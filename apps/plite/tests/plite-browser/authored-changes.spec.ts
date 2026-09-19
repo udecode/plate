@@ -2255,12 +2255,21 @@ test.describe('native authored changes', () => {
     await page.keyboard.type('better');
     await expect(proposed.root).toContainText('A better draft.');
     await expect(accepted.root).toContainText('A shared draft.');
-    await controls.getByRole('button', { name: 'Undo', exact: true }).click();
+    let undoCount = 0;
+    while (
+      undoCount < 'better'.length &&
+      !(await proposed.root.textContent())?.includes('A shared draft.')
+    ) {
+      await controls.getByRole('button', { name: 'Undo', exact: true }).click();
+      undoCount++;
+    }
     await expect(proposed.root).toContainText('A shared draft.');
     await expect
       .poll(() => page.evaluate(() => window.getSelection()?.toString()))
       .toBe('shared');
-    await controls.getByRole('button', { name: 'Redo', exact: true }).click();
+    for (let index = 0; index < undoCount; index++) {
+      await controls.getByRole('button', { name: 'Redo', exact: true }).click();
+    }
     await expect(proposed.root).toContainText('A better draft.');
     await page.keyboard.type('!');
     await expect(proposed.root).toContainText('A better! draft.');

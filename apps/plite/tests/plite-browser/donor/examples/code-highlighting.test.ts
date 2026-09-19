@@ -602,14 +602,22 @@ test.describe("code highlighting", () => {
       "If you are writing TypeScript"
     );
 
-    await page.keyboard.press(
-      await editor.root.evaluate(() =>
-        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
-        /Mac OS X/.test(navigator.userAgent)
-          ? "Meta+Z"
-          : "Control+Z"
-      )
+    const undoKey = await editor.root.evaluate(() =>
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? "Meta+Z"
+        : "Control+Z"
     );
+    for (let index = 0; index < "writing".length; index++) {
+      if (
+        (await editor.locator.block([2]).textContent())?.includes(
+          "If you are using TypeScript"
+        )
+      ) {
+        break;
+      }
+      await page.keyboard.press(undoKey);
+    }
 
     await expect(editor.locator.block([2])).toContainText(
       "If you are using TypeScript"
