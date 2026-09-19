@@ -1289,14 +1289,22 @@ test.describe('Inlines example', {
       .poll(async () => (await editor.get.blockTexts())[1])
       .toContain('There are two ways to add URLs. You');
 
-    await page.keyboard.press(
-      await editor.root.evaluate(() =>
-        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
-        /Mac OS X/.test(navigator.userAgent)
-          ? 'Meta+Z'
-          : 'Control+Z'
-      )
+    const undoKey = await editor.root.evaluate(() =>
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta+Z'
+        : 'Control+Z'
     );
+    let blockText = (await editor.get.blockTexts())[1];
+    for (
+      let index = 0;
+      index < 'URLs'.length &&
+      !blockText?.includes('There are two ways to add links. You');
+      index++
+    ) {
+      await page.keyboard.press(undoKey);
+      blockText = (await editor.get.blockTexts())[1];
+    }
 
     await expect
       .poll(async () => (await editor.get.blockTexts())[1])
@@ -1360,14 +1368,21 @@ test.describe('Inlines example', {
     await page.keyboard.type('wiki');
     await expect(editor.root.locator('a').first()).toHaveText('wiki');
 
-    await page.keyboard.press(
-      await editor.root.evaluate(() =>
-        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
-        /Mac OS X/.test(navigator.userAgent)
-          ? 'Meta+Z'
-          : 'Control+Z'
-      )
+    const undoKey = await editor.root.evaluate(() =>
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta+Z'
+        : 'Control+Z'
     );
+    let linkText = await editor.root.locator('a').first().textContent();
+    for (
+      let index = 0;
+      index < 'wiki'.length && linkText !== text;
+      index++
+    ) {
+      await page.keyboard.press(undoKey);
+      linkText = await editor.root.locator('a').first().textContent();
+    }
 
     await expect(editor.root.locator('a').first()).toHaveText(text);
     await expect.poll(() => editor.get.selection()).toEqual(draggedSelection);

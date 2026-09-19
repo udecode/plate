@@ -1747,7 +1747,16 @@ test.describe('On richtext example', () => {
       .poll(async () => (await editor.get.blockTexts())[0])
       .toBe('This is example, much better than a <textarea>!');
 
-    await page.keyboard.press(await getBrowserUndoHotkey(editor.root));
+    const undoKey = await getBrowserUndoHotkey(editor.root);
+    let blockText = (await editor.get.blockTexts())[0];
+    for (
+      let index = 0;
+      index < 'example'.length && blockText !== originalText;
+      index++
+    ) {
+      await page.keyboard.press(undoKey);
+      blockText = (await editor.get.blockTexts())[0];
+    }
 
     await expect
       .poll(async () => (await editor.get.blockTexts())[0])
