@@ -78,7 +78,7 @@
     "lucide-react": "^1.47.0",
     "next": "16.3.5",
     "pdf-lib": "^1.17.1",
-    "platejs": "^53.3.11",
+    "platejs": "^53.3.14",
     "radix-ui": "^1.6.7",
     "react": "19.3.0",
     "react-day-picker": "^10.0.1",
@@ -103,7 +103,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.0",
     "@tailwindcss/postcss": "4.3.3",
-    "@types/node": "^26.6.1",
+    "@types/node": "^26.6.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@typescript-eslint/parser": "8.56.1",

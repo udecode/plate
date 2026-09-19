@@ -74,6 +74,8 @@ Use `--prompt` for task-specific guidance, or `--prompt-file` and `--dataset` fo
 repository-relative context files. Context does not expand the selected Git
 target. The reviewer cannot read unchanged repository files from its empty
 sandbox; supply relevant source or dependency evidence when the diff is insufficient.
+`--prompt-file` also accepts an absolute path inside the repository; the same
+sensitive-path, symlink, and mutation checks apply. `--dataset` stays repo-relative.
 
 The default threshold is **P0 only**: material blockers to normal operation or
 safety. Use `--max-priority P1`, `P2`, or `P3` when the caller requests a wider
@@ -158,6 +160,15 @@ split context overrides are unsupported when projection is selected.
 
 The helper owns reviewer isolation, sanitized authentication, process cleanup,
 Git scope, and structured result validation. Keep those controls enabled.
+Before repository detection or target selection, Git must pass `--version`
+within 10 seconds. Failure exits `2` with an `incomplete` diagnostic and the
+resolved executable (or the unresolved selection); it never means `scoped-clean`.
+Set `AUTOREVIEW_GIT` to a trusted external Git executable to override every
+helper-owned Git invocation. On macOS with a broken selected Xcode, use
+`DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` for the invocation.
+Only `DEVELOPER_DIR` is additionally retained in Git's sanitized environment;
+neither override is forwarded to the isolated reviewer environment.
+
 Every reviewer pass must inspect its bundle for real credentials and report
 suspected credentials as P0 findings without reproducing their values. Harmless
 placeholders and test fixtures are not credentials. Autoreview does not require
