@@ -67,7 +67,7 @@ Blocked condition:
 Task state:
 - task_type: security package bug fix
 - task_complexity: non-trivial one-shot
-- current_phase: private tracker sync and release wait
+- current_phase: hosted CI and release wait
 - current_phase_status: in_progress
 - next_phase: release after authorized merge of PR #5131
 - goal_status: active
@@ -133,11 +133,11 @@ Start Gates:
 | `changeset` skill loaded when `.changeset` is required | yes | Loaded with repository changeset rule |
 | Barrel/export impact decision recorded | no | N/A: no files or package exports move |
 | Security advisory pack selected | yes | Private report, published package fix and disclosure order |
-| Advisory source read through correct authority or explicit access blocker | yes | Repository advisory API; source remains private triage |
+| Advisory source read through correct authority or explicit access blocker | yes | Repository advisory API; report accepted as private draft |
 | Affected package, vulnerable range, and fixed-version target identified | yes | Core through 53.3.11 and DOCX 53.0.0 path; fixed version assigned by later release |
 | Disclosure/release order recorded | yes | Patch package, publish fixed npm version, then update/publish advisory |
-| Private/draft disclosure safety recorded | yes | Private triage; sanitized public PR only, no payload or private advisory ID |
-| CVE decision recorded | yes | Empty CVE; request after fixed release, unless blocked on merge/release |
+| Private/draft disclosure safety recorded | yes | Private draft; sanitized public PR only, no payload or private advisory ID |
+| CVE decision recorded | yes | GitHub accepted the CVE request; assignment remains pending |
 
 Work Checklist:
 - [ ] If a duration was requested, it is recorded as minimum active work unless
@@ -279,7 +279,7 @@ Phase / pass table:
 | Intake and source read | done | Private advisory and npm artifacts read; source and browser behavior reproduced | implementation |
 | Implementation | done | Shared core helpers retain source document and move child nodes; core patch changeset | verification |
 | Verification | done | 159 focused tests, core typecheck/build, platejs build, lint, pnpm check, Chrome proof, clean autoreview | PR |
-| PR / tracker sync | in_progress | Sanitized PR #5131 created; private tracker update pending | release |
+| PR / tracker sync | done | Sanitized PR #5131 created; private report accepted and reporter updated | hosted CI |
 | Closeout | pending | Fixed npm version and advisory publication require merged PR | final response |
 
 Findings:
@@ -311,7 +311,8 @@ Verification evidence:
 - Chrome local package fixture at `127.0.0.1:41244`: before fix callback fired; rebuilt fixed packages returned styled and quote HTML with no callback. Browser error log empty; the missing local image path is intentional proof input. Fixture files remain outside the repo.
 - Autoreview `--mode local`: first P2 finding disproved by old/new output comparison; rerun with evidence reports no accepted/actionable findings.
 - No real editor paste gesture or hosted release proof claimed.
-- PR #5131: https://github.com/udecode/plate/pull/5131. First pushed patch commit `deeccb6143`; plan-only ownership update follows. The public PR omits the private advisory ID and payload.
+- PR #5131: https://github.com/udecode/plate/pull/5131. Patch commit `deeccb6143` and plan ownership commit `2cdd3574f4` pushed. The public PR omits the private advisory ID and payload.
+- Private tracker: accepted as a draft, reporter updated with the PR, and CVE request accepted by GitHub. Fixed version and publication remain pending release.
 
 Final handoff contract:
 - PR line: https://github.com/udecode/plate/pull/5131
@@ -328,7 +329,7 @@ Final handoff contract:
   - Why not quick patch: DOCX-only filtering would leave the shared conversion primitive unchanged
   - Why not broader change: no other reported path requires a parser redesign
 - Verified: package tests, typecheck/build, lint, pnpm check, local Chrome and final structured review
-- PR body verified: pending final head readback
+- PR body verified: one task-plan line and sanitized description at pushed head; repeat at final head after this plan update
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -355,9 +356,9 @@ Task-style PR body contract:
 Final handoff / sync:
 - PR: https://github.com/udecode/plate/pull/5131
 - Task plan at exact PR head: this file identifies PR #5131; verify after final push
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- Issue / tracker: private report accepted as draft; reporter updated; CVE requested, assignment pending
+- Browser proof: direct cleaner fixture passed in Chrome; no full editor paste gesture
+- Caveats: hosted CI, merge, fixed npm release and advisory publication pending
 
 Timeline:
 - 2026-09-19T09:28:13.095Z Task goal plan created.
@@ -365,8 +366,8 @@ Timeline:
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Verified package patch; preparing PR and private tracker sync |
-| Where am I going? | PR, then release/advisory after authorized merge |
+| Where am I? | PR and private tracker sync complete; hosted CI running |
+| Where am I going? | Release/advisory after authorized merge |
 | What is the goal? | Keep DOCX paste transforms in the source document and ship the fixed package |
 | What have I learned? | Browser proof must use rebuilt workspace artifacts; old nested-font traversal changed no returned HTML |
 | What have I done? | Source fix, changeset, focused/full checks, Chrome proof, structured review |
