@@ -163,7 +163,8 @@ describe('compilePlateModel', () => {
       tx.selection.set({ offset: 0, path: [0, 0] });
     });
     element.update.insert({ tone: 'warning' });
-    expect(editor.read.children()[1]).toMatchObject({
+    expect(editor.read.children()).toHaveLength(1);
+    expect(editor.read.children()[0]).toMatchObject({
       tone: 'warning',
       type: 'callout_node',
     });
