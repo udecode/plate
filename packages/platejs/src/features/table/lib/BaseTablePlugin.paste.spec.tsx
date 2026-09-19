@@ -312,7 +312,7 @@ describe('BaseTablePlugin prepared paste', () => {
 
   it.each([
     {
-      name: 'a source that cannot tile the selected rectangle exactly',
+      name: 'a partial source tile across the selected rectangle',
       input: (
         <editor>
           <htable>
@@ -349,6 +349,10 @@ describe('BaseTablePlugin prepared paste', () => {
         [0, 1, 1],
         [0, 1, 2],
       ],
+      expected: [
+        ['x', 'y', 'x'],
+        ['x', 'y', 'x'],
+      ],
       source: (
         <fragment>
           <htable>
@@ -365,7 +369,7 @@ describe('BaseTablePlugin prepared paste', () => {
       ) as Element[],
     },
     {
-      name: 'a paste rectangle that only partly intersects a merged cell',
+      name: 'a paste rectangle that intersects a merged cell',
       input: (
         <editor>
           <htable>
@@ -392,6 +396,10 @@ describe('BaseTablePlugin prepared paste', () => {
         </editor>
       ) as TestEditor,
       paths: [[0, 0, 1]],
+      expected: [
+        ['a', 'x', 'c'],
+        ['d', 'y', ''],
+      ],
       source: (
         <fragment>
           <htable>
@@ -409,36 +417,42 @@ describe('BaseTablePlugin prepared paste', () => {
         </fragment>
       ) as Element[],
     },
-  ])('rejects $name atomically', ({ input, paths, source }) => {
-    const editor = createTestTableEditor({
-      plugins: getTestTablePlugins(),
-      initialValue: input.children,
-    });
-    editor.update.selection.setNodes(paths);
-    const before = editor.read.value();
-    const selection = getEditorLiveSelection(editor);
-    const history = editor.read.history();
-    const tableKey = editor.key([0]);
-    const cellKeys = paths.map((path) => editor.key(path));
-    let commits = 0;
-    const unsubscribe = editor.subscribeCommit(() => {
-      commits += 1;
-    });
+  ])(
+    'pastes $name and replays it through history',
+    ({ expected, input, paths, source }) => {
+      const editor = createTestTableEditor({
+        plugins: getTestTablePlugins(),
+        initialValue: input.children,
+      });
+      editor.update.selection.setNodes(paths);
+      const before = editor.read.value();
+      const selection = getEditorLiveSelection(editor);
+      let commits = 0;
+      const unsubscribe = editor.subscribeCommit(() => {
+        commits += 1;
+      });
 
-    expect(
-      editor.update.slice.replace(
-        ContentSlice.fromJSON({ content: source, openEnd: 0, openStart: 0 })
-      )
-    ).toBe(false);
-    unsubscribe();
+      expect(
+        editor.update.slice.replace(
+          ContentSlice.fromJSON({ content: source, openEnd: 0, openStart: 0 })
+        )
+      ).toBe(true);
+      unsubscribe();
 
-    expect(editor.read.value()).toEqual(before);
-    expect(getEditorLiveSelection(editor)).toEqual(selection);
-    expect(editor.read.history()).toEqual(history);
-    expect(editor.key([0])).toBe(tableKey);
-    expect(paths.map((path) => editor.key(path))).toEqual(cellKeys);
-    expect(commits).toBe(0);
-  });
+      const after = editor.read.value();
+      expect(after).not.toEqual(before);
+      expect(tableText(editor)).toEqual(expected);
+      expect(commits).toBe(1);
+      expect(
+        compileTableGrid(editor.read.children()[0] as TableElement).problems
+      ).toEqual([]);
+      expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+      expect(editor.read.value()).toEqual(before);
+      expect(getEditorLiveSelection(editor)).toEqual(selection);
+      expect(editor.api.history.redo()).toEqual({ status: 'applied' });
+      expect(editor.read.value()).toEqual(after);
+    }
+  );
 
   it('publishes one canonical Yjs update and exact replay', () => {
     const initialValue: Value = [
