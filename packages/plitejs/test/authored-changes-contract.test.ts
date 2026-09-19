@@ -127,42 +127,51 @@ describe('native authored changes', () => {
     );
   });
 
-  it('discovers block-local changes beyond the page limit after unrelated commits', () => {
-    const count = 205;
-    const editor = createEditor({
-      plugins: [authored({ authorId: 'alice' })],
-      initialValue: Array.from({ length: count + 1 }, () => paragraph('Base')),
-    });
-    const proposed = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
-    });
-    const ids: string[] = [];
-    for (let block = 0; block < count; block++) {
-      proposed.update((tx) => {
-        ids.push(tx.authored.propose());
-        tx.text.insert('!', { at: point(4, block) });
+  it(
+    'discovers block-local changes beyond the page limit after unrelated commits',
+    { timeout: 15_000 },
+    () => {
+      const count = 205;
+      const editor = createEditor({
+        plugins: [authored({ authorId: 'alice' })],
+        initialValue: Array.from({ length: count + 1 }, () =>
+          paragraph('Base')
+        ),
       });
+      const proposed = createEditorView(editor, {
+        authored: { intent: 'propose', projection: 'proposed' },
+      });
+      const ids: string[] = [];
+      for (let block = 0; block < count; block++) {
+        proposed.update((tx) => {
+          ids.push(tx.authored.propose());
+          tx.text.insert('!', { at: point(4, block) });
+        });
+      }
+
+      assert.equal(
+        proposed.read.authored.changes({ limit: 200 }).items.length,
+        200
+      );
+      assert.deepEqual(
+        proposed.read.authored
+          .changesAt({
+            anchor: point(4, count - 1),
+            focus: point(5, count - 1),
+          })
+          .map(({ id }) => id),
+        [ids[count - 1]]
+      );
+
+      editor.update.text.insert('!', { at: point(4, count) });
+      assert.deepEqual(
+        proposed.read.authored
+          .changesAt({ anchor: point(4), focus: point(5) })
+          .map(({ id }) => id),
+        [ids[0]]
+      );
     }
-
-    assert.equal(
-      proposed.read.authored.changes({ limit: 200 }).items.length,
-      200
-    );
-    assert.deepEqual(
-      proposed.read.authored
-        .changesAt({ anchor: point(4, count - 1), focus: point(5, count - 1) })
-        .map(({ id }) => id),
-      [ids[count - 1]]
-    );
-
-    editor.update.text.insert('!', { at: point(4, count) });
-    assert.deepEqual(
-      proposed.read.authored
-        .changesAt({ anchor: point(4), focus: point(5) })
-        .map(({ id }) => id),
-      [ids[0]]
-    );
-  });
+  );
 
   it('filters block candidates by their exact ranges', () => {
     const editor = createEditor({

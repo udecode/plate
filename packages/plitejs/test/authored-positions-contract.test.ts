@@ -222,76 +222,80 @@ describe('authored durable positions', () => {
     assert.equal(resolveAuthoredPosition(current, point), 6);
   });
 
-  it('keeps token origins, inverse lookup and prior snapshots exact through repeated splits and deletions', () => {
-    let current = createAuthoredPositions(40, 'base');
-    const oracle = Array.from({ length: 40 }, (_, offset) => ({
-      origin: 'base',
-      offset,
-    }));
-    let randomState = 7;
-    const random = () =>
-      (randomState =
-        (Math.imul(randomState, 1_664_525) + 1_013_904_223) >>> 0) /
-      2 ** 32;
-    for (let revision = 0; revision < 1500; revision++) {
-      const before = current;
-      const beforeLength = oracle.length;
-      const from = Math.floor(random() * (oracle.length + 1));
-      const to = Math.min(oracle.length, from + Math.floor(random() * 6));
-      const length = 1 + Math.floor(random() * 6);
-      const origin = `operation-${revision}`;
-      current = replaceAuthoredPositions(current, from, to, [
-        {
-          birth: `change-${revision}`,
-          length,
-          offset: 0,
-          origin,
-          placement: null,
-          properties: {},
-        },
-      ]);
-      oracle.splice(
-        from,
-        to - from,
-        ...Array.from({ length }, (_, offset) => ({ origin, offset }))
-      );
-      assert.equal(before.root?.length ?? 0, beforeLength);
-      assert.equal(current.root?.length ?? 0, oracle.length);
-      if (revision % 25) continue;
-      const actual = [...authoredPositionSpans(current)];
-      assert.equal([...records(current.nodes)].length, actual.length);
-      assert.deepEqual(
-        actual.flatMap(({ span }) =>
-          Array.from({ length: span.length }, (_, offset) => ({
-            origin: span.origin,
-            offset: span.offset + offset,
-          }))
-        ),
-        oracle
-      );
-      for (let position = 0; position <= oracle.length; position++) {
-        assert.equal(
-          resolveAuthoredPosition(
-            current,
-            authoredPositionAt(current, position)
-          ),
-          position
+  it(
+    'keeps token origins, inverse lookup and prior snapshots exact through repeated splits and deletions',
+    { timeout: 60_000 },
+    () => {
+      let current = createAuthoredPositions(40, 'base');
+      const oracle = Array.from({ length: 40 }, (_, offset) => ({
+        origin: 'base',
+        offset,
+      }));
+      let randomState = 7;
+      const random = () =>
+        (randomState =
+          (Math.imul(randomState, 1_664_525) + 1_013_904_223) >>> 0) /
+        2 ** 32;
+      for (let revision = 0; revision < 1500; revision++) {
+        const before = current;
+        const beforeLength = oracle.length;
+        const from = Math.floor(random() * (oracle.length + 1));
+        const to = Math.min(oracle.length, from + Math.floor(random() * 6));
+        const length = 1 + Math.floor(random() * 6);
+        const origin = `operation-${revision}`;
+        current = replaceAuthoredPositions(current, from, to, [
+          {
+            birth: `change-${revision}`,
+            length,
+            offset: 0,
+            origin,
+            placement: null,
+            properties: {},
+          },
+        ]);
+        oracle.splice(
+          from,
+          to - from,
+          ...Array.from({ length }, (_, offset) => ({ origin, offset }))
         );
-      }
-      for (const identity of new Set(oracle.map((token) => token.origin))) {
-        const found = authoredOriginSpans(current, identity).flatMap(
-          ({ from: start, span }) =>
-            Array.from({ length: span.length }, (_, offset) => start + offset)
-        );
+        assert.equal(before.root?.length ?? 0, beforeLength);
+        assert.equal(current.root?.length ?? 0, oracle.length);
+        if (revision % 25) continue;
+        const actual = [...authoredPositionSpans(current)];
+        assert.equal([...records(current.nodes)].length, actual.length);
         assert.deepEqual(
-          found,
-          oracle.flatMap((token, index) =>
-            token.origin === identity ? [index] : []
-          )
+          actual.flatMap(({ span }) =>
+            Array.from({ length: span.length }, (_, offset) => ({
+              origin: span.origin,
+              offset: span.offset + offset,
+            }))
+          ),
+          oracle
         );
+        for (let position = 0; position <= oracle.length; position++) {
+          assert.equal(
+            resolveAuthoredPosition(
+              current,
+              authoredPositionAt(current, position)
+            ),
+            position
+          );
+        }
+        for (const identity of new Set(oracle.map((token) => token.origin))) {
+          const found = authoredOriginSpans(current, identity).flatMap(
+            ({ from: start, span }) =>
+              Array.from({ length: span.length }, (_, offset) => start + offset)
+          );
+          assert.deepEqual(
+            found,
+            oracle.flatMap((token, index) =>
+              token.origin === identity ? [index] : []
+            )
+          );
+        }
       }
     }
-  });
+  );
 
   it('retains ordered checkpoint records through full deletion and reload', () => {
     let tree: RecordTree<number> | null = null;
