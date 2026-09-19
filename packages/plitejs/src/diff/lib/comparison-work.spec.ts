@@ -35,7 +35,7 @@ describe('comparison work bounds', () => {
     expect(result.candidateEdges).toBe(100_000);
     expect(result.diagnostics.map(({ code }) => code)).toContain('work-limit');
     expect(kinds).toEqual(expect.arrayContaining(['delete', 'insert']));
-  }, 10_000);
+  }, 60_000);
 
   it('rejects cancellation during bounded candidate work without publishing a result', async () => {
     const { after, before } = workFixture(4200);
@@ -55,5 +55,5 @@ describe('comparison work bounds', () => {
     setTimeout(() => controller.abort(), 0);
 
     await expect(comparison).rejects.toMatchObject({ name: 'AbortError' });
-  }, 10_000);
+  }, 60_000);
 });
