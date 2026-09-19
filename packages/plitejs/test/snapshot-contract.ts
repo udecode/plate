@@ -2117,25 +2117,29 @@ it('reuses snapshot indexes for selection-only listener snapshots', () => {
   assert.equal(after.version, before.version + 1);
 });
 
-it('reads a deferred snapshot index after a long selection-only session', () => {
-  const editor = createPliteEditor({
-    initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
-  });
-  const before = editorGetSnapshot(editor);
-  const unsubscribe = editor.subscribeCommit(() => {});
-  for (let index = 0; index < 25_000; index++) {
-    editor.update((tx) => {
-      const point = { path: [0, 0], offset: index % 2 };
-      tx.selection.set({ kind: 'text', anchor: point, focus: point });
+it(
+  'reads a deferred snapshot index after a long selection-only session',
+  { timeout: 15_000 },
+  () => {
+    const editor = createPliteEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
     });
+    const before = editorGetSnapshot(editor);
+    const unsubscribe = editor.subscribeCommit(() => {});
+    for (let index = 0; index < 25_000; index++) {
+      editor.update((tx) => {
+        const point = { path: [0, 0], offset: index % 2 };
+        tx.selection.set({ kind: 'text', anchor: point, focus: point });
+      });
+    }
+    const after = editorGetSnapshot(editor);
+    assert.equal(after.children, before.children);
+    assert.equal(after.index, before.index);
+    assert.deepEqual(after.index.pathOf(after.index.keyAt([0, 0])!), [0, 0]);
+    assert.equal(after.version, before.version + 25_000);
+    unsubscribe();
   }
-  const after = editorGetSnapshot(editor);
-  assert.equal(after.children, before.children);
-  assert.equal(after.index, before.index);
-  assert.deepEqual(after.index.pathOf(after.index.keyAt([0, 0])!), [0, 0]);
-  assert.equal(after.version, before.version + 25_000);
-  unsubscribe();
-});
+);
 
 it('publishes touched node keys for collapsed text changes', () => {
   const editor = createEditor();

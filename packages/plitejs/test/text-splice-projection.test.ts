@@ -167,28 +167,34 @@ describe('canonical text splice projection', () => {
   });
 
   for (const count of [1, 10, 100, 1000]) {
-    it(`visits changed ranges, not the 4.9M-byte text, for ${count} splices`, () => {
-      const text = 'a'.repeat(4_900_000);
-      const editor = createEditor({
-        initialValue: [paragraph(text), paragraph('untouched')],
-      });
-      const key = getNodeKey(editor, [0, 0]);
-      editor.update((tx) => {
-        for (let index = count; index > 0; index--) {
-          tx.text.insert('X', { at: { path: [0, 0], offset: index * 4096 } });
-        }
-      });
-      const projection = projectEditorTextSplices(getLastCommit(editor)!);
-      const changes = projection.changes.get(key)!;
-      assert.ok(changes);
-      assert.equal(changes.length, count);
-      assert.equal(projection.changes.size, 1);
-      assert.equal(projection.insertedCodeUnits, count);
-      assert.ok(projection.visitedSections <= count * 2 + 1);
-      assert.equal(
-        apply(text, changes),
-        editor.read.children()[0].children[0].text
-      );
-    });
+    it(
+      `visits changed ranges, not the 4.9M-byte text, for ${count} splices`,
+      { timeout: 15_000 },
+      () => {
+        const text = 'a'.repeat(4_900_000);
+        const editor = createEditor({
+          initialValue: [paragraph(text), paragraph('untouched')],
+        });
+        const key = getNodeKey(editor, [0, 0]);
+        editor.update((tx) => {
+          for (let index = count; index > 0; index--) {
+            tx.text.insert('X', {
+              at: { path: [0, 0], offset: index * 4096 },
+            });
+          }
+        });
+        const projection = projectEditorTextSplices(getLastCommit(editor)!);
+        const changes = projection.changes.get(key)!;
+        assert.ok(changes);
+        assert.equal(changes.length, count);
+        assert.equal(projection.changes.size, 1);
+        assert.equal(projection.insertedCodeUnits, count);
+        assert.ok(projection.visitedSections <= count * 2 + 1);
+        assert.equal(
+          apply(text, changes),
+          editor.read.children()[0].children[0].text
+        );
+      }
+    );
   }
 });

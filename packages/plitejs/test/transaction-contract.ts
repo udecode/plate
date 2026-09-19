@@ -11,6 +11,7 @@ import {
   type Editor,
   type EditorCommand,
   type EditorCommandAroundHandler,
+  type EditorCommandHandler,
   type Element,
   type Range,
   SelectionApi,
@@ -56,14 +57,28 @@ const runEditorTransaction = (
 
 let commandPluginOrder = 0;
 
+const nextCommandPluginName = () =>
+  `test-command-${(commandPluginOrder += 1) - 1}`;
+
 const installCommandPlugin = <Input>(
   editor: Editor,
   command: EditorCommand<Input>,
   handler: EditorCommandAroundHandler<Input>
 ) =>
   editor.install(
-    definePlugin(`test-command-${(commandPluginOrder += 1) - 1}`, {
+    definePlugin(nextCommandPluginName(), {
       commands: ({ around }) => [around(command, handler)],
+    })
+  );
+
+const installCommandHandler = <Input>(
+  editor: Editor,
+  command: EditorCommand<Input>,
+  handler: EditorCommandHandler<Input>
+) =>
+  editor.install(
+    definePlugin(nextCommandPluginName(), {
+      commands: ({ handle }) => [handle(command, handler)],
     })
   );
 
@@ -1418,7 +1433,7 @@ describe('plite transaction contract', () => {
     );
   });
 
-  it('lets boolean false decline a command without stopping propagation', () => {
+  it('lets boolean false decline after around input rewriting', () => {
     const editor = createEditor();
     const seenCommands: string[] = [];
 
@@ -1428,7 +1443,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeDecline = installCommandPlugin(
+    const unsubscribeDecline = installCommandHandler(
       editor,
       editorCommands.insertText,
       (context) => {
@@ -1455,7 +1470,7 @@ describe('plite transaction contract', () => {
     unsubscribeDecline();
     unsubscribeOverride();
 
-    assert.deepEqual(seenCommands, ['decline:!', 'override:!']);
+    assert.deepEqual(seenCommands, ['override:!', 'decline:?']);
     assert.equal(editorString(editor, [0]), 'one?');
   });
 
