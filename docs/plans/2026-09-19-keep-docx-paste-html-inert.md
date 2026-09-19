@@ -67,9 +67,9 @@ Blocked condition:
 Task state:
 - task_type: security package bug fix
 - task_complexity: non-trivial one-shot
-- current_phase: PR and private tracker sync
+- current_phase: private tracker sync and release wait
 - current_phase_status: in_progress
-- next_phase: release after authorized merge
+- next_phase: release after authorized merge of PR #5131
 - goal_status: active
 
 Current verdict:
@@ -279,7 +279,7 @@ Phase / pass table:
 | Intake and source read | done | Private advisory and npm artifacts read; source and browser behavior reproduced | implementation |
 | Implementation | done | Shared core helpers retain source document and move child nodes; core patch changeset | verification |
 | Verification | done | 159 focused tests, core typecheck/build, platejs build, lint, pnpm check, Chrome proof, clean autoreview | PR |
-| PR / tracker sync | in_progress | Sanitized PR body prepared; exact PR and private tracker update pending | release |
+| PR / tracker sync | in_progress | Sanitized PR #5131 created; private tracker update pending | release |
 | Closeout | pending | Fixed npm version and advisory publication require merged PR | final response |
 
 Findings:
@@ -311,9 +311,10 @@ Verification evidence:
 - Chrome local package fixture at `127.0.0.1:41244`: before fix callback fired; rebuilt fixed packages returned styled and quote HTML with no callback. Browser error log empty; the missing local image path is intentional proof input. Fixture files remain outside the repo.
 - Autoreview `--mode local`: first P2 finding disproved by old/new output comparison; rerun with evidence reports no accepted/actionable findings.
 - No real editor paste gesture or hosted release proof claimed.
+- PR #5131: https://github.com/udecode/plate/pull/5131. First pushed patch commit `deeccb6143`; plan-only ownership update follows. The public PR omits the private advisory ID and payload.
 
 Final handoff contract:
-- PR line: pending
+- PR line: https://github.com/udecode/plate/pull/5131
 - Issue / tracker line: private repository advisory; public identifier omitted until disclosure
 - Confidence line: high for package behavior; limited to direct cleaner browser execution
 - Flow table:
@@ -327,7 +328,7 @@ Final handoff contract:
   - Why not quick patch: DOCX-only filtering would leave the shared conversion primitive unchanged
   - Why not broader change: no other reported path requires a parser redesign
 - Verified: package tests, typecheck/build, lint, pnpm check, local Chrome and final structured review
-- PR body verified: pending
+- PR body verified: pending final head readback
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -352,8 +353,8 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Task plan at exact PR head: pending
+- PR: https://github.com/udecode/plate/pull/5131
+- Task plan at exact PR head: this file identifies PR #5131; verify after final push
 - Issue / tracker: pending
 - Browser proof: pending
 - Caveats: pending
