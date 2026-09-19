@@ -200,7 +200,7 @@ describe('BaseMediaEmbedPlugin', () => {
       url: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
     });
 
-    const media = editor.read.children()[1];
+    const media = editor.read.children().at(-1);
 
     if (
       !media ||
@@ -237,7 +237,7 @@ describe('BaseMediaEmbedPlugin', () => {
       url: '<iframe src="https://www.youtube.com/watch?v=M7lc1UVf-VE"></iframe>',
     });
 
-    expect(editor.read.children()[1]).toMatchObject({
+    expect(editor.read.children().at(-1)).toMatchObject({
       provider: 'youtube',
       sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
       type: 'mediaEmbed',
