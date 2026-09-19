@@ -192,8 +192,14 @@ describe('CollaborativeEditingDemo', () => {
     fireEvent.click(connectionButton()!);
     expect(ada.awareness.getStates().has(202)).toBe(false);
     expect(lin.awareness.getStates().has(101)).toBe(false);
+    await waitFor(() => {
+      expect(connectionButton()?.dataset.connectionAction).toBe('connect');
+    });
 
     fireEvent.click(connectionButton()!);
+    await waitFor(() => {
+      expect(connectionButton()?.dataset.connectionAction).toBe('disconnect');
+    });
     expect(ada.awareness.getStates().has(202)).toBe(true);
     expect(lin.awareness.getStates().has(101)).toBe(true);
     expect(() => view.unmount()).not.toThrow();
