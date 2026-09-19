@@ -28,7 +28,7 @@ describe('history documentation contract', () => {
 
     assert.match(readme, /import \{ createEditor \} from ['"]platejs['"]/);
     assert.match(readme, /Plate tracks local undo and redo batches by default/);
-    assert.match(readme, /state\.history\.hasUndo\(\)/);
+    assert.match(readme, /editor\.read\.history\.hasUndo\(\)/);
     assert.match(readme, /editor\.api\.history\.undo\(\)/);
     assert.match(readme, /editor\.update\(\{ history: "skip" \}\)/);
     assert.match(readme, /History\.isHistory\(value: unknown\)/);
