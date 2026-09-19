@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.3.14
+
+### Patch Changes
+
+- [#5131](https://github.com/udecode/plate/pull/5131) by [@zbeyens](https://github.com/zbeyens) – Keep HTML element transforms in their source document during DOCX paste.
+
 ## 53.3.11
 
 ### Patch Changes
