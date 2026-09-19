@@ -608,15 +608,14 @@ test.describe("code highlighting", () => {
         ? "Meta+Z"
         : "Control+Z"
     );
-    for (let index = 0; index < "writing".length; index++) {
-      if (
-        (await editor.locator.block([2]).textContent())?.includes(
-          "If you are using TypeScript"
-        )
-      ) {
-        break;
-      }
+    let text = await editor.locator.block([2]).textContent();
+    for (
+      let index = 0;
+      index < "writing".length && !text?.includes("If you are using TypeScript");
+      index++
+    ) {
       await page.keyboard.press(undoKey);
+      text = await editor.locator.block([2]).textContent();
     }
 
     await expect(editor.locator.block([2])).toContainText(

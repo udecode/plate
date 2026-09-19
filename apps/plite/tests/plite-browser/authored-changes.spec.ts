@@ -2256,12 +2256,14 @@ test.describe('native authored changes', () => {
     await expect(proposed.root).toContainText('A better draft.');
     await expect(accepted.root).toContainText('A shared draft.');
     let undoCount = 0;
+    let proposedText = await proposed.root.textContent();
     while (
       undoCount < 'better'.length &&
-      !(await proposed.root.textContent())?.includes('A shared draft.')
+      !proposedText?.includes('A shared draft.')
     ) {
       await controls.getByRole('button', { name: 'Undo', exact: true }).click();
-      undoCount++;
+      undoCount += 1;
+      proposedText = await proposed.root.textContent();
     }
     await expect(proposed.root).toContainText('A shared draft.');
     await expect
