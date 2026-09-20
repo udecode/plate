@@ -8,6 +8,7 @@ import { cloneFrozen } from './clone';
 type DefineEffectBaseOptions<TValue> = Readonly<{
   codec?: EditorEffectType<TValue>['codec'];
   history?: EditorEffectType<TValue>['history'];
+  historyReplay?: EditorEffectType<TValue>['historyReplay'];
   invert?: (value: TValue) => TValue;
   key: string;
   map?: EditorEffectType<TValue>['map'];
@@ -70,6 +71,21 @@ export const defineEffect = <TValue = null>(
       `Editor effect "${key}" cannot define a collaboration transport unless collab is "shared".`
     );
   }
+  if (options.history === 'session' && options.collab === 'shared') {
+    throw new Error(
+      `Session history effect "${key}" cannot be shared through collaboration.`
+    );
+  }
+  if (options.history === 'session' && !options.historyReplay) {
+    throw new Error(
+      `Session history effect "${key}" requires a historyReplay callback.`
+    );
+  }
+  if (options.history !== 'session' && options.historyReplay) {
+    throw new Error(
+      `Editor effect "${key}" can only replay live work with history: "session".`
+    );
+  }
 
   return Object.freeze({
     ...(options.codec ? { codec: options.codec } : {}),
@@ -82,6 +98,7 @@ export const defineEffect = <TValue = null>(
       ? { collabTransport: Object.freeze({ ...options.collabTransport }) }
       : {}),
     history: options.history ?? 'push',
+    ...(options.historyReplay ? { historyReplay: options.historyReplay } : {}),
     invert: options.invert ?? ((value) => value),
     key,
     map: options.map ?? ((value) => value),

@@ -270,8 +270,13 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   `api` service, opens exactly one update, and returns an explicit outcome.
   Transaction `update` methods are reserved for mutations that honestly
   compose with other draft work. History replay therefore lives at
-  `editor.api.history.undo()` and `redo()`; transaction history controls only
-  grouping, skipping, and restoration.
+  `editor.api.history.undo()` and `redo()` and resolves an awaited outcome;
+  transaction history controls only grouping, skipping, and restoration.
+  A fallible session effect may join that one order only when its durable work
+  has an independent external owner. It is local, effect-only, non-mergeable,
+  excluded from persisted history, and replays before branch movement. A block
+  preserves the branch head, and no editor update may publish while the effect
+  awaits its owner.
 - The primary document root is implicit in public API and docs. Do not expose a
   public `main` root key, config option, or example. Explicit roots are only for
   additional roots.

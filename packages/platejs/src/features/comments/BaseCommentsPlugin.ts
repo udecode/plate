@@ -1,5 +1,9 @@
+import isEqual from 'lodash/isEqual.js';
+
 import {
+  defineEffect,
   definePlugin,
+  getEditorRuntimeOwner,
   nanoid,
   NodeApi,
   RangeApi,
@@ -7,6 +11,7 @@ import {
   type Anchor,
   type Editor,
   type EditorDocumentRange,
+  type EditorEffectHistoryReplayResult,
   type Location,
   type NodeKey,
   type Range,
@@ -58,6 +63,45 @@ export type CommentThread = Readonly<{
   target: CommentTarget;
   userId: string;
 }>;
+
+type CommentCreationHistoryTransition = Readonly<{
+  attachment: EditorDocumentRange | null;
+  messageId: string;
+  previous: CommentThread | null;
+  value: CommentThread | null;
+}>;
+
+const COMMENT_CREATION_HISTORY_REPLAYERS = new WeakMap<
+  object,
+  (
+    transition: CommentCreationHistoryTransition
+  ) => Promise<
+    EditorEffectHistoryReplayResult<CommentCreationHistoryTransition>
+  >
+>();
+
+const commentCreationHistoryEffect =
+  defineEffect<CommentCreationHistoryTransition>({
+    history: 'session',
+    historyReplay: (editor, transition) => {
+      const replay = COMMENT_CREATION_HISTORY_REPLAYERS.get(
+        getEditorRuntimeOwner(editor)
+      );
+
+      return replay
+        ? replay(transition)
+        : {
+            reason: 'comments-owner-unavailable',
+            status: 'blocked',
+          };
+    },
+    invert: ({ previous, value, ...transition }) => ({
+      ...transition,
+      previous: value,
+      value: previous,
+    }),
+    key: 'comments.creation',
+  });
 
 export type PendingComment = Readonly<{ excerpt: string }>;
 
@@ -322,11 +366,14 @@ const freezeComment = <T>(value: T): T => {
 /**
  * Owns comment records and their native range lifetime for one editor.
  * Load initialComments and save api.toJSON() with the exact document revision.
- * Conversations are independent from document undo; native anchors own mapping.
+ * Successful local thread creation joins session undo after durable commit.
+ * Other conversation actions stay independent; native anchors own mapping.
  */
 export const BaseCommentsPlugin = definePlugin('comments', {
+  effectTypes: [commentCreationHistoryEffect],
   initialState,
 }).extend(({ editor, store }) => {
+  const runtimeOwner = getEditorRuntimeOwner(editor);
   let threads = new Map<string, CommentThread>();
   const anchors = new Map<string, Anchor<Range>>();
   let source: ReadonlyArray<{ id: string; anchor: AnnotationAnchor }> = [];
@@ -685,6 +732,80 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     setThread(id, canonical, anchor);
     return { status: 'applied', value: undefined };
   };
+  const sameThread = (
+    left: CommentThread | null,
+    right: CommentThread | null
+  ) => isEqual(left, right);
+  const replayCreation = async (
+    transition: CommentCreationHistoryTransition
+  ): Promise<
+    EditorEffectHistoryReplayResult<CommentCreationHistoryTransition>
+  > => {
+    const thread = transition.value ?? transition.previous;
+    if (!thread) {
+      return { reason: 'comments-thread-changed', status: 'blocked' };
+    }
+    const current = threads.get(thread.id) ?? null;
+    if (
+      !sameThread(current, transition.previous) ||
+      thread.messages.length !== 1 ||
+      thread.messages[0]?.id !== transition.messageId
+    ) {
+      return { reason: 'comments-thread-changed', status: 'blocked' };
+    }
+
+    let restoredAnchor: Anchor<Range> | undefined;
+    try {
+      if (transition.value?.target.type === 'range') {
+        if (!transition.attachment) {
+          return {
+            reason: 'comments-attachment-unavailable',
+            status: 'blocked',
+          };
+        }
+        restoredAnchor = editor.anchor.restore(transition.attachment);
+        if (!restoredAnchor.resolve()) {
+          restoredAnchor.release();
+          return {
+            reason: 'comments-attachment-unavailable',
+            status: 'blocked',
+          };
+        }
+      }
+
+      const result = await commitMutation(
+        thread.id,
+        transition.value ? 'createThread' : 'removeThread',
+        transition.value,
+        restoredAnchor,
+        () => sameThread(threads.get(thread.id) ?? null, transition.previous)
+      );
+
+      if (result.status !== 'applied') {
+        restoredAnchor?.release();
+        return {
+          reason:
+            result.status === 'rejected' && result.code
+              ? `comments-${result.code}`
+              : `comments-${result.status}`,
+          status: 'blocked',
+        };
+      }
+
+      const value = threads.get(thread.id) ?? null;
+      return {
+        status: 'applied',
+        value: Object.freeze({
+          ...transition,
+          previous: current,
+          value,
+        }),
+      };
+    } catch {
+      restoredAnchor?.release();
+      return { reason: 'comments-mutation-failed', status: 'blocked' };
+    }
+  };
   const mutateThread = (
     id: string,
     operation: CommentOperation,
@@ -713,6 +834,11 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   const destroy = () => {
     if (destroyed) return;
     destroyed = true;
+    if (
+      COMMENT_CREATION_HISTORY_REPLAYERS.get(runtimeOwner) === replayCreation
+    ) {
+      COMMENT_CREATION_HISTORY_REPLAYERS.delete(runtimeOwner);
+    }
     unsubscribeActive?.();
     viewIndexes.forEach(
       ({ annotations, listeners, refreshers, unsubscribe }) => {
@@ -746,6 +872,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     pendingListeners.clear();
     dataListeners.clear();
   };
+
+  COMMENT_CREATION_HISTORY_REPLAYERS.set(runtimeOwner, replayCreation);
 
   return {
     activate: ({ beforePublish, onCleanup }) => {
@@ -810,6 +938,24 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             );
             if (result.status !== 'applied') return result;
             transferred = true;
+            const canonical = threads.get(thread.id);
+            const createdMessage = canonical?.messages[0];
+            if (!canonical || !createdMessage) {
+              throw new Error(
+                'Applied comment creation must publish one initial message'
+              );
+            }
+            const liveAnchor = anchors.get(thread.id);
+            commandEditor.update((tx) => {
+              tx.effects.emit(commentCreationHistoryEffect, {
+                attachment: liveAnchor
+                  ? commandEditor.anchor.save(liveAnchor)
+                  : null,
+                messageId: createdMessage.id,
+                previous: null,
+                value: canonical,
+              });
+            });
             if (pending && pending === pendingAnchor) {
               pendingAnchor = null;
               publish({ ...snapshot, pending: null }, { pending: true });

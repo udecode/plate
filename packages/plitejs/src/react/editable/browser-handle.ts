@@ -743,14 +743,14 @@ export const attachPliteBrowserHandle = ({
       forceRender();
     },
     redo: () => {
-      const result = replayHistory('redo', 'none');
+      void replayHistory('redo', 'none').then((result) => {
+        if (result.status !== 'applied') return;
 
-      if (result.status !== 'applied') return;
-
-      if (shouldForceRenderAfterModelOwnedHistory(editor)) {
-        forceRender();
-      }
-      refocusHandleElement();
+        if (shouldForceRenderAfterModelOwnedHistory(editor)) {
+          forceRender();
+        }
+        refocusHandleElement();
+      });
     },
     resolveRangeAnchor: (id) => {
       const rangeAnchor = browserHandleRangeAnchors.current.get(id);
@@ -897,14 +897,14 @@ export const attachPliteBrowserHandle = ({
       );
     },
     undo: () => {
-      const result = replayHistory('undo', 'none');
+      void replayHistory('undo', 'none').then((result) => {
+        if (result.status !== 'applied') return;
 
-      if (result.status !== 'applied') return;
-
-      if (shouldForceRenderAfterModelOwnedHistory(editor)) {
-        forceRender();
-      }
-      refocusHandleElement();
+        if (shouldForceRenderAfterModelOwnedHistory(editor)) {
+          forceRender();
+        }
+        refocusHandleElement();
+      });
     },
     releaseRangeAnchor: (id) => {
       const rangeAnchor = browserHandleRangeAnchors.current.get(id);

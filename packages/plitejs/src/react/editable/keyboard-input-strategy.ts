@@ -568,7 +568,8 @@ export const applyEditableKeyDown = ({
     if (!readOnly && Hotkeys.isRedo(nativeEvent)) {
       const result = replay('redo');
 
-      if (!result || result.status === 'unavailable') return keyDownUnhandled();
+      if (!result) return keyDownUnhandled();
+      void result;
       event.preventDefault();
       event.stopPropagation();
       return keyDownHandled();
@@ -577,7 +578,8 @@ export const applyEditableKeyDown = ({
     if (!readOnly && Hotkeys.isUndo(nativeEvent)) {
       const result = replay('undo');
 
-      if (!result || result.status === 'unavailable') return keyDownUnhandled();
+      if (!result) return keyDownUnhandled();
+      void result;
       event.preventDefault();
       event.stopPropagation();
       return keyDownHandled();
@@ -821,7 +823,8 @@ export const applyEditableKeyDown = ({
     if (Hotkeys.isRedo(nativeEvent)) {
       const result = replay('redo');
 
-      if (!result || result.status === 'unavailable') return keyDownUnhandled();
+      if (!result) return keyDownUnhandled();
+      void result;
       event.preventDefault();
       return keyDownHandled();
     }
@@ -829,7 +832,8 @@ export const applyEditableKeyDown = ({
     if (Hotkeys.isUndo(nativeEvent)) {
       const result = replay('undo');
 
-      if (!result || result.status === 'unavailable') return keyDownUnhandled();
+      if (!result) return keyDownUnhandled();
+      void result;
       event.preventDefault();
       return keyDownHandled();
     }

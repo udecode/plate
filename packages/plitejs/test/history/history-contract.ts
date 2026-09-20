@@ -393,7 +393,7 @@ describe('plite-history contract', () => {
     );
   });
 
-  it('reports empty undo and redo stacks without publishing an update', () => {
+  it('reports empty undo and redo stacks without publishing an update', async () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Initial text')], {
@@ -404,8 +404,8 @@ describe('plite-history contract', () => {
 
     const before = getVisibleState(editor);
 
-    assert.deepEqual(editor.api.history.undo(), { status: 'empty' });
-    assert.deepEqual(editor.api.history.redo(), { status: 'empty' });
+    assert.deepEqual(await editor.api.history.undo(), { status: 'empty' });
+    assert.deepEqual(await editor.api.history.redo(), { status: 'empty' });
 
     assert.deepEqual(getVisibleState(editor), before);
     assert.deepEqual(getHistory(editor).undos, []);
@@ -480,7 +480,7 @@ describe('plite-history contract', () => {
     assert.equal(getHistory(editor).redos.length, 0);
   });
 
-  it('replays one document-wide batch from a named-root view', () => {
+  it('replays one document-wide batch from a named-root view', async () => {
     const editor = createEditor({
       plugins: [history()],
       initialValue: {
@@ -497,12 +497,12 @@ describe('plite-history contract', () => {
       });
     });
 
-    assert.deepEqual(header.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(await header.api.history.undo(), { status: 'applied' });
     assert.deepEqual(editor.read.value(), {
       children: [paragraph('main')],
       roots: { header: [paragraph('header')] },
     });
-    assert.deepEqual(header.api.history.redo(), { status: 'applied' });
+    assert.deepEqual(await header.api.history.redo(), { status: 'applied' });
     assert.deepEqual(editor.read.value(), {
       children: [paragraph('main!')],
       roots: { header: [paragraph('header!')] },

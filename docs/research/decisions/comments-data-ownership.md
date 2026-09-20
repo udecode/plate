@@ -2,7 +2,7 @@
 title: Comments data ownership
 type: decision
 status: accepted
-updated: 2026-09-18
+updated: 2026-09-19
 review_scope: comments
 current_review: 2026-09-18-comments-attachment-design-gate
 reconciled_executions:
@@ -54,6 +54,15 @@ the earlier same-day proposal for a mandatory activity log: the observed
 open/resolved comments panel does not require a second runtime history store.
 Current-state conversations, native document history, and authored review
 provenance retain their own authorities.
+
+Successful local thread creation contributes one session-only effect to the
+native document-history order after the application mutation commits. Undo and
+redo await the same Comments mutation boundary before moving the branch. The
+effect removes or restores only an unchanged one-message canonical thread; a
+reply, edit, resolution, canonical replacement, rejection or failure blocks at
+that history head. Replies, message edits, resolution and explicit deletion
+remain outside document history. Session effects are omitted from persisted
+History JSON, so reload still starts without local comment-creation undo.
 
 The final accepted plan cuts a generic editor checkpoint, mandatory activity
 log and live `setThreads` replacement. Ordinary reload creates a fresh editor

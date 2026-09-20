@@ -957,7 +957,7 @@ describe('persistent anchor history contract', () => {
     assert.equal(editor.read.text.string([]), 'a');
   });
 
-  it('keeps anchor recovery when history is reconfigured with an edit', () => {
+  it('keeps anchor recovery when history is reconfigured with an edit', async () => {
     const slot = definePluginSlot('history-anchor-reconfiguration');
     const editor = createEditor({
       plugins: [slot.of(history({ maxDepth: 100 }))],
@@ -981,7 +981,7 @@ describe('persistent anchor history contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
-    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
     assert.deepEqual(anchor.resolve(), before);
     assert.equal(editor.read.text.string([]), 'abc');
   });

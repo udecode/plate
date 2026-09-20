@@ -24,7 +24,6 @@ import {
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   applyEditableCommand,
-  applyModelOwnedHistoryIntent,
   applyModelOwnedTextInput,
 } from '../../src/react/editable/mutation-controller';
 import type { ReactRuntimeEditor } from '../../src/react/plugin/react-editor';
@@ -57,7 +56,7 @@ class FakeDataTransfer {
   }
 }
 
-const replayMountedHistory = (
+const replayMountedHistory = async (
   editor: ReactRuntimeEditor,
   direction: 'redo' | 'undo'
 ) => {
@@ -66,7 +65,8 @@ const replayMountedHistory = (
   runtime.setRoot(document.createElement('div'));
   runtime.connect();
   try {
-    return applyModelOwnedHistoryIntent({ direction, editor, runtime });
+    const result = await runtime.replayHistory(direction);
+    return result.status !== 'unavailable';
   } finally {
     runtime.destroy();
   }
@@ -1334,7 +1334,7 @@ describe('projected editable commands', () => {
     });
   });
 
-  it('undo and redo restore the projected selection sidecar instead of losing owner identity', () => {
+  it('undo and redo restore the projected selection sidecar instead of losing owner identity', async () => {
     const { editor, graph } = createFixture();
 
     writeForwardProjectedSelection(editor, graph);
@@ -1347,14 +1347,14 @@ describe('projected editable commands', () => {
     });
     expect(readPliteViewSelection(editor)).toBe(null);
 
-    expect(replayMountedHistory(editor, 'undo')).toBe(true);
+    expect(await replayMountedHistory(editor, 'undo')).toBe(true);
     expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     });
     expect(readPliteViewSelection(editor)).toEqual(projectedSelection);
 
-    expect(replayMountedHistory(editor, 'redo')).toBe(true);
+    expect(await replayMountedHistory(editor, 'redo')).toBe(true);
     expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefX'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
@@ -1362,7 +1362,7 @@ describe('projected editable commands', () => {
     expect(readPliteViewSelection(editor)).toBe(null);
   });
 
-  it('ownerless projected paste undo restores the transaction-start model selection', () => {
+  it('ownerless projected paste undo restores the transaction-start model selection', async () => {
     const runtime = createEditor({
       plugins: [history(), dom()],
       initialValue: [paragraph('Before'), paragraph('After')],
@@ -1395,7 +1395,7 @@ describe('projected editable commands', () => {
         editor,
       })
     ).toBe(true);
-    expect(replayMountedHistory(editor, 'undo')).toBe(true);
+    expect(await replayMountedHistory(editor, 'undo')).toBe(true);
     expect(editor.read((state) => state.children())).toEqual([
       paragraph('Before'),
       paragraph('After'),
@@ -1407,7 +1407,7 @@ describe('projected editable commands', () => {
     expect(readPliteViewSelection(editor)).toEqual(projectedSelection);
   });
 
-  it('notifies view-selection subscribers when document history restores sidecars', () => {
+  it('notifies view-selection subscribers when document history restores sidecars', async () => {
     const { editor, graph } = createFixture();
 
     writeForwardProjectedSelection(editor, graph);
@@ -1426,7 +1426,7 @@ describe('projected editable commands', () => {
     });
 
     try {
-      expect(replayMountedHistory(editor, 'undo')).toBe(true);
+      expect(await replayMountedHistory(editor, 'undo')).toBe(true);
     } finally {
       unsubscribe();
     }
@@ -1435,7 +1435,7 @@ describe('projected editable commands', () => {
     expect(events).toEqual([projectedSelection]);
   });
 
-  it('keeps model-owned history undo from normalizing the outer command transaction', () => {
+  it('keeps model-owned history undo from normalizing the outer command transaction', async () => {
     const blockCount = 128;
     const initialValue = Array.from({ length: blockCount }, (_, index) =>
       paragraph(`block-${index}`)
@@ -1473,7 +1473,7 @@ describe('projected editable commands', () => {
     };
 
     try {
-      expect(replayMountedHistory(editor, 'undo')).toBe(true);
+      expect(await replayMountedHistory(editor, 'undo')).toBe(true);
     } finally {
       target.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }

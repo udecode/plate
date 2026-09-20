@@ -72,7 +72,8 @@ export type EditorHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
 
 type ModelHistoryResult =
   | Readonly<{ status: 'applied' | 'empty' }>
-  | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>;
+  | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>
+  | Readonly<{ reason: string; status: 'blocked' }>;
 
 export type EditableHistoryReplayResult =
   | ModelHistoryResult
@@ -904,10 +905,10 @@ export class EditableDOMRuntime {
     this.historySettleHandler = handler;
   }
 
-  replayHistory(
+  async replayHistory(
     direction: 'redo' | 'undo',
     focusPolicy: EditorHistoryFocusPolicy = 'restore-root'
-  ): EditableHistoryReplayResult {
+  ): Promise<EditableHistoryReplayResult> {
     const root = this.rootElement;
 
     if (!this.connected || !root) {
@@ -941,8 +942,8 @@ export class EditableDOMRuntime {
 
     const { history } = this.editorValue.api as unknown as {
       history?: {
-        redo: () => ModelHistoryResult;
-        undo: () => ModelHistoryResult;
+        redo: () => Promise<ModelHistoryResult>;
+        undo: () => Promise<ModelHistoryResult>;
       };
     };
 
@@ -955,14 +956,13 @@ export class EditableDOMRuntime {
 
     writePliteViewSelection(this.editorValue, null);
     try {
-      const result =
-        focusPolicy === 'preserve'
-          ? withUpdateTagContext(
-              this.editorValue,
-              PLITE_REACT_PRESERVE_SELECTION_TAGS,
-              run
-            )
-          : run();
+      const result = await (focusPolicy === 'preserve'
+        ? withUpdateTagContext(
+            this.editorValue,
+            PLITE_REACT_PRESERVE_SELECTION_TAGS,
+            run
+          )
+        : run());
 
       if (result.status !== 'applied') {
         writePliteViewSelection(this.editorValue, previousViewSelection);

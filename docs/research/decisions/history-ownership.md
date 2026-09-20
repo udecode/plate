@@ -2,7 +2,7 @@
 title: History ownership
 type: decision
 status: implemented
-updated: 2026-09-16
+updated: 2026-09-19
 review_scope: history
 current_review: 2026-09-16-history-post-adoption-reassessment
 review_history:
@@ -47,6 +47,14 @@ document updates, schema and effects, exact selection/root ownership, native
 composition grouping, and editor/view retirement. Authored selective reversal
 and collaborative identity must earn their distinct replay jobs. Compatibility
 does not choose the target.
+
+History also owns the single session order for fallible local effects whose
+durable mutation lives outside the document. Such an effect is local,
+effect-only, non-mergeable and excluded from persisted History JSON. Replay
+awaits its owner before moving the branch; a typed block leaves the same head in
+place, and editor publication is fenced while that replay is pending. The
+public `undo()` and `redo()` results are promises so mounted focus repair and
+callers observe the settled external mutation and document branch together.
 
 Acceptance:
 

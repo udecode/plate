@@ -102,7 +102,7 @@ describe('BaseSuggestionPlugin', () => {
     expect(Object.isFrozen(received[0].nodeKeys)).toBe(true);
   });
 
-  it('refreshes markup decorations when a decision changes accepted content', () => {
+  it('refreshes markup decorations when a decision changes accepted content', async () => {
     const editor = createEditor({
       initialValue: value,
       plugins: [BaseSuggestionPlugin],
@@ -126,7 +126,7 @@ describe('BaseSuggestionPlugin', () => {
     expect(refresh).toHaveBeenCalledWith({ nodeKeys: [nodeKey] });
     refresh.mockClear();
 
-    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(
       editor.plugin(DefaultAuthoredPlugin).read.change(change.id)?.status
     ).toBe('pending');

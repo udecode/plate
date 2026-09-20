@@ -260,6 +260,8 @@ export type {
   EditorUpdateTransaction,
   EditorUpdateTransactionOf,
   EditorUpdateTransactionProvider,
+  EditorEffectHistoryPolicy,
+  EditorEffectHistoryReplayResult,
   EditorNodeTypeProvider,
   EditorNodeUnsetOptions,
   EditorValueFromPlugins,

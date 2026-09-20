@@ -1798,6 +1798,7 @@ it('edits text inside a retained deletion without changing the accepted original
       command: { kind: 'history', direction: 'redo' },
       editor: parent,
     });
+    await Promise.resolve();
     assert.ok(
       readPliteViewSelection(parent)?.anchor.fragmentId,
       'redo retains fragment selection'

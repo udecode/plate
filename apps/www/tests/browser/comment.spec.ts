@@ -974,6 +974,89 @@ test('overlapping comments open together in Floating Discussion', async ({
   }
 });
 
+test('local comment creation shares document undo order and keeps composer history local', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await openDemo(page);
+    const { editor, popover, primary } = getDemo(page);
+    const firstBlock = editor.locator('[data-editor-node="element"]').first();
+    const text = () => getEditorText(firstBlock);
+
+    await physicallyPlaceCaret(page, firstBlock, 0);
+    await page.keyboard.type('A');
+    await expect.poll(text).toBe(`A${FIRST_BLOCK}`);
+
+    await physicallySelectText(page, firstBlock, 1, 2);
+    await editor.press(commentHotkey);
+    const composer = popover.getByRole('textbox', { name: 'New comment' });
+
+    await expect(composer).toBeFocused();
+    await composer.pressSequentially('Composer draft');
+    await composer.press(undo);
+    await expect(composer).not.toContainText('Composer draft');
+    await expect.poll(text).toBe(`A${FIRST_BLOCK}`);
+
+    await composer.pressSequentially('History thread');
+    await submitComposer(composer);
+    const thread = popover
+      .locator('[data-comment-thread]')
+      .filter({ hasText: 'History thread' });
+
+    await expect(thread).toBeVisible();
+    const threadId = await thread.getAttribute('data-comment-thread');
+
+    expect(threadId).not.toBeNull();
+    await physicallyPlaceCaret(page, firstBlock, 0);
+    await page.keyboard.type('C');
+    await expect.poll(text).toBe(`CA${FIRST_BLOCK}`);
+
+    await page.keyboard.press(undo);
+    await expect.poll(text).toBe(`A${FIRST_BLOCK}`);
+    await expect(
+      primary.locator(`[data-comment-id="${threadId}"]`)
+    ).not.toHaveCount(0);
+
+    await page.keyboard.press(undo);
+    await expect(thread).toHaveCount(0);
+    await expect(
+      primary.locator(`[data-comment-id="${threadId}"]`)
+    ).toHaveCount(0);
+    await expect.poll(text).toBe(`A${FIRST_BLOCK}`);
+    await expect(editor).toBeFocused();
+
+    await page.keyboard.press(undo);
+    await expect.poll(text).toBe(FIRST_BLOCK);
+
+    await page.keyboard.press(redo);
+    await expect.poll(text).toBe(`A${FIRST_BLOCK}`);
+
+    await page.keyboard.press(redo);
+    const restoredHighlight = primary
+      .locator(`[data-comment-id="${threadId}"]`)
+      .first();
+
+    await expect(restoredHighlight).toBeVisible();
+    await clickCommentHighlight(page, restoredHighlight);
+    await expect(
+      popover
+        .locator(`[data-comment-thread="${threadId}"]`)
+        .filter({ hasText: 'History thread' })
+    ).toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(editor).toBeFocused();
+
+    await page.keyboard.press(redo);
+    await expect.poll(text).toBe(`CA${FIRST_BLOCK}`);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
 test('a fully deleted comment stays reachable and exact through repeated history', async ({
   page,
 }, testInfo) => {

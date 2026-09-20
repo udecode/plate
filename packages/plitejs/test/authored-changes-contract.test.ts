@@ -471,7 +471,7 @@ describe('native authored changes', () => {
     assert.ok(edit[16].steps.length > 0);
   });
 
-  it('rebuilds live indexes from v6 footprints without hydrating retained bodies', () => {
+  it('rebuilds live indexes from v6 footprints without hydrating retained bodies', async () => {
     const propertyEditor = createEditor({
       plugins: [authored({ authorId: 'alice', retainHistory: true })],
       initialValue: [paragraph('Base')],
@@ -499,7 +499,8 @@ describe('native authored changes', () => {
       initialValue: [paragraph('Base')],
     });
     compensationEditor.update.text.insert('!', { at: point(4) });
-    assert.equal(compensationEditor.api.history.undo().status, 'applied');
+    const compensationUndo = await compensationEditor.api.history.undo();
+    assert.equal(compensationUndo.status, 'applied');
 
     for (const [editor, kind] of [
       [propertyEditor, 'property'],

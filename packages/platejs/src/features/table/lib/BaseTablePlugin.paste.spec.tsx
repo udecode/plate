@@ -117,7 +117,7 @@ describe('BaseTablePlugin prepared paste', () => {
     expect(editor.read.history().undos).toHaveLength(1);
   });
 
-  it('undoes and redoes edge expansion in an authored markup view', () => {
+  it('undoes and redoes edge expansion in an authored markup view', async () => {
     const model = createTarget(
       [DefaultAuthoredPlugin, ...getTestTablePlugins()],
       'alice'
@@ -161,9 +161,9 @@ describe('BaseTablePlugin prepared paste', () => {
     expect(after).not.toEqual(before);
     expect(editor.read.history().undos).toHaveLength(1);
 
-    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual(before);
-    expect(editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual(after);
   });
 
@@ -419,7 +419,7 @@ describe('BaseTablePlugin prepared paste', () => {
     },
   ])(
     'pastes $name and replays it through history',
-    ({ expected, input, paths, source }) => {
+    async ({ expected, input, paths, source }) => {
       const editor = createTestTableEditor({
         plugins: getTestTablePlugins(),
         initialValue: input.children,
@@ -446,10 +446,10 @@ describe('BaseTablePlugin prepared paste', () => {
       expect(
         compileTableGrid(editor.read.children()[0] as TableElement).problems
       ).toEqual([]);
-      expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+      expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
       expect(editor.read.value()).toEqual(before);
       expect(getEditorLiveSelection(editor)).toEqual(selection);
-      expect(editor.api.history.redo()).toEqual({ status: 'applied' });
+      expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
       expect(editor.read.value()).toEqual(after);
     }
   );

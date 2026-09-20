@@ -798,11 +798,24 @@ const assertEffectType = (pluginName: string, type: EditorEffectType): void => {
       `Editor effect "${type.key}" has an invalid collaboration snapshot policy.`
     );
   }
-  if (type.history !== 'push' && type.history !== 'skip') {
+  if (
+    type.history !== 'push' &&
+    type.history !== 'skip' &&
+    type.history !== 'session'
+  ) {
     throw new Error(
       `Editor effect "${type.key}" has invalid history policy "${String(
         type.history
       )}".`
+    );
+  }
+  if (
+    (type.history === 'session' &&
+      (type.collab !== 'local' || typeof type.historyReplay !== 'function')) ||
+    (type.history !== 'session' && type.historyReplay !== undefined)
+  ) {
+    throw new Error(
+      `Editor effect "${type.key}" has an invalid session history replay policy.`
     );
   }
   if (typeof type.invert !== 'function' || typeof type.map !== 'function') {

@@ -293,7 +293,7 @@ Question: When an edit deletes every character under a published comment, should
 - Delete the thread with its anchor: reject; a reversible document edit would cause irreversible conversation loss and remote editors could erase other people’s discussion.
 - Auto-resolve the thread: reject; removing text does not prove the question was answered, and Google Docs keeps original-content-deleted items visible in comment history.
 - Keep only the current collapsed range: keep as the live-editor projection, but insufficient for durable history because resolve, reopen, edit, deletion, actor, and time are overwritten or discarded.
-- Put comments inside editor undo/version history: reject; document restoration must not roll conversation state backward or resurrect deleted message content.
+- Put all durable conversation state inside editor undo/version history: reject; document restoration must not roll replies, resolution or deleted message content backward. One session-only effect may order successful local thread creation with document edits, but it is never persisted and blocks on canonical divergence.
 - Add a second history plugin or duplicate thread store: reject; comments owns conversation state, authored owns edit decisions, and an application history read model should join their immutable activity.
 - Preserve a compact thread aggregate plus append-only activity/tombstones and per-document-revision target projections: pursue.
 

@@ -94,9 +94,9 @@ describe('useEditorHistory', () => {
       });
     });
 
-    let undoResult: ReturnType<typeof result.current.undo> | undefined;
+    let undoResult: Awaited<ReturnType<typeof result.current.undo>> | undefined;
     await act(async () => {
-      undoResult = result.current.undo();
+      undoResult = await result.current.undo();
     });
 
     expect(undoResult).toEqual({ status: 'applied' });
@@ -105,7 +105,7 @@ describe('useEditorHistory', () => {
     expect(result.current.canRedo).toBe(true);
 
     await act(async () => {
-      result.current.redo();
+      await result.current.redo();
     });
 
     expect(editorText(editor)).toBe('body!');

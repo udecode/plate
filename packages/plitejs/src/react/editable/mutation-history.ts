@@ -16,9 +16,10 @@ export const applyModelOwnedHistoryIntent = ({
   focusPolicy?: EditorHistoryFocusPolicy;
   runtime?: EditableDOMRuntime | null;
 }) => {
-  const result = runtime?.replayHistory(direction, focusPolicy);
+  if (!runtime) return false;
 
-  return result !== undefined && result.status !== 'unavailable';
+  void runtime.replayHistory(direction, focusPolicy);
+  return true;
 };
 
 export const shouldForceRenderAfterModelOwnedHistory = (

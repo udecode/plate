@@ -43,6 +43,7 @@ import {
   registerEditorHistoryRuntime,
   registerEditorTransactionGuard,
 } from '../core/public-state';
+import { createEditorEffect } from '../core/transaction-values';
 import { type Batch, History, type HistoryJSON } from './history';
 import { decodeHistoryValue, encodeHistoryValue } from './history-codec';
 import {
@@ -91,13 +92,14 @@ export type HistoryStateApi<V extends Value = Value> = (() => History<V>) & {
 
 export type HistoryResult =
   | Readonly<{ status: 'applied' | 'empty' }>
-  | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>;
+  | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>
+  | Readonly<{ reason: string; status: 'blocked' }>;
 
 export type HistoryApi = {
   /** Replay the current redo batch as one complete editor update. */
-  redo: () => HistoryResult;
+  redo: () => Promise<HistoryResult>;
   /** Replay the current undo batch as one complete editor update. */
-  undo: () => HistoryResult;
+  undo: () => Promise<HistoryResult>;
 };
 
 export type HistoryControlTx = TxOnlyMethod<() => void>;
@@ -298,7 +300,8 @@ const applyHistoryAction = <V extends Value>(
   tx: HistoryTransaction<V>,
   direction: HistoryAction,
   root: string,
-  request: number
+  request: number,
+  replayBatch?: Batch<V>
 ) => {
   const entry = peekHistoryEntry(
     editor,
@@ -313,8 +316,10 @@ const applyHistoryAction = <V extends Value>(
     direction === 'undo' ? 'before' : 'after'
   );
 
-  runHistoricUpdate(root, tx, entry.batch, () => {
-    consumeHistoryBatch(tx, entry.batch, direction, root);
+  const batch = replayBatch ?? entry.batch;
+
+  runHistoricUpdate(root, tx, batch, () => {
+    consumeHistoryBatch(tx, batch, direction, root);
   });
   tx.annotations.set(historyAction, direction);
   tx.annotations.set(historyReplayRequest, request);
@@ -517,6 +522,9 @@ const createHistoryPlugin = <
 >(
   options: HistoryOptions<TEnabled> = {}
 ): HistoryPlugin<TEnabled> => {
+  let sessionReplayPending = false;
+  let replayQueue: Promise<void> | null = null;
+
   const reduceHistory = ({
     after,
     commit,
@@ -544,7 +552,7 @@ const createHistoryPlugin = <
     const authoredCapture = captureAuthoredHistory(editor, commit);
     const effects =
       authoredCapture?.effects ??
-      commit.effects.filter((effect) => effect.type.history === 'push');
+      commit.effects.filter((effect) => effect.type.history !== 'skip');
     const action = commit.annotations[historyAction.key] as
       | HistoryAction
       | undefined;
@@ -627,6 +635,19 @@ const createHistoryPlugin = <
       return undefined;
     }
 
+    const sessionEffects = effects.filter(
+      (effect) => effect.type.history === 'session'
+    );
+
+    if (
+      sessionEffects.length > 0 &&
+      (!changes.empty || effects.length !== 1 || sessionEffects.length !== 1)
+    ) {
+      throw new Error(
+        'A session history effect must own one effect-only history batch.'
+      );
+    }
+
     const prepared = prepareHistoryBatch(
       inverseChanges,
       commit,
@@ -638,6 +659,9 @@ const createHistoryPlugin = <
 
     const preparedBatch = prepared.batch;
     const lastEntry = peekHistoryEntry(editor, 'undos');
+    const lastEntryHasSessionEffect = lastEntry?.batch.effects.some(
+      (effect) => effect.type.history === 'session'
+    );
     const currentTime = globalThis.performance.now();
     const currentStartedAt = getEditorCommitStartedAt(commit);
     const previousAutomaticGroupTime =
@@ -673,6 +697,8 @@ const createHistoryPlugin = <
     );
     const merge =
       lastEntry != null &&
+      !lastEntryHasSessionEffect &&
+      sessionEffects.length === 0 &&
       !explicitPush &&
       (explicitMerge
         ? (!authoredCapture || effectsCompatible) &&
@@ -768,7 +794,10 @@ const createHistoryPlugin = <
   };
   return definePlugin('history', {
     api({ editor }) {
-      const replay = (direction: HistoryAction): HistoryResult => {
+      const applyReplay = (
+        direction: HistoryAction,
+        replayBatch?: Batch
+      ): HistoryResult => {
         const owner = getEditorRuntimeOwner(editor);
 
         if (isInTransaction(owner) || isBuildingTransactionSpec(owner)) {
@@ -787,7 +816,8 @@ const createHistoryPlugin = <
               tx,
               direction,
               getEditorUpdateRoot(editor),
-              request
+              request,
+              replayBatch
             );
           });
         } catch (error) {
@@ -815,6 +845,90 @@ const createHistoryPlugin = <
         }) satisfies HistoryResult;
 
         recordEditorHistoryReplayReceipt(result, receipt);
+        return result;
+      };
+      const replayNow = async (
+        direction: HistoryAction
+      ): Promise<HistoryResult> => {
+        const owner = getEditorRuntimeOwner(editor);
+
+        if (isInTransaction(owner) || isBuildingTransactionSpec(owner)) {
+          throw new Error(
+            'History replay cannot run inside editor.update or a transaction spec.'
+          );
+        }
+        const source = direction === 'undo' ? 'undos' : 'redos';
+        const entry = peekHistoryEntry(editor, source);
+
+        if (!entry) return EMPTY_HISTORY_RESULT;
+
+        let replayBatch = entry.batch;
+        const sessionEffect = replayBatch.effects.find(
+          (effect) => effect.type.history === 'session'
+        );
+
+        if (sessionEffect) {
+          const replayEffect = sessionEffect.type.historyReplay;
+
+          if (!replayEffect) {
+            throw new Error(
+              `Session history effect "${sessionEffect.type.key}" has no replay owner.`
+            );
+          }
+
+          sessionReplayPending = true;
+          try {
+            const result = await replayEffect(editor, sessionEffect.value);
+
+            if (result.status === 'blocked') return result;
+            if (peekHistoryEntry(editor, source)?.identity !== entry.identity) {
+              throw new Error(
+                'History changed while a session effect was replaying.'
+              );
+            }
+            replayBatch = Object.freeze({
+              ...replayBatch,
+              effects: Object.freeze([
+                createEditorEffect(sessionEffect.type, result.value),
+              ]),
+            });
+          } finally {
+            sessionReplayPending = false;
+          }
+        }
+
+        return applyReplay(direction, replayBatch);
+      };
+
+      const replay = (direction: HistoryAction): Promise<HistoryResult> => {
+        const owner = getEditorRuntimeOwner(editor);
+
+        if (isInTransaction(owner) || isBuildingTransactionSpec(owner)) {
+          throw new Error(
+            'History replay cannot run inside editor.update or a transaction spec.'
+          );
+        }
+        const source = direction === 'undo' ? 'undos' : 'redos';
+        const session = peekHistoryEntry(editor, source)?.batch.effects.some(
+          (effect) => effect.type.history === 'session'
+        );
+
+        if (!replayQueue && !session) {
+          return Promise.resolve(applyReplay(direction));
+        }
+
+        const run = () => replayNow(direction);
+        const result = replayQueue ? replayQueue.then(run, run) : run();
+        const settled = result.then(
+          () => {},
+          () => {}
+        );
+
+        replayQueue = settled;
+        void settled.then(() => {
+          if (replayQueue === settled) replayQueue = null;
+        });
+
         return result;
       };
 
@@ -885,6 +999,14 @@ const createHistoryPlugin = <
       context.onCleanup(
         registerEditorTransactionGuard(editor, ({ after, commit, schema }) => {
           if (HISTORY_ACTIVATION.get(editor) !== activation) return undefined;
+          if (
+            sessionReplayPending &&
+            commit.annotations[historyReplayRequest.key] === undefined
+          ) {
+            throw new Error(
+              'Editor updates cannot publish while a session history effect is replaying.'
+            );
+          }
 
           const beforeTime = LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
           const restoreTime = (time: number | undefined) => {

@@ -387,6 +387,14 @@ export type StateFieldCollabPolicy = 'local' | 'shared';
 
 export type StateFieldHistoryPolicy = 'push' | 'skip';
 
+/** Whether an effect is durable history state or live-session replay work. */
+export type EditorEffectHistoryPolicy = StateFieldHistoryPolicy | 'session';
+
+/** Result of replaying one live-session history effect. */
+export type EditorEffectHistoryReplayResult<TValue = unknown> =
+  | Readonly<{ status: 'applied'; value: TValue }>
+  | Readonly<{ reason: string; status: 'blocked' }>;
+
 export type StateFieldInitial<TValue> = TValue | (() => TValue);
 
 /** Versioned encoder and validator for persisted editor values. */
@@ -485,7 +493,14 @@ export type EditorEffectType<TValue = any> = Readonly<{
   /** Pure capture of the current absolute value for late-join checkpoints. */
   collabSnapshot?: (state: EditorStateView<Value, any>) => TValue | undefined;
   collabTransport?: EditorEffectCollabTransport<TValue>;
-  history: StateFieldHistoryPolicy;
+  history: EditorEffectHistoryPolicy;
+  /** Apply fallible live-session work before History moves its branch. */
+  historyReplay?: (
+    editor: BaseEditor,
+    value: TValue
+  ) =>
+    | EditorEffectHistoryReplayResult<TValue>
+    | Promise<EditorEffectHistoryReplayResult<TValue>>;
   invert: (value: TValue) => TValue;
   key: string;
   map: (value: TValue, changes: DocumentChange) => TValue | undefined;

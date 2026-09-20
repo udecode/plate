@@ -222,7 +222,7 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.read.text.string([])).toContain('next-b');
   });
 
-  it('inserts expanded AI edits after the restored block selection', () => {
+  it('inserts expanded AI edits after the restored block selection', async () => {
     const chatNodes = [
       { children: [{ text: 'old-a' }], type: 'paragraph' },
       { children: [{ text: 'old-b' }], type: 'paragraph' },
@@ -263,13 +263,13 @@ describe('AIChatPlugin suggestions', () => {
 
     const completed = structuredClone(editor.read.children());
 
-    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editor.read.text.string([])).toBe('old-aold-btail');
-    expect(editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual(completed);
   });
 
-  it('replaces accepted content with proposal output as one reversible action', () => {
+  it('replaces accepted content with proposal output as one reversible action', async () => {
     const chatNodes = [
       { children: [{ text: 'old-a' }], type: 'paragraph' },
       { children: [{ text: 'old-b' }], type: 'paragraph' },
@@ -303,9 +303,9 @@ describe('AIChatPlugin suggestions', () => {
 
     const completed = structuredClone(editor.read.children());
 
-    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editor.read.text.string([])).toBe('old-aold-btail');
-    expect(editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual(completed);
   });
 

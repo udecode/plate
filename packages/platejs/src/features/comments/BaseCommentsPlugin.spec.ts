@@ -1,5 +1,5 @@
 import { DefaultAuthoredPlugin } from '../../authored';
-import { createEditor, definePlugin, type Range } from '../../core';
+import { createEditor, definePlugin, NodeApi, type Range } from '../../core';
 import { createEditorView, defineRuntimePlugin } from '../../facade';
 import {
   commentBody as body,
@@ -636,8 +636,8 @@ describe('Comments persistence', () => {
         focus: { path: [0, 0], offset: 5 },
       },
     });
-    expect(reopened.api.history.undo()).toEqual({ status: 'empty' });
-    expect(reopened.api.history.redo()).toEqual({ status: 'empty' });
+    expect(await reopened.api.history.undo()).toEqual({ status: 'empty' });
+    expect(await reopened.api.history.redo()).toEqual({ status: 'empty' });
     expect(savedApi.toJSON()).toEqual(stored);
   });
 
@@ -810,6 +810,132 @@ describe('Comments persistence', () => {
 });
 
 describe('Comments mapping and conversation history', () => {
+  it('orders successful local thread creation with document undo and redo', async () => {
+    const { editor, api } = setup(null);
+    const text = () => NodeApi.string(editor.read.children()[0]!);
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('A', { at: { path: [0, 0], offset: 0 } });
+    });
+    expect(
+      await api.createThread({
+        id: 'local-thread',
+        body: body(),
+        target: { type: 'range', range },
+      })
+    ).toEqual({ status: 'applied', value: 'local-thread' });
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('C', { at: { path: [0, 0], offset: 0 } });
+    });
+
+    expect(editor.read.history().undos).toHaveLength(3);
+    expect(text()).toBe('CAAlpha Beta');
+    expect(api.getThread('local-thread')).toBeDefined();
+
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(text()).toBe('AAlpha Beta');
+    expect(api.getThread('local-thread')).toBeDefined();
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(text()).toBe('AAlpha Beta');
+    expect(api.getThread('local-thread')).toBeUndefined();
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(text()).toBe('Alpha Beta');
+
+    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(text()).toBe('AAlpha Beta');
+    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(api.getThread('local-thread')?.id).toBe('local-thread');
+    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(text()).toBe('CAAlpha Beta');
+    expect(
+      api.getThreads().filter(({ id }) => id === 'local-thread')
+    ).toHaveLength(1);
+  });
+
+  it('blocks local creation undo after its canonical thread diverges', async () => {
+    const { editor, api } = setup(null, ({ proposed }) => ({
+      status: 'commit',
+      thread:
+        proposed && proposed.messages.length === 1
+          ? {
+              ...proposed,
+              messages: [
+                ...proposed.messages,
+                {
+                  body: body('Remote reply'),
+                  createdAt: '2026-09-19T12:00:00.000Z',
+                  id: 'remote-reply',
+                  userId: 'bob',
+                },
+              ],
+            }
+          : proposed,
+    }));
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('A', { at: { path: [0, 0], offset: 0 } });
+    });
+    expect(
+      await api.createThread({
+        id: 'local-thread',
+        body: body(),
+        target: { type: 'range', range },
+      })
+    ).toEqual({ status: 'applied', value: 'local-thread' });
+
+    expect(await editor.api.history.undo()).toEqual({
+      reason: 'comments-thread-changed',
+      status: 'blocked',
+    });
+    expect(NodeApi.string(editor.read.children()[0]!)).toBe('AAlpha Beta');
+    expect(
+      api.getThread('local-thread')?.messages.map(({ userId }) => userId)
+    ).toEqual(['alice', 'bob']);
+    expect(editor.read.history.hasUndo()).toBe(true);
+  });
+
+  it.each(['reject', 'throw'] as const)(
+    'keeps local creation at the history head when removal %s',
+    async (failure) => {
+      const operations: Array<CommentMutationRequest['operation']> = [];
+      const { editor, api } = setup(null, (request) => {
+        operations.push(request.operation);
+        if (request.operation === 'createThread') {
+          return { status: 'commit', thread: request.proposed };
+        }
+        if (failure === 'throw') throw new Error('Storage unavailable');
+
+        return { status: 'reject', code: 'policy' };
+      });
+
+      editor.update({ history: 'new-batch' }, (tx) => {
+        tx.text.insert('A', { at: { path: [0, 0], offset: 0 } });
+      });
+      await api.createThread({
+        id: 'local-thread',
+        body: body(),
+        target: { type: 'range', range },
+      });
+
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        expect(await editor.api.history.undo()).toEqual({
+          reason:
+            failure === 'throw'
+              ? 'comments-mutation-failed'
+              : 'comments-policy',
+          status: 'blocked',
+        });
+        expect(NodeApi.string(editor.read.children()[0]!)).toBe('AAlpha Beta');
+        expect(api.getThread('local-thread')).toBeDefined();
+        expect(editor.read.history().undos).toHaveLength(2);
+        expect(editor.read.history().redos).toHaveLength(0);
+        expect(
+          operations.filter((operation) => operation === 'removeThread')
+        ).toHaveLength(attempt);
+      }
+    }
+  );
+
   it.each(['create', 'createThread', 'createDraft'] as const)(
     'captures %s ranges in the calling view while sharing one thread record',
     async (operation) => {
@@ -983,14 +1109,14 @@ describe('Comments mapping and conversation history', () => {
           : { type: 'range', status: 'unavailable' };
       expect(api.attachment('thread')).toEqual(deletedAttachment);
       for (let attempt = 0; attempt < 2; attempt++) {
-        expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+        expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
         expect(api.attachment('thread')).toEqual({
           type: 'range',
           status: 'attached',
           range,
         });
         expect(api.getThread('thread')).toBe(conversation);
-        expect(editor.api.history.redo()).toEqual({ status: 'applied' });
+        expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
         expect(api.attachment('thread')).toEqual(deletedAttachment);
         expect(api.getThread('thread')).toBe(conversation);
       }

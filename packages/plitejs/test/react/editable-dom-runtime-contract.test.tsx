@@ -36,7 +36,7 @@ const strictMode = ({ children }: { children: ReactNode }) => (
   <StrictMode>{children}</StrictMode>
 );
 
-test('owns mounted history replay and applies presentation only after success', () => {
+test('owns mounted history replay and applies presentation only after success', async () => {
   const initialValue: Value = [
     { type: 'paragraph', children: [{ text: 'a' }] },
   ];
@@ -56,7 +56,7 @@ test('owns mounted history replay and applies presentation only after success', 
     tx.text.insert('b', { at: { path: [0, 0], offset: 1 } });
   });
 
-  expect(runtime.replayHistory('undo', 'restore-root')).toEqual({
+  expect(await runtime.replayHistory('undo', 'restore-root')).toEqual({
     status: 'applied',
   });
   expect(editorString(editor, [])).toBe('a');
@@ -64,12 +64,12 @@ test('owns mounted history replay and applies presentation only after success', 
   expect(focus).toHaveBeenCalledWith('restore-root');
 
   focus.mockClear();
-  expect(runtime.replayHistory('undo')).toEqual({ status: 'empty' });
+  expect(await runtime.replayHistory('undo')).toEqual({ status: 'empty' });
   expect(focus).not.toHaveBeenCalled();
   runtime.destroy();
 });
 
-test('rejects history replay before settlement while composing or unmounted', () => {
+test('rejects history replay before settlement while composing or unmounted', async () => {
   const initialValue: Value = [
     { type: 'paragraph', children: [{ text: 'a' }] },
   ];
@@ -81,7 +81,7 @@ test('rejects history replay before settlement while composing or unmounted', ()
   const settle = vi.fn();
 
   runtime.updateHistorySettleHandler(settle);
-  expect(runtime.replayHistory('undo')).toEqual({
+  expect(await runtime.replayHistory('undo')).toEqual({
     reason: 'unmounted',
     status: 'unavailable',
   });
@@ -89,7 +89,7 @@ test('rejects history replay before settlement while composing or unmounted', ()
   runtime.setRoot(document.createElement('div'));
   runtime.connect();
   runtime.inputController.state.isComposing = true;
-  expect(runtime.replayHistory('undo')).toEqual({
+  expect(await runtime.replayHistory('undo')).toEqual({
     reason: 'composing',
     status: 'unavailable',
   });

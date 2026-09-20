@@ -906,12 +906,12 @@ export class ExternalTextRuntime {
           entry.host.ownerDocument.activeElement
         );
         this.endComposition(entry);
-        const result = this.runtime.replayHistory(
+        void this.runtime.replayHistory(
           direction,
           focused ? 'restore-root' : 'none'
         );
 
-        return result.status === 'applied';
+        return true;
       },
       navigateOut: ({ baseVersion, direction, extend, x }) => {
         const rejected = this.check(entry, baseVersion, false);

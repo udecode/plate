@@ -22,6 +22,7 @@ For comments alongside proposed edits, see [Discussion](/docs/discussion).
 
 - Rich-text comments, replies, and resolved threads
 - Highlights that follow document edits, undo, and redo
+- Session undo and redo for successful local thread creation
 - Overlapping threads and comments spanning text segments
 - Document-level discovery for open, resolved, and unavailable conversations
 - A versioned Comments JSON envelope saved with your document revision
@@ -228,6 +229,13 @@ Comments publishes only after commit. Rejection or a thrown error preserves the 
 
 ### Document history and versions
 
+Successful local thread creation joins the same session undo order as document
+edits. History waits for the configured mutation adapter before moving its
+branch. Undo removes the unchanged one-message thread; redo restores its saved
+target and canonical thread. A reply, edit, resolution, canonical replacement,
+rejected mutation, or storage error blocks that replay and keeps it at the
+history head, so the next document batch is never skipped.
+
 Resolve and reopen update conversation metadata outside document undo. Replies, message edits, and explicit message or thread deletion also stay outside document history. Undoing a text deletion can restore its highlight, but never recreates an explicitly deleted conversation.
 
 Accepting or rejecting a suggestion is a document action that can be undone. These decisions preserve its discussion, including messages and resolution. A change-targeted thread follows the same Authored change ID when the pending change becomes visible again.
@@ -254,7 +262,7 @@ const initialComments: CommentsJSON = {
 
 Open a fresh read-only editor with `revision.document` and this `initialComments`. Newer threads without a saved target are unavailable; currently deleted threads stay absent. Change targets can be located only when their IDs exist in that revision's Authored document.
 
-Restoring a version creates a new application revision under both document-head and conversation-generation checks. Retain current conversations, install only the selected revision's proven targets, and open a fresh editor with empty local history. See [History](/docs/history) for local undo and retained author history.
+Restoring a version creates a new application revision under both document-head and conversation-generation checks. Retain current conversations, install only the selected revision's proven targets, and open a fresh editor with empty local history. Local thread-creation undo is session-only and is not restored from `CommentsJSON` or `History.toJSON()`. See [History](/docs/history) for local undo and retained author history.
 
 ### Collaboration
 

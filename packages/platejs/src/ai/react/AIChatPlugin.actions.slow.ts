@@ -73,8 +73,10 @@ describe('ai chat action utils', () => {
     ]);
     ai.api.accept();
     view.update.text.insert('!');
-    expect(view.api.history.undo().status).toBe('applied');
-    expect(view.api.history.undo().status).toBe('applied');
+    const typingUndo = await view.api.history.undo();
+    expect(typingUndo.status).toBe('applied');
+    const acceptanceUndo = await view.api.history.undo();
+    expect(acceptanceUndo.status).toBe('applied');
     expect(view.read.text.string([1])).toBe('');
   });
 

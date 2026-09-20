@@ -27,7 +27,7 @@ import {
 
 /** Focus behavior after mounted undo or redo applies a history batch. */
 export type EditorHistoryFocusPolicy = EditableEditorHistoryFocusPolicy;
-export type EditorHistoryResult = EditableHistoryReplayResult;
+export type EditorHistoryResult = Promise<EditableHistoryReplayResult>;
 
 /** Options for history commands and shortcut handling. */
 export type UseEditorHistoryOptions<TRoot extends RootKey = RootKey> = {
@@ -153,7 +153,7 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
 
       return runtime
         ? runtime.replayHistory(direction, focusPolicy)
-        : { reason: 'unmounted', status: 'unavailable' };
+        : Promise.resolve({ reason: 'unmounted', status: 'unavailable' });
     },
     [editor, focusPolicy]
   );
@@ -165,13 +165,24 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
 
       if (!direction) return;
 
-      const result = applyHistory(direction);
-
-      if (result.status === 'unavailable') return;
+      if (
+        readOnly ||
+        composing ||
+        (direction === 'undo' ? !availability.canUndo : !availability.canRedo)
+      ) {
+        return;
+      }
+      void applyHistory(direction);
       event.preventDefault();
       event.stopPropagation();
     },
-    [applyHistory]
+    [
+      applyHistory,
+      availability.canRedo,
+      availability.canUndo,
+      composing,
+      readOnly,
+    ]
   );
 
   return useMemo(

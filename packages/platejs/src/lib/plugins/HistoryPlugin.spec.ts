@@ -4,7 +4,7 @@ import { HistoryPlugin } from './HistoryPlugin';
 const value = [{ children: [{ text: '' }], type: 'paragraph' }] as const;
 
 describe('HistoryPlugin', () => {
-  it('reads live grouping and retention config through one recorder', () => {
+  it('reads live grouping and retention config through one recorder', async () => {
     let now = 0;
     const clock = Object.getOwnPropertyDescriptor(
       globalThis.performance,
@@ -53,7 +53,7 @@ describe('HistoryPlugin', () => {
       );
 
       expect(editor.read.history().undos).toHaveLength(1);
-      expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+      expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
       expect(editor.read.text.string([0])).toBe('abc');
     } finally {
       if (clock) {

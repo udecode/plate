@@ -656,6 +656,44 @@ describe('versioned history persistence', () => {
     assert.equal(restored.read.getField(counter), 2);
   });
 
+  it('omits live-session effects while preserving durable history order', async () => {
+    const sessionEffect = defineEffect<string>({
+      history: 'session',
+      historyReplay: (_editor, value) => ({ status: 'applied', value }),
+      key: 'history.session-persistence',
+    });
+    const sessionPlugin = definePlugin('history-session-persistence', {
+      effectTypes: [sessionEffect],
+    });
+    const source = createEditor({
+      plugins: [history(), sessionPlugin] as const,
+      initialValue: [paragraph('')],
+    });
+
+    source.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('A', { at: { offset: 0, path: [0, 0] } });
+    });
+    source.update((tx) => tx.effects.emit(sessionEffect, 'comment'));
+
+    const encoded = History.toJSON(source);
+
+    assert.equal(source.read.history().undos.length, 2);
+    assert.equal(encoded.undos.length, 1);
+    assert.equal(encoded.redos.length, 0);
+
+    const restored = createEditor({
+      plugins: [history(), sessionPlugin] as const,
+      initialValue: source.read.value(),
+    });
+
+    restored.update((tx) =>
+      tx.history.restore(History.fromJSON(restored, encoded))
+    );
+    assert.deepEqual(await restored.api.history.undo(), { status: 'applied' });
+    assert.equal(restored.read.text.string([]), '');
+    assert.deepEqual(await restored.api.history.undo(), { status: 'empty' });
+  });
+
   it('rejects old, unversioned, schema-less history, unknown effects, and stale field data', () => {
     const editor = createStateEditor([paragraph('body')]);
     const schemaIdentity = editor.read.schema.identity();

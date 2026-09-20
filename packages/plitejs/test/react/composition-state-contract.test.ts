@@ -33,7 +33,6 @@ import {
   type PendingCompositionInput,
 } from '../../src/react/editable/input-state';
 import { applyModelOwnedBeforeInputMutation } from '../../src/react/editable/model-input-strategy';
-import { applyModelOwnedHistoryIntent } from '../../src/react/editable/mutation-controller';
 import {
   claimSettledCompositionInput,
   queuePendingCompositionModelInput,
@@ -60,13 +59,17 @@ const createAndroidManager = () =>
     handleInput: vi.fn(() => false),
   }) satisfies AndroidInputManager;
 
-const replayMountedHistory = (editor: Editor, direction: 'redo' | 'undo') => {
+const replayMountedHistory = async (
+  editor: Editor,
+  direction: 'redo' | 'undo'
+) => {
   const runtime = new EditableDOMRuntime({ editor });
 
   runtime.setRoot(document.createElement('div'));
   runtime.connect();
   try {
-    return applyModelOwnedHistoryIntent({ direction, editor, runtime });
+    const result = await runtime.replayHistory(direction);
+    return result.status !== 'unavailable';
   } finally {
     runtime.destroy();
   }
@@ -215,7 +218,7 @@ describe('composition state', () => {
     }
   });
 
-  it('keeps a marked multi-leaf composition replacement in one history unit', () => {
+  it('keeps a marked multi-leaf composition replacement in one history unit', async () => {
     const { before, editor } = createMarkedHistoryEditor();
     const inputController = createInputController();
     const hasSelectableTarget = vi
@@ -273,14 +276,14 @@ describe('composition state', () => {
       const composed = readVisibleEditorState(editor);
 
       expect(editorString(editor, [])).toBe('This is すし, done');
-      expect(replayMountedHistory(editor, 'undo')).toBe(true);
+      expect(await replayMountedHistory(editor, 'undo')).toBe(true);
       expect(
         editor.read((state) => ({
           selection: state.selection(),
           value: state.value(),
         }))
       ).toEqual(before);
-      expect(replayMountedHistory(editor, 'redo')).toBe(true);
+      expect(await replayMountedHistory(editor, 'redo')).toBe(true);
       expect(
         editor.read((state) => ({
           selection: state.selection(),
@@ -292,7 +295,7 @@ describe('composition state', () => {
     }
   });
 
-  it('keeps direct final composition input in the expanded replacement history unit', () => {
+  it('keeps direct final composition input in the expanded replacement history unit', async () => {
     const { before, editor } = createMarkedHistoryEditor();
     const inputController = createInputController();
     const hasSelectableTarget = vi
@@ -323,16 +326,16 @@ describe('composition state', () => {
       const composed = readVisibleEditorState(editor);
 
       expect(editorString(editor, [])).toBe('This is すし, done');
-      expect(replayMountedHistory(editor, 'undo')).toBe(true);
+      expect(await replayMountedHistory(editor, 'undo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(before);
-      expect(replayMountedHistory(editor, 'redo')).toBe(true);
+      expect(await replayMountedHistory(editor, 'redo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(composed);
     } finally {
       hasSelectableTarget.mockRestore();
     }
   });
 
-  it('keeps Chrome fallback input in the expanded replacement history unit', () => {
+  it('keeps Chrome fallback input in the expanded replacement history unit', async () => {
     const { before, editor } = createMarkedHistoryEditor();
     const inputController = createInputController();
     const hasSelectableTarget = vi
@@ -364,16 +367,16 @@ describe('composition state', () => {
       const composed = readVisibleEditorState(editor);
 
       expect(editorString(editor, [])).toBe('This is すし, done');
-      expect(replayMountedHistory(editor, 'undo')).toBe(true);
+      expect(await replayMountedHistory(editor, 'undo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(before);
-      expect(replayMountedHistory(editor, 'redo')).toBe(true);
+      expect(await replayMountedHistory(editor, 'redo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(composed);
     } finally {
       hasSelectableTarget.mockRestore();
     }
   });
 
-  it('does not merge collapsed composition input with an unrelated edit', () => {
+  it('does not merge collapsed composition input with an unrelated edit', async () => {
     const editor = createEditor({ plugins: [history()] });
     const firstSelection = {
       kind: 'text' as const,
@@ -430,7 +433,7 @@ describe('composition state', () => {
 
       expect(editorString(editor, [0])).toBe('a文b');
       expect(editorString(editor, [1])).toBe('tail!');
-      expect(replayMountedHistory(editor, 'undo')).toBe(true);
+      expect(await replayMountedHistory(editor, 'undo')).toBe(true);
       expect(editor.read((state) => state.value())).toEqual(
         valueAfterUnrelatedEdit
       );

@@ -36,7 +36,7 @@ const attachPliteBrowserHandle = (
     domPhaseScheduler,
     replayHistory:
       options.replayHistory ??
-      (() => ({ reason: 'unmounted', status: 'unavailable' })),
+      (() => Promise.resolve({ reason: 'unmounted', status: 'unavailable' })),
   });
 };
 

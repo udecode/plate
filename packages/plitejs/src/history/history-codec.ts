@@ -260,10 +260,15 @@ export const encodeHistoryValue = <V extends Value>(
   assertSchemaIdentity(editor, schema);
   validateHistory(editor, history);
 
+  const persistent = (batches: ReadonlyArray<Batch<V>>) =>
+    batches.filter((batch) =>
+      batch.effects.every((effect) => effect.type.history !== 'session')
+    );
+
   return {
-    redos: history.redos.map((batch) => encodeBatch(editor, batch)),
+    redos: persistent(history.redos).map((batch) => encodeBatch(editor, batch)),
     schema,
-    undos: history.undos.map((batch) => encodeBatch(editor, batch)),
+    undos: persistent(history.undos).map((batch) => encodeBatch(editor, batch)),
     version: 4,
   };
 };

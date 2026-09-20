@@ -17,7 +17,7 @@ const paragraph = (text: string) => ({
 const at = (offset: number, block = 0) => ({ path: [block, 0], offset });
 
 describe('authored local history', () => {
-  it('undoes and redoes a compound structural edit from a markup view', () => {
+  it('undoes and redoes a compound structural edit from a markup view', async () => {
     const cell = (text: string) => ({
       type: 'cell',
       children: [paragraph(text)],
@@ -53,13 +53,15 @@ describe('authored local history', () => {
 
     assert.notDeepEqual(after, before);
     assert.equal(view.read.history().undos.length, 1);
-    assert.equal(view.api.history.undo().status, 'applied');
+    const undo = await view.api.history.undo();
+    assert.equal(undo.status, 'applied');
     assert.deepEqual(view.read.children(), before);
-    assert.equal(view.api.history.redo().status, 'applied');
+    const redo = await view.api.history.redo();
+    assert.equal(redo.status, 'applied');
     assert.deepEqual(view.read.children(), after);
   });
 
-  it('replays a proposal, acceptance and dependent accepted typing', () => {
+  it('replays a proposal, acceptance and dependent accepted typing', async () => {
     const editor = createEditor({
       plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
@@ -82,11 +84,12 @@ describe('authored local history', () => {
     });
 
     for (let step = 0; step < 3; step++) {
-      assert.equal(editor.api.history.undo().status, 'applied');
+      const result = await editor.api.history.undo();
+      assert.equal(result.status, 'applied');
     }
     assert.deepEqual(editor.read.children(), [paragraph('Base')]);
     for (let step = 0; step < 3; step++) {
-      const result = editor.api.history.redo();
+      const result = await editor.api.history.redo();
       assert.equal(result.status, 'applied');
     }
     assert.deepEqual(editor.read.children(), [paragraph('Base draft!')]);
@@ -198,7 +201,7 @@ describe('authored local history', () => {
     });
   });
 
-  it('blocks acceptance undo after a dependent contribution is accepted', () => {
+  it('blocks acceptance undo after a dependent contribution is accepted', async () => {
     let authorId = 'alice';
     const editor = createEditor({
       plugins: [history(), authored({ authorId: () => authorId })],
@@ -232,7 +235,7 @@ describe('authored local history', () => {
     authorId = 'alice';
     const before = editor.read.value();
     const batches = editor.read.history().undos.length;
-    const result = editor.api.history.undo();
+    const result = await editor.api.history.undo();
 
     assert.deepEqual(result, { status: 'blocked', conflicts: [b] });
     assert.equal(
@@ -294,7 +297,7 @@ describe('authored local history', () => {
   }
 
   for (const action of ['accept', 'reject'] as const) {
-    it(`undoes and redoes a markup-view ${action} decision spanning inline boundaries`, () => {
+    it(`undoes and redoes a markup-view ${action} decision spanning inline boundaries`, async () => {
       const inline = defineEditorSchema('authored-history-review-inline', {
         elements: {
           link: {
@@ -344,9 +347,9 @@ describe('authored local history', () => {
         }).status,
         'applied'
       );
-      assert.deepEqual(view.api.history.undo(), { status: 'applied' });
+      assert.deepEqual(await view.api.history.undo(), { status: 'applied' });
       assert.equal(view.read.authored.change(id)?.status, 'pending');
-      assert.deepEqual(view.api.history.redo(), { status: 'applied' });
+      assert.deepEqual(await view.api.history.redo(), { status: 'applied' });
       assert.equal(
         view.read.authored.change(id)?.status,
         action === 'accept' ? 'accepted' : 'rejected'
@@ -464,7 +467,7 @@ describe('authored local history', () => {
     assert.equal(editor.read.history().redos.length, 0);
   });
 
-  it('captures a review decision and accepted suffix as one reversible batch', () => {
+  it('captures a review decision and accepted suffix as one reversible batch', async () => {
     const editor = createEditor({
       plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
@@ -492,16 +495,16 @@ describe('authored local history', () => {
     assert.equal(editor.read.authored.change(id)?.status, 'rejected');
     assert.equal(editor.read.history().undos.length, beforeActionDepth + 1);
 
-    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
     assert.deepEqual(editor.read.children(), [paragraph('Base')]);
     assert.equal(editor.read.authored.change(id)?.status, 'pending');
 
-    assert.deepEqual(editor.api.history.redo(), { status: 'applied' });
+    assert.deepEqual(await editor.api.history.redo(), { status: 'applied' });
     assert.deepEqual(editor.read.children(), [paragraph('Base final')]);
     assert.equal(editor.read.authored.change(id)?.status, 'rejected');
   });
 
-  it('captures a review decision and structural replacement suffix', () => {
+  it('captures a review decision and structural replacement suffix', async () => {
     const editor = createEditor({
       plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base'), paragraph('Tail')],
@@ -540,14 +543,14 @@ describe('authored local history', () => {
     assert.equal(editor.read.authored.change(id)?.status, 'rejected');
     assert.equal(editor.read.history().undos.length, beforeActionDepth + 1);
 
-    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
     assert.deepEqual(editor.read.children(), [
       paragraph('Base'),
       paragraph('Tail'),
     ]);
     assert.equal(editor.read.authored.change(id)?.status, 'pending');
 
-    assert.deepEqual(editor.api.history.redo(), { status: 'applied' });
+    assert.deepEqual(await editor.api.history.redo(), { status: 'applied' });
     assert.deepEqual(editor.read.children(), [
       paragraph('Final'),
       paragraph('Tail'),
@@ -651,7 +654,7 @@ describe('authored local history', () => {
     );
   });
 
-  it('refuses to erase a dependent foreign proposal during undo', () => {
+  it('refuses to erase a dependent foreign proposal during undo', async () => {
     let authorId = 'alice';
     const editor = createEditor({
       plugins: [history(), authored({ authorId: () => authorId })],
@@ -669,7 +672,7 @@ describe('authored local history', () => {
     });
     authorId = 'alice';
     const before = editor.read.value();
-    const result = editor.api.history.undo();
+    const result = await editor.api.history.undo();
 
     assert.equal(result.status, 'blocked');
     assert.equal(

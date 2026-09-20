@@ -581,11 +581,16 @@ all future mounted-view callbacks.
 Durable comment actions pass through `initialState.mutate` before publication
 and return a typed awaited result. The application owns authorization and
 canonical storage decisions; per-thread ordering and lifetime fencing belong
-to the package. Draft operations stay local. Resolve/Reopen changes conversation
-state outside document undo; suggestion Accept/Reject uses document history and
+to the package. Draft operations stay local. Successful local thread creation
+joins the one document-history order through a session-only effect after its
+durable commit. Replay awaits the same mutation owner and blocks on replies,
+canonical divergence, rejection or failure without advancing to the next
+document batch. Resolve/Reopen, replies, edits and explicit deletion stay
+outside document undo; suggestion Accept/Reject uses document history and
 preserves conversations. Ordinary reload creates a fresh editor and local undo
-stack. A generic checkpoint, live record-replacement API or separate comment
-undo stack needs an independent supported job; Comments does not require one.
+stack because session effects are not serialized. A generic checkpoint, live
+record-replacement API or separate comment undo stack needs an independent
+supported job; Comments does not require one.
 
 A published conversation outlives the current visibility of its document
 target. Exact current-view coverage alone owns inline paint, block counts and

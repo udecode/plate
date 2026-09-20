@@ -136,7 +136,7 @@ it('retains mapped data across observer fan-out, detachment and remount without 
   detach();
 });
 
-it('refreshes passive paint membership without observing and resumes the current index on remount', async () => {
+it('refreshes passive paint membership without observing and records one commit per creation', async () => {
   const { editor, comments, source } = setup([record('first')]);
   const subscribe = editor.subscribeCommit.bind(editor);
   const commits = mock();
@@ -175,7 +175,7 @@ it('refreshes passive paint membership without observing and resumes the current
   expect(readIds()).toEqual(['second']);
   expect(comments.api.idsAt(firstRange.anchor)).toEqual(['second']);
   expect(editor.read.value()).toEqual(value);
-  expect(commits).not.toHaveBeenCalled();
+  expect(commits).toHaveBeenCalledTimes(1);
   expect(subscriptions).not.toHaveBeenCalled();
 
   const refresh = mock();
@@ -204,7 +204,7 @@ it('refreshes passive paint membership without observing and resumes the current
   });
   expect(comments.api.idsAt(firstRange.anchor)).toEqual(['third']);
   expect(editor.read.value()).toEqual(value);
-  expect(commits).not.toHaveBeenCalled();
+  expect(commits).toHaveBeenCalledTimes(2);
   expect(subscriptions).toHaveBeenCalledTimes(1);
   expect(refresh).not.toHaveBeenCalled();
   expect(changed).not.toHaveBeenCalled();
@@ -225,7 +225,7 @@ it('refreshes passive paint membership without observing and resumes the current
   expect(stopped).toHaveBeenCalledTimes(2);
   expect(readIds()).toEqual(['third', 'fourth']);
   expect(subscriptions).toHaveBeenCalledTimes(2);
-  expect(commits).not.toHaveBeenCalled();
+  expect(commits).toHaveBeenCalledTimes(3);
   subscriptions.mockRestore();
   stopCommits();
 });

@@ -1232,7 +1232,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('leaves restored projected selection repair to the mounted replay owner', () => {
+  it('leaves restored projected selection repair to the mounted replay owner', async () => {
     const runtime = createEditor({
       plugins: [history()],
       initialValue: [paragraph('Before'), paragraph('After')],
@@ -1279,6 +1279,7 @@ describe('keyboard input strategy', () => {
 
       expect(result.handled).toBe(true);
       expect(result.repair).toBeUndefined();
+      await Promise.resolve();
       expect(readPliteViewSelection(editor)).toEqual(projectedSelection);
     } finally {
       hasEditableTarget.mockRestore();

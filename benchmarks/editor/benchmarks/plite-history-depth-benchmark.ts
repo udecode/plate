@@ -29,7 +29,7 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
-const rows = [100, 1000].map((depth) => {
+const rows = await Promise.all([100, 1000].map(async (depth) => {
   const editor = createEditor({
     plugins: [history({ maxDepth: depth })],
     initialValue: [paragraph('body')],
@@ -60,7 +60,7 @@ const rows = [100, 1000].map((depth) => {
   const heapDeltaBytes = process.memoryUsage().heapUsed - heapBefore;
   const undoStartedAt = performance.now();
 
-  const undoResult = editor.api.history.undo();
+  const undoResult = await editor.api.history.undo();
 
   if (undoResult.status !== 'applied') {
     throw new Error(`${depth}: lazy history did not apply the retained batch.`);
@@ -87,7 +87,7 @@ const rows = [100, 1000].map((depth) => {
     repeatedUnit: 'one history-skipped remote commit',
     undoResolutionMs,
   };
-});
+}));
 
 const normal = rows[0];
 const stress = rows[1];

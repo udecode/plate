@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Element } from 'plitejs';
+import {
+  createEditor,
+  defineEffect,
+  definePlugin,
+  type Element,
+} from 'plitejs';
 
 import { History, history } from '../../src/history';
 
@@ -10,7 +15,112 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
+const deferred = <T>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+
+  return { promise, resolve };
+};
+
 describe('immutable history branches', () => {
+  it('moves a session batch only after replay and queues the next undo', async () => {
+    type Transition = Readonly<{ previous: string; value: string }>;
+    const gate = deferred<void>();
+    let external = 'comment';
+    const sessionEffect = defineEffect<Transition>({
+      history: 'session',
+      historyReplay: async (_editor, transition) => {
+        await gate.promise;
+        external = transition.value;
+
+        return { status: 'applied', value: transition };
+      },
+      invert: ({ previous, value }) => ({ previous: value, value: previous }),
+      key: 'history.session-queue',
+    });
+    const editor = createEditor({
+      plugins: [
+        history(),
+        definePlugin('history-session-queue', {
+          effectTypes: [sessionEffect],
+        }),
+      ],
+      initialValue: [paragraph('')],
+    });
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('A', { at: { offset: 0, path: [0, 0] } });
+    });
+    editor.update((tx) => {
+      tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+    });
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('C', { at: { offset: 0, path: [0, 0] } });
+    });
+
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    const sessionUndo = editor.api.history.undo();
+    const documentUndo = editor.api.history.undo();
+
+    assert.equal(editor.read.text.string([]), 'A');
+    assert.equal(external, 'comment');
+    assert.equal(editor.read.history().undos.length, 2);
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.text.insert('X');
+        }),
+      /cannot publish while a session history effect is replaying/i
+    );
+
+    gate.resolve();
+    assert.deepEqual(await sessionUndo, { status: 'applied' });
+    assert.deepEqual(await documentUndo, { status: 'applied' });
+    assert.equal(external, '');
+    assert.equal(editor.read.text.string([]), '');
+    assert.equal(editor.read.history().undos.length, 0);
+  });
+
+  it('keeps a blocked session batch at the branch head', async () => {
+    let attempts = 0;
+    const sessionEffect = defineEffect<string>({
+      history: 'session',
+      historyReplay: () => {
+        attempts += 1;
+
+        return { reason: 'external-diverged', status: 'blocked' };
+      },
+      key: 'history.session-blocked',
+    });
+    const editor = createEditor({
+      plugins: [
+        history(),
+        definePlugin('history-session-blocked', {
+          effectTypes: [sessionEffect],
+        }),
+      ],
+      initialValue: [paragraph('')],
+    });
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('A', { at: { offset: 0, path: [0, 0] } });
+    });
+    editor.update((tx) => tx.effects.emit(sessionEffect, 'comment'));
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      assert.deepEqual(await editor.api.history.undo(), {
+        reason: 'external-diverged',
+        status: 'blocked',
+      });
+      assert.equal(attempts, attempt);
+      assert.equal(editor.read.text.string([]), 'A');
+      assert.equal(editor.read.history().undos.length, 2);
+      assert.equal(editor.read.history().redos.length, 0);
+    }
+  });
+
   it('publishes frozen revisioned snapshots and clips configurable depth', () => {
     const editor = createEditor({
       plugins: [history({ maxDepth: 2 })],
