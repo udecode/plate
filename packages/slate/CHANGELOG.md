@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 53.3.15
+
+### Patch Changes
+
+- [`a9bfa84`](https://github.com/udecode/plate/commit/a9bfa840b390bc2837fd50afd44a441d136e9f02) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Updated `slate-hyperscript`.
+
 ## 53.3.10
 
 ### Patch Changes
