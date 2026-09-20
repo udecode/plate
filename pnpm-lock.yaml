@@ -1009,8 +1009,8 @@ importers:
         specifier: 0.126.0
         version: 0.126.0(slate@0.126.2)
       slate-hyperscript:
-        specifier: 0.125.0
-        version: 0.125.0(slate@0.126.2)
+        specifier: 0.127.0
+        version: 0.127.0(slate@0.126.2)
       slate-react:
         specifier: 0.126.4
         version: 0.126.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(slate-dom@0.126.0(slate@0.126.2))(slate@0.126.2)
@@ -1674,8 +1674,8 @@ importers:
         specifier: 0.126.2
         version: 0.126.2
       slate-hyperscript:
-        specifier: 0.125.0
-        version: 0.125.0(slate@0.126.2)
+        specifier: 0.127.0
+        version: 0.127.0(slate@0.126.2)
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
@@ -9547,8 +9547,8 @@ packages:
     peerDependencies:
       slate: '>=0.121.0'
 
-  slate-hyperscript@0.125.0:
-    resolution: {integrity: sha512-tH6AYvTrTnSdUo+L5cUvqcHRzQ3muEkcSEN7APM9NtEdWk9L7lqEbmpyeKfv7oyzCUW2WbR/lPhlnOSu8/jUcA==}
+  slate-hyperscript@0.127.0:
+    resolution: {integrity: sha512-siQu4q4irgKKIpPcFz4xuzLTxzfdQ00MfPAg+NFOEBwUcz2ybvlRgozd+J3CqonZgpzPR2VID3LsQyqJ0GgQpQ==}
     peerDependencies:
       slate: '>=0.114.3'
 
@@ -19307,7 +19307,7 @@ snapshots:
       slate: 0.126.2
       tiny-invariant: 1.3.1
 
-  slate-hyperscript@0.125.0(slate@0.126.2):
+  slate-hyperscript@0.127.0(slate@0.126.2):
     dependencies:
       slate: 0.126.2
 

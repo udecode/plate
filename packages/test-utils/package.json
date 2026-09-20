@@ -43,7 +43,7 @@
   "dependencies": {
     "@platejs/slate": "workspace:*",
     "slate": "0.126.2",
-    "slate-hyperscript": "0.125.0"
+    "slate-hyperscript": "0.127.0"
   },
   "publishConfig": {
     "access": "public"
