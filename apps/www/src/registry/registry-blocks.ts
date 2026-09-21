@@ -28,7 +28,6 @@ export const registryBlocks: Registry['items'] = [
       '@plate/discussion',
       '@plate/suggestion',
       '@plate/use-mobile',
-      '@plate/media-uploadthing-api',
       '@plate/settings-dialog',
       '@plate/editor-plugins',
       '@plate/ai',

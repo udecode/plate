@@ -525,7 +525,13 @@ describe('authored Yjs collaboration', () => {
           anchor: { ...point(1), ...(root === 'main' ? {} : { root }) },
           focus: { ...point(5), ...(root === 'main' ? {} : { root }) },
         };
-        const anchor = anchoredView.anchor(anchoredRange, { deletion: 'drop' });
+        const nearestRange = {
+          anchor: { ...point(0), ...(root === 'main' ? {} : { root }) },
+          focus: { ...point(0), ...(root === 'main' ? {} : { root }) },
+        };
+        const anchor = anchoredView.anchor(anchoredRange, {
+          deletion: 'nearest',
+        });
         const savedAnchor = anchoredView.anchor.save(anchor);
         if (action === 'accepted-delete') {
           left.accepted.update.text.delete({
@@ -544,7 +550,7 @@ describe('authored Yjs collaboration', () => {
         }
         sync(left.doc, right.doc);
         sync(right.doc, left.doc);
-        assert.equal(anchor.resolve(), null);
+        assert.deepEqual(anchor.resolve(), nearestRange);
         right.accepted.update.text.insert('!', { at: point(11, 1) });
         sync(right.doc, left.doc);
         sync(left.doc, right.doc);
@@ -562,7 +568,7 @@ describe('authored Yjs collaboration', () => {
         const lateView =
           action === 'accepted-delete' ? late.accepted : late.proposed;
         const restoredAnchor = lateView.anchor.restore(savedAnchor);
-        assert.equal(restoredAnchor.resolve(), null);
+        assert.deepEqual(restoredAnchor.resolve(), nearestRange);
         for (const peer of [left, right, late]) {
           assert.deepEqual(peer.accepted.read.children(), [
             paragraph(''),

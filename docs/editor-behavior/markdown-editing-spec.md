@@ -1535,10 +1535,10 @@ Plugin surface:
   - optional `sourceUrl` when the edit surface needs the user-facing source URL
 - current allowlisted transform paths may also extract a canonical embed URL
   from selected sharing snippets such as Twitter / X embed markup
-- provider-specific previews, upload placeholders, and caption UI are current
+- provider-specific previews, upload draft slots, and caption UI are current
   app/render-layer behaviors layered on top of that contract
-- current package behavior already includes embed-url normalization and
-  placeholder-to-media replacement when the upload surface is enabled
+- current package behavior includes embed-url normalization and keyed
+  upload draft completion when the upload surface is enabled
 - current Plate media law does not define Typora-style file-system actions such
   as delete image file, move image file, copy image file, or bulk path rewrites
   from editor chrome

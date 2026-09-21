@@ -209,9 +209,9 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
       },
       trigger: {
         keys: 'mod+k',
-        handler: ({ editor }): boolean =>
+        handler: ({ editor }) =>
           !editor.read.view.isReadOnly() &&
-          editor.plugin(linkPlugin).api.trigger({
+          api.trigger({
             focused: editor.read.view.isFocused(),
           }) === true,
       },

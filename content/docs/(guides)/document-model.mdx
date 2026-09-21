@@ -149,7 +149,7 @@ List starts and restarts are signed safe integers. Element `id` identifies one p
 
 Table column width has one owner: TableElement.columnWidths. HTML cell widths normalize into that array during import; `null` records an unknown imported width without pretending the column is zero pixels wide.
 
-Image naturalWidth and naturalHeight store source-image geometry; media width stores the user-selected rendered width. Media captions are direct children. Upload queues, progress, and placeholder identity stay in application state.
+Image naturalWidth and naturalHeight store source-image geometry; media width stores the user-selected rendered width. Media captions are direct children. An upload draft persists `{ type: 'upload', kind, children }` in Plate JSON; its `File`, task, progress, and failure remain editor state. Completion stores the durable URL on an ordinary media node. External HTML, Markdown, and static output omit unresolved drafts.
 
 ## Standards relationship
 

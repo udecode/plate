@@ -51,16 +51,26 @@ export type TableAxisInsertOptions = TableTargetOptions & {
   select?: boolean;
 };
 
-type TableInsertPlacementBase = Omit<BlockInsertOptions, 'after' | 'at'>;
+type TableInsertPlacementBase = Omit<
+  BlockInsertOptions,
+  'after' | 'at' | 'before'
+>;
 
 export type TableInsertPlacement =
   | (TableInsertPlacementBase & {
       after?: never;
       at?: BlockInsertOptions['at'];
+      before?: never;
     })
   | (TableInsertPlacementBase & {
       after: NonNullable<BlockInsertOptions['after']>;
       at?: never;
+      before?: never;
+    })
+  | (TableInsertPlacementBase & {
+      after?: never;
+      at?: never;
+      before: NonNullable<BlockInsertOptions['before']>;
     });
 
 export type TableSelectionBounds = Readonly<{

@@ -8,8 +8,8 @@ export type {
   AnnotationRefreshOptions,
   AnnotationSnapshot,
   AnnotationStore,
-  AnnotationStoreMetrics,
   AnnotationStoreOptions,
+  OwnedAnnotationStore,
   ResolvedAnnotation,
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,
@@ -71,7 +71,6 @@ export type {
   ViewSourceStatus,
 } from './plite-react';
 export {
-  AnnotationProvider,
   useEditorRootElement,
   useEditorRuntimeState,
   useEditorScrollElement,
@@ -148,6 +147,8 @@ export type {
   TextNodeProps,
   TransformOptions,
   UseViewElementAttributes,
+  WrapContentProps,
+  WrapRootProps,
 } from './plugin/PlatePlugin';
 export { definePlugin } from './plugin/definePlugin';
 export { toReactPlugin } from './plugin/toReactPlugin';

@@ -33,10 +33,10 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "placeholder",
           "summary",
           "table",
           "toc",
+          "upload",
           "video"
         ]
       ],
@@ -75,10 +75,10 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "placeholder",
           "summary",
           "table",
           "toc",
+          "upload",
           "video"
         ]
       ],
@@ -109,10 +109,10 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "placeholder",
           "summary",
           "table",
           "toc",
+          "upload",
           "video"
         ]
       ],
@@ -155,10 +155,10 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "placeholder",
           "summary",
           "table",
           "toc",
+          "upload",
           "video"
         ]
       ],
@@ -247,10 +247,6 @@
         ]
       ],
       [
-        "element:placeholder",
-        []
-      ],
-      [
         "element:slashInput",
         []
       ],
@@ -291,10 +287,10 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "placeholder",
           "summary",
           "table",
           "toc",
+          "upload",
           "video"
         ]
       ],
@@ -306,6 +302,10 @@
       ],
       [
         "element:toc",
+        []
+      ],
+      [
+        "element:upload",
         []
       ],
       [
@@ -339,10 +339,10 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "placeholder",
           "summary",
           "table",
           "toc",
+          "upload",
           "video"
         ]
       ]
@@ -621,17 +621,6 @@
         ]
       ],
       [
-        "placeholder",
-        [
-          "element:blockquote",
-          "element:column",
-          "element:details",
-          "element:footnoteDefinition",
-          "element:tableCell",
-          "root"
-        ]
-      ],
-      [
         "slashInput",
         [
           "element:audio",
@@ -681,6 +670,17 @@
       ],
       [
         "toc",
+        [
+          "element:blockquote",
+          "element:column",
+          "element:details",
+          "element:footnoteDefinition",
+          "element:tableCell",
+          "root"
+        ]
+      ],
+      [
+        "upload",
         [
           "element:blockquote",
           "element:column",
@@ -790,10 +790,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -983,10 +983,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -1135,10 +1135,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -1362,10 +1362,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -1996,50 +1996,6 @@
       {
         "behavior": {
           "atom": true,
-          "inline": false,
-          "isolating": false,
-          "keyboardSelectable": true,
-          "markableVoid": false,
-          "readOnly": false,
-          "selectable": true,
-          "void": true,
-          "voidKind": "block"
-        },
-        "content": {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        },
-        "contentRoots": [],
-        "construction": {
-          "materializedPropertyIds": [],
-          "propertyIds": [
-            "element:mediaType@4b72b6953a6e3307"
-          ]
-        },
-        "groups": [
-          "all",
-          "block",
-          "element",
-          "plate:block-content"
-        ],
-        "propertyIds": [
-          "element:mediaType@4b72b6953a6e3307"
-        ],
-        "slice": {
-          "preserveContext": false,
-          "replaceWhenCovered": true
-        },
-        "type": "placeholder"
-      },
-      {
-        "behavior": {
-          "atom": true,
           "inline": true,
           "isolating": false,
           "keyboardSelectable": true,
@@ -2212,10 +2168,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -2346,6 +2302,50 @@
       },
       {
         "behavior": {
+          "atom": true,
+          "inline": false,
+          "isolating": false,
+          "keyboardSelectable": true,
+          "markableVoid": false,
+          "readOnly": false,
+          "selectable": true,
+          "void": true,
+          "voidKind": "block"
+        },
+        "content": {
+          "allowedElementTypes": [],
+          "allowsText": true,
+          "allowsUnknownElements": false,
+          "defaultPlan": {
+            "kind": "text"
+          },
+          "max": 1,
+          "min": 1
+        },
+        "contentRoots": [],
+        "construction": {
+          "materializedPropertyIds": [],
+          "propertyIds": [
+            "element:kind@e3c848dee20896b9"
+          ]
+        },
+        "groups": [
+          "all",
+          "block",
+          "element",
+          "plate:block-content"
+        ],
+        "propertyIds": [
+          "element:kind@e3c848dee20896b9"
+        ],
+        "slice": {
+          "preserveContext": false,
+          "replaceWhenCovered": true
+        },
+        "type": "upload"
+      },
+      {
+        "behavior": {
           "atom": false,
           "inline": false,
           "isolating": true,
@@ -2450,10 +2450,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -2520,10 +2520,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -2583,10 +2583,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -2666,10 +2666,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -2866,19 +2866,6 @@
         }
       ],
       [
-        "element:placeholder",
-        {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        }
-      ],
-      [
         "element:slashInput",
         {
           "allowedElementTypes": [],
@@ -2948,10 +2935,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -2982,6 +2969,19 @@
       ],
       [
         "element:toc",
+        {
+          "allowedElementTypes": [],
+          "allowsText": true,
+          "allowsUnknownElements": false,
+          "defaultPlan": {
+            "kind": "text"
+          },
+          "max": 1,
+          "min": 1
+        }
+      ],
+      [
+        "element:upload",
         {
           "allowedElementTypes": [],
           "allowsText": true,
@@ -3034,10 +3034,10 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "placeholder",
             "summary",
             "table",
             "toc",
+            "upload",
             "video"
           ],
           "allowsText": false,
@@ -3196,12 +3196,6 @@
         }
       ],
       [
-        "element:placeholder",
-        {
-          "kind": "text"
-        }
-      ],
-      [
         "element:slashInput",
         {
           "kind": "text"
@@ -3236,6 +3230,12 @@
       ],
       [
         "element:toc",
+        {
+          "kind": "text"
+        }
+      ],
+      [
+        "element:upload",
         {
           "kind": "text"
         }
@@ -3281,13 +3281,13 @@
           "mention",
           "mentionInput",
           "paragraph",
-          "placeholder",
           "slashInput",
           "summary",
           "table",
           "tableCell",
           "tableRow",
           "toc",
+          "upload",
           "video"
         ]
       ],
@@ -3309,12 +3309,12 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "placeholder",
           "summary",
           "table",
           "tableCell",
           "tableRow",
           "toc",
+          "upload",
           "video"
         ]
       ],
@@ -3344,13 +3344,13 @@
           "mention",
           "mentionInput",
           "paragraph",
-          "placeholder",
           "slashInput",
           "summary",
           "table",
           "tableCell",
           "tableRow",
           "toc",
+          "upload",
           "video"
         ]
       ],
@@ -3385,10 +3385,10 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "placeholder",
           "summary",
           "table",
           "toc",
+          "upload",
           "video"
         ]
       ],
@@ -3515,10 +3515,6 @@
         []
       ],
       [
-        "element:blockquote\u0000placeholder",
-        []
-      ],
-      [
         "element:blockquote\u0000summary",
         []
       ],
@@ -3528,6 +3524,10 @@
       ],
       [
         "element:blockquote\u0000toc",
+        []
+      ],
+      [
+        "element:blockquote\u0000upload",
         []
       ],
       [
@@ -3639,10 +3639,6 @@
         []
       ],
       [
-        "element:column\u0000placeholder",
-        []
-      ],
-      [
         "element:column\u0000summary",
         []
       ],
@@ -3652,6 +3648,10 @@
       ],
       [
         "element:column\u0000toc",
+        []
+      ],
+      [
+        "element:column\u0000upload",
         []
       ],
       [
@@ -3719,10 +3719,6 @@
         []
       ],
       [
-        "element:details\u0000placeholder",
-        []
-      ],
-      [
         "element:details\u0000summary",
         []
       ],
@@ -3732,6 +3728,10 @@
       ],
       [
         "element:details\u0000toc",
+        []
+      ],
+      [
+        "element:details\u0000upload",
         []
       ],
       [
@@ -3843,10 +3843,6 @@
         []
       ],
       [
-        "element:footnoteDefinition\u0000placeholder",
-        []
-      ],
-      [
         "element:footnoteDefinition\u0000summary",
         []
       ],
@@ -3856,6 +3852,10 @@
       ],
       [
         "element:footnoteDefinition\u0000toc",
+        []
+      ],
+      [
+        "element:footnoteDefinition\u0000upload",
         []
       ],
       [
@@ -4051,10 +4051,6 @@
         []
       ],
       [
-        "element:placeholder\u0000\u0000text",
-        []
-      ],
-      [
         "element:slashInput\u0000\u0000text",
         []
       ],
@@ -4155,10 +4151,6 @@
         []
       ],
       [
-        "element:tableCell\u0000placeholder",
-        []
-      ],
-      [
         "element:tableCell\u0000summary",
         []
       ],
@@ -4168,6 +4160,10 @@
       ],
       [
         "element:tableCell\u0000toc",
+        []
+      ],
+      [
+        "element:tableCell\u0000upload",
         []
       ],
       [
@@ -4184,6 +4180,10 @@
       ],
       [
         "element:toc\u0000\u0000text",
+        []
+      ],
+      [
+        "element:upload\u0000\u0000text",
         []
       ],
       [
@@ -4283,10 +4283,6 @@
         []
       ],
       [
-        "root\u0000placeholder",
-        []
-      ],
-      [
         "root\u0000summary",
         []
       ],
@@ -4299,15 +4295,19 @@
         []
       ],
       [
+        "root\u0000upload",
+        []
+      ],
+      [
         "root\u0000video",
         []
       ]
     ]
   },
-  "fingerprint": "fnv1a64:cd7e6fd34ea16989",
+  "fingerprint": "fnv1a64:29aa1d04db516b3f",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:cd7e6fd34ea16989",
+    "fingerprint": "fnv1a64:29aa1d04db516b3f",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -4327,10 +4327,10 @@
         "image",
         "mediaEmbed",
         "paragraph",
-        "placeholder",
         "summary",
         "table",
         "toc",
+        "upload",
         "video"
       ],
       "allowsText": false,
@@ -4629,6 +4629,36 @@
             "image",
             "paragraph"
           ]
+        }
+      },
+      {
+        "descriptor": {
+          "kind": "enum",
+          "omitDefault": false,
+          "required": true,
+          "values": [
+            "audio",
+            "file",
+            "image",
+            "video"
+          ]
+        },
+        "exclusiveGroupIds": [],
+        "id": "element:kind@e3c848dee20896b9",
+        "key": "kind",
+        "lifecycle": {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "drop"
+        },
+        "merge": "replace",
+        "owner": "upload",
+        "placement": "element",
+        "role": "content",
+        "target": {
+          "kind": "type",
+          "type": "upload"
         }
       },
       {
@@ -4935,30 +4965,6 @@
         "target": {
           "kind": "type",
           "type": "table"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": true
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:mediaType@4b72b6953a6e3307",
-        "key": "mediaType",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "placeholder",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "placeholder"
         }
       },
       {
@@ -6284,6 +6290,10 @@
         []
       ],
       [
+        "element:kind@e3c848dee20896b9",
+        []
+      ],
+      [
         "element:label@1a006ba1885943ec",
         []
       ],
@@ -6325,10 +6335,6 @@
       ],
       [
         "element:marginLeft@da82a82a76b6f0f1",
-        []
-      ],
-      [
-        "element:mediaType@4b72b6953a6e3307",
         []
       ],
       [
@@ -6741,12 +6747,6 @@
         ]
       ],
       [
-        "placeholder",
-        [
-          "element:mediaType@4b72b6953a6e3307"
-        ]
-      ],
-      [
         "slashInput",
         [
           "element:trigger@22e2f15f83b62e9d",
@@ -6784,6 +6784,12 @@
       [
         "toc",
         []
+      ],
+      [
+        "upload",
+        [
+          "element:kind@e3c848dee20896b9"
+        ]
       ],
       [
         "video",
@@ -6897,6 +6903,15 @@
         }
       ],
       [
+        "element:kind@e3c848dee20896b9",
+        {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "drop"
+        }
+      ],
+      [
         "element:label@1a006ba1885943ec",
         {
           "copy": "preserve",
@@ -6988,15 +7003,6 @@
       ],
       [
         "element:marginLeft@da82a82a76b6f0f1",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:mediaType@4b72b6953a6e3307",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -7547,6 +7553,12 @@
             ]
           ],
           [
+            "kind",
+            [
+              "element:kind@e3c848dee20896b9"
+            ]
+          ],
+          [
             "label",
             [
               "element:label@1a006ba1885943ec"
@@ -7605,12 +7617,6 @@
             "marginLeft",
             [
               "element:marginLeft@da82a82a76b6f0f1"
-            ]
-          ],
-          [
-            "mediaType",
-            [
-              "element:mediaType@4b72b6953a6e3307"
             ]
           ],
           [
@@ -7866,6 +7872,10 @@
         "replace"
       ],
       [
+        "element:kind@e3c848dee20896b9",
+        "replace"
+      ],
+      [
         "element:label@1a006ba1885943ec",
         "replace"
       ],
@@ -7907,10 +7917,6 @@
       ],
       [
         "element:marginLeft@da82a82a76b6f0f1",
-        "replace"
-      ],
-      [
-        "element:mediaType@4b72b6953a6e3307",
         "replace"
       ],
       [
@@ -8543,24 +8549,6 @@
         ]
       ],
       [
-        "placeholder",
-        [
-          "text:ai@2f2791ccdc09f005",
-          "text:backgroundColor@cb359bb332a9fb72",
-          "text:bold@66c11ef06c87ed62",
-          "text:code@6939885f562d0514",
-          "text:color@6093816ecb087592",
-          "text:fontFamily@b00b412164ea3c68",
-          "text:fontSize@5b3b0f080627a70d",
-          "text:highlight@b4c2a38d602e5889",
-          "text:italic@4f9fcc9f4f2d32c1",
-          "text:kbd@26be899c0d1b681a",
-          "text:script@508ca8ff29baaad6",
-          "text:strikethrough@9568299587c9032e",
-          "text:underline@e3a9db819714dd91"
-        ]
-      ],
-      [
         "slashInput",
         [
           "text:ai@2f2791ccdc09f005",
@@ -8669,6 +8657,24 @@
         ]
       ],
       [
+        "upload",
+        [
+          "text:ai@2f2791ccdc09f005",
+          "text:backgroundColor@cb359bb332a9fb72",
+          "text:bold@66c11ef06c87ed62",
+          "text:code@6939885f562d0514",
+          "text:color@6093816ecb087592",
+          "text:fontFamily@b00b412164ea3c68",
+          "text:fontSize@5b3b0f080627a70d",
+          "text:highlight@b4c2a38d602e5889",
+          "text:italic@4f9fcc9f4f2d32c1",
+          "text:kbd@26be899c0d1b681a",
+          "text:script@508ca8ff29baaad6",
+          "text:strikethrough@9568299587c9032e",
+          "text:underline@e3a9db819714dd91"
+        ]
+      ],
+      [
         "video",
         [
           "text:ai@2f2791ccdc09f005",
@@ -8716,13 +8722,13 @@
       "mention",
       "mentionInput",
       "paragraph",
-      "placeholder",
       "slashInput",
       "summary",
       "table",
       "tableCell",
       "tableRow",
       "toc",
+      "upload",
       "video"
     ],
     "groupNames": [
@@ -8746,6 +8752,7 @@
       "element:height@4222b97bc19b7723",
       "element:icon@b610536939eb3f13",
       "element:indent@08439eef12bbfdcb",
+      "element:kind@e3c848dee20896b9",
       "element:label@1a006ba1885943ec",
       "element:language@f075c3fe4239c09c",
       "element:latex@551cf2c0f2fc3a2d",
@@ -8757,7 +8764,6 @@
       "element:listStyle@b90bb1ea0c1c1372",
       "element:listType@8cf5be6ea266d5d9",
       "element:marginLeft@da82a82a76b6f0f1",
-      "element:mediaType@4b72b6953a6e3307",
       "element:name@1069a658ff703b9d",
       "element:naturalHeight@e20ef9fcaa621321",
       "element:naturalWidth@b685fe279997758e",

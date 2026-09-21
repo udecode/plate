@@ -551,12 +551,15 @@ const useDomDropNode = (
         if (!result || !onDropFiles) return undefined;
 
         onDropFiles({
+          edge:
+            result.direction === 'top' || result.direction === 'left'
+              ? 'before'
+              : 'after',
           key,
           dragItem,
           editor,
           monitor,
           nodeRef,
-          target: result.to,
         });
         return undefined;
       }

@@ -2,7 +2,7 @@ import { useInsertionEffect, useMemo, useRef } from 'react';
 
 import type { Editor, Value } from '../..';
 import {
-  createDormantPliteAnnotationStore,
+  createDormantPliteAnnotationStoreOwner,
   type Annotation,
   type AnnotationStore,
 } from '../../annotations/store';
@@ -24,7 +24,7 @@ const createAnnotationStoreOwner = <TData,>(
 ) => {
   const annotationsCell = { current: annotations };
   const optionsCell = { current: options };
-  const store = createDormantPliteAnnotationStore(
+  const storeOwner = createDormantPliteAnnotationStoreOwner(
     editor,
     () => annotationsCell.current,
     {
@@ -33,7 +33,7 @@ const createAnnotationStoreOwner = <TData,>(
     }
   );
 
-  return { annotationsCell, optionsCell, store };
+  return { annotationsCell, optionsCell, storeOwner };
 };
 
 /**
@@ -58,16 +58,17 @@ export function useAnnotationStore<
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor and source id define owner identity; committed effects publish current annotations and callbacks into that owner.
     [editor, sourceId]
   );
-  const { annotationsCell, optionsCell, store } = owner;
-  const storeRef = useRef(store);
+  const { annotationsCell, optionsCell, storeOwner } = owner;
+  const { store } = storeOwner;
+  const storeOwnerRef = useRef(storeOwner);
   const effectVersionRef = useRef(0);
 
   useInsertionEffect(() => {
     annotationsCell.current = annotations;
     optionsCell.current = options;
-    storeRef.current = store;
-    store.activate();
-  }, [annotations, annotationsCell, options, optionsCell, store]);
+    storeOwnerRef.current = storeOwner;
+    storeOwner.activate();
+  }, [annotations, annotationsCell, options, optionsCell, storeOwner]);
 
   useIsomorphicLayoutEffect(() => {
     store.refresh();
@@ -80,14 +81,14 @@ export function useAnnotationStore<
     return () => {
       queueMicrotask(() => {
         if (
-          storeRef.current !== store ||
+          storeOwnerRef.current !== storeOwner ||
           effectVersionRef.current === effectVersion
         ) {
-          store.destroy();
+          storeOwner.destroy();
         }
       });
     };
-  }, [store]);
+  }, [storeOwner]);
 
   return store;
 }

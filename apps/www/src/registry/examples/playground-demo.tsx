@@ -18,6 +18,7 @@ import {
 } from '@/registry/components/editor/editor';
 import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
 import { EditorKit } from '@/registry/components/editor/plugins';
+import { createEphemeralUploadKit } from '@/registry/components/editor/upload/ephemeral';
 
 export default function PlaygroundDemo({
   id,
@@ -29,7 +30,8 @@ export default function PlaygroundDemo({
   const locale = useLocale();
   const value = React.useMemo(() => getI18nValues(locale).playground, [locale]);
   const [createdAt] = React.useState(() => Date.now());
-  const editor = React.useMemo(() => {
+  const session = React.useMemo(() => {
+    const ephemeralUploads = createEphemeralUploadKit();
     const initialValue = structuredClone(value);
     const root = { children: initialValue.children, type: '' };
     const paragraph = NodeApi.get(root, [3]);
@@ -112,6 +114,7 @@ export default function PlaygroundDemo({
           rules: [{ path: [0], strictType: 'h1' }],
         },
       }),
+      ...ephemeralUploads.plugins,
     ];
     const current = createEditor({
       plugins,
@@ -225,7 +228,7 @@ export default function PlaygroundDemo({
     };
     anchor.release();
 
-    return createEditor({
+    const editor = createEditor({
       plugins: [
         ...plugins,
         CommentsPlugin.configure({
@@ -235,7 +238,11 @@ export default function PlaygroundDemo({
       userId: 'alice',
       initialValue: current.read.value(),
     });
+
+    return { dispose: ephemeralUploads.dispose, editor };
   }, [createdAt, id, locale, value]);
+  React.useEffect(() => session.dispose, [session]);
+  const { editor } = session;
 
   return (
     <EditorRoot

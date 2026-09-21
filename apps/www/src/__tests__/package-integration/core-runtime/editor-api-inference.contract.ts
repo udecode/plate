@@ -25,10 +25,10 @@ type ExpectedEditorApiKeys =
   | 'markdown'
   | 'mediaEmbed'
   | 'navigation'
-  | 'placeholder'
   | 'react'
   | 'suggestion'
   | 'table'
+  | 'upload'
   | 'video';
 
 type _EveryInstalledApiIsDiscoverable = AssertNever<
@@ -63,6 +63,9 @@ type _CsvApiKeepsItsMethods = Assert<
 >;
 type _MediaApiKeepsItsMethods = Assert<
   'normalizeUrl' extends keyof Editor['api']['image'] ? true : false
+>;
+type _UploadApiKeepsItsMethods = Assert<
+  'cancel' extends keyof Editor['api']['upload'] ? true : false
 >;
 type _DomApiKeepsClipboardMethods = Assert<
   'insertData' extends keyof Editor['api']['dom']['clipboard'] ? true : false

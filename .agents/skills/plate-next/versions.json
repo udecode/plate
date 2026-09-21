@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 216,
+  "latestVersion": 227,
   "versions": [
     {
       "version": 0,
@@ -2504,6 +2504,131 @@
         "Use the shared block policy: reuse a matching empty block for upsert, create a sibling for matching insert, replace a different empty editable block, preserve content and structure, and keep explicit insert overrides exact.",
         "Move copied dropdown focus intent onto the selected item, preserve content-level fallback behavior, and honor selection cancellation and explicit focus suppression.",
         "Migrate copied block actions to typed insert or upsert portals and delete local replacement-policy helpers."
+      ]
+    },
+    {
+      "version": 217,
+      "date": "2026-09-19",
+      "doctrineFingerprint": "sha256:8d2c2f25842d03c29fde18083e5334160f175c42d38d4922f772a27e5387359d",
+      "summary": "Document-bound uploads persist authored draft intent while live request authority stays local to exact node identity.",
+      "migrationChecks": [
+        "Admit each upload batch through one plugin-owned transaction, validate it before document mutation or transport, and start transport only after commit.",
+        "Persist only the draft asset kind; keep files, controllers, tokens, progress, failures, and object URLs local to the exact live NodeKey.",
+        "Recheck draft key and kind before atomic completion; revoke requests on removal, retagging, plugin cleanup, and whole-document replacement without restarting them from history.",
+        "Preserve upload drafts in internal slices while omitting unresolved assets from external HTML and static rendering."
+      ]
+    },
+    {
+      "version": 218,
+      "date": "2026-09-19",
+      "doctrineFingerprint": "sha256:ba4fae80867aabf984f9572fdb8cf5a9e184cc8766a8f3f7acd039c323d771b0",
+      "summary": "Plate file uploads use optional Files SDK client integration; media retains completed schemas and applications own gateway policy.",
+      "migrationChecks": [
+        "Replace MediaUploadPlugin's generic upload transport with the optional platejs/files FilesClient integration and synchronous durable-URL resolver; do not retain a transport facade or SDK wrapper.",
+        "Preserve the authored mediaUpload draft type and editor-owned keyed task lifecycle; complete only into an installed media plugin's schema with its URL normalization, without transitive media installation.",
+        "Keep copied picker, drop, progress, and cancel presentation in the app; enforce session/document access, storage policy, and durable download URLs in its gateway.",
+        "Prove isolated optional entrypoints, current media rendering without Files, draft lifecycle and denial behavior through package, gateway, and copied-editor checks."
+      ]
+    },
+    {
+      "version": 219,
+      "date": "2026-09-20",
+      "doctrineFingerprint": "sha256:aab78e031d0ff59ad216660c2a943b17c0c0385353510626957ec65d4ae887cc",
+      "summary": "Optional package-decoupled plugin dispatch checks installation inside the active transaction without reflection or duplicated types.",
+      "migrationChecks": [
+        "Use tx.plugins.has(pluginName) before optional tx.plugin(pluginName) dispatch so the installation check and operation share one active transaction.",
+        "Do not probe editor.api or editor.update through reflection, duplicate an erased target group with a local cast, or import a descriptor solely to test installation.",
+        "Prove name and descriptor installation checks, missing-plugin no-op behavior, and successful name-only dispatch at the optional consumer boundary."
+      ]
+    },
+    {
+      "version": 220,
+      "date": "2026-09-20",
+      "doctrineFingerprint": "sha256:f7fe6b197ffb9ed29582e34837ca0bed8abb44156c9b1edd4637e4266ba35563",
+      "summary": "Extracted plugin slot components consume canonical package prop contracts instead of reconstructing native fields in copied code.",
+      "migrationChecks": [
+        "Export WrapRootProps and WrapContentProps from the Plate React owner and use them in the corresponding slot definitions.",
+        "Migrate copied named slot components to package-owned contracts and remove local structural mirrors, casts, and callback return annotations that replace contextual plugin inference.",
+        "Prove public type exports, root/content slot inference, package declarations, registry typing, generated skill parity, and a zero-drift registry audit."
+      ]
+    },
+    {
+      "version": 221,
+      "date": "2026-09-20",
+      "doctrineFingerprint": "sha256:e92a470ad84527b50511574232df932b336f0fc8becf37217a2491531eb2b5cf",
+      "summary": "Copied UI consumes every framework-defined plugin field through package-owned contracts or contextual inference.",
+      "migrationChecks": [
+        "Use the package's named contract for extracted native plugin fields and descriptor-derived props for plugin-bound renderers.",
+        "Keep inline configure and extend fields contextually inferred; remove local structural mirrors, state Pick aliases, callback return annotations, and casts used to coerce native plugin fields.",
+        "When a canonical contract is missing or inference fails, repair and prove the package owner before wiring registry UI."
+      ]
+    },
+    {
+      "version": 222,
+      "date": "2026-09-20",
+      "doctrineFingerprint": "sha256:ac3e65d8741155d89d5cbef51d1671e50db406e569711ec0b0c1ff5a9ae1b37a",
+      "summary": "Feature ownership migrations reclassify surviving copied files and registry items instead of preserving obsolete one-consumer boundaries.",
+      "migrationChecks": [
+        "After moving a plugin, kit, or capability, recount terminal production consumers for every retained old copied file and registry item; tests, docs, metadata, changelog history, and prior item identity do not establish ownership.",
+        "Colocate each renderer, helper, and tiny peer with its new sole feature owner, then remove the obsolete registry item and reverse dependency.",
+        "Keep a sibling registry item only for an independently installable main component or another durable owner with its own consumers and proof; regenerate and verify the copied registry graph."
+      ]
+    },
+    {
+      "version": 223,
+      "date": "2026-09-20",
+      "doctrineFingerprint": "sha256:bf9ffa917cd37282891ceece9433b8cbd59b7595b3151a50f6ce7a0d4c4e0dc2",
+      "summary": "Upload lifecycle APIs use upload vocabulary while completed media nodes retain their content-type names and provider brands remain configuration details.",
+      "migrationChecks": [
+        "Expose the editor lifecycle as UploadPlugin from platejs/upload and remove files-named package, plugin, key, draft-schema, kit, renderer, registry, and documentation aliases.",
+        "Keep FilePlugin in platejs/media as the completed generic file node beside image, audio, and video; do not rename completed content to AttachmentPlugin merely to free a lifecycle noun.",
+        "Keep Files SDK names on its client, gateway, route, transport outcomes, and provider-specific application policy; prove package entrypoints, inferred contracts, generated editor schema, copied registry output, docs, and hard-cut scans."
+      ]
+    },
+    {
+      "version": 224,
+      "date": "2026-09-20",
+      "doctrineFingerprint": "sha256:ec00945b6d23340cdcd684fcfe27527acb96ecda501a6578c88b3ab30ed35017",
+      "summary": "Configuration-only static registry items collapse into their base plugin; foo-static remains only for real static presentation source.",
+      "migrationChecks": [
+        "Move null rendering, omission, and fallback semantics to the owning base plugin beside its schema and codecs.",
+        "Compose the base descriptor directly in aggregate static kits and delete configuration-only static files, registry items, dependencies, docs, and generated payloads.",
+        "Keep a foo-static item only when it installs independently useful static presentation source, then prove live overrides, static omission, registry generation, and hard-cut scans."
+      ]
+    },
+    {
+      "version": 225,
+      "date": "2026-09-20",
+      "doctrineFingerprint": "sha256:e4d9df7d9c803ca77c97f50421cea08d8df1915474ee08c9a7fed5fa2f9021e0",
+      "summary": "Upload configuration accepts the exact Files SDK-compatible operation, and asynchronous completion stays in the editor view that admitted the draft.",
+      "migrationChecks": [
+        "Expose UploadClient as the single-file upload capability using Files SDK call and outcome types; allow FilesClient structural fulfillment and independent session-local or test implementations without fake unrelated methods.",
+        "Keep UploadPlugin as the lifecycle owner and reject a generic upload transport facade, provider-named plugin, or global blob URL policy.",
+        "Complete each draft through the editor supplied by its after-commit boundary so authored and named-root node identity remains in the admitting runtime.",
+        "Prove package typing and lifecycle behavior plus copied real-gateway and deployed-playground browser uploads."
+      ]
+    },
+    {
+      "version": 226,
+      "date": "2026-09-21",
+      "doctrineFingerprint": "sha256:a1248c74a9b25861982a332e12f8ca545bf224eccff8432d8a4013b1a637891d",
+      "summary": "Annotation readers use explicit typed stores bound to exact mounted views, while headless owners retain explicit disposal and inline paint remains separate.",
+      "migrationChecks": [
+        "Create React annotation stores under the exact mounted editor view and pass the typed store explicitly to useAnnotation(store, id) or useAnnotations(store).",
+        "Remove generic AnnotationProvider contexts, implicit empty fallbacks, and React exposure of destroy, retry, source status, or metrics.",
+        "Keep borrowed annotation anchors resolve-only; release retained native anchors through their application owner outside replayable React state updaters.",
+        "Use the owned createAnnotationStore result only for independent framework lifetimes, keep annotation paint in a feature-owned Decoration source, and prove one-model multi-view behavior plus scale locality."
+      ]
+    },
+    {
+      "version": 227,
+      "date": "2026-09-21",
+      "doctrineFingerprint": "sha256:e78b3a892263c3351f6e008b4904adf6d6b309417f999d83080ca399ceb80f4e",
+      "summary": "Copied features expose mutually exclusive external backends as explicit provider items around one provider-neutral base and one shared policy owner.",
+      "migrationChecks": [
+        "Keep shared client and UI behavior in the provider-neutral base registry item, with browser-local demo behavior in its own explicit provider item.",
+        "Give each persistent provider item its adapter, route, environment contract, and provider dependencies while reusing one shared gateway security and access-policy owner.",
+        "Remove runtime environment provider switches and prove generated payloads keep backend routes and dependencies out of the base item and sibling provider items."
       ]
     }
   ],

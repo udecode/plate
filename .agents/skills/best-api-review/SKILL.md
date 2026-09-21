@@ -68,6 +68,14 @@ different consumers. Give every unit a disposition; report expected, reviewed,
 excluded and unresolved counts. An early rejection ends work on that candidate,
 not the remaining requested audit. Do not call a partial scan exhaustive.
 
+Before generalizing an implementation pattern, census the materially different
+production call shapes and classify their static contract, runtime guard and
+dependency boundary. A runtime presence check does not make dynamic dispatch
+statically typed. Treat an erased escape hatch at an intentionally decoupled
+boundary as an exception, not evidence for the general pattern. Where the
+consumer already owns the dependency, compare and prefer the exact inferred
+path unless erasure has a separate proven job.
+
 ## Compare the full design space
 
 Apply [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)

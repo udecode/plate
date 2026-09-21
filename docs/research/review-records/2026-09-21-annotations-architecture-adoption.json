@@ -1,0 +1,129 @@
+{
+  "id": "2026-09-21-annotations-architecture-adoption",
+  "kind": "execution",
+  "date": "2026-09-21",
+  "scopes": [
+    "annotations"
+  ],
+  "reviewBasis": [
+    "2026-09-21-annotations-oss-validation"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-21-annotations-architecture-adoption.md",
+    "sha256": "307d493eaa36e330460168e817ce7aa0bb8dfb1d3cfd5d9ee224f6dc2860a7f9"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Made local drop terminal across ordinary and authored anchors without poisoning projection-hidden targets; reduced annotations to resolve-only borrowed targets, explicit typed reader stores and separately owned headless disposal; removed the generic provider and public diagnostics; moved comment mode to two exact mounted views over one model; kept Decoration as the paint owner; and retained the existing private node-key mapping kernel after all matched candidates failed the frozen promotion gate.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/artifacts/annotations-architecture-adoption/verification.json",
+        "sha256": "d0036870c732c80de368240625da09e9494bdc3d72d0b4060d9a1bd1e9c8bcd6",
+        "claim": "Records passing focused anchor, annotation, Comments and browser contracts; strict Plite package/tooling/full-Chromium closure; complete website/docs/registry/type closure; and generated-owner checks."
+      },
+      {
+        "path": "docs/plans/artifacts/annotations-architecture-adoption/annotation-view-index-benchmark.json",
+        "sha256": "a5f377577997c77e62e013efb3df83c5628f3165005ed366457a879ff3db4eb6",
+        "claim": "Records matched 1/2/4-view and 1k/10k/100k dense/distributed cohorts with zero correctness failures, stable source, no candidate promotion and the current baseline retained."
+      }
+    ],
+    "limits": "Verified current-source local behavior and performance plus Chromium browser behavior. Firefox/WebKit, physical devices, production deployment and replicated terminal absence across peers were not exercised. The benchmark rejects the tested private replacements under the frozen local gate; it does not claim superiority over every possible external index."
+  },
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/anchor.ts": "b9350d66311998b09ecd025451683ced97a8863505935d659f31d94edd93eec5",
+      "packages/plitejs/src/core/anchor-state.ts": "97e8d68f01902732179788f12730d8e1c6b2cee43705c0a0395f8ca00f82ac33",
+      "packages/plitejs/src/authored/anchors.ts": "0c5e4a55929149c45fa3b7b7f9c60c07ccd2f1b1b122076c80a11a86d668abde",
+      "packages/plitejs/src/interfaces/decoration.ts": "f9b361ab68cc04c66a1dcee20934bf3bbe3486d99ceb5db4a4fdc51b556c9dc5",
+      "packages/plitejs/src/react/decoration-source.ts": "443a03e3d1ce2db8ac5913be0965a030abc47cf1a80761a4cc1c134e0125ba9f",
+      "packages/plitejs/src/react/decoration-context.tsx": "c9befa6dc5593e7adec588b758515a091ffb2b2d868cf2f73568ad783d22f2aa",
+      "packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx": "1afc1ca38bbee67ea11780b9bc96fdaf1f8713013b9ecbeeb5687eec66e58d4e",
+      "packages/plitejs/src/react/hooks/use-plite-annotations.tsx": "9aa1a516c077072e2ea80686f16f4c46f51b42fff0bde39fa52e351bb749dba7",
+      "apps/www/src/app/(app)/examples/plite/_examples/comment-mode.tsx": "4c5beced59a9ec84c93f837105609f6a99387fdd6cd7328075ef1d3532d260f2",
+      "apps/www/src/app/(app)/examples/plite/_examples/persistent-annotation-anchors.tsx": "9d94f760b1b2b6246ecb1d1ad840e9cdd6e640ce9f785eeeb095ba9e49d70f9b",
+      "apps/www/src/app/(app)/examples/plite/_examples/decorations-async.tsx": "a28e6e8e10765b4b725e07a8156c192fbd2fbc24a3c37e6e3d9710cf4ab5cef2",
+      "packages/plitejs/test/react/annotation-store-contract.test.tsx": "c6b9012e232bd682524c9b75bb286c3d0cd56e09c26db6f48d6e4501d0c0c151",
+      "packages/plitejs/test/react/annotation-store-contract.tsx": "c8b9361341dfca9d6f6ac45f4ee43d6528e589326a61835afb549396de1567fd",
+      "packages/plitejs/test/react/decoration-manager-contract.test.ts": "cf3d96962d11aa722fde2c450a0aa16ca28a63a23e9cf0022d9ce4eadf8eed6a",
+      "packages/plitejs/test/react/decoration-rendering-contract.test.tsx": "ba2257b2077f46b7dc71337f4ddf357d0a84a3d43f8d8f14969ebde8b446a2ec",
+      "packages/plitejs/test/authored-anchor-contract.test.ts": "fac1e01064941229d88f55f708825300c5213875d2e3e26ef8c3d51185d08bd8",
+      "packages/plitejs/test/anchor-contract.ts": "472cd1cecac83a8f1e93e079f1aaa64fbcfeebb56e48b685c21aae1c5e24df86",
+      "packages/plitejs/test/anchor-mapping-contract.ts": "1ea9bc58360c073a8265e8b4beb2b2494b7334238f64912ce257efd5930c399d",
+      "packages/plitejs/test/range-anchor-contract.ts": "98b0b91ec2322819d4eb5f54f11baa73c9f15e1f1a27412004a93fe06b94af23",
+      "packages/plitejs/test/history/anchor-history-contract.ts": "1229c33b9f0ca3dbcbbbcf2157e3f24445e73507f805ed89b394d6ed1f34bf4e",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "dcc90d02a70c286c9a7c8502092848b145e581b39f57b4ad63e92fc004df53f7",
+      "packages/plitejs/vitest.config.mjs": "c4831d8ab6b6fab76a2dc0dbf5cfae26345e1efb001ad1a8d28e96356cc9445d",
+      "packages/plitejs/test/react/vitest-setup.ts": "7249a0e18cefdca942df6da28ec8e90b99b35fdcb5cdb782ecc0908cbd35029f",
+      "packages/plitejs/src/interfaces/editor.ts": "9a8f93484744d0f52b00c03d70a415540c04de1d223f52c867402ed0906f49d7",
+      "packages/plitejs/src/core/public-state.ts": "1911e5d5823dac705b86fad2f3c2d8cd208a323e5dafff682dc42221dad15140",
+      "packages/plitejs/src/core/authored-runtime.ts": "a82a2da4e8eb06b134c07487a5b1458072a38307f660132c7515f5d77de858cc",
+      "packages/plitejs/src/editor-runtime-view.ts": "e66b62ae845b95550f554eb3d313ea0aef2580de654a6dd0721c359a1284bacc",
+      "packages/plitejs/src/react/components/plite.tsx": "dec84c2772591c98e88e2682e72abd651c2c2346f7e7ebe0f521dd0e304e32b2",
+      "packages/plitejs/src/internal/view/mapped-view-store.ts": "8417d1fa538beabc03ce9107f3d251ab8bfc59414236262a93e77e40e9607fcf",
+      "packages/plitejs/src/internal/view/stable-id-mapped-source.ts": "42cb114ed7183c1448732b28e414fe35709e8f103709a1ca706d564da9ecbf85",
+      "packages/plitejs/src/internal/view/view-source.ts": "464c36bb3aba20f89839b03dfe168e2ef304e6acca2854d1eb59527ae9c2b9dd",
+      "packages/plitejs/src/index.ts": "eaad219f8ea5f3429f443a2b90bd53b2e04fad076dd9c6de6f86e9cc5504c98d",
+      "packages/plitejs/src/react/index.ts": "9baa4926356fa8193f218f4b3f4777ad5f884f9bf138c86f001f8df47bd31be5",
+      "packages/plitejs/src/core/change/range-association.ts": "aaeaf32b178d6e23487079424e73dc8048725a4699e1599626161f1d7c8e33ee",
+      "packages/plitejs/src/core/change/document-change.ts": "3ce815e12a547089e16da06a860a8dfd846be84fadfdeb60d97ffafb3f5009f5",
+      "packages/plitejs/src/authored/state.ts": "6d9f0742f30a8f4d206f2876737aaa57b92e7d5ee7eff81131a37057b452ff5b",
+      "packages/plitejs/src/yjs/core/awareness-adapter.ts": "05748cc02e56e65d6a4332a9d77fb0d36bf74162f3550e330dbc5f84dbf0ffba",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "0f2a4e4ea3d3bac4b967397ae1ee83b88488bcacef2fcf36a514255bc695d3db",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "6198a6f95c4279640455d80ec45d5e4bc9e8a51b7b9f1ddde75431b09f051a2f",
+      "packages/platejs/src/features/comments/plite-comments.internal.ts": "e0b75f4461bcdd968c9ea813df6367ef5e1ea75b9c742261d96fd032e738af55",
+      "content/docs/api/anchor.mdx": "8ebfb4a8ecce89c172cc13d99eb87917c4a603a8aa22c08ecd24d44b24f6fd3d",
+      "content/docs/api/react-hooks.mdx": "84f6e346ffa67b56e2258fb1ac23d1aea65c409f1bf0a29ffcaf2240b5fe1f6b",
+      "content/docs/(guides)/annotations.mdx": "8b6cd0c69042d1a54cf1c3dca3137ada72cf9ad72e8cedf015091ce7a652aecf",
+      "content/docs/(guides)/decorations.mdx": "1b4d93b859b7eea67b216d4e1469c06b7d6a7d630e75547dee541e7947c63f69",
+      "content/docs/meta.json": "1c85bc946ed7f3c2d0e807d4e01640a3e86840b6e9e55dc21313db7ac0d61db7",
+      "docs/vision/plite.md": "339026441bb548213397b37604713b151f770f0ada493f5b2ec26a1584aa24fb",
+      "docs/vision/plate.md": "7e86bb45921f03d43c3671d8140a4cc80c5298701b89d2989dc63e9c0ef4e85d",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "tooling/config/bunTestSetup.ts": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e",
+      "tooling/config/tsconfig.test.json": "92b87c9c794877d2c9e4e3a2867c3f450f33560d6baded6a7f23b26e8880f0e8",
+      "docs/plans/artifacts/annotations-review/deletion-probe.ts": "b119bc92ac3b2dd8e9f3f422e5b75f0ee66f9f59be4f5f9d418094bc5b8b5f4a",
+      "docs/plans/artifacts/annotations-review/deletion-result.json": "4394690a5dd9f9b89a075a8b973711298f72f04c1c4a577b08b3ca59e14b3185",
+      "docs/plans/artifacts/annotations-review/proof.json": "2f0f8f63ffed68d218fd6cc171af7e034576886eda668148cbe52ff1da8c3adb",
+      "docs/plans/artifacts/annotations-review/core.log": "dd1dcdf5c0290f52372c079abb05be5118c2c3c2bd518a8e55dcc14632b0c298",
+      "docs/plans/artifacts/annotations-review/react.log": "3eb436ebe77be54e7da6fb30b4c917e98c5f3b2aa7dad407f3f072f99167a1e7",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "c30b05901aa8f2ecb6c6a62b6e37d963ed743eb8538c444517cd3117ae202a17",
+      "packages/plitejs/src/annotations/store.ts": "c5ceb15ab340254ef42c7ecf24715800fbc1dd221c2ffe14fc1928adc1739b16",
+      "packages/plitejs/src/internal/view/annotation-store-metrics.ts": "0e935a59c97a4fcd5387917dba94dc90f50c7784c313d306b4c3937f63517020",
+      "packages/plitejs/src/authored/authored.ts": "4e10fb213fc4b57244064959ca18b23b51ac29ddba5b1772f128ee4381722205",
+      "apps/plite/tests/plite-browser/donor/examples/comment-mode.test.ts": "2ec57a0dbeba53abb72eb40089d1a250cb0df6ff0cc676c7d493953c597844fb",
+      "apps/plite/tests/plite-browser/donor/examples/persistent-annotation-anchors.test.ts": "e4da18a7b4632a7078dadfb3ac9306cef60203de02f20adb9014c8938ecff8bc",
+      "benchmarks/slate-v2/donor/core/current/annotation-view-index.mjs": "d04528b12e33a74724a847ec9752c7d44502481bb564a59b85a9e44700c397ba",
+      "benchmarks/targets/slate-v2.json": "47fdd846d6e552791206513921369de4646f8b7e6b2e9202c9f8ba07a769e283",
+      ".agents/rules/best-api.mdc": "daa6ba4552b2fb7a2e502f9e6d15aee87f497870f606a2cee7196eeeb82aa97b",
+      ".agents/rules/plite-plan.mdc": "724b1123ebd294d94f5c88b245cd476a1c1bb815b6550fd53e48da60d78bd9cb",
+      ".agents/rules/plate-next/versions.json": "b601ed0314b4c72f7eb28eea8be16cb6251c28f6d5aca9f68babd46afe7a97c7"
+    },
+    "directories": {
+      "packages/plitejs/src/annotations": "81334c0b58735f48d15aad1534258a56fc61be09da1ea362e7620740f4fab53a",
+      "packages/platejs/src/features/comments": "aaa90ef05d0b1b50932c82db104bec2cd54fc80f32afb1e6d098cfe1a8b6f0dc"
+    },
+    "features": {
+      "example/plite/decorations-async": "19667fd8c2a9d47f221b75f6613b299cbc3afc50c0dc7f32c4eadd0be6f3c1ff",
+      "example/plite/persistent-annotation-anchors": "069c6e76de988c9b126f5085d795c8c83f31e9cd78a700bace8c7a0f2f13a86e",
+      "export/plitejs/./annotations": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "plitejs/annotations": "81334c0b58735f48d15aad1534258a56fc61be09da1ea362e7620740f4fab53a",
+      "plitejs/react/decoration-context": "97458c80a5732f5243629f57d6e80e604a0b73c56b742b8c1254915dd2f62eae",
+      "plitejs/react/decoration-source": "1353dbb90e049be9b6c66d6489ad6709427ee1398c6842aed2a68bccdb0ca925"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-21-annotations-architecture-adoption.md",
+    "docs/research/decisions/2026-09-20-annotations-ownership.md",
+    "docs/plans/artifacts/annotations-architecture-adoption/verification.json",
+    "docs/plans/artifacts/annotations-architecture-adoption/annotation-view-index-benchmark.json"
+  ]
+}

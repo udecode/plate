@@ -24,6 +24,7 @@
     "../src/react/features/comments/**/*",
     "../src/react/features/date/**/*",
     "../src/react/features/details/**/*",
+    "../src/react/features/upload/**/*",
     "../src/react/features/footnote/**/*",
     "../src/react/features/layout/**/*",
     "../src/react/features/media/**/*",

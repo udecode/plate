@@ -112,16 +112,19 @@ function clearColor(editor: Editor, plugin: ColorPlugin) {
 }
 
 function getColor(editor: PluginPortalEditor, plugin: ColorPlugin) {
-  switch (plugin.name) {
+  const pluginName = plugin.name;
+
+  switch (pluginName) {
     case FontBackgroundColorPlugin.name: {
       return editor.plugin(FontBackgroundColorPlugin).read.value();
     }
     case FontColorPlugin.name: {
       return editor.plugin(FontColorPlugin).read.value();
     }
+    default: {
+      throw new Error(`Unsupported color plugin: ${pluginName}`);
+    }
   }
-
-  throw new Error('Unsupported color plugin.');
 }
 
 export type ColorOption = {

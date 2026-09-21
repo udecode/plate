@@ -34,7 +34,7 @@ export interface AudioElement extends Element {
 }
 
 export interface BlockquoteElement extends Element {
-  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
+  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "blockquote";
   readonly checked?: boolean;
   readonly indent?: number;
@@ -65,7 +65,7 @@ export interface CodeBlockElement extends Element {
 }
 
 export interface ColumnElement extends Element {
-  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
+  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "column";
   readonly width: string;
 }
@@ -82,7 +82,7 @@ export interface DateElement extends Element {
 }
 
 export interface DetailsElement extends Element {
-  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
+  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "details";
   readonly checked?: boolean;
   readonly indent?: number;
@@ -115,7 +115,7 @@ export interface FileElement extends Element {
 }
 
 export interface FootnoteDefinitionElement extends Element {
-  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
+  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "footnoteDefinition";
   readonly ref: string;
 }
@@ -222,12 +222,6 @@ export interface ParagraphElement extends Element {
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
 }
 
-export interface PlaceholderElement extends Element {
-  readonly children: readonly [EditorText];
-  readonly type: "placeholder";
-  readonly mediaType: string;
-}
-
 export interface SlashInputElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "slashInput";
@@ -249,7 +243,7 @@ export interface TableElement extends Element {
 }
 
 export interface TableCellElement extends Element {
-  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
+  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "tableCell";
   readonly backgroundColor?: string;
   readonly borders?: unknown;
@@ -269,6 +263,12 @@ export interface TocElement extends Element {
   readonly type: "toc";
 }
 
+export interface UploadElement extends Element {
+  readonly children: readonly [EditorText];
+  readonly type: "upload";
+  readonly kind: "audio" | "file" | "image" | "video";
+}
+
 export interface VideoElement extends Element {
   readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
   readonly type: "video";
@@ -279,8 +279,8 @@ export interface VideoElement extends Element {
   readonly width?: number | string;
 }
 
-export type EditorElement = AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnElement | ColumnGroupElement | DateElement | DetailsElement | EmojiInputElement | EquationElement | FileElement | FootnoteDefinitionElement | FootnoteInputElement | FootnoteElement | HeadingElement | HorizontalRuleElement | ImageElement | InlineEquationElement | LinkElement | MediaEmbedElement | MentionElement | MentionInputElement | ParagraphElement | PlaceholderElement | SlashInputElement | DetailsSummaryElement | TableElement | TableCellElement | TableRowElement | TocElement | VideoElement;
-export type Value = readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
+export type EditorElement = AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnElement | ColumnGroupElement | DateElement | DetailsElement | EmojiInputElement | EquationElement | FileElement | FootnoteDefinitionElement | FootnoteInputElement | FootnoteElement | HeadingElement | HorizontalRuleElement | ImageElement | InlineEquationElement | LinkElement | MediaEmbedElement | MentionElement | MentionInputElement | ParagraphElement | SlashInputElement | DetailsSummaryElement | TableElement | TableCellElement | TableRowElement | TocElement | UploadElement | VideoElement;
+export type Value = readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
 export type Schema = Readonly<{
   readonly plugins: Readonly<{
     readonly paragraph: Readonly<{ readonly type: "paragraph"; }>;
@@ -300,7 +300,7 @@ export type Schema = Readonly<{
     readonly video: Readonly<{ readonly type: "video"; }>;
     readonly audio: Readonly<{ readonly type: "audio"; }>;
     readonly file: Readonly<{ readonly type: "file"; }>;
-    readonly placeholder: Readonly<{ readonly type: "placeholder"; }>;
+    readonly upload: Readonly<{ readonly type: "upload"; }>;
     readonly callout: Readonly<{ readonly type: "callout"; }>;
     readonly column: Readonly<{ readonly type: "column"; }>;
     readonly columnGroup: Readonly<{ readonly type: "columnGroup"; }>;
@@ -680,16 +680,6 @@ export type Mutations = Readonly<{
     readonly toggle: true;
     readonly type: "paragraph";
   }>;
-  readonly placeholder: Readonly<{
-    readonly block: true;
-    readonly construction: Readonly<{
-      readonly mediaType: string;
-    }>;
-    readonly properties: Readonly<{
-      readonly mediaType: string;
-    }>;
-    readonly type: "placeholder";
-  }>;
   readonly slashInput: Readonly<{
     readonly block: false;
     readonly construction: Readonly<{
@@ -757,6 +747,16 @@ export type Mutations = Readonly<{
     readonly properties: Readonly<Record<PropertyKey, never>>;
     readonly type: "toc";
   }>;
+  readonly upload: Readonly<{
+    readonly block: true;
+    readonly construction: Readonly<{
+      readonly kind: "audio" | "file" | "image" | "video";
+    }>;
+    readonly properties: Readonly<{
+      readonly kind: "audio" | "file" | "image" | "video";
+    }>;
+    readonly type: "upload";
+  }>;
   readonly video: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
@@ -803,7 +803,7 @@ export const schema = Object.freeze({
     video: Object.freeze({ type: "video" }),
     audio: Object.freeze({ type: "audio" }),
     file: Object.freeze({ type: "file" }),
-    placeholder: Object.freeze({ type: "placeholder" }),
+    upload: Object.freeze({ type: "upload" }),
     callout: Object.freeze({ type: "callout" }),
     column: Object.freeze({ type: "column" }),
     columnGroup: Object.freeze({ type: "columnGroup" }),
@@ -837,7 +837,7 @@ export const schema = Object.freeze({
   properties: Object.freeze({}),
 }) satisfies Schema;
 
-export const fingerprint = "fnv1a64:cd7e6fd34ea16989";
+export const fingerprint = "fnv1a64:29aa1d04db516b3f";
 
 type EditorPlugins = (typeof EditorModule)["EditorKit"] & GeneratedEditorTypeProvider<Types>;
 

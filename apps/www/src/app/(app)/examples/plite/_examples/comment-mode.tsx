@@ -10,18 +10,20 @@ import type { AnnotationStore } from 'plitejs/annotations';
 import {
   Editable,
   EditorRoot,
-  AnnotationProvider,
   type DecorationSource,
   type Editor,
-  useEditorSelection,
   useAnnotationStore,
   useAnnotations,
   useEditor,
+  useEditorContext,
+  useEditorFocused,
+  useEditorSelection,
 } from 'plitejs/react';
 import {
   type Dispatch,
   type PointerEvent,
   type SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -42,7 +44,6 @@ type CommentThread = {
   body: string;
   id: string;
   label: string;
-  mirrorAnchor: Anchor<Range>;
   status: CommentStatus;
   tone: CommentTone;
 };
@@ -76,9 +77,6 @@ const initialValue: Value = [
     ],
   },
 ];
-
-const cloneValue = (value: Value): Value =>
-  JSON.parse(JSON.stringify(value)) as Value;
 
 const isCollapsed = (range: Range | null) =>
   !range ||
@@ -123,15 +121,12 @@ const commentToneBadgeVariants = cva('editor-comment-mode-tone-badge', {
 
 const commentAnchorOptions = {
   association: 'inward',
-  deletion: 'drop',
+  deletion: 'nearest',
 } as const;
 
-const createCommentAnnotations = (
-  comments: readonly CommentThread[],
-  getAnchor: (comment: CommentThread) => Anchor<Range>
-) =>
+const createCommentAnnotations = (comments: readonly CommentThread[]) =>
   comments.map((comment) => ({
-    anchor: getAnchor(comment),
+    anchor: comment.anchor,
     data: {
       body: comment.body,
       label: comment.label,
@@ -238,9 +233,16 @@ const CommentedEditable = ({
   />
 );
 
-const WriterPane = ({ editor }: { editor: CommentEditor }) => {
-  const selection = useEditorSelection();
-  const annotationSnapshot = useAnnotations<CommentData>();
+const WriterPane = ({
+  editor,
+  store,
+}: {
+  editor: CommentEditor;
+  store: AnnotationStore<CommentData>;
+}) => {
+  const modelSelection = useEditorSelection();
+  const selection = useEditorFocused() ? modelSelection : null;
+  const annotationSnapshot = useAnnotations(store);
   const firstAnnotation =
     annotationSnapshot.allIds[0] == null
       ? null
@@ -325,46 +327,30 @@ const WriterPane = ({ editor }: { editor: CommentEditor }) => {
 };
 
 const CommentModePane = ({
-  commentEditor,
   comments,
+  editor,
   onCommentWrite,
   setComments,
-  writerEditor,
+  store,
 }: {
-  commentEditor: CommentEditor;
   comments: readonly CommentThread[];
+  editor: CommentEditor;
   onCommentWrite: () => void;
   setComments: Dispatch<SetStateAction<CommentThread[]>>;
-  writerEditor: CommentEditor;
+  store: AnnotationStore<CommentData>;
 }) => {
   const nextCommentId = useRef(1);
-  const selection = useEditorSelection();
-  const annotationSnapshot = useAnnotations<CommentData>();
-  const commentsRef = useRef(comments);
-
-  useEffect(() => {
-    commentsRef.current = comments;
-  }, [comments]);
-
-  useEffect(
-    () => () => {
-      commentsRef.current.forEach((comment) => {
-        comment.anchor.release();
-        comment.mirrorAnchor.release();
-      });
-    },
-    []
-  );
+  const modelSelection = useEditorSelection();
+  const selection = useEditorFocused() ? modelSelection : null;
+  const annotationSnapshot = useAnnotations(store);
 
   const createComment = (range: Range) => {
     const id = `comment-${nextCommentId.current}`;
     const tone: CommentTone =
       nextCommentId.current % 2 === 0 ? 'question' : 'review';
     const snippet =
-      writerEditor.read.text.string(range).replace(/\s+/g, ' ').trim() ||
-      'selection';
-    const anchor = writerEditor.anchor(range, commentAnchorOptions);
-    const mirrorAnchor = commentEditor.anchor(range, commentAnchorOptions);
+      editor.read.text.string(range).replace(/\s+/g, ' ').trim() || 'selection';
+    const anchor = editor.anchor(range, commentAnchorOptions);
 
     nextCommentId.current += 1;
     onCommentWrite();
@@ -374,8 +360,7 @@ const CommentModePane = ({
         anchor,
         body: `Discuss: ${snippet.slice(0, 56)}`,
         id,
-        label: `Comment ${current.length + 1}`,
-        mirrorAnchor,
+        label: `Comment ${comments.length + 1}`,
         status: 'open',
         tone,
       },
@@ -398,27 +383,19 @@ const CommentModePane = ({
   };
 
   const removeComment = (id: string) => {
+    const target = comments.find((comment) => comment.id === id);
+
+    target?.anchor.release();
     onCommentWrite();
-    setComments((current) => {
-      const target = current.find((comment) => comment.id === id);
-
-      target?.anchor.release();
-      target?.mirrorAnchor.release();
-
-      return current.filter((comment) => comment.id !== id);
-    });
+    setComments((current) => current.filter((comment) => comment.id !== id));
   };
 
   const clearComments = () => {
-    onCommentWrite();
-    setComments((current) => {
-      current.forEach((comment) => {
-        comment.anchor.release();
-        comment.mirrorAnchor.release();
-      });
-
-      return [];
+    comments.forEach((comment) => {
+      comment.anchor.release();
     });
+    onCommentWrite();
+    setComments([]);
   };
 
   const retoneFirstComment = () => {
@@ -606,78 +583,108 @@ const CommentModePane = ({
   );
 };
 
+const useCommentView = (
+  comments: readonly CommentThread[],
+  onDecorationSource: (source: DecorationSource<CommentEditor> | null) => void
+) => {
+  const editor = useEditorContext();
+  const annotations = useMemo(
+    () => createCommentAnnotations(comments),
+    [comments]
+  );
+  const store = useAnnotationStore<CommentData>(editor, annotations);
+  const decorationSource = useMemo(
+    () => createCommentDecorationSource(store),
+    [store]
+  );
+
+  useEffect(() => {
+    onDecorationSource(decorationSource);
+
+    return () => onDecorationSource(null);
+  }, [decorationSource, onDecorationSource]);
+
+  return { editor, store };
+};
+
+const CommentReviewView = ({
+  comments,
+  onCommentWrite,
+  onDecorationSource,
+  setComments,
+}: {
+  comments: readonly CommentThread[];
+  onCommentWrite: () => void;
+  onDecorationSource: (source: DecorationSource<CommentEditor> | null) => void;
+  setComments: Dispatch<SetStateAction<CommentThread[]>>;
+}) => {
+  const { editor, store } = useCommentView(comments, onDecorationSource);
+
+  return (
+    <CommentModePane
+      comments={comments}
+      editor={editor}
+      onCommentWrite={onCommentWrite}
+      setComments={setComments}
+      store={store}
+    />
+  );
+};
+
+const WriterView = ({
+  comments,
+  onDecorationSource,
+}: {
+  comments: readonly CommentThread[];
+  onDecorationSource: (source: DecorationSource<CommentEditor> | null) => void;
+}) => {
+  const { editor, store } = useCommentView(comments, onDecorationSource);
+
+  return <WriterPane editor={editor} store={store} />;
+};
+
 const CommentModeExample = () => {
-  const writerEditor = useEditor({
+  const editor = useEditor({
     initialSelection: {
       kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    initialValue: cloneValue(initialValue),
-  });
-  const commentEditor = useEditor({
-    initialSelection: {
-      kind: 'text',
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    },
-    initialValue: cloneValue(initialValue),
+    initialValue,
   });
   const [comments, setComments] = useState<CommentThread[]>([]);
   const [documentWrites, setDocumentWrites] = useState(0);
   const [commentWrites, setCommentWrites] = useState(0);
-  const writerAnnotations = useMemo(
-    () => createCommentAnnotations(comments, (comment) => comment.anchor),
-    [comments]
+  const [writerDecorationSource, setWriterDecorationSource] =
+    useState<DecorationSource<CommentEditor> | null>(null);
+  const [commentDecorationSource, setCommentDecorationSource] =
+    useState<DecorationSource<CommentEditor> | null>(null);
+  const commentsRef = useRef(comments);
+  const publishWriterDecorationSource = useCallback(
+    (source: DecorationSource<CommentEditor> | null) => {
+      setWriterDecorationSource(source);
+    },
+    []
   );
-  const commentAnnotations = useMemo(
-    () => createCommentAnnotations(comments, (comment) => comment.mirrorAnchor),
-    [comments]
-  );
-  const writerAnnotationStore = useAnnotationStore<CommentData>(
-    writerEditor,
-    writerAnnotations
-  );
-  const commentAnnotationStore = useAnnotationStore<CommentData>(
-    commentEditor,
-    commentAnnotations
-  );
-  const writerDecorations = useMemo(
-    () => createCommentDecorationSource(writerAnnotationStore),
-    [writerAnnotationStore]
-  );
-  const commentDecorations = useMemo(
-    () => createCommentDecorationSource(commentAnnotationStore),
-    [commentAnnotationStore]
+  const publishCommentDecorationSource = useCallback(
+    (source: DecorationSource<CommentEditor> | null) => {
+      setCommentDecorationSource(source);
+    },
+    []
   );
 
-  const syncCommentModeFromDocument = (value: Value) => {
-    commentEditor.update.value.replace({
-      children: cloneValue(value),
-      selection: null,
-    });
-  };
+  useEffect(() => {
+    commentsRef.current = comments;
+  }, [comments]);
 
-  const handleWriterValueChange = (value: Value) => {
-    setDocumentWrites((count) => count + 1);
-    syncCommentModeFromDocument(value);
-    setComments((current) =>
-      current.flatMap((comment) => {
-        const range = comment.anchor.resolve();
-
-        comment.mirrorAnchor.release();
-
-        return range
-          ? [
-              {
-                ...comment,
-                mirrorAnchor: commentEditor.anchor(range, commentAnchorOptions),
-              },
-            ]
-          : [];
-      })
-    );
-  };
+  useEffect(
+    () => () => {
+      commentsRef.current.forEach((comment) => {
+        comment.anchor.release();
+      });
+    },
+    []
+  );
 
   return (
     <div className="editor-comment-mode-panel">
@@ -719,29 +726,31 @@ const CommentModeExample = () => {
         </div>
       </div>
       <div className="editor-comment-mode-layout">
-        <EditorRoot decorations={[commentDecorations]} editor={commentEditor}>
-          <AnnotationProvider store={commentAnnotationStore}>
-            <CommentModePane
-              commentEditor={commentEditor}
-              comments={comments}
-              onCommentWrite={() => {
-                setCommentWrites((count) => count + 1);
-              }}
-              setComments={setComments}
-              writerEditor={writerEditor}
-            />
-          </AnnotationProvider>
+        <EditorRoot
+          decorations={commentDecorationSource ? [commentDecorationSource] : []}
+          editor={editor}
+          readOnly
+        >
+          <CommentReviewView
+            comments={comments}
+            onCommentWrite={() => {
+              setCommentWrites((count) => count + 1);
+            }}
+            onDecorationSource={publishCommentDecorationSource}
+            setComments={setComments}
+          />
         </EditorRoot>
         <EditorRoot
-          decorations={[writerDecorations]}
-          editor={writerEditor}
-          onValueChange={({ value }) => {
-            handleWriterValueChange(value);
+          decorations={writerDecorationSource ? [writerDecorationSource] : []}
+          editor={editor}
+          onValueChange={() => {
+            setDocumentWrites((count) => count + 1);
           }}
         >
-          <AnnotationProvider store={writerAnnotationStore}>
-            <WriterPane editor={writerEditor} />
-          </AnnotationProvider>
+          <WriterView
+            comments={comments}
+            onDecorationSource={publishWriterDecorationSource}
+          />
         </EditorRoot>
       </div>
     </div>

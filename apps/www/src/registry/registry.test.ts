@@ -357,6 +357,45 @@ describe('Plate registry editor files', () => {
     ).toEqual(['copilot-demo']);
   });
 
+  it('keeps upload providers explicit and out of the base upload item', () => {
+    const itemsByName = new Map(items.map((item) => [item.name, item]));
+    const upload = itemsByName.get('upload');
+    const ephemeral = itemsByName.get('upload-ephemeral');
+    const filesGateway = itemsByName.get('files-api');
+
+    expect(upload?.registryDependencies).toEqual(['@plate/use-object-url']);
+    expect(upload?.files?.map((file) => file.path)).toEqual([
+      'components/editor/upload.tsx',
+    ]);
+    expect(ephemeral?.registryDependencies).toEqual(['@plate/upload']);
+    expect(ephemeral?.files?.map((file) => file.path)).toEqual([
+      'components/editor/upload/ephemeral.ts',
+    ]);
+    expect(filesGateway?.dependencies).toEqual(['files-sdk@2.6.0']);
+    expect(filesGateway?.files?.map((file) => file.path)).toEqual([
+      'lib/files.ts',
+    ]);
+
+    for (const [name, source] of [
+      ['upload-r2', 'app/api/files/route.ts'],
+      ['upload-s3', 'app/api/files/s3-route.ts'],
+    ] as const) {
+      const provider = itemsByName.get(name);
+
+      expect(provider?.registryDependencies).toEqual([
+        '@plate/files-api',
+        '@plate/upload',
+      ]);
+      expect(provider?.files).toEqual([
+        {
+          path: source,
+          target: 'app/api/files/route.ts',
+          type: 'registry:file',
+        },
+      ]);
+    }
+  });
+
   it('keeps DOCX file IO isolated to the dedicated DOCX example', () => {
     const itemsByName = new Map(items.map((item) => [item.name, item]));
     const docxDemo = itemsByName.get('docx-demo');

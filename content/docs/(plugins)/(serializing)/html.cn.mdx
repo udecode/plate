@@ -260,6 +260,8 @@ MIME-keyed map。它是插件 schema 和 codec callback 唯一的 inline inferen
   Plate 使用已安装插件解析后的类型。
 - `encode` 为 mark 返回 wrapper，为 element 返回完整 node spec，
   为 element property 返回 attribute/style patch。
+- Element 的 `encode` 可以返回 `null`，从 HTML 中省略该 element，同时保留可序列化的
+  兄弟节点。Mark 和 property encoder 不能以这种方式省略已有值。
 - 仅导入的映射显式设置 `decodeOnly: true`。
 - `priority` 处理有意的重叠。相同优先级的排他声明会让 model 编译失败，
   不依赖插件数组顺序。

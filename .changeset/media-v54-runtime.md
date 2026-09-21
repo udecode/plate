@@ -6,14 +6,15 @@ Require React and React DOM 19.2 or newer.
 
 Copy the media node renderers, `media-toolbar`, and `media-preview-dialog` for rendering, URL editing, preview state, navigation, scale, translation, and download behavior. Each copied renderer reads its typed element and primitive editor state directly. Remove public media UI stores, providers, monolithic components, and UI-only hooks.
 
-Export complete `*PluginState` contracts for audio, file, video, image, media embed, and placeholder descriptors.
+Export complete `*PluginState` contracts for audio, file, video, image, media embed, and media upload descriptors.
 
 - Insert images with `editor.plugin(BaseImagePlugin).update.insert({ url }, options)`
 - Insert embeds with `editor.plugin(BaseMediaEmbedPlugin).update.insert({ url }, options)`
-- Insert headless placeholders with `editor.plugin(BasePlaceholderPlugin).update.insert({ mediaType }, options)`
-- Insert upload placeholders with `editor.plugin(BasePlaceholderPlugin).update.insertMedia(files, options)`
-- Configure `upload(file, { signal, onProgress })` on `BasePlaceholderPlugin`; it owns validation, request lifetime, and guarded replacement of the same live placeholder
-- Start or cancel an existing placeholder's upload with `api.upload(key, file)` or `api.cancelUpload(key)`; subscribe to its progress through `store.get('uploadTask', key)`
+- Author an unbound draft with `editor.plugin(BaseMediaUploadPlugin).update.insert({ kind }, options)`
+- Admit every file batch through `editor.plugin(BaseMediaUploadPlugin).update.submit(files, options)`, using either block insertion options or `{ slot: nodeKey }`
+- Configure `transport(file, { signal, onProgress })`, `rules`, `maxFiles`, and one-shot `onError` handling on `BaseMediaUploadPlugin`
+- Cancel a live request with `api.cancel(key)` and subscribe to its task through `store.get('task', key)`
+- Keep draft intent as `{ type: 'upload', kind, children }`, bind request authority to its `NodeKey`, and complete through the installed media descriptor's schema type
 - Insert prompted image and embed URLs through the installed media descriptor's `api.insertUrl(getUrl, options)`; copied UI supplies the prompt
 - Remove the standalone `insertImage`, `insertMedia`, `insertMediaEmbed`, `insertPlaceholder`, and `getUploadingFile` helpers
 - Remove `fileSizeToBytes`, `getMediaType`, `groupFilesByType`, `matchFileType`, `validateFileItem`, and `validateFiles`
@@ -22,12 +23,14 @@ Export complete `*PluginState` contracts for audio, file, video, image, media em
 - Remove the `withImage*`, `insertImagePlaceholder`, `setMediaNode`, `mediaStore`, `useMediaController*`, `placeholderStore`, and `usePlaceholder*` store and component-state exports
 - Honor disabled file drops and upload configurations without a file-size limit
 - Keep package upload defaults limit-free; copied `MediaKit` owns concrete file counts and size quotas
-- Target image, embed, and placeholder insertion through exact `at` locations or a live source node through `after`; `replaceEmpty` replaces only an empty writable text block
-- Preserve plugin API inference in typed component integrations and accept arrays when inserting placeholder media
-- Start configured uploads only after the placeholder transaction commits, and bind each upload to the exact accepted placeholder key
+- Target image, embed, and media-upload insertion through exact `at` locations or a live source node through `after`; `replaceEmpty` replaces only an empty writable text block
+- Insert before an exact live block with `BlockInsertOptions.before`; the stable `NodeKey` resolves in the active root-aware transaction view
+- Validate each submitted batch atomically and start configured uploads only after its draft transaction commits
+- Preserve draft slots in Plate JSON and internal slices while omitting unresolved drafts from external HTML and static output
+- Let a structural HTML encoder return `null` to omit that element while preserving serializable siblings
 - Expose the `MediaPlugin` union for typed floating-media URL controls
 - Rename `MediaPluginOptions` to `MediaPluginState`
-- Use `PlaceholderPluginState` for the shared upload owner; the React `PlaceholderPlugin` adds DOM input adaptation
+- Use `MediaUploadPluginState` for the shared upload owner; the React `MediaUploadPlugin` adds optional native-drop adaptation
 - Register media properties and required direct inline caption children in compiled schemas.
 - Convert legacy v53 media identities, captions, missing URLs, and retired placeholder IDs through the shared `migrateV54` application document step.
 - Accept caption strings or inline children as construction input and persist them as direct media children.

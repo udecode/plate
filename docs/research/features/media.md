@@ -28,6 +28,8 @@ Changed files: none identified. Changed directories: none identified. Changed so
 
 - **unbound-plan**: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
+- **completed-plan-without-current-outcome**: [2026-09-19-upload-draft-asset-protocol.md](../../plans/2026-09-19-upload-draft-asset-protocol.md).
+
 - **unbound-plan**: [4803-update-upload-history.md](../../plans/4803-update-upload-history.md).
 
 - **unreconciled-execution**: [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json).
@@ -42,6 +44,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-07-23-plate-next-media-full-colocation.md](../../plans/2026-07-23-plate-next-media-full-colocation.md) | unknown | implementation | unbound |
 | [2026-08-26-media-caption-block-reset-api.md](../../plans/2026-08-26-media-caption-block-reset-api.md) | unknown | implementation | unbound |
 | [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md) | completed | implementation | unbound |
+| [2026-09-19-upload-draft-asset-protocol.md](../../plans/2026-09-19-upload-draft-asset-protocol.md) | completed | implementation | [2026-09-19-uploads-node-model-correction](../review-records/2026-09-19-uploads-node-model-correction.json) |
 | [4803-update-upload-history.md](../../plans/4803-update-upload-history.md) | unknown | implementation | unbound |
 
 ### Outcomes recorded after the latest review

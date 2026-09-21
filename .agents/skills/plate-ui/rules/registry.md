@@ -19,6 +19,18 @@ When you add a new component:
 
 Do not leave the registry half-wired.
 
+When a migration changes feature ownership, audit retained source files and
+registry items before final wiring. Count terminal production consumers from
+the migrated graph; tests, docs, exports, generated metadata, changelog history,
+and the old item name do not count. A renderer or helper with one feature owner
+moves into that feature file, and its obsolete registry item and dependency are
+deleted. Keep a sibling item only when it still has an independently installable
+main component or another durable owner with its own consumers and proof.
+Null rendering, omission, and other schema semantics belong to the base plugin.
+Compose that descriptor directly in aggregate static kits; do not publish a
+configuration-only `foo-static` item. A `foo-static` item must install real
+static presentation source.
+
 ---
 
 ## Examples need explicit deps

@@ -1200,6 +1200,53 @@ describe('plite transforms contract', () => {
     assert.deepEqual(editor.read.nodes.path(first), [1]);
   });
 
+  it('changes a named-root element type by key without replacing its identity', () => {
+    const editor = createEditor({
+      plugins: [
+        defineTestSchema('keyed-named-root-type-change', {
+          draft: { properties: { kind: property.string() } },
+          image: { properties: { url: property.string() }, void: 'block' },
+        }),
+      ],
+      initialValue: {
+        children: [paragraph('body')],
+        roots: {
+          header: [
+            {
+              children: [{ text: '' }],
+              kind: 'image',
+              type: 'draft',
+            },
+          ],
+        },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+    const elementKey = header.key([0]);
+    const textKey = header.key([0, 0]);
+
+    assert.ok(elementKey);
+    assert.ok(textKey);
+    editor.update((tx) => {
+      tx.nodes.set(
+        { type: 'image', url: 'https://example.com/image.png' },
+        { at: elementKey }
+      );
+      tx.nodes.unset('kind', { at: elementKey });
+    });
+
+    assert.deepEqual(editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(header.read.children(), [
+      {
+        children: [{ text: '' }],
+        type: 'image',
+        url: 'https://example.com/image.png',
+      },
+    ]);
+    assert.equal(header.key([0]), elementKey);
+    assert.equal(header.key([0, 0]), textKey);
+  });
+
   it('can target an inserted node later in the same transaction', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
     const inserted = paragraph('two');

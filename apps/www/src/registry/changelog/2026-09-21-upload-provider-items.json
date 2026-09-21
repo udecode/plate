@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-21-upload-provider-items",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-21-upload-provider-items.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-21",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Choose an explicit upload provider",
+  "targets": [
+    {
+      "name": "upload",
+      "files": ["apps/www/src/registry/components/editor/upload.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "upload-ephemeral",
+      "files": ["apps/www/src/registry/components/editor/upload/ephemeral.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "upload-r2",
+      "files": ["apps/www/src/registry/app/api/files/route.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "upload-s3",
+      "files": ["apps/www/src/registry/app/api/files/s3-route.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "files-api",
+      "files": ["apps/www/src/registry/lib/files.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-21-upload-choose-an-explicit-provider-c6f0523f",
+      "kind": "wiring",
+      "summary": "Install provider-neutral upload UI with an explicit browser-local, Cloudflare R2, or Amazon S3 provider; persistent providers share one gateway policy and install only their own adapter dependencies.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "upload",
+        "upload-ephemeral",
+        "upload-r2",
+        "upload-s3",
+        "files-api"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-21",
+          "entry": "2026-09-21-upload-provider-items",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

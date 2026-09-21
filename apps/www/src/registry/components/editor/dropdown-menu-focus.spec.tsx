@@ -187,7 +187,7 @@ for (const provider of ['base', 'radix'] as const) {
           <menu.DropdownMenuContent onFinalFocus={fallback}>
             {React.createElement(
               Component as React.ComponentType<{
-                children: React.ReactNode;
+                children?: React.ReactNode;
                 finalFocus: () => void;
                 value: string;
               }>,

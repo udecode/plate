@@ -1,14 +1,11 @@
 'use client';
 
 import { BaseCodeBlockPlugin, PLUGINS, ElementApi } from 'platejs';
-import type { TabbablePluginState } from 'platejs/tabbable';
 import { TabbablePlugin } from 'platejs/tabbable/react';
 import { BaseTablePlugin } from 'platejs/table';
 
-export type TabbableKitPluginState = Pick<TabbablePluginState, 'query'>;
-
 export const TabbableKit = [
-  TabbablePlugin.extend({
+  TabbablePlugin.configure(({ editor }) => ({
     override: {
       [PLUGINS.indent]: {
         shortcuts: {
@@ -17,7 +14,6 @@ export const TabbableKit = [
         },
       },
     },
-  }).extend(({ editor }): { initialState: TabbableKitPluginState } => ({
     initialState: {
       query: () => {
         if (

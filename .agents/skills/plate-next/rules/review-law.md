@@ -415,10 +415,13 @@ editor.read.selection.nodes()` is a regression: it
   `tx.plugin(Plugin)` when the caller owns the descriptor or
   `tx.plugin(pluginName)` across an intentionally decoupled package boundary.
   Descriptor input keeps exact inference and nominal validation; name input is
-  intentionally erased and runtime-checked. Generated closed editors may use
-  the direct `tx.pluginName` group. Never index the transaction object with a
-  runtime plugin name or use a nested editor portal one-shot. Raw Plite and
-  Plate share the selector semantics.
+  intentionally erased and runtime-checked. Optional name-only dispatch checks
+  `tx.plugins.has(pluginName)` in the same transaction instead of reflecting
+  over editor capability maps, duplicating the target type, or importing the
+  target descriptor only as an installation probe. Generated closed editors
+  may use the direct `tx.pluginName` group. Never index the transaction object
+  with a runtime plugin name or use a nested editor portal one-shot. Raw Plite
+  and Plate share the selector semantics.
 - For a Plate-owned custom MDX element codec, bind `schema: { type }` in the
   codec factory and use that resolved type for `from`, the decoded element
   `type`, and the encoded MDX `name`. Fixed MDAST, HTML, and MDX syntax remains

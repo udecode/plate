@@ -30,6 +30,7 @@ import {
   type Editor,
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
+  type WrapRootProps,
   useEditor,
   useEditorRootElement,
   useEditorSelector,
@@ -178,7 +179,9 @@ const createDiscussionStore = () => {
 
   const notifyBlocks = (keys: ReadonlySet<NodeKey>) => {
     keys.forEach((key) => {
-      blockListeners.get(key)?.forEach((listener) => listener());
+      blockListeners.get(key)?.forEach((listener) => {
+        listener();
+      });
     });
   };
   const notify = () => {
@@ -186,7 +189,9 @@ const createDiscussionStore = () => {
     notifyQueued = true;
     queueMicrotask(() => {
       notifyQueued = false;
-      listeners.forEach((listener) => listener());
+      listeners.forEach((listener) => {
+        listener();
+      });
     });
   };
   const getGroup = (blockKey: NodeKey): DiscussionGroup | undefined => {
@@ -274,7 +279,9 @@ const createDiscussionStore = () => {
       });
     });
     snapshot = { ...snapshot, target };
-    listeners.forEach((listener) => listener());
+    listeners.forEach((listener) => {
+      listener();
+    });
     notifyBlocks(changedKeys);
   };
 
@@ -561,7 +568,7 @@ const useDiscussionController = () => {
   return store;
 };
 
-function DiscussionRoot({ children }: { children: React.ReactNode }) {
+function DiscussionRoot({ children }: WrapRootProps) {
   const store = useDiscussionController();
 
   return <DiscussionContext value={store}>{children}</DiscussionContext>;
@@ -677,7 +684,9 @@ const formatPropertyValue = (value: unknown) => {
 const describeSuggestionPart = (
   part: AuthoredChangePart
 ): readonly string[] => {
-  switch (part.kind) {
+  const { kind } = part;
+
+  switch (kind) {
     case 'boundary': {
       return [
         part.action === 'split'
@@ -688,8 +697,9 @@ const describeSuggestionPart = (
     case 'content': {
       const before = contentPreview(part.before);
       const after = contentPreview(part.after);
+      const { action } = part;
 
-      switch (part.action) {
+      switch (action) {
         case 'delete': {
           return [before ? `Delete “${before}”` : 'Delete content'];
         }
@@ -706,9 +716,12 @@ const describeSuggestionPart = (
               : 'Replace content',
           ];
         }
-      }
+        default: {
+          const unsupportedAction: never = action;
 
-      return [];
+          throw new Error(`Unsupported content action: ${unsupportedAction}`);
+        }
+      }
     }
     case 'properties': {
       const keys = [
@@ -729,9 +742,12 @@ const describeSuggestionPart = (
         }`,
       ];
     }
-  }
+    default: {
+      const unsupportedKind: never = kind;
 
-  return [];
+      throw new Error(`Unsupported suggestion part: ${unsupportedKind}`);
+    }
+  }
 };
 
 const describeSuggestion = (
@@ -854,7 +870,9 @@ function SuggestionDiscussionCard({
       : [];
   const outcomeMessage = (() => {
     if (!outcome) return null;
-    switch (outcome.status) {
+    const { status } = outcome;
+
+    switch (status) {
       case 'applied': {
         return null;
       }
@@ -875,9 +893,12 @@ function SuggestionDiscussionCard({
       case 'unavailable': {
         return 'The retained content needed for this action is unavailable.';
       }
-    }
+      default: {
+        const unsupportedStatus: never = status;
 
-    return null;
+        throw new Error(`Unsupported authored result: ${unsupportedStatus}`);
+      }
+    }
   })();
 
   return (

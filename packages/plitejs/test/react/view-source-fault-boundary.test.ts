@@ -79,7 +79,7 @@ test('optional view sources isolate failures and recover on refresh', () => {
   decorationFails = false;
   annotationFails = false;
   refreshDecoration();
-  annotations.retry();
+  annotations.refresh();
 
   expect(decorations.getNodeSnapshot(nodeKey)).toHaveLength(2);
   expect(decorations.getMetrics().failureCount).toBe(1);

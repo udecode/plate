@@ -5361,6 +5361,14 @@ const getUpdateView = <
       },
     }),
     plugins: Object.freeze({
+      has: (plugin: PluginReference | string) =>
+        runActive(() => {
+          const registry = getPluginRegistry(editor);
+
+          return typeof plugin === 'string'
+            ? registry.plugins.has(plugin)
+            : registry.pluginsByDescriptor.has(plugin);
+        }),
       reconfigure: (slot, input, options) => {
         runActive(() =>
           stagePluginCandidate(

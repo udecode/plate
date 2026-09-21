@@ -77,8 +77,12 @@ const editor = createEditor({
 | --- | --- |
 | `basic-nodes` | `BasicNodesKit`、`BasicBlocksKit` 和 `BasicMarksKit` 的依赖项。 |
 | `table` | `TableKit` 和表格 UI 组件。 |
-| `media` | 不包含媒体上传 API route 的 `MediaKit`。 |
-| `media-uploadthing` | `media` 以及 UploadThing API route。 |
+| `media` | `MediaKit` 和已完成媒体的 UI。 |
+| `upload` | `UploadKit` 和草稿上传 UI；与 `MediaKit` 组合使用。 |
+| `upload-ephemeral` | 用于演示和一次性编辑器的浏览器本地上传配置。 |
+| `upload-r2` | `UploadKit`、共享 Files 网关和 Cloudflare R2 路由。 |
+| `upload-s3` | `UploadKit`、共享 Files 网关和 Amazon S3 路由。 |
+| `files-api` | 用于自定义提供程序配方的 Files SDK 网关策略。 |
 | `editor-plugins` | 完整的可编辑 editor kit。 |
 | `editor-plugins-static` | 完整的 static/base kit。 |
 
@@ -86,3 +90,5 @@ const editor = createEditor({
 `Editor` 或 `Value` contract 时，应从已定制的 plugin module 生成，并在 CI
 中运行 `plate generate --check <entry>`。参阅
 [精确的生成编辑器类型](/cn/docs/editor#精确的生成编辑器类型)。
+
+本地文件上传的客户端和网关配置见[上传文件](/cn/docs/upload)。

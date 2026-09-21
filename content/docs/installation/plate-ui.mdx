@@ -231,9 +231,16 @@ These items provide server-side components or API route handlers necessary for c
 # Install AI-related API routes
 npx shadcn@latest add @plate/ai-api
 
-# Install file upload API routes (e.g., for UploadThing)
-npx shadcn@latest add @plate/media-uploadthing-api
+# Install a complete persistent upload provider
+npx shadcn@latest add @plate/upload-r2
+npx shadcn@latest add @plate/upload-s3
 ```
+
+Choose one persistent provider. Each item installs `@plate/upload` and the
+shared gateway policy. Use `@plate/upload-ephemeral` for browser-local demos,
+or install `@plate/files-api` directly when building a custom provider recipe.
+Persistent routes need storage credentials and an application access policy.
+See [Upload Files](/docs/upload) before accepting upload requests.
 
 ### Documentation
 

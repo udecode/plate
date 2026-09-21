@@ -18,11 +18,13 @@ import {
 test('classifies only retired scoped editor packages', () => {
   assert.equal(isRetiredPackageName('@platejs/ai'), true);
   assert.equal(isRetiredPackageName('@platejs/ai/react'), true);
+  assert.equal(isRetiredPackageName('@uploadthing/react'), true);
   assert.equal(isRetiredPackageName('@udecode/cn'), true);
   assert.equal(isRetiredPackageName('@platejs/test'), false);
   assert.equal(isRetiredPackageName('@platejs/cli'), false);
   assert.equal(isRetiredPackageName('platejs/ai'), false);
   assert.equal(isRetiredPackageName('plitejs/react'), false);
+  assert.equal(isRetiredPackageName('uploadthing'), true);
 });
 
 test('detects retired package specifiers without matching prose', () => {
@@ -60,9 +62,11 @@ test('removes retired dependencies and source files before regeneration', async 
           dependencies: {
             '@platejs/ai': '^53.0.0',
             platejs: '^53.0.0',
+            uploadthing: '^7.0.0',
           },
           devDependencies: {
             '@platejs/test': '^1.0.0',
+            '@uploadthing/react': '^7.0.0',
             '@udecode/cn': '^47.0.0',
           },
         },
@@ -91,7 +95,12 @@ test('removes retired dependencies and source files before regeneration', async 
       await readFile(path.join(templateDir, 'package.json'), 'utf-8')
     );
 
-    assert.deepEqual(result.dependencyNames, ['@platejs/ai', '@udecode/cn']);
+    assert.deepEqual(result.dependencyNames, [
+      '@platejs/ai',
+      '@udecode/cn',
+      '@uploadthing/react',
+      'uploadthing',
+    ]);
     assert.deepEqual(result.sourceFiles, [
       'src/app/api/ai/command/prompt/index.ts',
       'src/retired.ts',

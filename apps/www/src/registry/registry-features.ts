@@ -796,6 +796,7 @@ export const registryFeatures: Registry['items'] = [
       '@plate/markdown',
       '@plate/math',
       '@plate/media',
+      '@plate/upload',
       '@plate/mention',
       '@plate/slash',
       '@plate/suggestion',
@@ -1062,14 +1063,8 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: [
-      'platejs',
-      '@uploadthing/react@7.3.3',
-      'sonner',
-      'uploadthing@7.7.4',
-    ],
-    description:
-      'Media kit with an UploadThing client transport (see media-uploadthing-api for the server route).',
+    dependencies: ['platejs'],
+    description: 'Completed image, video, audio, file and embed nodes.',
     files: [
       {
         path: 'components/editor/media.tsx',
@@ -1078,16 +1073,13 @@ export const registryFeatures: Registry['items'] = [
     ],
     name: 'media',
     registryDependencies: [
-      '@plate/uploadthing',
       '@plate/media-audio',
       '@plate/media-embed',
       '@plate/media-file',
       '@plate/media-image',
-      '@plate/media-placeholder',
       '@plate/media-preview-dialog',
       '@plate/media-toolbar',
       '@plate/media-video',
-      '@plate/media-toolbar-button',
     ],
     type: 'registry:component',
     title: 'Media',
@@ -1097,12 +1089,40 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: [],
-    description: 'media + media-uploadthing-api',
-    files: [],
-    name: 'media-uploadthing',
-    registryDependencies: ['@plate/media', '@plate/media-uploadthing-api'],
+    dependencies: [
+      'platejs',
+      'files-sdk@2.6.0',
+      'sonner',
+      'use-file-picker@2.1.2',
+    ],
+    description:
+      'Files SDK upload client, draft slots, progress and cancellation.',
+    files: [
+      {
+        path: 'components/editor/upload.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'upload',
+    registryDependencies: ['@plate/use-object-url'],
     type: 'registry:component',
+    title: 'Upload',
+    meta: { docs: [{ route: '/docs/upload' }], examples: ['media-demo'] },
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'Browser-local uploads for demos and disposable editors.',
+    files: [
+      {
+        path: 'components/editor/upload/ephemeral.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'upload-ephemeral',
+    registryDependencies: ['@plate/upload'],
+    type: 'registry:component',
+    title: 'Ephemeral Upload',
+    meta: { docs: [{ route: '/docs/upload' }], examples: ['playground-demo'] },
   },
   {
     dependencies: ['platejs'],

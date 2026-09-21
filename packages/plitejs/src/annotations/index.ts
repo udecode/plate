@@ -5,8 +5,8 @@ export type {
   AnnotationRefreshOptions,
   AnnotationSnapshot,
   AnnotationStore,
-  AnnotationStoreMetrics,
   AnnotationStoreOptions,
+  OwnedAnnotationStore,
   ResolvedAnnotation,
 } from './store';
 export { createAnnotationStore } from './store';

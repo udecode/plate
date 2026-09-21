@@ -1,7 +1,12 @@
 'use client';
 
-import { PlaceholderPlugin } from 'platejs/media/react';
+import { createFilesClient } from 'files-sdk/client';
+import { BaseImagePlugin } from 'platejs/media';
 import { EditorContent, EditorRoot, useCreateEditor } from 'platejs/react';
+import { UploadPlugin } from 'platejs/upload/react';
+
+import { MediaToolbarButton } from '@/registry/components/editor/media-toolbar-button';
+import { Toolbar } from '@/registry/components/editor/toolbar';
 
 type ClipboardUploadProof = {
   aborted: boolean;
@@ -37,47 +42,57 @@ const getProof = () => {
   return proof;
 };
 
-const UploadPlaceholderPlugin = PlaceholderPlugin.configure({
+const client = createFilesClient({ endpoint: '/api/files?documentId=proof' });
+
+Object.assign(client, {
+  upload: (file: File, { signal }: { signal?: AbortSignal } = {}) => {
+    const proof = getProof();
+
+    proof.starts += 1;
+    proof.exactFile = file === proof.pastedFile;
+    proof.fileName = file.name;
+    signal?.addEventListener(
+      'abort',
+      () => {
+        proof.aborted = true;
+      },
+      { once: true }
+    );
+
+    return new Promise((resolve) => {
+      proof.resolve = () =>
+        resolve({
+          key: 'clipboard-upload.png',
+          size: file.size,
+          type: file.type,
+        });
+    });
+  },
+});
+
+const ClipboardUploadPlugin = UploadPlugin.configure({
   component: ({ attributes, children }) => (
-    <div {...attributes} data-testid="upload-placeholder">
+    <div {...attributes} data-testid="upload">
       {children}
     </div>
   ),
   initialState: {
-    upload: (file, { signal }) => {
-      const proof = getProof();
-
-      proof.starts += 1;
-      proof.exactFile = file === proof.pastedFile;
-      proof.fileName = file.name;
-      signal.addEventListener(
-        'abort',
-        () => {
-          proof.aborted = true;
-        },
-        { once: true }
-      );
-
-      return new Promise((resolve) => {
-        proof.resolve = () =>
-          resolve({
-            naturalHeight: 60,
-            naturalWidth: 80,
-            url: 'https://example.test/clipboard-upload.png',
-          });
-      });
-    },
+    client,
+    getUrl: ({ key }) => `https://example.test/${key}`,
   },
 });
 
 export default function ClipboardUploadProofPage() {
   const editor = useCreateEditor({
-    plugins: [UploadPlaceholderPlugin],
+    plugins: [BaseImagePlugin, ClipboardUploadPlugin],
     initialValue: [{ children: [{ text: 'target' }], type: 'paragraph' }],
   });
 
   return (
     <EditorRoot editor={editor}>
+      <Toolbar data-testid="upload-picker">
+        <MediaToolbarButton plugin={BaseImagePlugin} />
+      </Toolbar>
       <EditorContent aria-label="Upload clipboard proof" />
     </EditorRoot>
   );

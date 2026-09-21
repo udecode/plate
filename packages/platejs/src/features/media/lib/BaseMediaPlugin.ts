@@ -267,7 +267,8 @@ export function defineMediaPlugin(
           if (
             !tx.selection() &&
             resolvedOptions.at === undefined &&
-            resolvedOptions.after === undefined
+            resolvedOptions.after === undefined &&
+            resolvedOptions.before === undefined
           ) {
             return false;
           }

@@ -49,6 +49,18 @@ export const applyBlockInsertion = <TResult>({
 }: ApplyBlockInsertionOptions<TResult>): TResult | undefined => {
   const insertOptions = options as BlockInsertOptions;
 
+  if (insertOptions.before !== undefined) {
+    const target = tx.nodes.get(insertOptions.before);
+    if (!target) return undefined;
+    const { after: _after, before: _before, ...beforeOptions } = insertOptions;
+
+    return insert({
+      ...beforeOptions,
+      at: target[1],
+      replaceEmpty: false,
+    });
+  }
+
   if (
     mode === 'insert' &&
     ((insertOptions.at !== undefined && insertOptions.after === undefined) ||

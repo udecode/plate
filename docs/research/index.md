@@ -20,6 +20,10 @@ This is the entrypoint for the compiled agent research layer.
 - [Plite view ownership](decisions/plite-view-ownership.md): five-question audit;
   pursue removing the Widget geometry carrier and public React Runtime handle;
   keep selection, native input and accessibility responsibilities distinct.
+- [Anchors and annotations](decisions/2026-09-20-annotations-ownership.md):
+  retain separate anchor, annotation index and decoration owners; make `drop`
+  terminal across native backends, remove mirrored document/anchor machinery,
+  and cut unearned lifecycle, diagnostics and generic-provider API surface.
 - [Collaboration ownership](decisions/collaboration-ownership.md): separate
   transport and presence effects from transaction acceptance; consolidate Yjs
   configuration while retaining native synchronization and cursor mapping.

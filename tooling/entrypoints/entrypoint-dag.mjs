@@ -84,6 +84,7 @@ export const publicFeatureDependencies = Object.freeze({
   comments: [],
   date: [],
   details: [],
+  upload: ['dom'],
   find: [],
   footnote: ['combobox'],
   layout: [],
@@ -101,6 +102,7 @@ export const publicFeatureReactEntrypoints = Object.freeze([
   'comments',
   'date',
   'details',
+  'upload',
   'footnote',
   'layout',
   'media',
@@ -170,7 +172,12 @@ const publicFeatureEntrypoints = Object.fromEntries([
         `features/${name}`,
         ['core', ...dependencies],
         name === 'comments' ? ['plitejs/annotations'] : [],
-        name === 'combobox' ? {} : { runtimeProof: 'plate-plugin' }
+        name === 'combobox'
+          ? {}
+          : {
+              ...(name === 'upload' ? { peerDependencies: ['files-sdk'] } : {}),
+              runtimeProof: 'plate-plugin',
+            }
       )
     ),
   ]),

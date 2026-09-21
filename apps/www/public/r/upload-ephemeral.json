@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "upload-ephemeral",
+  "title": "Ephemeral Upload",
+  "description": "Browser-local uploads for demos and disposable editors.",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "files-sdk@^2.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/upload.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/upload/ephemeral.ts",
+      "content": "import { isUrl } from 'platejs';\nimport {\n  AudioPlugin,\n  FilePlugin,\n  ImagePlugin,\n  VideoPlugin,\n} from 'platejs/media/react';\nimport type { UploadClient } from 'platejs/upload';\nimport { UploadPlugin } from 'platejs/upload/react';\n\nexport const createEphemeralUploadKit = () => {\n  const urls = new Map<string, string>();\n  const sessionUrls = new Set<string>();\n  const isSessionUrl = (url: string) => sessionUrls.has(url) || isUrl(url);\n  const client: UploadClient = {\n    upload: async (file, options) => {\n      options?.signal?.throwIfAborted();\n\n      const key = crypto.randomUUID();\n      const url = URL.createObjectURL(file);\n      urls.set(key, url);\n      sessionUrls.add(url);\n      const type = file.type || 'application/octet-stream';\n\n      options?.onProgress?.(\n        { fraction: 1, loaded: file.size, total: file.size },\n        [\n          {\n            file,\n            key,\n            loaded: file.size,\n            name: file.name,\n            progress: 1,\n            size: file.size,\n            status: 'success',\n            total: file.size,\n            type,\n          },\n        ]\n      );\n\n      return { key, lastModified: file.lastModified, size: file.size, type };\n    },\n  };\n\n  return {\n    dispose: () => {\n      for (const url of urls.values()) URL.revokeObjectURL(url);\n      urls.clear();\n      sessionUrls.clear();\n    },\n    plugins: [\n      ImagePlugin.configure({ initialState: { isUrl: isSessionUrl } }),\n      VideoPlugin.configure({ initialState: { isUrl: isSessionUrl } }),\n      AudioPlugin.configure({ initialState: { isUrl: isSessionUrl } }),\n      FilePlugin.configure({ initialState: { isUrl: isSessionUrl } }),\n      UploadPlugin.configure({\n        initialState: {\n          client,\n          getUrl: ({ key }) => {\n            const url = urls.get(key);\n            if (!url) throw new Error('Missing playground upload URL.');\n\n            return url;\n          },\n        },\n      }),\n    ],\n  };\n};\n",
+      "type": "registry:component",
+      "target": "@components/editor/upload/ephemeral.ts"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/upload"
+      }
+    ],
+    "examples": [
+      "playground-demo"
+    ]
+  },
+  "type": "registry:component"
+}

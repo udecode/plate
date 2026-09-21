@@ -119,9 +119,11 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   another implementation-role suffix. A standalone renderer uses the semantic
   feature name (`blockquote`, `media-image`); aggregates such as
   `basic-blocks` compose it. Split every live/static source pair into `foo` and
-  `foo-static`. Classic remains maintenance-only for behavior and parity, but
-  that policy never permits a stale `*-node` item or filename when the owner is
-  explicitly touched.
+  `foo-static` only when the static side owns real presentation source. A null
+  renderer or omission-only configuration belongs to the base plugin and is
+  composed directly; it does not earn a registry item. Classic remains
+  maintenance-only for behavior and parity, but that policy never permits a
+  stale `*-node` item or filename when the owner is explicitly touched.
 - shallow copied-registry feature shells that export `FooKit` while importing
   their sole renderer or family-only UI from `foo-node`, `foo-buttons`,
   `foo-toast`, or another one-consumer sibling. Merge that source into `foo`

@@ -1,14 +1,10 @@
-import { afterEach, expect, it, mock } from 'bun:test';
+import { afterEach, expect, it } from 'bun:test';
 
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 
 import { Editor } from './editor';
-
-mock.module('@uploadthing/react', () => ({
-  generateReactHelpers: () => ({ uploadFiles: mock() }),
-}));
 
 const { EditorKit } = await import('./plugins');
 

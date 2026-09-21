@@ -1,0 +1,12 @@
+---
+id: 2026-09-21-upload-provider-items
+date: 2026-09-21
+status: draft
+kind: wiring
+summary: "Choose an explicit upload provider"
+change: {"type":"source","date":"2026-09-21","commits":[]}
+release: {"status":"unresolved"}
+diagnostics: []
+---
+<!-- entry: {"id":"2026-09-21-upload-choose-an-explicit-provider-c6f0523f","kind":"wiring","migrationNotes":[]} -->
+- **`upload`**, **`upload-ephemeral`**, **`upload-r2`**, **`upload-s3`**, **`files-api`**: Install provider-neutral upload UI with an explicit browser-local, Cloudflare R2, or Amazon S3 provider; persistent providers share one gateway policy and install only their own adapter dependencies.

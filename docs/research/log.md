@@ -1,5 +1,37 @@
 # Research Log
 
+## [2026-09-21] final review | Anchors and annotations
+
+- Reaffirm the separate anchor, annotation-index and decoration jobs, plus the
+  one-model/two-mounted-view cut for the reviewer example.
+- Supersede the prior policy ambiguity: `drop` is terminal across ordinary and
+  Authored mapping; `nearest` alone owns exact undo and redo recovery.
+- Keep the headless exact-view index used by Plate Comments, but cut false
+  public authority: borrowed targets need only `resolve`, React readers do not
+  own disposal or diagnostics, and the generic provider erases its data type.
+- Active docs still teach removed Widgets and omit unique-ID, fault recovery
+  and anchor save/restore law. Existing 107 core and 64 React results and the
+  deletion probe remain source-matching; no candidate runtime was executed.
+
+See [the corrected decision](decisions/2026-09-20-annotations-ownership.md) and
+[the immutable final review](review-records/2026-09-21-annotations-final-pass.json).
+
+## [2026-09-20] review | Anchors and annotations
+
+- Reviewed all six annotations source groups and six semantic units. Retain
+  distinct persistent/scoped anchor lifetimes, per-view annotation indexing
+  and inline decoration ownership.
+- Pursue deleting the second document and mirror anchors in the raw same-document
+  reviewer example, and making React anchor ownership explicit.
+- A public-call probe confirms ordinary and Authored `drop` ranges differ after
+  deletion and undo. Reopen that native policy contract while retaining the
+  implemented Comments succession and exact-view design.
+- 107 core and 64 React cases pass. These establish the baseline; no candidate
+  runtime, browser interaction or comparative performance is accepted.
+
+See [the decision](decisions/2026-09-20-annotations-ownership.md) and
+[the immutable review](review-records/2026-09-20-annotations-contract-and-consumers.json).
+
 ## [2026-09-17] review | Registry composition and installation
 
 - Assessed ten semantic units and accounted for all 60 `ui` census groups;

@@ -11,17 +11,18 @@ import { readAuthoredView } from '../core/authored-runtime';
 import { subscribeEditorViewState } from '../core/public-state';
 import { projectRange as editorProjectRange } from '../editor/project-range';
 import {
+  type AnnotationStoreMetrics,
+  registerAnnotationStoreMetrics,
+} from '../internal/view/annotation-store-metrics';
+import {
   areMappedViewDataEqual,
   createMappedViewStoreKernel,
   createViewSourceFaultBoundary,
 } from '../internal/view/mapped-view-store';
 import { createStableIdMappedSource } from '../internal/view/stable-id-mapped-source';
-import type {
-  ViewSourceErrorSink,
-  ViewSourceStatus,
-} from '../internal/view/view-source';
+import type { ViewSourceErrorSink } from '../internal/view/view-source';
 
-export type AnnotationAnchor = Pick<Anchor<Range>, 'release' | 'resolve'>;
+export type AnnotationAnchor = Pick<Anchor<Range>, 'resolve'>;
 
 export interface Annotation<TData = unknown> {
   anchor: AnnotationAnchor;
@@ -51,35 +52,29 @@ export type AnnotationRefreshOptions = Readonly<{
   reason?: 'annotation' | 'external' | 'refresh';
 }>;
 
-export type AnnotationStoreMetrics = Readonly<{
-  annotationResolveCount: number;
-  annotationSubscriberWakeCount: number;
-  changedAnnotationCount: number;
-  fullFallbackCount: number;
-  recomputeCount: number;
-}>;
-
 export type AnnotationStoreOptions = Readonly<{
   id?: string;
   onError?: ViewSourceErrorSink;
 }>;
 
 export interface AnnotationStore<TData = unknown> {
-  destroy: () => void;
   getAnnotation: (id: string) => ResolvedAnnotation<TData> | null;
   getAnnotationsAt: (
     nodeKey: NodeKey
   ) => ReadonlyArray<ResolvedAnnotation<TData>>;
-  getMetrics: () => AnnotationStoreMetrics;
-  getSourceStatus: () => ViewSourceStatus;
   getSnapshot: () => AnnotationSnapshot<TData>;
   refresh: (options?: AnnotationRefreshOptions) => void;
-  retry: () => void;
   subscribe: (listener: () => void) => () => void;
   subscribeAnnotation: (id: string, listener: () => void) => () => void;
   subscribeChanges: (
     listener: (change: AnnotationChange) => void
   ) => () => void;
+}
+
+export interface OwnedAnnotationStore<
+  TData = unknown,
+> extends AnnotationStore<TData> {
+  destroy: () => void;
 }
 
 const EMPTY_METRICS = Object.freeze({
@@ -89,6 +84,20 @@ const EMPTY_METRICS = Object.freeze({
   fullFallbackCount: 0,
   recomputeCount: 0,
 }) as AnnotationStoreMetrics;
+
+const assertUniqueAnnotationIds = <TData>(
+  annotations: ReadonlyArray<Annotation<TData>>
+) => {
+  const ids = new Set<string>();
+
+  for (const annotation of annotations) {
+    if (ids.has(annotation.id)) {
+      throw new Error(`Annotation IDs must be unique: "${annotation.id}".`);
+    }
+
+    ids.add(annotation.id);
+  }
+};
 
 const INVALID_ANNOTATION_RANGE_ERROR =
   /Cannot project a range outside the committed snapshot|Point offset .* is outside text bounds/;
@@ -129,10 +138,12 @@ const areResolvedAnnotationsEqual = <TData>(
   RangeApi.equals(left.range, right.range) &&
   areMappedViewDataEqual(left.data, right.data);
 
-export type ActivatablePliteAnnotationStore<TData = unknown> =
-  AnnotationStore<TData> & {
-    activate: () => void;
-  };
+export type PliteAnnotationStoreOwner<TData = unknown> = {
+  activate: () => void;
+  destroy: () => void;
+  getMetrics: () => AnnotationStoreMetrics;
+  store: AnnotationStore<TData>;
+};
 
 const createPliteAnnotationStoreInternal = <TData>(
   editorInput: unknown,
@@ -141,7 +152,7 @@ const createPliteAnnotationStoreInternal = <TData>(
     | (() => ReadonlyArray<Annotation<TData>>),
   options: AnnotationStoreOptions,
   dormant: boolean
-): ActivatablePliteAnnotationStore<TData> => {
+): PliteAnnotationStoreOwner<TData> => {
   const editor = editorInput as EditorType;
   const getAnnotations = typeof source === 'function' ? source : () => source;
   const faultBoundary = createViewSourceFaultBoundary({
@@ -187,6 +198,11 @@ const createPliteAnnotationStoreInternal = <TData>(
         value: [] as ReadonlyArray<Annotation<TData>>,
       } as const)
     : faultBoundary.run('read', getAnnotations);
+
+  if (initialAnnotationsResult.ok) {
+    assertUniqueAnnotationIds(initialAnnotationsResult.value);
+  }
+
   const initialMappedResult = initialAnnotationsResult.ok
     ? faultBoundary.run('resolve', () =>
         createMappedSource(initialAnnotationsResult.value)
@@ -232,6 +248,10 @@ const createPliteAnnotationStoreInternal = <TData>(
     const annotationsResult = faultBoundary.run('read', getAnnotations);
 
     if (!annotationsResult.ok) return;
+
+    if (reason !== 'editor' || annotationsResult.value !== currentAnnotations) {
+      assertUniqueAnnotationIds(annotationsResult.value);
+    }
 
     const previousResolveCount = mappedResolveCount;
     const mappedResult = faultBoundary.run('resolve', () =>
@@ -366,6 +386,7 @@ const createPliteAnnotationStoreInternal = <TData>(
   const refresh = (refreshOptions: AnnotationRefreshOptions = {}) => {
     if (!activated || destroyed || refreshOptions.ids?.length === 0) return;
 
+    faultBoundary.activate();
     ensureFresh();
     refreshCandidates(
       refreshOptions.ids ?? null,
@@ -373,7 +394,37 @@ const createPliteAnnotationStoreInternal = <TData>(
       refreshOptions.reason ?? 'refresh'
     );
   };
-  const publicStore: ActivatablePliteAnnotationStore<TData> = {
+  const store: AnnotationStore<TData> = {
+    getAnnotation: (id) => {
+      ensureFresh();
+      return annotationsStore.getSnapshot().byId.get(id) ?? null;
+    },
+    getAnnotationsAt: (nodeKey) => {
+      ensureFresh();
+      return Object.freeze(
+        mappedSource
+          .getIdsForOutputKeys([nodeKey])
+          .flatMap((id) => annotationsStore.getSnapshot().byId.get(id) ?? [])
+      );
+    },
+    getSnapshot: () => {
+      ensureFresh();
+      return annotationsStore.getSnapshot();
+    },
+    refresh,
+    subscribe: (listener) =>
+      observe(() => annotationsStore.subscribe(listener)),
+    subscribeAnnotation: (id, listener) =>
+      observe(() => annotationsStore.subscribeKey(id, listener)),
+    subscribeChanges: (listener) =>
+      observe(() => {
+        changeListeners.add(listener);
+        return () => {
+          changeListeners.delete(listener);
+        };
+      }),
+  };
+  const owner: PliteAnnotationStoreOwner<TData> = {
     activate() {
       if (activated || destroyed) return;
 
@@ -390,45 +441,16 @@ const createPliteAnnotationStoreInternal = <TData>(
       changeListeners.clear();
       annotationsStore.destroy();
     },
-    getAnnotation: (id) => {
-      ensureFresh();
-      return annotationsStore.getSnapshot().byId.get(id) ?? null;
-    },
-    getAnnotationsAt: (nodeKey) => {
-      ensureFresh();
-      return Object.freeze(
-        mappedSource
-          .getIdsForOutputKeys([nodeKey])
-          .flatMap((id) => annotationsStore.getSnapshot().byId.get(id) ?? [])
-      );
-    },
     getMetrics: () => metrics,
-    getSourceStatus: () => faultBoundary.getStatus(),
-    getSnapshot: () => {
-      ensureFresh();
-      return annotationsStore.getSnapshot();
-    },
-    refresh,
-    retry() {
-      if (!activated || destroyed) return;
-
-      faultBoundary.activate();
-      refreshCandidates(null, true);
-    },
-    subscribe: (listener) =>
-      observe(() => annotationsStore.subscribe(listener)),
-    subscribeAnnotation: (id, listener) =>
-      observe(() => annotationsStore.subscribeKey(id, listener)),
-    subscribeChanges: (listener) =>
-      observe(() => {
-        changeListeners.add(listener);
-        return () => {
-          changeListeners.delete(listener);
-        };
-      }),
+    store,
   };
 
-  return publicStore;
+  Object.freeze(store);
+  Object.freeze(owner);
+
+  registerAnnotationStoreMetrics(store, owner.getMetrics);
+
+  return owner;
 };
 
 /** Read a lazy view index; editor observation lasts only while subscribed. */
@@ -442,10 +464,24 @@ export const createAnnotationStore = <
     | ReadonlyArray<Annotation<TData>>
     | (() => ReadonlyArray<Annotation<TData>>),
   options: AnnotationStoreOptions = {}
-): AnnotationStore<TData> =>
-  createPliteAnnotationStoreInternal(editor, source, options, false);
+): OwnedAnnotationStore<TData> => {
+  const owner = createPliteAnnotationStoreInternal(
+    editor,
+    source,
+    options,
+    false
+  );
+  const store = Object.freeze({
+    ...owner.store,
+    destroy: owner.destroy,
+  });
 
-export const createDormantPliteAnnotationStore = <TData = unknown>(
+  registerAnnotationStoreMetrics(store, owner.getMetrics);
+
+  return store;
+};
+
+export const createDormantPliteAnnotationStoreOwner = <TData = unknown>(
   editor: unknown,
   source:
     | ReadonlyArray<Annotation<TData>>

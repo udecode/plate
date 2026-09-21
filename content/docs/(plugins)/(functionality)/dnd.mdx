@@ -16,7 +16,7 @@ docs:
 
 - Drag and drop blocks for content movement and insertion within the editor.
 - Automatic scrolling when dragging blocks near viewport edges.
-- File drop support for inserting media blocks.
+- Optional file drop placement when `UploadPlugin` is installed.
 - Visual drop indicators and drag handles.
 
 </PackageInfo>
@@ -104,20 +104,26 @@ To supply a shared or custom manager, place your `DndProvider` above the editors
 
 ### Advanced configuration
 
-Add automatic scrolling and file drop handling:
+Add automatic scrolling and file drop handling. `DndKit` works on its own;
+file drops submit to Files only when that plugin is installed. See
+[Upload files](/docs/upload) for the client and media destination setup.
 
 ```tsx
 import { DndPlugin } from 'platejs/dnd/react';
-import { PlaceholderPlugin } from 'platejs/media/react';
+import { UploadPlugin } from 'platejs/upload/react';
 import { BlockDraggable } from '@/components/editor/dnd';
 
 DndPlugin.configure({
   initialState: {
     enableScroller: true,
-    onDropFiles: ({ dragItem, editor, target }) => {
-      editor
-        .plugin(PlaceholderPlugin)
-        .update.insertMedia(dragItem.files, { at: target });
+    onDropFiles: ({ dragItem, edge, editor, key }) => {
+      const files = editor.plugin(UploadPlugin);
+      if (!files.installed) return;
+
+      files.update.submit(
+        dragItem.files,
+        edge === 'before' ? { before: key } : { after: key }
+      );
     },
   },
   slots: {
@@ -127,7 +133,7 @@ DndPlugin.configure({
 ```
 
 - `enableScroller`: Enables automatic scrolling when dragging blocks near the viewport edges.
-- `onDropFiles`: Handles file drops by inserting them as media blocks at the target location.
+- `onDropFiles`: Handles file drops at the target location when Files is installed.
 
 </Steps>
 

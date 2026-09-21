@@ -32,13 +32,14 @@ donor checkout as proof after the transplant.
 - `<EditorRoot decorations>` is the sole raw Plite input for transient inline paint.
   A source returns keyed ranges with `className`, `style`, `aria-*`, or `data-*`
   attributes and may observe an external owner for targeted node-key refresh.
-  `Editable` renders the result without another callback. Annotation stores use
-  `AnnotationProvider`; the owning feature adapts resolved annotations into
-  decorations only when it needs inline paint.
-- React components own annotations through `useAnnotationStore` and
-  `AnnotationProvider`. Framework adapters with an independent lifetime
-  use `createAnnotationStore` from `plitejs/annotations`. Keep that
-  constructor out of `plitejs/react` and reject public `/internal` bridges.
+  `Editable` renders the result without another callback. The owning feature
+  adapts resolved annotations into decorations only when it needs inline paint.
+- React components create one annotation index under each exact mounted view
+  with `useAnnotationStore` and pass its typed reader explicitly. Framework
+  adapters with an independent lifetime use the owned result of
+  `createAnnotationStore` from `plitejs/annotations`. Keep that constructor out
+  of `plitejs/react`, reject generic annotation providers and implicit empty
+  readers, and reject public `/internal` bridges.
 - Plite stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
 - Do not make child-count chunking foundational again.

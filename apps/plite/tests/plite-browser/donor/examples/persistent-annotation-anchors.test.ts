@@ -64,7 +64,7 @@ test.describe('persistent annotation anchors example', () => {
     await expect(editor.page.locator('#annotation-sidebar')).toHaveText('none');
   });
 
-  test('collapses annotation projections when the anchored text is deleted', async ({
+  test('drops annotation projections when the anchored text is deleted', async ({
     page,
   }) => {
     const editor = await openExample(
@@ -94,7 +94,7 @@ test.describe('persistent annotation anchors example', () => {
     await expect(editor.page.locator('#left-text')).toHaveCount(0);
     await expect(editor.page.locator('#left-projection')).toHaveCount(0);
     await expect(editor.page.locator('#annotation-sidebar')).toHaveText(
-      'comment-anchor:Comment anchor:0:1|0:1'
+      'comment-anchor:Comment anchor:none'
     );
   });
 });

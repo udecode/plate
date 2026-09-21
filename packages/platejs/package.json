@@ -169,6 +169,16 @@
       "import": "./dist/excalidraw/react/index.js",
       "default": "./dist/excalidraw/react/index.js"
     },
+    "./upload": {
+      "types": "./dist/features/upload/index.d.ts",
+      "import": "./dist/features/upload/index.js",
+      "default": "./dist/features/upload/index.js"
+    },
+    "./upload/react": {
+      "types": "./dist/react/features/upload/index.d.ts",
+      "import": "./dist/react/features/upload/index.js",
+      "default": "./dist/react/features/upload/index.js"
+    },
     "./find": {
       "types": "./dist/features/find/index.d.ts",
       "import": "./dist/features/find/index.js",
@@ -452,6 +462,8 @@
     "lint:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs testing",
     "lint:partition:toc": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs toc",
     "lint:partition:toc-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs toc-react",
+    "lint:partition:upload": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs upload",
+    "lint:partition:upload-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs upload-react",
     "lint:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs yjs",
     "lint:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs yjs-react",
     "test": "node ../../tooling/scripts/run-entrypoint-package-task.mjs platejs test",
@@ -494,7 +506,6 @@
     "test:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs markdown",
     "test:partition:math": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs math",
     "test:partition:media": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs media",
-    "test:partition:media-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs media-react",
     "test:partition:mention": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs mention",
     "test:partition:mention-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs mention-react",
     "test:partition:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs migrations",
@@ -520,6 +531,8 @@
     "test:partition:tag": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tag",
     "test:partition:tag-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tag-react",
     "test:partition:toc": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs toc",
+    "test:partition:upload": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs upload",
+    "test:partition:upload-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs upload-react",
     "test:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs yjs",
     "test:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs yjs-react",
     "test:watch": "node ../../tooling/scripts/plate-pkg.cjs p:test:watch",
@@ -607,6 +620,8 @@
     "typecheck:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs testing",
     "typecheck:partition:toc": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs toc",
     "typecheck:partition:toc-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs toc-react",
+    "typecheck:partition:upload": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs upload",
+    "typecheck:partition:upload-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs upload-react",
     "typecheck:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs",
     "typecheck:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs-react"
   },
@@ -657,6 +672,7 @@
     "diff-match-patch-ts": "^0.6.0",
     "fast-check": "^3.23.2",
     "fastest-levenshtein": "1.0.16",
+    "files-sdk": "2.6.0",
     "flowchart.js": "^1.15.0",
     "html-to-vdom": "^0.7.0",
     "jszip": "^3.10.1",
@@ -703,6 +719,7 @@
     "color-name": "^2.0.0",
     "diff-match-patch-ts": "^0.6.0",
     "fastest-levenshtein": "1.0.16",
+    "files-sdk": "^2.6.0",
     "flowchart.js": "^1.15.0",
     "html-to-vdom": "^0.7.0",
     "jszip": "^3.10.1",
@@ -767,6 +784,9 @@
       "optional": true
     },
     "fastest-levenshtein": {
+      "optional": true
+    },
+    "files-sdk": {
       "optional": true
     },
     "flowchart.js": {

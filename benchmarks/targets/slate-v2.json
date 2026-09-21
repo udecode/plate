@@ -856,8 +856,8 @@
         "upgrade": "Trusted one-ID changes copy one entity, visit one input, and scan zero unrelated unresolved IDs at 100/1k/10k/100k. Count copied child-map entries as well as rebuilt nodes, including divergent Unicode prefixes. Wide output work stays linear, historical snapshots remain immutable, and recreated external snapshots report their necessary full comparison separately."
       },
       "correctness": {
-        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/stable-id-mapped-source.test.ts test/react/annotation-store-contract.test.tsx test/react/widget-layer-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx",
-        "policy": "Require immutable ordered snapshots, unresolved-state transitions, fault atomicity, divergent Unicode IDs, long prefixes, isolated UTF-16 surrogates, exact Annotation/Widget dependency routing, one changed-ID batch per publication, and strict work/timing budgets."
+        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/stable-id-mapped-source.test.ts test/react/annotation-store-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx",
+        "policy": "Require immutable ordered snapshots, unresolved-state transitions, fault atomicity, divergent Unicode IDs, long prefixes, isolated UTF-16 surrogates, exact annotation and decoration dependency routing, one changed-ID batch per publication, and strict work/timing budgets."
       },
       "artifacts": [
         {
@@ -866,10 +866,52 @@
         }
       ],
       "docs": {
-        "sources": ["docs/plans/2026-07-19-wordgard-plite-final-extraction.md"]
+        "sources": [
+          "docs/plans/2026-07-19-wordgard-plite-final-extraction.md",
+          "docs/plans/2026-09-21-annotations-architecture-adoption.md"
+        ]
       },
       "thresholds": {
         "promotion": "plite_mapped_source_work_pass=1; copied child entries<=32*affectedOutputs+4096; one-ID trusted p95<=16.67ms including divergent Unicode prefixes; 10k affected-output p95<=100ms; cold creation<=250ms through 10k and <=2500ms at 100k; exact source fingerprints remain stable. Recreated external snapshot timing is diagnostic, not a delta-locality claim."
+      }
+    },
+    {
+      "id": "plite-annotation-view-index",
+      "question": "Does a grouped resolver, chunked range collection, or simple immutable snapshot materially beat the current node-key scalar/persistent-page annotation index across exact-view and annotation scale?",
+      "owner": "plitejs/annotations+react",
+      "family": "react-locality",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_ANNOTATION_INDEX_BENCH_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/annotation-view-index.mjs",
+      "metrics": {
+        "primary": "plite_annotation_view_index_baseline_retained",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "At 1k, 10k, and 100k annotations in one dense node or at least 1,000 distributed nodes, interleave three warmups and nine measured samples for one, two, and four exact views. A private candidate needs at least 20% and 1 ms p95 improvement, or at least 15% and 8 MiB retained-structure improvement, with no applicable cohort over 10% slower. Baseline rows below 1 ms are timing noise."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/anchor-contract.ts ./packages/plitejs/test/anchor-mapping-contract.ts ./packages/plitejs/test/range-anchor-contract.ts ./packages/plitejs/test/history/anchor-history-contract.ts ./packages/plitejs/test/authored-anchor-contract.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/annotation-store-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx test/react/view-source-fault-boundary.test.ts",
+        "policy": "Every prototype must select the same candidate IDs, resolve the same per-view targets, dirty the same node buckets, and publish the same subscriber wake count as the current node-key scalar baseline. Production locality and historical snapshot isolation remain covered by react-stable-id-overlay-source."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-annotation-view-index-benchmark.json",
+          "required": true
+        },
+        {
+          "path": "docs/plans/artifacts/annotations-architecture-adoption/annotation-view-index-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-09-21-annotations-architecture-adoption.md",
+          "docs/research/decisions/2026-09-20-annotations-ownership.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_annotation_view_index_baseline_retained=1 and plite_annotation_view_index_candidate_promotions=0 and correctnessFailures=0 and exact source fingerprints remain stable"
       }
     },
     {

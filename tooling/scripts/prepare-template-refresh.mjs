@@ -21,6 +21,7 @@ const GENERATED_SOURCE_DIRECTORIES = [
   'src/hooks',
 ];
 const PRESERVED_LIBRARY_FILES = new Set(['src/lib/utils.ts']);
+const RETIRED_PACKAGE_NAMES = new Set(['@uploadthing/react', 'uploadthing']);
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.mjs', '.ts', '.tsx']);
 const STALE_SOURCE_PATHS = ['src/app/api/ai/command/prompt/index.ts'];
 
@@ -190,6 +191,7 @@ function isMainModule() {
 }
 
 function isRetiredPackageName(packageName) {
+  if (RETIRED_PACKAGE_NAMES.has(packageName)) return true;
   if (packageName.startsWith('@udecode/')) return true;
   if (!packageName.startsWith('@platejs/')) return false;
 

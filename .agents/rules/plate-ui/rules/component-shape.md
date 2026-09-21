@@ -5,6 +5,7 @@
 - Node context hooks
 - Preserve props passthrough
 - Inline component props
+- Plugin field contracts
 - Plugin access
 - Base/live split
 - Keep helpers local
@@ -89,6 +90,70 @@ contracts.
 
 Apply this convention during implementation and review. It does not need a
 dedicated whole-repository lint gate.
+
+---
+
+## Plugin field contracts
+
+Plate owns the types of framework-defined plugin fields. Registry code consumes
+those contracts; it does not restate them.
+
+| Plugin field | Extracted consumer type |
+| --- | --- |
+| live node `component` | `EditorElementProps<typeof FooPlugin>` or `EditorLeafProps<typeof FooPlugin>` |
+| static node `component` | the matching descriptor-derived Plite props |
+| `beforeEditable` / `afterEditable` | `EditableSiblingProps` |
+| `beforeContainer` / `afterContainer` | `ContainerSiblingProps` |
+| `wrapRoot` | `WrapRootProps` |
+| `wrapContent` | `WrapContentProps` |
+| `wrapNode` / `wrapNodeChildren` | the matching `RenderNodeWrapperProps`, `RenderNodeWrapper`, or descriptor form |
+
+Keep inline plugin builder callbacks contextually typed by `.configure()` or
+`.extend()`. Do not add a local object type, state `Pick` alias, callback return
+annotation, or cast merely to make a native field compile:
+
+```tsx
+// Correct: the package owns the extracted slot contract.
+function FeatureRoot({ children, editableRef }: WrapRootProps) {
+  useFeature(editableRef);
+
+  return children;
+}
+
+// Correct: the plugin builder infers native callback fields.
+const FeaturePlugin = BaseFeaturePlugin.configure(({ editor }) => ({
+  initialState: {
+    query: () => editor.read.isEnabled(),
+  },
+}));
+
+// Incorrect: copied UI reconstructs a framework-owned field.
+function FeatureRoot({ children, editableRef }: {
+  children: React.ReactNode;
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  return children;
+}
+
+// Incorrect: a local adapter hides failed builder inference.
+type FeaturePluginState = Pick<BaseFeaturePluginState, 'query'>;
+
+BaseFeaturePlugin.extend(
+  ({ editor }): { initialState: FeaturePluginState } => ({
+    initialState: { query: () => editor.read.isEnabled() },
+  })
+);
+```
+
+If the package does not export the exact extracted-field contract, or the
+builder cannot infer a native callback, treat that as a package API defect.
+Route the repair through `plate-plugin-creator` and `best-api`, add the smallest
+canonical contract at the field owner, and prove its public inference before
+using it in registry code. Do not leave a local shadow contract behind.
+
+Application-authored API method parameters, honest domain data, and ordinary
+component props may still carry explicit types. The forbidden annotations are
+the ones that duplicate a framework field or coerce plugin builder acceptance.
 
 ---
 

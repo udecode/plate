@@ -13,6 +13,7 @@ import {
 import { AIChatPlugin } from 'platejs/ai/react';
 import {
   definePlugin,
+  type WrapContentProps,
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
@@ -68,7 +69,7 @@ const getLeafFormat = (
   return 'text';
 };
 
-export function BlockContextMenu({ children }: { children: React.ReactNode }) {
+export function BlockContextMenu({ children }: WrapContentProps) {
   const editor = useEditor();
   const valueRef = React.useRef<Value>(null);
   const [isTouch, setIsTouch] = React.useState(false);

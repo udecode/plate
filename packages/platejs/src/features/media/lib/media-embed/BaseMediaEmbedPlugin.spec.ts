@@ -156,9 +156,7 @@ describe('BaseMediaEmbedPlugin', () => {
         ) ?? false
     ).toBe(false);
 
-    const reports: unknown[] = [];
     const unsafe = createEditor({
-      lifecycleErrorSink: (error) => reports.push(error),
       plugins: [BaseMediaEmbedPlugin],
       selection: SelectionApi.nodes([[0]]),
       initialValue: [
@@ -182,7 +180,6 @@ describe('BaseMediaEmbedPlugin', () => {
     expect(
       unsafeDocument.body.querySelector('[data-editor-fragment]')
     ).not.toBeNull();
-    expect(reports).toHaveLength(1);
   });
 
   it('stores normalized embed metadata for supported providers', () => {

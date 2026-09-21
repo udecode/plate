@@ -565,6 +565,7 @@ export const editorComponents: Registry['items'] = [
     },
     name: 'media-toolbar-button',
     registryDependencies: [
+      '@plate/upload',
       '@plate/toolbar',
       'input',
       '@plate/editor-dropdown-menu',
@@ -1217,29 +1218,6 @@ export const editorNodes: Registry['items'] = [
     ],
     name: 'media-file-static',
     registryDependencies: ['@plate/caption-static'],
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['platejs', 'sonner', 'use-file-picker@2.1.2', 'zod'],
-    description: 'A placeholder for media upload progress indication.',
-    files: [
-      {
-        path: 'components/editor/media-placeholder.tsx',
-        type: 'registry:component',
-      },
-    ],
-    meta: {
-      docs: [
-        { route: '/docs/media' },
-        {
-          route: 'https://pro.platejs.org/docs/components/media-placeholder',
-        },
-      ],
-      examples: ['media-demo', 'media-pro'],
-    },
-    name: 'media-placeholder',
-    registryDependencies: ['@plate/use-object-url'],
-    title: 'Media Placeholder',
     type: 'registry:component',
   },
   {

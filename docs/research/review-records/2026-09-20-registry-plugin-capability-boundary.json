@@ -1,0 +1,116 @@
+{
+  "id": "2026-09-20-registry-plugin-capability-boundary",
+  "scope": "compiler",
+  "kind": "review",
+  "date": "2026-09-20",
+  "question": "Should reusable registry items use name-only plugin dispatch, exact descriptors, or generated application contracts for optional cross-feature capabilities?",
+  "model": "gpt-6",
+  "method": "best-api-review/history-v3",
+  "trigger": "User requested an exhaustive registry audit and harsh assessment of whether the Dnd-to-Files name-only transaction pattern should be replaced by stronger typing or coupling.",
+  "requirements": [
+    "Keep exact descriptors and inferred plugin capabilities as the normal registry authoring path.",
+    "Keep the standalone Dnd registry item independent of FilesPlugin, the complete EditorKit graph and the optional Files SDK peer.",
+    "Let a missing Files capability make external file drop a no-op while preserving exact before/after NodeKey placement when Files is installed.",
+    "Do not manufacture static capability types from unchecked strings, global plugin-name maps, caller generics, casts, reflection or generated app contracts.",
+    "Contain unavoidable type erasure to a package-decoupled integration boundary and preserve one active transaction."
+  ],
+  "evidenceReuse": "Reuses the September 14 decision that reusable registry items must not depend on generated application types and the September 19 Files design that standalone Dnd keeps a named optional lookup. Re-inspected current registry, Plite portal types, Dnd/Files owners, current docs and the post-implementation transaction guard. The current census covers 330 production registry TypeScript files: 261 editor.plugin calls, 52 tx.plugin calls and 40 usePluginStore calls; only Dnd-to-Files uses a string capability name.",
+  "summary": "Stop replacing descriptor inference with generated editor types or spreading name-only dispatch across registry items. Exact descriptors remain the typed default. Keep the single guarded Dnd-to-Files string dispatch because importing FilesPlugin would make independently installable Dnd depend on Files and its optional SDK peer. tx.plugins.has(name) is the runtime guard for the existing tx.plugin(name) escape path. Harsh limitation: this call is runtime-safe but not capability-safe; misspelled names or methods compile through DynamicEditorTransactionPluginGroup. Keep that erasure explicit and confined. The manual Dnd documentation is stale: a caller intentionally integrating Files should import FilesPlugin and use its typed portal rather than the unsupported editor.plugin('files') example.",
+  "verdict": "stop",
+  "previous": "2026-09-14-registry-generated-contract-boundary",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-14-registry-generated-contract-boundary",
+      "question": "Should reusable registry items depend on CLI-generated plugin/editor types because they are consumer-side code?",
+      "action": "retains",
+      "reason": "Reusable items still infer ordinary capabilities from exact descriptors and must not import the application-wide generated graph. The optional Dnd boundary does not justify reversing that owner split."
+    },
+    {
+      "record": "2026-09-19-uploads-official-files-sdk",
+      "question": "Should Files SDK become the official Plate upload contract through one platejs/files plugin, mirrored SDK methods, or core?",
+      "action": "retains",
+      "reason": "Keep Files as one optional Plate feature and keep ordinary Dnd independent of its SDK and configuration."
+    }
+  ],
+  "alternatives": [
+    "Use name-only plugin dispatch across all registry items: reject. It discards descriptor inference where a component already owns or imports the feature and lets typos compile.",
+    "Import FilesPlugin directly in DndKit: reject. It makes independently installable Dnd depend on the Files feature and its optional Files SDK peer solely for one optional integration.",
+    "Use the generated EditorKit contract to type the Dnd callback: reject. The reusable item would inherit the demo application graph, and callback configuration cannot prove the runtime installation.",
+    "Move descriptor-coupled wiring to the full app EditorKit: type-safe and honest at that root, but it removes automatic DndKit-plus-FilesKit composition or requires another adapter/configuration noun. It does not beat one confined late-bound call under the explicit decoupling requirement.",
+    "Add a type-only Files contract, caller generic or global name-to-capability registry: reject. Each recreates the dependency, duplicates a drifting contract or lets a generic manufacture an installed capability.",
+    "Keep descriptor portals everywhere else and one guarded tx.plugins.has('files') plus tx.plugin('files') boundary in DndKit: selected. The runtime name is the decoupling contract; focused behavior tests cover installed and absent Files."
+  ],
+  "proofLimits": "The audit establishes source shape, public type behavior and current focused contract coverage. DynamicEditorTransactionPluginGroup proves that the string call is intentionally erased; no claim of compile-time Files method checking is made. This review did not rerun browser drag behavior, create/install E2E, generation or the full package suite. Current Dnd documentation is inconsistent with the selected transaction boundary and was inspected, not repaired.",
+  "references": [
+    "docs/research/decisions/generated-contract-boundary.md",
+    "docs/research/decisions/uploads-ownership.md",
+    "apps/www/src/registry/components/editor/dnd.tsx",
+    "apps/www/src/registry/components/editor/dnd-files.spec.tsx",
+    "apps/www/src/registry/components/editor/plugins.ts",
+    "apps/www/src/registry/components/editor/plugins.generated.ts",
+    "apps/www/src/registry/registry-features.ts",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/test/transaction-plugin-contract.ts",
+    "packages/platejs/src/dnd/react/internal/DndStorePlugin.ts",
+    "packages/platejs/src/dnd/react/useDndNode.ts",
+    "packages/platejs/src/features/files/lib/BaseFilesPlugin.ts",
+    "content/docs/(plugins)/(functionality)/dnd.mdx",
+    "content/docs/(plugins)/(functionality)/dnd.cn.mdx",
+    "docs/plans/2026-09-19-official-files-sdk-integration.md"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/schema-compiler.ts": "a8c0dfeb881d7f4166d6517a7358f66dac89f5f2bccd0fa2a804cf5ed283b226",
+      "packages/cli/src/bin.ts": "e2ea4856408f6316e11dfa686e4b2564bd11cd36fc6a43c2b71346127acb187a",
+      "apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx": "6ed71c83e8d28138aae843f83f4b2206089049b599581d70a82b2ca20973c08e",
+      "packages/cli/test/generate.test.ts": "1fe173768cb0aa0d9f731057f0f4bf1fc96ca93ca7f090dd9260dac335eea085",
+      "packages/plitejs/test/schema-compiler.test.ts": "ad479a026ad30ae503f8c62875168e3b2fd01319ad4ac2ec88344c767fe889a5",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "3401f4df73ed6d19c6e63b114ab79493f36f951a804a81ee1a2fd6f2acff3f4f",
+      "packages/cli/src/generate.ts": "df6e8c6ad27f9b4b6980c968728d3ff478576e7fe904c1d28cfae67cf49f1b49",
+      "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts": "4f461635fa3e15361c6227ce49de1fabee001c8144e50d7702ff88d031267d8d",
+      "packages/platejs/src/react/stores/plate/useEditor.ts": "c9a6cfc63e0960a6b41944e1e11c756a2db4aecb76f8e120e1f00faeb57da666",
+      "packages/platejs/type-tests/combobox-input-contracts.ts": "fcf2ad97ebb5b62b52a45dbbb3dcb81ac9408aafb0fb230a90507cc713fcb092",
+      "apps/www/src/registry/components/editor/more-toolbar-button.tsx": "f6285ed58346fcc3788ca2ccd5398fa2323d2430f50f2c11d21cbfd718a4464d",
+      "apps/www/src/registry/components/editor/link-toolbar-button.tsx": "daa612b15526774b00be64a85105e86b4f502c2d2da3ab8389cd2f29a78221a4",
+      "apps/www/src/registry/components/editor/plugins.ts": "7ac27404f746760c0b1ad2fdc3f50e69eac8faa7b683e2f4d93c7958b2e0ac75",
+      "apps/www/src/registry/components/editor/plugins.generated.ts": "ee4065279a9133f08f433cf17bb7b65ecf1b86e6e95a0c4ce0bd627f50b7e123",
+      "apps/www/src/__tests__/package-integration/core-runtime/editor-api-inference.contract.ts": "75d16bcedaeede941017fa99ff2fee134230d8cb3a59c67a59674222fcfa5f5e",
+      "docs/vision/plate.md": "ac0ba8ae8e5b7ae78f4b7323b649d938e086d736e7e127e3b0612293ac5e696f",
+      "docs/research/decisions/plate-core-ownership.md": "0499b9a66a11abd630b29a9f3818a561165831bed4a1ff971a34112d38c3ce6b",
+      "docs/research/decisions/generated-contract-boundary.md": "cee4dcf8b88dfd98c9950a8af0ea3fff104fff9ce9d18ca5cf3783a4629f73bd",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "c30b05901aa8f2ecb6c6a62b6e37d963ed743eb8538c444517cd3117ae202a17",
+      ".agents/skills/best-api-review/SKILL.md": "6efbd1969db986962f154708c20e4f359c11cfc914e3dcf8deaf205bed00fa65",
+      ".agents/rules/task/references/best-api-review.md": "c1647f7156572e48e349a35d4ff6dce7075e4c230854e3f7dc216644e7521c63",
+      "docs/research/decisions/uploads-ownership.md": "3fd5ff349c81415408b0fe4c933dea40c41c9dc02245e0eb107725282c6cfd79",
+      "apps/www/src/registry/components/editor/dnd.tsx": "a5fdb37086b1da47d78ff89dae44e06f682eefeffa118986b21320e8867d8053",
+      "apps/www/src/registry/components/editor/dnd-files.spec.tsx": "14a930df0b2786a13fac8033edaad99f73ed681c1bf427611449253dd07b1800",
+      "apps/www/src/registry/registry-features.ts": "1a4fa3785efbe34cffe39825f57cf373041296722e48ac1b723a354b397b0e48",
+      "packages/plitejs/src/interfaces/editor.ts": "9a8f93484744d0f52b00c03d70a415540c04de1d223f52c867402ed0906f49d7",
+      "packages/plitejs/src/core/public-state.ts": "1911e5d5823dac705b86fad2f3c2d8cd208a323e5dafff682dc42221dad15140",
+      "packages/plitejs/test/transaction-plugin-contract.ts": "a4ee1c813353484960bc9b2d6798f24ea300626ea4e94e14502026ac353c3f18",
+      "packages/platejs/src/dnd/react/internal/DndStorePlugin.ts": "87c3624c69bd115662df4cf41dd8fe869241033245b9017afd970b9877c10958",
+      "packages/platejs/src/dnd/react/useDndNode.ts": "dd4c453f72b788c17ee6b2eaa2ba707f941f4d60e7d9451f9d111a3d2c440cc3",
+      "packages/platejs/src/features/files/lib/BaseFilesPlugin.ts": "b49617703a3617cf957cf2ee81dd768661992e44fa5c71677bd6b083ebedff0f",
+      "content/docs/(plugins)/(functionality)/dnd.mdx": "94690354dcaaa8b897a0eb7198b6756b001885b543132a363533bf18f8c4cc30",
+      "content/docs/(plugins)/(functionality)/dnd.cn.mdx": "5677ab5781cde058bb1044964629378e45c6d16b342c5a3d307b2197191096c1",
+      "docs/plans/2026-09-19-official-files-sdk-integration.md": "f071d38934510f8fdc2facedaa99ee44152dea0399c81716f24ccd7e1039094c"
+    },
+    "directories": {
+      "packages/platejs/src/compiler": "fc7f8cba7d58cf083e9b3d315d9e5dc12c18d6b8430ff87df715e07c6527daf6",
+      "apps/www/src/registry/components/editor": "e59fc064b05a747f398e7683941013f683ddc7c7eba8cf2a85697b4600fd46d6"
+    },
+    "features": {
+      "example/plite/plate-schema-descriptors": "51a157b10d32d265c9f2a09371bac762afd5dbae6b4f82250a0d9b4b9afea7f7",
+      "export/platejs/./compiler": "b336b7b7aa535a272d90c8caa6d72da0da17f55720b450ce79c0e3b84a1bac00",
+      "platejs/compiler": "fc7f8cba7d58cf083e9b3d315d9e5dc12c18d6b8430ff87df715e07c6527daf6",
+      "plitejs/core/schema-compiler": "9950b39b7bceb1ece1ab4f7ce4579d6da3bbcd222235c64f32425ff139056ffc"
+    },
+    "upstreams": []
+  }
+}

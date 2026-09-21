@@ -116,7 +116,11 @@ const createBoundAnchor = <TValue extends AnchorValue>(
   editor: Editor,
   saved: Omit<SavedRange, 'range' | 'authored'>,
   binding:
-    | { resolve: (view?: Editor) => TValue | null; serialize?: () => unknown }
+    | {
+        deleted?: () => boolean;
+        resolve: (view?: Editor) => TValue | null;
+        serialize?: () => unknown;
+      }
     | undefined,
   kind: 'path' | 'point' | 'range'
 ): Anchor<TValue> => {
@@ -125,6 +129,17 @@ const createBoundAnchor = <TValue extends AnchorValue>(
   let releaseBinding = binding
     ? registerBoundAnchor(getEditorRuntimeOwner(editor))
     : undefined;
+  const availableViews = new WeakSet<object>();
+  const captureRuntime = getEditorRuntime(editor);
+  const initial = activeBinding?.resolve();
+  if (initial !== null && initial !== undefined) {
+    availableViews.add(captureRuntime);
+  }
+  const drop = () => {
+    activeBinding = undefined;
+    releaseBinding?.();
+    releaseBinding = undefined;
+  };
   const anchor = Object.freeze({
     association: saved.association,
     deletion: saved.deletion,
@@ -133,9 +148,7 @@ const createBoundAnchor = <TValue extends AnchorValue>(
     release() {
       const value = this.resolve();
       released = true;
-      activeBinding = undefined;
-      releaseBinding?.();
-      releaseBinding = undefined;
+      drop();
       if (kind === 'range') {
         SAVED_RANGES.delete(anchor as Anchor<Range>);
         RELEASED_RANGES.add(anchor as Anchor<Range>);
@@ -145,7 +158,24 @@ const createBoundAnchor = <TValue extends AnchorValue>(
     resolve(view?: Editor) {
       if (released) return null;
       assertAnchorView(editor, saved.root, view);
-      return activeBinding?.resolve(view) ?? null;
+      const bindingValue = activeBinding;
+      if (!bindingValue) return null;
+      const runtime = view ? getEditorRuntime(view) : captureRuntime;
+      const value = bindingValue.resolve(view);
+      if (value !== null) {
+        availableViews.add(runtime);
+        return value;
+      }
+      if (
+        saved.deletion === 'drop' &&
+        availableViews.has(runtime) &&
+        bindingValue.deleted?.()
+      ) {
+        drop();
+      } else {
+        availableViews.delete(runtime);
+      }
+      return null;
     },
   }) as Anchor<TValue>;
   if (kind === 'range') {
@@ -373,6 +403,34 @@ const mapAnchorPosition = (
     : change.mapPosition(position, mapOptions);
 };
 
+const changeCoversSourceRange = (
+  change: DocumentChange,
+  root: string,
+  from: number,
+  to: number
+) => {
+  if (from === to) return false;
+
+  const changed: Array<readonly [number, number]> = [];
+  getInternalDocumentRootChange(change, root)?.iterChangedRanges(
+    (changedFrom, changedTo) => {
+      if (changedTo > from && changedFrom < to) {
+        changed.push([changedFrom, changedTo]);
+      }
+    }
+  );
+  changed.sort((left, right) => left[0] - right[0]);
+
+  let coveredTo = from;
+  for (const [changedFrom, changedTo] of changed) {
+    if (changedFrom > coveredTo) return false;
+    coveredTo = Math.max(coveredTo, changedTo);
+    if (coveredTo >= to) return true;
+  }
+
+  return false;
+};
+
 const mapTextOffset = (
   source: JsonNode & Text,
   current: JsonNode & Text,
@@ -499,7 +557,10 @@ export function createAnchor<TValue extends AnchorValue>(
         viewEditor,
         { association, deletion: options.deletion, root },
         pointValue
-          ? { resolve: (view) => binding.resolve(view)?.anchor ?? null }
+          ? {
+              deleted: binding.deleted,
+              resolve: (view) => binding.resolve(view)?.anchor ?? null,
+            }
           : binding,
         pointValue ? 'point' : 'range'
       ) as Anchor<TValue>;
@@ -1409,6 +1470,42 @@ export function createAnchor<TValue extends AnchorValue>(
 
       current = nextPath ? [...nextPath] : null;
     } else {
+      const sourceDocument = getSourceDocument();
+      const targetWasExpanded =
+        kind === 'range' &&
+        !PointApi.equals(
+          pointStates[0].point,
+          getDefined(pointStates[1]).point
+        );
+      const sourceFrom = sourceDocument.positionAt(pointStates[0].point);
+      const sourceTo =
+        kind === 'range'
+          ? sourceDocument.positionAt(getDefined(pointStates[1]).point)
+          : sourceFrom;
+      const sourceRangeWasReplaced =
+        targetWasExpanded &&
+        options.deletion === 'drop' &&
+        changeCoversSourceRange(
+          change,
+          root,
+          Math.min(sourceFrom, sourceTo),
+          Math.max(sourceFrom, sourceTo)
+        );
+      const sourceNodesKeepIdentity = pointStates.every((state) => {
+        const runtimePath = state.nodeKey
+          ? pathOfNodeKey(runtimeEditor, root, state.nodeKey)
+          : null;
+        if (!runtimePath) return false;
+
+        try {
+          return (
+            sourceDocument.node(state.point.path) ===
+            nextDocument().node(runtimePath)
+          );
+        } catch {
+          return false;
+        }
+      });
       const associations =
         kind === 'point'
           ? ([association === 'backward' ? -1 : 1] as const)
@@ -1510,8 +1607,9 @@ export function createAnchor<TValue extends AnchorValue>(
         );
       });
 
-      current =
-        kind === 'point'
+      current = sourceRangeWasReplaced && !sourceNodesKeepIdentity
+        ? null
+        : kind === 'point'
           ? points[0]
           : points[0] && points[1]
             ? { anchor: points[0], focus: points[1] }

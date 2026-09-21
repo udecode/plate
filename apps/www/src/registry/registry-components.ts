@@ -77,17 +77,56 @@ const registryApi: Registry['items'] = [
     type: 'registry:file',
   },
   {
-    dependencies: ['uploadthing@7.7.4'],
+    dependencies: ['files-sdk@2.6.0'],
+    files: [{ path: 'lib/files.ts', type: 'registry:lib' }],
+    name: 'files-api',
+    registryDependencies: [],
+    type: 'registry:lib',
+    title: 'Files Gateway',
+  },
+  {
+    dependencies: [
+      '@aws-sdk/client-s3',
+      '@aws-sdk/lib-storage',
+      '@aws-sdk/s3-presigned-post',
+      '@aws-sdk/s3-request-presigner',
+      'files-sdk@2.6.0',
+    ],
+    description: 'Files SDK upload gateway backed by Cloudflare R2.',
     files: [
       {
-        path: 'app/api/uploadthing/route.ts',
-        target: 'app/api/uploadthing/route.ts',
+        path: 'app/api/files/route.ts',
+        target: 'app/api/files/route.ts',
         type: 'registry:file',
       },
     ],
-    name: 'media-uploadthing-api',
-    registryDependencies: ['@plate/uploadthing'],
+    name: 'upload-r2',
+    registryDependencies: ['@plate/files-api', '@plate/upload'],
     type: 'registry:file',
+    title: 'Upload with R2',
+    meta: { docs: [{ route: '/docs/upload' }] },
+  },
+  {
+    dependencies: [
+      '@aws-sdk/client-s3',
+      '@aws-sdk/lib-storage',
+      '@aws-sdk/s3-presigned-post',
+      '@aws-sdk/s3-request-presigner',
+      'files-sdk@2.6.0',
+    ],
+    description: 'Files SDK upload gateway backed by Amazon S3.',
+    files: [
+      {
+        path: 'app/api/files/s3-route.ts',
+        target: 'app/api/files/route.ts',
+        type: 'registry:file',
+      },
+    ],
+    name: 'upload-s3',
+    registryDependencies: ['@plate/files-api', '@plate/upload'],
+    type: 'registry:file',
+    title: 'Upload with S3',
+    meta: { docs: [{ route: '/docs/upload' }] },
   },
 ];
 

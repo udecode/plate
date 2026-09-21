@@ -380,7 +380,8 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           if (
             !tx.selection() &&
             options.at === undefined &&
-            options.after === undefined
+            options.after === undefined &&
+            options.before === undefined
           ) {
             return;
           }

@@ -16,7 +16,7 @@ import {
   useDropLine,
 } from 'platejs/dnd/react';
 import { BaseColumnItemPlugin } from 'platejs/layout';
-import { PlaceholderPlugin } from 'platejs/media/react';
+import { UploadPlugin } from 'platejs/upload/react';
 import {
   ListPlugin,
   type Editor,
@@ -757,10 +757,13 @@ export const DndKit = [
   DndPlugin.configure({
     initialState: {
       enableScroller: true,
-      onDropFiles: ({ dragItem, editor, target }) => {
+      onDropFiles: ({ dragItem, edge, editor, key }) => {
         editor
-          .plugin(PlaceholderPlugin)
-          .update.insertMedia(dragItem.files, { at: target });
+          .plugin(UploadPlugin)
+          .update.submit(
+            dragItem.files,
+            edge === 'before' ? { before: key } : { after: key }
+          );
       },
     },
     slots: {

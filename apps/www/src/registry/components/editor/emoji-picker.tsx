@@ -270,9 +270,12 @@ const emojiPickerReducer = (
         isSearching: true,
       };
     }
-  }
+    default: {
+      const unsupportedType: never = type;
 
-  return current;
+      throw new Error(`Unsupported emoji picker action: ${unsupportedType}`);
+    }
+  }
 };
 
 type MutableRefs = React.RefObject<{

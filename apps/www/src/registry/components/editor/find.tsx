@@ -6,6 +6,7 @@ import { isHotkey } from 'platejs/dom';
 import { BaseFindPlugin } from 'platejs/find';
 import {
   type Editor,
+  type WrapRootProps,
   toReactPlugin,
   useEditor,
   usePluginStore,
@@ -49,13 +50,7 @@ const getSelectedText = (editor: Editor) => {
     .join('\n');
 };
 
-function FindRoot({
-  children,
-  editableRef,
-}: {
-  children: React.ReactNode;
-  editableRef: React.RefObject<HTMLDivElement | null>;
-}) {
+function FindRoot({ children, editableRef }: WrapRootProps) {
   const editor = useEditor();
   const [state, setState] = React.useState<{
     draft: { query: string } | null;

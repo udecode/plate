@@ -57,7 +57,8 @@ shortcuts, and mark leaf components.
 | --- | --- |
 | Paragraphs, headings, blockquotes, marks. | `basic-nodes` |
 | Tables with table UI components. | `table` |
-| Images, video, audio, files, embeds, captions. | `media` |
+| Completed images, video, audio, files, embeds, captions. | `media` |
+| Local file uploads and draft slots. | One `upload-*` provider with `media` |
 | Comments and discussions. | `comment` plus `discussion` |
 | AI menu, AI nodes, cursor overlay, and Markdown support. | `ai` |
 | Full editable editor stack. | `editor-plugins` |
@@ -119,8 +120,12 @@ names and install directly into `components/editor`.
 | --- | --- |
 | `basic-nodes` | `BasicNodesKit`, `BasicBlocksKit`, and `BasicMarksKit` dependencies. |
 | `table` | `TableKit` and table UI components. |
-| `media` | `MediaKit` without a media upload API route. |
-| `media-uploadthing` | `media` plus the UploadThing API route. |
+| `media` | `MediaKit` and completed-media UI. |
+| `upload` | `UploadKit` and the draft upload UI; compose it with `MediaKit`. |
+| `upload-ephemeral` | Browser-local upload configuration for demos and disposable editors. |
+| `upload-r2` | `UploadKit`, the shared Files gateway, and a Cloudflare R2 route. |
+| `upload-s3` | `UploadKit`, the shared Files gateway, and an Amazon S3 route. |
+| `files-api` | Provider-neutral Files SDK gateway policy for custom provider recipes. |
 | `editor-plugins` | The full editable editor kit. |
 | `editor-plugins-static` | The full static/base kit. |
 
@@ -137,3 +142,4 @@ customized plugin module and run `plate generate --check <entry>` in CI. See
 | Configure editor creation. | [Editor Configuration](/docs/editor) |
 | Compose plugin APIs and options. | [Plugin Methods](/docs/plugin-methods) |
 | Render without an editable React editor. | [Static Rendering](/docs/static) |
+| Upload local files. | [Upload Files](/docs/upload) |

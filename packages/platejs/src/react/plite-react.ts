@@ -5,8 +5,8 @@ export type {
   AnnotationRefreshOptions,
   AnnotationSnapshot,
   AnnotationStore,
-  AnnotationStoreMetrics,
   AnnotationStoreOptions,
+  OwnedAnnotationStore,
   ResolvedAnnotation,
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,
@@ -77,7 +77,6 @@ export type {
 } from 'plitejs/react';
 
 export {
-  AnnotationProvider,
   useEditorComposing,
   useEditorEditableElement,
   useEditorFocused,

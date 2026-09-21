@@ -1,0 +1,143 @@
+---
+title: Upload Files
+description: Upload local files with UploadPlugin and the Files SDK, then store durable media URLs.
+---
+
+`UploadPlugin` owns draft slots and upload tasks. The Files SDK transfers bytes;
+your application owns the gateway, document access, and durable download URLs.
+Add the [media plugins](/docs/media) for the completed image, video, audio, and
+file nodes.
+
+## Installation
+
+Install the copied media UI, then choose one upload provider. Each provider
+installs the shared `upload` UI:
+
+<ComponentInstallation name="media" inline />
+
+### Browser-local
+
+<ComponentInstallation name="upload-ephemeral" inline />
+
+Use this for demos and disposable editors. Files become object URLs in the
+current browser tab and disappear on refresh, unmount, or sharing.
+
+### Cloudflare R2
+
+<ComponentInstallation name="upload-r2" inline />
+
+### Amazon S3
+
+<ComponentInstallation name="upload-s3" inline />
+
+For manual setup, install the package and SDK:
+
+```bash
+npm install platejs files-sdk
+```
+
+The R2 recipe sets up `/api/files`. Set `FILES_R2_BUCKET`,
+`FILES_R2_ACCOUNT_ID`, `FILES_R2_ACCESS_KEY_ID`,
+`FILES_R2_SECRET_ACCESS_KEY`, a stable `FILES_API_SECRET` of at least 32
+characters, and a positive `FILES_MAX_UPLOAD_SIZE`. Implement
+`resolveFilesAccess` in the copied `lib/files.ts` for your session and document
+ACL before accepting requests. It checks read and write access, including on
+the proxy upload `PUT`. The route's `documentId` is an application document ID,
+not an authorization token. Use 1–128 letters, digits, underscores, or hyphens
+for that ID. Return a stable tenant/document namespace shared by authorized
+collaborators.
+
+The S3 recipe uses `FILES_S3_BUCKET` and `FILES_S3_REGION`. Supply credentials
+through the AWS credential chain. Both persistent providers reuse the same
+copied gateway policy in `lib/files.ts`; their route files only construct the
+selected adapter. Install `files-api` directly when building another provider
+recipe.
+
+## Configure the editor
+
+Create one client and plugin configuration for the editor's document lifetime.
+`getUrl` is synchronous: it maps the SDK's `UploadOutcome` key to an absolute,
+durable address. Keep the origin in application configuration so this setup
+also works during server rendering.
+
+```tsx
+import { createFilesClient } from 'files-sdk/client';
+import { UploadPlugin } from 'platejs/upload/react';
+import { createEditor } from 'platejs/react';
+
+import { UploadElement } from '@/components/editor/upload';
+import { MediaKit } from '@/components/editor/media';
+
+export function createDocumentEditor(documentId: string, appOrigin: string) {
+  const endpoint = `/api/files?documentId=${encodeURIComponent(documentId)}`;
+  const client = createFilesClient({ endpoint });
+
+  return createEditor({
+    plugins: [
+      ...MediaKit,
+      UploadPlugin.configure({
+        component: UploadElement,
+        initialState: {
+          client,
+          getUrl: ({ key }) => {
+            const url = new URL(endpoint, appOrigin);
+            url.searchParams.set('op', 'download');
+            url.searchParams.set('key', key);
+            return url.href;
+          },
+          onError: (failure) => console.error(failure),
+        },
+      }),
+    ],
+  });
+}
+```
+
+The gateway authorizes each download, then redirects to a short-lived storage
+URL or proxies trusted inline media.
+Persist the gateway URL returned by `getUrl`, rather than a signed storage URL.
+Use same-origin cookies for browser media requests and proxy uploads; those
+requests do not inherit `FilesClient.headers`. To display private media inline,
+configure the copied gateway's `trustedInlineType` from validated bytes or a
+trusted ingestion record. Without that policy, files download as attachments.
+
+If you use the copied `UploadKit`, edit its endpoint and URL resolver to include
+the active `documentId`, as in the configuration above.
+
+## Submit and observe files
+
+```tsx
+editor.plugin(UploadPlugin).update.submit(files, { after: blockKey });
+editor.plugin(UploadPlugin).update.submit(files, { slot: draftKey });
+editor.plugin(UploadPlugin).api.cancel(draftKey);
+```
+
+`submit` accepts `File[]` or `FileList`. It validates the whole batch before
+changing the document and starts one SDK upload per file after commit. A slot
+option fills an existing draft; block placement options insert new drafts.
+Cancellation leaves an idle draft. A failed live task keeps its `File` for
+explicit retry. Reloaded drafts need a new file selection.
+
+The copied `UploadElement` subscribes to the task keyed by the draft
+element. A custom renderer can read
+`editor.plugin(UploadPlugin).store.get('task', key)` and subscribe through its
+`getSnapshot` and `subscribe` methods. Its progress is the SDK's
+`AggregateProgress` with `loaded`, `total`, and `fraction` (`0` to `1`).
+Unmounting a renderer does not restart an upload.
+
+## API reference
+
+| Surface | Purpose |
+| --- | --- |
+| `BaseUploadPlugin` from `platejs/upload` | Headless draft schema, admission, task, and completion owner. |
+| `UploadPlugin` from `platejs/upload/react` | React adapter with an optional native file drop handler. |
+| `UploadPlugin.configure({ initialState })` | Set `client: UploadClient`, synchronous `getUrl: (file: UploadOutcome) => string`, `rules`, `maxFiles`, and `onError`. |
+| `editor.plugin(UploadPlugin).update.submit(files, options)` | Insert a validated batch or fill a draft slot. Slot and block placement options are mutually exclusive. |
+| `editor.plugin(UploadPlugin).api.cancel(key)` | Abort the live task for one draft. |
+
+The draft has persisted type `upload` and a required `kind`, while its
+`File`, progress, and failure stay in editor state. Completed media stores a
+URL and ordinary media fields. JSON preserves unresolved drafts; external HTML,
+Markdown, and static rendering omit them. A static editor that loads drafts
+must include `BaseUploadPlugin`; completed media alone needs only the media
+plugins.

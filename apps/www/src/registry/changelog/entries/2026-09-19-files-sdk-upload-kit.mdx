@@ -1,0 +1,14 @@
+---
+id: 2026-09-19-files-sdk-upload-kit
+date: 2026-09-19
+status: draft
+kind: wiring
+summary: "Install Files SDK uploads with a complete upload kit and private gateway"
+change: {"type":"source","date":"2026-09-19","commits":[]}
+release: {"status":"unresolved"}
+diagnostics: []
+---
+<!-- entry: {"id":"2026-09-19-files-install-sdk-uploads-separate-c6ee24d8","kind":"wiring","migrationNotes":[]} -->
+- **`upload`**, **`files-api`**, **`editor-plugins`**: Install the Files SDK client and private document-scoped gateway together through the upload kit; the route requires application access policy and storage credentials.
+<!-- entry: {"id":"2026-09-19-media-render-completed-nodes-93f362a1","kind":"wiring","migrationNotes":[]} -->
+- **`media`**, **`editor-plugins-static`**: Render completed media separately while the upload schema owner omits unresolved drafts from static output.

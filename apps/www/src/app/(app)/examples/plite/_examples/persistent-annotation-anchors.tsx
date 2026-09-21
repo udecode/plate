@@ -1,13 +1,14 @@
 import type { Anchor, createEditor, Path, Point, Range, Value } from 'plitejs';
+import type { AnnotationStore } from 'plitejs/annotations';
 import {
   EditorRoot,
-  AnnotationProvider,
-  useEditorSelector,
   useAnnotationStore,
   useAnnotations,
   useEditor,
+  useEditorContext,
+  useEditorSelector,
 } from 'plitejs/react';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -29,6 +30,12 @@ type BlockRowDescriptor = {
   childTexts: string[];
   path: Path;
   text: string;
+};
+
+type AnnotationData = {
+  kind: string;
+  label: string;
+  tone?: string;
 };
 
 const getBlockRows = (
@@ -160,15 +167,13 @@ const toBlockOffset = (row: BlockRowDescriptor, point: Point) => {
 const ProjectionRow = ({
   row,
   slot,
+  store,
 }: {
   row: BlockRowDescriptor;
   slot: 'left' | 'right';
+  store: AnnotationStore<AnnotationData>;
 }) => {
-  const snapshot = useAnnotations<{
-    kind: string;
-    label: string;
-    tone?: string;
-  }>();
+  const snapshot = useAnnotations(store);
   const projectionText =
     snapshot.allIds.length === 0
       ? 'none'
@@ -252,12 +257,12 @@ const formatAnnotationRange = (
       )}`
     : 'none';
 
-const AnnotationSidebar = () => {
-  const snapshot = useAnnotations<{
-    kind: string;
-    label: string;
-    tone?: string;
-  }>();
+const AnnotationSidebar = ({
+  store,
+}: {
+  store: AnnotationStore<AnnotationData>;
+}) => {
+  const snapshot = useAnnotations(store);
   const rows = useEditorSelector((editor) =>
     getBlockRows(editor.read.children())
   );
@@ -290,11 +295,15 @@ const AnnotationSidebar = () => {
 const AnchoredProjectionContent = ({
   annotation,
   editor,
-  setAnnotation,
+  onAddAnnotation,
+  onClearAnnotation,
+  store,
 }: {
   annotation: Anchor<Range> | null;
   editor: ReturnType<typeof createEditor>;
-  setAnnotation: React.Dispatch<React.SetStateAction<Anchor<Range> | null>>;
+  onAddAnnotation: (annotation: Anchor<Range>) => void;
+  onClearAnnotation: () => void;
+  store: AnnotationStore<AnnotationData>;
 }) => {
   const alphaRow = useEditorSelector(
     (innerEditor) =>
@@ -343,16 +352,14 @@ const AnchoredProjectionContent = ({
               text.includes('alpha')
             );
 
-            setAnnotation(
-              (current) =>
-                current ??
-                editor.anchor(
-                  {
-                    anchor: { path, offset: 1 },
-                    focus: { path, offset: 4 },
-                  },
-                  { association: 'inward', deletion: 'drop' }
-                )
+            onAddAnnotation(
+              editor.anchor(
+                {
+                  anchor: { path, offset: 1 },
+                  focus: { path, offset: 4 },
+                },
+                { association: 'inward', deletion: 'drop' }
+              )
             );
           }}
           type="button"
@@ -420,12 +427,7 @@ const AnchoredProjectionContent = ({
         <Button
           disabled={!annotation}
           id="clear-anchor"
-          onClick={() => {
-            setAnnotation((current) => {
-              current?.release();
-              return null;
-            });
-          }}
+          onClick={onClearAnnotation}
           type="button"
           variant="outline"
         >
@@ -434,16 +436,27 @@ const AnchoredProjectionContent = ({
       </div>
 
       <Outline />
-      {alphaRow ? <ProjectionRow row={alphaRow} slot="left" /> : null}
-      {betaRow ? <ProjectionRow row={betaRow} slot="right" /> : null}
-      <AnnotationSidebar />
+      {alphaRow ? (
+        <ProjectionRow row={alphaRow} slot="left" store={store} />
+      ) : null}
+      {betaRow ? (
+        <ProjectionRow row={betaRow} slot="right" store={store} />
+      ) : null}
+      <AnnotationSidebar store={store} />
     </div>
   );
 };
 
-const PersistentAnnotationAnchorsExample = () => {
-  const editor = useEditor({ initialValue: createChildren() });
-  const [annotation, setAnnotation] = useState<Anchor<Range> | null>(null);
+const MountedPersistentAnnotationAnchors = ({
+  annotation,
+  onAddAnnotation,
+  onClearAnnotation,
+}: {
+  annotation: Anchor<Range> | null;
+  onAddAnnotation: (annotation: Anchor<Range>) => void;
+  onClearAnnotation: () => void;
+}) => {
+  const editor = useEditorContext();
   const annotations = useMemo(
     () =>
       annotation
@@ -462,15 +475,54 @@ const PersistentAnnotationAnchorsExample = () => {
     [annotation]
   );
   const annotationStore = useAnnotationStore(editor, annotations);
+
+  return (
+    <AnchoredProjectionContent
+      annotation={annotation}
+      editor={editor}
+      onAddAnnotation={onAddAnnotation}
+      onClearAnnotation={onClearAnnotation}
+      store={annotationStore}
+    />
+  );
+};
+
+const PersistentAnnotationAnchorsExample = () => {
+  const editor = useEditor({ initialValue: createChildren() });
+  const [annotation, setAnnotation] = useState<Anchor<Range> | null>(null);
+  const annotationRef = useRef<Anchor<Range> | null>(null);
+  const addAnnotation = useCallback((next: Anchor<Range>) => {
+    if (annotationRef.current) {
+      next.release();
+      return;
+    }
+
+    annotationRef.current = next;
+    setAnnotation(next);
+  }, []);
+  const clearAnnotation = useCallback(() => {
+    const { current } = annotationRef;
+
+    annotationRef.current = null;
+    current?.release();
+    setAnnotation(null);
+  }, []);
+
+  useEffect(
+    () => () => {
+      annotationRef.current?.release();
+      annotationRef.current = null;
+    },
+    []
+  );
+
   return (
     <EditorRoot editor={editor}>
-      <AnnotationProvider store={annotationStore}>
-        <AnchoredProjectionContent
-          annotation={annotation}
-          editor={editor}
-          setAnnotation={setAnnotation}
-        />
-      </AnnotationProvider>
+      <MountedPersistentAnnotationAnchors
+        annotation={annotation}
+        onAddAnnotation={addAnnotation}
+        onClearAnnotation={clearAnnotation}
+      />
     </EditorRoot>
   );
 };

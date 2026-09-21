@@ -1332,6 +1332,7 @@ export const createPlateRuntimePlugins = (
                 if (
                   !context.tx.selection() &&
                   insertOptions.after === undefined &&
+                  insertOptions.before === undefined &&
                   !('at' in insertOptions && insertOptions.at !== undefined)
                 ) {
                   return;

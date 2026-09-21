@@ -10,8 +10,8 @@ export type {
   AnnotationRefreshOptions,
   AnnotationSnapshot,
   AnnotationStore,
-  AnnotationStoreMetrics,
   AnnotationStoreOptions,
+  OwnedAnnotationStore,
   ResolvedAnnotation,
 } from '../annotations';
 export type {
@@ -119,11 +119,7 @@ export {
   type UseAnnotationStoreOptions,
   useAnnotationStore,
 } from './hooks/use-plite-annotation-store';
-export {
-  AnnotationProvider,
-  useAnnotation,
-  useAnnotations,
-} from './hooks/use-plite-annotations';
+export { useAnnotation, useAnnotations } from './hooks/use-plite-annotations';
 export { useChildRoot } from './hooks/use-plite-child-root';
 export {
   type ContentRootController,

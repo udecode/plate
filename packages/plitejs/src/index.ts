@@ -62,6 +62,7 @@ export {
   type EditorSchemaContractRoot,
 } from './core/schema-compiler';
 export {
+  documentReplacement,
   repairEditorValue,
   runTrustedUpdate,
   setEditorMaxLength,

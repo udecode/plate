@@ -160,7 +160,6 @@ const expectedPliteReactRuntimeRootExports = [
   'Editable',
   'EditorReadOnlyProvider',
   'EditorRoot',
-  'AnnotationProvider',
   'EditorElement',
   'EditorLeaf',
   'EditorPlaceholder',

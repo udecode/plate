@@ -8,21 +8,55 @@ Question: Who owns an upload after a placeholder moves, disappears, is undone or
 
 ## Current decision
 
-[2026-09-19-uploads-node-model-correction](../review-records/2026-09-19-uploads-node-model-correction.json) — **pursue**. Pursue the upload protocol redesign, but supersede the recommendation to delete the dedicated draft asset node. Reserved position, restored unbound content and retry are document jobs distinct from completed media. Per-media pending nodes would make required media URLs optional across four schemas, spread draft rendering and codec branches, and still need one shared upload owner. Keep one editor-owned upload capability, one validated batch path, root-aware NodeKey authority, application transport, view-owned preview URLs and Plite history. Nine units reviewed, none excluded or without a verdict; the exact draft-slot schema remains Task design.
+[2026-09-21-uploads-provider-items](../review-records/2026-09-21-uploads-provider-items.json) — **pursue**. Pursue a provider-neutral upload item plus opt-in upload-ephemeral, upload-r2 and upload-s3 items. Keep gateway policy in one shared files-api support item, delete the runtime FILES_STORAGE_PROVIDER branch, and let each persistent provider contribute only a thin route adapter and its own dependencies.
 
-Compiled decision: [uploads-ownership.md](../decisions/uploads-ownership.md). Source observation: matching. Source matching is not behavior proof.
+Compiled decision: [uploads-ownership.md](../decisions/uploads-ownership.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **unbound**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
+Execution: **completed**. Proof: **verified**. This follow-up changes documentation only; runtime proof remains in the provider-item implementation record.
 
-Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
+Outcome: [2026-09-21-uploads-provider-items-doc-contract-closure](../review-records/2026-09-21-uploads-provider-items-doc-contract-closure.json). Governing reviews: [2026-09-21-uploads-provider-items](../review-records/2026-09-21-uploads-provider-items.json). Work kind: implementation. Reconciled with current review: yes.
+
+Imported scope flags (unbound historical claims): adoption adopted, proof verified. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [files.ts](../../../apps/www/src/registry/lib/files.ts), [route.ts](../../../apps/www/src/registry/app/api/files/route.ts), [registry-features.ts](../../../apps/www/src/registry/registry-features.ts), [plate.md](../../vision/plate.md), [upload.mdx](../../../content/docs/(guides)/upload.mdx). Changed directories: none identified. Changed source groups: application/files, registry/lib/files, registry/lib/files.typecheck-run, ui/upload.
 
 - **unbound-plan**: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
+- **completed-plan-without-current-outcome**: [2026-09-19-official-files-sdk-implementation.md](../../plans/2026-09-19-official-files-sdk-implementation.md).
+
+- **completed-plan-without-current-outcome**: [2026-09-19-official-files-sdk-integration.md](../../plans/2026-09-19-official-files-sdk-integration.md).
+
+- **completed-plan-without-current-outcome**: [2026-09-19-upload-draft-asset-protocol.md](../../plans/2026-09-19-upload-draft-asset-protocol.md).
+
 - **unbound-plan**: [4803-update-upload-history.md](../../plans/4803-update-upload-history.md).
+
+- **stale-execution-proof**: [2026-09-19-uploads-files-sdk-design](../review-records/2026-09-19-uploads-files-sdk-design.json).
+
+- **stale-execution-proof**: [2026-09-19-uploads-files-sdk-final-audit](../review-records/2026-09-19-uploads-files-sdk-final-audit.json).
+
+- **stale-execution-proof**: [2026-09-19-uploads-files-sdk-testing-method](../review-records/2026-09-19-uploads-files-sdk-testing-method.json).
+
+- **stale-execution-proof**: [2026-09-20-uploads-files-sdk-implementation](../review-records/2026-09-20-uploads-files-sdk-implementation.json).
+
+- **stale-execution-proof**: [2026-09-20-uploads-files-ui-colocation](../review-records/2026-09-20-uploads-files-ui-colocation.json).
+
+- **stale-execution-proof**: [2026-09-20-uploads-upload-api-hard-cut](../review-records/2026-09-20-uploads-upload-api-hard-cut.json).
+
+- **stale-execution-proof**: [2026-09-20-uploads-gateway-test-import-fix](../review-records/2026-09-20-uploads-gateway-test-import-fix.json).
+
+- **stale-execution-proof**: [2026-09-20-uploads-registry-dependency-implementation](../review-records/2026-09-20-uploads-registry-dependency-implementation.json).
+
+- **stale-execution-proof**: [2026-09-20-uploads-static-owner-cut-implementation](../review-records/2026-09-20-uploads-static-owner-cut-implementation.json).
+
+- **stale-execution-proof**: [2026-09-20-uploads-files-server-colocation-implementation](../review-records/2026-09-20-uploads-files-server-colocation-implementation.json).
+
+- **stale-execution-proof**: [2026-09-20-uploads-r2-live-verification](../review-records/2026-09-20-uploads-r2-live-verification.json).
+
+- **stale-execution-proof**: [2026-09-20-uploads-playground-ephemeral-implementation](../review-records/2026-09-20-uploads-playground-ephemeral-implementation.json).
+
+- **stale-execution-proof**: [2026-09-21-uploads-provider-items-implementation](../review-records/2026-09-21-uploads-provider-items-implementation.json).
 
 ## Plans and execution
 
@@ -31,13 +65,24 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
 | [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md) | completed | implementation | unbound |
+| [2026-09-19-official-files-sdk-implementation.md](../../plans/2026-09-19-official-files-sdk-implementation.md) | completed | implementation | [2026-09-19-uploads-official-files-sdk](../review-records/2026-09-19-uploads-official-files-sdk.json) |
+| [2026-09-19-official-files-sdk-integration.md](../../plans/2026-09-19-official-files-sdk-integration.md) | completed | design | [2026-09-19-uploads-official-files-sdk](../review-records/2026-09-19-uploads-official-files-sdk.json) |
+| [2026-09-19-upload-draft-asset-protocol.md](../../plans/2026-09-19-upload-draft-asset-protocol.md) | completed | implementation | [2026-09-19-uploads-node-model-correction](../review-records/2026-09-19-uploads-node-model-correction.json) |
+| [2026-09-20-files-server-colocation.md](../../plans/2026-09-20-files-server-colocation.md) | completed | implementation | [2026-09-20-uploads-files-server-colocation](../review-records/2026-09-20-uploads-files-server-colocation.json) |
+| [2026-09-20-playground-ephemeral-uploads.md](../../plans/2026-09-20-playground-ephemeral-uploads.md) | completed | implementation | [2026-09-19-uploads-official-files-sdk](../review-records/2026-09-19-uploads-official-files-sdk.json) |
+| [2026-09-20-r2-live-verification.md](../../plans/2026-09-20-r2-live-verification.md) | completed | verification | [2026-09-20-uploads-files-server-colocation](../review-records/2026-09-20-uploads-files-server-colocation.json) |
+| [2026-09-20-upload-api-hard-cut.md](../../plans/2026-09-20-upload-api-hard-cut.md) | completed | implementation | [2026-09-19-uploads-official-files-sdk](../review-records/2026-09-19-uploads-official-files-sdk.json) |
+| [2026-09-20-upload-registry-dependency.md](../../plans/2026-09-20-upload-registry-dependency.md) | completed | implementation | [2026-09-20-uploads-registry-dependency](../review-records/2026-09-20-uploads-registry-dependency.json) |
+| [2026-09-20-upload-static-owner-cut.md](../../plans/2026-09-20-upload-static-owner-cut.md) | completed | implementation | [2026-09-20-uploads-static-owner-cut](../review-records/2026-09-20-uploads-static-owner-cut.json) |
+| [2026-09-21-upload-provider-registry-items.md](../../plans/2026-09-21-upload-provider-registry-items.md) | completed | implementation | [2026-09-21-uploads-provider-items](../review-records/2026-09-21-uploads-provider-items.json) |
 | [4803-update-upload-history.md](../../plans/4803-update-upload-history.md) | unknown | implementation | unbound |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
+- [2026-09-21-uploads-provider-items-implementation](../review-records/2026-09-21-uploads-provider-items-implementation.json): completed; binding **current**; Split copied upload installation into a provider-neutral upload item, an explicit browser-local provider, and separate R2 and S3 provider items over one shared fail-closed Files SDK gateway policy. Proof: stale / verified. The prior live R2 run remains applicable because adapter and gateway behavior are unchanged. Live Amazon S3, production deployment, Firefox, WebKit, and native-device uploads were not executed.
+- [2026-09-21-uploads-provider-items-doc-contract-closure](../review-records/2026-09-21-uploads-provider-items-doc-contract-closure.json): completed; binding **current**; Corrected the public upload guide to name UploadClient as the plugin contract in both locales, regenerated docs and registry payloads, and preserved the provider-item implementation record as immutable history. Proof: matching / verified. This follow-up changes documentation only; runtime proof remains in the provider-item implementation record.
 
 ## Inspected documents
 
@@ -62,7 +107,7 @@ References: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-0
 
 ### 2026-09-18: 2026-09-18-uploads-lifecycle-ownership
 
-[Immutable record](../review-records/2026-09-18-uploads-lifecycle-ownership.json) — review; pursue; observation matching.
+[Immutable record](../review-records/2026-09-18-uploads-lifecycle-ownership.json) — review; pursue; observation stale.
 
 Pursue replacing the separate persisted placeholder type, mediaType routing and type-changing completion with pending media owned by the intended media schemas. Keep one editor-owned upload capability, application transport, view-owned preview URLs and Plite history. One validated submission must preserve exact node/root authority from admission through completion. Nine units reviewed, none excluded or without a verdict. Seven executable observations establish five defects and two lifetime/restoration gaps; the replacement API and runtime remain design work.
 
@@ -79,11 +124,11 @@ Question: Who owns an upload after a placeholder moves, disappears, is undone or
 
 Proof limits: Audit only: no product implementation or public doctrine changed, and the pending-media API/runtime has not been accepted or measured. Existing package/view tests and seven observed-behavior probes were run locally; browser cases were inspected, not rerun. No live UploadThing, native-device, performance, release or replacement-runtime claim. Design must settle absent-source grammar/rendering/export/collaboration, readonly/root lifetime, cancellation/editor exit, full-document replacement and partial-batch undo/redo restoration. Artifact files are excluded by the repository formatter/linter; their executable probe passed and ledger/whitespace checks are the applicable artifact checks.
 
-References: [uploads-ownership.md](../decisions/uploads-ownership.md), [observations.test.ts](../../plans/artifacts/2026-09-18-uploads-review/observations.test.ts), [observations.txt](../../plans/artifacts/2026-09-18-uploads-review/observations.txt), [BasePlaceholderPlugin.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.ts), [BasePlaceholderPlugin.upload.spec.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.upload.spec.ts), [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts), [PlaceholderPlugin.tsx](../../../packages/platejs/src/react/features/media/placeholder/PlaceholderPlugin.tsx), [media-placeholder.tsx](../../../apps/www/src/registry/components/editor/media-placeholder.tsx), [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), [dnd.tsx](../../../apps/www/src/registry/components/editor/dnd.tsx), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [commit.ts](../../../packages/plitejs/src/core/commit.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [plugin.ts](../../../packages/plitejs/src/core/plugin.ts), [history-plugin.ts](../../../packages/plitejs/src/history/history-plugin.ts), [history-state.ts](../../../packages/plitejs/src/history/history-state.ts), [uploadthing.ts](../../../apps/www/src/registry/lib/uploadthing.ts), [clipboard-upload.spec.ts](../../../apps/www/tests/browser/clipboard-upload.spec.ts), [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md), [2026-09-07-plate-ui-execution.md](../../editor-audits/reports/2026-09-07-plate-ui-execution.md), [4803-update-upload-history.md](../../plans/4803-update-upload-history.md), [clipboard-content-fitting.md](../decisions/clipboard-content-fitting.md).
+References: [uploads-ownership.md](../decisions/uploads-ownership.md), [observations.test.ts](../../plans/artifacts/2026-09-18-uploads-review/observations.test.ts), [observations.txt](../../plans/artifacts/2026-09-18-uploads-review/observations.txt), `packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.ts` (historical input unavailable), `packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.upload.spec.ts` (historical input unavailable), [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts), `packages/platejs/src/react/features/media/placeholder/PlaceholderPlugin.tsx` (historical input unavailable), `apps/www/src/registry/components/editor/media-placeholder.tsx` (historical input unavailable), [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), [dnd.tsx](../../../apps/www/src/registry/components/editor/dnd.tsx), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [commit.ts](../../../packages/plitejs/src/core/commit.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [plugin.ts](../../../packages/plitejs/src/core/plugin.ts), [history-plugin.ts](../../../packages/plitejs/src/history/history-plugin.ts), [history-state.ts](../../../packages/plitejs/src/history/history-state.ts), `apps/www/src/registry/lib/uploadthing.ts` (historical input unavailable), [clipboard-upload.spec.ts](../../../apps/www/tests/browser/clipboard-upload.spec.ts), [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md), [2026-09-07-plate-ui-execution.md](../../editor-audits/reports/2026-09-07-plate-ui-execution.md), [4803-update-upload-history.md](../../plans/4803-update-upload-history.md), [clipboard-content-fitting.md](../decisions/clipboard-content-fitting.md).
 
 ### 2026-09-19: 2026-09-19-uploads-node-model-correction
 
-[Immutable record](../review-records/2026-09-19-uploads-node-model-correction.json) — review; pursue; observation matching.
+[Immutable record](../review-records/2026-09-19-uploads-node-model-correction.json) — review; pursue; observation stale.
 
 Pursue the upload protocol redesign, but supersede the recommendation to delete the dedicated draft asset node. Reserved position, restored unbound content and retry are document jobs distinct from completed media. Per-media pending nodes would make required media URLs optional across four schemas, spread draft rendering and codec branches, and still need one shared upload owner. Keep one editor-owned upload capability, one validated batch path, root-aware NodeKey authority, application transport, view-owned preview URLs and Plite history. Nine units reviewed, none excluded or without a verdict; the exact draft-slot schema remains Task design.
 
@@ -102,7 +147,289 @@ Question: Who owns an upload after a placeholder moves, disappears, is undone or
 
 Proof limits: Audit correction only: no product implementation or public doctrine changed, and neither the redesigned draft-slot contract nor the per-media pending alternative has been prototyped or measured. Existing package/view results and seven observed-behavior probes were reused against matching product fingerprints; browser cases were inspected, not rerun. No live UploadThing, native-device, performance, release or replacement-runtime claim. Design must settle draft target identity, rendering, export/collaboration, readonly/root lifetime, cancellation/editor exit, full-document replacement and partial-batch undo/redo restoration. The dedicated slot is the evidence-backed leading model, not an accepted API.
 
-References: [uploads-ownership.md](../decisions/uploads-ownership.md), [observations.test.ts](../../plans/artifacts/2026-09-18-uploads-review/observations.test.ts), [observations.txt](../../plans/artifacts/2026-09-18-uploads-review/observations.txt), [BasePlaceholderPlugin.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.ts), [BasePlaceholderPlugin.upload.spec.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.upload.spec.ts), [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts), [PlaceholderPlugin.tsx](../../../packages/platejs/src/react/features/media/placeholder/PlaceholderPlugin.tsx), [media-placeholder.tsx](../../../apps/www/src/registry/components/editor/media-placeholder.tsx), [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), [dnd.tsx](../../../apps/www/src/registry/components/editor/dnd.tsx), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [commit.ts](../../../packages/plitejs/src/core/commit.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [plugin.ts](../../../packages/plitejs/src/core/plugin.ts), [history-plugin.ts](../../../packages/plitejs/src/history/history-plugin.ts), [history-state.ts](../../../packages/plitejs/src/history/history-state.ts), [uploadthing.ts](../../../apps/www/src/registry/lib/uploadthing.ts), [clipboard-upload.spec.ts](../../../apps/www/tests/browser/clipboard-upload.spec.ts), [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md), [2026-09-07-plate-ui-execution.md](../../editor-audits/reports/2026-09-07-plate-ui-execution.md), [4803-update-upload-history.md](../../plans/4803-update-upload-history.md), [clipboard-content-fitting.md](../decisions/clipboard-content-fitting.md).
+References: [uploads-ownership.md](../decisions/uploads-ownership.md), [observations.test.ts](../../plans/artifacts/2026-09-18-uploads-review/observations.test.ts), [observations.txt](../../plans/artifacts/2026-09-18-uploads-review/observations.txt), `packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.ts` (historical input unavailable), `packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.upload.spec.ts` (historical input unavailable), [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts), `packages/platejs/src/react/features/media/placeholder/PlaceholderPlugin.tsx` (historical input unavailable), `apps/www/src/registry/components/editor/media-placeholder.tsx` (historical input unavailable), [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), [dnd.tsx](../../../apps/www/src/registry/components/editor/dnd.tsx), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [commit.ts](../../../packages/plitejs/src/core/commit.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [plugin.ts](../../../packages/plitejs/src/core/plugin.ts), [history-plugin.ts](../../../packages/plitejs/src/history/history-plugin.ts), [history-state.ts](../../../packages/plitejs/src/history/history-state.ts), `apps/www/src/registry/lib/uploadthing.ts` (historical input unavailable), [clipboard-upload.spec.ts](../../../apps/www/tests/browser/clipboard-upload.spec.ts), [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md), [2026-09-07-plate-ui-execution.md](../../editor-audits/reports/2026-09-07-plate-ui-execution.md), [4803-update-upload-history.md](../../plans/4803-update-upload-history.md), [clipboard-content-fitting.md](../decisions/clipboard-content-fitting.md).
+
+### 2026-09-19: 2026-09-19-uploads-files-sdk-integration
+
+[Immutable record](../review-records/2026-09-19-uploads-files-sdk-integration.json) — review; pursue; observation stale.
+
+Pursue removing mandatory UploadThing wiring from the ordinary copied media kit, with Files SDK as the preferred replaceable integration candidate. Keep the existing plain Plate transport and editor-owned tasks; do not make Files SDK a Plate dependency or claim an ecosystem protocol winner. Its independent client supports progress/abort, but bounded R2 gateway uploads proxy through the server and durable media URLs remain application policy. Direct S3/R2 is the stronger minimal comparator when only S3-compatible storage is required.
+
+Question: Should Plate replace mandatory UploadThing wiring with Files SDK as its default upload protocol or copied integration?
+
+- Keep UploadThing as the only copied default: loses application storage choice. Release cadence merits evaluation but abandonment is not established.
+- Delete every supplied transport and expose only the callback: retains the correct package boundary but leaves copied upload DX unfinished; a replaceable concrete integration earns its app-level place.
+- Direct S3-compatible presigning and browser transport: strongest smaller alternative for S3/R2-only requirements; app still owns authorization, limits, completion and provider differences.
+- Files SDK behind MediaUploadTransport in copied source: preferred multi-provider integration candidate; reuse the framework-independent client and gateway without importing storage verbs or a second task store into Plate.
+- Mandatory Files SDK dependency or Files client in the Plate public API: reject; no editor capability is added and storage/provider contracts leak into the wrong owner.
+- Move editor upload authority into Files React hooks or replace the draft state machine: reject; unmount cancellation and provider-owned tasks cannot replace exact editor/node/history lifetimes.
+- Invent a Plate gateway/provider protocol: reject; the existing callback plus application-native or Files SDK transport already serves the current job.
+- retains [2026-09-19-uploads-node-model-correction](../review-records/2026-09-19-uploads-node-model-correction.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Current source implements the dedicated draft slot and plain transport with committed editor authority. Provider replacement supplies no reason to reopen the document model, roots or history. The completed implementation plan has no current source-bound execution receipt; its existing proof claims remain explicitly bounded.
+- reopens [2026-09-18-uploads-lifecycle-ownership](../review-records/2026-09-18-uploads-lifecycle-ownership.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain application-owned transport. Reopen only the mandatory UploadThing choice in copied MediaKit because the user now requires evaluating storage independence and Files SDK. Do not revive the superseded per-media pending-node proposal.
+
+Proof limits: Source/docs/metadata assessment only; no Files SDK runtime, live S3/R2, native/browser, performance, bundle-size, provider reliability or long-term maintenance certification. Prior implementation proof is reported in its existing artifact, not rerun here. The completed upload plan still lacks a reconciled source-bound execution outcome. R2 proxy fallback is source-established; the default deployment path and durable/private media URL policy remain design questions. No product implementation or publication is authorized by this review.
+
+References: [files-sdk-review.md](../../plans/artifacts/upload-draft-asset-protocol/files-sdk-review.md), [2026-09-19-upload-draft-asset-protocol.md](../../plans/2026-09-19-upload-draft-asset-protocol.md), [verification.md](../../plans/artifacts/upload-draft-asset-protocol/verification.md), `packages/platejs/src/features/media/lib/media-upload/BaseMediaUploadPlugin.ts` (historical input unavailable), [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), `apps/www/src/registry/lib/uploadthing.ts` (historical input unavailable), `apps/www/src/registry/app/api/uploadthing/route.ts` (historical input unavailable).
+
+### 2026-09-19: 2026-09-19-uploads-official-files-sdk
+
+[Immutable record](../review-records/2026-09-19-uploads-official-files-sdk.json) — review; pursue; observation stale.
+
+Pursue one official Files SDK-backed editor file plugin under platejs/files that replaces MediaUploadPlugin and its generic transport API. Accept the upstream FilesClient and reuse its I/O types directly; provider portability belongs to Files SDK. Supersede the prior copied-adapter recommendation because SDK replaceability is explicitly not a user requirement. Do not mirror storage methods through the editor, add a second adapter plugin, or move network storage into core. Retain editor-owned drafts/history and application-owned durable URLs and server authorization.
+
+Question: Should Files SDK become the official Plate upload contract through one platejs/files plugin, mirrored SDK methods, or core?
+
+- Keep copied provider-independent transport: reject under the clarified requirement; it preserves an unrequested SDK replacement job and recurring consumer mapping.
+- Official Files SDK within platejs/media: plausible but combines independently used media rendering with the optional file-ingestion workflow; prefer a focused entrypoint with dependency closure proof.
+- One platejs/files plugin replacing MediaUploadPlugin: selected; upstream owns storage transport and provider portability, Plate owns editor-file lifecycle.
+- Files SDK adapter plugin plus the existing upload plugin: reject because two installed authorities serve one upload job.
+- Mirror or re-export every Files SDK verb through Plate/editor.api: reject because storage operations can use the shared actual client and forwarding adds no editor semantics.
+- Put Files SDK in core: reject; neutral editing and already-hosted media do not require storage configuration or network upload authority.
+- Delete the editor owner and use SDK React hooks: reject; view unmount lifetime cannot own document identity, replacement and history.
+- supersedes [2026-09-19-uploads-files-sdk-integration](../review-records/2026-09-19-uploads-files-sdk-integration.json) (Should Plate replace mandatory UploadThing wiring with Files SDK as its default upload protocol or copied integration?): The clarified preference rejects paying for SDK replaceability. A direct official upstream client eliminates the custom transport public surface and recurring app mapping. Retain prior R2/URL/lifetime observations; reject the previous conclusion that a Plate SDK dependency is unjustified under this changed product constraint.
+- retains [2026-09-19-uploads-node-model-correction](../review-records/2026-09-19-uploads-node-model-correction.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Keep dedicated draft slots, atomic admission, exact NodeKey/root authority, post-commit requests, replacement cancellation and history. The provider/API boundary changes, not those editor laws. The completed implementation plan lacks a current source-bound execution outcome, so no runtime receipt is inferred.
+
+Proof limits: Review and source inspection only. Exact FilesPlugin names/configuration, persistent media address policy, package/declaration closure, live provider verification and browser proof remain Task design/adoption work. No product source or dependency was changed. Prior R2 capped-upload proxy and expiring-URL constraints remain. The earlier upload implementation plan still has no reconciled source-bound execution outcome.
+
+References: [files-sdk-official-review.md](../../plans/artifacts/upload-draft-asset-protocol/files-sdk-official-review.md), [files-sdk-review.md](../../plans/artifacts/upload-draft-asset-protocol/files-sdk-review.md), `packages/platejs/src/features/media/lib/media-upload/BaseMediaUploadPlugin.ts` (historical input unavailable), `packages/platejs/src/react/features/media/media-upload/MediaUploadPlugin.tsx` (historical input unavailable), [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), [package.json](../../../packages/platejs/package.json).
+
+### 2026-09-19: 2026-09-19-uploads-files-sdk-design
+
+[Immutable record](../review-records/2026-09-19-uploads-files-sdk-design.json) — execution; completed; observation stale.
+
+Completed the design/adoption plan for one optional platejs/files feature using the real FilesClient and synchronous durable URL policy. Delete the generic transport/result API and UploadThing integration; preserve authored drafts and editor lifetime. Product adoption remains future work.
+
+
+Proof limits: Design readiness and a disposable headless SDK-client integration only. No shipped FilesPlugin, direct AggregateProgress store, optional media dependency removal, XHR/native/browser proof, real gateway authorization, or live R2/S3 verification. No backfilled historical implementation receipt.
+
+References: [2026-09-19-official-files-sdk-integration.md](../../plans/2026-09-19-official-files-sdk-integration.md), [probe-results.md](../../plans/artifacts/official-files-sdk-integration/probe-results.md), [files-sdk-official-review.md](../../plans/artifacts/upload-draft-asset-protocol/files-sdk-official-review.md), [uploads-ownership.md](../decisions/uploads-ownership.md).
+
+### 2026-09-19: 2026-09-19-uploads-files-sdk-final-audit
+
+[Immutable record](../review-records/2026-09-19-uploads-files-sdk-final-audit.json) — execution; completed; observation stale.
+
+Final design audit corrected Files SDK operation names and proxy PUT authorization, identified the published 2.6.0 cross-entrypoint FilesError status defect as a shipping gate, and clarified browser authentication, signed-URL revocation, inline MIME trust and cross-document asset policy. No product integration was implemented.
+
+
+Proof limits: Four diagnostic cases characterize the installed published 2.6.0 gateway and prove the defects, not a safe shipped route or correct 401/403 statuses. The prior bounded editor probe remains a design result. No FilesPlugin, browser cookie/XHR, native input, live R2/S3 or provider throughput proof.
+
+References: [2026-09-19-official-files-sdk-integration.md](../../plans/2026-09-19-official-files-sdk-integration.md), [gateway-policy.spec.ts](../../plans/artifacts/official-files-sdk-integration/gateway-policy.spec.ts), [gateway-policy.observation.log](../../plans/artifacts/official-files-sdk-integration/gateway-policy.observation.log), [2026-09-19-uploads-files-sdk-design.json](../review-records/2026-09-19-uploads-files-sdk-design.json), [uploads-ownership.md](../decisions/uploads-ownership.md).
+
+### 2026-09-19: 2026-09-19-uploads-files-sdk-testing-method
+
+[Immutable record](../review-records/2026-09-19-uploads-files-sdk-testing-method.json) — execution; completed; observation stale.
+
+Extended the Files SDK integration plan with a source-linked test methodology: memory-backed router policy, injected client-to-gateway round trip, separate XHR/browser checks, repeatable provider fakes, opt-in live providers, and clean installed-package public-entrypoint proof. Upstream source tests cannot certify the published 2.6.0 error-class identity.
+
+
+Proof limits: The upstream test methodology was inspected and mapped to the planned integration. The existing four-case installed-package diagnostic still demonstrates the published status defect. No upstream suite, copied-route production test, browser run or live provider test was run in this planning pass.
+
+References: [2026-09-19-official-files-sdk-integration.md](../../plans/2026-09-19-official-files-sdk-integration.md), [testing-methodology-evidence.md](../../plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md), [gateway-policy.spec.ts](../../plans/artifacts/official-files-sdk-integration/gateway-policy.spec.ts), [2026-09-19-uploads-files-sdk-final-audit.json](../review-records/2026-09-19-uploads-files-sdk-final-audit.json), [uploads-ownership.md](../decisions/uploads-ownership.md).
+
+### 2026-09-20: 2026-09-20-uploads-files-sdk-implementation
+
+[Immutable record](../review-records/2026-09-20-uploads-files-sdk-implementation.json) — execution; completed; observation stale.
+
+Adopted the published Files SDK as Plate’s official optional upload protocol through platejs/files and platejs/files/react; moved request lifetime into the editor, kept mediaUpload as the draft document state, split FilesKit from MediaKit, replaced UploadThing with a fail-closed copied R2/S3 gateway, and synchronized registry, docs, release artifacts and doctrine.
+
+
+Proof limits: Verified package, copied UI, installed SDK gateway, Chromium picker/XHR, clean Base/Nova and Radix/Luma installs, generated outputs and frozen owner scale behavior. No live R2/S3 account, authenticated application policy, native file drag, Firefox/WebKit or production deployment was exercised. The broad www source typecheck remains blocked by the pre-existing HistoryPlugin recursive type-instantiation limit; focused Files checks, the platejs source typecheck and clean installed consumers pass.
+
+References: [2026-09-19-official-files-sdk-implementation.md](../../plans/2026-09-19-official-files-sdk-implementation.md), [uploads-ownership.md](../decisions/uploads-ownership.md), [implementation-proof.json](../../plans/artifacts/official-files-sdk-integration/implementation-proof.json), [production-results.md](../../plans/artifacts/official-files-sdk-integration/production-results.md), [testing-methodology-evidence.md](../../plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md).
+
+### 2026-09-20: 2026-09-20-uploads-files-ui-colocation
+
+[Immutable record](../review-records/2026-09-20-uploads-files-ui-colocation.json) — execution; completed; observation stale.
+
+Colocated the Files SDK upload renderer, picker, progress UI and FilesKit in one copied files registry item; removed the obsolete media-upload item and reverse dependency; repaired public teaching and Plate UI migration doctrine.
+
+
+Proof limits: Focused Files UI behavior and generated distribution were reverified. Browser upload behavior and package upload semantics were unchanged and were not rerun. The broad www package-integration TypeScript check remains blocked by the existing HistoryPlugin TS2589 recursive-instantiation failure.
+
+References: [2026-09-19-official-files-sdk-implementation.md](../../plans/2026-09-19-official-files-sdk-implementation.md), [ui-colocation-verification.json](../../plans/artifacts/official-files-sdk-integration/ui-colocation-verification.json), [uploads-ownership.md](../decisions/uploads-ownership.md).
+
+### 2026-09-20: 2026-09-20-uploads-upload-api-hard-cut
+
+[Immutable record](../review-records/2026-09-20-uploads-upload-api-hard-cut.json) — execution; completed; observation stale.
+
+Hard-cut Plate’s files-named editor lifecycle to UploadPlugin from platejs/upload across package exports, plugin key and schema, copied registry UI, docs, generated contracts and doctrine while retaining FilePlugin and Files SDK provider names.
+
+
+Proof limits: The vocabulary-only hard cut reuses the previously verified upload behavior and does not repeat browser or live-provider runs. The broad www integration typecheck reaches only the existing HistoryPlugin TS2589 blocker. The repository-wide schema audit reports unrelated existing violations and no upload-owner violation.
+
+References: [2026-09-20-upload-api-hard-cut.md](../../plans/2026-09-20-upload-api-hard-cut.md).
+
+### 2026-09-20: 2026-09-20-uploads-gateway-test-import-fix
+
+[Immutable record](../review-records/2026-09-20-uploads-gateway-test-import-fix.json) — execution; completed; observation stale.
+
+Corrected the copied Files SDK gateway test to import the surviving server-side files owner after the UploadPlugin hard cut; the installed SDK gateway and source-first type harnesses pass.
+
+
+Proof limits: This verifies the copied server gateway harness. It does not add browser or live-provider coverage.
+
+References: [2026-09-20-upload-api-hard-cut.md](../../plans/2026-09-20-upload-api-hard-cut.md).
+
+### 2026-09-20: 2026-09-20-uploads-registry-dependency
+
+[Immutable record](../review-records/2026-09-20-uploads-registry-dependency.json) — review; pursue; observation stale.
+
+Pursue making @plate/files-api a registry dependency of @plate/upload. The copied upload component hardcodes /api/files, so its current standalone installation is incomplete; @plate/ai already composes its required @plate/ai-api the same way. Keep files-api as a separate server item and keep its route, gateway and storage files separate from the client component. Remove redundant direct files-api dependencies from bundles that already install upload.
+
+Question: Should the copied @plate/upload registry item depend on @plate/files-api, keep the server recipe separately installed, or absorb its files?
+
+- Keep upload and files-api as unrelated manual installs: reject because UploadElement creates a FilesClient for /api/files, leaving the nominal leaf install without its default runtime.
+- Make @plate/upload depend on @plate/files-api: pursue because one install gets the official client and matching server recipe while preserving separate files and an independently addressable server item.
+- Delete files-api and merge its route and server libraries into the upload item or upload.tsx: reject because the gateway has an independent server-only install job and cannot share a client module with React UI, secrets, ACLs and storage adapters.
+- Remove the default endpoint and require every installer to supply a client: reject because it discards the requested batteries-included Files SDK path and adds setup work to the common case.
+- retains [2026-09-19-uploads-official-files-sdk](../review-records/2026-09-19-uploads-official-files-sdk.json) (Should Files SDK become the official Plate upload contract through one platejs/files plugin, mirrored SDK methods, or core?): Retain Files SDK as the official protocol, editor-owned upload state and application-owned gateway policy; this review settles only copied-registry installation composition.
+- retains [2026-09-19-uploads-files-sdk-design](../review-records/2026-09-19-uploads-files-sdk-design.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the recorded design, implementation and proof. Composing the existing server item transitively changes installation completeness without moving its runtime ownership or changing behavior.
+- retains [2026-09-19-uploads-files-sdk-final-audit](../review-records/2026-09-19-uploads-files-sdk-final-audit.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the recorded design, implementation and proof. Composing the existing server item transitively changes installation completeness without moving its runtime ownership or changing behavior.
+- retains [2026-09-19-uploads-files-sdk-testing-method](../review-records/2026-09-19-uploads-files-sdk-testing-method.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the recorded design, implementation and proof. Composing the existing server item transitively changes installation completeness without moving its runtime ownership or changing behavior.
+- retains [2026-09-20-uploads-files-sdk-implementation](../review-records/2026-09-20-uploads-files-sdk-implementation.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the recorded design, implementation and proof. Composing the existing server item transitively changes installation completeness without moving its runtime ownership or changing behavior.
+- retains [2026-09-20-uploads-files-ui-colocation](../review-records/2026-09-20-uploads-files-ui-colocation.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the recorded design, implementation and proof. Composing the existing server item transitively changes installation completeness without moving its runtime ownership or changing behavior.
+- retains [2026-09-20-uploads-upload-api-hard-cut](../review-records/2026-09-20-uploads-upload-api-hard-cut.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the recorded design, implementation and proof. Composing the existing server item transitively changes installation completeness without moving its runtime ownership or changing behavior.
+- retains [2026-09-20-uploads-gateway-test-import-fix](../review-records/2026-09-20-uploads-gateway-test-import-fix.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the recorded design, implementation and proof. Composing the existing server item transitively changes installation completeness without moving its runtime ownership or changing behavior.
+
+Proof limits: Source and registry-topology review only. No registry mutation, generated payload, clean installation or runtime behavior was executed for the proposed dependency change.
+
+References: [registry-features.ts](../../../apps/www/src/registry/registry-features.ts), [registry-components.ts](../../../apps/www/src/registry/registry-components.ts), [registry-blocks.ts](../../../apps/www/src/registry/registry-blocks.ts), [upload.tsx](../../../apps/www/src/registry/components/editor/upload.tsx), [upload.mdx](../../../content/docs/(guides)/upload.mdx), [uploads-ownership.md](../decisions/uploads-ownership.md).
+
+### 2026-09-20: 2026-09-20-uploads-registry-dependency-implementation
+
+[Immutable record](../review-records/2026-09-20-uploads-registry-dependency-implementation.json) — execution; completed; observation stale.
+
+Made @plate/files-api a transitive registry dependency of @plate/upload, removed the redundant editor-ai edge, taught upload as the complete default install, regenerated public payloads and changelog output, and proved a clean one-command shadcn install includes both client and server files.
+
+
+Proof limits: The clean install used a local HTTP mirror of the current generated payloads. It proves registry resolution and copied files, not configured storage credentials, live provider behavior, or a deployed registry. The temporary npm install resolved stable platejs 53, so no clean-consumer TypeScript claim is made for the next-only platejs/upload entrypoint.
+
+References: [2026-09-20-upload-registry-dependency.md](../../plans/2026-09-20-upload-registry-dependency.md).
+
+### 2026-09-20: 2026-09-20-uploads-static-owner-cut
+
+[Immutable record](../review-records/2026-09-20-uploads-static-owner-cut.json) — review; pursue; observation stale.
+
+Pursue deleting the upload-static registry item. BaseUploadPlugin already owns the persisted draft schema and null HTML encoding, so it should also default its renderer to null. Compose BaseUploadPlugin directly in the full static editor kit, preserve media-static independence, and keep UploadKit's UploadElement override for editable UI. Move the omission regression test to the package owner.
+
+Question: Should unresolved upload drafts require a copied upload-static registry item, belong to media-static, or carry their static omission in BaseUploadPlugin?
+
+- Keep upload-static: reject the copied registry noun because its entire implementation is one BaseUploadPlugin configuration line with no independent UI or user job.
+- Move draft omission into media-static: reject because drafts are not completed media and this restores the upload dependency removed from completed-media-only static composition.
+- Use the unknown-node static fallback: reject because it renders an EditorElement wrapper and does not register the persisted upload schema.
+- Make BaseUploadPlugin own null rendering: accept because the schema owner already encodes drafts as null HTML while editable UploadKit can override the component with UploadElement.
+- retains [2026-09-20-uploads-registry-dependency](../review-records/2026-09-20-uploads-registry-dependency.json) (Should the copied @plate/upload registry item depend on @plate/files-api, keep the server recipe separately installed, or absorb its files?): Retain the completed upload-to-files-api dependency. Removing upload-static changes only static draft rendering ownership.
+- retains [2026-09-20-uploads-registry-dependency-implementation](../review-records/2026-09-20-uploads-registry-dependency-implementation.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the verified registry dependency implementation. Its editable upload and server installation graph is independent of this static owner cut.
+
+Proof limits: This review establishes the owner and hard cut from current source. Execution must prove package static omission, editable renderer override, registry dependency closure, docs parity, and fresh generated registry output.
+
+References: [BaseUploadPlugin.ts](../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts), [pluginRenderElementStatic.internal.tsx](../../../packages/platejs/src/static/pluginRenderElementStatic.internal.tsx), `apps/www/src/registry/components/editor/upload-static.tsx` (historical input unavailable), [plugins-static.ts](../../../apps/www/src/registry/components/editor/plugins-static.ts), [2026-09-19-official-files-sdk-integration.md](../../plans/2026-09-19-official-files-sdk-integration.md).
+
+### 2026-09-20: 2026-09-20-uploads-static-owner-cut-implementation
+
+[Immutable record](../review-records/2026-09-20-uploads-static-owner-cut-implementation.json) — execution; completed; observation stale.
+
+Deleted the configuration-only upload-static registry item, made BaseUploadPlugin own null static rendering beside its null HTML codec, composed the descriptor directly in the full static editor kit, preserved the editable UploadElement override, repaired the owning registry doctrine, and regenerated current docs and registry output.
+
+
+Proof limits: No browser run was needed because the changed behavior is server static rendering and registry composition; the package SSR regression exercises the exact omission boundary. Immutable plans, review records and changelog history may retain upload-static as historical evidence.
+
+References: [2026-09-20-upload-static-owner-cut.md](../../plans/2026-09-20-upload-static-owner-cut.md).
+
+### 2026-09-20: 2026-09-20-uploads-files-server-colocation
+
+[Immutable record](../review-records/2026-09-20-uploads-files-server-colocation.json) — review; pursue; observation stale.
+
+Pursue deleting files-storage.ts and moving createFilesStorage into files.ts. The helper has one production consumer, ships in the same files-api registry item, and creates no independent install, reuse or runtime boundary. Keep route.ts as the thin Next handler assembly and retain the dynamic S3 import.
+
+Question: Should Files SDK storage provider construction remain in files-storage.ts, move into the route, or live with the copied server gateway in files.ts?
+
+- Keep files-storage.ts: reject because it has one production consumer, ships with files.ts, and owns only provider/env construction.
+- Inline storage construction into route.ts: reject because it mixes provider customization with framework handler assembly and splits the documented server customization owner.
+- Inline the whole files.ts gateway into route.ts: reject because the framework-neutral gateway and ACL policy form a substantial testable customization boundary.
+- Move storage construction into files.ts: accept because it leaves one copied server owner while preserving the thin route and dynamic provider loading.
+- retains [2026-09-20-uploads-static-owner-cut](../review-records/2026-09-20-uploads-static-owner-cut.json) (Should unresolved upload drafts require a copied upload-static registry item, belong to media-static, or carry their static omission in BaseUploadPlugin?): Retain package-owned static omission. Server file colocation does not change upload draft rendering.
+- retains [2026-09-20-uploads-static-owner-cut-implementation](../review-records/2026-09-20-uploads-static-owner-cut-implementation.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the verified static-owner execution; this correction only simplifies the copied Files SDK server source boundary.
+
+Proof limits: This review establishes source ownership from current consumers and registry composition. Execution must prove the installed Files SDK gateway, source-first types, registry metadata/generation, changelog targets and hard-cut scan.
+
+References: [files.ts](../../../apps/www/src/registry/lib/files.ts), `apps/www/src/registry/lib/files-storage.ts` (historical input unavailable), [route.ts](../../../apps/www/src/registry/app/api/files/route.ts), [registry-components.ts](../../../apps/www/src/registry/registry-components.ts), [upload.mdx](../../../content/docs/(guides)/upload.mdx).
+
+### 2026-09-20: 2026-09-20-uploads-files-server-colocation-implementation
+
+[Immutable record](../review-records/2026-09-20-uploads-files-server-colocation-implementation.json) — execution; completed; observation stale.
+
+Moved R2/S3 adapter construction into the copied files.ts server owner, deleted files-storage.ts, reduced files-api to route.ts plus files.ts, updated the installed-SDK typecheck and changelog inputs, removed the obsolete review feature identity, and regenerated the registry.
+
+
+Proof limits: No browser run was needed because this is copied server-source colocation; the installed-SDK gateway suite exercises the executable boundary. No live R2/S3 account, authenticated application policy or production deployment was exercised.
+
+References: [2026-09-20-files-server-colocation.md](../../plans/2026-09-20-files-server-colocation.md).
+
+### 2026-09-20: 2026-09-20-uploads-r2-live-verification
+
+[Immutable record](../review-records/2026-09-20-uploads-r2-live-verification.json) — execution; completed; observation stale.
+
+Verified the current createFilesStorage and Plate gateway against a live Cloudflare R2 bucket: a unique 16-byte object uploaded through the bounded proxy path, matched on direct and durable reads, returned the requested byte range and signed download, then was deleted and confirmed absent.
+
+
+Proof limits: The current gateway ran in process rather than through a deployed Next route and real application session policy. The probe covered one small object; multipart, concurrency, browser-native progress and production deployment remain unverified.
+
+References: [2026-09-20-r2-live-verification.md](../../plans/2026-09-20-r2-live-verification.md).
+
+### 2026-09-20: 2026-09-20-uploads-playground-ephemeral-implementation
+
+[Immutable record](../review-records/2026-09-20-uploads-playground-ephemeral-implementation.json) — execution; completed; observation stale.
+
+Added a browser-local UploadClient to the deployed playground, kept the copied UploadKit on the real Files SDK gateway, narrowed Plate to the single upload operation it consumes, and completed asynchronous drafts through the editor view that admitted them.
+
+
+Proof limits: Blob URLs are intentionally tab-local and no production deployment was exercised. The broad www TypeScript pass remains limited by the existing HistoryPlugin recursive type-instantiation problem; the source-first platejs typecheck and all focused registry/browser boundaries pass.
+
+References: [2026-09-20-playground-ephemeral-uploads.md](../../plans/2026-09-20-playground-ephemeral-uploads.md).
+
+### 2026-09-21: 2026-09-21-uploads-provider-items
+
+[Immutable record](../review-records/2026-09-21-uploads-provider-items.json) — review; pursue; observation stale.
+
+Pursue a provider-neutral upload item plus opt-in upload-ephemeral, upload-r2 and upload-s3 items. Keep gateway policy in one shared files-api support item, delete the runtime FILES_STORAGE_PROVIDER branch, and let each persistent provider contribute only a thin route adapter and its own dependencies.
+
+Question: Should upload registry consumers install one combined R2/S3 gateway, or choose separate ephemeral, R2 and S3 provider items over a shared gateway owner?
+
+- Keep upload dependent on one combined files-api item: reject because every UI consumer receives a server route, both provider contracts and AWS dependencies.
+- Move provider selection into upload.tsx: reject because browser UI must not own credentials, adapters or server routing.
+- Duplicate the complete gateway in every provider item: reject because ACL, namespace, response and error policy would drift.
+- Share the provider-neutral gateway and publish thin opt-in provider items: accept because install ownership follows the consumer choice while security policy remains DRY.
+- supersedes [2026-09-20-uploads-files-server-colocation](../review-records/2026-09-20-uploads-files-server-colocation.json) (Should Files SDK storage provider construction remain in files-storage.ts, move into the route, or live with the copied server gateway in files.ts?): The prior colocation was correct only while R2 and S3 shipped as one files-api choice. Explicit provider install boundaries now require common gateway policy to stay shared while adapter construction moves to each provider item.
+- supersedes [2026-09-20-uploads-files-server-colocation-implementation](../review-records/2026-09-20-uploads-files-server-colocation-implementation.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Replace the combined provider payload with a shared gateway support item and thin provider routes; retain its tested gateway policy.
+- retains [2026-09-20-uploads-r2-live-verification](../review-records/2026-09-20-uploads-r2-live-verification.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): The live R2 proof still validates the same Files SDK adapter and gateway behavior and does not require a combined provider item.
+- retains [2026-09-20-uploads-playground-ephemeral-implementation](../review-records/2026-09-20-uploads-playground-ephemeral-implementation.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain browser-local object URLs, cleanup and browser proof while promoting that configuration to its own opt-in registry item.
+
+Proof limits: The review chooses registry ownership. Execution must prove isolated generated payloads and dependency closure, installed gateway tests, R2 and S3 source typechecks, ephemeral cleanup, fresh registry generation and both browser upload paths. Existing live R2 evidence may be reused because adapter semantics do not change; live S3 remains unverified.
+
+References: [upload.tsx](../../../apps/www/src/registry/components/editor/upload.tsx), `apps/www/src/registry/examples/playground-demo/upload.ts` (historical input unavailable), [files.ts](../../../apps/www/src/registry/lib/files.ts), [route.ts](../../../apps/www/src/registry/app/api/files/route.ts), [registry-features.ts](../../../apps/www/src/registry/registry-features.ts), [registry-components.ts](../../../apps/www/src/registry/registry-components.ts), [upload.mdx](../../../content/docs/(guides)/upload.mdx).
+
+### 2026-09-21: 2026-09-21-uploads-provider-items-implementation
+
+[Immutable record](../review-records/2026-09-21-uploads-provider-items-implementation.json) — execution; completed; observation stale.
+
+Split copied upload installation into a provider-neutral upload item, an explicit browser-local provider, and separate R2 and S3 provider items over one shared fail-closed Files SDK gateway policy.
+
+
+Proof limits: The prior live R2 run remains applicable because adapter and gateway behavior are unchanged. Live Amazon S3, production deployment, Firefox, WebKit, and native-device uploads were not executed.
+
+References: [2026-09-21-upload-provider-registry-items.md](../../plans/2026-09-21-upload-provider-registry-items.md), [verification.json](../../plans/artifacts/upload-provider-registry-items/verification.json), [uploads-ownership.md](../decisions/uploads-ownership.md).
+
+### 2026-09-21: 2026-09-21-uploads-provider-items-doc-contract-closure
+
+[Immutable record](../review-records/2026-09-21-uploads-provider-items-doc-contract-closure.json) — execution; completed; observation matching.
+
+Corrected the public upload guide to name UploadClient as the plugin contract in both locales, regenerated docs and registry payloads, and preserved the provider-item implementation record as immutable history.
+
+
+Proof limits: This follow-up changes documentation only; runtime proof remains in the provider-item implementation record.
+
+References: [2026-09-21-upload-provider-registry-items.md](../../plans/2026-09-21-upload-provider-registry-items.md), [docs-contract-closure.json](../../plans/artifacts/upload-provider-registry-items/docs-contract-closure.json), [uploads-ownership.md](../decisions/uploads-ownership.md).
 
 ## Retrieval boundaries
 
@@ -114,14 +441,14 @@ References: [uploads-ownership.md](../decisions/uploads-ownership.md), [observat
 
 ## Owners and evidence entrypoints
 
-Owners: [BasePlaceholderPlugin.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.ts), [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), [uploadthing.ts](../../../apps/www/src/registry/lib/uploadthing.ts).
+Owners: [BaseUploadPlugin.ts](../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts), [UploadPlugin.tsx](../../../packages/platejs/src/react/features/upload/UploadPlugin.tsx), [files.ts](../../../apps/www/src/registry/lib/files.ts), [route.ts](../../../apps/www/src/registry/app/api/files/route.ts).
 
-Consumers: [media-placeholder.tsx](../../../apps/www/src/registry/components/editor/media-placeholder.tsx).
+Consumers: [upload.tsx](../../../apps/www/src/registry/components/editor/upload.tsx), [media-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/media-toolbar-button.tsx), [dnd.tsx](../../../apps/www/src/registry/components/editor/dnd.tsx).
 
-Proof entrypoints: [BasePlaceholderPlugin.upload.spec.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.upload.spec.ts), [media-placeholder.spec.tsx](../../../apps/www/src/registry/components/editor/media-placeholder.spec.tsx). These links alone are not proof of a passing run.
+Proof entrypoints: [BaseUploadPlugin.spec.ts](../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.spec.ts), [BaseUploadPlugin.sdk.spec.ts](../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.sdk.spec.ts), [BaseUploadPlugin.lifecycle.spec.ts](../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.lifecycle.spec.ts), [BaseUploadPlugin.typed.spec.ts](../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.typed.spec.ts), [UploadPlugin.spec.ts](../../../packages/platejs/src/react/features/upload/UploadPlugin.spec.ts), [upload.spec.tsx](../../../apps/www/src/registry/components/editor/upload.spec.tsx), [upload.lifecycle.spec.tsx](../../../apps/www/src/registry/components/editor/upload.lifecycle.spec.tsx), [dnd-upload.spec.tsx](../../../apps/www/src/registry/components/editor/dnd-upload.spec.tsx), [files.gateway.test.ts](../../../apps/www/src/registry/lib/files.gateway.test.ts), [files-sdk.spec.ts](../../../apps/www/tests/browser/files-sdk.spec.ts), [clipboard-upload.spec.ts](../../../apps/www/tests/browser/clipboard-upload.spec.ts), [production-run-2026-09-20T06-36-10-066Z-summary.json](../../plans/artifacts/official-files-sdk-integration/production-run-2026-09-20T06-36-10-066Z-summary.json). These links alone are not proof of a passing run.
 
-Inspection: Nine semantic upload units inspected across headless and transaction entrypoints, copied pickers, paste, DnD, transport, progress views, history and document identity. Seven executable observations reproduce current defects and lifetime/restoration gaps. A second review corrected the unsupported placeholder-deletion conclusion while retaining the protocol redesign verdict.
+Inspection: The adopted protocol uses the published FilesClient behind optional platejs/upload and platejs/upload/react entrypoints. Plate owns atomic admission, the upload draft node, root-aware NodeKey completion, committed-editor task lifetime, replacement/history cancellation and persisted stable application URLs. The copied app owns fail-closed authorization, provider configuration and presentation. UploadKit is separate from MediaKit and optional DnD checks the installed capability. Package, copied UI, installed SDK gateway, Chromium picker/XHR, clean Base/Radix installs, generated outputs and four frozen scale cohorts pass. A live Cloudflare R2 probe also passes gateway proxy upload, direct and durable reads, byte-range and signed downloads, and confirmed cleanup.
 
-Limits: The exact draft-slot schema and its per-media pending alternative, renderer behavior, codecs, collaboration, native ingress and scale proof belong to design/adoption; current focused tests and observations do not certify either replacement or the live provider.
+Limits: No live S3 account, deployed Next route with authenticated application access policy, native file drag, Firefox/WebKit or production deployment was exercised. The live R2 probe covered one small object, not multipart, concurrency or browser-native progress. The broad www source typecheck remains blocked by the pre-existing HistoryPlugin recursive type-instantiation limit; focused Upload source checks, platejs source typecheck and clean installed consumers pass. The repository-wide schema audit reports unrelated existing violations and no upload-owner violation.
 
 Related questions: [media](media.md), [history](history.md), [persistence](persistence.md), [clipboard](clipboard.md).

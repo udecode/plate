@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "upload-r2",
+  "title": "Upload with R2",
+  "description": "Files SDK upload gateway backed by Cloudflare R2.",
+  "dependencies": [
+    "@aws-sdk/client-s3",
+    "@aws-sdk/lib-storage",
+    "@aws-sdk/s3-presigned-post",
+    "@aws-sdk/s3-request-presigner",
+    "files-sdk@2.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/files-api.json",
+    "https://platejs.org/r/upload.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/app/api/files/route.ts",
+      "content": "import { r2 } from 'files-sdk/r2';\n\nimport { createFilesRoute, requireFilesEnv } from '../../../lib/files';\n\nexport const runtime = 'nodejs';\n\nconst route = createFilesRoute(() =>\n  r2({\n    bucket: requireFilesEnv('FILES_R2_BUCKET'),\n    accountId: requireFilesEnv('FILES_R2_ACCOUNT_ID'),\n    accessKeyId: requireFilesEnv('FILES_R2_ACCESS_KEY_ID'),\n    secretAccessKey: requireFilesEnv('FILES_R2_SECRET_ACCESS_KEY'),\n  })\n);\nconst { GET, POST, PUT } = route;\n\nexport { GET, POST, PUT };\n",
+      "type": "registry:file",
+      "target": "app/api/files/route.ts"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/upload"
+      }
+    ]
+  },
+  "type": "registry:file"
+}

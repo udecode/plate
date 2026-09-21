@@ -80,6 +80,18 @@ when they can change the verdict. Inspect the owning implementation, public
 types and materially different consumers. Include copied UI and kits when they
 own the policy under discussion; a package-only trace cannot settle that case.
 
+Before generalizing a plugin access pattern, census every in-scope production
+call shape and separate descriptor portals, generated direct transaction
+groups, and dynamic name dispatch. A presence guard makes name dispatch
+runtime-safe, not statically capability-safe. Accept that erased path only at
+an independently optional package or entrypoint boundary where importing the
+descriptor creates the wrong dependency. When an integration already chooses
+both features, require the descriptor and its inferred portal. Never present
+`editor.plugin(pluginName)` as the name-only alternative: the escape hatch is
+`tx.plugin(pluginName)` inside the active transaction, guarded there when the
+peer is optional. One exceptional boundary cannot establish a registry-wide
+pattern.
+
 Before issuing the value verdict, apply the relevant decision methods, not
 only their eventual handoff routes:
 

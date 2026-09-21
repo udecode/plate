@@ -2759,7 +2759,7 @@ const encodeCompiledHtml = (
         `Plate HTML encode has no encoder for element "${node.type}".`
       );
     }
-    const { patchTarget, root } = encodeWithRule(
+    const encoded = encodeWithRule(
       editor,
       structuralRule,
       node,
@@ -2770,11 +2770,7 @@ const encodeCompiledHtml = (
           failInvariant('Expected value to be defined')
         )(structuralContext ?? failInvariant('Expected value to be defined'));
 
-        if (spec === null) {
-          throw new Error(
-            `Plate HTML codec "${structuralRule.owner}" returned null for element "${node.type}".`
-          );
-        }
+        if (spec === null) return null;
         const innerRoot = compileNodeSpec(spec, new WeakSet());
 
         return Object.freeze({
@@ -2783,6 +2779,8 @@ const encodeCompiledHtml = (
         });
       }
     );
+    if (encoded === null) return '';
+    const { patchTarget, root } = encoded;
     const handledProperties = new Set<string>(
       structuralRule.properties.map(({ id }) => id)
     );

@@ -408,6 +408,41 @@ describe('Dnd node behavior', () => {
       expect(getTexts(editor)).toEqual(['drag', 'hover', 'other']);
     });
 
+    it.each([
+      [{ x: 50, y: 25 }, 'before'],
+      [{ x: 50, y: 75 }, 'after'],
+    ] as const)('reports file placement as a keyed %s edge', (offset, edge) => {
+      const onDropFiles = mock(() => {});
+      editor = createEditor({
+        plugins: [DndPlugin.configure({ initialState: { onDropFiles } })],
+      });
+      editor.update.value.replace({
+        children: [{ children: [{ text: 'target' }], type: 'paragraph' }],
+        selection: null,
+      });
+      const target = getElement(editor, [0]);
+      const key = getNodeKey(editor, [0]);
+      clientOffset = offset;
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: target,
+        nodeRef,
+      });
+
+      callDrop(
+        {
+          dataTransfer: [],
+          files: {} as FileList,
+          items: {} as DataTransferItemList,
+        },
+        monitor
+      );
+
+      expect(onDropFiles).toHaveBeenCalledWith(
+        expect.objectContaining({ edge, key })
+      );
+    });
+
     it('moves a block below the hovered block', () => {
       callDrop(dragItem, monitor);
 

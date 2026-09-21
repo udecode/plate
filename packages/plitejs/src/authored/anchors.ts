@@ -3,6 +3,7 @@ import type { NativeAuthoredRangeBinding } from '../core/authored-runtime';
 import { DocumentIndex } from '../core/change/document-index';
 import { getRangeEndpointAssociations } from '../core/change/range-association';
 import type { JsonEditorValue } from '../core/change/tokens';
+import { getEditorRuntime } from '../core/editor-runtime';
 import { snapshotEditorJsonValue } from '../core/value-codec';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import type { Path } from '../interfaces/path';
@@ -45,12 +46,15 @@ type RetainedRange = Readonly<{
 }>;
 
 export type AuthoredRangeProjection = Readonly<{
+  mode?: 'accepted' | 'fragment' | 'proposed';
   positions: AuthoredPositionRoots;
   state: AuthoredState;
+  unavailable?: 'projection';
   value: JsonEditorValue;
 }>;
 
 export const bindAuthoredDocumentPath = (
+  captureView: Editor,
   path: Path,
   options: AnchorOptions<Path>,
   read: (view?: Editor) => AuthoredRangeProjection | null,
@@ -91,8 +95,12 @@ export const bindAuthoredDocumentPath = (
     return { kind, position: authoredPositionAt(positions.positions, start) };
   };
   let retained = capture(path, initial);
+  let deleted = false;
+  const modes = new WeakMap<object, AuthoredRangeProjection['mode']>();
   return {
+    deleted: () => deleted,
     resolve(view?: Editor): Path | null {
+      deleted = false;
       if (isAborted()) return null;
       const draft = draftPath?.();
       if (draft !== undefined) {
@@ -105,8 +113,18 @@ export const bindAuthoredDocumentPath = (
       if (!current || current.state.documentId !== documentId || !retained) {
         return null;
       }
+      const runtime = getEditorRuntime(view ?? captureView);
+      const previousMode = modes.get(runtime);
+      modes.set(runtime, current.mode);
+      const deletedInSameMode = () => {
+        deleted =
+          options.deletion === 'drop' &&
+          previousMode === current.mode &&
+          current.unavailable !== 'projection';
+        return null;
+      };
       const positions = readRecord(current.positions, root);
-      if (!positions?.present) return null;
+      if (!positions?.present) return deletedInSameMode();
       if (retained.kind === 'root') return [];
       const { position } = retained;
       if (retained.kind === 'node' && options.deletion === 'drop') {
@@ -119,7 +137,7 @@ export const bindAuthoredDocumentPath = (
               endpoint.offset < span.offset + span.length
           )
         ) {
-          return null;
+          return deletedInSameMode();
         }
       }
       const offset = resolveAuthoredPosition(
@@ -130,15 +148,19 @@ export const bindAuthoredDocumentPath = (
           : 'left',
         options.deletion === 'drop' ? 'detach' : 'collapse'
       );
-      if (offset === null) return null;
+      if (offset === null) return deletedInSameMode();
       const document = DocumentIndex.fromValue(
         authoredRootNodes(current.value, root)
       );
       if (retained.kind === 'node') {
-        return document.nodeStartingAt(offset)?.path.slice() ?? null;
+        return (
+          document.nodeStartingAt(offset)?.path.slice() ?? deletedInSameMode()
+        );
       }
       const boundary = document.childBoundaryAt(offset);
-      return boundary ? [...boundary.parentPath, boundary.index] : null;
+      return boundary
+        ? [...boundary.parentPath, boundary.index]
+        : deletedInSameMode();
     },
     settle() {
       const draft = draftPath?.();
@@ -216,6 +238,7 @@ const decodeRange = (input: unknown): RetainedRange => {
 };
 
 export const bindAuthoredDocumentRange = (
+  captureView: Editor,
   input: Readonly<{ range: Range }> | Readonly<{ saved: unknown }>,
   options: AnchorOptions<Range>,
   read: (view?: Editor) => AuthoredRangeProjection | null,
@@ -316,8 +339,12 @@ export const bindAuthoredDocumentRange = (
   } else {
     retained = capture(input.range, initial);
   }
+  let deleted = false;
+  const modes = new WeakMap<object, AuthoredRangeProjection['mode']>();
   return {
+    deleted: () => deleted,
     resolve(view) {
+      deleted = false;
       if (isAborted()) return null;
       const draft = draftRange?.();
       if (draft !== undefined) {
@@ -329,6 +356,16 @@ export const bindAuthoredDocumentRange = (
       const current = read(view);
       if (!current) return null;
       if (current.state.documentId !== retained.documentId) return null;
+      const runtime = getEditorRuntime(view ?? captureView);
+      const previousMode = modes.get(runtime);
+      modes.set(runtime, current.mode);
+      const deletedInSameMode = () => {
+        deleted =
+          options.deletion === 'drop' &&
+          previousMode === current.mode &&
+          current.unavailable !== 'projection';
+        return null;
+      };
       const associations = getRangeEndpointAssociations(
         retained.direction,
         options.association
@@ -378,7 +415,8 @@ export const bindAuthoredDocumentRange = (
               )
             : null;
         }
-        if (live.length > 1 || options.deletion === 'drop') return null;
+        if (live.length > 1) return null;
+        if (options.deletion === 'drop') return deletedInSameMode();
 
         const collapseRoot =
           authoredPositionRoot(
@@ -419,10 +457,10 @@ export const bindAuthoredDocumentRange = (
             associations[index] === -1 ? 'left' : 'right'
           ) ?? root
       );
-      if (pointRoots[0] !== pointRoots[1]) return null;
+      if (pointRoots[0] !== pointRoots[1]) return deletedInSameMode();
       const resolvedRoot = pointRoots[0];
       const positions = readRecord(current.positions, resolvedRoot);
-      if (!positions?.present) return null;
+      if (!positions?.present) return deletedInSameMode();
       const document = DocumentIndex.fromValue(
         authoredRootNodes(current.value, resolvedRoot)
       );
@@ -446,12 +484,14 @@ export const bindAuthoredDocumentRange = (
             : null;
         }
       );
-      return points[0] && points[1]
-        ? snapshotEditorJsonValue(
-            { anchor: points[0], focus: points[1] },
-            'Resolved editor range'
-          )
-        : null;
+      const resolvedRange =
+        points[0] && points[1]
+          ? snapshotEditorJsonValue(
+              { anchor: points[0], focus: points[1] },
+              'Resolved editor range'
+            )
+          : null;
+      return resolvedRange ?? deletedInSameMode();
     },
     serialize() {
       if (isAborted()) {

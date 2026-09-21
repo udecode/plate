@@ -160,9 +160,11 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
       }
       target
         .querySelectorAll<HTMLElement>('[data-editor-authored-author]')
-        .forEach((element) =>
-          authors.add(element.getAttribute('data-editor-authored-author') ?? '')
-        );
+        .forEach((element) => {
+          authors.add(
+            element.getAttribute('data-editor-authored-author') ?? ''
+          );
+        });
     };
 
     const initialAuthors = new Set<string>();

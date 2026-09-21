@@ -14,7 +14,7 @@ docs:
 
 - 通过拖拽区块实现内容移动和插入
 - 拖拽至视窗边缘时自动滚动
-- 支持文件拖放插入媒体区块
+- 安装 `UploadPlugin` 后可拖放文件并指定插入位置
 - 可视化拖放指示器和拖拽手柄
 
 </PackageInfo>
@@ -102,20 +102,25 @@ const editor = createEditor({
 
 ### 高级配置
 
-添加自动滚动和文件拖放处理：
+添加自动滚动和文件拖放处理。`DndKit` 可单独使用；仅在安装 Files 插件时
+提交拖放文件。客户端和媒体目标插件的配置见[上传文件](/cn/docs/upload)。
 
 ```tsx
 import { DndPlugin } from 'platejs/dnd/react';
-import { PlaceholderPlugin } from 'platejs/media/react';
+import { UploadPlugin } from 'platejs/upload/react';
 import { BlockDraggable } from '@/components/editor/dnd';
 
 DndPlugin.configure({
   initialState: {
     enableScroller: true,
-    onDropFiles: ({ dragItem, editor, target }) => {
-      editor
-        .plugin(PlaceholderPlugin)
-        .update.insertMedia(dragItem.files, { at: target });
+    onDropFiles: ({ dragItem, edge, editor, key }) => {
+      const files = editor.plugin(UploadPlugin);
+      if (!files.installed) return;
+
+      files.update.submit(
+        dragItem.files,
+        edge === 'before' ? { before: key } : { after: key }
+      );
     },
   },
   slots: {
@@ -125,7 +130,7 @@ DndPlugin.configure({
 ```
 
 - `enableScroller`: 启用拖拽至视窗边缘时的自动滚动
-- `onDropFiles`: 处理文件拖放，在目标位置插入媒体区块
+- `onDropFiles`: 安装 Files 后在目标位置插入拖放文件
 
 </Steps>
 

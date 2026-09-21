@@ -7,8 +7,8 @@ import {
   usePluginStore,
   type EditorTextProps,
   type RenderNodeWrapperProps,
+  type WrapRootProps,
 } from 'platejs/react';
-import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 import {
@@ -49,6 +49,12 @@ function AIInlinePreview({
   );
 }
 
+function AIIntegration({ children, editableRef }: WrapRootProps) {
+  useEditorChat(editableRef);
+
+  return children;
+}
+
 export const AIKit = [
   AIPlugin.configure({ component: AILeaf }),
   AIChatTransportPlugin.extend(({ api, store }) => ({
@@ -79,11 +85,7 @@ export const AIKit = [
       },
       afterContainer: AILoadingBar,
       afterEditable: AIMenu,
-      // oxlint-disable-next-line eslint/func-name-matching -- Hooks require a named React component in this slot.
-      wrapRoot: function AIIntegration({ children, editableRef }) {
-        useEditorChat(editableRef);
-        return children;
-      },
+      wrapRoot: AIIntegration,
     },
     shortcuts: {
       show: {

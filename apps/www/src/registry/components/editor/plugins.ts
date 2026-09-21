@@ -32,6 +32,7 @@ import { SlashKit } from './slash';
 import { SuggestionKit } from './suggestion';
 import { TableKit } from './table';
 import { TocKit } from './toc';
+import { UploadKit } from './upload';
 
 export const EditorKit = [
   ...AIKit,
@@ -44,6 +45,7 @@ export const EditorKit = [
   ...DetailsKit,
   ...TocKit,
   ...MediaKit,
+  ...UploadKit,
   ...CalloutKit,
   ...ColumnKit,
   ...MathKit,

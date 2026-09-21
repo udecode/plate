@@ -20,7 +20,6 @@ const measuredFiles = [
   'packages/plitejs/src/internal/view/stable-id-mapped-source.ts',
   'packages/plitejs/src/internal/view/mapped-view-store.ts',
   'packages/plitejs/src/annotations/store.ts',
-  'packages/plitejs/src/react/widget-store.ts',
   'packages/plitejs/src/react/decoration-source.ts',
   'pnpm-lock.yaml',
 ];

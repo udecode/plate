@@ -3,7 +3,6 @@ import {
   BaseFilePlugin,
   BaseImagePlugin,
   BaseMediaEmbedPlugin,
-  BasePlaceholderPlugin,
   BaseVideoPlugin,
 } from 'platejs/media';
 
@@ -21,5 +20,4 @@ export const BaseMediaKit = [
   BaseMediaEmbedPlugin.configure({
     component: MediaEmbedElementStatic,
   }),
-  BasePlaceholderPlugin,
 ];

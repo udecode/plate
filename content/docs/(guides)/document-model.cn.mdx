@@ -135,7 +135,7 @@ listStart 保存条件作者意图：仅在该项是有序序列第一项时生�
 
 列表起始值和重启值是有符号安全整数。元素 `id` 标识一个持久化节点实例，`ref` 表示持久化关联，运行时身份继续使用 `NodeKey`。
 
-表格列宽只有一个所有者：TableElement.columnWidths。HTML 单元格宽度在导入时归一到该数组，`null` 表示未知宽度。图片的 naturalWidth 和 naturalHeight 保存源图片尺寸；媒体 width 保存用户选择的渲染宽度。媒体标题直接存于 children；上传进度和临时占位符属于应用状态。
+表格列宽只有一个所有者：TableElement.columnWidths。HTML 单元格宽度在导入时归一到该数组，`null` 表示未知宽度。图片的 naturalWidth 和 naturalHeight 保存源图片尺寸；媒体 width 保存用户选择的渲染宽度。媒体标题直接存于 children。上传草稿以 `{ type: 'upload', kind, children }` 持久化到 Plate JSON；`File`、任务、进度和错误保留在编辑器状态。上传完成后，普通媒体节点保存持久 URL。外部 HTML、Markdown 和静态输出会省略未完成草稿。
 
 ## 与标准的关系
 

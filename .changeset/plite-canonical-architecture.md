@@ -46,6 +46,7 @@
 - Name installed plugin namespace projections `EditorInstalledReadGroups` and `EditorInstalledUpdateGroups`
 - Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
 - Add document replacement, block-relative insertion, live location targets, structural type selectors, function-only node predicates, and explicit selection predicates
+- Export the `documentReplacement` annotation so package-owned resources can revoke authority on equal-content whole-document replacement.
 - Read the nearest schema block with `nodes.block()` and every relevant block with `nodes.blocks()`. Mutate semantic blocks through `blocks.duplicate`, `blocks.insertAfter`, `blocks.set`, and props-first `blocks.toggle`; keep generic structural lifting under `nodes.lift`.
 - Reset targeted blocks to their immediate parent or document-root schema default with `blocks.reset()`, preserving children, selection, live node keys, and lifecycle-approved properties.
 - Infer node read and mutation targets from `type` selectors or type-guard `match` predicates. Remove caller-selected node result generics and shallow object matchers. Keep `at` independent from the selected node type, and put insertion split-target selection under `split: { type, match }`.

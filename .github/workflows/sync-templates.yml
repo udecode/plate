@@ -48,9 +48,6 @@ jobs:
       - name: 🏗 Build Registry
         run: pnpm --filter www build:registry && pnpm --filter www build:tw
 
-      - name: 🏗 Build local dev registry
-        run: pnpm --filter www rd
-
       - name: 🔄 Update templates
         env:
           TEMPLATE_SKIP_VERIFY: 'true'

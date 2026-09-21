@@ -31,6 +31,38 @@ describe('compilePlateHtmlCodec', () => {
     expect(output.getData('text/html')).toBe('<p></p>');
   });
 
+  it('omits an element whose structural encoder returns null', () => {
+    const OmittedPlugin = definePlugin('omittedHtmlElement', {
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: () => null,
+            match: [{ tag: 'template' }],
+          },
+        }),
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+    });
+    const editor = createEditor({ plugins: [OmittedPlugin] });
+    const output = new DataTransfer();
+    const formats = writeHostFragmentData(
+      editor,
+      output,
+      ContentSlice.closed([
+        { children: [{ text: 'Before' }], type: 'paragraph' },
+        { children: [{ text: 'Draft' }], type: 'omittedHtmlElement' },
+        { children: [{ text: 'After' }], type: 'paragraph' },
+      ])
+    );
+
+    expect(formats).toContain('text/html');
+    expect(output.getData('text/html')).toBe('<p>Before</p><p>After</p>');
+  });
+
   it('decodes and encodes one inferred element rule', () => {
     const ParagraphPlugin = definePlugin('customParagraph', {
       codecs: ({ defineCodecs }) =>

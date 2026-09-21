@@ -540,6 +540,8 @@ export type PluginReconfigureOptions = Readonly<{
 }>;
 
 export type EditorTransactionPluginsApi = {
+  /** Whether the current editor has this plugin name or descriptor installed. */
+  has: (plugin: PluginReference | string) => boolean;
   /** Replace one named plugin slot when the surrounding update commits. */
   reconfigure: (
     slot: PluginSlotLike,
@@ -1630,7 +1632,9 @@ export type EditorCoreUpdateMethods<
   /** Dispatch a typed semantic command in one update. */
   command: EditorCommandDispatch<BaseEditor<V, TPlugins>>;
   effects: EditorBivariantMethods<EditorTransactionEffectsApi>;
-  plugins: EditorBivariantMethods<EditorTransactionPluginsApi>;
+  plugins: EditorBivariantMethods<
+    Pick<EditorTransactionPluginsApi, 'reconfigure'>
+  >;
   fragment: EditorBivariantMethods<
     Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>
   >;

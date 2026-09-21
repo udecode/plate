@@ -263,24 +263,15 @@ describe('persistent anchor history contract', () => {
     });
 
     nearest.release();
-    assert.deepEqual(dropped.resolve(), {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    });
+    assert.equal(dropped.resolve(), null);
 
     undo(editor);
     assert.equal(nearest.resolve(), null);
-    assert.deepEqual(dropped.resolve(), {
-      anchor: { path: [0, 0], offset: 1 },
-      focus: { path: [0, 0], offset: 1 },
-    });
+    assert.equal(dropped.resolve(), null);
 
     redo(editor);
     assert.equal(nearest.resolve(), null);
-    assert.deepEqual(dropped.resolve(), {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    });
+    assert.equal(dropped.resolve(), null);
   });
 
   it('maps an anchor created after an edit without applying older recovery', () => {

@@ -1,0 +1,117 @@
+{
+  "id": "2026-09-19-uploads-files-sdk-testing-method",
+  "kind": "execution",
+  "date": "2026-09-19",
+  "scopes": [
+    "uploads"
+  ],
+  "reviewBasis": [
+    "2026-09-19-uploads-official-files-sdk"
+  ],
+  "workKind": "design",
+  "plan": {
+    "path": "docs/plans/2026-09-19-official-files-sdk-integration.md",
+    "sha256": "f071d38934510f8fdc2facedaa99ee44152dea0399c81716f24ccd7e1039094c"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Extended the Files SDK integration plan with a source-linked test methodology: memory-backed router policy, injected client-to-gateway round trip, separate XHR/browser checks, repeatable provider fakes, opt-in live providers, and clean installed-package public-entrypoint proof. Upstream source tests cannot certify the published 2.6.0 error-class identity.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "docs/plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md",
+        "sha256": "aa58ec944687d0378d8995d16f1fe830d0d741ba1a93d49d45f704ef594a4560",
+        "claim": "Source-linked mapping of upstream test layers, Plate integration obligations and the published-package blind spot."
+      },
+      {
+        "path": "docs/plans/artifacts/official-files-sdk-integration/gateway-policy.spec.ts",
+        "sha256": "4b7dcc132415cba7222da1dcb31251359083b9b97e3a277350ee7deb18516e58",
+        "claim": "Installed-package diagnostic proving that source-level tests alone miss the 2.6.0 denial-status defect."
+      },
+      {
+        "path": "docs/plans/artifacts/official-files-sdk-integration/gateway-policy.observation.log",
+        "sha256": "2ddb1b0add2fdb3c4629087e33928b0b3d4c57839136bf7b0baa85bf1470e225",
+        "claim": "Four passing diagnostic cases, 23 assertions, against installed published 2.6.0."
+      }
+    ],
+    "limits": "The upstream test methodology was inspected and mapped to the planned integration. The existing four-case installed-package diagnostic still demonstrates the published status defect. No upstream suite, copied-route production test, browser run or live provider test was run in this planning pass."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/features/media/lib/media-upload/BaseMediaUploadPlugin.ts": "1695f674fcf4b0de5100b0c6126c2f8325ad7bfd26e1cd9554fe8ab9781ba120",
+      "apps/www/src/registry/components/editor/media.tsx": "5572d5b6b999b2476cd46f8b3ad3c9e3d7fa616732e713c241ef08b54d4caafb",
+      "apps/www/src/registry/lib/uploadthing.ts": "bae36adeb9413dfcc33851d6b1fd8a67d3b2a552604d20a518468b1032c20a17",
+      "apps/www/src/registry/components/editor/media-upload.tsx": "81f9a8107f7aa5eb2a26bd3774607aa90193583dccb633840a60f58e19597915",
+      "apps/www/src/registry/components/editor/media-toolbar-button.tsx": "92afe6624a2cdaa29261d7ed1c94f04adeb2865e6e4a7323d4299e09af90e36a",
+      "apps/www/src/registry/components/editor/dnd.tsx": "e7180c78bb4bac3fc92aaff80e3d91854295a52c8fb746afa7fa588df33a264d",
+      "packages/platejs/src/features/media/lib/media-upload/BaseMediaUploadPlugin.upload.spec.ts": "7100796c686d6dbd743cbcffd9a06eed84925f64347af108a346b0cf913d18e9",
+      "packages/platejs/src/react/features/media/media-upload/MediaUploadPlugin.spec.ts": "eeb614e979626d245e1360ab0d7798a0116da4f46d570788129592bfec941a11",
+      "packages/platejs/src/dnd/react/useDndNode.spec.ts": "286b82e5787efe82ae8c41f2a26ee34c9e3bb2fd4a69598707229e868d1ab7ce",
+      "apps/www/src/registry/components/editor/media-upload.spec.tsx": "2b58bf1d3bc39a34cd99e908fc15ac1ba7c376aa8b04f5eceb351a76b9982bfd",
+      "apps/www/src/registry/components/editor/media-upload.lifecycle.spec.tsx": "1589015243927b4ee80759b4ace1c7b6539c5f0198ce38610847fba9ab7cdc0d",
+      "apps/www/tests/browser/clipboard-upload.spec.ts": "f7f34ca162d22cfb4bdf18976c8106b537a4599582517c2fd1b8dd4d5124979f",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "0f2a4e4ea3d3bac4b967397ae1ee83b88488bcacef2fcf36a514255bc695d3db",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "5dd78e8b691c0e1f7d6d21dd8934ffb9d6590dca220d8174985eaa2877daa6ae",
+      "packages/platejs/src/react/features/media/media-upload/MediaUploadPlugin.tsx": "77315834704ab5e3968b8aa791cf75b3665440fb51783e7dedf8890b3e01aec8",
+      "apps/www/src/registry/components/editor/media-image.tsx": "60292f4a6df792912ab2a231bbe92d3ef1cb1ca8e28107d1042982c0855c76f1",
+      "packages/platejs/src/dnd/react/useDndNode.ts": "dd4c453f72b788c17ee6b2eaa2ba707f941f4d60e7d9451f9d111a3d2c440cc3",
+      "apps/www/src/registry/registry-features.ts": "07fd0f71b10c6e06ab04d29b41f468e541a0fd622b7ad14ebf7d41ac24448f37",
+      "content/docs/(plugins)/(elements)/media.mdx": "17d9bbaa7cf1756e9912702c26c24a41d6c5725cd0e0da8cd8dd21a338189113",
+      "content/docs/(guides)/document-model.mdx": "6f03072e0ee221027ea16b99b486c7acd10c4ab20607caa21885731939b8c0f7",
+      "docs/vision/plate.md": "b4023689d2b0a7fcc6dba9ae55431d70e29579298b979d01f226e356ed5d6334",
+      "docs/plans/4803-update-upload-history.md": "76deaafb3d8a0517120b31dc39551223dd9bcee3ae5e49fe091eb84b2525382d",
+      "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md": "6d646330ca469daf7ae2069855d7427dafb6ff29a1ba8a23e7ab97c233d98181",
+      "docs/research/decisions/clipboard-content-fitting.md": "c0709e45e4956999841744f9d10e3292147f3dd80c12305afa743ed9bd2d2c39",
+      "docs/plans/artifacts/2026-09-18-uploads-review/observations.test.ts": "97308d1504c163e492c7ad2ea3595922ccf6c8c026169424920b55c8fc1da83d",
+      "docs/plans/artifacts/2026-09-18-uploads-review/observations.txt": "b91a7ffd66290dfaf13759f37dfb2ccd2cc0a14bb18d5b9d1390018a0626de9f",
+      "packages/plitejs/src/core/public-state.ts": "f3f1b668bbe59c5aec69300d180062e8b5be1dde6202116d35d87e90f3f41481",
+      "packages/plitejs/src/core/plugin.ts": "f3845ada8e4dc1f688f904b98974adcf89cde0b82a859f22bec491acbf605b66",
+      "packages/plitejs/src/history/history-plugin.ts": "16c2ffafa63f071a87c998e65e0ccf3b993b30574f7693578cea3acf93994b99",
+      "packages/plitejs/src/history/history-state.ts": "573b6075ab8e44c5134ad45cb4ce761a6681cc40f27aeea62257feefa1018e93",
+      "packages/platejs/src/react/editor/useCreateEditor.ts": "80d2d3022d15f5179a3b038f94ebac76cf41ca8a3529c6f5cf8d40c1bd925040",
+      "packages/plitejs/test/state-tx-public-api-contract.ts": "209cec88181af5afdd9d487fb7fe54802179433514c99cc71cb1f4335e99b75e",
+      "packages/plitejs/test/plugin-configuration.test.ts": "b34e9eefa640c1cedfc8ef298bf6e54aa3b8e501e1193a3e805193b150c33c47",
+      "packages/plitejs/src/interfaces/editor.ts": "333d1ad3e93b3935040256d145fc2ef4b6ae35d66fd124c1944c87233b96b90e",
+      "packages/plitejs/src/core/commit.ts": "1be86183d11ddcff651f3e53c8fcdac83bbb3a11f6ae9eef4bc3f3dc62eeb9c7",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "540c4ad1419f4b1d836afc3f9d9b92a9df11d8811ca2ad45c4131ab9dead461d",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      "docs/plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md": "aa58ec944687d0378d8995d16f1fe830d0d741ba1a93d49d45f704ef594a4560",
+      "docs/plans/artifacts/official-files-sdk-integration/gateway-policy.spec.ts": "4b7dcc132415cba7222da1dcb31251359083b9b97e3a277350ee7deb18516e58",
+      "docs/plans/artifacts/official-files-sdk-integration/gateway-policy.observation.log": "2ddb1b0add2fdb3c4629087e33928b0b3d4c57839136bf7b0baa85bf1470e225"
+    },
+    "directories": {},
+    "features": {
+      "application/uploadthing": "6c220ef4de7b78fba50cc1f3e41890d147cc59acf818a955f5e47e9dec6b2778",
+      "capability/mediaUpload": "e119c9c080df6bd5c668185ad3b810d38908860f4141ca094b2538e94982830c",
+      "registry/hooks/use-object-url": "05b9bdd3c89dfa0feaff9dc0d787b7f47aadc2efde5867414b174bb25507d9c9",
+      "registry/hooks/use-object-url.spec": "240f85dbe01f39ca071c65ad7a1f7d43aeedd3dff74555e6df52efb0ec83bd81",
+      "registry/lib/uploadthing": "13db90c9d4f7d9408f6c71561313927c9fb96a56076dbd65fe58fc4822fde73d",
+      "ui/media-upload": "b243ff5316fb4abecc65b3a4678bd3f53e99e15e635a509dc45bf0566d698886"
+    },
+    "upstreams": [
+      {
+        "checkout": "/Users/zbeyens/git/files-sdk",
+        "commit": "e87f630c17d5fa3e5f84adb3d81fc540c4b17348",
+        "files": {
+          "packages/files-sdk/test/files-api.test.ts": "aa6240860b4824c6f7aedc630cec8ca10882850e560441a7b261380e58d5fa7d",
+          "packages/files-sdk/test/files-client.test.ts": "96f04a9f98a302c68f3c2459cdb96a95df7c974ef4185b003854511670ad60a7",
+          "packages/files-sdk/test/files-client-edge.test.ts": "8d2c63fa78e744d7d64accf84deb7fdbc832fb72dca04814a5ee406ceafdad63",
+          "packages/files-sdk/test/r2.test.ts": "7e64ce18815a5f939b38d645343f963241b1803d9c57a5dc75d7b5ceb36959c5",
+          "packages/files-sdk/test/s3.test.ts": "f43edbcdee8c276844a032fdedbd9ff043eb866ccdaa80f79a681125ab0e0e1d",
+          "packages/files-sdk/test/live-helper.ts": "a46708e791752b68b2c590d15324d0c5a78c7b6ac8f8469a275b3bba724fbf04",
+          "packages/files-sdk/test/build-output.test.ts": "50c3115b2048a9ab7caea742a9c414b6aec51ed1dc31c9aba8738347bbf87917"
+        }
+      }
+    ]
+  },
+  "references": [
+    "docs/plans/2026-09-19-official-files-sdk-integration.md",
+    "docs/plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md",
+    "docs/plans/artifacts/official-files-sdk-integration/gateway-policy.spec.ts",
+    "docs/research/review-records/2026-09-19-uploads-files-sdk-final-audit.json",
+    "docs/research/decisions/uploads-ownership.md"
+  ]
+}

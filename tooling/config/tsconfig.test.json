@@ -143,6 +143,10 @@
       "platejs/toc/react": [
         "../../packages/platejs/src/react/features/toc/index.ts"
       ],
+      "platejs/upload": ["../../packages/platejs/src/features/upload/index.ts"],
+      "platejs/upload/react": [
+        "../../packages/platejs/src/react/features/upload/index.ts"
+      ],
       "platejs/yjs": ["../../packages/platejs/src/yjs/index.tsx"],
       "platejs/yjs/react": ["../../packages/platejs/src/yjs/react/index.tsx"],
       "plitejs": ["../../packages/plitejs/src/index.ts"],

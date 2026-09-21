@@ -78,9 +78,9 @@ the same plan and repair the target before continuing.
   `<EditorRoot decorations>` list of `DecorationSource` descriptors. Each source
   returns keyed ranges with render-safe attributes and may observe an external
   owner for targeted node-key refresh. `Editable` only renders the compiled
-  result. Keep annotation context independent through
-  `AnnotationProvider`; require a feature-owned adapter for annotation
-  paint.
+  result. Keep each annotation index bound to its exact mounted view, pass its
+  typed reader explicitly, and require a feature-owned adapter for annotation
+  paint. Reject a generic annotation provider and implicit empty fallback.
 - For canonical state whose presentation differs by mounted view, first test
   whether the exact Plite React view can derive that choice from its runtime or
   DOM lifecycle. If it can, plan private view state plus a literal DOM protocol;

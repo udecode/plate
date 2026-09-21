@@ -13,17 +13,6 @@ export const registryLib: Registry['items'] = [
     type: 'registry:lib',
   },
   {
-    dependencies: ['uploadthing@7.7.4'],
-    files: [
-      {
-        path: 'lib/uploadthing.ts',
-        type: 'registry:lib',
-      },
-    ],
-    name: 'uploadthing',
-    type: 'registry:lib',
-  },
-  {
     dependencies: ['ai@6'],
     files: [
       {

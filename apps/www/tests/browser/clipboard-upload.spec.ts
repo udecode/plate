@@ -73,7 +73,7 @@ const getProof = async (page: Page) =>
       : null;
   });
 
-test('file paste starts after placeholder commit and aborts cleanly on undo', async ({
+test('file paste starts after draft commit and aborts cleanly on undo', async ({
   page,
 }) => {
   const { editor, root } = await openProof(page);
@@ -93,7 +93,7 @@ test('file paste starts after placeholder commit and aborts cleanly on undo', as
       value: {
         children: [
           { type: 'paragraph' },
-          { mediaType: 'image', type: 'placeholder' },
+          { kind: 'image', type: 'upload' },
         ],
       },
     });
@@ -117,6 +117,31 @@ test('file paste starts after placeholder commit and aborts cleanly on undo', as
     });
 });
 
+test('file picker starts from the committed editor view', async ({ page }) => {
+  const { editor } = await openProof(page);
+  const chooserPromise = page.waitForEvent('filechooser');
+
+  await page.getByTestId('upload-picker').locator('button').first().click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({
+    buffer: Buffer.from('image bytes'),
+    mimeType: 'image/png',
+    name: 'picker.png',
+  });
+
+  await expect
+    .poll(() => getProof(page))
+    .toMatchObject({
+      fileName: 'picker.png',
+      starts: 1,
+    });
+  await expect
+    .poll(() => editor.get.modelValue())
+    .toMatchObject({
+      children: [{ type: 'paragraph' }, { kind: 'image', type: 'upload' }],
+    });
+});
+
 test('one undo removes a completed pasted upload', async ({ page }) => {
   const { editor, root } = await openProof(page);
 
@@ -131,8 +156,6 @@ test('one undo removes a completed pasted upload', async ({ page }) => {
       children: [
         { type: 'paragraph' },
         {
-          naturalHeight: 60,
-          naturalWidth: 80,
           type: 'image',
           url: 'https://example.test/clipboard-upload.png',
         },

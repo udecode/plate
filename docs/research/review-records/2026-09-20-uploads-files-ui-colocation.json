@@ -1,0 +1,112 @@
+{
+  "id": "2026-09-20-uploads-files-ui-colocation",
+  "kind": "execution",
+  "date": "2026-09-20",
+  "scopes": [
+    "uploads"
+  ],
+  "reviewBasis": [
+    "2026-09-19-uploads-official-files-sdk"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-19-official-files-sdk-implementation.md",
+    "sha256": "65088bfbbf459d547eaf3f5840ae33e0988adaafa6b857a2bf12f84f558b5746"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Colocated the Files SDK upload renderer, picker, progress UI and FilesKit in one copied files registry item; removed the obsolete media-upload item and reverse dependency; repaired public teaching and Plate UI migration doctrine.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/artifacts/official-files-sdk-integration/ui-colocation-verification.json",
+        "sha256": "95f6d302c57e7b99551d2b12c2932ef21c47a81cff2d1441e2c8114ec6e672c0",
+        "claim": "Focused component behavior, registry generation/source, docs parity, changelog, formatting, doctrine validation and the known TypeScript blocker."
+      },
+      {
+        "path": "apps/www/public/r/files.json",
+        "sha256": "e41ecccb865625186186dc704832dda7e53747da6cbdf46d33fc5e0317a99b9e",
+        "claim": "Generated public files item contains the renderer and complete picker/preview dependencies without a media-upload registry dependency."
+      }
+    ],
+    "limits": "Focused Files UI behavior and generated distribution were reverified. Browser upload behavior and package upload semantics were unchanged and were not rerun. The broad www package-integration TypeScript check remains blocked by the existing HistoryPlugin TS2589 recursive-instantiation failure."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/features/files/lib/BaseFilesPlugin.ts": "b49617703a3617cf957cf2ee81dd768661992e44fa5c71677bd6b083ebedff0f",
+      "packages/platejs/src/react/features/files/FilesPlugin.tsx": "964bade30c0601a0c718d0122ea77a5897be6fdfc73a51c6e5c758c631acce24",
+      "apps/www/src/registry/lib/files.ts": "f667b50ad3b97c73990a833db71016c585c2e0511071856d4e3c3f0c61b7c794",
+      "apps/www/src/registry/app/api/files/route.ts": "a7576a2cc179c53939a2f5be7ffc96657c71f8dcfd934d5d80023ae5995ffb26",
+      "apps/www/src/registry/components/editor/files.tsx": "e9d1dfe9d01f4d1f618065fe05b6a3c7d339335614aa7254c66fe2a17e0e61b8",
+      "apps/www/src/registry/components/editor/media-toolbar-button.tsx": "1006b1d077a6c8f1a4fe9168605c714cc3889047b780cddc6d91682228e3c6ec",
+      "apps/www/src/registry/components/editor/dnd.tsx": "868524eba94be3e32a844e71f57ebe2cc9a9b925499e2fbfc3bee4635307603c",
+      "packages/platejs/src/features/files/lib/BaseFilesPlugin.spec.ts": "a2367c93181ebaef053c9ac7257eaee92b4f151f464352c2973472612871c94f",
+      "packages/platejs/src/features/files/lib/BaseFilesPlugin.sdk.spec.ts": "ad99fa0d193d4d0b1083f9d406ac9b84a713c88cb8d4b59090f4e4e515649546",
+      "packages/platejs/src/features/files/lib/BaseFilesPlugin.upload.spec.ts": "0bcd0f4879041f87cace5bea412927e9c502c276e612025d80a8058944dd4d37",
+      "packages/platejs/src/features/files/lib/BaseFilesPlugin.typed.spec.ts": "17f93ff4b4fcc9a1bac4fe728ba1a7f9a4c1093a7ff7bc23f35a9f1dab1e9271",
+      "packages/platejs/src/react/features/files/FilesPlugin.spec.ts": "2c7d2a0451f0d0c57c76fdc552f51f4f67f9e1ef369757af253fbd92d78771af",
+      "apps/www/src/registry/components/editor/files.spec.tsx": "8829d7136edd2822d22d2cb1a922ee510c9c4caeb66952d07d4767f0499c9ba5",
+      "apps/www/src/registry/components/editor/files.lifecycle.spec.tsx": "d81054f3b148be23aab55e029ebc7b88112a86ce4f023ecaa53ad9bd5096e458",
+      "apps/www/src/registry/components/editor/dnd-files.spec.tsx": "14a930df0b2786a13fac8033edaad99f73ed681c1bf427611449253dd07b1800",
+      "apps/www/src/registry/lib/files.gateway.test.ts": "d726d142b90694d94a526215e5c2b6f3a2b24bfb06dda604a9c6b0d2620126de",
+      "apps/www/tests/browser/files-sdk.spec.ts": "4a810f21d322882c693ab3f4758acd5db611c6d3ed6a3e4ce836955ab3499c5a",
+      "apps/www/tests/browser/clipboard-upload.spec.ts": "8da940d6c1066dfac5dbf44e83f1917219fbcb2663ba70700ddab3d36916ccc8",
+      "docs/plans/artifacts/official-files-sdk-integration/production-run-2026-09-20T06-36-10-066Z-summary.json": "1d6af0ace59350e6b392e5603ee486fa8bd24ce32616f722090a769e3fd99609",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "0f2a4e4ea3d3bac4b967397ae1ee83b88488bcacef2fcf36a514255bc695d3db",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "5dd78e8b691c0e1f7d6d21dd8934ffb9d6590dca220d8174985eaa2877daa6ae",
+      "apps/www/src/registry/components/editor/media-image.tsx": "60292f4a6df792912ab2a231bbe92d3ef1cb1ca8e28107d1042982c0855c76f1",
+      "packages/platejs/src/dnd/react/useDndNode.ts": "dd4c453f72b788c17ee6b2eaa2ba707f941f4d60e7d9451f9d111a3d2c440cc3",
+      "apps/www/src/registry/registry-features.ts": "6b5af46ac2ff954edb31d294620c61a6216ae6f6db147a60329b5bbd0e5b52ee",
+      "content/docs/(plugins)/(elements)/media.mdx": "83dc594e5eccea2db2025d915c89b8e6bca375f02babc139cb32f82280c975c8",
+      "content/docs/(guides)/document-model.mdx": "f3aa467294564f03b567390eba006723678d9a26b515120ae126364b5ebb336e",
+      "docs/vision/plate.md": "ac0ba8ae8e5b7ae78f4b7323b649d938e086d736e7e127e3b0612293ac5e696f",
+      "docs/plans/4803-update-upload-history.md": "76deaafb3d8a0517120b31dc39551223dd9bcee3ae5e49fe091eb84b2525382d",
+      "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md": "6d646330ca469daf7ae2069855d7427dafb6ff29a1ba8a23e7ab97c233d98181",
+      "docs/research/decisions/clipboard-content-fitting.md": "c0709e45e4956999841744f9d10e3292147f3dd80c12305afa743ed9bd2d2c39",
+      "docs/plans/artifacts/2026-09-18-uploads-review/observations.test.ts": "97308d1504c163e492c7ad2ea3595922ccf6c8c026169424920b55c8fc1da83d",
+      "docs/plans/artifacts/2026-09-18-uploads-review/observations.txt": "b91a7ffd66290dfaf13759f37dfb2ccd2cc0a14bb18d5b9d1390018a0626de9f",
+      "packages/plitejs/src/core/public-state.ts": "1911e5d5823dac705b86fad2f3c2d8cd208a323e5dafff682dc42221dad15140",
+      "packages/plitejs/src/core/plugin.ts": "f3845ada8e4dc1f688f904b98974adcf89cde0b82a859f22bec491acbf605b66",
+      "packages/plitejs/src/history/history-plugin.ts": "16c2ffafa63f071a87c998e65e0ccf3b993b30574f7693578cea3acf93994b99",
+      "packages/plitejs/src/history/history-state.ts": "573b6075ab8e44c5134ad45cb4ce761a6681cc40f27aeea62257feefa1018e93",
+      "packages/platejs/src/react/editor/useCreateEditor.ts": "80d2d3022d15f5179a3b038f94ebac76cf41ca8a3529c6f5cf8d40c1bd925040",
+      "packages/plitejs/test/state-tx-public-api-contract.ts": "209cec88181af5afdd9d487fb7fe54802179433514c99cc71cb1f4335e99b75e",
+      "packages/plitejs/test/plugin-configuration.test.ts": "b34e9eefa640c1cedfc8ef298bf6e54aa3b8e501e1193a3e805193b150c33c47",
+      "packages/plitejs/src/interfaces/editor.ts": "9a8f93484744d0f52b00c03d70a415540c04de1d223f52c867402ed0906f49d7",
+      "packages/plitejs/src/core/commit.ts": "1be86183d11ddcff651f3e53c8fcdac83bbb3a11f6ae9eef4bc3f3dc62eeb9c7",
+      "apps/www/src/registry/lib/files-storage.ts": "98d37145797c6ea70ab36f1251b4eb9d4b8b1a84f8c4d2c361c5dfe6d5808f7d",
+      "content/docs/(guides)/files.mdx": "d2d2dbe9cbbf744eeca73ff1a4fadea744c31ceb36368247188ecb0ebf0cef43",
+      "docs/plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md": "aa58ec944687d0378d8995d16f1fe830d0d741ba1a93d49d45f704ef594a4560",
+      "docs/plans/artifacts/official-files-sdk-integration/implementation-proof.json": "4a8a6a4c98e82a29d3b62b238e72059b921189b41c9a2774c1321880d92d7522",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "c30b05901aa8f2ecb6c6a62b6e37d963ed743eb8538c444517cd3117ae202a17"
+    },
+    "directories": {},
+    "features": {
+      "application/files": "cb2f0a49db300ba8ea3f7955bc330c430a242cb67f68329a0ecffb16c192c2c9",
+      "browser/files-sdk": "f2441d7d4ae1b0488b685aaf168566a2672e0f6712c70a7d2cb4bd5f33544f06",
+      "capability/files": "03ddb8cbbe76783e703bd8fb391d25dda1ce22eb814720837aa9e33fc1149e67",
+      "export/platejs/./files": "b336b7b7aa535a272d90c8caa6d72da0da17f55720b450ce79c0e3b84a1bac00",
+      "export/platejs/./files/react": "b336b7b7aa535a272d90c8caa6d72da0da17f55720b450ce79c0e3b84a1bac00",
+      "platejs/files": "cc3daf854ba8aa3e95c7571cdb713e330d3606f692a7df382425cba06c394e0c",
+      "registry/hooks/use-object-url": "fead23882e5f46ac8495bc4d002af1ecdc6d21aa031e581e3257478064d80179",
+      "registry/hooks/use-object-url.spec": "240f85dbe01f39ca071c65ad7a1f7d43aeedd3dff74555e6df52efb0ec83bd81",
+      "registry/lib/files": "ca726ed8c832040cba9229ac2cb7a8177644fb62b3c1c32b86d7781bfe296b52",
+      "registry/lib/files-storage": "62bda839e4ec0b1980f5080cf132747cf3773f47ab58dbf8a6d37e25d916a587",
+      "registry/lib/files.gateway.test": "5127f3f7842762f63e27dec87d12782e1d7a936ab11b80d2bf3c4ec9db8c933a",
+      "registry/lib/files.gateway.test-run": "7a1e4451d4dcf9e23b016da22ca9e4f02a3b046e5f3717efdf405f40ff5d8e53",
+      "registry/lib/files.typecheck-run": "c7cee6d4b7a863a05cba2801ab114ad86057347843695f37ee84bb539729c0bb",
+      "ui/dnd-files": "17e38b90f0fc37c15b44dccd41cc9a23987536ffdf616bf4b094dadd2cdf3b50",
+      "ui/files": "81b0bdc92cb75241a6317299d3247b6b40ad9ee09b3fcd6cf398ce20d762ec0a"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-19-official-files-sdk-implementation.md",
+    "docs/plans/artifacts/official-files-sdk-integration/ui-colocation-verification.json",
+    "docs/research/decisions/uploads-ownership.md"
+  ]
+}

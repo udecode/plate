@@ -23,7 +23,7 @@ export const proExamples: Registry['items'] = [
   },
   {
     categories: ['pro'],
-    description: `- Integration with [UploadThing](https://uploadthing.com/)
+    description: `- Files SDK upload integration with application-owned storage
 - Use slash commands for quick insertion
 - Displays clickable placeholders for various media types (image, video, audio, file)
 - Opens a popover with two tabs when the placeholder is clicked:

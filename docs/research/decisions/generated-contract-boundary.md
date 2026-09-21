@@ -2,14 +2,16 @@
 title: Generated contracts belong to the application graph
 type: decision
 status: assessed
-updated: 2026-09-14
+updated: 2026-09-20
 review_scope: compiler
-current_review: 2026-09-14-registry-generated-contract-boundary
+current_review: 2026-09-20-registry-plugin-capability-boundary
 review_history:
   - ../review-records/2026-09-14-registry-generated-contract-boundary.json
+  - ../review-records/2026-09-20-registry-plugin-capability-boundary.json
 source_refs:
   - ../../../packages/cli/src/generate.ts
   - ../../../apps/www/src/registry/components/editor/more-toolbar-button.tsx
+  - ../../../apps/www/src/registry/components/editor/dnd.tsx
   - ../../../apps/www/src/registry/components/editor/plugins.generated.ts
 related:
   - plate-core-ownership.md
@@ -37,6 +39,15 @@ type. Single feature updates use `editor.plugin(Plugin).update`. Node renderers
 derive local schema properties from their descriptor. If these contracts fail
 to infer a legitimate operation, repair their owning API rather than inserting
 an application graph, cast or handwritten union into copied source.
+
+One optional cross-feature boundary does not reverse that rule. The standalone
+`DndKit` can place dropped files when the separately installed Files capability
+exists, but importing `UploadPlugin` would make DnD pull the Files feature and
+its optional SDK peer. That integration uses the explicit erased boundary:
+`tx.plugins.has('files')` followed by `tx.plugin('files')` in the same update.
+It is runtime guarded and behavior tested, but its method shape is deliberately
+not statically checked. Keep name-only dispatch confined to such package-decoupled
+integration; ordinary registry items continue to use exact descriptors.
 
 Generated exact contracts retain an independent application job: statically
 checking a complete customized document shape and its schema/mutation contract.

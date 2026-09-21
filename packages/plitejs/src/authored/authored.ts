@@ -459,14 +459,21 @@ const readAuthoredViewProjection = (
     : live.source.read.getField(authoredState);
   const fragment = FRAGMENT_VIEWS.get(getEditorRuntime(view));
   if (fragment && coordinates === 'view') {
-    return (
-      readBoundFragmentProjection(
-        fragment,
-        readAuthoredViewProjection(live, view, 'accepted'),
-        readAuthoredViewProjection(live, view, 'proposed'),
-        tx ? undefined : live
-      ) ?? { positions: null, state, value: EMPTY_FRAGMENT_VALUE }
-    );
+    const unavailable =
+      fragment.requireMarkupParent &&
+      authoredView(fragment.parent).projection !== 'markup';
+    const projection = readBoundFragmentProjection(
+      fragment,
+      readAuthoredViewProjection(live, view, 'accepted'),
+      readAuthoredViewProjection(live, view, 'proposed'),
+      tx ? undefined : live
+    ) ?? { positions: null, state, value: EMPTY_FRAGMENT_VALUE };
+
+    return {
+      ...projection,
+      mode: 'fragment',
+      ...(unavailable ? { unavailable: 'projection' as const } : {}),
+    };
   }
   let projection: AuthoredProjection = live;
   const { active } = live;
@@ -556,6 +563,7 @@ const readAuthoredViewProjection = (
           ? active.inputProjection === 'accepted'
           : authoredView(view).projection === 'accepted';
   return {
+    mode: accepted ? 'accepted' : 'proposed',
     positions: accepted
       ? projection.acceptedPositions
       : projection.projectedPositions,
@@ -1659,6 +1667,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
               : null;
           let settled = false;
           const binding = bindAuthoredDocumentPath(
+            view,
             path,
             anchorOptions,
             (target) => {
@@ -1709,6 +1718,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
               : null;
           let settled = false;
           const binding = bindAuthoredDocumentRange(
+            view,
             input,
             input.options,
             (target) => {

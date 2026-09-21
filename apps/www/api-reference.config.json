@@ -82,6 +82,7 @@
             "BlockFenceInputRuleMatch",
             "BlockStartInputRuleConfig",
             "BlockStartInputRuleMatch",
+            "BlockUpsertOptions",
             "BlockquoteRules",
             "BoldRules",
             "BooleanMarkKeysOf",
@@ -776,6 +777,7 @@
             "defineValueCodec",
             "diffEditorSchemaContracts",
             "dispatchCommand",
+            "documentReplacement",
             "editorCommands",
             "editorReads",
             "encodeEditorEffect",
@@ -973,6 +975,33 @@
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {}
         },
+        "./upload": {
+          "exclude": ["UPLOAD_FILE_TYPES", "UPLOAD_KINDS"],
+          "excludeReason": "Internal constants are documented in the Upload guide.",
+          "include": {
+            "BaseUploadPlugin": "/docs/upload",
+            "UploadAdmissionError": "/docs/upload",
+            "UploadClient": "/docs/upload",
+            "UploadElement": "/docs/upload",
+            "UploadFailure": "/docs/upload",
+            "UploadFileType": "/docs/upload",
+            "UploadKind": "/docs/upload",
+            "UploadPluginState": "/docs/upload",
+            "UploadRule": "/docs/upload",
+            "UploadRules": "/docs/upload",
+            "UploadSubmitOptions": "/docs/upload",
+            "UploadTask": "/docs/upload",
+            "UploadTaskState": "/docs/upload"
+          }
+        },
+        "./upload/react": {
+          "exclude": [],
+          "excludeReason": "No curated reference page owns this symbol yet.",
+          "include": {
+            "UploadPlugin": "/docs/upload",
+            "UploadDefinition": "/docs/upload"
+          }
+        },
         "./media": {
           "exclude": [
             "AlignedMediaInsertInput",
@@ -982,7 +1011,6 @@
             "BaseFilePlugin",
             "BaseImagePlugin",
             "BaseMediaEmbedPlugin",
-            "BasePlaceholderPlugin",
             "BaseVideoPlugin",
             "EmbedUrlData",
             "EmbedUrlParser",
@@ -999,7 +1027,6 @@
             "MediaInsertInput",
             "MediaPluginState",
             "MediaUrlProperties",
-            "PlaceholderElement",
             "ProviderMediaInsertInput",
             "ResizableElement",
             "VIDEO_PROVIDERS",
@@ -1013,23 +1040,7 @@
             "parseVideoUrl"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {
-            "ALLOWED_FILE_TYPES": "/docs/media",
-            "AllowedFileType": "/docs/media",
-            "FileSize": "/docs/media",
-            "InsertMediaOptions": "/docs/media",
-            "MediaItemConfig": "/docs/media",
-            "MediaKeys": "/docs/media",
-            "MediaUpload": "/docs/media",
-            "MediaUploadResult": "/docs/media",
-            "MediaUploadState": "/docs/media",
-            "MediaUploadTransport": "/docs/media",
-            "PlaceholderPluginState": "/docs/media",
-            "SizeUnit": "/docs/media",
-            "UploadConfig": "/docs/media",
-            "UploadError": "/docs/media",
-            "UploadErrorCode": "/docs/media"
-          }
+          "include": {}
         },
         "./mention": {
           "exclude": [

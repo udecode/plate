@@ -3,11 +3,9 @@ title: "Annotations"
 description: "Attach durable range identities to editor text and read them from React UI."
 ---
 
-Annotations attach durable ranges to editor text and publish them to sidebars,
-widgets, and other React UI.
-Use [Decorations, annotations, and widgets](/docs/decorations) for the
-broader choice between decorations, annotation stores, widgets, and projected
-text rendering.
+Annotations attach durable ranges to editor text and publish them to sidebars
+and other React UI. Use [Decorations and annotations](/docs/decorations) for
+the broader choice between transient paint and retained range identity.
 
 ## When to use annotations
 
@@ -15,15 +13,15 @@ Use annotations when a range has identity beyond a single render pass: review
 comments, issue markers, tracked external diagnostics, resolved threads, or
 other application-owned ranges.
 
-Use decorations for transient paint such as search matches. Use widgets for UI
-that hangs off a node, selection, or annotation.
+Use decorations for transient paint such as search matches. Position floating
+UI from the mounted view's selection or range geometry.
 
 ## Annotation shape
 
 ```ts
 import type { Anchor, Range } from "platejs";
 
-type AnnotationAnchor = Pick<Anchor<Range>, "release" | "resolve">;
+type AnnotationAnchor = Pick<Anchor<Range>, "resolve">;
 
 type Annotation<TData> = {
   anchor: AnnotationAnchor;
@@ -40,10 +38,13 @@ Each store passes its editor to `anchor.resolve(editor)`. Stores for different
 views of the same model can share one retained anchor while reading different
 ranges. A projection change in one view does not change another store's view.
 
-Getters refresh ranges lazily after document or projection changes and otherwise
-reuse the index. Passive reads do not subscribe. Observation starts with the
-first subscriber and stops when the last unsubscribes. `destroy()` permanently
-stops observation and clears subscribers; reads cannot reactivate the store.
+Getters refresh ranges lazily after document or projection changes and
+otherwise reuse the index. Passive reads do not subscribe. Observation starts
+with the first subscriber and stops when the last unsubscribes.
+
+`useAnnotationStore` owns its store's activation and cleanup. The headless
+`createAnnotationStore` constructor returns an owned store with `destroy()` for
+framework adapters that own a non-React lifetime.
 
 `data` is application metadata. It is returned by `useAnnotation` and
 `useAnnotations`.
@@ -64,13 +65,9 @@ const anchor = editor.anchor(
   { association: "inward", deletion: "nearest" }
 );
 
-const annotationStore = useAnnotationStore(editor, [
-  {
-    anchor,
-    data: { label: "Comment 1" },
-    id: "comment-1",
-  },
-]);
+const annotations = [
+  { anchor, data: { label: "Comment 1" }, id: "comment-1" },
+];
 ```
 
 Use `nearest` for durable annotations. Complete deletion collapses the range to
@@ -86,23 +83,25 @@ const annotations = comments.map((comment) => ({
   id: comment.id,
 }));
 
-const annotationStore = useAnnotationStore(editor, annotations);
+function CommentsView() {
+  const view = useEditorContext();
+  const annotationStore = useAnnotationStore(view, annotations);
+
+  return <CommentsSidebar store={annotationStore} />;
+}
 ```
 
-Wrap annotation readers in `AnnotationProvider` when they should share a
-default store. The annotation provider is independent from the editor provider,
-so another subtree can use a different store.
+Create the store inside `EditorRoot` when its ranges belong to that mounted
+view. Pass the store explicitly so its data type and ownership stay visible.
 
 ```tsx
 <EditorRoot editor={editor}>
-  <AnnotationProvider store={annotationStore}>
-    <EditorContent />
-    <CommentsSidebar />
-  </AnnotationProvider>
+  <EditorContent />
+  <CommentsView />
 </EditorRoot>;
 
-function CommentsSidebar() {
-  const snapshot = useAnnotations();
+function CommentsSidebar({ store }: { store: AnnotationStore<Comment> }) {
+  const snapshot = useAnnotations(store);
 
   return snapshot.allIds.map((id) => {
     const comment = snapshot.byId.get(id);
@@ -156,6 +155,10 @@ Refresh semantics:
 - pass an empty array for a no-op
 - pass ids to re-resolve only those annotations
 
+Annotation IDs must be unique within a store. Duplicate IDs throw as invalid
+input. If reading or resolving an external source fails, correct the source and
+call `refresh()` to reactivate it.
+
 ## Comment channels
 
 Use separate channels for the document and the comments.
@@ -198,7 +201,6 @@ An external adapter can keep the document and comments in separate stores.
 import type { Editor, Range } from "platejs";
 
 type ExternalAnnotationAnchor = {
-  release(): Range | null;
   resolve(view?: Editor): Range | null;
 };
 
@@ -214,7 +216,9 @@ commentChannel.set(threadId, {
 The adapter owns mapping, drift recovery, deletion policy, and permissions.
 Resolve into the supplied view's coordinates. Omitting the view uses the
 capture view; an explicit view must belong to the same model and document root.
-See [Anchor API](/docs/api/anchor) for release and aborted-capture behavior.
+The application releases a native anchor through its own retained handle; the
+annotation store only borrows `resolve`. See [Anchor API](/docs/api/anchor) for
+release and aborted-capture behavior.
 
 ## Document-embedded ids
 

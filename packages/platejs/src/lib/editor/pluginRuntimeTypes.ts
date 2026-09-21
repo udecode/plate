@@ -770,7 +770,7 @@ type ElementInsertOptions<
   TSelector extends PluginNodeTypeSelector,
   TMutations = never,
 > = Omit<NodeInsertNodesOptions<Element>, 'match' | 'split' | 'type'> &
-  Pick<BlockInsertOptions, 'after' | 'replaceEmpty'> & {
+  Pick<BlockInsertOptions, 'after' | 'before' | 'replaceEmpty'> & {
     split?: Omit<
       NonNullable<NodeInsertNodesOptions<Element>['split']>,
       'match' | 'type'
@@ -1625,15 +1625,18 @@ export type NodeInsertOptions = Omit<
 /**
  * Placement options for feature commands that insert whole blocks.
  *
- * Without `at`, insertion uses `after` or the current block as its source. A
- * different empty editable block is replaced, a matching empty block gets a
- * sibling, and content or structural blocks are preserved before the new
- * block. `at` is an exact insertion location. `replaceEmpty` explicitly
- * overrides the semantic empty-block choice for `insert`.
+ * `before` and `after` accept stable block targets. Without an explicit target,
+ * insertion uses the current block as its source. A different empty editable
+ * block is replaced, a matching empty block gets a sibling, and content or
+ * structural blocks are preserved before the new block. `at` is an exact
+ * insertion location. `replaceEmpty` explicitly overrides the semantic
+ * empty-block choice for `insert`.
  */
 export type BlockInsertOptions = NodeInsertOptions & {
   /** Insert after this block target; omit `at` when using `after`. */
   after?: NodeTarget;
+  /** Insert before this stable block key; omit `at` and `after`. */
+  before?: NodeKey;
   /** Replace an empty editable source when inserting after a block. */
   replaceEmpty?: boolean;
 };

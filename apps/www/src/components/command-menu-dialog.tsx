@@ -84,7 +84,7 @@ const commandMenuCopyableRegistryNames = new Set(
   docx docx-export editor-static editor-plugins emoji exit-break
   fixed-toolbar floating-toolbar footnote font indent
   line-height link list markdown math
-  media media-uploadthing mention slash suggestion
+  media files mention slash suggestion
   tabbable table toc details
   ai-demo align-demo autoformat-demo basic-blocks-demo basic-marks-demo
   basic-nodes-demo block-menu-demo node-selection-demo callout-demo

@@ -332,10 +332,13 @@ Inside a later tx stage, call an earlier tx method through
 package dependency. Descriptor input keeps exact inference and nominal
 validation; name input is intentionally erased and fails at runtime when the
 plugin or group is absent. Generated closed editors may use the direct
-`tx.pluginName` group. Do not index the transaction object with a runtime plugin
-name or use `editor.plugin(...).update`, `context.update`, or another one-shot
-update there; those open a nested transaction. Raw Plite and Plate share the
-selector semantics.
+`tx.pluginName` group. An optional name-only consumer checks
+`tx.plugins.has(pluginName)` in the same transaction; it does not reflect over
+editor capability maps, recast the target group, or import a descriptor only
+to test installation. Do not index the transaction object with a runtime
+plugin name or use `editor.plugin(...).update`, `context.update`, or another
+one-shot update there; those open a nested transaction. Raw Plite and Plate
+share the selector semantics.
 
 New methods should accept domain inputs such as `value`, `entry`, `at`, or
 operation options. Do not invent function parameters for `editor`, `api`,

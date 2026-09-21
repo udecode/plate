@@ -13,10 +13,10 @@ docs:
     title: 媒体嵌入元素
   - route: /docs/components/media-toolbar
     title: 媒体弹出框
-  - route: /docs/components/media-placeholder
-    title: 媒体占位元素
+  - route: /docs/upload
+    title: 上传文件
   - route: /docs/components/media
-    title: 媒体上传提示
+    title: 媒体套件
   - route: /docs/components/media-toolbar-button
     title: 媒体工具栏按钮
   - route: https://pro.platejs.org/docs/examples/media
@@ -56,7 +56,7 @@ docs:
 - **上传体验**:
   - 实时进度跟踪
   - 上传过程中预览
-  - 上传或嵌入完成后自动将占位符转换为相应的媒体元素(图片/视频/音频/文件)
+  - 使用同一个节点身份将草稿位替换为完成的图片、视频、音频或文件
   - 错误处理
   - 文件大小验证
   - 类型验证
@@ -70,18 +70,19 @@ docs:
 ### 安装
 
 最快捷的媒体支持方式是使用 `MediaKit`。它包含预配置的 `ImagePlugin`、
-`VideoPlugin`、`AudioPlugin`、`FilePlugin`、`MediaEmbedPlugin` 和
-`PlaceholderPlugin`，以及对应的 [Plate UI](/docs/installation/plate-ui) 组件。
+`VideoPlugin`、`AudioPlugin`、`FilePlugin`、`MediaEmbedPlugin`，以及
+对应的 [Plate UI](/docs/installation/plate-ui) 组件。需要上传本地文件时，再添加
+`UploadKit`，由它负责草稿渲染和上传控件；`MediaKit` 负责已完成的媒体。
 
 <ComponentSource name="media" />
+<ComponentSource name="upload" />
 
 - [`ImageElement`](/docs/components/media-image): 渲染图片元素
 - [`VideoElement`](/docs/components/media-video): 渲染视频元素
 - [`AudioElement`](/docs/components/media-audio): 渲染音频元素
 - [`FileElement`](/docs/components/media-file): 渲染文件元素
 - [`MediaEmbedElement`](/docs/components/media-embed): 渲染嵌入媒体
-- [`PlaceholderElement`](/docs/components/media-placeholder): 渲染上传占位符
-- [`MediaUploadToast`](/docs/components/media): 显示上传进度通知
+- [`UploadElement`](/cn/docs/upload): 渲染 UploadKit 中未绑定、上传中和失败的媒体草稿位
 - [`MediaPreviewDialog`](/docs/components/media-preview-dialog): 提供媒体预览功能
 
 ### 添加套件
@@ -91,26 +92,21 @@ docs:
 ```tsx
 import { createEditor } from 'platejs/react';
 import { MediaKit } from '@/components/editor/media';
+import { UploadKit } from '@/components/editor/upload';
 
 const editor = createEditor({
   plugins: [
     // ...其他插件
     ...MediaKit,
+    ...UploadKit,
   ],
 });
 ```
 
-### 添加API路由
+### 配置上传
 
-<ComponentInstallation name="media-uploadthing-api" inline />
-
-### 环境配置
-
-从[UploadThing](https://uploadthing.com/dashboard/settings)获取密钥并添加到`.env`:
-
-```bash title=".env"
-UPLOADTHING_TOKEN=xxx
-```
+安装 Files 网关，并为 `UploadKit` 配置 `FilesClient` 和持久 URL 解析函数。
+客户端、路由、访问策略和环境变量见[上传文件](/cn/docs/upload)。
 
 </Steps>
 
@@ -129,7 +125,7 @@ npm install platejs @tanstack/react-virtual
 在创建编辑器时将媒体插件包含到Plate插件数组中。
 
 ```tsx
-import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, PlaceholderPlugin, VideoPlugin } from 'platejs/media/react';
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, VideoPlugin } from 'platejs/media/react';
 import { createEditor } from 'platejs/react';
 
 const editor = createEditor({
@@ -140,25 +136,22 @@ const editor = createEditor({
     AudioPlugin,
     FilePlugin,
     MediaEmbedPlugin,
-    PlaceholderPlugin,
   ],
 });
 ```
 
 ### 配置插件
 
-使用自定义组件和上传设置配置插件。
+使用自定义渲染组件配置媒体插件。
 
 ```tsx
-import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, PlaceholderPlugin, VideoPlugin } from 'platejs/media/react';
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, VideoPlugin } from 'platejs/media/react';
 import { createEditor } from 'platejs/react';
 import { AudioElement } from '@/components/editor/media-audio';
 import { FileElement } from '@/components/editor/media-file';
 import { ImageElement } from '@/components/editor/media-image';
 import { MediaEmbedElement } from '@/components/editor/media-embed';
-import { PlaceholderElement } from '@/components/editor/media-placeholder';
 import { VideoElement } from '@/components/editor/media-video';
-import { MediaUploadToast } from '@/components/editor/media';
 
 const editor = createEditor({
   plugins: [
@@ -168,18 +161,13 @@ const editor = createEditor({
     AudioPlugin.configure({ component: AudioElement }),
     FilePlugin.configure({ component: FileElement }),
     MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
-    PlaceholderPlugin.configure({
-      component: PlaceholderElement,
-      initialState: { disableEmptyPlaceholder: true },
-      slots: { afterEditable: MediaUploadToast },
-    }),
   ],
 });
 ```
 
 - `component`: 为每种媒体类型分配自定义渲染组件
-- `initialState.disableEmptyPlaceholder`: 插入上传占位符时创建独立的撤销批次
-- `slots.afterEditable`: 在编辑器外部渲染上传进度提示
+
+本地文件上传需单独添加 `UploadPlugin`，配置方法见[上传文件](/cn/docs/upload)。
 
 ### 标题
 
@@ -254,62 +242,18 @@ editor.plugin(ImagePlugin).update.insert({
 | 媒体路径上的 Plate `NodeSelection` | 聚焦资源，显示选中边框和空标题占位符；`ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
 | 媒体 children 内的 Plate `TextSelection` | 编辑标题；光标位于标题开头时，`ArrowUp` 返回资源焦点。 |
 
-### 自定义上传实现
+### 上传本地文件
 
-通过 `initialState.upload` 配置上传函数。占位符插件负责取消、进度和替换原始
-节点。你的接口接收文件并返回公开的 `url`。
+[`UploadPlugin`](/cn/docs/upload) 使用 `files-sdk/client` 的 `FilesClient` 上传
+本地文件。它验证整个批次、创建带 key 的草稿位，并在文档事务提交后启动请求。
+应用通过同步 `getUrl` 将 SDK 上传结果映射为持久的绝对 URL。上传完成后，
+已安装的媒体插件会把草稿位变为图片、视频、音频或文件节点。
 
-```ts
-import { PlaceholderPlugin } from 'platejs/media/react';
-
-PlaceholderPlugin.configure({
-  initialState: {
-    upload: async (file, { signal, onProgress }) => {
-      const body = new FormData();
-      body.append('file', file);
-      const response = await fetch('/api/upload', {
-        body,
-        method: 'POST',
-        signal,
-      });
-      if (!response.ok) throw new Error('Upload failed.');
-      const result: unknown = await response.json();
-      if (
-        !result || typeof result !== 'object' ||
-        !('url' in result) || typeof result.url !== 'string'
-      ) {
-        throw new Error('The upload returned no URL.');
-      }
-      onProgress(100);
-      return { name: file.name, url: result.url };
-    },
-  },
-});
-```
-
-将 `signal` 传给上传服务，并报告 0 到 100 的进度。返回值可以包含 `name`、
-`naturalWidth` 和 `naturalHeight`。图片替换不依赖预览组件的加载事件。
-上传失败时保留占位符并提供错误，不会生成替代 URL。未配置上传函数也会产生失败任务。
-
-调用 `editor.plugin(PlaceholderPlugin).api.upload(key, file)` 上传到现有占位符，
-使用 `api.cancelUpload(key)` 取消。通过 `editor.key(element)` 获取当前节点的
-`NodeKey`。插入文件的上传只在文档事务提交后启动。
-
-复制的 `PlaceholderElement` 已订阅上传任务。自定义 React 组件可以结合
-`platejs/react` 的 `usePluginStore` 和 `React.useSyncExternalStore`：
-
-```tsx
-const task = usePluginStore(PlaceholderPlugin, 'uploadTask', editor.key(element));
-const upload = React.useSyncExternalStore(
-  React.useCallback((notify) => task?.subscribe(notify) ?? (() => {}), [task]),
-  React.useCallback(() => task?.getSnapshot() ?? null, [task]),
-  () => null
-);
-```
-
-`task.file` 表示本次上传的文件，快照包含 `status`、`progress` 和 `error`。
-取消订阅或重新挂载视图不会重新启动上传。无 React 的调用方可以从
-`platejs/media` 使用 `BasePlaceholderPlugin` 的相同上传操作；上传与任务类型也从该路径导出。
+使用 `editor.plugin(UploadPlugin).update.submit(files)` 提交新批次；
+`{ slot: key }` 填充现有草稿；`{ after: key }` 等选项指定块位置。
+使用 `editor.plugin(UploadPlugin).api.cancel(key)` 取消单个任务。失败的实时任务
+保留本地 `File` 以便显式重试；重新加载的草稿需要重新选择文件。客户端、进度和
+网关访问策略见[上传文件](/cn/docs/upload)。
 
 ### 添加工具栏按钮
 
@@ -341,19 +285,6 @@ const upload = React.useSyncExternalStore(
 
 <API name="ImagePlugin">
 <APIOptions type="ImagePluginState">
-  <APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
-    上传图片到服务器的函数。接收:
-    - 来自`FileReader.readAsDataURL`的数据URL(字符串)
-    - 来自剪贴板数据的ArrayBuffer
-    返回:
-    - 上传图片的URL字符串
-    - 如果不需要上传则返回原始数据URL/ArrayBuffer
-    - **默认:** 返回原始输入
-  </APIItem>
-  <APIItem name="disableUploadInsert" type="boolean" optional>
-    禁用数据插入时的文件上传。
-    - **默认:** `false`
-  </APIItem>
   <APIItem name="disableEmbedInsert" type="boolean" optional>
     禁用数据插入时的URL嵌入。
     - **默认:** `false`
@@ -366,6 +297,8 @@ const upload = React.useSyncExternalStore(
   </APIItem>
 </APIOptions>
 </API>
+
+`UploadPlugin` 处理粘贴的图片文件；`ImagePlugin` 处理图片 URL。
 
 ### `VideoPlugin`
 
@@ -387,91 +320,34 @@ const upload = React.useSyncExternalStore(
 用于非 void、隔离且可通过键盘选择的媒体嵌入元素。其直接行内 children 存储标题。
 扩展 `MediaPluginState`。
 
-### `PlaceholderPlugin`
+### `UploadPlugin`
 
-管理上传过程中媒体占位符的插件。处理文件上传、拖放和剪贴板粘贴事件。
+管理持久化媒体草稿位和编辑器上传任务。`platejs/upload` 中的
+`BaseUploadPlugin` 拥有无 React 的相同状态机；React 插件增加可选的原生 DOM 拖放适配器。
 
-<API name="PlaceholderPlugin">
-<APIOptions type="object">
-  <APIItem name="upload" type="MediaUploadTransport" optional>
-返回 URL 和可选文件信息的上传函数，接收文件、取消信号和进度回调。插入文件前配置此函数。
+<API name="UploadPlugin">
+<APIOptions type="UploadPluginState">
+  <APIItem name="client" type="FilesClient | null">
+    由 `files-sdk/client` 的 `createFilesClient` 创建。**默认：** `null`。
   </APIItem>
-  <APIItem name="uploadConfig" type="Partial<Record<AllowedFileType, MediaItemConfig>>" optional>
-不同文件类型的配置。包默认把每个受支持的文件类别映射到对应媒体插件，且不设置大小或分类数量限制。复制的 `MediaKit` 使用以下产品策略：
-```ts
-{
-  audio: {
-    maxFileCount: 1,
-    maxFileSize: '8MB',
-    mediaType: PLUGINS.audio,
-    minFileCount: 1,
-  },
-  blob: {
-    maxFileCount: 1,
-    maxFileSize: '8MB',
-    mediaType: PLUGINS.file,
-    minFileCount: 1,
-  },
-  image: {
-    maxFileCount: 3,
-    maxFileSize: '4MB',
-    mediaType: PLUGINS.image,
-    minFileCount: 1,
-  },
-  pdf: {
-    maxFileCount: 1,
-    maxFileSize: '4MB',
-    mediaType: PLUGINS.file,
-    minFileCount: 1,
-  },
-  text: {
-    maxFileCount: 1,
-    maxFileSize: '64KB',
-    mediaType: PLUGINS.file,
-    minFileCount: 1,
-  },
-  video: {
-    maxFileCount: 1,
-    maxFileSize: '16MB',
-    mediaType: PLUGINS.video,
-    minFileCount: 1,
-  },
-}
-```
-支持的文件类型: `'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
-<APISubList>
-  <APISubListItem parent="uploadConfig" name="mediaType" type="MediaKeys">
-    此配置对应的媒体插件 name: `'audio' | 'file' | 'image' | 'video'`
-  </APISubListItem>
-  <APISubListItem parent="uploadConfig" name="maxFileCount" type="number" optional>
-    此类型文件可上传的最大数量。
-  </APISubListItem>
-  <APISubListItem parent="uploadConfig" name="maxFileSize" type="FileSize" optional>
-    此类型文件的最大文件大小。格式: `${1|2|4|8|16|32|64|128|256|512|1024}${B|KB|MB|GB}`
-  </APISubListItem>
-  <APISubListItem parent="uploadConfig" name="minFileCount" type="number" optional>
-    此类型文件必须上传的最小数量。
-  </APISubListItem>
-</APISubList>
-</APIItem>
-<APIItem name="disableEmptyPlaceholder" type="boolean" optional>
-插入上传占位符时创建独立的撤销批次。
-- **默认:** `false`
-</APIItem>
-<APIItem name="disableFileDrop" type="boolean" optional>
-当 DnD 插件不处理文件拖放时，启用占位符的 DOM 拖放处理器。
-- **默认:** `false`
-</APIItem>
-<APIItem name="maxFileCount" type="number" optional>
-如果`uploadConfig`未指定，可一次上传的最大文件数。
-- **默认:** `Number.POSITIVE_INFINITY`
-</APIItem>
-<APIItem name="multiple" type="boolean" optional>
-允许上传多个相同类型的文件。
-- **默认:** `true`
-</APIItem>
+  <APIItem name="getUrl" type="((file: UploadOutcome) => string) | null">
+    同步地将 SDK 上传结果映射为持久的绝对 URL。**默认：** `null`。
+  </APIItem>
+  <APIItem name="rules" type="UploadRules">
+    将 `audio | blob | image | pdf | text | video` 映射到必需的草稿 `kind`，
+    以及可选的 `minFiles`、`maxFiles`、`maxBytes`。
+  </APIItem>
+  <APIItem name="maxFiles" type="number">
+    一个提交批次的最大文件数。**默认：** `Number.POSITIVE_INFINITY`。
+  </APIItem>
+  <APIItem name="onError" type="((failure: UploadFailure) => void) | null">
+    每个被拒批次或失败任务只通知一次。**默认：** `null`。
+  </APIItem>
 </APIOptions>
 </API>
+
+React 版 `UploadPlugin` 还接受 `nativeDrop: boolean`（默认 `false`）。
+由 `DndPlugin` 指定文件位置时保持关闭。
 
 ## API
 
@@ -479,68 +355,36 @@ const upload = React.useSyncExternalStore(
 
 | 操作 | 契约 |
 | --- | --- |
-| `editor.plugin(PlaceholderPlugin).api.upload(key, file)` | 启动当前占位符的上传，替换之前的请求。 |
-| `editor.plugin(PlaceholderPlugin).api.cancelUpload(key)` | 中止请求并移除任务，迟到的回调不能替换节点。 |
-| `editor.plugin(PlaceholderPlugin).store.get('uploadTask', key)` | 返回 `MediaUpload` 或 `undefined`；通过 `file`、`getSnapshot` 和 `subscribe` 显示进度。 |
+| `editor.plugin(UploadPlugin).update.submit(files, options)` | 验证并插入整个批次，提交后启动 SDK 请求。 |
+| `editor.plugin(UploadPlugin).api.cancel(key)` | 中止该实时草稿 key 拥有的任务。 |
+| `editor.plugin(UploadPlugin).store.get('task', key)` | 返回 `UploadTask` 或 `undefined`；通过 `file`、`getSnapshot` 和 `subscribe` 构建进度与重试 UI。 |
 
-`key` 是运行时的 `NodeKey`，不是持久化元素 ID 或路径。上传完成后只替换原始占位符。
-节点被删除、媒体类型发生变化或编辑器变为只读时，迟到的结果不会写入文档。
-失败任务保留到取消、重试或删除占位符为止。
+只要 `NodeKey`、草稿类型和 `kind` 仍然有效，任务就保留权限。移动草稿不会取消任务；
+删除、改类型、改 `kind`、替换整个文档、重试或清理插件会取消任务。只读模式会阻止新提交，
+但不会取消已经提交的请求。
+
+`UploadFailure` 区分接收、配置、上传和 URL 结果错误。上传错误保留 SDK 的
+`unknown` 错误；无效的 URL 或抛错的 `getUrl` 属于结果错误。任务快照直接使用
+SDK 的 `AggregateProgress`（`loaded`、`total`、`fraction`），不是百分比数值。
 
 ## 转换方法
 
-### `editor.plugin(PlaceholderPlugin).update.insertMedia`
+### `editor.plugin(UploadPlugin).update.submit`
 
-使用上传占位符将媒体文件插入编辑器。
-
-<API name="insertMedia">
+<API name="submit">
 <APIParameters>
   <APIItem name="files" type="File[] | FileList">
-    要上传的文件。根据配置的文件类型和限制进行验证。
+    要整体验证和上传的完整批次。
   </APIItem>
-  <APIItem name="options" type="object" optional>
-    精确路径和选区选项。
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="object">
-  <APIItem name="at" type="Path" optional>
-    精确插入路径。省略时插入到选中块之后；无选区时追加到文档末尾。
-  </APIItem>
-  <APIItem name="select" type="boolean" optional>
-    选择插入的占位符。
-  </APIItem>
-</APIOptions>
-</API>
-
-根据配置的限制(大小、数量、类型)验证文件，为每个文件创建占位符元素，在插入事务提交后启动每个上传，并报告验证错误。
-
-错误代码:
-```ts
-enum UploadErrorCode {
-  INVALID_FILE_TYPE = 400,
-  TOO_MANY_FILES = 402,
-  INVALID_FILE_SIZE = 403,
-  TOO_LESS_FILES = 405,
-  TOO_LARGE = 413,
-}
-```
-
-### `editor.plugin(BasePlaceholderPlugin).update.insert`
-
-插入一个用于图片、视频、音频或文件的无 UI 占位符。
-
-<API name="insert">
-<APIParameters>
-  <APIItem name="mediaType" type="string">
-    上传完成后创建的媒体节点类型，例如 `PLUGINS.image`、`PLUGINS.video`、
-    `PLUGINS.audio` 或 `PLUGINS.file`。
-  </APIItem>
-  <APIItem name="options" type="NodeInsertOptions" optional>
-    精确路径和选区选项。
+  <APIItem name="options" type="UploadSubmitOptions" optional>
+    传入 `{ slot: NodeKey }` 填充一个现有草稿位。否则传入 `BlockInsertOptions`，
+    包括 `at`、`before`、`after`、`replaceEmpty` 或 `select`。两种模式不能混用。
   </APIItem>
 </APIParameters>
 </API>
+
+草稿位模式复用第一个节点，并把其余文件插入相邻位置。第一个文件必须匹配草稿位的
+`kind`。所有模式都会先验证整个批次，再修改文档。
 
 ### `editor.plugin(BaseImagePlugin).update.insert`
 
@@ -701,14 +545,14 @@ import type { AudioElement, FileElement, ImageElement, MediaEmbedElement, VideoE
 每个别名都从其所属插件的 schema 派生。`Element.children` 存储标题的直接行内内容。标题缺失时使用
 `[{ text: '' }]`。
 
-### `PlaceholderElement`
+### `UploadElement`
 
 ```tsx
-import type { PlaceholderElement } from 'platejs/media';
+import type { UploadElement } from 'platejs/upload';
 ```
 
-`PlaceholderElement` 从 `BasePlaceholderPlugin` 派生，并且需要字符串
-`mediaType`。
+`UploadElement` 从 `BaseUploadPlugin` 派生，并且需要严格的
+`kind`：`'audio' | 'file' | 'image' | 'video'`。
 
 ### `EmbedUrlData`
 

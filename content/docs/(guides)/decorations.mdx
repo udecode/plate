@@ -1,9 +1,9 @@
 ---
-title: Decorations, annotations, and widgets
-description: Paint transient ranges, retain annotation identities, and place anchored editor UI.
+title: Decorations and annotations
+description: Paint transient ranges and retain application-owned range identities.
 ---
 
-Use decorations for transient text paint, annotations for ranges with durable identity, and widgets for UI anchored to nodes, selections, or annotations.
+Use decorations for transient text paint and annotations for ranges with durable identity.
 
 ## Decorate text
 
@@ -50,7 +50,9 @@ Whole-element paint uses `render.useViewElementAttributes`. It runs once per ena
 
 ## Annotations
 
-Annotations attach IDs and application data to anchors. `useAnnotationStore` resolves them against commits. Wrap consumers in `AnnotationProvider` to supply the default store; use `useAnnotation(id)` for one item and `useAnnotations()` when the consumer needs the full snapshot.
+Annotations attach IDs and application data to anchors. `useAnnotationStore`
+resolves them in one exact mounted view. Pass its store explicitly to
+`useAnnotation(store, id)` or `useAnnotations(store)`.
 
 Annotation data does not paint text by itself. The feature that knows the visual states supplies its plugin's decoration reader. Keep comment bodies, permissions, and audit events in their application store.
 

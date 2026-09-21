@@ -48,13 +48,8 @@ const orderedElement = {
   type: 'paragraph',
 } as any;
 
-type ListNodePropsContract = {
-  query: (options: unknown) => boolean;
-  transformProps: (options: unknown) => unknown;
-};
-
 const getListNodeProps = (editor: Editor) =>
-  editor.plugin(BaseListPlugin).inject.nodeProps! as ListNodePropsContract;
+  editor.plugin(BaseListPlugin).inject.nodeProps!;
 
 describe('ListKit unordered list rendering', () => {
   it('decodes configured list items as paragraphs with list properties', () => {
@@ -118,6 +113,9 @@ describe('ListKit unordered list rendering', () => {
     ]) {
       const { query } = nodeProps;
       const { transformProps } = nodeProps;
+      if (!query || !transformProps) {
+        throw new Error('Expected configured list node props');
+      }
 
       expect(
         query({

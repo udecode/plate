@@ -10,11 +10,11 @@ import {
   useDropLine,
 } from 'platejs/dnd/react';
 import { BaseColumnItemPlugin } from 'platejs/layout';
-import { PlaceholderPlugin } from 'platejs/media/react';
 import {
   type Editor,
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
+  type WrapRootProps,
   useEditor,
   useEditorSelector,
   useElement,
@@ -540,16 +540,10 @@ const calcDragButtonTop = (editor: Editor, element: Element): number => {
   return currentMarginTop;
 };
 
-const DndIntegration = ({
-  children,
-  editableRef,
-}: {
-  children: React.ReactNode;
-  editableRef: React.RefObject<HTMLDivElement | null>;
-}) => {
+const DndIntegration = ({ children, editableRef }: WrapRootProps) => {
   const [editableElement, setEditableElement] =
     React.useState<HTMLDivElement | null>(null);
-  // oxlint-disable-next-line react-hooks/exhaustive-deps -- The stable ref can receive a different element during any commit.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- The stable ref can receive a different element during any commit.
   React.useLayoutEffect(() => {
     if (editableElement !== editableRef.current) {
       setEditableElement(editableRef.current);
@@ -612,10 +606,15 @@ export const DndKit = [
   DndPlugin.configure({
     initialState: {
       enableScroller: true,
-      onDropFiles: ({ dragItem, editor, target }) => {
-        editor
-          .plugin(PlaceholderPlugin)
-          .update.insertMedia(dragItem.files, { at: target });
+      onDropFiles: ({ dragItem, edge, editor, key }) => {
+        editor.update((tx) => {
+          if (!tx.plugins.has('upload')) return;
+
+          tx.plugin('upload').submit(
+            dragItem.files,
+            edge === 'before' ? { before: key } : { after: key }
+          );
+        });
       },
     },
     slots: {

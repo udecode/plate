@@ -29,6 +29,10 @@ export {
   type AnchorStateWork,
 } from '../core/anchor-state';
 export { getNodeKeyDOMValue } from '../utils/node-keys';
+export {
+  getAnnotationStoreMetrics,
+  type AnnotationStoreMetrics,
+} from './view/annotation-store-metrics';
 
 export {
   above,

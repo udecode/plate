@@ -20,6 +20,54 @@
       "diagnostics": []
     },
     {
+      "id": "2026-09-21-upload-provider-items",
+      "href": "/registry/changelog/2026-09-21-upload-provider-items.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Choose an explicit upload provider",
+      "change": {
+        "type": "source",
+        "date": "2026-09-21",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "upload",
+        "upload-ephemeral",
+        "upload-r2",
+        "upload-s3",
+        "files-api"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-19-files-sdk-upload-kit",
+      "href": "/registry/changelog/2026-09-19-files-sdk-upload-kit.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Install Files SDK uploads with a complete upload kit and private gateway",
+      "change": {
+        "type": "source",
+        "date": "2026-09-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "upload",
+        "files-api",
+        "editor-plugins",
+        "media",
+        "editor-plugins-static"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-18-comment-discovery",
       "href": "/registry/changelog/2026-09-18-comment-discovery.json",
       "status": "draft",
@@ -1034,7 +1082,7 @@
       "href": "/registry/changelog/2026-09-07-media-upload-lifetime.json",
       "status": "draft",
       "kind": "fix",
-      "summary": "Keep media uploads active across placeholder remounts and report upload failures",
+      "summary": "Keep media upload tasks active across draft view remounts",
       "change": {
         "type": "source",
         "date": "2026-09-07",
@@ -1043,7 +1091,7 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["media", "media-placeholder"],
+      "targets": ["media", "media-upload"],
       "entries": 1,
       "diagnostics": []
     },

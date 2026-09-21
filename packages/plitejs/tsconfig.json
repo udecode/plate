@@ -88,6 +88,8 @@
       "platejs/testing": ["../platejs/src/testing/index.ts"],
       "platejs/toc": ["../platejs/src/features/toc/index.ts"],
       "platejs/toc/react": ["../platejs/src/react/features/toc/index.ts"],
+      "platejs/upload": ["../platejs/src/features/upload/index.ts"],
+      "platejs/upload/react": ["../platejs/src/react/features/upload/index.ts"],
       "platejs/yjs": ["../platejs/src/yjs/index.tsx"],
       "platejs/yjs/react": ["../platejs/src/yjs/react/index.tsx"],
       "plitejs": ["./src/index.ts"],

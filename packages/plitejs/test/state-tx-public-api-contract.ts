@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   createEditorView,
+  documentReplacement,
   type Descendant,
   type Element,
   NodeApi,
@@ -223,7 +224,19 @@ describe('state/tx public API contract', () => {
     assert.equal(state.lastCommit?.changes.empty, false);
     assert.equal(state.lastCommit?.changed.has('document'), true);
     assert.equal(state.lastCommit?.changed.has('replace'), true);
+    assert.equal(state.lastCommit?.annotations[documentReplacement.key], true);
     assert.equal(state.lastCommit?.selectionChanged, true);
+  });
+
+  it('publishes replacement authority for an equal document replacement', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+
+    editor.update.value.replace(editor.read.value());
+
+    assert.equal(
+      editor.read.lastCommit()?.annotations[documentReplacement.key],
+      true
+    );
   });
 
   it('shares unchanged root nodes while detaching replacement input', () => {

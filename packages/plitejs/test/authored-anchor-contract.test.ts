@@ -63,7 +63,7 @@ describe('native document range persistence', () => {
     assert.equal(hasActiveAnchors(source), false);
   });
 
-  it('keeps proposal-only identity unavailable in accepted coordinates through restore and undo', () => {
+  it('keeps dropped proposal-only identity terminal across views and undo', () => {
     const { source, proposed } = setup();
     proposed.update.text.insert(' draft', { at: point(9) });
     const anchor = proposed.anchor(range(10, 15), { deletion: 'drop' });
@@ -78,12 +78,13 @@ describe('native document range persistence', () => {
     assert.equal(anchor.resolve(proposed), null);
     assert.equal(restored.resolve(proposed), null);
     proposed.api.history.redo();
-    assert.deepEqual(restored.resolve(proposed), range(10, 15));
+    assert.equal(anchor.resolve(proposed), null);
+    assert.equal(restored.resolve(proposed), null);
     source.update.authored.decide({
       action: 'accept',
       selection: source.read.authored.select({ status: 'pending' }),
     });
-    assert.deepEqual(anchor.resolve(source), range(10, 15));
+    assert.equal(anchor.resolve(source), null);
     anchor.release();
     restored.release();
   });
@@ -167,13 +168,13 @@ describe('native document range persistence', () => {
   });
 
   for (const pending of [false, true]) {
-    it(`restores deleted content identity through ${pending ? 'proposed' : 'accepted'} undo and reload`, () => {
+    it(`restores nearest content identity through ${pending ? 'proposed' : 'accepted'} undo and reload`, () => {
       const { source, proposed } = setup();
       const view = pending ? proposed : source;
-      const anchor = view.anchor(range(1, 3), { deletion: 'drop' });
+      const anchor = view.anchor(range(1, 3), { deletion: 'nearest' });
       const saved = view.anchor.save(anchor);
       view.update.text.delete({ at: range(1, 3) });
-      assert.equal(anchor.resolve(), null);
+      assert.deepEqual(anchor.resolve(), range(1, 1));
       view.api.history.undo();
       assert.deepEqual(anchor.resolve(), range(1, 3));
       const reopened = createEditor({
@@ -185,7 +186,7 @@ describe('native document range persistence', () => {
       ).anchor.restore(saved);
       assert.deepEqual(restored.resolve(), range(1, 3));
       view.api.history.redo();
-      assert.equal(anchor.resolve(), null);
+      assert.deepEqual(anchor.resolve(), range(1, 1));
       view.api.history.undo();
       assert.deepEqual(anchor.resolve(), range(1, 3));
       anchor.release();
@@ -550,7 +551,7 @@ describe('native document range persistence', () => {
     reopened.release();
   });
 
-  it('detaches a deleted range in the proposed projection and restores it after rejection', () => {
+  it('keeps a dropped proposed range terminal after rejection', () => {
     const { source, proposed } = setup();
     const anchor = proposed.anchor(range(5, 9), { deletion: 'drop' });
     proposed.update.text.delete({ at: range(5, 9) });
@@ -562,8 +563,8 @@ describe('native document range persistence', () => {
       action: 'reject',
       selection: source.read.authored.select({ authorId: 'alice' }),
     });
-    assert.deepEqual(anchor.resolve(), range(5, 9));
-    assert.deepEqual(reopened.resolve(), range(5, 9));
+    assert.equal(anchor.resolve(), null);
+    assert.equal(reopened.resolve(), null);
     anchor.release();
     reopened.release();
   });
@@ -620,7 +621,7 @@ describe('native document range persistence', () => {
     anchor.release();
   });
 
-  it('keeps original authored identity through a public retained revert and reload', () => {
+  it('keeps nearest authored identity through a public retained revert and reload', () => {
     let authorId = 'alice';
     const source = createEditor({
       plugins: [
@@ -631,10 +632,10 @@ describe('native document range persistence', () => {
     });
     const anchor = source.anchor(range(1, 4), {
       association: 'inward',
-      deletion: 'drop',
+      deletion: 'nearest',
     });
     source.update.text.delete({ at: range(1, 4) });
-    assert.equal(anchor.resolve(), null);
+    assert.deepEqual(anchor.resolve(), range(1, 1));
 
     const deletion = source.read.authored.select({ authorId: 'alice' });
     authorId = 'bob';

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "upload-s3",
+  "title": "Upload with S3",
+  "description": "Files SDK upload gateway backed by Amazon S3.",
+  "dependencies": [
+    "@aws-sdk/client-s3",
+    "@aws-sdk/lib-storage",
+    "@aws-sdk/s3-presigned-post",
+    "@aws-sdk/s3-request-presigner",
+    "files-sdk@2.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/files-api.json",
+    "https://platejs.org/r/upload.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/app/api/files/s3-route.ts",
+      "content": "import { s3 } from 'files-sdk/s3';\n\nimport { createFilesRoute, requireFilesEnv } from '../../../lib/files';\n\nexport const runtime = 'nodejs';\n\nconst route = createFilesRoute(() =>\n  s3({\n    bucket: requireFilesEnv('FILES_S3_BUCKET'),\n    region: requireFilesEnv('FILES_S3_REGION'),\n  })\n);\nconst { GET, POST, PUT } = route;\n\nexport { GET, POST, PUT };\n",
+      "type": "registry:file",
+      "target": "app/api/files/route.ts"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/upload"
+      }
+    ]
+  },
+  "type": "registry:file"
+}

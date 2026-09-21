@@ -1,16 +1,27 @@
-import { createEditor, definePlugin } from 'platejs/react';
+import {
+  createEditor,
+  definePlugin,
+  type WrapContentProps,
+  type WrapRootProps,
+} from 'platejs/react';
 import * as React from 'react';
+
+const ContentIntegration = ({ children }: WrapContentProps) => children;
+
+const RootIntegration = ({ children, editableRef }: WrapRootProps) => {
+  const viewRef: React.RefObject<HTMLDivElement | null> = editableRef;
+  // @ts-expect-error The view ref cannot widen to an untyped slot bag.
+  const canvasRef: React.RefObject<HTMLCanvasElement | null> = editableRef;
+  void canvasRef;
+  void viewRef;
+
+  return <section>{children}</section>;
+};
 
 const RootPlugin = definePlugin('typedRoot', {
   slots: {
-    wrapRoot: ({ children, editableRef }) => {
-      const viewRef: React.RefObject<HTMLDivElement | null> = editableRef;
-      // @ts-expect-error The view ref cannot widen to an untyped slot bag.
-      const canvasRef: React.RefObject<HTMLCanvasElement | null> = editableRef;
-      void canvasRef;
-      void viewRef;
-      return <section>{children}</section>;
-    },
+    wrapContent: ContentIntegration,
+    wrapRoot: RootIntegration,
   },
 }).configure({
   slots: {

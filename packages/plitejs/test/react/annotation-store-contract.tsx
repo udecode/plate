@@ -5,7 +5,7 @@ import {
   type Editor,
   type Range,
 } from 'plitejs';
-import { Suspense } from 'react';
+import { StrictMode, Suspense } from 'react';
 
 import {
   createAnnotationStore,
@@ -13,11 +13,13 @@ import {
 } from '../../src/annotations';
 import { authored } from '../../src/authored';
 import { history } from '../../src/history';
-import { replace as editorReplace } from '../../src/internal';
+import {
+  getAnnotationStoreMetrics,
+  replace as editorReplace,
+} from '../../src/internal';
 import {
   createEditor,
   type Annotation,
-  AnnotationProvider,
   useAnnotation,
   useAnnotationStore,
   useAnnotations,
@@ -44,9 +46,13 @@ const formatRange = (range: Range | null) =>
     ? `${range.anchor.path.join('.')}:${range.anchor.offset}|${range.focus.path.join('.')}:${range.focus.offset}`
     : 'none';
 
-const AnnotationProbe = () => {
-  const comment = useAnnotation<CommentData>('comment-1');
-  const snapshot = useAnnotations<CommentData>();
+const AnnotationProbe = ({
+  store,
+}: {
+  store: AnnotationStore<CommentData>;
+}) => {
+  const comment = useAnnotation(store, 'comment-1');
+  const snapshot = useAnnotations(store);
 
   return (
     <>
@@ -69,11 +75,7 @@ const AnnotationHarness = ({
 }) => {
   const store = useAnnotationStore(editor, annotations);
 
-  return (
-    <AnnotationProvider store={store}>
-      <AnnotationProbe />
-    </AnnotationProvider>
-  );
+  return <AnnotationProbe store={store} />;
 };
 
 describe('plite-react annotation store contract', () => {
@@ -95,33 +97,33 @@ describe('plite-react annotation store contract', () => {
       focus: { path: [0, 0], offset: 4 },
     });
     const store = createAnnotationStore(editor, [{ anchor, id: 'comment' }]);
-    const initialMetrics = store.getMetrics();
+    const initialMetrics = getAnnotationStoreMetrics(store);
     const initialSnapshot = store.getSnapshot();
     expect(subscriptions).not.toHaveBeenCalled();
     for (let index = 0; index < 10; index += 1) {
       store.getAnnotationsAt(editor.key([0, 0])!);
       expect(store.getSnapshot()).toBe(initialSnapshot);
     }
-    expect(store.getMetrics()).toBe(initialMetrics);
+    expect(getAnnotationStoreMetrics(store)).toBe(initialMetrics);
     editor.update.selection.set({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
     expect(store.getSnapshot()).toBe(initialSnapshot);
-    expect(store.getMetrics()).toBe(initialMetrics);
+    expect(getAnnotationStoreMetrics(store)).toBe(initialMetrics);
     editor.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
-    expect(store.getMetrics()).toBe(initialMetrics);
+    expect(getAnnotationStoreMetrics(store)).toBe(initialMetrics);
     expect(store.getAnnotation('comment')?.range).toEqual({
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 5 },
     });
-    const refreshed = store.getMetrics();
+    const refreshed = getAnnotationStoreMetrics(store);
     expect(refreshed.annotationResolveCount).toBe(
       initialMetrics.annotationResolveCount + 1
     );
     store.getAnnotationsAt(editor.key([0, 0])!);
     store.getSnapshot();
-    expect(store.getMetrics()).toBe(refreshed);
+    expect(getAnnotationStoreMetrics(store)).toBe(refreshed);
     expect(subscriptions).not.toHaveBeenCalled();
 
     const globalChanged = vi.fn();
@@ -136,7 +138,7 @@ describe('plite-react annotation store contract', () => {
     stopChanges();
     expect(stopped).toHaveBeenCalledTimes(1);
     editor.update.text.insert('?', { at: { path: [0, 0], offset: 0 } });
-    expect(store.getMetrics()).toBe(refreshed);
+    expect(getAnnotationStoreMetrics(store)).toBe(refreshed);
     const resume = store.subscribe(globalChanged);
     expect(subscriptions).toHaveBeenCalledTimes(2);
     expect(store.getAnnotation('comment')?.range?.anchor.offset).toBe(3);
@@ -201,28 +203,28 @@ describe('plite-react annotation store contract', () => {
     expect(commits).not.toHaveBeenCalled();
     expect(semanticChanges).not.toHaveBeenCalled();
 
-    const firstMetrics = firstStore.getMetrics();
-    const secondMetrics = secondStore.getMetrics();
+    const firstMetrics = getAnnotationStoreMetrics(firstStore);
+    const secondMetrics = getAnnotationStoreMetrics(secondStore);
     first.update.selection.set({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
     await Promise.resolve();
-    expect(firstStore.getMetrics()).toBe(firstMetrics);
-    expect(secondStore.getMetrics()).toBe(secondMetrics);
+    expect(getAnnotationStoreMetrics(firstStore)).toBe(firstMetrics);
+    expect(getAnnotationStoreMetrics(secondStore)).toBe(secondMetrics);
 
     stopFirst();
     stopSecond();
     first.api.authored.setView({ intent: 'edit', projection: 'accepted' });
-    expect(firstStore.getMetrics()).toBe(firstMetrics);
+    expect(getAnnotationStoreMetrics(firstStore)).toBe(firstMetrics);
     expect(firstStore.getAnnotation('comment')?.range).toEqual(range);
-    const passiveMetrics = firstStore.getMetrics();
+    const passiveMetrics = getAnnotationStoreMetrics(firstStore);
     expect(passiveMetrics.annotationResolveCount).toBe(
       firstMetrics.annotationResolveCount + 1
     );
     firstStore.getAnnotationsAt(first.key([0, 0])!);
     await Promise.resolve();
-    expect(firstStore.getMetrics()).toBe(passiveMetrics);
+    expect(getAnnotationStoreMetrics(firstStore)).toBe(passiveMetrics);
     expect(firstChanges).toHaveBeenCalledTimes(1);
     expect(secondChanges).toHaveBeenCalledTimes(1);
 
@@ -314,19 +316,29 @@ describe('plite-react annotation store contract', () => {
       active = useAnnotationStore(view, annotations);
       return null;
     };
-    const mounted = render(<Mounted />);
+    const mounted = render(
+      <StrictMode>
+        <Mounted />
+      </StrictMode>
+    );
     expect(active?.getAnnotation('comment')?.range).toEqual(anchor.resolve());
+    expect(active).not.toHaveProperty('destroy');
+    expect(active).not.toHaveProperty('getMetrics');
+    expect(active).not.toHaveProperty('getSourceStatus');
+    expect(active).not.toHaveProperty('retry');
     mounted.unmount();
     await Promise.resolve();
-    const metrics = active?.getMetrics();
+    const metrics = active ? getAnnotationStoreMetrics(active) : undefined;
 
     model.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
     view.api.authored.setView({ intent: 'propose', projection: 'markup' });
     await Promise.resolve();
 
-    expect(active?.getMetrics()).toBe(metrics);
+    expect(active ? getAnnotationStoreMetrics(active) : undefined).toBe(
+      metrics
+    );
     for (const store of abandoned) {
-      expect(store.getMetrics().annotationResolveCount).toBe(0);
+      expect(getAnnotationStoreMetrics(store).annotationResolveCount).toBe(0);
       expect(store.getSnapshot().allIds).toEqual([]);
     }
     expect(anchor.resolve()).toEqual({
@@ -356,7 +368,7 @@ describe('plite-react annotation store contract', () => {
     const store = createAnnotationStore(view, [
       {
         id: 'position',
-        anchor: { resolve: () => range, release: () => null },
+        anchor: { resolve: () => range },
       },
     ]);
     const oldKey = view.key([0, 0])!;
@@ -625,9 +637,6 @@ describe('plite-react annotation store contract', () => {
     const store = createAnnotationStore(editor, [
       {
         anchor: {
-          release() {
-            return null;
-          },
           resolve: () => range,
         },
         id: 'comment-1',
@@ -771,6 +780,34 @@ describe('plite-react annotation store contract', () => {
     store.destroy();
   });
 
+  test('duplicate ids are invalid input and recover after correction', () => {
+    const editor = createEditor({ initialValue: createChildren() });
+    const anchor = { resolve: () => null };
+
+    expect(() =>
+      createAnnotationStore(editor, [
+        { anchor, id: 'duplicate' },
+        { anchor, id: 'duplicate' },
+      ])
+    ).toThrow('Annotation IDs must be unique: "duplicate".');
+
+    let annotations: readonly Annotation[] = [{ anchor, id: 'first' }];
+    const store = createAnnotationStore(editor, () => annotations);
+    annotations = [
+      { anchor, id: 'duplicate' },
+      { anchor, id: 'duplicate' },
+    ];
+    expect(() => store.refresh()).toThrow(
+      'Annotation IDs must be unique: "duplicate".'
+    );
+    expect(store.getSnapshot().allIds).toEqual(['first']);
+
+    annotations = [{ anchor, id: 'recovered' }];
+    store.refresh();
+    expect(store.getSnapshot().allIds).toEqual(['recovered']);
+    store.destroy();
+  });
+
   test('non-JSON data uses reference equality', () => {
     const editor = createEditor({ initialValue: createChildren() });
     const anchor = createRangeAnchor(editor, {
@@ -808,14 +845,14 @@ describe('plite-react annotation store contract', () => {
     const store = createAnnotationStore(editor, () => [
       { anchor, data: { label }, id: 'comment-1' },
     ]);
-    const baseline = store.getMetrics();
+    const baseline = getAnnotationStoreMetrics(store);
 
     store.subscribe(() => {});
     store.subscribeAnnotation('comment-1', () => {});
     label = 'after';
     store.refresh({ ids: ['comment-1'] });
 
-    expect(store.getMetrics()).toMatchObject({
+    expect(getAnnotationStoreMetrics(store)).toMatchObject({
       annotationSubscriberWakeCount: baseline.annotationSubscriberWakeCount + 2,
       changedAnnotationCount: baseline.changedAnnotationCount + 1,
       recomputeCount: baseline.recomputeCount + 1,

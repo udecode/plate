@@ -1,5 +1,5 @@
 {
-  "generation": "ff8a385f7164a8a1aa57a5483381c6bd19033afbf0d8cc9d7085de844fd86d28",
+  "generation": "50a8d96075fcad42b22de4409aae39888dc0c046c9987cbcd34909ee6da7f0e8",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -890,6 +890,7 @@
             "use-file-picker@2.1.2",
             "sonner",
             "diff-match-patch-ts@^0.6.0",
+            "files-sdk@^2.6.0",
             "lucide-react"
           ],
           "description": "Toolbar button for inserting and managing media.",
@@ -913,6 +914,7 @@
           },
           "name": "media-toolbar-button",
           "registryDependencies": [
+            "@plate/upload",
             "@plate/toolbar",
             "input",
             "@plate/editor-dropdown-menu",
@@ -1917,44 +1919,6 @@
         {
           "dependencies": [
             "platejs",
-            "sonner",
-            "use-file-picker@2.1.2",
-            "zod",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
-          ],
-          "description": "A placeholder for media upload progress indication.",
-          "files": [
-            {
-              "path": "components/editor/media-placeholder.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/media-placeholder.tsx"
-            }
-          ],
-          "meta": {
-            "docs": [
-              {
-                "route": "/docs/media"
-              },
-              {
-                "route": "https://pro.platejs.org/docs/components/media-placeholder"
-              }
-            ],
-            "examples": [
-              "media-demo",
-              "media-pro"
-            ]
-          },
-          "name": "media-placeholder",
-          "registryDependencies": [
-            "@plate/use-object-url"
-          ],
-          "title": "Media Placeholder",
-          "type": "registry:component"
-        },
-        {
-          "dependencies": [
-            "platejs",
             "react-player@3.3.1",
             "react-lite-youtube-embed",
             "diff-match-patch-ts@^0.6.0",
@@ -2470,7 +2434,11 @@
             "@plate/toc-static",
             "@plate/details-static"
           ],
-          "type": "registry:component"
+          "type": "registry:component",
+          "dependencies": [
+            "files-sdk@^2.6.0",
+            "platejs"
+          ]
         },
         {
           "dependencies": [
@@ -3216,6 +3184,7 @@
             "@plate/markdown",
             "@plate/math",
             "@plate/media",
+            "@plate/upload",
             "@plate/mention",
             "@plate/slash",
             "@plate/suggestion",
@@ -3584,12 +3553,9 @@
         {
           "dependencies": [
             "platejs",
-            "@uploadthing/react@7.3.3",
-            "sonner",
-            "uploadthing@7.7.4",
             "diff-match-patch-ts@^0.6.0"
           ],
-          "description": "Media kit with an UploadThing client transport (see media-uploadthing-api for the server route).",
+          "description": "Completed image, video, audio, file and embed nodes.",
           "files": [
             {
               "path": "components/editor/media.tsx",
@@ -3599,16 +3565,13 @@
           ],
           "name": "media",
           "registryDependencies": [
-            "@plate/uploadthing",
             "@plate/media-audio",
             "@plate/media-embed",
             "@plate/media-file",
             "@plate/media-image",
-            "@plate/media-placeholder",
             "@plate/media-preview-dialog",
             "@plate/media-toolbar",
-            "@plate/media-video",
-            "@plate/media-toolbar-button"
+            "@plate/media-video"
           ],
           "type": "registry:component",
           "title": "Media",
@@ -3625,15 +3588,69 @@
           }
         },
         {
-          "dependencies": [],
-          "description": "media + media-uploadthing-api",
-          "files": [],
-          "name": "media-uploadthing",
-          "registryDependencies": [
-            "@plate/media",
-            "@plate/media-uploadthing-api"
+          "dependencies": [
+            "platejs",
+            "files-sdk@2.6.0",
+            "sonner",
+            "use-file-picker@2.1.2",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
-          "type": "registry:component"
+          "description": "Files SDK upload client, draft slots, progress and cancellation.",
+          "files": [
+            {
+              "path": "components/editor/upload.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/upload.tsx"
+            }
+          ],
+          "name": "upload",
+          "registryDependencies": [
+            "@plate/use-object-url"
+          ],
+          "type": "registry:component",
+          "title": "Upload",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ],
+            "examples": [
+              "media-demo"
+            ]
+          }
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "files-sdk@^2.6.0"
+          ],
+          "description": "Browser-local uploads for demos and disposable editors.",
+          "files": [
+            {
+              "path": "components/editor/upload/ephemeral.ts",
+              "type": "registry:component",
+              "target": "@components/editor/upload/ephemeral.ts"
+            }
+          ],
+          "name": "upload-ephemeral",
+          "registryDependencies": [
+            "@plate/upload"
+          ],
+          "type": "registry:component",
+          "title": "Ephemeral Upload",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ],
+            "examples": [
+              "playground-demo"
+            ]
+          }
         },
         {
           "dependencies": [
@@ -3961,20 +3978,80 @@
         },
         {
           "dependencies": [
-            "uploadthing@7.7.4"
+            "files-sdk@2.6.0"
           ],
           "files": [
             {
-              "path": "app/api/uploadthing/route.ts",
-              "target": "app/api/uploadthing/route.ts",
+              "path": "lib/files.ts",
+              "type": "registry:lib"
+            }
+          ],
+          "name": "files-api",
+          "registryDependencies": [],
+          "type": "registry:lib",
+          "title": "Files Gateway"
+        },
+        {
+          "dependencies": [
+            "@aws-sdk/client-s3",
+            "@aws-sdk/lib-storage",
+            "@aws-sdk/s3-presigned-post",
+            "@aws-sdk/s3-request-presigner",
+            "files-sdk@2.6.0"
+          ],
+          "description": "Files SDK upload gateway backed by Cloudflare R2.",
+          "files": [
+            {
+              "path": "app/api/files/route.ts",
+              "target": "app/api/files/route.ts",
               "type": "registry:file"
             }
           ],
-          "name": "media-uploadthing-api",
+          "name": "upload-r2",
           "registryDependencies": [
-            "@plate/uploadthing"
+            "@plate/files-api",
+            "@plate/upload"
           ],
-          "type": "registry:file"
+          "type": "registry:file",
+          "title": "Upload with R2",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ]
+          }
+        },
+        {
+          "dependencies": [
+            "@aws-sdk/client-s3",
+            "@aws-sdk/lib-storage",
+            "@aws-sdk/s3-presigned-post",
+            "@aws-sdk/s3-request-presigner",
+            "files-sdk@2.6.0"
+          ],
+          "description": "Files SDK upload gateway backed by Amazon S3.",
+          "files": [
+            {
+              "path": "app/api/files/s3-route.ts",
+              "target": "app/api/files/route.ts",
+              "type": "registry:file"
+            }
+          ],
+          "name": "upload-s3",
+          "registryDependencies": [
+            "@plate/files-api",
+            "@plate/upload"
+          ],
+          "type": "registry:file",
+          "title": "Upload with S3",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ]
+          }
         },
         {
           "dependencies": [
@@ -4072,7 +4149,6 @@
             "@plate/discussion",
             "@plate/suggestion",
             "@plate/use-mobile",
-            "@plate/media-uploadthing-api",
             "@plate/settings-dialog",
             "@plate/editor-plugins",
             "@plate/ai",
@@ -4260,19 +4336,6 @@
             }
           ],
           "name": "suggestion-style",
-          "type": "registry:lib"
-        },
-        {
-          "dependencies": [
-            "uploadthing@7.7.4"
-          ],
-          "files": [
-            {
-              "path": "lib/uploadthing.ts",
-              "type": "registry:lib"
-            }
-          ],
-          "name": "uploadthing",
           "type": "registry:lib"
         },
         {
@@ -6097,11 +6160,11 @@
           "name": "media-demo",
           "registryDependencies": [
             "@plate/media",
+            "@plate/upload",
             "@plate/media-audio",
             "@plate/media-embed",
             "@plate/media-file",
             "@plate/media-image",
-            "@plate/media-placeholder",
             "@plate/media-video",
             "@plate/editor",
             "@plate/ai",
@@ -6462,6 +6525,7 @@
             "@plate/editor",
             "@plate/editor-plugins",
             "@plate/excalidraw",
+            "@plate/upload-ephemeral",
             "@plate/ai",
             "@plate/dnd"
           ],
@@ -7519,6 +7583,7 @@
             "use-file-picker@2.1.2",
             "sonner",
             "diff-match-patch-ts@^0.6.0",
+            "files-sdk@^2.6.0",
             "lucide-react"
           ],
           "description": "Toolbar button for inserting and managing media.",
@@ -7542,6 +7607,7 @@
           },
           "name": "media-toolbar-button",
           "registryDependencies": [
+            "@plate/upload",
             "@plate/toolbar",
             "input",
             "@plate/editor-dropdown-menu",
@@ -8540,44 +8606,6 @@
         {
           "dependencies": [
             "platejs",
-            "sonner",
-            "use-file-picker@2.1.2",
-            "zod",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
-          ],
-          "description": "A placeholder for media upload progress indication.",
-          "files": [
-            {
-              "path": "components/editor/media-placeholder.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/media-placeholder.tsx"
-            }
-          ],
-          "meta": {
-            "docs": [
-              {
-                "route": "/docs/media"
-              },
-              {
-                "route": "https://pro.platejs.org/docs/components/media-placeholder"
-              }
-            ],
-            "examples": [
-              "media-demo",
-              "media-pro"
-            ]
-          },
-          "name": "media-placeholder",
-          "registryDependencies": [
-            "@plate/use-object-url"
-          ],
-          "title": "Media Placeholder",
-          "type": "registry:component"
-        },
-        {
-          "dependencies": [
-            "platejs",
             "react-player@3.3.1",
             "react-lite-youtube-embed",
             "diff-match-patch-ts@^0.6.0",
@@ -9093,7 +9121,11 @@
             "@plate/toc-static",
             "@plate/details-static"
           ],
-          "type": "registry:component"
+          "type": "registry:component",
+          "dependencies": [
+            "files-sdk@^2.6.0",
+            "platejs"
+          ]
         },
         {
           "dependencies": [
@@ -9839,6 +9871,7 @@
             "@plate/markdown",
             "@plate/math",
             "@plate/media",
+            "@plate/upload",
             "@plate/mention",
             "@plate/slash",
             "@plate/suggestion",
@@ -10207,12 +10240,9 @@
         {
           "dependencies": [
             "platejs",
-            "@uploadthing/react@7.3.3",
-            "sonner",
-            "uploadthing@7.7.4",
             "diff-match-patch-ts@^0.6.0"
           ],
-          "description": "Media kit with an UploadThing client transport (see media-uploadthing-api for the server route).",
+          "description": "Completed image, video, audio, file and embed nodes.",
           "files": [
             {
               "path": "components/editor/media.tsx",
@@ -10222,16 +10252,13 @@
           ],
           "name": "media",
           "registryDependencies": [
-            "@plate/uploadthing",
             "@plate/media-audio",
             "@plate/media-embed",
             "@plate/media-file",
             "@plate/media-image",
-            "@plate/media-placeholder",
             "@plate/media-preview-dialog",
             "@plate/media-toolbar",
-            "@plate/media-video",
-            "@plate/media-toolbar-button"
+            "@plate/media-video"
           ],
           "type": "registry:component",
           "title": "Media",
@@ -10248,15 +10275,69 @@
           }
         },
         {
-          "dependencies": [],
-          "description": "media + media-uploadthing-api",
-          "files": [],
-          "name": "media-uploadthing",
-          "registryDependencies": [
-            "@plate/media",
-            "@plate/media-uploadthing-api"
+          "dependencies": [
+            "platejs",
+            "files-sdk@2.6.0",
+            "sonner",
+            "use-file-picker@2.1.2",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
-          "type": "registry:component"
+          "description": "Files SDK upload client, draft slots, progress and cancellation.",
+          "files": [
+            {
+              "path": "components/editor/upload.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/upload.tsx"
+            }
+          ],
+          "name": "upload",
+          "registryDependencies": [
+            "@plate/use-object-url"
+          ],
+          "type": "registry:component",
+          "title": "Upload",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ],
+            "examples": [
+              "media-demo"
+            ]
+          }
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "files-sdk@^2.6.0"
+          ],
+          "description": "Browser-local uploads for demos and disposable editors.",
+          "files": [
+            {
+              "path": "components/editor/upload/ephemeral.ts",
+              "type": "registry:component",
+              "target": "@components/editor/upload/ephemeral.ts"
+            }
+          ],
+          "name": "upload-ephemeral",
+          "registryDependencies": [
+            "@plate/upload"
+          ],
+          "type": "registry:component",
+          "title": "Ephemeral Upload",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ],
+            "examples": [
+              "playground-demo"
+            ]
+          }
         },
         {
           "dependencies": [
@@ -10584,20 +10665,80 @@
         },
         {
           "dependencies": [
-            "uploadthing@7.7.4"
+            "files-sdk@2.6.0"
           ],
           "files": [
             {
-              "path": "app/api/uploadthing/route.ts",
-              "target": "app/api/uploadthing/route.ts",
+              "path": "lib/files.ts",
+              "type": "registry:lib"
+            }
+          ],
+          "name": "files-api",
+          "registryDependencies": [],
+          "type": "registry:lib",
+          "title": "Files Gateway"
+        },
+        {
+          "dependencies": [
+            "@aws-sdk/client-s3",
+            "@aws-sdk/lib-storage",
+            "@aws-sdk/s3-presigned-post",
+            "@aws-sdk/s3-request-presigner",
+            "files-sdk@2.6.0"
+          ],
+          "description": "Files SDK upload gateway backed by Cloudflare R2.",
+          "files": [
+            {
+              "path": "app/api/files/route.ts",
+              "target": "app/api/files/route.ts",
               "type": "registry:file"
             }
           ],
-          "name": "media-uploadthing-api",
+          "name": "upload-r2",
           "registryDependencies": [
-            "@plate/uploadthing"
+            "@plate/files-api",
+            "@plate/upload"
           ],
-          "type": "registry:file"
+          "type": "registry:file",
+          "title": "Upload with R2",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ]
+          }
+        },
+        {
+          "dependencies": [
+            "@aws-sdk/client-s3",
+            "@aws-sdk/lib-storage",
+            "@aws-sdk/s3-presigned-post",
+            "@aws-sdk/s3-request-presigner",
+            "files-sdk@2.6.0"
+          ],
+          "description": "Files SDK upload gateway backed by Amazon S3.",
+          "files": [
+            {
+              "path": "app/api/files/s3-route.ts",
+              "target": "app/api/files/route.ts",
+              "type": "registry:file"
+            }
+          ],
+          "name": "upload-s3",
+          "registryDependencies": [
+            "@plate/files-api",
+            "@plate/upload"
+          ],
+          "type": "registry:file",
+          "title": "Upload with S3",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ]
+          }
         },
         {
           "dependencies": [
@@ -10695,7 +10836,6 @@
             "@plate/discussion",
             "@plate/suggestion",
             "@plate/use-mobile",
-            "@plate/media-uploadthing-api",
             "@plate/settings-dialog",
             "@plate/editor-plugins",
             "@plate/ai",
@@ -10883,19 +11023,6 @@
             }
           ],
           "name": "suggestion-style",
-          "type": "registry:lib"
-        },
-        {
-          "dependencies": [
-            "uploadthing@7.7.4"
-          ],
-          "files": [
-            {
-              "path": "lib/uploadthing.ts",
-              "type": "registry:lib"
-            }
-          ],
-          "name": "uploadthing",
           "type": "registry:lib"
         },
         {
@@ -12720,11 +12847,11 @@
           "name": "media-demo",
           "registryDependencies": [
             "@plate/media",
+            "@plate/upload",
             "@plate/media-audio",
             "@plate/media-embed",
             "@plate/media-file",
             "@plate/media-image",
-            "@plate/media-placeholder",
             "@plate/media-video",
             "@plate/editor",
             "@plate/ai",
@@ -13085,6 +13212,7 @@
             "@plate/editor",
             "@plate/editor-plugins",
             "@plate/excalidraw",
+            "@plate/upload-ephemeral",
             "@plate/ai",
             "@plate/dnd"
           ],

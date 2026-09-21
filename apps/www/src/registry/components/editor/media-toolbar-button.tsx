@@ -14,8 +14,8 @@ import type {
   BaseImagePlugin,
   BaseVideoPlugin,
 } from 'platejs/media';
-import { PlaceholderPlugin } from 'platejs/media/react';
 import { useEditor } from 'platejs/react';
+import { UploadPlugin } from 'platejs/upload/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
@@ -90,14 +90,19 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
   const currentConfig = MEDIA_CONFIG[pluginName];
 
   const editor = useEditor();
+  const uploadInstalled = editor.plugin(UploadPlugin).installed;
   const [open, setOpen] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const { openFilePicker } = useFilePicker({
     accept: currentConfig.accept,
     multiple: true,
+    readFilesContent: false,
     onFilesSelected: ({ plainFiles: updatedFiles }) => {
-      editor.plugin(PlaceholderPlugin).update.insertMedia(updatedFiles);
+      const upload = editor.plugin(UploadPlugin);
+      if (!upload.installed) return;
+
+      upload.update.submit(updatedFiles);
     },
   });
 
@@ -105,6 +110,7 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
     <>
       <ToolbarSplitButton pressed={open}>
         <ToolbarSplitButtonPrimary
+          disabled={!uploadInstalled}
           onClick={() => {
             openFilePicker();
           }}
@@ -132,6 +138,7 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
           >
             <DropdownMenuGroup>
               <DropdownMenuItem
+                disabled={!uploadInstalled}
                 onSelect={() => {
                   openFilePicker();
                 }}

@@ -324,7 +324,17 @@ stage reuses the same group through `tx.plugin(Plugin).method()` when it owns
 the descriptor or `tx.plugin(pluginName).method()` when importing that
 descriptor would create the wrong package dependency. Descriptor input keeps
 nominal validation and exact inference; name input is the explicitly erased
-decoupled path and fails at runtime when the plugin or group is absent.
+decoupled path: its guard can prove runtime presence, but it carries no static
+capability contract and must never be described as fully typed. Use it only
+when the caller and capability owner are independently optional and importing
+the descriptor would create the wrong package or entrypoint dependency. When
+an integration already declares that dependency, import the descriptor and
+keep the inferred portal. An optional name-only consumer checks
+`tx.plugins.has(pluginName)` in the same transaction before dispatch. This
+escape hatch exists only on the active transaction selector; do not teach
+`editor.plugin(pluginName)`. Reject reflection over editor capability maps,
+local casts that duplicate the target group, and descriptor imports used only
+as installation probes.
 Generated closed editors may also expose `tx.pluginName.method()`. Do not index
 the transaction object with a runtime plugin name or open an editor portal
 one-shot inside the transaction.

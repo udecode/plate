@@ -318,8 +318,10 @@ or `Text` input, or second context generic. A presentation-only component
 family may use a union of descriptor-owned props; code that forwards the full
 plugin context keeps one exact owner. Deliberately erased or schema-agnostic
 renderer code uses `RenderElementProps`, `RenderLeafProps`,
-`RenderTextProps`, an inferred wrapper callback, or the named wrapper prop
-contract instead. Never make one type parameter switch between plugin
+`RenderTextProps`, an inferred wrapper callback, or the package's named field
+contract instead. Extracted root and content slot components use
+`WrapRootProps` and `WrapContentProps`; never reconstruct their `children` or
+`editableRef` fields in a local object type. Never make one type parameter switch between plugin
 ownership and raw node shape. When a consumer plugin installs the component
 being typed, use the stable imported owner descriptor rather than the
 self-referential configured value; access consumer-local store/API additions

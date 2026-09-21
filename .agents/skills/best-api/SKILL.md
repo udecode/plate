@@ -398,6 +398,29 @@ and replaces the input in one transaction. Keep query text and DOM navigation
 with the copied control; do not persist a second path, location anchor, or
 completion flag when the document already supplies identity and lifetime.
 
+For asynchronous document-bound assets, persist only the authored draft intent
+that must survive view remounts. The owning plugin admits one complete batch in
+one transaction, starts transport only after commit, and keeps files, request
+tokens, controllers, progress, failures, and object URLs local to the live node
+key. Completion rechecks that exact key and draft kind before one atomic
+replacement. Removal, retagging, plugin cleanup, and whole-document replacement
+revoke the request; history replay never starts one. Internal slices may carry
+the draft, while external HTML and static rendering omit unresolved assets.
+Do not generalize this into a public asynchronous-job framework.
+
+For Plate file uploads, `UploadPlugin` from `platejs/upload` owns admission,
+drafts, progress, cancellation, and completion through `UploadClient`: the
+single-file `upload` capability expressed with Files SDK call and outcome
+types. A Files SDK `FilesClient` satisfies it structurally; an independent
+session-local or test implementation supplies only that operation. Keep
+`FilePlugin` in `platejs/media` as the completed generic file node beside
+image, audio, and video; do not rename that node to attachment or name the
+lifecycle after its configured SDK. Configure a compatible client and a
+synchronous URL resolver; do not recreate a generic upload-transport facade or
+move completed media schemas into Upload. The application owns gateway access
+policy and storage, while installed media plugins own completed-node schemas
+and URL normalization.
+
 Do not confuse an internal canonical carrier with the best public read. A
 carrier may need tags, bookkeeping, or plugin payloads to preserve runtime
 truth while the common caller needs one established domain value. In that
@@ -547,16 +570,18 @@ conditionally for rendered nodes.
 
 Raw Plite has one transient paint path. `DecorationSource` returns
 `{ key, range, attributes }`; `Editable` renders those attributes without a
-second paint callback. Annotation stores use `AnnotationProvider` and stay
-independent until a feature deliberately adapts resolved annotations into a
-Decoration source.
+second paint callback. Annotation stores stay independent until a feature
+deliberately adapts resolved annotations into a Decoration source.
 
 Annotation ownership follows lifetime, not convenience. React components use
-`useAnnotationStore` plus `AnnotationProvider`. A framework adapter
-whose store must exist before React mounts uses `createAnnotationStore`
-from `plitejs/annotations`. Do not re-export the constructor from
-`plitejs/react`, publish an `/internal` bridge, or force a framework owner
-through a hidden component merely to reach a hook.
+`useAnnotationStore` under the exact mounted view and pass its typed reader
+explicitly to `useAnnotation(store, id)` or `useAnnotations(store)`. Do not add
+a generic provider or implicit empty fallback: those erase the data type and
+hide a missing owner. A framework adapter whose store must exist before React
+mounts uses the owned result of `createAnnotationStore` from
+`plitejs/annotations` and destroys it with that framework lifetime. Do not
+re-export the constructor from `plitejs/react`, publish an `/internal` bridge,
+or force a framework owner through a hidden component merely to reach a hook.
 
 A retained native anchor owns one target and one release lifetime. Resolve it
 in the exact mounted view with `anchor.resolve(view)` when the read belongs to
@@ -729,6 +754,21 @@ as intentional bundles, targets, styles, CSS, optional peers, and provider
 selection. Compile every supported public variant from one generation and bind
 its index, manifest, payload hashes, and publication marker to that generation;
 preview, docs, source checks, and installers consume the same generated facts.
+A copied registry item needs an independently installable source job. Do not
+publish a configuration-only static item whose sole purpose is to restate a
+package plugin's default omission or fallback behavior; put that semantic
+default on the base plugin and compose the descriptor directly in aggregate
+static kits. Keep `foo-static` only when it owns real static presentation.
+
+When one copied feature supports mutually exclusive external backends, keep its
+base item limited to shared client and UI behavior. Publish each supported
+backend as an explicit installable provider item that depends on the base item,
+owns its adapter, route, and environment contract, and pulls only that
+provider's dependencies. A browser-local demo backend is another explicit item,
+never a hidden base fallback. Share gateway security, access control, and
+durable URL policy through one support owner when providers use the same
+contract; do not duplicate that policy or select providers through a runtime
+environment branch in one route.
 
 ## Bounded Exhaustiveness Gate
 

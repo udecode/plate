@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-19-files-sdk-upload-kit",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-19-files-sdk-upload-kit.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Install Files SDK uploads with a complete upload kit and private gateway",
+  "targets": [
+    {
+      "name": "upload",
+      "files": ["apps/www/src/registry/components/editor/upload.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "files-api",
+      "files": ["apps/www/src/registry/lib/files.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-plugins",
+      "files": ["apps/www/src/registry/components/editor/plugins.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media",
+      "files": ["apps/www/src/registry/components/editor/media.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-plugins-static",
+      "files": ["apps/www/src/registry/components/editor/plugins-static.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-19-files-install-sdk-uploads-separate-c6ee24d8",
+      "kind": "wiring",
+      "summary": "Install the Files SDK client and private document-scoped gateway together through the upload kit; the route requires application access policy and storage credentials.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["upload", "files-api", "editor-plugins"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-19",
+          "entry": "2026-09-19-files-sdk-upload-kit",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-19-media-render-completed-nodes-93f362a1",
+      "kind": "wiring",
+      "summary": "Render completed media separately while the upload schema owner omits unresolved drafts from static output.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media", "editor-plugins-static"],
+      "source": {
+        "line": 14,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-19",
+          "entry": "2026-09-19-files-sdk-upload-kit",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

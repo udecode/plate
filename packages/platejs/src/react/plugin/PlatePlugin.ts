@@ -102,6 +102,12 @@ export type EditableSiblingProps = {
   readonly editableRef: React.RefObject<HTMLDivElement | null>;
 };
 
+export type WrapContentProps = {
+  children: React.ReactNode;
+};
+
+export type WrapRootProps = EditableSiblingProps & WrapContentProps;
+
 export type EditableSiblingComponent = (
   props: EditableSiblingProps
 ) => React.ReactElement | null;
@@ -169,6 +175,7 @@ type AnyPluginSlots = Omit<
   | 'afterNodeChildren'
   | 'beforeContainer'
   | 'beforeEditable'
+  | 'wrapContent'
   | 'wrapNode'
   | 'wrapNodeChildren'
   | 'wrapRoot'
@@ -178,13 +185,10 @@ type AnyPluginSlots = Omit<
   afterNodeChildren?: ErasedCallback<React.ReactNode> | null;
   beforeContainer?: ContainerSiblingComponent | null;
   beforeEditable?: EditableSiblingComponent | null;
+  wrapContent?: ((props: WrapContentProps) => React.ReactNode) | null;
   wrapNode?: ErasedRenderNodeWrapper | ErasedRenderNodeWrapperDescriptor | null;
   wrapNodeChildren?: ErasedRenderNodeWrapper | null;
-  wrapRoot?:
-    | ((
-        props: EditableSiblingProps & { children: React.ReactNode }
-      ) => React.ReactNode)
-    | null;
+  wrapRoot?: ((props: WrapRootProps) => React.ReactNode) | null;
 };
 
 type AnyPluginRuntime = Omit<AnyBasePlugin, 'editOnly' | 'render' | 'slots'> &
@@ -451,12 +455,11 @@ type ReactSlotFields<C extends AnyBasePluginDefinition> = {
   afterNodeChildren?: (props: RenderNodeWrapperProps<C>) => React.ReactNode;
   beforeContainer?: ContainerSiblingComponent;
   beforeEditable?: EditableSiblingComponent;
+  wrapContent?: (props: WrapContentProps) => React.ReactNode;
   wrapNode?: RenderNodeWrapperConfig<C>;
   wrapNodeChildren?: RenderNodeWrapper<C>;
   /** Wraps this view, including read-only views, with its exact Editable ref. */
-  wrapRoot?: (
-    props: EditableSiblingProps & { children: React.ReactNode }
-  ) => React.ReactNode;
+  wrapRoot?: (props: WrapRootProps) => React.ReactNode;
 };
 
 type PluginInject<C extends AnyBasePluginDefinition> = Omit<

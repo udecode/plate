@@ -292,6 +292,7 @@ test('platejs exposes exactly the accepted root and feature owners', () => {
     'comments',
     'date',
     'details',
+    'upload',
     'find',
     'footnote',
     'layout',
@@ -427,12 +428,12 @@ test('every public entrypoint has one canonical runtime', () => {
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin').length,
-    14
+    15
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin-client')
       .length,
-    13
+    14
   );
 });
 

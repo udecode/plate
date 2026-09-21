@@ -15,7 +15,7 @@
     "status": "unresolved"
   },
   "kind": "fix",
-  "summary": "Keep media uploads active across placeholder remounts and report upload failures",
+  "summary": "Keep media upload tasks active across draft view remounts",
   "targets": [
     {
       "name": "media",
@@ -24,22 +24,26 @@
       "diagnostics": []
     },
     {
-      "name": "media-placeholder",
-      "files": [
-        "apps/www/src/registry/components/editor/media-placeholder.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
+      "name": "media-upload",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-upload."
+        }
+      ]
     }
   ],
   "entries": [
     {
       "id": "2026-09-07-media-keep-uploads-active-across-65d719f5",
       "kind": "fix",
-      "summary": "Keep uploads active across placeholder remounts, cancel superseded requests and show upload failures. Configure the transport in `MediaKit`; image completion does not depend on the preview loading.",
+      "summary": "Admit picker, paste, and drop batches through one draft-slot protocol. Upload tasks survive view remounts, cancel when their keyed draft loses authority, expose local progress and retry state, and report each failure once through `MediaKit`.",
       "details": [],
       "migrationNotes": [],
-      "targets": ["media", "media-placeholder"],
+      "targets": ["media", "media-upload"],
       "source": {
         "line": 14,
         "row": 1,

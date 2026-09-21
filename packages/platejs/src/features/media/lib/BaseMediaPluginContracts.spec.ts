@@ -7,6 +7,7 @@ import {
   definePlugin,
   schema,
 } from '../../../core';
+import type { BaseUploadPlugin } from '../../upload/lib/BaseUploadPlugin';
 import {
   type AlignedMediaInsertInput,
   BaseAudioPlugin,
@@ -20,7 +21,6 @@ import {
 import type { ImageElement } from './image/BaseImagePlugin';
 import { BaseImagePlugin } from './image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
-import type { BasePlaceholderPlugin } from './placeholder/BasePlaceholderPlugin';
 
 const TestInlinePlugin = definePlugin('testInline', {
   schema: {
@@ -42,9 +42,7 @@ type _baseImagePluginNotAny = AssertFalse<IsAny<typeof BaseImagePlugin>>;
 type _baseMediaEmbedPluginNotAny = AssertFalse<
   IsAny<typeof BaseMediaEmbedPlugin>
 >;
-type _basePlaceholderPluginNotAny = AssertFalse<
-  IsAny<typeof BasePlaceholderPlugin>
->;
+type _baseUploadPluginNotAny = AssertFalse<IsAny<typeof BaseUploadPlugin>>;
 type _mediaWidthValueIsInferred = AssertTrue<
   IsEqual<PropertyValueOf<typeof mediaElementProperties.width>, number | string>
 >;

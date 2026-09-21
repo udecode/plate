@@ -151,6 +151,8 @@ Colocation is the default.
   `EditableSiblingProps` or `ContainerSiblingProps`, never a `typeof Plugin`
   generic that only restates the fixed slot. Descriptor-derived props belong to
   node renderers whose schema or plugin context changes the actual contract.
+  Extracted `wrapRoot` and `wrapContent` components use `WrapRootProps` and
+  `WrapContentProps`; never restate those native fields in a local object type.
   Delete sibling option bags and primitive-prop intersections without a current
   consumer job.
 - A separate helper needs multiple production consumers that cannot reuse the
@@ -197,6 +199,13 @@ Colocation is the default.
   placeholder copy, upload quotas, feature-specific accessibility labels, or
   copied-registry visual treatment from npm. Keep the semantic mapping and
   validation engine in the package; configure product policy in the app kit.
+- `UploadPlugin` from `platejs/upload` is the editor-owned upload lifecycle,
+  configured with the package's single-operation `UploadClient`. A Files SDK
+  client satisfies that capability without making its unrelated methods part of
+  Plate's contract; explicit session-local and test clients implement the same
+  operation. Keep draft admission and task lifetime in Upload; keep the
+  completed `FilePlugin` node and URL normalization with installed media
+  plugins, and gateway/storage policy with the application.
 - When colocation makes a helper obsolete, delete its file and generated barrel
   export. Do not preserve aliases, forwarding wrappers, or old filenames by
   default.

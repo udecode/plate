@@ -68,6 +68,12 @@ use<Family>.ts[x]      optional single semantic controller
   durable boundary with its own consumers and proof. Independence earns a
   semantic sibling such as `media-image.tsx`, never
   `media-image-node.tsx`.
+- When a migration moves a plugin, kit, or capability to another feature owner,
+  reclassify every surviving old file and registry item from its current
+  terminal production consumers. A historical item id, generated metadata,
+  changelog entry, test import, or former owner does not grandfather an
+  independent boundary. Inline a renderer or helper into its new sole feature
+  owner and remove the obsolete item and reverse registry dependency.
 - A large icon set, constant table, or output helper with one feature consumer
   stays in that feature owner. File size and generated-looking SVG volume do
   not create an install boundary or justify reverse registry dependencies.

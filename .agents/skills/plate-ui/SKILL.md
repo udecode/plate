@@ -151,6 +151,8 @@ schema law, and application typing remain outside this skill.
     installs its session, provider, and exact-view cleanup. Ordinary assemblies
     render EditorRoot and Editor without feature roots or ref plumbing. Reuse
     the existing feature plugin's `slots.wrapRoot` with its actual `editableRef`.
+    Type extracted root and content wrappers with `WrapRootProps` and
+    `WrapContentProps`; never reconstruct native slot fields locally.
     Sibling presentation slots preserve that integration. Explicitly replacing
     `wrapRoot` owns its integration and cleanup; compose the existing wrapper
     with JSX when adding presentation. Do not add companion integration plugins
@@ -215,6 +217,10 @@ schema law, and application typing remain outside this skill.
   policy in copied registry source. Packages expose neutral mechanics and
   configurable contracts, including positioning and hit-testing required for
   correct behavior, not Plate's example-product defaults.
+- For the optional Files SDK upload feature, copied UI owns picker, drop,
+  progress, and cancel presentation plus application endpoint configuration.
+  Compose `UploadPlugin` separately from completed-media plugins; gateway
+  authorization and durable URL policy stay in the application.
 - Compose independently placed package DOM primitives as siblings in copied
   registry UI. Style each through ordinary DOM props such as `className`; do
   not add a public root, provider, render prop, or `*ClassName` prop merely to
@@ -244,6 +250,12 @@ schema law, and application typing remain outside this skill.
 
 ### Component Shape & Editor Access → [component-shape.md](./rules/component-shape.md)
 
+- Plate owns the types of framework-defined plugin fields. Extracted registry
+  components use the matching package contract; inline plugin callbacks rely on
+  contextual inference. Never reconstruct a native field with a local object
+  type, `Pick` alias, callback return annotation, or cast. If the package does
+  not expose the exact contract or inference fails, repair the package owner
+  through `plate-plugin-creator` and `best-api` before wiring the registry.
 - Use `useElement()` for node-context element access. Treat `usePath()` as a
   reactive path dependency, not the default way to obtain a path.
 - In repeated node renderers, do not subscribe with `usePath()` when a path is
@@ -341,6 +353,10 @@ Read this reference for component families, registry feature variants, headless 
 - Build docs and primitive-agnostic registry items once. Resolve only named
   provider-boundary items at request/install time, preserve semantic item ids,
   and rewrite Plate self-dependencies to the requested supported style.
+- For mutually exclusive external backends, follow Best API's explicit
+  provider-item law: keep the base feature provider-neutral, select one backend
+  at install time, and prove through generated payloads that backend routes and
+  dependencies stay out of the base item and sibling provider items.
 - Compile all supported providers and public directories as one generation.
   Publish the index, metadata, manifest, payload hashes, and generation marker
   together; consumers must reject mixed or incomplete generations.
@@ -553,19 +569,24 @@ const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
    - should this stay in an event handler?
    - am I subscribing to more editor state than the UI actually renders?
 7. Build the component as open code first.
-8. Extract only the boundaries that survive the test.
-9. Share runtime-neutral kits; wire base/live renderer kits and registry deps
+8. When plugin wiring changes, audit the affected field and its registry peers
+   for local structural mirrors, state `Pick` aliases, callback return
+   annotations, and casts that replace package ownership or contextual
+   inference. Fix the canonical package contract instead of preserving a local
+   adapter.
+9. Extract only the boundaries that survive the test.
+10. Share runtime-neutral kits; wire base/live renderer kits and registry deps
    only where the renderer ownership actually differs.
-10. Apply the registry changelog decision:
+11. Apply the registry changelog decision:
 
 - user-visible registry change: add or update a registry changelog entry,
   run the generator, and run the registry changelog check
 - not user-visible: record `N/A: <reason>`
 
-11. If package exports changed, run `pnpm brl`.
-12. If the work changed a reusable API or canonical consumer pattern, run the
+12. If package exports changed, run `pnpm brl`.
+13. If the work changed a reusable API or canonical consumer pattern, run the
     automatic `best-api repair` chain before closeout.
-13. Verify the smallest honest surface:
+14. Verify the smallest honest surface:
 
 - affected component proof; add a regression only when Testing's value test applies
 - source-first package typecheck when package code changed; build for artifact proof

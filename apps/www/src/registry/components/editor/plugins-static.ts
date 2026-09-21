@@ -1,3 +1,5 @@
+import { BaseUploadPlugin } from 'platejs/upload';
+
 import { AlignKit } from './align';
 import { BaseBasicBlocksKit } from './basic-blocks-static';
 import { BaseBasicMarksKit } from './basic-marks-static';
@@ -27,6 +29,7 @@ export const BaseEditorKit = [
   ...BaseDetailsKit,
   ...BaseTocKit,
   ...BaseMediaKit,
+  BaseUploadPlugin,
   ...BaseCalloutKit,
   ...BaseColumnKit,
   ...BaseMathKit,

@@ -16,6 +16,30 @@ import {
 import { dispatchCommand } from '../src/internal';
 
 describe('transaction plugin values', () => {
+  it('checks optional plugins by name or descriptor before dispatch', () => {
+    let calls = 0;
+    const installed = definePlugin('optional-owner', {
+      update: () => ({ run: () => void (calls += 1) }),
+    });
+    const missing = definePlugin('missing-owner', {
+      update: () => ({ run: () => undefined }),
+    });
+    const editor = createEditor({ plugins: [installed] as const });
+
+    editor.update((tx) => {
+      assert.equal(tx.plugins.has(installed), true);
+      assert.equal(tx.plugins.has('optional-owner'), true);
+      assert.equal(tx.plugins.has(missing), false);
+      assert.equal(tx.plugins.has('missing-owner'), false);
+
+      if (tx.plugins.has('optional-owner')) {
+        tx.plugin('optional-owner').run();
+      }
+    });
+
+    assert.equal(calls, 1);
+  });
+
   it('reduces typed effects into fields and publishes mapped commit effects', () => {
     const increment = defineEffect<number>({
       invert: (value) => -value,

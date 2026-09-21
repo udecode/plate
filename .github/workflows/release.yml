@@ -395,8 +395,8 @@ jobs:
           PUBLISHED_PACKAGES_JSON: ${{ needs.release.outputs.publishedPackages }}
         run: node tooling/scripts/await-npm-publish.mjs
 
-      - name: 🏗 Build local dev registry
-        run: pnpm --filter www rd
+      - name: 🏗 Build local registry
+        run: pnpm --filter www build:registry
 
       - name: 🔄 Update templates
         id: update-templates

@@ -270,6 +270,9 @@ inline inference anchor for the plugin schema and codec callbacks:
   codecs do not return `type`; Plate supplies the installed configured type.
 - `encode` returns a wrapper for a mark, a full node spec for an element, or an
   attribute/style patch for an element property.
+- An element `encode` may return `null` to omit that element from HTML while
+  preserving serializable siblings. Mark and property encoders cannot omit a
+  present value this way.
 - Import-only mappings set `decodeOnly: true` instead of omitting encode
   silently.
 - `priority` resolves intentional overlap. Equal-priority exclusive claims

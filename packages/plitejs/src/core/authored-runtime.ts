@@ -39,6 +39,7 @@ export type NativeAuthoredTransaction = {
 };
 
 export type NativeAuthoredRangeBinding = {
+  deleted: () => boolean;
   resolve: (view?: Editor) => Range | null;
   serialize: () => unknown;
 };
@@ -132,7 +133,12 @@ type NativeAuthoredRuntime = {
     view: Editor,
     path: Path,
     options: AnchorOptions<Path>
-  ) => { resolve: (view?: Editor) => Path | null } | undefined;
+  ) =>
+    | {
+        deleted: () => boolean;
+        resolve: (view?: Editor) => Path | null;
+      }
+    | undefined;
   range: (
     view: Editor,
     input: (

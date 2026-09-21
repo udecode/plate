@@ -97,6 +97,8 @@
         "lint:partition:testing",
         "lint:partition:toc",
         "lint:partition:toc-react",
+        "lint:partition:upload",
+        "lint:partition:upload-react",
         "lint:partition:yjs",
         "lint:partition:yjs-react"
       ],
@@ -334,6 +336,7 @@
         "!src/features/comments/**",
         "!src/features/date/**",
         "!src/features/details/**",
+        "!src/features/upload/**",
         "!src/features/find/**",
         "!src/features/footnote/**",
         "!src/features/layout/**",
@@ -348,6 +351,7 @@
         "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
+        "!src/react/features/upload/**",
         "!src/react/features/footnote/**",
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
@@ -415,6 +419,7 @@
         "!test/features/comments/**",
         "!test/features/date/**",
         "!test/features/details/**",
+        "!test/features/upload/**",
         "!test/features/find/**",
         "!test/features/footnote/**",
         "!test/features/layout/**",
@@ -429,6 +434,7 @@
         "!test/react/features/comments/**",
         "!test/react/features/date/**",
         "!test/react/features/details/**",
+        "!test/react/features/upload/**",
         "!test/react/features/footnote/**",
         "!test/react/features/layout/**",
         "!test/react/features/media/**",
@@ -937,6 +943,7 @@
         "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
+        "!src/react/features/upload/**",
         "!src/react/features/footnote/**",
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
@@ -960,6 +967,7 @@
         "!test/react/features/comments/**",
         "!test/react/features/date/**",
         "!test/react/features/details/**",
+        "!test/react/features/upload/**",
         "!test/react/features/footnote/**",
         "!test/react/features/layout/**",
         "!test/react/features/media/**",
@@ -1418,6 +1426,36 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "lint:partition:upload": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/upload/**",
+        "test/features/upload/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:upload-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/upload/**",
+        "test/react/features/upload/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "lint:partition:yjs": {
       "cache": true,
       "dependsOn": [],
@@ -1482,7 +1520,6 @@
         "test:partition:markdown",
         "test:partition:math",
         "test:partition:media",
-        "test:partition:media-react",
         "test:partition:mention",
         "test:partition:mention-react",
         "test:partition:migrations",
@@ -1508,6 +1545,8 @@
         "test:partition:tag",
         "test:partition:tag-react",
         "test:partition:toc",
+        "test:partition:upload",
+        "test:partition:upload-react",
         "test:partition:yjs",
         "test:partition:yjs-react"
       ],
@@ -1744,7 +1783,8 @@
         "typecheck:partition:standard-list",
         "typecheck:partition:table",
         "typecheck:partition:testing",
-        "typecheck:partition:toc"
+        "typecheck:partition:toc",
+        "typecheck:partition:upload"
       ],
       "inputs": [
         "src/**",
@@ -1800,6 +1840,7 @@
         "!src/features/comments/**",
         "!src/features/date/**",
         "!src/features/details/**",
+        "!src/features/upload/**",
         "!src/features/find/**",
         "!src/features/footnote/**",
         "!src/features/layout/**",
@@ -1814,6 +1855,7 @@
         "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
+        "!src/react/features/upload/**",
         "!src/react/features/footnote/**",
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
@@ -1881,6 +1923,7 @@
         "!test/features/comments/**",
         "!test/features/date/**",
         "!test/features/details/**",
+        "!test/features/upload/**",
         "!test/features/find/**",
         "!test/features/footnote/**",
         "!test/features/layout/**",
@@ -1895,6 +1938,7 @@
         "!test/react/features/comments/**",
         "!test/react/features/date/**",
         "!test/react/features/details/**",
+        "!test/react/features/upload/**",
         "!test/react/features/footnote/**",
         "!test/react/features/layout/**",
         "!test/react/features/media/**",
@@ -2325,34 +2369,12 @@
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:media",
-        "typecheck:partition:proxies"
+        "typecheck:partition:proxies",
+        "typecheck:partition:upload"
       ],
       "inputs": [
         "src/features/media/**",
         "test/features/media/**",
-        "$TURBO_ROOT$/config/plite-source-aliases.ts",
-        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
-        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "bunfig.toml"
-      ],
-      "env": ["CI"],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "test:partition:media-react": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:core",
-        "typecheck:partition:media",
-        "typecheck:partition:media-react",
-        "typecheck:partition:react-core"
-      ],
-      "inputs": [
-        "src/react/features/media/**",
-        "test/react/features/media/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -2499,6 +2521,7 @@
         "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
+        "!src/react/features/upload/**",
         "!src/react/features/footnote/**",
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
@@ -2522,6 +2545,7 @@
         "!test/react/features/comments/**",
         "!test/react/features/date/**",
         "!test/react/features/details/**",
+        "!test/react/features/upload/**",
         "!test/react/features/footnote/**",
         "!test/react/features/layout/**",
         "!test/react/features/media/**",
@@ -2991,6 +3015,54 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "test:partition:upload": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:media",
+        "typecheck:partition:proxies",
+        "typecheck:partition:static",
+        "typecheck:partition:upload"
+      ],
+      "inputs": [
+        "src/features/upload/**",
+        "test/features/upload/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:upload-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:media",
+        "typecheck:partition:react-core",
+        "typecheck:partition:upload",
+        "typecheck:partition:upload-react"
+      ],
+      "inputs": [
+        "src/react/features/upload/**",
+        "test/react/features/upload/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "test:partition:yjs": {
       "cache": true,
       "dependsOn": [
@@ -3116,6 +3188,8 @@
         "typecheck:partition:testing",
         "typecheck:partition:toc",
         "typecheck:partition:toc-react",
+        "typecheck:partition:upload",
+        "typecheck:partition:upload-react",
         "typecheck:partition:yjs",
         "typecheck:partition:yjs-react",
         "typecheck:contracts"
@@ -3541,6 +3615,7 @@
         "!src/features/comments/**",
         "!src/features/date/**",
         "!src/features/details/**",
+        "!src/features/upload/**",
         "!src/features/find/**",
         "!src/features/footnote/**",
         "!src/features/layout/**",
@@ -3555,6 +3630,7 @@
         "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
+        "!src/react/features/upload/**",
         "!src/react/features/footnote/**",
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
@@ -4263,7 +4339,6 @@
     "typecheck:partition:media-react": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:core",
         "typecheck:partition:media",
         "typecheck:partition:react-core"
       ],
@@ -4466,6 +4541,7 @@
         "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
+        "!src/react/features/upload/**",
         "!src/react/features/footnote/**",
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
@@ -5312,6 +5388,61 @@
       "outputs": [
         ".turbo/entrypoint-types/toc-react/**",
         ".turbo/entrypoint-types/toc-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:upload": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:proxies"],
+      "inputs": [
+        "src/features/upload/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/upload.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/upload/**",
+        ".turbo/entrypoint-types/upload.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:upload-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:react-core",
+        "typecheck:partition:upload"
+      ],
+      "inputs": [
+        "src/react/features/upload/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/upload-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/upload-react/**",
+        ".turbo/entrypoint-types/upload-react.tsbuildinfo"
       ]
     },
     "typecheck:partition:yjs": {

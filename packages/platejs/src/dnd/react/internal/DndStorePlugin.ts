@@ -1,7 +1,7 @@
 import type React from 'react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import type { Element, NodeEntry, NodeKey, Path } from '../../../core';
+import type { Element, NodeEntry, NodeKey } from '../../../core';
 import { ElementApi, PathApi, PLUGINS } from '../../../core';
 import { BaseListPlugin } from '../../../features/list/lib/BaseListPlugin';
 import { definePlugin, type Editor } from '../../../react/core';
@@ -26,11 +26,11 @@ export type DndPluginState = {
   onDropFiles:
     | ((props: {
         key: NodeKey;
+        edge: 'after' | 'before';
         dragItem: FileDragItemNode;
         editor: Editor;
         monitor: DropTargetMonitor<DragItemNode>;
         nodeRef: React.RefObject<HTMLElement | null>;
-        target?: Path;
       }) => void)
     | null;
 };

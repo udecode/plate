@@ -14,7 +14,8 @@ import { BaseCalloutPlugin } from '../../features/callout';
 import { BaseDetailsPlugin } from '../../features/details';
 import { BaseColumnPlugin } from '../../features/layout';
 import { BaseListPlugin } from '../../features/list';
-import { BaseImagePlugin, BasePlaceholderPlugin } from '../../features/media';
+import { BaseUploadPlugin } from '../../features/upload';
+import { BaseImagePlugin } from '../../features/media';
 import { BaseTablePlugin } from '../../features/table';
 import { BaseTocPlugin } from '../../features/toc';
 import { BaseEquationPlugin } from '../../math';
@@ -28,7 +29,7 @@ const plugins = [
   BaseDetailsPlugin,
   BaseColumnPlugin,
   BaseImagePlugin,
-  BasePlaceholderPlugin,
+  BaseUploadPlugin,
   BaseTablePlugin,
   BaseTocPlugin,
   BaseEquationPlugin,
@@ -81,11 +82,11 @@ const cases: Array<{ type: string; insert: (editor: Editor) => void }> = [
         ),
   },
   {
-    type: 'placeholder',
+    type: 'upload',
     insert: (editor) =>
       editor
-        .plugin(BasePlaceholderPlugin)
-        .update.insert({ mediaType: 'video' }, { select: true }),
+        .plugin(BaseUploadPlugin)
+        .update.insert({ kind: 'video' }, { select: true }),
   },
   {
     type: 'table',
@@ -170,6 +171,25 @@ it('inserts after an explicit stable block without changing an unrelated selecti
     'paragraph',
   ]);
   expect(editor.read.selection()?.anchor).toEqual({ path: [1, 0], offset: 2 });
+});
+
+it('inserts before an explicit stable block key', () => {
+  const editor = createEditor({
+    plugins,
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'first' }] },
+      { type: 'paragraph', children: [{ text: 'second' }] },
+    ],
+  });
+  const before = editor.key([1])!;
+
+  editor.plugin(BaseCalloutPlugin).update.insert({}, { before });
+
+  expect(editor.read.children().map((node) => node.type)).toEqual([
+    'paragraph',
+    'callout',
+    'paragraph',
+  ]);
 });
 
 it('keeps explicit at as insertion before that path', () => {

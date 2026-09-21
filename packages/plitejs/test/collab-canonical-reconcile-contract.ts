@@ -19,8 +19,6 @@ import {
   string as editorString,
   subscribe as editorSubscribe,
 } from '../src/internal';
-import { createRangeAnchor } from './support/anchor';
-
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
@@ -66,7 +64,7 @@ const collapsed = (path: number[], offset: number): TextSelection => ({
 });
 
 describe('collab canonical remote reconcile contract', () => {
-  it('publishes one remote replace commit, skips history, and preserves same-position anchors', () => {
+  it('publishes one remote replace commit, skips history, and maps nearest anchors around replacement content', () => {
     const editor = createCollabEditor();
     const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
       [];
@@ -77,9 +75,12 @@ describe('collab canonical remote reconcile contract', () => {
     });
     const oldBlockNodeKey = editorGetNodeKey(editor, [0]);
     const oldTextNodeKey = editorGetNodeKey(editor, [0, 0]);
-    const anchor = createRangeAnchor(
-      editor,
-      range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
+    const anchor = editor.anchor(
+      range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 }),
+      {
+        association: 'inward',
+        deletion: 'nearest',
+      }
     );
 
     assert.ok(oldBlockNodeKey);
@@ -121,12 +122,12 @@ describe('collab canonical remote reconcile contract', () => {
     assert.ok(editorGetNodeKey(editor, [0, 0]));
     assert.deepEqual(
       anchor.resolve(),
-      range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
+      range({ path: [0, 0], offset: 0 }, { path: [1, 0], offset: 9 })
     );
-    assert.equal(editorString(editor, anchor.resolve()!), 'em');
+    assert.equal(editorString(editor, anchor.resolve()!), 'remotecanonical');
     assert.deepEqual(
       anchor.release(),
-      range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
+      range({ path: [0, 0], offset: 0 }, { path: [1, 0], offset: 9 })
     );
   });
 

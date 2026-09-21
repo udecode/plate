@@ -6,6 +6,7 @@ import React, {
   act,
   memo,
   type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -20,6 +21,7 @@ import type {
 } from '../../../../../packages/plitejs/src/index.ts';
 import { NodeApi } from '../../../../../packages/plitejs/src/index.ts';
 import {
+  getAnnotationStoreMetrics,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
 } from '../../../../../packages/plitejs/src/internal/index.ts';
@@ -31,15 +33,11 @@ import {
   type Annotation,
   type AnnotationStore,
   type DecorationSource,
-  type Widget,
-  type WidgetStore,
   useEditorContext,
   useEditorSelection,
   useEditorSelector,
   useAnnotationStore,
   useAnnotations,
-  useWidgetStore,
-  useWidgets,
 } from '../../../../../packages/plitejs/src/react/index.ts';
 import { usePliteDecorationEntries } from '../../../../../packages/plitejs/src/react/decoration-context.tsx';
 import {
@@ -518,33 +516,20 @@ type HiddenPanelAnnotation = Annotation<{
   label: string;
 }>;
 
-type AnnotationBreadthAnnotation = Annotation<{
+type AnnotationBreadthData = {
   kind: string;
   label: string;
   tone: string;
-}>;
+};
 
-type AnnotationBreadthWidget = Widget<
-  {
-    label: string;
-  },
-  {
-    kind: string;
-    label: string;
-    tone: string;
-  }
->;
+type AnnotationBreadthAnnotation = Annotation<AnnotationBreadthData>;
 
 const arePathsEqual = (left: readonly number[], right: readonly number[]) =>
   left.length === right.length &&
   left.every((value, index) => value === right[index]);
 
 const createAnnotationDecorationSource = (
-  store: AnnotationStore<{
-    kind: string;
-    label: string;
-    tone: string;
-  }>,
+  store: AnnotationStore<AnnotationBreadthData>,
 ): DecorationSource<ReturnType<typeof createEditor>> => ({
   id: 'annotation-breadth',
   observe: ({ editor, refresh }) => {
@@ -596,12 +581,11 @@ const createAnnotationDecorationSource = (
 const HiddenPanelSidebar = ({
   annotations,
   counts,
-  editor,
 }: {
   annotations: readonly HiddenPanelAnnotation[];
   counts: Record<string, number>;
-  editor: ReturnType<typeof createEditor>;
 }) => {
+  const editor = useEditorContext();
   const store = useAnnotationStore(editor, annotations);
   const snapshot = useAnnotations(store);
   const [localCount, setLocalCount] = useState(0);
@@ -659,7 +643,6 @@ const HiddenPanelActivityApp = ({
         <HiddenPanelSidebar
           annotations={annotations}
           counts={counts}
-          editor={editor}
         />
       </Activity>
     </EditorRoot>
@@ -698,54 +681,12 @@ const AnnotationSidebarSlice = memo(
   },
 );
 
-const AnnotationWidgetSlice = memo(
-  ({
-    counts,
-    widgetStore,
-  }: {
-    counts: Record<string, number>;
-    widgetStore: ReturnType<
-      typeof useWidgetStore<
-        {
-          label: string;
-        },
-        {
-          kind: string;
-          label: string;
-          tone: string;
-        }
-      >
-    >;
-  }) => {
-    useWidgets(widgetStore);
-    increment(counts, 'annotationWidget');
-    return <span id="annotation-widget">widget</span>;
-  },
-);
-
-const AnnotationWidgetBreadthSlices = ({
+const AnnotationBreadthSlices = ({
   annotationStore,
   counts,
-  widgetStore,
 }: {
-  annotationStore: AnnotationStore<{
-    kind: string;
-    label: string;
-    tone: string;
-  }>;
+  annotationStore: AnnotationStore<AnnotationBreadthData>;
   counts: Record<string, number>;
-  widgetStore: ReturnType<
-    typeof useWidgetStore<
-      {
-        label: string;
-      },
-      {
-        kind: string;
-        label: string;
-        tone: string;
-      }
-    >
-  >;
 }) => {
   const leftLeafId = useEditorSelector(
     (editor) => editorGetSnapshot(editor).index.keyAt([0, 0]) ?? null,
@@ -764,60 +705,75 @@ const AnnotationWidgetBreadthSlices = ({
         annotationStore={annotationStore}
         counts={counts}
       />
-      <AnnotationWidgetSlice counts={counts} widgetStore={widgetStore} />
     </>
   );
 };
 
-const AnnotationWidgetBreadthApp = ({
+const MountedAnnotationBreadth = ({
   annotations,
   counts,
-  editor,
-  onStores,
-  widgets,
+  onDecorationSource,
+  onStore,
 }: {
   annotations: readonly AnnotationBreadthAnnotation[];
   counts: Record<string, number>;
-  editor: ReturnType<typeof createEditor>;
-  onStores?: (stores: {
-    annotationStore: AnnotationStore<{
-      kind: string;
-      label: string;
-      tone: string;
-    }>;
-    widgetStore: WidgetStore<
-      {
-        label: string;
-      },
-      {
-        kind: string;
-        label: string;
-        tone: string;
-      }
-    >;
-  }) => void;
-  widgets: readonly AnnotationBreadthWidget[];
+  onDecorationSource: (
+    source: DecorationSource<ReturnType<typeof createEditor>> | null,
+  ) => void;
+  onStore?: (store: AnnotationStore<AnnotationBreadthData>) => void;
 }) => {
+  const editor = useEditorContext();
   const annotationStore = useAnnotationStore(editor, annotations);
-  const widgetStore = useWidgetStore(editor, widgets, annotationStore);
   const decorationSource = useMemo(
     () => createAnnotationDecorationSource(annotationStore),
     [annotationStore],
   );
 
   useEffect(() => {
-    onStores?.({
-      annotationStore,
-      widgetStore,
-    });
-  }, [annotationStore, onStores, widgetStore]);
+    onDecorationSource(decorationSource);
+    onStore?.(annotationStore);
+
+    return () => onDecorationSource(null);
+  }, [annotationStore, decorationSource, onDecorationSource, onStore]);
 
   return (
-    <EditorRoot decorations={[decorationSource]} editor={editor}>
-      <AnnotationWidgetBreadthSlices
-        annotationStore={annotationStore}
+    <AnnotationBreadthSlices
+      annotationStore={annotationStore}
+      counts={counts}
+    />
+  );
+};
+
+const AnnotationBreadthApp = ({
+  annotations,
+  counts,
+  editor,
+  onStore,
+}: {
+  annotations: readonly AnnotationBreadthAnnotation[];
+  counts: Record<string, number>;
+  editor: ReturnType<typeof createEditor>;
+  onStore?: (store: AnnotationStore<AnnotationBreadthData>) => void;
+}) => {
+  const [decorationSource, setDecorationSource] =
+    useState<DecorationSource<ReturnType<typeof createEditor>> | null>(null);
+  const publishDecorationSource = useCallback(
+    (source: DecorationSource<ReturnType<typeof createEditor>> | null) => {
+      setDecorationSource(source);
+    },
+    [],
+  );
+
+  return (
+    <EditorRoot
+      decorations={decorationSource ? [decorationSource] : []}
+      editor={editor}
+    >
+      <MountedAnnotationBreadth
+        annotations={annotations}
         counts={counts}
-        widgetStore={widgetStore}
+        onDecorationSource={publishDecorationSource}
+        onStore={onStore}
       />
     </EditorRoot>
   );
@@ -1166,25 +1122,11 @@ const measureHiddenPanelActivity = async () =>
     };
   });
 
-const measureAnnotationWidgetBreadth = async () =>
+const measureAnnotationBreadth = async () =>
   measureLane(async () => {
     const editor = createEditor();
     const counts: Record<string, number> = {};
-    let annotationStore: AnnotationStore<{
-      kind: string;
-      label: string;
-      tone: string;
-    }> | null = null;
-    let widgetStore: WidgetStore<
-      {
-        label: string;
-      },
-      {
-        kind: string;
-        label: string;
-        tone: string;
-      }
-    > | null = null;
+    let annotationStore: AnnotationStore<AnnotationBreadthData> | null = null;
 
     editorReplace(editor, {
       children: createSelectionChildren(),
@@ -1209,29 +1151,14 @@ const measureAnnotationWidgetBreadth = async () =>
         id: 'comment-1',
       },
     ] as const;
-    const widgets = [
-      {
-        anchor: {
-          annotationId: 'comment-1',
-          type: 'annotation' as const,
-        },
-        data: {
-          label: 'Comment widget',
-        },
-        id: 'comment-widget',
-      },
-    ] as const;
-
     const mounted = await mountApp(
-      <AnnotationWidgetBreadthApp
+      <AnnotationBreadthApp
         annotations={annotations}
         counts={counts}
         editor={editor}
-        onStores={(stores) => {
-          annotationStore = stores.annotationStore;
-          widgetStore = stores.widgetStore;
+        onStore={(store) => {
+          annotationStore = store;
         }}
-        widgets={widgets}
       />,
     );
     const baseline = cloneCounts(counts);
@@ -1245,7 +1172,9 @@ const measureAnnotationWidgetBreadth = async () =>
 
     const editMs = now() - start;
     const delta = deltaCounts(counts, baseline);
-    const annotationMetrics = annotationStore?.getMetrics();
+    const annotationMetrics = annotationStore
+      ? getAnnotationStoreMetrics(annotationStore)
+      : undefined;
 
     await mounted.dispose();
     bookmark.release();
@@ -1258,11 +1187,9 @@ const measureAnnotationWidgetBreadth = async () =>
       annotationSidebarRenders: delta.annotationSidebar ?? 0,
       annotationSubscriberWakeCount:
         annotationMetrics?.annotationSubscriberWakeCount ?? 0,
-      annotationWidgetRenders: delta.annotationWidget ?? 0,
       editMs,
       leftTextRenders: delta.annotationLeftText ?? 0,
       rightTextRenders: delta.annotationRightText ?? 0,
-      widgetRecomputeCount: widgetStore?.getMetrics().recomputeCount ?? 0,
     };
   });
 
@@ -1281,7 +1208,7 @@ const main = async () => {
     deepAncestorBreadth: await measureDeepAncestorBreadth(),
     decorationSourceToggleBreadth: await measureDecorationSourceToggleBreadth(),
     hiddenPanelActivity: await measureHiddenPanelActivity(),
-    annotationWidgetBreadth: await measureAnnotationWidgetBreadth(),
+    annotationBreadth: await measureAnnotationBreadth(),
   };
 
   await mkdir('tmp', { recursive: true });

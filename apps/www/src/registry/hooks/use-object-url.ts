@@ -10,11 +10,18 @@ export function useObjectUrl(source: Blob | null) {
 
   React.useEffect(() => {
     const url = source ? URL.createObjectURL(source) : null;
+    let active = true;
 
-    // oxlint-disable-next-line react/set-state-in-effect -- Allocate after commit so abandoned renders cannot leak browser URLs.
-    setResource(source && url ? { source, url } : null);
+    queueMicrotask(() => {
+      if (!active) return;
 
-    return url ? () => URL.revokeObjectURL(url) : undefined;
+      setResource(source && url ? { source, url } : null);
+    });
+
+    return () => {
+      active = false;
+      if (url) URL.revokeObjectURL(url);
+    };
   }, [source]);
 
   return resource?.source === source ? resource.url : null;

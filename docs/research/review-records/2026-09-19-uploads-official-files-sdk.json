@@ -1,0 +1,143 @@
+{
+  "id": "2026-09-19-uploads-official-files-sdk",
+  "scope": "uploads",
+  "kind": "review",
+  "date": "2026-09-19",
+  "question": "Should Files SDK become the official Plate upload contract through one platejs/files plugin, mirrored SDK methods, or core?",
+  "model": "GPT-6 (Codex)",
+  "method": "best-api-review/history-v3",
+  "trigger": "User rejects the cost of SDK replaceability and proposes adopting Files SDK as the official API, with one file plugin or core ownership.",
+  "requirements": [
+    "Use one officially supported Files SDK integration rather than maintaining generic provider/SDK adapter contracts.",
+    "Choose one canonical editor file capability and assess deletion of MediaUploadPlugin, the generic transport API, mirrored methods and core placement.",
+    "Preserve atomic admission, post-commit transport, exact root/node authority, progress, replacement cancellation, undo and valid media documents.",
+    "Keep application authorization and durable media addressing explicit, and keep ordinary editors and media rendering independent of an upload gateway."
+  ],
+  "evidenceReuse": "Reused the preceding source-bound Files SDK 2.6.0 provider/client/gateway investigation. Re-read current Plate transport/task/completion and React owners, package exports/dependency policy, upstream FilesClient options/results and React lifecycle. No provider behavior tests rerun.",
+  "summary": "Pursue one official Files SDK-backed editor file plugin under platejs/files that replaces MediaUploadPlugin and its generic transport API. Accept the upstream FilesClient and reuse its I/O types directly; provider portability belongs to Files SDK. Supersede the prior copied-adapter recommendation because SDK replaceability is explicitly not a user requirement. Do not mirror storage methods through the editor, add a second adapter plugin, or move network storage into core. Retain editor-owned drafts/history and application-owned durable URLs and server authorization.",
+  "verdict": "pursue",
+  "previous": "2026-09-19-uploads-files-sdk-integration",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-19-uploads-files-sdk-integration",
+      "question": "Should Plate replace mandatory UploadThing wiring with Files SDK as its default upload protocol or copied integration?",
+      "action": "supersedes",
+      "reason": "The clarified preference rejects paying for SDK replaceability. A direct official upstream client eliminates the custom transport public surface and recurring app mapping. Retain prior R2/URL/lifetime observations; reject the previous conclusion that a Plate SDK dependency is unjustified under this changed product constraint."
+    },
+    {
+      "record": "2026-09-19-uploads-node-model-correction",
+      "question": "Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?",
+      "action": "retains",
+      "reason": "Keep dedicated draft slots, atomic admission, exact NodeKey/root authority, post-commit requests, replacement cancellation and history. The provider/API boundary changes, not those editor laws. The completed implementation plan lacks a current source-bound execution outcome, so no runtime receipt is inferred."
+    }
+  ],
+  "alternatives": [
+    "Keep copied provider-independent transport: reject under the clarified requirement; it preserves an unrequested SDK replacement job and recurring consumer mapping.",
+    "Official Files SDK within platejs/media: plausible but combines independently used media rendering with the optional file-ingestion workflow; prefer a focused entrypoint with dependency closure proof.",
+    "One platejs/files plugin replacing MediaUploadPlugin: selected; upstream owns storage transport and provider portability, Plate owns editor-file lifecycle.",
+    "Files SDK adapter plugin plus the existing upload plugin: reject because two installed authorities serve one upload job.",
+    "Mirror or re-export every Files SDK verb through Plate/editor.api: reject because storage operations can use the shared actual client and forwarding adds no editor semantics.",
+    "Put Files SDK in core: reject; neutral editing and already-hosted media do not require storage configuration or network upload authority.",
+    "Delete the editor owner and use SDK React hooks: reject; view unmount lifetime cannot own document identity, replacement and history."
+  ],
+  "proofLimits": "Review and source inspection only. Exact FilesPlugin names/configuration, persistent media address policy, package/declaration closure, live provider verification and browser proof remain Task design/adoption work. No product source or dependency was changed. Prior R2 capped-upload proxy and expiring-URL constraints remain. The earlier upload implementation plan still has no reconciled source-bound execution outcome.",
+  "references": [
+    "docs/plans/artifacts/upload-draft-asset-protocol/files-sdk-official-review.md",
+    "docs/plans/artifacts/upload-draft-asset-protocol/files-sdk-review.md",
+    "packages/platejs/src/features/media/lib/media-upload/BaseMediaUploadPlugin.ts",
+    "packages/platejs/src/react/features/media/media-upload/MediaUploadPlugin.tsx",
+    "apps/www/src/registry/components/editor/media.tsx",
+    "packages/platejs/package.json"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/features/media/lib/media-upload/BaseMediaUploadPlugin.ts": "1695f674fcf4b0de5100b0c6126c2f8325ad7bfd26e1cd9554fe8ab9781ba120",
+      "apps/www/src/registry/components/editor/media.tsx": "5572d5b6b999b2476cd46f8b3ad3c9e3d7fa616732e713c241ef08b54d4caafb",
+      "apps/www/src/registry/lib/uploadthing.ts": "bae36adeb9413dfcc33851d6b1fd8a67d3b2a552604d20a518468b1032c20a17",
+      "apps/www/src/registry/components/editor/media-upload.tsx": "81f9a8107f7aa5eb2a26bd3774607aa90193583dccb633840a60f58e19597915",
+      "apps/www/src/registry/components/editor/media-toolbar-button.tsx": "92afe6624a2cdaa29261d7ed1c94f04adeb2865e6e4a7323d4299e09af90e36a",
+      "apps/www/src/registry/components/editor/dnd.tsx": "e7180c78bb4bac3fc92aaff80e3d91854295a52c8fb746afa7fa588df33a264d",
+      "packages/platejs/src/features/media/lib/media-upload/BaseMediaUploadPlugin.upload.spec.ts": "7100796c686d6dbd743cbcffd9a06eed84925f64347af108a346b0cf913d18e9",
+      "packages/platejs/src/react/features/media/media-upload/MediaUploadPlugin.spec.ts": "eeb614e979626d245e1360ab0d7798a0116da4f46d570788129592bfec941a11",
+      "packages/platejs/src/dnd/react/useDndNode.spec.ts": "286b82e5787efe82ae8c41f2a26ee34c9e3bb2fd4a69598707229e868d1ab7ce",
+      "apps/www/src/registry/components/editor/media-upload.spec.tsx": "2b58bf1d3bc39a34cd99e908fc15ac1ba7c376aa8b04f5eceb351a76b9982bfd",
+      "apps/www/src/registry/components/editor/media-upload.lifecycle.spec.tsx": "1589015243927b4ee80759b4ace1c7b6539c5f0198ce38610847fba9ab7cdc0d",
+      "apps/www/tests/browser/clipboard-upload.spec.ts": "f7f34ca162d22cfb4bdf18976c8106b537a4599582517c2fd1b8dd4d5124979f",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "0f2a4e4ea3d3bac4b967397ae1ee83b88488bcacef2fcf36a514255bc695d3db",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "5dd78e8b691c0e1f7d6d21dd8934ffb9d6590dca220d8174985eaa2877daa6ae",
+      "packages/platejs/src/react/features/media/media-upload/MediaUploadPlugin.tsx": "77315834704ab5e3968b8aa791cf75b3665440fb51783e7dedf8890b3e01aec8",
+      "apps/www/src/registry/components/editor/media-image.tsx": "60292f4a6df792912ab2a231bbe92d3ef1cb1ca8e28107d1042982c0855c76f1",
+      "packages/platejs/src/dnd/react/useDndNode.ts": "dd4c453f72b788c17ee6b2eaa2ba707f941f4d60e7d9451f9d111a3d2c440cc3",
+      "apps/www/src/registry/registry-features.ts": "07fd0f71b10c6e06ab04d29b41f468e541a0fd622b7ad14ebf7d41ac24448f37",
+      "content/docs/(plugins)/(elements)/media.mdx": "17d9bbaa7cf1756e9912702c26c24a41d6c5725cd0e0da8cd8dd21a338189113",
+      "content/docs/(guides)/document-model.mdx": "6f03072e0ee221027ea16b99b486c7acd10c4ab20607caa21885731939b8c0f7",
+      "docs/vision/plate.md": "b4023689d2b0a7fcc6dba9ae55431d70e29579298b979d01f226e356ed5d6334",
+      "docs/plans/4803-update-upload-history.md": "76deaafb3d8a0517120b31dc39551223dd9bcee3ae5e49fe091eb84b2525382d",
+      "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md": "6d646330ca469daf7ae2069855d7427dafb6ff29a1ba8a23e7ab97c233d98181",
+      "docs/research/decisions/clipboard-content-fitting.md": "c0709e45e4956999841744f9d10e3292147f3dd80c12305afa743ed9bd2d2c39",
+      "docs/plans/artifacts/2026-09-18-uploads-review/observations.test.ts": "97308d1504c163e492c7ad2ea3595922ccf6c8c026169424920b55c8fc1da83d",
+      "docs/plans/artifacts/2026-09-18-uploads-review/observations.txt": "b91a7ffd66290dfaf13759f37dfb2ccd2cc0a14bb18d5b9d1390018a0626de9f",
+      "packages/plitejs/src/core/public-state.ts": "f3f1b668bbe59c5aec69300d180062e8b5be1dde6202116d35d87e90f3f41481",
+      "packages/plitejs/src/core/plugin.ts": "f3845ada8e4dc1f688f904b98974adcf89cde0b82a859f22bec491acbf605b66",
+      "packages/plitejs/src/history/history-plugin.ts": "16c2ffafa63f071a87c998e65e0ccf3b993b30574f7693578cea3acf93994b99",
+      "packages/plitejs/src/history/history-state.ts": "573b6075ab8e44c5134ad45cb4ce761a6681cc40f27aeea62257feefa1018e93",
+      "packages/platejs/src/react/editor/useCreateEditor.ts": "80d2d3022d15f5179a3b038f94ebac76cf41ca8a3529c6f5cf8d40c1bd925040",
+      "packages/plitejs/test/state-tx-public-api-contract.ts": "209cec88181af5afdd9d487fb7fe54802179433514c99cc71cb1f4335e99b75e",
+      "packages/plitejs/test/plugin-configuration.test.ts": "b34e9eefa640c1cedfc8ef298bf6e54aa3b8e501e1193a3e805193b150c33c47",
+      "packages/plitejs/src/interfaces/editor.ts": "333d1ad3e93b3935040256d145fc2ef4b6ae35d66fd124c1944c87233b96b90e",
+      "packages/plitejs/src/core/commit.ts": "1be86183d11ddcff651f3e53c8fcdac83bbb3a11f6ae9eef4bc3f3dc62eeb9c7",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "540c4ad1419f4b1d836afc3f9d9b92a9df11d8811ca2ad45c4131ab9dead461d",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      ".agents/skills/best-api-review/SKILL.md": "6efbd1969db986962f154708c20e4f359c11cfc914e3dcf8deaf205bed00fa65",
+      ".agents/rules/task/references/best-api-review.md": "c1647f7156572e48e349a35d4ff6dce7075e4c230854e3f7dc216644e7521c63",
+      "docs/plans/artifacts/upload-draft-asset-protocol/files-sdk-official-review.md": "9cb82630cd31ea17a1ea1473f32a9d55a5242a547527e2b1300f461c11a7cac5",
+      "docs/plans/artifacts/upload-draft-asset-protocol/files-sdk-review.md": "fc765b3d6bf2a938e3121111c1f1dbba8239fe922a92e6502c0fa15400fcb853",
+      "packages/platejs/package.json": "d4b13fe549678e6ec3d483f3d83e16bcdd87f5a2816f4dae62be9097c4f13196"
+    },
+    "directories": {},
+    "features": {
+      "application/uploadthing": "6c220ef4de7b78fba50cc1f3e41890d147cc59acf818a955f5e47e9dec6b2778",
+      "capability/mediaUpload": "e119c9c080df6bd5c668185ad3b810d38908860f4141ca094b2538e94982830c",
+      "registry/hooks/use-object-url": "05b9bdd3c89dfa0feaff9dc0d787b7f47aadc2efde5867414b174bb25507d9c9",
+      "registry/hooks/use-object-url.spec": "240f85dbe01f39ca071c65ad7a1f7d43aeedd3dff74555e6df52efb0ec83bd81",
+      "registry/lib/uploadthing": "13db90c9d4f7d9408f6c71561313927c9fb96a56076dbd65fe58fc4822fde73d",
+      "ui/media-upload": "b243ff5316fb4abecc65b3a4678bd3f53e99e15e635a509dc45bf0566d698886"
+    },
+    "upstreams": [
+      {
+        "checkout": "/Users/zbeyens/git/files-sdk",
+        "commit": "e87f630c17d5fa3e5f84adb3d81fc540c4b17348",
+        "files": {
+          "packages/files-sdk/package.json": "410fb2a8f106f74dbf660d014b4271f8010fd38cd8881e1b8151c452ab40d456",
+          "LICENSE": "e76b3f525b681b119e7284939032d1fd66e41d0d41b9e24dbe0170683562335c",
+          "packages/files-sdk/src/client/files-client.ts": "e4f4e75f387487df80cfc492461e9c50b9c97437811c8e2b8ac01405403c6acd",
+          "packages/files-sdk/src/client/types.ts": "c61903cecbd3abc8d8fadd18b5eb168ae135da050bf61550761edf06a3448675",
+          "packages/files-sdk/src/client/transport.ts": "d15223e0df55466c3caa81fdd0a34f3c95cbd272e8d3eb7db5482f8f3683dc60",
+          "packages/files-sdk/src/internal/files-router/upload.ts": "a2b760b5c8e3503531075c0824d5520ad3c3748df3d19d46fa99e6d4e908f522",
+          "packages/files-sdk/src/internal/files-router/handler.ts": "8a23e671ce12a4fb2aab92882f82aa344b87b31170c815d81a5f9254ea303891",
+          "packages/files-sdk/src/r2/index.ts": "b2ecb27eb09c4d472c54c53dc3f9646f5b46e3ff5237e0b6ec0de515817de472",
+          "apps/web/docs/ui/server/gateway.mdx": "e1bb6199b35ed2ae1838dd47dc8661e26be7974bac570a474dbd567f27b29209",
+          "apps/web/docs/ui/server/authorization.mdx": "c1184256707c2b8d0066b66cda5900fb9a29cd9ec2179ba461167dd917b406bd",
+          "apps/web/docs/ui/client/react.mdx": "c9e7175021db0f9cfec535446d1e0d8d969b285eb2e023d89bbdaf29ab3d755b",
+          "apps/web/docs/adapters/(vendor-adapters)/r2.mdx": "9176e22725e92976b89de213cd30b1e8d60df945ec498172eb8b357e4ebaf211",
+          "skills/files-sdk/references/client-uploads.md": "d4ef091b518e1385e3bcd89481773c76c7efed754c03df00bee8a198c5d3068d",
+          "packages/files-sdk/test/router-edge.test.ts": "b24da3b7133e19b237afdd78954ec581b6355334ac388c42746305f31e47467d",
+          "packages/files-sdk/src/client/progress.ts": "2b070d13d0b95352075affa4f8ca9d4c9e4300b3af2e1564401ec98944a36928",
+          "packages/files-sdk/src/react/use-files.ts": "244b6efb6deee0b04c349f2ab1b26696bb69247363939aa7f8a127fcc3c632ff"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/uploadthing",
+        "commit": "e8ffeaeed0dad695bc4e56f2b9f6849da1b53d45",
+        "files": {
+          "packages/uploadthing/package.json": "606d80a590c4ab324e5bc6313ecea5f43990b042d03d827f757bf75cba48c32d",
+          "packages/uploadthing/CHANGELOG.md": "143766fc23d6fc0fe8c1402aaf8151f86a3bcd75cb294e0349edf10f04efc848",
+          "README.md": "40ecb11f35ebdd5d2854946eb0b6a61c15fa0252b51990e25c68b557515994c1"
+        }
+      }
+    ]
+  }
+}

@@ -22,9 +22,6 @@
   "include": ["../src/react/features/media/**/*"],
   "references": [
     {
-      "path": "./core.json"
-    },
-    {
       "path": "./media.json"
     },
     {

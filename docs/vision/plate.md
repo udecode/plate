@@ -372,6 +372,21 @@ Current priorities:
   current liveness and edit eligibility, then removes and replaces the input in
   one transaction. Copied controls own query text, composition, navigation, and
   DOM focus without duplicating the document's location or completion state.
+- The optional `platejs/upload` feature owns asynchronous file admission through
+  `UploadClient`, the single-file upload capability expressed with Files SDK
+  call and outcome types, not a generic transport contract. A Files SDK client
+  satisfies it structurally; session-local examples and tests may implement
+  only that operation. Its authored draft retains the `upload` schema type and
+  persists only the draft kind.
+  Upload validates and inserts a whole batch atomically, starts transfer after
+  commit, and keeps files, request authority, progress, failures, and object
+  URLs local to each live node key. Completion rechecks that key and kind before
+  atomically replacing the draft with the installed media plugin's completed
+  schema type. Media plugins own those completed schemas and URL normalization;
+  the application owns the gateway, access policy, storage, and durable URL
+  mapping. Removal, retagging, plugin cleanup, and whole-document replacement
+  revoke requests; history never restarts them. Internal slices preserve
+  drafts, while external HTML and static rendering omit unresolved media.
 - Low-level React composition is `react({ dom })`: one required object with the
   exact DOM descriptor. Keep one explicit erased implementation boundary only
   for the TypeScript 7 invariant-union reduction limit.
@@ -605,6 +620,10 @@ Current priorities:
   wrong package dependency. Descriptor input preserves nominal validation and
   exact inference; name input is the explicitly erased, decoupled path and
   fails at runtime when the installed plugin or transaction group is absent.
+  An optional name-only consumer checks `tx.plugins.has(pluginName)` in the
+  same transaction before dispatch. Do not probe `editor.api` or
+  `editor.update` with reflection, duplicate the target method type, or import
+  the descriptor solely to test installation.
   Generated closed editors may also expose `tx.pluginName.method()`. Nested
   portal one-shot updates are rejected.
 - Classify behavior before exposing composition: invariants stay in their
@@ -787,6 +806,13 @@ Current priorities:
   DnD manager. Keep optional SDKs and backends out of generic editor components,
   and keep dedicated render-attribute hooks private to their existing host.
   Do not provide a generic plugin hook runner or session framework.
+- A copied feature with mutually exclusive external backends keeps one
+  provider-neutral base item and exposes each supported backend as an explicit
+  installable provider item. The provider item owns its adapter, route,
+  environment contract, and provider dependencies; common gateway security and
+  access policy stay in one shared support owner. Browser-local demo storage is
+  an explicit provider choice. Do not hide a backend in the base item or select
+  among providers through one route's runtime environment.
 - Serialization packages own format semantics, conversion mechanics, and
   format-required defaults. Copied registry or application source owns optional
   export presentation presets. An exporter may accept one exact caller-owned
@@ -826,6 +852,9 @@ Current priorities:
   explicit optional package or registry dependency. Never create a shared
   integration grab bag for dependency-graph aesthetics; extract only a coherent
   capability, durable behavior owner, or real runtime-cycle boundary.
+- A static registry item owns real static presentation source. Package-default
+  omission, null rendering, or fallback configuration stays on the base plugin
+  and aggregate static kits compose that descriptor directly.
 - Derive required package and registry-item dependencies from each copied
   item's resolved source graph and the package DAG. Authored registry metadata
   owns only installation policy that source cannot express: intentional

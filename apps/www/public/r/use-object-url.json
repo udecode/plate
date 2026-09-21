@@ -4,7 +4,7 @@
   "files": [
     {
       "path": "src/registry/hooks/use-object-url.ts",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nexport function useObjectUrl(source: Blob | null) {\n  const [resource, setResource] = React.useState<{\n    source: Blob;\n    url: string;\n  } | null>(null);\n\n  React.useEffect(() => {\n    const url = source ? URL.createObjectURL(source) : null;\n\n    // oxlint-disable-next-line react/set-state-in-effect -- Allocate after commit so abandoned renders cannot leak browser URLs.\n    setResource(source && url ? { source, url } : null);\n\n    return url ? () => URL.revokeObjectURL(url) : undefined;\n  }, [source]);\n\n  return resource?.source === source ? resource.url : null;\n}\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nexport function useObjectUrl(source: Blob | null) {\n  const [resource, setResource] = React.useState<{\n    source: Blob;\n    url: string;\n  } | null>(null);\n\n  React.useEffect(() => {\n    const url = source ? URL.createObjectURL(source) : null;\n    let active = true;\n\n    queueMicrotask(() => {\n      if (!active) return;\n\n      setResource(source && url ? { source, url } : null);\n    });\n\n    return () => {\n      active = false;\n      if (url) URL.revokeObjectURL(url);\n    };\n  }, [source]);\n\n  return resource?.source === source ? resource.url : null;\n}\n",
       "type": "registry:hook"
     }
   ],

@@ -283,10 +283,8 @@ and external review markers.
 #### `useAnnotationStore<TData>(editor, annotations, options?): AnnotationStore<TData>`
 
 Create an annotation store for durable anchored ranges such as comments,
-diagnostics, or external review markers.
-
-Wrap reader components in `AnnotationProvider` when they should use the
-store by default.
+diagnostics, or external review markers. Call it under `EditorRoot` with the
+exact mounted editor from `useEditorContext()`.
 
 Pass the current annotation array directly. A new array identity refreshes the
 store automatically. Use `revision` only for an external mutable source that
@@ -299,19 +297,19 @@ const annotations = comments.map((comment) => ({
   id: comment.id,
 }));
 
-const annotationStore = useAnnotationStore(editor, annotations);
+const view = useEditorContext();
+const annotationStore = useAnnotationStore(view, annotations);
 
-const externalStore = useAnnotationStore(editor, mutableAnnotations, {
+const externalStore = useAnnotationStore(view, mutableAnnotations, {
   revision: mutableAnnotationsRevision,
 });
 ```
 
-#### `useAnnotations<TData>(store?): AnnotationSnapshot<TData>`
+#### `useAnnotations<TData>(store): AnnotationSnapshot<TData>`
 
-Read the current annotation snapshot. Without an explicit store, the hook reads
-the store from the nearest `AnnotationProvider`.
+Read the current annotation snapshot from an explicit store.
 
-#### `useAnnotation<TData>(id, store?): ResolvedAnnotation<TData> | null`
+#### `useAnnotation<TData>(store, id): ResolvedAnnotation<TData> | null`
 
 Read one annotation by id.
 

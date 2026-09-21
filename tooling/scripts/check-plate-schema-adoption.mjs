@@ -344,8 +344,8 @@ const intentionalProductionExtendStageChains = new Map([
     [[['read', 'update'], ['read']]],
   ],
   [
-    'packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.ts',
-    [[['update'], ['activate', 'api', 'on', 'update']]],
+    'packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts',
+    [[['activate', 'api', 'on', 'update'], ['commands']]],
   ],
   [
     'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',

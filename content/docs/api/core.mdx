@@ -11,6 +11,7 @@ Placement options for feature commands that insert whole blocks. Import the
 type from `platejs` when declaring a public command boundary.
 
 - `at`: an explicit insertion location.
+- `before`: a live block key; omit `at` and `after` when using it.
 - `after`: a live source block target; omit `at` when using it.
 - `replaceEmpty`: replace the empty, writable source text block when inserting
   after it. Structural and atomic blocks remain intact.

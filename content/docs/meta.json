@@ -16,6 +16,7 @@
     "[MCP](/docs/installation/mcp)",
     "---Guides---",
     "[Feature Kits](/docs/feature-kits)",
+    "[Upload Files](/docs/upload)",
     "[Plugin](/docs/plugin)",
     "[Plugin Methods](/docs/plugin-methods)",
     "[Plugin Shortcuts](/docs/plugin-shortcuts)",
@@ -46,7 +47,7 @@
     "[Roots](/docs/roots)",
     "[Document Meta](/docs/document-meta)",
     "[Clipboard and Paste](/docs/clipboard)",
-    "[Decorations, annotations, and widgets](/docs/decorations)",
+    "[Decorations and annotations](/docs/decorations)",
     "[Schema](/docs/schema)",
     "[History](/docs/history)",
     "[Pagination](/docs/pagination)",
@@ -175,7 +176,6 @@
     "[Media Audio Element](/docs/components/media-audio)",
     "[Media Embed Element](/docs/components/media-embed)",
     "[Media File Element](/docs/components/media-file)",
-    "[Media Placeholder Element](/docs/components/media-placeholder)",
     "[Media Video Element](/docs/components/media-video)",
     "[Mention Nodes](/docs/components/mention)",
     "[Paragraph Element](/docs/components/paragraph)",
@@ -788,12 +788,6 @@
               "titleCn": "Media File"
             },
             {
-              "description": "A placeholder for media upload progress indication.",
-              "href": "/docs/components/media-placeholder",
-              "title": "Media Placeholder",
-              "titleCn": "Media Placeholder"
-            },
-            {
               "description": "A video player component with YouTube and file upload support.",
               "href": "/docs/components/media-video",
               "title": "Media Video",
@@ -1231,6 +1225,11 @@
               "titleCn": "功能套件"
             },
             {
+              "href": "/docs/upload",
+              "title": "Upload Files",
+              "titleCn": "上传文件"
+            },
+            {
               "href": "/docs/plugin",
               "items": [
                 {
@@ -1390,7 +1389,7 @@
             },
             {
               "href": "/docs/decorations",
-              "title": "Decorations, annotations, and widgets",
+              "title": "Decorations and annotations",
               "titleCn": "装饰、注释和浮层"
             },
             {
@@ -2007,6 +2006,16 @@
       "/docs/feature-kits": {
         "title": "Feature Kits",
         "titleCn": "功能套件"
+      },
+      "/docs/upload": {
+        "description": "Upload local files with UploadPlugin and the Files SDK.",
+        "keywords": [
+          "files",
+          "upload",
+          "media"
+        ],
+        "title": "Upload Files",
+        "titleCn": "上传文件"
       },
       "/docs/plugin": {
         "title": "Plugin",
@@ -2776,11 +2785,6 @@
         "title": "Media File",
         "titleCn": "Media File"
       },
-      "/docs/components/media-placeholder": {
-        "description": "A placeholder for media upload progress indication.",
-        "title": "Media Placeholder",
-        "titleCn": "Media Placeholder"
-      },
       "/docs/components/media-video": {
         "description": "A video player component with YouTube and file upload support.",
         "title": "Media Video",
@@ -3191,7 +3195,7 @@
         "titleCn": "剪贴板与粘贴"
       },
       "/docs/decorations": {
-        "title": "Decorations, annotations, and widgets",
+        "title": "Decorations and annotations",
         "titleCn": "装饰、注释和浮层"
       },
       "/docs/schema": {

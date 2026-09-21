@@ -1,0 +1,130 @@
+---
+title: 上传文件
+description: 使用 UploadPlugin 和 Files SDK 上传本地文件，并保存持久的媒体 URL。
+---
+
+`UploadPlugin` 管理草稿位和上传任务。Files SDK 传输文件字节；应用负责网关、
+文档访问权限和持久下载 URL。已完成的图片、视频、音频和文件节点需要
+[媒体插件](/cn/docs/media)。
+
+## 安装
+
+安装复制的媒体 UI，然后选择一个上传提供程序。每个提供程序都会安装共享的
+`upload` UI：
+
+<ComponentInstallation name="media" inline />
+
+### 浏览器本地
+
+<ComponentInstallation name="upload-ephemeral" inline />
+
+适用于演示和一次性编辑器。文件会成为当前浏览器标签页中的对象 URL，并在刷新、
+卸载或共享时失效。
+
+### Cloudflare R2
+
+<ComponentInstallation name="upload-r2" inline />
+
+### Amazon S3
+
+<ComponentInstallation name="upload-s3" inline />
+
+手动配置时安装软件包和 SDK：
+
+```bash
+npm install platejs files-sdk
+```
+
+R2 配方会配置 `/api/files`。设置 `FILES_R2_BUCKET`、
+`FILES_R2_ACCOUNT_ID`、`FILES_R2_ACCESS_KEY_ID`、
+`FILES_R2_SECRET_ACCESS_KEY`、至少 32 个字符且跨进程稳定的
+`FILES_API_SECRET`，以及大于零的 `FILES_MAX_UPLOAD_SIZE`。
+在复制的 `lib/files.ts` 中实现 `resolveFilesAccess`，按会话和文档 ACL
+检查读写权限，包括代理上传的 `PUT` 请求。路由中的 `documentId` 是应用的
+文档 ID，不是授权凭证。ID 长度为 1–128 个字符，只能包含字母、数字、下划线
+和连字符。返回经授权协作者共享的稳定租户/文档命名空间。
+
+S3 配方使用 `FILES_S3_BUCKET` 和 `FILES_S3_REGION`，凭证由 AWS 凭证链提供。
+两个持久化提供程序复用 `lib/files.ts` 中同一份网关策略；各自的路由文件只创建
+所选适配器。构建其他提供程序配方时，可以直接安装 `files-api`。
+
+## 配置编辑器
+
+在编辑器的文档生命周期内创建一次客户端和插件配置。同步 `getUrl` 将 SDK
+`UploadOutcome` 的 key 映射为持久的绝对 URL。将源站地址保存在应用配置中，
+使服务端渲染也能使用这段配置。
+
+```tsx
+import { createFilesClient } from 'files-sdk/client';
+import { UploadPlugin } from 'platejs/upload/react';
+import { createEditor } from 'platejs/react';
+
+import { UploadElement } from '@/components/editor/upload';
+import { MediaKit } from '@/components/editor/media';
+
+export function createDocumentEditor(documentId: string, appOrigin: string) {
+  const endpoint = `/api/files?documentId=${encodeURIComponent(documentId)}`;
+  const client = createFilesClient({ endpoint });
+
+  return createEditor({
+    plugins: [
+      ...MediaKit,
+      UploadPlugin.configure({
+        component: UploadElement,
+        initialState: {
+          client,
+          getUrl: ({ key }) => {
+            const url = new URL(endpoint, appOrigin);
+            url.searchParams.set('op', 'download');
+            url.searchParams.set('key', key);
+            return url.href;
+          },
+          onError: (failure) => console.error(failure),
+        },
+      }),
+    ],
+  });
+}
+```
+
+网关会为每次下载检查权限，然后重定向到短时有效的存储 URL，或代理可信的内联媒体。持久化 `getUrl`
+返回的网关 URL，不要持久化签名存储 URL。浏览器媒体请求和代理上传请求不会
+继承 `FilesClient.headers`；请为它们使用同源 Cookie。要内联显示私有媒体，
+请通过已验证的文件字节或可信的导入记录配置网关的 `trustedInlineType`。
+未配置该策略时，文件作为附件下载。
+
+如果使用复制的 `UploadKit`，请按上面的配置修改 endpoint 和 URL 解析函数，
+加入当前 `documentId`。
+
+## 提交和查看任务
+
+```tsx
+editor.plugin(UploadPlugin).update.submit(files, { after: blockKey });
+editor.plugin(UploadPlugin).update.submit(files, { slot: draftKey });
+editor.plugin(UploadPlugin).api.cancel(draftKey);
+```
+
+`submit` 接受 `File[]` 或 `FileList`。它在修改文档前验证整个批次，在提交后
+为每个文件启动一次 SDK 上传。`slot` 填充现有草稿位；块位置选项插入新草稿。
+取消任务会保留空闲草稿。失败的实时任务保留 `File`，可显式重试；重新加载的
+草稿需要重新选择文件。
+
+复制的 `UploadElement` 根据草稿节点的 key 订阅任务。自定义组件可以读取
+`editor.plugin(UploadPlugin).store.get('task', key)`，并通过任务的
+`getSnapshot` 和 `subscribe` 订阅。进度使用 SDK 的 `AggregateProgress`：
+`loaded`、`total` 和 `fraction`（`0` 到 `1`）。组件卸载不会重启上传。
+
+## API 参考
+
+| 接口 | 用途 |
+| --- | --- |
+| `platejs/upload` 的 `BaseUploadPlugin` | 无 React 的草稿 schema、接收、任务和完成逻辑。 |
+| `platejs/upload/react` 的 `UploadPlugin` | React 适配器，可选原生文件拖放。 |
+| `UploadPlugin.configure({ initialState })` | 配置 `client: UploadClient`、同步 `getUrl: (file: UploadOutcome) => string`、`rules`、`maxFiles` 和 `onError`。 |
+| `editor.plugin(UploadPlugin).update.submit(files, options)` | 插入已验证批次或填充草稿；`slot` 与块位置选项不能混用。 |
+| `editor.plugin(UploadPlugin).api.cancel(key)` | 中止一个草稿的实时任务。 |
+
+草稿持久化类型是 `upload`，并且需要 `kind`。`File`、进度和错误只留在
+编辑器状态中。已完成的媒体保存 URL 和普通媒体字段。JSON 保留未完成草稿；
+外部 HTML、Markdown 和静态渲染会省略它们。静态编辑器加载草稿时须包含
+`BaseUploadPlugin`；只渲染已完成媒体时只需媒体插件。
