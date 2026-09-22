@@ -1,13 +1,22 @@
 import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
 import cloneDeep from 'lodash/cloneDeep.js';
+import isEqual from 'lodash/isEqual.js';
 
+import {
+  type AuthoredPlugin,
+  type AuthoredResult,
+  DefaultAuthoredPlugin,
+  readAuthoredFormatSnapshot,
+} from '../../authored';
 import {
   BaseParagraphPlugin,
   ContentSlice,
+  DocumentChange,
   type Anchor,
   type DefinitionOf,
   type Descendant,
   type EditorNodesOptions,
+  type EditorDocumentValue,
   type EditorUpdateTransaction,
   type Element,
   ElementApi,
@@ -97,7 +106,9 @@ export type AIChatNodeSnapshot = {
 export type AIChatPluginState = {
   _blockKey: NodeKey | null;
   _blockRefs: Record<string, Readonly<{ key: NodeKey; root?: NamedRootKey }>>;
+  _changeId: string | null;
   _requestId: string | null;
+  _replaceNodeKeys: NodeKey[];
   _tableCellRefs: Record<
     string,
     Readonly<{ key: NodeKey; root?: NamedRootKey }>
@@ -123,7 +134,11 @@ const aiChatCommandEditors = new WeakMap<object, Editor>();
 export const getAIChatCommandEditor = (editor: Editor) =>
   aiChatCommandEditors.get(editor) ?? editor;
 const plateDependencies = [BaseAIPlugin, MarkdownPlugin] as const;
-const dependencies = [...plateDependencies, HistoryPlugin] as const;
+const dependencies = [
+  ...plateDependencies,
+  DefaultAuthoredPlugin,
+  HistoryPlugin,
+] as const;
 
 type AIChatPluginReadState = PluginReadState<
   DefinitionOf<(typeof plateDependencies)[number]>
@@ -135,13 +150,20 @@ type AIActionTransaction = EditorUpdateTransaction<
   Value,
   readonly [typeof HistoryPlugin]
 >;
+type AuthoredAIEditor = Editor<Value, readonly [AuthoredPlugin]>;
+type AuthoredAITransaction = EditorUpdateTransaction<
+  Value,
+  readonly [AuthoredPlugin]
+>;
 
 const initialState: AIChatPluginState = {
   _blockKey: null,
   _blockRefs: {},
 
+  _changeId: null,
   _requestId: null,
 
+  _replaceNodeKeys: [],
   _tableCellRefs: {},
   chat: null,
   chatNodes: [],
@@ -162,7 +184,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   initialState,
 }).extend((context) => {
   const { editor } = context;
+  const authoredEditor = editor as AuthoredAIEditor;
   let previewAnchor: Anchor<Range> | null = null;
+  let suggestionBase: EditorDocumentValue | null = null;
+  let suggestionChange: DocumentChange | null = null;
+  let suggestionPaths: Path[] | null = null;
+  let suggestionTarget: Range | null = null;
   const tableDraft = new Map<
     NodeKey,
     { children: Value; root?: NamedRootKey }
@@ -333,10 +360,30 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       streaming: false,
     });
   };
+  const reviewSucceeded = (result: AuthoredResult | null) =>
+    result?.status === 'applied' || result?.status === 'unchanged';
+  const decideCurrentChange = (action: 'accept' | 'reject') => {
+    const changeId = context.store.get('_changeId');
+    if (!changeId) return null;
+    const result = authoredEditor.update.authored.decide({
+      action,
+      selection: authoredEditor.read.authored.select({ ids: [changeId] }),
+    });
+
+    if (reviewSucceeded(result)) {
+      context.store.set({ _changeId: null, _replaceNodeKeys: [] });
+    }
+
+    return result;
+  };
   const resetOptions = () => {
     stop();
     previewAnchor?.release();
     previewAnchor = null;
+    suggestionBase = null;
+    suggestionChange = null;
+    suggestionPaths = null;
+    suggestionTarget = null;
     tableDraft.clear();
     aiChatCommandEditors.delete(editor);
 
@@ -347,8 +394,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       _blockKey: null,
       _blockRefs: {},
 
+      _changeId: null,
       _requestId: null,
 
+      _replaceNodeKeys: [],
       _tableCellRefs: {},
       chatNodes: [],
       chatSelection: null,
@@ -357,12 +406,23 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       toolName: null,
     });
   };
-  const resetEditor = (commandEditor: Editor) => {
+  const resetEditor = (
+    commandEditor: Editor,
+    { restoreSelection = true }: { restoreSelection?: boolean } = {}
+  ) => {
+    const result = decideCurrentChange('reject');
+    if (result && !reviewSucceeded(result)) return result;
     const selection = previewAnchor?.resolve();
     resetOptions();
-    if (selection && !commandEditor.read.view.isReadOnly()) {
+    if (
+      restoreSelection &&
+      selection &&
+      !commandEditor.read.view.isReadOnly()
+    ) {
       commandEditor.update.selection.set(selection);
     }
+
+    return result;
   };
   const hideOptions = () => {
     context.store.set({ open: false });
@@ -620,6 +680,46 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       isNodeSelecting: state.selection.nodes().length > 0,
       isSelecting: state.selection.isExpanded(),
     });
+  const deserializeSuggestion = (content: string) => {
+    const snapshots = context.store.get('chatNodes');
+    let source: Descendant[] = cloneDeep(snapshots.map(({ node }) => node));
+    const first = source[0];
+
+    if (
+      source.length === 1 &&
+      ElementApi.isElement(first) &&
+      tablePlugin.installed &&
+      first.type === tablePlugin.schema.type &&
+      first.children.length === 1
+    ) {
+      const row = first.children[0];
+      const cell =
+        ElementApi.isElement(row) && row.children.length === 1
+          ? row.children[0]
+          : undefined;
+      const tableCell = editor.plugin(BaseTableCellPlugin);
+
+      if (
+        tableCell.installed &&
+        ElementApi.isElement(cell) &&
+        cell.type === tableCell.schema.type
+      ) {
+        source = [...cell.children];
+      }
+    }
+
+    return editor.api.markdown
+      .deserialize(content)
+      .children.map((node, index) =>
+        ElementApi.isElement(node)
+          ? {
+              ...node,
+              ...source[index],
+              children: node.children,
+            }
+          : node
+      );
+  };
   const finishCompleteAction = () => {
     resetOptions();
     hideOptions();
@@ -700,7 +800,404 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     return source;
   };
+  const createSuggestionDraft = (
+    commandEditor: Editor,
+    selection: Range,
+    nextNodes: Descendant[]
+  ) => {
+    const root = commandEditor.read.view.root();
+    const { proposed } = readAuthoredFormatSnapshot(authoredEditor);
+    const base = suggestionBase ?? proposed;
+    if (
+      suggestionChange &&
+      !DocumentChange.between(suggestionChange.apply(base), proposed).empty
+    ) {
+      return undefined;
+    }
+    const draftEditor = createEditorView(authoredEditor, {
+      authored: { intent: 'edit', projection: 'proposed' },
+      ...(root ? { root } : {}),
+    });
+    const rollback = Symbol('ai-suggestion-draft');
+    let result:
+      | {
+          base: EditorDocumentValue;
+          change: DocumentChange;
+          delta: DocumentChange;
+        }
+      | undefined;
+
+    try {
+      draftEditor.update((tx) => {
+        if (suggestionChange) {
+          tx.changes.apply(suggestionChange.invert(base));
+        }
+        const structure = (node: Descendant): Descendant =>
+          TextApi.isText(node)
+            ? { ...node, text: '' }
+            : { ...node, children: node.children.map(structure) };
+        const paths = suggestionPaths;
+        const sourceNodes = paths?.flatMap((path) => {
+          const entry = tx.nodes.get(path, { match: ElementApi.isElement });
+
+          return entry ? [entry[0]] : [];
+        });
+        let replaced = false;
+        let granularChange: DocumentChange | null = null;
+        const document = () => {
+          const children = cloneDeep(tx.children());
+
+          return root
+            ? {
+                ...proposed,
+                roots: { ...proposed.roots, [root]: children },
+              }
+            : { ...proposed, children };
+        };
+
+        if (
+          sourceNodes &&
+          sourceNodes.length === paths?.length &&
+          isEqual(sourceNodes.map(structure), nextNodes.map(structure))
+        ) {
+          const edits: Array<{
+            from: number;
+            path: Path;
+            text: string;
+            to: number;
+          }> = [];
+          const textEdits = (before: string, after: string) => {
+            type Chunk = { kind: 'delete' | 'equal' | 'insert'; text: string };
+            const beforeTokens = Array.from(before);
+            const afterTokens = Array.from(after);
+            const chunks: Chunk[] = [];
+            const append = (kind: Chunk['kind'], token: string) => {
+              const previous = chunks.at(-1);
+              if (previous?.kind === kind) previous.text += token;
+              else chunks.push({ kind, text: token });
+            };
+            const isSubsequence = (source: string[], target: string[]) => {
+              let sourceIndex = 0;
+              for (const token of target) {
+                if (source[sourceIndex] === token) sourceIndex += 1;
+              }
+
+              return sourceIndex === source.length;
+            };
+
+            if (isSubsequence(beforeTokens, afterTokens)) {
+              let beforeIndex = 0;
+              for (const token of afterTokens) {
+                if (beforeTokens[beforeIndex] === token) {
+                  append('equal', token);
+                  beforeIndex += 1;
+                } else {
+                  append('insert', token);
+                }
+              }
+            } else if (isSubsequence(afterTokens, beforeTokens)) {
+              let afterIndex = 0;
+              for (const token of beforeTokens) {
+                if (afterTokens[afterIndex] === token) {
+                  append('equal', token);
+                  afterIndex += 1;
+                } else {
+                  append('delete', token);
+                }
+              }
+            } else if (
+              (beforeTokens.length + 1) * (afterTokens.length + 1) <=
+              1_000_000
+            ) {
+              const lengths = Array.from(
+                { length: beforeTokens.length + 1 },
+                () => new Uint32Array(afterTokens.length + 1)
+              );
+              for (let left = beforeTokens.length - 1; left >= 0; left -= 1) {
+                for (
+                  let right = afterTokens.length - 1;
+                  right >= 0;
+                  right -= 1
+                ) {
+                  lengths[left][right] =
+                    beforeTokens[left] === afterTokens[right]
+                      ? lengths[left + 1][right + 1] + 1
+                      : Math.max(
+                          lengths[left + 1][right],
+                          lengths[left][right + 1]
+                        );
+                }
+              }
+              let left = 0;
+              let right = 0;
+              while (left < beforeTokens.length && right < afterTokens.length) {
+                if (beforeTokens[left] === afterTokens[right]) {
+                  append('equal', beforeTokens[left]);
+                  left += 1;
+                  right += 1;
+                } else if (
+                  lengths[left + 1][right] >= lengths[left][right + 1]
+                ) {
+                  append('delete', beforeTokens[left]);
+                  left += 1;
+                } else {
+                  append('insert', afterTokens[right]);
+                  right += 1;
+                }
+              }
+              while (left < beforeTokens.length) {
+                append('delete', beforeTokens[left]);
+                left += 1;
+              }
+              while (right < afterTokens.length) {
+                append('insert', afterTokens[right]);
+                right += 1;
+              }
+            } else {
+              let prefix = 0;
+              while (
+                prefix < before.length &&
+                prefix < after.length &&
+                before[prefix] === after[prefix]
+              ) {
+                prefix += 1;
+              }
+              let suffix = 0;
+              while (
+                suffix < before.length - prefix &&
+                suffix < after.length - prefix &&
+                before.at(-suffix - 1) === after.at(-suffix - 1)
+              ) {
+                suffix += 1;
+              }
+              chunks.push(
+                { kind: 'equal', text: before.slice(0, prefix) },
+                {
+                  kind: 'delete',
+                  text: before.slice(prefix, before.length - suffix),
+                },
+                {
+                  kind: 'insert',
+                  text: after.slice(prefix, after.length - suffix),
+                },
+                { kind: 'equal', text: before.slice(before.length - suffix) }
+              );
+            }
+
+            const inner: Array<{ from: number; text: string; to: number }> = [];
+            let beforeOffset = 0;
+            let index = 0;
+            while (index < chunks.length) {
+              const chunk = chunks[index];
+              if (chunk.kind === 'equal') {
+                beforeOffset += chunk.text.length;
+                index += 1;
+                continue;
+              }
+              const from = beforeOffset;
+              let inserted = '';
+              while (index < chunks.length && chunks[index].kind !== 'equal') {
+                const change = chunks[index];
+                if (change.kind === 'delete') {
+                  beforeOffset += change.text.length;
+                } else {
+                  inserted += change.text;
+                }
+                index += 1;
+              }
+              inner.push({ from, text: inserted, to: beforeOffset });
+            }
+
+            return inner;
+          };
+
+          sourceNodes.forEach((source, blockIndex) => {
+            const target = nextNodes[blockIndex];
+            const blockPath = paths?.[blockIndex];
+            if (!target || !blockPath) return;
+            const beforeTexts = [...NodeApi.texts(source)];
+            const afterTexts = [...NodeApi.texts(target)];
+
+            beforeTexts.forEach(([before, path], textIndex) => {
+              const after = afterTexts[textIndex]?.[0];
+              if (!after || before.text === after.text) return;
+              textEdits(before.text, after.text).forEach(
+                ({ from, text, to }) => {
+                  edits.push({
+                    from,
+                    path: [...blockPath, ...path],
+                    text,
+                    to,
+                  });
+                }
+              );
+            });
+          });
+
+          edits
+            .toSorted(
+              (left, right) =>
+                PathApi.compare(right.path, left.path) || right.from - left.from
+            )
+            .forEach(({ from, path, text, to }) => {
+              const before = document();
+              if (to > from) {
+                tx.text.delete({
+                  at: {
+                    anchor: { offset: from, path },
+                    focus: { offset: to, path },
+                  },
+                });
+              }
+              if (text) tx.text.insert(text, { at: { offset: from, path } });
+              const step = DocumentChange.between(before, document());
+              granularChange = granularChange
+                ? granularChange.compose(step)
+                : step;
+            });
+          replaced = true;
+        }
+        const openTextBlock = (node: Descendant | undefined) =>
+          ElementApi.isElement(node) &&
+          !tx.schema.isVoid(node) &&
+          node.children.every(
+            (child) => TextApi.isText(child) || tx.schema.isInline(child)
+          )
+            ? 1
+            : 0;
+        if (!replaced) {
+          replaced = tx.slice.replace(
+            ContentSlice.fromJSON({
+              content: nextNodes,
+              openStart: openTextBlock(nextNodes[0]),
+              openEnd: openTextBlock(nextNodes.at(-1)),
+            }),
+            { at: selection }
+          );
+        }
+
+        if (!replaced) return;
+
+        const next = document();
+        const change = granularChange ?? DocumentChange.between(base, next);
+        const delta = suggestionChange
+          ? suggestionChange.invert(base).compose(change, proposed)
+          : change;
+
+        result = {
+          base,
+          change,
+          delta,
+        };
+        // The draft transaction only computes the exact proposed document.
+        // Publish its canonical change through the request-owned transaction.
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) throw error;
+    }
+
+    return result;
+  };
+  const applySuggestion = (
+    commandEditor: Editor,
+    content: string,
+    { requestId }: { requestId?: string | null } = {}
+  ) => {
+    const state = context.store.get();
+    if (requestId !== undefined && requestId !== state._requestId) return false;
+    const sourceRoots = new Set(state.chatNodes.map(({ root }) => root));
+    const root = commandEditor.read.view.root();
+
+    if (sourceRoots.size !== 1 || !sourceRoots.has(root)) {
+      return false;
+    }
+    if (state.chatSelection && previewAnchor && !previewAnchor.resolve()) {
+      return false;
+    }
+
+    const currentChangeId = state._changeId;
+    const capturedSelection = state.chatSelection;
+    const nextNodes = deserializeSuggestion(content);
+    const targetKeys = state.chatNodes.map(({ nodeKey }) => nodeKey);
+    if (
+      targetKeys.length === 0 ||
+      new Set(targetKeys).size !== targetKeys.length
+    ) {
+      return false;
+    }
+    if (!capturedSelection) {
+      const acceptedView = createEditorView(authoredEditor, {
+        authored: { intent: 'edit', projection: 'accepted' },
+        ...(root ? { root } : {}),
+      });
+      if (targetKeys.some((key) => !acceptedView.read.nodes.get(key))) {
+        return false;
+      }
+    }
+    if (!capturedSelection && !suggestionTarget) {
+      const proposedView = createEditorView(authoredEditor, {
+        authored: { intent: 'edit', projection: 'proposed' },
+        ...(root ? { root } : {}),
+      });
+      const entries = targetKeys.flatMap((key) => {
+        const entry = proposedView.read.nodes.get(key, {
+          match: ElementApi.isElement,
+        });
+
+        return entry ? [entry] : [];
+      });
+      if (entries.length !== targetKeys.length) return false;
+      const ordered = entries.toSorted(([, a], [, b]) => PathApi.compare(a, b));
+      const first = ordered[0];
+      const last = ordered.at(-1);
+      if (!first || !last) return false;
+      suggestionPaths = ordered.map(([, path]) => path);
+      const anchor = proposedView.read.points.start(first[1]);
+      const focus = proposedView.read.points.end(last[1]);
+      suggestionTarget =
+        anchor && focus
+          ? { anchor, focus }
+          : (proposedView.read.ranges.fromEntries(ordered) ?? null);
+    }
+    const target = capturedSelection ?? suggestionTarget;
+    if (!target) return false;
+    const draft = createSuggestionDraft(commandEditor, target, nextNodes);
+    if (!draft || draft.delta.empty) return false;
+
+    let applied = false;
+    let publishedChangeId: string | null = null;
+    commandEditor.update((transaction) => {
+      const tx = transaction as unknown as AuthoredAITransaction &
+        AIActionTransaction;
+      const changeId = tx.authored.propose(
+        currentChangeId ? { changeId: currentChangeId } : undefined
+      );
+      if (currentChangeId) tx.history.merge();
+      else tx.history.newBatch();
+      tx.changes.apply(draft.delta);
+      publishedChangeId = changeId;
+      applied = true;
+    });
+
+    if (applied && publishedChangeId && draft) {
+      suggestionBase = draft.base;
+      suggestionChange = draft.change;
+      context.store.set({
+        _changeId: publishedChangeId,
+        _replaceNodeKeys: targetKeys,
+        previewValue: [],
+      });
+    }
+
+    return applied;
+  };
   const acceptAIResponse = (commandEditor: Editor) => {
+    if (context.store.get('_changeId')) {
+      const result = decideCurrentChange('accept');
+      if (result && reviewSucceeded(result)) finishCompleteAction();
+      return result;
+    }
     if (tableDraft.size > 0) {
       let applied = false;
       getActionEditor(commandEditor).update((tx) => {
@@ -853,7 +1350,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   };
 
   const show = (commandEditor: Editor, target?: Range) => {
-    resetOptions();
+    const result = resetEditor(commandEditor);
+    if (result && !reviewSucceeded(result)) return result;
     if (
       !target &&
       commandEditor.read.selection.nodes().length === 0 &&
@@ -871,6 +1369,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     context.store.set({ toolName: null });
     context.store.get().chat?.clear();
     context.store.set({ open: true });
+
+    return result;
   };
 
   return {
@@ -928,10 +1428,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       accept: () => acceptAIResponse(commandEditor),
       /** Close the session, cancel its request, and discard any unapplied draft. */
       hide: ({ focus = true }: { focus?: boolean } = {}) => {
-        if (focus) resetEditor(commandEditor);
-        else resetOptions();
+        const result = resetEditor(commandEditor, {
+          restoreSelection: focus,
+        });
+        if (result && !reviewSucceeded(result)) return result;
         hideOptions();
         if (focus) commandEditor.api.dom.focus();
+
+        return result;
       },
       insertBelow: ({
         format = 'single',
@@ -943,9 +1447,16 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       reload: () => {
         const { chat, toolName } = context.store.get();
         stop();
+        const result = decideCurrentChange('reject');
+        if (result && !reviewSucceeded(result)) return result;
+        suggestionBase = null;
+        suggestionChange = null;
+        suggestionPaths = null;
+        suggestionTarget = null;
         context.store.set({
           _blockKey: null,
           _requestId: null,
+          _replaceNodeKeys: [],
           previewValue: [],
         });
         tableDraft.clear();
@@ -965,6 +1476,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             },
           },
         });
+
+        return result;
       },
       replaceSelection: ({
         format = 'single',
@@ -973,16 +1486,17 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       } = {}) => {
         completeDetachedOutput(commandEditor, 'replaceSelection', format);
       },
-      reset: () => {
-        resetEditor(commandEditor);
-      },
-      /** Publish the current complete Markdown response without editing the document. */
+      reset: () => resetEditor(commandEditor),
+      /** Publish accumulated output to its request-owned review presentation. */
       setPreview: (
         content: string,
         { requestId }: { requestId?: string | null } = {}
       ) => {
         const state = context.store.get();
         if (requestId !== undefined && requestId !== state._requestId) return;
+        if (state.toolName === 'edit' && state.mode === 'chat') {
+          return applySuggestion(commandEditor, content, { requestId });
+        }
 
         let targetKey = state._blockKey;
         if (!targetKey) {
@@ -1087,7 +1601,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         const nextToolName = requestedToolName ?? toolName ?? null;
 
         if (!prompt && input.length === 0) return;
-        if (isOpen && !restoreTarget(commandEditor)) return;
+        const discarded = decideCurrentChange('reject');
+        if (discarded && !reviewSucceeded(discarded)) return discarded;
+        suggestionBase = null;
+        suggestionChange = null;
+        suggestionPaths = null;
+        suggestionTarget = null;
+        if (isOpen && !restoreTarget(commandEditor)) return discarded;
 
         aiChatCommandEditors.set(editor, commandEditor);
         captureTarget(commandEditor);
@@ -1106,10 +1626,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
         context.store.set({
           _blockKey: null,
+          _changeId: null,
           _requestId: crypto.randomUUID(),
 
           mode: nextMode,
           previewValue: [],
+          _replaceNodeKeys: [],
           streaming: false,
           toolName: nextToolName,
         });
@@ -1139,6 +1661,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           },
           ...options,
         });
+
+        return discarded;
       },
     }),
     read: ({ editor: commandEditor, state }) => ({

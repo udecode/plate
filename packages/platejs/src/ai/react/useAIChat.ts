@@ -154,7 +154,7 @@ function createEditorChat(
     });
     publishChat();
   };
-  const queueInsert = (chunk: string) => {
+  const queueInsert = (chunk: string, { defer = false } = {}) => {
     const requestId = store.get('_requestId');
 
     if (pendingInsert && pendingInsertRequestId !== requestId) {
@@ -163,6 +163,10 @@ function createEditorChat(
     pendingInsert = chunk;
     pendingInsertRequestId = requestId;
 
+    if (defer) {
+      insertStarted = true;
+      return;
+    }
     if (!insertStarted) {
       insertStarted = true;
       flushPendingInsert();
@@ -271,7 +275,9 @@ function createEditorChat(
     if (chunk && isLive() && !request?.signal.aborted) {
       if (isFirst) store.set({ streaming: true });
       if (!store.get('streaming')) return;
-      queueInsert(content);
+      queueInsert(content, {
+        defer: mode === 'chat' && toolName === 'edit' && loading,
+      });
     }
     if (finished) finish();
   };

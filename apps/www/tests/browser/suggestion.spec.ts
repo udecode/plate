@@ -162,6 +162,88 @@ test('playground deletes commented text directly in editing mode', async ({
   runtimeErrors.assertNone();
 });
 
+test('homepage select-all deletion stays editable', async ({ page }) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  await page.goto('/', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'homepage select-all deletion',
+    root
+  );
+
+  await editor.ready({
+    editor: 'visible',
+    text: PLAYGROUND_TITLE,
+  });
+  const initialBlocks = await editor.get.modelBlockTexts();
+  expect(initialBlocks.length).toBeGreaterThan(1);
+
+  await editor.focus();
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.press('Backspace');
+  await editor.assert.modelBlockTexts(['']);
+  await editor.assert.selection({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 0 },
+  });
+
+  await page.keyboard.type('x');
+
+  await editor.assert.modelBlockTexts(['x']);
+  await editor.assert.collapsedModelDOMSelection({
+    path: [0, 0],
+    offset: 1,
+    text: 'x',
+  });
+  runtimeErrors.assertNone();
+});
+
+test('homepage preserves consecutive empty paragraphs before follow-up typing', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  await page.goto('/', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'homepage consecutive Enter',
+    root
+  );
+
+  await editor.ready({
+    editor: 'visible',
+    text: PLAYGROUND_TITLE,
+  });
+  await editor.selectAll();
+  await editor.deleteFragment();
+  await editor.assert.modelBlockTexts(['']);
+  await editor.focus();
+
+  await page.keyboard.press('Enter');
+  await editor.assert.modelBlockTexts(['', '']);
+  await editor.assert.selection({
+    anchor: { path: [1, 0], offset: 0 },
+    focus: { path: [1, 0], offset: 0 },
+  });
+  await page.keyboard.press('Enter');
+  await editor.assert.modelBlockTexts(['', '', '']);
+  await editor.assert.selection({
+    anchor: { path: [2, 0], offset: 0 },
+    focus: { path: [2, 0], offset: 0 },
+  });
+  await page.keyboard.type('x');
+  await editor.assert.modelBlockTexts(['', '', 'x']);
+  await editor.assert.collapsedModelDOMSelection({
+    path: [2, 0],
+    offset: 1,
+    text: 'x',
+  });
+  runtimeErrors.assertNone();
+});
+
 test('playground deletes mixed accepted and pending text directly in editing mode', async ({
   page,
 }, testInfo) => {
@@ -240,6 +322,76 @@ test('playground deletes mixed accepted and pending text directly in editing mod
     }),
     contentType: 'image/png',
   });
+  runtimeErrors.assertNone();
+});
+
+test('homepage deletes live text around retained suggestion content', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  await page.goto('/', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'homepage retained suggestion deletion',
+    root
+  );
+
+  await editor.ready({
+    editor: 'visible',
+    text: 'Welcome to the Plate Playground!',
+  });
+  const before = await editor.get.modelBlockText(3);
+  if (!before) throw new Error('Missing paragraph text.');
+  const liveStart = 'or to ';
+  const liveEnd = '. Discuss';
+  const start = before.indexOf(liveStart);
+  const endStart = before.indexOf(liveEnd);
+  if (start === -1 || endStart === -1) {
+    throw new Error('Missing retained-suggestion boundary text.');
+  }
+  const end = endStart + liveEnd.length;
+
+  const selectedText = await root.evaluate((element: HTMLElement) => {
+    const walker = element.ownerDocument.createTreeWalker(
+      element,
+      NodeFilter.SHOW_TEXT
+    );
+    const nodes: Node[] = [];
+
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    const startNode = nodes.find((node) => node.textContent === ' or to ');
+    const endNode = nodes.find(
+      (node) => node.textContent === '. Discuss changes using '
+    );
+    const selection = element.ownerDocument.getSelection();
+    if (!startNode || !endNode || !selection) {
+      throw new Error('Missing retained-suggestion DOM boundary.');
+    }
+
+    element.focus();
+    selection.setBaseAndExtent(startNode, 1, endNode, '. Discuss'.length);
+    element.ownerDocument.dispatchEvent(
+      new Event('selectionchange', { bubbles: true })
+    );
+
+    return selection.toString();
+  });
+  expect(selectedText.replaceAll('\u00A0', ' ')).toContain(
+    'mark text for removal'
+  );
+  await page.waitForTimeout(100);
+
+  await page.keyboard.press('Backspace');
+  const deleted = `${before.slice(0, start)}${before.slice(end)}`;
+  await editor.assert.modelBlockText(3, deleted);
+
+  await page.keyboard.type('x');
+  await editor.assert.modelBlockText(
+    3,
+    `${before.slice(0, start)}x${before.slice(end)}`
+  );
   runtimeErrors.assertNone();
 });
 

@@ -34,6 +34,7 @@ export const useDecorationDOMRepairBridge = ({
           selectionSource: 'model-owned',
         },
       });
+      runtime.requestSelectionExportAfterDOMCommit();
     });
   }, [decorationStore, requestEditableRepair, runtime]);
 };

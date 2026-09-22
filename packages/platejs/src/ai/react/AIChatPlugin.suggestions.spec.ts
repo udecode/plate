@@ -54,7 +54,8 @@ describe('AIChatPlugin suggestions', () => {
     });
     const ai = editor.plugin(AIChatPlugin);
 
-    ai.store.set({ mode: 'chat' });
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ mode: 'chat', toolName: 'edit' });
     for (const content of [
       'This',
       'This sentence',
@@ -67,6 +68,55 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.read.text.string([])).toBe(
       'This sentence is poorly written.'
     );
+  });
+
+  it('suggests only the selected text inside a block', () => {
+    const chatNodes = [
+      { children: [{ text: 'prefix old suffix' }], type: 'paragraph' },
+    ];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+      kind: 'text',
+      anchor: { offset: 7, path: [0, 0] },
+      focus: { offset: 10, path: [0, 0] },
+    });
+    const ai = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ toolName: 'edit' });
+
+    ai.api.setPreview('new');
+
+    expect(editor.read.value().children).toEqual(chatNodes);
+    expect(editor.read.text.string([])).toBe('prefix new suffix');
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(1);
+    ai.api.accept();
+    expect(editor.read.value().children).toEqual([
+      { children: [{ text: 'prefix new suffix' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('suggests one replacement for a partial selection across blocks', () => {
+    const chatNodes = [
+      { children: [{ text: 'first block' }], type: 'paragraph' },
+      { children: [{ text: 'second block' }], type: 'paragraph' },
+    ];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+      kind: 'text',
+      anchor: { offset: 6, path: [0, 0] },
+      focus: { offset: 6, path: [1, 0] },
+    });
+    const ai = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ toolName: 'edit' });
+
+    ai.api.setPreview('replacement');
+
+    expect(editor.read.value().children).toEqual(chatNodes);
+    expect(editor.read.text.string([])).toBe('first replacement block');
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(1);
   });
 
   it('discards all streamed chunks without changing adjacent blocks', () => {
@@ -87,6 +137,7 @@ describe('AIChatPlugin suggestions', () => {
     const tailKey = editor.key([1]);
     const ai = editor.plugin(AIChatPlugin);
 
+    ai.store.set({ toolName: 'edit' });
     ai.api.setPreview('new');
     ai.api.setPreview('new text');
     ai.api.reset();
@@ -96,7 +147,30 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.key([1])).toBe(tailKey);
   });
 
-  it('dismisses a selection draft without applying it', () => {
+  it('stops streaming without rejecting the received suggestion', () => {
+    const nodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(nodes), nodes, {
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+    const ai = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ streaming: true, toolName: 'edit' });
+    ai.api.setPreview('new');
+    const changeId = ai.store.get('_changeId');
+
+    ai.api.stop();
+
+    expect(ai.store.get('streaming')).toBe(false);
+    expect(ai.store.get('_changeId')).toBe(changeId);
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(1);
+    expect(editor.read.text.string([])).toBe('new');
+  });
+
+  it('dismisses a selection suggestion without applying it', () => {
     const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
     const editor = createEditor(structuredClone(chatNodes), chatNodes, {
       kind: 'text',
@@ -105,9 +179,10 @@ describe('AIChatPlugin suggestions', () => {
     });
     const ai = editor.plugin(AIChatPlugin);
 
-    ai.store.set({ open: true });
+    ai.store.set({ open: true, toolName: 'edit' });
     ai.api.setPreview('new');
-    expect(ai.store.get('previewValue')).toHaveLength(1);
+    expect(ai.store.get('_changeId')).not.toBeNull();
+    expect(ai.store.get('previewValue')).toEqual([]);
 
     ai.api.hide({ focus: false });
 
@@ -135,6 +210,7 @@ describe('AIChatPlugin suggestions', () => {
     );
     const ai = editor.plugin(AIChatPlugin);
 
+    ai.store.set({ toolName: 'edit' });
     ai.api.setPreview('new');
     Reflect.set(editor.runtime, 'userId', 'bob');
     editor.api.authored.setView({
@@ -153,18 +229,22 @@ describe('AIChatPlugin suggestions', () => {
     );
   });
 
-  it('discards the draft without deciding another author’s suggestion', () => {
+  it('discards a granular AI change while preserving later author text', () => {
     const nodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
     const editor = createEditor(structuredClone(nodes), nodes);
     const ai = editor.plugin(AIChatPlugin);
-    ai.api.setPreview('new');
+    ai.store.set({ toolName: 'edit' });
+    ai.api.setPreview('old new');
+    Reflect.set(editor.runtime, 'userId', 'bob');
     editor.api.authored.setView({ intent: 'propose', projection: 'markup' });
-    editor.update.text.insert('!', { at: { offset: 3, path: [0, 0] } });
-    const proposals = editor.read.authored.changes({ status: 'pending' }).items;
-    ai.api.reset();
-    expect(editor.read.authored.changes({ status: 'pending' }).items).toEqual(
-      proposals
-    );
+    const end = editor.read.points.end([0]);
+    if (!end) throw new Error('Expected an AI insertion endpoint');
+    editor.update.text.insert('!', { at: end });
+    const result = ai.api.reset();
+    expect(result?.status).toBe('applied');
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(1);
     expect(editor.read.text.string([])).toBe('old!');
     expect(editor.read.authored.view()).toEqual({
       intent: 'propose',
@@ -198,28 +278,86 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.read.text.string([])).toBe('tail');
   });
 
-  it('replaces multi-block chat nodes and persists their selection ids', () => {
+  it('replaces multi-block chat nodes through one native proposal', () => {
     const chatNodes = [
       { children: [{ text: 'old-a' }], type: 'paragraph' },
       { children: [{ text: 'old-b' }], type: 'paragraph' },
     ];
     const editor = createEditor(structuredClone(chatNodes), chatNodes);
+    const ai = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ toolName: 'edit' });
 
-    editor.plugin(AIChatPlugin).api.setPreview('next-a\n\nnext-b');
+    ai.api.setPreview('next-a\n\nnext-b');
 
-    expect(editor.read.text.string([])).toBe('old-aold-b');
-    editor.plugin(AIChatPlugin).api.accept();
-    const replacementIds = editor.read.selection
-      .nodes()
-      .map(([node]) => editor.key(node));
-
-    expect(replacementIds).toHaveLength(2);
+    expect(editor.read.value().children).toEqual(chatNodes);
+    expect(editor.read.text.string([])).toBe('next-anext-b');
     expect(
-      editor.read.selection.nodes().map(([node]) => editor.key(node))
-    ).toEqual([...replacementIds]);
-    expect(replacementIds.every((id) => editor.read.nodes.path(id))).toBe(true);
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(1);
+    ai.api.accept();
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(0);
     expect(editor.read.text.string([])).toContain('next-a');
     expect(editor.read.text.string([])).toContain('next-b');
+  });
+
+  it('tracks only added emoji when editing a selected block', () => {
+    const text = 'First column content. Great for side-by-side comparisons.';
+    const chatNodes = [{ children: [{ text }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes);
+    const ai = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ toolName: 'edit' });
+
+    ai.api.setPreview(`1️⃣ ${text} ➡️`);
+
+    const changeId = ai.store.get('_changeId');
+    if (!changeId) throw new Error('Expected an AI change');
+    const details = editor.read.authored.details(changeId);
+    expect(details?.change.kind).toBe('insert');
+    expect(
+      details?.parts.status === 'available'
+        ? details.parts.items.flatMap((part) =>
+            part.after?.location?.kind === 'range'
+              ? [editor.read.text.string(part.after.location.range)]
+              : []
+          )
+        : []
+    ).toEqual(['1️⃣ ', ' ➡️']);
+    ai.api.accept();
+    expect(editor.read.text.string([])).toBe(`1️⃣ ${text} ➡️`);
+  });
+
+  it('tracks multiple emoji insertions without replacing retained text', () => {
+    const text =
+      'Plate offers many features out-of-the-box as free, open-source plugins.';
+    const output =
+      'Plate offers many features ✨ out-of-the-box 📦 as free, open-source 🌍 plugins.';
+    const chatNodes = [{ children: [{ text }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes);
+    const ai = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ toolName: 'edit' });
+
+    ai.api.setPreview(output);
+
+    const changeId = ai.store.get('_changeId');
+    if (!changeId) throw new Error('Expected an AI change');
+    const details = editor.read.authored.details(changeId);
+    expect(details?.change.kind).toBe('insert');
+    expect(
+      details?.parts.status === 'available'
+        ? details.parts.items.flatMap((part) =>
+            part.after?.location?.kind === 'range'
+              ? [editor.read.text.string(part.after.location.range)]
+              : []
+          )
+        : []
+    ).toEqual(['✨ ', '📦 ', '🌍 ']);
+    ai.api.accept();
+    expect(editor.read.text.string([])).toBe(output);
   });
 
   it('inserts expanded AI edits after the restored block selection', async () => {
@@ -353,26 +491,6 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.read.value()).toEqual(before);
   });
 
-  it('aborts a streaming replacement when any target key is missing', () => {
-    const chatNodes = [
-      { children: [{ text: 'old-a' }], type: 'paragraph' },
-      { children: [{ text: 'old-b' }], type: 'paragraph' },
-    ];
-    const editor = createEditor(structuredClone(chatNodes), chatNodes);
-
-    editor.plugin(AIChatPlugin).api.setPreview('next-a\n\nnext-b');
-    const firstKey = editor.key([0]);
-
-    if (!firstKey) throw new Error('Expected a replacement key');
-
-    editor.update.nodes.remove({ at: firstKey });
-    const before = editor.read.value();
-
-    editor.plugin(AIChatPlugin).api.setPreview('later-a\n\nlater-b');
-
-    expect(editor.read.value()).toEqual(before);
-  });
-
   it('aborts a single-block replacement when its source key is missing', () => {
     const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
     const editor = createEditor(
@@ -382,16 +500,19 @@ describe('AIChatPlugin suggestions', () => {
       ],
       chatNodes
     );
+    const ai = editor.plugin(AIChatPlugin);
+    ai.store.set({ toolName: 'edit' });
 
     editor.update.nodes.remove({ at: [0] });
     const before = editor.read.value();
 
-    editor.plugin(AIChatPlugin).api.setPreview('replacement');
+    ai.api.setPreview('replacement');
 
     expect(editor.read.value()).toEqual(before);
+    expect(ai.store.get('_changeId')).toBeNull();
   });
 
-  it('tracks only the blocks produced by its replacement groups', () => {
+  it('tracks only the source blocks owned by the AI request', () => {
     const chatNodes = [
       { children: [{ text: 'old-a' }], type: 'paragraph' },
       { children: [{ text: 'old-b' }], type: 'paragraph' },
@@ -407,19 +528,19 @@ describe('AIChatPlugin suggestions', () => {
       chatNodes
     );
     const unrelatedKey = editor.key([2])!;
+    const ai = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ toolName: 'edit' });
 
-    editor.plugin(AIChatPlugin).api.setPreview('next-a\n\nnext-b');
+    ai.api.setPreview('next-a\n\nnext-b');
 
-    editor.plugin(AIChatPlugin).api.accept();
-    const replacementKeys = editor.read.selection
-      .nodes()
-      .map(([node]) => editor.key(node));
+    const replacementKeys = ai.store.get('_replaceNodeKeys');
 
     expect(replacementKeys).toHaveLength(2);
     expect(replacementKeys).not.toContain(unrelatedKey);
-    expect(
-      editor.read.selection.nodes().map(([node]) => editor.key(node))
-    ).toEqual([...replacementKeys]);
+    expect(replacementKeys).toEqual(
+      chatNodes.map((_, index) => editor.key([index]))
+    );
   });
 
   it('keeps streaming when the replacement block count changes', () => {
@@ -429,14 +550,19 @@ describe('AIChatPlugin suggestions', () => {
     ];
     const editor = createEditor(structuredClone(chatNodes), chatNodes);
     const aiChat = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    aiChat.store.set({ toolName: 'edit' });
 
     aiChat.api.setPreview('next-a\n\nnext-b\n\nnext-c');
 
-    expect(aiChat.store.get('previewValue')).toHaveLength(3);
+    const changeId = aiChat.store.get('_changeId');
 
     aiChat.api.setPreview('last-a\n\nlast-b\n\nlast-c\n\nlast-d');
 
-    expect(aiChat.store.get('previewValue')).toHaveLength(4);
+    expect(aiChat.store.get('_changeId')).toBe(changeId);
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(1);
     aiChat.api.accept();
     expect(
       editor.read
@@ -631,23 +757,20 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.read.text.string([])).toBe('independentold');
   });
 
-  it('creates tracked edits only when the user explicitly chooses suggesting', () => {
+  it('creates a tracked AI edit without changing the user editing intent', () => {
     const nodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
     const editor = createEditor(structuredClone(nodes), nodes);
     const ai = editor.plugin(AIChatPlugin);
-    editor.api.authored.setView({ intent: 'propose', projection: 'markup' });
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ toolName: 'edit' });
     ai.api.setPreview('done');
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(0);
-    ai.api.accept();
     expect(
       editor.read.authored.changes({ status: 'pending' }).items
     ).toHaveLength(1);
     expect(editor.read.value().children).toEqual(nodes);
     expect(editor.read.text.string([])).toBe('done');
     expect(editor.read.authored.view()).toEqual({
-      intent: 'propose',
+      intent: 'edit',
       projection: 'markup',
     });
   });

@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-21-ai-edit-suggestions",
+      "href": "/registry/changelog/2026-09-21-ai-edit-suggestions.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Restore inline AI edit suggestions",
+      "change": {
+        "type": "source",
+        "date": "2026-09-21",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-menu", "ai-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-18-comment-discovery",
       "href": "/registry/changelog/2026-09-18-comment-discovery.json",
       "status": "draft",

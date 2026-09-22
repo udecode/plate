@@ -968,13 +968,19 @@ where trust decisions are actually made.
 AI support stays optional, composable, and plugin-first. Core editor APIs
 should not contort around provider churn or hype-cycle abstractions.
 
-Generated document content is a temporary draft until applied. Streaming and
-previewing preserve the user's editing intent and leave document history
-untouched. Apply uses one ordinary transaction under the current intent;
-discard releases the draft and its mapped targets without undoing other work.
-Copied UI owns purple draft presentation and the stream indicator. The
-installed Markdown codec parses the accumulated response; generated document
-nodes are never serialized back into the input stream.
+Generated or inserted document content is a temporary draft until applied.
+Streaming and previewing preserve the user's editing intent and leave document
+history untouched. Apply uses one ordinary transaction under the current
+intent; discard releases the draft and its mapped targets without undoing other
+work. Copied UI owns purple draft presentation and the stream indicator.
+
+AI selection edits stream into one request-owned native suggestion. They remain
+visible in an Editing view with markup projection without changing how later
+typing is authored. Accept or Discard decides that suggestion through the
+native authored owner; Stop retains the received proposal for review and retry
+rejects it before replacing the request. The installed Markdown codec parses
+the accumulated response; generated document nodes are never serialized back
+into the input stream.
 
 Generated feedback becomes an ordinary published comment thread as soon as its
 creation completes. It uses the normal thread controls rather than a second AI

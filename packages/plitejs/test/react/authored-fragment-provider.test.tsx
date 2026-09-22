@@ -88,6 +88,8 @@ const EditorRoot = ({ editor, ...props }: any) => (
   </PliteRuntimeProvider>
 );
 
+const editingMarkup = { intent: 'edit', projection: 'markup' } as const;
+
 it('shares retained projection state while keeping mounted DOM views independent', async () => {
   const authoring = authored({ authorId: 'alice' });
   const parents: Array<ReturnType<typeof useEditorContext>> = [];
@@ -2071,6 +2073,203 @@ it('selects, copies and protects native retained content across both document af
     root.querySelector('[data-editor-retained="delete"]')?.textContent,
     'X!YZ'
   );
+  mounted.unmount();
+});
+
+it('deletes the live document after select-all spans retained authored content', async () => {
+  const source = createEditor({
+    plugins: [history(), authored({ authorId: 'alice' })],
+    initialValue: [paragraph('AXYZB')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
+  parent.api.authored.setView(editingMarkup);
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable />
+    </EditorRoot>
+  );
+
+  await act(async () => {
+    applyEditableCommand({ command: { kind: 'select-all' }, editor: parent });
+  });
+
+  assert.equal(
+    getProjectedViewSelectionSlice(parent)
+      ?.content.map(NodeApi.string)
+      .join(''),
+    'AXYZB'
+  );
+  assert.deepEqual(parent.read.selection(), {
+    anchor: point(0),
+    focus: point(2),
+  });
+
+  await act(async () => {
+    applyEditableCommand({
+      command: { kind: 'delete-fragment' },
+      editor: parent,
+    });
+  });
+
+  assert.deepEqual(parent.read.children(), [paragraph('')]);
+  assert.equal(Object.isFrozen(parent.read.children()[0]), true);
+  assert.equal(
+    Object.isFrozen(
+      NodeApi.isElement(parent.read.children()[0])
+        ? parent.read.children()[0].children
+        : null
+    ),
+    true
+  );
+  assert.equal(
+    Object.isFrozen(
+      NodeApi.isElement(parent.read.children()[0])
+        ? parent.read.children()[0].children[0]
+        : null
+    ),
+    true
+  );
+  assert.deepEqual(parent.read.selection(), {
+    anchor: point(0),
+    focus: point(0),
+  });
+  assert.equal(readPliteViewSelection(parent), null);
+
+  await act(async () => parent.api.history.undo());
+  assert.deepEqual(parent.read.children(), [paragraph('AB')]);
+
+  await act(async () => parent.api.history.redo());
+  assert.deepEqual(parent.read.children(), [paragraph('')]);
+  assert.deepEqual(parent.read.selection(), {
+    anchor: point(0),
+    focus: point(0),
+  });
+  assert.equal(readPliteViewSelection(parent), null);
+  mounted.unmount();
+});
+
+it('deletes live ranges when a projected selection crosses retained content', async () => {
+  const source = createEditor({
+    plugins: [history(), authored({ authorId: 'alice' })],
+    initialValue: [paragraph('LAXYZBR')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.text.delete({ at: { anchor: point(2), focus: point(5) } });
+  parent.api.authored.setView(editingMarkup);
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable />
+    </EditorRoot>
+  );
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
+  const domSelection = window.getSelection();
+  assert.ok(root && domSelection);
+
+  for (const backward of [false, true]) {
+    const strings = [
+      ...mounted.container.querySelectorAll('[data-editor-string]'),
+    ].map((node) => node.firstChild);
+    const startNode = strings[0];
+    const endNode = strings[2];
+    assert.ok(startNode && endNode);
+
+    domSelection.setBaseAndExtent(
+      backward ? endNode : startNode,
+      1,
+      backward ? startNode : endNode,
+      1
+    );
+    const selected = resolveProjectedDOMSelection({
+      domSelection,
+      editor: parent,
+      editorElement: root,
+    });
+    assert.ok(selected);
+    assert.equal(selected.segments.backward, backward);
+    assert.equal(domSelection.toString(), 'AXYZB');
+    assert.equal(
+      selected.segments.parts.filter((part) => part.fragment).length,
+      1
+    );
+
+    await act(async () => {
+      writePliteViewSelection(parent, selected);
+      applyEditableCommand({
+        command: { kind: 'delete-fragment' },
+        editor: parent,
+      });
+    });
+
+    assert.deepEqual(source.read.children(), [paragraph('LAXYZBR')]);
+    assert.deepEqual(parent.read.children(), [paragraph('LR')]);
+    assert.deepEqual(parent.read.selection(), {
+      anchor: point(1),
+      focus: point(1),
+    });
+    assert.equal(readPliteViewSelection(parent), null);
+
+    await act(async () => parent.api.history.undo());
+    assert.deepEqual(parent.read.children(), [paragraph('LABR')]);
+  }
+
+  await act(async () => parent.api.history.redo());
+  assert.deepEqual(parent.read.children(), [paragraph('LR')]);
+  mounted.unmount();
+});
+
+it('inserts consecutive breaks after authored select-all deletion', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [paragraph('AXYZB')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
+  parent.api.authored.setView(editingMarkup);
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable />
+    </EditorRoot>
+  );
+
+  await act(async () => {
+    applyEditableCommand({ command: { kind: 'select-all' }, editor: parent });
+    applyEditableCommand({
+      command: { kind: 'delete-fragment' },
+      editor: parent,
+    });
+    assert.notEqual(
+      parent.read.authored.changesAt({
+        anchor: point(0),
+        focus: point(0),
+      }).length,
+      0
+    );
+    applyEditableCommand({
+      command: { kind: 'insert-break', variant: 'paragraph' },
+      editor: parent,
+    });
+    applyEditableCommand({
+      command: { kind: 'insert-break', variant: 'paragraph' },
+      editor: parent,
+    });
+  });
+
+  assert.deepEqual(parent.read.children(), [
+    paragraph(''),
+    paragraph(''),
+    paragraph(''),
+  ]);
+  assert.deepEqual(parent.read.selection(), {
+    anchor: { path: [2, 0], offset: 0 },
+    focus: { path: [2, 0], offset: 0 },
+  });
   mounted.unmount();
 });
 

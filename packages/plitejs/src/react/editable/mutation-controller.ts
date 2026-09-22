@@ -36,6 +36,7 @@ import {
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
   savePliteViewSelectionHistoryEntry,
+  type PliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
 import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
@@ -63,7 +64,10 @@ import {
 import { canUseCachedCollapsedTextInsert } from './mutation-full-block-editing';
 import { applyModelOwnedHistoryIntent } from './mutation-history';
 import { withProjectedMutationRoot } from './mutation-root-scope';
-import { resolveProjectedSelectionTarget } from './projected-selection-target';
+import {
+  type ProjectedSelectionTarget,
+  resolveProjectedSelectionTarget,
+} from './projected-selection-target';
 import {
   applyTransactionSpec,
   dispatchCommand,
@@ -136,7 +140,9 @@ export const applyModelOwnedLineBreak = ({
   kind: 'open-line' | 'paragraph' | 'soft';
 }) => {
   if (kind === 'paragraph') {
-    dispatchCommand(editor, editorCommands.insertBreak);
+    editor.update((tx) => {
+      tx.command(editorCommands.insertBreak);
+    });
     return;
   }
   if (kind === 'soft') {
@@ -164,7 +170,9 @@ export const applyModelOwnedLineBreak = ({
       : undefined;
 
   if (!blockEntry) {
-    dispatchCommand(editor, editorCommands.insertBreak);
+    editor.update((tx) => {
+      tx.command(editorCommands.insertBreak);
+    });
     return;
   }
 
@@ -215,6 +223,29 @@ const deleteProjectedRanges = (
   }
 };
 
+type AuthoredProposalTransaction = EditorUpdateTransaction & {
+  authored: { propose: () => string };
+};
+
+const prepareProjectedSelectionMutation = (
+  editor: RuntimeEditor,
+  tx: EditorUpdateTransaction,
+  target: ProjectedSelectionTarget,
+  viewSelection: PliteViewSelection
+): ProjectedSelectionTarget | null => {
+  if (!target.dependentRetainedSelection) return target;
+
+  const authoredTx = tx as AuthoredProposalTransaction;
+
+  // The selected visible document depends on retained contributions, so the
+  // entire gesture stays reviewable instead of resolving any prior change.
+  authoredTx.authored.propose();
+
+  const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
+
+  return resolution.kind === 'target' ? resolution.target : null;
+};
+
 const applyProjectedViewSelectionTextCommand = ({
   editor,
   nativeInput,
@@ -247,19 +278,27 @@ const applyProjectedViewSelectionTextCommand = ({
   editor.update(() => {
     // The view wrapper would pin implicit commands to its mounted root.
     const tx = getDefined(getActiveEditorTransaction(editor));
+    const mutationTarget = prepareProjectedSelectionMutation(
+      editor,
+      tx,
+      target,
+      viewSelection
+    );
+
+    if (!mutationTarget) return;
     if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
-    deleteProjectedRanges(runtimeEditor, tx, target.ranges);
+    deleteProjectedRanges(runtimeEditor, tx, mutationTarget.ranges);
 
     if (text) {
       tx.command(editorCommands.insertText, {
-        options: { at: target.start },
+        options: { at: mutationTarget.start },
         text,
       });
     }
 
     const selectionPoint = text
-      ? advancePointByText(target.start, text)
-      : target.start;
+      ? advancePointByText(mutationTarget.start, text)
+      : mutationTarget.start;
 
     tx.selection.set({
       anchor: selectionPoint,
@@ -300,6 +339,9 @@ const applyProjectedViewSelectionDataCommand = ({
   }
 
   const { target } = resolution;
+
+  if (target.dependentRetainedSelection) return true;
+
   const { combined, insertion, prefix } = editor.read((state) => {
     let deletion = state.transaction((tx) => {
       tx.selection.set({ anchor: target.start, focus: target.start });
@@ -395,14 +437,22 @@ const applyProjectedViewSelectionLineBreakCommand = ({
 
   editor.update(() => {
     const tx = getDefined(getActiveEditorTransaction(editor));
-    deleteProjectedRanges(runtimeEditor, tx, target.ranges);
+    const mutationTarget = prepareProjectedSelectionMutation(
+      editor,
+      tx,
+      target,
+      viewSelection
+    );
+
+    if (!mutationTarget) return;
+    deleteProjectedRanges(runtimeEditor, tx, mutationTarget.ranges);
 
     tx.selection.set({
-      anchor: target.start,
-      focus: target.start,
+      anchor: mutationTarget.start,
+      focus: mutationTarget.start,
     });
 
-    withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
+    withProjectedMutationRoot(runtimeEditor, mutationTarget.start.root, () => {
       if (kind !== 'open-line') {
         if (kind === 'paragraph') {
           tx.command(editorCommands.insertBreak);
@@ -414,7 +464,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
       }
 
       const blockEntry = tx.nodes.block({
-        at: target.start,
+        at: mutationTarget.start,
       });
 
       if (!blockEntry) {
@@ -611,6 +661,9 @@ const applyRetainedViewSelectionCommand = (
 ) => {
   const previous = readPliteViewSelection(editor);
   if (!previous?.segments.parts.some((part) => part.fragment)) return false;
+  if (resolveProjectedSelectionTarget(editor, previous).kind === 'target') {
+    return false;
+  }
   const { fragmentId } = previous.anchor;
   if (
     !fragmentId ||
@@ -898,6 +951,24 @@ export const applyEditableCommand = ({
 
     case 'select':
     case 'select-all': {
+      const root = toInternalRoot(editor.read((state) => state.view.root()));
+      const selectAllPoints =
+        command.kind === 'select-all'
+          ? editor.read((state) => [
+              state.points.start([]),
+              state.points.end([]),
+            ])
+          : null;
+      const nextSelection =
+        command.kind === 'select'
+          ? command.selection
+          : selectAllPoints?.[0] && selectAllPoints[1]
+            ? {
+                anchor: rootPlitePoint(selectAllPoints[0], root),
+                focus: rootPlitePoint(selectAllPoints[1], root),
+              }
+            : null;
+
       if (
         command.kind === 'select-all' &&
         readAuthoredViewFragmentVersion(editor)
@@ -913,7 +984,13 @@ export const applyEditableCommand = ({
         const focus =
           last && getContentRootViewBoundaryPoint(editor, last, 'end');
         if (anchor && focus) {
-          writeRuntimeSelection(editor, null);
+          if (nextSelection) {
+            dispatchCommand(editor, editorCommands.select, {
+              target: nextSelection,
+            });
+          } else {
+            writeRuntimeSelection(editor, null);
+          }
           writePliteViewSelection(
             editor,
             createPliteViewSelection(graph, { anchor, focus })
@@ -921,24 +998,8 @@ export const applyEditableCommand = ({
           return true;
         }
       }
-      const root = toInternalRoot(editor.read((state) => state.view.root()));
-      const nextSelection =
-        command.kind === 'select'
-          ? command.selection
-          : {
-              anchor: rootPlitePoint(
-                editor.read((state) => state.points.start([])) ??
-                  failInvariant(
-                    'Expected a document start point for select all'
-                  ),
-                root
-              ),
-              focus: rootPlitePoint(
-                editor.read((state) => state.points.end([])) ??
-                  failInvariant('Expected a document end point for select all'),
-                root
-              ),
-            };
+
+      if (!nextSelection) return true;
 
       dispatchCommand(editor, editorCommands.select, {
         target: nextSelection,

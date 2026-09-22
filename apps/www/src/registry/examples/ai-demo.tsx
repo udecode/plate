@@ -30,7 +30,10 @@ export default function AIDemo() {
   });
 
   return (
-    <EditorRoot editor={editor}>
+    <EditorRoot
+      editor={editor}
+      authored={{ intent: 'edit', projection: 'markup' }}
+    >
       <EditorFrame className="h-[650px]">
         <EditorContainer>
           <Editor />

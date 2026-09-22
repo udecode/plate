@@ -422,9 +422,10 @@ export const composeAuthoredRenderSegments = (
     if (!child) {
       child = resolveChild(source, source.document.nodeRange(path).from + 1);
     }
-    if (!child && parent.source.fragment) {
+    if (!child && (source.fragment || parent.source.fragment)) {
       child = resolveChild(source, source.document.nodeRange(path).to - 1);
     }
+    if (!child && source.fragment) return getDefined(path.at(-1));
     if (!child) throw new Error('Cannot resolve authored child slot.');
     return getDefined(child.path.at(-1));
   };

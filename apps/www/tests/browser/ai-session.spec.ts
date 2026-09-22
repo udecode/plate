@@ -247,7 +247,7 @@ test('undo survives resetting a heading before deleting its words', async ({
 });
 
 for (const toolName of ['generate', 'edit'] as const) {
-  test(`AI ${toolName} preview renders text, accepts it, and preserves undo on a narrow view`, async ({
+  test(`AI ${toolName} review renders text, accepts it, and preserves undo on a narrow view`, async ({
     page,
   }, info) => {
     const errors = recordBrowserRuntimeErrors(page);
@@ -286,30 +286,52 @@ for (const toolName of ['generate', 'edit'] as const) {
       const beforeChildren = (before as { children: unknown }).children;
       await editor.selection.select({
         anchor: { path: [1, 0], offset: 0 },
-        focus:
-          toolName === 'edit'
-            ? { path: [2, 0], offset: 8 }
-            : { path: [1, 0], offset: 36 },
+        focus: { path: [1, 0], offset: 36 },
       });
       await root.press('ControlOrMeta+j');
       const prompt = page.getByRole('dialog').getByRole('combobox');
       await prompt.fill('Write a summary');
       await prompt.press('Enter');
       const preview = page.getByRole('dialog').locator('.editor-editor');
-      await expect(preview).toContainText('Generated preview text.');
-      expect(await editor.get.modelValue()).toEqual(before);
+      if (toolName === 'edit') {
+        await expect(preview).toHaveCount(0);
+        await expect(root).toContainText('d preview text.');
+        await expect(
+          root.locator('[data-editor-authored-change]')
+        ).not.toHaveCount(0);
+        await root
+          .locator('[data-editor-authored-change]')
+          .first()
+          .scrollIntoViewIfNeeded();
+        await info.attach('ai-edit-inline-suggestion', {
+          body: await page.screenshot(),
+          contentType: 'image/png',
+        });
+      } else {
+        await expect(preview).toContainText('Generated preview text.');
+      }
+      if (toolName === 'edit') {
+        expect(
+          ((await editor.get.modelValue()) as { children: unknown }).children
+        ).toEqual(beforeChildren);
+      } else {
+        expect(await editor.get.modelValue()).toEqual(before);
+      }
       await expect(
         page.getByRole('button', { name: 'Editing', exact: true })
       ).toBeVisible();
-      await expect(root.locator('[data-editor-authored-change]')).toHaveCount(
-        0
-      );
+      if (toolName === 'generate') {
+        await expect(root.locator('[data-editor-authored-change]')).toHaveCount(
+          0
+        );
+      }
       await page.setViewportSize({ width: 390, height: 844 });
-      await expect(preview).toBeVisible();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible();
       await expect
         .poll(() =>
-          page.getByRole('dialog').evaluate((dialog) => {
-            const bounds = dialog.getBoundingClientRect();
+          dialog.evaluate((element) => {
+            const bounds = element.getBoundingClientRect();
             return bounds.left >= 0 && bounds.right <= window.innerWidth;
           })
         )
@@ -325,6 +347,9 @@ for (const toolName of ['generate', 'edit'] as const) {
       });
       await page.getByRole('option', { name: 'Accept', exact: true }).click();
       await expect(root).toContainText('Generated preview text.');
+      await expect(root.locator('[data-editor-authored-change]')).toHaveCount(
+        0
+      );
       await expect(root).toBeFocused();
       await page.keyboard.press('ControlOrMeta+z');
       await expect
@@ -355,6 +380,167 @@ for (const toolName of ['generate', 'edit'] as const) {
     }
   });
 }
+
+test('AI edit renders beside the homepage seeded suggestions', async ({
+  page,
+}, info) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  const response = `${[
+    { type: 'start', messageId: 'homepage-edit' },
+    { type: 'data-toolName', data: 'edit' },
+    { type: 'text-start', id: 'text' },
+    { type: 'text-delta', id: 'text', delta: 'Improved heading' },
+    { type: 'text-end', id: 'text' },
+    { type: 'finish' },
+  ]
+    .map((part) => `data: ${JSON.stringify(part)}\n\n`)
+    .join('')}data: [DONE]\n\n`;
+
+  try {
+    await page.route('**/api/ai/command', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        headers: { 'x-vercel-ai-ui-message-stream': 'v1' },
+        body: response,
+      })
+    );
+    await page.goto('/', { waitUntil: 'commit' });
+    const root = page.locator('.editor-editor[contenteditable="true"]').first();
+    const editor = createBrowserEditorHarness(page, 'ai:homepage-edit', root);
+    const heading = 'Welcome to the Plate Playground!';
+    await editor.ready({ editor: 'visible', text: heading });
+    await editor.selection.select({
+      anchor: { path: [3, 3, 0], offset: 0 },
+      focus: { path: [3, 4], offset: 23 },
+    });
+    await root.press('ControlOrMeta+j');
+    await page
+      .getByRole('option', { name: 'Improve writing', exact: true })
+      .click();
+
+    await expect(root).toContainText('Improved heading');
+    const improved = root.locator('[data-editor-authored-change]').filter({
+      hasText: 'Improved heading',
+    });
+    await expect(improved).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Editing', exact: true })
+    ).toBeVisible();
+    await improved.scrollIntoViewIfNeeded();
+    await info.attach('ai-homepage-existing-suggestions', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('AI edit preserves unchanged blocks and suggests only added emoji', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  const response = `${[
+    { type: 'start', messageId: 'cross-block-edit' },
+    { type: 'data-toolName', data: 'edit' },
+    { type: 'text-start', id: 'text' },
+    ...[
+      '## AI-Powered',
+      ' Editing 🤖✍️\n\n',
+      'Boost your productivity with integrated [AI SDK](/docs/ai). Press ',
+      '<kbd>⌘+J</kbd> or <kbd>Space</kbd> in an empty line to:\n\n',
+      '* Generate content (continue writing, summarize, explain)\n',
+      '* Edit existing text (improve, fix grammar, change tone)',
+    ].map((delta) => ({ type: 'text-delta', id: 'text', delta })),
+    { type: 'text-end', id: 'text' },
+    { type: 'finish' },
+  ]
+    .map((part) => `data: ${JSON.stringify(part)}\n\n`)
+    .join('')}data: [DONE]\n\n`;
+
+  try {
+    await page.setViewportSize({ width: 2010, height: 842 });
+    await page.route('**/api/ai/command', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        headers: { 'x-vercel-ai-ui-message-stream': 'v1' },
+        body: response,
+      })
+    );
+    await page.goto('/', { waitUntil: 'commit' });
+    const root = page.locator('.editor-editor[contenteditable="true"]').first();
+    const editor = createBrowserEditorHarness(
+      page,
+      'ai:cross-block-stream',
+      root
+    );
+    await editor.ready({ editor: 'visible', text: 'AI-Powered Editing' });
+    const before = (await editor.get.modelValue()) as {
+      children: Array<{ children: unknown[]; [key: string]: unknown }>;
+    };
+    const textContent = (node: unknown): string =>
+      typeof node === 'object' && node !== null
+        ? 'text' in node && typeof node.text === 'string'
+          ? node.text
+          : 'children' in node && Array.isArray(node.children)
+            ? node.children.map(textContent).join('')
+            : ''
+        : '';
+    await editor.selection.select({
+      anchor: { path: [4, 0], offset: 0 },
+      focus: {
+        path: [7, 0],
+        offset: 'Edit existing text (improve, fix grammar, change tone)'.length,
+      },
+    });
+    await root.press('ControlOrMeta+j');
+    await page
+      .getByRole('option', { name: 'Improve writing', exact: true })
+      .click();
+
+    await expect(root).toContainText(
+      'Edit existing text (improve, fix grammar, change tone)'
+    );
+    const emoji = root
+      .locator('[data-editor-authored-kind="insert"]')
+      .filter({ hasText: '🤖✍️' })
+      .first();
+    await expect(emoji).toBeVisible();
+    const changeId = await emoji.getAttribute('data-editor-authored-change');
+    expect(changeId).toBeTruthy();
+    expect(
+      await root
+        .locator(`[data-editor-authored-change="${changeId}"]`)
+        .allTextContents()
+    ).toEqual([' 🤖✍️']);
+    await expect(
+      root.locator(
+        `[data-editor-authored-change="${changeId}"][data-editor-retained="delete"]`
+      )
+    ).toHaveCount(0);
+    expect(((await editor.get.modelValue()) as typeof before).children).toEqual(
+      before.children
+    );
+
+    await page.getByRole('option', { name: 'Accept', exact: true }).click();
+    await expect
+      .poll(async () => {
+        const after = (await editor.get.modelValue()) as typeof before;
+        return after.children.map(textContent);
+      })
+      .toEqual(
+        before.children.map((node, index) =>
+          index === 4 ? 'AI-Powered Editing 🤖✍️' : textContent(node)
+        )
+      );
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
 
 test('the AI demo publishes generated comments without changing text', async ({
   page,
@@ -599,8 +785,31 @@ for (const start of ['heading', 'empty paragraph'] as const) {
     page,
   }, testInfo) => {
     const errors = recordBrowserRuntimeErrors(page);
+    const response = `${[
+      { type: 'start', messageId: 'continue-writing' },
+      { type: 'data-toolName', data: 'generate' },
+      { type: 'text-start', id: 'text' },
+      {
+        type: 'text-delta',
+        id: 'text',
+        delta:
+          'AI can help turn an initial idea into a clear and useful first draft.',
+      },
+      { type: 'text-end', id: 'text' },
+      { type: 'finish' },
+    ]
+      .map((part) => `data: ${JSON.stringify(part)}\n\n`)
+      .join('')}data: [DONE]\n\n`;
 
     try {
+      await page.route('**/api/ai/command', (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'text/event-stream',
+          headers: { 'x-vercel-ai-ui-message-stream': 'v1' },
+          body: response,
+        })
+      );
       await page.goto('/docs/components/ai-menu', { waitUntil: 'commit' });
       const root = page
         .locator('.editor-editor[contenteditable="true"]')

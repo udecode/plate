@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-21-ai-edit-suggestions",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-21-ai-edit-suggestions.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-21",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Restore inline AI edit suggestions",
+  "targets": [
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-demo",
+      "files": [
+        "apps/www/src/registry/examples/ai-demo.tsx",
+        "apps/www/src/registry/examples/values/ai-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-21-ai-menu-restore-inline-edit-suggestions-2192c204",
+      "kind": "fix",
+      "summary": "Restore inline AI edit suggestions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu", "ai-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-21",
+          "entry": "2026-09-21-ai-edit-suggestions",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -2,7 +2,7 @@
 title: AI preview ownership
 type: decision
 status: adopted
-updated: 2026-09-17
+updated: 2026-09-21
 review_scope: ai
 current_review: 2026-09-16-ai-main-regression-closure
 review_history:
@@ -18,12 +18,32 @@ related:
 
 # AI preview ownership
 
-**Keep temporary AI generation outside the persistent suggestion workflow.**
-The adopted implementation preserves the user's editing intent, renders one
-temporary purple draft, and applies it with one normal transaction. Native
-interaction and the frozen package scaling comparison support this target.
-No additional public draft, branch or projection primitive is justified for
-this job. This bounded decision does not certify the entire AI/Copilot surface.
+**Separate generated drafts from requested edits.** Generate and insert commands
+preserve the user's editing intent, render one temporary purple draft, and apply
+it with one normal transaction. Edit commands stream one request-owned native
+suggestion at the selected content without changing the user's Editing or
+Suggesting intent. No additional public draft, branch or projection primitive
+is justified for this job. This bounded decision does not certify the entire
+AI/Copilot surface.
+
+## Selection edit correction — September 21
+
+AI menu commands such as Improve writing and Fix spelling & grammar produce an
+inline authored suggestion while they stream. The request reuses one change ID,
+updates only its mapped selection, and leaves accepted document content
+unchanged until Accept. Accept and Discard decide that change through the native
+authored owner. Stop retains the received suggestion for review, and retry
+rejects the previous request-owned change before generating again.
+
+The editor keeps its current input intent throughout the operation. An Editing
+view with the markup projection displays the proposal without turning later
+typing into suggestions. Generate, Continue writing, and insert commands retain
+the independent draft and one-transaction apply path.
+
+This supersedes the earlier blanket use of detached preview for selection edits.
+The reproduced defect was the automatic Editing-to-Suggesting transition, not
+the existence of an inline edit proposal. Removing that transition did not
+justify replacing the edit interaction with a popup preview.
 
 ## Comment approval reconsideration — September 17
 
@@ -37,10 +57,10 @@ Stop keeps completed comments and prevents further generation. Manual comment
 composer drafts remain useful.
 
 This supersedes only the generated-comment draft portion of the previous
-lifetime decision. The temporary preview and Accept/Discard workflow for
-document edits remains adopted. Hiding the bar or adding an approval flag would
-preserve the unnecessary lifecycle. No new public AI comment primitive is
-justified by current evidence.
+lifetime decision. Document generation keeps its temporary preview; selection
+editing uses the native suggestion workflow above. Hiding the bar or adding an
+approval flag would preserve the unnecessary lifecycle. No new public AI
+comment primitive is justified by current evidence.
 
 The transport creates a private draft only while asynchronous thread creation
 is unresolved, publishes it immediately for a live request, then hands all
@@ -108,22 +128,29 @@ separate phase assertions.
 | Remove the view switch | Accepted projection hides pending output. This breaks inline generation instead of restoring it. |
 | Permit `edit/markup` in Plite | A real alternative, not a one-line validation change. Current update routing chooses accepted versus proposed coordinates from intent. Editing pending text needs a defined mapping policy, and markup still exposes unrelated proposals. This alone does not remove AI's transient/durable lifetime coupling. |
 | Add an AI origin flag or a filtered transient authored branch | Could distinguish or isolate records, but preserves per-stream authored work and introduces another projection/filter lifetime. It must beat the simpler draft candidate with executable evidence before earning a public primitive. |
-| Reuse the existing detached AI preview for every temporary response; apply once | Adopted. Removes AI's save/switch/restore protocol and separate proposal-versus-detached application paths. Retains the normal authored engine for the final user edit or explicitly requested tracked suggestion. Native replay and bounded scale measurements pass. |
+| Reuse the existing detached AI preview for every temporary response; apply once | Keep for generate and insert. Reject for selection edits because it removes the established inline suggestion interaction. |
+| Use a detached draft for generation and one request-owned native proposal for edits | Adopted. Removes AI's save/switch/restore protocol while preserving inline edit review and the user's current input intent. |
 
 ## Adopted ownership
 
 ```text
-transport text → AIChatPlugin's temporary draft + stable target
-              → copied inline/popup rich preview + streaming indicator
-Apply         → one normal editor update under the user's chosen intent
-Discard       → release the temporary draft
+generate/insert text → AIChatPlugin's temporary draft + stable target
+                     → copied inline/popup rich preview + streaming indicator
+Apply                → one normal editor update under the user's chosen intent
+Discard              → release the temporary draft
+
+edit text → one request-owned native authored proposal at the stable selection
+Accept    → accept that proposal
+Discard   → reject that proposal
 ```
 
 `api.setPreview(content, { requestId? })` consumes the full accumulated Markdown
-response. `api.setTablePreview` consumes request-local cell references and
-content. Both update `previewValue`; neither edits the source document or its
-history. Canonical Markdown parsing owns rich node construction. The serializer
-feedback loop and public per-chunk insertion helpers are deleted.
+response. Generate and insert requests update `previewValue` without editing the
+source document or its history. Selection edit requests update one native
+proposal identified by the current request. `api.setTablePreview` consumes
+request-local cell references and content. Canonical Markdown parsing owns rich
+node construction. The serializer feedback loop and public per-chunk insertion
+helpers remain deleted.
 
 The existing static `AIChatEditor` paints the draft and its generation-end
 indicator. Sparse keyed node attributes activate one private inline wrapper;
@@ -132,11 +159,11 @@ installed on every source block. Native anchors track text targets; node keys
 track block and table-cell targets. Request fencing and view retirement release
 stale work. Deleted targets fail without applying to another location.
 
-Accept uses normal commands under the current intent with one history batch.
-Explicit Suggestion mode creates tracked output only at application. Discard
-releases the draft and restores the mapped invoking selection. There is no
-saved mode to restore and no AI dependency on the authored plugin. The earlier
-native authored key/history repairs remain independently valid.
+Generate Accept uses normal commands under the current intent with one history
+batch. Edit Accept decides the request-owned proposal. Discard releases a
+generation draft or rejects the edit proposal and restores the mapped invoking
+selection. There is no saved mode to restore. The earlier native authored
+key/history repairs remain independently valid.
 
 ## History reconciliation and proof
 
@@ -144,8 +171,8 @@ The September 16 recovery plan's keep-native-proposals conclusion addressed
 node-key loss and localized rollback. Its assumption that AI may temporarily
 switch the invoking view is reversed by the explicit mode requirement and
 native reproduction. The successful key/history fixes remain valid. The
-September 10 independent-draft plan is relevant prior reasoning, not an
-accepted or implemented target.
+September 10 independent-draft plan governs generation; its explicit requirement
+to retain inline edit suggestions governs selection edits.
 
 The durable doctrine that human and AI proposals share native authored records
 still applies to actual tracked proposals. The Best API source rule, Plate
@@ -207,6 +234,7 @@ confirms Escape clears the completed draft and restores immediate typing.
 Doctrine version 204 records the lifetime law. Evidence and unproved provider,
 IME, deployment and broader type gates are retained in the plan and review record.
 
-Verdict: retain the adopted preview architecture with the repaired request
-ownership. The all-job source audit is complete; it is not an exhaustive
-end-to-end certification of every provider and editor state.
+Verdict: retain detached preview ownership for generation and native proposal
+ownership for selection edits, with the repaired request lifetime shared by
+both. The all-job source audit is complete; it is not an exhaustive end-to-end
+certification of every provider and editor state.

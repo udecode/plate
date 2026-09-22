@@ -77,7 +77,10 @@ function AuthorHistory({ onResult }: { onResult: (value: string) => void }) {
   }
 
   return (
-    <ol className="space-y-2">
+    <ol
+      className="max-h-48 space-y-2 overflow-y-auto overscroll-contain pr-2 [scrollbar-color:var(--border)_transparent] [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border"
+      data-testid="author-history"
+    >
       {changes.toReversed().map((change) => (
         <li
           className="flex items-center justify-between gap-3 rounded-md border p-2"
