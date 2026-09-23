@@ -568,7 +568,7 @@ describe('DiscussionSlots', () => {
           name: 'Close 1 discussion item for this block',
         })
       );
-      void act(() => editor.api.history.undo());
+      await act(() => editor.api.history.undo());
       fireEvent.click(
         await view.findByRole('button', {
           name: 'Open 2 discussion items for this block',
@@ -587,7 +587,7 @@ describe('DiscussionSlots', () => {
       expect(
         comments.getThreads().every(({ target }) => target.type === 'change')
       ).toBe(true);
-      void act(() => editor.api.history.redo());
+      await act(() => editor.api.history.redo());
       await waitFor(() =>
         expect(
           view.container.querySelector(`[data-comment-thread="${id}"] strong`)

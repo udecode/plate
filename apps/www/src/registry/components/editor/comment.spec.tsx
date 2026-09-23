@@ -252,7 +252,7 @@ it('awaits resolution and reopening, retains failures, and keeps document undo i
     expect(
       view.getByRole('textbox', { name: 'Reply to thread' })
     ).not.toBeNull();
-    void act(() => editor.api.history.undo());
+    await act(() => editor.api.history.undo());
     expect(editor.read.text.string([0])).toBe('Review this');
     expect(comments.getThread(id)?.resolution).toBeNull();
     expect(

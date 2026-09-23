@@ -53,9 +53,9 @@ it('commits a local equation draft once and restores it with one undo', async ()
       latex: 'x^2 + y^2',
     })
   );
-  void act(() => editor.api.history.undo());
+  await act(() => editor.api.history.undo());
   expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({ latex: 'x' });
-  void act(() => editor.api.history.redo());
+  await act(() => editor.api.history.redo());
   expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({
     latex: 'x^2 + y^2',
   });
