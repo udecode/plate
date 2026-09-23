@@ -68,6 +68,8 @@ Changed files: [authored.ts](../../../packages/plitejs/src/authored/authored.ts)
 
 - **unbound-plan**: [2026-09-16-slash-ai-suggested-paragraph.md](../../plans/2026-09-16-slash-ai-suggested-paragraph.md).
 
+- **completed-plan-without-current-outcome**: [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md).
+
 - **unbound-plan**: [5086-seeded-removal-suggestion-crash-regression.md](../../plans/5086-seeded-removal-suggestion-crash-regression.md).
 
 ## Plans and execution
@@ -100,6 +102,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-09-14-suggestion-restoration-resolver.md](../../plans/2026-09-14-suggestion-restoration-resolver.md) | completed | implementation | unbound |
 | [2026-09-16-slash-ai-suggested-paragraph.md](../../plans/2026-09-16-slash-ai-suggested-paragraph.md) | completed | implementation | unbound |
 | [2026-09-17-authored-direct-editing-with-visible-suggestions.md](../../plans/2026-09-17-authored-direct-editing-with-visible-suggestions.md) | completed | implementation | [2026-09-17-suggestions-authored-editing-final](../review-records/2026-09-17-suggestions-authored-editing-final.json) |
+| [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md) | completed | implementation | [2026-09-17-suggestions-authored-editing-final](../review-records/2026-09-17-suggestions-authored-editing-final.json) |
 | [5086-seeded-removal-suggestion-crash-regression.md](../../plans/5086-seeded-removal-suggestion-crash-regression.md) | unknown | implementation | unbound |
 
 ### Outcomes recorded after the latest review

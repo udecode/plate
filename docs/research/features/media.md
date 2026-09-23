@@ -20,7 +20,7 @@ Imported scope flags (unbound historical claims): adoption not-assessed, proof n
 
 ## Changes and tracking gaps
 
-Changed files: [caption.tsx](../../../apps/www/src/registry/components/editor/caption.tsx), [media-caption-delete.spec.ts](../../../apps/www/tests/browser/media-caption-delete.spec.ts). Changed directories: none identified. Changed source groups: browser/media-caption-delete, capability/image, ui/caption, ui/media-toolbar.
+Changed files: [caption.tsx](../../../apps/www/src/registry/components/editor/caption.tsx), [media-caption-delete.spec.ts](../../../apps/www/tests/browser/media-caption-delete.spec.ts), [keyboard-input-strategy.ts](../../../packages/plitejs/src/react/editable/keyboard-input-strategy.ts). Changed directories: none identified. Changed source groups: browser/media-caption-delete, capability/image, ui/caption, ui/media-toolbar.
 
 - **unbound-plan**: [2026-07-13-plate-next-media-mention-resizable-package-reviews.md](../../plans/2026-07-13-plate-next-media-mention-resizable-package-reviews.md).
 

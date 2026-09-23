@@ -1,13 +1,14 @@
 ---
 title: History ownership
 type: decision
-status: implemented
-updated: 2026-09-19
+status: accepted
+updated: 2026-09-23
 review_scope: history
-current_review: 2026-09-16-history-post-adoption-reassessment
+current_review: 2026-09-23-history-async-replay-api
 review_history:
   - ../review-records/2026-09-15-history-replay-boundary.json
   - ../review-records/2026-09-16-history-post-adoption-reassessment.json
+  - ../review-records/2026-09-23-history-async-replay-api.json
 source_refs:
   - ../../../packages/plitejs/src/history/history-plugin.ts
   - ../../../packages/plitejs/src/history/history-state.ts
@@ -20,19 +21,37 @@ related:
 
 # History ownership
 
-**Stop the Plite configuration redesign.** Keep the Plate history adapter and
-its live getters. Plite owns exact descriptors whose immutable construction
-inputs live in factory closures; Plate adds its richer descriptor structure,
-inference, terminal configuration and mutable per-editor store. The adapter is
-the honest boundary between those contracts, not a redundant second history
-owner.
+**Pursue one explicit replay lifecycle while retaining
+`Promise<HistoryResult>` for `undo()` and `redo()`.** A Promise is the honest
+single return type when the current branch head can await a server-first
+comment mutation. The current implementation does not yet earn the final API:
+ordinary replay mutates before returning a resolved Promise, session replay
+crosses an asynchronous boundary, native callers commonly discard the result,
+and the pending session path rejects editor publication without exposing its
+state.
 
-Status: Implemented and verified. The
+The target schedules every replay through one queue, exposes pending direction
+and state, and makes mounted input, controls, blocked outcomes, and errors obey
+that lifecycle. Detailed design must choose whether later interaction is
+disabled, buffered, or safely cancelled. Do not restore synchronous replay,
+return a sync-or-Promise union, add separate sync and async undo methods, or
+create a Comments history stack.
+
+**The earlier configuration Stop remains in force.** Keep the Plate history
+adapter and its live getters. Plite owns exact descriptors whose immutable
+construction inputs live in factory closures; Plate adds its richer descriptor
+structure, inference, terminal configuration and mutable per-editor store. The
+adapter is the honest boundary between those contracts, not a redundant second
+history owner.
+
+Status: Replay-lifecycle redesign accepted; implementation and proof remain
+open. The earlier
 [Task plan](../../plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md)
-adopts the target across Plite, Plate, native/mounted consumers, AI actions,
-public teaching and release artifacts. The dated assessment below preserves the
-original audit evidence and limits; the final production receipt records the
-source-stable implementation proof.
+adopts and verifies the synchronous replay boundary, grouping, Plate adapter,
+and existing mounted ownership. The
+[latest review](../review-records/2026-09-23-history-async-replay-api.json)
+reopens only the later asynchronous session-replay lifecycle introduced for
+comment creation.
 
 Objective: Review all 10 history ledger units, their public contracts and
 materially different consumers; compare keeping, cutting, merging and replacing
@@ -51,10 +70,11 @@ does not choose the target.
 History also owns the single session order for fallible local effects whose
 durable mutation lives outside the document. Such an effect is local,
 effect-only, non-mergeable and excluded from persisted History JSON. Replay
-awaits its owner before moving the branch; a typed block leaves the same head in
-place, and editor publication is fenced while that replay is pending. The
-public `undo()` and `redo()` results are promises so mounted focus repair and
-callers observe the settled external mutation and document branch together.
+awaits its owner before moving the branch, and a typed block leaves the same
+head in place. The public `undo()` and `redo()` results remain promises so
+mounted focus repair and callers can observe the settled external mutation and
+document branch together. Pending replay must become an explicit lifecycle;
+an invisible editor-wide publication fence is not the final interaction model.
 
 Acceptance:
 

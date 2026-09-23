@@ -48,8 +48,8 @@
     ],
     "snapshot": {
       "kind": "working-tree",
-      "baseCommit": "753f360a929da37876c39a9aa15cdbf7efd98eb3",
-      "fingerprint": "3b880ba81293de1eefc5d87c14fc6785ceeded686e9ee5f03fa8e0bde9e6b3d4"
+      "baseCommit": "0689161e6a3cc2830407924b9b7998493c04ce8f",
+      "fingerprint": "9ca625ccd4e9d9eca38fc6dd2c83845e1211c12625759ceae75a13e150c0d5bc"
     }
   },
   "features": [
@@ -90,7 +90,7 @@
       "scope": "ai",
       "disposition": "support",
       "count": 1,
-      "fingerprint": "0835498ab640940168f19be794be5ac9cae0145cc3665b67adcb08d0befe7001",
+      "fingerprint": "ba91105f2d0eaf33f867200af7e0f7dc421173a1af5fa7a6b0461dc941eae31c",
       "source": "apps/www/tests/browser/ai-session.spec.ts"
     },
     {
@@ -121,7 +121,7 @@
       "id": "browser/clipboard-upload",
       "scope": "clipboard",
       "count": 1,
-      "fingerprint": "c6103e789e9b55c406b12602bb452ba03ae8437a8dea245bfea6be001cc6571b",
+      "fingerprint": "f7e68cff0e038bdec406e830b27fe295cbba4e27bacd43c58dbc99fc3b5cac5f",
       "source": "apps/www/tests/browser/clipboard-upload.spec.ts",
       "disposition": "support"
     },
@@ -194,7 +194,7 @@
       "scope": "comments",
       "disposition": "support",
       "count": 1,
-      "fingerprint": "7b978af0579b44b7445125ff2f5c4d0eab66190b3624dc53d4846494c8ba2b57",
+      "fingerprint": "8b7b7ef51ce5b715eb618c2a1fd1e938b050bd0267a2c2a41e44bb6c3d59ad0d",
       "source": "apps/www/tests/browser/comment.spec.ts"
     },
     {
@@ -356,7 +356,7 @@
       "scope": "suggestions",
       "disposition": "support",
       "count": 1,
-      "fingerprint": "1df9949798679c0998767771908cf0d5da7c01e234edeb9c436ba4c970632788",
+      "fingerprint": "536c0921d80547a72725acfb3e13e63f26747a34f6e6d8b7b103a34c23e61ef7",
       "source": "apps/www/tests/browser/suggestion.spec.ts"
     },
     {
@@ -404,7 +404,7 @@
       "scope": "diff",
       "disposition": "support",
       "count": 1,
-      "fingerprint": "19c7d57c232566bc28c0023fd2b5d823592a98066ba45b87dcc6374f2c80df90",
+      "fingerprint": "cff81f2f8f6cfc5c1c898125b647ea761ff6f7d99c3c9d068715a0a6668a44d3",
       "source": "apps/www/tests/browser/version-history.spec.ts"
     },
     {
@@ -430,7 +430,7 @@
       "scope": "ai",
       "disposition": "grouped",
       "count": 2,
-      "fingerprint": "5af3f9df4cfb56800aadc4557bffe6aa8a19757dcb6cbc48d9bab9427a346adc",
+      "fingerprint": "f4fed3ead6699ab523eac742ce257158e81d2515512acba8445fffa6f642a5dc",
       "source": "packages/platejs/src/ai/react/AIChatPlugin.ts",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -547,7 +547,7 @@
       "scope": "layout",
       "disposition": "grouped",
       "count": 4,
-      "fingerprint": "5adf8b4fc19571dafef074697f25b276886219271db0c5035c0d9f364b01bd7e",
+      "fingerprint": "f44a3f435222fc5339f1232ab14bc6574f5ae81390a78e8dbf10e8cb45ac4905",
       "source": "packages/platejs/src/ai/react/AIChatPlugin.ts",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -682,7 +682,7 @@
       "scope": "editing",
       "disposition": "grouped",
       "count": 2,
-      "fingerprint": "99bf5726a8e298b0e6bebf73a2847817f991ec81098a42c8d3f7ca6a9f688c59",
+      "fingerprint": "757b764c688c14cbbcf6763facb3a2e8f589d4e781ff3542047bdeb65862ad3e",
       "source": "packages/platejs/src/utils/plate-keys.ts",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -1565,7 +1565,7 @@
       "scope": "ai",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "489d86e758069cf3fca40a0bb25b0ce8df3203a4d080909f4a440e02b57c79ec",
+      "fingerprint": "9d029b174454ff9603ae2f8431a30cf76bd3ab3b603c199a8c9c884da9300472",
       "source": "apps/www/src/registry/examples/ai-demo.tsx"
     },
     {
@@ -1941,7 +1941,7 @@
       "scope": "diff",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "e5b0dac79dc884ec50c8ffba4d0e4130211d1a152e9b9b3ce86096588e01089d",
+      "fingerprint": "12d6baea3ccb33fe2065ff0066614c57bbdfae67d3d37805a42de202f4da00f3",
       "source": "apps/www/src/registry/examples/version-history-demo.tsx"
     },
     {
@@ -3077,7 +3077,7 @@
       "scope": "ai",
       "disposition": "grouped",
       "count": 27,
-      "fingerprint": "94b11edf7a196ca5d9c65957fa464c664e49b369ba22f5f9c16a8f9a4c5b8d3b",
+      "fingerprint": "0965c0992588864daadb3189efe2fbe18dd37df2dad108eaa287b56537065968",
       "source": "packages/platejs/src/ai/index.ts"
     },
     {
@@ -3149,7 +3149,7 @@
       "scope": "comments",
       "disposition": "grouped",
       "count": 5,
-      "fingerprint": "aaa90ef05d0b1b50932c82db104bec2cd54fc80f32afb1e6d098cfe1a8b6f0dc",
+      "fingerprint": "2d652f7198b5a54aabffd529f46b3bf98cd94421ef76b379ac06f13c82acaa22",
       "source": "packages/platejs/src/features/comments/index.ts"
     },
     {
@@ -3229,7 +3229,7 @@
       "scope": "distribution",
       "disposition": "grouped",
       "count": 5,
-      "fingerprint": "40e7aa7876a6244bbae1f86000fa093be8eb6d7ce2488a5be7ccd7c4d155461f",
+      "fingerprint": "9fb4a089fd8fefe45066b618cbd92e93cf37b36945840f207021395b9685d20b",
       "source": "packages/platejs/src/index.tsx"
     },
     {
@@ -3237,7 +3237,7 @@
       "scope": "canvas",
       "disposition": "grouped",
       "count": 8,
-      "fingerprint": "4829bf55202f18bf29a67d631cecf580fe6c261a4c77d18db6b47e3bc78711e9",
+      "fingerprint": "1a16cc6a5a8e577c82dd5678f8a500e4deb02af6df6eb5e44033e070db748b32",
       "source": "packages/platejs/src/excalidraw/index.ts"
     },
     {
@@ -3285,7 +3285,7 @@
       "scope": "distribution",
       "disposition": "grouped",
       "count": 40,
-      "fingerprint": "38f53d012f55a4a1764d53b64f694479396301a588b489277bba5a35216cca44",
+      "fingerprint": "617853f0e5598277d7645d987d7bb823ce341455026791c04f338caeb52e56b4",
       "source": "packages/platejs/src/internal/index.ts"
     },
     {
@@ -3301,7 +3301,7 @@
       "scope": "plate-api",
       "disposition": "grouped",
       "count": 9,
-      "fingerprint": "85767a10e098fca3954c1fdc5e0e5387ab716805583832745f29c7df4c67cc8c",
+      "fingerprint": "3cea9ba7858b39d9e52c566fff8b8e38d96b1d38c60b4f6b625141134ea1e137",
       "source": "packages/platejs/src/lib/editor/index.ts"
     },
     {
@@ -3325,7 +3325,7 @@
       "scope": "plate-api",
       "disposition": "grouped",
       "count": 21,
-      "fingerprint": "808329ecaa94db80d93f408e37f488482c75678e2c92938761b2579a808f31d1",
+      "fingerprint": "9cb31f5794b34be0658c72d19bc3b697c1416ab20689cc3816abb67f946b2600",
       "source": "packages/platejs/src/lib/plugin/index.ts"
     },
     {
@@ -3333,7 +3333,7 @@
       "scope": "plate-api",
       "disposition": "grouped",
       "count": 42,
-      "fingerprint": "c9ac596593ba4d66e3bb932afb3ba3d76fd2914c9cd4432ce4dc188e8f9fadcb",
+      "fingerprint": "9ab27621552d05c3dac093a951af5ba5365f3e2221c74a70a8e1bb1ebf128212",
       "source": "packages/platejs/src/lib/plugins/affinity/index.ts"
     },
     {
@@ -3421,7 +3421,7 @@
       "scope": "proof",
       "disposition": "support",
       "count": 128,
-      "fingerprint": "68d15c561a2a27f46971ee7a9d3aea88d6013daa05e22563fca092c6d04cb755",
+      "fingerprint": "4398268f8fbf56f1422143a9b63ba88a5bd692bd77821958c66fe8f591ca73b1",
       "source": "packages/platejs/test/testing/index.ts"
     },
     {
@@ -3429,7 +3429,7 @@
       "scope": "react",
       "disposition": "grouped",
       "count": 190,
-      "fingerprint": "d74517a05a69706aff708a30a0f6268b15be275eba293684cfb40b1874fb7ce7",
+      "fingerprint": "ada7641deae7647e3e19d33b9c9b85a00d1520571c2d6274e1cdca3527dd53c1",
       "source": "packages/platejs/src/react/components/index.ts"
     },
     {
@@ -3452,7 +3452,7 @@
       "id": "platejs/suggestion",
       "scope": "suggestions",
       "count": 4,
-      "fingerprint": "00a75d763fd3bc96b2e7e6b83424bc39b6866dd7fc0ff4b63b44bcf26f72b505",
+      "fingerprint": "14ad370c8d115b0616ff3c940f59f9d5597ed6a1afd40cd41082b4a365ac04ca",
       "source": "packages/platejs/src/features/suggestion/index.ts",
       "disposition": "grouped"
     },
@@ -3469,7 +3469,7 @@
       "scope": "table",
       "disposition": "grouped",
       "count": 41,
-      "fingerprint": "d303d3e7aabe06024c7312dba22804fe908333d2511c8fd52a43ba3e5f9dd506",
+      "fingerprint": "c1903c04a5aaa56a08fff39f79711fa03abbeaecc2bea525fa694013bc67da74",
       "source": "packages/platejs/src/features/table/index.ts"
     },
     {
@@ -3501,7 +3501,7 @@
       "scope": "distribution",
       "disposition": "grouped",
       "count": 14,
-      "fingerprint": "a34833f8e3c5f15497696a597c80d7151a787beffb9fa81f8cc28d2979f9db5f",
+      "fingerprint": "2304155ead11c3b355ca8e7e5f3dba89014e1c91dde2326ed4c871f5b05a1d69",
       "source": "packages/platejs/src/utils/index.ts"
     },
     {
@@ -3525,7 +3525,7 @@
       "scope": "authored",
       "disposition": "grouped",
       "count": 24,
-      "fingerprint": "b4ad58b708fec86978a875aa75da3fc207edac4db04d77d3d1ddbf043cbf6547",
+      "fingerprint": "c905b1785808be7d236878a322638886cf49f50ac1610a5e4a799bb43df1c948",
       "source": "packages/plitejs/src/authored/index.ts"
     },
     {
@@ -3717,7 +3717,7 @@
       "scope": "model",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "aa66f4ae5b212fddfe9130793c205cb04347b1c999b5bc3c375efc6e4a77ccb3",
+      "fingerprint": "2c96e6a54f35fa125418ec46495a4cd14378678ceb122d749fa07e90eecf84cb",
       "source": "packages/plitejs/src/core/editor-schema.ts"
     },
     {
@@ -3829,7 +3829,7 @@
       "scope": "schema",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "0fdd7b1bf7be32d5fbdc30efd07aca9efa5e05ccffeb12f7533761ce9a9d323a",
+      "fingerprint": "f79442d6bb16b9ac5d903a49aab2a7b646fe47379abcadcd6760a8fe5ab649e1",
       "source": "packages/plitejs/src/core/plugin-registry.ts"
     },
     {
@@ -3917,7 +3917,7 @@
       "scope": "model",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "f688d9038b3c6d3182cce3f28376f1de856b64f316f93f6cb947fef45613e286",
+      "fingerprint": "0e6d24a1e13acbf9f77557aad34d4d22a9657b990ba1ac23ac1f3116a700af61",
       "source": "packages/plitejs/src/core/schema-definition.ts"
     },
     {
@@ -4013,7 +4013,7 @@
       "scope": "state",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "094a5319bd9ca28a171d9a0d8003bf7b68b62ae06c0e15aeb9b62e091c547278",
+      "fingerprint": "11d8a0c0d5cd2d1b4d72112a52b98fb7372aefd00a5f6202877e064ef7b28f7b",
       "source": "packages/plitejs/src/core/transaction-values.ts"
     },
     {
@@ -4229,7 +4229,7 @@
       "scope": "reads",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "c53078db7dffe7a5523b4666207e5396820234b70631597cc5f5fe6b68c83b1f",
+      "fingerprint": "2a7090fe6f135bc37074284fb87b961ac2ea72851162e383842ba222fb72974d",
       "source": "packages/plitejs/src/editor/index.ts"
     },
     {
@@ -4469,7 +4469,7 @@
       "scope": "model",
       "disposition": "grouped",
       "count": 5,
-      "fingerprint": "bcaad0ca526dd7b361e53c7e325cf509dcc461273f21e7019d7e8ccb7a9f073a",
+      "fingerprint": "fee53bc63cf21962d256c6fa80fc75e6c8346abf2382de9429b1eb1b775713f0",
       "source": "packages/plitejs/src/index.ts"
     },
     {
@@ -4477,7 +4477,7 @@
       "scope": "history",
       "disposition": "grouped",
       "count": 7,
-      "fingerprint": "07223389954c2c5a78d676e39934d92860f896ffe3ca2091d5e3a162868abfcf",
+      "fingerprint": "dd2e727e0fc7edbf1ddeb053374fda773faf3843cddcb51c55b3bc2bfe5b7ad7",
       "source": "packages/plitejs/src/history/index.ts"
     },
     {
@@ -4493,7 +4493,7 @@
       "scope": "model",
       "disposition": "grouped",
       "count": 16,
-      "fingerprint": "59651483223e0b5e23395caa54e071ae86673c62420ab1dcc3aaa45881fa2063",
+      "fingerprint": "99decff44e6b841cc800cf68d715563c92b0de8c4d800ef0cea7b75eb8c1c21d",
       "source": "packages/plitejs/src/interfaces/index.ts"
     },
     {
@@ -4517,7 +4517,7 @@
       "scope": "proof",
       "disposition": "support",
       "count": 1327,
-      "fingerprint": "808f20b1589d433fccb13bc23a65de6d64307e4047a58ff6d0560d3112581872",
+      "fingerprint": "17b8f7e12101d1d62663ff8cc88a946f1328d74dbd4dd8609815955f45f3f761",
       "source": "packages/plitejs/index.ts"
     },
     {
@@ -4573,7 +4573,7 @@
       "scope": "native",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "3406e151704b3a811c31234be8404db656d14ebf13a1f4f1492efbc24ae509f7",
+      "fingerprint": "2c64c3976334c12fb68ec4dfb70142223e1a4e0cad63798168a6e985466d0587",
       "source": "packages/plitejs/src/react/editable/browser-handle.ts"
     },
     {
@@ -4669,7 +4669,7 @@
       "scope": "native",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "9ad56c29957840989b25f6d4742b32a56c36520cad26c755cc52f1b15db4e8e8",
+      "fingerprint": "b19d52cd48a1442138d8083583baf07d3ea8ab7da709acf654740fd4197244b6",
       "source": "packages/plitejs/src/react/editable/decoration-repair-bridge.ts"
     },
     {
@@ -4733,7 +4733,7 @@
       "scope": "react",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "7f0626240de59467bcd23fc46df3e21b13432698883435c7003dc710875a7132",
+      "fingerprint": "f0e078745f9aa8bd136af5668b6ac2387ec546c7116bacfa3e9af88e3fb14105",
       "source": "packages/plitejs/src/react/editable/editable-dom-runtime.ts"
     },
     {
@@ -4765,7 +4765,7 @@
       "scope": "external-text",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "37b78dc01565f8af1de447768d6a529b571c54e8f8210fe6df254680e3663b47",
+      "fingerprint": "069909504f708d77f626d2a0dc9f2332ec8b037c32440a339db01d8885d34b9e",
       "source": "packages/plitejs/src/react/editable/external-text-runtime.ts"
     },
     {
@@ -4829,7 +4829,7 @@
       "scope": "native",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "a2dd38995cbbb263de6d1eefbeed7b436357aa4df22a7979078bcb761a48b597",
+      "fingerprint": "f5f1653ae1bc12191fece8e24aa1528e45a6610191553e30dd91225c3cc62ccd",
       "source": "packages/plitejs/src/react/editable/keyboard-input-strategy.ts"
     },
     {
@@ -4861,7 +4861,7 @@
       "scope": "native",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "aa45ddcd118e37c2e3e12e105037251448fb163f4c57fae0df96c9a41608db3f",
+      "fingerprint": "8d91d46c52f6f7c462cd61d20c926806aa51d74023db0d90d0167f46a5607eda",
       "source": "packages/plitejs/src/react/editable/mutation-controller.ts"
     },
     {
@@ -4877,7 +4877,7 @@
       "scope": "history",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "54ee65bfb3cb35011b5019ab28c00a8074725e91e753fe5f7f7d91353ba423f5",
+      "fingerprint": "c7b3b84acfb5c0c487d4a03d77bfda50ce578d3b92fa01cf2c28d6ce41fe645f",
       "source": "packages/plitejs/src/react/editable/mutation-history.ts"
     },
     {
@@ -4941,7 +4941,7 @@
       "scope": "selection",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "4db65422eddf3f6dc0eccb90f046268a9b5a9bdd90d7f17750a68f765ded5924",
+      "fingerprint": "644c1f6fdd123ee36da28a2482c930b8d5d8a3a845da47bc67e1700555c400e9",
       "source": "packages/plitejs/src/react/editable/projected-selection-target.ts"
     },
     {
@@ -5253,7 +5253,7 @@
       "scope": "react",
       "disposition": "grouped",
       "count": 33,
-      "fingerprint": "c0b53cb25ffbb1136b0b1f7844919b5ec783f0e1113aaaaca71bef2255094286",
+      "fingerprint": "4aaba8d722ae1c824737178f4b471764b45f2b388a2c8ed95e75498c446ec747",
       "source": "packages/plitejs/src/react/hooks/android-input-manager/android-input-manager.ts"
     },
     {
@@ -5733,7 +5733,7 @@
       "scope": "performance",
       "disposition": "support",
       "count": 78,
-      "fingerprint": "1776a1c041349eed05b59d349042f45e1d62f6375fc40906a2aa26304c455f87",
+      "fingerprint": "60d1941bb8c6e345ec71e938a0d0161049357a3b4ea00865076bfda99bd76fe7",
       "source": "benchmarks/editor/benchmarks/benchmark-artifact.ts"
     },
     {
@@ -5741,7 +5741,7 @@
       "scope": "ai",
       "disposition": "grouped",
       "count": 4,
-      "fingerprint": "1316b15ace770be7bec73dd51305149961d2dfd774d687c0fc944c7fa030c3a4",
+      "fingerprint": "d8fe49fcc77cb44d0de201016d028def1929a14f59894f6040afecf50222ba98",
       "source": "apps/www/src/registry/components/editor/ai.lifecycle-test-support.tsx"
     },
     {
@@ -13064,6 +13064,10 @@
     {
       "path": "docs/research/review-records/2026-09-23-editing-structural-rule-admission-implementation-execution.json",
       "sha256": "bcf3137a0ccc7a3f4c371cbbdb8b4e6d69b0ad6af3342002d3afa5aac5348e7f"
+    },
+    {
+      "path": "docs/research/review-records/2026-09-23-history-async-replay-api.json",
+      "sha256": "1fd5273df8460606f20f535bf223c9cdcdfd02469a27951714354b7b9ebd7546"
     }
   ],
   "reviewGroups": [

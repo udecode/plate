@@ -30,6 +30,8 @@ Changed files: [index.ts](../../../packages/plitejs/src/authored/index.ts), [aut
 
 - **unbound-plan**: [2026-09-12-authored-reload-prosemirror.md](../../plans/2026-09-12-authored-reload-prosemirror.md).
 
+- **completed-plan-without-current-outcome**: [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md).
+
 - **unreconciled-execution**: [2026-09-18-recovered-2026-09-10-native-authored-changes-and-suggestions](../review-records/2026-09-18-recovered-2026-09-10-native-authored-changes-and-suggestions.json).
 
 - **unreconciled-execution**: [2026-09-18-recovered-2026-09-12-authored-live-state-implementation](../review-records/2026-09-18-recovered-2026-09-12-authored-live-state-implementation.json).
@@ -54,6 +56,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-09-12-authored-reload-performance.md](../../plans/2026-09-12-authored-reload-performance.md) | completed | implementation | unbound |
 | [2026-09-12-authored-reload-prosemirror.md](../../plans/2026-09-12-authored-reload-prosemirror.md) | completed | verification | unbound |
 | [2026-09-17-authored-direct-editing-with-visible-suggestions.md](../../plans/2026-09-17-authored-direct-editing-with-visible-suggestions.md) | completed | implementation | [2026-09-17-suggestions-authored-editing-final](../review-records/2026-09-17-suggestions-authored-editing-final.json) |
+| [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md) | completed | implementation | [2026-09-17-suggestions-authored-editing-final](../review-records/2026-09-17-suggestions-authored-editing-final.json) |
 
 ### Outcomes recorded after the latest review
 
