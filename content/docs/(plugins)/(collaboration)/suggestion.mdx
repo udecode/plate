@@ -145,11 +145,11 @@ Changing the mode updates the input intent and preserves the current projection:
 | `'suggesting'` | `'propose'` | Keeps `markup` or `proposed`. An `accepted` view changes to `markup` so new proposals remain visible. |
 | `'editing'` | `'edit'` | Keeps `accepted`, `proposed`, or `markup`. |
 
-An editing markup view shows pending changes while ordinary edits to accepted content publish directly. An edit that depends on pending content remains reviewable with the current author. Use an accepted projection only when the view should hide pending content.
+An editing markup view shows pending changes while ordinary edits to accepted content publish directly. A replacement that fully contains pending changes resolves them and publishes the replacement directly in the same undoable transaction. Other dependent edits remain reviewable with the current author. Use an accepted projection only when the view should hide pending content.
 
 Mode belongs to the exact mounted view. Two views over one document can use different modes without changing each other.
 
-Changing the mode affects only subsequent input. It does not accept, reject, delete, or hide pending changes, and it does not add an undo step. In Editing mode, input that maps exactly to accepted content edits that content directly. Pending insertions, retained deletions, and selections that cross accepted and pending content stay review-only; switch to Suggestion mode to amend them.
+Changing the mode affects only subsequent input. It does not accept, reject, delete, or hide pending changes, and it does not add an undo step. In Editing mode, exact accepted targets edit directly. A replacement spanning pending content applies directly only when the selection fully contains every involved pending change and dependency. Partial retained or dependency-spanning selections stay protected. Switch to Suggestion mode to intentionally propose or amend reviewable work.
 
 To show accepted content without pending proposals, set `{ intent: 'edit', projection: 'accepted' }` directly on the authored view.
 

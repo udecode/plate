@@ -199,10 +199,13 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   markup projections belong to exact editor views; their input intent and
   rendered children never become another saved document or global mode. An
   editing view may use any projection. Independent accepted-content edits
-  publish directly, while edits that depend on pending content remain
-  reviewable with their actual author. Review
-  decisions are atomic document writes. Local undo remains local interaction
-  history, and retained author history produces new compensating changes.
+  publish directly. A visible replacement that fully contains its pending
+  contributions resolves them and publishes the replacement in one atomic
+  transaction; partial retained or dependency-spanning targets remain
+  protected. Other edits that depend on pending content remain reviewable with
+  their actual author. Review decisions are atomic document writes. Local undo
+  remains local interaction history, and retained author history produces new
+  compensating changes.
   Persistence checkpoints current authored facts and exact projections
   directly; opening a document never rebuilds them by reducing retained
   operations or replaying pending edits. Checksum-bound retained operation

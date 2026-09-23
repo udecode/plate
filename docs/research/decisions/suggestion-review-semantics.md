@@ -2,9 +2,9 @@
 title: Suggestion review semantics
 type: decision
 status: provisional
-updated: 2026-09-18
+updated: 2026-09-23
 review_scope: suggestions
-current_review: 2026-09-17-suggestions-authored-editing-final
+current_review: 2026-09-23-suggestions-direct-delete-retained-selection
 review_history:
   - ../review-records/2026-09-13-suggestions-google-docs-audit.json
   - ../review-records/2026-09-13-suggestions-omission-audit.json
@@ -15,6 +15,7 @@ review_history:
   - ../review-records/2026-09-17-suggestions-editing-visibility.json
   - ../review-records/2026-09-17-suggestions-authored-editing-final-plan.json
   - ../review-records/2026-09-17-suggestions-authored-editing-final.json
+  - ../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json
 source_refs:
   - ../../plans/artifacts/google-docs-suggestion-audit/audit.md
   - ../../plans/artifacts/google-docs-suggestion-audit/coverage-crosswalk.json
@@ -23,6 +24,7 @@ related:
   - authored-change-ownership.md
   - ../reviews.md#suggestions
 reconciled_executions:
+  - 2026-09-23-mixed-suggestion-selection-deletion-execution
   - 2026-09-18-recovered-2026-07-24-fix-optional-suggestion-trailing-block-kit-composition
   - 2026-09-18-recovered-2026-09-04-decouple-link-floating-ui
   - 2026-09-18-recovered-2026-09-10-native-authored-changes-and-suggestions
@@ -82,21 +84,17 @@ source review with supplied screenshot evidence; that immutable review is not
 an execution receipt. The later plan reports closure of the earlier hydration
 and first-paint failures through the joint product interaction.
 
-The [authored editing plan](../../plans/2026-09-17-authored-direct-editing-with-visible-suggestions.md)
-settles the five valid view combinations, projection-preserving mode controls,
-native input/publication ownership, and adoption. Its bounded mapper probe
-passes; its final status is Complete and records native, Plate and product
-adoption, 26 product browser cases and 55 native browser cases. Pending live
-content stays editable, while gestures that depend on it remain reviewable and
-preserve the actual writer's attribution. The transaction privately separates
-input projection, requested intent, and resolved publication. Its mapping owner
-is direction-aware rather than assigning undocumented reverse semantics to
-the earlier `acceptedEdit` flag. These are recovered execution claims, not a
-fresh replay in the September 18 history migration. Full original source and
-browser receipt binding is not recovered here; current proof remains explicitly
-unknown rather than inheriting the ledger's old verified flag. The plan also
-retains package/typecheck limitations. Preserve those limits independently from
-the selected architecture and the reported implementation completion.
+The authored view has five valid intent/projection combinations and
+projection-preserving mode controls. Pending live content stays editable. In an
+editing view, a visible replacement that fully contains every affected pending
+change and retained deletion resolves those changes before publishing the
+replacement directly. The decision and accepted suffix share one undoable
+transaction. If a retained fragment or required dependency extends outside the
+selection, the editor preserves the selection and content instead of deciding
+unselected work. Other dependent edits remain reviewable with the actual
+writer's attribution. The transaction privately separates input projection,
+requested intent, and resolved publication; no second suggestion state or
+public selection API owns this behavior.
 
 ## Document initialization
 

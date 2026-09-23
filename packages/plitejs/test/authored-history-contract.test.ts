@@ -489,9 +489,14 @@ describe('authored local history', () => {
 
       assert.equal(result.status, 'applied');
       tx.text.insert(' final', { at: at(4) });
+      tx.selection.set(at(10));
     });
 
     assert.deepEqual(editor.read.children(), [paragraph('Base final')]);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: at(10),
+      focus: at(10),
+    });
     assert.equal(editor.read.authored.change(id)?.status, 'rejected');
     assert.equal(editor.read.history().undos.length, beforeActionDepth + 1);
 
@@ -501,6 +506,10 @@ describe('authored local history', () => {
 
     assert.deepEqual(await editor.api.history.redo(), { status: 'applied' });
     assert.deepEqual(editor.read.children(), [paragraph('Base final')]);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: at(10),
+      focus: at(10),
+    });
     assert.equal(editor.read.authored.change(id)?.status, 'rejected');
   });
 

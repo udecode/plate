@@ -2160,6 +2160,8 @@ it('deletes live ranges when a projected selection crosses retained content', as
     createEditorView(source, { authored: markup })
   );
   parent.update.text.delete({ at: { anchor: point(2), focus: point(5) } });
+  const retainedChangeId = parent.read.authored.changes().items[0]?.id;
+  assert.ok(retainedChangeId);
   parent.api.authored.setView(editingMarkup);
   const mounted = render(
     <EditorRoot editor={parent}>
@@ -2205,8 +2207,13 @@ it('deletes live ranges when a projected selection crosses retained content', as
       });
     });
 
-    assert.deepEqual(source.read.children(), [paragraph('LAXYZBR')]);
+    assert.deepEqual(source.read.children(), [paragraph('LR')]);
     assert.deepEqual(parent.read.children(), [paragraph('LR')]);
+    assert.equal(
+      parent.read.authored.change(retainedChangeId)?.status,
+      'accepted'
+    );
+    assert.equal(root.querySelector('[data-editor-retained="delete"]'), null);
     assert.deepEqual(parent.read.selection(), {
       anchor: point(1),
       focus: point(1),
@@ -2214,11 +2221,83 @@ it('deletes live ranges when a projected selection crosses retained content', as
     assert.equal(readPliteViewSelection(parent), null);
 
     await act(async () => parent.api.history.undo());
+    assert.deepEqual(source.read.children(), [paragraph('LAXYZBR')]);
     assert.deepEqual(parent.read.children(), [paragraph('LABR')]);
+    assert.equal(
+      parent.read.authored.change(retainedChangeId)?.status,
+      'pending'
+    );
+    assert.equal(
+      root.querySelector('[data-editor-retained="delete"]')?.textContent,
+      'XYZ'
+    );
   }
 
   await act(async () => parent.api.history.redo());
+  assert.deepEqual(source.read.children(), [paragraph('LR')]);
   assert.deepEqual(parent.read.children(), [paragraph('LR')]);
+  assert.equal(
+    parent.read.authored.change(retainedChangeId)?.status,
+    'accepted'
+  );
+  assert.equal(root.querySelector('[data-editor-retained="delete"]'), null);
+  mounted.unmount();
+});
+
+it('protects a mixed selection when its retained change extends outside the range', async () => {
+  const source = createEditor({
+    plugins: [history(), authored({ authorId: 'alice' })],
+    initialValue: [paragraph('LAXBYCR')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update((tx) => {
+    tx.authored.propose();
+    tx.text.delete({ at: { anchor: point(4), focus: point(5) } });
+    tx.text.delete({ at: { anchor: point(2), focus: point(3) } });
+  });
+  const retainedChangeId = parent.read.authored.changes().items[0]?.id;
+  assert.ok(retainedChangeId);
+  parent.api.authored.setView(editingMarkup);
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable />
+    </EditorRoot>
+  );
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
+  const domSelection = window.getSelection();
+  const strings = [
+    ...mounted.container.querySelectorAll('[data-editor-string]'),
+  ].map((node) => node.firstChild);
+  const startNode = strings[0];
+  const endNode = strings[2];
+  assert.ok(root && domSelection && startNode && endNode);
+
+  domSelection.setBaseAndExtent(startNode, 1, endNode, 1);
+  const selected = resolveProjectedDOMSelection({
+    domSelection,
+    editor: parent,
+    editorElement: root,
+  });
+  assert.ok(selected);
+  assert.equal(domSelection.toString(), 'AXB');
+
+  await act(async () => {
+    writePliteViewSelection(parent, selected);
+    applyEditableCommand({
+      command: { kind: 'delete-fragment' },
+      editor: parent,
+    });
+  });
+
+  assert.deepEqual(source.read.children(), [paragraph('LAXBYCR')]);
+  assert.deepEqual(parent.read.children(), [paragraph('LABCR')]);
+  assert.equal(
+    parent.read.authored.change(retainedChangeId)?.status,
+    'pending'
+  );
+  assert.ok(readPliteViewSelection(parent));
   mounted.unmount();
 });
 
@@ -2244,11 +2323,8 @@ it('inserts consecutive breaks after authored select-all deletion', async () => 
       command: { kind: 'delete-fragment' },
       editor: parent,
     });
-    assert.notEqual(
-      parent.read.authored.changesAt({
-        anchor: point(0),
-        focus: point(0),
-      }).length,
+    assert.equal(
+      parent.read.authored.changes({ status: 'pending' }).items.length,
       0
     );
     applyEditableCommand({

@@ -1,0 +1,37 @@
+{
+  "id": "2026-09-23-mixed-suggestion-selection-deletion-execution",
+  "kind": "execution",
+  "date": "2026-09-23",
+  "scopes": [
+    "authored",
+    "selection",
+    "suggestions"
+  ],
+  "reviewBasis": [
+    "2026-09-23-suggestions-direct-delete-retained-selection"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-22-mixed-suggestion-selection-deletion.md",
+    "sha256": "e1ac281e7a9020a528ebc61d82cd60c0a5054b2128244fd9fd84a3485bffe08e"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Editing + Markup replacement now removes a complete visible selection that contains pending insertions and retained deletions. The private projected-selection bridge resolves only the fully selected closed dependency set, publishes the direct replacement and caret in one undoable transaction, and preserves incomplete selections.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-22-mixed-suggestion-selection-deletion.md",
+        "sha256": "e1ac281e7a9020a528ebc61d82cd60c0a5054b2128244fd9fd84a3485bffe08e",
+        "claim": "Final plan records frozen reporter contradiction, package RED/GREEN, full Plite suites, exact current-source Chromium behavior, inspected pixels, Undo/Redo, follow-up input, strict runtime errors and 25/25 retry-free repetitions."
+      }
+    ],
+    "limits": "The execution is recorded as historical-unbound because the current review index references unavailable local artifact files from unrelated earlier scopes. The final plan and live command logs provide current local evidence; the ledger does not upgrade proof to verified. No Firefox, WebKit, mobile, deployed or release claim."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-22-mixed-suggestion-selection-deletion.md",
+    "docs/research/review-records/2026-09-23-suggestions-direct-delete-retained-selection.json"
+  ]
+}

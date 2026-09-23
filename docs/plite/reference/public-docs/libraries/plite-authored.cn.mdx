@@ -40,7 +40,7 @@ const reviewView = createEditorView(editor, {
 | `{ intent: 'propose', projection: 'proposed' }` | 显示 proposed result，并把输入记录为 proposal。 |
 | `{ intent: 'propose', projection: 'markup' }` | 显示带保留审阅片段的 proposed result，并把输入记录为 proposal。 |
 
-调用 `view.api.authored.setView(policy)` 修改一个视图。Source editor 和 sibling view 保留各自的 policy 与 selection。在 editing proposed 或 markup view 中，依赖 pending content 的编辑仍可审阅，并归属于当前作者。切换 projection 不会接受或拒绝 change。
+调用 `view.api.authored.setView(policy)` 修改一个视图。Source editor 和 sibling view 保留各自的 policy 与 selection。在 editing proposed 或 markup view 中，完整包含待处理 change 的 replacement 会在同一个可撤销事务中解决这些 change，并直接发布。部分命中的 retained change 或依赖跨出 selection 时保持受保护；其他依赖 pending content 的编辑仍可审阅，并归属于当前作者。单独切换 projection 不会接受或拒绝 change。
 
 ## 创建和决定 proposal
 

@@ -63,7 +63,7 @@ Question: Which reusable metrics and paired experiments can distinguish useful r
 
 Proof limits: Research completion is not product adoption; comparator cohorts, budget failures and inconclusive results remain in the original report.
 
-References: [2026-09-07-editor-performance-research.md](../../plans/2026-09-07-editor-performance-research.md), [report.md](../../plans/artifacts/2026-09-07-editor-performance-research/report.md).
+References: [2026-09-07-editor-performance-research.md](../../plans/2026-09-07-editor-performance-research.md), `docs/plans/artifacts/2026-09-07-editor-performance-research/report.md` (historical input unavailable).
 
 ### 2026-09-09: 2026-09-09-performance-iteration-2
 

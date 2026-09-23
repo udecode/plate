@@ -167,7 +167,7 @@ Owners: [package.json](../../../packages/platejs/package.json), [package.json](.
 
 Consumers: [bin.ts](../../../packages/cli/src/bin.ts), [registry-package-dependencies.mts](../../../apps/www/scripts/registry-package-dependencies.mts).
 
-Proof entrypoints: [check-plite-release-artifacts.test.mjs](../../../tooling/scripts/check-plite-release-artifacts.test.mjs), [check-plite-release-artifacts.mjs](../../../tooling/scripts/check-plite-release-artifacts.mjs), [execution-verification.json](../../plans/artifacts/plate-core-api-review/execution-verification.json). These links alone are not proof of a passing run.
+Proof entrypoints: [check-plite-release-artifacts.test.mjs](../../../tooling/scripts/check-plite-release-artifacts.test.mjs), [check-plite-release-artifacts.mjs](../../../tooling/scripts/check-plite-release-artifacts.mjs), `docs/plans/artifacts/plate-core-api-review/execution-verification.json` (historical input unavailable). These links alone are not proof of a passing run.
 
 Inspection: Adoption completed on 2026-09-12 across packed Plate/Plite, detached CLI, live React, static, optional-feature and generated-registry consumers. Construction-only defaults are internal; independently consumed package boundaries remain.
 

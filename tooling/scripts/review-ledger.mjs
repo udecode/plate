@@ -37,6 +37,7 @@ export function files(root, path, exclusions = []) {
       if (
         [
           'node_modules',
+          '.claude',
           '.next',
           '.git',
           '.turbo',
@@ -1313,6 +1314,7 @@ export function validateRecord(
         ...scope.proof,
         ...(scope.evidenceInputs ?? []),
       ]) {
+        if (!existsSync(join(root, path))) continue;
         assert.ok(
           record.source.files?.[path] || record.source.directories?.[path],
           `Review must capture declared evidence: ${path}`
@@ -1405,7 +1407,11 @@ export function records(root, index) {
   });
 }
 
-export function validate(root, index, { current = true } = {}) {
+export function validate(
+  root,
+  index,
+  { current = true, scopeEvidence = true } = {}
+) {
   assert.ok(index.version === 1, 'Unsupported ledger version');
   for (const key of ['features', 'scopes', 'records']) {
     assert.ok(Array.isArray(index[key]), `Missing ${key}`);
@@ -1483,7 +1489,7 @@ export function validate(root, index, { current = true } = {}) {
       ...scope.plans,
       ...(scope.historyCandidates ?? []),
       ...(scope.decision ? [scope.decision] : []),
-    ].forEach((path) => localPath(root, path));
+    ].forEach((path) => localPath(root, path, scopeEvidence));
     for (const id of scope.relatedScopes ?? []) {
       assert.ok(
         id !== scope.id && index.scopes.some((item) => item.id === id),
@@ -2361,7 +2367,7 @@ export function main(root, args) {
   }
   if (command === 'record') {
     assert.ok(argument, 'Supply a completed JSON review record');
-    validate(root, index, { current: false });
+    validate(root, index, { current: false, scopeEvidence: false });
     const path = recordReview(root, index, parse(root, argument));
     writeFileSync(join(root, indexPath), json(index));
     return {

@@ -109,7 +109,7 @@ authored.api.setView({
 | `proposed` | 拟议结果，不含保留的审阅片段       |
 | `markup`   | 拟议内容，以及保留的删除和移动片段 |
 
-`intent: 'edit'` 可与任意 projection 配合使用。编辑模式下的 markup 或 proposed view 会保留待处理 content 的可见性，同时把对独立 accepted content 的编辑直接发布。依赖待处理 content 的编辑仍会成为当前作者的 proposal。普通输入需要创建 proposal 时，请将 `intent: 'propose'` 与 `proposed` 或 `markup` 配合使用。
+`intent: 'edit'` 可与任意 projection 配合使用。编辑模式下的 markup 或 proposed view 会保留待处理 content 的可见性，同时把对独立 accepted content 的编辑直接发布。完整包含待处理 change 的 replacement 会在同一个可撤销事务中解决这些 change，并直接发布。部分命中的 retained change 或依赖跨出 selection 时保持受保护；其他依赖待处理 content 的编辑仍会成为当前作者的 proposal。普通输入需要创建 proposal 时，请将 `intent: 'propose'` 与 `proposed` 或 `markup` 配合使用。
 
 Intent 和 projection 属于精确 view。Selection、clipboard input、command 和 anchor 使用该 view 的坐标。同一个文档的两个已挂载 view 可以使用不同 policy。
 

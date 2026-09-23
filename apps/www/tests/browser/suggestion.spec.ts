@@ -404,7 +404,7 @@ test('playground deletes mixed accepted and pending text directly in editing mod
   runtimeErrors.assertNone();
 });
 
-test('homepage deletes live text around retained suggestion content', async ({
+test('homepage protects a retained selection whose dependency stays outside', async ({
   page,
 }) => {
   const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
@@ -463,14 +463,120 @@ test('homepage deletes live text around retained suggestion content', async ({
   await page.waitForTimeout(100);
 
   await page.keyboard.press('Backspace');
-  const deleted = `${before.slice(0, start)}${before.slice(end)}`;
-  await editor.assert.modelBlockText(3, deleted);
+  await editor.assert.modelBlockText(3, before);
+  expect(await editor.selection.displayed()).toMatchObject({
+    source: 'view',
+    view: { active: true },
+  });
+  await expect(
+    root
+      .locator(
+        '[data-editor-retained="delete"] [data-editor-view-selection="true"]'
+      )
+      .first()
+  ).toBeVisible();
+  expect(before.slice(start, end)).toBe(`${liveStart}${liveEnd}`);
+  runtimeErrors.assertNone();
+});
 
-  await page.keyboard.type('x');
-  await editor.assert.modelBlockText(
-    3,
-    `${before.slice(0, start)}x${before.slice(end)}`
+test('homepage removes a mixed-suggestion multi-block selection from editing view', async ({
+  page,
+}, testInfo) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  await page.setViewportSize({ height: 1000, width: 1440 });
+  await page.goto('/', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'homepage mixed-suggestion multi-block deletion',
+    root
   );
+  const collaborative = root.getByRole('heading', {
+    name: 'Collaborative Editing',
+  });
+  const ai = root.getByRole('heading', { name: 'AI-Powered Editing' });
+  const richContent = root.getByRole('heading', {
+    name: 'Rich Content Editing',
+  });
+  const finalLine = 'Edit existing text (improve, fix grammar, change tone)';
+
+  await editor.ready({ editor: 'visible', text: PLAYGROUND_TITLE });
+  await editor.selection.dragTextRange({
+    direction: 'backward',
+    endAffinity: 'after',
+    endOffset: finalLine.length,
+    endText: finalLine,
+    startOffset: 0,
+    text: 'Collaborative Editing',
+  });
+  await expect(
+    root
+      .locator(
+        '[data-editor-retained="delete"] [data-editor-view-selection="true"]'
+      )
+      .first()
+  ).toBeVisible();
+  const handle = collaborative
+    .locator('xpath=ancestor::div[contains(@class, "relative")][1]')
+    .getByRole('button', { name: 'Drag block', exact: true });
+  await handle.hover();
+  const before = await editor.selection.displayed();
+
+  await page.keyboard.press('Backspace');
+
+  const after = {
+    blocks: await editor.get.modelBlockTexts(),
+    displayed: await editor.selection.displayed(),
+    kernel: await editor.get.kernelTrace(),
+    lastCommit: await editor.get.lastCommit(),
+  };
+  await testInfo.attach('mixed-suggestion-block-delete.png', {
+    body: await root.screenshot({
+      caret: 'initial',
+      path: testInfo.outputPath('mixed-suggestion-block-delete.png'),
+    }),
+    contentType: 'image/png',
+  });
+
+  expect(before).toMatchObject({ source: 'view', view: { active: true } });
+  expect(after.displayed).toMatchObject({
+    hasVisibleSelection: false,
+    view: { active: false },
+  });
+  expect(after.kernel).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        command: expect.objectContaining({ kind: 'delete' }),
+        ownership: 'model-owned',
+        targetOwner: 'editor',
+      }),
+    ])
+  );
+  expect(after.lastCommit).toEqual(
+    expect.objectContaining({
+      classifications: expect.arrayContaining([
+        expect.objectContaining({ document: true }),
+      ]),
+    })
+  );
+  await expect(collaborative).toHaveCount(0);
+  await expect(ai).toHaveCount(0);
+  await expect(root.locator('[data-editor-retained="delete"]')).toHaveCount(0);
+  await expect(richContent).toBeVisible();
+  await editor.assert.modelBlockText(2, 'Co');
+  await editor.undo();
+  await expect(collaborative).toBeVisible();
+  await expect(ai).toBeVisible();
+  await expect(
+    root.locator('[data-editor-retained="delete"]').filter({
+      hasText: 'mark text for removal',
+    })
+  ).toBeVisible();
+  await editor.redo();
+  await expect(collaborative).toHaveCount(0);
+  await expect(ai).toHaveCount(0);
+  await page.keyboard.type('x');
+  await editor.assert.modelBlockText(2, 'Cox');
   runtimeErrors.assertNone();
 });
 

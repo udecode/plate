@@ -157,7 +157,7 @@ authored.api.setView({
 | `proposed` | The proposed result without retained review fragments       |
 | `markup`   | Proposed content with retained deletions and move fragments |
 
-Use `intent: 'edit'` with any projection. An editing markup or proposed view keeps pending content visible while edits to independent accepted content publish directly. An edit that depends on pending content remains a proposal with the current author. Use `intent: 'propose'` with `proposed` or `markup` when ordinary input must create proposals.
+Use `intent: 'edit'` with any projection. An editing markup or proposed view keeps pending content visible while edits to independent accepted content publish directly. A replacement that fully contains pending changes resolves them and publishes directly in the same undoable transaction. Partial retained or dependency-spanning targets stay protected; other dependent edits remain proposals with the current author. Use `intent: 'propose'` with `proposed` or `markup` when ordinary input must create proposals.
 
 Intent and projection belong to the exact view. Selection, clipboard input, commands, and anchors use that view's coordinates. Two mounted views over one document can use different policies.
 

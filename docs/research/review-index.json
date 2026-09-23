@@ -6799,8 +6799,7 @@
         "packages/plitejs/test/schema-definition.test.ts",
         "packages/plitejs/test/schema-compiler-laws.test.ts",
         "packages/plitejs/test/node-key-view-contract.test.ts",
-        "packages/plitejs/test/value-codec.test.ts",
-        "docs/plans/artifacts/model-api-review/document-boundary-probe.mjs"
+        "packages/plitejs/test/value-codec.test.ts"
       ],
       "plans": [
         "docs/analysis/best-api-review.md",
@@ -6852,7 +6851,7 @@
         "content/docs/(guides)/schema.mdx"
       ],
       "inspection": "Model types, construction, compiled schema identity, document assertion/fitting/replacement, runtime node keys, Plate lowering, persisted IDs and raw/codec consumers inspected. The malformed-container probe ran red; 33 focused and adjacent tests, the core source-first typecheck and scoped lint pass after the shared validator repair, including primary-root redefinition.",
-      "gaps": "The selected document-boundary repair has focused model proof. Full model/runtime/native/performance closure and unrelated concurrent aggregate-check failures remain outside this adoption claim.",
+      "gaps": "The selected document-boundary repair has focused model proof. The historical disposable document-boundary probe artifact is unavailable and cannot support current proof. Full model/runtime/native/performance closure and unrelated concurrent aggregate-check failures remain outside this adoption claim.",
       "prerequisiteReason": "Document identity and validity are the starting laws for this queue.",
       "decision": "docs/research/decisions/model-document-boundary.md"
     },
@@ -13068,6 +13067,14 @@
     {
       "path": "docs/research/review-records/2026-09-23-history-async-replay-api.json",
       "sha256": "1fd5273df8460606f20f535bf223c9cdcdfd02469a27951714354b7b9ebd7546"
+    },
+    {
+      "path": "docs/research/review-records/2026-09-23-suggestions-direct-delete-retained-selection.json",
+      "sha256": "744b3be36c39ddc1fb182e95c0fb51af54ee1f661156ed921b527182a6433400"
+    },
+    {
+      "path": "docs/research/review-records/2026-09-23-mixed-suggestion-selection-deletion-execution.json",
+      "sha256": "98ebecd5b0349f0d4fa53ce85cda5589042365451246baa9aa04bd5d30d92ea5"
     }
   ],
   "reviewGroups": [

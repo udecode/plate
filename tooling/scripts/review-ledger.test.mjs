@@ -141,6 +141,44 @@ test('inventory accounts for exports and fails on new, removed or changed source
   );
 });
 
+test('inventory ignores local Claude settings inside packages', (t) => {
+  const { root, put, index } = fixture(t);
+  const before = discover(root, index);
+
+  put('packages/ai/.claude/settings.local.json', '{}');
+
+  assert.deepEqual(discover(root, index), before);
+});
+
+test('recording is not blocked by unavailable evidence from another scope', (t) => {
+  const { root, put, index } = fixture(t);
+  const draft = completed(root, index);
+
+  index.scopes.find((scope) => scope.id === 'link').evidenceInputs = [
+    'docs/missing-link-proof.json',
+  ];
+  put('docs/research/review-index.json', JSON.stringify(index));
+  put('docs/review-draft.json', JSON.stringify(draft));
+
+  assert.match(
+    main(root, ['record', 'docs/review-draft.json']).path,
+    /2026-09-11-comments-first/
+  );
+  assert.throws(() => main(root, ['check']), /Missing evidence/);
+});
+
+test('a review records an explicit gap instead of inventing missing evidence', (t) => {
+  const { root, index } = fixture(t);
+
+  index.scopes[0].evidenceInputs = ['docs/missing-comments-proof.json'];
+  index.scopes[0].gaps = 'The historical comments proof is unavailable.';
+  const draft = completed(root, index, {
+    proofLimits: 'The historical comments proof is unavailable.',
+  });
+
+  assert.doesNotThrow(() => recordReview(root, index, draft));
+});
+
 test('ordinary and new-model repeat reviews preserve history without altering adoption or proof', (t) => {
   const { root, index } = fixture(t);
   const first = completed(root, index);

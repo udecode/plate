@@ -141,11 +141,11 @@ export function SuggestionModeButton() {
 | `'suggesting'` | `'propose'` | 保留 `markup` 或 `proposed`。`accepted` view 会切换到 `markup`，以便显示新 proposal。 |
 | `'editing'` | `'edit'` | 保留 `accepted`、`proposed` 或 `markup`。 |
 
-编辑模式下的 markup view 会显示待处理 change，同时把对 accepted content 的普通编辑直接发布。依赖待处理 content 的编辑仍可审阅，并归属于当前作者。只有需要隐藏待处理 content 时才使用 accepted projection。
+编辑模式下的 markup view 会显示待处理 change，同时把对 accepted content 的普通编辑直接发布。完整包含待处理 change 的 replacement 会在同一个可撤销事务中解决这些 change，并直接发布 replacement。其他依赖待处理 content 的编辑仍可审阅，并归属于当前作者。只有需要隐藏待处理 content 时才使用 accepted projection。
 
 模式属于精确的已挂载 view。同一个文档的两个 view 可以使用不同模式，互不影响。
 
-改变模式只影响后续输入。它不会接受、拒绝、删除或隐藏待处理 change，也不会新增撤销步骤。编辑模式只直接修改能够精确映射到 accepted 内容的输入目标。待处理插入、保留删除，以及跨 accepted 和 pending 内容的 selection 保持只读；要修订这些内容，请切换到建议模式。
+改变模式只影响后续输入。它不会接受、拒绝、删除或隐藏待处理 change，也不会新增撤销步骤。编辑模式会直接修改 accepted 内容。跨 pending content 的 replacement 只有在 selection 完整包含所有相关 change 和依赖时才直接应用。部分命中的 retained change 或依赖跨出 selection 时保持受保护。需要主动创建或修订 proposal 时，请切换到建议模式。
 
 如需只显示已接受内容，请直接为 authored view 设置 `{ intent: 'edit', projection: 'accepted' }`。
 

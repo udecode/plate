@@ -171,7 +171,7 @@ Completed the execution-ready design for schema-owned object elements with edita
 
 Proof limits: Design and current-source model evidence only. Product source, a candidate object implementation, package suites, mounted React behavior, native clipboard MIME, browser selection/focus, collaboration behavior, performance, generated docs, release artifacts, and publication remain execution gates.
 
-References: [2026-09-21-object-elements-with-editable-children.md](../../plans/2026-09-21-object-elements-with-editable-children.md), [2026-09-21-object-elements-editable-children-proof.json](../../plans/artifacts/2026-09-21-object-elements-editable-children-proof.json), [2026-09-21-media-object-editable-content-final-pass.json](../review-records/2026-09-21-media-object-editable-content-final-pass.json), [media-object-content.md](../decisions/media-object-content.md), [README.md](../../plite/research/2026-09-21-media-object-editable-content/README.md).
+References: [2026-09-21-object-elements-with-editable-children.md](../../plans/2026-09-21-object-elements-with-editable-children.md), `docs/plans/artifacts/2026-09-21-object-elements-editable-children-proof.json` (historical input unavailable), [2026-09-21-media-object-editable-content-final-pass.json](../review-records/2026-09-21-media-object-editable-content-final-pass.json), [media-object-content.md](../decisions/media-object-content.md), [README.md](../../plite/research/2026-09-21-media-object-editable-content/README.md).
 
 ### 2026-09-22: 2026-09-22-object-elements-editable-children-execution
 
@@ -182,7 +182,7 @@ Implemented the strict Plite object schema role, selection-shaped slice and clip
 
 Proof limits: The full final-source five-project Plite browser matrix did not complete: unrelated rich-text and huge-document units hit bounded process timeouts, and the final strict Chromium phase timed out in an authored-changes unit after package, contract, and 19 browser batches passed. Earlier full Chromium proof predates final formatting and lint-only edits; focused final-source cross-browser and media proof does not establish a complete matrix pass.
 
-References: [2026-09-21-object-elements-implementation.md](../../plans/2026-09-21-object-elements-implementation.md), [2026-09-21-object-elements-with-editable-children.md](../../plans/2026-09-21-object-elements-with-editable-children.md), [2026-09-21-object-elements-verification.json](../../plans/artifacts/2026-09-21-object-elements-verification.json).
+References: [2026-09-21-object-elements-implementation.md](../../plans/2026-09-21-object-elements-implementation.md), [2026-09-21-object-elements-with-editable-children.md](../../plans/2026-09-21-object-elements-with-editable-children.md), `docs/plans/artifacts/2026-09-21-object-elements-verification.json` (historical input unavailable).
 
 ### 2026-09-22: 2026-09-22-object-elements-full-browser-proof-execution
 
@@ -193,7 +193,7 @@ The strict Plite object role and all five Plate media owners are adopted with se
 
 Proof limits: The matrix retains its declared browser-specific skips; no required project or directly relevant reporter interaction remained unexecuted.
 
-References: [2026-09-21-object-elements-implementation.md](../../plans/2026-09-21-object-elements-implementation.md), [2026-09-22-object-elements-full-proof.json](../../plans/artifacts/2026-09-22-object-elements-full-proof.json), [2026-09-21-object-elements-verification.json](../../plans/artifacts/2026-09-21-object-elements-verification.json).
+References: [2026-09-21-object-elements-implementation.md](../../plans/2026-09-21-object-elements-implementation.md), `docs/plans/artifacts/2026-09-22-object-elements-full-proof.json` (historical input unavailable), `docs/plans/artifacts/2026-09-21-object-elements-verification.json` (historical input unavailable).
 
 ### 2026-09-22: 2026-09-22-media-object-arrow-navigation-audit
 

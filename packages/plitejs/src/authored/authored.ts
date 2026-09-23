@@ -2754,7 +2754,8 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                     )
                   : active.historySelection !== undefined
                     ? active.historySelection
-                    : active.decision || !input.selectionWritten
+                    : (active.decision && !active.decisionSuffix) ||
+                        !input.selectionWritten
                       ? active.viewSelection
                       : captureAuthoredSelection(
                           viewSelection,

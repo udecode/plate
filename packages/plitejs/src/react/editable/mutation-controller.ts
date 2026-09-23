@@ -223,8 +223,13 @@ const deleteProjectedRanges = (
   }
 };
 
-type AuthoredProposalTransaction = EditorUpdateTransaction & {
-  authored: { propose: () => string };
+type AuthoredEditingTransaction = EditorUpdateTransaction & {
+  authored: {
+    decide: (input: { action: 'accept'; selection: unknown }) => {
+      status: string;
+    };
+    select: (input: { ids: readonly string[] }) => unknown;
+  };
 };
 
 const prepareProjectedSelectionMutation = (
@@ -233,13 +238,18 @@ const prepareProjectedSelectionMutation = (
   target: ProjectedSelectionTarget,
   viewSelection: PliteViewSelection
 ): ProjectedSelectionTarget | null => {
-  if (!target.dependentRetainedSelection) return target;
+  if (!target.retained) return target;
+  if (target.retained.kind === 'blocked') return null;
 
-  const authoredTx = tx as AuthoredProposalTransaction;
+  const authoredTx = tx as AuthoredEditingTransaction;
+  const decision = authoredTx.authored.decide({
+    action: 'accept',
+    selection: authoredTx.authored.select({
+      ids: target.retained.acceptedChangeIds,
+    }),
+  });
 
-  // The selected visible document depends on retained contributions, so the
-  // entire gesture stays reviewable instead of resolving any prior change.
-  authoredTx.authored.propose();
+  if (decision.status !== 'applied') return null;
 
   const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
 
@@ -274,6 +284,7 @@ const applyProjectedViewSelectionTextCommand = ({
   }
 
   const { target } = resolution;
+  let applied = false;
 
   editor.update(() => {
     // The view wrapper would pin implicit commands to its mounted root.
@@ -304,7 +315,9 @@ const applyProjectedViewSelectionTextCommand = ({
       anchor: selectionPoint,
       focus: selectionPoint,
     });
+    applied = true;
   });
+  if (!applied) return true;
   savePliteViewSelectionHistoryEntry(editor, {
     redo: null,
     undo: viewSelection,
@@ -340,7 +353,7 @@ const applyProjectedViewSelectionDataCommand = ({
 
   const { target } = resolution;
 
-  if (target.dependentRetainedSelection) return true;
+  if (target.retained) return true;
 
   const { combined, insertion, prefix } = editor.read((state) => {
     let deletion = state.transaction((tx) => {
@@ -434,6 +447,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
   }
 
   const { target } = resolution;
+  let applied = false;
 
   editor.update(() => {
     const tx = getDefined(getActiveEditorTransaction(editor));
@@ -451,6 +465,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
       anchor: mutationTarget.start,
       focus: mutationTarget.start,
     });
+    applied = true;
 
     withProjectedMutationRoot(runtimeEditor, mutationTarget.start.root, () => {
       if (kind !== 'open-line') {
@@ -485,6 +500,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
       });
     });
   });
+  if (!applied) return true;
   savePliteViewSelectionHistoryEntry(editor, {
     redo: null,
     undo: viewSelection,

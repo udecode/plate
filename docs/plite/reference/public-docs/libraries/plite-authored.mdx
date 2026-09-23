@@ -40,7 +40,7 @@ The author callback must return a nonempty author ID for every write. The applic
 | `{ intent: 'propose', projection: 'proposed' }` | Show the proposed result and record input as proposals. |
 | `{ intent: 'propose', projection: 'markup' }` | Show the proposed result with retained review fragments and record input as proposals. |
 
-Call `view.api.authored.setView(policy)` to change one view. The source editor and sibling views keep their own policies and selections. In an editing proposed or markup view, an edit that depends on pending content remains reviewable with the current author. Projection changes never accept or reject changes.
+Call `view.api.authored.setView(policy)` to change one view. The source editor and sibling views keep their own policies and selections. In an editing proposed or markup view, a replacement that fully contains pending changes resolves them and publishes directly in the same undoable transaction. Partial retained or dependency-spanning targets stay protected; other dependent edits remain reviewable with the current author. Projection changes alone never accept or reject changes.
 
 ## Propose and decide
 

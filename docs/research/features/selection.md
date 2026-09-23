@@ -28,6 +28,8 @@ Changed files: [selection-protocol.ts](../../../packages/plitejs/src/core/select
 
 - **unreconciled-execution**: [2026-09-18-recovered-2026-08-23-unify-plite-selection-anchors](../review-records/2026-09-18-recovered-2026-08-23-unify-plite-selection-anchors.json).
 
+- **unreconciled-execution**: [2026-09-23-mixed-suggestion-selection-deletion-execution](../review-records/2026-09-23-mixed-suggestion-selection-deletion-execution.json).
+
 ## Plans and execution
 
 The plan owns its lifecycle. Design completion is not implementation adoption. Unknown or unbound evidence stays explicit.
@@ -35,13 +37,14 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
 | [2026-08-23-unify-plite-selection-anchors.md](../../plans/2026-08-23-unify-plite-selection-anchors.md) | completed | implementation | unbound |
-| [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md) | completed | implementation | [2026-09-17-suggestions-authored-editing-final](../review-records/2026-09-17-suggestions-authored-editing-final.json) |
+| [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md) | completed | implementation | [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
 - [2026-09-18-recovered-2026-08-23-unify-plite-selection-anchors](../review-records/2026-09-18-recovered-2026-08-23-unify-plite-selection-anchors.json): completed; binding **historical-unbound**; Recovered historical implementation completion from the plan. done The record date is the recovery date, not evidence that this work happened after the latest review. Proof: unknown / unknown. Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
+- [2026-09-23-mixed-suggestion-selection-deletion-execution](../review-records/2026-09-23-mixed-suggestion-selection-deletion-execution.json): completed; binding **historical-unbound**; Editing + Markup replacement now removes a complete visible selection that contains pending insertions and retained deletions. The private projected-selection bridge resolves only the fully selected closed dependency set, publishes the direct replacement and caret in one undoable transaction, and preserves incomplete selections. Proof: unknown / unknown. The execution is recorded as historical-unbound because the current review index references unavailable local artifact files from unrelated earlier scopes. The final plan and live command logs provide current local evidence; the ledger does not upgrade proof to verified. No Firefox, WebKit, mobile, deployed or release claim.
 
 ## Inspected documents
 
@@ -82,6 +85,17 @@ Recovered historical implementation completion from the plan. done The record da
 Proof limits: Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
 
 References: [2026-08-23-unify-plite-selection-anchors.md](../../plans/2026-08-23-unify-plite-selection-anchors.md).
+
+### 2026-09-23: 2026-09-23-mixed-suggestion-selection-deletion-execution
+
+[Immutable record](../review-records/2026-09-23-mixed-suggestion-selection-deletion-execution.json) — execution; completed; observation unknown.
+
+Editing + Markup replacement now removes a complete visible selection that contains pending insertions and retained deletions. The private projected-selection bridge resolves only the fully selected closed dependency set, publishes the direct replacement and caret in one undoable transaction, and preserves incomplete selections.
+
+
+Proof limits: The execution is recorded as historical-unbound because the current review index references unavailable local artifact files from unrelated earlier scopes. The final plan and live command logs provide current local evidence; the ledger does not upgrade proof to verified. No Firefox, WebKit, mobile, deployed or release claim.
+
+References: [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md), [2026-09-23-suggestions-direct-delete-retained-selection.json](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json).
 
 ## Retrieval boundaries
 
