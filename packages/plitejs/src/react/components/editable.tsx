@@ -17,6 +17,7 @@ import {
 } from '../editable/runtime-editor-api';
 import { useEditableRootRuntime } from '../editable/runtime-root-engine';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
+import { resolveEditableSelectableOwnerClickTarget } from '../editable/selection-void-target';
 import {
   EditableDOMRuntimeContext,
   useEditableDOMHostFact,
@@ -411,10 +412,13 @@ export const EditableDOMRoot = (
         voidTarget?.getAttribute('data-editor-inline') === 'true';
       const draggableInlineVoidTarget =
         inlineVoidTarget && voidTarget?.getAttribute('draggable') === 'true';
+      const selectableOwnerTarget = Boolean(
+        resolveEditableSelectableOwnerClickTarget(editor, event.target)
+      );
 
       if (runtime.externalMouseGestureActive) {
         onRuntimeMouseDownCapture?.(event);
-      } else if (draggableInlineVoidTarget) {
+      } else if (draggableInlineVoidTarget || selectableOwnerTarget) {
         onRuntimeMouseDownCapture?.(event);
       } else if (inlineVoidTarget) {
         onRootMouseDownCapture(event);

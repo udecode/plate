@@ -35,7 +35,7 @@ function AIInlinePreview({
   children,
   editor,
   element,
-}: RenderNodeWrapperProps) {
+}: RenderNodeWrapperProps<typeof AIChatTransportPlugin>) {
   const replacesEmptyParagraph =
     element.type === editor.plugin(BaseParagraphPlugin).schema.type &&
     editor.read.nodes.isEmpty(element);

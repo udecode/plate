@@ -302,7 +302,6 @@ const tableModel = {
           min: 1,
         }),
         isolating: true,
-        keyboardSelectable: true,
         properties: {
           colSpan: property.number({ default: 1, omitDefault: true }),
           rowSpan: property.number({ default: 1, omitDefault: true }),
@@ -348,8 +347,8 @@ const createCommentsPlugin = (prefix: string) =>
 ```
 
 Element declarations can describe `inline`, `void`, `atom`, `isolating`,
-`keyboardSelectable`, `readOnly`, `selectable`, and `markableVoid` behavior.
-See [Selection And DOM](16-selection-and-dom#keyboard-selectable-content) and
+`object`, `readOnly`, `selectable`, and `markableVoid` behavior.
+See [Selection And DOM](16-selection-and-dom#object-elements-with-editable-children) and
 [Roots](13-roots#content-roots) for the associated selection and root laws.
 
 ## Read middleware

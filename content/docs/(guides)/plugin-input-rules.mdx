@@ -32,7 +32,7 @@ Ownership splits cleanly into three lanes:
 - **Core.** Owns dispatch, selection helpers, and the low-level authoring
   surfaces: `createMarkInputRule`, `createBlockStartInputRule`,
   `createBlockFenceInputRule`, `createTextSubstitutionInputRule`,
-  `createRuleFactory`, and `defineInputRule`.
+  and `defineInputRule`.
 - **Feature packages.** Own semantic rule families like `HeadingRules`,
   `BlockquoteRules`, `CodeBlockRules`, `BulletedListRules`, `MathRules`,
   `LinkRules`. Each family exports factory functions that return concrete rule
@@ -515,14 +515,12 @@ low-level builders.
 
 ## Custom rules
 
-Everything above is sugar on top of three low-level authoring surfaces:
+Everything above is built from two low-level authoring surfaces:
 
-- `defineInputRule`, an identity function that types a raw rule inline.
+- `defineInputRule`, which types a raw rule inline and can bind it to an owning
+  plugin descriptor for owner-specific transaction inference.
 - The specialized builders: `createMarkInputRule`, `createBlockStartInputRule`,
   `createBlockFenceInputRule`, `createTextSubstitutionInputRule`.
-- `createRuleFactory`, the package-authoring helper used to expose semantic
-  families like `MathRules.markdown(...)` or `LinkRules.autolink(...)` without
-  re-declaring shared runtime fields.
 
 Use this section when none of the shipped families fit your need or when you're authoring your own reusable rule family.
 
@@ -563,108 +561,51 @@ const gatedBlockquoteRule = {
 };
 ```
 
-### Plugin-side factories
-
-For plugin authors, the `inputRules` option also accepts a function that
-receives a `rule` builder. Use this form when your rules depend on plugin-local
-state or when you want your rule wiring to live next to the plugin's types.
-
-```tsx showLineNumbers
-import { BaseCodeBlockPlugin } from 'platejs';
-import { definePlugin } from 'platejs';
-
-const CustomPlugin = definePlugin('custom', {
-  dependencies: [BaseCodeBlockPlugin],
-  inputRules: ({ rule }) => [
-    rule.mark({
-      trigger: '*',
-      start: '*',
-    }),
-    rule.blockStart({
-      trigger: ' ',
-      match: '>',
-      mode: 'wrap',
-      node: 'blockquote',
-    }),
-    rule.blockFence({
-      fence: '```',
-      on: 'match',
-      apply: (context, match) => {
-        context.editor.update((tx) => {
-          tx.text.delete({ at: match.range });
-          tx.nodes.set(
-            {
-              type: context.editor.plugin(BaseCodeBlockPlugin).schema.type,
-            },
-            { at: match.path }
-          );
-        });
-      },
-    }),
-  ],
-});
-```
-
-The `rule` builder exposes six primitives:
-
-| Method | Wraps |
-| ------ | ----- |
-| `rule.mark(config)` | `createMarkInputRule` |
-| `rule.blockStart(config)` | `createBlockStartInputRule` |
-| `rule.blockFence(config)` | `createBlockFenceInputRule` |
-| `rule.insertText(rule)` | typed `defineInputRule` for `insertText` |
-| `rule.insertBreak(rule)` | typed `defineInputRule` for `insertBreak` |
-| `rule.insertData(rule)` | typed `defineInputRule` for `insertData` |
-
-Use the factory form when you need that co-location; use the array form when you just want to register a handful of concrete instances.
-
 ### Author a rule family
 
 When you're shipping a package, you usually want a public factory like
 `MyNodeRules.markdown(...)` that takes a narrow options object and hides the
-low-level rule plumbing. Reach for `createRuleFactory`.
+low-level rule plumbing. Write an ordinary function and return
+`defineInputRule(owner, rule)` when `apply` needs the owner's typed transaction
+group.
 
 ```tsx showLineNumbers
-import { BaseCodeBlockPlugin, createRuleFactory } from 'platejs';
+import {
+  BaseListPlugin,
+  defineInputRule,
+  ListType,
+  matchBlockStart,
+  type InsertTextInputRuleReadContext,
+} from 'platejs';
 
-export const BlockquoteRules = {
-  markdown: createRuleFactory<{}, { marker: string }>({
-    type: 'blockStart',
-    marker: '>',
-    trigger: ' ',
-    mode: 'wrap',
-    match: ({ marker }) => marker,
-    enabled: ({ editor }) => {
-      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-
-      return (
-        !codeBlock.installed ||
-        !editor.read.nodes.some({ type: codeBlock.schema.type })
-      );
-    },
-  }),
+export const BulletedListRules = {
+  markdown: ({
+    enabled,
+    priority,
+    variant = '-',
+  }: {
+    enabled?: (context: InsertTextInputRuleReadContext) => boolean;
+    priority?: number;
+    variant?: '*' | '-';
+  } = {}) =>
+    defineInputRule(BaseListPlugin, {
+      target: 'insertText',
+      trigger: ' ',
+      enabled,
+      priority,
+      resolve: (context) => matchBlockStart(context, { match: variant }),
+      apply: ({ decline, tx }, match) => {
+        tx.text.delete({ at: match.range });
+        if (!tx.list.toggle({ type: ListType.Bulleted })) return decline();
+      },
+    }),
 };
 ```
 
-A few things to notice:
-
-- `type` picks the underlying builder. Use `'mark'`, `'blockStart'`, `'blockFence'`, or `'textSubstitution'`.
-- The two generic parameters model your public API: `TRequired` (the first) are
-  options callers must pass; `TDefaults` (the second) are options you supply a
-  default for — here, `marker: '>'`.
-- Factory values can be plain values (`'>'`) or functions of the input
-  (`({ marker }) => marker`). The input includes the runtime context, your
-  defaults, and any required options the caller passes.
-- For `blockStart`, core already owns the base match payload: `{ range, text }`.
-  If you provide `resolveMatch`, return only your extra fields — core merges
-  them onto the base payload before `apply` runs.
-- `enabled` and `priority` stay available as runtime overrides on the returned rule instance — callers can override them even when your factory sets a default.
-
-That's the pattern every `*Rules.markdown(...)` family in EditorRoot uses. Clone it when you need your own.
-
-Done. Between `defineInputRule`, the four specialized builders, the plugin-side
-`rule` builder, and `createRuleFactory`, every rule in EditorRoot — yours included —
-comes from the same small core.
+The function owns public options and defaults with ordinary TypeScript. The
+owner-bound overload infers `tx.list` and the match payload without callback
+annotations. Use one-argument `defineInputRule(rule)` when the rule needs only
+core transaction commands.
 
 ## How rule execution works
 
@@ -693,11 +634,13 @@ The high-level factories set `target` for you:
 
 ### Selection context
 
-Every `enabled`, `resolve`, and `apply` call receives a context object with the live editor, the selection state, and a handful of lazy helpers.
+`enabled` and `resolve` receive a read context. `apply` receives the same
+snapshot-derived values plus the accepted transaction and a typed continuation.
+Matching cannot mutate the editor.
 
 | Field | Returns |
 | ----- | ------- |
-| `editor` | The current `Editor` |
+| `editor` | A read-only editor projection with `read` and read-only plugin portals |
 | `isCollapsed` | Whether the selection is collapsed |
 | `plugin` | The descriptor that owns the rule; use `editor.plugin(plugin).schema` for persisted identity. |
 | `getBlockEntry()` | The current block's `NodeEntry`, or `undefined` |
@@ -709,30 +652,44 @@ Every `enabled`, `resolve`, and `apply` call receives a context object with the 
 
 The `get*` helpers are memoized — calling them twice inside the same rule evaluation doesn't recompute. That matters because multiple rules can share the same evaluation pass.
 
-Target-specific context fields:
+Target-specific read fields:
 
-- `insertText` rules additionally receive `text`, `cause: 'insertText'`, and an `insertText` callback for default fallthrough.
-- `insertBreak` rules receive `cause: 'insertBreak'` and an `insertBreak` callback.
-- `insertData` rules receive `data: DataTransfer`, `text`, `cause: 'insertData'`, and an `insertData` callback.
+- `insertText` rules additionally receive `text`, optional command `options`,
+  and `cause: 'insertText'`.
+- `insertBreak` rules receive `cause: 'insertBreak'`.
+- `insertData` rules receive `data: DataTransfer`, `text`, and
+  `cause: 'insertData'`.
+
+The accepted rule's `apply` context adds `tx`, `next`, and `decline`. Mutate only
+through `tx`. Return `decline()` when the matched conversion cannot apply;
+draft changes are discarded and the original input runs. Return `next()` to run
+the original command after the rule's prefix, or pass replacement text/data to
+the target-specific `next(...)` overload.
 
 ### Lifecycle
 
-For each transform call, the runtime walks rules in priority order (highest first). For each rule, it runs the following steps:
+For each transform call, the runtime walks rules in priority order (highest
+first):
 
-1. **`enabled`.** A boolean gate. If it returns `false`, skip to the next rule.
-2. **`resolve`.** Computes a match payload. If it returns `undefined`, skip to the next rule.
-3. **`apply`.** Performs the transform. If it returns `false`, the runtime
-   treats the rule as not consumed and continues; any other return value
-   consumes the input and short-circuits the rest of the walk.
+1. **`enabled`.** A read-only policy gate. `false` skips the rule.
+2. **`resolve`.** A read-only matcher. `undefined` skips the rule.
+3. **`apply`.** The first accepted rule receives one transaction. Returning
+   `undefined` consumes the input. Returning `next(...)` composes the original
+   command after the rule's transaction prefix. Returning `decline()` discards
+   that draft and runs the original command.
 
-If no rule consumes the input, the default EditorRoot transform runs as normal.
+Rules skipped by `enabled` or `resolve` create no transaction. A resolved rule
+may stage changes and then decline; none of its draft changes publish. A consumed
+or continued rule publishes one transaction. If `apply` throws, none of its
+draft changes publish. Calling `next(...)` more than once is an error. If no
+rule matches, the original command runs normally.
 
 | Field | Purpose |
 | ----- | ------- |
 | `trigger` | Restricts an `insertText` rule to fire only when the typed character matches (string or array) |
 | `enabled` | Policy gate, evaluated first |
 | `resolve` | Computes the match payload passed to `apply` |
-| `apply` | Performs the transform |
+| `apply` | Mutates `tx`, then consumes, returns `next(...)`, or returns `decline()` |
 | `priority` | Sort order for rules on the same target |
 | `on` | Block-fence commit mode: `'match'` or `'break'` |
 | `mimeTypes` | Narrows an `insertData` rule to specific MIME types |
@@ -757,10 +714,12 @@ type InputRuleTarget = 'insertText' | 'insertBreak' | 'insertData';
 
 ### defineInputRule
 
-Identity function that types a rule inline.
+Types a rule inline. Pass an owner descriptor when the rule needs that plugin's
+transaction group, reads, store, or schema identity.
 
 ```ts
-function defineInputRule<TRule extends InputRule>(rule: TRule): TRule;
+defineInputRule(rule);
+defineInputRule(owner, rule);
 ```
 
 ```ts
@@ -775,50 +734,16 @@ const copyrightRule = defineInputRule({
 
     return { replacement: '©' };
   },
-  apply: ({ editor }, match) => {
-    editor.update((tx) => {
-      tx.text.delete({ distance: 2, reverse: true, unit: 'character' });
-      tx.text.insert(match.replacement);
-    });
+  apply: ({ tx }, match) => {
+    tx.text.delete({ distance: 2, reverse: true, unit: 'character' });
+    tx.text.insert(match.replacement);
   },
 });
 ```
 
-Use it when you want a raw rule object typed against `InsertTextInputRule`, `InsertBreakInputRule`, or `InsertDataInputRule` without going through a builder.
-
-### createRuleFactory
-
-Package-facing helper for semantic rule families. Use it when you want to expose
-a narrow public factory like `BlockquoteRules.markdown(...)`, keep shared
-runtime fields like `enabled` and `priority`, and hide the low-level rule
-construction details.
-
-```ts
-import { BaseCodeBlockPlugin, createRuleFactory } from 'platejs';
-
-export const BlockquoteRules = {
-  markdown: createRuleFactory<{}, { marker: string }>({
-    type: 'blockStart',
-    marker: '>',
-    trigger: ' ',
-    match: ({ marker }) => marker,
-    mode: 'wrap',
-    enabled: ({ editor }) => {
-      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-
-      return (
-        !codeBlock.installed ||
-        !editor.read.nodes.some({ type: codeBlock.schema.type })
-      );
-    },
-  }),
-};
-```
-
-The returned function is your public rule family. Concrete values in the config
-become default public options (`marker: '>'`), while the generic type parameters
-let you model required options and defaults for the family. The created rule
-instance still supports the shared runtime overrides: `enabled` and `priority`.
+Use it for raw `insertText`, `insertBreak`, or `insertData` rules. Match payload
+types flow from `resolve` into `apply`. The owner-bound overload also exposes
+the owner's typed `tx` group without explicit callback annotations.
 
 ### createMarkInputRule
 
@@ -832,7 +757,7 @@ function createMarkInputRule(config: {
   mark?: PluginReference | string;
   marks?: readonly (PluginReference | string)[];
   trim?: 'allow' | 'reject';
-  enabled?: (context: InsertTextInputRuleContext) => boolean;
+  enabled?: (context: InsertTextInputRuleReadContext) => boolean;
   priority?: number;
 }): InsertTextInputRule;
 ```
@@ -863,7 +788,7 @@ function createBlockStartInputRule<TMatch extends object = {}>(config: {
   match:
     | RegExp
     | string
-    | ((context: InsertTextInputRuleContext) => RegExp | string | undefined);
+    | ((context: InsertTextInputRuleReadContext) => RegExp | string | undefined);
   mode?: 'set' | 'toggle' | 'wrap';
   node?: PluginReference | string;
   removeMatchedText?: boolean;
@@ -875,8 +800,8 @@ function createBlockStartInputRule<TMatch extends object = {}>(config: {
   apply?: (
     context: InsertTextInputRuleContext,
     match: BlockStartInputRuleMatch & TMatch
-  ) => boolean | void;
-  enabled?: (context: InsertTextInputRuleContext) => boolean;
+  ) => ReturnType<InsertTextInputRule['apply']>;
+  enabled?: (context: InsertTextInputRuleReadContext) => boolean;
   priority?: number;
 }): InsertTextInputRule<TMatch>;
 ```
@@ -899,6 +824,8 @@ createBlockStartInputRule({
 - `apply` overrides the built-in transform entirely — supply your own when none
   of the modes fit. That also means you own matched-text cleanup; if you still
   want the shorthand removed, delete `match.range` yourself.
+- The built-in transform declines when the target plugin or structural placement
+  is unavailable, leaving the typed shorthand in the document.
 - `resolveMatch` returns extra fields only. Core still provides the base `{ range, text }` payload automatically, and `apply` receives the merged object.
 
 ### createBlockFenceInputRule
@@ -909,7 +836,10 @@ Fenced block patterns like triple-backtick code fences or `$$` math fences.
 function createBlockFenceInputRule<TMatch>(config: {
   fence: string;
   on: 'break' | 'match';
-  apply: (context: SelectionInputRuleContext, match: TMatch) => boolean | void;
+  apply: (
+    context: SelectionInputRuleContext & TransformInputRuleContext,
+    match: TMatch
+  ) => ReturnType<TransformInputRuleContext['decline']> | undefined;
   block?: PluginReference | string;
   resolveMatch?: (args: {
     fence: string;
@@ -929,18 +859,15 @@ import { createBlockFenceInputRule } from 'platejs';
 createBlockFenceInputRule({
   fence: '```',
   on: 'match',
-  apply: (context, match) => {
-    const codeBlock = context.editor.plugin(BaseCodeBlockPlugin);
-
-    if (!codeBlock.installed) return false;
-
-    context.editor.update((tx) => {
-      tx.text.delete({ at: match.range });
-      tx.nodes.set(
-        { type: codeBlock.schema.type },
-        { at: match.path }
-      );
-    });
+  enabled: ({ editor }) => editor.plugin(BaseCodeBlockPlugin).installed,
+  apply: ({ decline, editor, tx }, match) => {
+    if (!tx.nodes.replace(
+      {
+        type: editor.plugin(BaseCodeBlockPlugin).schema.type,
+        children: [{ text: '' }],
+      },
+      { at: match.path }
+    )) return decline();
   },
 });
 ```
@@ -967,7 +894,7 @@ function createTextSubstitutionInputRule(config: {
     match: readonly string[] | string;
     trigger?: readonly string[] | string;
   }>;
-  enabled?: (context: InsertTextInputRuleContext) => boolean;
+  enabled?: (context: InsertTextInputRuleReadContext) => boolean;
   priority?: number;
 }): InsertTextInputRule;
 ```

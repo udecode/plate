@@ -307,8 +307,8 @@ module，不复制生成的 contract。
 }
 ```
 
-生成模块会导出精确的 editor/value 类型、静态 schema handle 和指纹。它不负责
-运行时插件组合：
+生成的 TypeScript 模块会导出精确的 editor/value 类型和静态 schema handle。
+编译后的 schema 指纹保存在生成的 JSON 合约中。两种产物都不负责运行时插件组合：
 
 ```tsx title="src/editor/document-editor.tsx"
 import { EditorRoot, useCreateEditor } from "platejs/react";

@@ -91,10 +91,7 @@ test('file paste starts after draft commit and aborts cleanly on undo', async ({
         starts: 1,
       },
       value: {
-        children: [
-          { type: 'paragraph' },
-          { kind: 'image', type: 'upload' },
-        ],
+        children: [{ type: 'paragraph' }, { kind: 'image', type: 'upload' }],
       },
     });
 

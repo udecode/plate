@@ -5,7 +5,8 @@ description: 配置常见的编辑行为。
 
 插件规则控制编辑器节点如何响应常见的用户操作。您可以直接在插件的 `rules` 属性上配置这些行为，而无需重写编辑器方法。
 
-本指南展示如何使用 `rules.break`、`rules.delete`、`rules.merge`、`rules.normalize`、`rules.selection` 和 `rules.match` 来创建直观的编辑体验。
+本指南展示如何使用 `rules.break`、`rules.delete`、`rules.merge`、
+`rules.normalize` 和 `rules.selection` 来创建直观的编辑体验。
 
 <ComponentPreview name="plugin-rules-demo" />
 
@@ -272,9 +273,8 @@ const plugins = [
   // ...其他插件
   CodeBlockPlugin.configure({
     rules: {
-      delete: { empty: 'reset' },
-      match: ({ editor, rule }) => {
-        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      delete: {
+        empty: ({ read }) => (read.isEmpty() ? 'reset' : undefined),
       },
     },
   }),
@@ -368,9 +368,9 @@ const plugins = [
   // ...其他插件
   ListPlugin.configure({
     rules: {
-      delete: { start: 'reset' },
-      match: ({ rule, node }) => {
-        return rule === 'delete.start' && Boolean(node.listStyle);
+      delete: {
+        start: ({ node }) =>
+          node.listStyle ? 'reset' : undefined,
       },
     },
   }),
@@ -573,13 +573,13 @@ const plugins = [
 </p>
 ```
 
-## `rules.match`
+## 条件规则叶子
 
-插件规则中的 `match` 函数允许您基于节点属性（而不仅仅是类型匹配）覆盖特定插件的默认行为。这在您想为现有节点类型扩展新行为时特别有用。
+每个结构规则叶子既可直接接受 action，也可接受 resolver。Resolver 会收到所属
+插件的 context，以及当前 `node` 和 `path`。返回 action 即决定该叶子；返回
+`undefined` 则交给下一个贡献者。对于 boolean 叶子，`false` 是终止值。
 
-### 示例
-
-**带自定义空块检测的代码块：**
+把 resolver 放在需要条件判断的具体行为上：
 
 ```tsx
 import { CodeBlockPlugin } from 'platejs/react';
@@ -588,14 +588,21 @@ const plugins = [
   // ...其他插件
   CodeBlockPlugin.configure({
     rules: {
-      delete: { empty: 'reset' },
-      match: ({ rule, node }) => {
-        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      delete: {
+        empty: ({ read }) => (read.isEmpty() ? 'reset' : undefined),
+      },
+      merge: {
+        removeEmpty: ({ node }) =>
+          node.keepDuringMerge ? false : undefined,
       },
     },
   }),
 ];
 ```
+
+其他插件的 resolver 按 plugin priority 和 source order 执行。若都返回
+`undefined`，Plate 会从为节点持久化 type 编译的插件中解析同一个叶子。一个叶子
+上的条件不会遮蔽无关的 break、delete、merge 或 normalize 行为。
 
 ## 自定义结构命令
 

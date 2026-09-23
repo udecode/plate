@@ -21,12 +21,44 @@ const getOpenDepth = (editor: Editor, point: Point) => {
 
     return (
       NodeApi.isElement(ancestor) &&
-      (editor.read.schema.isIsolating(ancestor) ||
-        editor.read.schema.isVoid(ancestor) ||
+      (editor.read.schema.isVoid(ancestor) ||
         editor.read.schema.getElementSlicePolicy(ancestor).preserveContext)
     );
   });
   return barrierIndex === -1 ? ancestorPaths.length : barrierIndex;
+};
+
+const omitOpenBoundaryRoots = (
+  editor: Editor,
+  children: readonly Descendant[],
+  depth: number,
+  edge: 'start' | 'end'
+): readonly Descendant[] => {
+  if (depth === 0 || children.length === 0) return children;
+
+  const index = edge === 'start' ? 0 : children.length - 1;
+  const node = children[index];
+
+  if (!ElementApi.isElement(node)) return children;
+
+  const nested = omitOpenBoundaryRoots(editor, node.children, depth - 1, edge);
+  let replacement: Descendant = node;
+
+  if (editor.read.schema.isObject(node) && 'childRoots' in node) {
+    const { childRoots: _childRoots, ...withoutRoots } = node;
+
+    replacement = { ...withoutRoots, children: nested };
+  } else if (nested !== node.children) {
+    replacement = { ...node, children: nested };
+  }
+
+  if (replacement === node) return children;
+
+  const result = [...children];
+
+  result[index] = replacement;
+
+  return result;
 };
 
 /**
@@ -84,6 +116,15 @@ export const getContentSlice = <V extends Value>(
   } else {
     return ContentSlice.empty;
   }
+  const [start, end] = rangeSelection
+    ? RangeApi.edges(rangeSelection)
+    : [null, null];
+  const openStart = start ? getOpenDepth(editor, start) : 0;
+  const openEnd = end ? getOpenDepth(editor, end) : 0;
+
+  content = omitOpenBoundaryRoots(editor, content, openStart, 'start');
+  content = omitOpenBoundaryRoots(editor, content, openEnd, 'end');
+
   const roots: Record<string, readonly Descendant[]> = {};
   const visitedRoots = new Set<string>();
   const collect = (children: readonly Descendant[]) => {
@@ -127,12 +168,5 @@ export const getContentSlice = <V extends Value>(
 
   if (!rangeSelection) return ContentSlice.empty;
 
-  const [start, end] = RangeApi.edges(rangeSelection);
-
-  return createContentSliceFromFragment<V>(
-    content,
-    getOpenDepth(editor, start),
-    getOpenDepth(editor, end),
-    roots
-  );
+  return createContentSliceFromFragment<V>(content, openStart, openEnd, roots);
 };

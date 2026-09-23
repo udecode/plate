@@ -360,16 +360,16 @@ describe('Plate registry editor files', () => {
   it('keeps upload providers explicit and out of the base upload item', () => {
     const itemsByName = new Map(items.map((item) => [item.name, item]));
     const upload = itemsByName.get('upload');
-    const ephemeral = itemsByName.get('upload-ephemeral');
+    const browser = itemsByName.get('upload-browser');
     const filesGateway = itemsByName.get('files-api');
 
     expect(upload?.registryDependencies).toEqual(['@plate/use-object-url']);
     expect(upload?.files?.map((file) => file.path)).toEqual([
       'components/editor/upload.tsx',
     ]);
-    expect(ephemeral?.registryDependencies).toEqual(['@plate/upload']);
-    expect(ephemeral?.files?.map((file) => file.path)).toEqual([
-      'components/editor/upload/ephemeral.ts',
+    expect(browser?.registryDependencies).toEqual(['@plate/upload']);
+    expect(browser?.files?.map((file) => file.path)).toEqual([
+      'components/editor/upload/browser.ts',
     ]);
     expect(filesGateway?.dependencies).toEqual(['files-sdk@2.6.0']);
     expect(filesGateway?.files?.map((file) => file.path)).toEqual([

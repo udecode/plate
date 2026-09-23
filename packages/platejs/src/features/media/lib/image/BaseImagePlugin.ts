@@ -67,8 +67,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
   initialState,
   schema: {
     element: schema.element.textBlock({
-      isolating: true,
-      keyboardSelectable: true,
+      object: true,
       properties: {
         ...mediaElementProperties,
         alt: property.string(),

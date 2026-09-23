@@ -149,6 +149,7 @@ export type {
   RootKey,
   SchemaContent,
   SchemaContentOptions,
+  SchemaContentPrefixSlot,
   SchemaContentRootContribution,
   SchemaContentRule,
   SchemaElement,

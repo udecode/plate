@@ -34,7 +34,6 @@ projection switch.
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ProseMirror      | Persistent mapped collections reuse unaffected child structure; bookmarks separate mapping from later resolution.                                  | Decorations combine range and paint and do not own external thread lifetime or Plite's exact authored view.                                                    |
 | Lexical          | External thread records can refer to document attachment IDs; dirty-node routing bounds reconciliation.                                            | `MarkNode` writes attachment identity into document content and its history. That is the wrong default for Plate Comments.                                     |
-| CKEditor         | One model can feed separate projections; each mapper owns projection-local bindings; marker deltas coalesce per transaction.                       | Every live range subscribes to model operations, marker queries scan a global map, and CKEditor explicitly recommends keeping few markers.                     |
 | CodeMirror       | `RangeSet` is immutable, chunked, maps only touched chunks, and compares shared chunks cheaply. View plugins own explicit cleanup.                 | A view owns its own `EditorState`; nonempty ranges collapse on complete deletion; decorations remain range plus paint rather than semantic targets.            |
 | Monaco / VS Code | One model can serve several editors; an augmented interval tree lazily shifts untouched subtrees and queries only viewport ranges.                 | Decorations collapse or move on deletion, invalidation is coarser than Plite's changed-node routing, and model decorations do not own comment records.         |
 | Yjs              | Relative positions preserve collaborative identity; current source batches many positions by node and accepts an explicit renderer per resolution. | Deleted positions usually resolve to a boundary, and exact local undo following can disagree with a synced clone. It cannot define a portable terminal target. |
@@ -48,8 +47,7 @@ projection switch.
    projection, annotation index, and paint belong to the exact view. The target
    and application record do not.
 2. **Native anchors as the semantic mapper.** Plite already indexes listeners by
-   node key and visits only affected anchors for ordinary commits. CKEditor's
-   observer-per-range design is a regression at high cardinality.
+   node key and visits only affected anchors for ordinary commits.
 3. **One annotation index per exact view.** A shared resolved snapshot is false
    when accepted and proposed projections expose different positions.
 4. **Metadata, target, index, and paint as four lifetimes.** Comments owns

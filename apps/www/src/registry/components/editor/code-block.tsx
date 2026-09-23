@@ -1,11 +1,12 @@
 'use client';
 
-import { all, createLowlight } from 'lowlight';
+import { DiffMatchPatch, DiffOp } from 'diff-match-patch-ts';
 import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
-import { BaseCodeBlockPlugin, CodeBlockRules } from 'platejs';
+import { CodeBlockRules, type Element, ElementApi, NodeApi } from 'platejs';
 import {
   CodeBlockPlugin,
   CodeHighlightPlugin,
+  type Editor,
   EditorElement,
   type EditorElementProps,
   useEditor,
@@ -24,6 +25,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { createCodeBlockLowlight } from '@/registry/components/editor/code-block-lowlight';
 import {
   FloatingPopover,
   FloatingPopoverContent,
@@ -165,6 +167,7 @@ export function CodeBlockContainer({
   showLanguageLabel?: boolean;
 }) {
   const { editor, element, attributes, plugin, ref, slots } = elementProps;
+  const readOnly = useEditorReadOnly();
 
   return (
     <EditorElement
@@ -182,14 +185,12 @@ export function CodeBlockContainer({
           className="absolute top-1 right-1 z-10 flex gap-0.5 select-none"
           contentEditable={false}
         >
-          {element.language === 'json' && (
+          {!readOnly && element.language === 'json' && (
             <Button
               size="icon"
               variant="ghost"
               className="size-6 text-xs"
-              onClick={() => {
-                editor.plugin(BaseCodeBlockPlugin).update.format({ element });
-              }}
+              onClick={() => formatJsonCodeBlock(editor, element)}
               title="Format code"
             >
               <BracesIcon className="!size-3.5 text-muted-foreground" />
@@ -206,6 +207,83 @@ export function CodeBlockContainer({
       </div>
     </EditorElement>
   );
+}
+
+export function formatJsonCodeBlock(editor: Editor, element: Element) {
+  if (editor.read.view.isReadOnly()) return;
+
+  const blockPath = editor.read.nodes.path(element);
+
+  if (!blockPath) return;
+
+  const block = editor.read.nodes.get(blockPath)?.[0];
+
+  if (
+    block !== element ||
+    !ElementApi.isElement(block) ||
+    block.type !== editor.plugin(CodeBlockPlugin).schema.type ||
+    block.language !== 'json' ||
+    block.children.length !== 1
+  ) {
+    return;
+  }
+
+  const [child] = block.children;
+
+  if (!NodeApi.isText(child)) return;
+
+  const { text } = child;
+  let formatted: string;
+
+  try {
+    formatted = JSON.stringify(JSON.parse(text), null, 2);
+  } catch {
+    return;
+  }
+
+  if (formatted === text) return;
+
+  const diff = new DiffMatchPatch().diff_main(text, formatted, false);
+  const edits: Array<{ end: number; start: number; text: string }> = [];
+  let oldOffset = 0;
+  let start: number | null = null;
+  let replacement = '';
+
+  for (const [operation, value] of diff) {
+    if (operation === DiffOp.Equal) {
+      if (start !== null) {
+        edits.push({ start, end: oldOffset, text: replacement });
+        start = null;
+        replacement = '';
+      }
+      oldOffset += value.length;
+    } else if (operation === DiffOp.Delete) {
+      start ??= oldOffset;
+      oldOffset += value.length;
+    } else {
+      start ??= oldOffset;
+      replacement += value;
+    }
+  }
+
+  if (start !== null) {
+    edits.push({ start, end: oldOffset, text: replacement });
+  }
+
+  editor.update((tx) => {
+    for (const edit of edits.reverse()) {
+      const at = {
+        anchor: { path: [...blockPath, 0], offset: edit.start },
+        focus: { path: [...blockPath, 0], offset: edit.end },
+      };
+
+      if (edit.text) {
+        tx.text.insert(edit.text, { at });
+      } else {
+        tx.text.delete({ at });
+      }
+    }
+  });
 }
 
 function CodeBlockCopyButton() {
@@ -301,7 +379,7 @@ function CodeBlockCombobox({
                     if (!path) return;
 
                     editor
-                      .plugin(BaseCodeBlockPlugin)
+                      .plugin(CodeBlockPlugin)
                       .update.set({ language: innerValue2 }, { at: path });
                     setSearchValue(innerValue2);
                     setOpen(false);
@@ -387,14 +465,14 @@ function CopyButton({
   );
 }
 
-const lowlight = createLowlight(all);
-
 export const createCodeBlockPlugin = (component: typeof CodeBlockElement) =>
   CodeBlockPlugin.configure({
     component,
     inputRules: [CodeBlockRules.markdown({ on: 'match' })],
     shortcuts: { toggle: { keys: 'mod+alt+8' } },
   });
+
+const lowlight = createCodeBlockLowlight();
 
 export const CodeBlockKit = [
   createCodeBlockPlugin(CodeBlockElement),

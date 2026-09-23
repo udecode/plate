@@ -15,7 +15,6 @@ export * from './has-inlines';
 export * from './has-path';
 export * from './has-texts';
 export * from './insert-break';
-export * from './insert-node';
 export * from './insert-soft-break';
 export * from './insert-text';
 export * from './is-block';

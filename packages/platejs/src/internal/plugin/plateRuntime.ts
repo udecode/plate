@@ -7,6 +7,19 @@ import type { AnyBasePlugin, EditorShortcut } from '../../lib';
 import type { ResolvedInputRulesMeta } from '../../lib/plugins/input-rules/types';
 import type { CompiledPlateShortcut } from './compilePlateShortcuts';
 
+export const STRUCTURAL_RULE_KEYS = [
+  'break.default',
+  'break.empty',
+  'break.emptyLineEnd',
+  'break.splitReset',
+  'delete.empty',
+  'delete.start',
+  'merge.removeEmpty',
+  'normalize.removeEmpty',
+] as const;
+
+export type StructuralRuleKey = (typeof STRUCTURAL_RULE_KEYS)[number];
+
 export type PlatePluginCache = Readonly<{
   contentAttributes: Readonly<{
     editable: DecorationAttributes;
@@ -41,7 +54,7 @@ export type PlatePluginCache = Readonly<{
     wrapNodeChildren: readonly string[];
     wrapRoot: readonly string[];
   }>;
-  rules: Readonly<{ match: readonly string[] }>;
+  rules: Readonly<Record<StructuralRuleKey, readonly string[]>>;
   useViewElementAttributes: readonly string[];
 }>;
 

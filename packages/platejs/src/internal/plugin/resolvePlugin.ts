@@ -91,17 +91,11 @@ const isObjectRecord = (
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const assertConfiguredInputRules = (value: unknown) => {
-  if (
-    value === undefined ||
-    typeof value === 'function' ||
-    Array.isArray(value)
-  ) {
+  if (value === undefined || Array.isArray(value)) {
     return;
   }
 
-  throw new Error(
-    'inputRules must be an array of explicit rule instances or a factory.'
-  );
+  throw new Error('inputRules must be an array of explicit rule instances.');
 };
 
 const mergeLifecycleHandlers = (
@@ -131,7 +125,9 @@ const mergeLifecycleHandlers = (
       handlers[name] = next;
     } else {
       throw new Error(
-        `Plate plugin "${plugin.name}" on.${String(name)} must be a function or null.`
+        `Plate plugin "${plugin.name}" on.${String(
+          name
+        )} must be a function or null.`
       );
     }
   }
@@ -665,7 +661,9 @@ export const validatePlugin = (
     };
 
     api.error(
-      `Invalid plugin '${(plugin as { name: string }).name}', use definePlugin.`,
+      `Invalid plugin '${
+        (plugin as { name: string }).name
+      }', use definePlugin.`,
       'USE_CREATE_PLUGIN'
     );
   }

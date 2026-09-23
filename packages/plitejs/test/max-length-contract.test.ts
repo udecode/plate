@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, DocumentChange, type Element } from 'plitejs';
+import {
+  createEditor,
+  createEditorView,
+  DocumentChange,
+  type Element,
+  SelectionApi,
+} from 'plitejs';
+import { history } from 'plitejs/history';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -59,6 +66,87 @@ describe('maxLength editor option', () => {
     editor.update.text.insert('y there');
 
     assert.equal(editor.read.text.string([]), 'Hey t');
+  });
+
+  it('limits command-owned replacement of fully selected sibling blocks', () => {
+    const initialValue = [paragraph('abc'), paragraph('def')];
+    const editor = createEditor({
+      initialSelection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 3 },
+      },
+      initialValue,
+      maxLength: 5,
+      plugins: [history()],
+    });
+
+    editor.update.text.insert('123456789');
+
+    assert.deepEqual(editor.read.children(), [paragraph('12345')]);
+
+    editor.api.history.undo();
+
+    assert.deepEqual(editor.read.children(), initialValue);
+  });
+
+  it('limits full-block replacement in the active named root', () => {
+    const initialHeader = [paragraph('abc'), paragraph('def')];
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: initialHeader },
+      },
+      maxLength: 5,
+      plugins: [history()],
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    header.update.selection.set({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 3 },
+    });
+    header.update.text.insert('123456789');
+
+    assert.deepEqual(editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(header.read.children(), [paragraph('12345')]);
+
+    editor.api.history.undo();
+
+    assert.deepEqual(header.read.children(), initialHeader);
+  });
+
+  it('counts exact node-selection replacement before constructing its block', () => {
+    const editor = createEditor({
+      initialSelection: null,
+      initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
+      maxLength: 5,
+    });
+
+    editor.update.selection.set(SelectionApi.nodes([[0], [2]]));
+    editor.update.text.insert('123456');
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('1234'),
+      paragraph('b'),
+    ]);
+  });
+
+  it('permits an empty replacement when maxLength is zero', () => {
+    const editor = createEditor({
+      initialSelection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+      initialValue: [paragraph('abc')],
+      maxLength: 0,
+    });
+
+    editor.update.text.insert('replacement');
+
+    assert.deepEqual(editor.read.children(), [paragraph('')]);
   });
 
   it('truncates inserted fragments', () => {

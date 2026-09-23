@@ -248,7 +248,11 @@ cross-node behavior use semantic update methods.
 </APIItem>
 
 <APIItem name="rules" type="object">
-Defines editing behavior for the plugin's compiled schema identity.
+Defines editing behavior for the plugin's compiled schema identity. Each
+structural leaf accepts either its action directly or a resolver of the form
+`(context) => action | undefined`. A returned action is final, including
+`false`; `undefined` delegates that exact leaf to the next contributor and then
+to the plugin compiled for the node type.
 
 <APISubList>
 <APISubListItem parent="rules" name="selection.affinity" type="'default' | 'directional' | 'outward' | 'hard'" optional>
@@ -263,7 +267,7 @@ Defines the selection behavior at the boundaries of nodes. See [Plugin Rules](/d
 
 </APISubListItem>
 
-<APISubListItem parent="rules" name="break.empty" type="'default' | 'deleteExit' | 'exit' | 'lift' | 'reset'" optional>
+<APISubListItem parent="rules" name="break.empty" type="RuleDecision<'default' | 'deleteExit' | 'exit' | 'lift' | 'none' | 'reset'>" optional>
 Action when Enter is pressed in an empty block. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
@@ -271,10 +275,11 @@ Action when Enter is pressed in an empty block. See [Plugin Rules](/docs/plugin-
 - `'exit'`: Exit the current block
 - `'lift'`: Lift the current block out of the nearest matching ancestor
 - `'deleteExit'`: Delete backward then exit
+- `'none'`: Handle Enter without changing the document
 
 </APISubListItem>
 
-<APISubListItem parent="rules" name="break.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
+<APISubListItem parent="rules" name="break.emptyLineEnd" type="RuleDecision<'default' | 'deleteExit' | 'exit'>" optional>
 Action when Enter is pressed at the end of an empty line. This is typically used with `rules.break.default: 'lineBreak'`. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
@@ -283,20 +288,21 @@ Action when Enter is pressed at the end of an empty line. This is typically used
 
 </APISubListItem>
 
-<APISubListItem parent="rules" name="break.default" type="'default' | 'deleteExit' | 'exit' | 'lineBreak'" optional>
+<APISubListItem parent="rules" name="break.default" type="RuleDecision<'default' | 'deleteExit' | 'exit' | 'lineBreak' | 'none'>" optional>
 Default action when Enter is pressed. Defaults to splitting the block. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
 - `'exit'`: Exit the current block
 - `'lineBreak'`: Insert newline character
 - `'deleteExit'`: Delete backward then exit
+- `'none'`: Handle Enter without changing the document
 
 </APISubListItem>
 
-<APISubListItem parent="rules" name="break.splitReset" type="boolean" optional>
+<APISubListItem parent="rules" name="break.splitReset" type="RuleDecision<boolean>" optional>
 If true, the new block after splitting will be reset to the default type. See [Plugin Rules](/docs/plugin-rules).
 </APISubListItem>
-<APISubListItem parent="rules" name="delete.start" type="'default' | 'lift' | 'reset'" optional>
+<APISubListItem parent="rules" name="delete.start" type="RuleDecision<'default' | 'lift' | 'reset'>" optional>
 Action when Backspace is pressed at the start of the block. This applies whether the block is empty or not. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
@@ -305,33 +311,21 @@ Action when Backspace is pressed at the start of the block. This applies whether
 
 </APISubListItem>
 
-<APISubListItem parent="rules" name="delete.empty" type="'default' | 'reset'" optional>
+<APISubListItem parent="rules" name="delete.empty" type="RuleDecision<'default' | 'reset'>" optional>
 Action when Backspace is pressed and the block is empty. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
 - `'reset'`: Reset block to default paragraph type
 
 </APISubListItem>
-<APISubListItem parent="rules" name="match" type="MatchRules" optional>
-Function to determine if this plugin's rules should apply to a node. Used to override behavior based on node properties beyond just type matching.
-
-No implicit capability-name or schema-identity match is applied. Without this
-callback, Plate uses the rules owned by the plugin compiled for the element's
-persisted type.
-
-**Example:** `matchRules: ({ node }) => Boolean(node.listType)`
-
-Example: List plugin sets `match: ({ node }) => !!node.listType` to override paragraph behavior when the paragraph is a list item.
-
-</APISubListItem>
-<APISubListItem parent="rules" name="merge.removeEmpty" type="boolean" optional>
+<APISubListItem parent="rules" name="merge.removeEmpty" type="RuleDecision<boolean>" optional>
 Whether to remove the node when it's empty during merge operations. See [Plugin Rules](/docs/plugin-rules).
 
 - **Default:** `false`
 
 </APISubListItem>
 
-<APISubListItem parent="rules" name="normalize.removeEmpty" type="boolean" optional>
+<APISubListItem parent="rules" name="normalize.removeEmpty" type="RuleDecision<boolean>" optional>
 Whether to remove nodes with empty text during normalization. See [Plugin Rules](/docs/plugin-rules).
 
 - **Default:** `false`

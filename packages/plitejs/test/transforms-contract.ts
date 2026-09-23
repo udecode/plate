@@ -2401,6 +2401,148 @@ describe('plite transforms contract', () => {
     });
   });
 
+  for (const direction of ['forward', 'backward'] as const) {
+    it(`liftNodes preserves ${direction} range direction through structural mapping`, () => {
+      const start = { path: [0, 0, 0], offset: 1 };
+      const end = { path: [0, 1, 0], offset: 2 };
+      const editor = createEditor({
+        initialSelection: {
+          kind: 'text' as const,
+          anchor: direction === 'forward' ? start : end,
+          focus: direction === 'forward' ? end : start,
+        },
+        initialValue: [
+          {
+            type: 'quote',
+            children: [paragraph('one'), paragraph('two')],
+          },
+        ],
+      });
+
+      editor.update.nodes.lift();
+
+      const mappedStart = { path: [0, 0], offset: 1 };
+      const mappedEnd = { path: [1, 0], offset: 2 };
+
+      assert.deepEqual(editor.read.children(), [
+        paragraph('one'),
+        paragraph('two'),
+      ]);
+      assert.deepEqual(editor.read.runtime.snapshot().selection, {
+        kind: 'text',
+        anchor: direction === 'forward' ? mappedStart : mappedEnd,
+        focus: direction === 'forward' ? mappedEnd : mappedStart,
+      });
+    });
+
+    it(`unwrapNodes preserves ${direction} range direction through structural mapping`, () => {
+      const start = { path: [0, 0, 0], offset: 1 };
+      const end = { path: [0, 1, 0], offset: 2 };
+      const editor = createEditor({
+        initialSelection: {
+          kind: 'text' as const,
+          anchor: direction === 'forward' ? start : end,
+          focus: direction === 'forward' ? end : start,
+        },
+        initialValue: [
+          {
+            type: 'quote',
+            children: [paragraph('one'), paragraph('two')],
+          },
+        ],
+      });
+
+      editor.update.nodes.unwrap();
+
+      const mappedStart = { path: [0, 0], offset: 1 };
+      const mappedEnd = { path: [1, 0], offset: 2 };
+
+      assert.deepEqual(editor.read.children(), [
+        paragraph('one'),
+        paragraph('two'),
+      ]);
+      assert.deepEqual(editor.read.runtime.snapshot().selection, {
+        kind: 'text',
+        anchor: direction === 'forward' ? mappedStart : mappedEnd,
+        focus: direction === 'forward' ? mappedEnd : mappedStart,
+      });
+    });
+  }
+
+  for (const operation of ['lift', 'unwrap'] as const) {
+    it(`${operation}Nodes preserves backward selection and undo in a named root`, () => {
+      const editor = createEditor({
+        initialValue: {
+          children: [paragraph('body')],
+          roots: {
+            header: [
+              {
+                type: 'quote',
+                children: [paragraph('one'), paragraph('two')],
+              },
+            ],
+          },
+        },
+        plugins: [history()],
+      });
+      const header = createEditorView(editor, { root: 'header' });
+      const selection = {
+        kind: 'text' as const,
+        anchor: { path: [0, 1, 0], offset: 2 },
+        focus: { path: [0, 0, 0], offset: 1 },
+      };
+
+      header.update.selection.set(selection);
+      if (operation === 'lift') {
+        header.update.nodes.lift();
+      } else {
+        header.update.nodes.unwrap();
+      }
+
+      assert.deepEqual(editor.read.children(), [paragraph('body')]);
+      assert.deepEqual(header.read.children(), [
+        paragraph('one'),
+        paragraph('two'),
+      ]);
+      assert.deepEqual(header.read.selection(), {
+        anchor: { path: [1, 0], offset: 2, root: 'header' },
+        focus: { path: [0, 0], offset: 1, root: 'header' },
+      });
+
+      editor.api.history.undo();
+
+      assert.deepEqual(header.read.children(), [
+        {
+          type: 'quote',
+          children: [paragraph('one'), paragraph('two')],
+        },
+      ]);
+      assert.deepEqual(header.read.selection(), {
+        anchor: { ...selection.anchor, root: 'header' },
+        focus: { ...selection.focus, root: 'header' },
+      });
+    });
+  }
+
+  it('liftNodes preserves a collapsed selection through structural mapping', () => {
+    const editor = createEditor({
+      initialSelection: collapsedSelection([0, 0, 0], 2),
+      initialValue: [
+        {
+          type: 'quote',
+          children: [paragraph('one'), paragraph('two')],
+        },
+      ],
+    });
+
+    editor.update.nodes.lift();
+
+    assert.deepEqual(
+      editor.read.runtime.snapshot().selection,
+      collapsedSelection([0, 0], 2)
+    );
+  });
+
   it('liftNodes preserves canonical void content when voids is true', () => {
     const editor = createEditor();
     editor.install(

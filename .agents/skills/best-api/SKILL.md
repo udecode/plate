@@ -193,6 +193,14 @@ Keep strict error capture explicit on the existing recorder rather than copying
 listeners or silently adopting a narrower filter. Test capture and cleanup
 behavior through that owner; private function spelling is not proof.
 
+When one block is independently meaningful but its children remain editable,
+declare that fact once in the schema as an object role. Derive semantic
+non-emptiness, structural protection, and owner selection from it. Keep
+selection-shaped transfer: a selected owner moves closed, while selected child
+text stays open. Do not model the same job as an editable void, an atomic node,
+a second child root, or a keyboard interaction flag. Feature-specific Enter
+behavior moves child content without cloning the owner.
+
 Package entrypoints must tell the truth about dependency reachability. A root
 may expose only code backed by its required dependencies. Code requiring an
 optional framework or runtime peer belongs behind an explicit subpath whose
@@ -240,6 +248,10 @@ describe compilation as side-effect-free. Keep caches, stores, candidate graphs
 and runtime owners private. A type-only projection is justified only by an
 actual tooling job whose exact property domains cannot be expressed through
 the existing public descriptor types; it must reuse the same inference owner.
+Keep a derived schema fingerprint in the structured schema contract and the
+runtime identity; omit a duplicate generated TypeScript constant when no
+consumer needs it. Behavior-only schema changes should not rewrite an otherwise
+identical type module.
 
 Neutral behavior belongs in the substrate even when the framework adopted it
 first. Preserve one implementation and exact facade identity; keep framework
@@ -491,6 +503,14 @@ their canonical owners. Feature commands keep their guards and delegate this
 structural step. Reject feature-local default-node replacement, reset aliases,
 and type or mode knobs on this exact operation.
 
+A structural input rule consumes its matched shorthand only when the actual
+transaction operation stages a change. Structural commands return a truthful
+boolean; a rule whose attempted conversion returns `false` calls `decline()` so
+the candidate draft is discarded and the original input runs. Keep read-only
+matching separate from mutation and preserve `next()` for composition. Do not
+shadow-copy the document in feature rules or add a general transaction savepoint
+for this local admission job.
+
 ### Transient View Lifetime Gate
 
 Choose an existing lifetime owner before naming a public view abstraction.
@@ -550,6 +570,15 @@ external renderer discards only contributions with that provider's explicit
 identity attribute. Never infer ownership from CSS classes or discard neutral
 annotations along with syntax. Keep parser controls inside copied UI, outside
 the external-text protocol.
+
+A code command constructs its final schema-valid node in one step. Retain an
+authored insert/upsert policy only when its selection or empty-block behavior
+differs from generated insertion; do not expose an intermediate default type.
+An optional button-specific rewrite, such as JSON prettifying, belongs to the
+copied component and uses canonical text edits so selection, annotations and
+history remain model-owned. A syntax reader consumes the supplied highlighter
+without registering or replacing grammars during a read; copied native and
+static kits configure their shared parser resource before publishing it.
 
 Sparse attributes that custom element components receive through React use
 `render.useViewElementAttributes`, one React hook host per enabled plugin per

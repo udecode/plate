@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { join, relative, resolve, sep } from "node:path";
+import { pathToFileURL } from "node:url";
 
-import { parse } from '@babel/parser';
+import { parse } from "@babel/parser";
 
-import { extractJavaScriptCodeFences } from './check-plate-doc-code-contracts.mjs';
+import { extractJavaScriptCodeFences } from "./check-plate-doc-code-contracts.mjs";
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -16,12 +16,12 @@ const compareStrings = (left, right) => {
   return 0;
 };
 
-const repoRoot = resolve(import.meta.dirname, '../..');
-const sourceRoots = ['packages', 'apps', 'benchmarks', 'content', '.changeset'];
+const repoRoot = resolve(import.meta.dirname, "../..");
+const sourceRoots = ["packages", "apps", "benchmarks", "content", ".changeset"];
 export const ciGeneratedPlateSchemaOutputRoots = Object.freeze([
-  'apps/www/public/r',
-  'apps/www/public/rd',
-  'templates',
+  "apps/www/public/r",
+  "apps/www/public/rd",
+  "templates",
 ]);
 const markdownFilePattern = /\.mdx?$/;
 const staticPluginApiReferencePattern = /\b[A-Za-z_$][\w$]*Plugin\.api\b/gu;
@@ -49,170 +49,170 @@ const pluginPortalOwnerNamePattern =
   /^(?:installed|owner|plugin|portal|reference|resolved|target)/i;
 const schemaTypeOperationNamePattern = /(?:Block|Element|Node)Types?$/;
 const pluginConfigurationMethods = new Set([
-  'configure',
-  'extend',
-  'extendPlugin',
+  "configure",
+  "extend",
+  "extendPlugin",
 ]);
 const deletedPluginBuilderMethods = new Set([
-  'clone',
-  'extendApi',
-  'extendCodecs',
-  'extendEditorApi',
-  'extendExtension',
-  'extendHtmlCodec',
-  'extendSelectors',
-  'extendTx',
-  'extendTxGroup',
-  'withComponent',
+  "clone",
+  "extendApi",
+  "extendCodecs",
+  "extendEditorApi",
+  "extendExtension",
+  "extendHtmlCodec",
+  "extendSelectors",
+  "extendTx",
+  "extendTxGroup",
+  "withComponent",
 ]);
 const pluginAuthoringMethods = new Set([
-  'configure',
-  'configurePlugin',
-  'extend',
-  'extendPlugin',
+  "configure",
+  "configurePlugin",
+  "extend",
+  "extendPlugin",
   ...deletedPluginBuilderMethods,
 ]);
 const contextualConfigureKeys = new Set([
-  'initialState',
-  'on',
-  'override',
-  'render',
-  'shortcuts',
-  'slots',
+  "initialState",
+  "on",
+  "override",
+  "render",
+  "shortcuts",
+  "slots",
 ]);
 const deletedPlatePluginDefinitionKeys = new Set([
-  'clipboard',
-  'config',
-  'extension',
-  'handlers',
-  'key',
-  'pluginApi',
-  'targetPluginKeys',
-  'tx',
-  'type',
-  'validateConfiguration',
+  "clipboard",
+  "config",
+  "extension",
+  "handlers",
+  "key",
+  "pluginApi",
+  "targetPluginKeys",
+  "tx",
+  "type",
+  "validateConfiguration",
 ]);
 const deletedPlitePluginDefinitionKeys = new Set([
-  'config',
-  'state',
-  'tx',
-  'validateConfiguration',
+  "config",
+  "state",
+  "tx",
+  "validateConfiguration",
 ]);
 const deletedPluginTypeSymbols = new Set([
-  'AnyPluginConfig',
-  'BasePluginExtensionContract',
-  'EffectiveExtensionContractField',
-  'EffectivePlateContractField',
-  'InferConfig',
-  'PluginConfig',
-  'TPlatePluginConfig',
-  'UnifiedRuntimeBasePluginConfig',
-  'UnifiedRuntimePlatePluginConfig',
+  "AnyPluginConfig",
+  "BasePluginExtensionContract",
+  "EffectiveExtensionContractField",
+  "EffectivePlateContractField",
+  "InferConfig",
+  "PluginConfig",
+  "TPlatePluginConfig",
+  "UnifiedRuntimeBasePluginConfig",
+  "UnifiedRuntimePlatePluginConfig",
 ]);
-const deletedPluginContractMemberKeys = new Set(['__config', 'pluginApi']);
+const deletedPluginContractMemberKeys = new Set(["__config", "pluginApi"]);
 const factoryOnlyCapabilityKeys = new Set([
-  'api',
-  'commands',
-  'read',
-  'readMiddleware',
-  'update',
+  "api",
+  "commands",
+  "read",
+  "readMiddleware",
+  "update",
 ]);
 const staleCapabilityFactoryContextBindings = new Set([
-  'editorApi',
-  'editorReads',
-  'editorTransforms',
-  'pluginApi',
-  'pluginReads',
-  'pluginTransforms',
+  "editorApi",
+  "editorReads",
+  "editorTransforms",
+  "pluginApi",
+  "pluginReads",
+  "pluginTransforms",
 ]);
 const plateEditorConstructionOptionIndexes = new Map([
-  ['createEditor', 0],
-  ['createStaticEditor', 0],
-  ['useEditor', 0],
-  ['useStaticEditor', 0],
+  ["createEditor", 0],
+  ["createStaticEditor", 0],
+  ["useEditor", 0],
+  ["useStaticEditor", 0],
 ]);
 const defaultPlateEditorConstructorNames = new Map(
   [...plateEditorConstructionOptionIndexes.keys()].map((name) => [name, name])
 );
 const skippedDirectoryNames = new Set([
-  '.next',
-  '.contentlayer',
-  '.source',
-  '.turbo',
-  'coverage',
-  'dist',
-  'node_modules',
-  'public',
-  'templates',
+  ".next",
+  ".contentlayer",
+  ".source",
+  ".turbo",
+  "coverage",
+  "dist",
+  "node_modules",
+  "public",
+  "templates",
 ]);
 export const isPlateSchemaAdoptionSourcePath = (file) =>
   auditedFilePattern.test(file) &&
-  !file.split('/').some((part) => skippedDirectoryNames.has(part));
+  !file.split("/").some((part) => skippedDirectoryNames.has(part));
 const deletedNodeBagKeys = new Set([
-  'component',
-  'dangerouslyAllowAttributes',
-  'element',
-  'isContainer',
-  'isDecoration',
-  'isElement',
-  'isInline',
-  'isLeaf',
-  'isMarkableVoid',
-  'isMetadataProp',
-  'isSelectable',
-  'isStrictSiblings',
-  'isVoid',
-  'mark',
-  'toDataAttributes',
-  'type',
+  "component",
+  "dangerouslyAllowAttributes",
+  "element",
+  "isContainer",
+  "isDecoration",
+  "isElement",
+  "isInline",
+  "isLeaf",
+  "isMarkableVoid",
+  "isMetadataProp",
+  "isSelectable",
+  "isStrictSiblings",
+  "isVoid",
+  "mark",
+  "toDataAttributes",
+  "type",
 ]);
 const deletedSymbols = new Set([
-  'PluginBaseNode',
-  'PluginNodeMark',
-  'PluginSchemaOptions',
-  'freezePlateSchemaOptions',
-  'resolvePlatePluginType',
+  "PluginBaseNode",
+  "PluginNodeMark",
+  "PluginSchemaOptions",
+  "freezePlateSchemaOptions",
+  "resolvePlatePluginType",
 ]);
 const privateSchemaGroupOwners = new Set([
-  'packages/platejs/src/internal/plugin/compilePlateModel.ts',
+  "packages/platejs/src/internal/plugin/compilePlateModel.ts",
 ]);
-const plitePrivateWitnessOwner = 'packages/plitejs/src/interfaces/editor.ts';
+const plitePrivateWitnessOwner = "packages/plitejs/src/interfaces/editor.ts";
 const internalRenderNodeOwners = new Set([
-  'packages/platejs/src/internal/plugin/resolvePlugins.ts',
-  'packages/platejs/src/lib/plugin/definePlugin.ts',
-  'packages/platejs/src/react/plugin/toReactPlugin.ts',
+  "packages/platejs/src/internal/plugin/resolvePlugins.ts",
+  "packages/platejs/src/lib/plugin/definePlugin.ts",
+  "packages/platejs/src/react/plugin/toReactPlugin.ts",
 ]);
 const intentionalRenderNodeNegativeContract =
-  'packages/platejs/src/lib/plugin/definePlugin.typed.spec.ts';
+  "packages/platejs/src/lib/plugin/definePlugin.typed.spec.ts";
 const intentionalPluginDeclarationStageMarker =
-  '@plate-plugin-declaration-stage';
+  "@plate-plugin-declaration-stage";
 const intentionalRawCodecNegativeMarker =
-  '@plate-schema-adoption-negative-codec';
+  "@plate-schema-adoption-negative-codec";
 const intentionalPliteConfigNegativeMarker =
-  '@ts-expect-error Plite plugins validate the candidate context, not Plate config';
-const intentionalReactFactoryNegativeMarker = '@ts-expect-error react ';
+  "@ts-expect-error Plite plugins validate the candidate context, not Plate config";
+const intentionalReactFactoryNegativeMarker = "@ts-expect-error react ";
 const intentionalRawCodecNegativeContractCounts = new Map([
-  ['packages/platejs/src/internal/plugin/compilePlateHtmlCodec.spec.ts', 1],
-  ['packages/platejs/src/lib/plugins/ProductCodecs.spec.ts', 1],
-  ['packages/platejs/src/lib/plugins/html/HtmlPlugin.codec.spec.ts', 1],
-  ['packages/platejs/type-tests/base-plugin-contracts.ts', 1],
-  ['packages/platejs/src/markdown/lib/internal/markdownCodecs.spec.ts', 1],
+  ["packages/platejs/src/internal/plugin/compilePlateHtmlCodec.spec.ts", 1],
+  ["packages/platejs/src/lib/plugins/ProductCodecs.spec.ts", 1],
+  ["packages/platejs/src/lib/plugins/html/HtmlPlugin.codec.spec.ts", 1],
+  ["packages/platejs/type-tests/base-plugin-contracts.ts", 1],
+  ["packages/platejs/src/markdown/lib/internal/markdownCodecs.spec.ts", 1],
 ]);
 const intentionalPliteConfigNegativeContractCounts = new Map([
-  ['packages/plitejs/test/generic-plugin-contract.ts', 1],
+  ["packages/plitejs/test/generic-plugin-contract.ts", 1],
 ]);
 const intentionalReactFactoryNegativeContractCounts = new Map([
-  ['packages/plitejs/test/react/generic-react-editor-contract.tsx', 2],
+  ["packages/plitejs/test/react/generic-react-editor-contract.tsx", 2],
 ]);
 const intentionalRuntimeNegativeDefinitionFields = new Map([
   [
-    'packages/platejs/src/react/plugin/definePlugin.spec.ts',
-    new Set(['invalidApi:api']),
+    "packages/platejs/src/react/plugin/definePlugin.spec.ts",
+    new Set(["invalidApi:api"]),
   ],
 ]);
 const packageConfigureInstallationOwners = new Set([
-  'packages/platejs/src/lib/plugins/getCorePlugins.internal.ts',
-  'packages/platejs/src/react/editor/getPlateCorePlugins.internal.ts',
+  "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts",
+  "packages/platejs/src/react/editor/getPlateCorePlugins.internal.ts",
 ]);
 const packagePluginSourcePattern =
   /^packages\/[^/]+\/src\/.*\.(?:cjs|cts|js|jsx|mjs|mts|ts|tsx)$/;
@@ -236,27 +236,27 @@ const publicCoreModulePattern =
   /^(?:@platejs\/core(?:\/react|\/static)?|platejs(?:\/react|\/static)?)$/;
 const plateModulePattern = /^(?:platejs|@platejs\/)/;
 const internalCoreContractTypeSymbols = new Set([
-  'InternalDefinitionOf',
-  'InternalPluginDefinitionOf',
-  'PluginDefinitionCarrier',
-  'StaticPluginTypeLambda',
+  "InternalDefinitionOf",
+  "InternalPluginDefinitionOf",
+  "PluginDefinitionCarrier",
+  "StaticPluginTypeLambda",
 ]);
 const privateCoreDefinitionCarrierSymbols = new Set([
-  'InternalDefinitionOf',
-  'PluginDefinitionCarrier',
+  "InternalDefinitionOf",
+  "PluginDefinitionCarrier",
 ]);
 const internalCoreCompilerTypeSymbols = new Set([
-  'LowerBasePlugin',
-  'NormalizeBasePluginInput',
-  'NormalizePluginInput',
+  "LowerBasePlugin",
+  "NormalizeBasePluginInput",
+  "NormalizePluginInput",
 ]);
 const internalPliteContractTypeSymbols = new Set([
-  'PluginTypeLambda',
-  'PluginDependencyContractReference',
-  'PluginDependencyReferenceFor',
-  'PluginInstalledCapabilitiesOf',
-  'PluginTypeProviderOf',
-  'PluginWitnessFor',
+  "PluginTypeLambda",
+  "PluginDependencyContractReference",
+  "PluginDependencyReferenceFor",
+  "PluginInstalledCapabilitiesOf",
+  "PluginTypeProviderOf",
+  "PluginWitnessFor",
 ]);
 const liveRegistryNodeModulePattern =
   /^(?:@\/registry\/components\/editor\/|\.\/)(?:block-list|blockquote|callout|caption|code|code-block|code-drawing|column|comment|date|details|footnote|heading|highlight|horizontal-rule|kbd|link|math|media-audio|media-embed|media-file|media-image|media-video|mention|paragraph|suggestion|table|toc)$/;
@@ -264,273 +264,273 @@ const historicalOrGeneratedSourcePattern =
   /(?:^|\/)(?:generated|historical)(?:\/|$)|^(?:apps\/www\/public|templates)\//;
 const intentionalProductionExtendStageChains = new Map([
   [
-    'packages/platejs/src/lib/plugins/affinity/AffinityPlugin.ts',
-    [[['commands']]],
+    "packages/platejs/src/lib/plugins/affinity/AffinityPlugin.ts",
+    [[["commands"]]],
   ],
   [
-    'packages/platejs/src/lib/plugins/HistoryPlugin.ts',
-    [[['$factory:history']]],
+    "packages/platejs/src/lib/plugins/HistoryPlugin.ts",
+    [[["$factory:history"]]],
   ],
   [
-    'packages/platejs/src/lib/plugins/dom/DOMPlugin.ts',
-    [[['$value:plateDOMPlugin']]],
+    "packages/platejs/src/lib/plugins/dom/DOMPlugin.ts",
+    [[["$value:plateDOMPlugin"]]],
   ],
   [
-    'packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts',
-    [[['commands', 'contributions']]],
+    "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts",
+    [[["commands", "contributions"]]],
   ],
   [
-    'packages/platejs/src/lib/plugins/override/OverridePlugin.ts',
-    [[['commands', 'corrections', 'readMiddleware']]],
+    "packages/platejs/src/internal/plugin/OverridePlugin.ts",
+    [[["commands", "corrections", "readMiddleware"]]],
   ],
   [
-    'packages/platejs/src/react/editor/getPlateCorePlugins.internal.ts',
-    [[['$value:plateReactPlugin']]],
+    "packages/platejs/src/react/editor/getPlateCorePlugins.internal.ts",
+    [[["$value:plateReactPlugin"]]],
   ],
   [
-    'packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts',
-    [[['corrections', 'on', 'prepareDocument', 'read']]],
+    "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts",
+    [[["corrections", "on", "prepareDocument", "read"]]],
   ],
   [
-    'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts',
-    [[['update'], ['commands', 'contributions']], [['decorate', 'on']]],
+    "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts",
+    [[["update"], ["commands", "contributions"]], [["decorate", "on"]]],
   ],
   [
-    'packages/platejs/src/dnd/react/internal/DndStorePlugin.ts',
-    [[['read'], ['api']]],
+    "packages/platejs/src/dnd/react/internal/DndStorePlugin.ts",
+    [[["read"], ["api"]]],
   ],
   [
-    'packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.ts',
-    [[['api']]],
+    "packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.ts",
+    [[["api"]]],
   ],
   [
-    'packages/platejs/src/features/comments/BaseCommentsPlugin.ts',
-    [[['activate', 'api', 'decorate']]],
+    "packages/platejs/src/features/comments/BaseCommentsPlugin.ts",
+    [[["activate", "api", "decorate"]]],
   ],
-  ['packages/platejs/src/features/date/lib/BaseDatePlugin.ts', [[['update']]]],
+  ["packages/platejs/src/features/date/lib/BaseDatePlugin.ts", [[["update"]]]],
   [
-    'packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts',
-    [[['corrections']]],
+    "packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts",
+    [[["corrections"]]],
   ],
   [
-    'packages/platejs/src/features/list/lib/BaseListPlugin.ts',
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts",
     [
       [
-        ['codecs'],
-        ['api', 'read'],
-        ['override', 'update'],
-        ['commands'],
-        ['corrections'],
+        ["codecs"],
+        ["api", "read"],
+        ["override", "update"],
+        ["commands"],
+        ["corrections"],
       ],
     ],
   ],
   [
-    'packages/platejs/src/features/link/lib/BaseLinkPlugin.ts',
-    [[['update'], ['commands']]],
+    "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
+    [[["update"], ["commands"]]],
   ],
-  ['packages/platejs/src/csv/lib/CsvPlugin.ts', [[['api'], ['codecs']]]],
-  ['packages/platejs/src/markdown/lib/MarkdownPlugin.ts', [[['api']]]],
-  ['packages/platejs/src/features/toc/lib/BaseTocPlugin.ts', [[['read']]]],
+  ["packages/platejs/src/csv/lib/CsvPlugin.ts", [[["api"], ["codecs"]]]],
+  ["packages/platejs/src/markdown/lib/MarkdownPlugin.ts", [[["api"]]]],
+  ["packages/platejs/src/features/toc/lib/BaseTocPlugin.ts", [[["read"]]]],
   [
-    'packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts',
-    [[['api', 'corrections', 'on', 'selectors', 'update'], ['commands']]],
-  ],
-  [
-    'packages/platejs/src/features/find/lib/BaseFindPlugin.ts',
-    [[['api', 'decorate', 'on', 'selectors', 'update']]],
+    "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts",
+    [[["api", "corrections", "on", "selectors", "update"], ["commands"]]],
   ],
   [
-    'packages/platejs/src/features/tag/lib/BaseTagPlugin.ts',
-    [[['read', 'update'], ['read']]],
+    "packages/platejs/src/features/find/lib/BaseFindPlugin.ts",
+    [[["api", "decorate", "on", "selectors", "update"]]],
   ],
   [
-    'packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts',
-    [[['activate', 'api', 'on', 'update'], ['commands']]],
+    "packages/platejs/src/features/tag/lib/BaseTagPlugin.ts",
+    [[["read", "update"], ["read"]]],
   ],
   [
-    'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',
+    "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts",
+    [[["activate", "api", "on", "update"], ["commands"]]],
+  ],
+  [
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
     [
       [
-        ['api'],
-        ['api'],
-        ['api', 'read'],
-        ['api'],
-        ['read'],
-        ['api', 'read'],
-        ['update'],
-        ['update'],
-        ['contributions'],
-        ['corrections'],
-        ['readMiddleware'],
-        ['commands'],
+        ["api"],
+        ["api"],
+        ["api", "read"],
+        ["api"],
+        ["read"],
+        ["api", "read"],
+        ["update"],
+        ["update"],
+        ["contributions"],
+        ["corrections"],
+        ["readMiddleware"],
+        ["commands"],
       ],
     ],
   ],
   [
-    'packages/platejs/src/ai/react/CopilotPlugin.tsx',
+    "packages/platejs/src/ai/react/CopilotPlugin.tsx",
     [
       [
-        ['api', 'slots'],
-        ['commands', 'on', 'selectors', 'shortcuts', 'slots'],
+        ["api", "slots"],
+        ["commands", "on", "selectors", "shortcuts", "slots"],
       ],
     ],
   ],
   [
-    'packages/platejs/src/ai/react/AIChatPlugin.ts',
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
     [
       [
-        ['api', 'read', 'selectors', 'update'],
-        ['commands', 'corrections', 'effectTypes', 'on'],
+        ["api", "read", "selectors", "update"],
+        ["commands", "corrections", "effectTypes", "on"],
       ],
     ],
   ],
   [
-    'packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts',
-    [[['commands'], ['update']]],
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts",
+    [[["commands"], ["update"]]],
   ],
-  ['packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts', [[['commands']]]],
+  ["packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts", [[["commands"]]]],
   [
-    'packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts',
-    [[['commands']]],
-  ],
-  [
-    'packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts',
-    [[['commands']]],
+    "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts",
+    [[["commands"]]],
   ],
   [
-    'packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts',
-    [[['update'], ['shortcuts']], [['corrections', 'update']]],
+    "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts",
+    [[["commands"]]],
   ],
-  ['packages/platejs/src/math/lib/BaseEquationPlugin.ts', [[['update']]]],
   [
-    'packages/platejs/src/features/media/lib/BaseMediaPlugin.ts',
+    "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts",
+    [[["update"], ["shortcuts"]], [["corrections", "update"]]],
+  ],
+  ["packages/platejs/src/math/lib/BaseEquationPlugin.ts", [[["update"]]]],
+  [
+    "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts",
     [
-      [['$factory:defineMediaPlugin']],
-      [['$factory:defineMediaPlugin']],
-      [['$factory:defineMediaPlugin']],
+      [["$factory:defineMediaPlugin"]],
+      [["$factory:defineMediaPlugin"]],
+      [["$factory:defineMediaPlugin"]],
     ],
   ],
   [
-    'packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts',
-    [[['$factory:defineMediaPlugin'], ['contributions']]],
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts",
+    [[["$factory:defineMediaPlugin"], ["contributions"]]],
   ],
   [
-    'packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts',
-    [[['$factory:defineMediaPlugin']]],
+    "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts",
+    [[["$factory:defineMediaPlugin"]]],
   ],
-  ['packages/platejs/src/yjs/react/YjsPlugin.tsx', [[['$factory:yjs']]]],
+  ["packages/platejs/src/yjs/react/YjsPlugin.tsx", [[["$factory:yjs"]]]],
 ]);
 const allowedSchemaFactoryBindings = new Set([
-  'initialState',
-  'name',
-  'plugins',
-  'targetElementTypes',
+  "initialState",
+  "name",
+  "plugins",
+  "targetElementTypes",
 ]);
 // Raw queries are reserved for runtime discovery and contextual contract laws.
 // Every owning file has an exact reviewed count so tests cannot hide new drift.
 const intentionalRawSchemaQueryCounts = new Map([
   [
-    'apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx',
+    "apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx",
     1,
   ],
-  ['packages/platejs/src/ai/lib/BaseAIPlugin.spec.tsx', 6],
+  ["packages/platejs/src/ai/lib/BaseAIPlugin.spec.tsx", 6],
   [
-    'packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts',
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts",
     8,
   ],
-  ['packages/platejs/src/ai/react/AIChatPlugin.ts', 1],
-  ['packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.spec.ts', 3],
-  ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 6],
-  ['packages/platejs/src/lib/editor/withPlite.slow.ts', 2],
-  ['packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
-  ['packages/platejs/src/lib/plugins/html/HtmlPlugin.ts', 4],
-  ['packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts', 1],
-  ['packages/platejs/src/migrations/migratePlateV54Ast.internal.ts', 1],
-  ['packages/platejs/src/migrations/migratePlateV54Profile.internal.ts', 1],
-  ['packages/platejs/type-tests/plugin-schema-contracts.ts', 8],
-  ['packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx', 2],
-  ['packages/plitejs/test/editor-foundation-contract.ts', 2],
-  ['packages/plitejs/test/schema-contract.ts', 10],
-  ['packages/plitejs/test/schema-inference-contract.ts', 2],
-  ['packages/plitejs/test/schema-validation-diagnostics.test.ts', 4],
-  ['packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.spec.ts', 1],
-  ['packages/platejs/src/markdown/lib/internal/markdownConversion.ts', 1],
-  ['packages/platejs/src/features/table/lib/BaseTablePlugin.schema.spec.ts', 5],
-  ['packages/platejs/src/features/tag/lib/BaseTagPlugin.spec.tsx', 1],
+  ["packages/platejs/src/ai/react/AIChatPlugin.ts", 1],
+  ["packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.spec.ts", 3],
+  ["packages/platejs/src/internal/plugin/compilePlateModel.spec.ts", 6],
+  ["packages/platejs/src/lib/editor/withPlite.slow.ts", 2],
+  ["packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts", 1],
+  ["packages/platejs/src/lib/plugins/html/HtmlPlugin.ts", 4],
+  ["packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts", 1],
+  ["packages/platejs/src/migrations/migratePlateV54Ast.internal.ts", 1],
+  ["packages/platejs/src/migrations/migratePlateV54Profile.internal.ts", 1],
+  ["packages/platejs/type-tests/plugin-schema-contracts.ts", 8],
+  ["packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx", 2],
+  ["packages/plitejs/test/editor-foundation-contract.ts", 2],
+  ["packages/plitejs/test/schema-contract.ts", 10],
+  ["packages/plitejs/test/schema-inference-contract.ts", 2],
+  ["packages/plitejs/test/schema-validation-diagnostics.test.ts", 4],
+  ["packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.spec.ts", 1],
+  ["packages/platejs/src/markdown/lib/internal/markdownConversion.ts", 1],
+  ["packages/platejs/src/features/table/lib/BaseTablePlugin.schema.spec.ts", 5],
+  ["packages/platejs/src/features/tag/lib/BaseTagPlugin.spec.tsx", 1],
 ]);
 const intentionalNamedSchemaLineages = new Map([
   [
-    'apps/www/src/registry/components/editor/remote-cursor-overlay.spec.tsx',
-    new Map([['copied-yjs-presentation@1', 1]]),
+    "apps/www/src/registry/components/editor/remote-cursor-overlay.spec.tsx",
+    new Map([["copied-yjs-presentation@1", 1]]),
   ],
-  ['content/docs/(guides)/editor.cn.mdx', new Map([['acme-document@3', 1]])],
-  ['content/docs/(guides)/editor.mdx', new Map([['acme-document@3', 1]])],
+  ["content/docs/(guides)/editor.cn.mdx", new Map([["acme-document@3", 1]])],
+  ["content/docs/(guides)/editor.mdx", new Map([["acme-document@3", 1]])],
   [
-    'content/docs/(plugins)/(collaboration)/yjs.cn.mdx',
-    new Map([['yjs-example@1', 1]]),
-  ],
-  [
-    'content/docs/(plugins)/(collaboration)/yjs.mdx',
-    new Map([['yjs-example@1', 1]]),
+    "content/docs/(plugins)/(collaboration)/yjs.cn.mdx",
+    new Map([["yjs-example@1", 1]]),
   ],
   [
-    'packages/platejs/src/yjs/YjsPlugin.api.spec.ts',
-    new Map([['plate:yjs-api-test@1', 3]]),
+    "content/docs/(plugins)/(collaboration)/yjs.mdx",
+    new Map([["yjs-example@1", 1]]),
   ],
   [
-    'apps/www/src/registry/examples/collaboration-demo.tsx',
-    new Map([['plate-collaboration-demo@1', 1]]),
+    "packages/platejs/src/yjs/YjsPlugin.api.spec.ts",
+    new Map([["plate:yjs-api-test@1", 3]]),
   ],
   [
-    'apps/www/src/registry/examples/document-migration-demo.tsx',
-    new Map([['document-migration-demo@54', 1]]),
+    "apps/www/src/registry/examples/collaboration-demo.tsx",
+    new Map([["plate-collaboration-demo@1", 1]]),
   ],
   [
-    'packages/platejs/src/migrations/migratePlateV54.spec.ts',
-    new Map([['plate@54', 20]]),
+    "apps/www/src/registry/examples/document-migration-demo.tsx",
+    new Map([["document-migration-demo@54", 1]]),
   ],
   [
-    'packages/platejs/src/migrations/migratePlateV54.editor.spec.ts',
-    new Map([['plate@54', 1]]),
+    "packages/platejs/src/migrations/migratePlateV54.spec.ts",
+    new Map([["plate@54", 20]]),
   ],
   [
-    'packages/platejs/src/migrations/migratePlateV54Ast.spec.ts',
-    new Map([['plate@54', 2]]),
+    "packages/platejs/src/migrations/migratePlateV54.editor.spec.ts",
+    new Map([["plate@54", 1]]),
   ],
   [
-    'packages/platejs/type-tests/plate-editor-value-contracts.ts',
+    "packages/platejs/src/migrations/migratePlateV54Ast.spec.ts",
+    new Map([["plate@54", 2]]),
+  ],
+  [
+    "packages/platejs/type-tests/plate-editor-value-contracts.ts",
     new Map([
-      ['conditional-policy@1', 1],
-      ['identity-only@1', 1],
+      ["conditional-policy@1", 1],
+      ["identity-only@1", 1],
     ]),
   ],
   [
-    'packages/platejs/test/yjs/react-contract.spec.tsx',
-    new Map([['plate:yjs-react-contract@1', 1]]),
+    "packages/platejs/test/yjs/react-contract.spec.tsx",
+    new Map([["plate:yjs-react-contract@1", 1]]),
   ],
 ]);
 const requiredNamedSchemaLineageFiles = new Set([
-  'content/docs/(guides)/editor.cn.mdx',
-  'content/docs/(guides)/editor.mdx',
-  'content/docs/(plugins)/(collaboration)/yjs.cn.mdx',
-  'content/docs/(plugins)/(collaboration)/yjs.mdx',
-  'packages/platejs/src/yjs/YjsPlugin.api.spec.ts',
+  "content/docs/(guides)/editor.cn.mdx",
+  "content/docs/(guides)/editor.mdx",
+  "content/docs/(plugins)/(collaboration)/yjs.cn.mdx",
+  "content/docs/(plugins)/(collaboration)/yjs.mdx",
+  "packages/platejs/src/yjs/YjsPlugin.api.spec.ts",
 ]);
 
-const toPosixPath = (path) => path.split(sep).join('/');
+const toPosixPath = (path) => path.split(sep).join("/");
 
 const getPropertyName = (node) => {
-  if (node?.type === 'Identifier') return node.name;
-  if (node?.type === 'StringLiteral') return node.value;
-  if (node?.type === 'NumericLiteral') return String(node.value);
+  if (node?.type === "Identifier") return node.name;
+  if (node?.type === "StringLiteral") return node.value;
+  if (node?.type === "NumericLiteral") return String(node.value);
 
   return undefined;
 };
 
 const getStaticString = (node) => {
-  if (node?.type === 'StringLiteral') return node.value;
-  if (node?.type === 'NumericLiteral') return String(node.value);
-  if (node?.type === 'TemplateLiteral' && node.expressions.length === 0) {
+  if (node?.type === "StringLiteral") return node.value;
+  if (node?.type === "NumericLiteral") return String(node.value);
+  if (node?.type === "TemplateLiteral" && node.expressions.length === 0) {
     return node.quasis[0]?.value.cooked;
   }
 
@@ -538,10 +538,10 @@ const getStaticString = (node) => {
 };
 
 const getObjectProperty = (node, name) =>
-  node?.type === 'ObjectExpression'
+  node?.type === "ObjectExpression"
     ? node.properties.find(
         (property) =>
-          property.type !== 'SpreadElement' &&
+          property.type !== "SpreadElement" &&
           getPropertyName(property.key) === name
       )
     : undefined;
@@ -551,8 +551,8 @@ const getResolvedObjectPropertyName = (
   staticStringBindings = new Map()
 ) => {
   if (
-    property?.type !== 'ObjectProperty' &&
-    property?.type !== 'ObjectMethod'
+    property?.type !== "ObjectProperty" &&
+    property?.type !== "ObjectMethod"
   ) {
     return undefined;
   }
@@ -562,8 +562,8 @@ const getResolvedObjectPropertyName = (
 
   return (
     getStaticString(key) ??
-    (key?.type === 'Identifier'
-      ? typeof staticStringBindings.getAt === 'function'
+    (key?.type === "Identifier"
+      ? typeof staticStringBindings.getAt === "function"
         ? staticStringBindings.getAt(key.name, property.start, property)
         : staticStringBindings.get(key.name)
       : undefined)
@@ -575,10 +575,10 @@ const getResolvedObjectProperty = (
   name,
   staticStringBindings = new Map()
 ) =>
-  node?.type === 'ObjectExpression'
+  node?.type === "ObjectExpression"
     ? node.properties.find(
         (property) =>
-          property.type !== 'SpreadElement' &&
+          property.type !== "SpreadElement" &&
           getResolvedObjectPropertyName(property, staticStringBindings) === name
       )
     : undefined;
@@ -586,10 +586,10 @@ const getResolvedObjectProperty = (
 const unwrapTypedExpression = (node) => {
   if (
     [
-      'TSAsExpression',
-      'TSNonNullExpression',
-      'TSSatisfiesExpression',
-      'TypeCastExpression',
+      "TSAsExpression",
+      "TSNonNullExpression",
+      "TSSatisfiesExpression",
+      "TypeCastExpression",
     ].includes(node?.type)
   ) {
     return unwrapTypedExpression(node.expression);
@@ -612,13 +612,13 @@ const collectStaticStringBindings = (ast) => {
   const scopeByNode = new WeakMap();
   const isFunctionNode = (node) =>
     [
-      'ArrowFunctionExpression',
-      'FunctionDeclaration',
-      'FunctionExpression',
-      'ObjectMethod',
+      "ArrowFunctionExpression",
+      "FunctionDeclaration",
+      "FunctionExpression",
+      "ObjectMethod",
     ].includes(node?.type);
   const visitScopes = (node, scope, parent) => {
-    if (!node || typeof node !== 'object') return;
+    if (!node || typeof node !== "object") return;
 
     parentByNode.set(node, parent);
     scopeByNode.set(node, scope);
@@ -634,7 +634,7 @@ const collectStaticStringBindings = (ast) => {
       };
       childScope.functionOwner = childScope;
       childScopeByNode.set(node, childScope);
-    } else if (node.type === 'BlockStatement' || node.type === 'CatchClause') {
+    } else if (node.type === "BlockStatement" || node.type === "CatchClause") {
       childScope = {
         bindings: new Map(),
         functionOwner: scope.functionOwner,
@@ -645,15 +645,15 @@ const collectStaticStringBindings = (ast) => {
 
     for (const [key, value] of Object.entries(node)) {
       if (
-        ['comments', 'errors', 'extra', 'loc', 'tokens'].includes(key) ||
-        key === 'start' ||
-        key === 'end'
+        ["comments", "errors", "extra", "loc", "tokens"].includes(key) ||
+        key === "start" ||
+        key === "end"
       ) {
         continue;
       }
       if (Array.isArray(value)) {
         for (const child of value) visitScopes(child, childScope, node);
-      } else if (value && typeof value === 'object' && value.type) {
+      } else if (value && typeof value === "object" && value.type) {
         visitScopes(value, childScope, node);
       }
     }
@@ -715,7 +715,7 @@ const collectStaticStringBindings = (ast) => {
     const resolved = unwrapTypedExpression(value);
     const staticString =
       getStaticString(resolved) ??
-      (resolved?.type === 'Identifier'
+      (resolved?.type === "Identifier"
         ? readName(resolved.name, position, node)
         : undefined);
 
@@ -727,7 +727,7 @@ const collectStaticStringBindings = (ast) => {
   };
   const declarePattern = (pattern, scope, position) => {
     if (!pattern) return;
-    if (pattern.type === 'Identifier') {
+    if (pattern.type === "Identifier") {
       const binding = declare(scope, pattern.name);
 
       binding.stringEvents.push({
@@ -739,17 +739,17 @@ const collectStaticStringBindings = (ast) => {
       return;
     }
     if (
-      pattern.type === 'AssignmentPattern' ||
-      pattern.type === 'RestElement'
+      pattern.type === "AssignmentPattern" ||
+      pattern.type === "RestElement"
     ) {
       declarePattern(pattern.left ?? pattern.argument, scope, position);
 
       return;
     }
-    if (pattern.type === 'ObjectPattern') {
+    if (pattern.type === "ObjectPattern") {
       for (const property of pattern.properties) {
         declarePattern(
-          property.type === 'RestElement' ? property.argument : property.value,
+          property.type === "RestElement" ? property.argument : property.value,
           scope,
           position
         );
@@ -757,7 +757,7 @@ const collectStaticStringBindings = (ast) => {
 
       return;
     }
-    if (pattern.type === 'ArrayPattern') {
+    if (pattern.type === "ArrayPattern") {
       for (const element of pattern.elements) {
         declarePattern(element, scope, position);
       }
@@ -766,7 +766,7 @@ const collectStaticStringBindings = (ast) => {
 
   walkAst(ast, (node) => {
     if (isFunctionNode(node)) {
-      if (node.type === 'FunctionDeclaration' && node.id) {
+      if (node.type === "FunctionDeclaration" && node.id) {
         declarePattern(node.id, scopeByNode.get(node) ?? rootScope, node.start);
       }
 
@@ -779,10 +779,10 @@ const collectStaticStringBindings = (ast) => {
       return;
     }
     if (
-      (node.type === 'ClassDeclaration' ||
-        node.type === 'ImportDefaultSpecifier' ||
-        node.type === 'ImportNamespaceSpecifier' ||
-        node.type === 'ImportSpecifier') &&
+      (node.type === "ClassDeclaration" ||
+        node.type === "ImportDefaultSpecifier" ||
+        node.type === "ImportNamespaceSpecifier" ||
+        node.type === "ImportSpecifier") &&
       (node.id ?? node.local)
     ) {
       declarePattern(
@@ -793,7 +793,7 @@ const collectStaticStringBindings = (ast) => {
 
       return;
     }
-    if (node.type === 'CatchClause') {
+    if (node.type === "CatchClause") {
       declarePattern(
         node.param,
         childScopeByNode.get(node),
@@ -802,17 +802,17 @@ const collectStaticStringBindings = (ast) => {
 
       return;
     }
-    if (node.type === 'VariableDeclarator') {
+    if (node.type === "VariableDeclarator") {
       const declaration = parentByNode.get(node);
       let declarationScope = scopeByNode.get(node) ?? rootScope;
 
-      if (declaration?.kind === 'var') {
+      if (declaration?.kind === "var") {
         declarationScope = declarationScope.functionOwner;
       }
 
       declarePattern(node.id, declarationScope, node.start);
 
-      if (node.id?.type === 'Identifier') {
+      if (node.id?.type === "Identifier") {
         assign(
           declare(declarationScope, node.id.name),
           node.init,
@@ -825,9 +825,9 @@ const collectStaticStringBindings = (ast) => {
       return;
     }
     if (
-      node.type === 'AssignmentExpression' &&
-      ['=', '&&=', '??=', '||='].includes(node.operator) &&
-      node.left?.type === 'Identifier'
+      node.type === "AssignmentExpression" &&
+      ["=", "&&=", "??=", "||="].includes(node.operator) &&
+      node.left?.type === "Identifier"
     ) {
       const scope = scopeByNode.get(node) ?? rootScope;
       const binding =
@@ -861,9 +861,9 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
   } = staticStringBindings.bindingContext;
   const objectPropertyEvents = new Map();
   const splitPath = (path) => {
-    const [name, ...segments] = path?.split('.') ?? [];
+    const [name, ...segments] = path?.split(".") ?? [];
 
-    return { name, suffix: segments.join('.') };
+    return { name, suffix: segments.join(".") };
   };
   const getAssignmentPath = (node) => {
     const path = getResolvedStaticExpressionPath(
@@ -875,8 +875,8 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
 
     if (
       path ||
-      (node?.type !== 'MemberExpression' &&
-        node?.type !== 'OptionalMemberExpression')
+      (node?.type !== "MemberExpression" &&
+        node?.type !== "OptionalMemberExpression")
     ) {
       return path;
     }
@@ -892,13 +892,13 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
 
     const property = unwrapTypedExpression(node.property);
     const key = node.computed
-      ? (getStaticString(property) ??
-        (property?.type === 'Identifier'
+      ? getStaticString(property) ??
+        (property?.type === "Identifier"
           ? staticStringBindings.getAt(property.name, node.start, node)
-          : undefined))
+          : undefined)
       : getPropertyName(property);
 
-    return `${objectPath}.${key ?? 'schema'}`;
+    return `${objectPath}.${key ?? "schema"}`;
   };
   const getIdentityAt = (binding, position, useScope, inclusive = false) =>
     binding?.objectIdentityEvents.findLast(
@@ -1006,7 +1006,7 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
   ) => {
     const current = unwrapTypedExpression(value);
 
-    if (current?.type === 'ConditionalExpression') {
+    if (current?.type === "ConditionalExpression") {
       addContainerBindings(
         basePath,
         current.consequent,
@@ -1026,7 +1026,7 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
 
       return;
     }
-    if (current?.type === 'LogicalExpression') {
+    if (current?.type === "LogicalExpression") {
       addContainerBindings(
         basePath,
         current.left,
@@ -1047,8 +1047,8 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
       return;
     }
     if (
-      current?.type !== 'ArrayExpression' &&
-      current?.type !== 'ObjectExpression'
+      current?.type !== "ArrayExpression" &&
+      current?.type !== "ObjectExpression"
     ) {
       if (!followAliases) return;
 
@@ -1079,9 +1079,9 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
 
       return;
     }
-    if (current?.type === 'ArrayExpression') {
+    if (current?.type === "ArrayExpression") {
       for (const [index, element] of current.elements.entries()) {
-        if (!element || element.type === 'SpreadElement') continue;
+        if (!element || element.type === "SpreadElement") continue;
 
         const path = `${basePath}.${index}`;
 
@@ -1098,10 +1098,10 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
 
       return;
     }
-    if (current?.type !== 'ObjectExpression') return;
+    if (current?.type !== "ObjectExpression") return;
 
     for (const property of current.properties) {
-      if (property.type === 'SpreadElement') {
+      if (property.type === "SpreadElement") {
         addContainerBindings(
           basePath,
           property.argument,
@@ -1113,11 +1113,11 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
 
         continue;
       }
-      if (property.type !== 'ObjectProperty') continue;
+      if (property.type !== "ObjectProperty") continue;
 
       const key =
         getResolvedObjectPropertyName(property, staticStringBindings) ??
-        (property.computed ? 'schema' : undefined);
+        (property.computed ? "schema" : undefined);
 
       if (!key) continue;
 
@@ -1138,10 +1138,10 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
   walkAst(ast, (node) => {
     if (
       isCallExpressionNode(node) &&
-      (node.callee.type === 'MemberExpression' ||
-        node.callee.type === 'OptionalMemberExpression') &&
-      getStaticMemberName(node.callee) === 'assign' &&
-      getStaticExpressionPath(node.callee.object) === 'Object'
+      (node.callee.type === "MemberExpression" ||
+        node.callee.type === "OptionalMemberExpression") &&
+      getStaticMemberName(node.callee) === "assign" &&
+      getStaticExpressionPath(node.callee.object) === "Object"
     ) {
       const targetPath = getResolvedStaticExpressionPath(
         node.arguments[0],
@@ -1165,18 +1165,18 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
 
       return;
     }
-    if (node.type === 'VariableDeclarator' && node.id?.type === 'Identifier') {
+    if (node.type === "VariableDeclarator" && node.id?.type === "Identifier") {
       addBinding(node.id.name, node.init, node.start, node);
       addContainerBindings(node.id.name, node.init, node.start, node);
 
       return;
     }
     if (
-      node.type === 'AssignmentExpression' &&
-      ['=', '&&=', '??=', '||='].includes(node.operator) &&
-      (node.left?.type === 'Identifier' ||
-        node.left?.type === 'MemberExpression' ||
-        node.left?.type === 'OptionalMemberExpression')
+      node.type === "AssignmentExpression" &&
+      ["=", "&&=", "??=", "||="].includes(node.operator) &&
+      (node.left?.type === "Identifier" ||
+        node.left?.type === "MemberExpression" ||
+        node.left?.type === "OptionalMemberExpression")
     ) {
       const path = getAssignmentPath(node.left);
 
@@ -1196,14 +1196,14 @@ const getPlateEditorConstructionOptions = (
 
   const callee = unwrapTypedExpression(node.callee);
   const constructorName =
-    callee?.type === 'Identifier'
+    callee?.type === "Identifier"
       ? constructorNames.get(callee.name, callee)
-      : callee?.type === 'MemberExpression' ||
-          callee?.type === 'OptionalMemberExpression'
-        ? typeof constructorNames.getMember === 'function'
-          ? constructorNames.getMember(callee)
-          : getStaticMemberName(callee)
-        : undefined;
+      : callee?.type === "MemberExpression" ||
+        callee?.type === "OptionalMemberExpression"
+      ? typeof constructorNames.getMember === "function"
+        ? constructorNames.getMember(callee)
+        : getStaticMemberName(callee)
+      : undefined;
   const optionsIndex =
     plateEditorConstructionOptionIndexes.get(constructorName);
 
@@ -1211,8 +1211,8 @@ const getPlateEditorConstructionOptions = (
 
   const options = node.arguments[optionsIndex];
 
-  return options?.type === 'SpreadElement' ||
-    options?.type === 'ArgumentPlaceholder'
+  return options?.type === "SpreadElement" ||
+    options?.type === "ArgumentPlaceholder"
     ? undefined
     : options;
 };
@@ -1229,7 +1229,7 @@ const getNamedSchemaLineage = (
   );
   const resolvedHoistedSchema = resolveStaticObjectProperty(
     options,
-    'schema',
+    "schema",
     staticValueBindings,
     staticStringBindings
   );
@@ -1249,8 +1249,8 @@ const getNamedSchemaLineage = (
         resolvedHoistedSchema.useNode ?? node
       )
     : optionsPath && !resolvedHoistedSchema.resolved
-      ? bindings.getAt(`${optionsPath}.schema`, node.start, node)
-      : undefined;
+    ? bindings.getAt(`${optionsPath}.schema`, node.start, node)
+    : undefined;
 
   if (hoistedLineage) {
     return {
@@ -1264,11 +1264,11 @@ const getNamedSchemaLineage = (
     let result = { hasSchema: false };
 
     for (const property of object.properties) {
-      if (property.type === 'SpreadElement') {
+      if (property.type === "SpreadElement") {
         const spread = unwrapTypedExpression(property.argument);
         const resolvedSpreadSchema = resolveStaticObjectProperty(
           spread,
-          'schema',
+          "schema",
           staticValueBindings,
           staticStringBindings
         );
@@ -1283,20 +1283,20 @@ const getNamedSchemaLineage = (
             )
           : undefined;
         const spreadResult =
-          spread?.type === 'ObjectExpression'
+          spread?.type === "ObjectExpression"
             ? resolveOptionsObject(spread)
-            : spread?.type === 'ConditionalExpression' ||
-                spread?.type === 'LogicalExpression'
-              ? resolveOptionsValue(spread)
-              : resolvedSpreadSchema.present
-                ? { hasSchema: true, lineage: spreadLineage, node: property }
-                : { hasSchema: false };
+            : spread?.type === "ConditionalExpression" ||
+              spread?.type === "LogicalExpression"
+            ? resolveOptionsValue(spread)
+            : resolvedSpreadSchema.present
+            ? { hasSchema: true, lineage: spreadLineage, node: property }
+            : { hasSchema: false };
 
         if (spreadResult.hasSchema) result = spreadResult;
 
         continue;
       }
-      if (property.type !== 'ObjectProperty') continue;
+      if (property.type !== "ObjectProperty") continue;
 
       const key = getResolvedObjectPropertyName(property, staticStringBindings);
       const lineage = resolveNamedSchemaLineage(
@@ -1310,7 +1310,7 @@ const getNamedSchemaLineage = (
       const isUnresolvedComputedNamedSchema =
         property.computed && !key && Boolean(lineage);
 
-      if (key === 'schema' || isUnresolvedComputedNamedSchema) {
+      if (key === "schema" || isUnresolvedComputedNamedSchema) {
         result = { hasSchema: true, lineage, node: property };
       }
     }
@@ -1320,41 +1320,41 @@ const getNamedSchemaLineage = (
   const resolveOptionsValue = (value) => {
     const resolved = unwrapTypedExpression(value);
 
-    if (resolved?.type === 'ObjectExpression') {
+    if (resolved?.type === "ObjectExpression") {
       return resolveOptionsObject(resolved);
     }
-    if (resolved?.type === 'ConditionalExpression') {
+    if (resolved?.type === "ConditionalExpression") {
       const consequent = resolveOptionsValue(resolved.consequent);
 
       return consequent.lineage
         ? consequent
         : resolveOptionsValue(resolved.alternate);
     }
-    if (resolved?.type === 'LogicalExpression') {
+    if (resolved?.type === "LogicalExpression") {
       const left = resolveOptionsValue(resolved.left);
 
       return left.lineage ? left : resolveOptionsValue(resolved.right);
     }
     if (
       isCallExpressionNode(resolved) &&
-      (resolved.callee.type === 'MemberExpression' ||
-        resolved.callee.type === 'OptionalMemberExpression') &&
-      getStaticMemberName(resolved.callee) === 'assign' &&
-      getStaticExpressionPath(resolved.callee.object) === 'Object'
+      (resolved.callee.type === "MemberExpression" ||
+        resolved.callee.type === "OptionalMemberExpression") &&
+      getStaticMemberName(resolved.callee) === "assign" &&
+      getStaticExpressionPath(resolved.callee.object) === "Object"
     ) {
       let result = { hasSchema: false };
 
       for (const argument of resolved.arguments) {
         if (
-          argument.type === 'ArgumentPlaceholder' ||
-          argument.type === 'SpreadElement'
+          argument.type === "ArgumentPlaceholder" ||
+          argument.type === "SpreadElement"
         ) {
           continue;
         }
 
         const resolvedSchema = resolveStaticObjectProperty(
           argument,
-          'schema',
+          "schema",
           staticValueBindings,
           staticStringBindings
         );
@@ -1411,8 +1411,8 @@ const recordNamedSchemaLineage = (
 
   if (!lineage) return undefined;
 
-  const signature = `${lineage.id ?? '<dynamic>'}@${
-    lineage.version ?? '<dynamic>'
+  const signature = `${lineage.id ?? "<dynamic>"}@${
+    lineage.version ?? "<dynamic>"
   }`;
   const count = (counts.get(signature) ?? 0) + 1;
 
@@ -1427,26 +1427,26 @@ const recordNamedSchemaLineage = (
   return {
     node: lineage.node,
     reason:
-      'ordinary Plate editor construction must use derived schema identity; named lineage belongs in a reviewed persistence, collaboration, or migration contract',
+      "ordinary Plate editor construction must use derived schema identity; named lineage belongs in a reviewed persistence, collaboration, or migration contract",
   };
 };
 
 const walkAst = (node, callback) => {
-  if (!node || typeof node !== 'object') return;
+  if (!node || typeof node !== "object") return;
 
   callback(node);
 
   for (const [key, value] of Object.entries(node)) {
     if (
-      ['comments', 'errors', 'extra', 'loc', 'tokens'].includes(key) ||
-      key === 'start' ||
-      key === 'end'
+      ["comments", "errors", "extra", "loc", "tokens"].includes(key) ||
+      key === "start" ||
+      key === "end"
     ) {
       continue;
     }
     if (Array.isArray(value)) {
       for (const child of value) walkAst(child, callback);
-    } else if (value && typeof value === 'object' && value.type) {
+    } else if (value && typeof value === "object" && value.type) {
       walkAst(value, callback);
     }
   }
@@ -1457,8 +1457,8 @@ const containsMemberNamed = (node, names) => {
 
   walkAst(node, (current) => {
     if (
-      (current.type === 'MemberExpression' ||
-        current.type === 'OptionalMemberExpression') &&
+      (current.type === "MemberExpression" ||
+        current.type === "OptionalMemberExpression") &&
       names.has(getStaticMemberName(current))
     ) {
       found = true;
@@ -1472,7 +1472,7 @@ const containsStringLiteral = (node) => {
   let found = false;
 
   walkAst(node, (current) => {
-    if (current.type === 'StringLiteral') found = true;
+    if (current.type === "StringLiteral") found = true;
   });
 
   return found;
@@ -1482,32 +1482,32 @@ const containsCapabilityIdentityFallback = (node) => {
   const current = unwrapTypedExpression(node);
 
   if (
-    current?.type === 'LogicalExpression' ||
-    current?.type === 'ConditionalExpression'
+    current?.type === "LogicalExpression" ||
+    current?.type === "ConditionalExpression"
   ) {
     return Object.values(current).some(
       (value) =>
         value &&
-        typeof value === 'object' &&
+        typeof value === "object" &&
         containsCapabilityIdentityFallback(value)
     );
   }
   if (
-    current?.type !== 'MemberExpression' &&
-    current?.type !== 'OptionalMemberExpression'
+    current?.type !== "MemberExpression" &&
+    current?.type !== "OptionalMemberExpression"
   ) {
     return false;
   }
   const owner = unwrapTypedExpression(current.object);
 
-  if (owner?.type === 'Identifier' && owner.name === 'PLUGINS') return true;
-  if (getStaticMemberName(current) !== 'name') return false;
+  if (owner?.type === "Identifier" && owner.name === "PLUGINS") return true;
+  if (getStaticMemberName(current) !== "name") return false;
 
   return (
-    (owner?.type === 'Identifier' &&
+    (owner?.type === "Identifier" &&
       (pluginOwnerNamePattern.test(owner.name) ||
         pluginPortalOwnerNamePattern.test(owner.name))) ||
-    (isCallExpressionNode(owner) && readMemberCallName(owner) === 'plugin')
+    (isCallExpressionNode(owner) && readMemberCallName(owner) === "plugin")
   );
 };
 
@@ -1523,34 +1523,34 @@ const isConsumerPortalSchemaIdentity = (
   const current = unwrapTypedExpression(node);
 
   if (
-    (current?.type !== 'MemberExpression' &&
-      current?.type !== 'OptionalMemberExpression') ||
-    !['key', 'type'].includes(getStaticMemberName(current))
+    (current?.type !== "MemberExpression" &&
+      current?.type !== "OptionalMemberExpression") ||
+    !["key", "type"].includes(getStaticMemberName(current))
   ) {
     return false;
   }
   const schemaMember = unwrapTypedExpression(current.object);
 
   if (
-    schemaMember?.type === 'Identifier' &&
+    schemaMember?.type === "Identifier" &&
     schemaBindings.has(getBinding(schemaMember.name, schemaMember))
   ) {
     return true;
   }
   if (
-    (schemaMember?.type !== 'MemberExpression' &&
-      schemaMember?.type !== 'OptionalMemberExpression') ||
-    getStaticMemberName(schemaMember) !== 'schema'
+    (schemaMember?.type !== "MemberExpression" &&
+      schemaMember?.type !== "OptionalMemberExpression") ||
+    getStaticMemberName(schemaMember) !== "schema"
   ) {
     return false;
   }
   const portal = unwrapTypedExpression(schemaMember.object);
   const portalBinding =
-    portal?.type === 'Identifier' ? getBinding(portal.name, portal) : undefined;
+    portal?.type === "Identifier" ? getBinding(portal.name, portal) : undefined;
 
   return (
-    (isCallExpressionNode(portal) && readMemberCallName(portal) === 'plugin') ||
-    (portal?.type === 'Identifier' &&
+    (isCallExpressionNode(portal) && readMemberCallName(portal) === "plugin") ||
+    (portal?.type === "Identifier" &&
       (portalBindings.has(portalBinding) ||
         (!portalBinding && pluginPortalOwnerNamePattern.test(portal.name))))
   );
@@ -1587,8 +1587,8 @@ const isInstalledSchemaIdentityFallback = (
   getBinding = (name) => name
 ) => {
   if (
-    node?.type === 'LogicalExpression' &&
-    ['??', '||'].includes(node.operator)
+    node?.type === "LogicalExpression" &&
+    ["??", "||"].includes(node.operator)
   ) {
     return (
       (containsConsumerPortalSchemaIdentity(
@@ -1607,8 +1607,8 @@ const isInstalledSchemaIdentityFallback = (
         containsInvalidSchemaIdentityFallback(node.left))
     );
   }
-  if (node?.type !== 'ConditionalExpression') return false;
-  if (!containsMemberNamed(node.test, new Set(['installed']))) return false;
+  if (node?.type !== "ConditionalExpression") return false;
+  if (!containsMemberNamed(node.test, new Set(["installed"]))) return false;
 
   return (
     (containsConsumerPortalSchemaIdentity(
@@ -1640,20 +1640,20 @@ const collectConsumerPluginPortalBindings = (ast, staticStringBindings) => {
   while (changed) {
     changed = false;
     walkAst(ast, (node) => {
-      if (node.type !== 'VariableDeclarator') return;
+      if (node.type !== "VariableDeclarator") return;
       const value = unwrapTypedExpression(node.init);
       const sourceBinding =
-        value?.type === 'Identifier'
+        value?.type === "Identifier"
           ? getBinding(value.name, value)
           : undefined;
       const isPluginPortal =
         (isCallExpressionNode(value) &&
-          readMemberCallName(value) === 'plugin') ||
-        (value?.type === 'Identifier' &&
+          readMemberCallName(value) === "plugin") ||
+        (value?.type === "Identifier" &&
           (portalBindings.has(sourceBinding) ||
             (!sourceBinding && pluginPortalOwnerNamePattern.test(value.name))));
       const declaredBinding =
-        node.id?.type === 'Identifier'
+        node.id?.type === "Identifier"
           ? getBinding(node.id.name, node.id)
           : undefined;
 
@@ -1665,21 +1665,21 @@ const collectConsumerPluginPortalBindings = (ast, staticStringBindings) => {
         portalBindings.add(declaredBinding);
         changed = true;
       }
-      if (node.id?.type === 'ObjectPattern' && isPluginPortal) {
+      if (node.id?.type === "ObjectPattern" && isPluginPortal) {
         for (const property of node.id.properties) {
           if (
-            property.type !== 'ObjectProperty' ||
-            getPropertyName(property.key) !== 'schema'
+            property.type !== "ObjectProperty" ||
+            getPropertyName(property.key) !== "schema"
           ) {
             continue;
           }
           const binding =
-            property.value.type === 'Identifier'
+            property.value.type === "Identifier"
               ? property.value
-              : property.value.type === 'AssignmentPattern' &&
-                  property.value.left.type === 'Identifier'
-                ? property.value.left
-                : undefined;
+              : property.value.type === "AssignmentPattern" &&
+                property.value.left.type === "Identifier"
+              ? property.value.left
+              : undefined;
 
           const resolvedBinding = binding
             ? getBinding(binding.name, binding)
@@ -1691,21 +1691,21 @@ const collectConsumerPluginPortalBindings = (ast, staticStringBindings) => {
           }
         }
       }
-      if (node.id?.type !== 'Identifier') return;
+      if (node.id?.type !== "Identifier") return;
 
       const schemaOwner =
-        (value?.type === 'MemberExpression' ||
-          value?.type === 'OptionalMemberExpression') &&
-        getStaticMemberName(value) === 'schema'
+        (value?.type === "MemberExpression" ||
+          value?.type === "OptionalMemberExpression") &&
+        getStaticMemberName(value) === "schema"
           ? unwrapTypedExpression(value.object)
           : undefined;
       const isPortalSchema =
         (isCallExpressionNode(schemaOwner) &&
-          readMemberCallName(schemaOwner) === 'plugin') ||
-        (schemaOwner?.type === 'Identifier' &&
+          readMemberCallName(schemaOwner) === "plugin") ||
+        (schemaOwner?.type === "Identifier" &&
           portalBindings.has(getBinding(schemaOwner.name, schemaOwner)));
       const isSchemaAlias =
-        value?.type === 'Identifier' &&
+        value?.type === "Identifier" &&
         schemaBindings.has(getBinding(value.name, value));
 
       if (
@@ -1731,81 +1731,81 @@ const isConsumerPortalSchemaMap = (
   const current = unwrapTypedExpression(node);
 
   if (
-    current?.type !== 'MemberExpression' &&
-    current?.type !== 'OptionalMemberExpression'
+    current?.type !== "MemberExpression" &&
+    current?.type !== "OptionalMemberExpression"
   ) {
     return false;
   }
-  if (!['element', 'properties'].includes(getStaticMemberName(current))) {
+  if (!["element", "properties"].includes(getStaticMemberName(current))) {
     return false;
   }
   const schemaMember = unwrapTypedExpression(current.object);
 
   if (
-    schemaMember?.type === 'Identifier' &&
+    schemaMember?.type === "Identifier" &&
     schemaBindings.has(getBinding(schemaMember.name, schemaMember))
   ) {
     return true;
   }
 
   if (
-    (schemaMember?.type !== 'MemberExpression' &&
-      schemaMember?.type !== 'OptionalMemberExpression') ||
-    getStaticMemberName(schemaMember) !== 'schema'
+    (schemaMember?.type !== "MemberExpression" &&
+      schemaMember?.type !== "OptionalMemberExpression") ||
+    getStaticMemberName(schemaMember) !== "schema"
   ) {
     return false;
   }
   const portal = unwrapTypedExpression(schemaMember.object);
   const portalBinding =
-    portal?.type === 'Identifier' ? getBinding(portal.name, portal) : undefined;
+    portal?.type === "Identifier" ? getBinding(portal.name, portal) : undefined;
 
   return (
-    (isCallExpressionNode(portal) && readMemberCallName(portal) === 'plugin') ||
-    (portal?.type === 'Identifier' &&
+    (isCallExpressionNode(portal) && readMemberCallName(portal) === "plugin") ||
+    (portal?.type === "Identifier" &&
       (portalBindings.has(portalBinding) ||
         (!portalBinding && pluginPortalOwnerNamePattern.test(portal.name))))
   );
 };
 
 const isLiteralArraySpread = (node) =>
-  node?.type === 'SpreadElement' &&
-  unwrapTypedExpression(node.argument)?.type === 'ArrayExpression';
+  node?.type === "SpreadElement" &&
+  unwrapTypedExpression(node.argument)?.type === "ArrayExpression";
 
 const containsDefinitionOfType = (node) => {
   const value =
-    node?.type === 'TSParenthesizedType' ? node.typeAnnotation : node;
+    node?.type === "TSParenthesizedType" ? node.typeAnnotation : node;
 
   return (
-    value?.type === 'TSTypeReference' &&
-    value.typeName?.type === 'Identifier' &&
-    value.typeName.name === 'DefinitionOf'
+    value?.type === "TSTypeReference" &&
+    value.typeName?.type === "Identifier" &&
+    value.typeName.name === "DefinitionOf"
   );
 };
 
 const isDirectDefinitionOfDescriptor = (node) => {
   const value =
-    node?.type === 'TSParenthesizedType' ? node.typeAnnotation : node;
+    node?.type === "TSParenthesizedType" ? node.typeAnnotation : node;
   const parameter = value?.typeParameters?.params?.[0];
 
   return (
     containsDefinitionOfType(value) &&
-    parameter?.type === 'TSTypeQuery' &&
-    parameter.exprName?.type === 'Identifier'
+    parameter?.type === "TSTypeQuery" &&
+    parameter.exprName?.type === "Identifier"
   );
 };
 
 const isExplicitPluginDescriptorAnnotation = (node) => {
-  const value = node?.type === 'TSTypeAnnotation' ? node.typeAnnotation : node;
+  const value = node?.type === "TSTypeAnnotation" ? node.typeAnnotation : node;
   const typeName =
-    value?.type === 'TSTypeReference' && value.typeName?.type === 'Identifier'
+    value?.type === "TSTypeReference" && value.typeName?.type === "Identifier"
       ? value.typeName.name
       : undefined;
 
   return (
-    typeName === 'BasePlugin' ||
-    typeName === 'ConfiguredBasePlugin' ||
-    typeName === 'ConfiguredPlugin' ||
-    typeName === 'Plugin'
+    typeName === "BasePlugin" ||
+    typeName === "ConfiguredBasePlugin" ||
+    typeName === "ConfiguredPlugin" ||
+    typeName === "Plugin"
   );
 };
 
@@ -1822,7 +1822,7 @@ const collectNamedSchemaLineageBindings = (
   const objectRestAliases = [];
   const arrayRestAliases = [];
   const getPathBinding = (path, node) =>
-    findBinding(scopeByNode.get(node) ?? rootScope, path?.split('.')[0]);
+    findBinding(scopeByNode.get(node) ?? rootScope, path?.split(".")[0]);
   const getLineage = (
     path,
     node,
@@ -1893,8 +1893,8 @@ const collectNamedSchemaLineageBindings = (
 
     if (
       path ||
-      (node?.type !== 'MemberExpression' &&
-        node?.type !== 'OptionalMemberExpression')
+      (node?.type !== "MemberExpression" &&
+        node?.type !== "OptionalMemberExpression")
     ) {
       return path;
     }
@@ -1910,13 +1910,13 @@ const collectNamedSchemaLineageBindings = (
 
     const property = unwrapTypedExpression(node.property);
     const key = node.computed
-      ? (getStaticString(property) ??
-        (property?.type === 'Identifier'
+      ? getStaticString(property) ??
+        (property?.type === "Identifier"
           ? staticStringBindings.getAt(property.name, node.start, node)
-          : undefined))
+          : undefined)
       : getPropertyName(property);
 
-    return `${objectPath}.${key ?? 'schema'}`;
+    return `${objectPath}.${key ?? "schema"}`;
   };
   const addCandidate = (path, value, node) => {
     const values = candidates.get(path) ?? [];
@@ -1943,21 +1943,21 @@ const collectNamedSchemaLineageBindings = (
   const addContainerCandidates = (basePath, value, node) => {
     const current = unwrapTypedExpression(value);
 
-    if (current?.type === 'ConditionalExpression') {
+    if (current?.type === "ConditionalExpression") {
       addContainerCandidates(basePath, current.consequent, node);
       addContainerCandidates(basePath, current.alternate, node);
 
       return;
     }
-    if (current?.type === 'LogicalExpression') {
+    if (current?.type === "LogicalExpression") {
       addContainerCandidates(basePath, current.left, node);
       addContainerCandidates(basePath, current.right, node);
 
       return;
     }
-    if (current?.type === 'ArrayExpression') {
+    if (current?.type === "ArrayExpression") {
       for (const [index, element] of current.elements.entries()) {
-        if (!element || element.type === 'SpreadElement') continue;
+        if (!element || element.type === "SpreadElement") continue;
 
         const path = `${basePath}.${index}`;
 
@@ -1967,14 +1967,14 @@ const collectNamedSchemaLineageBindings = (
 
       return;
     }
-    if (current?.type !== 'ObjectExpression') return;
+    if (current?.type !== "ObjectExpression") return;
 
     for (const [index, property] of current.properties.entries()) {
-      if (property.type === 'SpreadElement') {
+      if (property.type === "SpreadElement") {
         const overrides = new Map(
           current.properties
             .slice(index + 1)
-            .filter((candidate) => candidate.type === 'ObjectProperty')
+            .filter((candidate) => candidate.type === "ObjectProperty")
             .map((candidate) => [
               getResolvedObjectPropertyName(candidate, staticStringBindings),
               candidate.value,
@@ -1992,7 +1992,7 @@ const collectNamedSchemaLineageBindings = (
 
         continue;
       }
-      if (property.type !== 'ObjectProperty') continue;
+      if (property.type !== "ObjectProperty") continue;
 
       const key = getResolvedObjectPropertyName(property, staticStringBindings);
 
@@ -2010,20 +2010,20 @@ const collectNamedSchemaLineageBindings = (
   const addPatternPathAliases = (pattern, basePath, node = pattern) => {
     if (!pattern || !basePath) return;
 
-    if (pattern.type === 'Identifier') {
+    if (pattern.type === "Identifier") {
       addPathAlias(pattern.name, basePath, node);
 
       return;
     }
-    if (pattern.type === 'AssignmentPattern') {
+    if (pattern.type === "AssignmentPattern") {
       addPatternPathAliases(pattern.left, basePath, node);
 
       return;
     }
-    if (pattern.type === 'ObjectPattern') {
+    if (pattern.type === "ObjectPattern") {
       const excludedKeys = new Set(
         pattern.properties
-          .filter((property) => property.type === 'ObjectProperty')
+          .filter((property) => property.type === "ObjectProperty")
           .map((property) =>
             getResolvedObjectPropertyName(property, staticStringBindings)
           )
@@ -2031,8 +2031,8 @@ const collectNamedSchemaLineageBindings = (
       );
 
       for (const property of pattern.properties) {
-        if (property.type === 'RestElement') {
-          if (property.argument.type === 'Identifier') {
+        if (property.type === "RestElement") {
+          if (property.argument.type === "Identifier") {
             objectRestAliases.push({
               aliasPath: property.argument.name,
               excludedKeys,
@@ -2043,7 +2043,7 @@ const collectNamedSchemaLineageBindings = (
 
           continue;
         }
-        if (property.type !== 'ObjectProperty') continue;
+        if (property.type !== "ObjectProperty") continue;
 
         const key = getResolvedObjectPropertyName(
           property,
@@ -2061,13 +2061,13 @@ const collectNamedSchemaLineageBindings = (
 
       return;
     }
-    if (pattern.type !== 'ArrayPattern') return;
+    if (pattern.type !== "ArrayPattern") return;
 
     for (const [index, element] of pattern.elements.entries()) {
       if (!element) continue;
       if (
-        element.type === 'RestElement' &&
-        element.argument.type === 'Identifier'
+        element.type === "RestElement" &&
+        element.argument.type === "Identifier"
       ) {
         arrayRestAliases.push({
           aliasPath: element.argument.name,
@@ -2086,10 +2086,10 @@ const collectNamedSchemaLineageBindings = (
   walkAst(ast, (node) => {
     if (
       isCallExpressionNode(node) &&
-      (node.callee.type === 'MemberExpression' ||
-        node.callee.type === 'OptionalMemberExpression') &&
-      getStaticMemberName(node.callee) === 'assign' &&
-      getStaticExpressionPath(node.callee.object) === 'Object'
+      (node.callee.type === "MemberExpression" ||
+        node.callee.type === "OptionalMemberExpression") &&
+      getStaticMemberName(node.callee) === "assign" &&
+      getStaticExpressionPath(node.callee.object) === "Object"
     ) {
       const targetPath = getResolvedStaticExpressionPath(
         node.arguments[0],
@@ -2106,8 +2106,8 @@ const collectNamedSchemaLineageBindings = (
 
       return;
     }
-    if (node.type === 'VariableDeclarator') {
-      if (node.id?.type === 'Identifier') {
+    if (node.type === "VariableDeclarator") {
+      if (node.id?.type === "Identifier") {
         addCandidate(node.id.name, node.init, node);
         addPathAlias(node.id.name, getStaticExpressionPath(node.init), node);
         addContainerCandidates(node.id.name, node.init, node);
@@ -2118,14 +2118,14 @@ const collectNamedSchemaLineageBindings = (
       return;
     }
     if (
-      node.type === 'AssignmentExpression' &&
-      ['=', '&&=', '??=', '||='].includes(node.operator) &&
+      node.type === "AssignmentExpression" &&
+      ["=", "&&=", "??=", "||="].includes(node.operator) &&
       node.left
     ) {
       if (
-        node.left.type === 'Identifier' ||
-        node.left.type === 'MemberExpression' ||
-        node.left.type === 'OptionalMemberExpression'
+        node.left.type === "Identifier" ||
+        node.left.type === "MemberExpression" ||
+        node.left.type === "OptionalMemberExpression"
       ) {
         const path = getAssignmentPath(node.left);
 
@@ -2198,25 +2198,25 @@ const collectNamedSchemaLineageBindings = (
         if (!lineage) continue;
 
         if (bindingPath === sourcePath) {
-          const idOverride = unwrapTypedExpression(overrides.get('id'));
+          const idOverride = unwrapTypedExpression(overrides.get("id"));
           const versionOverride = unwrapTypedExpression(
-            overrides.get('version')
+            overrides.get("version")
           );
 
           if (
-            (idOverride && idOverride.type !== 'StringLiteral') ||
-            (versionOverride && versionOverride.type !== 'NumericLiteral')
+            (idOverride && idOverride.type !== "StringLiteral") ||
+            (versionOverride && versionOverride.type !== "NumericLiteral")
           ) {
             continue;
           }
 
           const spreadLineage = {
             id:
-              idOverride?.type === 'StringLiteral'
+              idOverride?.type === "StringLiteral"
                 ? idOverride.value
                 : lineage.id,
             version:
-              versionOverride?.type === 'NumericLiteral'
+              versionOverride?.type === "NumericLiteral"
                 ? versionOverride.value
                 : lineage.version,
           };
@@ -2228,7 +2228,7 @@ const collectNamedSchemaLineageBindings = (
         if (!bindingPath.startsWith(`${sourcePath}.`)) continue;
 
         const suffix = bindingPath.slice(sourcePath.length + 1);
-        const [key] = suffix.split('.');
+        const [key] = suffix.split(".");
 
         if (excludedKeys.has(key)) continue;
 
@@ -2251,8 +2251,8 @@ const collectNamedSchemaLineageBindings = (
 
         if (bindingPath === sourcePath) {
           if (
-            !excludedKeys.has('id') &&
-            !excludedKeys.has('version') &&
+            !excludedKeys.has("id") &&
+            !excludedKeys.has("version") &&
             setLineage(aliasPath, node, lineage)
           ) {
             changed = true;
@@ -2263,7 +2263,7 @@ const collectNamedSchemaLineageBindings = (
         if (!bindingPath.startsWith(`${sourcePath}.`)) continue;
 
         const suffix = bindingPath.slice(sourcePath.length + 1);
-        const [key] = suffix.split('.');
+        const [key] = suffix.split(".");
 
         if (excludedKeys.has(key)) continue;
 
@@ -2283,7 +2283,7 @@ const collectNamedSchemaLineageBindings = (
 
         const [index, ...suffix] = bindingPath
           .slice(sourcePath.length + 1)
-          .split('.');
+          .split(".");
         const numericIndex = Number(index);
 
         if (!Number.isInteger(numericIndex) || numericIndex < offset) continue;
@@ -2292,7 +2292,7 @@ const collectNamedSchemaLineageBindings = (
           aliasPath,
           String(numericIndex - offset),
           ...suffix,
-        ].join('.');
+        ].join(".");
 
         if (setLineage(aliasBinding, node, lineage)) changed = true;
       }
@@ -2304,16 +2304,16 @@ const collectNamedSchemaLineageBindings = (
 
 const parsePlateSource = (source, file, { errorRecovery = false } = {}) => {
   const plugins = [
-    'decorators-legacy',
-    'explicitResourceManagement',
-    'importAttributes',
+    "decorators-legacy",
+    "explicitResourceManagement",
+    "importAttributes",
   ];
 
-  if (!typescriptFilePattern.test(file) || file.endsWith('x')) {
-    plugins.push('jsx');
+  if (!typescriptFilePattern.test(file) || file.endsWith("x")) {
+    plugins.push("jsx");
   }
   if (typescriptFilePattern.test(file) || markdownFilePattern.test(file)) {
-    plugins.push('typescript');
+    plugins.push("typescript");
   }
 
   return parse(source, {
@@ -2321,20 +2321,20 @@ const parsePlateSource = (source, file, { errorRecovery = false } = {}) => {
     allowReturnOutsideFunction: true,
     errorRecovery,
     plugins,
-    sourceType: 'unambiguous',
+    sourceType: "unambiguous",
   });
 };
 
 const isFunction = (node) =>
-  node?.type === 'ArrowFunctionExpression' ||
-  node?.type === 'FunctionExpression' ||
-  node?.type === 'ObjectMethod';
+  node?.type === "ArrowFunctionExpression" ||
+  node?.type === "FunctionExpression" ||
+  node?.type === "ObjectMethod";
 const isStaticCapabilityDeclaration = (property) =>
-  property?.type === 'ObjectProperty' &&
-  property.value?.type === 'ObjectExpression';
+  property?.type === "ObjectProperty" &&
+  property.value?.type === "ObjectExpression";
 const getCapabilityFactoryParameterCount = (property) => {
-  if (property?.type === 'ObjectMethod') return property.params.length;
-  if (property?.type === 'ObjectProperty' && isFunction(property.value)) {
+  if (property?.type === "ObjectMethod") return property.params.length;
+  if (property?.type === "ObjectProperty" && isFunction(property.value)) {
     return property.value.params.length;
   }
 
@@ -2344,10 +2344,10 @@ const getCapabilityFactoryParameterCount = (property) => {
 const inspectContextualConfigure = (callback) => {
   const body = unwrapTypedExpression(callback?.body);
 
-  if (body?.type === 'ObjectExpression') {
+  if (body?.type === "ObjectExpression") {
     return { invalidReturns: [], properties: body.properties };
   }
-  if (body?.type !== 'BlockStatement') {
+  if (body?.type !== "BlockStatement") {
     return { invalidReturns: [body ?? callback], properties: [] };
   }
 
@@ -2355,13 +2355,13 @@ const inspectContextualConfigure = (callback) => {
   const properties = [];
   let returnCount = 0;
   const visitReturns = (node) => {
-    if (!node || typeof node !== 'object') return;
+    if (!node || typeof node !== "object") return;
     if (node !== body && isFunction(node)) return;
-    if (node.type === 'ReturnStatement') {
+    if (node.type === "ReturnStatement") {
       const value = unwrapTypedExpression(node.argument);
 
       returnCount += 1;
-      if (value?.type === 'ObjectExpression') {
+      if (value?.type === "ObjectExpression") {
         properties.push(...value.properties);
       } else {
         invalidReturns.push(value ?? node);
@@ -2405,7 +2405,7 @@ const getStaticPluginProperties = (
 
   const value = unwrapTypedExpression(contribution);
 
-  if (value?.type === 'ObjectExpression') return value.properties;
+  if (value?.type === "ObjectExpression") return value.properties;
   if (isFunction(value)) return inspectContextualConfigure(value).properties;
 
   return [];
@@ -2415,13 +2415,13 @@ const getStaticFunctionResults = (callback) => {
   const body = unwrapTypedExpression(callback?.body);
 
   if (!body) return [];
-  if (body.type !== 'BlockStatement') return [body];
+  if (body.type !== "BlockStatement") return [body];
 
   const results = [];
   const visitReturns = (node) => {
-    if (!node || typeof node !== 'object') return;
+    if (!node || typeof node !== "object") return;
     if (node !== body && isFunction(node)) return;
-    if (node.type === 'ReturnStatement') {
+    if (node.type === "ReturnStatement") {
       const result = unwrapTypedExpression(node.argument);
 
       if (result) results.push(result);
@@ -2442,26 +2442,26 @@ const getStaticFunctionResults = (callback) => {
   return results;
 };
 
-const defaultPluginCreatorNames = new Set(['definePlugin']);
+const defaultPluginCreatorNames = new Set(["definePlugin"]);
 const defaultPlitePluginCreatorNames = new Set();
 const pliteModulePattern = /^plitejs(?:\/|$)/;
 const isCallExpressionNode = (node) =>
-  node?.type === 'CallExpression' || node?.type === 'OptionalCallExpression';
+  node?.type === "CallExpression" || node?.type === "OptionalCallExpression";
 
 const getPluginCreatorCallKind = (node, pluginCreatorNames) => {
   if (!isCallExpressionNode(node)) return undefined;
 
   const callee = unwrapTypedExpression(node.callee);
 
-  if (callee?.type === 'Identifier') {
+  if (callee?.type === "Identifier") {
     return (
       pluginCreatorNames.get?.(callee.name) ??
       (pluginCreatorNames.has(callee.name) ? callee.name : undefined)
     );
   }
   if (
-    callee?.type === 'MemberExpression' ||
-    callee?.type === 'OptionalMemberExpression'
+    callee?.type === "MemberExpression" ||
+    callee?.type === "OptionalMemberExpression"
   ) {
     const name = getStaticMemberName(callee);
 
@@ -2482,7 +2482,7 @@ const isDirectCreatorExtendChain = (
 
     const callee = unwrapTypedExpression(current.callee);
 
-    if (callee?.type !== 'MemberExpression') return false;
+    if (callee?.type !== "MemberExpression") return false;
 
     current = unwrapTypedExpression(callee.object);
   }
@@ -2493,10 +2493,10 @@ const isDirectCreatorExtendChain = (
 const getStaticExpressionPath = (node) => {
   const current = unwrapTypedExpression(node);
 
-  if (current?.type === 'Identifier') return current.name;
+  if (current?.type === "Identifier") return current.name;
   if (
-    current?.type !== 'MemberExpression' &&
-    current?.type !== 'OptionalMemberExpression'
+    current?.type !== "MemberExpression" &&
+    current?.type !== "OptionalMemberExpression"
   ) {
     return undefined;
   }
@@ -2515,10 +2515,10 @@ const getResolvedStaticExpressionPath = (
 ) => {
   const current = unwrapTypedExpression(node);
 
-  if (current?.type === 'Identifier') return current.name;
+  if (current?.type === "Identifier") return current.name;
   if (
-    current?.type !== 'MemberExpression' &&
-    current?.type !== 'OptionalMemberExpression'
+    current?.type !== "MemberExpression" &&
+    current?.type !== "OptionalMemberExpression"
   ) {
     return undefined;
   }
@@ -2531,10 +2531,10 @@ const getResolvedStaticExpressionPath = (
   );
   const property = unwrapTypedExpression(current.property);
   const key = current.computed
-    ? (getStaticString(property) ??
-      (property?.type === 'Identifier'
+    ? getStaticString(property) ??
+      (property?.type === "Identifier"
         ? staticStringBindings.getAt(property.name, position, useNode)
-        : undefined))
+        : undefined)
     : getPropertyName(property);
 
   return objectPath && key ? `${objectPath}.${key}` : undefined;
@@ -2551,7 +2551,7 @@ const resolveStaticObjectProperty = (
 ) => {
   const value = unwrapTypedExpression(node);
 
-  if (value?.type !== 'ObjectExpression') {
+  if (value?.type !== "ObjectExpression") {
     const path = getResolvedStaticExpressionPath(
       value,
       staticStringBindings,
@@ -2614,7 +2614,7 @@ const resolveStaticObjectProperty = (
   let result = { present: false, resolved: true };
 
   for (const property of value.properties) {
-    if (property.type === 'SpreadElement') {
+    if (property.type === "SpreadElement") {
       const spreadResult = resolveStaticObjectProperty(
         property.argument,
         propertyName,
@@ -2630,10 +2630,10 @@ const resolveStaticObjectProperty = (
       continue;
     }
     if (
-      property.type === 'ObjectProperty' &&
+      property.type === "ObjectProperty" &&
       (getResolvedObjectPropertyName(property, staticStringBindings) ===
         propertyName ||
-        (propertyName === 'schema' &&
+        (propertyName === "schema" &&
           property.computed &&
           !getResolvedObjectPropertyName(property, staticStringBindings)))
     ) {
@@ -2673,9 +2673,9 @@ const resolveStaticObjectProperties = (
       )
     );
   }
-  if (value?.type === 'ObjectExpression') {
+  if (value?.type === "ObjectExpression") {
     return value.properties.flatMap((property) =>
-      property.type === 'SpreadElement'
+      property.type === "SpreadElement"
         ? resolveStaticObjectProperties(
             property.argument,
             valueBindings,
@@ -2725,10 +2725,10 @@ const isFullyResolvedStaticObject = (
 ) => {
   const value = unwrapTypedExpression(node);
 
-  if (value?.type === 'ObjectExpression') {
+  if (value?.type === "ObjectExpression") {
     return value.properties.every(
       (property) =>
-        property.type !== 'SpreadElement' ||
+        property.type !== "SpreadElement" ||
         isFullyResolvedStaticObject(
           property.argument,
           valueBindings,
@@ -2778,7 +2778,7 @@ const resolveNamedSchemaLineage = (
 ) => {
   const value = unwrapTypedExpression(node);
 
-  if (value?.type === 'ConditionalExpression') {
+  if (value?.type === "ConditionalExpression") {
     return (
       resolveNamedSchemaLineage(
         value.consequent,
@@ -2800,7 +2800,7 @@ const resolveNamedSchemaLineage = (
       )
     );
   }
-  if (value?.type === 'LogicalExpression') {
+  if (value?.type === "LogicalExpression") {
     return (
       resolveNamedSchemaLineage(
         value.left,
@@ -2822,7 +2822,7 @@ const resolveNamedSchemaLineage = (
       )
     );
   }
-  if (value?.type !== 'ObjectExpression') {
+  if (value?.type !== "ObjectExpression") {
     const path = getResolvedStaticExpressionPath(
       value,
       staticStringBindings,
@@ -2850,7 +2850,7 @@ const resolveNamedSchemaLineage = (
       }
     }
 
-    return typeof bindings.getAt === 'function'
+    return typeof bindings.getAt === "function"
       ? bindings.getAt(path, position, useNode)
       : bindings.get(path);
   }
@@ -2859,7 +2859,7 @@ const resolveNamedSchemaLineage = (
   let version;
 
   for (const property of value.properties) {
-    if (property.type === 'SpreadElement') {
+    if (property.type === "SpreadElement") {
       const spreadLineage = resolveNamedSchemaLineage(
         property.argument,
         bindings,
@@ -2876,26 +2876,26 @@ const resolveNamedSchemaLineage = (
 
       continue;
     }
-    if (property.type !== 'ObjectProperty') continue;
+    if (property.type !== "ObjectProperty") continue;
 
     const key = getResolvedObjectPropertyName(property, staticStringBindings);
     const propertyValue = unwrapTypedExpression(property.value);
 
-    if (key === 'id') {
+    if (key === "id") {
       id =
-        propertyValue?.type === 'StringLiteral'
+        propertyValue?.type === "StringLiteral"
           ? propertyValue.value
           : undefined;
     }
-    if (key === 'version') {
+    if (key === "version") {
       version =
-        propertyValue?.type === 'NumericLiteral'
+        propertyValue?.type === "NumericLiteral"
           ? propertyValue.value
           : undefined;
     }
   }
 
-  return typeof id === 'string' && typeof version === 'number'
+  return typeof id === "string" && typeof version === "number"
     ? { id, version }
     : undefined;
 };
@@ -2907,8 +2907,8 @@ const getPluginBuilderRootPath = (node) => {
     const callee = unwrapTypedExpression(current.callee);
 
     if (
-      callee?.type !== 'MemberExpression' &&
-      callee?.type !== 'OptionalMemberExpression'
+      callee?.type !== "MemberExpression" &&
+      callee?.type !== "OptionalMemberExpression"
     ) {
       return undefined;
     }
@@ -2931,11 +2931,11 @@ const collectLocalPluginCreatorNames = (ast) => {
     candidates.set(name, values);
   };
   const collectDestructuredCreatorAliases = (pattern) => {
-    if (pattern?.type !== 'ObjectPattern') return;
+    if (pattern?.type !== "ObjectPattern") return;
 
     for (const property of pattern.properties) {
       if (
-        property.type !== 'ObjectProperty' ||
+        property.type !== "ObjectProperty" ||
         !defaultPluginCreatorNames.has(getPropertyName(property.key))
       ) {
         continue;
@@ -2944,10 +2944,10 @@ const collectLocalPluginCreatorNames = (ast) => {
       const value = unwrapTypedExpression(property.value);
       const kind = getPropertyName(property.key);
 
-      if (value?.type === 'Identifier') names.set(value.name, kind);
+      if (value?.type === "Identifier") names.set(value.name, kind);
       if (
-        value?.type === 'AssignmentPattern' &&
-        value.left?.type === 'Identifier'
+        value?.type === "AssignmentPattern" &&
+        value.left?.type === "Identifier"
       ) {
         names.set(value.left.name, kind);
       }
@@ -2955,21 +2955,21 @@ const collectLocalPluginCreatorNames = (ast) => {
   };
 
   walkAst(ast, (node) => {
-    if (node.type === 'ImportSpecifier') {
+    if (node.type === "ImportSpecifier") {
       const importedName = getPropertyName(node.imported);
 
       if (
         importedName &&
         defaultPluginCreatorNames.has(importedName) &&
-        node.local?.type === 'Identifier'
+        node.local?.type === "Identifier"
       ) {
         names.set(node.local.name, importedName);
       }
 
       return;
     }
-    if (node.type === 'VariableDeclarator') {
-      if (node.id?.type === 'Identifier') {
+    if (node.type === "VariableDeclarator") {
+      if (node.id?.type === "Identifier") {
         addCandidate(node.id.name, node.init);
       } else {
         collectDestructuredCreatorAliases(node.id);
@@ -2977,8 +2977,8 @@ const collectLocalPluginCreatorNames = (ast) => {
 
       return;
     }
-    if (node.type === 'AssignmentExpression' && node.operator === '=') {
-      if (node.left?.type === 'Identifier') {
+    if (node.type === "AssignmentExpression" && node.operator === "=") {
+      if (node.left?.type === "Identifier") {
         addCandidate(node.left.name, node.right);
       } else {
         collectDestructuredCreatorAliases(node.left);
@@ -2999,12 +2999,12 @@ const collectLocalPluginCreatorNames = (ast) => {
       for (const value of values) {
         const resolved = unwrapTypedExpression(value);
         const kind =
-          resolved?.type === 'Identifier'
+          resolved?.type === "Identifier"
             ? names.get(resolved.name)
-            : resolved?.type === 'MemberExpression' ||
-                resolved?.type === 'OptionalMemberExpression'
-              ? getStaticMemberName(resolved)
-              : undefined;
+            : resolved?.type === "MemberExpression" ||
+              resolved?.type === "OptionalMemberExpression"
+            ? getStaticMemberName(resolved)
+            : undefined;
 
         if (kind && defaultPluginCreatorNames.has(kind)) {
           creatorKind = kind;
@@ -3025,7 +3025,7 @@ const collectLocalPluginCreatorNames = (ast) => {
 const collectLocalPlitePluginCreatorNames = (ast, file) => {
   const creators = new Set(defaultPlitePluginCreatorNames);
 
-  if (file.startsWith('packages/plitejs/')) creators.add('definePlugin');
+  if (file.startsWith("packages/plitejs/")) creators.add("definePlugin");
   const namespaces = new Set();
   const creatorCandidates = [];
   const namespaceCandidates = [];
@@ -3037,24 +3037,24 @@ const collectLocalPlitePluginCreatorNames = (ast, file) => {
     namespaceCandidates.push({ name, value });
   };
   const addDestructuredCandidates = (pattern, source) => {
-    if (pattern?.type !== 'ObjectPattern') return;
+    if (pattern?.type !== "ObjectPattern") return;
 
     for (const property of pattern.properties) {
       if (
-        property.type !== 'ObjectProperty' ||
-        getPropertyName(property.key) !== 'definePlugin'
+        property.type !== "ObjectProperty" ||
+        getPropertyName(property.key) !== "definePlugin"
       ) {
         continue;
       }
 
       const value = unwrapTypedExpression(property.value);
       const identifier =
-        value?.type === 'Identifier'
+        value?.type === "Identifier"
           ? value
-          : value?.type === 'AssignmentPattern' &&
-              value.left?.type === 'Identifier'
-            ? value.left
-            : undefined;
+          : value?.type === "AssignmentPattern" &&
+            value.left?.type === "Identifier"
+          ? value.left
+          : undefined;
 
       if (identifier) {
         destructuredCandidates.push({ name: identifier.name, source });
@@ -3064,37 +3064,37 @@ const collectLocalPlitePluginCreatorNames = (ast, file) => {
   const isNamespaceValue = (value) => {
     const current = unwrapTypedExpression(value);
 
-    return current?.type === 'Identifier' && namespaces.has(current.name);
+    return current?.type === "Identifier" && namespaces.has(current.name);
   };
   const isCreatorValue = (value) => {
     const current = unwrapTypedExpression(value);
 
-    if (current?.type === 'Identifier') return creators.has(current.name);
+    if (current?.type === "Identifier") return creators.has(current.name);
     if (
-      current?.type !== 'MemberExpression' &&
-      current?.type !== 'OptionalMemberExpression'
+      current?.type !== "MemberExpression" &&
+      current?.type !== "OptionalMemberExpression"
     ) {
       return false;
     }
 
     return (
-      getStaticMemberName(current) === 'definePlugin' &&
+      getStaticMemberName(current) === "definePlugin" &&
       isNamespaceValue(current.object)
     );
   };
 
   walkAst(ast, (node) => {
     if (
-      node.type === 'ImportDeclaration' &&
+      node.type === "ImportDeclaration" &&
       pliteModulePattern.test(node.source.value)
     ) {
       for (const specifier of node.specifiers) {
-        if (specifier.type === 'ImportNamespaceSpecifier') {
+        if (specifier.type === "ImportNamespaceSpecifier") {
           namespaces.add(specifier.local.name);
         }
         if (
-          specifier.type === 'ImportSpecifier' &&
-          getPropertyName(specifier.imported) === 'definePlugin'
+          specifier.type === "ImportSpecifier" &&
+          getPropertyName(specifier.imported) === "definePlugin"
         ) {
           creators.add(specifier.local.name);
         }
@@ -3102,8 +3102,8 @@ const collectLocalPlitePluginCreatorNames = (ast, file) => {
 
       return;
     }
-    if (node.type === 'VariableDeclarator') {
-      if (node.id?.type === 'Identifier') {
+    if (node.type === "VariableDeclarator") {
+      if (node.id?.type === "Identifier") {
         addCandidate(node.id.name, node.init);
       } else {
         addDestructuredCandidates(node.id, node.init);
@@ -3111,8 +3111,8 @@ const collectLocalPlitePluginCreatorNames = (ast, file) => {
 
       return;
     }
-    if (node.type === 'AssignmentExpression' && node.operator === '=') {
-      if (node.left?.type === 'Identifier') {
+    if (node.type === "AssignmentExpression" && node.operator === "=") {
+      if (node.left?.type === "Identifier") {
         addCandidate(node.left.name, node.right);
       } else {
         addDestructuredCandidates(node.left, node.right);
@@ -3154,16 +3154,16 @@ const collectLocalPlitePluginCreatorNames = (ast, file) => {
 
       const callee = unwrapTypedExpression(node.callee);
 
-      if (callee?.type === 'Identifier') return creators.has(callee.name);
+      if (callee?.type === "Identifier") return creators.has(callee.name);
       if (
-        callee?.type !== 'MemberExpression' &&
-        callee?.type !== 'OptionalMemberExpression'
+        callee?.type !== "MemberExpression" &&
+        callee?.type !== "OptionalMemberExpression"
       ) {
         return false;
       }
 
       return (
-        getStaticMemberName(callee) === 'definePlugin' &&
+        getStaticMemberName(callee) === "definePlugin" &&
         isNamespaceValue(callee.object)
       );
     },
@@ -3182,15 +3182,15 @@ const collectLocalModuleCallableNames = (
   const isNamespace = (value) => {
     const current = unwrapTypedExpression(value);
 
-    return current?.type === 'Identifier' && namespaces.has(current.name);
+    return current?.type === "Identifier" && namespaces.has(current.name);
   };
   const isCallable = (value) => {
     const current = unwrapTypedExpression(value);
 
     return (
-      (current?.type === 'Identifier' && callables.has(current.name)) ||
-      ((current?.type === 'MemberExpression' ||
-        current?.type === 'OptionalMemberExpression') &&
+      (current?.type === "Identifier" && callables.has(current.name)) ||
+      ((current?.type === "MemberExpression" ||
+        current?.type === "OptionalMemberExpression") &&
         getStaticMemberName(current) === exportedName &&
         isNamespace(current.object))
     );
@@ -3198,15 +3198,15 @@ const collectLocalModuleCallableNames = (
 
   walkAst(ast, (node) => {
     if (
-      node.type === 'ImportDeclaration' &&
+      node.type === "ImportDeclaration" &&
       modulePattern.test(node.source.value)
     ) {
       for (const specifier of node.specifiers) {
-        if (specifier.type === 'ImportNamespaceSpecifier') {
+        if (specifier.type === "ImportNamespaceSpecifier") {
           namespaces.add(specifier.local.name);
         }
         if (
-          specifier.type === 'ImportSpecifier' &&
+          specifier.type === "ImportSpecifier" &&
           getPropertyName(specifier.imported) === exportedName
         ) {
           callables.add(specifier.local.name);
@@ -3215,19 +3215,19 @@ const collectLocalModuleCallableNames = (
 
       return;
     }
-    if (node.type !== 'VariableDeclarator') return;
+    if (node.type !== "VariableDeclarator") return;
 
-    if (node.id?.type === 'Identifier') {
+    if (node.id?.type === "Identifier") {
       callableCandidates.push({ name: node.id.name, value: node.init });
       namespaceCandidates.push({ name: node.id.name, value: node.init });
 
       return;
     }
-    if (node.id?.type !== 'ObjectPattern') return;
+    if (node.id?.type !== "ObjectPattern") return;
 
     for (const property of node.id.properties) {
       if (
-        property.type !== 'ObjectProperty' ||
+        property.type !== "ObjectProperty" ||
         getPropertyName(property.key) !== exportedName
       ) {
         continue;
@@ -3235,12 +3235,12 @@ const collectLocalModuleCallableNames = (
 
       const value = unwrapTypedExpression(property.value);
       const identifier =
-        value?.type === 'Identifier'
+        value?.type === "Identifier"
           ? value
-          : value?.type === 'AssignmentPattern' &&
-              value.left?.type === 'Identifier'
-            ? value.left
-            : undefined;
+          : value?.type === "AssignmentPattern" &&
+            value.left?.type === "Identifier"
+          ? value.left
+          : undefined;
 
       if (identifier) {
         destructuredCandidates.push({
@@ -3338,13 +3338,13 @@ const collectLocalPlateEditorConstructorNames = (ast, staticStringBindings) => {
   ) => {
     const resolved = unwrapTypedExpression(value);
 
-    if (resolved?.type !== 'Identifier') return false;
+    if (resolved?.type !== "Identifier") return false;
 
     const binding = getBinding(resolved.name, node);
 
     return binding
       ? Boolean(readEvent(namespaceEvents, binding, position, node))
-      : resolved.name === 'Plate';
+      : resolved.name === "Plate";
   };
   const getMember = (
     member,
@@ -3362,12 +3362,12 @@ const collectLocalPlateEditorConstructorNames = (ast, staticStringBindings) => {
   const resolveCandidate = (value, node) => {
     const resolved = unwrapTypedExpression(value);
 
-    return resolved?.type === 'Identifier'
+    return resolved?.type === "Identifier"
       ? get(resolved.name, node)
-      : resolved?.type === 'MemberExpression' ||
-          resolved?.type === 'OptionalMemberExpression'
-        ? getMember(resolved, node)
-        : undefined;
+      : resolved?.type === "MemberExpression" ||
+        resolved?.type === "OptionalMemberExpression"
+      ? getMember(resolved, node)
+      : undefined;
   };
   const addCandidate = (name, value, node) => {
     const binding = getBinding(name, node);
@@ -3380,20 +3380,20 @@ const collectLocalPlateEditorConstructorNames = (ast, staticStringBindings) => {
     });
   };
   const addDestructuredCandidates = (pattern, source, node) => {
-    if (pattern?.type !== 'ObjectPattern') return;
+    if (pattern?.type !== "ObjectPattern") return;
 
     for (const property of pattern.properties) {
-      if (property.type !== 'ObjectProperty') continue;
+      if (property.type !== "ObjectProperty") continue;
 
       const constructorName = getPropertyName(property.key);
       const value = unwrapTypedExpression(property.value);
       const identifier =
-        value?.type === 'Identifier'
+        value?.type === "Identifier"
           ? value
-          : value?.type === 'AssignmentPattern' &&
-              value.left?.type === 'Identifier'
-            ? value.left
-            : undefined;
+          : value?.type === "AssignmentPattern" &&
+            value.left?.type === "Identifier"
+          ? value.left
+          : undefined;
 
       if (
         identifier &&
@@ -3416,15 +3416,15 @@ const collectLocalPlateEditorConstructorNames = (ast, staticStringBindings) => {
   };
 
   walkAst(ast, (node) => {
-    if (node.type === 'ImportDeclaration') {
+    if (node.type === "ImportDeclaration") {
       const isPlateModule = plateModulePattern.test(node.source.value);
 
       for (const specifier of node.specifiers) {
         const binding = getBinding(specifier.local?.name, specifier);
 
-        if (specifier.type === 'ImportNamespaceSpecifier' && isPlateModule) {
+        if (specifier.type === "ImportNamespaceSpecifier" && isPlateModule) {
           addEvent(namespaceEvents, binding, specifier, true);
-        } else if (specifier.type === 'ImportSpecifier' && isPlateModule) {
+        } else if (specifier.type === "ImportSpecifier" && isPlateModule) {
           const constructorName = getPropertyName(specifier.imported);
 
           if (
@@ -3438,8 +3438,8 @@ const collectLocalPlateEditorConstructorNames = (ast, staticStringBindings) => {
 
       return;
     }
-    if (node.type === 'VariableDeclarator') {
-      if (node.id?.type === 'Identifier') {
+    if (node.type === "VariableDeclarator") {
+      if (node.id?.type === "Identifier") {
         addCandidate(node.id.name, node.init, node);
       } else {
         addDestructuredCandidates(node.id, node.init, node);
@@ -3447,8 +3447,8 @@ const collectLocalPlateEditorConstructorNames = (ast, staticStringBindings) => {
 
       return;
     }
-    if (node.type === 'AssignmentExpression' && node.operator === '=') {
-      if (node.left?.type === 'Identifier') {
+    if (node.type === "AssignmentExpression" && node.operator === "=") {
+      if (node.left?.type === "Identifier") {
         addCandidate(node.left.name, node.right, node);
       } else {
         addDestructuredCandidates(node.left, node.right, node);
@@ -3506,7 +3506,7 @@ const collectLocalPluginDescriptorBindings = (
   const arrayRestAliases = [];
   const descriptorBindings = new Map();
   const getPathBinding = (path, node) =>
-    findBinding(scopeByNode.get(node) ?? rootScope, path?.split('.')[0]);
+    findBinding(scopeByNode.get(node) ?? rootScope, path?.split(".")[0]);
   const hasDescriptorBinding = (path, node) => {
     const binding = getPathBinding(path, node);
 
@@ -3550,21 +3550,21 @@ const collectLocalPluginDescriptorBindings = (
   const addContainerDeclarations = (basePath, value, node) => {
     const current = unwrapTypedExpression(value);
 
-    if (current?.type === 'ConditionalExpression') {
+    if (current?.type === "ConditionalExpression") {
       addContainerDeclarations(basePath, current.consequent, node);
       addContainerDeclarations(basePath, current.alternate, node);
 
       return;
     }
-    if (current?.type === 'LogicalExpression') {
+    if (current?.type === "LogicalExpression") {
       addContainerDeclarations(basePath, current.left, node);
       addContainerDeclarations(basePath, current.right, node);
 
       return;
     }
-    if (current?.type === 'ArrayExpression') {
+    if (current?.type === "ArrayExpression") {
       for (const [index, element] of current.elements.entries()) {
-        if (!element || element.type === 'SpreadElement') continue;
+        if (!element || element.type === "SpreadElement") continue;
 
         const path = `${basePath}.${index}`;
 
@@ -3574,16 +3574,16 @@ const collectLocalPluginDescriptorBindings = (
 
       return;
     }
-    if (current?.type !== 'ObjectExpression') return;
+    if (current?.type !== "ObjectExpression") return;
 
     for (const [index, property] of current.properties.entries()) {
-      if (property.type === 'SpreadElement') {
+      if (property.type === "SpreadElement") {
         objectSpreadAliases.push({
           aliasPath: basePath,
           excludedKeys: new Set(
             current.properties
               .slice(index + 1)
-              .filter((candidate) => candidate.type === 'ObjectProperty')
+              .filter((candidate) => candidate.type === "ObjectProperty")
               .map((candidate) =>
                 getResolvedObjectPropertyName(candidate, staticStringBindings)
               )
@@ -3595,7 +3595,7 @@ const collectLocalPluginDescriptorBindings = (
 
         continue;
       }
-      if (property.type !== 'ObjectProperty') continue;
+      if (property.type !== "ObjectProperty") continue;
 
       const key = getResolvedObjectPropertyName(property, staticStringBindings);
 
@@ -3610,20 +3610,20 @@ const collectLocalPluginDescriptorBindings = (
   const addPatternPathAliases = (pattern, basePath, node = pattern) => {
     if (!pattern || !basePath) return;
 
-    if (pattern.type === 'Identifier') {
+    if (pattern.type === "Identifier") {
       addPathAlias(pattern.name, basePath, node);
 
       return;
     }
-    if (pattern.type === 'AssignmentPattern') {
+    if (pattern.type === "AssignmentPattern") {
       addPatternPathAliases(pattern.left, basePath, node);
 
       return;
     }
-    if (pattern.type === 'ObjectPattern') {
+    if (pattern.type === "ObjectPattern") {
       const excludedKeys = new Set(
         pattern.properties
-          .filter((property) => property.type === 'ObjectProperty')
+          .filter((property) => property.type === "ObjectProperty")
           .map((property) =>
             getResolvedObjectPropertyName(property, staticStringBindings)
           )
@@ -3631,8 +3631,8 @@ const collectLocalPluginDescriptorBindings = (
       );
 
       for (const property of pattern.properties) {
-        if (property.type === 'RestElement') {
-          if (property.argument.type === 'Identifier') {
+        if (property.type === "RestElement") {
+          if (property.argument.type === "Identifier") {
             objectRestAliases.push({
               aliasPath: property.argument.name,
               excludedKeys,
@@ -3643,7 +3643,7 @@ const collectLocalPluginDescriptorBindings = (
 
           continue;
         }
-        if (property.type !== 'ObjectProperty') continue;
+        if (property.type !== "ObjectProperty") continue;
 
         const key = getResolvedObjectPropertyName(
           property,
@@ -3661,13 +3661,13 @@ const collectLocalPluginDescriptorBindings = (
 
       return;
     }
-    if (pattern.type !== 'ArrayPattern') return;
+    if (pattern.type !== "ArrayPattern") return;
 
     for (const [index, element] of pattern.elements.entries()) {
       if (!element) continue;
       if (
-        element.type === 'RestElement' &&
-        element.argument.type === 'Identifier'
+        element.type === "RestElement" &&
+        element.argument.type === "Identifier"
       ) {
         arrayRestAliases.push({
           aliasPath: element.argument.name,
@@ -3687,8 +3687,8 @@ const collectLocalPluginDescriptorBindings = (
   };
 
   walkAst(ast, (node) => {
-    if (node.type === 'VariableDeclarator') {
-      if (node.id?.type === 'Identifier') {
+    if (node.type === "VariableDeclarator") {
+      if (node.id?.type === "Identifier") {
         addDeclaration(node.id.name, node.init, node);
         addPathAlias(node.id.name, getStaticExpressionPath(node.init), node);
         addContainerDeclarations(node.id.name, node.init, node);
@@ -3700,14 +3700,14 @@ const collectLocalPluginDescriptorBindings = (
     }
 
     if (
-      node.type === 'AssignmentExpression' &&
-      node.operator === '=' &&
+      node.type === "AssignmentExpression" &&
+      node.operator === "=" &&
       node.left
     ) {
       if (
-        node.left.type === 'Identifier' ||
-        node.left.type === 'MemberExpression' ||
-        node.left.type === 'OptionalMemberExpression'
+        node.left.type === "Identifier" ||
+        node.left.type === "MemberExpression" ||
+        node.left.type === "OptionalMemberExpression"
       ) {
         const path = getResolvedStaticExpressionPath(
           node.left,
@@ -3779,7 +3779,7 @@ const collectLocalPluginDescriptorBindings = (
         if (!hasDescriptorBinding(descriptorPath, node)) continue;
 
         const suffix = descriptorPath.slice(sourcePath.length + 1);
-        const [key] = suffix.split('.');
+        const [key] = suffix.split(".");
 
         if (excludedKeys.has(key)) continue;
 
@@ -3802,7 +3802,7 @@ const collectLocalPluginDescriptorBindings = (
         if (!hasDescriptorBinding(descriptorPath, node)) continue;
 
         const suffix = descriptorPath.slice(sourcePath.length + 1);
-        const [key] = suffix.split('.');
+        const [key] = suffix.split(".");
 
         if (excludedKeys.has(key)) continue;
 
@@ -3821,7 +3821,7 @@ const collectLocalPluginDescriptorBindings = (
 
         const [index, ...suffix] = descriptorPath
           .slice(sourcePath.length + 1)
-          .split('.');
+          .split(".");
         const numericIndex = Number(index);
 
         if (!Number.isInteger(numericIndex) || numericIndex < offset) continue;
@@ -3830,7 +3830,7 @@ const collectLocalPluginDescriptorBindings = (
           aliasPath,
           String(numericIndex - offset),
           ...suffix,
-        ].join('.');
+        ].join(".");
 
         if (markDescriptorBinding(aliasBinding, node)) {
           changed = true;
@@ -3845,16 +3845,16 @@ const collectLocalPluginDescriptorBindings = (
 const isPluginDescriptorBuilderChain = (node) => {
   let current = unwrapTypedExpression(node);
 
-  while (current?.type === 'CallExpression') {
+  while (current?.type === "CallExpression") {
     const callee = unwrapTypedExpression(current.callee);
 
     if (
-      callee?.type === 'Identifier' &&
-      ['definePlugin', 'definePlugin', 'toReactPlugin'].includes(callee.name)
+      callee?.type === "Identifier" &&
+      ["definePlugin", "definePlugin", "toReactPlugin"].includes(callee.name)
     ) {
       return true;
     }
-    if (callee?.type !== 'MemberExpression') return false;
+    if (callee?.type !== "MemberExpression") return false;
 
     current = unwrapTypedExpression(callee.object);
   }
@@ -3863,16 +3863,16 @@ const isPluginDescriptorBuilderChain = (node) => {
 };
 
 const getDefineCodecsCall = (property) => {
-  if (property?.type !== 'ObjectProperty') return undefined;
+  if (property?.type !== "ObjectProperty") return undefined;
 
   let value = unwrapTypedExpression(property.value);
 
   if (isFunction(value)) {
     const body = unwrapTypedExpression(value.body);
 
-    if (body?.type === 'BlockStatement') {
+    if (body?.type === "BlockStatement") {
       const returns = body.body.filter(
-        (statement) => statement.type === 'ReturnStatement'
+        (statement) => statement.type === "ReturnStatement"
       );
 
       value =
@@ -3885,9 +3885,9 @@ const getDefineCodecsCall = (property) => {
   }
 
   if (
-    value?.type === 'CallExpression' &&
-    value.callee.type === 'Identifier' &&
-    value.callee.name === 'defineCodecs'
+    value?.type === "CallExpression" &&
+    value.callee.type === "Identifier" &&
+    value.callee.name === "defineCodecs"
   ) {
     return value;
   }
@@ -3915,9 +3915,9 @@ const getOpaquePluginStageIdentity = (contribution, staticStringBindings) => {
       value
     );
 
-    return `$factory:${factory ?? '<dynamic>'}`;
+    return `$factory:${factory ?? "<dynamic>"}`;
   }
-  if (value?.type === 'ArrayExpression') {
+  if (value?.type === "ArrayExpression") {
     const entries = value.elements.map((element) => {
       const item = unwrapTypedExpression(element);
 
@@ -3927,19 +3927,19 @@ const getOpaquePluginStageIdentity = (contribution, staticStringBindings) => {
         if (isFunction(callee)) {
           const results = getStaticFunctionResults(callee);
           const fields = results.flatMap((result) =>
-            result?.type === 'ObjectExpression'
+            result?.type === "ObjectExpression"
               ? result.properties.map((property) =>
-                  property.type === 'SpreadElement'
-                    ? '...'
-                    : (getResolvedObjectPropertyName(
+                  property.type === "SpreadElement"
+                    ? "..."
+                    : getResolvedObjectPropertyName(
                         property,
                         staticStringBindings
-                      ) ?? '?')
+                      ) ?? "?"
                 )
-              : [`$${result?.type ?? 'missing'}`]
+              : [`$${result?.type ?? "missing"}`]
           );
 
-          return `$iife:${fields.sort(compareStrings).join(',')}`;
+          return `$iife:${fields.sort(compareStrings).join(",")}`;
         }
 
         return `$factory:${
@@ -3948,27 +3948,27 @@ const getOpaquePluginStageIdentity = (contribution, staticStringBindings) => {
             staticStringBindings,
             item.start,
             item
-          ) ?? '<dynamic>'
+          ) ?? "<dynamic>"
         }`;
       }
-      if (item?.type !== 'ObjectExpression') {
-        return `$${item?.type ?? 'hole'}`;
+      if (item?.type !== "ObjectExpression") {
+        return `$${item?.type ?? "hole"}`;
       }
 
       return item.properties
         .map((property) =>
-          property.type === 'SpreadElement'
-            ? '...'
-            : (getResolvedObjectPropertyName(property, staticStringBindings) ??
-              '?')
+          property.type === "SpreadElement"
+            ? "..."
+            : getResolvedObjectPropertyName(property, staticStringBindings) ??
+              "?"
         )
         .sort()
-        .join(',');
+        .join(",");
     });
 
-    return `$array:${entries.join('|')}`;
+    return `$array:${entries.join("|")}`;
   }
-  if (value?.type === 'ObjectExpression') return '$object';
+  if (value?.type === "ObjectExpression") return "$object";
 
   const path = getResolvedStaticExpressionPath(
     value,
@@ -3977,15 +3977,15 @@ const getOpaquePluginStageIdentity = (contribution, staticStringBindings) => {
     value
   );
 
-  return path ? `$value:${path}` : `$node:${value?.type ?? 'missing'}`;
+  return path ? `$value:${path}` : `$node:${value?.type ?? "missing"}`;
 };
 
 const getPluginStageFields = (contribution, staticStringBindings) => {
   const fields = getStaticPluginProperties(contribution)
     .map((property) =>
-      property.type === 'SpreadElement'
-        ? '...'
-        : (getResolvedObjectPropertyName(property, staticStringBindings) ?? '?')
+      property.type === "SpreadElement"
+        ? "..."
+        : getResolvedObjectPropertyName(property, staticStringBindings) ?? "?"
     )
     .sort();
 
@@ -3999,8 +3999,8 @@ const getExtendChainStages = (node, staticStringBindings) => {
   let current = unwrapTypedExpression(node);
 
   while (
-    current?.type === 'CallExpression' &&
-    readMemberCallName(current) === 'extend'
+    current?.type === "CallExpression" &&
+    readMemberCallName(current) === "extend"
   ) {
     stages.unshift(
       getPluginStageFields(current.arguments[0], staticStringBindings)
@@ -4040,8 +4040,8 @@ const getPluginCreatorFromBuilderChain = (
     const callee = unwrapTypedExpression(current.callee);
 
     if (
-      callee?.type !== 'MemberExpression' &&
-      callee?.type !== 'OptionalMemberExpression'
+      callee?.type !== "MemberExpression" &&
+      callee?.type !== "OptionalMemberExpression"
     ) {
       return undefined;
     }
@@ -4057,18 +4057,18 @@ const countStageField = (stages, field) =>
     (count, stage) =>
       count +
       stage.reduce((stageCount, signature) => {
-        const entries = signature.startsWith('$array:')
-          ? signature.slice('$array:'.length).split('|')
+        const entries = signature.startsWith("$array:")
+          ? signature.slice("$array:".length).split("|")
           : [signature];
 
         return (
           stageCount +
           entries.reduce((entryCount, entry) => {
-            const fields = entry.startsWith('$iife:')
-              ? entry.slice('$iife:'.length).split(',')
-              : entry.startsWith('$')
-                ? []
-                : entry.split(',');
+            const fields = entry.startsWith("$iife:")
+              ? entry.slice("$iife:".length).split(",")
+              : entry.startsWith("$")
+              ? []
+              : entry.split(",");
 
             return (
               entryCount +
@@ -4111,11 +4111,11 @@ const isNestedInLaterExtend = (node, ancestors) => {
   const grandparent = ancestors.at(-2);
 
   return (
-    parent?.type === 'MemberExpression' &&
+    parent?.type === "MemberExpression" &&
     parent.object === node &&
-    grandparent?.type === 'CallExpression' &&
+    grandparent?.type === "CallExpression" &&
     grandparent.callee === parent &&
-    readMemberCallName(grandparent) === 'extend'
+    readMemberCallName(grandparent) === "extend"
   );
 };
 
@@ -4124,12 +4124,12 @@ const isProductionPluginAuthoringFile = (file) =>
   !historicalOrGeneratedSourcePattern.test(file);
 
 const isSchemaApiCall = (node, method) =>
-  node?.type === 'CallExpression' &&
-  node.callee.type === 'MemberExpression' &&
+  node?.type === "CallExpression" &&
+  node.callee.type === "MemberExpression" &&
   !node.callee.computed &&
   getPropertyName(node.callee.property) === method &&
-  node.callee.object.type === 'MemberExpression' &&
-  getPropertyName(node.callee.object.property) === 'schema';
+  node.callee.object.type === "MemberExpression" &&
+  getPropertyName(node.callee.object.property) === "schema";
 
 const isPluginFactoryCall = (
   node,
@@ -4138,11 +4138,11 @@ const isPluginFactoryCall = (
   if (!isCallExpressionNode(node)) return false;
   if (getPluginCreatorCallKind(node, pluginCreatorNames)) return true;
 
-  if (node.callee.type === 'Identifier') {
+  if (node.callee.type === "Identifier") {
     return pluginFactoryNamePattern.test(node.callee.name);
   }
 
-  if (node.callee.type !== 'MemberExpression' || node.callee.computed) {
+  if (node.callee.type !== "MemberExpression" || node.callee.computed) {
     return false;
   }
 
@@ -4156,11 +4156,11 @@ const isPlatePluginFactoryCall = (
   if (!isCallExpressionNode(node)) return false;
   if (getPluginCreatorCallKind(node, pluginCreatorNames)) return true;
 
-  if (node.callee.type === 'Identifier') {
-    return node.callee.name.endsWith('Plugin');
+  if (node.callee.type === "Identifier") {
+    return node.callee.name.endsWith("Plugin");
   }
 
-  if (node.callee.type !== 'MemberExpression' || node.callee.computed) {
+  if (node.callee.type !== "MemberExpression" || node.callee.computed) {
     return false;
   }
 
@@ -4173,7 +4173,7 @@ const isDirectPluginDeclarationObject = (
 ) => {
   const objectIndex = ancestors.length - 1;
 
-  if (ancestors[objectIndex]?.type !== 'ObjectExpression') return false;
+  if (ancestors[objectIndex]?.type !== "ObjectExpression") return false;
 
   for (let index = objectIndex - 1; index >= 0; index--) {
     const ancestor = ancestors[index];
@@ -4185,7 +4185,7 @@ const isDirectPluginDeclarationObject = (
           .slice(index + 1, objectIndex)
           .some(
             (item) =>
-              item.type === 'ArrayExpression' || item.type === 'ObjectProperty'
+              item.type === "ArrayExpression" || item.type === "ObjectProperty"
           )
       );
     }
@@ -4200,7 +4200,7 @@ const isDirectPlatePluginDeclarationObject = (
 ) => {
   const objectIndex = ancestors.length - 1;
 
-  if (ancestors[objectIndex]?.type !== 'ObjectExpression') return false;
+  if (ancestors[objectIndex]?.type !== "ObjectExpression") return false;
 
   for (let index = objectIndex - 1; index >= 0; index--) {
     const ancestor = ancestors[index];
@@ -4212,7 +4212,7 @@ const isDirectPlatePluginDeclarationObject = (
           .slice(index + 1, objectIndex)
           .some(
             (item) =>
-              item.type === 'ArrayExpression' || item.type === 'ObjectProperty'
+              item.type === "ArrayExpression" || item.type === "ObjectProperty"
           )
       );
     }
@@ -4228,8 +4228,8 @@ const isInsidePluginSchema = (
 ) => {
   const schemaIndex = ancestors.findLastIndex(
     (ancestor) =>
-      ancestor.type === 'ObjectProperty' &&
-      getResolvedObjectPropertyName(ancestor, staticStringBindings) === 'schema'
+      ancestor.type === "ObjectProperty" &&
+      getResolvedObjectPropertyName(ancestor, staticStringBindings) === "schema"
   );
 
   return (
@@ -4255,7 +4255,7 @@ const isInsidePluginFactoryDeclaration = (
       continue;
     }
 
-    return ancestor.callee.type === 'Identifier';
+    return ancestor.callee.type === "Identifier";
   }
 
   return false;
@@ -4267,8 +4267,8 @@ const isInsidePluginInitialState = (
 ) => {
   const initialStateIndex = ancestors.findLastIndex(
     (ancestor) =>
-      ancestor.type === 'ObjectProperty' &&
-      getPropertyName(ancestor.key) === 'initialState'
+      ancestor.type === "ObjectProperty" &&
+      getPropertyName(ancestor.key) === "initialState"
   );
 
   return (
@@ -4281,21 +4281,21 @@ const isInsidePluginInitialState = (
 };
 
 const hasExpectError = (source, node) => {
-  const lineStart = source.lastIndexOf('\n', Math.max(0, node.start - 1));
+  const lineStart = source.lastIndexOf("\n", Math.max(0, node.start - 1));
   const previousLineStart = source.lastIndexOf(
-    '\n',
+    "\n",
     Math.max(0, lineStart - 1)
   );
 
   return source
     .slice(Math.max(0, previousLineStart), node.start)
-    .includes('@ts-expect-error');
+    .includes("@ts-expect-error");
 };
 
 const hasPrecedingMarker = (source, node, marker) => {
-  const lineStart = source.lastIndexOf('\n', Math.max(0, node.start - 1));
+  const lineStart = source.lastIndexOf("\n", Math.max(0, node.start - 1));
   const previousLineStart = source.lastIndexOf(
-    '\n',
+    "\n",
     Math.max(0, lineStart - 1)
   );
 
@@ -4306,27 +4306,27 @@ const hasPrecedingMarker = (source, node, marker) => {
 
 const readCallName = (callee) => {
   if (
-    callee?.type !== 'MemberExpression' ||
+    callee?.type !== "MemberExpression" ||
     callee.computed ||
-    callee.object?.type !== 'Identifier'
+    callee.object?.type !== "Identifier"
   ) {
     return undefined;
   }
 
-  return callee.object.name === 'schema'
+  return callee.object.name === "schema"
     ? getPropertyName(callee.property)
     : undefined;
 };
 
 const readSchemaContentCallName = (callee) => {
   if (
-    callee?.type !== 'MemberExpression' ||
+    callee?.type !== "MemberExpression" ||
     callee.computed ||
-    callee.object?.type !== 'MemberExpression' ||
+    callee.object?.type !== "MemberExpression" ||
     callee.object.computed ||
-    callee.object.object?.type !== 'Identifier' ||
-    callee.object.object.name !== 'schema' ||
-    getPropertyName(callee.object.property) !== 'content'
+    callee.object.object?.type !== "Identifier" ||
+    callee.object.object.name !== "schema" ||
+    getPropertyName(callee.object.property) !== "content"
   ) {
     return undefined;
   }
@@ -4336,8 +4336,8 @@ const readSchemaContentCallName = (callee) => {
 
 const getStaticMemberName = (member) => {
   if (
-    member?.type !== 'MemberExpression' &&
-    member?.type !== 'OptionalMemberExpression'
+    member?.type !== "MemberExpression" &&
+    member?.type !== "OptionalMemberExpression"
   ) {
     return undefined;
   }
@@ -4349,17 +4349,17 @@ const getStaticMemberName = (member) => {
 
 const readMemberCallName = (node) =>
   isCallExpressionNode(node) &&
-  (node.callee.type === 'MemberExpression' ||
-    node.callee.type === 'OptionalMemberExpression')
+  (node.callee.type === "MemberExpression" ||
+    node.callee.type === "OptionalMemberExpression")
     ? getStaticMemberName(node.callee)
     : undefined;
 
 const readCallChainRootName = (node) => {
   let current = unwrapTypedExpression(node);
 
-  while (current?.type === 'CallExpression') {
-    if (current.callee.type === 'Identifier') return current.callee.name;
-    if (current.callee.type !== 'MemberExpression' || current.callee.computed) {
+  while (current?.type === "CallExpression") {
+    if (current.callee.type === "Identifier") return current.callee.name;
+    if (current.callee.type !== "MemberExpression" || current.callee.computed) {
       return undefined;
     }
 
@@ -4370,11 +4370,11 @@ const readCallChainRootName = (node) => {
 };
 
 const isForeignStoreSelectorPlugin = (node, file) =>
-  readMemberCallName(node) === 'extendSelectors' &&
-  (readCallChainRootName(node) === 'createZustandStore' ||
-    (file === 'packages/platejs/src/internal/plugin/resolvePlugins.ts' &&
-      node.callee.object?.type === 'Identifier' &&
-      node.callee.object.name === 'store'));
+  readMemberCallName(node) === "extendSelectors" &&
+  (readCallChainRootName(node) === "createZustandStore" ||
+    (file === "packages/platejs/src/internal/plugin/resolvePlugins.ts" &&
+      node.callee.object?.type === "Identifier" &&
+      node.callee.object.name === "store"));
 
 const isPackagePluginDefinitionSource = (file) =>
   packagePluginSourcePattern.test(file) &&
@@ -4382,15 +4382,15 @@ const isPackagePluginDefinitionSource = (file) =>
   !packageConfigureInstallationOwners.has(file);
 
 const isPluginTypeReference = (node) => {
-  if (node?.type !== 'MemberExpression') return false;
+  if (node?.type !== "MemberExpression") return false;
 
   let { object } = node;
 
-  while (object?.type === 'MemberExpression') ({ object } = object);
+  while (object?.type === "MemberExpression") ({ object } = object);
 
   return (
-    object?.type === 'Identifier' &&
-    (object.name === 'KEYS' || object.name === 'NODES')
+    object?.type === "Identifier" &&
+    (object.name === "KEYS" || object.name === "NODES")
   );
 };
 
@@ -4403,9 +4403,9 @@ const createIssue = (file, node, reason) => ({
 
 const getStaticPliteElementMap = (node, staticStringBindings) => {
   if (
-    node?.type !== 'CallExpression' ||
-    node.callee.type !== 'Identifier' ||
-    (node.callee.name !== 'defineEditorSchema' &&
+    node?.type !== "CallExpression" ||
+    node.callee.type !== "Identifier" ||
+    (node.callee.name !== "defineEditorSchema" &&
       !plitePluginNamePattern.test(node.callee.name))
   ) {
     return undefined;
@@ -4413,26 +4413,26 @@ const getStaticPliteElementMap = (node, staticStringBindings) => {
 
   const declaration = node.arguments[1];
 
-  if (declaration?.type !== 'ObjectExpression') return undefined;
+  if (declaration?.type !== "ObjectExpression") return undefined;
 
   const schema =
-    node.callee.name === 'defineEditorSchema'
+    node.callee.name === "defineEditorSchema"
       ? declaration
-      : getResolvedObjectProperty(declaration, 'schema', staticStringBindings)
+      : getResolvedObjectProperty(declaration, "schema", staticStringBindings)
           ?.value;
 
-  if (schema?.type !== 'ObjectExpression') return undefined;
+  if (schema?.type !== "ObjectExpression") return undefined;
 
   const elements = getResolvedObjectProperty(
     schema,
-    'elements',
+    "elements",
     staticStringBindings
   )?.value;
 
-  return elements?.type === 'ObjectExpression' ? elements : undefined;
+  return elements?.type === "ObjectExpression" ? elements : undefined;
 };
 
-export function auditPlateSchemaSource(source, file = 'fixture.ts') {
+export function auditPlateSchemaSource(source, file = "fixture.ts") {
   const ast = parsePlateSource(source, file);
   const staticStringBindings = collectStaticStringBindings(ast);
   const { getBinding, portalBindings, schemaBindings } =
@@ -4443,7 +4443,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     file
   );
   const localReactFactoryNames = collectLocalModuleCallableNames(ast, {
-    exportedName: 'react',
+    exportedName: "react",
     modulePattern: pliteReactModulePattern,
   });
   const localPlateEditorConstructorNames =
@@ -4488,55 +4488,55 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       owner
     );
   const externalMarkdownElementNodeNames = new Set([
-    'figure',
-    'figcaption',
-    'image',
-    'img',
-    'span',
+    "figure",
+    "figcaption",
+    "image",
+    "img",
+    "span",
   ]);
   const externalMarkdownNodeSources = new Set([
-    'blockquote',
-    'br',
-    'break',
-    'code',
-    'definition',
-    'del',
-    'delete',
-    'emphasis',
-    'figure',
-    'footnoteDefinition',
-    'footnoteReference',
-    'heading',
-    'html',
-    'image',
-    'imageReference',
-    'img',
-    'inlineCode',
-    'inlineMath',
-    'link',
-    'linkReference',
-    'list',
-    'listItem',
-    'mark',
-    'math',
-    'mdxFlowExpression',
-    'mdxJsxFlowElement',
-    'mdxJsxTextElement',
-    'mdxTextExpression',
-    'mdxjsEsm',
-    'mention',
-    'paragraph',
-    'span',
-    'strong',
-    'sub',
-    'sup',
-    'table',
-    'tableCell',
-    'tableRow',
-    'text',
-    'thematicBreak',
-    'u',
-    'yaml',
+    "blockquote",
+    "br",
+    "break",
+    "code",
+    "definition",
+    "del",
+    "delete",
+    "emphasis",
+    "figure",
+    "footnoteDefinition",
+    "footnoteReference",
+    "heading",
+    "html",
+    "image",
+    "imageReference",
+    "img",
+    "inlineCode",
+    "inlineMath",
+    "link",
+    "linkReference",
+    "list",
+    "listItem",
+    "mark",
+    "math",
+    "mdxFlowExpression",
+    "mdxJsxFlowElement",
+    "mdxJsxTextElement",
+    "mdxTextExpression",
+    "mdxjsEsm",
+    "mention",
+    "paragraph",
+    "span",
+    "strong",
+    "sub",
+    "sup",
+    "table",
+    "tableCell",
+    "tableRow",
+    "text",
+    "thematicBreak",
+    "u",
+    "yaml",
   ]);
   const getProperty = (properties, name) =>
     properties.find(
@@ -4547,33 +4547,33 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     const callback = unwrapTypedExpression(value);
     const parameter = unwrapTypedExpression(callback?.params?.[0]);
 
-    if (!isFunction(callback) || parameter?.type !== 'ObjectPattern') {
+    if (!isFunction(callback) || parameter?.type !== "ObjectPattern") {
       return new Set();
     }
 
-    const schemaProperty = getProperty(parameter.properties, 'schema');
+    const schemaProperty = getProperty(parameter.properties, "schema");
     const schemaPattern = unwrapTypedExpression(schemaProperty?.value);
 
-    if (schemaPattern?.type !== 'ObjectPattern') return new Set();
+    if (schemaPattern?.type !== "ObjectPattern") return new Set();
 
-    const typeProperty = getProperty(schemaPattern.properties, 'type');
+    const typeProperty = getProperty(schemaPattern.properties, "type");
     const localType = unwrapTypedExpression(typeProperty?.value);
 
-    return new Set(localType?.type === 'Identifier' ? [localType.name] : []);
+    return new Set(localType?.type === "Identifier" ? [localType.name] : []);
   };
   const getSchemaObjectBindings = (value) => {
     const callback = unwrapTypedExpression(value);
     const parameter = unwrapTypedExpression(callback?.params?.[0]);
 
-    if (!isFunction(callback) || parameter?.type !== 'ObjectPattern') {
+    if (!isFunction(callback) || parameter?.type !== "ObjectPattern") {
       return new Set();
     }
 
-    const schemaProperty = getProperty(parameter.properties, 'schema');
+    const schemaProperty = getProperty(parameter.properties, "schema");
     const localSchema = unwrapTypedExpression(schemaProperty?.value);
 
     return new Set(
-      localSchema?.type === 'Identifier' ? [localSchema.name] : []
+      localSchema?.type === "Identifier" ? [localSchema.name] : []
     );
   };
   const getCodecContextSchemaBindings = (property, ownerCallback) => ({
@@ -4589,19 +4589,19 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const isSchemaTypeBinding = (node, typeBindings, innerSchemaBindings) => {
     const value = unwrapTypedExpression(node);
 
-    if (value?.type === 'Identifier' && typeBindings.has(value.name)) {
+    if (value?.type === "Identifier" && typeBindings.has(value.name)) {
       return true;
     }
 
     if (
-      (value?.type === 'MemberExpression' ||
-        value?.type === 'OptionalMemberExpression') &&
-      getStaticMemberName(value) === 'type'
+      (value?.type === "MemberExpression" ||
+        value?.type === "OptionalMemberExpression") &&
+      getStaticMemberName(value) === "type"
     ) {
       const owner = unwrapTypedExpression(value.object);
 
       return (
-        owner?.type === 'Identifier' && innerSchemaBindings.has(owner.name)
+        owner?.type === "Identifier" && innerSchemaBindings.has(owner.name)
       );
     }
 
@@ -4613,10 +4613,10 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     const collect = (value) => {
       const result = unwrapTypedExpression(value);
 
-      if (result?.type === 'ConditionalExpression') {
+      if (result?.type === "ConditionalExpression") {
         return [...collect(result.consequent), ...collect(result.alternate)];
       }
-      if (result?.type !== 'ObjectExpression') return [];
+      if (result?.type !== "ObjectExpression") return [];
 
       return [getAuthorProperties(result, callback)];
     };
@@ -4631,10 +4631,10 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     const collect = (value) => {
       const result = unwrapTypedExpression(value);
 
-      if (result?.type === 'ConditionalExpression') {
+      if (result?.type === "ConditionalExpression") {
         return [...collect(result.consequent), ...collect(result.alternate)];
       }
-      if (result?.type !== 'ObjectExpression') return [];
+      if (result?.type !== "ObjectExpression") return [];
 
       return [result.properties];
     };
@@ -4646,9 +4646,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const getCodecRulePropertySets = (value, owner) => {
     const rules = unwrapTypedExpression(value);
 
-    if (rules?.type === 'ArrayExpression') {
+    if (rules?.type === "ArrayExpression") {
       return rules.elements
-        .filter((element) => !!element && element.type !== 'SpreadElement')
+        .filter((element) => !!element && element.type !== "SpreadElement")
         .map((element) => getAuthorProperties(element, owner))
         .filter((properties) => properties.length > 0);
     }
@@ -4661,7 +4661,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     authorProperties,
     ownerCallback
   ) => {
-    const codecsProperty = getProperty(authorProperties, 'codecs');
+    const codecsProperty = getProperty(authorProperties, "codecs");
     const defineCodecsCall = getDefineCodecsCall(codecsProperty);
 
     if (
@@ -4675,9 +4675,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       defineCodecsCall.arguments.at(-1),
       codecsProperty
     );
-    const markdownProperty = getProperty(codecProperties, 'text/markdown');
+    const markdownProperty = getProperty(codecProperties, "text/markdown");
 
-    if (!markdownProperty || markdownProperty.type !== 'ObjectProperty') {
+    if (!markdownProperty || markdownProperty.type !== "ObjectProperty") {
       return;
     }
 
@@ -4691,33 +4691,33 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       markdownProperty.value,
       markdownProperty
     )) {
-      const kindProperty = getProperty(ruleProperties, 'kind');
-      const markProperty = getProperty(ruleProperties, 'mark');
-      const fromProperty = getProperty(ruleProperties, 'from');
+      const kindProperty = getProperty(ruleProperties, "kind");
+      const markProperty = getProperty(ruleProperties, "mark");
+      const fromProperty = getProperty(ruleProperties, "from");
       const from = unwrapTypedExpression(fromProperty?.value);
-      const decodeProperty = getProperty(ruleProperties, 'decode');
+      const decodeProperty = getProperty(ruleProperties, "decode");
 
       if (
         getStaticString(unwrapTypedExpression(kindProperty?.value)) !==
-          'node' ||
+          "node" ||
         unwrapTypedExpression(markProperty?.value)?.value === true
       ) {
         continue;
       }
 
-      const encodeProperty = getProperty(ruleProperties, 'encode');
+      const encodeProperty = getProperty(ruleProperties, "encode");
       const encodedMdxObjects = getReturnedObjectPropertySets(
         encodeProperty?.value
       ).filter((properties) => {
-        const typeProperty = getProperty(properties, 'type');
+        const typeProperty = getProperty(properties, "type");
         const type = getStaticString(
           unwrapTypedExpression(typeProperty?.value)
         );
 
-        return type === 'mdxJsxFlowElement' || type === 'mdxJsxTextElement';
+        return type === "mdxJsxFlowElement" || type === "mdxJsxTextElement";
       });
       const encodedNameProperties = encodedMdxObjects
-        .map((properties) => getProperty(properties, 'name'))
+        .map((properties) => getProperty(properties, "name"))
         .filter(Boolean);
       const fromName = getStaticString(from);
       const hasCustomDecodeSource =
@@ -4736,7 +4736,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           codecsProperty,
-          'custom Markdown element codecs must be owned by their target plugin so from, decode, and encode share its resolved schema type; foreign defineCodecs(TargetPlugin, ...) contributions cannot author configurable MDX identity'
+          "custom Markdown element codecs must be owned by their target plugin so from, decode, and encode share its resolved schema type; foreign defineCodecs(TargetPlugin, ...) contributions cannot author configurable MDX identity"
         );
         continue;
       }
@@ -4751,7 +4751,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           fromProperty ?? decodeProperty,
-          'custom Markdown element codecs use the resolved schema type for from; bind schema: { type } in the codec factory and use from: type'
+          "custom Markdown element codecs use the resolved schema type for from; bind schema: { type } in the codec factory and use from: type"
         );
       }
 
@@ -4759,7 +4759,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         decodeProperty?.value
       );
       const decodedTypeProperties = decodedObjects
-        .map((properties) => getProperty(properties, 'type'))
+        .map((properties) => getProperty(properties, "type"))
         .filter(Boolean);
       const decodedSchemaBindings = {
         objects: new Set([
@@ -4787,7 +4787,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           decodeProperty ?? fromProperty,
-          'custom Markdown element codecs decode to the resolved schema type; return type from the codec schema context'
+          "custom Markdown element codecs decode to the resolved schema type; return type from the codec schema context"
         );
       }
 
@@ -4795,12 +4795,12 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         getReturnedRawObjectPropertySets(decodeProperty?.value).some(
           (properties) => {
             const spreadIndex = properties.findLastIndex(
-              (property) => property.type === 'SpreadElement'
+              (property) => property.type === "SpreadElement"
             );
 
             if (spreadIndex === -1) return false;
 
-            return ['children', 'type'].some((name) => {
+            return ["children", "type"].some((name) => {
               const index = properties.findIndex(
                 (property) =>
                   getResolvedObjectPropertyName(
@@ -4816,7 +4816,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           decodeProperty,
-          'Markdown codec attributes cannot override Plate children or schema type; spread parsed properties before structural fields'
+          "Markdown codec attributes cannot override Plate children or schema type; spread parsed properties before structural fields"
         );
       }
 
@@ -4833,7 +4833,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           encodeProperty ?? fromProperty,
-          'custom Markdown element codecs encode the resolved schema type as the MDX name; use name: type from the codec schema context'
+          "custom Markdown element codecs encode the resolved schema type as the MDX name; use name: type from the codec schema context"
         );
       }
     }
@@ -4847,11 +4847,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     const nameProperty = properties.find(
       (candidate) =>
         getResolvedObjectPropertyName(candidate, staticStringBindings) ===
-        'name'
+        "name"
     );
     const name =
       getStaticString(unwrapTypedExpression(factoryCall?.arguments[0])) ??
-      (nameProperty?.type === 'ObjectProperty'
+      (nameProperty?.type === "ObjectProperty"
         ? getStaticString(unwrapTypedExpression(nameProperty.value))
         : undefined);
 
@@ -4867,7 +4867,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const reportPrefixedOnHandlers = (property) => {
     const key = getResolvedObjectPropertyName(property, staticStringBindings);
 
-    if (key !== 'on' || property.type !== 'ObjectProperty') return;
+    if (key !== "on" || property.type !== "ObjectProperty") return;
 
     for (const handler of resolveStaticObjectProperties(
       property.value,
@@ -4882,18 +4882,20 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         staticStringBindings
       );
 
-      if (prefixedOnListenerPattern.test(handlerName ?? '')) {
+      if (prefixedOnListenerPattern.test(handlerName ?? "")) {
         report(
           handler,
-          `plugin on listeners are prefixless; use ${handlerName[2].toLowerCase()}${handlerName.slice(3)}`
+          `plugin on listeners are prefixless; use ${handlerName[2].toLowerCase()}${handlerName.slice(
+            3
+          )}`
         );
       }
     }
   };
   const getPropertyFunction = (property) => {
-    if (property?.type === 'ObjectMethod') return property;
+    if (property?.type === "ObjectMethod") return property;
     if (
-      property?.type === 'ObjectProperty' &&
+      property?.type === "ObjectProperty" &&
       isFunction(unwrapTypedExpression(property.value))
     ) {
       return unwrapTypedExpression(property.value);
@@ -4904,21 +4906,21 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const reportPliteConfigContext = (property) => {
     const key = getResolvedObjectPropertyName(property, staticStringBindings);
 
-    if (!['activate', 'api', 'schema', 'validate'].includes(key)) return;
+    if (!["activate", "api", "schema", "validate"].includes(key)) return;
 
     const callback = getPropertyFunction(property);
-    const parameter = callback?.params[key === 'activate' ? 1 : 0];
+    const parameter = callback?.params[key === "activate" ? 1 : 0];
 
-    if (parameter?.type !== 'ObjectPattern') return;
+    if (parameter?.type !== "ObjectPattern") return;
 
     for (const binding of parameter.properties) {
       if (
-        binding.type === 'ObjectProperty' &&
+        binding.type === "ObjectProperty" &&
         getResolvedObjectPropertyName(binding, staticStringBindings) ===
-          'config'
+          "config"
       ) {
         const isIntentionalNegativeContract =
-          key === 'validate' &&
+          key === "validate" &&
           pliteConfigNegativeContractCount <
             allowedPliteConfigNegativeContractCount &&
           hasPrecedingMarker(
@@ -4934,7 +4936,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
         report(
           binding,
-          'final Plite schema/API/activation/validation contexts have no config'
+          "final Plite schema/API/activation/validation contexts have no config"
         );
       }
     }
@@ -4942,16 +4944,16 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const reportStaleCapabilityFactoryContext = (property) => {
     const key = getResolvedObjectPropertyName(property, staticStringBindings);
 
-    if (!['api', 'read', 'update'].includes(key)) return;
+    if (!["api", "read", "update"].includes(key)) return;
 
     const callback = getPropertyFunction(property);
     const parameter = callback?.params[0];
 
-    if (parameter?.type !== 'ObjectPattern') return;
+    if (parameter?.type !== "ObjectPattern") return;
 
     for (const binding of parameter.properties) {
       const bindingName =
-        binding.type === 'ObjectProperty'
+        binding.type === "ObjectProperty"
           ? getResolvedObjectPropertyName(binding, staticStringBindings)
           : undefined;
 
@@ -4970,30 +4972,30 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       expression
     );
   const hasNonExtractablePluginAuthoringBinding = (pattern) =>
-    pattern?.type === 'ObjectPattern' &&
+    pattern?.type === "ObjectPattern" &&
     pattern.properties.some(
       (property) =>
-        property.type === 'RestElement' ||
-        (property.type === 'ObjectProperty' &&
+        property.type === "RestElement" ||
+        (property.type === "ObjectProperty" &&
           (property.computed ||
             pluginAuthoringMethods.has(getPropertyName(property.key))))
     );
   const isCapabilityIdentityExpression = (value) => {
     const current = unwrapTypedExpression(value);
 
-    if (current?.type === 'Identifier') return current.name === 'name';
+    if (current?.type === "Identifier") return current.name === "name";
     if (
-      current?.type !== 'MemberExpression' &&
-      current?.type !== 'OptionalMemberExpression'
+      current?.type !== "MemberExpression" &&
+      current?.type !== "OptionalMemberExpression"
     ) {
       return false;
     }
 
     const owner = unwrapTypedExpression(current.object);
 
-    if (owner?.type === 'Identifier' && owner.name === 'PLUGINS') return true;
-    if (getStaticMemberName(current) !== 'name') return false;
-    if (owner?.type === 'Identifier') {
+    if (owner?.type === "Identifier" && owner.name === "PLUGINS") return true;
+    if (getStaticMemberName(current) !== "name") return false;
+    if (owner?.type === "Identifier") {
       return (
         pluginOwnerNamePattern.test(owner.name) ||
         pluginPortalOwnerNamePattern.test(owner.name)
@@ -5001,15 +5003,15 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     }
 
     return (
-      (isCallExpressionNode(owner) && readMemberCallName(owner) === 'plugin') ||
-      getStaticExpressionPath(owner)?.split('.').includes('plugin')
+      (isCallExpressionNode(owner) && readMemberCallName(owner) === "plugin") ||
+      getStaticExpressionPath(owner)?.split(".").includes("plugin")
     );
   };
   const containsCapabilityIdentityExpression = (value) => {
     const current = unwrapTypedExpression(value);
 
     if (isCapabilityIdentityExpression(current)) return true;
-    if (current?.type === 'ArrayExpression') {
+    if (current?.type === "ArrayExpression") {
       return current.elements.some(containsCapabilityIdentityExpression);
     }
 
@@ -5018,8 +5020,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const containsRawStringLiteral = (value) => {
     const current = unwrapTypedExpression(value);
 
-    if (current?.type === 'StringLiteral') return true;
-    if (current?.type === 'ArrayExpression') {
+    if (current?.type === "StringLiteral") return true;
+    if (current?.type === "ArrayExpression") {
       return current.elements.some(containsRawStringLiteral);
     }
 
@@ -5029,14 +5031,14 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     const current = unwrapTypedExpression(value);
 
     return (
-      (current?.type === 'MemberExpression' ||
-        current?.type === 'OptionalMemberExpression') &&
-      ['key', 'type'].includes(getStaticMemberName(current))
+      (current?.type === "MemberExpression" ||
+        current?.type === "OptionalMemberExpression") &&
+      ["key", "type"].includes(getStaticMemberName(current))
     );
   };
 
   const visit = (node, ancestors = []) => {
-    if (!node || typeof node !== 'object') return;
+    if (!node || typeof node !== "object") return;
 
     if (
       isInstalledSchemaIdentityFallback(
@@ -5048,7 +5050,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     ) {
       report(
         node,
-        'uninstalled plugins have no schema identity; do not replace a missing type or key with a raw string fallback'
+        "uninstalled plugins have no schema identity; do not replace a missing type or key with a raw string fallback"
       );
     }
     if (
@@ -5062,54 +5064,54 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     ) {
       report(
         node,
-        'consumer plugin portals expose only flat schema.type or schema.key; schema.element and schema.properties are author/compiler-only'
+        "consumer plugin portals expose only flat schema.type or schema.key; schema.element and schema.properties are author/compiler-only"
       );
     }
     if (isLiteralArraySpread(node)) {
       report(
         node,
-        'inline literal array items directly instead of spreading a literal array'
+        "inline literal array items directly instead of spreading a literal array"
       );
     }
 
     if (
-      node.type === 'VariableDeclarator' &&
-      node.id?.type === 'Identifier' &&
-      node.id.name.endsWith('Type') &&
+      node.type === "VariableDeclarator" &&
+      node.id?.type === "Identifier" &&
+      node.id.name.endsWith("Type") &&
       containsCapabilityIdentityExpression(node.init)
     ) {
       report(
         node.init,
-        'element type bindings must not derive from plugin capability names'
+        "element type bindings must not derive from plugin capability names"
       );
     }
 
     const isMarkedPluginDeclarationStage =
-      node.type === 'VariableDeclarator' &&
-      node.id?.type === 'Identifier' &&
+      node.type === "VariableDeclarator" &&
+      node.id?.type === "Identifier" &&
       hasPrecedingMarker(source, node, intentionalPluginDeclarationStageMarker);
 
     if (isMarkedPluginDeclarationStage) {
       report(
         node,
-        'new plugin declaration stages are forbidden; repair the owning generic or declaration boundary'
+        "new plugin declaration stages are forbidden; repair the owning generic or declaration boundary"
       );
     }
 
     if (
-      node.type === 'VariableDeclarator' &&
-      node.id?.type === 'Identifier' &&
+      node.type === "VariableDeclarator" &&
+      node.id?.type === "Identifier" &&
       privatePluginBuilderScaffoldNamePattern.test(node.id.name) &&
       isProductionPluginAuthoringFile(file) &&
       isPluginDescriptorBuilderChain(node.init) &&
-      !ancestors.some((ancestor) => ancestor.type === 'ExportNamedDeclaration')
+      !ancestors.some((ancestor) => ancestor.type === "ExportNamedDeclaration")
     ) {
       const escapedName = node.id.name.replaceAll(
         /[$()*+.?[\\\]^{|}]/g,
-        '\\$&'
+        "\\$&"
       );
       const referenceCount =
-        source.match(new RegExp(`\\b${escapedName}\\b`, 'g'))?.length ?? 0;
+        source.match(new RegExp(`\\b${escapedName}\\b`, "g"))?.length ?? 0;
       const onlyConsumerContinuesBuilder = new RegExp(
         `\\b${escapedName}\\s*\\.\\s*(?:configure|extend)\\b`
       ).test(source);
@@ -5117,20 +5119,20 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       if (referenceCount === 2 && onlyConsumerContinuesBuilder) {
         report(
           node,
-          'one-use private plugin descriptor scaffolding; export the complete builder chain directly'
+          "one-use private plugin descriptor scaffolding; export the complete builder chain directly"
         );
       }
     }
 
     if (
-      node.type === 'TSTypeReference' &&
-      node.typeName?.type === 'Identifier' &&
-      (node.typeName.name === 'ElementOf' || node.typeName.name === 'TextOf') &&
+      node.type === "TSTypeReference" &&
+      node.typeName?.type === "Identifier" &&
+      (node.typeName.name === "ElementOf" || node.typeName.name === "TextOf") &&
       (node.typeParameters?.params ?? node.typeArguments?.params)?.some(
         (parameter) =>
-          parameter.type === 'TSTypeQuery' &&
-          parameter.exprName?.type === 'Identifier' &&
-          parameter.exprName.name === 'editor'
+          parameter.type === "TSTypeQuery" &&
+          parameter.exprName?.type === "Identifier" &&
+          parameter.exprName.name === "editor"
       ) &&
       isProductionPluginAuthoringFile(file) &&
       packagePluginSourcePattern.test(file)
@@ -5142,99 +5144,99 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     }
 
     if (
-      node.type === 'ImportDeclaration' &&
+      node.type === "ImportDeclaration" &&
       baseOrStaticSourcePattern.test(file) &&
       reactPluginEntrypointPattern.test(node.source.value) &&
       !plateReactAdapterEntrypointPattern.test(node.source.value)
     ) {
       report(
         node,
-        'static/base modules cannot import a feature package live React plugin'
+        "static/base modules cannot import a feature package live React plugin"
       );
     }
 
     if (
-      node.type === 'ImportDeclaration' &&
+      node.type === "ImportDeclaration" &&
       registryStandaloneEditorTypeSourcePattern.test(file) &&
       node.specifiers.some(
         (specifier) =>
-          specifier.type === 'ImportSpecifier' &&
-          getPropertyName(specifier.imported) === 'MyEditor'
+          specifier.type === "ImportSpecifier" &&
+          getPropertyName(specifier.imported) === "MyEditor"
       )
     ) {
       report(
         node,
-        'copied registry items must type against their owned plugin tuple, not the host MyEditor'
+        "copied registry items must type against their owned plugin tuple, not the host MyEditor"
       );
     }
 
     if (
-      node.type === 'ImportDeclaration' &&
+      node.type === "ImportDeclaration" &&
       baseOrStaticSourcePattern.test(file) &&
       plateReactAdapterEntrypointPattern.test(node.source.value)
     ) {
       report(
         node,
-        'static/base modules bind components with terminal BasePlugin.configure({ component }) without platejs/react'
+        "static/base modules bind components with terminal BasePlugin.configure({ component }) without platejs/react"
       );
     }
 
     if (
-      node.type === 'ImportDeclaration' &&
+      node.type === "ImportDeclaration" &&
       baseOrStaticSourcePattern.test(file) &&
       liveRegistryNodeModulePattern.test(node.source.value)
     ) {
       report(
         node,
-        'static/base kits cannot bind live registry node modules; import the static renderer'
+        "static/base kits cannot bind live registry node modules; import the static renderer"
       );
     }
 
     if (
-      ((node.type === 'VariableDeclarator' &&
+      ((node.type === "VariableDeclarator" &&
         hasNonExtractablePluginAuthoringBinding(node.id) &&
         isLocallyCreatedPluginDescriptorExpression(node.init)) ||
-        (node.type === 'AssignmentExpression' &&
-          node.operator === '=' &&
+        (node.type === "AssignmentExpression" &&
+          node.operator === "=" &&
           hasNonExtractablePluginAuthoringBinding(node.left) &&
           isLocallyCreatedPluginDescriptorExpression(node.right))) &&
       isProductionPluginAuthoringFile(file) &&
-      (packagePluginSourcePattern.test(file) || file.startsWith('apps/'))
+      (packagePluginSourcePattern.test(file) || file.startsWith("apps/"))
     ) {
       report(
         node,
-        'plugin authoring methods cannot be extracted from a locally created descriptor; keep the exact builder chain visible'
+        "plugin authoring methods cannot be extracted from a locally created descriptor; keep the exact builder chain visible"
       );
     }
 
     if (
-      (node.type === 'MemberExpression' ||
-        node.type === 'OptionalMemberExpression') &&
+      (node.type === "MemberExpression" ||
+        node.type === "OptionalMemberExpression") &&
       pluginAuthoringMethods.has(getStaticMemberName(node)) &&
       isLocallyCreatedPluginDescriptorExpression(node.object)
     ) {
       const parent = ancestors.at(-1);
       const isDirectCall =
-        (parent?.type === 'CallExpression' ||
-          parent?.type === 'OptionalCallExpression') &&
+        (parent?.type === "CallExpression" ||
+          parent?.type === "OptionalCallExpression") &&
         parent.callee === node;
 
       if (
         !isDirectCall &&
         isProductionPluginAuthoringFile(file) &&
-        (packagePluginSourcePattern.test(file) || file.startsWith('apps/'))
+        (packagePluginSourcePattern.test(file) || file.startsWith("apps/"))
       ) {
         report(
           node,
-          'plugin authoring methods cannot be extracted from a locally created descriptor; keep the exact builder chain visible'
+          "plugin authoring methods cannot be extracted from a locally created descriptor; keep the exact builder chain visible"
         );
       }
     }
 
     if (
-      node.type === 'OptionalCallExpression' &&
-      (node.callee.type === 'MemberExpression' ||
-        node.callee.type === 'OptionalMemberExpression')
+      node.type === "OptionalCallExpression" &&
+      (node.callee.type === "MemberExpression" ||
+        node.callee.type === "OptionalMemberExpression")
     ) {
       const callsLocallyCreatedPluginDescriptor =
         isLocallyCreatedPluginDescriptorExpression(node.callee.object);
@@ -5242,127 +5244,133 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       if (
         callsLocallyCreatedPluginDescriptor &&
         isProductionPluginAuthoringFile(file) &&
-        (packagePluginSourcePattern.test(file) || file.startsWith('apps/'))
+        (packagePluginSourcePattern.test(file) || file.startsWith("apps/"))
       ) {
         report(
           node,
-          'optional plugin-authoring calls on locally created descriptors cannot bypass the exact stage audit'
+          "optional plugin-authoring calls on locally created descriptors cannot bypass the exact stage audit"
         );
       }
     }
 
-    if (node.type === 'Identifier' && deletedSymbols.has(node.name)) {
+    if (node.type === "Identifier" && deletedSymbols.has(node.name)) {
       report(node, `deleted Plate schema symbol ${node.name}`);
     }
     if (
-      node.type === 'TSTypeAliasDeclaration' &&
+      node.type === "TSTypeAliasDeclaration" &&
       containsDefinitionOfType(node.typeAnnotation) &&
-      (!node.id.name.endsWith('Definition') ||
+      (!node.id.name.endsWith("Definition") ||
         (isDirectDefinitionOfDescriptor(node.typeAnnotation) &&
-          node.id.name.endsWith('PluginDefinition')))
+          node.id.name.endsWith("PluginDefinition")))
     ) {
       report(
         node.id,
-        'aliases derived with DefinitionOf use FooDefinition, never FooPluginDefinition'
+        "aliases derived with DefinitionOf use FooDefinition, never FooPluginDefinition"
       );
     }
     if (
-      node.type === 'VariableDeclarator' &&
-      node.id?.type === 'Identifier' &&
-      node.id.name.endsWith('Plugin') &&
+      node.type === "VariableDeclarator" &&
+      node.id?.type === "Identifier" &&
+      node.id.name.endsWith("Plugin") &&
       isExplicitPluginDescriptorAnnotation(node.id.typeAnnotation) &&
       ancestors.some(
-        (ancestor) => ancestor.type === 'ExportNamedDeclaration'
+        (ancestor) => ancestor.type === "ExportNamedDeclaration"
       ) &&
       isPackagePluginDefinitionSource(file)
     ) {
       report(
         node.id,
-        'exported package plugins infer their exact descriptor; do not force BasePlugin or Plugin annotations'
+        "exported package plugins infer their exact descriptor; do not force BasePlugin or Plugin annotations"
       );
     }
     if (
-      node.type === 'TSTypeReference' &&
-      node.typeName?.type === 'Identifier' &&
-      node.typeName.name === 'Plugin' &&
+      node.type === "TSTypeReference" &&
+      node.typeName?.type === "Identifier" &&
+      node.typeName.name === "Plugin" &&
       (node.typeParameters?.params.length ??
         node.typeArguments?.params.length ??
         0) > 1
     ) {
       report(
         node,
-        'Plugin exposes one public Definition generic; transitive dependency requirements stay private'
+        "Plugin exposes one public Definition generic; transitive dependency requirements stay private"
       );
     }
     if (
-      node.type === 'TSTypeReference' &&
-      node.typeName?.type === 'Identifier' &&
-      node.typeName.name === 'PluginDependencyReference' &&
+      node.type === "TSTypeReference" &&
+      node.typeName?.type === "Identifier" &&
+      node.typeName.name === "PluginDependencyReference" &&
       (node.typeParameters?.params.length ??
         node.typeArguments?.params.length ??
         0) > 0
     ) {
       report(
         node,
-        'PluginDependencyReference is a shallow non-generic root identity; capability/provider contracts stay internal'
+        "PluginDependencyReference is a shallow non-generic root identity; capability/provider contracts stay internal"
       );
     }
     if (
-      node.type === 'ImportDeclaration' &&
+      node.type === "ImportDeclaration" &&
       privatePliteModulePattern.test(node.source.value) &&
       !internalPliteBridgeConsumerPattern.test(file)
     ) {
-      report(node, 'plitejs/internal is not a public package entrypoint');
+      report(node, "plitejs/internal is not a public package entrypoint");
     }
     if (
-      node.type === 'ImportDeclaration' &&
+      node.type === "ImportDeclaration" &&
       pliteRootModulePattern.test(node.source.value)
     ) {
       for (const specifier of node.specifiers) {
         if (
-          specifier.type === 'ImportSpecifier' &&
+          specifier.type === "ImportSpecifier" &&
           internalPliteContractTypeSymbols.has(
             getPropertyName(specifier.imported)
           )
         ) {
           report(
             specifier,
-            `${getPropertyName(specifier.imported)} is internal dependency typing and cannot be imported from plitejs`
+            `${getPropertyName(
+              specifier.imported
+            )} is internal dependency typing and cannot be imported from plitejs`
           );
         }
       }
     }
     if (
-      node.type === 'ImportDeclaration' &&
+      node.type === "ImportDeclaration" &&
       publicCoreModulePattern.test(node.source.value)
     ) {
       for (const specifier of node.specifiers) {
         if (
-          specifier.type === 'ImportSpecifier' &&
+          specifier.type === "ImportSpecifier" &&
           internalCoreContractTypeSymbols.has(
             getPropertyName(specifier.imported)
           )
         ) {
           report(
             specifier,
-            `${getPropertyName(specifier.imported)} is an internal Core author-to-canonical carrier and cannot be imported from a public entrypoint`
+            `${getPropertyName(
+              specifier.imported
+            )} is an internal Core author-to-canonical carrier and cannot be imported from a public entrypoint`
           );
         }
         if (
-          specifier.type === 'ImportSpecifier' &&
+          specifier.type === "ImportSpecifier" &&
           internalCoreCompilerTypeSymbols.has(
             getPropertyName(specifier.imported)
           )
         ) {
           report(
             specifier,
-            `${getPropertyName(specifier.imported)} is internal Core compiler typing and cannot be imported from a public entrypoint`
+            `${getPropertyName(
+              specifier.imported
+            )} is internal Core compiler typing and cannot be imported from a public entrypoint`
           );
         }
       }
     }
     if (
-      node.type === 'ExportNamedDeclaration' &&
+      node.type === "ExportNamedDeclaration" &&
       node.source &&
       pliteRootModulePattern.test(node.source.value)
     ) {
@@ -5378,8 +5386,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
     if (
-      file === 'packages/plitejs/src/index.ts' &&
-      node.type === 'ExportSpecifier'
+      file === "packages/plitejs/src/index.ts" &&
+      node.type === "ExportSpecifier"
     ) {
       const exportedName = getPropertyName(node.local);
 
@@ -5391,8 +5399,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
     if (
-      file === 'packages/platejs/src/index.ts' &&
-      node.type === 'ExportSpecifier'
+      file === "packages/platejs/src/index.ts" &&
+      node.type === "ExportSpecifier"
     ) {
       const exportedName = getPropertyName(node.local);
 
@@ -5404,8 +5412,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
     if (
-      file === 'packages/platejs/src/internal/index.ts' &&
-      node.type === 'ExportSpecifier'
+      file === "packages/platejs/src/internal/index.ts" &&
+      node.type === "ExportSpecifier"
     ) {
       const exportedName = getPropertyName(node.local);
 
@@ -5417,9 +5425,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
     if (
-      file.startsWith('packages/platejs/src/') &&
+      file.startsWith("packages/platejs/src/") &&
       !internalModulePattern.test(file) &&
-      node.type === 'ExportSpecifier'
+      node.type === "ExportSpecifier"
     ) {
       const exportedName = getPropertyName(node.local);
 
@@ -5431,21 +5439,21 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
     if (
-      file.startsWith('packages/platejs/src/') &&
+      file.startsWith("packages/platejs/src/") &&
       !internalModulePattern.test(file) &&
-      node.type === 'ExportAllDeclaration' &&
+      node.type === "ExportAllDeclaration" &&
       internalModulePattern.test(node.source.value)
     ) {
       report(
         node,
-        'public Core barrels cannot star-export internal compiler modules'
+        "public Core barrels cannot star-export internal compiler modules"
       );
     }
     if (
-      node.type === 'TSTypeAliasDeclaration' &&
+      node.type === "TSTypeAliasDeclaration" &&
       internalCoreCompilerTypeSymbols.has(node.id.name) &&
       ancestors.some(
-        (ancestor) => ancestor.type === 'ExportNamedDeclaration'
+        (ancestor) => ancestor.type === "ExportNamedDeclaration"
       ) &&
       !internalModulePattern.test(file)
     ) {
@@ -5455,14 +5463,14 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       );
     }
     if (
-      (node.type === 'CallExpression' ||
-        node.type === 'OptionalCallExpression') &&
+      (node.type === "CallExpression" ||
+        node.type === "OptionalCallExpression") &&
       localReactFactoryNames.hasCall(node)
     ) {
       const options = node.arguments.length === 1 ? node.arguments[0] : null;
       const properties = options
         ? getAuthorProperties(options, node).filter(
-            (property) => property.type !== 'SpreadElement'
+            (property) => property.type !== "SpreadElement"
           )
         : [];
       const propertyNames = properties.map((property) =>
@@ -5471,7 +5479,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       if (
         properties.length !== 1 ||
-        propertyNames[0] !== 'dom' ||
+        propertyNames[0] !== "dom" ||
         node.arguments.length !== 1 ||
         !isFullyResolvedStaticObject(
           options,
@@ -5496,64 +5504,64 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         } else {
           report(
             node,
-            'react requires exactly one { dom } object containing the exact DOM descriptor'
+            "react requires exactly one { dom } object containing the exact DOM descriptor"
           );
         }
       }
     }
     if (
-      node.type === 'CallExpression' ||
-      node.type === 'OptionalCallExpression'
+      node.type === "CallExpression" ||
+      node.type === "OptionalCallExpression"
     ) {
       const calleePath = getStaticExpressionPath(node.callee);
 
       if (
-        (calleePath === 'target.type' || calleePath === 'target.types') &&
+        (calleePath === "target.type" || calleePath === "target.types") &&
         node.arguments.some(containsCapabilityIdentityExpression)
       ) {
         report(
           node,
-          'schema targets must use element types or property keys, not plugin capability names'
+          "schema targets must use element types or property keys, not plugin capability names"
         );
       }
       if (
-        calleePath === 'schema.handle.element' &&
+        calleePath === "schema.handle.element" &&
         containsCapabilityIdentityExpression(node.arguments[1])
       ) {
         report(
           node,
-          'schema handles must use an element type, not a plugin capability name'
+          "schema handles must use an element type, not a plugin capability name"
         );
       }
       if (
-        schemaTypeOperationNamePattern.test(calleePath ?? '') &&
+        schemaTypeOperationNamePattern.test(calleePath ?? "") &&
         node.arguments.some(containsCapabilityIdentityExpression)
       ) {
         report(
           node,
-          'node type operations must use element types, not plugin capability names'
+          "node type operations must use element types, not plugin capability names"
         );
       }
     }
     if (
-      node.type === 'Identifier' &&
-      node.name === 'editorPluginDefinition' &&
+      node.type === "Identifier" &&
+      node.name === "editorPluginDefinition" &&
       file !== plitePrivateWitnessOwner &&
-      (file.startsWith('packages/') || file.startsWith('apps/'))
+      (file.startsWith("packages/") || file.startsWith("apps/"))
     ) {
-      report(node, 'private Plite definition witness leaked outside its owner');
+      report(node, "private Plite definition witness leaked outside its owner");
     }
-    if (node.type === 'Identifier') {
+    if (node.type === "Identifier") {
       const parent = ancestors.at(-1);
       const isDeletedTypeReference =
         deletedPluginTypeSymbols.has(node.name) &&
-        ((parent?.type === 'TSTypeReference' && parent.typeName === node) ||
-          (parent?.type === 'ImportSpecifier' &&
-            plateModulePattern.test(ancestors.at(-2)?.source?.value ?? '') &&
+        ((parent?.type === "TSTypeReference" && parent.typeName === node) ||
+          (parent?.type === "ImportSpecifier" &&
+            plateModulePattern.test(ancestors.at(-2)?.source?.value ?? "") &&
             (parent.imported === node || parent.local === node)));
       const deletedContractMemberOwner =
-        (parent?.type === 'MemberExpression' ||
-          parent?.type === 'OptionalMemberExpression') &&
+        (parent?.type === "MemberExpression" ||
+          parent?.type === "OptionalMemberExpression") &&
         parent.property === node
           ? getStaticExpressionPath(parent.object)
           : undefined;
@@ -5561,11 +5569,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         deletedPluginContractMemberKeys.has(node.name) &&
         ((deletedContractMemberOwner !== undefined &&
           pluginDescriptorOwnerPathPattern.test(deletedContractMemberOwner)) ||
-          (parent?.type === 'TSPropertySignature' && parent.key === node));
+          (parent?.type === "TSPropertySignature" && parent.key === node));
 
       if (
         (isDeletedTypeReference || isDeletedContractMember) &&
-        (file.startsWith('packages/') || file.startsWith('apps/'))
+        (file.startsWith("packages/") || file.startsWith("apps/"))
       ) {
         report(node, `deleted Plate plugin contract symbol ${node.name}`);
       }
@@ -5573,46 +5581,46 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
     const staticString = getStaticString(node);
 
-    if (staticString?.startsWith('plate:plugin-schema:')) {
-      report(node, 'synthetic Plate schema extension identity');
+    if (staticString?.startsWith("plate:plugin-schema:")) {
+      report(node, "synthetic Plate schema extension identity");
     }
     if (
-      staticString === 'plate:block-content' &&
+      staticString === "plate:block-content" &&
       !privateSchemaGroupOwners.has(file)
     ) {
-      report(node, 'private Plate block-content schema group');
+      report(node, "private Plate block-content schema group");
     }
 
     if (
-      (node.type === 'MemberExpression' ||
-        node.type === 'OptionalMemberExpression') &&
+      (node.type === "MemberExpression" ||
+        node.type === "OptionalMemberExpression") &&
       node.computed &&
       getStaticMemberName(unwrapTypedExpression(node.object)) ===
-        'properties' &&
+        "properties" &&
       getStaticMemberName(
         unwrapTypedExpression(unwrapTypedExpression(node.object)?.object)
-      ) === 'schema' &&
-      getStaticExpressionPath(node.property)?.endsWith('.name')
+      ) === "schema" &&
+      getStaticExpressionPath(node.property)?.endsWith(".name")
     ) {
       report(
         node,
-        'schema property local ids must be explicit; plugin capability names are not property keys'
+        "schema property local ids must be explicit; plugin capability names are not property keys"
       );
     }
 
     if (
-      (node.type === 'MemberExpression' ||
-        node.type === 'OptionalMemberExpression') &&
+      (node.type === "MemberExpression" ||
+        node.type === "OptionalMemberExpression") &&
       !node.computed
     ) {
       const memberName = getStaticMemberName(node);
       const memberOwner = unwrapTypedExpression(node.object);
       const isUniversalPluginIdentity =
-        (memberName === 'key' || memberName === 'type') &&
-        ((memberOwner?.type === 'Identifier' &&
-          memberOwner.name.endsWith('Plugin')) ||
+        (memberName === "key" || memberName === "type") &&
+        ((memberOwner?.type === "Identifier" &&
+          memberOwner.name.endsWith("Plugin")) ||
           (isCallExpressionNode(memberOwner) &&
-            readMemberCallName(memberOwner) === 'plugin'));
+            readMemberCallName(memberOwner) === "plugin"));
 
       if (isUniversalPluginIdentity && !hasExpectError(source, node)) {
         report(
@@ -5623,32 +5631,32 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       if (
         packageTestSourcePattern.test(file) &&
-        getStaticExpressionPath(node) === 'editor.tx'
+        getStaticExpressionPath(node) === "editor.tx"
       ) {
         report(
           node,
-          'test fixtures use the canonical root editor.update channel'
+          "test fixtures use the canonical root editor.update channel"
         );
       }
 
-      if (getStaticExpressionPath(node) === 'editor.api.clipboard') {
+      if (getStaticExpressionPath(node) === "editor.api.clipboard") {
         report(
           node,
-          'DOM clipboard APIs project through editor.api.dom.clipboard'
+          "DOM clipboard APIs project through editor.api.dom.clipboard"
         );
       }
 
       const owner = node.object;
       const readsDeletedNodeField =
-        owner?.type === 'Identifier'
-          ? owner.name === 'node'
-          : owner?.type === 'MemberExpression' &&
+        owner?.type === "Identifier"
+          ? owner.name === "node"
+          : owner?.type === "MemberExpression" &&
             !owner.computed &&
-            getPropertyName(owner.property) === 'node';
+            getPropertyName(owner.property) === "node";
 
       if (
         readsDeletedNodeField &&
-        ['component', 'element', 'mark'].includes(
+        ["component", "element", "mark"].includes(
           getPropertyName(node.property)
         )
       ) {
@@ -5659,23 +5667,23 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
 
-    if (node.type === 'ObjectProperty') {
+    if (node.type === "ObjectProperty") {
       const key = getResolvedObjectPropertyName(node, staticStringBindings);
       const parentObject = ancestors.at(-1);
       const isElementSourceMarker =
-        file === 'packages/plitejs/src/core/schema-definition.ts' &&
-        key === 'type' &&
-        parentObject?.type === 'ObjectExpression' &&
-        getObjectProperty(parentObject, 'source');
+        file === "packages/plitejs/src/core/schema-definition.ts" &&
+        key === "type" &&
+        parentObject?.type === "ObjectExpression" &&
+        getObjectProperty(parentObject, "source");
 
       if (
         !isElementSourceMarker &&
-        (key === 'type' ||
-          (key === 'key' &&
+        (key === "type" ||
+          (key === "key" &&
             !ancestors
               .at(-1)
               ?.properties?.some(
-                (property) => property.type === 'SpreadElement'
+                (property) => property.type === "SpreadElement"
               ))) &&
         containsCapabilityIdentityExpression(node.value)
       ) {
@@ -5685,8 +5693,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         );
       }
       const nodeComponent =
-        key === 'render' && node.value?.type === 'ObjectExpression'
-          ? getObjectProperty(node.value, 'node')
+        key === "render" && node.value?.type === "ObjectExpression"
+          ? getObjectProperty(node.value, "node")
           : undefined;
       const isIntentionalTypedNegativeRenderNode =
         file === intentionalRenderNodeNegativeContract &&
@@ -5694,9 +5702,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         hasExpectError(source, nodeComponent) &&
         ancestors.some(
           (ancestor) =>
-            ancestor.type === 'CallExpression' &&
-            ((ancestor.callee.type === 'Identifier' &&
-              ancestor.callee.name === 'toReactPlugin') ||
+            ancestor.type === "CallExpression" &&
+            ((ancestor.callee.type === "Identifier" &&
+              ancestor.callee.name === "toReactPlugin") ||
               !!getPluginCreatorCallKind(ancestor, localPluginCreatorNames))
         );
       if (
@@ -5706,18 +5714,18 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           nodeComponent,
-          'plugin node components must use root-level component instead of render.node authoring'
+          "plugin node components must use root-level component instead of render.node authoring"
         );
       }
 
-      if (key === 'node' && node.value?.type === 'ObjectExpression') {
+      if (key === "node" && node.value?.type === "ObjectExpression") {
         const keys = node.value.properties
           .map((property) =>
             getResolvedObjectPropertyName(property, staticStringBindings)
           )
           .filter((property) => deletedNodeBagKeys.has(property));
         const hasDistinctiveNodeBagKey = keys.some(
-          (property) => property !== 'type'
+          (property) => property !== "type"
         );
 
         if (
@@ -5725,13 +5733,13 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           (hasDistinctiveNodeBagKey ||
             isDirectPluginDeclarationObject(ancestors, localPluginCreatorNames))
         ) {
-          report(node, `deleted Plate node bag (${keys.join(', ')})`);
+          report(node, `deleted Plate node bag (${keys.join(", ")})`);
         }
       }
 
       if (
-        key === 'mark' &&
-        node.value?.type === 'BooleanLiteral' &&
+        key === "mark" &&
+        node.value?.type === "BooleanLiteral" &&
         node.value.value &&
         isInsidePluginSchema(
           ancestors,
@@ -5739,16 +5747,16 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           staticStringBindings
         )
       ) {
-        report(node, 'schema.mark must use a property descriptor');
+        report(node, "schema.mark must use a property descriptor");
       }
 
       if (
-        key === 'groups' &&
-        node.value?.type === 'ArrayExpression' &&
+        key === "groups" &&
+        node.value?.type === "ArrayExpression" &&
         node.value.elements.some(
           (element) =>
-            element?.type === 'StringLiteral' &&
-            (element.value === 'block' || element.value === 'inline')
+            element?.type === "StringLiteral" &&
+            (element.value === "block" || element.value === "inline")
         ) &&
         isInsidePluginSchema(
           ancestors,
@@ -5756,12 +5764,12 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           staticStringBindings
         )
       ) {
-        report(node, 'Plate plugins must not repeat derived structural groups');
+        report(node, "Plate plugins must not repeat derived structural groups");
       }
 
       if (
-        key === 'element' &&
-        node.value?.type === 'ObjectExpression' &&
+        key === "element" &&
+        node.value?.type === "ObjectExpression" &&
         isInsidePluginSchema(
           ancestors,
           localPluginCreatorNames,
@@ -5769,50 +5777,50 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         ) &&
         isInsidePluginFactoryDeclaration(ancestors, localPluginCreatorNames) &&
         !node.value.properties.some(
-          (property) => property.type === 'SpreadElement'
+          (property) => property.type === "SpreadElement"
         ) &&
         !node.value.properties.some((property) =>
-          ['content', 'void'].includes(
+          ["content", "void"].includes(
             getResolvedObjectPropertyName(property, staticStringBindings)
           )
         ) &&
         !hasExpectError(source, node) &&
         !ancestors.some(
           (ancestor) =>
-            ancestor.type === 'ObjectProperty' &&
+            ancestor.type === "ObjectProperty" &&
             getResolvedObjectPropertyName(ancestor, staticStringBindings) ===
-              'schema' &&
+              "schema" &&
             hasExpectError(source, ancestor)
         )
       ) {
-        report(node, 'non-void element schema requires explicit content');
+        report(node, "non-void element schema requires explicit content");
       }
 
       if (
-        key === 'targetPlugins' &&
+        key === "targetPlugins" &&
         isInsidePluginInitialState(ancestors, localPluginCreatorNames)
       ) {
         report(
           node,
-          'schema target descriptors belong in top-level targetPlugins'
+          "schema target descriptors belong in top-level targetPlugins"
         );
       }
 
       if (
-        key === 'config' &&
+        key === "config" &&
         isDirectPlatePluginDeclarationObject(ancestors, localPluginCreatorNames)
       ) {
-        report(node, 'Plate plugin values belong in initialState');
+        report(node, "Plate plugin values belong in initialState");
       }
 
       if (
-        key === 'schema' &&
+        key === "schema" &&
         isFunction(node.value) &&
         isDirectPlatePluginDeclarationObject(ancestors, localPluginCreatorNames)
       ) {
         const parameter = node.value.params?.[0];
 
-        if (parameter?.type === 'ObjectPattern') {
+        if (parameter?.type === "ObjectPattern") {
           for (const property of parameter.properties) {
             const binding = getPropertyName(
               property.value ?? property.argument
@@ -5841,41 +5849,41 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         : getPluginCreatorCallKind(node, localPluginCreatorNames);
       const isIntentionalRuntimeNegativeConstructor =
         packageTestSourcePattern.test(file) &&
-        node.callee.type === 'TSAsExpression' &&
-        node.callee.typeAnnotation?.type === 'TSAnyKeyword';
+        node.callee.type === "TSAsExpression" &&
+        node.callee.typeAnnotation?.type === "TSAnyKeyword";
       const memberCallOwner =
-        node.callee.type === 'MemberExpression' ||
-        node.callee.type === 'OptionalMemberExpression'
+        node.callee.type === "MemberExpression" ||
+        node.callee.type === "OptionalMemberExpression"
           ? unwrapTypedExpression(node.callee.object)
           : undefined;
       const hasDynamicComputedMember =
-        (node.callee.type === 'MemberExpression' ||
-          node.callee.type === 'OptionalMemberExpression') &&
+        (node.callee.type === "MemberExpression" ||
+          node.callee.type === "OptionalMemberExpression") &&
         node.callee.computed &&
         getStaticMemberName(node.callee) === undefined;
       const callsLocallyCreatedPluginDescriptor =
-        (node.callee.type === 'MemberExpression' ||
-          node.callee.type === 'OptionalMemberExpression') &&
+        (node.callee.type === "MemberExpression" ||
+          node.callee.type === "OptionalMemberExpression") &&
         isLocallyCreatedPluginDescriptorExpression(node.callee.object);
       const memberCallOwnerPath = getStaticExpressionPath(memberCallOwner);
       const callsLikelyPluginClone =
-        memberCallName !== 'clone' ||
+        memberCallName !== "clone" ||
         callsLocallyCreatedPluginDescriptor ||
-        pluginDescriptorOwnerPathPattern.test(memberCallOwnerPath ?? '');
+        pluginDescriptorOwnerPathPattern.test(memberCallOwnerPath ?? "");
       const callsLikelyPluginAuthoring =
-        memberCallName === 'clone'
+        memberCallName === "clone"
           ? callsLikelyPluginClone
           : callsLocallyCreatedPluginDescriptor ||
-            pluginDescriptorOwnerPathPattern.test(memberCallOwnerPath ?? '');
+            pluginDescriptorOwnerPathPattern.test(memberCallOwnerPath ?? "");
 
       if (
-        memberCallName === 'assign' &&
-        getStaticExpressionPath(node.callee.object) === 'Object' &&
-        getStaticExpressionPath(node.arguments[0]) === 'editor.api'
+        memberCallName === "assign" &&
+        getStaticExpressionPath(node.callee.object) === "Object" &&
+        getStaticExpressionPath(node.arguments[0]) === "editor.api"
       ) {
         report(
           node,
-          'plugin APIs project through editor.api.<name>, not Object.assign(editor.api, extensionApi)'
+          "plugin APIs project through editor.api.<name>, not Object.assign(editor.api, extensionApi)"
         );
       }
 
@@ -5883,27 +5891,27 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         hasDynamicComputedMember &&
         callsLocallyCreatedPluginDescriptor &&
         isProductionPluginAuthoringFile(file) &&
-        (packagePluginSourcePattern.test(file) || file.startsWith('apps/'))
+        (packagePluginSourcePattern.test(file) || file.startsWith("apps/"))
       ) {
         report(
           node,
-          'computed plugin-authoring calls on locally created descriptors cannot bypass the exact stage audit'
+          "computed plugin-authoring calls on locally created descriptors cannot bypass the exact stage audit"
         );
       }
 
       const configuresComponent =
-        memberCallName === 'configure' &&
+        memberCallName === "configure" &&
         getAuthorProperties(node.arguments[0], node).some(
           (property) =>
             getResolvedObjectPropertyName(property, staticStringBindings) ===
-            'component'
+            "component"
         );
       const configuresConvertedBaseDescriptor =
-        memberCallOwner?.type === 'CallExpression' &&
-        (memberCallOwner.callee.type === 'Identifier'
-          ? memberCallOwner.callee.name === 'toReactPlugin'
-          : getStaticMemberName(memberCallOwner.callee) === 'toReactPlugin');
-      const configureOwnerName = memberCallOwnerPath?.split('.').at(-1);
+        memberCallOwner?.type === "CallExpression" &&
+        (memberCallOwner.callee.type === "Identifier"
+          ? memberCallOwner.callee.name === "toReactPlugin"
+          : getStaticMemberName(memberCallOwner.callee) === "toReactPlugin");
+      const configureOwnerName = memberCallOwnerPath?.split(".").at(-1);
       const configureOwnerCreator = getPluginCreatorFromBuilderChain(
         memberCallOwner,
         localPluginCreatorNames,
@@ -5911,21 +5919,21 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         staticStringBindings
       );
       const configuresBaseDescriptor =
-        basePluginDescriptorNamePattern.test(configureOwnerName ?? '') ||
+        basePluginDescriptorNamePattern.test(configureOwnerName ?? "") ||
         getPluginCreatorCallKind(
           configureOwnerCreator,
           localPluginCreatorNames
-        ) === 'definePlugin';
+        ) === "definePlugin";
 
       if (
         configuresComponent &&
         configuresConvertedBaseDescriptor &&
         isProductionPluginAuthoringFile(file) &&
-        (file.startsWith('apps/') || file.startsWith('packages/'))
+        (file.startsWith("apps/") || file.startsWith("packages/"))
       ) {
         report(
           node,
-          'terminal consumers configure the Base descriptor directly; owning React adapters pass component to toReactPlugin() while publishing the Plate descriptor'
+          "terminal consumers configure the Base descriptor directly; owning React adapters pass component to toReactPlugin() while publishing the Plate descriptor"
         );
       } else if (
         baseOrStaticSourcePattern.test(file) &&
@@ -5934,7 +5942,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           node,
-          'static/base component bindings use BasePlugin.configure({ component }) without a Plate React adapter'
+          "static/base component bindings use BasePlugin.configure({ component }) without a Plate React adapter"
         );
       }
 
@@ -5946,7 +5954,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           node,
-          'static/base component bindings require the owning BasePlugin and its terminal .configure({ component })'
+          "static/base component bindings require the owning BasePlugin and its terminal .configure({ component })"
         );
       }
 
@@ -5958,24 +5966,24 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           node,
-          memberCallName === 'withComponent'
-            ? 'deleted plugin builder .withComponent(); use root-level component'
+          memberCallName === "withComponent"
+            ? "deleted plugin builder .withComponent(); use root-level component"
             : `deleted plugin builder .${memberCallName}(); use constructor fields or .extend() only for imported/prebuilt adaptation or a real staged dependency`
         );
       }
 
       if (
-        memberCallName === 'getApi' &&
-        memberCallOwner?.type === 'Identifier' &&
-        memberCallOwner.name === 'editor'
+        memberCallName === "getApi" &&
+        memberCallOwner?.type === "Identifier" &&
+        memberCallOwner.name === "editor"
       ) {
         report(
           node,
-          'plugin APIs use editor.api.<name> or editor.plugin(Plugin).api'
+          "plugin APIs use editor.api.<name> or editor.plugin(Plugin).api"
         );
       }
 
-      if (memberCallName === 'extend' && isCallExpressionNode(node)) {
+      if (memberCallName === "extend" && isCallExpressionNode(node)) {
         const authorProperties = getAuthorProperties(node.arguments[0], node);
 
         reportCustomMarkdownCodecIdentity(authorProperties, node.arguments[0]);
@@ -5998,10 +6006,10 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           }
 
           if (
-            key === 'component' &&
+            key === "component" &&
             (callsLocallyCreatedPluginDescriptor ||
               pluginDescriptorOwnerPathPattern.test(
-                memberCallOwnerPath ?? ''
+                memberCallOwnerPath ?? ""
               )) &&
             !(
               file === intentionalRenderNodeNegativeContract &&
@@ -6010,7 +6018,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           ) {
             report(
               property,
-              'plugin .extend() cannot define component; use the constructor default or terminal .configure({ component }) replacement'
+              "plugin .extend() cannot define component; use the constructor default or terminal .configure({ component }) replacement"
             );
           }
 
@@ -6023,13 +6031,13 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           }
 
           if (
-            key === 'api' &&
+            key === "api" &&
             (getCapabilityFactoryParameterCount(property) ?? 0) > 1
           ) {
-            report(property, 'plugin api factory receives one context object');
+            report(property, "plugin api factory receives one context object");
           }
 
-          if (key !== 'codecs') {
+          if (key !== "codecs") {
             continue;
           }
 
@@ -6048,7 +6056,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
             } else {
               report(
                 property,
-                'plugin codec declarations must use the context-bound defineCodecs(...) helper'
+                "plugin codec declarations must use the context-bound defineCodecs(...) helper"
               );
             }
           }
@@ -6057,12 +6065,12 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
             packagePluginSourcePattern.test(file) &&
             isProductionPluginAuthoringFile(file) &&
             !(intentionalProductionExtendStageChains.get(file) ?? []).some(
-              (chain) => chain.some((fields) => fields.includes('codecs'))
+              (chain) => chain.some((fields) => fields.includes("codecs"))
             )
           ) {
             report(
               property,
-              'independent plugin codecs belong in the constructor callback'
+              "independent plugin codecs belong in the constructor callback"
             );
           }
         }
@@ -6070,7 +6078,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         if (
           !isNestedInLaterExtend(node, ancestors) &&
           isProductionPluginAuthoringFile(file) &&
-          (packagePluginSourcePattern.test(file) || file.startsWith('apps/')) &&
+          (packagePluginSourcePattern.test(file) || file.startsWith("apps/")) &&
           isLocallyCreatedPluginDescriptorExpression(node.callee.object)
         ) {
           const stages = getExtendChainStages(node, staticStringBindings);
@@ -6091,10 +6099,10 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           productionExtendChainCount += 1;
           productionExtendChains.push(stages);
 
-          if (countStageField(authorStages, 'commands') > 1) {
+          if (countStageField(authorStages, "commands") > 1) {
             report(
               node,
-              'replacement plugin commands must have one ordered owner factory; .extend() does not concatenate command declarations'
+              "replacement plugin commands must have one ordered owner factory; .extend() does not concatenate command declarations"
             );
           }
 
@@ -6107,14 +6115,14 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
             report(
               node,
               `direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found ${stages
-                .map((fields) => `[${fields.join(', ')}]`)
-                .join(' -> ')}`
+                .map((fields) => `[${fields.join(", ")}]`)
+                .join(" -> ")}`
             );
           }
         }
       }
 
-      if (memberCallName === 'configure' && isCallExpressionNode(node)) {
+      if (memberCallName === "configure" && isCallExpressionNode(node)) {
         for (const property of getAuthorProperties(node.arguments[0], node)) {
           const key = getResolvedObjectPropertyName(
             property,
@@ -6132,10 +6140,10 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
             report(property, `deleted Plate plugin definition field ${key}`);
           }
 
-          if (key === 'api') {
+          if (key === "api") {
             report(
               property,
-              'plugin api is an author factory and cannot be configured'
+              "plugin api is an author factory and cannot be configured"
             );
           }
         }
@@ -6156,14 +6164,14 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         ) {
           report(
             node,
-            'Plate plugin factories infer one definition from the author object'
+            "Plate plugin factories infer one definition from the author object"
           );
         }
 
         for (const property of authorProperties) {
           const key =
-            property.type === 'ObjectProperty' ||
-            property.type === 'ObjectMethod'
+            property.type === "ObjectProperty" ||
+            property.type === "ObjectMethod"
               ? getResolvedObjectPropertyName(property, staticStringBindings)
               : undefined;
 
@@ -6192,13 +6200,13 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           }
 
           if (
-            key === 'api' &&
+            key === "api" &&
             (getCapabilityFactoryParameterCount(property) ?? 0) > 1
           ) {
-            report(property, 'plugin api factory receives one context object');
+            report(property, "plugin api factory receives one context object");
           }
 
-          if (key === 'codecs' && !isDefineCodecsCall(property)) {
+          if (key === "codecs" && !isDefineCodecsCall(property)) {
             const isIntentionalNegativeContract =
               rawCodecNegativeContractCount <
                 allowedRawCodecNegativeContractCount &&
@@ -6213,7 +6221,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
             } else {
               report(
                 property,
-                'plugin codec declarations must use the context-bound defineCodecs(...) helper'
+                "plugin codec declarations must use the context-bound defineCodecs(...) helper"
               );
             }
           }
@@ -6222,7 +6230,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       if (localPlitePluginCreatorNames.hasCall(node)) {
         if (node.arguments.length !== 2) {
-          report(node, 'definePlugin requires (name, definition)');
+          report(node, "definePlugin requires (name, definition)");
         }
         if (
           node.typeParameters?.params.length > 0 ||
@@ -6230,15 +6238,15 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         ) {
           report(
             node,
-            'definePlugin infers one definition from its author object'
+            "definePlugin infers one definition from its author object"
           );
         }
 
         if (node.arguments[1]) {
           for (const property of getAuthorProperties(node.arguments[1], node)) {
             const key =
-              property.type === 'ObjectProperty' ||
-              property.type === 'ObjectMethod'
+              property.type === "ObjectProperty" ||
+              property.type === "ObjectMethod"
                 ? getResolvedObjectPropertyName(property, staticStringBindings)
                 : undefined;
 
@@ -6259,12 +6267,12 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
             }
 
             if (
-              key === 'api' &&
+              key === "api" &&
               (getCapabilityFactoryParameterCount(property) ?? 0) > 1
             ) {
               report(
                 property,
-                'plugin api factory receives one context object'
+                "plugin api factory receives one context object"
               );
             }
           }
@@ -6273,7 +6281,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       if (
         memberCallName &&
-        ['clone', 'configure', 'configurePlugin', 'extendPlugin'].includes(
+        ["clone", "configure", "configurePlugin", "extendPlugin"].includes(
           memberCallName
         ) &&
         isPackagePluginDefinitionSource(file) &&
@@ -6281,16 +6289,16 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           node,
-          'package plugin definitions must use constructor fields or a justified imported/prebuilt or staged extend; reserve configure and nested plugin configuration for consumer installation'
+          "package plugin definitions must use constructor fields or a justified imported/prebuilt or staged extend; reserve configure and nested plugin configuration for consumer installation"
         );
       }
 
       if (
         memberCallName &&
         pluginAuthoringMethods.has(memberCallName) &&
-        readMemberCallName(memberCallOwner) === 'configure'
+        readMemberCallName(memberCallOwner) === "configure"
       ) {
-        report(node, 'configure must be the final plugin authoring call');
+        report(node, "configure must be the final plugin authoring call");
       }
 
       const namedLineageIssue = recordNamedSchemaLineage(
@@ -6308,11 +6316,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
 
       const rawSchemaQuery =
-        ((isSchemaApiCall(node, 'getProperty') ||
-          isSchemaApiCall(node, 'getElementProperty')) &&
-          node.arguments[1]?.type === 'StringLiteral') ||
-        (isSchemaApiCall(node, 'property') &&
-          node.arguments[0]?.type === 'ObjectExpression');
+        ((isSchemaApiCall(node, "getProperty") ||
+          isSchemaApiCall(node, "getElementProperty")) &&
+          node.arguments[1]?.type === "StringLiteral") ||
+        (isSchemaApiCall(node, "property") &&
+          node.arguments[0]?.type === "ObjectExpression");
 
       if (rawSchemaQuery) {
         rawSchemaQueryCount += 1;
@@ -6320,7 +6328,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         if (rawSchemaQueryCount > allowedRawSchemaQueryCount) {
           report(
             node,
-            'raw schema query is outside the intentional runtime/context contract allowlist'
+            "raw schema query is outside the intentional runtime/context contract allowlist"
           );
         }
       }
@@ -6329,13 +6337,13 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       for (const elementProperty of elements?.properties ?? []) {
         if (
-          elementProperty.type === 'SpreadElement' ||
-          elementProperty.value?.type !== 'ObjectExpression' ||
+          elementProperty.type === "SpreadElement" ||
+          elementProperty.value?.type !== "ObjectExpression" ||
           elementProperty.value.properties.some(
-            (property) => property.type === 'SpreadElement'
+            (property) => property.type === "SpreadElement"
           ) ||
           elementProperty.value.properties.some((property) =>
-            ['content', 'void'].includes(
+            ["content", "void"].includes(
               getResolvedObjectPropertyName(property, staticStringBindings)
             )
           ) ||
@@ -6346,14 +6354,14 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
         report(
           elementProperty,
-          'non-void element schema requires explicit content'
+          "non-void element schema requires explicit content"
         );
       }
 
       if (
-        (node.callee?.type === 'MemberExpression' ||
-          node.callee?.type === 'OptionalMemberExpression') &&
-        getStaticMemberName(node.callee) === 'configure' &&
+        (node.callee?.type === "MemberExpression" ||
+          node.callee?.type === "OptionalMemberExpression") &&
+        getStaticMemberName(node.callee) === "configure" &&
         isFunction(node.arguments[0])
       ) {
         const inspection = inspectContextualConfigure(node.arguments[0]);
@@ -6362,13 +6370,13 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           if (!hasExpectError(source, invalidReturn)) {
             report(
               invalidReturn,
-              'contextual plugin configure callbacks must return an explicit object'
+              "contextual plugin configure callbacks must return an explicit object"
             );
           }
         }
         for (const property of inspection.properties) {
           const key =
-            property.type === 'SpreadElement'
+            property.type === "SpreadElement"
               ? undefined
               : getPropertyName(property.key);
 
@@ -6378,7 +6386,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           ) {
             report(
               property,
-              'contextual plugin configure only accepts explicit initialState, on, override, render, shortcuts, and slots overrides'
+              "contextual plugin configure only accepts explicit initialState, on, override, render, shortcuts, and slots overrides"
             );
           }
         }
@@ -6386,22 +6394,22 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       const schemaCall = readCallName(node.callee);
 
-      if (['contribution', 'element', 'group', 'root'].includes(schemaCall)) {
+      if (["contribution", "element", "group", "root"].includes(schemaCall)) {
         report(node, `deleted schema.${schemaCall}(...) wrapper`);
       }
 
       const contentCall = readSchemaContentCallName(node.callee);
 
       if (
-        (contentCall === 'type' || contentCall === 'types') &&
+        (contentCall === "type" || contentCall === "types") &&
         node.arguments.some(isPluginTypeReference)
       ) {
-        report(node, 'schema content must use typed plugin references');
+        report(node, "schema content must use typed plugin references");
       }
     }
 
     if (
-      node.type === 'BinaryExpression' &&
+      node.type === "BinaryExpression" &&
       ((isSchemaIdentityMember(node.left) &&
         containsCapabilityIdentityExpression(node.right)) ||
         (isSchemaIdentityMember(node.right) &&
@@ -6409,12 +6417,12 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     ) {
       report(
         node,
-        'schema identity comparisons must not use plugin capability names'
+        "schema identity comparisons must not use plugin capability names"
       );
     }
     if (
-      node.type === 'BinaryExpression' &&
-      file.startsWith('apps/www/src/registry/') &&
+      node.type === "BinaryExpression" &&
+      file.startsWith("apps/www/src/registry/") &&
       !packageTestSourcePattern.test(file)
     ) {
       for (const [identity, literal] of [
@@ -6422,14 +6430,14 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         [node.right, node.left],
       ]) {
         if (
-          unwrapTypedExpression(literal)?.type === 'StringLiteral' &&
+          unwrapTypedExpression(literal)?.type === "StringLiteral" &&
           registrySchemaIdentityOwnerPathPattern.test(
-            getStaticExpressionPath(unwrapTypedExpression(identity)) ?? ''
+            getStaticExpressionPath(unwrapTypedExpression(identity)) ?? ""
           )
         ) {
           report(
             node,
-            'registry runtime schema identity comparisons must use an editor plugin portal'
+            "registry runtime schema identity comparisons must use an editor plugin portal"
           );
           break;
         }
@@ -6437,59 +6445,59 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     }
 
     if (
-      node.type === 'MemberExpression' &&
-      file.startsWith('apps/www/src/registry/') &&
+      node.type === "MemberExpression" &&
+      file.startsWith("apps/www/src/registry/") &&
       !packageTestSourcePattern.test(file) &&
-      (getStaticExpressionPath(unwrapTypedExpression(node)) ?? '').endsWith(
-        '.plugin.type'
+      (getStaticExpressionPath(unwrapTypedExpression(node)) ?? "").endsWith(
+        ".plugin.type"
       )
     ) {
       report(
         node,
-        'registry render contribution plugins do not own element types; compare element.type to an editor plugin portal type'
+        "registry render contribution plugins do not own element types; compare element.type to an editor plugin portal type"
       );
     }
 
     if (
-      node.type === 'ObjectProperty' &&
-      file.startsWith('apps/www/src/registry/') &&
+      node.type === "ObjectProperty" &&
+      file.startsWith("apps/www/src/registry/") &&
       !packageTestSourcePattern.test(file)
     ) {
       const key = getResolvedObjectPropertyName(node, staticStringBindings);
       const containerProperty = ancestors.at(-2);
       const outerProperty = ancestors.at(-4);
       const containerKey =
-        containerProperty?.type === 'ObjectProperty'
+        containerProperty?.type === "ObjectProperty"
           ? getResolvedObjectPropertyName(
               containerProperty,
               staticStringBindings
             )
           : undefined;
       const outerKey =
-        outerProperty?.type === 'ObjectProperty'
+        outerProperty?.type === "ObjectProperty"
           ? getResolvedObjectPropertyName(outerProperty, staticStringBindings)
           : undefined;
 
       if (
-        key === 'type' &&
+        key === "type" &&
         containsRawStringLiteral(node.value) &&
-        containerKey === 'match'
+        containerKey === "match"
       ) {
         report(
           node.value,
-          'registry runtime node matchers must use editor plugin portal types'
+          "registry runtime node matchers must use editor plugin portal types"
         );
       }
-      if (key === 'plainMarks' && containsRawStringLiteral(node.value)) {
+      if (key === "plainMarks" && containsRawStringLiteral(node.value)) {
         report(
           node.value,
-          'registry Markdown plain marks must use exact plugin property keys'
+          "registry Markdown plain marks must use exact plugin property keys"
         );
       }
       if (
         !node.computed &&
-        outerKey === 'override' &&
-        (containerKey === 'components' || containerKey === 'plugins')
+        outerKey === "override" &&
+        (containerKey === "components" || containerKey === "plugins")
       ) {
         report(
           node,
@@ -6502,15 +6510,15 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
     for (const [key, value] of Object.entries(node)) {
       if (
-        ['comments', 'errors', 'extra', 'loc', 'tokens'].includes(key) ||
-        key === 'start' ||
-        key === 'end'
+        ["comments", "errors", "extra", "loc", "tokens"].includes(key) ||
+        key === "start" ||
+        key === "end"
       ) {
         continue;
       }
       if (Array.isArray(value)) {
         for (const child of value) visit(child, nextAncestors);
-      } else if (value && typeof value === 'object' && value.type) {
+      } else if (value && typeof value === "object" && value.type) {
         visit(value, nextAncestors);
       }
     }
@@ -6527,7 +6535,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   if (rawCodecNegativeContractCount < allowedRawCodecNegativeContractCount) {
     report(
       ast,
-      `raw codec negative-contract allowlist expects ${allowedRawCodecNegativeContractCount} marked declaration${allowedRawCodecNegativeContractCount === 1 ? '' : 's'} but found ${rawCodecNegativeContractCount}`
+      `raw codec negative-contract allowlist expects ${allowedRawCodecNegativeContractCount} marked declaration${
+        allowedRawCodecNegativeContractCount === 1 ? "" : "s"
+      } but found ${rawCodecNegativeContractCount}`
     );
   }
   if (
@@ -6537,7 +6547,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       createIssue(
         file,
         ast.program,
-        `Plite config negative-contract allowlist expects ${allowedPliteConfigNegativeContractCount} marked declaration${allowedPliteConfigNegativeContractCount === 1 ? '' : 's'} but found ${pliteConfigNegativeContractCount}`
+        `Plite config negative-contract allowlist expects ${allowedPliteConfigNegativeContractCount} marked declaration${
+          allowedPliteConfigNegativeContractCount === 1 ? "" : "s"
+        } but found ${pliteConfigNegativeContractCount}`
       )
     );
   }
@@ -6548,7 +6560,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       createIssue(
         file,
         ast.program,
-        `React factory negative-contract allowlist expects ${allowedReactFactoryNegativeContractCount} marked call${allowedReactFactoryNegativeContractCount === 1 ? '' : 's'} but found ${reactFactoryNegativeContractCount}`
+        `React factory negative-contract allowlist expects ${allowedReactFactoryNegativeContractCount} marked call${
+          allowedReactFactoryNegativeContractCount === 1 ? "" : "s"
+        } but found ${reactFactoryNegativeContractCount}`
       )
     );
   }
@@ -6564,7 +6578,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
     report(
       ast,
-      `production extend-stage allowlist expects exact ${expectedCount} audited chain${expectedCount === 1 ? '' : 's'} but found ${productionExtendChainCount}; signatures did not match`
+      `production extend-stage allowlist expects exact ${expectedCount} audited chain${
+        expectedCount === 1 ? "" : "s"
+      } but found ${productionExtendChainCount}; signatures did not match`
     );
   }
   for (const [signature, count] of intentionalNamedSchemaLineages.get(file) ??
@@ -6574,7 +6590,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     if (found < count && requiredNamedSchemaLineageFiles.has(file)) {
       report(
         ast,
-        `named schema lineage allowlist expects ${count} ${signature} construction${count === 1 ? '' : 's'} but found ${found}`
+        `named schema lineage allowlist expects ${count} ${signature} construction${
+          count === 1 ? "" : "s"
+        } but found ${found}`
       );
     }
   }
@@ -6584,14 +6602,14 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
 export function auditNamedSchemaLineageDocument(
   source,
-  file = 'content/docs/example.mdx'
+  file = "content/docs/example.mdx"
 ) {
   const issues = [];
   const counts = new Map();
   const auditsCurrentPluginRendererProse =
-    file.startsWith('.changeset/') ||
-    (file.startsWith('content/docs/') &&
-      !file.startsWith('content/docs/migration/'));
+    file.startsWith(".changeset/") ||
+    (file.startsWith("content/docs/") &&
+      !file.startsWith("content/docs/migration/"));
 
   if (auditsCurrentPluginRendererProse) {
     const terminalComponentConversion =
@@ -6601,10 +6619,10 @@ export function auditNamedSchemaLineageDocument(
       issues.push({
         column: 1,
         file,
-        line: source.slice(0, terminalComponentConversion.index).split('\n')
+        line: source.slice(0, terminalComponentConversion.index).split("\n")
           .length,
         reason:
-          'terminal consumers configure the Base descriptor directly; owning React adapters pass component to toReactPlugin() while publishing the Plate descriptor',
+          "terminal consumers configure the Base descriptor directly; owning React adapters pass component to toReactPlugin() while publishing the Plate descriptor",
       });
     }
 
@@ -6614,9 +6632,9 @@ export function auditNamedSchemaLineageDocument(
       issues.push({
         column: 1,
         file,
-        line: source.slice(0, baseExtendComponent.index).split('\n').length,
+        line: source.slice(0, baseExtendComponent.index).split("\n").length,
         reason:
-          'Base plugin .extend() cannot define component; use the constructor default or terminal .configure({ component }) replacement',
+          "Base plugin .extend() cannot define component; use the constructor default or terminal .configure({ component }) replacement",
       });
     }
 
@@ -6627,22 +6645,22 @@ export function auditNamedSchemaLineageDocument(
       issues.push({
         column: 1,
         file,
-        line: source.slice(0, staticBaseKitReactAdapter.index).split('\n')
+        line: source.slice(0, staticBaseKitReactAdapter.index).split("\n")
           .length,
         reason:
-          'static/base kits declare or configure component on the Base descriptor without platejs/react',
+          "static/base kits declare or configure component on the Base descriptor without platejs/react",
       });
     }
   }
 
-  if (file.startsWith('.changeset/') || file.startsWith('content/')) {
+  if (file.startsWith(".changeset/") || file.startsWith("content/")) {
     for (const match of source.matchAll(staticPluginApiReferencePattern)) {
       issues.push({
         column: 1,
         file,
-        line: source.slice(0, match.index).split('\n').length,
+        line: source.slice(0, match.index).split("\n").length,
         reason:
-          'release prose uses an installed editor portal instead of static FooPlugin.api',
+          "release prose uses an installed editor portal instead of static FooPlugin.api",
       });
     }
   }
@@ -6658,11 +6676,11 @@ export function auditNamedSchemaLineageDocument(
         file,
         line:
           fence.line +
-          fence.code.slice(0, staticEditorBaseReactAdapter.index).split('\n')
+          fence.code.slice(0, staticEditorBaseReactAdapter.index).split("\n")
             .length -
           1,
         reason:
-          'static editors use terminal BasePlugin.configure({ component }) without platejs/react; toReactPlugin(BasePlugin) is for live React',
+          "static editors use terminal BasePlugin.configure({ component }) without platejs/react; toReactPlugin(BasePlugin) is for live React",
       });
     }
 
@@ -6716,7 +6734,7 @@ export function auditNamedSchemaLineageDocument(
           ...createIssue(
             file,
             node,
-            'uninstalled plugins have no schema identity; do not replace a missing type or key with a raw string fallback'
+            "uninstalled plugins have no schema identity; do not replace a missing type or key with a raw string fallback"
           ),
           line: fence.line + (node.loc?.start.line ?? 1) - 1,
         });
@@ -6726,7 +6744,7 @@ export function auditNamedSchemaLineageDocument(
           ...createIssue(
             file,
             node,
-            'inline literal array items directly instead of spreading a literal array'
+            "inline literal array items directly instead of spreading a literal array"
           ),
           line: fence.line + (node.loc?.start.line ?? 1) - 1,
         });
@@ -6762,7 +6780,9 @@ export function auditNamedSchemaLineageDocument(
           column: 1,
           file,
           line: 1,
-          reason: `named schema lineage allowlist expects ${count} ${signature} construction${count === 1 ? '' : 's'} but found ${found}`,
+          reason: `named schema lineage allowlist expects ${count} ${signature} construction${
+            count === 1 ? "" : "s"
+          } but found ${found}`,
         });
       }
     }
@@ -6773,18 +6793,18 @@ export function auditNamedSchemaLineageDocument(
 
 const collectSourceFiles = () =>
   execFileSync(
-    'git',
+    "git",
     [
-      'ls-files',
-      '--cached',
-      '--others',
-      '--exclude-standard',
-      '--',
+      "ls-files",
+      "--cached",
+      "--others",
+      "--exclude-standard",
+      "--",
       ...sourceRoots,
     ],
-    { cwd: repoRoot, encoding: 'utf-8' }
+    { cwd: repoRoot, encoding: "utf-8" }
   )
-    .split('\n')
+    .split("\n")
     .filter(Boolean)
     .filter(isPlateSchemaAdoptionSourcePath)
     .map((file) => join(repoRoot, file))
@@ -6794,7 +6814,7 @@ export function auditPlateSchemaAdoption() {
   const files = collectSourceFiles();
   const issues = files.flatMap((path) => {
     const file = toPosixPath(relative(repoRoot, path));
-    const source = readFileSync(path, 'utf-8');
+    const source = readFileSync(path, "utf-8");
 
     try {
       return markdownFilePattern.test(file)
@@ -6824,7 +6844,7 @@ function runAudit() {
     auditPlateSchemaAdoption();
 
   if (issues.length > 0) {
-    console.error('Plate schema adoption audit failed:');
+    console.error("Plate schema adoption audit failed:");
     for (const issue of issues) {
       console.error(
         `- ${issue.file}:${issue.line}:${issue.column}: ${issue.reason}`
@@ -6834,7 +6854,9 @@ function runAudit() {
   }
 
   console.log(
-    `Plate schema adoption source audit passed (${fileCount} source and documentation files; CI-generated ${excludedGeneratedRoots.join(', ')} excluded).`
+    `Plate schema adoption source audit passed (${fileCount} source and documentation files; CI-generated ${excludedGeneratedRoots.join(
+      ", "
+    )} excluded).`
   );
 }
 

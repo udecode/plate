@@ -39,14 +39,23 @@ standard:
   final schema bindings, mutation maps, and fingerprints may belong to
   committed opt-in generated artifacts, never every
   `editor.api/read/update` access.
+- A current generated TypeScript contract carries only types and static schema
+  handles. Its companion JSON schema contract owns the compiled fingerprint;
+  do not emit a duplicate TypeScript fingerprint that churns for a behavior-only
+  schema change. Migration snapshots retain historical source fingerprints for
+  their separate persisted-document job.
 
 - A Plate application schema declares `root` only when its primary structure
   differs from the standard nonempty paragraph policy. Use existing
-  descriptor-aware `schema.content.*` builders with an explicit positive
-  `min`; the first descriptor in `elements` owns the default. Descriptors match
-  the installed Base or Plate family. Root grammar participates in generated
-  contracts and schema identity, so named persisted schemas version and
-  migrate a change.
+  descriptor-aware `schema.content.*` builders with an effective positive
+  minimum. A required `schema.content.prefix(slots, rest)` contributes its
+  slots to that minimum; each slot constrains a persisted type and exact
+  schema-valid properties. The rest rule owns subsequent children and their
+  default. The first descriptor in `elements` owns its ordinary default.
+  Descriptors match the installed Base or Plate family. Root grammar
+  participates in generated contracts and schema identity, so named persisted
+  schemas version and migrate a change. App-owned corrections do not enforce
+  document positions that the canonical schema can declare.
 - A complete schema declares `root: SchemaContent` directly. Named `roots`
   map names directly to `SchemaContent`; a `{ content }` wrapper earns nothing.
 - Omitted complete-schema `elements` means `{}` and omitted `unknown` means

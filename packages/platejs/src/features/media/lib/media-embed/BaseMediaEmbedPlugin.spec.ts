@@ -30,8 +30,7 @@ describe('BaseMediaEmbedPlugin', () => {
       editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior.isolating
     ).toBe(true);
     expect(
-      editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior
-        .keyboardSelectable
+      editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior.object
     ).toBe(true);
     expect(editor.read.schema.element(BaseMediaEmbedPlugin)?.groups).toContain(
       'block'

@@ -22,19 +22,16 @@ const getSortedKeys = (plugins: readonly AnyBasePlugin[]) => {
 };
 
 describe('resolvePlugins', () => {
-  it('compiles input-rule declarations once into the published runtime', () => {
-    let calls = 0;
+  it('compiles explicit input-rule declarations into the published runtime', () => {
     const Plugin = defineHeadlessPlugin('singleInputRuleCompilation', {
-      inputRules: () => {
-        calls += 1;
-
-        return [];
-      },
+      inputRules: [],
     });
+    const editor = createEditor({ plugins: [Plugin] });
 
-    createEditor({ plugins: [Plugin] });
-
-    expect(calls).toBe(1);
+    expect(
+      getPlateRuntime(editor).inputRules.plugins.singleInputRuleCompilation
+        .rules
+    ).toEqual([]);
   });
 
   it('installs required dependencies', () => {
@@ -508,7 +505,7 @@ describe('resolvePlugins', () => {
             wrapRoot: () => null,
           },
           rules: {
-            match: () => true,
+            break: { default: () => 'none' },
           },
         }),
       ],
@@ -557,7 +554,12 @@ describe('resolvePlugins', () => {
     expect(
       getPlateRuntime(editor).pluginCache.slots.afterNodeChildren
     ).toContain('cachey');
-    expect(getPlateRuntime(editor).pluginCache.rules.match).toContain('cachey');
+    expect(
+      getPlateRuntime(editor).pluginCache.rules['break.default']
+    ).toContain('cachey');
+    expect(getPlateRuntime(editor).pluginCache.rules['delete.start']).toEqual(
+      []
+    );
     expect(
       getPlateRuntime(editor).pluginCache.useViewElementAttributes
     ).toContain('cachey');
@@ -950,9 +952,7 @@ describe('resolvePlugins', () => {
           }),
         ],
       })
-    ).toThrow(
-      'inputRules must be an array of explicit rule instances or a factory.'
-    );
+    ).toThrow('inputRules must be an array of explicit rule instances.');
   });
 });
 

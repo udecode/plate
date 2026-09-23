@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-22",
+  "scope": "document-structure-prefix",
+  "passed": [
+    "Plite development lane: 159 tasks; Plite package typecheck: 13 tasks",
+    "Plite Yjs partition: 274 tests, including external Y.Doc deletion of a required title",
+    "Plate standard basic-nodes partition: 55 tests",
+    "Focused Plite slice and schema-contract tests: 59 tests",
+    "Raw Plite forced-layout Chromium: 2 tests",
+    "Playground Chromium: initial editing paint, H2 toolbar rejection, and direct typing/plain-text paste",
+    "www typecheck: editor, API reference, docs source, registry source, route and integration types",
+    "www check:docs and build:registry",
+    "Strict Plite schema construction benchmark: 8 prefix cohorts, max changed span 1, required-node identity retained",
+    "Non-strict full Plite schema architecture benchmark: prefix compile p95 0.377 ms (one slot), 0.114 ms (two slots), under 16 ms",
+    "Benchmark targets, barrel generation, doctrine version, plan completion, formatting and git diff whitespace checks"
+  ],
+  "limits": [
+    "Full suggestion Chromium suite: 28 of 30 passed on the initial run. The direct paste failure was repaired and the targeted retest passed. The remaining discussion-count assertion expects 5 but gets 4; it reproduces with the new playground schema disabled.",
+    "Strict schema architecture benchmark remains red at its existing equivalent-reconfiguration ratio gate: 5.42x and 19.7x in two runs versus a 1.05x limit. The full non-strict receipt observed 13.82x. No threshold was changed.",
+    "No publication, deployment, native-device run, or migration of saved documents is claimed."
+  ],
+  "receipts": [
+    "architecture-benchmark.json",
+    "construction-benchmark.json"
+  ]
+}

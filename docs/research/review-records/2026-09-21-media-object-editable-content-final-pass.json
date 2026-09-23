@@ -1,0 +1,192 @@
+{
+  "id": "2026-09-21-media-object-editable-content-final-pass",
+  "scope": "media",
+  "kind": "review",
+  "date": "2026-09-21",
+  "question": "Does Plite need an object-like schema role for selectable media with editable children, or can narrower intrinsic-content and existing flag repairs solve the job more cleanly?",
+  "model": "GPT-5 / Codex",
+  "method": "best-api-review/history-v3; redesign-from-first-principles; model-switch final-pass reassessment",
+  "trigger": "The user switched models and requested a fresh last pass of the same review, specifically questioning whether media needs a void-like node type that still exposes editable children.",
+  "requirements": [
+    "Keep media captions as ordinary canonical children with normal text selection, history, clipboard and collaboration ownership.",
+    "Treat the asset as meaningful content even when its caption is empty.",
+    "Keep whole-owner selection, movement and deletion distinct from descendant text editing and transfer.",
+    "Prevent generic editing from discarding or duplicating the asset while preserving intentional explicit operations.",
+    "Compare a coherent object role against narrow intrinsic-content, existing orthogonal flags, editable voids, atoms, wrappers and independent roots.",
+    "Retain atom and void semantics only where their actual traversal and rendering laws still apply."
+  ],
+  "evidenceReuse": "Reused the source-matching ProseMirror, WordGard and Lexical comparison plus the three existing Plite model probes. Re-read the current schema/compiler, emptiness, replacement, selection, traversal, merge/delete boundary, slice and media command owners. Added one focused executable probe that changes only isolating and confirms it alone changes inner-caption transfer from an open text slice to a closed owner slice. No external clone refresh or browser rerun was needed.",
+  "summary": "Pursue and reaffirm a schema-owned object role for independently meaningful owners with editable children, but tighten the target. Object must be a first-class semantic fact consumed by emptiness, owner selection and structural editing; it must not be a macro for atom or today's isolating + keyboardSelectable pair. Atom remains the distinct non-traversable-content fact. Inner range transfer must stay open child content while NodeSelection transfers the owner, so the current blanket use of isolating as a slice barrier must be separated. Do not add a second public isContent flag until a real non-object consumer exists. Keep direct caption children and Plate-owned caption Enter policy.",
+  "verdict": "pursue",
+  "previous": "2026-09-21-media-object-editable-content",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-21-media-object-editable-content",
+      "question": "Does Plite need object semantics for a selectable media body with editable children, and how does that compare with ProseMirror, WordGard and Lexical?",
+      "action": "retains",
+      "reason": "Retain the object/content direction, direct caption children, Plite ownership, Plate caption Enter policy and rejection of editable voids, nested editors and wrappers. Refine the provisional API: object does not replace atom, and it cannot inherit the current isolating slice behavior. The fresh probe shows transfer openness is independently controlled by the isolating barrier."
+    },
+    {
+      "record": "2026-09-21-media-caption-clean-reset-ownership",
+      "question": "Should media-caption Enter scrub properties in Plate, generalize to all void nodes, or use a typed clean reset owned by Plite?",
+      "action": "supersedes",
+      "reason": "Retain canonical block conversion and shared media coverage. The reset-only target remains insufficient because emptiness, owner selection and transfer require a schema semantic beyond property cleanup."
+    }
+  ],
+  "alternatives": [
+    "Keep current media flags and patch only replaceEmpty, slice openness and caption Enter: strongest hard-cut alternative and sufficient for the three immediate symptoms, but it leaves no truthful schema answer for an owner that remains meaningful independently of editable children. Generic operations and plugin authors must keep coordinating unrelated flags.",
+    "Add only intrinsicContent or isContent: fixes semantic emptiness and can guard replacement, but duplicates a public axis with no current non-object consumer and leaves owner selection and structural boundary coordination separate. Keep it private or derived unless design discovers an independent job.",
+    "Add object as a macro for isolating + keyboardSelectable: reject. The fresh probe proves current isolation closes inner text slices and recreates the owner; encoding that combination would canonize the transfer defect.",
+    "Add a first-class object role with editable children: pursue. It states independent owner meaning and lets selection and structural operations query one domain fact while retaining selection-shaped transfer. Exact constructor/flag spelling and derived defaults remain design work.",
+    "Replace atom with object, restore void, or add editable void: reject. Atom is the real non-traversable-content fact, and the executed traversal probe shows it closes caption positions. Void still means editor-owned editable descendants are unavailable.",
+    "Add caption wrappers, nested editors or named roots: reject for one caption. They add grammar, identity, history or lifecycle ownership without a current independent-region job; direct children already satisfy the persisted-content law."
+  ],
+  "proofLimits": "Assessment only. Four existing source-bound model probes and one fresh isolation comparison establish current emptiness, traversal and slice behavior; they do not prove browser clipboard MIME, DOM selection geometry, deletion UX, IME, collaboration, performance or a candidate object implementation. External findings were reused at their recorded commits without refresh or test execution. No product API shape, migration, implementation or publication is authorized by this review.",
+  "references": [
+    "docs/research/decisions/media-object-content.md",
+    "docs/research/review-records/2026-09-21-media-object-editable-content.json",
+    "docs/plite/research/2026-09-21-media-object-editable-content/README.md",
+    "docs/plite/research/2026-09-21-media-object-editable-content/observations.test.ts",
+    "docs/plite/research/2026-09-21-media-object-editable-content/observations.txt",
+    "docs/plite/research/2026-09-21-media-object-editable-content/last-pass-observations.test.ts",
+    "docs/plite/research/2026-09-21-media-object-editable-content/last-pass-observations.txt",
+    "packages/plitejs/src/interfaces/schema.ts",
+    "packages/plitejs/src/core/schema-compiler.ts",
+    "packages/plitejs/src/editor/is-empty.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/get-content-slice.ts",
+    "packages/plitejs/src/editor/positions.ts",
+    "packages/plitejs/src/react/editable/selection-void-target.ts",
+    "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/media.tsx": "a3a10aee7b55a1cf1f6304d49d3c6ea901b8268b85ff6b41e32947aa2a66f491",
+      "apps/www/src/registry/components/editor/caption.tsx": "19c1ad2e59243ed6512a4de33c90c0d800d51def83afa56b8e96659784399597",
+      "packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts": "af9181606dce67414020e2d014dbae8b6abcfc955cf1889134de88bf9d3007de",
+      "apps/www/tests/browser/media-caption.spec.ts": "056176f400efe626da504cbe62e4fc93be7cbb7be2213c001a8c1635c73deddf",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "981f135c7dcd70df7b60a07fa40fcdf008fe7e01b1b6a014eccc1629f8a722a9",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "c30b05901aa8f2ecb6c6a62b6e37d963ed743eb8538c444517cd3117ae202a17",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "packages/plitejs/src/interfaces/schema.ts": "6bf2dbf0970d8d12307a697a09089791973ce4b5fb1bb5281c7633c40e77a444",
+      "packages/plitejs/src/core/schema-compiler.ts": "a8c0dfeb881d7f4166d6517a7358f66dac89f5f2bccd0fa2a804cf5ed283b226",
+      "packages/plitejs/src/editor/is-empty.ts": "1a41cc32f716f635555dbcf25d4e1ddd28a0b0ad71e48ebd832d6c2539ba2cfb",
+      "packages/plitejs/src/core/public-state.ts": "b977d898ba00a8726cb9ab06a116c13ced5ec23293774f67dba16a172fe936db",
+      "packages/plitejs/src/core/get-content-slice.ts": "da56a43b15a0d7e1e7a9fdedbf48ed7a627606e514127979824853963a232649",
+      "packages/plitejs/src/editor/positions.ts": "d1f70356aec3fb57f5300d3be8aa8df8a84824f816a34871eac8e13eb86cf5c7",
+      "packages/plitejs/src/react/editable/selection-void-target.ts": "40d5ca4eca34b832796914220f4bd04218e6e646bfd2efdb57fdf6ded6778767",
+      "packages/plitejs/src/transforms-node/merge-nodes.ts": "ff2382f1c8a6ba890f7f027cb04e12c784dff8afd5dccd975fb780251df091e4",
+      "packages/plitejs/src/transforms-text/delete-text.ts": "bdfcdacd5a26eee930a13f054dac8dd2d8eddfcad0b92903447ddeb4d809e434",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "8fe2765d33268090ce8aaf0639ee5fc0170e0b6a16c01c56ce4c10e5ed489d13",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "5dd78e8b691c0e1f7d6d21dd8934ffb9d6590dca220d8174985eaa2877daa6ae",
+      "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts": "3a4083354ca04943efe11b05da714dd653cf421f9ad344bab50750d03e90314b",
+      "docs/plite/research/2026-09-21-media-object-editable-content/README.md": "51fbe7b2189a9b658551cbf1132ce493e417a046b7f94127044c290e3e3e8bcd",
+      "docs/plite/research/2026-09-21-media-object-editable-content/observations.test.ts": "f40ca2b7460afd9dea4057bbb08cd743cbb84f325ddb9733a5cfe998e523f7d7",
+      "docs/plite/research/2026-09-21-media-object-editable-content/observations.txt": "f63b9d62bfca41c59c938cd7c66357335b67aabf35da0ddd3b62ac56d511d6df",
+      "docs/plite/research/2026-09-21-media-object-editable-content/last-pass-observations.test.ts": "5f99f163389e7ed3db02e964edc3eb0cf0706208548b0fdb17e4388e82e08143",
+      "docs/plite/research/2026-09-21-media-object-editable-content/last-pass-observations.txt": "725428c86a504d64d0603401007cfde221de7f6b82898f593d9f6bf2579756d8"
+    },
+    "directories": {
+      "packages/platejs/src/features/media": "c745a85a372017de159392d6af0e992339e550c158281be0a22af53c646c7607"
+    },
+    "features": {
+      "browser/media-caption": "05db3735c4472ad8f7fd26c46e834a2c563b5295a3f340d4899d3a959598bb66",
+      "capability/audio": "1a8580e7131ed6845741119e65c93e035ca9d42498dc20e69b351aba07d34de2",
+      "capability/file": "2e4f5a6ebaa8766fcc396188a31f7c0d2abd1750cc234aa1d672e77f6788d142",
+      "capability/image": "9675ca714d0992eec78c2ef66f00116ebdada695b724c70ed6f235ba395ef970",
+      "capability/mediaEmbed": "63b756fc7d5827f79001cb044284795a562aee8e3d451da600520c0f85fe05c8",
+      "capability/video": "1a8580e7131ed6845741119e65c93e035ca9d42498dc20e69b351aba07d34de2",
+      "example/plite/embeds": "10c7c76155c9915c7c74a9dea9e60317de88e8b865f3546588a6d9de422b09de",
+      "example/plite/images": "ea227cc055033ceac45f6dd4f4448c35683b4f10715be368086791b54f6f17c6",
+      "example/registry/image-pro-demo": "e58afb88e01cc707ba3b9fa121c47300984ff8a2ca90f002433fc9145d2f46a2",
+      "example/value/media-value": "948297ee10ce56abfc1a99ab9e143c502dd2af0361cd468778f0094256b298b8",
+      "export/platejs/./media": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "export/platejs/./media/react": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "export/platejs/./resizable/react": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "platejs/media": "ffdd999f29b3f225d2b6c293896f452fc7e740712c91a82c1694f861e921c4ca",
+      "ui/caption": "3ee98c4522ce8401ddd68c163be390bc4f0bdff69dce79eb497f97143b448b67",
+      "ui/media": "2663c399060ef10fa1e840c6d4b4e97b93251ce2e97d192798fe7b44ed731eca",
+      "ui/media-audio": "5163b122373cd359cac13e1b63480066453cfb83d2bd0e45688038a0f164cf6c",
+      "ui/media-embed": "27d6b3144964a060d200aad6659dae230c86daab78907aa20abd14ec0e6e5da8",
+      "ui/media-file": "a1b71cb16238b6f5482995c73627455f5a14d257b7ed61d08bc80d8d88cf7e01",
+      "ui/media-image": "b3f89949792cfea962bbcc141d2b565cb58a76eb79cb0091a4e43ece23c06842",
+      "ui/media-preview-dialog": "42bba9945cb37437fad16ff7730aff987fed9a0d99238f76ce26150b8ab87c5f",
+      "ui/media-toolbar": "b4329cdc937b8ff78b3bb4d5658895c830ed1d5187765d9fcab4b3528296185f",
+      "ui/media-toolbar-button": "bf6390bc419a5f69450a7f30e805f46c42e20a9b2545b080b1f5c36eda094bbd",
+      "ui/media-video": "13ec23b18d970a8e929655612e67eea216db849de2d0b7d425be961c2de4609a",
+      "ui/resize-handle": "355d9898808b16b0d66ef5d948c3d0b5355bee50e9209ade998d7184c0159b36"
+    },
+    "upstreams": [
+      {
+        "checkout": "/Users/zbeyens/git/prosemirror-model",
+        "commit": "6264de069d8439131e88f8ba06973551916184e4",
+        "files": {
+          "src/schema.ts": "e7eb493c877d6f50db1ee0f0c3cbb35dc6d898e43491bbf51ddd502a7b23af2c"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/prosemirror-view",
+        "commit": "ca4c78e9b56f1b164c0b3758b59d8748f11b7534",
+        "files": {
+          "src/viewdesc.ts": "73205e5de91d68f36bd7fb22e6e8e44f33997a7eac73c61f6218d1e4c1cac3cd",
+          "src/input.ts": "33751f88e1361059693a7aabba9f0e062c732f2881fa8f512d9face48995d25c",
+          "src/capturekeys.ts": "edc174a4deb3e5fe0bcc033fc3ba404aa1fdb8e00cf3163516d68b4f990e4ff6"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/prosemirror-commands",
+        "commit": "52a84a842774fadec3b167bcdbd56085ec6c85df",
+        "files": {
+          "src/commands.ts": "b7cea4c5b7f0d8c3c2d9306de430720f608c014332cfb284d848b6f8501224c2"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/prosemirror-schema-basic",
+        "commit": "6daea265c3983a04f272f510b99493868919d374",
+        "files": {
+          "src/schema-basic.ts": "a5fd3c9387c93e540b72b53831b8bc12c5e50c2638737767ef8dcb23c52f8be2"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/wordgard",
+        "commit": "b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54",
+        "files": {
+          "src/types/schema.ts": "26fc2e9cc9113bed403c905d1b4ad625d6d3b51a5a0fbc1883082a99c95ac2b6",
+          "src/schema/image.ts": "b85a487318f9a4896daa14192eba1a0fae98d722b69596fe76dfd80cd0bdb46e",
+          "src/doc/node.ts": "001a408809c5c94fb1f1b6b41c9c4a44c0fdc78290b65db66f04246fb593ecbe",
+          "src/state/state.ts": "8a1970ba1f34643c3e755213d01bdcb4c3d34bb53671929b487ad551234ba7e6",
+          "src/editor/selection.ts": "bbe35a8472dadcb8db01777fc0752914d1c2343a3b9a72d684de291de82d53d1",
+          "src/command/commands.ts": "5dc0435ed15549b0cb93834cf10f4be23451e8e7c45cce1ae0dfdc93e5ea1a63",
+          "src/command/helper.ts": "ee17c435ed0224827a2331d9c5c7ef5d21df2bd2dd80ba2f67de3037bd8797f7",
+          "test/webtest-serialize.ts": "384eba2cec242ec700171fa51f0ae78c3166385ba79c57b2beb053e0192ee942",
+          "test/webtest-resolve-dom.ts": "5976cb08f58b6e0daf37655fcee9fa3f07d4a7d90f605631b59719bc347527da",
+          "test/test-commands.ts": "ce8193146d3242bcefe10b2fb1a5781eb326feebe4cfb3f8fb59bf254c4e5a28"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/lexical",
+        "commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+        "files": {
+          "packages/lexical-playground/src/nodes/ImageNode.tsx": "53d53300e282452aab58a8eead378d2bbdd03721cc557962af9fe611fa81e31e",
+          "packages/lexical-playground/src/nodes/ImageComponent.tsx": "f8a80ff2c3676b522fac4d3205791a739a617c8c2c3034e1be88ddb847f48e84",
+          "packages/lexical/src/nodes/LexicalDecoratorNode.ts": "dabfc12aa879c2a14bff60eb4a83b3655f6ba1a1867da04f1698f55bb1868dde",
+          "packages/lexical/src/nodes/LexicalElementNode.ts": "3fc89dfd814089edab2f30469ba8ce7b41795042e75be0428ed83d43480a0d6a",
+          "packages/lexical/src/LexicalSlot.ts": "14698598851a7cf3affc5cbba192fde0fc2b1eccb996b4f17bd596f8accdf1c6",
+          "packages/lexical/src/LexicalSelection.ts": "925a0f22a337d34dc049e7f06d59713c50b742b813bb9c46fabb7963aa5d619e",
+          "packages/lexical-website/docs/concepts/named-slots.md": "7a8b8850512a1266f0ff27380dc48c4f8dee0a63c307597a2358c895ca8fecfb",
+          "packages/lexical-playground/src/plugins/PullQuoteExtension/PullQuoteNode.tsx": "fb7491fb200c770ccbc09230f3b97a8c2124807db298de44ce26a789a3023d7a",
+          "packages/lexical-playground/src/plugins/PullQuoteExtension/index.tsx": "afb2fd19d883ec701b5397782e64f7d3372b2a0bb659ea97ecb74919fc4eabbd",
+          "packages/lexical-playground/src/nodes/hostChromeSelection.ts": "973acef4dfe8e99ff4ae11bfdf45bd6601edc0266548bc3bd35c70107f46f165",
+          "packages/lexical/src/__tests__/unit/LexicalSlotSelection.test.ts": "58128670b68ee3cf97cb87b7f63599c5be34cf838c27d64e8262423d9f4574fb",
+          "packages/lexical-playground/__tests__/e2e/PullQuoteSlot.spec.mjs": "d54ef0b0adac77599fce0bb452b857432c3b4b2d6a9325159b5262834fcf392d"
+        }
+      }
+    ]
+  }
+}

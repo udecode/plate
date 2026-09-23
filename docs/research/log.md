@@ -1,5 +1,52 @@
 # Research Log
 
+## [2026-09-22] review | Code commands and highlighter ownership
+
+- Reconciled the CodeLine cut, adopted optional CodeMirror/parser boundary,
+  September 5 native plateau, later R4 native performance adoption and
+  September 15 external-text ordering repair. Historical proof remains dated.
+- Pursue removing hidden grammar mutation, reusing schema-owned insertion and
+  moving JSON-only policy to copied UI with selection-preserving canonical
+  edits. Repair the native selected-line endpoint and copied backend imports.
+- [Audit](../plans/artifacts/2026-09-22-code-api-audit/review.md): 13/13 source
+  groups, eight semantic units, 58 existing tests passed, and two observational
+  probes reproduced the remaining flaws. No product implementation or fresh
+  browser/performance certification.
+
+## [2026-09-21] final review | Editing rules and structural commands
+
+- Supersede the first review's headline input-rule cut. Input rules already run
+  as middleware around canonical Plite commands and own activation, ordering,
+  trigger indexing, reusable context and feature-factory jobs.
+- Pursue atomic candidate transactions and one consume/decline/continue
+  contract. Hide the always-installed executor and delete unused
+  helper-injection authoring; redesign rather than pre-delete the package-author
+  factory capability used by 18 production definitions.
+- Retain the cuts of global `rules.match`, `NormalizeTypesPlugin`, duplicate
+  singular insertion and orphan examples, plus the `maxLength` and selection
+  direction repairs. Coverage remains 33/33 with two explicit deferrals.
+
+See [the corrected decision](decisions/editing-command-ownership.md), the
+[fresh challenge](../plans/artifacts/editing-api-review/final-pass.md) and the
+[immutable final review](review-records/2026-09-21-editing-command-final-pass.json).
+
+## [2026-09-21] review | Editing rules and structural commands
+
+- Accounted for all 33 editing source groups: 16 Pursue, 15 Stop, two Defer.
+  Retain useful feature declarations and distinct single-block/single-line jobs;
+  pursue deleting separate input-rule outcomes, global rule matching and the
+  path/type-only normalization language.
+- Thirty-five existing input-rule tests pass. Current-source probes reproduce
+  inconsistent mutation/fallthrough handling, an ignored enabled override,
+  full-sibling command replacement bypassing maxLength, and lift/unwrap turning
+  backward selection forward.
+- Nested void parent grammar and representation-cleanup consolidation remain
+  gated. No product implementation, native replay or candidate performance
+  acceptance is established. Task design plan owns the remaining coupled work.
+
+See [the decision](decisions/editing-command-ownership.md) and
+[the immutable review](review-records/2026-09-21-editing-command-and-structural-ownership.json).
+
 ## [2026-09-21] final review | Anchors and annotations
 
 - Reaffirm the separate anchor, annotation-index and decoration jobs, plus the

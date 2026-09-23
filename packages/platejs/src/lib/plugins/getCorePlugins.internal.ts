@@ -1,3 +1,4 @@
+import { OverridePlugin } from '../../internal/plugin/OverridePlugin';
 import type { DefinitionOf } from '../plugin';
 import { AffinityPlugin } from './affinity';
 import { DebugPlugin } from './debug';
@@ -6,7 +7,6 @@ import { ElementStatePlugin } from './element-state';
 import { HistoryPlugin } from './HistoryPlugin';
 import { HtmlPlugin } from './html';
 import { InputRulesPlugin } from './input-rules/InputRulesPlugin';
-import { OverridePlugin } from './override/OverridePlugin';
 import { BaseParagraphPlugin } from './paragraph';
 
 export type GetCorePluginsOptions = {

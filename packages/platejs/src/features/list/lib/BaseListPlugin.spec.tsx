@@ -10,6 +10,7 @@ import {
   type InitialValue,
   type Value,
 } from '../../../core';
+import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
 import { BaseIndentPlugin } from '../../indent';
 import {
   BaseListPlugin,
@@ -1023,6 +1024,43 @@ describe('BaseListPlugin canonical model', () => {
 
       expect(editor.read.children()[0]).toMatchObject(expected);
     }
+  });
+
+  it('keeps list syntax in a title that is not an eligible list block', () => {
+    const editor = createProductEditor({
+      plugins: [
+        BaseHeadingPlugin,
+        BaseListPlugin.configure({
+          inputRules: [BulletedListRules.markdown()],
+        }),
+      ],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue: [
+        { children: [{ text: '-' }], level: 1, type: 'heading' },
+        { children: [{ text: 'Body' }], type: 'paragraph' },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+    });
+
+    editor.update.text.insert(' ');
+
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: '- ' }],
+      level: 1,
+      type: 'heading',
+    });
   });
 
   it('joins an existing sequence without forcing the typed start', () => {

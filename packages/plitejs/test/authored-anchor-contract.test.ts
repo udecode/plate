@@ -336,6 +336,31 @@ describe('native document range persistence', () => {
     assert.equal(handle.resolve(), null);
   });
 
+  it('maps an unchanged range through multiple disjoint text edits in one update', () => {
+    const editor = createEditor({
+      plugins: [history()],
+      initialValue: [paragraph('{"a":1}')],
+    });
+    const anchor = editor.anchor(range(2, 3), {
+      association: 'inward',
+      deletion: 'nearest',
+    });
+
+    editor.update((tx) => {
+      tx.text.insert('\n', { at: point(6) });
+      tx.text.insert(' ', { at: point(5) });
+      tx.text.insert('\n  ', { at: point(1) });
+    });
+
+    assert.deepEqual(anchor.resolve(), range(5, 6));
+    assert.equal(editor.read.history().undos.length, 1);
+    editor.api.history.undo();
+    assert.deepEqual(anchor.resolve(), range(2, 3));
+    editor.api.history.redo();
+    assert.deepEqual(anchor.resolve(), range(5, 6));
+    anchor.release();
+  });
+
   it('maps an ordinary range to an atomic replacement through undo and redo', () => {
     const editor = createEditor({
       plugins: [history()],

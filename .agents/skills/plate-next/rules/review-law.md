@@ -713,12 +713,13 @@ editor.update.selection.set(...) })` are bugs, not style issues.
 
 Concrete correction:
 
-- `OverridePlugin` is the main-code owner for plugin node override behavior.
-  Keep that public concept unless an accepted API redesign changes it.
+- Exact structural-rule middleware is a private core owner. A runtime plugin
+  descriptor may implement that owner internally, but execution alone does not
+  make the descriptor a public configuration concept.
 - A helper like `installPlateElementSpecsExtension` sitting in a huge editor
   file is migration plumbing. Do not defend that placement as final taste.
-  If `OverridePlugin` is its only production owner, inline it there. Use an
-  adjacent `override/` helper only when it has real reuse or an independent
+  If the private structural-rule owner is its only production owner, inline it
+  there. Use an adjacent helper only when it has real reuse or an independent
   boundary. File size is not an extraction reason.
 - The drift to cut is duplicate API wrapping, `any`, stale `getPluginByType`
   runtime lookup, or a special installer in the huge editor file. The review

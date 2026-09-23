@@ -24,8 +24,8 @@
       "diagnostics": []
     },
     {
-      "name": "upload-ephemeral",
-      "files": ["apps/www/src/registry/components/editor/upload/ephemeral.ts"],
+      "name": "upload-browser",
+      "files": ["apps/www/src/registry/components/editor/upload/browser.ts"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     },
@@ -57,7 +57,7 @@
       "migrationNotes": [],
       "targets": [
         "upload",
-        "upload-ephemeral",
+        "upload-browser",
         "upload-r2",
         "upload-s3",
         "files-api"

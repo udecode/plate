@@ -107,12 +107,11 @@ const editor = createEditor({
 ```tsx
 import { CodeBlockRules } from 'platejs';
 import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
-import { all, createLowlight } from 'lowlight';
 import { createEditor } from 'platejs/react';
 import { CodeBlockElement } from '@/components/editor/code-block';
+import { createCodeBlockLowlight } from '@/components/editor/code-block-lowlight';
 
-// 创建包含所有语言的 lowlight 实例
-const lowlight = createLowlight(all);
+const lowlight = createCodeBlockLowlight();
 
 const editor = createEditor({
   plugins: [
@@ -170,7 +169,7 @@ const editor = createEditor({
 - `CodeBlockPlugin.configure({ component })`：使用
   [`CodeBlockElement`](/docs/components/code-block) 渲染代码块容器
 - `inputRules`：注册三反引号围栏规则。`on: 'match'` 表示围栏完成时立即提交，`on: 'break'` 表示围栏完成后按 `Enter` 再提交。
-- `CodeHighlightPlugin.initialState.lowlight`: 用于语法高亮的 lowlight 实例
+- `CodeHighlightPlugin.initialState.lowlight`：用于语法高亮的 lowlight 实例。插件只读取传入的实例，不会修改语言注册表。复制组件提供的 `createCodeBlockLowlight()` 会预先注册兼容浏览器的 Python 语法及 `py`、`gyp`、`ipython` 别名。
 - `CodeHighlightPlugin.initialState.defaultLanguage`: 未指定语言时使用的默认语言
 - `shortcuts.toggle`: 定义切换代码块的键盘[快捷键](/docs/plugin-shortcuts)
 

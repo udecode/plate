@@ -81,7 +81,6 @@
   },
   "source_fingerprints": {
     "/Users/zbeyens/git/automerge/javascript/src/implementation.ts": "a986ae23fdaeb8d0b30d95338fa66753aac024c449f759bfd764feb19f4183f3",
-    "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/model/history.ts": "ae54f1761b5f1164cd8a332b0f3a5aef1934efbb4ff526c8dc5af887fc02cd27",
     "/Users/zbeyens/git/docx-editor/apps/docs/content/docs/editor/track-changes.mdx": "1f3e48aa8c33eb0b5417c024fb5e60d9d707d2a736d35c51e5fc8242c5eed26c",
     "/Users/zbeyens/git/docx-editor/packages/document-api/src/track-changes/track-changes.ts": "b35d4c2ccd2361b759656a3087d9854a6cfc7b4f64f909d41b6207ccbbc3be50",
     "/Users/zbeyens/git/lexical/packages/lexical-history/src/index.ts": "fb98368ea46a27cd6d74332d5ec4ae780850c77e87bd5aea71f2f0db45bcb419",

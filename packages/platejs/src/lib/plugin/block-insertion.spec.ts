@@ -14,10 +14,10 @@ import { BaseCalloutPlugin } from '../../features/callout';
 import { BaseDetailsPlugin } from '../../features/details';
 import { BaseColumnPlugin } from '../../features/layout';
 import { BaseListPlugin } from '../../features/list';
-import { BaseUploadPlugin } from '../../features/upload';
 import { BaseImagePlugin } from '../../features/media';
 import { BaseTablePlugin } from '../../features/table';
 import { BaseTocPlugin } from '../../features/toc';
+import { BaseUploadPlugin } from '../../features/upload';
 import { BaseEquationPlugin } from '../../math';
 import { BaseParagraphPlugin } from '../plugins/paragraph';
 

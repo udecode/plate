@@ -1,6 +1,7 @@
 import type {
   EditorSchemaOverrideInput,
   SchemaContent,
+  SchemaContentPrefixSlot,
   SchemaProperty,
   SchemaPropertyDefinition,
 } from '../../facade';
@@ -28,7 +29,11 @@ export type EditorApplicationSchema = Readonly<{
    * standard paragraph root. Descriptor sources must match the installed
    * plugin family; the first source in `schema.content.elements` is default.
    */
-  root?: SchemaContent & Readonly<{ min: number }>;
+  root?: SchemaContent &
+    (
+      | Readonly<{ min: number }>
+      | Readonly<{ prefix: readonly SchemaContentPrefixSlot[] }>
+    );
 }> &
   EditorSchemaLineage;
 

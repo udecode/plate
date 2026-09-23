@@ -38,7 +38,7 @@ describe('resolvePlugin', () => {
 
   it('does not mutate configured inputRules reused across editors', () => {
     const configuredRule = defineInputRule({
-      apply: () => true,
+      apply: () => {},
       target: 'insertText',
       trigger: '*',
     });
@@ -64,14 +64,14 @@ describe('resolvePlugin', () => {
 
   it('keeps terminal inputRules configuration final over stages', () => {
     const stageRule = defineInputRule({
-      apply: () => true,
+      apply: () => {},
       target: 'insertText',
       trigger: 'stage',
     });
     const plugin = definePlugin('configuredInputRulesFinal', {
       inputRules: [
         defineInputRule({
-          apply: () => true,
+          apply: () => {},
           target: 'insertText',
           trigger: 'base',
         }),
@@ -90,33 +90,27 @@ describe('resolvePlugin', () => {
     ).toEqual([]);
   });
 
-  it('accepts an inputRules factory in terminal object configuration', () => {
+  it('rejects an inputRules factory in terminal object configuration', () => {
     const configuredRule = defineInputRule({
-      apply: () => true,
+      apply: () => {},
       target: 'insertText',
       trigger: 'configured',
     });
     const plugin = definePlugin('configuredInputRulesFactory', {
       inputRules: [
         defineInputRule({
-          apply: () => true,
+          apply: () => {},
           target: 'insertText',
           trigger: 'base',
         }),
       ],
-    }).configure({
-      inputRules: () => [configuredRule],
     });
-    const editor = createEditor({ plugins: [plugin] });
-    const { rules } =
-      getPlateRuntime(editor).inputRules.plugins.configuredInputRulesFactory;
 
-    expect(rules).toHaveLength(1);
-    expect(rules[0]?.target).toBe('insertText');
-    if (rules[0]?.target !== 'insertText') {
-      throw new Error('Expected an insertText input rule.');
-    }
-    expect(rules[0].trigger).toBe('configured');
+    expect(() =>
+      plugin.configure({
+        inputRules: (() => [configuredRule]) as any,
+      })
+    ).toThrow('inputRules must be an array of explicit rule instances.');
   });
 
   it('reports plugins that do not come from definePlugin', () => {
@@ -144,7 +138,7 @@ describe('resolvePlugin', () => {
     const configured = BaseParagraphPlugin.configure({
       inputRules: [
         {
-          apply: () => true,
+          apply: () => {},
           target: 'insertText',
           trigger: ' ',
         } as any,

@@ -303,7 +303,7 @@ Plugins declare element and property policy. Read the compiled schema through `s
 const behavior = editor.read((state) => ({
   inline: state.schema.isInline(element),
   isolating: state.schema.isIsolating(element),
-  keyboardSelectable: state.schema.isKeyboardSelectable(element),
+  object: state.schema.isObject(element),
   void: state.schema.isVoid(element),
 }));
 ```
@@ -328,7 +328,7 @@ Common schema checks include:
 - `state.schema.isElementTypeInGroup(type, group)`
 - `state.schema.isInline(element)`
 - `state.schema.isIsolating(element)`
-- `state.schema.isKeyboardSelectable(element)`
+- `state.schema.isObject(element)`
 - `state.schema.isReadOnly(element)`
 - `state.schema.isVoid(element)`
 - `state.schema.isMarkableVoid(element)`

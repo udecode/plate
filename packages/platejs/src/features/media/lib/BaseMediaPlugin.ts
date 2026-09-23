@@ -11,7 +11,6 @@ import {
   ElementApi,
   type ElementOf,
   type ElementWith,
-  PathApi,
   type BlockInsertOptions,
   type BlockUpsertOptions,
   type PluginTransaction,
@@ -227,33 +226,88 @@ export function defineMediaPlugin(
 
           if (!selection || state.selection.nodes().length > 0) return next();
 
-          const anchorBlock = state.nodes.block({ at: selection.anchor });
-          const focusBlock = state.nodes.block({ at: selection.focus });
+          const edges = state.ranges.edges(selection);
+          const start = edges?.[0];
+          const block = start && state.nodes.block({ at: start });
 
-          if (
-            !anchorBlock ||
-            !focusBlock ||
-            anchorBlock[0].type !== type ||
-            focusBlock[0].type !== type ||
-            !PathApi.equals(anchorBlock[1], focusBlock[1])
-          ) {
-            return next();
-          }
+          if (!block || block[0].type !== type) return next();
 
-          const rightPath = PathApi.next(anchorBlock[1]);
-          const result = next();
+          let delegate = false;
+          let valid = true;
+          const result = state.transaction((tx) => {
+            if (!tx.selection.isCollapsed()) tx.fragment.delete();
 
-          if (result === false) return false;
+            const caret = tx.selection();
+            const media = caret && tx.nodes.block({ at: caret.anchor });
 
-          return state.transaction.extend(result, (tx) => {
-            const right = tx.nodes.get(rightPath)?.[0];
-
-            if (!ElementApi.isElement(right) || right.type !== type) {
+            if (!media || media[0].type !== type) {
+              delegate = true;
               return;
             }
 
-            tx.blocks.reset({ at: rightPath });
+            const end = tx.points.end(media[1]);
+
+            if (!end) {
+              valid = false;
+              return;
+            }
+
+            const suffix = tx.slice.get({
+              at: { anchor: caret.anchor, focus: end },
+            });
+            const defaultBlock = tx.schema.createDefaultRootChild(
+              caret.anchor.root
+            );
+
+            if (!defaultBlock || !ElementApi.isElement(defaultBlock)) {
+              valid = false;
+              return;
+            }
+
+            if (suffix.content.length > 0) {
+              tx.fragment.delete({
+                at: { anchor: caret.anchor, focus: end },
+              });
+            }
+
+            const inserted = tx.blocks.insertAfter(defaultBlock, {
+              at: media[1],
+              replaceEmpty: false,
+            });
+
+            if (!inserted) {
+              valid = false;
+              return;
+            }
+
+            const point = tx.points.start(inserted);
+
+            if (!point) {
+              valid = false;
+              return;
+            }
+
+            if (
+              suffix.content.length > 0 &&
+              !tx.slice.replace(suffix, { at: point })
+            ) {
+              valid = false;
+              return;
+            }
+
+            const startPoint = tx.points.start(inserted);
+
+            if (!startPoint) {
+              valid = false;
+              return;
+            }
+
+            tx.selection.set(startPoint);
           });
+
+          if (!valid) return false;
+
+          return delegate ? next.after(result) : result;
         }),
       ],
       update: ({ tx }) => {
@@ -357,8 +411,7 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
   initialState: (): AudioPluginState => ({ isUrl: null, transformUrl: null }),
   schema: {
     element: schema.element.textBlock({
-      isolating: true,
-      keyboardSelectable: true,
+      object: true,
       properties: mediaElementProperties,
     }),
   },
@@ -410,8 +463,7 @@ export const BaseFilePlugin = definePlugin(PLUGINS.file, {
   initialState: (): FilePluginState => ({ isUrl: null, transformUrl: null }),
   schema: {
     element: schema.element.textBlock({
-      isolating: true,
-      keyboardSelectable: true,
+      object: true,
       properties: {
         ...mediaElementProperties,
         name: property.string(),
@@ -466,8 +518,7 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
   initialState: (): VideoPluginState => ({ isUrl: null, transformUrl: null }),
   schema: {
     element: schema.element.textBlock({
-      isolating: true,
-      keyboardSelectable: true,
+      object: true,
       properties: {
         ...mediaElementProperties,
         provider: property.string(),

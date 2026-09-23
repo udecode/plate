@@ -93,6 +93,9 @@ donor checkout as proof after the transplant.
   become element identity handles; Plate may project their compiled property
   capabilities onto broad elements or text while preserving aliases, prefixes,
   defaults, and exact value domains from Plite descriptors.
+- Ordered required child positions and their literal property values belong to
+  the compiled content grammar, including construction, admission, fitting and
+  saved identity. App corrections do not maintain a second document shape.
 - Pure value predicates must honor the base model type they promise.
   `ElementApi.isElement` owns editor exclusion, the `children` array, and the
   required string `type`; `deep: true` additionally checks descendant shape.
@@ -224,6 +227,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   plural reads for exact disjoint membership. Generic range predicates inspect
   that same representative range; they never return a kind-specific answer.
   Node selection has no native DOM range.
+- Structural transforms map anchor and focus independently and restore them in
+  authored order. Lift, unwrap, and named-root operations must preserve a
+  backward, forward, or collapsed selection instead of reconstructing a
+  forward range from sorted endpoints.
 - Schema owns block classification. `nodes.block()` reads the nearest block;
   `nodes.blocks()` reads every relevant block and defaults to the active text or
   exact node selection. `selection.nodes()` never accepts traversal filters.
@@ -234,6 +241,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   preserves children, selection, and live `NodeKey`; feature commands keep
   their policy guards and delegate this structural mutation instead of
   replacing a node with a handcrafted default.
+- Structural commands used for shorthand conversion report whether they staged
+  a change. An inadmissible placement or no-op returns `false` without claiming
+  a successful mutation; the canonical schema and change builder remain the
+  authority for the outcome.
 - `Plugin` stays flat except for the coherent `on.*` event family.
   Lifecycle and host/DOM observation use prefixless child names; Plate extends
   the same family with names such as `keyDown`, `paste`, `nodeChange`,
@@ -263,6 +274,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   adapter owners.
 - Public updates are synchronous and cannot nest. Helpers inside an update use
   the active `tx`.
+- Command insertion admission evaluates the complete proposed replacement
+  against the command's current state before constructing or publishing it.
+  Full range and exact node-selection replacement subtract all replaced text;
+  `maxLength: 0` remains a real limit. Imported canonical changes retain their
+  explicit admission exemption.
 - Command `handle` interceptors are conditional fallbacks: returning `false`
   continues to the next handler or descriptor default. Command `around`
   interceptors own the invocation unless they explicitly call `next()` or
@@ -297,6 +313,12 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   Structural child elements require their own grammar, properties, commands,
   or multiple real semantic regions. Explicit roots require independent
   addressing, lifecycle, sharing, or transaction semantics.
+- A block whose identity is meaningful apart from its editable children declares
+  `object: true` in the schema. The role implies structural isolation and
+  semantic non-emptiness, while children remain normal editable content.
+  Owner `NodeSelection` transfers the complete block; inner or boundary text
+  selections transfer open child content. Generic split cannot duplicate the
+  owner; feature commands may move child content out in one transaction.
 - Physical or visual lines are not structural children. Multiline source whose
   lines own no independent semantics stays in one newline-bearing Text. Derive
   line operations from offsets and native syntax paint from Decorations; solve scale

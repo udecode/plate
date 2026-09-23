@@ -69,6 +69,12 @@ const ReleaseIndex = dynamic(() =>
   import('./release-index').then((module) => module.ReleaseIndex)
 );
 
+const DevelopmentOnly = ({ children }: { children: ReactNode }) => {
+  if (process.env.NODE_ENV !== 'development') return null;
+
+  return children;
+};
+
 export const mdxComponents = {
   a: Link,
   Accordion,
@@ -110,6 +116,7 @@ export const mdxComponents = {
   ComponentPreview,
   ComponentPreviewPro,
   ComponentSource,
+  DevelopmentOnly,
   File,
   Files,
   Folder,

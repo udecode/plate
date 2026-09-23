@@ -3,17 +3,74 @@
 
 import { jsxt } from '#platejs-test-internal';
 
-import { BaseParagraphPlugin, createEditor, SelectionApi } from '../../../core';
+import {
+  BaseParagraphPlugin,
+  createBlockStartInputRule,
+  createEditor,
+  schema,
+  SelectionApi,
+} from '../../../core';
 import {
   BaseBlockquotePlugin,
   BaseHorizontalRulePlugin,
   BlockquoteRules,
   HorizontalRuleRules,
 } from './BaseBlockPlugins';
+import { BaseHeadingPlugin } from './BaseHeadingPlugins';
 
 jsxt;
 
 describe('BaseBlockquotePlugin', () => {
+  it('declines wrapping a required title without throwing or changing the document', () => {
+    const initialValue = [
+      { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+      { children: [{ text: 'Body' }], type: 'paragraph' },
+    ];
+    const editor = createEditor({
+      plugins: [BaseHeadingPlugin, BaseBlockquotePlugin],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue,
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+    });
+
+    expect(() =>
+      editor.plugin(BaseBlockquotePlugin).update.toggle()
+    ).not.toThrow();
+    expect(editor.read.children()).toEqual(initialValue);
+
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 4, path: [1, 0] },
+    });
+    expect(() =>
+      editor.plugin(BaseBlockquotePlugin).update.toggle()
+    ).not.toThrow();
+    expect(editor.read.children()).toEqual(initialValue);
+
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [1, 0] },
+    });
+    editor.plugin(BaseBlockquotePlugin).update.toggle();
+
+    expect(editor.read.children()).toEqual([
+      initialValue[0],
+      { children: [initialValue[1]], type: 'blockquote' },
+    ]);
+  });
+
   it('decodes and encodes its HTML element claim', () => {
     const editor = createEditor({
       plugins: [BaseBlockquotePlugin],
@@ -293,6 +350,86 @@ describe('BaseHorizontalRulePlugin', () => {
 });
 
 describe('basic block input rules', () => {
+  it('preserves typed syntax when a generic wrap rule cannot replace the required title', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseHeadingPlugin,
+        BaseBlockquotePlugin.configure({
+          inputRules: [
+            createBlockStartInputRule({
+              match: '>',
+              mode: 'wrap',
+              trigger: ' ',
+            }),
+          ],
+        }),
+      ],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue: [
+        { children: [{ text: '>' }], level: 1, type: 'heading' },
+        { children: [{ text: 'Body' }], type: 'paragraph' },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+    });
+
+    editor.update.text.insert(' ');
+
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: '> ' }],
+      level: 1,
+      type: 'heading',
+    });
+  });
+
+  it('keeps blockquote markdown syntax and the space in a required title', () => {
+    const initialValue = [
+      { children: [{ text: '>' }], level: 1, type: 'heading' },
+      { children: [{ text: 'Body' }], type: 'paragraph' },
+    ];
+    const editor = createEditor({
+      plugins: [
+        BaseHeadingPlugin,
+        BaseBlockquotePlugin.configure({
+          inputRules: [BlockquoteRules.markdown()],
+        }),
+      ],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue,
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+    });
+
+    editor.update.text.insert(' ');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '> ' }], level: 1, type: 'heading' },
+      initialValue[1],
+    ]);
+  });
+
   it('wraps a paragraph in blockquote when markdown group is enabled', () => {
     const input = (
       <editor>
@@ -395,5 +532,42 @@ describe('basic block input rules', () => {
         type: 'paragraph',
       },
     ]);
+  });
+
+  it('keeps horizontal-rule syntax in a required title', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseHeadingPlugin,
+        BaseHorizontalRulePlugin.configure({
+          inputRules: [HorizontalRuleRules.markdown({ variant: '-' })],
+        }),
+      ],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue: [
+        { children: [{ text: '--' }], level: 1, type: 'heading' },
+        { children: [{ text: 'Body' }], type: 'paragraph' },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+    });
+
+    editor.update.text.insert('-');
+
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: '---' }],
+      level: 1,
+      type: 'heading',
+    });
   });
 });

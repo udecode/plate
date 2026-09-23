@@ -1,6 +1,6 @@
 'use client';
 
-import { NodeApi, NormalizeTypesPlugin, TextApi } from 'platejs';
+import { NodeApi, TextApi } from 'platejs';
 import type { CommentsJSON } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor, EditorRoot } from 'platejs/react';
@@ -18,20 +18,15 @@ import {
 } from '@/registry/components/editor/editor';
 import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
 import { EditorKit } from '@/registry/components/editor/plugins';
-import { createEphemeralUploadKit } from '@/registry/components/editor/upload/ephemeral';
+import { createBrowserUploadKit } from '@/registry/components/editor/upload/browser';
 
-export default function PlaygroundDemo({
-  id,
-  className,
-}: {
-  id?: string;
-  className?: string;
-}) {
+export default function PlaygroundDemo({ className }: { className?: string }) {
   const locale = useLocale();
   const value = React.useMemo(() => getI18nValues(locale).playground, [locale]);
   const [createdAt] = React.useState(() => Date.now());
   const session = React.useMemo(() => {
-    const ephemeralUploads = createEphemeralUploadKit();
+    const browserUploads =
+      process.env.NODE_ENV === 'production' ? createBrowserUploadKit() : null;
     const initialValue = structuredClone(value);
     const root = { children: initialValue.children, type: '' };
     const paragraph = NodeApi.get(root, [3]);
@@ -108,13 +103,7 @@ export default function PlaygroundDemo({
       }),
       ...CodeDrawingKit,
       ...ExcalidrawKit,
-      NormalizeTypesPlugin.configure({
-        enabled: id === 'forced-layout',
-        initialState: {
-          rules: [{ path: [0], strictType: 'h1' }],
-        },
-      }),
-      ...ephemeralUploads.plugins,
+      ...(browserUploads?.plugins ?? []),
     ];
     const current = createEditor({
       plugins,
@@ -239,8 +228,8 @@ export default function PlaygroundDemo({
       initialValue: current.read.value(),
     });
 
-    return { dispose: ephemeralUploads.dispose, editor };
-  }, [createdAt, id, locale, value]);
+    return { dispose: browserUploads?.dispose, editor };
+  }, [createdAt, locale, value]);
   React.useEffect(() => session.dispose, [session]);
   const { editor } = session;
 

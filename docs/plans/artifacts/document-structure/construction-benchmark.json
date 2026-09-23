@@ -1,0 +1,160 @@
+{
+  "benchmark": "plite-schema-construction",
+  "boundaryIdentityPreserved": true,
+  "compiledSchema": {
+    "active": true,
+    "elementTypes": 2,
+    "id": "schema-construction-benchmark",
+    "properties": 1
+  },
+  "generatedAt": "2026-09-22T16:15:22.920Z",
+  "immutablePublicationDiagnostic": {
+    "label": "immutable-publication diagnostic",
+    "rows": [
+      {
+        "blocks": 100,
+        "boundaryIdentityPreserved": true,
+        "iterations": 20,
+        "maximumChangedSpan": 2,
+        "p50Ms": 0.904666000000006,
+        "p95Ms": 1.4877079999999978,
+        "target": 50
+      },
+      {
+        "blocks": 1000,
+        "boundaryIdentityPreserved": true,
+        "iterations": 20,
+        "maximumChangedSpan": 2,
+        "p50Ms": 1.9902079999999955,
+        "p95Ms": 4.219082999999998,
+        "target": 500
+      },
+      {
+        "blocks": 10000,
+        "boundaryIdentityPreserved": true,
+        "iterations": 20,
+        "maximumChangedSpan": 2,
+        "p50Ms": 16.650999999999954,
+        "p95Ms": 27.00295799999998,
+        "target": 5000
+      },
+      {
+        "blocks": 50000,
+        "boundaryIdentityPreserved": true,
+        "iterations": 20,
+        "maximumChangedSpan": 2,
+        "p50Ms": 94.45566700000018,
+        "p95Ms": 143.00379199999998,
+        "target": 25000
+      }
+    ],
+    "sizeRatio": 104.4094361897093,
+    "scope": "Sparse text insertion publishes immutable ancestor arrays. These timings expose DocumentChange publication width and are not schema-construction latency."
+  },
+  "prefixRows": [
+    {
+      "blocks": 100,
+      "bodyEditMs": 0.8315419999998994,
+      "contractBytes": 5908,
+      "fullValidationMs": 0.3275000000003274,
+      "boundaryIdentityPreserved": true,
+      "maximumChangedSpan": 1,
+      "pasteMs": 3.2966670000000704,
+      "prefixLength": 1,
+      "propertyEditMs": 1.8939580000001115,
+      "startupMs": 2.0584170000001905
+    },
+    {
+      "blocks": 1000,
+      "bodyEditMs": 0.43975000000000364,
+      "contractBytes": 5908,
+      "fullValidationMs": 2.3867499999996653,
+      "boundaryIdentityPreserved": true,
+      "maximumChangedSpan": 1,
+      "pasteMs": 1.2815410000002885,
+      "prefixLength": 1,
+      "propertyEditMs": 4.543874999999844,
+      "startupMs": 4.8221669999998085
+    },
+    {
+      "blocks": 10000,
+      "bodyEditMs": 3.6356659999996737,
+      "contractBytes": 5908,
+      "fullValidationMs": 23.295500000000175,
+      "boundaryIdentityPreserved": true,
+      "maximumChangedSpan": 1,
+      "pasteMs": 7.940582999999606,
+      "prefixLength": 1,
+      "propertyEditMs": 112.04954199999975,
+      "startupMs": 46.49274999999989
+    },
+    {
+      "blocks": 50000,
+      "bodyEditMs": 21.884625000000142,
+      "contractBytes": 5908,
+      "fullValidationMs": 117.35558400000082,
+      "boundaryIdentityPreserved": true,
+      "maximumChangedSpan": 1,
+      "pasteMs": 127.08783400000038,
+      "prefixLength": 1,
+      "propertyEditMs": 260.45962499999996,
+      "startupMs": 264.957625
+    },
+    {
+      "blocks": 100,
+      "bodyEditMs": 0.2321250000004511,
+      "contractBytes": 5982,
+      "fullValidationMs": 0.24495899999965332,
+      "boundaryIdentityPreserved": true,
+      "maximumChangedSpan": 1,
+      "pasteMs": 0.6271660000002157,
+      "prefixLength": 2,
+      "propertyEditMs": 0.9155419999997321,
+      "startupMs": 1.8340420000004087
+    },
+    {
+      "blocks": 1000,
+      "bodyEditMs": 0.44466599999941536,
+      "contractBytes": 5982,
+      "fullValidationMs": 2.1437089999999444,
+      "boundaryIdentityPreserved": true,
+      "maximumChangedSpan": 1,
+      "pasteMs": 1.066791000000194,
+      "prefixLength": 2,
+      "propertyEditMs": 4.899207999999817,
+      "startupMs": 4.490624999999454
+    },
+    {
+      "blocks": 10000,
+      "bodyEditMs": 3.327291999999943,
+      "contractBytes": 5982,
+      "fullValidationMs": 22.716166000000158,
+      "boundaryIdentityPreserved": true,
+      "maximumChangedSpan": 1,
+      "pasteMs": 7.23975000000064,
+      "prefixLength": 2,
+      "propertyEditMs": 116.95837500000016,
+      "startupMs": 46.84925000000021
+    },
+    {
+      "blocks": 50000,
+      "bodyEditMs": 22.11683399999947,
+      "contractBytes": 5982,
+      "fullValidationMs": 221.64820899999995,
+      "boundaryIdentityPreserved": true,
+      "maximumChangedSpan": 1,
+      "pasteMs": 46.608125000000655,
+      "prefixLength": 2,
+      "propertyEditMs": 267.54654200000004,
+      "startupMs": 307.13083300000017
+    }
+  ],
+  "prefixMaximumChangedSpan": 1,
+  "maximumChangedSpan": 2,
+  "thresholdPolicy": {
+    "boundaryIdentityRequired": true,
+    "maximumChangedSpanExclusive": 64,
+    "timingScope": "Whole editor publication is recorded but not gated because immutable plain-JSON ancestor reconstruction scales with ancestor width."
+  },
+  "version": 2
+}

@@ -9,6 +9,24 @@ import { BaseHeadingPlugin, HeadingRules } from './BaseHeadingPlugins';
 
 jsxt;
 
+const checkPrefixTypes = () => {
+  schema.content.prefix(
+    [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+    schema.content.group('block')
+  );
+  // @ts-expect-error Heading levels must come from the descriptor.
+  schema.content.prefix(
+    [{ element: BaseHeadingPlugin, properties: { level: 7 } }],
+    schema.content.group('block')
+  );
+  // @ts-expect-error The heading descriptor does not own this property.
+  schema.content.prefix(
+    [{ element: BaseHeadingPlugin, properties: { unknown: true } }],
+    schema.content.group('block')
+  );
+};
+void checkPrefixTypes;
+
 describe('base heading plugin', () => {
   it('owns one heading capability with six semantic levels', () => {
     const editor = createEditor({ plugins: [BaseHeadingPlugin] });
@@ -88,9 +106,155 @@ describe('base heading plugin', () => {
       type: 'paragraph',
     });
   });
+
+  it('declines a heading toggle that would violate a required title', () => {
+    const initialValue = [
+      { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+      { children: [{ text: 'Body' }], type: 'paragraph' },
+    ];
+    const editor = createEditor({
+      plugins: [BaseHeadingPlugin],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue,
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+    });
+
+    expect(() => editor.update.heading.toggle({ level: 2 })).not.toThrow();
+    expect(() =>
+      editor.update((tx) => tx.blocks.set({ level: 2, type: 'heading' }))
+    ).not.toThrow();
+    expect(editor.read.children()).toEqual(initialValue);
+  });
+
+  it('resolves required title slots through schema overrides and checks raw values', () => {
+    const root = schema.content.prefix(
+      [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+      schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      })
+    );
+    const editor = createEditor({
+      plugins: [BaseHeadingPlugin],
+      schema: {
+        overrides: [
+          schema.override(BaseHeadingPlugin, {
+            element: { type: 'sectionHeading' },
+          }),
+        ],
+        root,
+      },
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'sectionHeading' },
+        { children: [{ text: 'Body' }], type: 'paragraph' },
+      ],
+    });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      level: 1,
+      type: 'sectionHeading',
+    });
+    expect(() =>
+      createEditor({
+        plugins: [BaseHeadingPlugin],
+        schema: {
+          root: schema.content.prefix(
+            [{ element: 'heading', properties: { level: 7 } }],
+            schema.content.group('block', {
+              default: { type: 'paragraph' },
+              min: 1,
+            })
+          ),
+        },
+      })
+    ).toThrow();
+  });
 });
 
 describe('heading input rules', () => {
+  it('promotes markdown in the body after a required title', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseHeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
+      ],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        { children: [{ text: '##' }], type: 'paragraph' },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [1, 0] },
+        focus: { offset: 2, path: [1, 0] },
+      },
+    });
+
+    editor.update.text.insert(' ');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+      { children: [{ text: '' }], level: 2, type: 'heading' },
+    ]);
+  });
+
+  it('keeps markdown syntax and the space when a required title cannot become H2', () => {
+    const initialValue = [
+      { children: [{ text: '##' }], level: 1, type: 'heading' },
+      { children: [{ text: 'Body' }], type: 'paragraph' },
+    ];
+    const editor = createEditor({
+      plugins: [
+        BaseHeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
+      ],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue,
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+    });
+
+    editor.update.text.insert(' ');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '## ' }], level: 1, type: 'heading' },
+      initialValue[1],
+    ]);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+  });
+
   it('keeps markdown depth bound to the heading capability when its persisted type changes', () => {
     const plugin = BaseHeadingPlugin.configure({
       inputRules: [HeadingRules.markdown()],

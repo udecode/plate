@@ -15,6 +15,7 @@ import {
   SelectionApi,
   type Value,
 } from 'plitejs';
+import { history } from 'plitejs/history';
 
 import { getInternalDocumentChangeEntries } from '../src/core/change/document-change';
 import { DocumentIndex } from '../src/core/change/document-index';
@@ -40,6 +41,512 @@ import { createTestDocumentChange } from './support/document-change';
 const paragraph = (text: string, children?: Descendant[]) => ({
   type: 'paragraph',
   children: children ?? [{ text }],
+});
+
+describe('required document prefix', () => {
+  const PrefixSchema = defineEditorSchema('schema:required-prefix', {
+    elements: {
+      blockquote: {
+        content: schema.content.group('block', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      } as const,
+      cell: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      } as const,
+      heading: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: { level: property.number({ required: true }) },
+      } as const,
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      } as const,
+      table: {
+        content: schema.content.type('cell', { min: 1 }),
+      } as const,
+    },
+    root: schema.content.prefix(
+      [
+        { element: 'heading', properties: { level: 1 } },
+        { element: 'paragraph' },
+      ],
+      schema.content.group('block')
+    ),
+    unknown: 'reject',
+  });
+  const NamedPrefixSchema = defineEditorSchema('schema:named-required-prefix', {
+    elements: PrefixSchema.schema.elements,
+    root: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    roots: {
+      header: schema.content.prefix(
+        [
+          { element: 'heading', properties: { level: 1 } },
+          { element: 'paragraph' },
+        ],
+        schema.content.group('block')
+      ),
+    },
+    unknown: 'reject',
+  });
+  const NestedPrefixSchema = defineEditorSchema(
+    'schema:nested-required-prefix',
+    {
+      elements: {
+        ...PrefixSchema.schema.elements,
+        box: {
+          content: schema.content.prefix(
+            [
+              { element: 'heading', properties: { level: 1 } },
+              { element: 'paragraph' },
+            ],
+            schema.content.group('block')
+          ),
+        } as const,
+      },
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+    }
+  );
+
+  it('reports structural admission without changing a required title', () => {
+    const initialValue = [
+      { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+      paragraph('Required'),
+      paragraph('Body'),
+    ];
+    const editor = createEditor({
+      plugins: [PrefixSchema],
+      initialValue,
+    });
+
+    editor.update((tx) => {
+      assert.equal(
+        tx.blocks.toggle({ level: 2, type: 'heading' }, { at: [0] }),
+        false
+      );
+      assert.equal(tx.blocks.set({ type: 'paragraph' }, { at: [0] }), false);
+      assert.equal(
+        tx.nodes.wrap({ children: [], type: 'blockquote' }, { at: [0] }),
+        false
+      );
+      assert.equal(
+        tx.nodes.replace(paragraph('Replacement'), { at: [0] }),
+        false
+      );
+    });
+
+    assert.deepEqual(editor.read.children(), initialValue);
+    editor.update((tx) => {
+      assert.equal(
+        tx.nodes.wrap({ children: [], type: 'blockquote' }, { at: [2] }),
+        true
+      );
+    });
+    assert.deepEqual(editor.read.children(), [
+      initialValue[0],
+      initialValue[1],
+      { children: [initialValue[2]], type: 'blockquote' },
+    ]);
+  });
+
+  it('rejects a property-only title change in the same transaction', () => {
+    const editor = createEditor({
+      plugins: [PrefixSchema],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Body'),
+      ],
+    });
+    const before = editor.read.value();
+
+    assert.throws(() =>
+      editor.update((tx) => tx.nodes.set({ level: 2 }, { at: [0] }))
+    );
+    assert.deepEqual(editor.read.value(), before);
+  });
+
+  it('rejects a title property change even when the same edit removes the body', () => {
+    const editor = createEditor({
+      plugins: [PrefixSchema],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Body'),
+      ],
+    });
+    const before = editor.read.value();
+
+    assert.throws(() =>
+      editor.update((tx) => {
+        tx.nodes.set({ level: 2 }, { at: [0] });
+        tx.nodes.remove({ at: [1] });
+      })
+    );
+    assert.deepEqual(editor.read.value(), before);
+  });
+
+  it('declines wrapping a required title before mutating the document', () => {
+    const editor = createEditor({
+      plugins: [PrefixSchema],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Body'),
+      ],
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      }),
+    });
+    const before = editor.read.value();
+
+    assert.doesNotThrow(() =>
+      editor.update.blocks.toggle({ type: 'blockquote' }, { wrap: true })
+    );
+    assert.deepEqual(editor.read.value(), before);
+  });
+
+  it('constructs missing positions without changing nested incoming content', () => {
+    const editor = createEditor({ plugins: [PrefixSchema] });
+    const table = {
+      children: [{ children: [{ text: 'preserved' }], type: 'cell' }],
+      type: 'table',
+    } as const;
+
+    editor.update.value.replace({
+      children: [table],
+      selection: {
+        anchor: { offset: 3, path: [0, 0, 0] },
+        focus: { offset: 3, path: [0, 0, 0] },
+        kind: 'text',
+      },
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: '' }], level: 1, type: 'heading' },
+      paragraph(''),
+      table,
+    ]);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 3, path: [2, 0, 0] },
+      focus: { offset: 3, path: [2, 0, 0] },
+    });
+  });
+
+  it('keeps the title and incoming closed block content on paste', () => {
+    const table = {
+      children: [{ children: [{ text: 'preserved' }], type: 'cell' }],
+      type: 'table',
+    } as const;
+    const editor = createEditor({
+      plugins: [PrefixSchema],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Body'),
+      ],
+    });
+    const slice = ContentSlice.fromJSON({
+      content: [table],
+      openEnd: 0,
+      openStart: 0,
+    });
+
+    editor.update((tx) => {
+      assert.equal(
+        tx.slice.replace(slice, { at: { offset: 0, path: [0, 0] } }),
+        true
+      );
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+      paragraph('Body'),
+      table,
+    ]);
+  });
+
+  it('preserves a closed table when replacing selected title text', () => {
+    const table = {
+      children: [{ children: [{ text: 'preserved' }], type: 'cell' }],
+      type: 'table',
+    } as const;
+    const editor = createEditor({
+      plugins: [PrefixSchema, history()],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Deck'),
+        paragraph('Body'),
+      ],
+    });
+    const before = editor.read.children();
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed([table]), {
+        at: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 5, path: [0, 0] },
+        },
+      }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: '' }], level: 1, type: 'heading' },
+      paragraph('Deck'),
+      table,
+      paragraph('Body'),
+    ]);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 'preserved'.length, path: [2, 0, 0] },
+      focus: { offset: 'preserved'.length, path: [2, 0, 0] },
+    });
+    const after = editor.read.children();
+    const remote = createEditor({
+      plugins: [PrefixSchema],
+      initialValue: before,
+    });
+    const commit = editor.read.lastCommit();
+
+    assert.ok(commit);
+    remote.update((tx) => tx.changes.apply(commit.changes));
+    assert.deepEqual(remote.read.children(), after);
+
+    editor.api.history.undo();
+    assert.deepEqual(editor.read.children(), before);
+    editor.api.history.redo();
+    assert.deepEqual(editor.read.children(), after);
+  });
+
+  it('reconstructs required slots when deleting the full selected document', () => {
+    const editor = createEditor({
+      plugins: [PrefixSchema, history()],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Deck'),
+        paragraph('Body'),
+      ],
+    });
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 4, path: [2, 0] },
+    });
+    const before = editor.read.children();
+
+    editor.update.fragment.delete({ direction: 'backward' });
+
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: '' }], level: 1, type: 'heading' },
+      paragraph(''),
+    ]);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+    editor.api.history.undo();
+    assert.deepEqual(editor.read.children(), before);
+    editor.api.history.redo();
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: '' }], level: 1, type: 'heading' },
+      paragraph(''),
+    ]);
+  });
+
+  it('reconstructs a removed required slot even when later siblings meet the minimum', () => {
+    for (const removed of [0, 1]) {
+      const initialValue = [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Deck'),
+        paragraph('Body'),
+      ];
+      const editor = createEditor({ plugins: [PrefixSchema], initialValue });
+
+      editor.update((tx) => tx.nodes.remove({ at: [removed] }));
+
+      assert.deepEqual(editor.read.children(), [
+        removed === 0
+          ? { children: [{ text: '' }], level: 1, type: 'heading' }
+          : initialValue[0],
+        removed === 1 ? paragraph('') : initialValue[1],
+        initialValue[2],
+      ]);
+    }
+  });
+
+  it('preserves a closed table when replacing selected title text in a named root', () => {
+    const table = {
+      children: [{ children: [{ text: 'preserved' }], type: 'cell' }],
+      type: 'table',
+    } as const;
+    const editor = createEditor({
+      plugins: [NamedPrefixSchema],
+      initialValue: {
+        children: [paragraph('Main')],
+        roots: {
+          header: [
+            { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+            paragraph('Deck'),
+            paragraph('Body'),
+          ],
+        },
+      },
+    });
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed([table]), {
+        at: {
+          anchor: { offset: 0, path: [0, 0], root: 'header' },
+          focus: { offset: 5, path: [0, 0], root: 'header' },
+        },
+      }),
+      true
+    );
+    assert.deepEqual(editor.read.root('header'), [
+      { children: [{ text: '' }], level: 1, type: 'heading' },
+      paragraph('Deck'),
+      table,
+      paragraph('Body'),
+    ]);
+    assert.deepEqual(editor.read.children(), [paragraph('Main')]);
+  });
+
+  it('reconstructs required slots after deleting a named root selection', () => {
+    const editor = createEditor({
+      plugins: [NamedPrefixSchema],
+      initialValue: {
+        children: [paragraph('Main')],
+        roots: {
+          header: [
+            { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+            paragraph('Deck'),
+            paragraph('Body'),
+          ],
+        },
+      },
+    });
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0], root: 'header' },
+      focus: { offset: 4, path: [2, 0], root: 'header' },
+    });
+
+    editor.update.fragment.delete({ direction: 'backward' });
+
+    assert.deepEqual(editor.read.root('header'), [
+      { children: [{ text: '' }], level: 1, type: 'heading' },
+      paragraph(''),
+    ]);
+    assert.deepEqual(editor.read.children(), [paragraph('Main')]);
+  });
+
+  it('fits closed blocks inside an element with a required prefix', () => {
+    const table = {
+      children: [{ children: [{ text: 'preserved' }], type: 'cell' }],
+      type: 'table',
+    } as const;
+    const editor = createEditor({
+      plugins: [NestedPrefixSchema],
+      initialValue: [
+        {
+          type: 'box',
+          children: [
+            { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+            paragraph('Deck'),
+            paragraph('Body'),
+          ],
+        },
+      ],
+    });
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed([table]), {
+        at: { offset: 2, path: [0, 0, 0] },
+      }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'box',
+        children: [
+          { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+          paragraph('Deck'),
+          table,
+          paragraph('Body'),
+        ],
+      },
+    ]);
+  });
+
+  it('preserves a closed table over selected text in a nested required title', () => {
+    const table = {
+      children: [{ children: [{ text: 'preserved' }], type: 'cell' }],
+      type: 'table',
+    } as const;
+    const editor = createEditor({
+      plugins: [NestedPrefixSchema],
+      initialValue: [
+        {
+          type: 'box',
+          children: [
+            { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+            paragraph('Deck'),
+            paragraph('Body'),
+          ],
+        },
+      ],
+    });
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed([table]), {
+        at: {
+          anchor: { offset: 0, path: [0, 0, 0] },
+          focus: { offset: 5, path: [0, 0, 0] },
+        },
+      }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'box',
+        children: [
+          { children: [{ text: '' }], level: 1, type: 'heading' },
+          paragraph('Deck'),
+          table,
+          paragraph('Body'),
+        ],
+      },
+    ]);
+  });
+
+  it('does not lose an incompatible open table slice at the title', () => {
+    const editor = createEditor({
+      plugins: [PrefixSchema],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Body'),
+      ],
+    });
+    const before = editor.read.value();
+    const slice = ContentSlice.fromJSON({
+      content: [
+        {
+          children: [{ children: [{ text: 'preserved' }], type: 'cell' }],
+          type: 'table',
+        },
+      ],
+      openEnd: 1,
+      openStart: 1,
+    });
+
+    assert.throws(() =>
+      editor.update((tx) => {
+        tx.slice.replace(slice, { at: { offset: 0, path: [0, 0] } });
+      })
+    );
+    assert.deepEqual(editor.read.value(), before);
+  });
 });
 
 const SliceFitSchema = defineEditorSchema('schema:slice-fit-contract', {
@@ -356,7 +863,118 @@ describe('contextual schema slice fitting', () => {
     assert.equal(Object.isFrozen(partial.content), true);
   });
 
-  it('keeps compiled context barriers closed across extraction and fitting', () => {
+  it('transfers object children as open text and complete owners as closed nodes', () => {
+    const ObjectSchema = defineEditorSchema('schema:object-slice-contract', {
+      elements: {
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'object-slice-contract',
+      root: schema.content.types(['media', 'paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const media = { children: [{ text: 'hello' }], type: 'media' };
+    const source = createEditor({
+      plugins: [ObjectSchema],
+      initialValue: [paragraph('before'), media, paragraph('after')],
+    });
+    const inner = source.read.slice.get({
+      at: {
+        anchor: { offset: 1, path: [1, 0] },
+        focus: { offset: 4, path: [1, 0] },
+      },
+    });
+    const owner = source.read.slice.get({ at: SelectionApi.nodes([[1]]) });
+    const across = source.read.slice.get({
+      at: {
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [2, 0] },
+      },
+    });
+    const boundary = source.read.slice.get({
+      at: {
+        anchor: { offset: 2, path: [1, 0] },
+        focus: { offset: 2, path: [2, 0] },
+      },
+    });
+
+    assert.deepEqual(inner, {
+      content: [{ children: [{ text: 'ell' }], type: 'media' }],
+      openEnd: 1,
+      openStart: 1,
+    });
+    assert.deepEqual(owner, ContentSlice.closed([media]));
+    assert.deepEqual(across, {
+      content: [paragraph('fore'), media, paragraph('af')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    assert.deepEqual(boundary, {
+      content: [
+        { children: [{ text: 'llo' }], type: 'media' },
+        paragraph('af'),
+      ],
+      openEnd: 1,
+      openStart: 1,
+    });
+
+    const target = createEditor({
+      plugins: [ObjectSchema],
+      initialValue: [paragraph('')],
+    });
+    const fitted = target.read.slice.fit(inner, {
+      at: { offset: 0, path: [0, 0] },
+    });
+
+    assert.ok(fitted);
+    assert.deepEqual(fitted.changes.apply(target.read.value()).children, [
+      paragraph('ell'),
+    ]);
+    const fittedBoundary = target.read.slice.fit(boundary, {
+      at: { offset: 0, path: [0, 0] },
+    });
+
+    assert.ok(fittedBoundary);
+    assert.deepEqual(
+      fittedBoundary.changes.apply(target.read.value()).children,
+      [paragraph('llo'), paragraph('af')]
+    );
+
+    source.update.selection.set({ offset: 2, path: [1, 0] });
+    source.update.break.insert();
+    assert.deepEqual(source.read.children(), [
+      paragraph('before'),
+      media,
+      paragraph('after'),
+    ]);
+
+    const replacementTarget = createEditor({
+      plugins: [ObjectSchema],
+      initialValue: [paragraph('before'), media, paragraph('after')],
+      initialSelection: SelectionApi.nodes([[1]]),
+    });
+
+    replacementTarget.update.slice.replace(
+      ContentSlice.closed([paragraph('first'), paragraph('second')])
+    );
+    assert.deepEqual(replacementTarget.read.children(), [
+      paragraph('before'),
+      paragraph('first'),
+      paragraph('second'),
+      paragraph('after'),
+    ]);
+  });
+
+  it('keeps explicit context barriers closed while opening isolated text', () => {
     const plugin = defineEditorSchema('schema:slice-context-barrier', {
       elements: {
         container: {
@@ -410,12 +1028,14 @@ describe('contextual schema slice fitting', () => {
 
       assert.deepEqual(slice, {
         content: [{ children: [{ text: 'ell' }], type }],
-        openEnd: 0,
-        openStart: 0,
+        openEnd: type === 'preserved' ? 0 : 1,
+        openStart: type === 'preserved' ? 0 : 1,
       });
       assert.ok(fitted);
       assert.deepEqual(fitted.changes.apply(target.read.value()).children, [
-        { children: [{ text: 'ell' }], type },
+        type === 'preserved'
+          ? { children: [{ text: 'ell' }], type }
+          : paragraph('ell'),
       ]);
     }
 

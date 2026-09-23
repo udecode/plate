@@ -1,7 +1,9 @@
 import {
   type BasePluginDefinitionInput,
-  createRuleFactory,
+  defineInputRule,
   definePlugin,
+  matchBlockStart,
+  type InsertTextInputRuleReadContext,
   property,
   schema,
   PLUGINS,
@@ -71,31 +73,46 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
     }),
   rules,
   update: ({ tx, schema: { type } }) => ({
-    toggle: ({ level }: ToggleHeadingOptions) => {
-      tx.blocks.toggle({ level, type });
-    },
+    toggle: ({ level }: ToggleHeadingOptions) =>
+      tx.blocks.toggle({ level, type }),
   }),
 });
 
 export const HeadingRules = {
-  markdown: createRuleFactory(BaseHeadingPlugin)<
-    {},
-    {},
-    { level: HeadingLevel }
-  >({
-    type: 'blockStart',
-    trigger: ' ',
-    match: /^(#{1,6})$/,
-    resolveMatch: ({ match }) => {
-      const level = (match as RegExpMatchArray)[1].length;
+  markdown: ({
+    enabled,
+    priority,
+  }: {
+    enabled?: (context: InsertTextInputRuleReadContext) => boolean;
+    priority?: number;
+  } = {}) =>
+    defineInputRule(BaseHeadingPlugin, {
+      target: 'insertText',
+      trigger: ' ',
+      enabled,
+      priority,
+      resolve: (context) =>
+        matchBlockStart(context, {
+          match: /^(#{1,6})$/,
+          resolveMatch: ({ match }) => {
+            const level = (match as RegExpMatchArray)[1].length;
 
-      return isHeadingLevel(level) ? { level } : undefined;
-    },
-    apply: ({ tx }, match) => {
-      tx.text.delete({ at: match.range });
-      tx.heading.toggle({ level: match.level });
+            return isHeadingLevel(level) ? { level } : undefined;
+          },
+        }),
+      apply: ({ decline, editor, tx }, match) => {
+        const block = tx.nodes.block();
+        const { type } = editor.plugin(BaseHeadingPlugin).schema;
 
-      return true;
-    },
-  }),
+        if (
+          !block ||
+          (block[0].type === type && block[0].level === match.level)
+        ) {
+          return decline();
+        }
+
+        tx.text.delete({ at: match.range });
+        if (!tx.heading.toggle({ level: match.level })) return decline();
+      },
+    }),
 };

@@ -4,10 +4,10 @@ import {
   BaseCodeBlockPlugin,
   createTextSubstitutionInputRule,
   definePlugin,
-  type Editor,
+  type InputRuleEditor,
 } from 'platejs';
 
-const isTextSubstitutionBlocked = (editor: Editor) =>
+const isTextSubstitutionBlocked = (editor: InputRuleEditor) =>
   editor.read.nodes.some({
     type: BaseCodeBlockPlugin,
   });

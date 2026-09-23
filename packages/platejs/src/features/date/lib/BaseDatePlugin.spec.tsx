@@ -42,7 +42,7 @@ describe('BaseDatePlugin', () => {
 
     const element = { children: [{ text: '' }], type: 'date' };
 
-    expect(editor.read.schema.isKeyboardSelectable(element)).toBe(false);
+    expect(editor.read.schema.isObject(element)).toBe(false);
   });
 
   it('provides the date.insert transaction', () => {

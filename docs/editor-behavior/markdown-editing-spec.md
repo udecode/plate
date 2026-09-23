@@ -582,8 +582,8 @@ Ownership:
 
 Plugin surface:
 
-- code-block plugins expose code-block creation, formatting, and rendering
-  surfaces
+- code-block plugins expose code-block creation and rendering surfaces;
+  optional JSON prettifying belongs to the copied UI action
 - this section defines editor behavior once the caret is already inside the code
   block
 
@@ -664,6 +664,9 @@ bar]]
 bar]]
 ```
 ````
+
+For `⇥` and `⇤`, an expanded selection ending exactly at the next physical
+line start excludes that untouched line in either selection direction.
 
 ## Math Block
 
@@ -907,7 +910,7 @@ Authority:
 Ownership:
 
 - link is an inline non-void span with directional affinity
-- image is an isolating non-void keyboard-selectable media owner;
+- image is a non-void object media owner with editable children;
   `NodeSelection` focuses its asset and `TextSelection` edits its direct caption
   children
 - image markdown syntax is still a serializer / parser concern, not a direct
@@ -1513,10 +1516,17 @@ Authority:
 
 Ownership:
 
-- media blocks are isolating non-void keyboard-selectable owners around asset
+- media blocks are non-void object owners around asset
   selection, direct inline caption editing, and deletion
 - `NodeSelection` at the media path focuses the asset
 - `TextSelection` inside the media children edits the caption
+- a media object remains meaningful with an empty caption; generic split does
+  not duplicate its owner
+- `NodeSelection` copies or cuts the complete media owner, while caption
+  `TextSelection` transfers only its open child content
+- Enter in the caption moves its unselected suffix to a fresh paragraph after
+  the media owner; the same rule applies to expanded selections starting in
+  the caption, including selections extending into the following paragraph
 
 Plugin surface:
 
@@ -1602,17 +1612,100 @@ media NodeSelection
 
 note: `ArrowUp` at the caption start returns focus to the asset
 
+- `EDIT-CAPTION-NAV-003` `locked`
+
+```text
+text before media + →
+=>
+media NodeSelection + →
+=>
+TextSelection at caption start
+```
+
+note: horizontal movement treats the owner as a separate keyboard stop before
+its editable children. Reverse movement visits caption end, then the owner,
+then the preceding text. An empty caption still has one text-caret stop. In an
+RTL editable, the physical arrow keys reverse while this logical order stays
+the same.
+
+- `EDIT-CAPTION-NAV-004` `locked`
+
+```text
+↓ from the final visual line of text immediately before media
+=>
+media NodeSelection + ↓
+=>
+TextSelection at caption start
+```
+
+note: vertical movement through earlier lines stays in the text block. The
+selectable asset is a keyboard stop before its direct caption children.
+
+- `EDIT-CAPTION-NAV-005` `locked`
+
+```text
+↑ from the first visual line of text immediately after media
+with a populated caption
+=>
+TextSelection in the caption + ↑ from its first visual line
+=>
+media NodeSelection
+```
+
+note: vertical movement through later lines stays in the following text block.
+Caret geometry chooses a caption offset from the horizontal position, and
+vertical movement through a wrapped caption remains in its text until its
+first visual line.
+
+- `EDIT-CAPTION-NAV-006` `locked`
+
+```text
+↑ from the first visual line of text immediately after media
+with an empty caption
+=>
+media NodeSelection + ↓
+=>
+TextSelection at caption start
+```
+
+note: an unfocused empty caption is hidden, so reverse entry stops on the
+selectable asset before exposing its editable caption.
+
+- `EDIT-CAPTION-DELETE-001` `locked`
+
+```text
+select all caption text + Delete
+=>
+empty caption TextSelection; same media owner remains; placeholder visible
+```
+
+note: a text range wholly inside direct caption children edits those children,
+even when it spans all their text. Deleting the media owner requires its
+`NodeSelection`.
+
 - `EDIT-CAPTION-EMPTY-001` `locked`
 
 ```text
 media children = [{ text: '' }]
 =>
-caption absent; placeholder visible only during asset NodeSelection
+placeholder visible during caption TextSelection or asset NodeSelection;
+caption hidden after focus leaves the media
 ```
 
 note: empty-caption visibility is render state; copy, cut, delete, undo,
 collaboration, and serialization keep the direct children with their media
 owner
+
+- `EDIT-CAPTION-ENTER-001` `locked`
+
+```text
+media caption = he|llo + ↵
+=>
+media caption = he; next paragraph = llo
+```
+
+note: Enter moves the open caption suffix without creating a second media
+owner or inheriting media properties on the paragraph
 
 ## Styling And Layout
 
@@ -2287,6 +2380,44 @@ Ownership:
 - resulting nodes still follow their existing block / mark contracts after the
   trigger fires
 - first matching rule wins; current rule order matters when triggers overlap
+
+### Input-Rule Execution
+
+- `EDIT-INPUT-RULE-001` `locked`
+
+```text
+enabled / resolve declines
+=>
+no transaction and no published change
+```
+
+note: policy and syntax matching are read-only; a rule must decline before an
+apply transaction exists
+
+- `EDIT-INPUT-RULE-002` `locked`
+
+```text
+first resolved rule
+=>
+one apply transaction
+=>
+consume input or continue the original command once after that prefix
+```
+
+note: `apply` mutates only its supplied transaction; returning no continuation
+consumes the input, while a typed continuation composes the original text,
+break, or data command after the prefix
+
+- `EDIT-INPUT-RULE-003` `locked`
+
+```text
+apply throws
+=>
+no rule mutation publishes and no continuation runs
+```
+
+note: an accepted input-rule attempt is atomic and produces at most one history
+step for its mutation prefix
 
 ### Block Shorthand Autoformat
 

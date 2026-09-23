@@ -149,52 +149,52 @@ export function UploadElement(props: EditorElementProps<typeof UploadPlugin>) {
 
   return (
     <EditorElement className="relative my-1" {...props}>
-      {(!loading || !isImage) && (
-        <button
-          className={cn(
-            'flex w-full cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 text-left hover:bg-primary/10'
-          )}
-          disabled={loading || readOnly}
-          onClick={() => openFilePicker()}
-          contentEditable={false}
-          type="button"
-        >
-          <div className="relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6">
-            {currentContent.icon}
-          </div>
-          <div className="text-sm whitespace-nowrap text-muted-foreground">
-            <div>{currentFile?.name ?? currentContent.content}</div>
-
-            {loading && !isImage && currentFile && (
-              <div className="mt-1 flex items-center gap-1.5">
-                <div>{formatBytes(currentFile.size)}</div>
-                <div>–</div>
-                <div className="flex items-center">
-                  <Loader2Icon className="mr-1 size-3.5 animate-spin text-muted-foreground" />
-                  {progress}%
-                </div>
-              </div>
+      <div contentEditable={false}>
+        {(!loading || !isImage) && (
+          <button
+            className={cn(
+              'flex w-full cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 text-left hover:bg-primary/10'
             )}
-            {failed && <div className="mt-1">Upload failed. Try again.</div>}
-          </div>
-        </button>
-      )}
+            disabled={loading || readOnly}
+            onClick={() => openFilePicker()}
+            type="button"
+          >
+            <div className="relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6">
+              {currentContent.icon}
+            </div>
+            <div className="text-sm whitespace-nowrap text-muted-foreground">
+              <div>{currentFile?.name ?? currentContent.content}</div>
 
-      {isImage && loading && currentFile && (
-        <ImageProgress file={currentFile} progress={progress} />
-      )}
+              {loading && !isImage && currentFile && (
+                <div className="mt-1 flex items-center gap-1.5">
+                  <div>{formatBytes(currentFile.size)}</div>
+                  <div>–</div>
+                  <div className="flex items-center">
+                    <Loader2Icon className="mr-1 size-3.5 animate-spin text-muted-foreground" />
+                    {progress}%
+                  </div>
+                </div>
+              )}
+              {failed && <div className="mt-1">Upload failed. Try again.</div>}
+            </div>
+          </button>
+        )}
 
-      {loading && !readOnly && (
-        <button
-          aria-label="Cancel upload"
-          className="absolute top-2 right-2 rounded-sm bg-background/80 p-1 text-xs text-foreground"
-          contentEditable={false}
-          onClick={() => api.cancel(nodeKey)}
-          type="button"
-        >
-          Cancel
-        </button>
-      )}
+        {isImage && loading && currentFile && (
+          <ImageProgress file={currentFile} progress={progress} />
+        )}
+
+        {loading && !readOnly && (
+          <button
+            aria-label="Cancel upload"
+            className="absolute top-2 right-2 rounded-sm bg-background/80 p-1 text-xs text-foreground"
+            onClick={() => api.cancel(nodeKey)}
+            type="button"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
 
       {props.children}
     </EditorElement>

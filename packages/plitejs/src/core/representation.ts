@@ -86,6 +86,70 @@ type CanonicalizeOptions = Readonly<{
   schema?: RepresentationSchema;
 }>;
 
+const completeRequiredContent = (
+  schema: RepresentationSchema,
+  content: NonNullable<ReturnType<RepresentationSchema['getRootContent']>>,
+  source: readonly Descendant[],
+  parent: Editor | Element,
+  root: string,
+  wasDisplaced?: (child: Descendant, slotIndex: number) => boolean
+): readonly Descendant[] => {
+  let children: readonly Descendant[] = source;
+  let addedRequired = false;
+
+  if (content.prefix) {
+    const required: Descendant[] = [];
+    let consumed = 0;
+
+    for (const [index, slot] of content.prefix.entries()) {
+      const candidate = children[consumed];
+      const displaced = candidate && wasDisplaced?.(candidate, index);
+
+      if (
+        candidate &&
+        !displaced &&
+        schema.canContainAt(
+          ElementApi.isElement(parent) ? parent : null,
+          candidate,
+          index,
+          root
+        )
+      ) {
+        required.push(candidate);
+        consumed += 1;
+      } else {
+        if (candidate && wasDisplaced && !displaced) {
+          return source;
+        }
+        addedRequired = true;
+        required.push(schema.create(slot.type, slot.properties));
+      }
+    }
+    if (addedRequired) children = [...required, ...source.slice(consumed)];
+  }
+
+  if (!addedRequired && children.length >= content.min) return source;
+
+  const completed = [...children];
+  const plan = content.remainder?.defaultPlan ?? content.defaultPlan;
+
+  while (completed.length < content.min) {
+    if (plan?.kind === 'text') {
+      completed.push({ text: '' });
+    } else if (plan?.kind === 'element') {
+      completed.push(schema.create(plan.type));
+    } else {
+      const owner = ElementApi.isElement(parent)
+        ? `element "${parent.type}"`
+        : `root "${root}"`;
+
+      throw new Error(`Editor ${owner} requires defaultable content.`);
+    }
+  }
+
+  return completed;
+};
+
 const hasInlineContent = (
   editor: Editor,
   parent: Editor | Element,
@@ -211,23 +275,13 @@ const canonicalizeDirectChildren = (
       : source.filter((child): child is Element => ElementApi.isElement(child));
 
   if (contentSpec) {
-    while (children.length < contentSpec.min) {
-      if (children === source) children = [...source];
-
-      if (contentSpec.defaultPlan?.kind === 'text') {
-        (children as Descendant[]).push({ text: '' });
-      } else if (contentSpec.defaultPlan?.kind === 'element') {
-        (children as Descendant[]).push(
-          schema.create(contentSpec.defaultPlan.type)
-        );
-      } else {
-        const owner = ElementApi.isElement(parent)
-          ? `element "${parent.type}"`
-          : `root "${root}"`;
-
-        throw new Error(`Editor ${owner} requires defaultable content.`);
-      }
-    }
+    children = completeRequiredContent(
+      schema,
+      contentSpec,
+      children,
+      parent,
+      root
+    );
   }
 
   if (hasInlineContent(editor, parent, children, schema)) {
@@ -1000,32 +1054,40 @@ const replaceCanonicalChildWindow = (
       ? draft.document.value
       : (draft.document.node(path) as Element).children
   ) as readonly Descendant[];
-  const minimum = contentSpec.min;
+  const previousParent = beforeDocument
+    ? path.length === 0
+      ? null
+      : getDescendant(beforeDocument.value as readonly Descendant[], path)
+    : null;
+  const previousChildren = beforeDocument
+    ? path.length === 0
+      ? (beforeDocument.value as readonly Descendant[])
+      : previousParent && ElementApi.isElement(previousParent)
+        ? previousParent.children
+        : null
+    : null;
+  const completed = completeRequiredContent(
+    schema,
+    contentSpec,
+    current,
+    parent,
+    root,
+    previousChildren
+      ? (child, index) =>
+          current.length < previousChildren.length &&
+          previousChildren[index] !== child &&
+          previousChildren.includes(child, index + 1)
+      : undefined
+  );
 
-  if (current.length >= minimum) return;
-
-  const defaults: Descendant[] = [];
-
-  while (current.length + defaults.length < minimum) {
-    if (contentSpec.defaultPlan?.kind === 'text') {
-      defaults.push({ text: '' });
-    } else if (contentSpec.defaultPlan?.kind === 'element') {
-      defaults.push(schema.create(contentSpec.defaultPlan.type));
-    } else {
-      throw new Error(
-        ElementApi.isElement(node)
-          ? `Editor element "${node.type}" requires defaultable content.`
-          : `Editor root "${root}" requires defaultable content.`
-      );
-    }
-  }
+  if (completed === current) return;
 
   const step = reconcileChildrenStep(
     draft.document,
     path,
-    current.length,
     0,
-    defaults
+    current.length,
+    completed
   );
 
   draft.change = draft.change.empty

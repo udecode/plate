@@ -1,8 +1,4 @@
 import type { Point } from '../../../facade';
-import {
-  getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
-} from '../../../internal/plugin/compilePlateModel';
 import { defineInputRule } from './defineInputRule';
 import type {
   BlockFenceInputRuleConfig,
@@ -10,8 +6,9 @@ import type {
   BlockStartInputRuleConfig,
   BlockStartInputRuleMatch,
   DelimitedInlineInputRuleMatch,
-  InputRuleBuilder,
+  InsertTextInputRule,
   MarkInputRuleConfig,
+  MarkInputRuleMatch,
   MatchBlockFenceOptions,
   MatchBlockStartOptions,
   MatchDelimitedInlineOptions,
@@ -25,7 +22,7 @@ const NON_WHITESPACE = /\S+/;
 
 export const createMarkInputRule = (
   config: MarkInputRuleConfig
-): ReturnType<InputRuleBuilder['mark']> =>
+): InsertTextInputRule<MarkInputRuleMatch> =>
   defineInputRule({
     enabled: config.enabled,
     priority: config.priority,
@@ -102,21 +99,12 @@ export const createMarkInputRule = (
       const markKeys: string[] = [];
 
       for (const mark of marks) {
-        const descriptor =
-          typeof mark === 'string'
-            ? getCompiledPlatePlugin(editor, mark)
-            : mark;
-
-        if (!descriptor) return undefined;
-        const portal = editor.plugin(descriptor);
+        const portal = editor.plugin(mark);
         if (!portal.installed) return undefined;
-        const resolved = getCompiledPlatePlugin(editor, descriptor.name);
-        const binding = resolved
-          ? getCompiledPlateModelBinding(editor, resolved)
-          : undefined;
+        const { schema } = portal;
 
-        if (binding?.kind !== 'mark' || !binding.propertyKey) return undefined;
-        markKeys.push(binding.propertyKey);
+        if (!('key' in schema)) return undefined;
+        markKeys.push(schema.key);
       }
 
       const selection = tx.selection();
@@ -150,8 +138,6 @@ export const createMarkInputRule = (
           focus: match.afterStartMatchPoint,
         },
       });
-
-      return true;
     },
   });
 
@@ -237,14 +223,8 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
       const { editor, plugin, tx } = context;
       const defaultMatch = match as BlockStartInputRuleMatch;
       const target = config.node ?? plugin;
-      const descriptor =
-        typeof target === 'string'
-          ? getCompiledPlatePlugin(editor, target)
-          : target;
-
-      if (!descriptor) return;
-      const portal = editor.plugin(descriptor);
-      if (!portal.installed) return;
+      const portal = editor.plugin(target);
+      if (!portal.installed) return context.decline();
       const { type } = portal.schema;
 
       if (config.removeMatchedText !== false) {
@@ -252,23 +232,20 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
       }
 
       if (config.mode === 'wrap') {
-        tx.blocks.toggle(
+        const applied = tx.blocks.toggle(
           { type },
           {
             wrap: true,
           }
         );
-        return true;
+        return applied ? undefined : context.decline();
       }
 
       if (config.mode === 'toggle') {
-        tx.blocks.toggle({ type });
-        return true;
+        return tx.blocks.toggle({ type }) ? undefined : context.decline();
       }
 
-      tx.blocks.set({ type });
-
-      return true;
+      return tx.blocks.set({ type }) ? undefined : context.decline();
     },
   });
 
@@ -289,13 +266,7 @@ const matchBlockFence = <TMatch = BlockFenceInputRuleMatch>(
   const endPoint = editor.read.points.end(path);
 
   if (config.block) {
-    const descriptor =
-      typeof config.block === 'string'
-        ? getCompiledPlatePlugin(editor, config.block)
-        : config.block;
-
-    if (!descriptor) return undefined;
-    const plugin = editor.plugin(descriptor);
+    const plugin = editor.plugin(config.block);
     if (!plugin.installed) return undefined;
 
     const blockType = plugin.schema.type;
@@ -566,7 +537,7 @@ export const createTextSubstitutionInputRule = ({
     apply: ({ tx }, match: TextSubstitutionMatch) => {
       const selection = tx.selection();
 
-      if (!selection) return false;
+      if (!selection) return;
 
       if (match.end) {
         tx.text.delete({
@@ -601,8 +572,6 @@ export const createTextSubstitutionInputRule = ({
           at: match.points.beforeStartMatchPoint,
         });
       }
-
-      return true;
     },
   });
 };

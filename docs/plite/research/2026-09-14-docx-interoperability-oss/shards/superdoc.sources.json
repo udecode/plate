@@ -1,0 +1,571 @@
+{
+  "schema_version": 1,
+  "report_path": "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-14-docx-interoperability-oss/shards/superdoc.md",
+  "observed_on": "2026-09-14",
+  "freshness_checked_at_utc": "2026-09-14T18:05:00Z",
+  "timestamp_precision": "minute approximation; clock tool at completion read 2026-09-14T18:05:43Z",
+  "method": "bounded best-api-review OSS sidecar; Codex GPT-6; no independent worker",
+  "repositories": [
+    {
+      "repo_key": "github.com/superdoc/docx-editor",
+      "canonical_url": "https://github.com/superdoc/docx-editor",
+      "local_path": "/Users/zbeyens/git/docx-editor",
+      "origin": "https://github.com/superdoc/docx-editor.git",
+      "api_full_name": "superdoc/docx-editor",
+      "renamed": false,
+      "default_branch": "main",
+      "checkout_sha": "cabf6fae68167efa98eeec13ec11bdb0461fb674",
+      "checkout_committer_date": "2026-09-10T05:11:21Z",
+      "checkout_author_date": "2026-09-10T05:11:21Z",
+      "remote_head_sha": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "remote_committer_date": "2026-09-14T13:11:31Z",
+      "remote_author_date": "2026-09-14T13:11:31Z",
+      "remote_ahead_by": 69,
+      "remote_behind_by": 0,
+      "metadata_pushed_at": "2026-09-14T15:33:47Z",
+      "metadata_updated_at": "2026-09-14T15:34:00Z",
+      "archived": false,
+      "metadata_license": "AGPL-3.0",
+      "inspected_license": "AGPL-3.0 editor; separate proprietary @superdoc/docx-engine",
+      "license_read_ids": [
+        "R11",
+        "R14",
+        "R45"
+      ],
+      "inspected_source_sha": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "source_method": "git show after exact-sha fetch --no-tags; no checkout",
+      "closing_remote_head_unchanged": true,
+      "closing_checkout_head_unchanged": true,
+      "engine_source_availability": "not present in current public Git tree; proprietary package dependency 0.14.0-next.11",
+      "issues_read": 0,
+      "pr_bodies_read": 0,
+      "comments_read": 0,
+      "tests_executed": 0
+    }
+  ],
+  "selected_reads": [
+    {
+      "read_id": "R10",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "README.md",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "8931cad8825f841df292be76f7b425361a57c2ab50ecc52305ed60d43b26ca18",
+      "total_lines": 111,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 111,
+          "range_sha256": "8931cad8825f841df292be76f7b425361a57c2ab50ecc52305ed60d43b26ca18"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R11",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "LICENSE",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+      "total_lines": 661,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 40,
+          "range_sha256": "4f0c22effe41be560905c6bd610d55813d4b4e28ccd9953f74aa16798ffcdf30"
+        },
+        {
+          "start_line": 520,
+          "end_line": 550,
+          "range_sha256": "9026a4f18d2c0373f9bc0b7d5fa33513ae4845dacc2b495072357d7679863736"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R12",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/document-api/src/export/export.types.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "2e6c1c64db240a33195bbca5485941a8ed65c58f1571f32b06f1d3b4e1142096",
+      "total_lines": 56,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 56,
+          "range_sha256": "2e6c1c64db240a33195bbca5485941a8ed65c58f1571f32b06f1d3b4e1142096"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R13",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/document-api/src/export/export.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "23f5d2e4e8ef6f97016f2a8277a4810c587b411079d5f70e6b493a596fda00bb",
+      "total_lines": 73,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 73,
+          "range_sha256": "23f5d2e4e8ef6f97016f2a8277a4810c587b411079d5f70e6b493a596fda00bb"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R14",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "apps/docs/content/docs/resources/docx-engine-license.mdx",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "c03e38b127f1f5e3e78cfe36e80a6c520406d56fa466deb0ebe892f7855cde08",
+      "total_lines": 143,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 143,
+          "range_sha256": "c03e38b127f1f5e3e78cfe36e80a6c520406d56fa466deb0ebe892f7855cde08"
+        }
+      ],
+      "output_truncated": true,
+      "notes": "Tail reread R45 completes license inspection; combined initial output truncated."
+    },
+    {
+      "read_id": "R18",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/document-api/src/export/export.test.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "770685a3f73bd499308afe9a8a1865d760bd1ac2c357fac908a0c32b091b604f",
+      "total_lines": 72,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 72,
+          "range_sha256": "770685a3f73bd499308afe9a8a1865d760bd1ac2c357fac908a0c32b091b604f"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R19",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/package.json",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "33cc7c608eb29b8dbf0aa486d3253b7ddd61d1218a30bcd898b18876b1c241ef",
+      "total_lines": 200,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 45,
+          "range_sha256": "bbfa4f01ddebf1efaabb69e6ac7aa55606fdd524bb8d5b467e7c77c321f16c9c"
+        },
+        {
+          "start_line": 90,
+          "end_line": 138,
+          "range_sha256": "f2fc27e9fe42b8825fa787a8c36a430a877e34d8458699db8ab110675ab70d6d"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R21",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/src/core/v2-integration/v2-integration.js",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "8068bff5be5438937c7921fc423df9cbdbe3f75e52676c341dbafa4eb35607ab",
+      "total_lines": 230,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 125,
+          "range_sha256": "32d7ced131708de36db97df7b830156d7806cb11999dfb4950849265fd4f528f"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R22",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/src/core/SuperDoc.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "349363f735c103336b788043ea680b32efaa3aad19099ebd0f2ea2ee9fbbe476",
+      "total_lines": 4476,
+      "read_ranges": [
+        {
+          "start_line": 4150,
+          "end_line": 4230,
+          "range_sha256": "a38e7dbe5eb6967f2a9fac2c2695abf1070e7d84928ead9f2da8d3cd060706d3"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R23",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/src/core/SuperDoc.export.test.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "e545989809f3adb8be3d6c93e10cce1ad4162d8b4a7791d6d78d8a095be74fcb",
+      "total_lines": 235,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 130,
+          "range_sha256": "3a1b430bdec70397f89a5e7505aa30e2ac52dd6ffcee6957f848f62ab34ecc14"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    }
+  ],
+  "all_read_receipts": [
+    {
+      "read_id": "R10",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "README.md",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "8931cad8825f841df292be76f7b425361a57c2ab50ecc52305ed60d43b26ca18",
+      "total_lines": 111,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 111,
+          "range_sha256": "8931cad8825f841df292be76f7b425361a57c2ab50ecc52305ed60d43b26ca18"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R11",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "LICENSE",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+      "total_lines": 661,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 40,
+          "range_sha256": "4f0c22effe41be560905c6bd610d55813d4b4e28ccd9953f74aa16798ffcdf30"
+        },
+        {
+          "start_line": 520,
+          "end_line": 550,
+          "range_sha256": "9026a4f18d2c0373f9bc0b7d5fa33513ae4845dacc2b495072357d7679863736"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R12",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/document-api/src/export/export.types.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "2e6c1c64db240a33195bbca5485941a8ed65c58f1571f32b06f1d3b4e1142096",
+      "total_lines": 56,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 56,
+          "range_sha256": "2e6c1c64db240a33195bbca5485941a8ed65c58f1571f32b06f1d3b4e1142096"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R13",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/document-api/src/export/export.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "23f5d2e4e8ef6f97016f2a8277a4810c587b411079d5f70e6b493a596fda00bb",
+      "total_lines": 73,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 73,
+          "range_sha256": "23f5d2e4e8ef6f97016f2a8277a4810c587b411079d5f70e6b493a596fda00bb"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R14",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "apps/docs/content/docs/resources/docx-engine-license.mdx",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "c03e38b127f1f5e3e78cfe36e80a6c520406d56fa466deb0ebe892f7855cde08",
+      "total_lines": 143,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 143,
+          "range_sha256": "c03e38b127f1f5e3e78cfe36e80a6c520406d56fa466deb0ebe892f7855cde08"
+        }
+      ],
+      "output_truncated": true,
+      "notes": "Tail reread R45 completes license inspection; combined initial output truncated."
+    },
+    {
+      "read_id": "R15",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/package.json",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "33cc7c608eb29b8dbf0aa486d3253b7ddd61d1218a30bcd898b18876b1c241ef",
+      "total_lines": 200,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 150,
+          "range_sha256": "0d5704668d63e972dca85e7ef8db45e3bb1b3867755796ddc4ea01ab390c08b7"
+        }
+      ],
+      "output_truncated": true,
+      "notes": "Relied-on ranges reread R19."
+    },
+    {
+      "read_id": "R16",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "scripts/ci-docx-engine-artifact.mjs",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "0558ae0a5d46a3e99e7573145973008ba983955ea46412fc3a93ab4f56c15120",
+      "total_lines": 408,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 210,
+          "range_sha256": "59e800fd3a3ee1259eb8759fa3beed83e17d61972be230262b507c1f890c1587"
+        }
+      ],
+      "output_truncated": true,
+      "notes": "Discovery only; discarded fidelity lead; header reread R20."
+    },
+    {
+      "read_id": "R17",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/src/core/helpers/export.js",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "d9f015952095d7ccc93e7ffdc7e9cbedf42f479f5b915c29a3134f7c4f122cc2",
+      "total_lines": 107,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 107,
+          "range_sha256": "d9f015952095d7ccc93e7ffdc7e9cbedf42f479f5b915c29a3134f7c4f122cc2"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R18",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/document-api/src/export/export.test.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "770685a3f73bd499308afe9a8a1865d760bd1ac2c357fac908a0c32b091b604f",
+      "total_lines": 72,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 72,
+          "range_sha256": "770685a3f73bd499308afe9a8a1865d760bd1ac2c357fac908a0c32b091b604f"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R19",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/package.json",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "33cc7c608eb29b8dbf0aa486d3253b7ddd61d1218a30bcd898b18876b1c241ef",
+      "total_lines": 200,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 45,
+          "range_sha256": "bbfa4f01ddebf1efaabb69e6ac7aa55606fdd524bb8d5b467e7c77c321f16c9c"
+        },
+        {
+          "start_line": 90,
+          "end_line": 138,
+          "range_sha256": "f2fc27e9fe42b8825fa787a8c36a430a877e34d8458699db8ab110675ab70d6d"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R20",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "scripts/ci-docx-engine-artifact.mjs",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "0558ae0a5d46a3e99e7573145973008ba983955ea46412fc3a93ab4f56c15120",
+      "total_lines": 408,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 24,
+          "range_sha256": "d91ffd3121bd2f11c5d32fe9a9030504fe1439754eba13d114307251357c68e7"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R21",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/src/core/v2-integration/v2-integration.js",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "8068bff5be5438937c7921fc423df9cbdbe3f75e52676c341dbafa4eb35607ab",
+      "total_lines": 230,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 125,
+          "range_sha256": "32d7ced131708de36db97df7b830156d7806cb11999dfb4950849265fd4f528f"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R22",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/src/core/SuperDoc.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "349363f735c103336b788043ea680b32efaa3aad19099ebd0f2ea2ee9fbbe476",
+      "total_lines": 4476,
+      "read_ranges": [
+        {
+          "start_line": 4150,
+          "end_line": 4230,
+          "range_sha256": "a38e7dbe5eb6967f2a9fac2c2695abf1070e7d84928ead9f2da8d3cd060706d3"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R23",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "packages/superdoc/src/core/SuperDoc.export.test.ts",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "e545989809f3adb8be3d6c93e10cce1ad4162d8b4a7791d6d78d8a095be74fcb",
+      "total_lines": 235,
+      "read_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 130,
+          "range_sha256": "3a1b430bdec70397f89a5e7505aa30e2ac52dd6ffcee6957f848f62ab34ecc14"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    },
+    {
+      "read_id": "R45",
+      "repo_path": "/Users/zbeyens/git/docx-editor",
+      "path": "apps/docs/content/docs/resources/docx-engine-license.mdx",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "file_sha256": "c03e38b127f1f5e3e78cfe36e80a6c520406d56fa466deb0ebe892f7855cde08",
+      "total_lines": 143,
+      "read_ranges": [
+        {
+          "start_line": 111,
+          "end_line": 143,
+          "range_sha256": "4f8b932da7b1a224b632c152bd21a86b4b0aea0c267dce14c60890379dbcd418"
+        }
+      ],
+      "output_truncated": false,
+      "notes": null
+    }
+  ],
+  "dispositions": [
+    {
+      "topic": "current-v2-authority",
+      "status": "supersedes-v1-description",
+      "evidence": [
+        "R10",
+        "R19",
+        "R21"
+      ],
+      "limitation": "Public integration inspected; proprietary engine implementation not inspected."
+    },
+    {
+      "topic": "v2-export-docs-vs-public-source",
+      "status": "aligned-contract-unverified-engine",
+      "evidence": [
+        "R12",
+        "R13",
+        "R18"
+      ],
+      "unverified": [
+        "actual roundtrip retention",
+        "structured warning production",
+        "read-only/idempotent engine behavior"
+      ]
+    },
+    {
+      "topic": "repo-agpl-vs-engine-proprietary",
+      "status": "resolved-distinct-components",
+      "evidence": [
+        "R11",
+        "R14",
+        "R19"
+      ]
+    },
+    {
+      "topic": "shell-export-vs-document-api-export",
+      "status": "distinct-surfaces-mapping-untraced",
+      "evidence": [
+        "R12",
+        "R22",
+        "R23"
+      ]
+    }
+  ],
+  "external_proof": [
+    {
+      "owner": "Main",
+      "provenance": "user message in this task",
+      "existing_docx_tests_passing": 123,
+      "observation": "Separate replay confirmed retained sidecar silently overriding externally edited XML.",
+      "replayed_by_this_sidecar": false
+    }
+  ],
+  "proof_limits": {
+    "tests_executed": 0,
+    "docx_files_replayed": 0,
+    "native_word_verified": false,
+    "browser_fidelity_verified": false,
+    "issues_read": 0,
+    "proprietary_engine_downloaded": false
+  },
+  "web_discovery": [
+    {
+      "url": "https://docs.superdoc.dev/",
+      "role": "current-v2-discovery"
+    },
+    {
+      "url": "https://docs.superdoc.dev/document-api/reference/export/to-docx/",
+      "role": "public-mode-contract-docs"
+    }
+  ],
+  "hashing": {
+    "file_sha256": "SHA256 of complete original file bytes",
+    "range_sha256": "SHA256 of original bytes for inclusive line range, retaining original line endings",
+    "source_files_saved": false
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "id": "2026-09-22-code-last-pass-ownership-gates",
+  "scope": "code",
+  "kind": "review",
+  "date": "2026-09-22",
+  "question": "Which canonical text, editing and syntax-presentation contract should native code blocks use?",
+  "model": "GPT-6 / Codex",
+  "method": "best-api-review/history-v3",
+  "trigger": "User requested a fresh final code audit after switching models; review only, with no product implementation authority.",
+  "requirements": [
+    "Reconcile the current September 22 code review and prior CodeMirror/native/external-text history without treating historical proof as current runtime proof.",
+    "Give all eight code semantic units and the previously inspected 13 source groups a disposition, retaining one canonical Text, native/static and optional external-text/CodeMirror jobs.",
+    "Challenge the strongest deletion, merge, owner move and replacement alternatives, including generated insertion parity, formatter selection and optional highlighter composition.",
+    "Correct unsupported claims, state proof limits, and record the conclusion without implementing product changes."
+  ],
+  "evidenceReuse": "The predecessor 13/13 source-group census, 58 passing unit tests/142 assertions, two observational probes/eight assertions, and prior history remain source matching. This pass inspected generated insertion, generic replaceChildren selection semantics, native/CodeMirror copied composition and code command implementation. No new test, browser, bundle or performance result is claimed.",
+  "summary": "Pursue code-command and caller-owned highlighter repairs. Hidden Python grammar mutation, JSON-only package policy with no-op selection loss, and selected-line endpoint error remain real. The previous review overstated generated insertion as an already equivalent replacement and a shared-control move as sufficient to remove Lowlight from CodeMirror composition. Gate insertion on option/schema/selection parity and defer an independent backend split until complete composition and measured value are established. Generic replaceChildren intentionally drops selection for replaced node identities; the JSON command owns its misuse.",
+  "verdict": "pursue",
+  "previous": "2026-09-22-code-commands-and-highlighter-ownership",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-22-code-commands-and-highlighter-ownership",
+      "question": "Which canonical text, editing and syntax-presentation contract should native code blocks use?",
+      "action": "supersedes",
+      "reason": "Retains overall Pursue direction, all observed defects, one Text/native/optional CodeMirror topology and historical proof limits. Narrows the generated insertion and CodeMirror backend-split claims; identifies command-owned selection loss rather than a Plite primitive defect."
+    },
+    {
+      "record": "2026-09-04-code-external-text",
+      "question": "Which owner should hold code text, editing, syntax rendering and large-block layout?",
+      "action": "retains",
+      "reason": "One canonical Text and optional CodeMirror with renderer-owned syntax still serve distinct current jobs; the shared recipe proposal stays rejected."
+    },
+    {
+      "record": "2026-09-05-code-native-plateau",
+      "question": "Which owner should hold code text, editing, syntax rendering and large-block layout?",
+      "action": "retains",
+      "reason": "The failed September 5 native experiment remains dated; later September 6 R4 work does not turn that result into current performance proof."
+    },
+    {
+      "record": "2026-09-15-external-text-ordered-feedback",
+      "question": "Which editing and selection authority may an external text view own while sharing canonical document text, history and other views?",
+      "action": "retains",
+      "reason": "The narrow synchronous external-text authority remains settled; none of the code-command failures requires reopening it."
+    }
+  ],
+  "alternatives": [
+    "Make CodeMirror the sole code renderer or delete native syntax projection: Stop; native full-DOM, static and authored rich-projection jobs would be lost.",
+    "Delete CodeMirror or move its parser/input ownership into Plite: Stop; the bounded-DOM job remains independent and the narrow external-text slot already exists.",
+    "Use generated schema insertion immediately as a drop-in for custom code insertion: pursue only as a candidate; exact target, select defaults, empty reuse, list properties and schema validity require parity proof.",
+    "Change generic Plite replaceChildren selection semantics to retain new nodes automatically: Stop; reference-based retention is deliberate replacement behavior, while the code formatter supplies no mapped selection.",
+    "Remove hidden Lowlight registry mutation and JSON-only package formatting policy: Pursue; current probes demonstrate mutation/cache disagreement and no-op selection loss.",
+    "Move a single shared copied control to make CodeMirror-only composition backend-free: Defer; multiple imports still initialize the native module, and measured benefit is missing.",
+    "Replace Lowlight with an incremental native parser or create a shared command DSL: Defer parser pending matched performance/language/SSR proof; Stop shared DSL without an independent current job."
+  ],
+  "proofLimits": "Fresh source reinspection only. Reused model-level 58 passing tests and two observational probes were not rerun; they characterize failures, not fixes. No browser, IME, assistive-technology, packed distribution, CodeMirror bundle/runtime measurement or current performance comparison. September 5/6 and September 15 evidence remains dated; recovered executions remain historical-unbound. A source import proves the module path, not production bundle savings or read-only mutation.",
+  "references": [
+    "docs/plans/artifacts/2026-09-22-code-api-audit/last-pass.md",
+    "docs/plans/artifacts/2026-09-22-code-api-audit/review.md",
+    "docs/plans/artifacts/2026-09-22-code-api-audit/coverage.json",
+    "docs/plans/artifacts/2026-09-22-code-api-audit/probe.test.ts",
+    "docs/plans/artifacts/2026-09-22-code-api-audit/probe.log",
+    "docs/plans/artifacts/2026-09-22-code-api-audit/unit.log",
+    "docs/research/decisions/code-text-ownership.md",
+    "docs/research/review-records/2026-09-22-code-commands-and-highlighter-ownership.json",
+    "packages/plitejs/src/transforms-node/replace-children.ts",
+    "packages/platejs/src/internal/plugin/resolvePlugins.ts",
+    "apps/www/src/registry/components/editor/plugins.ts"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": "4c6b5e66b2013dc52dc038654cb9f86b65af98520d559017d3fc3f6347ecae37",
+      "apps/www/src/registry/components/editor/code-block.tsx": "fa8c6e28d2aee1cbd2acffa019f7da1f81c6b50b1f4df3e94dcfc0ae72579843",
+      "apps/www/src/registry/examples/code-block-huge-demo.tsx": "79101d73adaf70f48a794d8becd5a00799d5ba4458f1ece09fb6678a1f38c773",
+      "apps/www/tests/browser/code-block-native-interactions.spec.ts": "3428eda572f118b3b61d7f503a1900f8d8ce36c2fed32b009866a9cc4cc9a795",
+      "apps/www/tests/browser/code-block-syntax.spec.ts": "790c509832a447482d471589cdd8787d17640d4faedb2eed099e773aed6a5d96",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "981f135c7dcd70df7b60a07fa40fcdf008fe7e01b1b6a014eccc1629f8a722a9",
+      "packages/platejs/src/internal/plugin/blockInsertion.ts": "cca8614da6bb4bde12cb9bc9e2a60a4db12301366ac5e8a803ad8ad9961a1889",
+      "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts": "4f461635fa3e15361c6227ce49de1fabee001c8144e50d7702ff88d031267d8d",
+      "apps/www/src/registry/components/editor/code-block-static.tsx": "17ddb9afe34364df0202d653e25da491a56d3e8f20e71b683c861505f5d7a20c",
+      "apps/www/src/registry/components/editor/code-block-codemirror.tsx": "ab7b976014306982ade881891f6726ff4df30946211f484e08772bc32efb120f",
+      "apps/www/src/registry/examples/code-block-codemirror-demo.tsx": "b6741adcc114982b5859cfa391ab9fc1fd5c2dc3802604578247a09c693905cf",
+      "apps/www/src/registry/examples/code-block-views-demo.tsx": "706e5767ac8807fe8576e3b4c3f7e672792dfdf9c40ffc7512e89eddfb6d364b",
+      "apps/www/src/registry/registry-features.ts": "7f886c6a722df1cdabd9640ffdf8edf4da1853c898ffd8b4c378cb003c845117",
+      "content/docs/(plugins)/(elements)/code-block.mdx": "644d1f8c242d65db3e24c61f1eb527a62e4ebbd79eab77f8546a2de423a844b2",
+      "content/docs/(plugins)/(elements)/code-block.cn.mdx": "1a57ac869196de86dc7ac12cc9fa9676840ac60dc42cec4a7d6fa87ed6ffaabe",
+      "content/docs/(guides)/plugin-components.cn.mdx": "d1d87c17aa2fee98976577c343ca0ec1c792c8a84c724f115775cc92ed022114",
+      "packages/platejs/package.json": "97faae906581c775d720a4953a98c5642e0f53f909ed0720ad12c2bfc6576411",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "tooling/config/bunTestSetup.ts": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e",
+      "tooling/scripts/run-entrypoint-task.mjs": "2a7c478035f55226129436c0cf4ce4988edc52d8317de27500ecf33a3ab7e3ec",
+      "tooling/entrypoints/entrypoint-turbo.mjs": "29b373de283b2a7c959c1124a03aee1584e908cf6d7a569627b35ec97d3ea316",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "c30b05901aa8f2ecb6c6a62b6e37d963ed743eb8538c444517cd3117ae202a17",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "docs/plans/artifacts/2026-09-22-code-api-audit/last-pass.md": "268555a63f7efeea8b86f8d6c98bcdcb9b74cdd24098f51141233c1f11124111",
+      "docs/plans/artifacts/2026-09-22-code-api-audit/review.md": "f49afecb0bd3a221d020f56cec3f530c0b3a52bff002496d5b8fbc7a1d4c2733",
+      "docs/plans/artifacts/2026-09-22-code-api-audit/coverage.json": "38559a76ae834e20ea7672379b9565e48a815fc11ab1f338cdd8b422e0040d94",
+      "docs/plans/artifacts/2026-09-22-code-api-audit/probe.test.ts": "843a58e5832125cd20d504e344e2c383c850941419eb4ed7449584f6cc946497",
+      "docs/plans/artifacts/2026-09-22-code-api-audit/probe.log": "41c9b07bec886985edb829140eeaeaaa06f33fb86abcaaa0b23068c2d3b45bac",
+      "docs/plans/artifacts/2026-09-22-code-api-audit/unit.log": "da2f561dc538493550fded1dd9a24051c33c54056d58ac2ccee493d3998c8eb3",
+      "docs/research/review-records/2026-09-22-code-commands-and-highlighter-ownership.json": "e6f67d1bedb35c61e20268be7f32ca96e05d4bfc2f38397bdad15694516fd28e",
+      "packages/plitejs/src/transforms-node/replace-children.ts": "7f42beea5760ba5ae2618427205ec3d9c6f004595082d030a5c9c28d20efd1ce",
+      "packages/platejs/src/internal/plugin/resolvePlugins.ts": "f112860e7986a8e7ba6c7347581bb8b0482795cc4081930dffaf5bdcb982e618",
+      "apps/www/src/registry/components/editor/plugins.ts": "43bcdaf082e122e5d353f2621f1bd0bc84893bfe245a997f5d47b4fbe603a137"
+    },
+    "directories": {
+      "packages/platejs/src/features/code-block": "45d4ab96292c6188e0515133c227b390d0782df609734c2097564cfa71387def",
+      "packages/platejs/src/react/features/code-block": "b384c606319e1ba8151104443345737f101c279279101bc20ce146c2b1bc39c1",
+      "packages/platejs/src/code-block/codemirror": "03b54c0ec4abfc5e6d3c5c2a060becea676e9eb17d926801d881e678cb5a5c78"
+    },
+    "features": {
+      "browser/code-block-demos": "ed0fcedfa762e3b9b91b82730675034024dc6af04549e31b4b19dde2dc8e0098",
+      "browser/code-block-native-interactions": "251a0ce0a5c53303486693615a6f63c094d39bddd35d41023770399ee613f580",
+      "browser/code-block-selection": "769f4c63b2ac6b896b55a7599fe93614048da61906b8f3cb847dab4c6565aa77",
+      "browser/code-block-syntax": "0f6eb83345714b1dbca39e5710c9fba53a78860a6a783eabaadd9f2cb4ff540e",
+      "capability/codeBlock": "e901d7134a03d3bb2ee4ea27588a46eecbcd10568102ce3a9846ee488fc6ad8b",
+      "capability/codeSyntax": "e0d615a3169285a9af57398263f8d43be4719bccb4a3e1792dce7e135f0bc621",
+      "example/plite/code-highlighting": "1eccb4a1b858636f0bde95cb699a75bd737b95dcb76b9ae4ea48c4b6f2f4eae7",
+      "example/registry/code-block-demo": "234bee48bd145c9bcaa6551e56d07f018742609612ec5d7d63d37918bb6136a4",
+      "example/registry/code-block-huge-demo": "6505a9be5c8f533a20a831b2d52eaf419be2933f1d3e90f531be8c552ce2e6b2",
+      "example/value/code-block-value": "0e63f922786c5ef9462b1a3d7c3903c209bf599f1cca68e7fa9ff50b52539086",
+      "example/value/huge-code-block-value": "c1779f9e270099d1afa55710a6d21ff219fbedbd0909cfb44706a0860761a13f",
+      "platejs/code-block": "45d4ab96292c6188e0515133c227b390d0782df609734c2097564cfa71387def",
+      "ui/code-block": "d4f09dba79e9e1d717065ba3b6cebdef009ec20f2013cbbe6a9603307aee9e23"
+    },
+    "upstreams": []
+  }
+}

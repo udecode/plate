@@ -11,6 +11,7 @@ import { VideoPlugin } from 'platejs/media/react';
 import {
   EditorElement,
   useEditor,
+  useEditorFocused,
   useEditorMounted,
   useElementSelected,
   usePath,
@@ -31,6 +32,7 @@ import {
 
 export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
   const path = usePath();
+  const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'node' });
   const { provider, url: unsafeUrl } = props.element;
   const textAlign =
@@ -64,11 +66,23 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
   });
 
   return (
-    <EditorElement className="py-2.5" {...props}>
+    <EditorElement
+      {...props}
+      attributes={{
+        ...props.attributes,
+        'data-node-selection-highlight': 'self',
+      }}
+      className="py-2.5"
+    >
       <figure className="relative m-0 cursor-default hover:[&_.editor-media-resize-handle]:after:opacity-100">
         <div contentEditable={false}>
           <Resizable
-            className={cn(isDragging && 'opacity-50')}
+            className={cn(
+              focused &&
+                selected &&
+                'rounded-sm ring-2 ring-ring ring-offset-2',
+              isDragging && 'opacity-50'
+            )}
             align={textAlign}
             maxWidth={isTweet ? 550 : '100%'}
             minWidth={isTweet ? 300 : 100}

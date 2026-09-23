@@ -11,8 +11,6 @@ import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPl
 import { PLUGINS } from '../plate-keys';
 
 export type TrailingBlockPluginState = {
-  /** Wrap the default insertion without exposing the active transaction. */
-  insert: ((defaultInsert: () => void) => void) | null;
   /** Level where the trailing node should be, the first level being 0. */
   level: number;
   /** Match the last node before inserting the trailing block. */
@@ -23,7 +21,6 @@ export type TrailingBlockPluginState = {
 
 export const TrailingBlockPlugin = definePlugin(PLUGINS.trailingBlock, {
   initialState: ({ editor }): TrailingBlockPluginState => ({
-    insert: null,
     level: 0,
     match: null,
     type: editor.plugin(BaseParagraphPlugin).schema.type,
@@ -33,7 +30,7 @@ export const TrailingBlockPlugin = definePlugin(PLUGINS.trailingBlock, {
       event: 'children',
       query: 'root',
       correct({ editor, tx }) {
-        const { insert, level, match, type } = editor
+        const { level, match, type } = editor
           .plugin(TrailingBlockPlugin)
           .store.get();
         const lastChild =
@@ -53,15 +50,8 @@ export const TrailingBlockPlugin = definePlugin(PLUGINS.trailingBlock, {
                 NodeApi.matches(lastChildNode, match, lastChild[1]))))
         ) {
           const at = lastChild ? PathApi.next(lastChild[1]) : [0];
-          const insertDefault = () => {
-            tx.nodes.insert({ children: [{ text: '' }], type }, { at });
-          };
 
-          if (insert) {
-            insert(insertDefault);
-          } else {
-            insertDefault();
-          }
+          tx.nodes.insert(tx.schema.create(type), { at });
         }
       },
     },

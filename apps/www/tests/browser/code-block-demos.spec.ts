@@ -142,6 +142,33 @@ test('code-block demos: default keeps the small main-style value', async ({
   }
 });
 
+test('code-block demos: initial Python highlights after hydration', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const response = await page.goto('/blocks/code-block-demo', {
+      waitUntil: 'commit',
+    });
+    expect(await response?.text()).toContain('TaskManager');
+    const root = page.locator(EDITABLE_EDITOR).first();
+    const editor = createBrowserEditorHarness(page, 'code-block:python', root);
+
+    await editor.ready({ editor: 'visible', text: 'JavaScript example' });
+    await expect(
+      page
+        .locator('.editor-codeBlock')
+        .nth(1)
+        .locator('[data-code-block-syntax].hljs-keyword')
+        .first()
+    ).toContainText(/from|class|def/);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
 test('code-block demos: native Plate owns and edits the exact 10k-line value', async ({
   page,
 }, testInfo) => {
@@ -285,10 +312,6 @@ test('code-block demos: native Plate owns and edits the exact 10k-line value', a
     await page
       .getByRole('menuitemradio', { exact: true, name: 'Viewing' })
       .click();
-    await expect(page.locator(EDITOR).first()).toHaveAttribute(
-      'data-readonly',
-      'true'
-    );
     await expect(page.locator(EDITOR).first()).toHaveAttribute(
       'aria-readonly',
       'true'

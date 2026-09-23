@@ -77,7 +77,6 @@ import type {
   InferRead,
   InferSelectors,
   InferUpdate,
-  MatchRules,
   NodeComponent,
   HtmlParserOptions,
   HtmlPluginContext,
@@ -191,11 +190,10 @@ type ErasedPluginSlots = {
   wrapRoot?: NodeComponent | null;
 };
 type ErasedPluginRules = {
-  break?: BreakRules;
-  delete?: DeleteRules;
-  match?: ErasedPluginCallable<boolean> | null;
-  merge?: MergeRules;
-  normalize?: NormalizeRules;
+  break?: BreakRules<any>;
+  delete?: DeleteRules<any>;
+  merge?: MergeRules<any>;
+  normalize?: NormalizeRules<any>;
   selection?: SelectionRules;
 };
 /** @internal */
@@ -210,7 +208,10 @@ export type ErasedPluginConfigurationLayer =
     }>;
 
 /** Type-erased boundary for heterogeneous plugin collections. */
-type AnyPluginDependencyDescriptor = RuntimePluginReference | PluginReference;
+type AnyPluginDependencyDescriptor = Readonly<{
+  enabled?: boolean;
+  name: string;
+}>;
 
 export type AnyBasePlugin = {
   activate?: ErasedPluginCallable;
@@ -1220,25 +1221,6 @@ type BasePluginAuthorFields<
         /** Wraps the complete editor root for this view. */
         wrapRoot?: NodeComponent<{ children: any }>;
       }>;
-    rules: {
-      /**
-       * Function to determine if this plugin's rules should apply to a node.
-       * Used to override behavior based on node properties beyond just type
-       * matching.
-       *
-       * Example: List plugin sets `match: ({ node }) => !!node.listType`
-       * to override paragraph behavior when the paragraph is a list item.
-       *
-       * No implicit capability-name or schema-identity match is applied.
-       */
-      match?: (
-        options: {
-          node: Element;
-          path: Path;
-          rule: MatchRules;
-        } & BasePluginContext<C>
-      ) => boolean;
-    };
     /**
      * Keyboard shortcuts configuration mapping shortcut names to their key
      * combinations and handlers. Each shortcut can link to a public update

@@ -18,6 +18,67 @@ import {
 } from '../src/internal';
 
 describe('generated editor schema contract', () => {
+  it('includes required prefix properties in identity and restored grammar', () => {
+    const compile = (level: number) => {
+      const article = defineEditorSchema('schema:prefix-contract', {
+        elements: {
+          heading: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            properties: { level: property.number({ required: true }) },
+          },
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+        root: schema.content.prefix(
+          [{ element: 'heading', properties: { level } }],
+          schema.content.type('paragraph', { min: 1 })
+        ),
+        unknown: 'reject',
+      });
+      const records = [
+        { contribution: article.schema, pluginName: article.name },
+      ];
+
+      return { compiled: compileEditorSchemaContributions(records), records };
+    };
+    const first = compile(1);
+    const second = compile(2);
+    const firstContract = createEditorSchemaContract(first.compiled);
+    const secondContract = createEditorSchemaContract(second.compiled);
+    const restored = restoreEditorSchemaContract(
+      JSON.parse(JSON.stringify(firstContract)),
+      first.records
+    );
+
+    assert.deepEqual(createEditorSchemaContract(restored), firstContract);
+    assert.notEqual(firstContract.fingerprint, secondContract.fingerprint);
+    assert.equal(
+      diffEditorSchemaContracts(firstContract, secondContract)
+        .requiresMigration,
+      true
+    );
+    assert.throws(() =>
+      compileEditorSchemaContributions([
+        {
+          contribution: defineEditorSchema('schema:invalid-prefix', {
+            elements: {
+              heading: {
+                content: schema.content.text(),
+                properties: { level: property.number() },
+              },
+            },
+            root: schema.content.prefix(
+              [{ element: 'heading', properties: { unknown: 1 } }],
+              schema.content.type('heading')
+            ),
+          }).schema,
+          pluginName: 'invalid-prefix',
+        },
+      ])
+    );
+  });
+
   const Article = defineEditorSchema('schema:article-contract', {
     elements: {
       paragraph: {

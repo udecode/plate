@@ -10,7 +10,7 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -75,7 +75,8 @@ function MediaToolbarContent({ plugin }: { plugin: MediaPlugin }) {
   return (
     <div className="box-content flex items-center">
       <Button
-        className={buttonVariants({ size: 'sm', variant: 'ghost' })}
+        size="sm"
+        variant="ghost"
         onClick={() => {
           const sourceUrl =
             'sourceUrl' in element && typeof element.sourceUrl === 'string'

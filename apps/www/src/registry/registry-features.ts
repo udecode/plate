@@ -53,6 +53,10 @@ export const registryStaticFeatures: Registry['items'] = [
         path: 'components/editor/code-block-static.tsx',
         type: 'registry:component',
       },
+      {
+        path: 'components/editor/code-block-lowlight.ts',
+        type: 'registry:component',
+      },
     ],
     name: 'code-block-static',
     registryDependencies: [],
@@ -440,10 +444,14 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: ['platejs', 'lowlight'],
+    dependencies: ['platejs', 'lowlight', 'diff-match-patch-ts'],
     files: [
       {
         path: 'components/editor/code-block.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/code-block-lowlight.ts',
         type: 'registry:component',
       },
     ],
@@ -1114,14 +1122,14 @@ export const registryFeatures: Registry['items'] = [
     description: 'Browser-local uploads for demos and disposable editors.',
     files: [
       {
-        path: 'components/editor/upload/ephemeral.ts',
+        path: 'components/editor/upload/browser.ts',
         type: 'registry:component',
       },
     ],
-    name: 'upload-ephemeral',
+    name: 'upload-browser',
     registryDependencies: ['@plate/upload'],
     type: 'registry:component',
-    title: 'Ephemeral Upload',
+    title: 'Browser Upload',
     meta: { docs: [{ route: '/docs/upload' }], examples: ['playground-demo'] },
   },
   {

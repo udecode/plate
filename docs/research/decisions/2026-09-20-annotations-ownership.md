@@ -79,7 +79,7 @@ evidence boundary without absorbing the separate Comments feature review.
 ## Final external validation
 
 The September 21 OSS pass compared the current source of ProseMirror, Lexical,
-CKEditor, CodeMirror, Monaco/VS Code, Yjs, Automerge and Quill, plus the public
+CodeMirror, Monaco/VS Code, Yjs, Automerge and Quill, plus the public
 Tiptap Comments contract. The full source ledger and exact references are in
 [the research report](../../plite/research/2026-09-21-annotation-architecture-oss/REPORT.md).
 
@@ -88,9 +88,6 @@ required jobs more cleanly:
 
 - ProseMirror and CodeMirror have strong persistent range collections, but
   their decoration values combine mapped range and paint.
-- CKEditor validates one model with projection-local mappers, then shows the
-  cost of a live observer per marker and global marker scans. Its source warns
-  callers to keep few markers.
 - Monaco validates one model attached to multiple editors and supplies a strong
   interval-tree implementation, but model-decoration invalidation is coarser
   and complete deletion preserves collapsed/moved decoration identity.

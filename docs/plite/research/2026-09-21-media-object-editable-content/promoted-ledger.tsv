@@ -1,0 +1,4 @@
+lead_key	packet_id	slate_owner	test_or_benchmark	verification_command	decision
+media:object-with-editable-content:selection-structure	2026-09-21-media-object-editable-content	task design plan	schema object/content contract plus model and mounted-view adoption	bun test ./docs/plite/research/2026-09-21-media-object-editable-content/observations.test.ts	Pursue direction; no implementation or runtime acceptance
+media:intrinsic-content:replacement	2026-09-21-media-object-editable-content	task design plan	current public model defect	same observations command	Include empty-caption owner preservation
+media:inner-text-slice:clipboard	2026-09-21-media-object-editable-content	task design plan	current public model defect	same observations command	Include caption-text versus whole-owner transfer

@@ -48,7 +48,14 @@ export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
       plugin={ImagePlugin}
       selected={selected}
     >
-      <EditorElement {...props} className="py-2.5">
+      <EditorElement
+        {...props}
+        attributes={{
+          ...props.attributes,
+          'data-node-selection-highlight': 'self',
+        }}
+        className="py-2.5"
+      >
         <figure className="relative m-0 hover:[&_.editor-media-resize-handle]:after:opacity-100">
           <div contentEditable={false}>
             <Resizable

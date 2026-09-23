@@ -72,7 +72,7 @@
       "docs/plans/artifacts/authored-reload-prosemirror/full-authored-yjs-final.log": "44d491a7d5d7164f8869fe45e0ca15ac379b3e49072d5f94b015d63312d85540",
       "docs/plans/2026-09-12-authored-reload-performance.md": "328ccd465656b22655d597b96dcab9a3a90be0cc5b84ec892272b9fd147bf02f",
       "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md": "2cf63cc7e0d7592ef08781899ddfcde0ef5d03023f62acc8b4079abdc013e29c",
-      "docs/plite/research/2026-09-10-authored-changes/assessment.md": "babfc245377350a86c09ea2b4fe3ced999fe0f9c606f13b52ae3c1785ea484bb",
+      "docs/plite/research/2026-09-10-authored-changes/assessment.md": "7fbe81d672bcfb3ef2e16a4a6eeadb4c104ff4193068067598503cb8c644fb58",
       "docs/plite/research/2026-09-10-authored-changes/rejected-ledger.tsv": "9addd9212ab9207813458603e757330446cb184b2503b4bd47b2058f36af9276",
       "packages/plitejs/src/authored/state.ts": "e052eecbb068c22d3e57f5e57a8012c177746fc5931139c2d0d2c598168623d9",
       "packages/plitejs/src/authored/authored.ts": "6037284537eb34720ddfca62a122a08da0cbd358d9439b864e20ccd8654ace2d",

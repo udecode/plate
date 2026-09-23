@@ -187,10 +187,11 @@ caret or range, focus, and displayed highlights. After asserting the target
 state, type again and verify the text and caret. A correct model range alone
 does not establish that browser input and visible selection are correct.
 
-## Keyboard-selectable content
+## Object elements with editable children
 
-A non-void, isolating element can declare `schema.element.keyboardSelectable: true`
-when it owns both an asset and editable child content. Selecting the owner node
+A block element can declare `object: true` when it owns both an asset and
+editable child content. An object is selectable and structurally isolating,
+while its children remain ordinary editable content. Selecting the owner node
 focuses the asset and keeps native selection empty. ArrowDown enters its text;
 ArrowUp from the leading visual boundary returns to node selection. Backspace
 or Delete removes a selected owner.
@@ -198,3 +199,5 @@ or Delete removes a selected owner.
 Clicking a noneditable descendant selects the owner; clicking editable text
 selects text. Use `useElementSelected({ mode: 'node' })` for the exact asset
 selection. The default intersection mode also matches text selection inside it.
+An empty caption does not make the asset an empty block. Copying the owner
+transfers the whole object; selecting caption text transfers only that text.

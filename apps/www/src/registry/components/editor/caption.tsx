@@ -4,12 +4,17 @@ import { cva } from 'class-variance-authority';
 import {
   NodeApi,
   PathApi,
-  SelectionApi,
+  RangeApi,
   type Element,
   type Path,
   type RenderElementProps,
 } from 'platejs';
-import { useEditor, useEditorSelector, useElement } from 'platejs/react';
+import {
+  useEditor,
+  useEditorSelector,
+  useElement,
+  usePath,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -21,9 +26,9 @@ const captionVariants = cva('max-w-full', {
   },
   variants: {
     align: {
-      center: 'mx-auto text-center',
-      left: 'mr-auto text-left',
-      right: 'ml-auto text-right',
+      center: 'mx-auto justify-center text-center',
+      left: 'mr-auto justify-start text-left',
+      right: 'ml-auto justify-end text-right',
     },
   },
 });
@@ -33,7 +38,7 @@ export function useCaptionFocused(path: Path) {
     const selection = editor.read.selection();
 
     return (
-      SelectionApi.isText(selection) &&
+      RangeApi.isRange(selection) &&
       (PathApi.isDescendant(selection.anchor.path, path) ||
         PathApi.isDescendant(selection.focus.path, path))
     );
@@ -57,8 +62,18 @@ export function Caption({
   placeholder?: string;
   slots: RenderElementProps['slots'];
 }) {
+  const editor = useEditor();
+  const path = usePath();
+  const nodeKey = editor.read((state) => state.key(path));
   const width = 'width' in element ? element.width : undefined;
-  const empty = NodeApi.string(element).length === 0;
+  const empty = useEditorSelector(
+    (current) =>
+      NodeApi.string(current.read.nodes.get(path)?.[0] ?? element).length === 0,
+    {
+      shouldUpdate: (change) =>
+        !change || !nodeKey || change.changed.hasNodeKey(nodeKey, 'node'),
+    }
+  );
   const hidden = !active && empty;
 
   return (
@@ -67,7 +82,8 @@ export function Caption({
       className={cn(
         captionVariants({ align }),
         'relative mt-2 min-h-6 w-full bg-inherit p-0 font-[inherit] text-inherit',
-        'before:pointer-events-none before:absolute before:inset-x-0 before:text-muted-foreground before:content-[attr(data-placeholder)]',
+        active && empty && 'flex items-center',
+        'after:pointer-events-none after:text-muted-foreground after:content-[attr(data-placeholder)]',
         'print:placeholder:text-transparent',
         className
       )}

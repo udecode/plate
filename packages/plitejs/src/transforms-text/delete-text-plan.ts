@@ -71,6 +71,7 @@ export const getHighestNonEditable = (editor: Editor, at: Path | Point) =>
     match: (node) =>
       NodeApi.isElement(node) &&
       (getEditorSchema(editor).isVoid(node) ||
+        getEditorSchema(editor).isAtom(node) ||
         getEditorSchema(editor).isReadOnly(node)),
     mode: 'highest',
     voids: true,

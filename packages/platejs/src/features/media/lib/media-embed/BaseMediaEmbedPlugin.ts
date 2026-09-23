@@ -56,8 +56,7 @@ const initialState: MediaEmbedPluginState = {
 export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
   schema: {
     element: schema.element.textBlock({
-      isolating: true,
-      keyboardSelectable: true,
+      object: true,
       properties: {
         ...mediaElementProperties,
         provider: property.string(),

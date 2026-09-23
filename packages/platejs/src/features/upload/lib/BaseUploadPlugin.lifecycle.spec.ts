@@ -234,14 +234,22 @@ describe('Files admission and lifetime', () => {
     expect(calls).toBe(1);
   });
 
-  it('completes through the authored view that admitted the draft', async () => {
-    const request = deferred();
+  it('retries through the authored view that admitted the draft', async () => {
+    const requests = [deferred(), deferred()];
+    let calls = 0;
     const editor = createEditor({
       plugins: [
         BaseFilePlugin,
         BaseImagePlugin,
         withUpload({
-          initialState: { upload: () => request.promise },
+          initialState: {
+            upload: () => {
+              const request = requests[calls];
+              calls += 1;
+
+              return request.promise;
+            },
+          },
         }),
         authored({ authorId: () => 'alice' }),
       ],
@@ -252,11 +260,26 @@ describe('Files admission and lifetime', () => {
     });
     const owner = view.plugin(BaseUploadPlugin);
 
-    owner.update.submit(
-      [new File(['image'], 'image.png', { type: 'image/png' })],
-      { after: view.key([0])!, replaceEmpty: true }
-    );
-    request.resolve({ url: 'https://example.test/image.png' });
+    const firstFile = new File(['first'], 'first.png', { type: 'image/png' });
+    const secondFile = new File(['second'], 'second.png', {
+      type: 'image/png',
+    });
+
+    expect(
+      owner.update.submit([firstFile], {
+        after: view.key([0])!,
+        replaceEmpty: true,
+      })
+    ).toBe(true);
+    requests[0].reject(new Error('first upload failed'));
+    await settle();
+    const key = view.key([0])!;
+
+    expect(owner.store.get('task', key)?.getSnapshot()).toMatchObject({
+      status: 'failed',
+    });
+    expect(owner.update.submit([secondFile], { slot: key })).toBe(true);
+    requests[1].resolve({ url: 'https://example.test/image.png' });
     await settle();
 
     expect(view.read.children()[0]).toMatchObject({
@@ -264,6 +287,68 @@ describe('Files admission and lifetime', () => {
       url: 'https://example.test/image.png',
     });
     expect(owner.store.get('task', view.key([0])!)).toBeUndefined();
+    expect(calls).toBe(2);
+  });
+
+  it('completes every draft admitted through an authored view', async () => {
+    const requests = [deferred(), deferred(), deferred()];
+    let calls = 0;
+    const editor = createEditor({
+      plugins: [
+        BaseFilePlugin,
+        BaseImagePlugin,
+        withUpload({
+          initialState: {
+            upload: () => {
+              const request = requests[calls];
+              calls += 1;
+
+              return request.promise;
+            },
+          },
+        }),
+        authored({ authorId: () => 'alice' }),
+      ],
+      initialValue: [paragraph('target')],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'edit', projection: 'markup' },
+    });
+    const owner = view.plugin(BaseUploadPlugin);
+
+    expect(
+      owner.update.submit(
+        [
+          new File(['one'], 'one.png', { type: 'image/png' }),
+          new File(['two'], 'two.png', { type: 'image/png' }),
+          new File(['three'], 'three.png', { type: 'image/png' }),
+        ],
+        { after: view.key([0])!, replaceEmpty: true }
+      )
+    ).toBe(true);
+    expect(calls).toBe(3);
+
+    requests[0].resolve({ url: 'https://example.test/one.png' });
+    await settle();
+    expect(view.read.children()).toMatchObject([
+      { type: 'paragraph' },
+      { type: 'image', url: 'https://example.test/one.png' },
+      { kind: 'image', type: 'upload' },
+      { kind: 'image', type: 'upload' },
+    ]);
+    expect(Object.keys(owner.store.get('tasks'))).toHaveLength(2);
+
+    requests[1].resolve({ url: 'https://example.test/two.png' });
+    requests[2].resolve({ url: 'https://example.test/three.png' });
+    await settle();
+
+    expect(view.read.children()).toMatchObject([
+      { type: 'paragraph' },
+      { type: 'image', url: 'https://example.test/one.png' },
+      { type: 'image', url: 'https://example.test/two.png' },
+      { type: 'image', url: 'https://example.test/three.png' },
+    ]);
+    expect(owner.store.get('tasks')).toEqual({});
   });
 
   it('completes with the installed media schema type', async () => {

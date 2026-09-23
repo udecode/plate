@@ -1,3 +1,4 @@
+import type { EditorNodeTypeProvider } from '../interfaces/editor';
 import type {
   EditorSchemaDeclaration,
   EditorSchemaDerivedDefinition,
@@ -21,6 +22,7 @@ import type {
   SchemaContentDefault,
   SchemaContentInput,
   SchemaContentOptions,
+  SchemaContentPrefixSlot,
   SchemaElement,
   SchemaElementHandle,
   SchemaElementProperty,
@@ -773,6 +775,32 @@ type SchemaElementSourceName<TSource> = TSource extends string
     : never;
 
 type SchemaElementContentOptions = Omit<SchemaContentOptions, 'default'>;
+type PrefixElementSource = string | Readonly<{ name: string }>;
+type PrefixInput = Readonly<{
+  element: PrefixElementSource;
+  properties?: Readonly<Record<string, PropertyJsonValue>>;
+}>;
+type PrefixSourceProperties<TSource> =
+  TSource extends EditorNodeTypeProvider<infer TElement, infer _TText>
+    ? Omit<ReturnType<TElement>, 'children' | 'type'>
+    : Readonly<Record<string, PropertyJsonValue>>;
+type CheckedPrefixInput<TInput> =
+  TInput extends Readonly<{
+    element: infer TSource;
+    properties: infer TProperties;
+  }>
+    ? Exclude<
+        keyof TProperties,
+        keyof PrefixSourceProperties<TSource>
+      > extends never
+      ? TProperties extends Partial<PrefixSourceProperties<TSource>>
+        ? TInput
+        : never
+      : never
+    : TInput;
+type CheckedPrefixInputs<TInputs extends readonly PrefixInput[]> = {
+  readonly [TIndex in keyof TInputs]: CheckedPrefixInput<TInputs[TIndex]>;
+};
 type SchemaElementContentRule<
   TSource extends string | Readonly<{ name: string }>,
 > = Readonly<{
@@ -1163,7 +1191,8 @@ const toContentRule = <const TInput extends SchemaContentInput>(
   if (
     input.default !== undefined ||
     input.max !== undefined ||
-    input.min !== undefined
+    input.min !== undefined ||
+    input.prefix !== undefined
   ) {
     throw new Error(
       'Nested schema content rules cannot declare default, min, or max.'
@@ -1233,8 +1262,8 @@ function textBlock(
       'contentRoots',
       'groups',
       'isolating',
-      'keyboardSelectable',
       'markableVoid',
+      'object',
       'properties',
       'readOnly',
       'selectable',
@@ -1359,6 +1388,13 @@ type SchemaContentApi = (<
       group: TGroup,
       options?: TOptions
     ) => SchemaContent<Readonly<{ group: TGroup; kind: 'group' }>, TOptions>;
+    prefix: <
+      const TRequired extends readonly [PrefixInput, ...PrefixInput[]],
+      const TRest extends SchemaContent,
+    >(
+      required: TRequired & CheckedPrefixInputs<TRequired>,
+      rest: TRest
+    ) => TRest & Readonly<{ prefix: readonly SchemaContentPrefixSlot[] }>;
     element: <
       const TSource extends string | Readonly<{ name: string }>,
       const TOptions extends SchemaElementContentOptions = {},
@@ -1537,6 +1573,49 @@ const schemaContent: SchemaContentApi = Object.assign(content, {
     assertNonEmpty(group, 'Schema content group');
 
     return content(Object.freeze({ group, kind: 'group' }), options);
+  },
+  prefix: <
+    const TRequired extends readonly [PrefixInput, ...PrefixInput[]],
+    const TRest extends SchemaContent,
+  >(
+    required: TRequired,
+    rest: TRest
+  ) => {
+    if (required.length === 0 || rest.prefix !== undefined) {
+      throw new Error(
+        'Schema content prefix needs required slots and a plain remainder.'
+      );
+    }
+
+    const prefix = required.map(({ element, properties }, index) => {
+      if (
+        properties !== undefined &&
+        (typeof properties !== 'object' ||
+          properties === null ||
+          Array.isArray(properties))
+      ) {
+        throw new Error(
+          `Schema content prefix slot ${index} properties must be an object.`
+        );
+      }
+
+      return {
+        element: typeof element === 'string' ? element : elementTarget(element),
+        ...(properties === undefined
+          ? {}
+          : {
+              properties: cloneFrozenJson(
+                properties,
+                `Schema content prefix slot ${index} properties`
+              ),
+            }),
+      };
+    });
+
+    return cloneFrozenDeclaration(
+      { ...rest, prefix },
+      'Schema content prefix'
+    ) as TRest & Readonly<{ prefix: readonly SchemaContentPrefixSlot[] }>;
   },
   open: <const TOptions extends SchemaContentOptions = {}>(
     options: TOptions = {} as TOptions

@@ -1,0 +1,762 @@
+{
+  "baseline": {
+    "artifact": "benchmarks/editor/docs/baselines/plite-schema-architecture.md",
+    "equivalentReconfigurationP95Ms": 3.739,
+    "exactElementPropertyP50Ns": 2736,
+    "namespaceP50Ns": 3600,
+    "retainedSchemaHeapP50BytesPerEditor": 631225,
+    "typeP50Ns": 2970,
+    "wrapperP50Ns": 9921,
+    "comparability": {
+      "allowedParent": "No legacy equivalent; current baseline only.",
+      "compile": "Legacy measured full editor construction; current measures the pure compiler, so no ratio is reported.",
+      "fullValidation": "No legacy full-document validation metric exists. Cold detached and warm frozen 10k-block multi-root rows are current baselines only.",
+      "group": "Legacy measured targeted property resolution; current measures compiled group membership, so no ratio is reported.",
+      "retainedHeap": "Same forced-GC corpus-minus-minimal retained bytes per live editor, with the same 128-editor and five-sample default. The promotion ratio conservatively uses the worst current sample against the legacy p50 because shared compiled schemas can make the true per-editor delta smaller than GC noise.",
+      "retainedRepresentation": "The deterministic serialized compiled-representation byte proxy is supplemental and is never compared with heap units.",
+      "reconfiguration": "Same real editor slot reconfiguration path and equivalent corpus.",
+      "typeExactPropertyAndPrefix": "Same successful warm lookup question over the same corpus; current paths query the compiled artifact directly.",
+      "wrapper": "Same successful repeated wrapper lookup over the same schema corpus; the current public query returns one revision-compiled plan identity without BFS or factory probing."
+    }
+  },
+  "benchmark": "plite-schema-architecture",
+  "schemaConstructionAuthority": {
+    "authority": "Isolated createAndFill over one compiled target plan; editor transactions and immutable document publication are outside this timing.",
+    "iterations": 5000,
+    "propertyWidthRatio": 0.841804379003729,
+    "rows": [
+      {
+        "constructionDefaultPropertyIds": 1,
+        "constructionPropertyIds": 1,
+        "creationNs": {
+          "p50": 7059.825,
+          "p95": 8960.4832,
+          "p99": 8960.4832
+        },
+        "creations": 25000,
+        "globalProperties": 100
+      },
+      {
+        "constructionDefaultPropertyIds": 1,
+        "constructionPropertyIds": 1,
+        "creationNs": {
+          "p50": 5942.9916,
+          "p95": 7998.5166,
+          "p99": 7998.5166
+        },
+        "creations": 25000,
+        "globalProperties": 1000
+      }
+    ]
+  },
+  "prefixCompileRows": [
+    {
+      "prefixLength": 1,
+      "compileMs": {
+        "p50": 0.0895840000000021,
+        "p95": 0.3772910000000138,
+        "p99": 1.4356670000000236
+      }
+    },
+    {
+      "prefixLength": 2,
+      "compileMs": {
+        "p50": 0.08249999999998181,
+        "p95": 0.11366599999996652,
+        "p99": 0.17695800000001327
+      }
+    }
+  ],
+  "contributions": {
+    "iterations": 5,
+    "rows": [
+      {
+        "coldMergeCompileCount": 1,
+        "contributions": 1,
+        "directCompileMs": {
+          "p50": 0.0504579999999919,
+          "p95": 0.1808330000000069,
+          "p99": 0.1808330000000069
+        },
+        "elements": 1,
+        "previousRevisionCacheMs": {
+          "p50": 0.03358399999996209,
+          "p95": 0.12341700000001765,
+          "p99": 0.12341700000001765
+        },
+        "previousRevisionCompileCount": 0,
+        "structuralCacheCompileCount": 0,
+        "structuralCacheMs": {
+          "p50": 0.022499999999979536,
+          "p95": 0.0751669999999649,
+          "p99": 0.0751669999999649
+        }
+      },
+      {
+        "coldMergeCompileCount": 1,
+        "contributions": 100,
+        "directCompileMs": {
+          "p50": 1.662333999999987,
+          "p95": 3.067542000000003,
+          "p99": 3.067542000000003
+        },
+        "elements": 100,
+        "previousRevisionCacheMs": {
+          "p50": 1.668374999999969,
+          "p95": 2.477291999999977,
+          "p99": 2.477291999999977
+        },
+        "previousRevisionCompileCount": 0,
+        "structuralCacheCompileCount": 0,
+        "structuralCacheMs": {
+          "p50": 0.40287499999999454,
+          "p95": 0.5452920000000177,
+          "p99": 0.5452920000000177
+        }
+      },
+      {
+        "coldMergeCompileCount": 1,
+        "contributions": 1000,
+        "directCompileMs": {
+          "p50": 16.412374999999997,
+          "p95": 18.883958000000007,
+          "p99": 18.883958000000007
+        },
+        "elements": 1000,
+        "previousRevisionCacheMs": {
+          "p50": 17.830874999999992,
+          "p95": 18.014542000000006,
+          "p99": 18.014542000000006
+        },
+        "previousRevisionCompileCount": 0,
+        "structuralCacheCompileCount": 0,
+        "structuralCacheMs": {
+          "p50": 4.562542000000008,
+          "p95": 5.0833749999999895,
+          "p99": 5.0833749999999895
+        }
+      }
+    ]
+  },
+  "corpus": {
+    "declaredGroups": 30,
+    "elementTypes": 100,
+    "exactElementProperties": 100,
+    "exactTextProperties": 100,
+    "namedRoots": 3,
+    "prefixElementProperties": 10,
+    "prefixTextProperties": 10,
+    "roots": 4,
+    "exactProperties": 200,
+    "prefixProperties": 20
+  },
+  "environment": {
+    "arch": "arm64",
+    "platform": "darwin",
+    "runtime": "bun",
+    "runtimeVersion": "1.3.12"
+  },
+  "executionBudgets": {
+    "constructionPropertyWidthRatioInclusive": 2,
+    "contribution1000CompileP95MsExclusive": 100,
+    "contribution1000PreviousRevisionCacheP95MsExclusive": 50,
+    "contribution1000StructuralCacheP95MsExclusive": 25,
+    "largeDocumentMigration10000P95MsExclusive": 2000,
+    "largeDocumentMigrationWidthRatioInclusive": 15,
+    "plateDescriptorResolutionWidthRatioInclusive": 2,
+    "plateStartup1000P95MsExclusive": 2500,
+    "plateStartupPerDescriptorRatioInclusive": 2.5,
+    "projectedClipboardHostWidthRatioInclusive": 2,
+    "projectedClipboardWidthRatioInclusive": 1.5,
+    "typecheck1000CheckMsExclusive": 5000,
+    "typecheck1000InstantiationsExclusive": 5000000,
+    "typecheck1000MemoryBytesExclusive": 1342177280,
+    "typecheckCheckTimeRatioInclusive": 2,
+    "typecheckInstantiationRatioInclusive": 1.25
+  },
+  "generatedAt": "2026-09-22T16:21:08.494Z",
+  "largeDocumentMigration": {
+    "documentWidthRatio": 13.869101911198385,
+    "iterations": 10,
+    "rows": [
+      {
+        "blocks": 1000,
+        "commits": 10,
+        "configurationDirtyCommits": 10,
+        "migrationCalls": 10,
+        "migrationMs": {
+          "p50": 42.98350000000028,
+          "p95": 45.141333999999915,
+          "p99": 45.141333999999915
+        },
+        "migrationSamplesMs": [
+          45.141333999999915,
+          43.80858400000034,
+          42.67908299999999,
+          43.22770800000035,
+          41.57583400000112,
+          44.6361250000009,
+          42.820958000000246,
+          43.282375000000684,
+          42.44837499999994,
+          42.98350000000028
+        ]
+      },
+      {
+        "blocks": 10000,
+        "commits": 10,
+        "configurationDirtyCommits": 10,
+        "migrationCalls": 10,
+        "migrationMs": {
+          "p50": 596.1425419999996,
+          "p95": 611.4923330000001,
+          "p99": 611.4923330000001
+        },
+        "migrationSamplesMs": [
+          611.4923330000001,
+          593.4701249999998,
+          595.6896669999996,
+          598.9831670000003,
+          595.3127910000003,
+          588.1372920000013,
+          604.064875,
+          596.4712080000008,
+          606.7892920000013,
+          596.1425419999996
+        ]
+      }
+    ],
+    "sampling": {
+      "cohortOrder": [
+        [
+          1000,
+          10000
+        ],
+        [
+          10000,
+          1000
+        ],
+        [
+          1000,
+          10000
+        ],
+        [
+          10000,
+          1000
+        ],
+        [
+          1000,
+          10000
+        ],
+        [
+          10000,
+          1000
+        ],
+        [
+          1000,
+          10000
+        ],
+        [
+          10000,
+          1000
+        ],
+        [
+          1000,
+          10000
+        ],
+        [
+          10000,
+          1000
+        ]
+      ],
+      "gcBeforeEachSample": true,
+      "order": "rotating-round-robin",
+      "samplesPerCohort": 10,
+      "warmupIterationsPerCohort": 1
+    }
+  },
+  "plateDescriptors": {
+    "resolutionWidthRatio": 0.39296542948038177,
+    "rows": [
+      {
+        "cachedStartupMs": {
+          "p50": 12.711749999999938,
+          "p95": 18.225666000000047,
+          "p99": 18.225666000000047
+        },
+        "cachedStartupSamplesMs": [
+          13.642458999999917,
+          12.711749999999938,
+          11.889416999999867,
+          18.225666000000047,
+          12.635582999999997
+        ],
+        "descriptors": 100,
+        "resolved": 500,
+        "resolutionNs": {
+          "p50": 1178.75,
+          "p95": 5618.34,
+          "p99": 5618.34
+        },
+        "resolutionSamplesNs": [
+          5618.34,
+          1178.75,
+          1165.83,
+          1090.41,
+          1207.5
+        ],
+        "startupMs": {
+          "p50": 14.971542,
+          "p95": 16.721415999999977,
+          "p99": 16.721415999999977
+        },
+        "startupSamplesMs": [
+          16.721415999999977,
+          15.54424999999992,
+          14.971542,
+          14.806959000000006,
+          14.930374999999913
+        ]
+      },
+      {
+        "cachedStartupMs": {
+          "p50": 141.43629099999998,
+          "p95": 149.21841700000004,
+          "p99": 149.21841700000004
+        },
+        "cachedStartupSamplesMs": [
+          135.21437500000002,
+          135.52887499999997,
+          141.43629099999998,
+          149.21841700000004,
+          146.20170899999994
+        ],
+        "descriptors": 1000,
+        "resolved": 5000,
+        "resolutionNs": {
+          "p50": 463.208,
+          "p95": 2822.416,
+          "p99": 2822.416
+        },
+        "resolutionSamplesNs": [
+          2822.416,
+          609.834,
+          463.208,
+          431.916,
+          429.834
+        ],
+        "startupMs": {
+          "p50": 152.83562500000016,
+          "p95": 162.96645799999988,
+          "p99": 162.96645799999988
+        },
+        "startupSamplesMs": [
+          159.25762500000008,
+          162.96645799999988,
+          151.10620799999992,
+          151.73583400000007,
+          152.83562500000016
+        ]
+      }
+    ],
+    "startupScope": {
+      "cached": "Repeated editor creation with the last cold cohort and structural schema cache available.",
+      "cold": "Editor creation from unique descriptor and schema identities; plugin definition is outside the timed region."
+    },
+    "startupSampling": {
+      "cohortOrder": [
+        [
+          100,
+          1000
+        ],
+        [
+          1000,
+          100
+        ],
+        [
+          100,
+          1000
+        ],
+        [
+          1000,
+          100
+        ],
+        [
+          100,
+          1000
+        ]
+      ],
+      "gcBeforeEachSample": true,
+      "order": "rotating-round-robin",
+      "samplesPerCohort": 5,
+      "warmupIterationsPerCohort": 1
+    },
+    "startupPerDescriptorRatio": 1.0208409060335948
+  },
+  "projectedClipboardLocality": {
+    "documentWidthRatio": 0.6514522821576764,
+    "hostSerializationWidthRatio": 0.8025321012840514,
+    "iterations": 1,
+    "rows": [
+      {
+        "blocks": 1000,
+        "rootValidationPropertyReads": 0,
+        "fragmentNs": {
+          "p50": 150625,
+          "p95": 156750,
+          "p99": 156750
+        },
+        "fragmentReads": 5,
+        "hostWriteNs": {
+          "p50": 16666,
+          "p95": 40042,
+          "p99": 40042
+        },
+        "hostWrites": 5,
+        "openEnd": 1,
+        "openStart": 1,
+        "payloadBytes": 921,
+        "selectedNodes": 2
+      },
+      {
+        "blocks": 50000,
+        "rootValidationPropertyReads": 0,
+        "fragmentNs": {
+          "p50": 98125,
+          "p95": 102708,
+          "p99": 102708
+        },
+        "fragmentReads": 5,
+        "hostWriteNs": {
+          "p50": 13375,
+          "p95": 21167,
+          "p99": 21167
+        },
+        "hostWrites": 5,
+        "openEnd": 1,
+        "openStart": 1,
+        "payloadBytes": 921,
+        "selectedNodes": 2
+      }
+    ]
+  },
+  "queries": {
+    "allowedParentNs": {
+      "p50": 218.43832,
+      "p95": 350.54334,
+      "p99": 350.54334
+    },
+    "exactPropertyNs": {
+      "p50": 293.19832,
+      "p95": 436.60582,
+      "p99": 436.60582
+    },
+    "groupNs": {
+      "p50": 214.22668,
+      "p95": 393.3475,
+      "p99": 393.3475
+    },
+    "iterations": 50000,
+    "samples": 15,
+    "textPrefixPropertyNs": {
+      "p50": 421.7125,
+      "p95": 544.42666,
+      "p99": 544.42666
+    },
+    "typeNs": {
+      "p50": 118.78582,
+      "p95": 134.33084,
+      "p99": 134.33084
+    },
+    "wrapperNs": {
+      "p50": 443.94332,
+      "p95": 661.46916,
+      "p99": 661.46916
+    },
+    "prefixPropertyNs": {
+      "p50": 428.95,
+      "p95": 568.26916,
+      "p99": 568.26916
+    },
+    "work": {
+      "allowedParentMapLookupsPerQuery": 1,
+      "exactPropertyCandidateIdsPerQuery": 1,
+      "exactPropertyPrefixSelectorTestsPerQuery": 10,
+      "groupMapLookupsPerQuery": 1,
+      "prefixPropertyCandidateIdsPerQuery": 1,
+      "prefixPropertySelectorTestsPerQuery": 10,
+      "textPrefixPropertySelectorTestsPerQuery": 10,
+      "typeMapLookupsPerQuery": 1,
+      "wrapperPlanIdentityReused": true,
+      "wrapperPlanLength": 1,
+      "wrapperPlanSearchCount": 1,
+      "wrapperPlanSearchesAfterFirst": 0,
+      "wrapperUnknownPlanIdentityCount": 1
+    }
+  },
+  "ratios": {
+    "equivalentReconfiguration": 13.820295266113508,
+    "exactProperty": 0.10716312865497077,
+    "namespace": 0.11915277777777777,
+    "retainedHeap": 0.0021653456572537527,
+    "retainedHeapP50": 0,
+    "type": 0.03999522558922559,
+    "wrapper": 0.04474783993549038
+  },
+  "retainedRepresentation": {
+    "compiledBytesProxy": 196460,
+    "declarationBytesProxy": 48745,
+    "policy": "Deterministic UTF-8 bytes of a JSON projection of every retained compiled declaration field; this is a representation-size proxy, not JS heap."
+  },
+  "retainedHeap": {
+    "bytesPerEditor": {
+      "p50": -1341.625,
+      "p95": 1366.8203125,
+      "p99": 1366.8203125
+    },
+    "editorsPerSample": 128,
+    "samples": [
+      -6469.1171875,
+      -7772.375,
+      20.046875,
+      1366.8203125,
+      -1341.625
+    ],
+    "supported": true,
+    "worstCaseBytesPerEditor": 1366.8203125
+  },
+  "schemaInvalidation": {
+    "affectedRuntimeIds": 64,
+    "changedTypeRatio": 1.2868307367819907,
+    "coldIndexLargeMs": {
+      "p50": 35.248083000002225,
+      "p95": 83.20866699999897,
+      "p99": 83.20866699999897
+    },
+    "coldIndexSmallMs": {
+      "p50": 0.6960420000013983,
+      "p95": 1.2030830000003334,
+      "p99": 1.2030830000003334
+    },
+    "documentWidthRatio": 1.029573415689112,
+    "iterations": 5000,
+    "largeDocumentBlocks": 50000,
+    "manyChangedTypes": 9,
+    "propertyAffectedRuntimeIds": 64,
+    "samples": 10,
+    "sampling": {
+      "cohortOrder": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          2,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          2,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          2,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "gcBeforeEachSample": true,
+      "iterationsPerSample": 5000,
+      "order": "rotating-round-robin",
+      "rawSamplesNs": [
+        [
+          5160.3416,
+          4029.3,
+          4222.7916,
+          4036.3082,
+          4094.0418,
+          4216.1834,
+          4097.75,
+          3965.275,
+          4056.7834,
+          4110.225
+        ],
+        [
+          4415.75,
+          4148.8,
+          4810.9082,
+          4335.175,
+          4488.3168,
+          4016.1166,
+          4537.15,
+          4068.85,
+          4014.5416,
+          4215.1166
+        ],
+        [
+          6069.4416,
+          5424.1416,
+          5333.3416,
+          5338.6668,
+          5867.2916,
+          5470.575,
+          5292.9082,
+          6005.7084,
+          5357.8084,
+          5445.1416
+        ]
+      ],
+      "samplesPerCohort": 10,
+      "warmupIterationsPerCohort": 250
+    },
+    "smallDocumentBlocks": 1000,
+    "warmLargeNs": {
+      "p50": 4215.1166,
+      "p95": 4810.9082,
+      "p99": 4810.9082
+    },
+    "warmManyTypesNs": {
+      "p50": 5424.1416,
+      "p95": 6069.4416,
+      "p99": 6069.4416
+    },
+    "warmSmallNs": {
+      "p50": 4094.0418,
+      "p95": 5160.3416,
+      "p99": 5160.3416
+    }
+  },
+  "strictValidation": {
+    "requested": false,
+    "status": "measured"
+  },
+  "thresholdPolicy": {
+    "absolute": "Compile p95 stays below 16 ms and equivalent reconfiguration performs zero compiler runs.",
+    "relative": "Only semantically comparable legacy rows receive ratios. Type, exact property, prefix, and wrapper lookup target at least 2x less latency; equivalent reconfiguration stays within 5% of its legacy p95; every forced-GC retained-heap sample stays at least 25% below the legacy p50.",
+    "unpaired": "Group, allowed-parent, compiler-only compile scope, cold-detached/repeated-frozen full validation, and representation-size-proxy rows are honest current baselines without invented ratios."
+  },
+  "timings": {
+    "compileMs": {
+      "p50": 5.864250000000027,
+      "p95": 7.178458000000006,
+      "p99": 7.4966249999999945
+    },
+    "equivalentReconfigurationCommitCount": 30,
+    "equivalentReconfigurationCompileCount": 0,
+    "equivalentReconfigurationIdentityReused": true,
+    "equivalentReconfigurationMs": {
+      "p50": 17.656999999999243,
+      "p95": 51.6740839999984,
+      "p99": 157.51845900000626
+    },
+    "iterations": 30,
+    "sampling": {
+      "compileWarmupIterations": 3,
+      "typecheckHeapClearedBeforeRuntime": false
+    }
+  },
+  "typecheckBudget": {
+    "enabled": false,
+    "reason": "Set PLITE_SCHEMA_TYPECHECK_BUDGET=1 for the registered strict target."
+  },
+  "validation": {
+    "blocks": 10000,
+    "coldMs": {
+      "p50": 26.50404200000048,
+      "p95": 38.35762499999964,
+      "p99": 38.35762499999964
+    },
+    "coldValidatedBlocks": 100000,
+    "frozenValue": true,
+    "iterations": 10,
+    "repeatedFrozenMs": {
+      "p50": 23.635416000000077,
+      "p95": 34.972874999999476,
+      "p99": 34.972874999999476
+    },
+    "repeatedFrozenValidatedBlocks": 100000,
+    "roots": 4
+  },
+  "validationLocality": {
+    "fullDocumentScans": 0,
+    "incrementalHits": 1,
+    "mainElementPropertyVisits": 1,
+    "mainPropertyVisits": 2,
+    "mainTextPropertyVisits": 1,
+    "namedRootPropertyVisits": 0,
+    "sourceBlocks": 50000,
+    "windowDiscoveries": 1
+  },
+  "wrapperLookup": {
+    "firstNs": {
+      "p50": 3166,
+      "p95": 16000,
+      "p99": 16000
+    },
+    "hostileTypes": 256,
+    "planSearches": 1,
+    "planSearchesAfterFirst": 0,
+    "warmNs": {
+      "p50": 197.93084,
+      "p95": 313.85332,
+      "p99": 313.85332
+    }
+  },
+  "version": 7,
+  "sourceBefore": {
+    "packages/plitejs/src/core/public-state.ts": "c626e30f5a3fde51a53af56d74c14436eea239e4bf30b58f3385d294f2e2072f",
+    "packages/plitejs/src/core/get-content-slice.ts": "a9530afaf93ab7f6bf80cc730989a78027a473f40369e843318f512eda0fc187",
+    "packages/plitejs/src/core/change/document-change.ts": "3ce815e12a547089e16da06a860a8dfd846be84fadfdeb60d97ffafb3f5009f5",
+    "packages/plitejs/src/core/snapshot-index.ts": "b2a921da89d08be40935a0fb9ba4ab601fffd1f568d7beabe67eed2fe8bccf4a",
+    "packages/plitejs/src/core/schema-compiler.ts": "4eae521b38ad68f09407a3689d9d953df1cbc4abe4e786b356acef07373d1e19",
+    "packages/plitejs/src/core/editor-schema.ts": "17d6d3b1eeae95d526d1fbf9a8cd0c40ba6d41f247374a1a60d3264a4c1293e6",
+    "packages/plitejs/src/interfaces/node.ts": "e75fafa20ae004deb7db029c784bd30323408bea5fd244905a2018c626b96166",
+    "packages/plitejs/src/react/editable/projected-clipboard.ts": "dfb46b2c47dc070e32c71457bee56c4f2213d4eacccd3ae87af2c0ac170e7faf",
+    "benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts": "2f46aae5386415b26e7f868b9fe3ee33522df0e3af65221b86b0c18a5ade1161",
+    "benchmarks/editor/benchmarks/plite-schema-typecheck-budget.mjs": "eb14b30014b594730f789de02463eaf64dc2514c507efe199001a319d0f21364"
+  },
+  "sourceAfter": {
+    "packages/plitejs/src/core/public-state.ts": "c626e30f5a3fde51a53af56d74c14436eea239e4bf30b58f3385d294f2e2072f",
+    "packages/plitejs/src/core/get-content-slice.ts": "a9530afaf93ab7f6bf80cc730989a78027a473f40369e843318f512eda0fc187",
+    "packages/plitejs/src/core/change/document-change.ts": "3ce815e12a547089e16da06a860a8dfd846be84fadfdeb60d97ffafb3f5009f5",
+    "packages/plitejs/src/core/snapshot-index.ts": "b2a921da89d08be40935a0fb9ba4ab601fffd1f568d7beabe67eed2fe8bccf4a",
+    "packages/plitejs/src/core/schema-compiler.ts": "4eae521b38ad68f09407a3689d9d953df1cbc4abe4e786b356acef07373d1e19",
+    "packages/plitejs/src/core/editor-schema.ts": "17d6d3b1eeae95d526d1fbf9a8cd0c40ba6d41f247374a1a60d3264a4c1293e6",
+    "packages/plitejs/src/interfaces/node.ts": "e75fafa20ae004deb7db029c784bd30323408bea5fd244905a2018c626b96166",
+    "packages/plitejs/src/react/editable/projected-clipboard.ts": "dfb46b2c47dc070e32c71457bee56c4f2213d4eacccd3ae87af2c0ac170e7faf",
+    "benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts": "2f46aae5386415b26e7f868b9fe3ee33522df0e3af65221b86b0c18a5ade1161",
+    "benchmarks/editor/benchmarks/plite-schema-typecheck-budget.mjs": "eb14b30014b594730f789de02463eaf64dc2514c507efe199001a319d0f21364"
+  }
+}

@@ -16,7 +16,7 @@ describe('schema-backed sparse edit benchmark authority', () => {
     {
       // The child enforces the benchmark budgets. This outer process timeout only
       // needs enough headroom to avoid killing valid work on a shared CI host.
-      timeout: 20_000,
+      timeout: 180_000,
     },
     () => {
       const result = spawnSync(
@@ -25,7 +25,7 @@ describe('schema-backed sparse edit benchmark authority', () => {
           '--preload',
           './config/plite-source-aliases.ts',
           'benchmarks/editor/benchmarks/plite-schema-construction-benchmark.ts',
-          '--iterations=1',
+          '--iterations=20',
           '--output=tmp/plite-schema-construction-contract.json',
         ],
         {
@@ -59,6 +59,31 @@ describe('schema-backed sparse edit benchmark authority', () => {
           label: string;
           rows: Array<{ maximumChangedSpan: number }>;
         };
+        prefixRows: Array<{
+          blocks: number;
+          boundaryIdentityPreserved: boolean;
+          contractBytes: number;
+          bodyMaximumChangedSpan: number;
+          maximumChangedSpan: number;
+          plainPropertyEdit: {
+            p50Ms: number;
+            p95Ms: number;
+            samplesMs: number[];
+          };
+          pairedPropertyDelta: { samplesMs: number[] };
+          prefixLength: number;
+          prefixPropertyEdit: {
+            p50Ms: number;
+            p95Ms: number;
+            samplesMs: number[];
+          };
+          prefixPropertyMaximumChangedSpan: number;
+          propertyP95OverheadBudgetMs: number;
+          propertyP95OverheadMs: number;
+          propertyP95WithinBudget: boolean;
+        }>;
+        prefixPropertyP95WithinBudget: boolean;
+        propertyOnlyDiagnostic: boolean;
       };
 
       assert.deepEqual(artifact.compiledSchema, {
@@ -72,9 +97,38 @@ describe('schema-backed sparse edit benchmark authority', () => {
         'immutable-publication diagnostic'
       );
       assert.equal(artifact.immutablePublicationDiagnostic.rows.length, 4);
+      assert.equal(artifact.propertyOnlyDiagnostic, false);
+      assert.equal(artifact.prefixPropertyP95WithinBudget, true);
       assert.equal(
         artifact.immutablePublicationDiagnostic.rows.every(
           ({ maximumChangedSpan }) => maximumChangedSpan < 64
+        ),
+        true
+      );
+      assert.deepEqual(
+        artifact.prefixRows.map(({ blocks, prefixLength }) => [
+          prefixLength,
+          blocks,
+        ]),
+        [1, 2].flatMap((prefixLength) =>
+          [100, 1000, 10_000, 50_000].map((blocks) => [prefixLength, blocks])
+        )
+      );
+      assert.equal(
+        artifact.prefixRows.every(
+          (row) =>
+            row.boundaryIdentityPreserved &&
+            row.contractBytes > 0 &&
+            row.maximumChangedSpan < 64 &&
+            row.prefixPropertyMaximumChangedSpan < 64 &&
+            row.bodyMaximumChangedSpan < 64 &&
+            row.plainPropertyEdit.samplesMs.length === 20 &&
+            row.prefixPropertyEdit.samplesMs.length === 20 &&
+            row.pairedPropertyDelta.samplesMs.length === 20 &&
+            row.plainPropertyEdit.p50Ms <= row.plainPropertyEdit.p95Ms &&
+            row.prefixPropertyEdit.p50Ms <= row.prefixPropertyEdit.p95Ms &&
+            row.propertyP95WithinBudget &&
+            row.propertyP95OverheadMs <= row.propertyP95OverheadBudgetMs
         ),
         true
       );

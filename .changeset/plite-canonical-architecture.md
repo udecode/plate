@@ -4,6 +4,7 @@
 
 - Add immutable `TransactionSpec` and versioned `DocumentChange` APIs for atomic, serializable updates, with explicit primary and named-root changes and no public primary-root sentinel
 - Compile closed schemas from plugin `schema` declarations with shared `property.*` laws, structural content fitting, stable identity, and typed element, group, root, and property queries
+- Declare independently meaningful blocks with editable children using `object: true`; compiled objects are selectable, isolating, and non-empty, while child text selection remains open for transfer and generic split cannot clone the owner
 - Define literal string domains with `property.enum(...)`
 - Avoid redundant editable renders when a controlled read-only prop already determines the effective input policy
 - Bind structural slice fitting to each compiled schema revision through one private, immutable fitter artifact

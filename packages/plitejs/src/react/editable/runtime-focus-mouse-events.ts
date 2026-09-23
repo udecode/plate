@@ -25,7 +25,7 @@ import {
   applyEditableFocus,
   applyEditableMouseDown,
   type EditableSelectionReconcilerState,
-  selectEditableKeyboardSelectableTarget,
+  selectEditableSelectableOwnerTarget,
   selectEditableVoidTarget,
 } from './selection-reconciler';
 
@@ -303,16 +303,13 @@ export const useRuntimeFocusMouseEvents = ({
       clearVerticalGoal();
       markNativePointerFocus(event);
 
-      if (
-        readOnly ||
-        isInteractiveInternalTarget(editor, event.target) ||
-        isNativeDraggableTarget(editor, event.target)
-      ) {
+      if (readOnly || isInteractiveInternalTarget(editor, event.target)) {
         return;
       }
 
+      const nativeDraggable = isNativeDraggableTarget(editor, event.target);
       const selectedPath =
-        selectEditableKeyboardSelectableTarget({
+        selectEditableSelectableOwnerTarget({
           editor,
           inputController,
           target: event.target,
@@ -323,7 +320,7 @@ export const useRuntimeFocusMouseEvents = ({
           target: event.target,
         });
 
-      if (selectedPath) {
+      if (selectedPath && !nativeDraggable) {
         event.preventDefault();
       }
     },

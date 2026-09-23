@@ -380,6 +380,53 @@ describe('OverridePlugin', () => {
     ]);
   });
 
+  it('stops at the first exact-leaf resolver decision, including false', () => {
+    let laterCalls = 0;
+    const CalloutPlugin = definePlugin('callout', {
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+      },
+    });
+    const PreserveCalloutPlugin = definePlugin('preserveCallout', {
+      rules: {
+        merge: {
+          removeEmpty: ({ node }) =>
+            node.type === CalloutPlugin.name ? false : undefined,
+        },
+      },
+    });
+    const RemoveEmptyPlugin = definePlugin('removeEmpty', {
+      rules: {
+        merge: {
+          removeEmpty: () => {
+            laterCalls += 1;
+
+            return true;
+          },
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [CalloutPlugin, PreserveCalloutPlugin, RemoveEmptyPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+      initialValue: [
+        { children: [{ text: '' }], type: 'callout' },
+        { children: [{ text: 'after' }], type: 'paragraph' },
+      ],
+    });
+
+    deleteBackward(editor, { unit: 'character' });
+
+    expect(laterCalls).toBe(0);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'after' }], type: 'callout' },
+    ]);
+  });
+
   it('preserves plugin-owned empty merge targets by default', () => {
     const CalloutPlugin = definePlugin('callout', {
       schema: {

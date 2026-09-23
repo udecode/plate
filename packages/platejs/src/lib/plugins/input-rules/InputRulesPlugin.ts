@@ -7,12 +7,28 @@ import {
 } from '../../../facade';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { definePlugin } from '../../plugin';
+import { createPlatePluginPortal } from '../../plugin/createPluginContext.internal';
+import {
+  createInputRuleDecline,
+  createInputRuleContinuation,
+  isInputRuleDecline,
+  isInputRuleContinuation,
+} from './inputRuleContinuation.internal';
 import type {
   InsertBreakInputRuleContext,
+  InsertBreakInputRuleReadContext,
   InsertDataInputRuleContext,
+  InsertDataInputRuleReadContext,
+  InputRuleEditor,
   InsertTextInputRuleContext,
+  InsertTextInputRuleReadContext,
   SelectionInputRuleContext,
 } from './types';
+
+const invalidApplyResult = () =>
+  new Error(
+    'An input rule must return undefined or the result of next(...) or decline().'
+  );
 
 export const InputRulesPlugin = definePlugin('inputRules', {
   editOnly: true,
@@ -29,6 +45,62 @@ export const InputRulesPlugin = definePlugin('inputRules', {
 
       return value;
     };
+  };
+  const createReadEditor = (state: EditorStateView): InputRuleEditor => {
+    const portals = new Map<object | string, unknown>();
+
+    const plugin: InputRuleEditor['plugin'] = ((reference: object | string) => {
+      const cached = portals.get(reference);
+
+      if (cached) return cached;
+
+      const portal =
+        typeof reference === 'string'
+          ? createPlatePluginPortal(editor, reference as never)
+          : editor.plugin(reference as never);
+      const name =
+        typeof reference === 'string'
+          ? reference
+          : (reference as { name: string }).name;
+      const store = Object.freeze({
+        get: (...args: unknown[]) => {
+          const pluginStore = portal.store as {
+            get: (...args: unknown[]) => unknown;
+          };
+
+          return Reflect.apply(pluginStore.get, pluginStore, args);
+        },
+      });
+      const value = Object.freeze(
+        Object.defineProperties(
+          {},
+          {
+            api: { enumerable: true, get: () => portal.api },
+            installed: { enumerable: true, get: () => portal.installed },
+            name: { enumerable: true, value: name },
+            read: {
+              enumerable: true,
+              get: () => {
+                if (!portal.installed) {
+                  throw new Error(`Plate plugin "${name}" is not installed.`);
+                }
+
+                return Reflect.get(state, name) ?? {};
+              },
+            },
+            schema: { enumerable: true, get: () => portal.schema },
+            selectors: { enumerable: true, get: () => portal.selectors },
+            store: { enumerable: true, value: store },
+          }
+        )
+      );
+
+      portals.set(reference, value);
+
+      return value;
+    }) as InputRuleEditor['plugin'];
+
+    return { plugin, read: state } as unknown as InputRuleEditor;
   };
   const createSelectionContext = ({
     state,
@@ -98,7 +170,7 @@ export const InputRulesPlugin = definePlugin('inputRules', {
     });
 
     return {
-      editor,
+      editor: createReadEditor(state as EditorStateView),
       getBlockEntry,
       getBlockStartRange,
       getBlockStartText,
@@ -114,134 +186,184 @@ export const InputRulesPlugin = definePlugin('inputRules', {
       around(domCommands.insertData, ({ input, state, next }) => {
         const rules = getPlateRuntime(editor).inputRules.insertData;
 
-        if (rules.length === 0) return next();
+        const firstRule = rules[0];
 
-        const data = input;
-        const text = data.getData('text/plain') || null;
-        const dataTypes = new Set(data.types);
-        let handled = false;
-        let continued = false;
-        let continuation: DataTransfer | undefined;
+        if (!firstRule) return next();
+
+        const dataTypes = new Set(input.types);
+        const selectionContext = createSelectionContext({ state });
+        const context = {
+          cause: 'insertData',
+          data: input,
+          plugin: firstRule.plugin,
+          text: input.getData('text/plain') || null,
+          ...selectionContext,
+        } satisfies InsertDataInputRuleReadContext;
+        let accepted:
+          | {
+              context: InsertDataInputRuleReadContext;
+              match: unknown;
+              rule: (typeof rules)[number];
+            }
+          | undefined;
+
+        for (const rule of rules) {
+          context.plugin = rule.plugin;
+
+          const { enabled } = rule;
+
+          if (typeof enabled === 'function' && !enabled(context)) {
+            continue;
+          }
+          if (
+            rule.mimeTypes?.length &&
+            !rule.mimeTypes.some((type) => {
+              if (type === 'Files') return (input.files?.length ?? 0) > 0;
+              if (dataTypes.has(type)) return true;
+
+              try {
+                return !!input.getData(type);
+              } catch {
+                return false;
+              }
+            })
+          ) {
+            continue;
+          }
+
+          const { resolve } = rule;
+          const match = typeof resolve === 'function' ? resolve(context) : true;
+
+          if (match === undefined) continue;
+
+          accepted = { context, match, rule };
+          break;
+        }
+
+        if (!accepted) return next();
+
+        let outcome: unknown;
         const prefix = state.transaction((tx) => {
-          const selectionContext = createSelectionContext({ state: tx });
+          let continued = false;
+          const ruleNext: InsertDataInputRuleContext['next'] = (data) => {
+            if (continued) {
+              throw new Error(
+                'An input rule cannot continue insertData more than once.'
+              );
+            }
 
-          for (const rule of rules) {
-            const context = {
-              cause: 'insertData',
-              data,
-              insertData: (nextData) => {
-                if (continued) {
-                  throw new Error(
-                    'An input rule cannot continue insertData more than once.'
-                  );
-                }
+            continued = true;
 
-                continued = true;
-                continuation = nextData;
-              },
-              plugin: rule.plugin,
-              text,
+            return createInputRuleContinuation(data);
+          };
+
+          outcome = accepted.rule.apply(
+            {
+              ...accepted.context,
+              decline: createInputRuleDecline,
+              next: ruleNext,
               tx,
-              ...selectionContext,
-            } satisfies Omit<InsertDataInputRuleContext, 'tx'> & {
-              tx: typeof tx;
-            };
-            if (
-              typeof rule.enabled === 'function' &&
-              !Reflect.apply(rule.enabled, undefined, [context])
-            ) {
-              continue;
-            }
-            if (
-              rule.mimeTypes?.length &&
-              !rule.mimeTypes.some((type) => {
-                if (type === 'Files') return (data.files?.length ?? 0) > 0;
-                if (dataTypes.has(type)) return true;
+            },
+            accepted.match
+          );
 
-                try {
-                  return !!data.getData(type);
-                } catch {
-                  return false;
-                }
-              })
-            ) {
-              continue;
-            }
-
-            const match =
-              typeof rule.resolve === 'function'
-                ? Reflect.apply(rule.resolve, undefined, [context])
-                : true;
-
-            if (match === undefined) continue;
-            if (
-              Reflect.apply(rule.apply, undefined, [context, match]) !== false
-            ) {
-              handled = true;
-
-              break;
-            }
+          if (
+            outcome !== undefined &&
+            !isInputRuleContinuation(outcome) &&
+            !isInputRuleDecline(outcome)
+          ) {
+            throw invalidApplyResult();
           }
         });
 
-        if (!handled || continued) {
-          return next.after(prefix, continuation ?? input);
-        }
+        if (outcome === undefined) return prefix;
+        if (isInputRuleDecline(outcome)) return next();
 
-        return prefix;
+        const continuation = outcome as ReturnType<
+          InsertDataInputRuleContext['next']
+        >;
+
+        return continuation.input === undefined
+          ? next.after(prefix)
+          : next.after(prefix, continuation.input);
       }),
       around(editorCommands.insertBreak, ({ state, next }) => {
         const rules = getPlateRuntime(editor).inputRules.insertBreak;
 
-        if (rules.length === 0) return next();
+        const firstRule = rules[0];
 
-        let handled = false;
-        let continueInsertion = false;
+        if (!firstRule) return next();
+
+        const selectionContext = createSelectionContext({ state });
+        const context = {
+          cause: 'insertBreak',
+          plugin: firstRule.plugin,
+          ...selectionContext,
+        } satisfies InsertBreakInputRuleReadContext;
+        let accepted:
+          | {
+              context: InsertBreakInputRuleReadContext;
+              match: unknown;
+              rule: (typeof rules)[number];
+            }
+          | undefined;
+
+        for (const rule of rules) {
+          context.plugin = rule.plugin;
+
+          const { enabled } = rule;
+
+          if (typeof enabled === 'function' && !enabled(context)) {
+            continue;
+          }
+
+          const { resolve } = rule;
+          const match = typeof resolve === 'function' ? resolve(context) : true;
+
+          if (match === undefined) continue;
+
+          accepted = { context, match, rule };
+          break;
+        }
+
+        if (!accepted) return next();
+
+        let outcome: unknown;
         const prefix = state.transaction((tx) => {
-          const selectionContext = createSelectionContext({ state: tx });
+          let continued = false;
+          const ruleNext: InsertBreakInputRuleContext['next'] = () => {
+            if (continued) {
+              throw new Error(
+                'An input rule cannot continue insertBreak more than once.'
+              );
+            }
 
-          for (const rule of rules) {
-            const context = {
-              cause: 'insertBreak',
-              insertBreak: () => {
-                if (continueInsertion) {
-                  throw new Error(
-                    'An input rule cannot continue insertBreak more than once.'
-                  );
-                }
+            continued = true;
 
-                continueInsertion = true;
-              },
-              plugin: rule.plugin,
+            return createInputRuleContinuation(undefined);
+          };
+
+          outcome = accepted.rule.apply(
+            {
+              ...accepted.context,
+              decline: createInputRuleDecline,
+              next: ruleNext,
               tx,
-              ...selectionContext,
-            } satisfies Omit<InsertBreakInputRuleContext, 'tx'> & {
-              tx: typeof tx;
-            };
-            if (
-              typeof rule.enabled === 'function' &&
-              !Reflect.apply(rule.enabled, undefined, [context])
-            ) {
-              continue;
-            }
-            const match =
-              typeof rule.resolve === 'function'
-                ? Reflect.apply(rule.resolve, undefined, [context])
-                : true;
+            },
+            accepted.match
+          );
 
-            if (match === undefined) continue;
-            if (
-              Reflect.apply(rule.apply, undefined, [context, match]) !== false
-            ) {
-              handled = true;
-
-              break;
-            }
+          if (
+            outcome !== undefined &&
+            !isInputRuleContinuation(outcome) &&
+            !isInputRuleDecline(outcome)
+          ) {
+            throw invalidApplyResult();
           }
         });
 
-        if (!handled) return next();
-        if (!continueInsertion) return prefix;
+        if (outcome === undefined) return prefix;
+        if (isInputRuleDecline(outcome)) return next();
 
         return next.after(prefix);
       }),
@@ -260,67 +382,95 @@ export const InputRulesPlugin = definePlugin('inputRules', {
           ? { ...input.options, at: resolvedTarget }
           : undefined;
 
-        if (rules.length === 0) return next();
+        const firstRule = rules[0];
 
-        let handled = false;
-        let continuation: typeof input | undefined;
+        if (!firstRule) return next();
+
+        const selectionContext = createSelectionContext({ state });
+        const context = {
+          cause: 'insertText',
+          options: commandOptions,
+          plugin: firstRule.plugin,
+          text: input.text,
+          ...selectionContext,
+        } satisfies InsertTextInputRuleReadContext;
+        let accepted:
+          | {
+              context: InsertTextInputRuleReadContext;
+              match: unknown;
+              rule: (typeof rules)[number];
+            }
+          | undefined;
+
+        for (const rule of rules) {
+          context.plugin = rule.plugin;
+
+          const { enabled } = rule;
+
+          if (typeof enabled === 'function' && !enabled(context)) {
+            continue;
+          }
+
+          const { resolve } = rule;
+          const match = typeof resolve === 'function' ? resolve(context) : true;
+
+          if (match === undefined) continue;
+
+          accepted = { context, match, rule };
+          break;
+        }
+
+        if (!accepted) return next();
+
+        let outcome: unknown;
         const prefix = state.transaction((tx) => {
-          const selectionContext = createSelectionContext({ state: tx });
+          let continued = false;
+          const ruleNext: InsertTextInputRuleContext['next'] = (
+            text,
+            options
+          ) => {
+            if (continued) {
+              throw new Error(
+                'An input rule cannot continue insertText more than once.'
+              );
+            }
 
-          for (const rule of rules) {
-            const context = {
-              cause: 'insertText',
-              insertText: (text, options) => {
-                if (continuation) {
-                  throw new Error(
-                    'An input rule cannot continue insertText more than once.'
-                  );
-                }
+            continued = true;
 
-                continuation = { ...input, options, text };
-              },
-              options: commandOptions,
-              plugin: rule.plugin,
-              text: input.text,
+            return createInputRuleContinuation(
+              text === undefined ? undefined : { options, text }
+            );
+          };
+
+          outcome = accepted.rule.apply(
+            {
+              ...accepted.context,
+              decline: createInputRuleDecline,
+              next: ruleNext,
               tx,
-              ...selectionContext,
-            } satisfies Omit<InsertTextInputRuleContext, 'tx'> & {
-              tx: typeof tx;
-            };
-            if (
-              Array.isArray(rule.trigger)
-                ? !rule.trigger.includes(context.text)
-                : rule.trigger !== context.text
-            ) {
-              continue;
-            }
-            if (
-              typeof rule.enabled === 'function' &&
-              !Reflect.apply(rule.enabled, undefined, [context])
-            ) {
-              continue;
-            }
+            },
+            accepted.match
+          );
 
-            const match =
-              typeof rule.resolve === 'function'
-                ? Reflect.apply(rule.resolve, undefined, [context])
-                : true;
-
-            if (match === undefined) continue;
-            if (
-              Reflect.apply(rule.apply, undefined, [context, match]) !== false
-            ) {
-              handled = true;
-
-              break;
-            }
+          if (
+            outcome !== undefined &&
+            !isInputRuleContinuation(outcome) &&
+            !isInputRuleDecline(outcome)
+          ) {
+            throw invalidApplyResult();
           }
         });
 
-        if (!handled && !continuation) return next();
-        if (!continuation) return prefix;
+        if (outcome === undefined) return prefix;
+        if (isInputRuleDecline(outcome)) return next();
 
-        return next.after(prefix, continuation);
+        const continuation = outcome as ReturnType<
+          InsertTextInputRuleContext['next']
+        >;
+
+        return continuation.input === undefined
+          ? next.after(prefix)
+          : next.after(prefix, { ...input, ...continuation.input });
       }),
     ],
   };

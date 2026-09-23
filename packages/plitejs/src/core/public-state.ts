@@ -565,6 +565,7 @@ const STATE_VIEW_CACHE = new WeakMap<
     view: EditorStateView;
   }
 >();
+const STATE_VIEW_OWNERS = new WeakMap<object, Editor>();
 const CONSTRUCTING_STATE_VIEWS = new WeakSet<Editor>();
 
 const incrementStateViewTransformGeneration = (editor: Editor) => {
@@ -4416,6 +4417,7 @@ const getStateView = <
     }
 
     state = Object.freeze(stateRecord) as EditorStateView<V, TPlugins>;
+    STATE_VIEW_OWNERS.set(state, owner);
     STATE_VIEW_CACHE.set(editor, {
       registry,
       transformGeneration,
@@ -4798,7 +4800,10 @@ const getUpdateView = <
     let defaultBlock: Descendant | null = null;
 
     if (path.length === 1) {
-      defaultBlock = state.schema.createDefaultRootChild(toPublicRoot(root));
+      defaultBlock = state.schema.createDefaultRootChild(
+        toPublicRoot(root),
+        path[0]
+      );
     } else {
       const parent = state.nodes.parent(path)?.[0];
       const defaultChild =
@@ -4838,6 +4843,29 @@ const getUpdateView = <
       { at: path, voids: options.voids }
     );
   };
+  const canApplyBlockProps = (
+    path: Path,
+    root: string,
+    props: Readonly<Record<string, unknown>>,
+    unset: readonly string[] = []
+  ) => {
+    const entry = state.nodes.get(path);
+
+    if (!entry || !ElementApi.isElement(entry[0])) return false;
+
+    const candidate: Record<string, unknown> = { ...entry[0], ...props };
+
+    for (const key of unset) delete candidate[key];
+
+    const parent = state.nodes.parent(path)?.[0];
+
+    return getEditorSchema(editor).canContainAt(
+      ElementApi.isElement(parent) ? parent : null,
+      candidate as Element,
+      path.at(-1) ?? 0,
+      root
+    );
+  };
   const resetBlocks: EditorTransactionBlocksApi<V>['reset'] = (options) => {
     runNodeTargetMutation(options, (resolvedOptions) => {
       const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
@@ -4855,13 +4883,13 @@ const getUpdateView = <
       props,
       { at = getCurrentSelection(editor) ?? undefined, voids, wrap } = {}
     ) => {
-      if (!at) return;
+      if (!at) return false;
       const nodeSelection = SelectionApi.isNode(at) ? at : null;
       const targetAt = nodeSelection
         ? null
         : resolveNodeTargetLocation(editor, at as NodeTarget);
 
-      if (!nodeSelection && !targetAt) return;
+      if (!nodeSelection && !targetAt) return false;
       const root = nodeSelection
         ? (nodeSelection.root ?? MAIN_ROOT_KEY)
         : targetAt
@@ -4873,7 +4901,7 @@ const getUpdateView = <
           .map(([, path]) => path)
       );
 
-      if (selectedBlockPaths.length === 0) return;
+      if (selectedBlockPaths.length === 0) return false;
 
       const propsMatch = (node: PliteNode) =>
         NodeApi.isElement(node) && ElementApi.matches(node, props);
@@ -4888,6 +4916,55 @@ const getUpdateView = <
               return !!entry && propsMatch(entry[0]);
             })
       );
+
+      if (!wrap) {
+        const allowed = runWithMutationRoot(editor, root, () =>
+          selectedBlockPaths.every((path) => {
+            const nextProps = isActive
+              ? getDefaultBlockProps(path, root)
+              : props;
+            const unset = isActive
+              ? Object.keys(props).filter(
+                  (key) => key !== 'type' && !Object.hasOwn(nextProps, key)
+                )
+              : [];
+
+            return canApplyBlockProps(path, root, nextProps, unset);
+          })
+        );
+
+        if (!allowed) return false;
+      }
+
+      if (wrap && !isActive) {
+        const schema = getEditorSchema(editor);
+        const allowed = runWithMutationRoot(editor, root, () =>
+          selectedBlockPaths.every((path) => {
+            const entry = state.nodes.get(path);
+
+            if (!entry || !ElementApi.isElement(entry[0])) return false;
+
+            const wrapper = {
+              ...props,
+              children: [entry[0]],
+            } as Element;
+            const parent = state.nodes.parent(path)?.[0];
+
+            return (
+              schema.canContainAt(
+                ElementApi.isElement(parent) ? parent : null,
+                wrapper,
+                path.at(-1) ?? 0,
+                root
+              ) && schema.canContain(wrapper, entry[0])
+            );
+          })
+        );
+
+        if (!allowed) return false;
+      }
+
+      const before = getActiveDocumentChangeBuilder(editor).change;
 
       if (wrap) {
         for (const path of selectedBlockPaths.toReversed()) {
@@ -4910,7 +4987,7 @@ const getUpdateView = <
           });
         }
 
-        return;
+        return getActiveDocumentChangeBuilder(editor).change !== before;
       }
 
       for (const path of selectedBlockPaths) {
@@ -4930,10 +5007,10 @@ const getUpdateView = <
           }
         });
       }
+      return getActiveDocumentChangeBuilder(editor).change !== before;
     },
-    (command, [props, options]) => {
-      command(editorCommands.toggleBlock, { options, props });
-    }
+    (command, [props, options]) =>
+      command(editorCommands.toggleBlock, { options, props })
   );
   let txRecord!: EditorUpdateTransaction<V, TPlugins>;
   const duplicateNodes = (
@@ -5088,7 +5165,6 @@ const getUpdateView = <
       const replace =
         replaceEmpty &&
         NodeApi.isText(block[0].children[0]) &&
-        !state.schema.isAtom(block[0]) &&
         !state.schema.isReadOnly(block[0]) &&
         state.nodes.isEmpty(block[0]);
       const path = insertAt(PathApi.next(block[1]));
@@ -5174,6 +5250,20 @@ const getUpdateView = <
   ) =>
     runNodeTargetMutation(options, (resolvedOptions) => {
       const entries = state.nodes.blocks(resolvedOptions as never);
+      const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
+
+      if (
+        entries.length === 0 ||
+        !entries.every(([, path]) => canApplyBlockProps(path, root, props))
+      ) {
+        return false;
+      }
+
+      if (entries.every(([node]) => ElementApi.matches(node, props))) {
+        return false;
+      }
+
+      const before = getActiveDocumentChangeBuilder(editor).change;
 
       for (const [, path] of entries) {
         setTransactionNodes(
@@ -5184,7 +5274,8 @@ const getUpdateView = <
           } as never
         );
       }
-    })) as EditorTransactionBlocksApi<V>['set'];
+      return getActiveDocumentChangeBuilder(editor).change !== before;
+    }) ?? false) as EditorTransactionBlocksApi<V>['set'];
   const unsetTransactionNodes = ((
     props: string | readonly string[] | SchemaPropertyHandle,
     options?: NodeUnsetNodesOptions<NodeIn<V>>
@@ -5205,14 +5296,31 @@ const getUpdateView = <
   ) => {
     const at = resolveNodeTargetLocation(editor, options.at);
 
-    if (!at || !LocationApi.isPath(at)) return;
+    if (!at || !LocationApi.isPath(at)) return false;
 
-    runMutation({ at }, () => {
+    return runMutation({ at }, () => {
       if (at.length === 0) {
         throw new Error('Cannot replace the editor root.');
       }
 
       const replacedNode = NodeApi.get(editor, at);
+      const replacements = Array.isArray(nodes) ? nodes : [nodes];
+      const parentPath = PathApi.parent(at);
+      const index = getDefined(at.at(-1));
+      const parent = state.nodes.get(parentPath)?.[0];
+
+      if (
+        replacements.length === 1 &&
+        !getEditorSchema(editor).canContainAt(
+          ElementApi.isElement(parent) ? parent : null,
+          replacements[0],
+          index,
+          getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
+        )
+      ) {
+        return false;
+      }
+
       const snapshot = getTransactionSnapshot(editor);
       if (snapshot) {
         const currentIndex = getTransactionSnapshotIndex(
@@ -5226,9 +5334,6 @@ const getUpdateView = <
         }
       }
 
-      const replacements = Array.isArray(nodes) ? nodes : [nodes];
-      const parentPath = PathApi.parent(at);
-      const index = getDefined(at.at(-1));
       const newSelection =
         options.select && replacements.length > 0
           ? (() => {
@@ -5252,12 +5357,16 @@ const getUpdateView = <
             })()
           : undefined;
 
+      const before = getActiveDocumentChangeBuilder(editor).change;
+
       replaceChildren(editor, replacements, {
         at: parentPath,
         count: 1,
         index,
         newSelection,
       });
+
+      return getActiveDocumentChangeBuilder(editor).change !== before;
     });
   };
   const replaceChildrenNodes: EditorTransactionNodesApi<V>['replaceChildren'] =
@@ -5529,8 +5638,36 @@ const getUpdateView = <
         options?: { at?: NodeSelection | NodeTarget }
       ) =>
         runNodeTargetMutation(options, (resolvedOptions) => {
+          const at = resolvedOptions?.at;
+
+          if (at && PathApi.isPath(at)) {
+            const entry = state.nodes.get(at);
+
+            if (!entry || !ElementApi.isElement(entry[0])) return false;
+
+            const parent = state.nodes.parent(at)?.[0];
+            const wrapper = { ...element, children: [entry[0]] };
+            const schema = getEditorSchema(editor);
+
+            if (
+              !schema.canContainAt(
+                ElementApi.isElement(parent) ? parent : null,
+                wrapper,
+                at.at(-1) ?? 0,
+                getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
+              ) ||
+              !schema.canContain(wrapper, entry[0])
+            ) {
+              return false;
+            }
+          }
+
+          const before = getActiveDocumentChangeBuilder(editor).change;
+
           wrapNodes(editor, element, resolvedOptions as never);
-        }),
+
+          return getActiveDocumentChangeBuilder(editor).change !== before;
+        }) ?? false,
     }),
     roots: Object.freeze({
       create: (root, children) => {
@@ -7150,9 +7287,10 @@ const normalizeEditorMaxLength = (maxLength: number | undefined) => {
   return maxLength;
 };
 
-export const getEditorMaxLength = (
-  editor: AnyPluginEditor
-): number | undefined => EDITOR_MAX_LENGTH.get(editor);
+export const getEditorMaxLength = (editor: object): number | undefined =>
+  EDITOR_MAX_LENGTH.get(
+    STATE_VIEW_OWNERS.get(editor) ?? getEditorRuntimeOwner(editor as Editor)
+  );
 
 export const setEditorMaxLength = (
   editor: AnyPluginEditor,

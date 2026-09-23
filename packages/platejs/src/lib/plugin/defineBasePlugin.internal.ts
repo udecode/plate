@@ -24,6 +24,16 @@ type PluginRecord = Record<PropertyKey, unknown> & {
 const isObjectRecord = (value: unknown): value is PluginRecord =>
   typeof value === 'object' && value !== null;
 
+const assertInputRules = (value: PluginRecord) => {
+  if (
+    Object.hasOwn(value, 'inputRules') &&
+    value.inputRules !== undefined &&
+    !Array.isArray(value.inputRules)
+  ) {
+    throw new Error('inputRules must be an array of explicit rule instances.');
+  }
+};
+
 const assertBaseDefinition: (
   value: unknown
 ) => asserts value is PluginRecord = (value) => {
@@ -48,10 +58,12 @@ const assertBaseDefinition: (
   if (Object.hasOwn(value, 'api') && typeof value.api !== 'function') {
     throw new Error('Plate plugin `api` must be a context factory.');
   }
+  assertInputRules(value);
 };
 
 const assertExtendObject = (value: object) => {
   assertNoPrepareDocument(value);
+  assertInputRules(value as PluginRecord);
 
   if (Object.hasOwn(value, 'component')) {
     throw new Error(
@@ -83,6 +95,7 @@ const assertExtendObject = (value: object) => {
 
 const assertConfigureObject = (value: object) => {
   assertNoPrepareDocument(value);
+  assertInputRules(value as PluginRecord);
 
   for (const field of [
     'activate',

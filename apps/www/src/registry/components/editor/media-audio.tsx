@@ -4,6 +4,7 @@ import type { AudioPlugin } from 'platejs/media/react';
 import {
   type EditorElementProps,
   EditorElement,
+  useEditorFocused,
   useElementSelected,
   usePath,
 } from 'platejs/react';
@@ -15,6 +16,7 @@ import { Caption, useCaptionFocused } from './caption';
 
 export function AudioElement(props: EditorElementProps<typeof AudioPlugin>) {
   const path = usePath();
+  const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'node' });
   const textAlign =
     'textAlign' in props.element &&
@@ -26,9 +28,22 @@ export function AudioElement(props: EditorElementProps<typeof AudioPlugin>) {
   const captionFocused = useCaptionFocused(path);
 
   return (
-    <EditorElement {...props} className="mb-1">
+    <EditorElement
+      {...props}
+      attributes={{
+        ...props.attributes,
+        'data-node-selection-highlight': 'self',
+      }}
+      className="mb-1"
+    >
       <figure className="group relative cursor-default [&>figcaption]:min-h-20">
-        <div className={cn('h-16 rounded-sm')} contentEditable={false}>
+        <div
+          className={cn(
+            'h-16 rounded-sm',
+            focused && selected && 'ring-2 ring-ring ring-offset-2'
+          )}
+          contentEditable={false}
+        >
           {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}
           <audio className="size-full" src={props.element.url} controls />
         </div>

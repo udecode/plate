@@ -57,11 +57,11 @@ export type BasePluginDefinition = Readonly<{
   api?: object;
   codecs?: true;
   commands?: true;
-  conflicts?: ReadonlyArray<RuntimePluginReference | PluginReference>;
+  conflicts?: ReadonlyArray<Readonly<{ enabled?: boolean; name: string }>>;
   contributions?: true;
   corrections?: true;
   decorate?: true;
-  dependencies?: ReadonlyArray<RuntimePluginReference | PluginReference>;
+  dependencies?: ReadonlyArray<Readonly<{ enabled?: boolean; name: string }>>;
   editOnly?: true;
   effectTypes?: true;
   enabled?: boolean;
@@ -263,7 +263,7 @@ export type PluginBase<
      * - `'lineBreak'`: Insert newline character
      * - `'deleteExit'`: Delete backward then exit
      */
-    break?: BreakRules;
+    break?: BreakRules<C>;
     /**
      * Defines actions on delete based on block state.
      *
@@ -271,11 +271,11 @@ export type PluginBase<
      * - `'lift'`: Lift the current block out of the nearest matching ancestor
      * - `'reset'`: Reset block to default paragraph type
      */
-    delete?: DeleteRules;
+    delete?: DeleteRules<C>;
     /** Defines the behavior of merging nodes. */
-    merge?: MergeRules;
+    merge?: MergeRules<C>;
     /** Defines the behavior of normalizing nodes. */
-    normalize?: NormalizeRules;
+    normalize?: NormalizeRules<C>;
     /** Defines the behavior of selection. */
     selection?: SelectionRules;
   };
@@ -508,9 +508,50 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 // -----------------------------------------------------------------------------
 
-export type BreakRules = {
+type StructuralRulePluginPortal<P extends PluginReference> = [
+  DefinitionOf<P>,
+] extends [never]
+  ? PluginPortalContext
+  : PluginPortalContext<DefinitionOf<P>>;
+
+/** Read-only editor capabilities available while resolving a structural rule. */
+export type StructuralRuleEditor = Omit<RuntimeEditor, 'plugin'> & {
+  plugin<const P extends PluginReference>(
+    plugin: P
+  ): StructuralRulePluginPortal<P>;
+};
+
+export type StructuralRuleContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
+  editor: StructuralRuleEditor;
+  node: Element;
+  path: Path;
+  plugin: PluginReference<C['name']>;
+} & PluginBaseContext<C>;
+
+type StructuralRuleResolver<TAction, C extends AnyBasePluginDefinition> = {
+  bivarianceHack(context: StructuralRuleContext<C>): TAction | undefined;
+}['bivarianceHack'];
+
+export type RuleDecision<
+  TAction,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = TAction | StructuralRuleResolver<TAction, C>;
+
+type BreakAction =
+  | 'default'
+  | 'deleteExit'
+  | 'exit'
+  | 'lift'
+  | 'none'
+  | 'reset';
+
+export type BreakRules<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
   /** Action when Enter is pressed in an empty block. */
-  empty?: 'default' | 'deleteExit' | 'exit' | 'lift' | 'none' | 'reset';
+  empty?: RuleDecision<BreakAction, C>;
   /**
    * Action when Enter is pressed at the end of an empty line. This is typically
    * used with `default: 'lineBreak'`.
@@ -524,27 +565,36 @@ export type BreakRules = {
    *     </blockquote>
    * ```
    */
-  emptyLineEnd?: 'default' | 'deleteExit' | 'exit';
+  emptyLineEnd?: RuleDecision<'default' | 'deleteExit' | 'exit', C>;
   /**
    * Default action when Enter is pressed. Defaults to splitting the block.
    * Use `'none'` to handle Enter without changing the document.
    */
-  default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak' | 'none';
+  default?: RuleDecision<
+    'default' | 'deleteExit' | 'exit' | 'lineBreak' | 'none',
+    C
+  >;
   /** If true, the new block after splitting will be reset to the default type. */
-  splitReset?: boolean;
+  splitReset?: RuleDecision<boolean, C>;
 };
 
-export type MergeRules = {
+export type MergeRules<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
   /** Whether to remove the node when it's empty. */
-  removeEmpty?: boolean;
+  removeEmpty?: RuleDecision<boolean, C>;
 };
 
-export type NormalizeRules = {
+export type NormalizeRules<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
   /** Whether to remove nodes with empty text. */
-  removeEmpty?: boolean;
+  removeEmpty?: RuleDecision<boolean, C>;
 };
 
-export type DeleteRules = {
+export type DeleteRules<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
   /**
    * Action when Backspace is pressed at the start of the block. This applies
    * whether the block is empty or not.
@@ -557,9 +607,9 @@ export type DeleteRules = {
    *     </blockquote>
    * ```
    */
-  start?: 'default' | 'lift' | 'reset';
+  start?: RuleDecision<'default' | 'lift' | 'reset', C>;
   /** Action when a deletion starts from or leaves the block empty. */
-  empty?: 'default' | 'reset';
+  empty?: RuleDecision<'default' | 'reset', C>;
 };
 
 export type SelectionRules = {
@@ -576,17 +626,6 @@ export type SelectionRules = {
    */
   affinity?: 'default' | 'directional' | 'hard' | 'outward';
 };
-
-export type MatchRules =
-  | 'break.default'
-  | 'break.empty'
-  | 'break.emptyLineEnd'
-  | 'break.splitReset'
-  | 'delete.empty'
-  | 'delete.start'
-  | 'merge.removeEmpty'
-  | 'normalize.removeEmpty'
-  | 'selection.affinity';
 
 export type EditOnlyConfig = {
   /**

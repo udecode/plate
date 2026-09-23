@@ -1,10 +1,8 @@
 query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
 web-google-views	web	site.developers.google.com docs api suggestions accepted rejected suggestionsViewMode	primary sources	not captured	1	Google Docs	views	none
 web-editor-suggestions	web	rich text track changes ProseMirror suggestions GitHub manuscripts handlewithcare SuperDoc	primary sources	not captured	3	HWC; SuperDoc; ProseMirror	projection; capture	local clones
-web-ckeditor-features	web	site.ckeditor.com docs track changes integrations suggestion data revision history	primary sources	not captured	2	CKEditor	persistence; capture	custom feature docs
 web-automerge-history	web	site.automerge.org docs history actor changes text	primary sources	not captured	2	Automerge	authorship; history	local source
 web-loro-history	web	site.loro.dev docs version history undo rich text	primary sources	not captured	2	Loro	history	local source
-web-ckeditor-persistence	web	site.ckeditor.com docs track changes integration load save suggestions data	primary sources	not captured	2	none	persistence	none
 web-yjs14	web	site.yjs.dev v14 attribution suggestions DiffAttributionManager	primary sources	not captured	2	Yjs; y-prosemirror	projection	refresh upstream source
 web-yjs-attribution	web	site.discuss.yjs.dev suggestion mode attribution manager	primary sources	not captured	2	Yhub	authorship; history	local clone
 web-google-ui	web	site.support.google.com/docs suggest edits accept reject all changes	primary sources	not captured	2	none	views	none

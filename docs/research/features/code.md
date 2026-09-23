@@ -8,25 +8,37 @@ Question: Which canonical text, editing and syntax-presentation contract should 
 
 ## Current decision
 
-[2026-09-05-code-native-plateau](../review-records/2026-09-05-code-native-plateau.json) — **historical / unknown**. Full-native investigation stopped at the authorized plateau with no certified timing gain.
+[2026-09-22-code-last-pass-ownership-gates](../review-records/2026-09-22-code-last-pass-ownership-gates.json) — **pursue**. Pursue code-command and caller-owned highlighter repairs. Hidden Python grammar mutation, JSON-only package policy with no-op selection loss, and selected-line endpoint error remain real. The previous review overstated generated insertion as an already equivalent replacement and a shared-control move as sufficient to remove Lowlight from CodeMirror composition. Gate insertion on option/schema/selection parity and defer an independent backend split until complete composition and measured value are established. Generic replaceChildren intentionally drops selection for replaced node identities; the JSON command owns its misuse.
 
-Compiled decision: [code-text-ownership.md](../decisions/code-text-ownership.md). Source observation: unknown. Source matching is not behavior proof.
+Compiled decision: [code-text-ownership.md](../decisions/code-text-ownership.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **unbound**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
+Execution: **completed**. Proof: **stale**. This verifies the accepted code-block behavior and browser paths, not comparative performance, production bundle size, physical-device/IME or assistive-technology behavior.
+
+Outcome: [2026-09-22-code-demo-browser-closure](../review-records/2026-09-22-code-demo-browser-closure.json). Governing reviews: [2026-09-22-code-last-pass-ownership-gates](../review-records/2026-09-22-code-last-pass-ownership-gates.json). Work kind: implementation. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [BaseCodeBlockPlugin.ts](../../../packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts), [code-block.tsx](../../../apps/www/src/registry/components/editor/code-block.tsx), [code-block-huge-demo.tsx](../../../apps/www/src/registry/examples/code-block-huge-demo.tsx), [package.json](../../../apps/www/package.json), [code-block-static.tsx](../../../apps/www/src/registry/components/editor/code-block-static.tsx), [registry-features.ts](../../../apps/www/src/registry/registry-features.ts), [code-block.mdx](../../../content/docs/(plugins)/(elements)/code-block.mdx), [code-block.cn.mdx](../../../content/docs/(plugins)/(elements)/code-block.cn.mdx), [pnpm-lock.yaml](../../../pnpm-lock.yaml). Changed directories: [code-block](../../../packages/platejs/src/features/code-block). Changed source groups: browser/code-block-demos, capability/codeBlock, capability/codeSyntax, example/registry/code-block-demo, example/registry/code-block-huge-demo, platejs/code-block, ui/code-block.
 
-- **decision-review-mismatch**: [code-text-ownership.md](../decisions/code-text-ownership.md); expected 2026-09-05-code-native-plateau, recorded 2026-09-04-code-external-text.
+- **unbound-plan**: [2026-09-02-remove-code-line-model.md](../../plans/2026-09-02-remove-code-line-model.md).
+
+- **unbound-plan**: [2026-09-03-external-text-execution.md](../../plans/2026-09-03-external-text-execution.md).
 
 - **unbound-plan**: [2026-09-04-code-block-external-text-architecture-audit.md](../../plans/2026-09-04-code-block-external-text-architecture-audit.md).
 
+- **unbound-plan**: [2026-09-04-code-block-external-text-execution.md](../../plans/2026-09-04-code-block-external-text-execution.md).
+
 - **unbound-plan**: [2026-09-05-native-code-full-dom-investigation.md](../../plans/2026-09-05-native-code-full-dom-investigation.md).
 
-- **unreconciled-execution**: [2026-09-18-recovered-2026-09-05-native-code-full-dom-investigation](../review-records/2026-09-18-recovered-2026-09-05-native-code-full-dom-investigation.json).
+- **unbound-plan**: [2026-09-06-code-block-plate-plite-tiptap-perf-audit.md](../../plans/2026-09-06-code-block-plate-plite-tiptap-perf-audit.md).
+
+- **stale-execution-proof**: [2026-09-22-code-design-ownership-plan](../review-records/2026-09-22-code-design-ownership-plan.json).
+
+- **stale-execution-proof**: [2026-09-22-code-commands-and-highlighter-implementation](../review-records/2026-09-22-code-commands-and-highlighter-implementation.json).
+
+- **stale-execution-proof**: [2026-09-22-code-demo-browser-closure](../review-records/2026-09-22-code-demo-browser-closure.json).
 
 ## Plans and execution
 
@@ -34,20 +46,31 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
+| [2026-09-02-remove-code-line-model.md](../../plans/2026-09-02-remove-code-line-model.md) | planned | design | unbound |
+| [2026-09-03-external-text-execution.md](../../plans/2026-09-03-external-text-execution.md) | unknown | implementation | unbound |
 | [2026-09-04-code-block-external-text-architecture-audit.md](../../plans/2026-09-04-code-block-external-text-architecture-audit.md) | unknown | research | unbound |
+| [2026-09-04-code-block-external-text-execution.md](../../plans/2026-09-04-code-block-external-text-execution.md) | unknown | implementation | unbound |
 | [2026-09-05-native-code-full-dom-investigation.md](../../plans/2026-09-05-native-code-full-dom-investigation.md) | completed | implementation | unbound |
+| [2026-09-06-code-block-plate-plite-tiptap-perf-audit.md](../../plans/2026-09-06-code-block-plate-plite-tiptap-perf-audit.md) | unknown | implementation | unbound |
+| [2026-09-22-code-commands-and-highlighter-ownership.md](../../plans/2026-09-22-code-commands-and-highlighter-ownership.md) | completed | implementation | [2026-09-22-code-last-pass-ownership-gates](../review-records/2026-09-22-code-last-pass-ownership-gates.json) |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-- [2026-09-18-recovered-2026-09-05-native-code-full-dom-investigation](../review-records/2026-09-18-recovered-2026-09-05-native-code-full-dom-investigation.json): completed; binding **historical-unbound**; Recovered historical implementation completion from the plan. Complete at the user-authorized plateau. No certified timing gain; only verified event-only path subscription repairs remain. All speculative CSS/kernel changes are reverted. The record date is the recovery date, not evidence that this work happened after the latest review. Proof: unknown / unknown. Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
+- [2026-09-22-code-design-ownership-plan](../review-records/2026-09-22-code-design-ownership-plan.json): completed; binding **current**; Completed the plan-only code repair design: retain code-specific insert/upsert policy while constructing a schema-valid code node, move JSON formatting to copied UI with a mapped text edit, correct the native selected-line endpoint, and move Python registration to copied-kit resource construction. Product implementation and browser proof remain open; optional CodeMirror backend separation is deferred. Proof: stale / partial. Design-only outcome. Current source inspection and two narrow ad hoc Bun probes support owner selection; the prior 58-test suite was reused, not rerun. No changed product source, browser or SSR parity run, CodeMirror runtime/bundle measurement, packed distribution, or implementation proof.
+- [2026-09-22-code-commands-and-highlighter-implementation](../review-records/2026-09-22-code-commands-and-highlighter-implementation.json): completed; binding **current**; Construct code blocks directly from their schema, retain code-specific insertion and reuse policy, correct selected-line endpoints, move JSON formatting to the copied UI with one canonical multi-edit update, repair Plite mapping for retained text anchors, and register browser-safe Python at copied-kit construction rather than during package reads. Public docs, generated registry items, behavior law and Plate Next v230 are aligned; the optional CodeMirror backend split remains deferred. Proof: stale / partial. An adjacent code-demo Enter-at-heading-start row fails; cause not established, so no full browser-file pass is claimed. No production bundle, large-JSON timing, assistive-technology or physical-device proof ran.
+- [2026-09-22-code-demo-browser-closure](../review-records/2026-09-22-code-demo-browser-closure.json): completed; binding **current**; Completed the code-block implementation and repaired the two full-EditorKit code demos by supplying their required demo user identity. Removed a stale read-only data-attribute assertion in favor of the live accessibility state. All six code-block demo and view browser rows now pass together, including large-block editing, Python hydration and copied JSON formatting; package, registry and typechecks remain green. Proof: stale / verified. This verifies the accepted code-block behavior and browser paths, not comparative performance, production bundle size, physical-device/IME or assistive-technology behavior.
 
 ## Inspected documents
 
 - [2026-09-04-code-block-external-text-architecture-audit.md](../../plans/2026-09-04-code-block-external-text-architecture-audit.md) — plan, historical. Audit the past week's code-block and external-text plans against current Plite/Plate source, public APIs, correctness, and benchmark evidence; deliver ranked findings, a challenged target, and at most three adoption phases. 
 - [2026-09-05-native-code-full-dom-investigation.md](../../plans/2026-09-05-native-code-full-dom-investigation.md) — plan, historical. retain measured, correct Plate/Plite performance improvements, starting with full-native highlighted-code mount and editing. Follow the remaining measured bottlenecks through their owning packages, components, consumers and proof tools. Preserve full DOM and native editing semantics. Completion threshold: stop after three consecutive distinct, evidence-backed optimization candidates fail to produce a material improvement, or after the ranked in-s Preserve the rejected CSS/kernel experiments and explicit no-certified-timing-gain plateau; completion does not mean performance success.
 - [code-text-ownership.md](../decisions/code-text-ownership.md) — decision, active. # Code text ownership The retained design uses one newline-bearing Text for code content and separate native and external renderers. The September 4 audit kept the narrow external-text protocol and recommended removing whole-block Lowlight transport from CodeMirror. Native highlighting, neutral annotations and native editing retain independent jobs. Current source has the [code-block owner](../../../packages/platejs/src/features/code-block/lib/Ba
+- [2026-09-02-remove-code-line-model.md](../../plans/2026-09-02-remove-code-line-model.md) — plan, historical. Retain the explicit no-CodeLine model decision and matched planning probe as historical context; current source confirms one Text adoption.
+- [2026-09-03-external-text-execution.md](../../plans/2026-09-03-external-text-execution.md) — plan, historical. Generic external-text slot execution; explicitly excluded CodeMirror. Its textarea proof does not certify the later adapter.
+- [2026-09-04-code-block-external-text-execution.md](../../plans/2026-09-04-code-block-external-text-execution.md) — plan, historical. Implemented optional CodeMirror parser ownership, omission of native syntax in external-only composition and retained mixed views. Later checkpoints supersede its stale in-progress table; rejected shared recipe API remains rejected.
+- [2026-09-06-code-block-plate-plite-tiptap-perf-audit.md](../../plans/2026-09-06-code-block-plate-plite-tiptap-perf-audit.md) — plan, historical. Final R4 adoption and matched native rendering measurements postdate the Sep5 plateau. Historical runtime evidence and limits remain distinct from current behavior/performance proof.
 
 ## Chronological history and alternatives
 
@@ -90,23 +113,103 @@ Proof limits: Historical execution claim only. Complete original source/fixture/
 
 References: [2026-09-05-native-code-full-dom-investigation.md](../../plans/2026-09-05-native-code-full-dom-investigation.md).
 
+### 2026-09-22: 2026-09-22-code-commands-and-highlighter-ownership
+
+[Immutable record](../review-records/2026-09-22-code-commands-and-highlighter-ownership.json) — review; pursue; observation stale.
+
+Pursue bounded code-command and native-highlighter cleanup while retaining one Text, native/static rendering, optional CodeMirror and synchronous external-text ownership. Cut hidden Python registry mutation and accidental grammar API, reuse schema-owned construction instead of public defaultType plus paragraph retyping, move JSON-only formatting policy to copied UI with selection-preserving canonical edits, repair selected-line endpoints, and remove native backend initialization from shared CodeMirror controls. All 13 source groups and eight semantic units reviewed; current probes expose selection loss, invalid intermediate schema, extra-line indentation and alias-cache disagreement. CodeMirror/parser adoption and later native R4 improvements were already done; the old ledger summary was incomplete.
+
+Question: Which canonical text, editing and syntax-presentation contract should native code blocks use?
+
+- Make CodeMirror the sole renderer: Stop. Native full-DOM, static and authored rich-projection consumers have independent current jobs. CodeMirror search/print already exist and are not arguments against it.
+- Delete CodeMirror or expose canonical editor internals to its adapter: Stop. Existing bounded-DOM code editing needs its mounted parser/input owner; the narrow optional protocol already carries canonical changes, history and neutral paint.
+- Merge native syntax into structural code editing: Stop. Plain and CodeMirror-only consumers omit it, while native/static and mixed views require it.
+- Delete native decoration projection and inline it into each kit: Stop. Duplicates token projection and lifecycle machinery. Delete hidden caller-registry mutation and unused backend initialization instead.
+- Keep current custom defaultType construction and JSON format command: Pursue the stronger cut. Schema insertion already owns construction; copied JSON policy can use canonical edits. Current probes demonstrate schema rejection and no-op selection loss.
+- Add shared code-text recipes, a generic formatter manager or a new scheduler/cache owner: Stop. No independent current job justifies the protocol; prior execution rejected shared recipes.
+- Replace Lowlight with one incremental parser everywhere: unaccepted alternative pending current matched whole-operation/language/SSR evidence. No runtime speed claim or parser replacement is selected.
+- Keep everything and configure callers around it: reject. Hidden resource mutation and command-owned selection loss require repair at their owners.
+- retains [2026-09-04-code-external-text](../review-records/2026-09-04-code-external-text.json) (Which owner should hold code text, editing, syntax rendering and large-block layout?): Retain one Text, optional external-text and independent native syntax. Sep4 execution adopted CodeMirror-owned parsing, cut native syntax transport and rejected the proposed shared recipe API.
+- retains [2026-09-05-code-native-plateau](../review-records/2026-09-05-code-native-plateau.json) (Which owner should hold code text, editing, syntax rendering and large-block layout?): Preserve this investigation's no-certified-gain plateau and reverted experiments. It is dated context, not a verdict that later native work failed or CodeMirror remains unfinished; the Sep6 final R4 account records later adoption.
+- retains [2026-09-18-recovered-2026-09-05-native-code-full-dom-investigation](../review-records/2026-09-18-recovered-2026-09-05-native-code-full-dom-investigation.json) (Which canonical text, editing and syntax-presentation contract should native code blocks use?): Recovered completion remains historical-unbound with unknown current proof. Reconcile it into the decision without upgrading its evidence.
+- retains [2026-09-15-external-text-ordered-feedback](../review-records/2026-09-15-external-text-ordered-feedback.json) (Which editing and selection authority may an external text view own while sharing canonical document text, history and other views?): Keep the narrow slot and synchronous dispatch-boundary ownership. Live source adopts the ordering repair; no new adapter replacement is justified.
+- retains [2026-09-18-recovered-2026-09-15-external-text-ordered-feedback](../review-records/2026-09-18-recovered-2026-09-15-external-text-ordered-feedback.json) (Which canonical text, editing and syntax-presentation contract should native code blocks use?): Retain the historical implementation and original scoped proof limits. This code audit does not turn the recovered external-text execution into fresh source-bound proof.
+- retains [2026-09-21-editing-command-input-rule-convergence-execution](../review-records/2026-09-21-editing-command-input-rule-convergence-execution.json) (Which canonical text, editing and syntax-presentation contract should native code blocks use?): Keep atomic input rules and exact feature policy adoption; this review only changes the code-owned insertion, formatting and selected-line question.
+
+Proof limits: Audit complete; cleanup not implemented. Current model-level evidence is 58 existing unit tests and two observational probes characterizing undesirable behavior. No browser/device/physical IME/assistive-tech, fresh CodeMirror integration run, packed-distribution or bundle measurement, or new performance comparison ran. Historical R4 and external-text receipts retain their original source/cohort limitations and historical-unbound execution status. No O(delta), universal editor ranking, bundle-size or release-ready claim. Structured Autoreview not run on next.
+
+References: [review.md](../../plans/artifacts/2026-09-22-code-api-audit/review.md), [coverage.json](../../plans/artifacts/2026-09-22-code-api-audit/coverage.json), [probe.test.ts](../../plans/artifacts/2026-09-22-code-api-audit/probe.test.ts), [probe.log](../../plans/artifacts/2026-09-22-code-api-audit/probe.log), [unit.log](../../plans/artifacts/2026-09-22-code-api-audit/unit.log), [code-text-ownership.md](../decisions/code-text-ownership.md), [external-text-ownership.md](../decisions/external-text-ownership.md), [2026-09-02-remove-code-line-model.md](../../plans/2026-09-02-remove-code-line-model.md), [2026-09-03-external-text-execution.md](../../plans/2026-09-03-external-text-execution.md), [2026-09-04-code-block-external-text-architecture-audit.md](../../plans/2026-09-04-code-block-external-text-architecture-audit.md), [2026-09-04-code-block-external-text-execution.md](../../plans/2026-09-04-code-block-external-text-execution.md), [2026-09-05-native-code-full-dom-investigation.md](../../plans/2026-09-05-native-code-full-dom-investigation.md), [2026-09-06-code-block-plate-plite-tiptap-perf-audit.md](../../plans/2026-09-06-code-block-plate-plite-tiptap-perf-audit.md), [2026-09-15-external-text-ordered-feedback.md](../../plans/2026-09-15-external-text-ordered-feedback.md), [2026-09-21-editing-command-and-input-rule-convergence.md](../../plans/2026-09-21-editing-command-and-input-rule-convergence.md), [2026-04-17-code-block-browser-highlight-must-match-server-output.md](../../solutions/logic-errors/2026-04-17-code-block-browser-highlight-must-match-server-output.md).
+
+### 2026-09-22: 2026-09-22-code-last-pass-ownership-gates
+
+[Immutable record](../review-records/2026-09-22-code-last-pass-ownership-gates.json) — review; pursue; observation stale.
+
+Pursue code-command and caller-owned highlighter repairs. Hidden Python grammar mutation, JSON-only package policy with no-op selection loss, and selected-line endpoint error remain real. The previous review overstated generated insertion as an already equivalent replacement and a shared-control move as sufficient to remove Lowlight from CodeMirror composition. Gate insertion on option/schema/selection parity and defer an independent backend split until complete composition and measured value are established. Generic replaceChildren intentionally drops selection for replaced node identities; the JSON command owns its misuse.
+
+Question: Which canonical text, editing and syntax-presentation contract should native code blocks use?
+
+- Make CodeMirror the sole code renderer or delete native syntax projection: Stop; native full-DOM, static and authored rich-projection jobs would be lost.
+- Delete CodeMirror or move its parser/input ownership into Plite: Stop; the bounded-DOM job remains independent and the narrow external-text slot already exists.
+- Use generated schema insertion immediately as a drop-in for custom code insertion: pursue only as a candidate; exact target, select defaults, empty reuse, list properties and schema validity require parity proof.
+- Change generic Plite replaceChildren selection semantics to retain new nodes automatically: Stop; reference-based retention is deliberate replacement behavior, while the code formatter supplies no mapped selection.
+- Remove hidden Lowlight registry mutation and JSON-only package formatting policy: Pursue; current probes demonstrate mutation/cache disagreement and no-op selection loss.
+- Move a single shared copied control to make CodeMirror-only composition backend-free: Defer; multiple imports still initialize the native module, and measured benefit is missing.
+- Replace Lowlight with an incremental native parser or create a shared command DSL: Defer parser pending matched performance/language/SSR proof; Stop shared DSL without an independent current job.
+- supersedes [2026-09-22-code-commands-and-highlighter-ownership](../review-records/2026-09-22-code-commands-and-highlighter-ownership.json) (Which canonical text, editing and syntax-presentation contract should native code blocks use?): Retains overall Pursue direction, all observed defects, one Text/native/optional CodeMirror topology and historical proof limits. Narrows the generated insertion and CodeMirror backend-split claims; identifies command-owned selection loss rather than a Plite primitive defect.
+- retains [2026-09-04-code-external-text](../review-records/2026-09-04-code-external-text.json) (Which owner should hold code text, editing, syntax rendering and large-block layout?): One canonical Text and optional CodeMirror with renderer-owned syntax still serve distinct current jobs; the shared recipe proposal stays rejected.
+- retains [2026-09-05-code-native-plateau](../review-records/2026-09-05-code-native-plateau.json) (Which owner should hold code text, editing, syntax rendering and large-block layout?): The failed September 5 native experiment remains dated; later September 6 R4 work does not turn that result into current performance proof.
+- retains [2026-09-15-external-text-ordered-feedback](../review-records/2026-09-15-external-text-ordered-feedback.json) (Which editing and selection authority may an external text view own while sharing canonical document text, history and other views?): The narrow synchronous external-text authority remains settled; none of the code-command failures requires reopening it.
+
+Proof limits: Fresh source reinspection only. Reused model-level 58 passing tests and two observational probes were not rerun; they characterize failures, not fixes. No browser, IME, assistive-technology, packed distribution, CodeMirror bundle/runtime measurement or current performance comparison. September 5/6 and September 15 evidence remains dated; recovered executions remain historical-unbound. A source import proves the module path, not production bundle savings or read-only mutation.
+
+References: [last-pass.md](../../plans/artifacts/2026-09-22-code-api-audit/last-pass.md), [review.md](../../plans/artifacts/2026-09-22-code-api-audit/review.md), [coverage.json](../../plans/artifacts/2026-09-22-code-api-audit/coverage.json), [probe.test.ts](../../plans/artifacts/2026-09-22-code-api-audit/probe.test.ts), [probe.log](../../plans/artifacts/2026-09-22-code-api-audit/probe.log), [unit.log](../../plans/artifacts/2026-09-22-code-api-audit/unit.log), [code-text-ownership.md](../decisions/code-text-ownership.md), [2026-09-22-code-commands-and-highlighter-ownership.json](../review-records/2026-09-22-code-commands-and-highlighter-ownership.json), [replace-children.ts](../../../packages/plitejs/src/transforms-node/replace-children.ts), [resolvePlugins.ts](../../../packages/platejs/src/internal/plugin/resolvePlugins.ts), [plugins.ts](../../../apps/www/src/registry/components/editor/plugins.ts).
+
+### 2026-09-22: 2026-09-22-code-design-ownership-plan
+
+[Immutable record](../review-records/2026-09-22-code-design-ownership-plan.json) — execution; completed; observation stale.
+
+Completed the plan-only code repair design: retain code-specific insert/upsert policy while constructing a schema-valid code node, move JSON formatting to copied UI with a mapped text edit, correct the native selected-line endpoint, and move Python registration to copied-kit resource construction. Product implementation and browser proof remain open; optional CodeMirror backend separation is deferred.
+
+
+Proof limits: Design-only outcome. Current source inspection and two narrow ad hoc Bun probes support owner selection; the prior 58-test suite was reused, not rerun. No changed product source, browser or SSR parity run, CodeMirror runtime/bundle measurement, packed distribution, or implementation proof.
+
+References: [2026-09-22-code-commands-and-highlighter-ownership.md](../../plans/2026-09-22-code-commands-and-highlighter-ownership.md), [2026-09-22-code-design-check.log](../../plans/artifacts/2026-09-22-code-design-check.log), [last-pass.md](../../plans/artifacts/2026-09-22-code-api-audit/last-pass.md), [probe.log](../../plans/artifacts/2026-09-22-code-api-audit/probe.log), [resolvePlugins.ts](../../../packages/platejs/src/internal/plugin/resolvePlugins.ts), [replace-children.ts](../../../packages/plitejs/src/transforms-node/replace-children.ts), [plugins.ts](../../../apps/www/src/registry/components/editor/plugins.ts), [2026-04-17-code-block-browser-highlight-must-match-server-output.md](../../solutions/logic-errors/2026-04-17-code-block-browser-highlight-must-match-server-output.md).
+
+### 2026-09-22: 2026-09-22-code-commands-and-highlighter-implementation
+
+[Immutable record](../review-records/2026-09-22-code-commands-and-highlighter-implementation.json) — execution; completed; observation stale.
+
+Construct code blocks directly from their schema, retain code-specific insertion and reuse policy, correct selected-line endpoints, move JSON formatting to the copied UI with one canonical multi-edit update, repair Plite mapping for retained text anchors, and register browser-safe Python at copied-kit construction rather than during package reads. Public docs, generated registry items, behavior law and Plate Next v230 are aligned; the optional CodeMirror backend split remains deferred.
+
+
+Proof limits: An adjacent code-demo Enter-at-heading-start row fails; cause not established, so no full browser-file pass is claimed. No production bundle, large-JSON timing, assistive-technology or physical-device proof ran.
+
+References: [2026-09-22-code-commands-and-highlighter-ownership.md](../../plans/2026-09-22-code-commands-and-highlighter-ownership.md), [2026-09-22-code-implementation-proof.md](../../plans/artifacts/2026-09-22-code-implementation-proof.md), [anchor.ts](../../../packages/plitejs/src/core/anchor.ts), [code-block-lowlight.ts](../../../apps/www/src/registry/components/editor/code-block-lowlight.ts).
+
+### 2026-09-22: 2026-09-22-code-demo-browser-closure
+
+[Immutable record](../review-records/2026-09-22-code-demo-browser-closure.json) — execution; completed; observation stale.
+
+Completed the code-block implementation and repaired the two full-EditorKit code demos by supplying their required demo user identity. Removed a stale read-only data-attribute assertion in favor of the live accessibility state. All six code-block demo and view browser rows now pass together, including large-block editing, Python hydration and copied JSON formatting; package, registry and typechecks remain green.
+
+
+Proof limits: This verifies the accepted code-block behavior and browser paths, not comparative performance, production bundle size, physical-device/IME or assistive-technology behavior.
+
+References: [2026-09-22-code-commands-and-highlighter-ownership.md](../../plans/2026-09-22-code-commands-and-highlighter-ownership.md), [2026-09-22-code-demo-final-proof.md](../../plans/artifacts/2026-09-22-code-demo-final-proof.md), [code-block-demo.tsx](../../../apps/www/src/registry/examples/code-block-demo.tsx), [code-block-huge-demo.tsx](../../../apps/www/src/registry/examples/code-block-huge-demo.tsx), [code-block-demos.spec.ts](../../../apps/www/tests/browser/code-block-demos.spec.ts), [code-block-views.spec.ts](../../../apps/www/tests/browser/code-block-views.spec.ts).
+
 ## Retrieval boundaries
 
-21 unclassified candidates. Filename matches are discovery leads, not adopted decisions.
+17 unclassified candidates. Filename matches are discovery leads, not adopted decisions.
 
 - [4613-code-block-paste-must-not-autolink.md](../../plans/4613-code-block-paste-must-not-autolink.md)
 - [4520-code-block-format-highlight.md](../../plans/4520-code-block-format-highlight.md)
-- [2026-09-06-code-block-plate-plite-tiptap-perf-audit.md](../../plans/2026-09-06-code-block-plate-plite-tiptap-perf-audit.md)
 - [2026-09-06-code-block-1000-tiptap-benchmark.md](../../plans/2026-09-06-code-block-1000-tiptap-benchmark.md)
 - [2026-09-05-code-block-docs-scrolling.md](../../plans/2026-09-05-code-block-docs-scrolling.md)
-- [2026-09-04-code-block-external-text-execution.md](../../plans/2026-09-04-code-block-external-text-execution.md)
 - [2026-09-04-code-block-demo-variants-benchmark.md](../../plans/2026-09-04-code-block-demo-variants-benchmark.md)
 - [2026-09-03-find-plate-code-block-product-benchmark-gap.md](../../plans/2026-09-03-find-plate-code-block-product-benchmark-gap.md)
-- [2026-09-03-external-text-execution.md](../../plans/2026-09-03-external-text-execution.md)
 - [2026-09-03-code-block-text-flow-root-gate-closure.md](../../plans/2026-09-03-code-block-text-flow-root-gate-closure.md)
 - [2026-09-03-add-huge-code-block-demo.md](../../plans/2026-09-03-add-huge-code-block-demo.md)
 - [2026-09-02-wordgard-huge-code-block-benchmark.md](../../plans/2026-09-02-wordgard-huge-code-block-benchmark.md)
-- [2026-09-02-remove-code-line-model.md](../../plans/2026-09-02-remove-code-line-model.md)
 - [2026-07-28-code-block-pure-utility-ownership.md](../../plans/2026-07-28-code-block-pure-utility-ownership.md)
 - [2026-07-10-plate-next-uncommitted-code-block-files.md](../../plans/2026-07-10-plate-next-uncommitted-code-block-files.md)
 - [2026-07-09-plate-next-code-block-drift-closure.md](../../plans/2026-07-09-plate-next-code-block-drift-closure.md)
@@ -127,8 +230,8 @@ Consumers: [code-block.tsx](../../../apps/www/src/registry/components/editor/cod
 
 Proof entrypoints: [code-block-native-interactions.spec.ts](../../../apps/www/tests/browser/code-block-native-interactions.spec.ts), [code-block-syntax.spec.ts](../../../apps/www/tests/browser/code-block-syntax.spec.ts). These links alone are not proof of a passing run.
 
-Inspection: Current owner, consumer and proof entrypoints located; this queue is not a completed feature review.
+Inspection: 2026-09-22: all 13 source groups and eight semantic units audited; CodeMirror/external-text and later native performance history reconciled. Native code unit suite and two observational probes executed.
 
-Limits: Behavior, native/device coverage, performance and adoption require a scoped review and matching execution evidence.
+Limits: Recommended command/highlighter/UI cleanup is not implemented. No current browser, native-device, bundle-size or comparative performance proof; recovered historical executions stay unbound.
 
 Related questions: [external-text](external-text.md), [large-documents](large-documents.md), [performance](performance.md).

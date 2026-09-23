@@ -1,10 +1,11 @@
 import {
   BaseParagraphPlugin,
-  createRuleFactory,
+  defineInputRule,
   definePlugin,
   editorCommands,
   ElementApi,
   getInjectMatch,
+  matchBlockStart,
   isHtmlBlockElement,
   PathApi,
   PLUGINS,
@@ -20,6 +21,7 @@ import {
   type Element,
   type ElementWith,
   type Location,
+  type InsertTextInputRuleReadContext,
   type NodeEntry,
   type NodeKey,
   type NodeSelection,
@@ -767,9 +769,8 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
   rules: {
     merge: {
-      removeEmpty: false,
+      removeEmpty: ({ node }) => (isListItem(node) ? false : undefined),
     },
-    match: ({ node }) => isListItem(node),
   },
 })
   .extend(({ defineCodecs, editor }) => {
@@ -1153,7 +1154,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             (at === undefined && !tx.selection()) ||
             (PathApi.isPath(at) && at.length === 0)
           ) {
-            return;
+            return false;
           }
           if (listStart !== undefined && listRestart !== undefined) {
             throw new Error(
@@ -1168,7 +1169,22 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             mode: 'lowest',
           });
 
-          if (entries.length === 0) return;
+          if (entries.length === 0) return false;
+
+          const changed = (candidates: ReadonlyArray<NodeEntry<Element>>) =>
+            candidates.some(([before, path]) => {
+              const after = tx.nodes.get(path)?.[0];
+
+              return (
+                ElementApi.isElement(after) &&
+                (before.checked !== after.checked ||
+                  before.indent !== after.indent ||
+                  before.listRestart !== after.listRestart ||
+                  before.listStart !== after.listStart ||
+                  before.listStyle !== after.listStyle ||
+                  before.listType !== after.listType)
+              );
+            });
 
           const normalizedListStyle = normalizeListStyle(type, listStyle);
           const isSameList = ([node]: NodeEntry<Element>) =>
@@ -1201,7 +1217,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                 tx.nodes.unset('indent', { at: path });
               }
             });
-            return;
+            return changed(entries);
           }
 
           const targets = [...entries];
@@ -1291,6 +1307,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               tx.nodes.unset('listRestart', { at: path });
             }
           });
+          return changed(targets);
         },
         upsert: (input: { type: ListType }, options: BlockUpsertOptions = {}) =>
           applyListInsertion('upsert', input, options),
@@ -1448,100 +1465,96 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
 export type BaseListDefinition = DefinitionOf<typeof BaseListPlugin>;
 
+type MarkdownListRuleOptions = {
+  enabled?: (context: InsertTextInputRuleReadContext) => boolean;
+  priority?: number;
+};
+
+const isMarkdownListRuleEnabled = (
+  context: InsertTextInputRuleReadContext,
+  enabled: MarkdownListRuleOptions['enabled']
+) => {
+  if (enabled && !enabled(context)) return false;
+
+  const codeBlock = context.editor.plugin(PLUGINS.codeBlock);
+
+  if (!codeBlock.installed) return true;
+
+  return !context.editor.read.nodes.some({
+    type: [codeBlock.schema.type],
+  });
+};
+
 export const BulletedListRules = {
-  markdown: createRuleFactory(BaseListPlugin)<{}, { variant: '*' | '-' }>({
-    type: 'blockStart',
-    variant: '-',
-    enabled: ({ editor, tx }) => {
-      const codeBlockDescriptor = getCompiledPlatePlugin(
-        editor,
-        PLUGINS.codeBlock
-      );
-
-      if (!codeBlockDescriptor) return true;
-
-      return !tx.nodes.some({
-        type: [editor.plugin(codeBlockDescriptor).schema.type],
-      });
-    },
-    trigger: ' ',
-    match: ({ variant }) => variant,
-    apply: ({ tx }, match) => {
-      tx.text.delete({ at: match.range });
-      tx.list.toggle({ type: ListType.Bulleted });
-
-      return true;
-    },
-  }),
+  markdown: ({
+    enabled,
+    priority,
+    variant = '-',
+  }: MarkdownListRuleOptions & { variant?: '*' | '-' } = {}) =>
+    defineInputRule(BaseListPlugin, {
+      target: 'insertText',
+      trigger: ' ',
+      priority,
+      enabled: (context) => isMarkdownListRuleEnabled(context, enabled),
+      resolve: (context) => matchBlockStart(context, { match: variant }),
+      apply: ({ decline, tx }, match) => {
+        tx.text.delete({ at: match.range });
+        if (!tx.list.toggle({ type: ListType.Bulleted })) return decline();
+      },
+    }),
 };
 
 export const OrderedListRules = {
-  markdown: createRuleFactory(BaseListPlugin)<
-    {},
-    { variant: '.' | ')' },
-    { start: number }
-  >({
-    type: 'blockStart',
-    variant: '.',
-    enabled: ({ editor, tx }) => {
-      const codeBlockDescriptor = getCompiledPlatePlugin(
-        editor,
-        PLUGINS.codeBlock
-      );
-
-      if (!codeBlockDescriptor) return true;
-
-      return !tx.nodes.some({
-        type: [editor.plugin(codeBlockDescriptor).schema.type],
-      });
-    },
-    trigger: ' ',
-    match: ({ variant }) =>
-      new RegExp(`^(\\d+)${variant === ')' ? '\\)' : '\\.'}$`),
-    resolveMatch: ({ match }) => ({
-      start: Number((match as RegExpMatchArray)[1]),
+  markdown: ({
+    enabled,
+    priority,
+    variant = '.',
+  }: MarkdownListRuleOptions & { variant?: '.' | ')' } = {}) =>
+    defineInputRule(BaseListPlugin, {
+      target: 'insertText',
+      trigger: ' ',
+      priority,
+      enabled: (context) => isMarkdownListRuleEnabled(context, enabled),
+      resolve: (context) =>
+        matchBlockStart(context, {
+          match: new RegExp(`^(\\d+)${variant === ')' ? '\\)' : '\\.'}$`),
+          resolveMatch: ({ match }) => ({
+            start: Number((match as RegExpMatchArray)[1]),
+          }),
+        }),
+      apply: ({ decline, tx }, match) => {
+        tx.text.delete({ at: match.range });
+        if (
+          !tx.list.toggle({
+            listStart: match.start ?? 1,
+            type: ListType.Numbered,
+          })
+        ) {
+          return decline();
+        }
+      },
     }),
-    apply: ({ tx }, match) => {
-      tx.text.delete({ at: match.range });
-      tx.list.toggle({
-        listStart: match.start ?? 1,
-        type: ListType.Numbered,
-      });
-
-      return true;
-    },
-  }),
 };
 
 export const TaskListRules = {
-  markdown: createRuleFactory(BaseListPlugin)<{}, { checked: boolean }>({
-    type: 'blockStart',
-    checked: false,
-    enabled: ({ editor, tx }) => {
-      const codeBlockDescriptor = getCompiledPlatePlugin(
-        editor,
-        PLUGINS.codeBlock
-      );
-
-      if (!codeBlockDescriptor) return true;
-
-      return !tx.nodes.some({
-        type: [editor.plugin(codeBlockDescriptor).schema.type],
-      });
-    },
-    trigger: ' ',
-    match: ({ checked }) => (checked ? '[x]' : '[]'),
-    apply: ({ checked, tx }, match) => {
-      tx.text.delete({ at: match.range });
-      tx.list.toggle({ type: ListType.Task });
-      tx.nodes.set({
-        checked,
-        listType: ListType.Task,
-      });
-
-      return true;
-    },
-  }),
+  markdown: ({
+    checked = false,
+    enabled,
+    priority,
+  }: MarkdownListRuleOptions & { checked?: boolean } = {}) =>
+    defineInputRule(BaseListPlugin, {
+      target: 'insertText',
+      trigger: ' ',
+      priority,
+      enabled: (context) => isMarkdownListRuleEnabled(context, enabled),
+      resolve: (context) =>
+        matchBlockStart(context, { match: checked ? '[x]' : '[]' }),
+      apply: ({ decline, tx }, match) => {
+        tx.text.delete({ at: match.range });
+        if (!tx.list.toggle({ type: ListType.Task })) return decline();
+        tx.nodes.set({ checked, listType: ListType.Task });
+      },
+    }),
 };
 
 /** Element carrying the Indent and List schema capabilities. */

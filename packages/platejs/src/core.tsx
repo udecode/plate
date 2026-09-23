@@ -87,7 +87,6 @@ export type {
   InferSelectors,
   InferTargetPlugins,
   InferUpdate,
-  MatchRules,
   MergeRules,
   NodeComponent,
   NormalizeRules,
@@ -106,7 +105,10 @@ export type {
   PluginSelectorReturn,
   PluginSelectors,
   PluginStore,
+  RuleDecision,
   SelectionRules,
+  StructuralRuleEditor,
+  StructuralRuleContext,
   WithAnyName,
   WithRequiredName,
 } from './lib/plugin/PluginDefinition';
@@ -138,7 +140,6 @@ export {
 } from './lib/plugins/html/HtmlPlugin';
 export { someHtmlElement } from './lib/plugins/html/htmlDom';
 export * from './lib/plugins/input-rules/index';
-export * from './lib/plugins/override/index';
 export * from './lib/plugins/paragraph/index';
 export type * from './lib/types/index';
 export * from './lib/utils/index';

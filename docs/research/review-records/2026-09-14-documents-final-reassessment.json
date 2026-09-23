@@ -16,7 +16,7 @@
     "Word comments, revisions, package parts, named Plate roots and visible-format properties receive explicit supported, lossy or rejected dispositions rather than inferred fidelity from ZIP validity or a private sidecar.",
     "Public nouns and entrypoints name their actual job: remove file-import RTF, competing nodes/document results and the second authored exporter; rename the clipboard-only DocxPlugin during adoption."
   ],
-  "evidenceReuse": "Re-read current import/export/paste public types and implementations, EditorDocumentValue, authored snapshot ownership, copied import/export callers, DOCX docs, prior decision and open questions, the completed clipboard ownership decision, and the initial immutable documents record. Reused its matching 135 unique passing tests, two historical bug probes and seven-corpus research only within their recorded limits; no external discovery, upstream execution or product test was repeated. Added current local fingerprints for the editor document contract and final reassessment.",
+  "evidenceReuse": "Re-read current import/export/paste public types and implementations, EditorDocumentValue, authored snapshot ownership, copied import/export callers, DOCX docs, prior decision and open questions, the completed clipboard ownership decision, and the initial immutable documents record. Reused its matching 135 unique passing tests, two historical bug probes and six-corpus research only within their recorded limits; no external discovery, upstream execution or product test was repeated. Added current local fingerprints for the editor document contract and final reassessment.",
   "summary": "Pursue remains correct, but the initial target was incomplete. Supersede it with one canonical import result, one projection-aware snapshot export, structured diagnostics, bounded untrusted-input policy and an accurately named Word paste adapter. Delete public exportAuthoredToDocx, ImportDocxResult.nodes and file-import rtf; remove unconditional sidecar authority and the duplicate review serializer. Direct OOXML remains the strongest file candidate but is provisional. The earlier blanket recommendation to preserve paste images/table geometry is withdrawn until destination media/table policy proves safe cases.",
   "verdict": "pursue",
   "previous": "2026-09-14-documents-oss-fidelity-review",
@@ -30,7 +30,7 @@
     "Preserve all Word-paste images and table geometry immediately: stop as part of this documents plan; safe payload classes and useful geometry depend on destination media/table policy and size/resource limits.",
     "Add a universal document engine, Office abstraction, public converter registry or shared AST: stop; it merges independent jobs and owners without repeated caller coordination."
   ],
-  "proofLimits": "No product behavior changed. Reused prior proof only while matching source: 123 package tests plus 12 additional fixture/selected-roundtrip/demo tests, and two bug-observation probes confirming stale sidecar authority and mixed export captures. No native Word/LibreOffice, browser paste, current packed install, full slow suite, performance, decompression-limit, cancellation, comment-range, named-root, cross-part revision or arbitrary lossless-roundtrip proof. No security exploit is claimed. The seven-corpus/67-file comparison is inherited from the previous immutable record; no upstream source or tests were refreshed in this reassessment. Exact result/error/limit/comment types and HTML-versus-OOXML runtime remain for Task design and prototype.",
+  "proofLimits": "No product behavior changed. Reused prior proof only while matching source: 123 package tests plus 12 additional fixture/selected-roundtrip/demo tests, and two bug-observation probes confirming stale sidecar authority and mixed export captures. No native Word/LibreOffice, browser paste, current packed install, full slow suite, performance, decompression-limit, cancellation, comment-range, named-root, cross-part revision or arbitrary lossless-roundtrip proof. No security exploit is claimed. The six-corpus/47-file comparison is inherited from the previous immutable record; no upstream source or tests were refreshed in this reassessment. Exact result/error/limit/comment types and HTML-versus-OOXML runtime remain for Task design and prototype.",
   "references": [
     "docs/research/decisions/documents-conversion-fidelity.md",
     "docs/research/open-questions/documents-conversion-proof.md",
@@ -92,12 +92,12 @@
       "docs/research/sources/docx-interoperability-oss.md": "ece63f0376fcb25bcbc6fb392d1def6eca7549c17a1e685624980b8d78723d14",
       "docs/research/decisions/documents-conversion-fidelity.md": "d35a53294aa9311b700f7bd7f80ca4e94aed8d5283539e379c1f169b69d591da",
       "docs/research/open-questions/documents-conversion-proof.md": "0242d30f03fa21a75f4f167f04c61cb0b5329f6cc9f8191a88c78f2040f93f56",
-      "docs/plite/research/2026-09-14-docx-interoperability-oss/source-manifest.json": "0731b322041bff25868290522c56f6554fbe368e256653a6a46f18a8dd63837e",
-      "docs/plite/research/2026-09-14-docx-interoperability-oss/read-log.tsv": "3a142fa2235712e2ed7e8ba437886b1d81484ca967ff802e61e369d7d080ad97",
+      "docs/plite/research/2026-09-14-docx-interoperability-oss/source-manifest.json": "c5e83b4d753fb6059513a7011c9379cbb95484855a4f047fe6670f7fe0867a06",
+      "docs/plite/research/2026-09-14-docx-interoperability-oss/read-log.tsv": "86459b276d7da16e9513aae59a998858569c2b1a20954d8400e51090862a2b23",
       "docs/plite/research/2026-09-14-docx-interoperability-oss/proof/receipt.json": "8124a29128827977bd235b7001cf02d13aa7f7a1f1fa763e4d63299046ec0d9e",
       "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/plate-audit.md": "816c8ff5b2d2aacd5534be5253632fddf27996a5614436d3503b954773d625dd",
       "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/final-reassessment.md": "b29b4603ffb1f9a09035e8bd73f6e02a075cf9b3a1ee131c53aeadf6d4c3790b",
-      "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/ckeditor-superdoc.md": "323d85da2b3ae0717c1a318e3386acae781f656a762e49f19d3833cf0d7acd19",
+      "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/superdoc.md": "bf4741e5a09b4e9b35f4c6b34605a313b891d49a9c70ae8eafd9fe30fb3e0747",
       "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/pandoc-preview.md": "bda4e9dbd9a00d39977dfa1e921c7d821c845ec38b7b92bdaeeaf169371cfa00",
       "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",

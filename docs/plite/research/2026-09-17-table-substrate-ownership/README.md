@@ -4,7 +4,7 @@ Status: Complete — Pursue focused design; product implementation not authorize
 
 Question: From first principles, which table selection, resizing, topology, transfer and view responsibilities belong in Plite, Plate or copied UI? Does source evidence from other editors justify redesign after the September 17 adoption?
 
-Scope: Current table owners and real consumers; generic Plite selection and mounted-view hooks; ProseMirror/Tiptap, Lexical, CKEditor, ProseKit and Milkdown prior art. Search additional projects only when they supply an independent ownership model.
+Scope: Current table owners and real consumers; generic Plite selection and mounted-view hooks; ProseMirror/Tiptap, Lexical, ProseKit and Milkdown prior art. Search additional projects only when they supply an independent ownership model.
 
 Acceptance: Reconcile prior table reviews; read exact upstream source/tests at recorded revisions; compare keep/change/add/delete/move/replace lanes; record deduplicated findings and one Stop/Pursue/Defer verdict with proposed call shape, owner, proof limits and next owner. Product code, implementation plans, publication, issue corpus completion and performance/native-parity certification are excluded.
 
@@ -37,8 +37,8 @@ packets feed one Task design/plan, not four new tasks.
 Source and freshness details are in [the registry](repo-registry.tsv),
 [the read log](read-log.tsv), [upstream input hashes](sources/upstream-inputs.json),
 and the bounded [PM/Tiptap](shards/pm.json), [Lexical](shards/lexical.json),
-[CKEditor](shards/ckeditor.json), and [local/adapters](shards/local-and-adapters.json)
-shards. Three independent source investigations and one local diagnostic were
+and [local/adapters](shards/local-and-adapters.json)
+shards. Two independent source investigations and one local diagnostic were
 consumed and closed. Current upstream supplements supersede stale snapshot
 observations where explicitly marked; no checkout or branch was changed.
 

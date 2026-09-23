@@ -26,7 +26,6 @@ import type {
   NodeMutationMethods,
   NodeUnwrapNodesOptions,
 } from '../interfaces/transforms/node';
-import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { liftNodes } from './lift-nodes';
@@ -258,7 +257,6 @@ export const unwrapNodes = ((
 
     const startWrapperIndex = startWrapperPath[0];
     const endWrapperIndex = endWrapperPath[0];
-    const wrapperChildCounts: number[] = [];
 
     for (
       let wrapperIndex = startWrapperIndex;
@@ -273,35 +271,29 @@ export const unwrapNodes = ((
       ) {
         return;
       }
-
-      wrapperChildCounts.push(getChildren(editor, wrapperNode).length);
     }
+    const anchor = editor.anchor(target.anchor, { deletion: 'drop' });
+    const focus = editor.anchor(target.focus, { deletion: 'drop' });
 
-    for (
-      let wrapperIndex = endWrapperIndex;
-      wrapperIndex >= startWrapperIndex;
-      wrapperIndex -= 1
-    ) {
-      unwrapNodeAtPath([wrapperIndex]);
+    try {
+      for (
+        let wrapperIndex = endWrapperIndex;
+        wrapperIndex >= startWrapperIndex;
+        wrapperIndex -= 1
+      ) {
+        unwrapNodeAtPath([wrapperIndex]);
+      }
+
+      mergeAdjacentTextRuns(editor);
+    } finally {
+      const nextAnchor = anchor.release();
+      const nextFocus = focus.release();
+
+      if (nextAnchor && nextFocus) {
+        tx.setSelection(
+          SelectionApi.text({ anchor: nextAnchor, focus: nextFocus })
+        );
+      }
     }
-
-    const mapPoint = (point: Point) => ({
-      path: [
-        startWrapperIndex +
-          wrapperChildCounts
-            .slice(0, point.path[0] - startWrapperIndex)
-            .reduce((total, count) => total + count, 0) +
-          point.path[1],
-        ...point.path.slice(2),
-      ],
-      offset: point.offset,
-    });
-
-    select(editor, {
-      anchor: mapPoint(start),
-      focus: mapPoint(end),
-    });
-
-    mergeAdjacentTextRuns(editor);
   });
 }) as NodeMutationMethods['unwrapNodes'];

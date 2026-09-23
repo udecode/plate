@@ -1,12 +1,12 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import assert from "node:assert/strict";
+import test from "node:test";
 
 import {
   auditNamedSchemaLineageDocument,
   auditPlateSchemaSource,
   ciGeneratedPlateSchemaOutputRoots,
   isPlateSchemaAdoptionSourcePath,
-} from './check-plate-schema-adoption.mjs';
+} from "./check-plate-schema-adoption.mjs";
 
 const expectRejected = (source) => {
   assert.notEqual(auditPlateSchemaSource(source).length, 0, source);
@@ -16,33 +16,33 @@ const expectAccepted = (source) => {
   assert.deepEqual(auditPlateSchemaSource(source), [], source);
 };
 
-test('names CI-owned generated output excluded from source adoption proof', () => {
+test("names CI-owned generated output excluded from source adoption proof", () => {
   assert.deepEqual(ciGeneratedPlateSchemaOutputRoots, [
-    'apps/www/public/r',
-    'apps/www/public/rd',
-    'templates',
+    "apps/www/public/r",
+    "apps/www/public/rd",
+    "templates",
   ]);
   assert.equal(
     isPlateSchemaAdoptionSourcePath(
-      'apps/www/src/registry/components/editor/plugins/basic-blocks-kit.tsx'
+      "apps/www/src/registry/components/editor/plugins/basic-blocks-kit.tsx"
     ),
     true
   );
   assert.equal(
-    isPlateSchemaAdoptionSourcePath('apps/www/public/r/basic-blocks-kit.json'),
+    isPlateSchemaAdoptionSourcePath("apps/www/public/r/basic-blocks-kit.json"),
     false
   );
   assert.equal(
-    isPlateSchemaAdoptionSourcePath('apps/www/public/rd/registry.json'),
+    isPlateSchemaAdoptionSourcePath("apps/www/public/rd/registry.json"),
     false
   );
   assert.equal(
-    isPlateSchemaAdoptionSourcePath('templates/plate-template/src/editor.tsx'),
+    isPlateSchemaAdoptionSourcePath("templates/plate-template/src/editor.tsx"),
     false
   );
 });
 
-test('rejects every deleted Plate schema authoring shape', () => {
+test("rejects every deleted Plate schema authoring shape", () => {
   for (const source of [
     `definePlugin('p', {node: { element: true } })`,
     `ParagraphPlugin.configure({ node: { type: 'p' } })`,
@@ -62,7 +62,7 @@ test('rejects every deleted Plate schema authoring shape', () => {
     `resolvePlatePluginType('paragraph')`,
     `const name = 'plate:plugin-schema:paragraph'`,
     `const group = 'plate:block-content'`,
-    'const group = `plate:block-content`',
+    "const group = `plate:block-content`",
     `definePlugin('p', {schema: ({ editor }) => ({ editor }) })`,
     `definePlugin('link', { config: { schemes: ['https'] }, })`,
     `const configKey = 'config'; definePlugin('link', { [configKey]: {}, })`,
@@ -103,21 +103,21 @@ test('rejects every deleted Plate schema authoring shape', () => {
   }
 });
 
-test('allows the private block-content group only in its compiler owner', () => {
+test("allows the private block-content group only in its compiler owner", () => {
   assert.deepEqual(
     auditPlateSchemaSource(
       `const PLATE_BLOCK_CONTENT_SCHEMA_GROUP = 'plate:block-content'`,
-      'packages/platejs/src/internal/plugin/compilePlateModel.ts'
+      "packages/platejs/src/internal/plugin/compilePlateModel.ts"
     ),
     []
   );
 });
 
-test('keeps compiler exports private across filename and directory boundaries', () => {
+test("keeps compiler exports private across filename and directory boundaries", () => {
   for (const file of [
-    'packages/platejs/src/react/internal/index.ts',
-    'packages/platejs/src/static/internal/index.ts',
-    'packages/platejs/src/lib/plugin/types.internal.ts',
+    "packages/platejs/src/react/internal/index.ts",
+    "packages/platejs/src/static/internal/index.ts",
+    "packages/platejs/src/lib/plugin/types.internal.ts",
   ]) {
     assert.deepEqual(
       auditPlateSchemaSource(
@@ -128,7 +128,7 @@ test('keeps compiler exports private across filename and directory boundaries', 
     );
     assert.deepEqual(
       auditPlateSchemaSource(
-        'export type NormalizePluginInput = string;',
+        "export type NormalizePluginInput = string;",
         file
       ),
       []
@@ -136,18 +136,18 @@ test('keeps compiler exports private across filename and directory boundaries', 
   }
 
   for (const file of [
-    'packages/platejs/src/index.tsx',
-    'packages/platejs/src/react/index.tsx',
-    'packages/platejs/src/static/index.ts',
+    "packages/platejs/src/index.tsx",
+    "packages/platejs/src/react/index.tsx",
+    "packages/platejs/src/static/index.ts",
   ]) {
     for (const specifier of [
-      './types.internal',
-      './internal',
-      './internal/types',
+      "./types.internal",
+      "./internal",
+      "./internal/types",
     ]) {
       assert.ok(
         auditPlateSchemaSource(`export * from '${specifier}';`, file).some(
-          ({ reason }) => reason.includes('cannot star-export internal')
+          ({ reason }) => reason.includes("cannot star-export internal")
         ),
         `${file}: ${specifier}`
       );
@@ -156,27 +156,27 @@ test('keeps compiler exports private across filename and directory boundaries', 
       auditPlateSchemaSource(
         `export type { NormalizePluginInput } from './internal/types';`,
         file
-      ).some(({ reason }) => reason.includes('cannot be public-exported'))
+      ).some(({ reason }) => reason.includes("cannot be public-exported"))
     );
   }
 });
 
-test('rejects deleted plugin builders while allowing the foreign Zustand selector method', () => {
+test("rejects deleted plugin builders while allowing the foreign Zustand selector method", () => {
   for (const method of [
-    'clone',
-    'extendApi',
-    'extendCodecs',
-    'extendEditorApi',
-    'extendExtension',
-    'extendHtmlCodec',
-    'extendSelectors',
-    'extendTx',
-    'extendTxGroup',
-    'withComponent',
+    "clone",
+    "extendApi",
+    "extendCodecs",
+    "extendEditorApi",
+    "extendExtension",
+    "extendHtmlCodec",
+    "extendSelectors",
+    "extendTx",
+    "extendTxGroup",
+    "withComponent",
   ]) {
     assert.match(
       auditPlateSchemaSource(`ExamplePlugin.${method}(() => ({}))`)[0]
-        ?.reason ?? '',
+        ?.reason ?? "",
       /deleted plugin builder/
     );
   }
@@ -184,7 +184,7 @@ test('rejects deleted plugin builders while allowing the foreign Zustand selecto
   assert.deepEqual(
     auditPlateSchemaSource(
       `store = store.extendSelectors(() => extendedOptions)`,
-      'packages/platejs/src/internal/plugin/resolvePlugins.ts'
+      "packages/platejs/src/internal/plugin/resolvePlugins.ts"
     ),
     []
   );
@@ -205,7 +205,7 @@ test('rejects deleted plugin builders while allowing the foreign Zustand selecto
   }
 });
 
-test('accepts the full independent plugin declaration vocabulary in constructors', () => {
+test("accepts the full independent plugin declaration vocabulary in constructors", () => {
   for (const source of [
     `definePlugin('p', { api: () => ({}), commands: () => [], component: ParagraphElement,on: {}, read: () => ({}), readMiddleware: () => [], render: { leaf: Leaf }, selectors: {}, update: () => ({}) })`,
     `definePlugin('markCapability', { schema: { mark: { key: 'persistedMark', property: property.boolean() } } })`,
@@ -223,20 +223,20 @@ test('accepts the full independent plugin declaration vocabulary in constructors
         codecs: { 'text/html': rule },
 
       });
-    `)[0]?.reason ?? '',
+    `)[0]?.reason ?? "",
     /context-bound defineCodecs/
   );
 
   assert.deepEqual(
     auditPlateSchemaSource(
       `(definePlugin as any)({ codecs: {}, name: 'negative' })`,
-      'packages/platejs/src/lib/plugin/other.spec.ts'
+      "packages/platejs/src/lib/plugin/other.spec.ts"
     ),
     []
   );
 });
 
-test('rejects deleted Plate and Plite definition fields', () => {
+test("rejects deleted Plate and Plite definition fields", () => {
   const plateIssues = auditPlateSchemaSource(
     `definePlugin('p', {
       clipboard: {},
@@ -253,7 +253,7 @@ test('rejects deleted Plate and Plite definition fields', () => {
 
   assert.equal(
     plateIssues.filter((issue) =>
-      issue.reason.includes('deleted Plate plugin definition field')
+      issue.reason.includes("deleted Plate plugin definition field")
     ).length,
     8
   );
@@ -263,7 +263,7 @@ test('rejects deleted Plate and Plite definition fields', () => {
     `Plugin.configure({ handlers: {} })`,
   ]) {
     assert.match(
-      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      auditPlateSchemaSource(source)[0]?.reason ?? "",
       /deleted Plate plugin definition field/
     );
   }
@@ -276,34 +276,34 @@ test('rejects deleted Plate and Plite definition fields', () => {
       tx: {},
       validateConfiguration() {},
     })`,
-    'packages/plitejs/test/raw-plugin-contract.ts'
+    "packages/plitejs/test/raw-plugin-contract.ts"
   );
 
   assert.equal(
     pliteIssues.filter((issue) =>
-      issue.reason.includes('deleted Plite plugin definition field')
+      issue.reason.includes("deleted Plite plugin definition field")
     ).length,
     4
   );
   assert.match(
     auditPlateSchemaSource(
       `definePlugin<Editor>('typed', {})`,
-      'packages/plitejs/test/raw-plugin-contract.ts'
-    )[0]?.reason ?? '',
+      "packages/plitejs/test/raw-plugin-contract.ts"
+    )[0]?.reason ?? "",
     /infers one definition/
   );
   assert.match(
     auditPlateSchemaSource(`definePlugin<Definition>('typedPlate', {})`)[0]
-      ?.reason ?? '',
+      ?.reason ?? "",
     /infer one definition/
   );
   assert.match(
-    auditPlateSchemaSource(`editor.getApi(RawPlugin).run()`)[0]?.reason ?? '',
+    auditPlateSchemaSource(`editor.getApi(RawPlugin).run()`)[0]?.reason ?? "",
     /editor.plugin\(Plugin\)\.api/
   );
 });
 
-test('rejects the deleted root editor tx channel in test fixtures', () => {
+test("rejects the deleted root editor tx channel in test fixtures", () => {
   for (const source of [
     `editor.tx.footnote.focusDefinition({ identifier: '1' })`,
     `editor.tx?.footnote.focusDefinition({ identifier: '1' })`,
@@ -311,15 +311,15 @@ test('rejects the deleted root editor tx channel in test fixtures', () => {
     assert.match(
       auditPlateSchemaSource(
         source,
-        'apps/www/src/registry/components/editor/footnote.slow.tsx'
-      )[0]?.reason ?? '',
+        "apps/www/src/registry/components/editor/footnote.slow.tsx"
+      )[0]?.reason ?? "",
       /root editor\.update channel/
     );
   }
   expectAccepted(`editor.update.footnote.focusDefinition({ identifier: '1' })`);
 });
 
-test('requires prefixless on listeners only inside resolved plugin declarations', () => {
+test("requires prefixless on listeners only inside resolved plugin declarations", () => {
   const issues = auditPlateSchemaSource(`
     const legacy = { onKeyDown() {}, onNodeChange() {} };
     const on = { onPasteCapture() {}, onTextChange() {} };
@@ -329,7 +329,7 @@ test('requires prefixless on listeners only inside resolved plugin declarations'
   `);
 
   assert.equal(
-    issues.filter((issue) => issue.reason.includes('listeners are prefixless'))
+    issues.filter((issue) => issue.reason.includes("listeners are prefixless"))
       .length,
     5
   );
@@ -347,7 +347,7 @@ test('requires prefixless on listeners only inside resolved plugin declarations'
   `);
 });
 
-test('recognizes aliased and namespace Plite plugin factories', () => {
+test("recognizes aliased and namespace Plite plugin factories", () => {
   const issues = auditPlateSchemaSource(`
     import * as Plite from 'plitejs';
     import { definePlugin as rawPlugin } from 'plitejs';
@@ -369,30 +369,30 @@ test('recognizes aliased and namespace Plite plugin factories', () => {
 
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('deleted Plite plugin definition field')
+      issue.reason.includes("deleted Plite plugin definition field")
     ).length,
     4
   );
   assert.equal(
-    issues.filter((issue) => issue.reason.includes('infers one definition'))
+    issues.filter((issue) => issue.reason.includes("infers one definition"))
       .length,
     1
   );
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('must be declared as a factory')
+      issue.reason.includes("must be declared as a factory")
     ).length,
     1
   );
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('receives one context object')
+      issue.reason.includes("receives one context object")
     ).length,
     1
   );
 });
 
-test('resolves local objects, spreads, and returned objects before auditing author fields', () => {
+test("resolves local objects, spreads, and returned objects before auditing author fields", () => {
   const issues = auditPlateSchemaSource(`
     const definition = { extension: {} };
     definePlugin('base', definition);
@@ -406,12 +406,12 @@ test('resolves local objects, spreads, and returned objects before auditing auth
 
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('deleted Plate plugin definition field')
+      issue.reason.includes("deleted Plate plugin definition field")
     ).length,
     3
   );
   assert.equal(
-    issues.filter((issue) => issue.reason.includes('listeners are prefixless'))
+    issues.filter((issue) => issue.reason.includes("listeners are prefixless"))
       .length,
     1
   );
@@ -421,7 +421,7 @@ test('resolves local objects, spreads, and returned objects before auditing auth
   `);
 });
 
-test('rejects config only in final Plite callback contexts', () => {
+test("rejects config only in final Plite callback contexts", () => {
   const issues = auditPlateSchemaSource(
     `
       definePlugin('contexts', {
@@ -433,21 +433,21 @@ test('rejects config only in final Plite callback contexts', () => {
       const config = {};
       const runtime = ({ config }) => config;
     `,
-    'packages/plitejs/test/plugin-context-contract.ts'
+    "packages/plitejs/test/plugin-context-contract.ts"
   );
 
   assert.equal(
     issues.filter((issue) =>
       issue.reason.includes(
-        'schema/API/activation/validation contexts have no config'
+        "schema/API/activation/validation contexts have no config"
       )
     ).length,
     4
   );
 });
 
-test('allows only the exact marked Plite config negative contract', () => {
-  const file = 'packages/plitejs/test/generic-plugin-contract.ts';
+test("allows only the exact marked Plite config negative contract", () => {
+  const file = "packages/plitejs/test/generic-plugin-contract.ts";
 
   assert.deepEqual(
     auditPlateSchemaSource(
@@ -473,12 +473,12 @@ test('allows only the exact marked Plite config negative contract', () => {
         });
       `,
       file
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /contexts have no config/
   );
 });
 
-test('rejects stale names only in capability factory contexts', () => {
+test("rejects stale names only in capability factory contexts", () => {
   const issues = auditPlateSchemaSource(`
     definePlugin('legacy', {
       read: ({ editorReads }) => ({ value: () => editorReads.value() }),
@@ -492,29 +492,29 @@ test('rejects stale names only in capability factory contexts', () => {
 
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('stale read factory context binding editorReads')
+      issue.reason.includes("stale read factory context binding editorReads")
     ).length,
     1
   );
   assert.equal(
     issues.filter((issue) =>
       issue.reason.includes(
-        'stale update factory context binding editorTransforms'
+        "stale update factory context binding editorTransforms"
       )
     ).length,
     1
   );
 });
 
-test('rejects only proven API root merges', () => {
+test("rejects only proven API root merges", () => {
   assert.match(
     auditPlateSchemaSource(`Object.assign(editor.api, extensionApi);`)[0]
-      ?.reason ?? '',
+      ?.reason ?? "",
     /project through editor\.api\.<name>/
   );
   assert.match(
     auditPlateSchemaSource(`editor.api.clipboard.insertData(data);`)[0]
-      ?.reason ?? '',
+      ?.reason ?? "",
     /editor\.api\.dom\.clipboard/
   );
   expectAccepted(`
@@ -527,7 +527,7 @@ test('rejects only proven API root merges', () => {
   `);
 });
 
-test('rejects the deleted parallel plugin generic machine', () => {
+test("rejects the deleted parallel plugin generic machine", () => {
   const issues = auditPlateSchemaSource(
     `
       type A = AnyPluginConfig;
@@ -542,12 +542,12 @@ test('rejects the deleted parallel plugin generic machine', () => {
       plugin.__config;
       plugin.pluginApi;
     `,
-    'packages/example/src/plugin-contract.ts'
+    "packages/example/src/plugin-contract.ts"
   );
 
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('deleted Plate plugin contract symbol')
+      issue.reason.includes("deleted Plate plugin contract symbol")
     ).length,
     11
   );
@@ -559,7 +559,7 @@ test('rejects the deleted parallel plugin generic machine', () => {
   `);
 });
 
-test('names DefinitionOf aliases after the extracted definition', () => {
+test("names DefinitionOf aliases after the extracted definition", () => {
   const issues = auditPlateSchemaSource(
     `
       type MediaConfig = DefinitionOf<typeof MediaPlugin>;
@@ -568,11 +568,11 @@ test('names DefinitionOf aliases after the extracted definition', () => {
       type MediaDefinition = DefinitionOf<typeof MediaPlugin>;
       type RuntimeConfig = { enabled: boolean };
     `,
-    'packages/example/src/plugin-contract.ts'
+    "packages/example/src/plugin-contract.ts"
   );
 
   assert.equal(
-    issues.filter((issue) => issue.reason.includes('use FooDefinition')).length,
+    issues.filter((issue) => issue.reason.includes("use FooDefinition")).length,
     3
   );
   expectAccepted(`
@@ -582,7 +582,7 @@ test('names DefinitionOf aliases after the extracted definition', () => {
   `);
 });
 
-test('rejects explicit descriptor annotations on exported package plugins', () => {
+test("rejects explicit descriptor annotations on exported package plugins", () => {
   const issues = auditPlateSchemaSource(
     `
       type ExamplePluginDefinition = Readonly<{
@@ -594,46 +594,46 @@ test('rejects explicit descriptor annotations on exported package plugins', () =
       export const ExamplePlugin: BasePlugin<ExamplePluginDefinition> =
         examplePlugin;
     `,
-    'packages/example/src/ExamplePlugin.ts'
+    "packages/example/src/ExamplePlugin.ts"
   );
 
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('infer their exact descriptor')
+      issue.reason.includes("infer their exact descriptor")
     ).length,
     1
   );
 });
 
-test('rejects static plugin API references in current docs and release prose', () => {
+test("rejects static plugin API references in current docs and release prose", () => {
   for (const file of [
-    '.changeset/markdown.md',
-    'content/docs/plugins/markdown.mdx',
+    ".changeset/markdown.md",
+    "content/docs/plugins/markdown.mdx",
   ]) {
     assert.match(
       auditNamedSchemaLineageDocument(
-        'Use `MarkdownPlugin.api.serialize` for Markdown output.',
+        "Use `MarkdownPlugin.api.serialize` for Markdown output.",
         file
-      )[0]?.reason ?? '',
+      )[0]?.reason ?? "",
       /installed editor portal/
     );
   }
   assert.deepEqual(
     auditNamedSchemaLineageDocument(
-      'Use `editor.plugin(MarkdownPlugin).api.serialize` for Markdown output.',
-      '.changeset/markdown.md'
+      "Use `editor.plugin(MarkdownPlugin).api.serialize` for Markdown output.",
+      ".changeset/markdown.md"
     ),
     []
   );
 });
 
-test('rejects invented schema identities and accepts absence guards', () => {
+test("rejects invented schema identities and accepts absence guards", () => {
   for (const source of [
     `const type = plugin.installed ? plugin.schema.type : 'paragraph';`,
     `const key = plugin.installed ? plugin.schema.key : 'bold';`,
   ]) {
     assert.match(
-      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      auditPlateSchemaSource(source)[0]?.reason ?? "",
       /uninstalled plugins have no schema identity/
     );
   }
@@ -647,36 +647,36 @@ test('rejects invented schema identities and accepts absence guards', () => {
   assert.match(
     auditNamedSchemaLineageDocument(
       '```tsx\nconst type = plugin.installed ? plugin.schema.type : "paragraph";\n```'
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /uninstalled plugins have no schema identity/
   );
 });
 
-test('rejects spread-wrapped literal arrays', () => {
+test("rejects spread-wrapped literal arrays", () => {
   assert.match(
     auditPlateSchemaSource(
       `const targets = [...[PLUGINS.h1, PLUGINS.h2], PLUGINS.paragraph];`
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /inline literal array items directly/
   );
   expectAccepted(`const targets = [...plugins, PLUGINS.paragraph];`);
 
   assert.match(
     auditNamedSchemaLineageDocument(
-      '```tsx\nconst targets = [...[PLUGINS.h1, PLUGINS.h2]];\n```'
-    )[0]?.reason ?? '',
+      "```tsx\nconst targets = [...[PLUGINS.h1, PLUGINS.h2]];\n```"
+    )[0]?.reason ?? "",
     /inline literal array items directly/
   );
 });
 
-test('keeps Base component docs native and terminal conversion-free', () => {
+test("keeps Base component docs native and terminal conversion-free", () => {
   for (const file of [
-    '.changeset/base-component.md',
-    'content/docs/plugins/base-component.mdx',
+    ".changeset/base-component.md",
+    "content/docs/plugins/base-component.mdx",
   ]) {
     assert.deepEqual(
       auditNamedSchemaLineageDocument(
-        '`BaseParagraphPlugin.configure({ component: ParagraphStatic })`',
+        "`BaseParagraphPlugin.configure({ component: ParagraphStatic })`",
         file
       ),
       []
@@ -690,30 +690,30 @@ test('keeps Base component docs native and terminal conversion-free', () => {
     );
     assert.deepEqual(
       auditNamedSchemaLineageDocument(
-        '`toReactPlugin(BaseParagraphPlugin, { component: ParagraphElement })`',
+        "`toReactPlugin(BaseParagraphPlugin, { component: ParagraphElement })`",
         file
       ),
       []
     );
     assert.match(
       auditNamedSchemaLineageDocument(
-        '`toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphElement })`',
+        "`toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphElement })`",
         file
-      )[0]?.reason ?? '',
+      )[0]?.reason ?? "",
       /terminal consumers configure the Base descriptor directly/
     );
     assert.match(
       auditNamedSchemaLineageDocument(
-        '`BaseParagraphPlugin.extend({ component: ParagraphStatic })`',
+        "`BaseParagraphPlugin.extend({ component: ParagraphStatic })`",
         file
-      )[0]?.reason ?? '',
+      )[0]?.reason ?? "",
       /\.extend\(\) cannot define component/
     );
     assert.match(
       auditNamedSchemaLineageDocument(
-        '`basic-blocks-base-kit` adds `toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })`.',
+        "`basic-blocks-base-kit` adds `toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })`.",
         file
-      )[0]?.reason ?? '',
+      )[0]?.reason ?? "",
       /terminal consumers configure the Base descriptor directly/
     );
   }
@@ -721,24 +721,24 @@ test('keeps Base component docs native and terminal conversion-free', () => {
   assert.match(
     auditNamedSchemaLineageDocument(
       [
-        '```tsx',
+        "```tsx",
         "import { createStaticEditor } from 'platejs/static';",
         "import { toReactPlugin } from 'platejs/react';",
-        'createStaticEditor({',
-        '  plugins: [toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })],',
-        '});',
-        '```',
-      ].join('\n')
-    )[0]?.reason ?? '',
+        "createStaticEditor({",
+        "  plugins: [toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })],",
+        "});",
+        "```",
+      ].join("\n")
+    )[0]?.reason ?? "",
     /terminal consumers configure the Base descriptor directly/
   );
 });
 
-test('keeps Plite dependency requirements behind one public plugin generic', () => {
+test("keeps Plite dependency requirements behind one public plugin generic", () => {
   assert.match(
     auditPlateSchemaSource(
       `type Bad = Plugin<ExampleDefinition, readonly [Dependency]>;`
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /one public Definition generic/
   );
   assert.deepEqual(
@@ -748,18 +748,18 @@ test('keeps Plite dependency requirements behind one public plugin generic', () 
   assert.match(
     auditPlateSchemaSource(
       `type Leaked = typeof editorPluginDefinition;`,
-      'packages/example/src/types.ts'
-    )[0]?.reason ?? '',
+      "packages/example/src/types.ts"
+    )[0]?.reason ?? "",
     /private Plite definition witness leaked/
   );
 });
 
-test('keeps root dependency references shallow and internal carriers internal', () => {
+test("keeps root dependency references shallow and internal carriers internal", () => {
   const genericIssue = auditPlateSchemaSource(
     `type Bad = PluginDependencyReference<Capability>;`
   )[0];
 
-  assert.match(genericIssue?.reason ?? '', /shallow non-generic root identity/);
+  assert.match(genericIssue?.reason ?? "", /shallow non-generic root identity/);
   assert.deepEqual(
     auditPlateSchemaSource(`type Good = PluginDependencyReference;`),
     []
@@ -776,7 +776,7 @@ test('keeps root dependency references shallow and internal carriers internal', 
 
   assert.equal(
     rootImportIssues.filter((issue) =>
-      issue.reason.includes('internal dependency typing')
+      issue.reason.includes("internal dependency typing")
     ).length,
     4
   );
@@ -792,26 +792,26 @@ test('keeps root dependency references shallow and internal carriers internal', 
   assert.match(
     auditPlateSchemaSource(
       `import type { PluginTypeProviderOf } from 'plitejs/internal';`
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /not a public package entrypoint/
   );
   assert.deepEqual(
     auditPlateSchemaSource(
       `import type { PluginTypeProviderOf } from 'plitejs/internal';`,
-      'packages/platejs/src/internal/pluginBridge.ts'
+      "packages/platejs/src/internal/pluginBridge.ts"
     ),
     []
   );
   assert.match(
     auditPlateSchemaSource(
       `export type { PluginTypeProviderOf } from './interfaces/editor';`,
-      'packages/plitejs/src/index.ts'
-    )[0]?.reason ?? '',
+      "packages/plitejs/src/index.ts"
+    )[0]?.reason ?? "",
     /cannot be root-exported/
   );
 });
 
-test('keeps Core author-to-canonical carriers internal', () => {
+test("keeps Core author-to-canonical carriers internal", () => {
   const issues = auditPlateSchemaSource(`
     import type {
       InternalDefinitionOf,
@@ -823,7 +823,7 @@ test('keeps Core author-to-canonical carriers internal', () => {
 
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('internal Core author-to-canonical carrier')
+      issue.reason.includes("internal Core author-to-canonical carrier")
     ).length,
     4
   );
@@ -836,20 +836,20 @@ test('keeps Core author-to-canonical carriers internal', () => {
   assert.match(
     auditPlateSchemaSource(
       `export type { PluginDefinitionCarrier } from './lib/plugin/pluginDefinitionCarrier.internal';`,
-      'packages/platejs/src/index.ts'
-    )[0]?.reason ?? '',
+      "packages/platejs/src/index.ts"
+    )[0]?.reason ?? "",
     /cannot be root-exported/
   );
   assert.deepEqual(
     auditPlateSchemaSource(
       `export type { InternalPluginDefinitionOf } from '../lib/plugin/pluginDefinitionLookup.internal';`,
-      'packages/platejs/src/internal/index.ts'
+      "packages/platejs/src/internal/index.ts"
     ),
     []
   );
 });
 
-test('keeps Core compiler aliases in internal modules', () => {
+test("keeps Core compiler aliases in internal modules", () => {
   const issues = auditPlateSchemaSource(`
     import type {
       LowerBasePlugin,
@@ -860,7 +860,7 @@ test('keeps Core compiler aliases in internal modules', () => {
 
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('internal Core compiler typing')
+      issue.reason.includes("internal Core compiler typing")
     ).length,
     3
   );
@@ -868,19 +868,19 @@ test('keeps Core compiler aliases in internal modules', () => {
   for (const [source, file] of [
     [
       `export type LowerBasePlugin<C> = C;`,
-      'packages/platejs/src/lib/plugin/BasePlugin.ts',
+      "packages/platejs/src/lib/plugin/BasePlugin.ts",
     ],
     [
       `export type NormalizePluginInput<C> = C;`,
-      'packages/platejs/src/react/plugin/PlatePlugin.ts',
+      "packages/platejs/src/react/plugin/PlatePlugin.ts",
     ],
     [
       `export type { NormalizeBasePluginInput } from './basePluginCompiler.internal';`,
-      'packages/platejs/src/lib/plugin/index.ts',
+      "packages/platejs/src/lib/plugin/index.ts",
     ],
     [
       `export * from './basePluginCompiler.internal';`,
-      'packages/platejs/src/lib/plugin/index.ts',
+      "packages/platejs/src/lib/plugin/index.ts",
     ],
   ]) {
     assert.notEqual(auditPlateSchemaSource(source, file).length, 0, file);
@@ -889,13 +889,13 @@ test('keeps Core compiler aliases in internal modules', () => {
   assert.deepEqual(
     auditPlateSchemaSource(
       `export type LowerBasePlugin<C> = C;`,
-      'packages/platejs/src/lib/plugin/basePluginCompiler.internal.ts'
+      "packages/platejs/src/lib/plugin/basePluginCompiler.internal.ts"
     ),
     []
   );
 });
 
-test('requires the exact react({ dom }) factory input', () => {
+test("requires the exact react({ dom }) factory input", () => {
   const issues = auditPlateSchemaSource(`
     import * as PliteReact from 'plitejs/react';
     import { react as installReact } from 'plitejs/react';
@@ -910,7 +910,7 @@ test('requires the exact react({ dom }) factory input', () => {
 
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('exactly one { dom } object')
+      issue.reason.includes("exactly one { dom } object")
     ).length,
     5
   );
@@ -925,8 +925,8 @@ test('requires the exact react({ dom }) factory input', () => {
   `);
 });
 
-test('allows only the exact marked React factory negative contracts', () => {
-  const file = 'packages/plitejs/test/react/generic-react-editor-contract.tsx';
+test("allows only the exact marked React factory negative contracts", () => {
+  const file = "packages/plitejs/test/react/generic-react-editor-contract.tsx";
 
   assert.deepEqual(
     auditPlateSchemaSource(
@@ -949,76 +949,76 @@ test('allows only the exact marked React factory negative contracts', () => {
         const invalidFlattenedReact = react({ clipboardFormatKey: 'x-test' });
       `,
       file
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /exactly one \{ dom \} object/
   );
 });
 
-test('requires API factories and keeps API out of consumer configuration', () => {
+test("requires API factories and keeps API out of consumer configuration", () => {
   const rejected = [
     "definePlugin('base', { api: {}, });",
     "definePlugin('react', { api: {}, });",
     "definePlugin('raw', { api: {}, });",
-    'Plugin.extend({ api: {} });',
-    'Plugin.configure({ api: () => ({}) });',
+    "Plugin.extend({ api: {} });",
+    "Plugin.configure({ api: () => ({}) });",
     "definePlugin('groups', {read: {}, update: {} });",
     "definePlugin('middleware', { commands: {},readMiddleware: {} });",
     "definePlugin('twoPlateContexts', { api: (editor, store) => ({ editor, store }), });",
     "definePlugin('twoPliteContexts', { api: (editor, context) => ({ editor, context }), });",
-  ].join('\n');
+  ].join("\n");
   const accepted = [
     "definePlugin('base', { api: () => ({}),read: () => ({}), update: () => ({}) });",
     "definePlugin('react', { api() { return {}; }, });",
     "definePlugin('raw', { api: ({ editor, getContributions, root }) => ({ editor, getContributions, root }), commands: () => [],readMiddleware: () => [] });",
-    'Plugin.extend({ api: () => ({}) });',
-  ].join('\n');
+    "Plugin.extend({ api: () => ({}) });",
+  ].join("\n");
   const issues = auditPlateSchemaSource(rejected);
 
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('api must be declared as a factory')
+      issue.reason.includes("api must be declared as a factory")
     ).length,
     4
   );
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('must be declared as a factory')
+      issue.reason.includes("must be declared as a factory")
     ).length,
     8
   );
   assert.equal(
     issues.filter((issue) =>
-      issue.reason.includes('receives one context object')
+      issue.reason.includes("receives one context object")
     ).length,
     2
   );
   assert.equal(
-    issues.filter((issue) => issue.reason.includes('cannot be configured'))
+    issues.filter((issue) => issue.reason.includes("cannot be configured"))
       .length,
     1
   );
   assert.deepEqual(auditPlateSchemaSource(accepted), []);
 });
 
-test('rejects unaudited direct constructor extend stages', () => {
+test("rejects unaudited direct constructor extend stages", () => {
   assert.match(
     auditPlateSchemaSource(
       `definePlugin('example', { }).extend(() => ({ api: () => ({}) }))`,
-      'packages/example/src/ExamplePlugin.ts'
-    )[0]?.reason ?? '',
+      "packages/example/src/ExamplePlugin.ts"
+    )[0]?.reason ?? "",
     /not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency/
   );
 
   assert.deepEqual(
     auditPlateSchemaSource(
       `Plugin.extend(() => ({ api: () => ({}), on: {} }))`,
-      'packages/example/src/ExamplePlugin.ts'
+      "packages/example/src/ExamplePlugin.ts"
     ),
     []
   );
 });
 
-test('keeps replacement command declarations in one owner factory', () => {
+test("keeps replacement command declarations in one owner factory", () => {
   const issues = auditPlateSchemaSource(
     `
       definePlugin('example', {
@@ -1028,17 +1028,17 @@ test('keeps replacement command declarations in one owner factory', () => {
         commands: () => [],
       });
     `,
-    'packages/example/src/BaseExamplePlugin.ts'
+    "packages/example/src/BaseExamplePlugin.ts"
   );
 
   assert.match(
-    issues.find((issue) => issue.reason.includes('replacement plugin commands'))
-      ?.reason ?? '',
+    issues.find((issue) => issue.reason.includes("replacement plugin commands"))
+      ?.reason ?? "",
     /one ordered owner factory/
   );
 });
 
-test('rejects unaudited extend stages through local descriptor bindings', () => {
+test("rejects unaudited extend stages through local descriptor bindings", () => {
   for (const source of [
     `
       export const BaseExamplePlugin = definePlugin('example', { });
@@ -1099,8 +1099,8 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
     `,
   ]) {
     assert.match(
-      auditPlateSchemaSource(source, 'packages/example/src/ExamplePlugin.ts')[0]
-        ?.reason ?? '',
+      auditPlateSchemaSource(source, "packages/example/src/ExamplePlugin.ts")[0]
+        ?.reason ?? "",
       /not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency/
     );
   }
@@ -1114,8 +1114,8 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
           api: () => ({}),
         }));
       `,
-      'packages/example/src/ExamplePlugin.ts'
-    )[0]?.reason ?? '',
+      "packages/example/src/ExamplePlugin.ts"
+    )[0]?.reason ?? "",
     /cannot bypass the exact stage audit/
   );
 
@@ -1130,8 +1130,8 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
           export const BaseExamplePlugin = definePlugin('example', { });
           export const ExamplePlugin = ${optionalCall};
         `,
-        'packages/example/src/ExamplePlugin.ts'
-      )[0]?.reason ?? '',
+        "packages/example/src/ExamplePlugin.ts"
+      )[0]?.reason ?? "",
       /optional plugin-authoring calls.*cannot bypass the exact stage audit/
     );
   }
@@ -1166,18 +1166,18 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
           export const BaseExamplePlugin = definePlugin('example', { });
           ${extraction}
         `,
-        'packages/example/src/ExamplePlugin.ts'
-      )[0]?.reason ?? '',
+        "packages/example/src/ExamplePlugin.ts"
+      )[0]?.reason ?? "",
       /plugin authoring methods cannot be extracted/
     );
   }
 
   for (const method of [
-    'clone',
-    'configure',
-    'configurePlugin',
-    'extendApi',
-    'extendPlugin',
+    "clone",
+    "configure",
+    "configurePlugin",
+    "extendApi",
+    "extendPlugin",
   ]) {
     assert.match(
       auditPlateSchemaSource(
@@ -1186,8 +1186,8 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
           const extractedMethod = BaseExamplePlugin.${method};
           export const ExamplePlugin = extractedMethod();
         `,
-        'packages/example/src/ExamplePlugin.ts'
-      )[0]?.reason ?? '',
+        "packages/example/src/ExamplePlugin.ts"
+      )[0]?.reason ?? "",
       /plugin authoring methods cannot be extracted/
     );
   }
@@ -1205,7 +1205,7 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
             read: () => ({}),
           }));
       `,
-      'packages/platejs/src/features/tag/lib/BaseTagPlugin.ts'
+      "packages/platejs/src/features/tag/lib/BaseTagPlugin.ts"
     ),
     []
   );
@@ -1302,10 +1302,10 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
     assert.match(
       auditPlateSchemaSource(
         source,
-        'packages/example/src/ExamplePlugin.ts'
+        "packages/example/src/ExamplePlugin.ts"
       ).find((issue) =>
-        issue.reason.includes('direct constructor .extend() chain')
-      )?.reason ?? '',
+        issue.reason.includes("direct constructor .extend() chain")
+      )?.reason ?? "",
       /not an audited constructor-inaccessible/
     );
   }
@@ -1316,7 +1316,7 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
         const InternalRootPlugin = definePlugin('root', { });
         snapshotSources({ internalRoot: InternalRootPlugin });
       `,
-      'packages/platejs/src/lib/editor/withPlite.ts'
+      "packages/platejs/src/lib/editor/withPlite.ts"
     ),
     []
   );
@@ -1332,9 +1332,9 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
           api: () => ({}),
         }));
       `,
-      'packages/example/src/ExamplePlugin.ts'
+      "packages/example/src/ExamplePlugin.ts"
     ).some((issue) =>
-      issue.reason.includes('direct constructor .extend() chain')
+      issue.reason.includes("direct constructor .extend() chain")
     ),
     false
   );
@@ -1346,13 +1346,13 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
         api: () => ({}),
       }));
     `,
-    'packages/example/src/ExamplePlugin.ts'
+    "packages/example/src/ExamplePlugin.ts"
   );
 
   assert.match(
     newDeclarationStageIssues.find((issue) =>
-      issue.reason.includes('new plugin declaration stages')
-    )?.reason ?? '',
+      issue.reason.includes("new plugin declaration stages")
+    )?.reason ?? "",
     /repair the owning generic or declaration boundary/
   );
 
@@ -1365,9 +1365,9 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
           api: () => ({}),
         }));
       `,
-      'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts'
-    ).find((issue) => issue.reason.includes('new plugin declaration stages'))
-      ?.reason ?? '',
+      "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts"
+    ).find((issue) => issue.reason.includes("new plugin declaration stages"))
+      ?.reason ?? "",
     /repair the owning generic or declaration boundary/
   );
 
@@ -1380,14 +1380,14 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
           }),
         });
       `,
-      'packages/example/src/BaseExamplePlugin.ts'
-    ).find((issue) => issue.reason.includes('entire installed editor'))
-      ?.reason ?? '',
+      "packages/example/src/BaseExamplePlugin.ts"
+    ).find((issue) => issue.reason.includes("entire installed editor"))
+      ?.reason ?? "",
     /owning descriptor or the honest broad Element\/Text domain/
   );
 });
 
-test('rejects one-use private plugin descriptor scaffolding', () => {
+test("rejects one-use private plugin descriptor scaffolding", () => {
   const source = `
     const ExamplePluginDefinition = definePlugin('example', { });
     export const ExamplePlugin = ExamplePluginDefinition.extend(() => ({
@@ -1396,8 +1396,8 @@ test('rejects one-use private plugin descriptor scaffolding', () => {
   `;
 
   assert.match(
-    auditPlateSchemaSource(source, 'packages/example/src/ExamplePlugin.ts')[0]
-      ?.reason ?? '',
+    auditPlateSchemaSource(source, "packages/example/src/ExamplePlugin.ts")[0]
+      ?.reason ?? "",
     /export the complete builder chain directly/
   );
   assert.equal(
@@ -1408,27 +1408,27 @@ test('rejects one-use private plugin descriptor scaffolding', () => {
           api: () => ({}),
         }));
       `,
-      'packages/example/src/ExamplePlugin.ts'
+      "packages/example/src/ExamplePlugin.ts"
     ).some((issue) =>
-      issue.reason.includes('one-use private plugin descriptor scaffolding')
+      issue.reason.includes("one-use private plugin descriptor scaffolding")
     ),
     false
   );
 });
 
-test('excludes non-production plugin chains from the constructor-stage rule', () => {
+test("excludes non-production plugin chains from the constructor-stage rule", () => {
   const source = `definePlugin('example', { }).extend(() => ({ api: () => ({}) }))`;
 
   for (const file of [
-    'packages/example/src/ExamplePlugin.spec.ts',
-    'packages/example/type-tests/ExamplePlugin.ts',
-    'packages/example/historical/ExamplePlugin.ts',
-    'packages/example/generated/ExamplePlugin.ts',
-    'templates/example/ExamplePlugin.ts',
+    "packages/example/src/ExamplePlugin.spec.ts",
+    "packages/example/type-tests/ExamplePlugin.ts",
+    "packages/example/historical/ExamplePlugin.ts",
+    "packages/example/generated/ExamplePlugin.ts",
+    "templates/example/ExamplePlugin.ts",
   ]) {
     assert.equal(
       auditPlateSchemaSource(source, file).some((issue) =>
-        issue.reason.includes('direct constructor .extend() chain')
+        issue.reason.includes("direct constructor .extend() chain")
       ),
       false,
       file
@@ -1436,7 +1436,7 @@ test('excludes non-production plugin chains from the constructor-stage rule', ()
   }
 });
 
-test('rejects plugin capability names used as persisted schema identities', () => {
+test("rejects plugin capability names used as persisted schema identities", () => {
   for (const source of [
     `const value = { type: ParagraphPlugin.name }`,
     `const property = { key: BoldPlugin.name }`,
@@ -1465,7 +1465,7 @@ test('rejects plugin capability names used as persisted schema identities', () =
   );
 });
 
-test('rejects compiler schema maps on consumer plugin portals', () => {
+test("rejects compiler schema maps on consumer plugin portals", () => {
   for (const source of [
     `const type = editor.plugin(ParagraphPlugin).schema.element.type`,
     `const key = editor.plugin(BoldPlugin).schema.properties.bold.key`,
@@ -1477,7 +1477,7 @@ test('rejects compiler schema maps on consumer plugin portals', () => {
     `const bold = editor.plugin(BoldPlugin); const schema = bold.schema; const alias = schema; const key = alias.properties.bold.key`,
   ]) {
     assert.match(
-      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      auditPlateSchemaSource(source)[0]?.reason ?? "",
       /consumer plugin portals expose only flat/
     );
   }
@@ -1493,7 +1493,7 @@ test('rejects compiler schema maps on consumer plugin portals', () => {
   );
 });
 
-test('rejects capability identities as missing-plugin schema fallbacks', () => {
+test("rejects capability identities as missing-plugin schema fallbacks", () => {
   for (const source of [
     `const type = plugin.installed ? plugin.schema.type : PLUGINS.paragraph`,
     `const key = plugin.installed ? plugin.schema.key : plugin.name`,
@@ -1503,7 +1503,7 @@ test('rejects capability identities as missing-plugin schema fallbacks', () => {
     `const type = (plugin.installed && plugin.schema.type) || plugin.name`,
   ]) {
     assert.match(
-      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      auditPlateSchemaSource(source)[0]?.reason ?? "",
       /uninstalled plugins have no schema identity/
     );
   }
@@ -1519,8 +1519,8 @@ test('rejects capability identities as missing-plugin schema fallbacks', () => {
   );
 });
 
-test('rejects raw registry runtime and configuration identities', () => {
-  const file = 'apps/www/src/registry/ui/example.tsx';
+test("rejects raw registry runtime and configuration identities", () => {
+  const file = "apps/www/src/registry/ui/example.tsx";
 
   for (const source of [
     `editor.read.nodes.some({ match: { type: 'table' } })`,
@@ -1550,25 +1550,25 @@ test('rejects raw registry runtime and configuration identities', () => {
   assert.deepEqual(
     auditPlateSchemaSource(
       `export const value = [{ children: [{ text: '' }], type: 'table' }]`,
-      'apps/www/src/registry/examples/values/table-value.ts'
+      "apps/www/src/registry/examples/values/table-value.ts"
     ),
     []
   );
 });
 
-test('rejects host editor types in standalone copied registry items', () => {
+test("rejects host editor types in standalone copied registry items", () => {
   const source = `
     import type { MyEditor } from '@/registry/components/editor/editor-kit';
     const editor = useEditor<MyEditor>();
   `;
 
   for (const file of [
-    'apps/www/src/registry/ui/example.tsx',
-    'apps/www/src/registry/components/editor/use-chat.ts',
-    'apps/www/src/registry/components/editor/use-chat.tsx',
+    "apps/www/src/registry/ui/example.tsx",
+    "apps/www/src/registry/components/editor/use-chat.ts",
+    "apps/www/src/registry/components/editor/use-chat.tsx",
   ]) {
     assert.match(
-      auditPlateSchemaSource(source, file)[0]?.reason ?? '',
+      auditPlateSchemaSource(source, file)[0]?.reason ?? "",
       /owned plugin tuple/
     );
   }
@@ -1576,30 +1576,30 @@ test('rejects host editor types in standalone copied registry items', () => {
   assert.deepEqual(
     auditPlateSchemaSource(
       `const editor = useEditor<Editor<Value, readonly [typeof TablePlugin]>>();`,
-      'apps/www/src/registry/ui/example.tsx'
+      "apps/www/src/registry/ui/example.tsx"
     ),
     []
   );
   assert.deepEqual(
     auditPlateSchemaSource(
       source,
-      'apps/www/src/registry/examples/example.tsx'
+      "apps/www/src/registry/examples/example.tsx"
     ),
     []
   );
 });
 
-test('keeps locally created descriptor identity lexical', () => {
+test("keeps locally created descriptor identity lexical", () => {
   assert.deepEqual(
     auditPlateSchemaSource(
       `const BaseExamplePlugin = definePlugin('example', { }); export function adapt(BaseExamplePlugin) { return BaseExamplePlugin.extend(() => ({ api: () => ({}) })); }`,
-      'packages/example/src/lib/BaseExamplePlugin.ts'
+      "packages/example/src/lib/BaseExamplePlugin.ts"
     ),
     []
   );
 });
 
-test('allows only exact audited production extend stages at their owner path', () => {
+test("allows only exact audited production extend stages at their owner path", () => {
   const exact = `
     definePlugin('code', { })
       .extend({ update: () => ({}) })
@@ -1613,7 +1613,7 @@ test('allows only exact audited production extend stages at their owner path', (
       });
   `;
   const owner =
-    'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts';
+    "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts";
 
   assert.deepEqual(auditPlateSchemaSource(exact, owner), []);
   assert.match(
@@ -1626,7 +1626,7 @@ test('allows only exact audited production extend stages at their owner path', (
           .extend(() => ({ api: () => ({}) }));
       `,
       owner
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /found \[api\]/
   );
 
@@ -1639,10 +1639,10 @@ test('allows only exact audited production extend stages at their owner path', (
       owner,
       /\[rules, update\]/,
     ],
-    [exact, 'packages/example/src/BaseCodeBlockPlugin.ts', /\[update\]/],
+    [exact, "packages/example/src/BaseCodeBlockPlugin.ts", /\[update\]/],
   ]) {
     const issue = auditPlateSchemaSource(source, file).find((item) =>
-      item.reason.includes('direct constructor .extend() chain')
+      item.reason.includes("direct constructor .extend() chain")
     );
 
     assert.ok(issue, file);
@@ -1651,7 +1651,7 @@ test('allows only exact audited production extend stages at their owner path', (
 
   assert.match(
     auditPlateSchemaSource(`definePlugin('code', { })`, owner).at(-1)?.reason ??
-      '',
+      "",
     /expects exact 2 audited chains but found 0/
   );
 
@@ -1662,12 +1662,12 @@ test('allows only exact audited production extend stages at their owner path', (
         definePlugin('duplicate', { }).extend({ commands: () => [], contributions: [] });
       `,
       owner
-    ).at(-1)?.reason ?? '',
+    ).at(-1)?.reason ?? "",
     /found 2; signatures did not match/
   );
 
   for (const file of [
-    'packages/platejs/src/lib/plugins/affinity/AffinityPlugin.ts',
+    "packages/platejs/src/lib/plugins/affinity/AffinityPlugin.ts",
   ]) {
     assert.deepEqual(
       auditPlateSchemaSource(
@@ -1683,18 +1683,18 @@ test('allows only exact audited production extend stages at their owner path', (
   for (const [source, file] of [
     [
       `definePlugin('history', { }).extend(history())`,
-      'packages/platejs/src/lib/plugins/HistoryPlugin.ts',
+      "packages/platejs/src/lib/plugins/HistoryPlugin.ts",
     ],
     [
       `definePlugin('dom', { }).extend(plateDOMPlugin)`,
-      'packages/platejs/src/lib/plugins/dom/DOMPlugin.ts',
+      "packages/platejs/src/lib/plugins/dom/DOMPlugin.ts",
     ],
     [
       `definePlugin('inputRules', { }).extend(() => ({
         commands: () => [],
         contributions: [],
       }))`,
-      'packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts',
+      "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts",
     ],
     [
       `definePlugin('override', { }).extend(() => ({
@@ -1702,11 +1702,11 @@ test('allows only exact audited production extend stages at their owner path', (
         corrections: [],
         readMiddleware: () => ({}),
       }))`,
-      'packages/platejs/src/lib/plugins/override/OverridePlugin.ts',
+      "packages/platejs/src/internal/plugin/OverridePlugin.ts",
     ],
     [
       `definePlugin('react', { }).extend(plateReactPlugin)`,
-      'packages/platejs/src/react/editor/getPlateCorePlugins.internal.ts',
+      "packages/platejs/src/react/editor/getPlateCorePlugins.internal.ts",
     ],
   ]) {
     assert.deepEqual(auditPlateSchemaSource(source, file), []);
@@ -1715,12 +1715,12 @@ test('allows only exact audited production extend stages at their owner path', (
   assert.match(
     auditPlateSchemaSource(
       `definePlugin('indent', { }).extend({ shortcuts: {} })`,
-      'packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts'
-    )[0]?.reason ?? '',
+      "packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts"
+    )[0]?.reason ?? "",
     /found \[shortcuts\]/
   );
 
-  const listOwner = 'packages/platejs/src/features/list/lib/BaseListPlugin.ts';
+  const listOwner = "packages/platejs/src/features/list/lib/BaseListPlugin.ts";
   const listStages = `definePlugin('list', { })
     .extend(({ defineCodecs }) => ({ codecs: defineCodecs({}) }))
     .extend(() => ({ api: () => ({}), read: () => ({}) }))
@@ -1737,13 +1737,13 @@ test('allows only exact audited production extend stages at their owner path', (
         .extend(() => ({ commands: () => [] }))
         .extend(() => ({ corrections: [] }))`,
       listOwner
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /\[override\] -> \[update\] -> \[commands\] -> \[corrections\]/
   );
 
   for (const [file, source] of [
     [
-      'packages/platejs/src/csv/lib/CsvPlugin.ts',
+      "packages/platejs/src/csv/lib/CsvPlugin.ts",
       `definePlugin('csv', { })
         .extend(() => ({ api: () => ({}) }))
         .extend(({ defineCodecs }) => ({
@@ -1751,25 +1751,25 @@ test('allows only exact audited production extend stages at their owner path', (
         }))`,
     ],
     [
-      'packages/platejs/src/features/link/lib/BaseLinkPlugin.ts',
+      "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
       `definePlugin('link', { })
         .extend(() => ({ update: () => ({}) }))
         .extend(() => ({ commands: () => [] }))`,
     ],
     [
-      'packages/platejs/src/markdown/lib/MarkdownPlugin.ts',
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
       `definePlugin('markdown', { })
         .extend(() => ({ api: () => ({}) }))`,
     ],
     [
-      'packages/platejs/src/ai/react/AIChatPlugin.ts',
+      "packages/platejs/src/ai/react/AIChatPlugin.ts",
       `definePlugin('aiChat', { })
         .extend(() => ({ api: () => ({}), read: () => ({}), selectors: {}, update: () => ({}) }))
         .extend(() => ({ commands: () => [], corrections: [], effectTypes: [], on: {} }));
        editor.read.schema.property({});`,
     ],
     [
-      'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',
+      "packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
       `definePlugin('table', { })
         .extend(() => ({ api: () => ({}) }))
         .extend(() => ({ api: () => ({}) }))
@@ -1785,12 +1785,12 @@ test('allows only exact audited production extend stages at their owner path', (
         .extend(() => ({ commands: () => [] }))`,
     ],
     [
-      'packages/platejs/src/features/toc/lib/BaseTocPlugin.ts',
+      "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts",
       `definePlugin('toc', { })
         .extend(() => ({ read: () => ({}) }))`,
     ],
     [
-      'packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts',
+      "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts",
       `definePlugin('details', { })
         .extend(() => ({
           api: () => ({}),
@@ -1809,15 +1809,15 @@ test('allows only exact audited production extend stages at their owner path', (
     auditPlateSchemaSource(
       `definePlugin('markdown', { })
         .extend(() => ({ read: () => ({}) }))`,
-      'packages/platejs/src/markdown/lib/MarkdownPlugin.ts'
-    )[0]?.reason ?? '',
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts"
+    )[0]?.reason ?? "",
     /found \[read\]/
   );
 });
 
-test('matches opaque shared-factory stages by exact callee identity', () => {
+test("matches opaque shared-factory stages by exact callee identity", () => {
   const owner =
-    'packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts';
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts";
 
   assert.deepEqual(
     auditPlateSchemaSource(
@@ -1832,12 +1832,12 @@ test('matches opaque shared-factory stages by exact callee identity', () => {
     auditPlateSchemaSource(
       `definePlugin('image', { }).extend(createUnrelatedPlugin())`,
       owner
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /\$factory:createUnrelatedPlugin/
   );
 });
 
-test('requires context-bound codec declarations', () => {
+test("requires context-bound codec declarations", () => {
   for (const source of [
     `Plugin.extend(() => ({ codecs: { 'text/html': rule } }))`,
     `const codecsKey = 'codecs'; Plugin.extend(() => ({ [codecsKey]: { 'text/html': rule } }))`,
@@ -1847,7 +1847,7 @@ test('requires context-bound codec declarations', () => {
     `const codecsKey = 'codecs'; definePlugin('p', { [codecsKey]: { 'text/html': rule }, })`,
   ]) {
     assert.match(
-      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      auditPlateSchemaSource(source)[0]?.reason ?? "",
       /context-bound defineCodecs/
     );
   }
@@ -1862,7 +1862,7 @@ test('requires context-bound codec declarations', () => {
   }
 });
 
-test('binds custom Markdown element identity to the resolved schema type', () => {
+test("binds custom Markdown element identity to the resolved schema type", () => {
   const definition = (rule) => `definePlugin('customCapability', {
     schema: { element: schema.element.textBlock() },
     codecs: ({ defineCodecs, schema: { type } }) => defineCodecs({
@@ -1897,7 +1897,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
           decode: () => ({ children: [{ text: '' }], type: 'image' }),
         },
       }),
-    })`)[0]?.reason ?? '',
+    })`)[0]?.reason ?? "",
     /decode to the resolved schema type/
   );
   assert.deepEqual(
@@ -1926,7 +1926,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
         encode: () => ({ attributes: [], children: [], name: type, type: 'mdxJsxFlowElement' }),
       }`)
     ).find((issue) => /attributes cannot override/.test(issue.reason))
-      ?.reason ?? '',
+      ?.reason ?? "",
     /attributes cannot override/
   );
 
@@ -1960,7 +1960,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
     ],
   ]) {
     assert.match(
-      auditPlateSchemaSource(definition(rule))[0]?.reason ?? '',
+      auditPlateSchemaSource(definition(rule))[0]?.reason ?? "",
       reason
     );
   }
@@ -1978,7 +1978,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
         },
       }),
     }))`).find((issue) => /resolved schema type for from/.test(issue.reason))
-      ?.reason ?? '',
+      ?.reason ?? "",
     /resolved schema type for from/
   );
   assert.match(
@@ -1993,7 +1993,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
         },
       }),
     }))`).find((issue) => /resolved schema type for from/.test(issue.reason))
-      ?.reason ?? '',
+      ?.reason ?? "",
     /resolved schema type for from/
   );
 
@@ -2023,7 +2023,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
           encode: () => ({ attributes: [], children: [], name: 'customElement', type: 'mdxJsxFlowElement' }),
         },
       }),
-    })`)[0]?.reason ?? '',
+    })`)[0]?.reason ?? "",
     /must be owned by their target plugin/
   );
   assert.deepEqual(
@@ -2058,7 +2058,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
         kind: 'node',
         decode: () => ({ children: [{ text: '' }] }),
       }`)
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /decode to the resolved schema type/
   );
   assert.deepEqual(
@@ -2078,30 +2078,30 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
   );
 });
 
-test('keeps independent production codecs in the constructor', () => {
+test("keeps independent production codecs in the constructor", () => {
   for (const file of [
-    'packages/example/src/lib/BaseExamplePlugin.ts',
-    'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts',
+    "packages/example/src/lib/BaseExamplePlugin.ts",
+    "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts",
   ]) {
     assert.match(
       auditPlateSchemaSource(
         `definePlugin('example', { }).extend(({ defineCodecs }) => ({ codecs: defineCodecs({ 'text/html': rule }) }))`,
         file
-      )[0]?.reason ?? '',
+      )[0]?.reason ?? "",
       /constructor callback/
     );
   }
   assert.deepEqual(
     auditPlateSchemaSource(
       `definePlugin('example', {codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': rule }) })`,
-      'packages/example/src/lib/BaseExamplePlugin.ts'
+      "packages/example/src/lib/BaseExamplePlugin.ts"
     ),
     []
   );
 });
 
-test('keeps independent production fields in the constructor', () => {
-  const file = 'packages/example/src/lib/BaseExamplePlugin.ts';
+test("keeps independent production fields in the constructor", () => {
+  const file = "packages/example/src/lib/BaseExamplePlugin.ts";
   const issues = auditPlateSchemaSource(
     `definePlugin('example', { }).extend(({ type }) => ({
       render: { as: 'p' },
@@ -2112,23 +2112,23 @@ test('keeps independent production fields in the constructor', () => {
 
   assert.equal(issues.length, 1);
   assert.match(
-    issues[0]?.reason ?? '',
+    issues[0]?.reason ?? "",
     /not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency/
   );
 });
 
-test('allows only exact marked raw-codec negative contracts', () => {
+test("allows only exact marked raw-codec negative contracts", () => {
   const markedRawCodec = `Plugin.extend(() => ({
     // @plate-schema-adoption-negative-codec
     codecs: { 'text/html': rule },
   }))`;
   const runtimeOwner =
-    'packages/platejs/src/internal/plugin/compilePlateHtmlCodec.spec.ts';
+    "packages/platejs/src/internal/plugin/compilePlateHtmlCodec.spec.ts";
   const productCodecOwner =
-    'packages/platejs/src/lib/plugins/ProductCodecs.spec.ts';
-  const typeOwner = 'packages/platejs/type-tests/base-plugin-contracts.ts';
+    "packages/platejs/src/lib/plugins/ProductCodecs.spec.ts";
+  const typeOwner = "packages/platejs/type-tests/base-plugin-contracts.ts";
   const markdownOwner =
-    'packages/platejs/src/markdown/lib/internal/markdownCodecs.spec.ts';
+    "packages/platejs/src/markdown/lib/internal/markdownCodecs.spec.ts";
 
   for (const file of [
     runtimeOwner,
@@ -2141,7 +2141,7 @@ test('allows only exact marked raw-codec negative contracts', () => {
       auditPlateSchemaSource(
         `Plugin.extend(() => ({ codecs: { 'text/html': rule } }))`,
         file
-      )[0]?.reason ?? '',
+      )[0]?.reason ?? "",
       /context-bound defineCodecs/
     );
   }
@@ -2149,24 +2149,24 @@ test('allows only exact marked raw-codec negative contracts', () => {
   assert.match(
     auditPlateSchemaSource(
       markedRawCodec,
-      'packages/platejs/src/internal/plugin/other.spec.ts'
-    )[0]?.reason ?? '',
+      "packages/platejs/src/internal/plugin/other.spec.ts"
+    )[0]?.reason ?? "",
     /context-bound defineCodecs/
   );
   assert.equal(
     auditPlateSchemaSource(
       `${markedRawCodec};\n${markedRawCodec}`,
       runtimeOwner
-    ).filter((issue) => issue.reason.includes('context-bound defineCodecs'))
+    ).filter((issue) => issue.reason.includes("context-bound defineCodecs"))
       .length,
     1
   );
 });
 
-test('allows render.node only in Core resolved-slot owners', () => {
+test("allows render.node only in Core resolved-slot owners", () => {
   for (const file of [
-    'packages/platejs/src/internal/plugin/resolvePlugins.ts',
-    'packages/platejs/src/lib/plugin/definePlugin.ts',
+    "packages/platejs/src/internal/plugin/resolvePlugins.ts",
+    "packages/platejs/src/lib/plugin/definePlugin.ts",
   ]) {
     assert.deepEqual(
       auditPlateSchemaSource(
@@ -2178,9 +2178,9 @@ test('allows render.node only in Core resolved-slot owners', () => {
   }
 });
 
-test('keeps static/base component bindings free of Plate React adapters', () => {
+test("keeps static/base component bindings free of Plate React adapters", () => {
   const file =
-    'apps/www/src/registry/components/editor/basic-blocks-static.tsx';
+    "apps/www/src/registry/components/editor/basic-blocks-static.tsx";
 
   assert.deepEqual(
     auditPlateSchemaSource(
@@ -2188,7 +2188,7 @@ test('keeps static/base component bindings free of Plate React adapters', () => 
         `import { BaseParagraphPlugin } from 'platejs';`,
         `import { ParagraphStatic } from '@/registry/components/editor/paragraph-static';`,
         `const kit = [definePlugin('p', { component: ParagraphStatic, })];`,
-      ].join('\n'),
+      ].join("\n"),
       file
     ),
     []
@@ -2219,7 +2219,7 @@ test('keeps static/base component bindings free of Plate React adapters', () => 
   );
 });
 
-test('accepts Base constructor components and rejects extension-stage components', () => {
+test("accepts Base constructor components and rejects extension-stage components", () => {
   for (const source of [
     `const HighlightPlugin = definePlugin('highlight', {});
      HighlightPlugin.configure({ component: ParagraphStatic });`,
@@ -2230,7 +2230,7 @@ test('accepts Base constructor components and rejects extension-stage components
     assert.deepEqual(
       auditPlateSchemaSource(
         source,
-        'packages/example/src/static/render.spec.tsx'
+        "packages/example/src/static/render.spec.tsx"
       ),
       []
     );
@@ -2241,47 +2241,47 @@ test('accepts Base constructor components and rejects extension-stage components
        function render(TonePlugin) {
          TonePlugin.configure({ component: ParagraphStatic });
        }`,
-      'packages/example/src/static/render.spec.tsx'
-    ).some((issue) => issue.reason.includes('owning BasePlugin')),
+      "packages/example/src/static/render.spec.tsx"
+    ).some((issue) => issue.reason.includes("owning BasePlugin")),
     true
   );
   assert.deepEqual(
     auditPlateSchemaSource(
       `definePlugin('p', { component: ParagraphStatic, });`,
-      'packages/example/src/lib/BaseParagraphPlugin.ts'
+      "packages/example/src/lib/BaseParagraphPlugin.ts"
     ),
     []
   );
   assert.equal(
     auditPlateSchemaSource(
       `BaseParagraphPlugin.extend({ component: ParagraphStatic });`,
-      'apps/www/src/registry/components/editor/plugins/basic-blocks-base-kit.tsx'
+      "apps/www/src/registry/components/editor/plugins/basic-blocks-base-kit.tsx"
     ).some((issue) =>
-      issue.reason.includes('.extend() cannot define component')
+      issue.reason.includes(".extend() cannot define component")
     ),
     true
   );
   assert.deepEqual(
     auditPlateSchemaSource(
       `BaseParagraphPlugin.configure({ component: ParagraphStatic });`,
-      'apps/www/src/registry/components/editor/plugins/basic-blocks-base-kit.tsx'
+      "apps/www/src/registry/components/editor/plugins/basic-blocks-base-kit.tsx"
     ),
     []
   );
   assert.deepEqual(
     auditPlateSchemaSource(
       `toReactPlugin(BaseParagraphPlugin, { component: ParagraphElement });`,
-      'packages/example/src/react/ParagraphPlugin.tsx'
+      "packages/example/src/react/ParagraphPlugin.tsx"
     ),
     []
   );
   assert.equal(
     auditPlateSchemaSource(
       `toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphElement });`,
-      'apps/www/src/registry/examples/example.tsx'
+      "apps/www/src/registry/examples/example.tsx"
     ).some((issue) =>
       issue.reason.includes(
-        'terminal consumers configure the Base descriptor directly'
+        "terminal consumers configure the Base descriptor directly"
       )
     ),
     true
@@ -2289,27 +2289,27 @@ test('accepts Base constructor components and rejects extension-stage components
   assert.deepEqual(
     auditPlateSchemaSource(
       [
-        '// @ts-expect-error configured descriptors are terminal authoring inputs',
-        'ConfiguredPlatePlugin.extend({ component: ParagraphElement });',
-      ].join('\n'),
-      'packages/platejs/src/lib/plugin/definePlugin.typed.spec.ts'
+        "// @ts-expect-error configured descriptors are terminal authoring inputs",
+        "ConfiguredPlatePlugin.extend({ component: ParagraphElement });",
+      ].join("\n"),
+      "packages/platejs/src/lib/plugin/definePlugin.typed.spec.ts"
     ),
     []
   );
 });
 
-test('allows only the exact typed negative render.node contract', () => {
+test("allows only the exact typed negative render.node contract", () => {
   const source = [
     "definePlugin('negative', { render: {",
-    '  // @ts-expect-error custom node components use the Plate component field',
-    '  node: Component,',
-    '} });',
-  ].join('\n');
-  const file = 'packages/platejs/src/lib/plugin/definePlugin.typed.spec.ts';
+    "  // @ts-expect-error custom node components use the Plate component field",
+    "  node: Component,",
+    "} });",
+  ].join("\n");
+  const file = "packages/platejs/src/lib/plugin/definePlugin.typed.spec.ts";
 
   assert.equal(
     auditPlateSchemaSource(source, file).some((issue) =>
-      issue.reason.includes('root-level component')
+      issue.reason.includes("root-level component")
     ),
     false
   );
@@ -2317,19 +2317,19 @@ test('allows only the exact typed negative render.node contract', () => {
     auditPlateSchemaSource(
       "definePlugin('negative', {render: { node: Component } });",
       file
-    ).some((issue) => issue.reason.includes('root-level component')),
+    ).some((issue) => issue.reason.includes("root-level component")),
     true
   );
   assert.equal(
     auditPlateSchemaSource(
       source,
-      'packages/platejs/src/lib/plugin/other.spec.ts'
-    ).some((issue) => issue.reason.includes('root-level component')),
+      "packages/platejs/src/lib/plugin/other.spec.ts"
+    ).some((issue) => issue.reason.includes("root-level component")),
     true
   );
 });
 
-test('allows only the exact runtime API negative fixture', () => {
+test("allows only the exact runtime API negative fixture", () => {
   const source = `
     const createRuntime = definePlugin as unknown as (
       name: string,
@@ -2339,26 +2339,26 @@ test('allows only the exact runtime API negative fixture', () => {
       api: { label: () => 'invalid' },
     });
   `;
-  const file = 'packages/platejs/src/react/plugin/definePlugin.spec.ts';
+  const file = "packages/platejs/src/react/plugin/definePlugin.spec.ts";
 
   assert.deepEqual(auditPlateSchemaSource(source, file), []);
   assert.match(
     auditPlateSchemaSource(
       source.replace("'invalidApi'", "'different'"),
       file
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /plugin api must be declared as a factory/
   );
   assert.match(
     auditPlateSchemaSource(
       source,
-      'packages/platejs/src/react/plugin/other.spec.ts'
-    )[0]?.reason ?? '',
+      "packages/platejs/src/react/plugin/other.spec.ts"
+    )[0]?.reason ?? "",
     /plugin api must be declared as a factory/
   );
 });
 
-test('accepts current plugin syntax and unrelated document or Markdown AST shapes', () => {
+test("accepts current plugin syntax and unrelated document or Markdown AST shapes", () => {
   for (const source of [
     `definePlugin('p', { component: Paragraph, schema: { element: { content: schema.content.text(), type: 'paragraph' } } })`,
     `definePlugin('hr', {schema: { element: { void: 'block' } } })`,
@@ -2415,7 +2415,7 @@ test('accepts current plugin syntax and unrelated document or Markdown AST shape
   }
 });
 
-test('reserves package configure calls for reviewed consumer installation owners', () => {
+test("reserves package configure calls for reviewed consumer installation owners", () => {
   for (const source of [
     `definePlugin('example', { }).configure({ initialState: { enabled: true } })`,
     `definePlugin('example', { }).configurePlugin(OtherPlugin, { initialState: { enabled: true } })`,
@@ -2427,7 +2427,7 @@ test('reserves package configure calls for reviewed consumer installation owners
     assert.ok(
       auditPlateSchemaSource(
         `export const ExamplePlugin = ${source};`,
-        'packages/example/src/ExamplePlugin.ts'
+        "packages/example/src/ExamplePlugin.ts"
       ).some((issue) =>
         /package plugin definitions must use constructor fields/.test(
           issue.reason
@@ -2439,37 +2439,37 @@ test('reserves package configure calls for reviewed consumer installation owners
   for (const [source, file] of [
     [
       `export const ExamplePlugin = definePlugin('example', {initialState: { enabled: true } });`,
-      'packages/example/src/ExamplePlugin.ts',
+      "packages/example/src/ExamplePlugin.ts",
     ],
     [
       `ExamplePlugin.configure({ initialState: { enabled: true } })`,
-      'packages/example/src/ExamplePlugin.spec.ts',
+      "packages/example/src/ExamplePlugin.spec.ts",
     ],
     [
       `ExamplePlugin.configure({ initialState: { enabled: true } })`,
-      'packages/platejs/src/lib/plugins/getCorePlugins.internal.ts',
+      "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts",
     ],
     [
       `
         definePlugin('react', { }).extend(plateReactPlugin);
         ExamplePlugin.configure({ initialState: { enabled: true } });
       `,
-      'packages/platejs/src/react/editor/getPlateCorePlugins.internal.ts',
+      "packages/platejs/src/react/editor/getPlateCorePlugins.internal.ts",
     ],
     [
       `ExamplePlugin.configure({ initialState: { enabled: true } })`,
-      'apps/www/src/registry/components/editor/plugins/example-kit.ts',
+      "apps/www/src/registry/components/editor/plugins/example-kit.ts",
     ],
     [
       `viewportStore.configure({ root: null })`,
-      'packages/example/src/ExamplePlugin.ts',
+      "packages/example/src/ExamplePlugin.ts",
     ],
   ]) {
     assert.deepEqual(auditPlateSchemaSource(source, file), []);
   }
 });
 
-test('rejects authoring chained after terminal configure', () => {
+test("rejects authoring chained after terminal configure", () => {
   for (const source of [
     `ExamplePlugin.configure({}).configure({})`,
     `ExamplePlugin.configure({}).extend({})`,
@@ -2477,13 +2477,13 @@ test('rejects authoring chained after terminal configure', () => {
     `ExamplePlugin.configure({}).configure({ component: Component })`,
   ]) {
     assert.match(
-      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      auditPlateSchemaSource(source)[0]?.reason ?? "",
       /configure must be the final plugin authoring call/
     );
   }
 });
 
-test('rejects local named lineage on ordinary package editor construction', () => {
+test("rejects local named lineage on ordinary package editor construction", () => {
   for (const source of [
     `createEditor({ schema: { id: 'ordinary', version: 1 } })`,
     `createEditor({ schema: { id: 'ordinary', version: 1 } })`,
@@ -2548,43 +2548,43 @@ test('rejects local named lineage on ordinary package editor construction', () =
     `const identity = { id: 'ordinary', version: 1 } as const; useStaticEditor({ schema: identity })`,
   ]) {
     assert.match(
-      auditPlateSchemaSource(source, 'packages/example/src/editor.spec.ts')[0]
-        ?.reason ?? '',
+      auditPlateSchemaSource(source, "packages/example/src/editor.spec.ts")[0]
+        ?.reason ?? "",
       /must use derived schema identity/,
       source
     );
   }
 });
 
-test('ignores same-named constructors imported from non-Plate modules', () => {
+test("ignores same-named constructors imported from non-Plate modules", () => {
   assert.deepEqual(
     auditPlateSchemaSource(
       `import { createEditor } from 'some-editor';
        createEditor({ schema: { id: 'ordinary', version: 1 } });`,
-      'packages/example/src/editor.ts'
+      "packages/example/src/editor.ts"
     ),
     []
   );
 });
 
-test('rejects local named lineage on ordinary app editor construction', () => {
+test("rejects local named lineage on ordinary app editor construction", () => {
   assert.match(
     auditPlateSchemaSource(
       `createEditor({ schema: { id: 'ordinary-app', version: 1 } })`,
-      'apps/www/src/example.ts'
-    )[0]?.reason ?? '',
+      "apps/www/src/example.ts"
+    )[0]?.reason ?? "",
     /must use derived schema identity/
   );
 });
 
-test('owns named-lineage policy for documentation code fences', () => {
+test("owns named-lineage policy for documentation code fences", () => {
   const fence = (code) => `\`\`\`tsx\n${code}\n\`\`\``;
 
   assert.match(
     auditNamedSchemaLineageDocument(
       fence(`createEditor({ schema: { id: 'ordinary-doc', version: 1 } })`),
-      'content/docs/(guides)/ordinary.mdx'
-    )[0]?.reason ?? '',
+      "content/docs/(guides)/ordinary.mdx"
+    )[0]?.reason ?? "",
     /must use derived schema identity/
   );
 
@@ -2593,16 +2593,16 @@ test('owns named-lineage policy for documentation code fences', () => {
       fence(
         `const createEditor = Plate.createEditor; createEditor({ schema: { id: 'ordinary-doc', version: 1 } })`
       ),
-      'content/docs/(guides)/ordinary.mdx'
-    )[0]?.reason ?? '',
+      "content/docs/(guides)/ordinary.mdx"
+    )[0]?.reason ?? "",
     /must use derived schema identity/
   );
 
   for (const [file, id, version] of [
-    ['content/docs/(guides)/editor.cn.mdx', 'acme-document', 3],
-    ['content/docs/(guides)/editor.mdx', 'acme-document', 3],
-    ['content/docs/(plugins)/(collaboration)/yjs.cn.mdx', 'yjs-example', 1],
-    ['content/docs/(plugins)/(collaboration)/yjs.mdx', 'yjs-example', 1],
+    ["content/docs/(guides)/editor.cn.mdx", "acme-document", 3],
+    ["content/docs/(guides)/editor.mdx", "acme-document", 3],
+    ["content/docs/(plugins)/(collaboration)/yjs.cn.mdx", "yjs-example", 1],
+    ["content/docs/(plugins)/(collaboration)/yjs.mdx", "yjs-example", 1],
   ]) {
     assert.deepEqual(
       auditNamedSchemaLineageDocument(
@@ -2616,63 +2616,63 @@ test('owns named-lineage policy for documentation code fences', () => {
   assert.notDeepEqual(
     auditNamedSchemaLineageDocument(
       fence(`createEditor({ schema: { id: 'yjs-example', version: 1 } })`),
-      'content/docs/(guides)/editor.mdx'
+      "content/docs/(guides)/editor.mdx"
     ),
     []
   );
   assert.match(
     auditNamedSchemaLineageDocument(
       fence(`createEditor()`),
-      'content/docs/(guides)/editor.mdx'
-    )[0]?.reason ?? '',
+      "content/docs/(guides)/editor.mdx"
+    )[0]?.reason ?? "",
     /allowlist expects 1 acme-document@3/
   );
 });
 
-test('accepts reviewed named lineage without banning schema declarations', () => {
+test("accepts reviewed named lineage without banning schema declarations", () => {
   for (const [source, file] of [
     [
       `createEditor({ schema: importedLineage })`,
-      'packages/plitejs/test/yjs/schema-identity-contract.spec.ts',
+      "packages/plitejs/test/yjs/schema-identity-contract.spec.ts",
     ],
     [
       `const TestSchema = { id: 'plate:yjs-api-test', version: 1 } as const;
        createEditor({ schema: TestSchema });
        createEditor({ schema: TestSchema });
        createEditor({ schema: TestSchema });`,
-      'packages/platejs/src/yjs/YjsPlugin.api.spec.ts',
+      "packages/platejs/src/yjs/YjsPlugin.api.spec.ts",
     ],
     [
       `defineEditorSchema("schema:document", { id: 'document', version: 1, elements: { paragraph: { content: schema.content.text() } } })`,
-      'packages/plitejs/test/named-lineage-guard.spec.ts',
+      "packages/plitejs/test/named-lineage-guard.spec.ts",
     ],
     [
       `definePlugin('paragraph', {schema: { element: { content: schema.content.text(), properties: { id: property.string(), version: property.number() } } } })`,
-      'packages/example/src/plugin.spec.ts',
+      "packages/example/src/plugin.spec.ts",
     ],
   ]) {
     assert.deepEqual(auditPlateSchemaSource(source, file), []);
   }
 });
 
-test('allows only the exact reviewed raw-query count in an owning file', () => {
+test("allows only the exact reviewed raw-query count in an owning file", () => {
   expectRejected(`editor.read.schema.property({ key, placement, type })`);
   expectRejected(`editor.read.schema.getElementProperty(element, 'colSpan')`);
   expectRejected(`editor.read.schema.getProperty(element, 'colSpan')`);
 
-  const htmlOwner = 'packages/platejs/src/lib/plugins/html/HtmlPlugin.ts';
+  const htmlOwner = "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts";
   const htmlQueries = Array.from(
     { length: 4 },
     () =>
       `state.schema.property({ key: property.key, placement: property.property.placement, type })`
-  ).join(';');
+  ).join(";");
 
   assert.deepEqual(auditPlateSchemaSource(htmlQueries, htmlOwner), []);
   assert.match(
     auditPlateSchemaSource(
       `${htmlQueries}; state.schema.property({ id, kind: 'schema-property' })`,
       htmlOwner
-    )[0]?.reason ?? '',
+    )[0]?.reason ?? "",
     /outside the intentional runtime/
   );
 });

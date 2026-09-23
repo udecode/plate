@@ -231,11 +231,11 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
   set: (
     props: NodePropertyPatch<NodeProps<ElementIn<V>>>,
     options?: EditorBlockSetOptions<ElementIn<V>>
-  ) => void;
+  ) => boolean;
   toggle: (
     props: NodePropertyPatch<NodeProps<ElementIn<V>>> & { type: string },
     options?: EditorBlockToggleOptions
-  ) => void;
+  ) => boolean;
 };
 
 export type EditorNodeUnsetOptions<
@@ -1116,7 +1116,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     replace: <T extends ElementOrTextIn<V>>(
       nodes: T | readonly T[],
       options: EditorReplaceNodeOptions
-    ) => void;
+    ) => boolean;
     replaceChildren: (
       children: ReadonlyArray<ElementOrTextIn<V>>,
       options: EditorReplaceChildrenOptions
@@ -1208,7 +1208,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
           type: TType;
           voids?: boolean;
         }
-      ): void;
+      ): boolean;
       (
         element: ElementIn<V>,
         options?: {
@@ -1219,7 +1219,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
           type?: NodeTypeSelector;
           voids?: boolean;
         }
-      ): void;
+      ): boolean;
     };
   };
 
@@ -1370,7 +1370,8 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
   ) => TNode;
   /** Create the declared default child for one document root. */
   createDefaultRootChild: <TRoot extends RootKey>(
-    root?: NamedRootKey<TRoot>
+    root?: NamedRootKey<TRoot>,
+    index?: number
   ) => Descendant | null;
   /** Semantic resources changed by the current configuration publication. */
   delta: () => EditorSchemaDelta | null;
@@ -1405,7 +1406,7 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
   isElementTypeInGroup: (type: string, group: string) => boolean;
   isInline: (element: Node) => boolean;
   isIsolating: (element: Node) => boolean;
-  isKeyboardSelectable: (element: Node) => boolean;
+  isObject: (element: Node) => boolean;
   isReadOnly: (element: Node) => boolean;
   isSelectable: (element: Node) => boolean;
   isVoid: (element: Node) => boolean;
@@ -1450,8 +1451,8 @@ export type EditorElementBehavior = Readonly<{
   atom: boolean;
   inline: boolean;
   isolating: boolean;
-  keyboardSelectable: boolean;
   markableVoid: boolean;
+  object: boolean;
   readOnly: boolean;
   selectable: boolean;
   void: boolean;

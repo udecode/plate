@@ -27,7 +27,12 @@ import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY } from '../root-key';
 import { readPliteViewSelection } from '../view-selection';
 import { isSelectAllHotkey } from '../viewport-commands';
-import { applyEditableCaretMovement, getTextDirection } from './caret-engine';
+import {
+  applyEditableCaretMovement,
+  getSelectableOwnerHorizontalNavigationTarget,
+  getSelectableOwnerVerticalNavigationTarget,
+  getTextDirection,
+} from './caret-engine';
 import {
   applyContentRootNavigation,
   applyContentRootViewSelection,
@@ -888,6 +893,36 @@ export const applyEditableKeyDown = ({
       }
     }
 
+    const horizontalOwnerTarget = getSelectableOwnerHorizontalNavigationTarget({
+      editor,
+      event,
+      selection,
+    });
+    const verticalOwnerTarget = getSelectableOwnerVerticalNavigationTarget({
+      editor,
+      event,
+      selection,
+    });
+    const selectableOwnerTarget =
+      horizontalOwnerTarget ??
+      (SelectionApi.isText(selection) ? verticalOwnerTarget : null);
+
+    if (selectableOwnerTarget) {
+      const caretMovementResult = applyEditableCaretMovement({
+        domPhaseScheduler,
+        viewportRuntime,
+        editor,
+        event,
+        ownerNavigationTarget: selectableOwnerTarget,
+        preferredX: preferredVerticalX,
+        selection,
+      });
+
+      if (caretMovementResult.handled) {
+        return keyDownHandled(caretMovementResult.repair);
+      }
+    }
+
     const contentRootViewSelectionResult = applyContentRootViewSelection({
       editor,
       event,
@@ -932,6 +967,7 @@ export const applyEditableKeyDown = ({
       viewportRuntime,
       editor,
       event,
+      ownerNavigationTarget: verticalOwnerTarget,
       preferredX: preferredVerticalX,
       selection,
     });

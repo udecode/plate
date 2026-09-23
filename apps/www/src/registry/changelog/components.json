@@ -30,7 +30,7 @@
       "2026-09-21-upload-provider-items",
       "2026-09-19-files-sdk-upload-kit"
     ],
-    "upload-ephemeral": ["2026-09-21-upload-provider-items"],
+    "upload-browser": ["2026-09-21-upload-provider-items"],
     "upload-r2": ["2026-09-21-upload-provider-items"],
     "upload-s3": ["2026-09-21-upload-provider-items"],
     "files-api": [

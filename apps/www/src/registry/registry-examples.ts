@@ -2,6 +2,24 @@ import type { Registry } from 'shadcn/schema';
 
 export const examples: Registry['items'] = [
   {
+    description: 'Upload files through a browser-local or R2-backed gateway.',
+    files: [{ path: 'examples/upload-demo.tsx', type: 'registry:example' }],
+    meta: { docs: [{ route: '/docs/upload' }] },
+    name: 'upload-demo',
+    registryDependencies: [
+      '@plate/editor',
+      '@plate/dnd',
+      '@plate/media',
+      '@plate/media-toolbar-button',
+      '@plate/paragraph',
+      '@plate/toolbar',
+      '@plate/upload',
+      '@plate/upload-browser',
+    ],
+    title: 'Upload Files',
+    type: 'registry:example',
+  },
+  {
     name: 'suggestion-format-demo',
     title: 'Formatting and Block Suggestions',
     description:
@@ -1658,7 +1676,7 @@ export const internalExamples: Registry['items'] = (
         '@plate/editor',
         '@plate/editor-plugins',
         '@plate/excalidraw',
-        '@plate/upload-ephemeral',
+        '@plate/upload-browser',
         '@plate/ai',
         '@plate/dnd',
       ],

@@ -41,6 +41,7 @@ import { getDefined } from '../internal/get-defined';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
 import { ContentSlice as ContentSliceValue } from './content-slice';
+import { limitTextInsert } from './insert-limit';
 import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
 import { areEditorJsonValuesEqual } from './value-codec';
 
@@ -277,6 +278,13 @@ const getFullySelectedSiblingBlockPaths = (
   const startPath = startBlock[1];
   const endPath = endBlock[1];
 
+  if (
+    PathApi.equals(startPath, endPath) &&
+    state.schema.isObject(startBlock[0])
+  ) {
+    return null;
+  }
+
   if (!equalsInRoot(state.points.start(startPath), start)) return null;
 
   const parentPath = PathApi.parent(startPath);
@@ -367,9 +375,13 @@ const fillDefaultRootChild = (
   state: CommandStateView,
   root: string,
   text: string,
-  marks: Record<string, unknown> | null
+  marks: Record<string, unknown> | null,
+  index = 0
 ): Descendant | null => {
-  const defaultChild = state.schema.createDefaultRootChild(toPublicRoot(root));
+  const defaultChild = state.schema.createDefaultRootChild(
+    toPublicRoot(root),
+    index
+  );
   const textNode = marks ? { ...marks, text } : { text };
 
   if (!defaultChild) return null;
@@ -395,7 +407,8 @@ const LINE_BREAK_PATTERN = /\r|\n/;
 const getFullBlockTextReplacement = (
   state: CommandStateView,
   range: Range,
-  text: string
+  text: string,
+  force = false
 ) => {
   if (LINE_BREAK_PATTERN.test(text)) return null;
 
@@ -406,7 +419,7 @@ const getFullBlockTextReplacement = (
 
   if (!paths) return null;
 
-  if (paths.length === 1) {
+  if (!force && paths.length === 1) {
     const block = state.nodes.get(paths[0])?.[0];
 
     if (
@@ -423,7 +436,8 @@ const getFullBlockTextReplacement = (
     state,
     root,
     text,
-    state.marks() ?? getConsistentBlockTextMarks(state, paths)
+    state.marks() ?? getConsistentBlockTextMarks(state, paths),
+    paths[0]?.[0]
   );
 
   if (!replacement) return null;
@@ -457,8 +471,7 @@ const getNodeSelectionReplacement = (
     paths: Extract<EditorSelection, { kind: 'node' }>['paths'];
     root: string;
   }) => Readonly<{
-    edge: 'first' | 'last';
-    replacement: Descendant;
+    replacements: readonly Descendant[];
   }> | null
 ) => {
   const { paths } = selection;
@@ -479,23 +492,27 @@ const getNodeSelectionReplacement = (
 
   if (!planned) return null;
 
-  const textEntries = [...NodeApi.texts(planned.replacement)];
-  const textEntry =
-    planned.edge === 'first' ? textEntries[0] : textEntries.at(-1);
+  const lastReplacement = planned.replacements.at(-1);
+  const textEntry = lastReplacement
+    ? [...NodeApi.texts(lastReplacement)].at(-1)
+    : undefined;
   const firstPath = paths[0];
 
   if (!textEntry || !firstPath) return null;
 
+  const parentPath = PathApi.parent(firstPath);
+  const lastIndex =
+    getDefined(firstPath.at(-1)) + planned.replacements.length - 1;
   const point: Point = {
     offset: textEntry[0].text.length,
-    path: [...firstPath, ...textEntry[1]],
+    path: [...parentPath, lastIndex, ...textEntry[1]],
     ...(toPublicRoot(root) ? { root: toPublicRoot(root) } : {}),
   };
 
   return {
     firstPath,
     paths,
-    replacement: planned.replacement,
+    replacements: planned.replacements,
     selection: { anchor: point, focus: point, kind: 'text' as const },
   };
 };
@@ -672,7 +689,8 @@ export const editorCommands: EditorCommands = Object.freeze({
               state,
               root,
               '',
-              state.marks() ?? getConsistentBlockTextMarks(state, fullBlocks)
+              state.marks() ?? getConsistentBlockTextMarks(state, fullBlocks),
+              fullBlocks[0]?.[0]
             );
 
         if (!survivingPoint && !defaultChild) {
@@ -751,22 +769,26 @@ export const editorCommands: EditorCommands = Object.freeze({
   insertText: defineCommand<InsertTextCommand>('text.insert', {
     build: ({ input, state }) => {
       const nodeSelection = getCurrentNodeSelection(state);
+      const nodeReplacementText = nodeSelection
+        ? limitTextInsert(state, input.text, { at: nodeSelection })
+        : input.text;
       const nodeReplacement =
         input.options?.at === undefined && nodeSelection
           ? getNodeSelectionReplacement(
               state,
               nodeSelection,
               ({ paths, root }) => {
-                if (LINE_BREAK_PATTERN.test(input.text)) return null;
+                if (LINE_BREAK_PATTERN.test(nodeReplacementText)) return null;
 
                 const replacement = fillDefaultRootChild(
                   state,
                   root,
-                  input.text,
-                  state.marks() ?? getConsistentBlockTextMarks(state, paths)
+                  nodeReplacementText,
+                  state.marks() ?? getConsistentBlockTextMarks(state, paths),
+                  paths[0]?.[0]
                 );
 
-                return replacement ? { edge: 'last', replacement } : null;
+                return replacement ? { replacements: [replacement] } : null;
               }
             )
           : null;
@@ -775,20 +797,29 @@ export const editorCommands: EditorCommands = Object.freeze({
         if (!nodeReplacement) return false;
 
         return state.transaction((tx) => {
-          tx.selection.set(null);
-          for (const path of nodeReplacement.paths.toReversed()) {
+          for (const path of nodeReplacement.paths.slice(1).toReversed()) {
             tx.nodes.remove({ at: path });
           }
-          tx.nodes.insert(nodeReplacement.replacement, {
-            at: nodeReplacement.firstPath,
+          tx.nodes.replaceChildren(nodeReplacement.replacements, {
+            at: PathApi.parent(nodeReplacement.firstPath),
+            count: 1,
+            index: getDefined(nodeReplacement.firstPath.at(-1)),
+            newSelection: nodeReplacement.selection,
           });
-          tx.selection.set(nodeReplacement.selection);
         });
       }
 
       const range = resolveCommandRange(state, input.options?.at);
+      const replacementText = range
+        ? limitTextInsert(state, input.text, { at: range })
+        : input.text;
       const replacement = range
-        ? getFullBlockTextReplacement(state, range, input.text)
+        ? getFullBlockTextReplacement(
+            state,
+            range,
+            replacementText,
+            replacementText !== input.text
+          )
         : null;
 
       if (replacement) {
@@ -856,26 +887,48 @@ export const editorCommands: EditorCommands = Object.freeze({
         const nodeReplacement = getNodeSelectionReplacement(
           state,
           nodeSelection,
-          ({ root }) => {
+          ({ paths, root }) => {
             const { slice } = input;
 
-            if (
-              slice.openStart !== 0 ||
-              slice.openEnd !== 0 ||
-              slice.roots !== undefined ||
-              slice.content.length === 0
-            ) {
+            if (slice.roots !== undefined || slice.content.length === 0) {
               return null;
             }
 
+            if (
+              slice.openStart === 0 &&
+              slice.openEnd === 0 &&
+              slice.content.every(
+                (node) =>
+                  NodeApi.isElement(node) &&
+                  state.schema.element(node.type) !== null &&
+                  state.schema.isBlock(node)
+              )
+            ) {
+              return { replacements: slice.content };
+            }
+
             const defaultChild = state.schema.createDefaultRootChild(
-              toPublicRoot(root)
+              toPublicRoot(root),
+              paths[0]?.[0]
             );
 
+            if (!defaultChild || !NodeApi.isElement(defaultChild)) {
+              return null;
+            }
+
+            const content =
+              slice.openStart === 1 &&
+              slice.openEnd === 1 &&
+              slice.content.length === 1 &&
+              NodeApi.isElement(slice.content[0])
+                ? slice.content[0].children
+                : slice.openStart === 0 && slice.openEnd === 0
+                  ? slice.content
+                  : null;
+
             if (
-              !defaultChild ||
-              !NodeApi.isElement(defaultChild) ||
-              slice.content.some(
+              !content ||
+              content.some(
                 (node) =>
                   state.schema.findWrapping(defaultChild, node)?.length !== 0
               )
@@ -884,8 +937,7 @@ export const editorCommands: EditorCommands = Object.freeze({
             }
 
             return {
-              edge: 'last',
-              replacement: { ...defaultChild, children: slice.content },
+              replacements: [{ ...defaultChild, children: content }],
             };
           }
         );
@@ -896,7 +948,7 @@ export const editorCommands: EditorCommands = Object.freeze({
             for (const path of nodeReplacement.paths.toReversed()) {
               tx.nodes.remove({ at: path });
             }
-            tx.nodes.insert(nodeReplacement.replacement, {
+            tx.nodes.insert([...nodeReplacement.replacements], {
               at: nodeReplacement.firstPath,
             });
             tx.selection.set(nodeReplacement.selection);
@@ -968,13 +1020,16 @@ export const editorCommands: EditorCommands = Object.freeze({
     build: ({ input, state }) => {
       const { collapse, ...options } = input.options ?? {};
 
-      return state.transaction((tx) => {
-        tx.blocks.toggle(input.props, options);
+      let applied = false;
+      const spec = state.transaction((tx) => {
+        applied = tx.blocks.toggle(input.props, options);
 
-        if (collapse) {
+        if (applied && collapse) {
           tx.selection.collapse(collapse === true ? undefined : collapse);
         }
       });
+
+      return applied ? spec : false;
     },
   }),
 });

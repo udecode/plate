@@ -1,79 +1,105 @@
 import {
   BaseParagraphPlugin,
+  defineInputRule,
   definePlugin,
-  createRuleFactory,
+  matchBlockStart,
+  type InsertTextInputRuleReadContext,
   type MarkdownDecodeContext,
   ElementApi,
   PathApi,
   PLUGINS,
   type Location,
   type NodeSelection,
+  type StructuralRuleContext,
 } from '../../../core';
-import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 
 const thematicBreakDashRe = /^(--|—)$/;
 
 export const BlockquoteRules = {
-  markdown: createRuleFactory<{}, { marker: string }>({
-    type: 'blockStart',
-    marker: '>',
-    trigger: ' ',
-    enabled: ({ editor }) => {
-      const codeBlockDescriptor = getCompiledPlatePlugin(
-        editor,
-        PLUGINS.codeBlock
-      );
+  markdown: ({
+    enabled,
+    marker = '>',
+    priority,
+  }: {
+    enabled?: (context: InsertTextInputRuleReadContext) => boolean;
+    marker?: string;
+    priority?: number;
+  } = {}) =>
+    defineInputRule({
+      target: 'insertText',
+      trigger: ' ',
+      priority,
+      enabled: (context) => {
+        if (enabled && !enabled(context)) return false;
 
-      if (!codeBlockDescriptor) return true;
+        const { editor } = context;
+        const codeBlock = editor.plugin(PLUGINS.codeBlock);
 
-      return !editor.read.nodes.some({
-        type: editor.plugin(codeBlockDescriptor).schema.type,
-      });
-    },
-    match: ({ marker }) => marker,
-    apply: ({ editor, getBlockEntry, tx }, match) => {
-      const blockEntry = getBlockEntry();
+        if (!codeBlock.installed) return true;
 
-      if (!blockEntry) return undefined;
+        return !editor.read.nodes.some({
+          type: codeBlock.schema.type,
+        });
+      },
+      resolve: (context) => {
+        const match = matchBlockStart(context, { match: marker });
+        const blockEntry = context.getBlockEntry();
 
-      tx.text.delete({ at: match.range });
-      tx.nodes.wrap(
-        {
-          children: [],
-          type: editor.plugin(BaseBlockquotePlugin).schema.type,
-        },
-        {
-          at: blockEntry[1],
+        return match && blockEntry
+          ? { ...match, blockPath: blockEntry[1] }
+          : undefined;
+      },
+      apply: ({ decline, editor, tx }, match) => {
+        const block = tx.nodes.get(match.blockPath);
+        const { type } = editor.plugin(BaseBlockquotePlugin).schema;
+
+        if (!block || !ElementApi.isElement(block[0])) return decline();
+
+        tx.text.delete({ at: match.range });
+        if (!tx.nodes.wrap({ children: [], type }, { at: match.blockPath })) {
+          return decline();
         }
-      );
-
-      return true;
-    },
-  }),
+      },
+    }),
 };
 
 export const HorizontalRuleRules = {
-  markdown: createRuleFactory<{}, { variant: '-' | '_' }>({
-    type: 'blockStart',
-    variant: '-',
-    match: ({ variant }) => (variant === '_' ? '___' : thematicBreakDashRe),
-    trigger: ({ variant }) => (variant === '_' ? ' ' : '-'),
-    apply: ({ editor, tx, variant }) => {
-      if (variant === '_') {
-        tx.text.deleteBackward({ unit: 'character' });
-      }
+  markdown: ({
+    enabled,
+    priority,
+    variant = '-',
+  }: {
+    enabled?: (context: InsertTextInputRuleReadContext) => boolean;
+    priority?: number;
+    variant?: '-' | '_';
+  } = {}) =>
+    defineInputRule({
+      target: 'insertText',
+      trigger: variant === '_' ? ' ' : '-',
+      enabled,
+      priority,
+      resolve: (context) =>
+        matchBlockStart(context, {
+          match: variant === '_' ? '___' : thematicBreakDashRe,
+        }),
+      apply: ({ decline, editor, tx }) => {
+        if (variant === '_') {
+          tx.text.deleteBackward({ unit: 'character' });
+        }
 
-      tx.nodes.set({
-        type: editor.plugin(BaseHorizontalRulePlugin).schema.type,
-      });
-      tx.nodes.insert({
-        children: [{ text: '' }],
-        type: editor.plugin(BaseParagraphPlugin).schema.type,
-      });
-
-      return true;
-    },
-  }),
+        if (
+          !tx.blocks.set({
+            type: editor.plugin(BaseHorizontalRulePlugin).schema.type,
+          })
+        ) {
+          return decline();
+        }
+        tx.nodes.insert({
+          children: [{ text: '' }],
+          type: editor.plugin(BaseParagraphPlugin).schema.type,
+        });
+      },
+    }),
 };
 
 /** Enables support for block quotes, useful for quotations and passages. */
@@ -126,28 +152,17 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
   component: 'blockquote',
   rules: {
     break: {
-      empty: 'lift',
+      empty: (context) =>
+        isLiftableBlockquoteChild(context) ? 'lift' : undefined,
     },
     delete: {
-      start: 'lift',
-    },
-    match: ({ editor, node, path, plugin, rule, schema: { type } }) => {
-      if (!['break.empty', 'delete.start'].includes(rule)) return false;
-      if (!path) return false;
-      if (!ElementApi.isElement(node)) return false;
+      start: (context) => {
+        if (!isLiftableBlockquoteChild(context)) return undefined;
 
-      const isLiftable =
-        node.type === editor.plugin(BaseParagraphPlugin).schema.type &&
-        !node.listType &&
-        !!editor.read.nodes.above({
-          at: path,
-          type: plugin,
-        });
+        const { editor, node, path, schema } = context;
 
-      if (rule === 'delete.start') {
-        if (!isLiftable) return false;
         if (!editor.read.selection() || !editor.read.nodes.isEmpty(node)) {
-          return true;
+          return 'lift';
         }
 
         const parent = editor.read.nodes.parent(path);
@@ -155,15 +170,13 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
         if (
           !parent ||
           !ElementApi.isElement(parent[0]) ||
-          parent[0].type !== type
+          parent[0].type !== schema.type
         ) {
-          return true;
+          return 'lift';
         }
 
-        return !PathApi.hasPrevious(path);
-      }
-
-      return isLiftable;
+        return PathApi.hasPrevious(path) ? undefined : 'lift';
+      },
     },
   },
   shortcuts: {
@@ -213,6 +226,19 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
     },
   }),
 });
+
+function isLiftableBlockquoteChild({
+  editor,
+  node,
+  path,
+  schema,
+}: StructuralRuleContext) {
+  return (
+    node.type === editor.plugin(BaseParagraphPlugin).schema.type &&
+    !node.listType &&
+    !!editor.read.nodes.above({ at: path, type: schema.type })
+  );
+}
 
 export const BaseHorizontalRulePlugin = definePlugin(PLUGINS.horizontalRule, {
   schema: {

@@ -182,6 +182,47 @@ const compileSamples = Array.from({ length: iterations }, () => {
   return elapsed;
 });
 const compileMs = summarize(compileSamples);
+const prefixCompileRows = ([1, 2] as const).map((prefixLength) => {
+  const definition = defineEditorSchema(
+    `schema:architecture-prefix-${prefixLength}`,
+    {
+      elements: {
+        heading: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: { level: property.number({ required: true }) },
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      root: schema.content.prefix(
+        prefixLength === 1
+          ? [{ element: 'heading', properties: { level: 1 } }]
+          : [
+              { element: 'heading', properties: { level: 1 } },
+              { element: 'paragraph' },
+            ],
+        schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        })
+      ),
+      unknown: 'reject',
+    }
+  );
+  const samples = Array.from({ length: iterations }, () => {
+    const before = performance.now();
+    const compiled = compileEditorSchemaContributions([
+      { contribution: definition.schema, pluginName: definition.name },
+    ]);
+
+    assert.equal(compiled.primaryRoot.content.min, prefixLength + 1);
+
+    return performance.now() - before;
+  });
+
+  return { prefixLength, compileMs: summarize(samples) };
+});
 const compiled = compile();
 
 const CONTRIBUTION_COHORTS = [1, 100, 1000] as const;
@@ -1775,6 +1816,7 @@ const result = {
     propertyWidthRatio: constructionPropertyWidthRatio,
     rows: constructionPropertyRows,
   },
+  prefixCompileRows,
   contributions: {
     iterations: architectureIterations,
     rows: contributionRows,
@@ -1981,6 +2023,12 @@ const validateStrictBenchmark = () => {
     compileMs.p95 < 16,
     `compile p95 ${compileMs.p95} ms exceeds 16 ms`
   );
+  for (const row of prefixCompileRows) {
+    assert.ok(
+      row.compileMs.p95 < 16,
+      `${row.prefixLength}-slot prefix compile p95 ${row.compileMs.p95} ms exceeds 16 ms`
+    );
+  }
   assert.equal(equivalentReconfigurationCompileCount, 0);
   assert.equal(equivalentReconfigurationIdentityReused, true);
   assert.equal(incrementalValidationHits, 1);
@@ -2156,6 +2204,9 @@ const output = `${JSON.stringify(result, null, 2)}\n`;
 
 process.stdout.write(
   `METRIC plite_schema_architecture_compile_p95_ms=${compileMs.p95}\n`
+);
+process.stdout.write(
+  `METRIC plite_schema_architecture_prefix_compile_p95_ms=${Math.max(...prefixCompileRows.map((row) => row.compileMs.p95))}\n`
 );
 process.stdout.write(
   `METRIC plite_schema_architecture_type_query_p50_ns=${typeQueryNs.p50}\n`

@@ -86,7 +86,7 @@ export const resolveEditableVoidClickTarget = (
   return null;
 };
 
-export const getKeyboardSelectableNodeSelection = (
+export const getSelectableOwnerNodeSelection = (
   editor: ReactRuntimeEditor,
   path: Path
 ) =>
@@ -97,7 +97,8 @@ export const getKeyboardSelectableNodeSelection = (
       !node ||
       !NodeApi.isElement(node) ||
       state.schema.isVoid(node) ||
-      !state.schema.isKeyboardSelectable(node)
+      !state.schema.isSelectable(node) ||
+      !(state.schema.isObject(node) || state.schema.isAtom(node))
     ) {
       return null;
     }
@@ -109,7 +110,7 @@ export const getKeyboardSelectableNodeSelection = (
       : null;
   });
 
-export const getKeyboardSelectableAncestorNodeSelection = (
+export const getSelectableOwnerAncestorNodeSelection = (
   editor: ReactRuntimeEditor,
   point: Point
 ) =>
@@ -119,7 +120,7 @@ export const getKeyboardSelectableAncestorNodeSelection = (
       match: (node) =>
         NodeApi.isElement(node) &&
         !state.schema.isVoid(node) &&
-        state.schema.isKeyboardSelectable(node),
+        state.schema.isObject(node),
       mode: 'lowest',
       voids: true,
     });
@@ -141,7 +142,7 @@ export const getKeyboardSelectableAncestorNodeSelection = (
       : null;
   });
 
-export const resolveEditableKeyboardSelectableClickTarget = (
+export const resolveEditableSelectableOwnerClickTarget = (
   editor: ReactRuntimeEditor,
   target: EventTarget
 ) => {
@@ -162,7 +163,7 @@ export const resolveEditableKeyboardSelectableClickTarget = (
 
   return resolvedTarget &&
     NodeApi.isElement(resolvedTarget.node) &&
-    getKeyboardSelectableNodeSelection(editor, resolvedTarget.path)
+    getSelectableOwnerNodeSelection(editor, resolvedTarget.path)
     ? resolvedTarget
     : null;
 };
@@ -198,7 +199,7 @@ export const preferModelSelectionForVoidTarget = ({
   return true;
 };
 
-export const preferModelSelectionForKeyboardSelectableTarget = ({
+export const preferModelSelectionForSelectableOwnerTarget = ({
   editor,
   inputController,
   target,
@@ -209,7 +210,7 @@ export const preferModelSelectionForKeyboardSelectableTarget = ({
 }) => {
   if (
     !isDOMNode(target) ||
-    !resolveEditableKeyboardSelectableClickTarget(editor, target)
+    !resolveEditableSelectableOwnerClickTarget(editor, target)
   ) {
     return false;
   }
@@ -265,7 +266,7 @@ export const selectEditableVoidPath = ({
   return path;
 };
 
-export const selectEditableKeyboardSelectablePath = ({
+export const selectEditableSelectableOwnerPath = ({
   editor,
   inputController,
   path,
@@ -274,7 +275,7 @@ export const selectEditableKeyboardSelectablePath = ({
   inputController: EditableInputController;
   path: Path;
 }) => {
-  const selection = getKeyboardSelectableNodeSelection(editor, path);
+  const selection = getSelectableOwnerNodeSelection(editor, path);
 
   if (!selection) return null;
 
@@ -286,15 +287,16 @@ export const selectEditableKeyboardSelectablePath = ({
   });
   inputController.state.selectionChangeOrigin = 'programmatic-export';
 
-  ReactEditor.focus(editor);
+  // Focus uses the current selection; publish the owner before it can seed a caret elsewhere.
   writePliteViewSelection(editor, null);
   dispatchCommand(editor, editorCommands.select, { target: selection });
+  ReactEditor.focus(editor);
   getSelection(ReactEditor.findDocumentOrShadowRoot(editor))?.removeAllRanges();
 
   return path;
 };
 
-export const selectEditableKeyboardSelectableTarget = ({
+export const selectEditableSelectableOwnerTarget = ({
   editor,
   inputController,
   target,
@@ -304,11 +306,11 @@ export const selectEditableKeyboardSelectableTarget = ({
   target: EventTarget | null;
 }) => {
   const selectableTarget = isDOMNode(target)
-    ? resolveEditableKeyboardSelectableClickTarget(editor, target)
+    ? resolveEditableSelectableOwnerClickTarget(editor, target)
     : null;
 
   return selectableTarget
-    ? selectEditableKeyboardSelectablePath({
+    ? selectEditableSelectableOwnerPath({
         editor,
         inputController,
         path: selectableTarget.path,

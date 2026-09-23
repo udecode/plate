@@ -89,6 +89,12 @@ import { assertEditorJsonValue, snapshotEditorJsonValue } from './value-codec';
 export type InternalEditorSchemaApi<V extends Value = Value> =
   EditorStateSchemaApi<V> & {
     canContain: (parent: Element, child: Descendant) => boolean;
+    canContainAt: (
+      parent: Element | null,
+      child: Descendant,
+      index: number,
+      root?: RootKey
+    ) => boolean;
     canContainAtRoot: (child: Descendant, root?: RootKey) => boolean;
     /** Register one trusted immutable document installed by the runtime owner. */
     adoptDocumentBaseline: (value: EditorDocumentValue) => void;
@@ -292,7 +298,7 @@ const nodePropertiesEqual = (
 const contentProgramsEqual = (
   left: CompiledSchemaContentProgram | null,
   right: CompiledSchemaContentProgram | null
-) =>
+): boolean =>
   left === right ||
   (left !== null &&
     right !== null &&
@@ -304,7 +310,9 @@ const contentProgramsEqual = (
     [...left.allowedElementTypes].every((type) =>
       right.allowedElementTypes.has(type)
     ) &&
-    structurallyEqual(left.defaultPlan, right.defaultPlan));
+    structurallyEqual(left.defaultPlan, right.defaultPlan) &&
+    structurallyEqual(left.prefix, right.prefix) &&
+    contentProgramsEqual(left.remainder ?? null, right.remainder ?? null));
 
 export const canonicalizeCompiledExclusiveTextProperties = (
   schema: CompiledEditorSchema,
@@ -601,6 +609,10 @@ export const createEditorSchema = <V extends Value = Value>(
             : null,
       max: content.max,
       min: content.min,
+      ...(content.prefix ? { prefix: content.prefix } : {}),
+      ...(content.remainder
+        ? { remainder: toPublicContent(content.remainder) }
+        : {}),
     });
 
   const getPublicElement = (type: string): EditorSchemaElement | null => {
@@ -920,8 +932,8 @@ export const createEditorSchema = <V extends Value = Value>(
     atom: false,
     inline: false,
     isolating: false,
-    keyboardSelectable: false,
     markableVoid: false,
+    object: false,
     readOnly: false,
     selectable: true,
     void: false,
@@ -940,7 +952,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const getRootContent = (
     root: RootKey = 'main',
-    value?: EditorDocumentValue
+    value: EditorDocumentValue = getEditorDocumentValue(getEditor())
   ) => {
     const schema = getDeclarativeSchema();
 
@@ -1267,6 +1279,30 @@ export const createEditorSchema = <V extends Value = Value>(
       ElementApi.isElement(child) &&
       !getCompiledElement(child));
 
+  const contentAllowsAt = (
+    schema: CompiledEditorSchema,
+    content: CompiledSchemaContentProgram,
+    child: Descendant,
+    index: number,
+    options: RuntimeTargetOptions = {}
+  ) => {
+    const { prefix } = content;
+
+    if (prefix && index < prefix.length) {
+      const slot = prefix[index];
+
+      return (
+        ElementApi.isElement(child) &&
+        getElementType(child) === slot.type &&
+        Object.entries(slot.properties).every(([key, value]) =>
+          structurallyEqual(getProperty(child, key, options), value)
+        )
+      );
+    }
+
+    return validationContentAllows(schema, content.remainder ?? content, child);
+  };
+
   const elementUsesInlineContent = (element: Element) => {
     const behavior = getElementBehavior(element);
 
@@ -1301,6 +1337,27 @@ export const createEditorSchema = <V extends Value = Value>(
     if (schema && content) return contentAllows(schema, content, child);
 
     return ElementApi.isElement(child) && !getElementBehavior(child).inline;
+  };
+
+  const canContainAt: InternalEditorSchemaApi<V>['canContainAt'] = (
+    parent,
+    child,
+    index,
+    root = 'main'
+  ) => {
+    const schema = getDeclarativeSchema();
+    const content = parent
+      ? getCompiledElement(parent)?.content
+      : getRootContent(root);
+
+    if (schema && content) {
+      return contentAllowsAt(schema, content, child, index, {
+        ancestors: parent ? [parent] : [],
+        root,
+      });
+    }
+
+    return parent ? canContain(parent, child) : canContainAtRoot(child, root);
   };
 
   const createDeclarativeAndFill = (
@@ -1418,9 +1475,20 @@ export const createEditorSchema = <V extends Value = Value>(
     const nextCreating = new Set(creating).add(type);
 
     while (element.children.length < minimum) {
+      const slot = compiled.content?.prefix?.[element.children.length];
       const plan = compiled.content?.defaultPlan;
-      const child =
-        plan?.kind === 'text'
+      const child = slot
+        ? createDeclarativeAndFill(
+            schema,
+            slot.type,
+            slot.properties,
+            nextCreating,
+            {
+              ancestors: [element, ...(options.ancestors ?? [])],
+              root: options.root,
+            }
+          )
+        : plan?.kind === 'text'
           ? ({ text: '' } as Text)
           : plan?.kind === 'element' && !nextCreating.has(plan.type)
             ? createDeclarativeAndFill(
@@ -1479,11 +1547,26 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   }) as InternalEditorSchemaApi['create'];
 
-  const createDefaultRootChild = (root = 'main'): Descendant | null => {
+  const createDefaultRootChild = (
+    root = 'main',
+    index = 0
+  ): Descendant | null => {
     const declarative = getDeclarativeSchema();
 
     if (!declarative) return null;
-    const plan = getDeclarativeRootProgram(declarative, root)?.defaultPlan;
+    const content = getRootContent(root);
+    const slot = content?.prefix?.[index];
+
+    if (slot) {
+      return createDeclarativeAndFill(
+        declarative,
+        slot.type,
+        slot.properties,
+        new Set(),
+        { root }
+      );
+    }
+    const plan = content?.defaultPlan;
 
     if (plan?.kind === 'text') return { text: '' };
     if (!plan) return null;
@@ -1501,6 +1584,7 @@ export const createEditorSchema = <V extends Value = Value>(
   const sliceFitter = createCompiledSliceFitterDelegate<V>(() => ({
     canContain,
     contentAllows,
+    contentAllowsAt,
     createDeclarativeAndFill,
     editorRootLabel,
     elementUsesInlineContent,
@@ -2709,7 +2793,10 @@ export const createEditorSchema = <V extends Value = Value>(
           const childType = NodeApi.isText(child)
             ? null
             : getElementType(child);
-          const allowed = validationContentAllows(schema, content, child);
+          const allowed = contentAllowsAt(schema, content, child, childIndex, {
+            ancestors: [node, ...ancestors],
+            root,
+          });
 
           if (!allowed) {
             throw createEditorSchemaValidationError(
@@ -2913,7 +3000,7 @@ export const createEditorSchema = <V extends Value = Value>(
       );
     }
     for (const [index, child] of children.entries()) {
-      const allowed = contentAllows(schema, content, child);
+      const allowed = contentAllowsAt(schema, content, child, index, { root });
 
       if (!allowed) {
         throw createEditorSchemaValidationError(
@@ -3433,7 +3520,8 @@ export const createEditorSchema = <V extends Value = Value>(
       children: readonly Descendant[],
       content: CompiledSchemaContentProgram,
       indexes: ReadonlySet<number>,
-      owner: string
+      owner: string,
+      options: RuntimeTargetOptions
     ) => {
       if (children.length < content.min) {
         throw new EditorSchemaValidationError(
@@ -3451,7 +3539,7 @@ export const createEditorSchema = <V extends Value = Value>(
         if (
           !child ||
           !schema ||
-          validationContentAllows(schema, content, child)
+          contentAllowsAt(schema, content, child, index, options)
         ) {
           continue;
         }
@@ -3653,7 +3741,8 @@ export const createEditorSchema = <V extends Value = Value>(
             node.children,
             element.content,
             new Set(node.children.map((_child, index) => index)),
-            `Editor element "${node.type}" at [${path}]`
+            `Editor element "${node.type}" at [${path}]`,
+            { ancestors: [node, ...ancestors], root }
           );
         }
         node.children.forEach((child, index) => {
@@ -3723,7 +3812,14 @@ export const createEditorSchema = <V extends Value = Value>(
           indexes,
           path.length === 0
             ? `Editor ${editorRootLabel(root)}`
-            : `Editor element "${(parent as Element).type}" at [${path}]`
+            : `Editor element "${(parent as Element).type}" at [${path}]`,
+          {
+            ancestors:
+              parent && ElementApi.isElement(parent)
+                ? [parent, ...getElementAncestors(children, path)]
+                : [],
+            root,
+          }
         );
       }
 
@@ -3757,6 +3853,7 @@ export const createEditorSchema = <V extends Value = Value>(
     },
     allowsElementType,
     canContain,
+    canContainAt,
     canContainAtRoot,
     canonicalizeTextPropertiesAt,
     canonicalizeChildren,
@@ -3802,9 +3899,8 @@ export const createEditorSchema = <V extends Value = Value>(
       ElementApi.isElement(element) && getElementBehavior(element).inline,
     isIsolating: (element: Node) =>
       ElementApi.isElement(element) && getElementBehavior(element).isolating,
-    isKeyboardSelectable: (element: Node) =>
-      ElementApi.isElement(element) &&
-      getElementBehavior(element).keyboardSelectable,
+    isObject: (element: Node) =>
+      ElementApi.isElement(element) && getElementBehavior(element).object,
     isReadOnly: (element: Node) =>
       ElementApi.isElement(element) && getElementBehavior(element).readOnly,
     isSelectable: (element: Node) =>

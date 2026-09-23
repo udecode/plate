@@ -290,6 +290,11 @@ export type CompiledSchemaConstructionPlan =
   | Readonly<{ kind: 'element'; type: string }>
   | Readonly<{ kind: 'text' }>;
 
+export type CompiledSchemaContentPrefixSlot = Readonly<{
+  properties: Readonly<Record<string, PropertyJsonValue>>;
+  type: string;
+}>;
+
 export type CompiledSchemaWrapperPlan = readonly string[];
 
 export type CompiledSchemaContentProgram = Readonly<{
@@ -299,6 +304,8 @@ export type CompiledSchemaContentProgram = Readonly<{
   defaultPlan: CompiledSchemaConstructionPlan | null;
   max: number | null;
   min: number;
+  prefix?: readonly CompiledSchemaContentPrefixSlot[];
+  remainder?: CompiledSchemaContentProgram;
 }>;
 
 export type CompiledSchemaContentRoot = Readonly<{
@@ -310,8 +317,8 @@ export type CompiledSchemaElementBehavior = Readonly<{
   atom: boolean;
   inline: boolean;
   isolating: boolean;
-  keyboardSelectable: boolean;
   markableVoid: boolean;
+  object: boolean;
   readOnly: boolean;
   selectable: boolean;
   void: boolean;
@@ -568,6 +575,8 @@ type MutableContentProgram = {
   defaultPlan: CompiledSchemaConstructionPlan | null;
   max: number | null;
   min: number;
+  prefix?: readonly CompiledSchemaContentPrefixSlot[];
+  remainder?: MutableContentProgram;
   source: Source<SchemaContent>;
 };
 
@@ -910,7 +919,7 @@ const collectSchemaKeyDiagnostics = (
   const visitContent = (value: unknown, owner: string, path: string) => {
     const content = check(
       value,
-      ['allowed', 'default', 'max', 'min'],
+      ['allowed', 'default', 'max', 'min', 'prefix'],
       owner,
       path
     );
@@ -919,6 +928,25 @@ const collectSchemaKeyDiagnostics = (
     visitContentRule(content.allowed, owner, `${path}.allowed`);
     if (content.default && content.default !== 'text') {
       check(content.default, ['type'], owner, `${path}.default`);
+    }
+    if (content.prefix !== undefined) {
+      array(content.prefix, owner, `${path}.prefix`)?.forEach((slot, index) => {
+        const at = `${path}.prefix.${index}`;
+        const entry = check(slot, ['element', 'properties'], owner, at);
+
+        if (!entry) return;
+        if (entry.element !== undefined && typeof entry.element !== 'string') {
+          check(
+            entry.element,
+            ['kind', 'source', 'type'],
+            owner,
+            `${at}.element`
+          );
+        }
+        if (entry.properties !== undefined) {
+          object(entry.properties, owner, `${at}.properties`);
+        }
+      });
     }
   };
   const visitContentRoot = (
@@ -990,8 +1018,8 @@ const collectSchemaKeyDiagnostics = (
           'groups',
           'inline',
           'isolating',
-          'keyboardSelectable',
           'markableVoid',
+          'object',
           'properties',
           'readOnly',
           'selectable',
@@ -1508,6 +1536,24 @@ const remapSchemaContent = (
   Object.freeze({
     ...content,
     allowed: remapSchemaContentRule(content.allowed, renames),
+    ...(content.prefix
+      ? {
+          prefix: Object.freeze(
+            content.prefix.map((slot) =>
+              Object.freeze({
+                ...slot,
+                element:
+                  typeof slot.element === 'string'
+                    ? remapSchemaType(slot.element, renames)
+                    : Object.freeze({
+                        ...slot.element,
+                        type: remapSchemaType(slot.element.type, renames),
+                      }),
+              })
+            )
+          ),
+        }
+      : {}),
     ...(content.default && content.default !== 'text'
       ? {
           default: Object.freeze({
@@ -1966,13 +2012,31 @@ const compileElementBehavior = (
   const inline = input.inline ?? inlineFromVoid;
   const selectable = input.selectable ?? true;
   const atom = input.atom ?? isVoid(voidKind ?? undefined);
+  const object = input.object ?? false;
+
+  if (
+    object &&
+    (inline ||
+      voidKind !== null ||
+      atom ||
+      !selectable ||
+      input.isolating === false ||
+      Object.hasOwn(input.slice ?? {}, 'preserveContext'))
+  ) {
+    compileFailure(
+      'invalid-element-behavior',
+      `Schema element at ${source.path} has incompatible object behavior.`,
+      [source],
+      `${source.path}.object`
+    );
+  }
 
   return Object.freeze({
     atom,
     inline,
-    isolating: input.isolating ?? false,
-    keyboardSelectable: input.keyboardSelectable ?? (selectable && atom),
+    isolating: object || (input.isolating ?? false),
     markableVoid: input.markableVoid ?? voidKind === 'markable-inline',
+    object,
     readOnly: input.readOnly ?? false,
     selectable,
     void: isVoid(voidKind ?? undefined),
@@ -2278,7 +2342,7 @@ const compileContent = (
     }
   }
 
-  return {
+  const remainder: MutableContentProgram = {
     allowedElementTypes: allowed.types,
     allowsText: allowed.allowsText,
     allowsUnknownElements: allowed.allowsUnknownElements,
@@ -2286,6 +2350,47 @@ const compileContent = (
     max,
     min,
     source,
+  };
+
+  if (!value.prefix) return remainder;
+  if (value.prefix.length === 0) {
+    compileFailure(
+      'invalid-content-prefix',
+      `Schema content at ${source.path} needs at least one required prefix slot.`,
+      [source],
+      `${source.path}.prefix`
+    );
+  }
+  const prefix = value.prefix.map((slot, index) => {
+    const type =
+      typeof slot.element === 'string' ? slot.element : slot.element.type;
+    const path = `${source.path}.prefix.${index}`;
+
+    if (!elementTypes.has(type)) {
+      compileFailure(
+        'unknown-element-type',
+        `Schema content at ${path} references unknown element type "${type}".`,
+        [source],
+        path
+      );
+    }
+
+    return Object.freeze({
+      type,
+      properties: Object.freeze({ ...slot.properties }),
+    });
+  });
+
+  return {
+    ...remainder,
+    allowedElementTypes: new Set([
+      ...remainder.allowedElementTypes,
+      ...prefix.map(({ type }) => type),
+    ]),
+    max: remainder.max === null ? null : remainder.max + prefix.length,
+    min: remainder.min + prefix.length,
+    prefix: Object.freeze(prefix),
+    remainder,
   };
 };
 
@@ -2299,6 +2404,10 @@ const freezeContentProgram = (
     defaultPlan: program.defaultPlan,
     max: program.max,
     min: program.min,
+    ...(program.prefix ? { prefix: program.prefix } : {}),
+    ...(program.remainder
+      ? { remainder: freezeContentProgram(program.remainder) }
+      : {}),
   });
 
 const cloneTarget = (
@@ -3844,9 +3953,13 @@ const compileEditorSchemaInternal = (
     ].map((slot) => `contentRoot:${type}:${slot}`);
 
     for (const programId of [`element:${type}`, ...contentRootProgramIds]) {
-      const plan = mutablePrograms.get(programId)?.defaultPlan;
+      const program = mutablePrograms.get(programId);
+      const plan = program?.defaultPlan;
 
       if (plan?.kind === 'element') validateElementConstruction(plan.type);
+      for (const slot of program?.prefix ?? []) {
+        validateElementConstruction(slot.type);
+      }
     }
     constructing.pop();
     constructible.add(type);
@@ -3855,6 +3968,9 @@ const compileEditorSchemaInternal = (
   for (const program of mutablePrograms.values()) {
     if (program.defaultPlan?.kind === 'element') {
       validateElementConstruction(program.defaultPlan.type);
+    }
+    for (const slot of program.prefix ?? []) {
+      validateElementConstruction(slot.type);
     }
   }
 
@@ -4171,6 +4287,73 @@ const compileEditorSchemaInternal = (
     }
   }
 
+  for (const program of mutablePrograms.values()) {
+    for (const [index, slot] of (program.prefix ?? []).entries()) {
+      const path = `${program.source.path}.prefix.${index}`;
+      const allowedIds =
+        propertyIdsByElement.get(slot.type) ?? new Set<string>();
+
+      for (const [key, value] of Object.entries(slot.properties)) {
+        const candidates = [...allowedIds]
+          .map((id) => byId.get(id))
+          .filter(
+            (property): property is CompiledSchemaProperty =>
+              property?.placement === 'element' && property.key === key
+          );
+
+        if (candidates.length !== 1) {
+          compileFailure(
+            'invalid-content-prefix-property',
+            `Schema content slot at ${path} does not own one element property "${key}" on "${slot.type}".`,
+            [program.source],
+            `${path}.properties.${key}`
+          );
+        }
+        const candidate = candidates[0];
+        const source = {
+          ...program.source,
+          path: `${path}.properties.${key}`,
+          value,
+        };
+        const canonical = canonicalizePropertyValue(
+          candidate.descriptor,
+          value,
+          source
+        );
+
+        if (stableStringify(canonical) !== stableStringify(value)) {
+          compileFailure(
+            'invalid-content-prefix-property',
+            `Schema content slot property "${key}" at ${path} must use its canonical value.`,
+            [program.source],
+            source.path
+          );
+        }
+      }
+
+      for (const id of allowedIds) {
+        const property = byId.get(id);
+
+        if (
+          property?.placement === 'element' &&
+          typeof property.key === 'string' &&
+          property.descriptor.required &&
+          !Object.hasOwn(property.descriptor, 'default') &&
+          !property.descriptor.generate &&
+          !Object.hasOwn(slot.properties, property.key) &&
+          (property.target === null || property.target.kind === 'type')
+        ) {
+          compileFailure(
+            'missing-content-prefix-property',
+            `Schema content slot at ${path} needs required property "${property.key}" on "${slot.type}".`,
+            [program.source],
+            `${path}.properties.${property.key}`
+          );
+        }
+      }
+    }
+  }
+
   const compiledElements = new Map<string, CompiledSchemaElement>();
 
   const compileStructureProperty = (
@@ -4459,26 +4642,10 @@ const compileEditorSchemaInternal = (
     elements: [...compiledElements].map(([type, element]) => ({
       behavior: canonicalSchemaElementBehavior(element.behavior),
       content: element.content
-        ? {
-            allowedElementTypes: sortedStrings(
-              element.content.allowedElementTypes
-            ),
-            allowsText: element.content.allowsText,
-            allowsUnknownElements: element.content.allowsUnknownElements,
-            defaultPlan: element.content.defaultPlan,
-            max: element.content.max,
-            min: element.content.min,
-          }
+        ? canonicalContentProgram(element.content)
         : null,
       contentRoots: [...element.contentRoots].map(([slot, root]) => ({
-        content: {
-          allowedElementTypes: sortedStrings(root.content.allowedElementTypes),
-          allowsText: root.content.allowsText,
-          allowsUnknownElements: root.content.allowsUnknownElements,
-          defaultPlan: root.content.defaultPlan,
-          max: root.content.max,
-          min: root.content.min,
-        },
+        content: canonicalContentProgram(root.content),
         ownership: root.ownership,
         slot,
       })),
@@ -4513,21 +4680,9 @@ const compileEditorSchemaInternal = (
       role: property.role,
       target: canonicalTarget(property.target),
     })),
-    root: {
-      allowedElementTypes: sortedStrings(primaryProgram.allowedElementTypes),
-      allowsText: primaryProgram.allowsText,
-      allowsUnknownElements: primaryProgram.allowsUnknownElements,
-      defaultPlan: primaryProgram.defaultPlan,
-      max: primaryProgram.max,
-      min: primaryProgram.min,
-    },
+    root: canonicalContentProgram(primaryProgram),
     roots: [...roots].map(([name, root]) => ({
-      allowedElementTypes: sortedStrings(root.content.allowedElementTypes),
-      allowsText: root.content.allowsText,
-      allowsUnknownElements: root.content.allowsUnknownElements,
-      defaultPlan: root.content.defaultPlan,
-      max: root.content.max,
-      min: root.content.min,
+      ...canonicalContentProgram(root.content),
       name,
     })),
     unknown: unknownPolicy,
@@ -4883,7 +5038,24 @@ export type EditorSchemaContractContentProgram = Readonly<{
   defaultPlan: CompiledSchemaConstructionPlan | null;
   max: number | null;
   min: number;
+  prefix?: readonly CompiledSchemaContentPrefixSlot[];
+  remainder?: EditorSchemaContractContentProgram;
 }>;
+
+const canonicalContentProgram = (
+  program: CompiledSchemaContentProgram | EditorSchemaContractContentProgram
+): Readonly<Record<string, unknown>> => ({
+  allowedElementTypes: sortedStrings(program.allowedElementTypes),
+  allowsText: program.allowsText,
+  allowsUnknownElements: program.allowsUnknownElements,
+  defaultPlan: program.defaultPlan,
+  max: program.max,
+  min: program.min,
+  ...(program.prefix ? { prefix: program.prefix } : {}),
+  ...(program.remainder
+    ? { remainder: canonicalContentProgram(program.remainder) }
+    : {}),
+});
 
 export type EditorSchemaContractContentRoot = Readonly<{
   content: EditorSchemaContractContentProgram;
@@ -5031,6 +5203,10 @@ const contractContentProgram = (
     defaultPlan: program.defaultPlan,
     max: program.max,
     min: program.min,
+    ...(program.prefix ? { prefix: program.prefix } : {}),
+    ...(program.remainder
+      ? { remainder: contractContentProgram(program.remainder) }
+      : {}),
   });
 
 const contractContentRoot = (
@@ -5180,7 +5356,7 @@ const isContractConstructionPlan = (value: unknown) =>
   (value.kind === 'text' ||
     (value.kind === 'element' && typeof value.type === 'string'));
 
-const isContractContentProgram = (value: unknown) =>
+const isContractContentProgram = (value: unknown): boolean =>
   isRecord(value) &&
   isStringArray(value.allowedElementTypes) &&
   typeof value.allowsText === 'boolean' &&
@@ -5191,7 +5367,18 @@ const isContractContentProgram = (value: unknown) =>
   (value.min as number) >= 0 &&
   (value.max === null ||
     (Number.isSafeInteger(value.max) &&
-      (value.max as number) >= (value.min as number)));
+      (value.max as number) >= (value.min as number))) &&
+  (value.prefix === undefined ||
+    (Array.isArray(value.prefix) &&
+      value.prefix.length > 0 &&
+      value.prefix.every(
+        (slot) =>
+          isRecord(slot) &&
+          typeof slot.type === 'string' &&
+          isRecord(slot.properties)
+      ) &&
+      isContractContentProgram(value.remainder))) &&
+  (value.prefix !== undefined || value.remainder === undefined);
 
 const isContractContentRoot = (value: unknown) =>
   isRecord(value) &&
@@ -5204,8 +5391,8 @@ const isContractElementBehavior = (value: unknown) =>
     'atom',
     'inline',
     'isolating',
-    'keyboardSelectable',
     'markableVoid',
+    'object',
     'readOnly',
     'selectable',
     'void',
@@ -5477,22 +5664,8 @@ const isEditorSchemaContractShape = (value: Record<string, unknown>) => {
 };
 
 const editorSchemaContractFingerprint = (contract: EditorSchemaContract) => {
-  const content = (program: EditorSchemaContractContentProgram) => ({
-    allowedElementTypes: sortedStrings(program.allowedElementTypes),
-    allowsText: program.allowsText,
-    allowsUnknownElements: program.allowsUnknownElements,
-    defaultPlan: program.defaultPlan,
-    max: program.max,
-    min: program.min,
-  });
-  const rootContent = (program: EditorSchemaContractContentProgram) => ({
-    allowedElementTypes: sortedStrings(program.allowedElementTypes),
-    allowsText: program.allowsText,
-    allowsUnknownElements: program.allowsUnknownElements,
-    defaultPlan: program.defaultPlan,
-    max: program.max,
-    min: program.min,
-  });
+  const content = canonicalContentProgram;
+  const rootContent = canonicalContentProgram;
   const canonicalModel = {
     elements: [...contract.elements.byType]
       .sort((left, right) => left.type.localeCompare(right.type))
@@ -5592,6 +5765,17 @@ const contractContentIncludes = (
   next: EditorSchemaContractContentProgram
 ) => {
   const nextTypes = new Set(next.allowedElementTypes);
+
+  if (
+    stableStringify(previous.prefix ?? null) !==
+    stableStringify(next.prefix ?? null)
+  ) {
+    return false;
+  }
+  if (previous.remainder && next.remainder) {
+    return contractContentIncludes(previous.remainder, next.remainder);
+  }
+  if (previous.remainder || next.remainder) return false;
 
   return (
     previous.allowedElementTypes.every((type) => nextTypes.has(type)) &&
@@ -5964,11 +6148,15 @@ export const diffEditorSchemaContracts = (
 
 const restoreContentProgram = (
   program: EditorSchemaContractContentProgram
-): CompiledSchemaContentProgram =>
-  Object.freeze({
-    ...program,
+): CompiledSchemaContentProgram => {
+  const { remainder, ...rest } = program;
+
+  return Object.freeze({
+    ...rest,
     allowedElementTypes: freezeSet(program.allowedElementTypes),
+    ...(remainder ? { remainder: restoreContentProgram(remainder) } : {}),
   });
+};
 
 const restoreContentRoot = (
   root: EditorSchemaContractContentRoot
@@ -6125,17 +6313,7 @@ export const restoreEditorSchemaContract = (
 
 const canonicalCompiledContent = (
   content: CompiledSchemaContentProgram | null
-) =>
-  content
-    ? {
-        allowedElementTypes: sortedStrings(content.allowedElementTypes),
-        allowsText: content.allowsText,
-        allowsUnknownElements: content.allowsUnknownElements,
-        defaultPlan: content.defaultPlan,
-        max: content.max,
-        min: content.min,
-      }
-    : null;
+) => (content ? canonicalContentProgram(content) : null);
 
 const canonicalCompiledElement = (element: CompiledSchemaElement | null) =>
   element

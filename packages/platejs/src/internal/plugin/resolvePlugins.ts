@@ -31,15 +31,8 @@ import {
   createPlatePluginPortal,
   createPluginContext,
 } from '../../lib/plugin/createPluginContext.internal';
-import {
-  createBlockFenceInputRule,
-  createBlockStartInputRule,
-  createMarkInputRule,
-} from '../../lib/plugins/input-rules/createInputRules';
-import { defineInputRule } from '../../lib/plugins/input-rules/defineInputRule';
 import type {
   InputRule,
-  InputRuleBuilder,
   ResolvedInputRule,
 } from '../../lib/plugins/input-rules/types';
 import { failInvariant } from '../failInvariant';
@@ -79,6 +72,7 @@ import { compilePlateShortcuts } from './compilePlateShortcuts';
 import { isEditOnly } from './isEditOnlyDisabled';
 import { mergePluginCapabilities } from './mergePluginCapabilities';
 import {
+  STRUCTURAL_RULE_KEYS,
   setPlateRuntimeCandidate,
   type PlatePluginCache,
 } from './plateRuntime';
@@ -242,7 +236,9 @@ const createMutablePlatePluginCache = (): MutablePlatePluginCache => ({
     wrapNodeChildren: [],
     wrapRoot: [],
   },
-  rules: { match: [] },
+  rules: Object.fromEntries(
+    STRUCTURAL_RULE_KEYS.map((key) => [key, []])
+  ) as unknown as MutablePlatePluginCache['rules'],
   useViewElementAttributes: [],
 });
 
@@ -907,7 +903,19 @@ export const createPlateModelPublication = (
     if (plugin.slots.afterNodeChildren) {
       pluginCache.slots.afterNodeChildren.push(plugin.name);
     }
-    if (plugin.rules?.match) pluginCache.rules.match.push(plugin.name);
+    for (const key of STRUCTURAL_RULE_KEYS) {
+      const [family, action] = key.split('.') as [
+        keyof typeof plugin.rules,
+        string,
+      ];
+      const familyRules = plugin.rules[family] as
+        | Record<string, unknown>
+        | undefined;
+
+      if (typeof familyRules?.[action] === 'function') {
+        pluginCache.rules[key].push(plugin.name);
+      }
+    }
     if (plugin.decorate) pluginCache.decorate.push(plugin.name);
     if (plugin.render.useViewElementAttributes) {
       pluginCache.useViewElementAttributes.push(plugin.name);
@@ -955,7 +963,14 @@ export const createPlateModelPublication = (
       wrapNodeChildren: freezeList(pluginCache.slots.wrapNodeChildren),
       wrapRoot: freezeList(pluginCache.slots.wrapRoot),
     }),
-    rules: Object.freeze({ match: freezeList(pluginCache.rules.match) }),
+    rules: Object.freeze(
+      Object.fromEntries(
+        STRUCTURAL_RULE_KEYS.map((key) => [
+          key,
+          freezeList(pluginCache.rules[key]),
+        ])
+      )
+    ) as PlatePluginCache['rules'],
     useViewElementAttributes: freezeList(pluginCache.useViewElementAttributes),
   });
   const shortcutRuntime = snapshotApiValue(
@@ -1151,6 +1166,14 @@ export const createPlateRuntimePlugins = (
       apiContributions.length > 0 ||
       Reflect.ownKeys(frozenPluginApi).length > 0;
     const { conflicts, dependencies } = plugin;
+    // Public plugin types expose dependency metadata, while runtime values keep
+    // the original branded references required by Plite's identity graph.
+    const runtimeConflicts = conflicts as NonNullable<
+      RuntimePluginDefinitionInput<Editor>['conflicts']
+    >;
+    const runtimeDependencies = dependencies as NonNullable<
+      RuntimePluginDefinitionInput<Editor>['dependencies']
+    >;
     const on = createPluginLifecycleHandlers(editor, plugin);
     const pluginContext = createPluginContext(editor, plugin);
     const stateFields = plugin.stateFields ?? [];
@@ -1169,8 +1192,8 @@ export const createPlateRuntimePlugins = (
       );
     const definition: RuntimePluginDefinitionInput<Editor> = {
       ...(plugin.enabled === false ? { enabled: false } : {}),
-      ...(dependencies.length > 0 ? { dependencies } : {}),
-      ...(conflicts.length > 0 ? { conflicts } : {}),
+      ...(dependencies.length > 0 ? { dependencies: runtimeDependencies } : {}),
+      ...(conflicts.length > 0 ? { conflicts: runtimeConflicts } : {}),
       ...(exposesApi
         ? {
             api: (context) => {
@@ -1760,20 +1783,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
   const resolvedMeta = createMutableResolvedInputRulesMeta();
 
   pluginList.forEach((plugin, pluginIndex) => {
-    const inputRulesDefinition = plugin.inputRules;
-    const definitionRules =
-      typeof inputRulesDefinition === 'function'
-        ? inputRulesDefinition({
-            rule: {
-              blockFence: (config) => createBlockFenceInputRule(config),
-              blockStart: (config) => createBlockStartInputRule(config),
-              insertBreak: (rule) => defineInputRule(rule),
-              insertData: (rule) => defineInputRule(rule),
-              insertText: (rule) => defineInputRule(rule),
-              mark: (config) => createMarkInputRule(config),
-            } satisfies InputRuleBuilder,
-          })
-        : (inputRulesDefinition ?? []);
+    const definitionRules = plugin.inputRules ?? [];
     const ruleDefinitions = definitionRules as InputRule[];
 
     resolvedMeta.plugins[plugin.name] = {

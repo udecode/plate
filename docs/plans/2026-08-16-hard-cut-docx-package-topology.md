@@ -195,7 +195,7 @@ Conditional evidence:
 - High-risk scenarios: missing leaf dependency after split; stale plugin key
   causing runtime lookup failure; composer duplicating/omitting descriptors;
   browser-only code leaking into an intended server path.
-- External research: accepted editor audit compared current CKEditor, Tiptap,
+- External research: accepted editor audit compared Tiptap,
   TinyMCE, Lexical, and ProseMirror package/capability boundaries.
 - Issue/PR provenance: N/A; this is a user-directed local API hard cut.
 - Docs/registry/browser/release/behavior-law owners: docs, registry editor and

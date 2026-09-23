@@ -3,10 +3,16 @@ import type { EditorStaticApi } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
 
 export const isEmpty: EditorStaticApi['isEmpty'] = (editor, element) => {
+  const schema = getEditorSchema(editor);
+
+  if (
+    schema.isVoid(element) ||
+    schema.isAtom(element) ||
+    schema.isObject(element)
+  ) {
+    return false;
+  }
+
   const { children } = element;
-  return (
-    children.length === 0 ||
-    (children.every((child) => NodeApi.isText(child) && child.text === '') &&
-      !getEditorSchema(editor).isVoid(element))
-  );
+  return children.every((child) => NodeApi.isText(child) && child.text === '');
 };

@@ -177,62 +177,62 @@
         [
           "README.md",
           "1-111",
-          "Independent source sidecar R10; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R10; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "LICENSE",
           "1-40;520-550",
-          "Independent source sidecar R11; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R11; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "packages/document-api/src/export/export.types.ts",
           "1-56",
-          "Independent source sidecar R12; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R12; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "packages/document-api/src/export/export.ts",
           "1-73",
-          "Independent source sidecar R13; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R13; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "packages/superdoc/src/core/helpers/export.js",
           "1-107",
-          "Independent source sidecar R17; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R17; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "packages/document-api/src/export/export.test.ts",
           "1-72",
-          "Independent source sidecar R18; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R18; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "packages/superdoc/package.json",
           "1-45;90-138",
-          "Independent source sidecar R19; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R19; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "scripts/ci-docx-engine-artifact.mjs",
           "1-24",
-          "Independent source sidecar R20; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R20; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "packages/superdoc/src/core/v2-integration/v2-integration.js",
           "1-125",
-          "Independent source sidecar R21; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R21; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "packages/superdoc/src/core/SuperDoc.ts",
           "4150-4230",
-          "Independent source sidecar R22; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R22; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "packages/superdoc/src/core/SuperDoc.export.test.ts",
           "1-130",
-          "Independent source sidecar R23; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R23; see shards/superdoc.md for exact claim and limits."
         ],
         [
           "apps/docs/content/docs/resources/docx-engine-license.mdx",
           "1-23;111-143",
-          "Independent source sidecar R45; see shards/ckeditor-superdoc.md for exact claim and limits."
+          "Independent source sidecar R45; see shards/superdoc.md for exact claim and limits."
         ]
       ],
       "fileHashes": {
@@ -250,143 +250,6 @@
         "apps/docs/content/docs/resources/docx-engine-license.mdx": "c03e38b127f1f5e3e78cfe36e80a6c520406d56fa466deb0ebe892f7855cde08"
       },
       "sourceFingerprint": "e0755290b06bae93ee0ce5ce05668a27932ad6ef61eb952e422f8871fde4de68"
-    },
-    {
-      "key": "ckeditor",
-      "repo": "ckeditor/ckeditor5",
-      "path": "/Users/zbeyens/git/ckeditor5",
-      "commit": "d2e9dac45fd2af5de02c20aefeea1024c7bb489f",
-      "commitDate": "2026-09-14T13:47:30Z",
-      "license": "GPL-2.0-or-later or commercial",
-      "signal": "Word-paste source and captured fixture harness",
-      "activity": "2026-09-14T13:47:31Z",
-      "freshness": "Fetched exact current default-branch commit; inspected via git show; checkout unchanged. See sidecar identity table.",
-      "lead": "paste-evidence-before-cleanup",
-      "files": [
-        [
-          "packages/ckeditor5/LICENSE.md",
-          "1-52",
-          "Independent source sidecar R24; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/LICENSE.md",
-          "1-22",
-          "Independent source sidecar R25; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/src/pastefromoffice.ts",
-          "80-153",
-          "Independent source sidecar R26; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/src/normalizers/mswordnormalizer.ts",
-          "1-80",
-          "Independent source sidecar R27; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/src/filters/parse.ts",
-          "1-172",
-          "Independent source sidecar R28; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "docs/features/cloud-services-overview.md",
-          "47-69",
-          "Independent source sidecar R30; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/src/filters/list.ts",
-          "40-157",
-          "Independent source sidecar R31; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/src/filters/image.ts",
-          "18-44;236-354",
-          "Independent source sidecar R32; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/src/filters/replacemsfootnotes.ts",
-          "1-140",
-          "Independent source sidecar R33; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-clipboard/src/clipboardpipeline.ts",
-          "249-300",
-          "Independent source sidecar R34; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/tests/README.md",
-          "1-100",
-          "Independent source sidecar R35; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/tests/data/normalization.js",
-          "1-64",
-          "Independent source sidecar R36; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/tests/data/integration.js",
-          "1-130",
-          "Independent source sidecar R37; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/tests/filters/image.js",
-          "17-65",
-          "Independent source sidecar R38; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/tests/filters/replacemsfootnotes.js",
-          "185-221",
-          "Independent source sidecar R39; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/tests/_data/list/continuation-after-different-list/normalized.word.html",
-          "1-31",
-          "Independent source sidecar R40; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/tests/_data/list/continuation-after-different-list/model.word.html",
-          "1-9",
-          "Independent source sidecar R41; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/tests/_utils/utils.js",
-          "185-207;229-247;307-352",
-          "Independent source sidecar R42; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/src/filters/removemsattributes.ts",
-          "1-56",
-          "Independent source sidecar R43; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ],
-        [
-          "packages/ckeditor5-paste-from-office/docs/features/paste-from-office.md",
-          "12-41;64-94",
-          "Independent source sidecar R44; see shards/ckeditor-superdoc.md for exact claim and limits."
-        ]
-      ],
-      "fileHashes": {
-        "packages/ckeditor5/LICENSE.md": "a117cfe0ba5684fd8734ef9e36781f3f9ced6ccde6144a9c1622997b5e99cc0e",
-        "packages/ckeditor5-paste-from-office/LICENSE.md": "e2160085b4425822582cf8754123e10a115d8228a7657b9e39cebeead2cb89b6",
-        "packages/ckeditor5-paste-from-office/src/pastefromoffice.ts": "50bf1e457c50d04a46621273075103cd2d67abe8e5b1f5339fb516365f082c5f",
-        "packages/ckeditor5-paste-from-office/src/normalizers/mswordnormalizer.ts": "782dd77a12c5b489996798ef521fc061ff8f4918618bb982f02cff7a32c2e959",
-        "packages/ckeditor5-paste-from-office/src/filters/parse.ts": "d68dfa3b18f108f85a38a2657951ff3d9611105cfb0b8ebb12d516b1d3670069",
-        "docs/features/cloud-services-overview.md": "0f792f83a85f848a219e7861321b7a85c766fca519e1720b3c0c85f7a0203d84",
-        "packages/ckeditor5-paste-from-office/src/filters/list.ts": "44cc3f4f0eb0b117c5f2577790cca20808e6a243c695bb1dca779329f373a416",
-        "packages/ckeditor5-paste-from-office/src/filters/image.ts": "f2d78cdedc978c6b997b4fd5bbb4e366722b192974888f3031c59dce4496e0b9",
-        "packages/ckeditor5-paste-from-office/src/filters/replacemsfootnotes.ts": "81aa4d1a1cdd5c4a56fe4f8c2b182fc8cc18a53fd08d28744ddb59cfa855992c",
-        "packages/ckeditor5-clipboard/src/clipboardpipeline.ts": "6547803beb3f8cd175fd37be7df39674ac6af468ef9eb22e51efe102e889019f",
-        "packages/ckeditor5-paste-from-office/tests/README.md": "b34d5a4ee03f18ad0f88b41c42a4db12a21bd858f10c50fa816fffe1e8084e5d",
-        "packages/ckeditor5-paste-from-office/tests/data/normalization.js": "e182f171d3b3b99f2f627b763202a1af6a7426e613a86e47c0282fa9873fa4ce",
-        "packages/ckeditor5-paste-from-office/tests/data/integration.js": "44027608d081f6f1dac587e24053b9578b36c300aee3a4468302ec3c9e9624af",
-        "packages/ckeditor5-paste-from-office/tests/filters/image.js": "7ce0e6ff41ffbf68928549099e863b61632e8889d915876d117c19020a2ee6a1",
-        "packages/ckeditor5-paste-from-office/tests/filters/replacemsfootnotes.js": "202a4504cbd736cb2a1783e95e9737b9423770f3268294c4beac71a56b3727df",
-        "packages/ckeditor5-paste-from-office/tests/_data/list/continuation-after-different-list/normalized.word.html": "74b63063c1c24808cdb382bb2d86ddcbbff888450475d9a10b1e37a63a36e8f9",
-        "packages/ckeditor5-paste-from-office/tests/_data/list/continuation-after-different-list/model.word.html": "3bf9552c16c43cb336f96267d8fcf155625587eaf72b78229882c317ee8cf7c1",
-        "packages/ckeditor5-paste-from-office/tests/_utils/utils.js": "9750ad5f525e519311faf3d5b2d2be9ecab741fd8d78e7fac142a2b56baf14ad",
-        "packages/ckeditor5-paste-from-office/src/filters/removemsattributes.ts": "a034d6cba3b40fecd438db47164f8f28e7ac0712f14cdfc11109f0cef1e7cd68",
-        "packages/ckeditor5-paste-from-office/docs/features/paste-from-office.md": "5a760b82532001c1850198e7318d8b8f67ea9f452f66d82343c1a4a4c5339ee8"
-      },
-      "sourceFingerprint": "4b9567006fa69b2c3cd10978106df55ee535cb0de51aaa871f4f08a61bd76d9a"
     },
     {
       "key": "pandoc",

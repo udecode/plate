@@ -180,12 +180,11 @@ Configure each capability where it is owned. `CodeBlockPlugin` owns the multilin
 ```tsx
 import { CodeBlockRules } from 'platejs';
 import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
-import { all, createLowlight } from 'lowlight';
 import { createEditor } from 'platejs/react';
 import { CodeBlockElement } from '@/components/editor/code-block';
+import { createCodeBlockLowlight } from '@/components/editor/code-block-lowlight';
 
-// Create a lowlight instance with all languages
-const lowlight = createLowlight(all);
+const lowlight = createCodeBlockLowlight();
 
 const editor = createEditor({
   plugins: [
@@ -244,7 +243,7 @@ const editor = createEditor({
   [`CodeBlockElement`](/docs/components/code-block) to render code block
   containers.
 - `inputRules`: Registers the triple-backtick fence rule. Use `on: 'match'` to commit when the fence becomes complete or `on: 'break'` to commit on `Enter`.
-- `CodeHighlightPlugin.initialState.lowlight`: Lowlight instance for syntax highlighting.
+- `CodeHighlightPlugin.initialState.lowlight`: Lowlight instance for syntax highlighting. The plugin reads the supplied registry without modifying it. The copied `createCodeBlockLowlight()` resource registers the shipped browser-safe Python grammar and its `py`, `gyp`, and `ipython` aliases before the editor uses it.
 - `CodeHighlightPlugin.initialState.defaultLanguage`: Default language when no language is specified.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
 

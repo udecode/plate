@@ -1,7 +1,14 @@
 /** @jsxRuntime classic */
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, createEditor } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  createEditor,
+  createEditorView,
+  definePlugin,
+  property,
+  schema,
+} from 'platejs';
 
 import { jsxt, type TestEditor } from '../../testing';
 import { fixtureSchemaPlugins, normalizeRoot } from './__tests__/normalizeRoot';
@@ -21,24 +28,125 @@ describe('TrailingBlockPlugin', () => {
     );
   });
 
-  it('wraps insertion without exposing the active transaction', () => {
-    let insertCount = 0;
+  it('creates the trailing block through its schema', () => {
+    const RequiredTrailingPlugin = definePlugin('requiredTrailing', {
+      schema: {
+        element: {
+          ...schema.element.textBlock(),
+          properties: {
+            tone: property.string({
+              default: 'neutral',
+              omitDefault: false,
+            }),
+          },
+        },
+      },
+    });
     const normalized = normalizeRoot({
       plugins: [
+        RequiredTrailingPlugin,
         TrailingBlockPlugin.configure({
           initialState: {
-            insert: (insert) => {
-              insertCount += 1;
-              insert();
-            },
+            type: RequiredTrailingPlugin.name,
           },
         }),
       ],
       value: [{ type: 'h1', children: [{ text: 'x' }] }],
     });
 
-    expect(insertCount).toBe(1);
-    expect(normalized.children).toHaveLength(2);
+    expect(normalized.children[1]).toEqual({
+      children: [{ text: '' }],
+      tone: 'neutral',
+      type: 'requiredTrailing',
+    });
+  });
+
+  it('repairs the changed nested parent at the configured depth', () => {
+    const editor = createEditor({
+      plugins: [
+        ...fixtureSchemaPlugins,
+        TrailingBlockPlugin.configure({
+          initialState: {
+            level: 1,
+            type: 'paragraph',
+          },
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'element',
+          children: [
+            { type: 'h1', children: [{ text: 'first' }] },
+            { type: 'paragraph', children: [{ text: '' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update.nodes.insert(
+      { type: 'h1', children: [{ text: 'second' }] },
+      { at: [0, 2] }
+    );
+
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'element',
+        children: [
+          { type: 'h1', children: [{ text: 'first' }] },
+          { type: 'paragraph', children: [{ text: '' }] },
+          { type: 'h1', children: [{ text: 'second' }] },
+          { type: 'paragraph', children: [{ text: '' }] },
+        ],
+      },
+    ]);
+  });
+
+  it('repairs the changed named root without touching the main root', () => {
+    const RootHolderPlugin = definePlugin('trailingRootHolder', {
+      schema: {
+        element: {
+          blockContent: true,
+          contentRoots: {
+            body: {
+              content: schema.content.types(['paragraph', 'h1'], {
+                default: { type: BaseParagraphPlugin.name },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [...fixtureSchemaPlugins, RootHolderPlugin, TrailingBlockPlugin],
+      initialValue: {
+        children: [
+          {
+            childRoots: { body: 'header' },
+            children: [{ text: '' }],
+            type: RootHolderPlugin.name,
+          },
+        ],
+        roots: {
+          header: [{ type: 'paragraph', children: [{ text: '' }] }],
+        },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    header.update.nodes.insert(
+      { type: 'h1', children: [{ text: 'heading' }] },
+      { at: [1] }
+    );
+
+    expect(editor.read.children()).toHaveLength(1);
+    expect(header.read.children()).toEqual([
+      { type: 'paragraph', children: [{ text: '' }] },
+      { type: 'h1', children: [{ text: 'heading' }] },
+      { type: 'paragraph', children: [{ text: '' }] },
+    ]);
   });
 
   it.each([

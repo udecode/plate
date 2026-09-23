@@ -9,6 +9,7 @@ import {
   getCompiledPlateContainerTypes,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import { OverridePlugin } from '../../internal/plugin/OverridePlugin';
 import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
 import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins.internal';
 import { createEditor as createReactEditor } from '../../react/editor/withPlate';
@@ -24,7 +25,6 @@ import {
   ElementStatePlugin,
   HistoryPlugin,
   HtmlPlugin,
-  OverridePlugin,
 } from '../index';
 import { InputRulesPlugin } from '../plugins/input-rules/InputRulesPlugin';
 

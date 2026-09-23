@@ -7,6 +7,24 @@ description: 使用 UploadPlugin 和 Files SDK 上传本地文件，并保存持
 文档访问权限和持久下载 URL。已完成的图片、视频、音频和文件节点需要
 [媒体插件](/cn/docs/media)。
 
+## 预览
+
+<DevelopmentOnly>
+
+### Cloudflare R2
+
+此本地开发预览会将文件存储在 `plate-dev` R2 存储桶中。
+
+<ComponentPreview name="upload-demo" provider="r2" />
+
+</DevelopmentOnly>
+
+### 浏览器本地
+
+此预览将文件保存在当前浏览器标签页中，并在编辑器卸载时释放文件。
+
+<ComponentPreview name="upload-demo" provider="browser" />
+
 ## 安装
 
 安装复制的媒体 UI，然后选择一个上传提供程序。每个提供程序都会安装共享的
@@ -16,7 +34,7 @@ description: 使用 UploadPlugin 和 Files SDK 上传本地文件，并保存持
 
 ### 浏览器本地
 
-<ComponentInstallation name="upload-ephemeral" inline />
+<ComponentInstallation name="upload-browser" inline />
 
 适用于演示和一次性编辑器。文件会成为当前浏览器标签页中的对象 URL，并在刷新、
 卸载或共享时失效。

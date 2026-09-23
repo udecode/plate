@@ -61,7 +61,13 @@ export const attachEditableOutsideFocusBoundaryListener = ({
           selection?.focusNode ?? null
         ))
     ) {
-      return undefined;
+      // Keep the sibling's native selection, but release this view's focus.
+      if (ReactEditor.isFocused(editor)) {
+        IS_FOCUSED.delete(editor);
+        setEditorFocused(editor, false);
+        publishFocusState();
+      }
+      return;
     }
     const hasReadOnlyModelSelection =
       readOnly && Boolean(editor.read((innerState) => innerState.selection()));

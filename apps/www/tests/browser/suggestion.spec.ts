@@ -106,6 +106,82 @@ test('playground types and pastes direct edits without changing pending suggesti
   runtimeErrors.assertNone();
 });
 
+test('playground title can change to H2 from the toolbar', async ({ page }) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  await page.goto('/blocks/playground', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(page, 'playground title', root);
+
+  await editor.ready({ editor: 'visible', text: PLAYGROUND_TITLE });
+  await editor.selection.collapse({ offset: 0, path: [0, 0] });
+  await editor.focus();
+  await page.getByRole('button', { name: 'Heading 1' }).click();
+  await page.getByRole('menuitemradio', { name: 'Heading 2' }).click();
+
+  await expect(root.getByRole('heading', { level: 2 }).first()).toContainText(
+    PLAYGROUND_TITLE
+  );
+  runtimeErrors.assertNone();
+});
+
+test('playground preserves a table pasted over part of its heading', async ({
+  context,
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/blocks/playground', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'playground title paste',
+    root
+  );
+
+  await editor.ready({ editor: 'visible', text: PLAYGROUND_TITLE });
+  await editor.selection.select({
+    anchor: { path: [0, 0], offset: 1 },
+    focus: { path: [0, 0], offset: 3 },
+  });
+  await editor.focus();
+  await page.evaluate(async () => {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': new Blob(
+          [
+            '<table><tbody><tr><td><p>Pasted cell</p></td></tr></tbody></table>',
+          ],
+          { type: 'text/html' }
+        ),
+        'text/plain': new Blob(['Pasted cell'], { type: 'text/plain' }),
+      }),
+    ]);
+  });
+  await root.press('ControlOrMeta+V');
+
+  await editor.assert.modelBlockText(0, 'W');
+  await editor.assert.modelBlockText(2, 'come to the Plate Playground!');
+  await expect(root.getByRole('heading', { level: 1 })).toHaveCount(2);
+  await expect(root.locator('table').first()).toContainText('Pasted cell');
+  const pasted = (await editor.get.modelValue()) as {
+    children: Array<{ type?: string }>;
+  };
+  expect(pasted.children.some((node) => node.type === 'table')).toBe(true);
+
+  await root.press('ControlOrMeta+Z');
+  await editor.assert.modelBlockText(0, PLAYGROUND_TITLE);
+  const undone = (await editor.get.modelValue()) as {
+    children: Array<{ type?: string }>;
+  };
+  expect(undone.children[1]).toMatchObject({
+    type: 'paragraph',
+  });
+  await root.press('ControlOrMeta+Shift+Z');
+  await expect(root.locator('table').first()).toContainText('Pasted cell');
+  runtimeErrors.assertNone();
+});
+
 test('playground deletes commented text directly in editing mode', async ({
   page,
 }) => {
@@ -126,6 +202,9 @@ test('playground deletes commented text directly in editing mode', async ({
   await expect(
     page.getByRole('button', { name: 'Editing', exact: true })
   ).toBeVisible();
+  await expect(
+    root.locator('[data-discussion-block-trigger]')
+  ).toHaveAccessibleName('Open 5 discussion items for this block');
   const before = await editor.get.modelBlockText(3);
   const changeIds = await authored.evaluateAll((elements) => [
     ...new Set(
@@ -158,7 +237,7 @@ test('playground deletes commented text directly in editing mode', async ({
   ).toEqual(changeIds);
   await expect(
     root.locator('[data-discussion-block-trigger]')
-  ).toHaveAccessibleName('Open 5 discussion items for this block');
+  ).toHaveAccessibleName('Open 4 discussion items for this block');
   runtimeErrors.assertNone();
 });
 

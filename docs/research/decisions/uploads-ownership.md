@@ -4,7 +4,7 @@ type: decision
 status: accepted
 updated: 2026-09-21
 review_scope: uploads
-current_review: 2026-09-21-uploads-provider-items
+current_review: 2026-09-21-uploads-browser-provider-naming
 review_history:
   - ../review-records/2026-09-18-uploads-lifecycle-ownership.json
   - ../review-records/2026-09-19-uploads-node-model-correction.json
@@ -14,6 +14,7 @@ review_history:
   - ../review-records/2026-09-20-uploads-static-owner-cut.json
   - ../review-records/2026-09-20-uploads-files-server-colocation.json
   - ../review-records/2026-09-21-uploads-provider-items.json
+  - ../review-records/2026-09-21-uploads-browser-provider-naming.json
 source_refs:
   - ../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts
   - ../../../packages/platejs/src/react/features/upload/UploadPlugin.tsx
@@ -22,7 +23,7 @@ source_refs:
   - ../../../apps/www/src/registry/lib/files.ts
   - ../../../apps/www/src/registry/app/api/files/route.ts
   - ../../../apps/www/src/registry/app/api/files/s3-route.ts
-  - ../../../apps/www/src/registry/components/editor/upload/ephemeral.ts
+  - ../../../apps/www/src/registry/components/editor/upload/browser.ts
   - ../../../apps/www/src/registry/components/editor/media.tsx
   - ../../../apps/www/src/registry/components/editor/dnd.tsx
   - ../../../apps/www/src/registry/examples/playground-demo.tsx
@@ -48,6 +49,7 @@ reconciled_executions:
   - 2026-09-20-uploads-playground-ephemeral-implementation
   - 2026-09-21-uploads-provider-items-implementation
   - 2026-09-21-uploads-provider-items-doc-contract-closure
+  - 2026-09-21-uploads-browser-provider-naming-implementation
 ---
 
 # Upload lifetime and draft asset ownership
@@ -74,7 +76,7 @@ activation from MediaKit, and keep its upload renderer in the same copied
 static media. No storage facade or new Plite API is needed.
 
 Keep the copied `upload` item provider-neutral. Consumers install exactly one
-explicit provider recipe: `upload-ephemeral`, `upload-r2`, or `upload-s3`.
+explicit provider recipe: `upload-browser`, `upload-r2`, or `upload-s3`.
 Persistent provider items reuse the `files-api` gateway policy and contribute
 only their own adapter route and environment contract. Do not select storage
 providers through a runtime environment switch in one route.
@@ -153,12 +155,21 @@ paths pass. Blob URLs intentionally do not survive refresh or sharing.
 The [provider-item review](../review-records/2026-09-21-uploads-provider-items.json)
 and its implementation expose those three consumer jobs directly. Generated
 `upload` contains only copied client/UI source and no AWS dependency or server
-route. `upload-ephemeral` owns session object URLs and cleanup. `upload-r2` and
+route. `upload-browser` owns browser object URLs and cleanup. `upload-r2` and
 `upload-s3` each target `app/api/files/route.ts`, depend on `upload` and the
 shared `files-api` policy, and install one provider contract. Source contract,
 installed-SDK gateway/type, generated registry, docs/changelog and both
 Chromium upload paths pass. The prior live R2 proof remains valid because its
 adapter and gateway behavior are unchanged; live S3 remains unexecuted.
+
+The [browser-provider naming review](../review-records/2026-09-21-uploads-browser-provider-naming.json)
+names that recipe after its actual platform boundary. `upload-browser`,
+`createBrowserUploadKit` and `upload/browser.ts` communicate where the recipe
+runs without confusing it with the Files SDK client, React client components,
+an authentication session or a storage durability promise. The hard rename has
+no compatibility alias on `next`; object URL lifetime and cleanup are unchanged.
+The [implementation outcome](../review-records/2026-09-21-uploads-browser-provider-naming-implementation.json)
+binds the renamed source, generated payload, docs and hard-cut proof.
 
 The [bound design outcome](../review-records/2026-09-19-uploads-files-sdk-design.json)
 records four passing headless cohorts, 16 lifetime guards and 27 existing owner

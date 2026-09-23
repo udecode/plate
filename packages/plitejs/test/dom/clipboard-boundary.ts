@@ -132,8 +132,8 @@ const permissiveClipboardSchema = defineEditorSchema(
   }
 );
 
-const keyboardSelectableClipboardSchema = defineEditorSchema(
-  'schema:keyboard-selectable-clipboard-test',
+const objectClipboardSchema = defineEditorSchema(
+  'schema:object-clipboard-test',
   {
     elements: {
       media: {
@@ -147,13 +147,13 @@ const keyboardSelectableClipboardSchema = defineEditorSchema(
             ownership: 'exclusive',
           },
         },
-        keyboardSelectable: true,
+        object: true,
       },
       paragraph: {
         content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
-    id: 'keyboard-selectable-clipboard-test',
+    id: 'object-clipboard-test',
     root: schema.content.types(['media', 'paragraph'], {
       default: { type: 'paragraph' },
       min: 1,
@@ -642,7 +642,7 @@ describe('plite-dom clipboard boundary', () => {
         { children: [{ text: 'Owned details' }], type: 'paragraph' as const },
       ];
       const editor = createEditor({
-        plugins: [dom(), keyboardSelectableClipboardSchema],
+        plugins: [dom(), objectClipboardSchema],
         initialSelection: SelectionApi.nodes([[1]]),
         initialValue: {
           children: [
@@ -673,6 +673,49 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
+  it('writes selected object caption text as an open slice without its owner', () => {
+    withDom((document) => {
+      const owner = {
+        childRoots: { details: 'media:1:details' },
+        children: [{ text: 'Caption' }],
+        type: 'media' as const,
+      };
+      const editor = createEditor({
+        plugins: [dom(), objectClipboardSchema],
+        initialSelection: SelectionApi.text({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        }),
+        initialValue: {
+          children: [owner],
+          roots: {
+            'media:1:details': [
+              { children: [{ text: 'Details' }], type: 'paragraph' },
+            ],
+          },
+        },
+      });
+      const clipboard = new FakeDataTransfer();
+
+      editor.api.dom.clipboard.writeSelection(clipboard);
+
+      expect(clipboard.getData('text/plain')).toBe('apt');
+      expect(
+        decodeFragmentPayload(
+          document,
+          clipboard.getData('application/x-editor-fragment')
+        )
+      ).toEqual({
+        slice: ContentSlice.fromJSON({
+          content: [{ children: [{ text: 'apt' }], type: 'media' }],
+          openEnd: 1,
+          openStart: 1,
+        }),
+        version: 1,
+      });
+    });
+  });
+
   it('writes current named-root text selections from their owning root', () => {
     withDom((document) => {
       const owner = {
@@ -684,7 +727,7 @@ describe('plite-dom clipboard boundary', () => {
         { children: [{ text: 'Owned details' }], type: 'paragraph' as const },
       ];
       const editor = createEditor({
-        plugins: [dom(), keyboardSelectableClipboardSchema],
+        plugins: [dom(), objectClipboardSchema],
         initialSelection: SelectionApi.text({
           anchor: {
             offset: 0,

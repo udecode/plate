@@ -1950,13 +1950,14 @@ describe('editor schema', () => {
         'mention-card': {
           atom: true,
           isolating: true,
-          keyboardSelectable: true,
         } as const,
+        object: schema.element.textBlock({ object: true }),
       })
     );
 
     const atom = { type: 'mention-card', children: [{ text: 'label' }] };
     const textEmbed = { type: 'text-embed', children: [{ text: 'inside' }] };
+    const object = { type: 'object', children: [{ text: '' }] };
 
     assert.equal(
       editor.read((state) => state.schema.isAtom(atom)),
@@ -1967,8 +1968,12 @@ describe('editor schema', () => {
       true
     );
     assert.equal(
-      editor.read((state) => state.schema.isKeyboardSelectable(atom)),
+      editor.read((state) => state.schema.isObject(object)),
       true
+    );
+    assert.equal(
+      editor.read((state) => state.nodes.isEmpty(object)),
+      false
     );
     assert.equal(
       editor.read((state) => state.schema.isVoid(textEmbed)),

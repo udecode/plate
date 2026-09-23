@@ -8,19 +8,19 @@ Question: Who owns an upload after a placeholder moves, disappears, is undone or
 
 ## Current decision
 
-[2026-09-21-uploads-provider-items](../review-records/2026-09-21-uploads-provider-items.json) — **pursue**. Pursue a provider-neutral upload item plus opt-in upload-ephemeral, upload-r2 and upload-s3 items. Keep gateway policy in one shared files-api support item, delete the runtime FILES_STORAGE_PROVIDER branch, and let each persistent provider contribute only a thin route adapter and its own dependencies.
+[2026-09-21-uploads-browser-provider-naming](../review-records/2026-09-21-uploads-browser-provider-naming.json) — **pursue**. Hard-rename the browser-local recipe to upload-browser, createBrowserUploadKit and upload/browser.ts. Browser identifies the only distinguishing provider boundary; ephemeral describes durability, client is already an API role, and session invents an owner the implementation does not have.
 
 Compiled decision: [uploads-ownership.md](../decisions/uploads-ownership.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **completed**. Proof: **verified**. This follow-up changes documentation only; runtime proof remains in the provider-item implementation record.
+Execution: **completed**. Proof: **stale**. The final workspace TypeScript phase is blocked by concurrent input-rule and math errors outside upload source. The global ledger check is blocked by an unrelated stale browser/media-caption inventory hash. Runtime behavior was not rerun because the object URL implementation did not change; prior browser proof remains applicable.
 
-Outcome: [2026-09-21-uploads-provider-items-doc-contract-closure](../review-records/2026-09-21-uploads-provider-items-doc-contract-closure.json). Governing reviews: [2026-09-21-uploads-provider-items](../review-records/2026-09-21-uploads-provider-items.json). Work kind: implementation. Reconciled with current review: yes.
+Outcome: [2026-09-21-uploads-browser-provider-naming-implementation](../review-records/2026-09-21-uploads-browser-provider-naming-implementation.json). Governing reviews: [2026-09-21-uploads-browser-provider-naming](../review-records/2026-09-21-uploads-browser-provider-naming.json). Work kind: implementation. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption adopted, proof verified. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: [files.ts](../../../apps/www/src/registry/lib/files.ts), [route.ts](../../../apps/www/src/registry/app/api/files/route.ts), [registry-features.ts](../../../apps/www/src/registry/registry-features.ts), [plate.md](../../vision/plate.md), [upload.mdx](../../../content/docs/(guides)/upload.mdx). Changed directories: none identified. Changed source groups: application/files, registry/lib/files, registry/lib/files.typecheck-run, ui/upload.
+Changed files: [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts), [BaseImagePlugin.ts](../../../packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts), [media-image.tsx](../../../apps/www/src/registry/components/editor/media-image.tsx), [registry-features.ts](../../../apps/www/src/registry/registry-features.ts), [media.mdx](../../../content/docs/(plugins)/(elements)/media.mdx), [plate.md](../../vision/plate.md), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [pnpm-lock.yaml](../../../pnpm-lock.yaml). Changed directories: none identified. Changed source groups: capability/upload.
 
 - **unbound-plan**: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
@@ -58,6 +58,10 @@ Changed files: [files.ts](../../../apps/www/src/registry/lib/files.ts), [route.t
 
 - **stale-execution-proof**: [2026-09-21-uploads-provider-items-implementation](../review-records/2026-09-21-uploads-provider-items-implementation.json).
 
+- **stale-execution-proof**: [2026-09-21-uploads-provider-items-doc-contract-closure](../review-records/2026-09-21-uploads-provider-items-doc-contract-closure.json).
+
+- **stale-execution-proof**: [2026-09-21-uploads-browser-provider-naming-implementation](../review-records/2026-09-21-uploads-browser-provider-naming-implementation.json).
+
 ## Plans and execution
 
 The plan owns its lifecycle. Design completion is not implementation adoption. Unknown or unbound evidence stays explicit.
@@ -74,6 +78,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-09-20-upload-api-hard-cut.md](../../plans/2026-09-20-upload-api-hard-cut.md) | completed | implementation | [2026-09-19-uploads-official-files-sdk](../review-records/2026-09-19-uploads-official-files-sdk.json) |
 | [2026-09-20-upload-registry-dependency.md](../../plans/2026-09-20-upload-registry-dependency.md) | completed | implementation | [2026-09-20-uploads-registry-dependency](../review-records/2026-09-20-uploads-registry-dependency.json) |
 | [2026-09-20-upload-static-owner-cut.md](../../plans/2026-09-20-upload-static-owner-cut.md) | completed | implementation | [2026-09-20-uploads-static-owner-cut](../review-records/2026-09-20-uploads-static-owner-cut.json) |
+| [2026-09-21-upload-browser-provider-rename.md](../../plans/2026-09-21-upload-browser-provider-rename.md) | completed | implementation | [2026-09-21-uploads-browser-provider-naming](../review-records/2026-09-21-uploads-browser-provider-naming.json) |
 | [2026-09-21-upload-provider-registry-items.md](../../plans/2026-09-21-upload-provider-registry-items.md) | completed | implementation | [2026-09-21-uploads-provider-items](../review-records/2026-09-21-uploads-provider-items.json) |
 | [4803-update-upload-history.md](../../plans/4803-update-upload-history.md) | unknown | implementation | unbound |
 
@@ -81,8 +86,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-- [2026-09-21-uploads-provider-items-implementation](../review-records/2026-09-21-uploads-provider-items-implementation.json): completed; binding **current**; Split copied upload installation into a provider-neutral upload item, an explicit browser-local provider, and separate R2 and S3 provider items over one shared fail-closed Files SDK gateway policy. Proof: stale / verified. The prior live R2 run remains applicable because adapter and gateway behavior are unchanged. Live Amazon S3, production deployment, Firefox, WebKit, and native-device uploads were not executed.
-- [2026-09-21-uploads-provider-items-doc-contract-closure](../review-records/2026-09-21-uploads-provider-items-doc-contract-closure.json): completed; binding **current**; Corrected the public upload guide to name UploadClient as the plugin contract in both locales, regenerated docs and registry payloads, and preserved the provider-item implementation record as immutable history. Proof: matching / verified. This follow-up changes documentation only; runtime proof remains in the provider-item implementation record.
+- [2026-09-21-uploads-browser-provider-naming-implementation](../review-records/2026-09-21-uploads-browser-provider-naming-implementation.json): completed; binding **current**; Hard-renamed the browser-local provider to upload-browser, createBrowserUploadKit and upload/browser.ts across registry source, examples, docs, changelog source and generated payloads, with no compatibility alias. Object URL behavior and disposal semantics are unchanged. Proof: stale / verified. The final workspace TypeScript phase is blocked by concurrent input-rule and math errors outside upload source. The global ledger check is blocked by an unrelated stale browser/media-caption inventory hash. Runtime behavior was not rerun because the object URL implementation did not change; prior browser proof remains applicable.
 
 ## Inspected documents
 
@@ -422,7 +426,7 @@ References: [2026-09-21-upload-provider-registry-items.md](../../plans/2026-09-2
 
 ### 2026-09-21: 2026-09-21-uploads-provider-items-doc-contract-closure
 
-[Immutable record](../review-records/2026-09-21-uploads-provider-items-doc-contract-closure.json) — execution; completed; observation matching.
+[Immutable record](../review-records/2026-09-21-uploads-provider-items-doc-contract-closure.json) — execution; completed; observation stale.
 
 Corrected the public upload guide to name UploadClient as the plugin contract in both locales, regenerated docs and registry payloads, and preserved the provider-item implementation record as immutable history.
 
@@ -430,6 +434,38 @@ Corrected the public upload guide to name UploadClient as the plugin contract in
 Proof limits: This follow-up changes documentation only; runtime proof remains in the provider-item implementation record.
 
 References: [2026-09-21-upload-provider-registry-items.md](../../plans/2026-09-21-upload-provider-registry-items.md), [docs-contract-closure.json](../../plans/artifacts/upload-provider-registry-items/docs-contract-closure.json), [uploads-ownership.md](../decisions/uploads-ownership.md).
+
+### 2026-09-21: 2026-09-21-uploads-browser-provider-naming
+
+[Immutable record](../review-records/2026-09-21-uploads-browser-provider-naming.json) — review; pursue; observation stale.
+
+Hard-rename the browser-local recipe to upload-browser, createBrowserUploadKit and upload/browser.ts. Browser identifies the only distinguishing provider boundary; ephemeral describes durability, client is already an API role, and session invents an owner the implementation does not have.
+
+Question: What should the browser-local object-URL upload registry provider be named?
+
+- Keep upload-ephemeral: reject because ephemeral is a vague durability adjective and does not identify the provider boundary.
+- Use upload-client: reject because every provider has a client and Plate already exposes UploadClient while React also uses client to name a rendering boundary.
+- Use upload-session: reject because the implementation has no formal session; object URLs live until kit or editor disposal.
+- Use upload-object-url: reject for the registry name because it exposes the current mechanism instead of the stable browser boundary.
+- Use upload-browser: accept because browser-local object URLs are the distinguishing provider and runtime contract.
+- supersedes [2026-09-21-uploads-provider-items](../review-records/2026-09-21-uploads-provider-items.json) (Should upload registry consumers install one combined R2/S3 gateway, or choose separate ephemeral, R2 and S3 provider items over a shared gateway owner?): Supersede only the browser-local recipe name. Retain the three-provider install split, shared gateway ownership and all provider isolation decisions.
+- retains [2026-09-21-uploads-provider-items-implementation](../review-records/2026-09-21-uploads-provider-items-implementation.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the implementation and proof except for current source and teaching renamed from ephemeral to browser.
+- retains [2026-09-21-uploads-provider-items-doc-contract-closure](../review-records/2026-09-21-uploads-provider-items-doc-contract-closure.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the docs contract and apply the same hard rename to current documentation.
+
+Proof limits: This review selects naming only. Execution must prove current source, docs, examples, changelog source and generated registry output use the new name with no alias. Existing runtime proof remains applicable because upload semantics do not change.
+
+References: [browser.ts](../../../apps/www/src/registry/components/editor/upload/browser.ts), [registry-features.ts](../../../apps/www/src/registry/registry-features.ts), [upload-demo.tsx](../../../apps/www/src/registry/examples/upload-demo.tsx), [upload.mdx](../../../content/docs/(guides)/upload.mdx), [uploads-ownership.md](../decisions/uploads-ownership.md).
+
+### 2026-09-21: 2026-09-21-uploads-browser-provider-naming-implementation
+
+[Immutable record](../review-records/2026-09-21-uploads-browser-provider-naming-implementation.json) — execution; completed; observation stale.
+
+Hard-renamed the browser-local provider to upload-browser, createBrowserUploadKit and upload/browser.ts across registry source, examples, docs, changelog source and generated payloads, with no compatibility alias. Object URL behavior and disposal semantics are unchanged.
+
+
+Proof limits: The final workspace TypeScript phase is blocked by concurrent input-rule and math errors outside upload source. The global ledger check is blocked by an unrelated stale browser/media-caption inventory hash. Runtime behavior was not rerun because the object URL implementation did not change; prior browser proof remains applicable.
+
+References: [2026-09-21-upload-browser-provider-rename.md](../../plans/2026-09-21-upload-browser-provider-rename.md), [verification.json](../../plans/artifacts/upload-browser-provider-rename/verification.json), [uploads-ownership.md](../decisions/uploads-ownership.md).
 
 ## Retrieval boundaries
 

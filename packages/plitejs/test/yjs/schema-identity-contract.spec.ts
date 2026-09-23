@@ -91,6 +91,26 @@ const requiredCardSchema = defineEditorSchema('schema:required-card', {
   version: 1,
 });
 
+const requiredTitleSchema = defineEditorSchema('schema:required-title', {
+  elements: {
+    heading: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: { level: property.number({ required: true }) },
+    },
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+  root: schema.content.prefix(
+    [{ element: 'heading', properties: { level: 1 } }],
+    schema.content.type('paragraph', {
+      default: { type: 'paragraph' },
+      min: 1,
+    })
+  ),
+  unknown: 'reject',
+});
+
 type PolicyProbe = Readonly<{ revision: number }>;
 type PolicySchemaMode = 'add' | 'base' | 'remove' | 'replace';
 
@@ -164,6 +184,28 @@ const seedUpdate = (
 };
 
 describe('plitejs/yjs schema identity contract', () => {
+  it('keeps a required title when remote content removes every root child', () => {
+    const doc = new Y.Doc();
+    const editor = createEditor({
+      plugins: [
+        requiredTitleSchema,
+        yjs({ doc, initialReady: true, rootName, seed: true }),
+      ],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Body'),
+      ],
+    });
+    const root = doc.get(rootName, Y.XmlElement);
+
+    doc.transact(() => root.delete(0, root.length));
+
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: '' }], level: 1, type: 'heading' },
+      paragraph(''),
+    ]);
+  });
+
   it('derives an empty Yjs root from the compiled schema minimum', () => {
     const doc = new Y.Doc();
     const editor = createEditor({

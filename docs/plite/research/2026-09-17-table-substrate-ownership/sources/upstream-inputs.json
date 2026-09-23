@@ -96,49 +96,6 @@
       }
     },
     {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "14e73cc31b869ce483bd8449f40b9102ac7746da",
-      "files": {
-        "LICENSE.md": "6226a1b6b05e07d887f516a40bc000bb7617a4fa0f36721234453ca436ba7d23",
-        "packages/ckeditor5/LICENSE.md": "36a71958376efedd9f9fed622561af7aefb8de6ccaff923ac76e170761fc9064",
-        "packages/ckeditor5-table/LICENSE.md": "fe9a7f354d43a9f8bb3b74b2c4597c88b718daafc81ec90256e0f1d0fa19f894",
-        "packages/ckeditor5-widget/LICENSE.md": "9fd518b774781d0789ccf3f9c42e05a51c23c48bc82c8338f5cd7d2333d8f4fe",
-        "packages/ckeditor5-table/package.json": "255ff4b6c76813e5bb60a57a8f49794d1c5cb9020cd6dd28c63af2bb19c2700c",
-        "packages/ckeditor5-widget/package.json": "06e9465e24b0b1ada26a1a6a56a20ee494c3a8f81bfb175f22b6fc06668577fb",
-        "packages/ckeditor5-table/src/table.ts": "e82c6c247c24fee898a629bfd0e19e16723c7481a96817353d60141a500a3a84",
-        "packages/ckeditor5-table/src/tableediting.ts": "7f50eb958144d5e597bca082b1d65237c2601e004d91b36a4f2d015fa30ba698",
-        "packages/ckeditor5-table/src/tableselection.ts": "75b4fa32a4f6bbb4d940da1aacfa7f74767bf3570d6169fb1108da530e238525",
-        "packages/ckeditor5-engine/src/model/documentselection.ts": "9facf42fabe7177d04bc104a7d66f07d1bcc9b86acf701055a7e843d5d68705a",
-        "packages/ckeditor5-engine/src/model/liverange.ts": "27f0a30833c44635e13bfe03cb85d895536f60853fc190c0b6893a98dbcb64ab",
-        "packages/ckeditor5-table/src/tableclipboard.ts": "76c06bb2891f0eedc8304bf0268d7486c959ad8b7e8fec97f9fdce7d372a1a7d",
-        "packages/ckeditor5-table/src/tablekeyboard.ts": "295759bbf64cb099f5f4b0ff6f143a4d25458cf49868709124e5f5a2dc758709",
-        "packages/ckeditor5-table/src/tablemouse.ts": "3c43479e51acce10fcfea39a31f21373b9e86bd7a9d1f5191998542fab1ef6b7",
-        "packages/ckeditor5-table/src/tablecolumnresize.ts": "bc7be4c524b60e170c65c970f5204dcd979367869fc9d3da0ed182d371df5161",
-        "packages/ckeditor5-table/src/tablecolumnresize/tablecolumnresizeediting.ts": "cf81b2c1422f3977069261e494596fa87246f96cb03095007ef3d51e384c1c49",
-        "packages/ckeditor5-table/src/tablecolumnresize/tablewidthscommand.ts": "7728405c59bbcf4155dd6a2e3d8e11eafe67370f5f27b3217dca7f5a996d4683",
-        "packages/ckeditor5-table/src/tablecolumnresize/utils.ts": "e5e7542c973edf5f0477b0a7cb284b598239bf37a732dac97f6075f0eeb7440a",
-        "packages/ckeditor5-table/src/tablelayout/tablelayoutediting.ts": "9e211d5ff75863b32860614c549480f10099533f97c27f943ded54bb58fe9f56",
-        "packages/ckeditor5-widget/src/widgetresize.ts": "a9dd07395e2f7cbb09b8e75f2bc644246fd65b53982eaa318ef311c46d107046",
-        "packages/ckeditor5-widget/src/widgetresize/resizer.ts": "7780954a69e77c0d1f951efadc6a1490ee43b5404c4874d1d93a36391c4edc94",
-        "packages/ckeditor5-widget/src/widgetresize/resizerstate.ts": "d0cbfd44142cabe3d3a2f22d632d8f3cc55562a9420e72c9d8e03129548eff0d",
-        "packages/ckeditor5-image/src/imageresize/imageresizehandles.ts": "1fbc55189ef1c6cafc712985d9e14c817f2c19a218a10e1b073fcadfabd187d7",
-        "packages/ckeditor5-table/theme/tablecolumnresize.css": "d60d6e824b5d037581d8d791b3b99c1bcf298a6e842c8ae8826be68bc2a081aa",
-        "packages/ckeditor5-table/src/index.ts": "ecb421821a326072a368409608eac46a69b528d7a2f01fec84446993cf129d2f",
-        "packages/ckeditor5-table/src/tableui.ts": "f1233f49bcd87145521fc59364b3c62c78fa243352e59843a4367b1da0ebc248",
-        "packages/ckeditor5-table/src/tablecellwidth/tablecellwidthediting.ts": "7862f690bbb31f07d3f2fd9e8325742114218c2b97eebf496e9b1fb1efc18094",
-        "packages/ckeditor5-table/tests/tableselection.js": "4d7e9ceaa8f2346ea487f7502371b048db42e3e997a0daf42d46443293eb8b37",
-        "packages/ckeditor5-table/tests/tableselection-integration.js": "e869e86665256e33de281f9a461adc24e8ab1a429dd432269052fd36f7cfd42f",
-        "packages/ckeditor5-table/tests/tableclipboard-copy-cut.js": "21b6cee6d4f48200bc22bbeca12f4226b7ed1d9948295df312c176cd629f991f",
-        "packages/ckeditor5-table/tests/tableclipboard-paste.js": "93d9439e7aade73219b26f64bd119cc6a510771391afb1ca8f05b290a482d82c",
-        "packages/ckeditor5-table/tests/tablekeyboard.js": "2d41c16b0a3b8dc6c37215f4b150d0932894c6d4a8c38d09d17c2030ddd330ad",
-        "packages/ckeditor5-table/tests/tablecolumnresize/tablecolumnresizeediting.js": "02affc8dc4c7d1c039530d98ccab035e7838caf0864a18859e175be673f659a0",
-        "packages/ckeditor5-table/tests/tablecolumnresize/tablewidthscommand.js": "0592d737d5c5af52292a5029d111c71524164657201e425659cf4b0ee3666e2d",
-        "packages/ckeditor5-table/tests/tablelayout/tablelayoutediting.js": "00e03f0d0f600e8158c40f9bb8ad9eaa1d882876dfe92adcfeb8b3de2048b22e",
-        "packages/ckeditor5-widget/tests/widgetresize.js": "eacd016c02410567a9aa2f0fad14687e60e44c7e342f77b44f33fc4731f068ca",
-        "packages/ckeditor5-widget/tests/widgetresize/resizer.js": "a6d82282b1c71a333825591eb5516e5bfb4c72255605873e3a6ee26b6b8777a3"
-      }
-    },
-    {
       "checkout": "/Users/zbeyens/git/prosekit",
       "commit": "3fbfe7906c3448328e80c1c1333647d08e50907e",
       "files": {
@@ -411,60 +368,6 @@
       "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
       "path": "packages/lexical-playground/src/plugins/TableCellResizer/index.css",
       "sha256": "44d7ed272b778a4a95df80568c7bf9571dd5414ad01294236a08743f974a0565"
-    },
-    {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
-      "path": "packages/ckeditor5-table/src/tablecolumnresize/tablecolumnresizeediting.ts",
-      "sha256": "eea6e60a865f4e9ec2365f29faabcfb9bc38e0c42809a879a4ff5f7c98ca1f87"
-    },
-    {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
-      "path": "packages/ckeditor5-table/src/tablecolumnresize/utils.ts",
-      "sha256": "e75733cfbfc24e8dc4335ca9616cbce82897470e3a1593d8e5c626a38876d200"
-    },
-    {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
-      "path": "packages/ckeditor5-table/theme/tablecolumnresize.css",
-      "sha256": "76aca9cd93d4a40716f33f4667115c7191dffa82874acdb60856f93e5fc82d44"
-    },
-    {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
-      "path": "packages/ckeditor5-table/src/tablecolumnresize/commands/tablecolumnwidthcommand.ts",
-      "sha256": "523de0096a113a0bb90e9da7044fe842386511e82e2b4ad93e987770633e753b"
-    },
-    {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
-      "path": "packages/ckeditor5-table/src/tablecolumnresize/tablewidthscommand.ts",
-      "sha256": "716dea1baf74a17122a595b42412ed02f6fb26aaae5784a7988a91b6577a4c90"
-    },
-    {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
-      "path": "packages/ckeditor5-table/tests/tablecolumnresize/tablecolumnresizeediting.js",
-      "sha256": "3db26ca9bb886f5dae309aba7c1c4853388853b5720446c6781e5b18bb844a65"
-    },
-    {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
-      "path": "packages/ckeditor5-table/LICENSE.md",
-      "sha256": "7992fa649bf150e077dc88f079ca27485c26d637aafa8bc93c7dd028bfcb9ff8"
-    },
-    {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
-      "path": "packages/ckeditor5-widget/LICENSE.md",
-      "sha256": "a46198316c23a1f5292fea8b0bfe0837e43c51889c5187caefad64139d7d0b64"
-    },
-    {
-      "checkout": "/Users/zbeyens/git/ckeditor5",
-      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
-      "path": "packages/ckeditor5-table/package.json",
-      "sha256": "70c8a68eb7c3a0755e4bbfc0964e185089ba7e1d073595f609e37c6742e73a81"
     },
     {
       "checkout": "/Users/zbeyens/git/prosekit",

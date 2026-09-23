@@ -19,7 +19,8 @@ one line with no breaks. Each constraint is an independent plugin.
 
 - `SingleBlockPlugin` keeps one root block and converts Enter to a soft break.
 - `SingleLinePlugin` keeps one root block and removes all line break characters.
-- Root normalization merges extra blocks into the first block.
+- Root correction joins representable rich content without flattening marks or inline voids.
+- Block content that cannot fit inside the first block is rejected before publication.
 - Demo toggle for switching between single-block and single-line behavior.
 
 </PackageInfo>
@@ -37,7 +38,8 @@ export const editor = createEditor({
 });
 ```
 
-Use `SingleLinePlugin` when the field must be plain one-line text.
+Use `SingleLinePlugin` when the field must contain one line. Marks and inline
+elements remain part of that line.
 
 ```tsx
 import { SingleLinePlugin } from "platejs";
@@ -86,8 +88,8 @@ corrections rewrite invalid root content before publication.
 
 | Plugin              | Enter                          | Soft Break         | Extra Root Blocks                                 | Existing Text Breaks                                |
 | ------------------- | ------------------------------ | ------------------ | ------------------------------------------------- | --------------------------------------------------- |
-| `SingleBlockPlugin` | Calls `tx.break.insertSoft()`. | Preserved as `\n`. | Merged into the first block with `\n` separators. | Preserved.                                          |
-| `SingleLinePlugin`  | No-op.                         | No-op.             | Merged into the first block with no separator.    | Removes `\r`, `\n`, `\r\n`, `\u2028`, and `\u2029`. |
+| `SingleBlockPlugin` | Calls `tx.break.insertSoft()`. | Preserved as `\n`. | Joined into the first block with `\n` separators. | Preserved.                                          |
+| `SingleLinePlugin`  | No-op.                         | No-op.             | Joined into the first block with no separator.    | Removes `\r`, `\n`, `\r\n`, `\u2028`, and `\u2029`. |
 
 Use single-block mode for descriptions, comments, or titles that may wrap across lines. Use single-line mode for labels, slugs, short titles, and command inputs.
 
@@ -98,12 +100,18 @@ Both behavior plugins register Plate corrections.
 | Case                                                       | Result                                                                             |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | Root has one block                                         | Leaves the value alone.                                                            |
-| Root has multiple blocks with `SingleBlockPlugin`          | Inserts `\n` at the start of each next block, then merges it into the first block. |
-| Root has multiple blocks with `SingleLinePlugin`           | Merges each next block into the first block without a separator.                   |
-| Text node contains line separators with `SingleLinePlugin` | Replaces the text with the filtered one-line string.                               |
+| Root has multiple compatible blocks with `SingleBlockPlugin` | Joins each next block into the first block with a `\n` separator.                |
+| Root has multiple compatible blocks with `SingleLinePlugin`  | Joins each next block into the first block without a separator.                  |
+| Marks or inline voids occur in a joined block                | Preserves the complete inline nodes.                                             |
+| A later root contains nested block content or is a block void | Rejects the correction instead of deleting or stringifying the content.         |
+| Text node contains line separators with `SingleLinePlugin`   | Replaces that complete text node with the filtered text and its existing marks.  |
 
 Each correction runs in the active Plate transaction, so the root collapse
 publishes as one update.
+
+Single-content plugins accept rich inline content, but they do not flatten
+arbitrary block structure. Validate or transform block containers before
+placing them in a single-block field.
 
 ## Demo toggle
 

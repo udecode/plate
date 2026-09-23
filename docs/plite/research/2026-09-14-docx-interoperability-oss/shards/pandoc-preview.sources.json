@@ -2,7 +2,10 @@
   "schema_version": 1,
   "status": "complete",
   "audit": "documents/DOCX import-export",
-  "scope": ["jgm/pandoc", "VolodymyrBaydalka/docxjs"],
+  "scope": [
+    "jgm/pandoc",
+    "VolodymyrBaydalka/docxjs"
+  ],
   "verified_at": "2026-09-14T18:08:39Z",
   "inspection_mode": "local exact-commit source only",
   "report_path": "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-14-docx-interoperability-oss/shards/pandoc-preview.md",
@@ -712,7 +715,7 @@
     "No complete OOXML vocabulary or dependency/fixture license review.",
     "Pandoc tip differs from release 3.11.",
     "Tests inspected as source only; no passing-test assertion.",
-    "No claims about Mammoth, html-to-docx, docx, CKEditor or SuperDoc."
+    "No claims about Mammoth, html-to-docx, docx, SuperDoc."
   ],
   "command_log": [
     {

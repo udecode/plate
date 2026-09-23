@@ -113,6 +113,9 @@ test('code-block: native and CodeMirror views share edits, neutral paint and lan
     });
     await input.dispatchEvent('compositionend', { data: '' });
     await expect(nativeText).toHaveText('def shared():\n    return 2');
+    await expect(
+      native.locator('[data-code-block-syntax].hljs-keyword').first()
+    ).toHaveText('def');
     await expect(input).toContainText('def shared():');
     await expect(
       host.locator('.cm-line').first().locator('.hljs-keyword')
@@ -148,6 +151,44 @@ test('code-block: native and CodeMirror views share edits, neutral paint and lan
       body: await page.screenshot(),
       contentType: 'image/png',
     });
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('code-block: copied JSON button formats the live model', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/blocks/code-block-views-demo', { waitUntil: 'commit' });
+    const external = page.getByRole('region', { name: 'CodeMirror view' });
+    const native = page.getByRole('region', { name: 'Native view' });
+    const root = external.locator('.editor-editor');
+    const editor = createBrowserEditorHarness(
+      page,
+      'code-block:json-format',
+      root
+    );
+
+    await editor.ready({ editor: 'visible', text: 'const shared' });
+    await root.evaluate((element) => {
+      (element as BrowserHandleElement).__pliteBrowserHandle.applyValueChange({
+        children: [
+          {
+            type: 'codeBlock',
+            language: 'json',
+            children: [{ text: '{"a":1}' }],
+          },
+        ],
+      });
+    });
+    await native.locator('button[title="Format code"]').click();
+    await expect
+      .poll(() => editor.get.modelBlockText(0))
+      .toBe('{\n  "a": 1\n}');
+    await expect(native.locator('pre code')).toHaveText('{\n  "a": 1\n}');
     errors.assertNone();
   } finally {
     errors.stop();

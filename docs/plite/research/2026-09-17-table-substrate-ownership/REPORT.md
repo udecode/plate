@@ -35,7 +35,7 @@ Neither a second selection store nor a public `TableController`, `GridManager`,
 ## What the external sources establish
 
 The detailed evidence is in [PM/Tiptap](shards/pm.json),
-[Lexical](shards/lexical.json), [CKEditor](shards/ckeditor.json), and
+[Lexical](shards/lexical.json) and
 [local/adapter reads](shards/local-and-adapters.json). Each source read records
 its revision and file identity. Upstream tests were inspected, not executed.
 Tiptap, ProseKit, and Milkdown inherit ProseMirror table behavior; they are
@@ -46,24 +46,22 @@ different integration examples, not three additional independent engines.
 | ProseMirror | Core `Selection` is extensible. Optional `CellSelection` supplies cell ranges, mapping, content, replacement, and bookmarks. `TableMap` and `columnResizing` stay in `prosemirror-tables`. | First-class selection does not require tables in core. A custom selection protocol has substantial obligations beyond two endpoints. |
 | Tiptap | Exposes `setCellSelection` and table commands, and installs PM editing/resizing. Supplies its own table view. | Application callers deserve semantic commands. Its source is not independent validation of PM's engine. |
 | Lexical | Optional table selection implements core `BaseSelection`; table observers own browser behavior. Its playground supplies one editor-level resizer with two active-cell handles. | Keep structural selection and editing available below React. Its current source fixes earlier cleanup gaps; explicit cancellation and logical resize directions still need separate assessment. |
-| CKEditor | Table selection writes ordinary model ranges; generic live ranges transform them. Table column resize is separate from `WidgetResize`. | Custom selection classes are not the only sound architecture. Shared pointer mechanics do not eliminate table-specific width policy. |
 | ProseKit | Wraps PM table plugins; provides framework-neutral table controls and a separate generic resizable element. | Generic box resize and table boundary resize are distinct user jobs. Framework portability alone does not justify moving table semantics into the substrate. |
 | Milkdown | Wraps PM table editing and exposes row/column/table selection commands used by table controls. | Promote semantic selection instead of asking copied UI to construct text ranges. Its delayed DOM selection handling is not a pattern to import. |
 
 Current official documentation also describes [ProseKit's separate resizable
-component](https://prosekit.dev/components/resizable/), [Milkdown's selection
-commands](https://milkdown.dev/docs/api/preset-gfm), and [CKEditor's width
-policies](https://ckeditor.com/docs/ckeditor5/latest/features/tables/tables-resize.html).
+component](https://prosekit.dev/components/resizable/) and [Milkdown's selection
+commands](https://milkdown.dev/docs/api/preset-gfm).
 Documentation and open issues route source inspection; neither proves behavior
 in Plate or the latest upstream browser build.
 
-Seven repositories were inspected across six editor projects and three
+The retained comparison covers six repositories across five editor projects and two
 independent table engines. Freshness checks include PM's canonical state repo,
 current Tiptap owners/tests, current Lexical selection/observer/resizer deltas,
-current CKEditor resize code/tests, and ProseKit/Milkdown read-file comparisons.
+and ProseKit/Milkdown read-file comparisons.
 PM table HEAD matches the inspected clone. ProseKit's selected files are
 unchanged; Milkdown's selected-file differences are comments. The older broad
-Lexical/CKEditor test reads remain snapshot-scoped. This is not a claim to have
+Lexical test reads remain snapshot-scoped. This is not a claim to have
 audited each project's entire current branch or dependency graph.
 
 ## Promote logical selection into Plate
@@ -140,8 +138,7 @@ selection dragging constrain this design.
 
 This is an independently motivated cut; it is not a claim that all upstreams
 use one overlay or that the candidate is faster. PM uses active-column
-decorations, Lexical has a shared active-cell resizer, and CKEditor has its own
-column-edge UI conversion. Their different choices provide comparisons.
+decorations, and Lexical has a shared active-cell resizer. Their different choices provide comparisons.
 
 Keep the sound part of today's resize design:
 
@@ -159,9 +156,7 @@ should cancel a drag: the current session invalidates on table-node identity,
 which is safe but broader than topology or dimension changes.
 
 Keep width units explicit. Plate's current numeric column widths, height, and
-left margin describe a pixel-oriented contract. Current CKEditor source has
-distinct pixel and percentage policies, including import conversion and total
-width reconciliation. A responsive width model would be a separate table-domain
+left margin describe a pixel-oriented contract. A responsive width model would be a separate table-domain
 capability, not a reason to promote resizing into Plite. Do not add unit modes
 without a current responsive/import job; do not imply that the current numeric
 API provides percentage fidelity. Logical inline edges and keyboard controls
@@ -209,7 +204,7 @@ binding is slow.
 | --- | --- |
 | Keep/configure everything | Reject: no configuration supplies semantic selection commands or fixes stale selected DOM hosts. |
 | Change the existing table API | Pursue headless selection and logical navigation; keep compact read projections and canonical updates. |
-| Add a generic selection-kind protocol | Defer until enduring intent or another unmet semantic job is established. PM shows the complete obligations; CKEditor shows custom kinds are not required. |
+| Add a generic selection-kind protocol | Defer until enduring intent or another unmet semantic job is established. PM shows the complete obligations; a local gap still needs proof. |
 | Delete/merge/inline | Pursue removal of caller range assembly and copied gesture policy; compare deleting per-cell handles and the dedicated paint cache. Runtime candidates need measurement. |
 | Move table code into Plite | Reject blanket promotion. Table schema, spans, clipboard tiling, merge policy, and neighbor-width redistribution remain feature semantics. |
 | Move host lifetime into the existing substrate owner | Conditional, narrow candidate. A table bug alone does not justify a public generic registry. Reuse current view/root owners first. |

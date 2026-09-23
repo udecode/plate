@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "upload-demo",
+  "title": "Upload Files",
+  "description": "Upload files through a browser-local or R2-backed gateway.",
+  "dependencies": [
+    "diff-match-patch-ts@^0.6.0",
+    "platejs"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/dnd.json",
+    "https://platejs.org/r/media.json",
+    "https://platejs.org/r/media-toolbar-button.json",
+    "https://platejs.org/r/paragraph.json",
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/upload.json",
+    "https://platejs.org/r/upload-browser.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/upload-demo.tsx",
+      "content": "'use client';\n\nimport { BaseImagePlugin } from 'platejs/media';\nimport { createEditor, EditorRoot, ParagraphPlugin } from 'platejs/react';\nimport * as React from 'react';\n\nimport { DndKit } from '@/registry/components/editor/dnd';\nimport {\n  Editor,\n  EditorContainer,\n  EditorFrame,\n} from '@/registry/components/editor/editor';\nimport { MediaKit } from '@/registry/components/editor/media';\nimport { MediaToolbarButton } from '@/registry/components/editor/media-toolbar-button';\nimport { ParagraphElement } from '@/registry/components/editor/paragraph';\nimport { Toolbar } from '@/registry/components/editor/toolbar';\nimport { UploadKit } from '@/registry/components/editor/upload';\nimport { createBrowserUploadKit } from '@/registry/components/editor/upload/browser';\n\nexport default function UploadDemo({\n  provider = 'r2',\n}: {\n  provider?: 'browser' | 'r2';\n}) {\n  const session = React.useMemo(() => {\n    const browserUploads =\n      provider === 'browser' ? createBrowserUploadKit() : null;\n    const editor = createEditor({\n      plugins: [\n        ParagraphPlugin.configure({ component: ParagraphElement }),\n        ...DndKit,\n        ...MediaKit,\n        ...UploadKit,\n        ...(browserUploads?.plugins ?? []),\n      ],\n      initialValue: [\n        {\n          children: [\n            {\n              text: 'Choose an image, or drop or paste a file into the editor.',\n            },\n          ],\n          type: 'paragraph',\n        },\n      ],\n    });\n\n    return { dispose: browserUploads?.dispose, editor };\n  }, [provider]);\n\n  React.useEffect(() => session.dispose, [session]);\n\n  return (\n    <EditorRoot editor={session.editor}>\n      <EditorFrame>\n        <Toolbar>\n          <MediaToolbarButton plugin={BaseImagePlugin} />\n        </Toolbar>\n        <EditorContainer>\n          <Editor placeholder=\"Drop or paste files here...\" />\n        </EditorContainer>\n      </EditorFrame>\n    </EditorRoot>\n  );\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/upload"
+      }
+    ]
+  },
+  "type": "registry:example"
+}

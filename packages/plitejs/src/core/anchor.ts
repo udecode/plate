@@ -1290,6 +1290,16 @@ export function createAnchor<TValue extends AnchorValue>(
       const currentNode = next.node(runtimePath);
 
       if (isTextNode(sourceNode) && isTextNode(currentNode)) {
+        const tracked = change.mapPosition(source.positionAt(state.point), {
+          association: endpointAssociation === -1 ? 'backward' : 'forward',
+          track: 'around',
+          ...(root === 'main' ? {} : { root }),
+        });
+
+        if (tracked !== null && canonicalMapping?.runtimeStable) {
+          return canonicalMapping;
+        }
+
         if (
           preserveSamePathOffset &&
           PathApi.equals(runtimePath, state.point.path)
@@ -1470,17 +1480,17 @@ export function createAnchor<TValue extends AnchorValue>(
 
       current = nextPath ? [...nextPath] : null;
     } else {
-      const sourceDocument = getSourceDocument();
+      const beforeDocument = getSourceDocument();
       const targetWasExpanded =
         kind === 'range' &&
         !PointApi.equals(
           pointStates[0].point,
           getDefined(pointStates[1]).point
         );
-      const sourceFrom = sourceDocument.positionAt(pointStates[0].point);
+      const sourceFrom = beforeDocument.positionAt(pointStates[0].point);
       const sourceTo =
         kind === 'range'
-          ? sourceDocument.positionAt(getDefined(pointStates[1]).point)
+          ? beforeDocument.positionAt(getDefined(pointStates[1]).point)
           : sourceFrom;
       const sourceRangeWasReplaced =
         targetWasExpanded &&
@@ -1499,7 +1509,7 @@ export function createAnchor<TValue extends AnchorValue>(
 
         try {
           return (
-            sourceDocument.node(state.point.path) ===
+            beforeDocument.node(state.point.path) ===
             nextDocument().node(runtimePath)
           );
         } catch {
@@ -1607,13 +1617,14 @@ export function createAnchor<TValue extends AnchorValue>(
         );
       });
 
-      current = sourceRangeWasReplaced && !sourceNodesKeepIdentity
-        ? null
-        : kind === 'point'
-          ? points[0]
-          : points[0] && points[1]
-            ? { anchor: points[0], focus: points[1] }
-            : null;
+      current =
+        sourceRangeWasReplaced && !sourceNodesKeepIdentity
+          ? null
+          : kind === 'point'
+            ? points[0]
+            : points[0] && points[1]
+              ? { anchor: points[0], focus: points[1] }
+              : null;
       pointStates = current
         ? kind === 'point'
           ? [getDefined(nextPointStates[0])]

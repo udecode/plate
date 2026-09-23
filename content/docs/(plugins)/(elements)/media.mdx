@@ -178,8 +178,9 @@ For local file uploads, add `UploadPlugin` separately as shown in
 
 ### Captions
 
-Every image, audio, video, file, and embed is a non-void, isolating,
-keyboard-selectable element. Its direct inline children are the caption; the
+Every image, audio, video, file, and embed is a non-void object element.
+The object role makes the asset selectable, meaningful even with an empty
+caption, and structurally isolating. Its direct inline children are the caption; the
 media plugin owns the schema and behavior, with no separate caption plugin,
 node type, or content root.
 
@@ -250,8 +251,20 @@ Asset focus and caption editing are separate selection states:
 
 | Selection | Behavior |
 | --- | --- |
-| Plate `NodeSelection` at the media path | Focuses the asset, shows its selection ring and empty-caption placeholder, lets `ArrowDown` enter the caption, and lets Delete remove the media node. |
-| Plate `TextSelection` inside the media children | Edits the caption and lets `ArrowUp` at the caption start return focus to the asset. |
+| Plate `NodeSelection` at the media path | Focuses the asset, shows its selection ring and empty-caption placeholder, lets the forward arrow or `ArrowDown` enter the caption, and lets Delete remove the media node. |
+| Plate `TextSelection` inside the media children | Edits the caption; the backward arrow or `ArrowUp` at its start returns focus to the asset. |
+
+In left-to-right text, `ArrowRight` from the text before a media block selects
+the asset before the next press enters its caption. Moving back visits the
+caption, then the selected asset, then the preceding text. An empty caption
+remains one editable caret stop. Left and right keys reverse in a right-to-left
+editable.
+
+Copying or cutting the media `NodeSelection` transfers the asset and caption
+together. Selecting only caption text transfers that text without the asset.
+Enter in a caption moves its unselected suffix into a fresh paragraph after
+the media element. This also applies when the selection extends into the next
+paragraph; the media asset keeps its identity.
 
 ### Upload local files
 
@@ -295,7 +308,7 @@ You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-tool
 
 ### `ImagePlugin`
 
-Plugin for non-void, isolating, keyboard-selectable image elements whose direct
+Plugin for non-void object image elements whose direct
 inline children store captions.
 
 <API name="ImagePlugin">
@@ -317,22 +330,22 @@ inline children store captions.
 
 ### `VideoPlugin`
 
-Plugin for non-void, isolating, keyboard-selectable video elements whose direct
+Plugin for non-void object video elements whose direct
 inline children store captions. Extends `MediaPluginState`.
 
 ### `AudioPlugin`
 
-Plugin for non-void, isolating, keyboard-selectable audio elements whose direct
+Plugin for non-void object audio elements whose direct
 inline children store captions. Extends `MediaPluginState`.
 
 ### `FilePlugin`
 
-Plugin for non-void, isolating, keyboard-selectable file elements whose direct
+Plugin for non-void object file elements whose direct
 inline children store captions. Extends `MediaPluginState`.
 
 ### `MediaEmbedPlugin`
 
-Plugin for non-void, isolating, keyboard-selectable media embed elements whose
+Plugin for non-void object media embed elements whose
 direct inline children store captions. Extends `MediaPluginState`.
 
 ### `UploadPlugin`

@@ -99,18 +99,19 @@ const next = editor.api.dom.resolveVisualPoint(point, {
 This low-level API is useful for renderer integrations. Normal editors should
 let `<Editable>` own keyboard movement.
 
-## Keyboard-selectable content
+## Object elements with editable children
 
-Use a non-void, isolating element with `keyboardSelectable: true` when one
+Use a block element with `object: true` when one
 document node owns both non-editable asset chrome and editable child content.
-The model keeps its focus states distinct:
+The object remains non-void, selectable, and structurally isolating. The model
+keeps its focus states distinct:
 
 | State | Behavior |
 | --- | --- |
 | `NodeSelection` at the owner path | Focuses the asset. The native browser selection stays empty. `ArrowDown` enters the owner's text content, and Backspace or Delete removes the owner. |
 | `TextSelection` inside the owner | Edits child content. `ArrowUp` from its leading visual boundary returns to the owner `NodeSelection`. |
 
-Clicking a `contenteditable="false"` descendant of a keyboard-selectable owner
+Clicking a `contenteditable="false"` descendant of an object owner
 creates its `NodeSelection`. Clicking editable child text creates a normal
 `TextSelection`.
 
@@ -122,8 +123,7 @@ const media = definePlugin("media", {
     elements: {
       image: {
         content: schema.content.text({ default: "text", min: 1 }),
-        isolating: true,
-        keyboardSelectable: true,
+        object: true,
       },
     },
   },
@@ -133,6 +133,10 @@ const media = definePlugin("media", {
 In React node UI, use `useElementSelected({ mode: "node" })` for the exact
 asset-focused state. The default intersection mode also matches text selection
 inside the element.
+
+An object with an empty child text is still meaningful content. An owner
+`NodeSelection` copies the complete object, while a `TextSelection` inside its
+children copies open child content without recreating the owner on paste.
 
 ## DOM phase order
 

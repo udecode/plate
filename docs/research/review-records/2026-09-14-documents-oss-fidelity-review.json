@@ -13,9 +13,9 @@
     "Preserve canonical authored ownership and existing before/after property facts; expose deliberate review projections and actionable unsupported/lossy conversion results.",
     "Respect installed schema, comments/ranges, media and transfer owners; retain remote resources opt-in, app-owned export styling and lazy file dependencies.",
     "Compare maximum-value deletion, merge/reuse and direct OOXML replacement against current HTML machinery; do not adopt a runtime without complete-operation correctness and scale evidence.",
-    "Complete bounded official discovery and exact-source investigation for seven corpus families with explicit evidence gaps; do not treat proprietary engine contracts or preview retention as inspected OSS preservation proof."
+    "Complete bounded official discovery and exact-source investigation for six corpus families with explicit evidence gaps; do not treat proprietary engine contracts or preview retention as inspected OSS preservation proof."
   ],
-  "evidenceReuse": "Rechecked September 8 DOCX plan: its standalone jobs and optional styling remain justified, while its deliberately unchanged algorithms and historical packed proof do not settle current authored conversion. Reconciled prior no-universal-rich-AST rejection and September 10 authored research. Fetched current html-to-docx, SuperDoc and CKEditor commits without changing their older checkouts; four other source clones match current default branch. All selected upstream file hashes verified. Current Plate source and real callers reread; main executed four partitions and two bug probes; independent worker supplied additional fixture/demo results.",
+  "evidenceReuse": "Rechecked September 8 DOCX plan: its standalone jobs and optional styling remain justified, while its deliberately unchanged algorithms and historical packed proof do not settle current authored conversion. Reconciled prior no-universal-rich-AST rejection and September 10 authored research. Fetched current html-to-docx and SuperDoc commits without changing their older checkouts; four other source clones match current default branch. All selected upstream file hashes verified. Current Plate source and real callers reread; main executed four partitions and two bug probes; independent worker supplied additional fixture/demo results.",
   "summary": "Pursue a documents design plan. Strongest cuts are unconditional private-sidecar authority and duplicate review schema serialization. Two local public-operation probes confirm silently ignored Word-body edits and mixed export snapshots; 135 unique existing tests pass across main and worker evidence. Direct OOXML adapters are the strongest replacement candidate to compare with a repaired shared HTML path, but the runtime and package-preservation claim are not accepted. Keep paste/file boundaries and canonical authored ownership; make projection, loss and full-document adoption explicit.",
   "verdict": "pursue",
   "previous": null,
@@ -29,7 +29,7 @@
     "Add retained package or OOXML-backed editor: defer unless an actual arbitrary-package editing job justifies its second representation, identity and lifetime; current source comparison does not prove it.",
     "Merge a universal Office/document framework or canonical AST: stop; clipboard fragments, file conversion, CSV, pagination and authored runtime have distinct jobs and owners."
   ],
-  "proofLimits": "Main: 123 existing tests in four source-based DOCX partitions plus two bug-observation probes (not correctness acceptance). Worker: 12 additional fixture/demo/selected-roundtrip tests; duplicate 123-test run adds no coverage. No complete slow-suite, current packed-install, browser clipboard, native Word/LibreOffice, performance or arbitrary preservation proof. Seven bounded source corpora, 67 current selected external files; zero upstream tests and zero issue/PR bodies. SuperDoc proprietary v2 engine is an explicit evidence gap; CKEditor proprietary file converters are outside the inspected paste lane. Source-revision manifest tracks fetched object reads independently of unchanged older checkout HEADs. Design, implementation and doctrine/doc repair remain outstanding.",
+  "proofLimits": "Main: 123 existing tests in four source-based DOCX partitions plus two bug-observation probes (not correctness acceptance). Worker: 12 additional fixture/demo/selected-roundtrip tests; duplicate 123-test run adds no coverage. No complete slow-suite, current packed-install, browser clipboard, native Word/LibreOffice, performance or arbitrary preservation proof. Seven bounded source corpora, 67 current selected external files; zero upstream tests and zero issue/PR bodies. SuperDoc proprietary v2 engine is an explicit evidence gap; Source-revision manifest tracks fetched object reads independently of unchanged older checkout HEADs. Design, implementation and doctrine/doc repair remain outstanding.",
   "references": [
     "docs/research/decisions/documents-conversion-fidelity.md",
     "docs/research/sources/docx-interoperability-oss.md",
@@ -39,7 +39,7 @@
     "docs/plite/research/2026-09-14-docx-interoperability-oss/source-manifest.json",
     "docs/plite/research/2026-09-14-docx-interoperability-oss/promotion-packets.md",
     "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/plate-audit.md",
-    "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/ckeditor-superdoc.md",
+    "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/superdoc.md",
     "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/pandoc-preview.md"
   ],
   "source": {
@@ -85,11 +85,11 @@
       "docs/research/sources/docx-interoperability-oss.md": "ece63f0376fcb25bcbc6fb392d1def6eca7549c17a1e685624980b8d78723d14",
       "docs/research/decisions/documents-conversion-fidelity.md": "8c51e80a005fea6151e091f837b86de55b86d8218b6bd29d959a29a3548cd8f5",
       "docs/research/open-questions/documents-conversion-proof.md": "a2917761f668e053ffaa39d298b84bcd39482132e270421446e1359f4ced3f16",
-      "docs/plite/research/2026-09-14-docx-interoperability-oss/source-manifest.json": "0731b322041bff25868290522c56f6554fbe368e256653a6a46f18a8dd63837e",
-      "docs/plite/research/2026-09-14-docx-interoperability-oss/read-log.tsv": "3a142fa2235712e2ed7e8ba437886b1d81484ca967ff802e61e369d7d080ad97",
+      "docs/plite/research/2026-09-14-docx-interoperability-oss/source-manifest.json": "c5e83b4d753fb6059513a7011c9379cbb95484855a4f047fe6670f7fe0867a06",
+      "docs/plite/research/2026-09-14-docx-interoperability-oss/read-log.tsv": "86459b276d7da16e9513aae59a998858569c2b1a20954d8400e51090862a2b23",
       "docs/plite/research/2026-09-14-docx-interoperability-oss/proof/receipt.json": "8124a29128827977bd235b7001cf02d13aa7f7a1f1fa763e4d63299046ec0d9e",
       "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/plate-audit.md": "816c8ff5b2d2aacd5534be5253632fddf27996a5614436d3503b954773d625dd",
-      "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/ckeditor-superdoc.md": "323d85da2b3ae0717c1a318e3386acae781f656a762e49f19d3833cf0d7acd19",
+      "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/superdoc.md": "bf4741e5a09b4e9b35f4c6b34605a313b891d49a9c70ae8eafd9fe30fb3e0747",
       "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/pandoc-preview.md": "bda4e9dbd9a00d39977dfa1e921c7d821c845ec38b7b92bdaeeaf169371cfa00",
       "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",

@@ -12,7 +12,9 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 import {
-  createRuleFactory,
+  createBlockFenceInputRule,
+  createBlockStartInputRule,
+  createMarkInputRule,
   defineInputRule,
 } from '../../lib/plugins/input-rules';
 import {
@@ -26,6 +28,21 @@ import { definePlugin } from '../plugin';
 
 jsxt;
 
+const createTextDataTransfer = (text: string) =>
+  ({
+    files: [],
+    getData: (type: string) => (type === 'text/plain' ? text : ''),
+    types: ['text/plain'],
+  }) as DataTransfer;
+
+const setEndSelection = (editor: ReturnType<typeof createEditor>) => {
+  editor.update.selection.set({
+    kind: 'text',
+    anchor: { offset: 1, path: [0, 0] },
+    focus: { offset: 1, path: [0, 0] },
+  });
+};
+
 describe('input rules', () => {
   it('retains element schema contributions after configuring input rules', () => {
     const CalloutPlugin = definePlugin('callout', {
@@ -35,7 +52,7 @@ describe('input rules', () => {
     }).configure({
       inputRules: [
         defineInputRule({
-          apply: () => true,
+          apply: () => {},
           target: 'insertText',
           trigger: '>',
         }),
@@ -54,7 +71,7 @@ describe('input rules', () => {
 
   it('registers explicit configured rule instances on the owning plugin', () => {
     const strongRule = defineInputRule({
-      apply: () => true,
+      apply: () => {},
       target: 'insertText',
       trigger: '*',
     });
@@ -78,7 +95,7 @@ describe('input rules', () => {
   });
 
   it('dispatches configured insertText rules through the core runtime', () => {
-    const apply = mock(() => true);
+    const apply = mock(() => {});
     const editor = createEditor({
       plugins: [
         definePlugin('testPlugin', {}).configure({
@@ -105,7 +122,7 @@ describe('input rules', () => {
         definePlugin('testPlugin', {}).configure({
           inputRules: [
             defineInputRule({
-              apply: () => true,
+              apply: () => {},
               target: 'insertText',
               trigger: '*',
             }),
@@ -133,19 +150,22 @@ describe('input rules', () => {
   it('keeps generated competing insertText rules single-winner', () => {
     for (const winnerIndex of [0, 1, 3, 7]) {
       for (const continueInsertion of [false, true]) {
-        const callCounts = Array.from({ length: 8 }, () => 0);
+        const applyCounts = Array.from({ length: 8 }, () => 0);
+        const resolveCounts = Array.from({ length: 8 }, () => 0);
         const editor = createEditor({
           plugins: [
             definePlugin('testPlugin', {}).configure({
               inputRules: Array.from({ length: 8 }, (_, index) =>
                 defineInputRule({
-                  apply: ({ insertText: innerInsertText }) => {
-                    callCounts[index] += 1;
+                  apply: ({ next }) => {
+                    applyCounts[index] += 1;
 
-                    if (index !== winnerIndex) return false;
-                    if (continueInsertion) innerInsertText('continued');
+                    if (continueInsertion) return next('continued');
+                  },
+                  resolve: () => {
+                    resolveCounts[index] += 1;
 
-                    return true;
+                    return index === winnerIndex ? true : undefined;
                   },
                   target: 'insertText',
                   trigger: '*',
@@ -163,9 +183,14 @@ describe('input rules', () => {
         });
         insertText(editor, '*');
 
-        expect(callCounts).toEqual(
+        expect(resolveCounts).toEqual(
           Array.from({ length: 8 }, (_, index) =>
             index <= winnerIndex ? 1 : 0
+          )
+        );
+        expect(applyCounts).toEqual(
+          Array.from({ length: 8 }, (_, index) =>
+            index === winnerIndex ? 1 : 0
           )
         );
         expect(editorString(editor, [])).toBe(
@@ -185,8 +210,6 @@ describe('input rules', () => {
               apply: ({ tx }) => {
                 applyCount += 1;
                 tx.text.insert('handled');
-
-                return true;
               },
               target: 'insertText',
               trigger: '*',
@@ -211,7 +234,7 @@ describe('input rules', () => {
   });
 
   it('dispatches configured insertBreak rules through the core runtime', () => {
-    const apply = mock(() => true);
+    const apply = mock(() => {});
     const editor = createEditor({
       plugins: [
         definePlugin('testPlugin', {}).configure({
@@ -259,7 +282,7 @@ describe('input rules', () => {
   });
 
   it('falls through when configured insertBreak rules do not match', () => {
-    const apply = mock(() => true);
+    const apply = mock(() => {});
     const editor = createEditor({
       plugins: [
         BaseParagraphPlugin,
@@ -300,8 +323,6 @@ describe('input rules', () => {
               apply: ({ tx }) => {
                 applyCount += 1;
                 tx.text.insert('!');
-
-                return true;
               },
               target: 'insertBreak',
             }),
@@ -327,8 +348,6 @@ describe('input rules', () => {
   it('dispatches configured insertData rules through the core runtime', () => {
     const apply = mock(({ text }) => {
       expect(text).toBe('hello');
-
-      return true;
     });
     const editor = createEditor({
       plugins: [
@@ -365,8 +384,158 @@ describe('input rules', () => {
     ]);
   });
 
+  it('composes insertText prefix and continuation into one history entry', async () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        definePlugin('textContinuation', {}).configure({
+          inputRules: [
+            defineInputRule({
+              apply: ({ next, tx }) => {
+                tx.text.insert('!');
+
+                return next('continued');
+              },
+              target: 'insertText',
+              trigger: '*',
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+    });
+    setEndSelection(editor);
+
+    insertText(editor, '*');
+
+    expect(editorString(editor, [])).toBe('a!continued');
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editorString(editor, [])).toBe('a');
+    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+  });
+
+  it('composes insertBreak prefix and continuation into one history entry', async () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        definePlugin('breakContinuation', {}).configure({
+          inputRules: [
+            defineInputRule({
+              apply: ({ next, tx }) => {
+                tx.text.insert('!');
+
+                return next();
+              },
+              target: 'insertBreak',
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+    });
+    setEndSelection(editor);
+
+    insertBreak(editor);
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'a!' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'paragraph' },
+    ]);
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'a' }], type: 'paragraph' },
+    ]);
+    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+  });
+
+  it('composes insertData prefix and replacement continuation into one history entry', async () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        definePlugin('dataContinuation', {}).configure({
+          inputRules: [
+            defineInputRule({
+              apply: ({ next, tx }) => {
+                tx.text.insert('!');
+
+                return next(createTextDataTransfer('replacement'));
+              },
+              mimeTypes: ['text/plain'],
+              target: 'insertData',
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+    });
+    setEndSelection(editor);
+
+    editor.update(() => {
+      editor.api.dom.clipboard.insertData(createTextDataTransfer('original'));
+    });
+
+    expect(editorString(editor, [])).toBe('a!replacement');
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editorString(editor, [])).toBe('a');
+    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+  });
+
+  it.each([
+    {
+      rule: defineInputRule({
+        apply: ({ tx }) => {
+          tx.text.insert('leaked');
+          throw new Error('text failed');
+        },
+        target: 'insertText',
+        trigger: '*',
+      }),
+      run: (editor: ReturnType<typeof createEditor>) => insertText(editor, '*'),
+      title: 'insertText',
+    },
+    {
+      rule: defineInputRule({
+        apply: ({ tx }) => {
+          tx.text.insert('leaked');
+          throw new Error('break failed');
+        },
+        target: 'insertBreak',
+      }),
+      run: (editor: ReturnType<typeof createEditor>) => insertBreak(editor),
+      title: 'insertBreak',
+    },
+    {
+      rule: defineInputRule({
+        apply: ({ tx }) => {
+          tx.text.insert('leaked');
+          throw new Error('data failed');
+        },
+        mimeTypes: ['text/plain'],
+        target: 'insertData',
+      }),
+      run: (editor: ReturnType<typeof createEditor>) =>
+        editor.update(() => {
+          editor.api.dom.clipboard.insertData(createTextDataTransfer('data'));
+        }),
+      title: 'insertData',
+    },
+  ])('publishes nothing when $title apply throws', async ({ rule, run }) => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        definePlugin('throwingRule', {}).configure({ inputRules: [rule] }),
+      ],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+    });
+    setEndSelection(editor);
+
+    expect(() => run(editor)).toThrow('failed');
+    expect(editorString(editor, [])).toBe('a');
+    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+  });
+
   it('skips rules whose enabled predicate returns false', () => {
-    const apply = mock(() => true);
+    const apply = mock(() => {});
     const enabled = mock(() => false);
     const editor = createEditor({
       plugins: [
@@ -396,7 +565,7 @@ describe('input rules', () => {
         definePlugin('testPlugin', {
           inputRules: [
             defineInputRule({
-              apply: () => true,
+              apply: () => {},
               target: 'insertText',
               trigger: '*',
             }),
@@ -404,7 +573,7 @@ describe('input rules', () => {
         }).configure({
           inputRules: [
             defineInputRule({
-              apply: () => true,
+              apply: () => {},
               target: 'insertText',
               trigger: '_',
             }),
@@ -425,7 +594,7 @@ describe('input rules', () => {
   });
 
   it('provides lazy cached selection getters and the owning plugin to insertText resolve', () => {
-    const apply = mock(() => true);
+    const apply = mock(() => {});
     const resolve = mock(
       ({ getBlockStartRange, getBlockStartText, plugin }) => {
         expect(plugin.name).toBe('h2');
@@ -463,8 +632,48 @@ describe('input rules', () => {
     expect(apply).toHaveBeenCalledTimes(1);
   });
 
+  it('reads installed plugin groups and absent optional names while matching', () => {
+    const ReaderPlugin = definePlugin('reader', {
+      read: ({ state }) => ({
+        firstCharacter: () =>
+          state.text.string({
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 1, path: [0, 0] },
+          }),
+      }),
+    });
+    const editor = createEditor({
+      plugins: [
+        ReaderPlugin,
+        definePlugin('optionalRule', {}).configure({
+          inputRules: [
+            defineInputRule({
+              target: 'insertText',
+              trigger: '*',
+              enabled: ({ editor: readEditor }) => {
+                expect(readEditor.plugin('absentReader').installed).toBe(false);
+                expect(readEditor.plugin(ReaderPlugin).installed).toBe(true);
+
+                return (
+                  readEditor.plugin(ReaderPlugin).read.firstCharacter() === 'a'
+                );
+              },
+              apply: ({ next }) => next(),
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+    });
+    setEndSelection(editor);
+
+    insertText(editor, '*');
+
+    expect(editorString(editor, [])).toBe('a*');
+  });
+
   it('provides lazy cached character getters to insertText resolve', () => {
-    const apply = mock(() => true);
+    const apply = mock(() => {});
     const resolve = mock(({ getCharAfter, getCharBefore }) => {
       expect(getCharBefore()).toBe('b');
       expect(getCharBefore()).toBe('b');
@@ -502,7 +711,7 @@ describe('input rules', () => {
 
   it('orders competing rules by priority, then plugin order, then declaration order', () => {
     const baseRule = defineInputRule({
-      apply: () => true,
+      apply: () => {},
       target: 'insertText',
       trigger: '*',
     });
@@ -527,13 +736,13 @@ describe('input rules', () => {
     ).toEqual(['beta.0', 'alpha.0', 'alpha.1']);
   });
 
-  it('supports definition-side inputRules factories with owner-scoped helpers', () => {
+  it('registers explicit rules built by public helpers', () => {
     const BoldPlugin = definePlugin('bold', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
-      inputRules: ({ rule }) => [
-        rule.mark({
+      inputRules: [
+        createMarkInputRule({
           end: '*',
           start: '**',
           trigger: '*',
@@ -574,8 +783,8 @@ describe('input rules', () => {
       plugins: [
         BaseParagraphPlugin,
         definePlugin('markRuleOwner', {
-          inputRules: ({ rule }) => [
-            rule.mark({
+          inputRules: [
+            createMarkInputRule({
               end: '*',
               mark: 'missingMark',
               start: '**',
@@ -603,8 +812,8 @@ describe('input rules', () => {
     const editor = createEditor({
       plugins: [
         definePlugin('bold', {
-          inputRules: ({ rule }) => [
-            rule.mark({
+          inputRules: [
+            createMarkInputRule({
               end: '*',
               start: '**',
               trigger: '*',
@@ -629,14 +838,14 @@ describe('input rules', () => {
     ]);
   });
 
-  it('supports definition-side blockFence helpers for match-triggered fences', () => {
-    const apply = mock(() => true);
+  it('supports explicit blockFence helpers for match-triggered fences', () => {
+    const apply = mock(() => {});
     const editor = createEditor({
       plugins: [
         BaseParagraphPlugin,
         definePlugin('codeBlock', {
-          inputRules: ({ rule }) => [
-            rule.blockFence({
+          inputRules: [
+            createBlockFenceInputRule({
               apply,
               block: BaseParagraphPlugin,
               fence: '```',
@@ -671,7 +880,7 @@ describe('input rules', () => {
         definePlugin('codeBlock', {}).configure({
           inputRules: [
             defineInputRule({
-              apply: () => true,
+              apply: () => {},
               target: 'insertText',
               trigger: '`',
             }),
@@ -702,7 +911,7 @@ describe('input rules', () => {
         definePlugin('equation', {}).configure({
           inputRules: [
             defineInputRule({
-              apply: () => true,
+              apply: () => {},
               target: 'insertBreak',
             }),
           ],
@@ -721,14 +930,13 @@ describe('input rules', () => {
     );
   });
 
-  it('supports rule factories with concrete defaults and caller overrides', () => {
-    const blockquoteMarkdown = createRuleFactory<{}, { marker: string }>({
-      type: 'blockStart',
-      marker: '>',
-      trigger: ' ',
-      mode: 'wrap',
-      match: ({ marker }) => marker,
-    });
+  it('supports ordinary rule functions with concrete defaults and caller overrides', () => {
+    const blockquoteMarkdown = ({ marker = '>' }: { marker?: string } = {}) =>
+      createBlockStartInputRule({
+        match: marker,
+        mode: 'wrap',
+        trigger: ' ',
+      });
     const editor = createEditor({
       plugins: [
         definePlugin('blockquote', {
@@ -764,8 +972,8 @@ describe('input rules', () => {
       plugins: [
         BaseParagraphPlugin,
         definePlugin('blockRuleOwner', {
-          inputRules: ({ rule }) => [
-            rule.blockStart({
+          inputRules: [
+            createBlockStartInputRule({
               match: '>',
               mode: 'set',
               node: 'missingBlock',
@@ -785,9 +993,97 @@ describe('input rules', () => {
     insertText(editor, ' ');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '>' }], type: 'paragraph' },
+      { children: [{ text: '> ' }], type: 'paragraph' },
     ]);
   });
+
+  it("discards a declined rule's draft before inserting the typed input", async () => {
+    const editor = createEditor({
+      plugins: [
+        definePlugin('decliningRule', {}).configure({
+          inputRules: [
+            defineInputRule({
+              target: 'insertText',
+              trigger: ' ',
+              apply: ({ decline, tx }) => {
+                tx.text.deleteBackward({ unit: 'character' });
+                tx.text.insert('replacement');
+
+                return decline();
+              },
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: '@' }], type: 'paragraph' }],
+    });
+
+    setEndSelection(editor);
+    insertText(editor, ' ');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '@ ' }], type: 'paragraph' },
+    ]);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 2, path: [0, 0] },
+      focus: { offset: 2, path: [0, 0] },
+    });
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '@' }], type: 'paragraph' },
+    ]);
+    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+  });
+
+  it.each([
+    {
+      rule: defineInputRule({
+        target: 'insertBreak',
+        apply: ({ decline, tx }) => {
+          tx.text.insert('discarded');
+          return decline();
+        },
+      }),
+      run: (editor: ReturnType<typeof createEditor>) => insertBreak(editor),
+      expected: [
+        { children: [{ text: 'a' }], type: 'paragraph' },
+        { children: [{ text: '' }], type: 'paragraph' },
+      ],
+      target: 'insertBreak',
+    },
+    {
+      rule: defineInputRule({
+        target: 'insertData',
+        mimeTypes: ['text/plain'],
+        apply: ({ decline, tx }) => {
+          tx.text.insert('discarded');
+          return decline();
+        },
+      }),
+      run: (editor: ReturnType<typeof createEditor>) =>
+        editor.update(() => {
+          editor.api.dom.clipboard.insertData(createTextDataTransfer('pasted'));
+        }),
+      expected: [{ children: [{ text: 'apasted' }], type: 'paragraph' }],
+      target: 'insertData',
+    },
+  ])(
+    'discards a declined $target draft before the original command',
+    ({ rule, run, expected }) => {
+      const editor = createEditor({
+        plugins: [
+          BaseParagraphPlugin,
+          definePlugin('decliningRule', {}).configure({ inputRules: [rule] }),
+        ],
+        initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+      });
+
+      setEndSelection(editor);
+      run(editor);
+
+      expect(editor.read.children()).toEqual(expected);
+    }
+  );
 
   it('toggles block-start rules back to paragraph when active', () => {
     const HeadingPlugin = definePlugin('h2', {
@@ -797,13 +1093,13 @@ describe('input rules', () => {
         },
       },
     });
-    const headingMarkdown = createRuleFactory({
-      type: 'blockStart',
-      trigger: ' ',
-      mode: 'toggle',
-      match: '##',
-      node: HeadingPlugin,
-    });
+    const headingMarkdown = () =>
+      createBlockStartInputRule({
+        trigger: ' ',
+        mode: 'toggle',
+        match: '##',
+        node: HeadingPlugin,
+      });
     const editor = createEditor({
       plugins: [
         BaseParagraphPlugin,
@@ -835,8 +1131,6 @@ describe('input rules', () => {
           }),
         ],
       })
-    ).toThrow(
-      'inputRules must be an array of explicit rule instances or a factory.'
-    );
+    ).toThrow('inputRules must be an array of explicit rule instances.');
   });
 });

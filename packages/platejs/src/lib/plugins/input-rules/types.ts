@@ -10,16 +10,63 @@ import type {
   TextInsertTextOptions,
 } from '../../../facade';
 import type { Editor } from '../../editor';
-import type { AnyBasePlugin, PluginReference } from '../../plugin';
-
-/** Portable default editor context for unbound input-rule factories. */
-export interface InputRuleEditor extends Editor {}
+import type {
+  AnyBasePlugin,
+  AnyBasePluginDefinition,
+  BasePluginPortal,
+  DynamicBasePluginPortal,
+  PluginReference,
+} from '../../plugin';
+import type { InternalPluginDefinitionOf } from '../../plugin/pluginDefinitionLookup.internal';
+import type {
+  InputRuleContinuation,
+  InputRuleDecline,
+} from './inputRuleContinuation.internal';
 
 export type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';
 
-type InputRuleInsertTextOptions = Omit<TextInsertTextOptions, 'at'> & {
+export type InputRuleInsertTextOptions = Omit<TextInsertTextOptions, 'at'> & {
   at?: NodeTarget;
 };
+
+type ReadPluginPortal<TPortal> = Pick<
+  TPortal,
+  Extract<
+    keyof TPortal,
+    'api' | 'installed' | 'name' | 'read' | 'schema' | 'selectors'
+  >
+> &
+  (TPortal extends { store: infer TStore }
+    ? { store: Pick<TStore, Extract<keyof TStore, 'get'>> }
+    : {});
+
+type InputRulePluginPortalFor<P extends PluginReference> = [
+  InternalPluginDefinitionOf<P>,
+] extends [never]
+  ? ReadPluginPortal<DynamicBasePluginPortal>
+  : ReadPluginPortal<
+      BasePluginPortal<
+        Extract<InternalPluginDefinitionOf<P>, AnyBasePluginDefinition>
+      >
+    >;
+
+type InputRulePluginLookup = {
+  <P extends PluginReference>(plugin: P): InputRulePluginPortalFor<P>;
+  (plugin: string): ReadPluginPortal<DynamicBasePluginPortal>;
+  (
+    plugin: AnyBasePlugin | PluginReference | string
+  ): ReadPluginPortal<DynamicBasePluginPortal>;
+};
+
+/** Read-only editor capabilities available while an input rule is selected. */
+export type InputRuleEditor<TEditor = Editor> = TEditor extends {
+  read: infer TRead;
+}
+  ? {
+      readonly plugin: InputRulePluginLookup;
+      readonly read: { readonly [TKey in keyof TRead]: TRead[TKey] };
+    }
+  : never;
 
 export type MarkInputRuleMatch = {
   afterStartMatchPoint: Point;
@@ -37,7 +84,7 @@ type BivariantCallback<TArgs extends unknown[], TResult> = {
 }['bivarianceHack'];
 
 export type SelectionInputRuleContext<TEditor = Editor> = {
-  editor: TEditor;
+  editor: InputRuleEditor<TEditor>;
   getBlockEntry: () => NodeEntry<Element> | undefined;
   getBlockStartRange: () => Range | undefined;
   getBlockStartText: () => string | undefined;
@@ -49,48 +96,73 @@ export type SelectionInputRuleContext<TEditor = Editor> = {
 };
 
 export type TransformInputRuleContext<TEditor = Editor> = {
+  decline: () => InputRuleDecline;
   tx: InputRuleTransaction<TEditor>;
 };
 
+export type InsertBreakInputRuleReadContext<TEditor = Editor> =
+  SelectionInputRuleContext<TEditor> & {
+    cause: 'insertBreak';
+  };
+
+export type InsertDataInputRuleReadContext<TEditor = Editor> =
+  SelectionInputRuleContext<TEditor> & {
+    cause: 'insertData';
+    data: DataTransfer;
+    text: string | null;
+  };
+
+export type InsertTextInputRuleReadContext<TEditor = Editor> =
+  SelectionInputRuleContext<TEditor> & {
+    cause: 'insertText';
+    options?: InputRuleInsertTextOptions;
+    text: string;
+  };
+
 export type InsertBreakInputRuleContext<TEditor = Editor> =
-  SelectionInputRuleContext<TEditor> &
+  InsertBreakInputRuleReadContext<TEditor> &
     TransformInputRuleContext<TEditor> & {
-      cause: 'insertBreak';
-      insertBreak: () => void;
+      next: () => InputRuleContinuation;
     };
 
 export type InsertDataInputRuleContext<TEditor = Editor> =
-  SelectionInputRuleContext<TEditor> &
+  InsertDataInputRuleReadContext<TEditor> &
     TransformInputRuleContext<TEditor> & {
-      cause: 'insertData';
-      data: DataTransfer;
-      insertData: (data: DataTransfer) => void;
-      text: string | null;
+      next: (
+        data?: DataTransfer
+      ) => InputRuleContinuation<DataTransfer | undefined>;
     };
 
 export type InsertTextInputRuleContext<TEditor = Editor> =
-  SelectionInputRuleContext<TEditor> &
+  InsertTextInputRuleReadContext<TEditor> &
     TransformInputRuleContext<TEditor> & {
-      cause: 'insertText';
-      insertText: (text: string, options?: InputRuleInsertTextOptions) => void;
-      options?: InputRuleInsertTextOptions;
-      text: string;
+      next: (
+        text?: string,
+        options?: InputRuleInsertTextOptions
+      ) => InputRuleContinuation<
+        | {
+            options?: InputRuleInsertTextOptions;
+            text: string;
+          }
+        | undefined
+      >;
     };
 
-export type BaseInputRule<TContext = SelectionInputRuleContext> = {
-  enabled?: BivariantCallback<[context: TContext], boolean>;
+export type BaseInputRule<TReadContext = SelectionInputRuleContext> = {
+  enabled?: BivariantCallback<[context: TReadContext], boolean>;
   priority?: number;
 };
 
-export type MarkInputRuleConfig = BaseInputRule<InsertTextInputRuleContext> & {
-  end?: string;
-  mark?: PluginReference | string;
-  marks?: ReadonlyArray<PluginReference | string>;
-  start: string;
-  trim?: 'allow' | 'reject';
-  trigger: string;
-  value?: PropertyJsonValue;
-};
+export type MarkInputRuleConfig =
+  BaseInputRule<InsertTextInputRuleReadContext> & {
+    end?: string;
+    mark?: PluginReference | string;
+    marks?: ReadonlyArray<PluginReference | string>;
+    start: string;
+    trim?: 'allow' | 'reject';
+    trigger: string;
+    value?: PropertyJsonValue;
+  };
 
 export type BlockStartInputRuleMatch = {
   range: Range;
@@ -110,16 +182,16 @@ export type MatchBlockStartOptions<
 };
 
 export type BlockStartInputRuleConfig<TMatch extends object = {}> =
-  BaseInputRule<InsertTextInputRuleContext> & {
+  BaseInputRule<InsertTextInputRuleReadContext> & {
     apply?: (
       context: InsertTextInputRuleContext,
       match: BlockStartInputRuleMatch & TMatch
-    ) => boolean | void;
+    ) => ReturnType<InsertTextInputRule['apply']>;
     mode?: 'set' | 'toggle' | 'wrap';
     node?: PluginReference | string;
     removeMatchedText?: boolean;
     trigger: string;
-  } & MatchBlockStartOptions<TMatch, InsertTextInputRuleContext>;
+  } & MatchBlockStartOptions<TMatch, InsertTextInputRuleReadContext>;
 
 export type BlockFenceInputRuleMatch = BlockStartInputRuleMatch & {
   path: Path;
@@ -136,13 +208,16 @@ export type MatchBlockFenceOptions<TMatch = BlockFenceInputRuleMatch> = {
   }) => TMatch | undefined;
 };
 
+type BlockFenceApplyContext = SelectionInputRuleContext &
+  TransformInputRuleContext;
+
 export type BlockFenceInputRuleConfig<TMatch = BlockFenceInputRuleMatch> =
-  BaseInputRule<SelectionInputRuleContext & TransformInputRuleContext> &
+  BaseInputRule<SelectionInputRuleContext> &
     MatchBlockFenceOptions<TMatch> & {
       apply: (
-        context: SelectionInputRuleContext & TransformInputRuleContext,
+        context: BlockFenceApplyContext,
         match: TMatch
-      ) => boolean | void;
+      ) => InputRuleDecline | undefined;
       on: 'break' | 'match';
     };
 
@@ -178,48 +253,20 @@ export type TextSubstitutionMatch = {
 };
 
 export type TextSubstitutionInputRuleConfig =
-  BaseInputRule<InsertTextInputRuleContext> & {
+  BaseInputRule<InsertTextInputRuleReadContext> & {
     patterns: TextSubstitutionPattern[];
   };
-
-export type InputRuleBuilder = {
-  blockFence: <TMatch = BlockFenceInputRuleMatch>(
-    config: BlockFenceInputRuleConfig<TMatch>
-  ) => InputRule<TMatch>;
-  blockStart: <TMatch extends object = {}>(
-    config: BlockStartInputRuleConfig<TMatch>
-  ) => InsertTextInputRule<BlockStartInputRuleMatch & TMatch>;
-  insertBreak: <TMatch = true>(
-    rule: InsertBreakInputRule<TMatch>
-  ) => InsertBreakInputRule<TMatch>;
-  insertData: <TMatch = true>(
-    rule: InsertDataInputRule<TMatch>
-  ) => InsertDataInputRule<TMatch>;
-  insertText: <TMatch = true>(
-    rule: InsertTextInputRule<TMatch>
-  ) => InsertTextInputRule<TMatch>;
-  mark: (config: MarkInputRuleConfig) => InsertTextInputRule<{
-    afterStartMatchPoint: Point;
-    beforeEndMatchPoint: Point;
-    beforeStartMatchPoint: Point;
-    end: string | undefined;
-  }>;
-};
-
-export type InputRulesFactoryContext = {
-  rule: InputRuleBuilder;
-};
 
 export type InsertBreakInputRule<
   TMatch = true,
   TEditor = Editor,
-> = BaseInputRule<InsertBreakInputRuleContext<TEditor>> & {
+> = BaseInputRule<InsertBreakInputRuleReadContext<TEditor>> & {
   apply: BivariantCallback<
     [context: InsertBreakInputRuleContext<TEditor>, match: TMatch],
-    boolean | void
+    InputRuleContinuation | InputRuleDecline | undefined
   >;
   resolve?: BivariantCallback<
-    [context: InsertBreakInputRuleContext<TEditor>],
+    [context: InsertBreakInputRuleReadContext<TEditor>],
     TMatch | undefined
   >;
   target: 'insertBreak';
@@ -228,14 +275,16 @@ export type InsertBreakInputRule<
 export type InsertDataInputRule<
   TMatch = true,
   TEditor = Editor,
-> = BaseInputRule<InsertDataInputRuleContext<TEditor>> & {
+> = BaseInputRule<InsertDataInputRuleReadContext<TEditor>> & {
   apply: BivariantCallback<
     [context: InsertDataInputRuleContext<TEditor>, match: TMatch],
-    boolean | void
+    | InputRuleContinuation<DataTransfer | undefined>
+    | InputRuleDecline
+    | undefined
   >;
   mimeTypes?: string[];
   resolve?: BivariantCallback<
-    [context: InsertDataInputRuleContext<TEditor>],
+    [context: InsertDataInputRuleReadContext<TEditor>],
     TMatch | undefined
   >;
   target: 'insertData';
@@ -244,13 +293,21 @@ export type InsertDataInputRule<
 export type InsertTextInputRule<
   TMatch = true,
   TEditor = Editor,
-> = BaseInputRule<InsertTextInputRuleContext<TEditor>> & {
+> = BaseInputRule<InsertTextInputRuleReadContext<TEditor>> & {
   apply: BivariantCallback<
     [context: InsertTextInputRuleContext<TEditor>, match: TMatch],
-    boolean | void
+    | InputRuleContinuation<
+        | {
+            options?: InputRuleInsertTextOptions;
+            text: string;
+          }
+        | undefined
+      >
+    | InputRuleDecline
+    | undefined
   >;
   resolve?: BivariantCallback<
-    [context: InsertTextInputRuleContext<TEditor>],
+    [context: InsertTextInputRuleReadContext<TEditor>],
     TMatch | undefined
   >;
   target: 'insertText';
@@ -262,69 +319,31 @@ export type InputRule<TMatch = unknown, TEditor = Editor> =
   | InsertDataInputRule<TMatch, TEditor>
   | InsertTextInputRule<TMatch, TEditor>;
 
-type InputRuleFactoryOptions<TOptions extends object, TRule> = TOptions & {
-  enabled?: TRule extends Readonly<{ enabled?: infer TEnabled }>
-    ? TEnabled
-    : never;
-  priority?: number;
-};
-
-/** Portable public shape for feature-owned input rule factories. */
-export type InputRuleFactory<
-  TOptions extends object = {},
-  TRequired extends boolean = false,
-  TMatch = never,
-  TEditor = Editor,
-  TRule extends InputRule<any, TEditor> = InputRule<TMatch, TEditor>,
-> = TRequired extends true
-  ? (options: InputRuleFactoryOptions<TOptions, TRule>) => TRule
-  : (options?: InputRuleFactoryOptions<TOptions, TRule>) => TRule;
-
-type StoredInsertBreakInputRule<
-  TContext = unknown,
-  TMatch = unknown,
-  TResolved = TMatch,
-> = BaseInputRule<TContext> & {
-  apply: BivariantCallback<[context: TContext, match: TMatch], boolean | void>;
-  resolve?: BivariantCallback<[context: TContext], TResolved>;
-  target: 'insertBreak';
-};
-
-type StoredInsertDataInputRule<
-  TContext = unknown,
-  TMatch = unknown,
-  TResolved = TMatch,
-> = BaseInputRule<TContext> & {
-  apply: BivariantCallback<[context: TContext, match: TMatch], boolean | void>;
-  mimeTypes?: string[];
-  resolve?: BivariantCallback<[context: TContext], TResolved>;
-  target: 'insertData';
-};
-
-type StoredInsertTextInputRule<
-  TContext = unknown,
-  TMatch = unknown,
-  TResolved = TMatch,
-> = BaseInputRule<TContext> & {
-  apply: BivariantCallback<[context: TContext, match: TMatch], boolean | void>;
-  resolve?: BivariantCallback<[context: TContext], TResolved>;
-  target: 'insertText';
-  trigger: readonly string[] | string;
-};
-
 type StoredInputRule =
-  | StoredInsertBreakInputRule
-  | StoredInsertDataInputRule
-  | StoredInsertTextInputRule;
+  | InsertBreakInputRule<any, any>
+  | InsertDataInputRule<any, any>
+  | InsertTextInputRule<any, any>;
 
 type InputRuleReference =
-  | StoredInsertBreakInputRule<never, never, unknown>
-  | StoredInsertDataInputRule<never, never, unknown>
-  | StoredInsertTextInputRule<never, never, unknown>;
+  | (BaseInputRule<never> & {
+      apply: BivariantCallback<[context: never, match: never], unknown>;
+      resolve?: BivariantCallback<[context: never], unknown>;
+      target: 'insertBreak';
+    })
+  | (BaseInputRule<never> & {
+      apply: BivariantCallback<[context: never, match: never], unknown>;
+      mimeTypes?: string[];
+      resolve?: BivariantCallback<[context: never], unknown>;
+      target: 'insertData';
+    })
+  | (BaseInputRule<never> & {
+      apply: BivariantCallback<[context: never, match: never], unknown>;
+      resolve?: BivariantCallback<[context: never], unknown>;
+      target: 'insertText';
+      trigger: readonly string[] | string;
+    });
 
-export type InputRulesDefinition<TEditor = Editor> =
-  | InputRulesConfig<TEditor>
-  | ((ctx: InputRulesFactoryContext) => InputRulesConfig<TEditor>);
+export type InputRulesDefinition<TEditor = Editor> = InputRulesConfig<TEditor>;
 
 export type InputRulesConfig<TEditor = Editor> = Array<
   InputRule<any, TEditor> | InputRuleReference

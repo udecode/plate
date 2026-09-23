@@ -661,13 +661,13 @@ const withViewTransaction = <V extends Value>(
     props: Parameters<ViewBlocksApi['set']>[0],
     options?: Parameters<ViewBlocksApi['set']>[1]
   ) =>
-    runImplicitSelectionMutation(options, () => {
-      transaction.blocks.set(props, options);
-    });
+    runImplicitSelectionMutation(options, () =>
+      transaction.blocks.set(props, options)
+    ) ?? false;
   const toggleViewBlocks: ViewBlocksApi['toggle'] = (props, options) =>
-    runImplicitSelectionMutation(options, () => {
-      transaction.blocks.toggle(props, options);
-    });
+    runImplicitSelectionMutation(options, () =>
+      transaction.blocks.toggle(props, options)
+    ) ?? false;
 
   const viewTransaction = Object.freeze<EditorUpdateTransaction<V, any>>({
     ...state,
@@ -777,9 +777,9 @@ const withViewTransaction = <V extends Value>(
           transaction.nodes.remove(options as never);
         }),
       replace: (nodes, options) =>
-        runImplicitSelectionMutation({ at: options.at }, () => {
-          transaction.nodes.replace(nodes, options);
-        }),
+        runImplicitSelectionMutation({ at: options.at }, () =>
+          transaction.nodes.replace(nodes, options)
+        ) ?? false,
       replaceChildren: (children, options) =>
         runImplicitSelectionMutation({ at: options.at }, () => {
           transaction.nodes.replaceChildren(children, options);
@@ -812,9 +812,9 @@ const withViewTransaction = <V extends Value>(
         element: ElementIn<V>,
         options?: { at?: NodeSelection | NodeTarget }
       ) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.wrap(element, options as never);
-        }),
+        runImplicitSelectionMutation(options, () =>
+          transaction.nodes.wrap(element, options as never)
+        ) ?? false,
     }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {

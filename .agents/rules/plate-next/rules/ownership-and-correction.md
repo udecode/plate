@@ -162,6 +162,20 @@ Plate Next means:
   descriptor compiler rather than restoring the carrier.
 - Plate product APIs may compose Plite APIs, but they must not mirror Plite
   namespaces or create a second mutation/read layer.
+- Declarative input rules compile privately around canonical Plite commands.
+  Keep `enabled` and `resolve` read-only. An accepted rule stages one candidate
+  transaction: `undefined` consumes, `next()` composes the original command
+  after its prefix, and `decline()` discards the candidate before running the
+  original input. Structural commands report whether they staged a change so
+  feature rules do not shadow-copy a document to predict schema admission.
+  Package rule families use ordinary functions plus `defineInputRule`; bind the
+  owner descriptor only when its capabilities are needed for inference. Do not
+  restore a public executor plugin, injected rule builder, or parallel factory
+  language.
+- Structural behavior conditions belong on the exact break, delete, merge, or
+  normalize leaf they decide. `undefined` delegates that leaf and `false` is a
+  terminal boolean decision. Reject a global matcher that selects or shadows
+  an entire rule family.
 - No public compat aliases, old Slate shims, or docs for old API names.
 - Private bridges are allowed only with owner, deletion gate, and proof.
   They are not allowed to become a dumping ground for displaced product/plugin

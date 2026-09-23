@@ -187,6 +187,22 @@ export const splitNodes = ((
       }
       if (SelectionApi.isNode(at)) return;
 
+      if (
+        !hasExplicitSelector &&
+        (LocationApi.isPoint(at) || LocationApi.isRange(at))
+      ) {
+        const point = LocationApi.isRange(at) ? RangeApi.start(at) : at;
+        const [object] = getNodes(editor, {
+          at: point,
+          match: (node) =>
+            NodeApi.isElement(node) && getEditorSchema(editor).isObject(node),
+          mode: 'highest',
+          voids: true,
+        });
+
+        if (object) return;
+      }
+
       if (match == null) {
         match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
       }
@@ -357,7 +373,9 @@ export const splitNodes = ((
             if (
               path.length < highestPath.length ||
               path.length === 0 ||
-              (!voids && NodeApi.isElement(node) && editorIsVoid(editor, node))
+              (NodeApi.isElement(node) &&
+                (getEditorSchema(editor).isObject(node) ||
+                  (!voids && editorIsVoid(editor, node))))
             ) {
               break;
             }

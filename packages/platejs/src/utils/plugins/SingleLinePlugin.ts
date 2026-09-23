@@ -1,6 +1,7 @@
 import { editorCommands, NodeApi } from '../../facade';
 import { definePlugin } from '../../lib/plugin/definePlugin';
 import { PLUGINS } from '../plate-keys';
+import { joinNextRootBlock } from './joinSingleRootBlock.internal';
 
 const LINE_BREAK = /[\r\n\u2028\u2029]/g;
 
@@ -19,21 +20,7 @@ export const SingleLinePlugin = definePlugin(PLUGINS.singleLine, {
       event: 'children',
       query: 'root',
       correct({ tx }) {
-        const children = tx.nodes.children();
-
-        if (children.length > 1) {
-          const secondText = NodeApi.string(children[1]);
-
-          if (secondText.length === 0) {
-            tx.nodes.remove({ at: [1] });
-            return;
-          }
-
-          tx.nodes.merge({
-            at: [1],
-            match: (_, path) => path.length === 1,
-          });
-        }
+        joinNextRootBlock(tx, '', 'SingleLinePlugin');
       },
     },
     {
@@ -45,16 +32,7 @@ export const SingleLinePlugin = definePlugin(PLUGINS.singleLine, {
           const filteredText = node.text.replace(LINE_BREAK, '');
 
           if (filteredText !== node.text) {
-            tx.text.delete({
-              at: {
-                anchor: { offset: 0, path },
-                focus: { offset: node.text.length, path },
-              },
-            });
-
-            if (filteredText.length > 0) {
-              tx.text.insert(filteredText, { at: { offset: 0, path } });
-            }
+            tx.nodes.replace({ ...node, text: filteredText }, { at: path });
           }
         }
       },

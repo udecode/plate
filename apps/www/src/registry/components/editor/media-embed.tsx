@@ -61,7 +61,14 @@ export function MediaEmbedElement(
 
   return (
     <MediaToolbar plugin={MediaEmbedPlugin} selected={selected}>
-      <EditorElement className="py-2.5" {...props}>
+      <EditorElement
+        {...props}
+        attributes={{
+          ...props.attributes,
+          'data-node-selection-highlight': 'self',
+        }}
+        className="py-2.5"
+      >
         <figure className="relative m-0 w-full cursor-default hover:[&_.editor-media-resize-handle]:after:opacity-100">
           <div contentEditable={false}>
             <Resizable

@@ -2,27 +2,29 @@ import katex, { type KatexOptions } from 'katex';
 
 import {
   BaseParagraphPlugin,
-  createRuleFactory,
+  createBlockFenceInputRule,
+  defineInputRule,
   definePlugin,
   type Editor,
   type ElementOf,
+  type InputRuleEditor,
   matchDelimitedInline,
   type NodeInsertOptions,
+  type PluginReference,
+  RangeApi,
+  type SelectionInputRuleContext,
   PLUGINS,
   property,
 } from '../../core';
-import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 
 const INLINE_EQUATION_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_EQUATION_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
 
-const getMathExcludedSelectors = (editor: Editor) => {
-  const codeBlockDescriptor = getCompiledPlatePlugin(editor, PLUGINS.codeBlock);
+const getMathExcludedSelectors = (editor: InputRuleEditor<Editor>) => {
+  const codeBlock = editor.plugin(PLUGINS.codeBlock);
 
   return [
-    ...(codeBlockDescriptor
-      ? [editor.plugin(codeBlockDescriptor).schema.type]
-      : []),
+    ...(codeBlock.installed ? [codeBlock.schema.type] : []),
     BaseEquationPlugin,
     BaseInlineEquationPlugin,
   ];
@@ -110,115 +112,113 @@ type InlineMathMatch = {
 };
 
 export const MathRules = (() => {
-  const block = createRuleFactory(BaseEquationPlugin)<{
+  type CommonOptions = {
+    enabled?: (context: SelectionInputRuleContext) => boolean;
+    priority?: number;
+  };
+
+  const isEnabled = (
+    context: SelectionInputRuleContext,
+    enabled: CommonOptions['enabled']
+  ) =>
+    (!enabled || enabled(context)) &&
+    !context.editor.read.nodes.some({
+      type: getMathExcludedSelectors(context.editor),
+    });
+
+  const blockRule = ({
+    block = BaseParagraphPlugin,
+    enabled,
+    fence = '$$',
+    on,
+    priority = 100,
+  }: CommonOptions & {
+    block?: PluginReference | string;
+    fence?: string;
     on: 'break' | 'match';
-  }>({
-    type: 'blockFence',
-    apply: ({ editor, tx }, match) => {
-      tx.nodes.remove({ at: match.path });
-      tx.nodes.insert(
-        {
-          children: [{ text: '' }],
-          latex: '',
-          type: editor.plugin(BaseEquationPlugin).schema.type,
-        },
-        {
-          at: match.path,
-          select: true,
+  }) =>
+    createBlockFenceInputRule({
+      block,
+      fence,
+      on,
+      priority,
+      enabled: (context) => isEnabled(context, enabled),
+      apply: ({ editor, tx }, match) => {
+        tx.nodes.remove({ at: match.path });
+        tx.nodes.insert(
+          {
+            children: [{ text: '' }],
+            latex: '',
+            type: editor.plugin(BaseEquationPlugin).schema.type,
+          },
+          {
+            at: match.path,
+            select: true,
+          }
+        );
+      },
+    });
+
+  const inline = ({ enabled, priority }: CommonOptions = {}) =>
+    defineInputRule(BaseInlineEquationPlugin, {
+      target: 'insertText',
+      trigger: '$',
+      priority,
+      enabled: (context) => isEnabled(context, enabled),
+      resolve: (context) => {
+        const target = context.options?.at;
+        const selection = context.editor.read.selection();
+
+        if (
+          target &&
+          (!selection ||
+            !RangeApi.isRange(target) ||
+            !RangeApi.equals(target, selection))
+        ) {
+          return undefined;
         }
-      );
 
-      return true;
-    },
-    block: BaseParagraphPlugin,
-    fence: '$$',
-    on: ({ on }) => on,
-    priority: 100,
-  });
-  const inline = createRuleFactory(BaseInlineEquationPlugin)<
-    {},
-    {},
-    InlineMathMatch
-  >({
-    type: 'insertText',
-    apply: ({ editor, tx }, match) => {
-      tx.text.delete({
-        at: match.deleteRange,
-      });
-      tx.selection.set(match.deleteRange.anchor);
-      tx.nodes.insert({
-        children: [{ text: '' }],
-        latex: match.latex,
-        type: editor.plugin(BaseInlineEquationPlugin).schema.type,
-      });
+        const match = matchDelimitedInline(context, {
+          boundaryRe: INLINE_EQUATION_BOUNDARY_RE,
+          followRe: INLINE_EQUATION_FOLLOW_RE,
+          open: '$',
+          requireClosingDelimiter: false,
+          trim: 'reject',
+        });
 
-      return true;
-    },
-    resolve: (context) => {
-      if (context.text !== '$' || context.options?.at) return undefined;
+        if (!match) return undefined;
 
-      const match = matchDelimitedInline(context, {
-        boundaryRe: INLINE_EQUATION_BOUNDARY_RE,
-        followRe: INLINE_EQUATION_FOLLOW_RE,
-        open: '$',
-        requireClosingDelimiter: false,
-        trim: 'reject',
-      });
-
-      if (!match) return undefined;
-
-      return {
-        deleteRange: match.deleteRange,
-        latex: match.content,
-      };
-    },
-    trigger: '$',
-  });
+        return {
+          deleteRange: match.deleteRange,
+          latex: match.content,
+        } satisfies InlineMathMatch;
+      },
+      apply: ({ editor, tx }, match) => {
+        tx.text.delete({ at: match.deleteRange });
+        tx.selection.set(match.deleteRange.anchor);
+        tx.nodes.insert({
+          children: [{ text: '' }],
+          latex: match.latex,
+          type: editor.plugin(BaseInlineEquationPlugin).schema.type,
+        });
+      },
+    });
 
   return {
     markdown: (
       options:
         | (NonNullable<Parameters<typeof inline>[0]> & { variant: '$' })
-        | (Parameters<typeof block>[0] & { variant: '$$' })
+        | (Parameters<typeof blockRule>[0] & { variant: '$$' })
     ) => {
       if (options.variant === '$$') {
         const { variant: _, ...ruleOptions } = options;
-        const rule = block(ruleOptions);
 
-        if (rule.target === 'insertBreak') {
-          const { enabled } = rule;
-
-          rule.enabled = (context) =>
-            (enabled?.(context) ?? true) &&
-            !context.editor.read.nodes.some({
-              type: getMathExcludedSelectors(context.editor),
-            });
-        }
-
-        if (rule.target === 'insertText') {
-          const { enabled } = rule;
-
-          rule.enabled = (context) =>
-            (enabled?.(context) ?? true) &&
-            !context.editor.read.nodes.some({
-              type: getMathExcludedSelectors(context.editor),
-            });
-        }
-
-        return rule;
+        return blockRule(ruleOptions);
       }
 
       const { variant: _, ...ruleOptions } = options;
-      const rule = inline(ruleOptions);
-      const { enabled } = rule;
 
-      rule.enabled = (context) =>
-        (enabled?.(context) ?? true) &&
-        !context.editor.read.nodes.some({
-          type: getMathExcludedSelectors(context.editor),
-        });
-
-      return rule;
+      return inline(ruleOptions);
     },
   };
 })();

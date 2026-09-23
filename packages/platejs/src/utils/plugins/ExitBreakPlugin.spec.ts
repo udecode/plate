@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, definePlugin } from 'platejs';
+import { BaseParagraphPlugin, createEditorView, definePlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
 
 import { schema } from '../../core';
@@ -166,6 +166,63 @@ describe('ExitBreakPlugin', () => {
         type: 'table',
       },
       { children: [{ text: '' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('inserts and undoes inside the active named root', () => {
+    const RootHolderPlugin = definePlugin('exitBreakRootHolder', {
+      schema: {
+        element: {
+          blockContent: true,
+          contentRoots: {
+            body: {
+              content: schema.content.type(BaseParagraphPlugin.name, {
+                default: { type: BaseParagraphPlugin.name },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [ExitBreakPlugin, RootHolderPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0], root: 'header' },
+        focus: { offset: 4, path: [0, 0], root: 'header' },
+      },
+      initialValue: {
+        children: [
+          {
+            childRoots: { body: 'header' },
+            children: [{ text: '' }],
+            type: RootHolderPlugin.name,
+          },
+        ],
+        roots: {
+          header: [
+            { children: [{ text: 'head' }], type: BaseParagraphPlugin.name },
+          ],
+        },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    header.plugin(ExitBreakPlugin).update.insert();
+
+    expect(header.read.children()).toEqual([
+      { children: [{ text: 'head' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'paragraph' },
+    ]);
+    expect(editor.read.children()).toHaveLength(1);
+
+    editor.api.history.undo();
+
+    expect(header.read.children()).toEqual([
+      { children: [{ text: 'head' }], type: 'paragraph' },
     ]);
   });
 });

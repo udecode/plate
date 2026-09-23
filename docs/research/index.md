@@ -17,6 +17,10 @@ This is the entrypoint for the compiled agent research layer.
 - [Plite core ownership](decisions/plite-core-ownership.md): four-question audit;
   retain document/view and extension ownership, pursue removing unused facets
   and default-only public command evaluation.
+- [Editing rules and structural commands](decisions/editing-command-ownership.md):
+  keep declarative input rules as canonical command middleware, make each rule
+  attempt atomic, and cut false public executor/helper layers plus type-only
+  normalization. Includes the complete 33-member audit and runtime probes.
 - [Plite view ownership](decisions/plite-view-ownership.md): five-question audit;
   pursue removing the Widget geometry carrier and public React Runtime handle;
   keep selection, native input and accessibility responsibilities distinct.
@@ -42,7 +46,11 @@ This is the entrypoint for the compiled agent research layer.
   conversations, live attachment placement and document-level discovery;
   dialog design specified; three bounded native candidates rejected on scale
   or saved-history correctness. Implementation readiness remains gated.
-- [Code text ownership](decisions/code-text-ownership.md),
+- [Code text ownership](decisions/code-text-ownership.md): retain adopted
+  native/CodeMirror owners; remove hidden grammar mutation and intermediate
+  insertion types, preserve selection through formatting and indentation,
+  and isolate copied backend initialization. Includes all 13 source groups.
+- Related decisions:
   [authored changes](decisions/authored-change-ownership.md),
   [structural comparison](decisions/structural-comparison.md), and
   [performance candidate reuse](decisions/performance-candidate-reuse.md).

@@ -181,8 +181,8 @@ type _PublicEditorLifecycleMethods = [
     ReturnType<typeof editor.read.selection>
   >,
   ExpectAssignable<boolean, ReturnType<typeof editor.read.schema.isBlock>>,
-  ExpectAssignable<void, ReturnType<typeof editor.update.blocks.set>>,
-  ExpectAssignable<void, ReturnType<typeof editor.update.blocks.toggle>>,
+  ExpectAssignable<boolean, ReturnType<typeof editor.update.blocks.set>>,
+  ExpectAssignable<boolean, ReturnType<typeof editor.update.blocks.toggle>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.nodes.lift>>,
   ExpectAssignable<
     import('plitejs').Path | undefined,
@@ -190,7 +190,7 @@ type _PublicEditorLifecycleMethods = [
   >,
   ExpectAssignable<void, ReturnType<typeof editor.update.text.insert>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.nodes.insert>>,
-  ExpectAssignable<void, ReturnType<typeof editor.update.nodes.replace>>,
+  ExpectAssignable<boolean, ReturnType<typeof editor.update.nodes.replace>>,
   ExpectAssignable<
     void,
     ReturnType<typeof editor.update.nodes.replaceChildren>

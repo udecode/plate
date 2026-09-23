@@ -1,5 +1,5 @@
 {
-  "generation": "50a8d96075fcad42b22de4409aae39888dc0c046c9987cbcd34909ee6da7f0e8",
+  "generation": "2f9fbcec2c00ca9ea6557a2160605404bf6d4e7235db4ad079f3db5875f4cce5",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2121,6 +2121,11 @@
               "path": "components/editor/code-block-static.tsx",
               "type": "registry:component",
               "target": "@components/editor/code-block-static.tsx"
+            },
+            {
+              "path": "components/editor/code-block-lowlight.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-lowlight.ts"
             }
           ],
           "name": "code-block-static",
@@ -2669,7 +2674,7 @@
           "dependencies": [
             "platejs",
             "lowlight",
-            "diff-match-patch-ts@^0.6.0",
+            "diff-match-patch-ts",
             "lucide-react"
           ],
           "files": [
@@ -2677,6 +2682,11 @@
               "path": "components/editor/code-block.tsx",
               "type": "registry:component",
               "target": "@components/editor/code-block.tsx"
+            },
+            {
+              "path": "components/editor/code-block-lowlight.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-lowlight.ts"
             }
           ],
           "name": "code-block",
@@ -3630,17 +3640,17 @@
           "description": "Browser-local uploads for demos and disposable editors.",
           "files": [
             {
-              "path": "components/editor/upload/ephemeral.ts",
+              "path": "components/editor/upload/browser.ts",
               "type": "registry:component",
-              "target": "@components/editor/upload/ephemeral.ts"
+              "target": "@components/editor/upload/browser.ts"
             }
           ],
-          "name": "upload-ephemeral",
+          "name": "upload-browser",
           "registryDependencies": [
             "@plate/upload"
           ],
           "type": "registry:component",
-          "title": "Ephemeral Upload",
+          "title": "Browser Upload",
           "meta": {
             "docs": [
               {
@@ -4433,6 +4443,39 @@
           ],
           "name": "use-mounted",
           "type": "registry:hook"
+        },
+        {
+          "description": "Upload files through a browser-local or R2-backed gateway.",
+          "files": [
+            {
+              "path": "examples/upload-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ]
+          },
+          "name": "upload-demo",
+          "registryDependencies": [
+            "@plate/editor",
+            "@plate/dnd",
+            "@plate/media",
+            "@plate/media-toolbar-button",
+            "@plate/paragraph",
+            "@plate/toolbar",
+            "@plate/upload",
+            "@plate/upload-browser"
+          ],
+          "title": "Upload Files",
+          "type": "registry:example",
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ]
         },
         {
           "name": "suggestion-format-demo",
@@ -6525,7 +6568,7 @@
             "@plate/editor",
             "@plate/editor-plugins",
             "@plate/excalidraw",
-            "@plate/upload-ephemeral",
+            "@plate/upload-browser",
             "@plate/ai",
             "@plate/dnd"
           ],
@@ -8808,6 +8851,11 @@
               "path": "components/editor/code-block-static.tsx",
               "type": "registry:component",
               "target": "@components/editor/code-block-static.tsx"
+            },
+            {
+              "path": "components/editor/code-block-lowlight.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-lowlight.ts"
             }
           ],
           "name": "code-block-static",
@@ -9356,7 +9404,7 @@
           "dependencies": [
             "platejs",
             "lowlight",
-            "diff-match-patch-ts@^0.6.0",
+            "diff-match-patch-ts",
             "lucide-react"
           ],
           "files": [
@@ -9364,6 +9412,11 @@
               "path": "components/editor/code-block.tsx",
               "type": "registry:component",
               "target": "@components/editor/code-block.tsx"
+            },
+            {
+              "path": "components/editor/code-block-lowlight.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-lowlight.ts"
             }
           ],
           "name": "code-block",
@@ -10317,17 +10370,17 @@
           "description": "Browser-local uploads for demos and disposable editors.",
           "files": [
             {
-              "path": "components/editor/upload/ephemeral.ts",
+              "path": "components/editor/upload/browser.ts",
               "type": "registry:component",
-              "target": "@components/editor/upload/ephemeral.ts"
+              "target": "@components/editor/upload/browser.ts"
             }
           ],
-          "name": "upload-ephemeral",
+          "name": "upload-browser",
           "registryDependencies": [
             "@plate/upload"
           ],
           "type": "registry:component",
-          "title": "Ephemeral Upload",
+          "title": "Browser Upload",
           "meta": {
             "docs": [
               {
@@ -11120,6 +11173,39 @@
           ],
           "name": "use-mounted",
           "type": "registry:hook"
+        },
+        {
+          "description": "Upload files through a browser-local or R2-backed gateway.",
+          "files": [
+            {
+              "path": "examples/upload-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/upload"
+              }
+            ]
+          },
+          "name": "upload-demo",
+          "registryDependencies": [
+            "@plate/editor",
+            "@plate/dnd",
+            "@plate/media",
+            "@plate/media-toolbar-button",
+            "@plate/paragraph",
+            "@plate/toolbar",
+            "@plate/upload",
+            "@plate/upload-browser"
+          ],
+          "title": "Upload Files",
+          "type": "registry:example",
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ]
         },
         {
           "name": "suggestion-format-demo",
@@ -13212,7 +13298,7 @@
             "@plate/editor",
             "@plate/editor-plugins",
             "@plate/excalidraw",
-            "@plate/upload-ephemeral",
+            "@plate/upload-browser",
             "@plate/ai",
             "@plate/dnd"
           ],

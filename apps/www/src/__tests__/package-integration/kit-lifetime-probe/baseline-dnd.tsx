@@ -16,7 +16,6 @@ import {
   useDropLine,
 } from 'platejs/dnd/react';
 import { BaseColumnItemPlugin } from 'platejs/layout';
-import { UploadPlugin } from 'platejs/upload/react';
 import {
   ListPlugin,
   type Editor,
@@ -32,6 +31,7 @@ import {
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from 'platejs/table';
+import { UploadPlugin } from 'platejs/upload/react';
 import * as React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';

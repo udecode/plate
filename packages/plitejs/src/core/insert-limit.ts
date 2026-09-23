@@ -2,35 +2,57 @@ import type {
   ContentSlice,
   DescendantIn,
   AnyEditor as Editor,
+  EditorStateView,
   ElementOrTextIn,
   Location,
+  NodeSelection,
   Value,
 } from '../interfaces';
-import { ElementApi, NodeApi, RangeApi, TextApi } from '../interfaces';
+import {
+  ElementApi,
+  NodeApi,
+  RangeApi,
+  SelectionApi,
+  TextApi,
+} from '../interfaces';
 import {
   ContentSlice as ContentSliceValue,
   prepareContentSliceVariant,
 } from './content-slice';
 import { getEditorMaxLength } from './public-state';
 
-const getReplacementLength = (
-  editor: Editor,
-  options: { at?: Location } | undefined
+type InsertLimitSource<V extends Value = Value> =
+  | Editor<V>
+  | EditorStateView<V, any>;
+type InsertLimitTarget = Location | NodeSelection;
+
+const getText = <V extends Value>(
+  source: InsertLimitSource<V>,
+  at?: InsertLimitTarget
+): string =>
+  'read' in source ? source.read.text.string(at) : source.text.string(at);
+
+const getSelection = <V extends Value>(source: InsertLimitSource<V>) =>
+  'read' in source ? source.read.selection() : source.selection();
+
+const getReplacementLength = <V extends Value>(
+  editor: InsertLimitSource<V>,
+  options: { at?: InsertLimitTarget } | undefined
 ) => {
   if (options?.at !== undefined) {
-    return RangeApi.isRange(options.at)
-      ? editor.read.text.string(options.at).length
+    return RangeApi.isRange(options.at) || SelectionApi.isNode(options.at)
+      ? getText(editor, options.at).length
       : 0;
   }
 
-  const selection = editor.read.selection();
+  const selection = getSelection(editor);
 
-  return selection ? editor.read.text.string(selection).length : 0;
+  return selection ? getText(editor, selection).length : 0;
 };
 
-const getRemainingLength = (
-  editor: Editor,
-  options: { at?: Location } | undefined
+const getRemainingLength = <V extends Value>(
+  editor: InsertLimitSource<V>,
+  options: { at?: InsertLimitTarget } | undefined
 ) => {
   const maxLength = getEditorMaxLength(editor);
 
@@ -39,15 +61,14 @@ const getRemainingLength = (
   return Math.max(
     0,
     maxLength -
-      (editor.read.text.string([]).length -
-        getReplacementLength(editor, options))
+      (getText(editor, []).length - getReplacementLength(editor, options))
   );
 };
 
-export const limitTextInsert = (
-  editor: Editor,
+export const limitTextInsert = <V extends Value>(
+  editor: InsertLimitSource<V>,
   text: string,
-  options: { at?: Location } | undefined
+  options: { at?: InsertLimitTarget } | undefined
 ) => {
   const remaining = getRemainingLength(editor, options);
 
@@ -86,9 +107,9 @@ const limitNode = <TNode extends ElementOrTextIn<Value>>(
 };
 
 export const limitFragmentInsert = <V extends Value>(
-  editor: Editor<V>,
+  editor: InsertLimitSource<V>,
   fragment: ReadonlyArray<DescendantIn<V>>,
-  options: { at?: Location } | undefined
+  options: { at?: InsertLimitTarget } | undefined
 ) => {
   const remainingLength = getRemainingLength(editor, options);
 
@@ -127,9 +148,9 @@ const getOpenEdgeDepth = (
 
 /** Apply the editor's insertion limit while preserving valid open slice edges. */
 export const limitSliceInsert = <V extends Value>(
-  editor: Editor<V>,
+  editor: InsertLimitSource<V>,
   slice: ContentSlice<V>,
-  options: { at?: Location } | undefined
+  options: { at?: InsertLimitTarget } | undefined
 ): ContentSlice<V> => {
   const content = slice.content as ReadonlyArray<DescendantIn<V>>;
   const limited = limitFragmentInsert(editor, content, options);
@@ -147,9 +168,9 @@ export const limitNodeInsert = <
   V extends Value,
   TNode extends ElementOrTextIn<V>,
 >(
-  editor: Editor<V>,
+  editor: InsertLimitSource<V>,
   nodes: TNode | readonly TNode[],
-  options: { at?: Location } | undefined
+  options: { at?: InsertLimitTarget } | undefined
 ) => {
   const isList = Array.isArray(nodes);
   const input = (isList ? nodes : [nodes]) as ReadonlyArray<DescendantIn<V>>;

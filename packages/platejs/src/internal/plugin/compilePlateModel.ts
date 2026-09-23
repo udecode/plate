@@ -660,6 +660,27 @@ const lowerPluginContent = (
   return Object.freeze({
     ...content,
     allowed,
+    ...(content.prefix
+      ? {
+          prefix: Object.freeze(
+            content.prefix.map((slot) =>
+              Object.freeze({
+                ...slot,
+                element:
+                  typeof slot.element === 'string'
+                    ? slot.element
+                    : resolvePluginElementSource(
+                        slot.element.source,
+                        getSchemaElementSourceReference(slot.element),
+                        owner,
+                        elementTypes,
+                        references
+                      ),
+              })
+            )
+          ),
+        }
+      : {}),
     ...(resolvedType && content.default !== 'text'
       ? { default: Object.freeze({ type: resolvedType }) }
       : {}),
@@ -1328,6 +1349,24 @@ const lowerApplicationContent = (
   return Object.freeze({
     ...content,
     allowed: lowerApplicationContentRule(model, content.allowed),
+    ...(content.prefix
+      ? {
+          prefix: Object.freeze(
+            content.prefix.map((slot) =>
+              Object.freeze({
+                ...slot,
+                element:
+                  typeof slot.element === 'string'
+                    ? slot.element
+                    : resolveApplicationElementSource(
+                        model,
+                        slot.element as SchemaElementSourceReference
+                      ),
+              })
+            )
+          ),
+        }
+      : {}),
     ...(defaultReference
       ? {
           default: {
@@ -1426,8 +1465,8 @@ export const compileEditorApplicationSchema = (
     root !== undefined &&
     (typeof root !== 'object' ||
       root === null ||
-      !Number.isInteger(root.min) ||
-      root.min < 1)
+      !Number.isInteger((root.min ?? 0) + (root.prefix?.length ?? 0)) ||
+      (root.min ?? 0) + (root.prefix?.length ?? 0) < 1)
   ) {
     throw new TypeError(
       'Editor application schema root min must be a positive integer.'

@@ -364,8 +364,8 @@ describe('detached slice content fitting', () => {
           }),
       },
       {
-        accepted: false,
-        id: 'isolating-barrier',
+        accepted: true,
+        id: 'isolating-open-content',
         parent: () => matrixCell([paragraph('old')]),
         slice: (text: string) =>
           ContentSlice.fromJSON({

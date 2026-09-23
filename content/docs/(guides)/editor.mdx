@@ -328,8 +328,9 @@ Add `--watch` during development. Gate committed artifacts in CI:
 }
 ```
 
-The generated module exports exact editor/value types, static schema handles,
-and a fingerprint. It does not own runtime plugin composition:
+The generated TypeScript module exports exact editor/value types and static
+schema handles. The generated JSON contract carries the compiled schema
+fingerprint. Neither artifact owns runtime plugin composition:
 
 ```tsx title="src/editor/document-editor.tsx"
 import { EditorRoot, useCreateEditor } from "platejs/react";

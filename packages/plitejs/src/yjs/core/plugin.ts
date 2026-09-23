@@ -141,7 +141,8 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
 
             while (children.length < rootContent.min) {
               const child = context.schema.createDefaultRootChild(
-                root === 'main' ? undefined : root
+                root === 'main' ? undefined : root,
+                children.length
               );
 
               if (!child) {

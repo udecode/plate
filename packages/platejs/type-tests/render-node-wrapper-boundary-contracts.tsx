@@ -3,6 +3,7 @@ import {
   type RenderStaticNodeWrapper,
   type RenderStaticNodeWrapperProps,
 } from 'platejs';
+import { DefaultAuthoredPlugin } from 'platejs/authored';
 import {
   definePlugin,
   type RenderNodeWrapper,
@@ -50,6 +51,13 @@ const BaseAdaptedWrapperPlugin = defineHeadlessPlugin('adaptedWrapper', {
 const AdaptedWrapperPlugin = toReactPlugin(BaseAdaptedWrapperPlugin, {
   component: () => null,
 });
+
+const RuntimeDependencyWrapperPlugin = definePlugin(
+  'runtimeDependencyWrapper',
+  {
+    dependencies: [DefaultAuthoredPlugin],
+  }
+);
 
 const WrapperBoundaryPlugin = definePlugin('wrapperBoundary', {
   api: () => ({
@@ -127,6 +135,16 @@ AdaptedWrapperPlugin.configure({
   },
 });
 
+const runtimeDependencyWrapper = ({
+  children,
+}: RenderNodeWrapperProps<typeof RuntimeDependencyWrapperPlugin>) => children;
+
+RuntimeDependencyWrapperPlugin.configure({
+  slots: {
+    wrapNodeChildren: runtimeDependencyWrapper,
+  },
+});
+
 const exactWrapper: RenderNodeWrapper<typeof WrapperBoundaryPlugin> = ({
   editor,
   element,
@@ -196,6 +214,7 @@ UnrelatedWrapperPlugin.configure({
 
 void exactWrapper;
 void adaptedWrapper;
+void runtimeDependencyWrapper;
 void exactRootNode;
 void exactStaticWrapper;
 void exactStaticRootNode;

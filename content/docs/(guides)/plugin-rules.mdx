@@ -5,8 +5,9 @@ description: Configure common editing behaviors.
 
 Plugin Rules control how editor nodes respond to common user actions. Instead of overriding the editor methods, you can configure these behaviors directly on a plugin's `rules` property.
 
-This guide shows you how to use `rules.break`, `rules.delete`, `rules.merge`, `rules.normalize`, `rules.selection`
- and `rules.match` to create intuitive editing experiences.
+This guide shows you how to use `rules.break`, `rules.delete`, `rules.merge`,
+`rules.normalize`, and `rules.selection` to create intuitive editing
+experiences.
 
 <ComponentPreview name="plugin-rules-demo" />
 
@@ -271,9 +272,8 @@ const plugins = [
   // ...otherPlugins,
   CodeBlockPlugin.configure({
     rules: {
-      delete: { empty: 'reset' },
-      match: ({ read, rule }) => {
-        return rule === 'delete.empty' && read.isEmpty();
+      delete: {
+        empty: ({ read }) => (read.isEmpty() ? 'reset' : undefined),
       },
     },
   }),
@@ -366,9 +366,9 @@ const plugins = [
   // ...otherPlugins,
   ListPlugin.configure({
     rules: {
-      delete: { start: 'reset' },
-      match: ({ rule, node }) => {
-        return rule === 'delete.start' && Boolean(node.listStyle);
+      delete: {
+        start: ({ node }) =>
+          node.listStyle ? 'reset' : undefined,
       },
     },
   }),
@@ -572,13 +572,14 @@ After normalization (empty link removed):
 </p>
 ```
 
-## `rules.match`
+## Conditional rule leaves
 
-The `match` function in plugin rules allows you to override the default behavior of specific plugins based on node properties beyond just type matching. This is particularly useful when you want to extend existing node types with new behaviors.
+Each structural rule leaf accepts either its action directly or a resolver.
+The resolver receives the owning plugin context plus the current `node` and
+`path`. Return an action to decide that leaf, or `undefined` to let the next
+contributor decide it. Boolean `false` is a terminal value for boolean leaves.
 
-### Examples
-
-**Code block with custom empty detection:**
+Use a resolver on the exact behavior that needs a condition:
 
 ```tsx
 import { CodeBlockPlugin } from 'platejs/react';
@@ -587,14 +588,22 @@ const plugins = [
   // ...otherPlugins,
   CodeBlockPlugin.configure({
     rules: {
-      delete: { empty: 'reset' },
-      match: ({ read, rule }) => {
-        return rule === 'delete.empty' && read.isEmpty();
+      delete: {
+        empty: ({ read }) => (read.isEmpty() ? 'reset' : undefined),
+      },
+      merge: {
+        removeEmpty: ({ node }) =>
+          node.keepDuringMerge ? false : undefined,
       },
     },
   }),
 ];
 ```
+
+Resolvers from other plugins run in plugin priority and source order. If they
+all return `undefined`, Plate resolves the same leaf from the plugin compiled
+for the node's persisted type. A condition on one leaf cannot shadow unrelated
+break, delete, merge, or normalize behavior.
 
 ## Feature-specific reset commands
 

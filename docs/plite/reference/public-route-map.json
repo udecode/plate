@@ -1,4 +1,5 @@
 {
+  "/docs/forced-layout": "/docs/schema#require-a-title",
   "/docs/plite": "/docs",
   "/docs/plite/api/nodes/editor": "/docs/api/editor-api",
   "/docs/plite/api/transforms": "/docs/api/editor-transforms",

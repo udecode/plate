@@ -214,8 +214,10 @@ Current priorities:
   options. `plate generate` discovers
   the unique exported plugin tuple and optional application schema by validated
   runtime shape, never fixed identifiers. It may emit committed exact `Editor`,
-  `Value`, schema, mutation, and fingerprint artifacts. It never emits the
-  runtime plugin owner or becomes the ordinary docs path. Do not make ordinary `editor.api`,
+  `Value`, schema, and mutation TypeScript contracts plus a JSON schema
+  contract with the compiled fingerprint. It never duplicates that fingerprint
+  in generated TypeScript, emits the runtime plugin owner, or becomes the
+  ordinary docs path. Do not make ordinary `editor.api`,
   `editor.read`, or `editor.update` access recursively evaluate the complete
   application grammar, and do not introduce size heuristics or depth-limited
   precision.
@@ -478,6 +480,24 @@ Current priorities:
   `false` rejects the command and stops fallback.
   The owning plugin or Plate stage contextually infers installed transaction
   capabilities without callback annotations or editor type arguments.
+- Input rules are feature-owned declarations compiled into private middleware
+  around the canonical text, break, and data commands. `enabled` and `resolve`
+  are read-only and create no transaction. The first resolved rule receives one
+  transaction; returning `undefined` consumes the input, its typed `next(...)`
+  token composes the original command after that prefix, and `decline()` discards
+  the candidate and delegates the original input. A thrown apply publishes
+  nothing. Structural commands report whether they actually staged a change,
+  so a matched marker is consumed only when its conversion applies. Package
+  rule families are ordinary functions built
+  with `defineInputRule(rule)` or descriptor-bound
+  `defineInputRule(owner, rule)`; no public executor plugin, injected builder
+  DSL, or separate rule-factory language is part of the contract.
+- Structural break, delete, merge, and normalize policy resolves at the exact
+  leaf. A leaf may be a direct value or an owner-context resolver; `undefined`
+  delegates that leaf and boolean `false` is terminal. Do not restore a global
+  matcher that shadows an entire rule family. Positional document policy uses
+  an app-owned convergent correction that constructs complete schema-valid
+  nodes, not a path/type retagging plugin.
 - Core owns the author-facing codec types and MIME registry entry for a
   universal first-party format when that contract needs only type dependencies.
   Feature packages must not activate built-in format typing through empty or
@@ -818,6 +838,12 @@ Current priorities:
   export presentation presets. An exporter may accept one exact caller-owned
   stylesheet, but it never injects a hidden Plate theme or defines an additive
   override protocol around package styling.
+- Code-block commands construct schema-valid code nodes directly, preserving
+  their distinct insert/upsert selection policy without exposing an intermediate
+  default type. Optional JSON prettifying belongs to copied UI and edits the
+  canonical text through Plite. Syntax readers do not mutate a caller's
+  highlighter; copied native and static kits register their parser resources
+  before use.
 - Independently placed DOM parts are independent primitives with ordinary DOM
   props such as `className` and `style`. They compose as siblings; a public
   root or `*ClassName` control prop requires a real shared lifecycle or state

@@ -8,17 +8,19 @@ Question: What belongs to persisted media content, captions and display, and whi
 
 ## Current decision
 
-Unassessed. No review conclusion is recorded.
+[2026-09-22-caret-navigation-robustness-review](../review-records/2026-09-22-caret-navigation-robustness-review.json) — **pursue**. Pursue a Plite-owned navigation contract review, not a new media plugin or public schema flag. Current covered media behavior and the updated behavior law agree on owner/caption horizontal traversal, focused full-caption deletion, and reverse vertical traversal through visible versus hidden captions. It is still too strong to call the caret engine regression-proof: reverse vertical navigation uses document text length as a proxy for rendered caption visibility before placing the caret with DOM geometry, and horizontal owner navigation determines direction from the Editable host rather than the active text run. The first is an implicit generic-object/UI coupling; the second is an unproved mixed-direction boundary. Keep the Plite selection owner, but derive owner and visible child stops through one private navigation policy and test its cost before accepting an implementation. The selected audit reviewed six interaction families; three retain explicit proof or contract gaps.
 
-Compiled decision: not associated. Source observation: unknown. Source matching is not behavior proof.
+Compiled decision: [media-object-content.md](../decisions/media-object-content.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **unbound**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
+Execution: **completed**. Proof: **stale**. The initial broad browser run timed out during cold docs preview compilation; it was rerun successfully after compilation. This verifies the reporter interaction and covered media cases, not every media behavior.
+
+Outcome: [2026-09-22-media-caption-focused-empty-execution](../review-records/2026-09-22-media-caption-focused-empty-execution.json). Governing reviews: [2026-09-21-media-object-editable-content-final-pass](../review-records/2026-09-21-media-object-editable-content-final-pass.json). Work kind: implementation. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [caption.tsx](../../../apps/www/src/registry/components/editor/caption.tsx), [media-caption-delete.spec.ts](../../../apps/www/tests/browser/media-caption-delete.spec.ts). Changed directories: none identified. Changed source groups: browser/media-caption-delete, capability/image, ui/caption, ui/media-toolbar.
 
 - **unbound-plan**: [2026-07-13-plate-next-media-mention-resizable-package-reviews.md](../../plans/2026-07-13-plate-next-media-mention-resizable-package-reviews.md).
 
@@ -30,9 +32,27 @@ Changed files: none identified. Changed directories: none identified. Changed so
 
 - **completed-plan-without-current-outcome**: [2026-09-19-upload-draft-asset-protocol.md](../../plans/2026-09-19-upload-draft-asset-protocol.md).
 
+- **completed-plan-without-current-outcome**: [2026-09-21-object-elements-with-editable-children.md](../../plans/2026-09-21-object-elements-with-editable-children.md).
+
 - **unbound-plan**: [4803-update-upload-history.md](../../plans/4803-update-upload-history.md).
 
 - **unreconciled-execution**: [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json).
+
+- **stale-execution-proof**: [2026-09-21-object-elements-editable-children-design](../review-records/2026-09-21-object-elements-editable-children-design.json).
+
+- **stale-execution-proof**: [2026-09-22-object-elements-editable-children-execution](../review-records/2026-09-22-object-elements-editable-children-execution.json).
+
+- **stale-execution-proof**: [2026-09-22-object-elements-full-browser-proof-execution](../review-records/2026-09-22-object-elements-full-browser-proof-execution.json).
+
+- **stale-execution-proof**: [2026-09-22-media-object-arrow-navigation-execution](../review-records/2026-09-22-media-object-arrow-navigation-execution.json).
+
+- **stale-execution-proof**: [2026-09-22-media-object-arrow-final-execution](../review-records/2026-09-22-media-object-arrow-final-execution.json).
+
+- **stale-execution-proof**: [2026-09-22-media-object-arrow-ledger-closure-execution](../review-records/2026-09-22-media-object-arrow-ledger-closure-execution.json).
+
+- **stale-execution-proof**: [2026-09-22-media-caption-full-text-delete-execution](../review-records/2026-09-22-media-caption-full-text-delete-execution.json).
+
+- **stale-execution-proof**: [2026-09-22-media-caption-focused-empty-execution](../review-records/2026-09-22-media-caption-focused-empty-execution.json).
 
 ## Plans and execution
 
@@ -45,13 +65,17 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-08-26-media-caption-block-reset-api.md](../../plans/2026-08-26-media-caption-block-reset-api.md) | unknown | implementation | unbound |
 | [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md) | completed | implementation | unbound |
 | [2026-09-19-upload-draft-asset-protocol.md](../../plans/2026-09-19-upload-draft-asset-protocol.md) | completed | implementation | [2026-09-19-uploads-node-model-correction](../review-records/2026-09-19-uploads-node-model-correction.json) |
+| [2026-09-21-object-elements-implementation.md](../../plans/2026-09-21-object-elements-implementation.md) | completed | implementation | [2026-09-21-media-object-editable-content-final-pass](../review-records/2026-09-21-media-object-editable-content-final-pass.json) |
+| [2026-09-21-object-elements-with-editable-children.md](../../plans/2026-09-21-object-elements-with-editable-children.md) | completed | design | [2026-09-21-media-object-editable-content-final-pass](../review-records/2026-09-21-media-object-editable-content-final-pass.json) |
+| [2026-09-22-media-caption-full-text-delete.md](../../plans/2026-09-22-media-caption-full-text-delete.md) | completed | implementation | [2026-09-21-media-object-editable-content-final-pass](../review-records/2026-09-21-media-object-editable-content-final-pass.json) |
+| [2026-09-22-media-object-arrow-navigation.md](../../plans/2026-09-22-media-object-arrow-navigation.md) | completed | implementation | [2026-09-22-media-object-arrow-navigation-audit](../review-records/2026-09-22-media-object-arrow-navigation-audit.json) |
 | [4803-update-upload-history.md](../../plans/4803-update-upload-history.md) | unknown | implementation | unbound |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-- [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json): completed; binding **historical-unbound**; Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review. Proof: unknown / unknown. Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
+No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
 
 ## Inspected documents
 
@@ -76,6 +100,199 @@ Recovered historical implementation completion from the plan. complete The recor
 Proof limits: Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
 
 References: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
+
+### 2026-09-21: 2026-09-21-media-caption-clean-reset-ownership
+
+[Immutable record](../review-records/2026-09-21-media-caption-clean-reset-ownership.json) — review; pursue; observation stale.
+
+Pursue. The patch is not image-only: all five non-void media caption plugins share the command, and image is only the visible browser oracle. True void blocks already insert a fresh default block through Plite and cannot contain editable captions. Replace Plate’s manual extractProps/unset workaround with an opt-in clean mode on the existing Plite tx.blocks.reset owner, leaving preservation as the default.
+
+Question: Should media-caption Enter scrub properties in Plate, generalize to all void nodes, or use a typed clean reset owned by Plite?
+
+- Keep the Plate caller-side NodeApi.extractProps plus unset workaround: reject as the lasting API. It passes current behavior proof but duplicates the structural reset owner, requires callers to understand property cleanup and contradicts the earlier plan’s explicit ban on pre-unsetting arbitrary props.
+- Apply the same cleanup to every void node: reject. Media caption elements are non-void isolating text blocks; true block voids have no editable direct caption and Plite already inserts a fresh schema-default block after a selected void.
+- Make tx.blocks.reset always discard source properties: reject. Block-menu conversions and override reset rules intentionally retain properties allowed by the target schema.
+- Change textAlign or all media properties to drop on every split/type change: reject. Same-type media splits need required media properties such as url until the guarded caption command resets the right half, and ordinary paragraph splits should preserve compatible formatting.
+- Add a caption plugin, void-exit layer or media-specific property denylist: reject. There is one existing shared media policy command and one existing schema-default mutation owner; another public noun or duplicated schema list has no independent job.
+- Extend tx.blocks.reset with preserveProperties?: boolean, defaulting to true, and use false only for the shared media-caption right half: pursue. Plite can atomically remove source element props, apply immediate parent/root default props, and retain children, selection and NodeKey.
+
+Proof limits: This review inspected current schema declarations, reset and void-boundary implementations, production reset consumers, historical ownership decisions and the already verified media regression. The proposed clean-reset option is not implemented or runtime-proved yet. Adoption must add a focused Plite reset contract and rerun the shared five-plugin media contract plus the physical Enter browser case.
+
+References: [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts), [BaseMediaPluginContracts.spec.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [block-void-break.ts](../../../packages/plitejs/src/editor/block-void-break.ts), [insert-break.ts](../../../packages/plitejs/src/editor/insert-break.ts), [plite.md](../../vision/plite.md), [editing-command-ownership.md](../decisions/editing-command-ownership.md), [2026-08-26-media-caption-block-reset-api.md](../../plans/2026-08-26-media-caption-block-reset-api.md), [2026-09-21-media-caption-clean-break-regression.md](../../plans/2026-09-21-media-caption-clean-break-regression.md).
+
+### 2026-09-21: 2026-09-21-media-object-editable-content
+
+[Immutable record](../review-records/2026-09-21-media-object-editable-content.json) — review; pursue; observation stale.
+
+Pursue schema-owned object/content semantics in Plite, retaining direct caption children as the default representation. Three probes establish that empty-caption images are removed by replaceEmpty, atom collapses caption traversal, and caption-only slice export/insertion recreates the image. The previous reset-only recommendation is insufficient. Compare a minimal intrinsic-content capability with a coherent object role that replaces redundant flag composition; keep Plate caption Enter policy above neutral Plite selection/structural/slice laws. No editable-void kind, nested editor or extra persisted wrapper earns default status.
+
+Question: Does Plite need object semantics for a selectable media body with editable children, and how does that compare with ProseMirror, WordGard and Lexical?
+
+- Keep isolating + keyboardSelectable and add preserveProperties:false only: insufficient. It can prevent one property leak but does not encode intrinsic content or separate caption versus whole-object clipboard semantics.
+- Re-enable atom, restore media voids, or add void:editable: reject. Current atom makes child text non-traversable and void means no editor-owned editable children; repackaging the contradiction as a kind does not settle selection, boundaries or transfer.
+- Add a narrow intrinsic-content fact and repair replacement/clipboard/split owners while retaining orthogonal selection/isolation: the strongest minimum candidate. Intrinsic content can be modeled independently from a full object bundle. It must compete against the coherent object role during design.
+- Pursue object behavior on the existing element schema with normal editable children: one semantic owner can distinguish asset meaning, whole-node operations and inner text operations. Prefer replacing/redefining redundant atom and media flag composition over stacking a synonym or publishing an ObjectPlugin. Exact spelling and derivation remain provisional.
+- Add a caption wrapper: reject as the default for one inline caption without independent grammar, identity or block formatting. Keep the direct-child requirement; independent regions can justify revisiting topology. Prior art does not require a tree shape.
+- Use nested editors or named roots/slots for all captions: reject as the default. Lexical image nested editors carry separate state/history concerns; experimental same-state slots are real and useful for multiple isolated regions, but ordinary direct children fit the current one-caption job.
+- Copy WordGard CaptionedFigure or ProseMirror atom settings wholesale: reject. WordGard demonstrates direct caption children but lacks the requested default body selection and safe middle-split behavior. ProseMirror separates node-view content and selection flags; atom alone is not a caption contract.
+- supersedes [2026-09-21-media-caption-clean-reset-ownership](../review-records/2026-09-21-media-caption-clean-reset-ownership.json) (Should media-caption Enter scrub properties in Plate, generalize to all void nodes, or use a typed clean reset owned by Plite?): Retain shared media coverage, direct editable captions, canonical type-conversion ownership and the objection to caller property scrubbing. Supersede the clean-reset-only next target because current model probes establish intrinsic-content and transfer failures. Being non-void does not rule out a stronger object capability. Also qualify the old void Enter claim: the existing fresh-block helper uses a collapsed text selection; applyInsertBreak returns for a NodeSelection.
+
+Proof limits: Three Bun observation cases passed (8 assertions) against current local public model APIs; they record current unwanted behavior and atom traversal, not the desired fix. No product code changed. Local external source/test inspection and official documentation are evidence, not external test execution or latest-upstream guarantees. No mounted browser, clipboard MIME, mobile, collaboration, candidate runtime or performance proof was run. Public object syntax and the split/extract/reset mechanism require Task design; any hot-path/runtime acceptance requires its measured probe.
+
+References: [media-object-content.md](../decisions/media-object-content.md), [README.md](../../plite/research/2026-09-21-media-object-editable-content/README.md), [observations.test.ts](../../plite/research/2026-09-21-media-object-editable-content/observations.test.ts), [observations.txt](../../plite/research/2026-09-21-media-object-editable-content/observations.txt), [repo-registry.tsv](../../plite/research/2026-09-21-media-object-editable-content/repo-registry.tsv), [read-log.tsv](../../plite/research/2026-09-21-media-object-editable-content/read-log.tsv), [lead-ledger.tsv](../../plite/research/2026-09-21-media-object-editable-content/lead-ledger.tsv), [rejected-ledger.tsv](../../plite/research/2026-09-21-media-object-editable-content/rejected-ledger.tsv), [promoted-ledger.tsv](../../plite/research/2026-09-21-media-object-editable-content/promoted-ledger.tsv), [query-ledger.tsv](../../plite/research/2026-09-21-media-object-editable-content/query-ledger.tsv), [schema.ts](../../../packages/plitejs/src/interfaces/schema.ts), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [schema-compiler.ts](../../../packages/plitejs/src/core/schema-compiler.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [get-content-slice.ts](../../../packages/plitejs/src/core/get-content-slice.ts), [positions.ts](../../../packages/plitejs/src/editor/positions.ts), [is-empty.ts](../../../packages/plitejs/src/editor/is-empty.ts), [insert-break.ts](../../../packages/plitejs/src/editor/insert-break.ts), [block-void-break.ts](../../../packages/plitejs/src/editor/block-void-break.ts), [selection-void-target.ts](../../../packages/plitejs/src/react/editable/selection-void-target.ts), [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts), [BaseImagePlugin.ts](../../../packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts), [media-image.tsx](../../../apps/www/src/registry/components/editor/media-image.tsx), [caption.tsx](../../../apps/www/src/registry/components/editor/caption.tsx), [BaseUploadPlugin.ts](../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts), [2026-07-23-schema-api-hard-cuts.md](../../plans/2026-07-23-schema-api-hard-cuts.md), [2026-08-26-media-caption-block-reset-api.md](../../plans/2026-08-26-media-caption-block-reset-api.md), [2026-09-21-media-caption-clean-break-regression.md](../../plans/2026-09-21-media-caption-clean-break-regression.md).
+
+### 2026-09-21: 2026-09-21-media-object-editable-content-final-pass
+
+[Immutable record](../review-records/2026-09-21-media-object-editable-content-final-pass.json) — review; pursue; observation stale.
+
+Pursue and reaffirm a schema-owned object role for independently meaningful owners with editable children, but tighten the target. Object must be a first-class semantic fact consumed by emptiness, owner selection and structural editing; it must not be a macro for atom or today's isolating + keyboardSelectable pair. Atom remains the distinct non-traversable-content fact. Inner range transfer must stay open child content while NodeSelection transfers the owner, so the current blanket use of isolating as a slice barrier must be separated. Do not add a second public isContent flag until a real non-object consumer exists. Keep direct caption children and Plate-owned caption Enter policy.
+
+Question: Does Plite need an object-like schema role for selectable media with editable children, or can narrower intrinsic-content and existing flag repairs solve the job more cleanly?
+
+- Keep current media flags and patch only replaceEmpty, slice openness and caption Enter: strongest hard-cut alternative and sufficient for the three immediate symptoms, but it leaves no truthful schema answer for an owner that remains meaningful independently of editable children. Generic operations and plugin authors must keep coordinating unrelated flags.
+- Add only intrinsicContent or isContent: fixes semantic emptiness and can guard replacement, but duplicates a public axis with no current non-object consumer and leaves owner selection and structural boundary coordination separate. Keep it private or derived unless design discovers an independent job.
+- Add object as a macro for isolating + keyboardSelectable: reject. The fresh probe proves current isolation closes inner text slices and recreates the owner; encoding that combination would canonize the transfer defect.
+- Add a first-class object role with editable children: pursue. It states independent owner meaning and lets selection and structural operations query one domain fact while retaining selection-shaped transfer. Exact constructor/flag spelling and derived defaults remain design work.
+- Replace atom with object, restore void, or add editable void: reject. Atom is the real non-traversable-content fact, and the executed traversal probe shows it closes caption positions. Void still means editor-owned editable descendants are unavailable.
+- Add caption wrappers, nested editors or named roots: reject for one caption. They add grammar, identity, history or lifecycle ownership without a current independent-region job; direct children already satisfy the persisted-content law.
+- retains [2026-09-21-media-object-editable-content](../review-records/2026-09-21-media-object-editable-content.json) (Does Plite need object semantics for a selectable media body with editable children, and how does that compare with ProseMirror, WordGard and Lexical?): Retain the object/content direction, direct caption children, Plite ownership, Plate caption Enter policy and rejection of editable voids, nested editors and wrappers. Refine the provisional API: object does not replace atom, and it cannot inherit the current isolating slice behavior. The fresh probe shows transfer openness is independently controlled by the isolating barrier.
+- supersedes [2026-09-21-media-caption-clean-reset-ownership](../review-records/2026-09-21-media-caption-clean-reset-ownership.json) (Should media-caption Enter scrub properties in Plate, generalize to all void nodes, or use a typed clean reset owned by Plite?): Retain canonical block conversion and shared media coverage. The reset-only target remains insufficient because emptiness, owner selection and transfer require a schema semantic beyond property cleanup.
+
+Proof limits: Assessment only. Four existing source-bound model probes and one fresh isolation comparison establish current emptiness, traversal and slice behavior; they do not prove browser clipboard MIME, DOM selection geometry, deletion UX, IME, collaboration, performance or a candidate object implementation. External findings were reused at their recorded commits without refresh or test execution. No product API shape, migration, implementation or publication is authorized by this review.
+
+References: [media-object-content.md](../decisions/media-object-content.md), [2026-09-21-media-object-editable-content.json](../review-records/2026-09-21-media-object-editable-content.json), [README.md](../../plite/research/2026-09-21-media-object-editable-content/README.md), [observations.test.ts](../../plite/research/2026-09-21-media-object-editable-content/observations.test.ts), [observations.txt](../../plite/research/2026-09-21-media-object-editable-content/observations.txt), [last-pass-observations.test.ts](../../plite/research/2026-09-21-media-object-editable-content/last-pass-observations.test.ts), [last-pass-observations.txt](../../plite/research/2026-09-21-media-object-editable-content/last-pass-observations.txt), [schema.ts](../../../packages/plitejs/src/interfaces/schema.ts), [schema-compiler.ts](../../../packages/plitejs/src/core/schema-compiler.ts), [is-empty.ts](../../../packages/plitejs/src/editor/is-empty.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [get-content-slice.ts](../../../packages/plitejs/src/core/get-content-slice.ts), [positions.ts](../../../packages/plitejs/src/editor/positions.ts), [selection-void-target.ts](../../../packages/plitejs/src/react/editable/selection-void-target.ts), [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts).
+
+### 2026-09-21: 2026-09-21-object-elements-editable-children-design
+
+[Immutable record](../review-records/2026-09-21-object-elements-editable-children-design.json) — execution; completed; observation stale.
+
+Completed the execution-ready design for schema-owned object elements with editable children. The target adds strict object schema semantics, deletes public keyboardSelectable, separates structural isolation from slice closure, centralizes semantic emptiness, prevents generic object splitting, and replaces Plate media Enter with one atomic open-suffix move. Product adoption remains separate.
+
+
+Proof limits: Design and current-source model evidence only. Product source, a candidate object implementation, package suites, mounted React behavior, native clipboard MIME, browser selection/focus, collaboration behavior, performance, generated docs, release artifacts, and publication remain execution gates.
+
+References: [2026-09-21-object-elements-with-editable-children.md](../../plans/2026-09-21-object-elements-with-editable-children.md), [2026-09-21-object-elements-editable-children-proof.json](../../plans/artifacts/2026-09-21-object-elements-editable-children-proof.json), [2026-09-21-media-object-editable-content-final-pass.json](../review-records/2026-09-21-media-object-editable-content-final-pass.json), [media-object-content.md](../decisions/media-object-content.md), [README.md](../../plite/research/2026-09-21-media-object-editable-content/README.md).
+
+### 2026-09-22: 2026-09-22-object-elements-editable-children-execution
+
+[Immutable record](../review-records/2026-09-22-object-elements-editable-children-execution.json) — execution; completed; observation stale.
+
+Implemented the strict Plite object schema role, selection-shaped slice and clipboard behavior, central object emptiness and split boundaries, and atomic caption Enter for all five Plate media owners. Removed keyboardSelectable, updated public docs and doctrine, and regenerated the registry, API reference, and release-size baseline. Direct model and media browser proof passed; the unrelated full Plite browser matrix timed out.
+
+
+Proof limits: The full final-source five-project Plite browser matrix did not complete: unrelated rich-text and huge-document units hit bounded process timeouts, and the final strict Chromium phase timed out in an authored-changes unit after package, contract, and 19 browser batches passed. Earlier full Chromium proof predates final formatting and lint-only edits; focused final-source cross-browser and media proof does not establish a complete matrix pass.
+
+References: [2026-09-21-object-elements-implementation.md](../../plans/2026-09-21-object-elements-implementation.md), [2026-09-21-object-elements-with-editable-children.md](../../plans/2026-09-21-object-elements-with-editable-children.md), [2026-09-21-object-elements-verification.json](../../plans/artifacts/2026-09-21-object-elements-verification.json).
+
+### 2026-09-22: 2026-09-22-object-elements-full-browser-proof-execution
+
+[Immutable record](../review-records/2026-09-22-object-elements-full-browser-proof-execution.json) — execution; completed; observation stale.
+
+The strict Plite object role and all five Plate media owners are adopted with selection-shaped transfer and atomic caption Enter. The final read-only sibling-view focus repair preserves the active writer caret. The complete five-project Plite browser matrix, direct media interactions, affected package checks, docs, registry, doctrine, and packed release checks passed.
+
+
+Proof limits: The matrix retains its declared browser-specific skips; no required project or directly relevant reporter interaction remained unexecuted.
+
+References: [2026-09-21-object-elements-implementation.md](../../plans/2026-09-21-object-elements-implementation.md), [2026-09-22-object-elements-full-proof.json](../../plans/artifacts/2026-09-22-object-elements-full-proof.json), [2026-09-21-object-elements-verification.json](../../plans/artifacts/2026-09-21-object-elements-verification.json).
+
+### 2026-09-22: 2026-09-22-media-object-arrow-navigation-audit
+
+[Immutable record](../review-records/2026-09-22-media-object-arrow-navigation-audit.json) — review; pursue; observation stale.
+
+Pursue one Plite-owned object-navigation repair, not another media plugin or public schema flag. In the live editor, ArrowRight from the preceding paragraph goes directly to image caption text and ArrowRight from an image NodeSelection does nothing. ArrowUp from caption start also goes to the preceding paragraph, contrary to the accepted vertical law, although ArrowDown from the selected asset enters caption start. The generic caret engine only offers an owner transition for vertical arrows and rejects NodeSelection before horizontal movement; the exact interception causing the observed ArrowUp escape still needs isolation. All five Plate media descriptors have the same object role, so the target is a single substrate traversal contract plus honest law and browser proof, not five feature-specific handlers. The current browser and package tests do not assert these arrow transitions despite two matrix rows marked tested. The prior implementation/proof remains valid for its executed scope, but not for this newly observed interaction.
+
+Question: Does keyboard traversal select each media object before entering its editable caption, and do the behavior law and tests prove it?
+
+- Strongest hard cut: remove the newly introduced Plite object role and return media to void plus a separate CaptionPlugin. Reject: this removes direct editable child content and reopens the previously proven emptiness, transfer, and caption-editing problems; the deployed docs describe that older model, not a superior solution to this traversal bug.
+- Keep the schema and add five Plate media keydown handlers or a new MediaNavigationPlugin. Reject: the selection transition is generic to selectable non-void object owners and would duplicate the same policy across media and other object consumers.
+- Keep source behavior and only edit docs or accept caption-first ArrowRight. Reject: owner selection becomes keyboard-unreachable from adjacent text and the live ArrowUp path contradicts the already locked law; click selection alone is not enough.
+- Use Plite's existing selection/caret owner to define adjacent-text to NodeSelection to child-text traversal and reverse, including actual ArrowUp/Down handling. Pursue without a new public flag or package; separate word/selection-extension and RTL cases during implementation proof.
+- retains [2026-09-21-media-object-editable-content-final-pass](../review-records/2026-09-21-media-object-editable-content-final-pass.json) (Does Plite need an object-like schema role for selectable media with editable children, or can narrower intrinsic-content and existing flag repairs solve the job more cleanly?): Retain the object role and direct editable children. Reopen only the unaddressed horizontal keyboard traversal and observed vertical escape; neither symptom justifies void, atom, nested editor, or caption wrapper replacement.
+- reopens [2026-09-21-object-elements-editable-children-design](../review-records/2026-09-21-object-elements-editable-children-design.json) (What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?): The design specified owner-to-caption ArrowDown and reverse ArrowUp but omitted ArrowRight/ArrowLeft. Its claim that existing React tests covered vertical transitions is not borne out by the cited current tests, and the live route contradicts ArrowUp.
+- retains [2026-09-22-object-elements-editable-children-execution](../review-records/2026-09-22-object-elements-editable-children-execution.json) (What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?): The object role, five media adoptions, and caption Enter/selection-shaped transfer are implemented. This audit does not challenge those completed implementation units; it identifies a keyboard path they did not settle.
+- reopens [2026-09-22-object-elements-full-browser-proof-execution](../review-records/2026-09-22-object-elements-full-browser-proof-execution.json) (What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?): Retain the five-project passing result for its actual assertions. Reopen any claim that it proved media owner/caption keyboard traversal: the direct browser specimen skips the owner on ArrowRight and escapes the owner on ArrowUp, while the cited tests contain no matching assertions.
+
+Proof limits: A direct headless Chromium probe on /blocks/editor-ai reproduced the image path only; it is not a cross-browser or five-media runtime pass, and the exact cause of ArrowUp falling through remains unisolated. Source inspection proves shared schema descriptors and missing cited test assertions, not how every media chrome behaves. The deployed website describes an earlier void/CaptionPlugin API and does not define this branch's arrow semantics. This review does not authorize product implementation or publication.
+
+References: [media-object-content.md](../decisions/media-object-content.md), [2026-09-21-object-elements-with-editable-children.md](../../plans/2026-09-21-object-elements-with-editable-children.md), [2026-09-22-media-arrow-browser-observation.md](../raw/2026-09-22-media-arrow-browser-observation.md), [caret-engine.ts](../../../packages/plitejs/src/react/editable/caret-engine.ts), [selection-void-target.ts](../../../packages/plitejs/src/react/editable/selection-void-target.ts), [runtime-keyboard-events.ts](../../../packages/plitejs/src/react/editable/runtime-keyboard-events.ts), [BaseMediaPluginContracts.spec.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts), [media-caption.spec.ts](../../../apps/www/tests/browser/media-caption.spec.ts), [editor-protocol-matrix.md](../../editor-behavior/editor-protocol-matrix.md), [markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md), [media.mdx](../../../content/docs/(plugins)/(elements)/media.mdx), [2026-04-27-plite-image-keyboard-navigation.md](../../plans/2026-04-27-plite-image-keyboard-navigation.md).
+
+### 2026-09-22: 2026-09-22-media-object-arrow-navigation-execution
+
+[Immutable record](../review-records/2026-09-22-media-object-arrow-navigation-execution.json) — execution; completed; observation stale.
+
+Plite plain-arrow navigation stops on a selectable object before its editable caption, traverses back symmetrically, and returns from caption start to the owner on ArrowUp. The www editor-ai media interaction and generic Plite object contract pass on final source.
+
+
+Proof limits: The full www typecheck remains blocked by unrelated active code-block source edits: initial TypeScript errors and a later parser error at a literal +type in code-block.tsx:466.
+
+References: [2026-09-22-media-object-arrow-navigation.md](../../plans/2026-09-22-media-object-arrow-navigation.md), [2026-09-22-media-object-arrow-proof.md](../raw/2026-09-22-media-object-arrow-proof.md).
+
+### 2026-09-22: 2026-09-22-media-object-arrow-final-execution
+
+[Immutable record](../review-records/2026-09-22-media-object-arrow-final-execution.json) — execution; completed; observation stale.
+
+Generic Plite object navigation now stops on media owners before editable captions, reverses through both stops, and returns from caption start on ArrowUp. The final pass avoids computed-direction reads for interior text arrows and passes direct media and mixed-bidi browser proof.
+
+
+Proof limits: The full www typecheck is blocked by an unrelated unclassified CodeHighlightGrammar API symbol, and ledger check reports an unrelated ui/code-block-lowlight inventory mismatch from concurrent code-block edits.
+
+References: [2026-09-22-media-object-arrow-navigation.md](../../plans/2026-09-22-media-object-arrow-navigation.md), [2026-09-22-media-object-arrow-final-proof.md](../raw/2026-09-22-media-object-arrow-final-proof.md).
+
+### 2026-09-22: 2026-09-22-media-object-arrow-ledger-closure-execution
+
+[Immutable record](../review-records/2026-09-22-media-object-arrow-ledger-closure-execution.json) — execution; completed; observation stale.
+
+Generic Plite object navigation stops on media owners before their editable captions, reverses through both stops, and returns from caption start on ArrowUp. Final direct browser and package checks passed; the feature ledger inventory and generated hub are reconciled.
+
+
+Proof limits: The full www typecheck remains blocked at API-reference generation by an unrelated unclassified CodeHighlightGrammar symbol.
+
+References: [2026-09-22-media-object-arrow-navigation.md](../../plans/2026-09-22-media-object-arrow-navigation.md), [2026-09-22-media-object-arrow-final-proof.md](../raw/2026-09-22-media-object-arrow-final-proof.md), [2026-09-22-media-object-arrow-ledger-closure.md](../raw/2026-09-22-media-object-arrow-ledger-closure.md).
+
+### 2026-09-22: 2026-09-22-media-caption-full-text-delete-execution
+
+[Immutable record](../review-records/2026-09-22-media-caption-full-text-delete-execution.json) — execution; completed; observation stale.
+
+A full TextSelection inside direct media caption children clears or replaces caption text without deleting the object owner. The direct reporter interaction passes in Chromium; generic object and command contracts, both affected typechecks, and changed-file lint pass.
+
+
+Proof limits: The broader media-caption Chromium suite passed six of seven tests; the separate highlight test timed out trying to click a hidden image before its assertion. Another thread owns that visual regression.
+
+References: [2026-09-22-media-caption-full-text-delete.md](../../plans/2026-09-22-media-caption-full-text-delete.md), [2026-09-22-media-caption-full-text-delete-proof.md](../raw/2026-09-22-media-caption-full-text-delete-proof.md).
+
+### 2026-09-22: 2026-09-22-media-caption-focused-empty-execution
+
+[Immutable record](../review-records/2026-09-22-media-caption-focused-empty-execution.json) — execution; completed; observation stale.
+
+A fully deleted media caption remains visible with its placeholder and text caret while focused, hides after blur, reappears when its asset is selected, and accepts typing into the same media child. The source-backed Chrome replay, eight-case media browser suite, registry generation, typecheck, and focused lint pass.
+
+
+Proof limits: The initial broad browser run timed out during cold docs preview compilation; it was rerun successfully after compilation. This verifies the reporter interaction and covered media cases, not every media behavior.
+
+References: [2026-09-22-media-caption-full-text-delete.md](../../plans/2026-09-22-media-caption-full-text-delete.md), [2026-09-22-media-caption-focused-empty-proof.md](../raw/2026-09-22-media-caption-focused-empty-proof.md).
+
+### 2026-09-22: 2026-09-22-caret-navigation-robustness-review
+
+[Immutable record](../review-records/2026-09-22-caret-navigation-robustness-review.json) — review; pursue; observation stale.
+
+Pursue a Plite-owned navigation contract review, not a new media plugin or public schema flag. Current covered media behavior and the updated behavior law agree on owner/caption horizontal traversal, focused full-caption deletion, and reverse vertical traversal through visible versus hidden captions. It is still too strong to call the caret engine regression-proof: reverse vertical navigation uses document text length as a proxy for rendered caption visibility before placing the caret with DOM geometry, and horizontal owner navigation determines direction from the Editable host rather than the active text run. The first is an implicit generic-object/UI coupling; the second is an unproved mixed-direction boundary. Keep the Plite selection owner, but derive owner and visible child stops through one private navigation policy and test its cost before accepting an implementation. The selected audit reviewed six interaction families; three retain explicit proof or contract gaps.
+
+Question: Is Plite caret navigation robust across visible media caption and generic object stops, and do the behavior law and tests describe its actual transitions?
+
+- Maximum hard cut: delete Plite's caret engine and rely on native browser arrows. Reject: DOM-less NodeSelection, skipped DOM coverage, content roots and virtualized views have current jobs the browser cannot own through native caret movement alone.
+- Keep the current text-length heuristic and updated NAV-005/NAV-006 law. This is sufficient for currently covered media examples, but leaves generic object navigation coupled to a Plate caption visibility convention and leaves local RTL boundaries unproved.
+- Add Plate media key handlers or a public caption-visible/object-navigation flag. Reject: five duplicated handlers or a persisted view-state flag move coordination to consumers and weaken the neutral object role.
+- Pursue a private Plite owner-stop policy that distinguishes visible child caret stops from selectable owner stops using mounted DOM/coverage instead of document text length, reuses one resolution for the native-fast-path decision, and preserves canonical selection. Retain the revised NAV-005/NAV-006 physical ordering and the new horizontal coordinate placement. Validate mixed local direction, generic empty visible children, all media classes, content roots and scale before accepting the exact implementation.
+- retains [2026-09-22-media-object-arrow-navigation-audit](../review-records/2026-09-22-media-object-arrow-navigation-audit.json) (Does keyboard traversal select each media object before entering its editable caption, and do the behavior law and tests prove it?): Retain the accepted direct-child object role, generic Plite owner navigation and the repaired horizontal and caption-start transitions. This review reopens the later reverse-from-below policy, not those earlier proven paths.
+- retains [2026-09-22-media-object-arrow-navigation-execution](../review-records/2026-09-22-media-object-arrow-navigation-execution.json) (What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?): The first arrow execution established owner-to-caption traversal. Its proof did not settle visible-caption reverse entry or mixed local direction.
+- retains [2026-09-22-media-object-arrow-final-execution](../review-records/2026-09-22-media-object-arrow-final-execution.json) (What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?): Retain the corrected ArrowRight/Left and caption-start ArrowUp cases. The new reverse-from-below browser case expands the question beyond that execution.
+- reopens [2026-09-22-media-object-arrow-ledger-closure-execution](../review-records/2026-09-22-media-object-arrow-ledger-closure-execution.json) (What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?): Retain the generic object arrow repair. NAV-005 and NAV-006 were reconciled during this review; reopen only any claim that their passing media fixtures prove generic object layouts or mixed local direction.
+- retains [2026-09-22-media-caption-full-text-delete-execution](../review-records/2026-09-22-media-caption-full-text-delete-execution.json) (What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?): Retain the model law that full-caption Delete edits child text and preserves the owner. This is distinct from physical arrow traversal.
+- retains [2026-09-22-media-caption-focused-empty-execution](../review-records/2026-09-22-media-caption-focused-empty-execution.json) (What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?): Retain the live empty-placeholder and focus repair. Its presentation rule exposes why text length alone is not a generic visible-caret-stop contract.
+
+Proof limits: The settled-source Chrome probe and tests establish the reported media paths only: Plite typecheck, 41/41 React tests and 14/14 media-caption Chromium cases passed. An earlier cold /docs/media preview timed out while showing Loading..., then passed after compilation. No mixed local RTL object boundary, generic non-media object with visible empty children, media-embed reverse path, non-Chromium media browser run, or IME/virtualized-media interaction was executed. Source suggests these risks but does not prove a runtime defect or performance cost. The proposed private policy is a design direction, not an accepted unmeasured algorithm.
+
+References: [2026-09-22-caret-navigation-robustness-observation.md](../raw/2026-09-22-caret-navigation-robustness-observation.md), [media-object-content.md](../decisions/media-object-content.md), [markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md), [editor-protocol-matrix.md](../../editor-behavior/editor-protocol-matrix.md), [caret-engine.ts](../../../packages/plitejs/src/react/editable/caret-engine.ts), [keyboard-input-strategy.ts](../../../packages/plitejs/src/react/editable/keyboard-input-strategy.ts), [runtime-keyboard-events.ts](../../../packages/plitejs/src/react/editable/runtime-keyboard-events.ts), [object-selection.test.tsx](../../../packages/plitejs/test/react/object-selection.test.tsx), [caret-engine-contract.test.ts](../../../packages/plitejs/test/react/caret-engine-contract.test.ts), [content-root-navigation-contract.test.ts](../../../packages/plitejs/test/react/content-root-navigation-contract.test.ts), [caption.tsx](../../../apps/www/src/registry/components/editor/caption.tsx), [media-caption.spec.ts](../../../apps/www/tests/browser/media-caption.spec.ts), [media-caption-delete.spec.ts](../../../apps/www/tests/browser/media-caption-delete.spec.ts).
 
 ## Retrieval boundaries
 
@@ -104,7 +321,7 @@ Owners: [media](../../../packages/platejs/src/features/media).
 
 Consumers: [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), [caption.tsx](../../../apps/www/src/registry/components/editor/caption.tsx).
 
-Proof entrypoints: [BaseMediaPluginContracts.spec.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts), [media-caption.spec.ts](../../../apps/www/tests/browser/media-caption.spec.ts). These links alone are not proof of a passing run.
+Proof entrypoints: [BaseMediaPluginContracts.spec.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts), [media-caption.spec.ts](../../../apps/www/tests/browser/media-caption.spec.ts), [media-caption-delete.spec.ts](../../../apps/www/tests/browser/media-caption-delete.spec.ts). These links alone are not proof of a passing run.
 
 Inspection: Current owner, consumer and proof entrypoints located; this queue is not a completed feature review.
 

@@ -618,10 +618,6 @@
     },
     {
       "surface": "web",
-      "query": "CKEditor 5 table column resizing multi cell selection"
-    },
-    {
-      "surface": "web",
       "query": "ProseKit table resize handle Milkdown table selection plugin"
     },
     {

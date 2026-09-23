@@ -1,4 +1,4 @@
-import { definePlugin, NodeApi, type Element as EditorElement } from 'plitejs';
+import { defineEditorSchema, schema } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
@@ -9,67 +9,25 @@ import {
 
 import type {
   CustomElement,
-  CustomElementType,
   ParagraphElement,
   TitleElement,
 } from './custom-types.d';
 
-const createTitle = (): TitleElement => ({
-  type: 'title',
-  children: [{ text: 'Untitled' }],
+const ForcedLayoutSchema = defineEditorSchema('schema:forced-layout-example', {
+  elements: {
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+    title: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+  root: schema.content.prefix(
+    [{ element: 'title' }, { element: 'paragraph' }],
+    schema.content.group('block')
+  ),
+  unknown: 'reject',
 });
-
-const createParagraph = (): ParagraphElement => ({
-  type: 'paragraph',
-  children: [{ text: '' }],
-});
-
-const setType = (type: CustomElementType) =>
-  ({ type }) satisfies Partial<EditorElement>;
-
-const forcedLayout = () =>
-  definePlugin('forced-layout', {
-    corrections: [
-      {
-        event: 'children',
-        query: 'root',
-        correct({ tx }) {
-          const children = tx.nodes.children();
-          const first = children[0];
-          const second = children[1];
-          const firstText = first ? NodeApi.string(first) : '';
-
-          if (children.length <= 1 && firstText === '') {
-            tx.nodes.insert(createTitle(), {
-              at: [0],
-              select: true,
-            });
-            return;
-          }
-
-          if (children.length < 2) {
-            tx.nodes.insert(createParagraph(), { at: [1] });
-            return;
-          }
-
-          if (
-            NodeApi.isElement(first) &&
-            first.type !== ('title' satisfies CustomElementType)
-          ) {
-            tx.nodes.set(setType('title'), { at: [0] });
-            return;
-          }
-
-          if (
-            NodeApi.isElement(second) &&
-            second.type !== ('paragraph' satisfies CustomElementType)
-          ) {
-            tx.nodes.set(setType('paragraph'), { at: [1] });
-          }
-        },
-      },
-    ],
-  });
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {
   switch (props.element.type) {
@@ -87,7 +45,7 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
 
 const ForcedLayoutExample = () => {
   const editor = useEditor({
-    plugins: [history(), forcedLayout()],
+    plugins: [history(), ForcedLayoutSchema],
     initialValue: [
       {
         type: 'title',

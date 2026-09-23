@@ -1,0 +1,91 @@
+{
+  "id": "2026-09-22-media-caption-focused-empty-execution",
+  "kind": "execution",
+  "date": "2026-09-22",
+  "scopes": [
+    "media"
+  ],
+  "reviewBasis": [
+    "2026-09-21-media-object-editable-content-final-pass"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-22-media-caption-full-text-delete.md",
+    "sha256": "20ce1b95a104be9122aac2a790094a357e32da1cddb22c769587e429ad917ee9"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "A fully deleted media caption remains visible with its placeholder and text caret while focused, hides after blur, reappears when its asset is selected, and accepts typing into the same media child. The source-backed Chrome replay, eight-case media browser suite, registry generation, typecheck, and focused lint pass.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/research/raw/2026-09-22-media-caption-focused-empty-proof.md",
+        "sha256": "eb5fab97e25e7b2551830a070c4bbb98c7b34945c190edad2bfd05dcd65ea4ab",
+        "claim": "Published and local Chrome replay distinguished old textarea behavior from the target; the local focused Delete, blur, reselect and typing behavior worked, and all eight media browser cases passed after the docs preview compiled."
+      }
+    ],
+    "limits": "The initial broad browser run timed out during cold docs preview compilation; it was rerun successfully after compilation. This verifies the reporter interaction and covered media cases, not every media behavior."
+  },
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/media.tsx": "a3a10aee7b55a1cf1f6304d49d3c6ea901b8268b85ff6b41e32947aa2a66f491",
+      "apps/www/src/registry/components/editor/caption.tsx": "825d55435627458cfd5e3a89b6313c0deeb970d42a9baeffced6309971f738bd",
+      "packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts": "f7a64b4302ad8e93241920d7e1de4772c52aff0882812c8ec39482cc3357ced9",
+      "apps/www/tests/browser/media-caption.spec.ts": "79b40c798f6fb62155aa5e44044557993d38db73014b3bd4d533510a8cb0c2f0",
+      "apps/www/tests/browser/media-caption-delete.spec.ts": "b508528748a77bfdfaca2707f59e6f8bff391d5a6d1454b55226a71b6db94a88",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "fa379b896cd99a95ecc39dd3eba92fcde63f977d2d74e6e62075fac0d1706757",
+      "packages/plitejs/src/react/editable/caret-engine.ts": "187abf5f9754106acc41d3d2ec88e38b36f076f9438e8ccaa2e040e2c80e1895",
+      "packages/plitejs/src/react/editable/selection-void-target.ts": "98a002324e26c9591b03a89d7fa3b2d27ba4b62fa3c79fc9b5181df229afd05a",
+      "packages/plitejs/src/react/editable/runtime-keyboard-events.ts": "791e2133a2c757b2df59a41ed5a60e6c44d3fd529f46f245963f64d56359f9b4",
+      "packages/plitejs/test/react/caret-engine-contract.test.ts": "4ebc148bf0239b8b7e4d3755831746732f83691aa0c950520019231da86250ac",
+      "packages/plitejs/test/react/dom-coverage-boundary-contract.tsx": "1a5b903010bfee7781e8faaba5d340aeb76e3995c33c7826c1daed2434ca682f",
+      "docs/editor-behavior/markdown-editing-spec.md": "220467160338e1da8498e3f23a94dc93e7efabe97f337bad0f41d8252ff97b27",
+      "docs/editor-behavior/editor-protocol-matrix.md": "1244f07654788039c9fc89efba231f66f8ef7d725abf0cac3440842fb4dc4055",
+      "content/docs/(plugins)/(elements)/media.mdx": "7a491ecfad5a41c68ab1f4f49e09e4bf42dfb747ab0a9b78b814b3e64c19820c",
+      "docs/plans/2026-09-21-object-elements-with-editable-children.md": "d71570a96cdb95aea3ff4dfd939aef746f707304d74d217cde9f75f13971f186",
+      "docs/research/raw/2026-09-22-media-arrow-browser-observation.md": "352cf9437e5066a5a33d514386ccd2d63f6350ae1ed6b5cfc54e5bce624f165d",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77bf6f360dc7b3199b947dc167649fbc39007b81b4f9bd5364660757e7d4a703"
+    },
+    "directories": {
+      "packages/platejs/src/features/media": "dd5aa8c23ad3d709386e4a8b5cc322b9b5edeb6e381f45bf73e1718140a4d008"
+    },
+    "features": {
+      "browser/media-caption": "a8cc5605bedb9ae8f29e8b14169412283345fef0facad43fb174abdf43be28a1",
+      "browser/media-caption-delete": "00623a5af716a35680311cc5f1bb531414c9a324fb47cf5ae8826cac59f697d4",
+      "capability/audio": "ae49f55d350b96c0cc35fb236140621a8fa0b52608b4a07b03e776c364982ed1",
+      "capability/file": "278eda43d0fe3c96319838d32640e972b2232c91051cfc3c8e58a8c1dbcb3862",
+      "capability/image": "311befabf973797a1909488bd6dd7c37da48d7a93d14acb80cf923d4b90bfb85",
+      "capability/mediaEmbed": "475199e91defe61a246943e53c0538a9c94cdc80635157b247a7cf5641c1318c",
+      "capability/video": "ae49f55d350b96c0cc35fb236140621a8fa0b52608b4a07b03e776c364982ed1",
+      "example/plite/embeds": "10c7c76155c9915c7c74a9dea9e60317de88e8b865f3546588a6d9de422b09de",
+      "example/plite/images": "ea227cc055033ceac45f6dd4f4448c35683b4f10715be368086791b54f6f17c6",
+      "example/registry/image-pro-demo": "e58afb88e01cc707ba3b9fa121c47300984ff8a2ca90f002433fc9145d2f46a2",
+      "example/value/media-value": "948297ee10ce56abfc1a99ab9e143c502dd2af0361cd468778f0094256b298b8",
+      "export/platejs/./media": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "export/platejs/./media/react": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "export/platejs/./resizable/react": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "platejs/media": "48b93a05a810d6f33e23395e829bb1b20979c138d45a1dc6e3eeee34cae1686c",
+      "ui/caption": "f098203a3b121b9678f2e061d2349d6ec5081cce35e2bb65aad371aba5734e5f",
+      "ui/media": "2663c399060ef10fa1e840c6d4b4e97b93251ce2e97d192798fe7b44ed731eca",
+      "ui/media-audio": "2ece02fcc0c757261ba7049e09506d4001b86cf9d89ee9498d636b55f0be6a2a",
+      "ui/media-embed": "106c2d2a626e868e0417ab4d563884d64cf9d7d6db5292f354a085cc8199dfac",
+      "ui/media-file": "c8342b59e109170a33f8cfab7f51f16ff1a31ba8a455aab3f320d6d3089f0620",
+      "ui/media-image": "55640a606ce1132e64387ab090b36fcd9410a9b464389c3c1b26ba5741f7f949",
+      "ui/media-preview-dialog": "42bba9945cb37437fad16ff7730aff987fed9a0d99238f76ce26150b8ab87c5f",
+      "ui/media-toolbar": "b4329cdc937b8ff78b3bb4d5658895c830ed1d5187765d9fcab4b3528296185f",
+      "ui/media-toolbar-button": "bf6390bc419a5f69450a7f30e805f46c42e20a9b2545b080b1f5c36eda094bbd",
+      "ui/media-video": "3b6e1cd94b03f971650a799664351e5cae43371413c8ec89846ae2b0175d7bef",
+      "ui/resize-handle": "355d9898808b16b0d66ef5d948c3d0b5355bee50e9209ade998d7184c0159b36"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-22-media-caption-full-text-delete.md",
+    "docs/research/raw/2026-09-22-media-caption-focused-empty-proof.md"
+  ]
+}

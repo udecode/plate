@@ -269,6 +269,12 @@ export type SchemaContentOptions = Readonly<{
   min?: number;
 }>;
 
+/** One required child at a fixed position before ordinary content. */
+export type SchemaContentPrefixSlot = Readonly<{
+  element: string | Readonly<{ source: string; type: string }>;
+  properties?: Readonly<Record<string, PropertyJsonValue>>;
+}>;
+
 type SchemaContentRuleWitness<TAllowed extends SchemaContentRule> = Readonly<{
   /**
    * Exact rule witness; absent from runtime values.
@@ -282,7 +288,9 @@ export type SchemaContent<
   TAllowed extends SchemaContentRule = SchemaContentRule,
   TOptions extends SchemaContentOptions | undefined = undefined,
 > = Readonly<
-  { allowed: TAllowed } & ([TOptions] extends [undefined]
+  { allowed: TAllowed; prefix?: readonly SchemaContentPrefixSlot[] } & ([
+    TOptions,
+  ] extends [undefined]
     ? SchemaContentOptions
     : TOptions) &
     ([SchemaContentRule] extends [TAllowed]
@@ -367,8 +375,8 @@ export type SchemaElementInput = Readonly<{
   groups?: readonly string[];
   inline?: boolean;
   isolating?: boolean;
-  keyboardSelectable?: boolean;
   markableVoid?: boolean;
+  object?: boolean;
   properties?: SchemaElementProperties;
   readOnly?: boolean;
   selectable?: boolean;
@@ -394,6 +402,13 @@ export type EditorSchemaContent = Readonly<{
   default: SchemaContentDefault | null;
   max: number | null;
   min: number;
+  prefix?: ReadonlyArray<
+    Readonly<{
+      properties: Readonly<Record<string, PropertyJsonValue>>;
+      type: string;
+    }>
+  >;
+  remainder?: EditorSchemaContent;
 }>;
 
 /** Immutable compiled element-owned root facts. */
@@ -433,8 +448,8 @@ export type EditorSchemaElement = Readonly<{
     atom: boolean;
     inline: boolean;
     isolating: boolean;
-    keyboardSelectable: boolean;
     markableVoid: boolean;
+    object: boolean;
     readOnly: boolean;
     selectable: boolean;
     void: boolean;

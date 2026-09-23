@@ -5,6 +5,7 @@ import type { FilePlugin } from 'platejs/media/react';
 import {
   type EditorElementProps,
   EditorElement,
+  useEditorFocused,
   useElementSelected,
   usePath,
 } from 'platejs/react';
@@ -16,16 +17,25 @@ import { Caption, useCaptionFocused } from './caption';
 
 export function FileElement(props: EditorElementProps<typeof FilePlugin>) {
   const path = usePath();
+  const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'node' });
   const captionFocused = useCaptionFocused(path);
 
   return (
-    <EditorElement className="my-px rounded-sm" {...props}>
+    <EditorElement
+      {...props}
+      attributes={{
+        ...props.attributes,
+        'data-node-selection-highlight': 'self',
+      }}
+      className="my-px rounded-sm"
+    >
       <figure className="group relative m-0 [&>figcaption]:text-left">
         <div contentEditable={false}>
           <a
             className={cn(
-              'flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted'
+              'flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted',
+              focused && selected && 'ring-2 ring-ring ring-offset-2'
             )}
             download={props.element.name}
             href={props.element.url}

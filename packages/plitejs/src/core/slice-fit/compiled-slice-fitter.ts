@@ -155,6 +155,13 @@ type SliceFitterDependencies<V extends Value> = Readonly<{
     content: CompiledSchemaContentProgram,
     child: Descendant
   ) => boolean;
+  contentAllowsAt: (
+    schema: CompiledEditorSchema,
+    content: CompiledSchemaContentProgram,
+    child: Descendant,
+    index: number,
+    options?: SliceFitRuntimeTargetOptions
+  ) => boolean;
   createDeclarativeAndFill: (
     schema: CompiledEditorSchema,
     type: string,
@@ -247,6 +254,7 @@ export const compileSliceFitter = <V extends Value>(
   const {
     canContain,
     contentAllows,
+    contentAllowsAt,
     createDeclarativeAndFill,
     editorRootLabel,
     elementUsesInlineContent,
@@ -323,6 +331,51 @@ export const compileSliceFitter = <V extends Value>(
     createdDefaults: readonly Descendant[] = [],
     options: RuntimeTargetOptions = {}
   ): readonly Descendant[] | null => {
+    if (content.prefix && content.remainder) {
+      const fitted: Descendant[] = [];
+      let consumed = 0;
+
+      for (const [index, slot] of content.prefix.entries()) {
+        const candidate = source[consumed];
+
+        if (
+          candidate &&
+          contentAllowsAt(innerSchema2, content, candidate, index, options)
+        ) {
+          fitted.push(candidate);
+          consumed += 1;
+          continue;
+        }
+
+        fitted.push(
+          createDeclarativeAndFill(
+            innerSchema2,
+            slot.type,
+            slot.properties,
+            new Set(),
+            options
+          )
+        );
+      }
+
+      const remainder = fitDirectContent(
+        innerSchema2,
+        content.remainder,
+        source.slice(consumed),
+        [],
+        options
+      );
+
+      if (
+        !remainder ||
+        (content.max !== null && fitted.length + remainder.length > content.max)
+      ) {
+        return null;
+      }
+
+      return Object.freeze([...fitted, ...remainder]);
+    }
+
     if (
       (content.max !== null && source.length > content.max) ||
       !allContentAllowed(innerSchema2, content, source)
@@ -543,6 +596,22 @@ export const compileSliceFitter = <V extends Value>(
     coerceDefaultShell = false,
     dropMisplacedText = false
   ): readonly Descendant[] | null {
+    if (content.prefix) {
+      const closed = source.map((child) =>
+        fitClosedNode(innerSchema8, child, options)
+      );
+
+      return closed.some((child) => child === null)
+        ? null
+        : fitDirectContent(
+            innerSchema8,
+            content,
+            closed as Descendant[],
+            [],
+            options
+          );
+    }
+
     const groups: Array<{
       children: Descendant[];
       wrappers: readonly string[];
@@ -694,7 +763,6 @@ export const compileSliceFitter = <V extends Value>(
       const behavior = getElementBehavior(node);
 
       if (
-        behavior.isolating ||
         behavior.void ||
         (getElementSlicePolicy(node).preserveContext &&
           !canOpenPreservedContext(node))
@@ -992,6 +1060,8 @@ export const compileSliceFitter = <V extends Value>(
     }
 
     for (const [content, { id, options }] of contentPrograms) {
+      if (content.prefix) continue;
+
       const fitted = declarative
         ? fitClosedContent(declarative, id, content, slice.content, options)
         : null;
@@ -1081,6 +1151,108 @@ export const compileSliceFitter = <V extends Value>(
     );
   };
 
+  const contextsShareContent = (left: Element, right: Element) => {
+    if (getElementType(left) === getElementType(right)) return true;
+
+    const leftBehavior = getElementBehavior(left);
+    const rightBehavior = getElementBehavior(right);
+
+    return (
+      !leftBehavior.inline &&
+      !rightBehavior.inline &&
+      elementUsesInlineContent(left) &&
+      elementUsesInlineContent(right)
+    );
+  };
+
+  const getPrefixInsertionBoundary = (
+    at: Range,
+    rootChildren: readonly Descendant[],
+    document: DocumentIndex,
+    source: ContentSlice,
+    targetRootProgram: CompiledSchemaContentProgram | null,
+    allowSelected = false
+  ): number | null => {
+    const declarative = getDeclarativeSchema();
+    const [start, end] = RangeApi.edges(at);
+    const targetParent = getDescendant(rootChildren, start.path.slice(0, -1));
+
+    if (
+      ElementApi.isElement(targetParent) &&
+      source.content.every(
+        (child) =>
+          ElementApi.isElement(child) &&
+          contextsShareContent(targetParent, child)
+      )
+    ) {
+      return null;
+    }
+
+    if (
+      !declarative ||
+      (!allowSelected &&
+        document.positionAt(start) !== document.positionAt(end)) ||
+      source.openStart !== 0 ||
+      source.openEnd !== 0 ||
+      source.content.length === 0
+    ) {
+      return null;
+    }
+
+    for (let depth = start.path.length - 1; depth >= 0; depth--) {
+      const ownerPath = start.path.slice(0, depth);
+      const owner = ownerPath.length
+        ? getDescendant(rootChildren, ownerPath)
+        : null;
+      const ownerType =
+        owner && ElementApi.isElement(owner) ? getElementType(owner) : null;
+      const content = ownerType
+        ? declarative.elements.byType.get(ownerType)?.content
+        : depth === 0
+          ? targetRootProgram
+          : null;
+      const prefix = content?.prefix;
+      const remainder = content?.remainder;
+      const children =
+        owner && ElementApi.isElement(owner) ? owner.children : rootChildren;
+      const options: RuntimeTargetOptions = {
+        ancestors: ownerType
+          ? getElementAncestors(rootChildren, ownerPath, {
+              includeTarget: true,
+            })
+          : [],
+        root: start.root ?? 'main',
+      };
+
+      if (
+        !prefix ||
+        !remainder ||
+        start.path[depth] === undefined ||
+        start.path[depth] >= prefix.length ||
+        !source.content.every((child) =>
+          contentAllows(declarative, remainder, child)
+        ) ||
+        !prefix.every(
+          (_slot, index) =>
+            children[index] &&
+            contentAllowsAt(
+              declarative,
+              content,
+              children[index],
+              index,
+              options
+            )
+        )
+      ) {
+        continue;
+      }
+
+      return document.nodeRange([...ownerPath, prefix.length - 1]).to;
+    }
+
+    return null;
+  };
+
   const getBoundaryCandidates = (
     at: Range,
     rootChildren: readonly Descendant[],
@@ -1114,6 +1286,18 @@ export const compileSliceFitter = <V extends Value>(
     add({ cost: 0, from, to });
 
     const collapsed = from === to;
+    const boundary = getPrefixInsertionBoundary(
+      at,
+      rootChildren,
+      document,
+      source,
+      targetRootProgram
+    );
+
+    if (boundary !== null) {
+      add({ cost: -1, from: boundary, to: boundary });
+    }
+
     const startBounds = [{ cost: 0, position: from }];
     const endBounds = [{ cost: 0, position: to }];
     const deleting = source.content.length === 0;
@@ -1130,11 +1314,7 @@ export const compileSliceFitter = <V extends Value>(
         if (depth < source.openStart) {
           const behavior = getElementBehavior(node);
 
-          if (
-            behavior.isolating ||
-            behavior.void ||
-            getElementSlicePolicy(node).preserveContext
-          ) {
+          if (behavior.void || getElementSlicePolicy(node).preserveContext) {
             return [];
           }
         }
@@ -1776,6 +1956,16 @@ export const compileSliceFitter = <V extends Value>(
         ? { anchor: rootPoint, focus: rootPoint }
         : options.target.at;
     const [start, end] = RangeApi.edges(at);
+    const prefixInsertionBoundary =
+      options.target.kind === 'root'
+        ? null
+        : getPrefixInsertionBoundary(
+            at,
+            rootChildren,
+            document,
+            inputSlice,
+            targetRootProgram
+          );
     const exactBounds =
       options.target.kind === 'root'
         ? { from: 0, to: document.length }
@@ -1825,19 +2015,6 @@ export const compileSliceFitter = <V extends Value>(
 
     const tokenLength = (token: FitToken) =>
       token.kind === 'text' ? token.text.length : 1;
-    const contextsShareContent = (left: Element, right: Element) => {
-      if (getElementType(left) === getElementType(right)) return true;
-
-      const leftBehavior = getElementBehavior(left);
-      const rightBehavior = getElementBehavior(right);
-
-      return (
-        !leftBehavior.inline &&
-        !rightBehavior.inline &&
-        elementUsesInlineContent(left) &&
-        elementUsesInlineContent(right)
-      );
-    };
     const openTokenNode = (token: FitOpenToken): Descendant => {
       if (token.sourceNode) return token.sourceNode as Descendant;
 
@@ -2412,6 +2589,7 @@ export const compileSliceFitter = <V extends Value>(
       inputSlice.content.every(rootCanContain) &&
       !sourceSharesTargetContent;
     const shouldGenerateLocalCandidate = () =>
+      prefixInsertionBoundary === null &&
       !exactBounds &&
       inputSlice.content.length > 0 &&
       ((!sameTextPath &&
@@ -2897,9 +3075,44 @@ export const compileSliceFitter = <V extends Value>(
     };
 
     const directLocalCandidate =
-      inputSlice.openStart === 1 && inputSlice.openEnd === 1
+      prefixInsertionBoundary === null &&
+      inputSlice.openStart === 1 &&
+      inputSlice.openEnd === 1
         ? createLocalTextCandidate(inputSlice, 0)
         : null;
+    const selectedPrefixCandidate = ((): SliceFitCandidate | null => {
+      if (
+        options.target.kind !== 'range' ||
+        !sameTextPath ||
+        collapsed ||
+        !targetText ||
+        !NodeApi.isText(targetText)
+      ) {
+        return null;
+      }
+
+      const boundary = getPrefixInsertionBoundary(
+        at,
+        rootChildren,
+        document,
+        inputSlice,
+        targetRootProgram,
+        true
+      );
+
+      if (boundary === null) return null;
+      const retained = document.tokens.slice(exactTo, boundary);
+      const incoming = encodeContentSlice(inputSlice);
+
+      return {
+        cost: -1,
+        from: exactFrom,
+        insert: PreparedTokenSlice.concat([retained, incoming]),
+        selectionOffset: retained.length + getContentEndOffset(incoming),
+        to: boundary,
+        ...(preparedInput ? { preparation: preparedInput.preparation } : {}),
+      };
+    })();
     const selectedCandidate: SliceFitCandidate | null =
       options.target.kind === 'root'
         ? (() => {
@@ -2913,76 +3126,77 @@ export const compileSliceFitter = <V extends Value>(
               to: document.length,
             });
           })()
-        : directLocalCandidate &&
-            'preparedOpenBlock' in directLocalCandidate &&
-            isStructurallyApplicable(directLocalCandidate)
-          ? {
-              ...directLocalCandidate,
-              ...(preparedInput
-                ? { preparation: preparedInput.preparation }
-                : {}),
-            }
-          : selectSliceFitCandidate({
-              candidates: ({ state, variant }) => {
-                if (state.kind === 'local') {
-                  const candidate = profileCoreDuration(
-                    'slice-fit-local-candidates',
+        : (selectedPrefixCandidate ??
+          (directLocalCandidate &&
+          'preparedOpenBlock' in directLocalCandidate &&
+          isStructurallyApplicable(directLocalCandidate)
+            ? {
+                ...directLocalCandidate,
+                ...(preparedInput
+                  ? { preparation: preparedInput.preparation }
+                  : {}),
+              }
+            : selectSliceFitCandidate({
+                candidates: ({ state, variant }) => {
+                  if (state.kind === 'local') {
+                    const candidate = profileCoreDuration(
+                      'slice-fit-local-candidates',
+                      () =>
+                        createLocalTextCandidate(
+                          variant.slice,
+                          state.cost,
+                          state.family.priority < 0
+                        )
+                    );
+
+                    if (candidate && isStructurallyApplicable(candidate)) {
+                      return [
+                        state.family.index === 0
+                          ? {
+                              ...candidate,
+                              ...(preparedInput
+                                ? {
+                                    preparation: preparedInput.preparation,
+                                  }
+                                : {}),
+                            }
+                          : candidate,
+                      ];
+                    }
+
+                    return [];
+                  }
+
+                  const candidates = profileCoreDuration(
+                    'slice-fit-structural-candidates',
                     () =>
-                      createLocalTextCandidate(
-                        variant.slice,
-                        state.cost,
-                        state.family.priority < 0
+                      createStructuralCandidates(
+                        state.boundary as SliceBoundaryCandidate,
+                        variant,
+                        state.cost
                       )
                   );
 
-                  if (candidate && isStructurallyApplicable(candidate)) {
-                    return [
-                      state.family.index === 0
-                        ? {
-                            ...candidate,
-                            ...(preparedInput
-                              ? {
-                                  preparation: preparedInput.preparation,
-                                }
-                              : {}),
-                          }
-                        : candidate,
-                    ];
-                  }
+                  const structurallyApplicable = candidates.filter(
+                    isStructurallyApplicable
+                  );
 
-                  return [];
-                }
-
-                const candidates = profileCoreDuration(
-                  'slice-fit-structural-candidates',
-                  () =>
-                    createStructuralCandidates(
-                      state.boundary as SliceBoundaryCandidate,
-                      variant,
-                      state.cost
-                    )
-                );
-
-                const structurallyApplicable = candidates.filter(
-                  isStructurallyApplicable
-                );
-
-                return state.family.index === 0
-                  ? structurallyApplicable.map((candidate) => ({
-                      ...candidate,
-                      ...(preparedInput
-                        ? {
-                            preparation: preparedInput.preparation,
-                          }
-                        : {}),
-                    }))
-                  : structurallyApplicable;
-              },
-              exactFrom,
-              inputSlice,
-              preferOpenVariants,
-              seeds: createSeeds(),
-            });
+                  return state.family.index === 0
+                    ? structurallyApplicable.map((candidate) => ({
+                        ...candidate,
+                        ...(preparedInput
+                          ? {
+                              preparation: preparedInput.preparation,
+                            }
+                          : {}),
+                      }))
+                    : structurallyApplicable;
+                },
+                exactFrom,
+                inputSlice,
+                preferOpenVariants,
+                seeds: createSeeds(),
+              })));
 
     if (!selectedCandidate) return false;
     const materializedCandidate = profileCoreDuration(

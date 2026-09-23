@@ -35,7 +35,7 @@
       },
       "targets": [
         "upload",
-        "upload-ephemeral",
+        "upload-browser",
         "upload-r2",
         "upload-s3",
         "files-api"

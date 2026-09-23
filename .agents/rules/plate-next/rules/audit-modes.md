@@ -157,7 +157,7 @@ reach 100 only when its behavior lives in the right owner.
 - Any file that imports or installs such a bridge is capped at `25`, even when
   `check:core` passes.
 - An owner file whose real runtime behavior was moved into the bridge is capped:
-  `InputRulesPlugin` with input-rule execution in the bridge is `<=5`;
+  the private input-rule command owner with execution in the bridge is `<=5`;
   `ElementIdPlugin` with persisted-ID lifecycle work in the bridge is `<=45`;
   `AffinityPlugin` with edge insertion/selection behavior in the bridge is
   `<=55`; `PliteExtensionPlugin` with change dispatch in the bridge is `<=45`.

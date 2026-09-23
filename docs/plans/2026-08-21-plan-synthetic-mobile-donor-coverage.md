@@ -70,7 +70,7 @@ Boundaries:
   Slate, Wordgard, and Yjs Collaboration are supporting negative controls
   because durable local harvests already exist. ProseKit and Meowdown are
   excluded because their accepted packets are already closed.
-- CKEditor5 and TinyMCE scratch reports, Milkdown, Remirror, and arbitrary
+- TinyMCE scratch reports, Milkdown, Remirror, and arbitrary
   sibling clones are not part of the named-candidate closure. Their existence
   cannot silently expand this plan into another comprehensive harvest.
 - Candidate behaviors include touch, pointer, mobile viewport, non-editable

@@ -837,8 +837,6 @@ export const schema = Object.freeze({
   properties: Object.freeze({}),
 }) satisfies Schema;
 
-export const fingerprint = "fnv1a64:29aa1d04db516b3f";
-
 type EditorPlugins = (typeof EditorModule)["EditorKit"] & GeneratedEditorTypeProvider<Types>;
 
 export type Editor = BaseEditor<Value, readonly [], EditorPlugins>;

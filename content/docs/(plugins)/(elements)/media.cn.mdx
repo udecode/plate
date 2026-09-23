@@ -171,7 +171,8 @@ const editor = createEditor({
 
 ### 标题
 
-每个图片、音频、视频、文件和嵌入都是非 void、隔离且可通过键盘选择的元素。
+每个图片、音频、视频、文件和嵌入都是非 void 的对象元素。`object: true`
+使资源即使没有标题也属于有效内容，并让整个资源可选中且在结构上隔离。
 媒体元素的直接行内 children 就是标题；媒体插件负责 schema 和行为，不需要单独的
 标题插件、节点类型或 content root。
 
@@ -241,6 +242,10 @@ editor.plugin(ImagePlugin).update.insert({
 | --- | --- |
 | 媒体路径上的 Plate `NodeSelection` | 聚焦资源，显示选中边框和空标题占位符；`ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
 | 媒体 children 内的 Plate `TextSelection` | 编辑标题；光标位于标题开头时，`ArrowUp` 返回资源焦点。 |
+
+复制或剪切媒体 `NodeSelection` 会连同标题传输整个资源；只选择标题文本时，
+粘贴不会重建资源。在标题中按 Enter 会把光标后的文本移到资源之后的新段落，
+资源节点仍保持原有身份。
 
 ### 上传本地文件
 

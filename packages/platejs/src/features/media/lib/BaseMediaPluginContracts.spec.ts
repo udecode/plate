@@ -7,6 +7,7 @@ import {
   definePlugin,
   schema,
 } from '../../../core';
+import { BaseTextAlignPlugin } from '../../basic-styles/lib/BaseStylePlugins';
 import type { BaseUploadPlugin } from '../../upload/lib/BaseUploadPlugin';
 import {
   type AlignedMediaInsertInput,
@@ -129,7 +130,7 @@ type _mediaApiIsPublished = AssertTrue<
 >;
 
 describe('Base media plugin contracts', () => {
-  it('configures every media node as a keyboard-selectable direct caption owner', () => {
+  it('configures every media node as an object with direct caption children', () => {
     for (const plugin of [
       BaseFilePlugin,
       BaseAudioPlugin,
@@ -144,7 +145,7 @@ describe('Base media plugin contracts', () => {
 
       expect(element?.behavior).toMatchObject({
         isolating: true,
-        keyboardSelectable: true,
+        object: true,
         void: false,
       });
       expect(element?.content).toMatchObject({
@@ -206,8 +207,11 @@ describe('Base media plugin contracts', () => {
       plugin,
       type,
     ]: P) => {
+      const TextAlignPlugin = BaseTextAlignPlugin.configure({
+        targetPlugins: [plugin, PLUGINS.paragraph],
+      });
       const editor = createEditor({
-        plugins: [plugin] as const,
+        plugins: [plugin, TextAlignPlugin] as const,
         selection: {
           kind: 'text',
           anchor: { offset: 2, path: [0, 0] },
@@ -216,8 +220,10 @@ describe('Base media plugin contracts', () => {
         initialValue: [
           {
             children: [{ text: 'hello' }],
+            textAlign: 'center',
             type,
             url: 'https://platejs.org/example',
+            width: '55%',
           },
           { children: [{ text: 'after' }], type: 'paragraph' },
         ],
@@ -228,8 +234,10 @@ describe('Base media plugin contracts', () => {
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'he' }],
+          textAlign: 'center',
           type,
           url: 'https://platejs.org/example',
+          width: '55%',
         },
         { children: [{ text: 'llo' }], type: 'paragraph' },
         { children: [{ text: 'after' }], type: 'paragraph' },
@@ -241,6 +249,112 @@ describe('Base media plugin contracts', () => {
     };
 
     rows.forEach(verifyCaptionSplit);
+  });
+
+  it('exits media captions without duplicating the owner across selection shapes', () => {
+    const rows = [
+      [BaseFilePlugin, PLUGINS.file],
+      [BaseAudioPlugin, PLUGINS.audio],
+      [BaseVideoPlugin, PLUGINS.video],
+      [BaseImagePlugin, PLUGINS.image],
+      [BaseMediaEmbedPlugin, PLUGINS.mediaEmbed],
+    ] as const;
+    const cases = [
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 0,
+        focus: [0, 0] as const,
+        focusOffset: 0,
+        mediaText: '',
+        exitText: 'hello',
+        afterText: 'outside',
+      },
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 5,
+        focus: [0, 0] as const,
+        focusOffset: 5,
+        mediaText: 'hello',
+        exitText: '',
+        afterText: 'outside',
+      },
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 1,
+        focus: [0, 0] as const,
+        focusOffset: 4,
+        mediaText: 'h',
+        exitText: 'o',
+        afterText: 'outside',
+      },
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 4,
+        focus: [0, 0] as const,
+        focusOffset: 1,
+        mediaText: 'h',
+        exitText: 'o',
+        afterText: 'outside',
+      },
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 2,
+        focus: [1, 0] as const,
+        focusOffset: 2,
+        mediaText: 'he',
+        exitText: '',
+        afterText: 'tside',
+      },
+      {
+        anchor: [1, 0] as const,
+        anchorOffset: 2,
+        focus: [0, 0] as const,
+        focusOffset: 2,
+        mediaText: 'he',
+        exitText: '',
+        afterText: 'tside',
+      },
+    ] as const;
+
+    for (const [plugin, type] of rows) {
+      for (const testCase of cases) {
+        const editor = createEditor({
+          plugins: [plugin],
+          selection: {
+            kind: 'text',
+            anchor: {
+              offset: testCase.anchorOffset,
+              path: [...testCase.anchor],
+            },
+            focus: { offset: testCase.focusOffset, path: [...testCase.focus] },
+          },
+          initialValue: [
+            {
+              children: [{ text: 'hello' }],
+              type,
+              url: 'https://platejs.org/example',
+            },
+            { children: [{ text: 'outside' }], type: 'paragraph' },
+          ],
+        });
+
+        editor.update.break.insert();
+
+        expect(editor.read.children()).toEqual([
+          {
+            children: [{ text: testCase.mediaText }],
+            type,
+            url: 'https://platejs.org/example',
+          },
+          { children: [{ text: testCase.exitText }], type: 'paragraph' },
+          { children: [{ text: testCase.afterText }], type: 'paragraph' },
+        ]);
+        expect(editor.read.selection()).toEqual({
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 0, path: [1, 0] },
+        });
+      }
+    }
   });
 
   it('keeps hard Enter behavior outside media captions', () => {

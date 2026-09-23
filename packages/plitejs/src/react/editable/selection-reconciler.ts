@@ -83,15 +83,15 @@ import {
 } from './selection-side-effect-policy';
 import { exportTripleClickSelectionToDOM } from './selection-triple-click';
 import {
-  preferModelSelectionForKeyboardSelectableTarget,
+  preferModelSelectionForSelectableOwnerTarget,
   preferModelSelectionForVoidTarget,
   resolveEditableClickTarget,
   resolveEditableVoidClickTarget,
 } from './selection-void-target';
 
 export {
-  selectEditableKeyboardSelectablePath,
-  selectEditableKeyboardSelectableTarget,
+  selectEditableSelectableOwnerPath,
+  selectEditableSelectableOwnerTarget,
   selectEditableVoidPath,
   selectEditableVoidTarget,
 } from './selection-void-target';
@@ -326,7 +326,7 @@ export const applyEditableClick = ({
     isEditableModelSelectionPreferred(inputController);
   const modelTargetOwnsSelection =
     modelSelectionOwnsClick ||
-    preferModelSelectionForKeyboardSelectableTarget({
+    preferModelSelectionForSelectableOwnerTarget({
       editor,
       inputController,
       target: event.target,
@@ -462,7 +462,7 @@ export const applyEditableMouseDown = ({
   }
 
   const modelTargetOwnsSelection =
-    preferModelSelectionForKeyboardSelectableTarget({
+    preferModelSelectionForSelectableOwnerTarget({
       editor,
       inputController,
       target: event.target,

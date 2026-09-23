@@ -26,7 +26,6 @@ type ApplyBlockInsertionOptions<TResult> = Readonly<{
 
 const isReplaceableEmptyBlock = (tx: EditorUpdateTransaction, block: Element) =>
   NodeApi.isText(block.children[0]) &&
-  !tx.schema.isAtom(block) &&
   !tx.schema.isReadOnly(block) &&
   tx.nodes.isEmpty(block);
 

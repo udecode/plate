@@ -14,9 +14,10 @@ source map. The normative editing spec remains in this directory.
 | Behavior or spec family | Current source, consumers and proof entry points |
 | --- | --- |
 | Paragraph, heading, quote, rule; `EDIT-P-*`, `EDIT-H-*`, `EDIT-BQ-*` | [Blocks and styles](../research/reviews.md#basic) |
+| Required document slots, closed paste, deletion and rule fallback | [Document-structure repair](../plans/2026-09-22-document-structure-editing-repair.md); [Plite slice contract](../../packages/plitejs/test/slice-fit-contract.test.ts), Plate [heading](../../packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.spec.tsx) and [quote](../../packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.spec.tsx) rules, [raw forced-layout browser proof](../../apps/plite/tests/plite-browser/donor/examples/forced-layout.test.ts). This restores the accepted schema-owned document invariant; the editing law is unchanged. |
 | Marks and affinity; `EDIT-AFF-*`; autoformat and exit breaks | [Styles](../research/reviews.md#styles), [selection](../research/reviews.md#selection), [editing](../research/reviews.md#editing) |
 | Lists and indentation; `EDIT-LIST-*` | [Lists](../research/reviews.md#list) |
-| Code; `EDIT-CB-*` | [Native code](../research/reviews.md#code), [external text](../research/reviews.md#external-text) |
+| Code; `EDIT-CB-*` | [Native code](../research/reviews.md#code), [external text](../research/reviews.md#external-text). Current line-boundary and insertion proof: [`BaseCodeBlockPlugin.spec.tsx`](../../packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx); copied JSON, selection, history and comment proof: [`code-block.format.spec.tsx`](../../apps/www/src/registry/components/editor/code-block.format.spec.tsx); live syntax and JSON button proof: [`code-block-views.spec.ts`](../../apps/www/tests/browser/code-block-views.spec.ts). |
 | Links | [Links and source entry](../research/reviews.md#link) |
 | Math; `EDIT-MATH-*` | [Math](../research/reviews.md#math) |
 | Tables; `EDIT-TABLE-*` | [Tables and cell selection](../research/reviews.md#table) |

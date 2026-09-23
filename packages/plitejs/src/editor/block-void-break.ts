@@ -42,7 +42,8 @@ export const insertDefaultBlockAfterSelectedBlockVoid = (
   }
 
   const defaultChild = getEditorSchema(editor).createDefaultRootChild(
-    toPublicRoot(getEditorRuntimeRoot(editor))
+    toPublicRoot(getEditorRuntimeRoot(editor)),
+    voidPath[0] + 1
   );
 
   if (!ElementApi.isElement(defaultChild)) return false;

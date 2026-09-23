@@ -28,36 +28,6 @@ const CODE_LANGUAGE_CLASS_RE = /(?:^|\s)language-([^\s]+)/;
 const NON_WHITESPACE = /\S/;
 const NON_WHITESPACE_OR_END = /\S|$/;
 const TRAILING_NEWLINES = /\n+$/;
-const patchedLowlights = new WeakSet<object>();
-
-type HighlightMode = {
-  aliases?: string[];
-  begin?: RegExp | string;
-  beginKeywords?: string;
-  className?: string;
-  contains?: Array<HighlightMode | string>;
-  end?: RegExp | string;
-  endsWithParent?: boolean;
-  excludeBegin?: boolean;
-  excludeEnd?: boolean;
-  illegal?: RegExp | string;
-  keywords?: string | string[] | Record<string, string | string[]>;
-  name?: string;
-  relevance?: number;
-  skip?: boolean;
-  variants?: HighlightMode[];
-};
-type HighlightLanguage = HighlightMode & {
-  contains: HighlightMode[];
-  name: string;
-};
-type HighlightJs = {
-  APOS_STRING_MODE: HighlightMode;
-  BACKSLASH_ESCAPE: HighlightMode;
-  HASH_COMMENT_MODE: HighlightMode;
-  QUOTE_STRING_MODE: HighlightMode;
-  UNDERSCORE_TITLE_MODE: HighlightMode;
-};
 export type HighlightNode = {
   children?: HighlightNode[];
   properties?: Record<string, unknown>;
@@ -68,7 +38,6 @@ export type HighlightResult = {
   children: HighlightNode[];
   type: string;
 };
-export type CodeHighlightGrammar = (...args: never[]) => unknown;
 
 export type CodeHighlightLowlight = {
   highlight(
@@ -85,21 +54,6 @@ export type CodeHighlightLowlight = {
   ): HighlightResult;
   listLanguages(): string[];
   registered(aliasOrName: string): boolean;
-};
-type CodeHighlightRegistry = {
-  register(name: string, grammar: CodeHighlightGrammar): unknown;
-  registerAlias(language: string, alias: readonly string[] | string): unknown;
-};
-const isCodeHighlightRegistry = (
-  lowlight: CodeHighlightLowlight
-): lowlight is CodeHighlightLowlight & CodeHighlightRegistry => {
-  const registry = lowlight as CodeHighlightLowlight &
-    Partial<CodeHighlightRegistry>;
-
-  return (
-    typeof registry.register === 'function' &&
-    typeof registry.registerAlias === 'function'
-  );
 };
 type CodeBlockDecoration = Readonly<{
   attributes: Readonly<{ className: string; 'data-code-block-syntax': '' }>;
@@ -163,7 +117,7 @@ const getSelectedLineStarts = (text: string, start: number, end: number) => {
   const starts = [getLineStartOffset(text, start)];
   let nextBreak = text.indexOf('\n', starts[0]);
 
-  while (nextBreak !== -1 && nextBreak < end) {
+  while (nextBreak !== -1 && nextBreak + 1 < end) {
     starts.push(nextBreak + 1);
     nextBreak = text.indexOf('\n', nextBreak + 1);
   }
@@ -301,6 +255,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 })
   .extend(({ editor, plugin, schema: { type } }) => {
     type CodeBlock = ElementOf<typeof plugin>;
+    type CodeBlockInsertInput = Pick<CodeBlock, 'language'>;
 
     return {
       update: ({ tx }) => {
@@ -372,9 +327,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           }
         };
         const insertCodeBlock = (
-          {
-            defaultType = editor.plugin(BaseParagraphPlugin).schema.type,
-          }: { defaultType?: string } = {},
+          input: CodeBlockInsertInput = {},
           options: BlockInsertOptions = {}
         ) => {
           if (
@@ -386,7 +339,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             return;
           }
 
-          const element = tx.schema.create(defaultType);
+          const element = tx.schema.create(type, input);
           const insertOptions = {
             ...options,
             select: options.select ?? true,
@@ -400,14 +353,10 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           } else {
             tx.nodes.insert(element, insertOptions);
           }
-
-          const path = tx.nodes.path(element);
-
-          if (path) tx.nodes.set({ type }, { at: path });
         };
         const applyCodeBlockInsertion = (
           mode: 'insert' | 'upsert',
-          input: { defaultType?: string } = {},
+          input: CodeBlockInsertInput = {},
           options: BlockInsertOptions | BlockUpsertOptions = {}
         ) =>
           applyBlockInsertion({
@@ -415,18 +364,17 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             matches: (block) =>
               block.type === type && block.listType === undefined,
             mode,
+            onReuse: ([block, path]) => {
+              if (
+                input.language !== undefined &&
+                block.language !== input.language
+              ) {
+                tx.nodes.set({ language: input.language }, { at: path });
+              }
+            },
             options,
             tx,
           });
-        const setContent = ({
-          code,
-          element,
-        }: {
-          code: string;
-          element: CodeBlock;
-        }) => {
-          tx.nodes.replaceChildren([{ text: code }], { at: element });
-        };
         const tab = (reverse = false) => {
           const selection = tx.selection();
 
@@ -504,25 +452,8 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         };
 
         return {
-          format: ({ element }: { element: CodeBlock }) => {
-            const { language } = element;
-            const code = NodeApi.string(element);
-
-            if (language !== 'json') return;
-
-            try {
-              JSON.parse(code);
-            } catch {
-              return;
-            }
-
-            setContent({
-              code: JSON.stringify(JSON.parse(code), null, 2),
-              element,
-            });
-          },
           insert: (
-            input: { defaultType?: string } = {},
+            input: CodeBlockInsertInput = {},
             options: BlockInsertOptions = {}
           ) => applyCodeBlockInsertion('insert', input, options),
           resetBlock: () => {
@@ -648,7 +579,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           },
           untab: () => tab(true),
           upsert: (
-            input: { defaultType?: string } = {},
+            input: CodeBlockInsertInput = {},
             options: BlockUpsertOptions = {}
           ) => applyCodeBlockInsertion('upsert', input, options),
         };
@@ -825,364 +756,6 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
     lowlight: null,
   }),
 }).extend(({ editor, store }) => {
-  const stablePythonAliases = ['py', 'gyp', 'ipython'] as const;
-  const source = (value: RegExp | string | null | undefined) => {
-    if (!value) return null;
-
-    return typeof value === 'string' ? value : value.source;
-  };
-  const concat = (...values: Array<RegExp | string | null | undefined>) =>
-    values.map((value) => source(value)).join('');
-  const lookahead = (value: RegExp | string) => concat('(?=', value, ')');
-
-  // Adapted from the older Highlight.js Python grammar. The current 11.x
-  // grammar uses unicodeRegex + multi-match rules that can generate invalid
-  // regex ranges in browser bundles.
-  // The vendored grammar stays lexical to its single plugin owner.
-  const pythonBrowserSafe = (hljs: HighlightJs): HighlightLanguage => {
-    const reservedWords = [
-      'and',
-      'as',
-      'assert',
-      'async',
-      'await',
-      'break',
-      'case',
-      'class',
-      'continue',
-      'def',
-      'del',
-      'elif',
-      'else',
-      'except',
-      'finally',
-      'for',
-      'from',
-      'global',
-      'if',
-      'import',
-      'in',
-      'is',
-      'lambda',
-      'match',
-      'nonlocal|10',
-      'not',
-      'or',
-      'pass',
-      'raise',
-      'return',
-      'try',
-      'while',
-      'with',
-      'yield',
-    ];
-    const builtIns = [
-      '__import__',
-      'abs',
-      'all',
-      'any',
-      'ascii',
-      'bin',
-      'bool',
-      'breakpoint',
-      'bytearray',
-      'bytes',
-      'callable',
-      'chr',
-      'classmethod',
-      'compile',
-      'complex',
-      'delattr',
-      'dict',
-      'dir',
-      'divmod',
-      'enumerate',
-      'eval',
-      'exec',
-      'filter',
-      'float',
-      'format',
-      'frozenset',
-      'getattr',
-      'globals',
-      'hasattr',
-      'hash',
-      'help',
-      'hex',
-      'id',
-      'input',
-      'int',
-      'isinstance',
-      'issubclass',
-      'iter',
-      'len',
-      'list',
-      'locals',
-      'map',
-      'max',
-      'memoryview',
-      'min',
-      'next',
-      'object',
-      'oct',
-      'open',
-      'ord',
-      'pow',
-      'print',
-      'property',
-      'range',
-      'repr',
-      'reversed',
-      'round',
-      'set',
-      'setattr',
-      'slice',
-      'sorted',
-      'staticmethod',
-      'str',
-      'sum',
-      'super',
-      'tuple',
-      'type',
-      'vars',
-      'zip',
-    ];
-    const literals = [
-      '__debug__',
-      'Ellipsis',
-      'False',
-      'None',
-      'NotImplemented',
-      'True',
-    ];
-    const types = [
-      'Any',
-      'Callable',
-      'Coroutine',
-      'Dict',
-      'List',
-      'Literal',
-      'Generic',
-      'Optional',
-      'Sequence',
-      'Set',
-      'Tuple',
-      'Type',
-      'Union',
-    ];
-    const keywords: NonNullable<HighlightMode['keywords']> = {
-      $pattern: String.raw`[A-Za-z]\w+|__\w+__`,
-      built_in: builtIns,
-      keyword: reservedWords,
-      literal: literals,
-      type: types,
-    };
-    const prompt: HighlightMode = {
-      begin: /^(>>>|\.\.\.) /,
-      className: 'meta',
-    };
-    const subst: HighlightMode = {
-      begin: /\{/,
-      className: 'subst',
-      end: /\}/,
-      illegal: /#/,
-      keywords,
-    };
-    const literalBracket: HighlightMode = {
-      begin: /\{\{/,
-      relevance: 0,
-    };
-    const string: HighlightMode = {
-      className: 'string',
-      contains: [hljs.BACKSLASH_ESCAPE],
-      variants: [
-        {
-          begin: /([uU]|[bB]|[rR]|[bB][rR]|[rR][bB])?'''/,
-          contains: [hljs.BACKSLASH_ESCAPE, prompt],
-          end: /'''/,
-          relevance: 10,
-        },
-        {
-          begin: /([uU]|[bB]|[rR]|[bB][rR]|[rR][bB])?"""/,
-          contains: [hljs.BACKSLASH_ESCAPE, prompt],
-          end: /"""/,
-          relevance: 10,
-        },
-        {
-          begin: /([fF][rR]|[rR][fF]|[fF])'''/,
-          contains: [hljs.BACKSLASH_ESCAPE, prompt, literalBracket, subst],
-          end: /'''/,
-        },
-        {
-          begin: /([fF][rR]|[rR][fF]|[fF])"""/,
-          contains: [hljs.BACKSLASH_ESCAPE, prompt, literalBracket, subst],
-          end: /"""/,
-        },
-        {
-          begin: /([uU]|[rR])'/,
-          end: /'/,
-          relevance: 10,
-        },
-        {
-          begin: /([uU]|[rR])"/,
-          end: /"/,
-          relevance: 10,
-        },
-        {
-          begin: /([bB]|[bB][rR]|[rR][bB])'/,
-          end: /'/,
-        },
-        {
-          begin: /([bB]|[bB][rR]|[rR][bB])"/,
-          end: /"/,
-        },
-        {
-          begin: /([fF][rR]|[rR][fF]|[fF])'/,
-          contains: [hljs.BACKSLASH_ESCAPE, literalBracket, subst],
-          end: /'/,
-        },
-        {
-          begin: /([fF][rR]|[rR][fF]|[fF])"/,
-          contains: [hljs.BACKSLASH_ESCAPE, literalBracket, subst],
-          end: /"/,
-        },
-        hljs.APOS_STRING_MODE,
-        hljs.QUOTE_STRING_MODE,
-      ],
-    };
-    const digitPart = '[0-9](_?[0-9])*';
-    const pointFloat = `(\\b(${digitPart}))?\\.(${digitPart})|\\b(${digitPart})\\.`;
-    const number: HighlightMode = {
-      className: 'number',
-      relevance: 0,
-      variants: [
-        {
-          begin: `(\\b(${digitPart})|(${pointFloat}))[eE][+-]?(${digitPart})[jJ]?\\b`,
-        },
-        {
-          begin: `(${pointFloat})[jJ]?`,
-        },
-        {
-          begin: '\\b([1-9](_?[0-9])*|0+(_?0)*)[lLjJ]?\\b',
-        },
-        {
-          begin: '\\b0[bB](_?[01])+[lL]?\\b',
-        },
-        {
-          begin: '\\b0[oO](_?[0-7])+[lL]?\\b',
-        },
-        {
-          begin: '\\b0[xX](_?[0-9a-fA-F])+[lL]?\\b',
-        },
-        {
-          begin: `\\b(${digitPart})[jJ]\\b`,
-        },
-      ],
-    };
-    const commentType: HighlightMode = {
-      begin: lookahead(/# type:/),
-      className: 'comment',
-      contains: [
-        {
-          begin: /# type:/,
-        },
-        {
-          begin: /#/,
-          end: /\b\B/,
-          endsWithParent: true,
-        },
-      ],
-      end: /$/,
-      keywords,
-    };
-    const params: HighlightMode = {
-      className: 'params',
-      variants: [
-        {
-          begin: /\(\s*\)/,
-          className: '',
-          skip: true,
-        },
-        {
-          begin: /\(/,
-          contains: ['self', prompt, number, string, hljs.HASH_COMMENT_MODE],
-          end: /\)/,
-          excludeBegin: true,
-          excludeEnd: true,
-          keywords,
-        },
-      ],
-    };
-
-    subst.contains = [string, number, prompt];
-
-    return {
-      aliases: [...stablePythonAliases],
-      contains: [
-        prompt,
-        number,
-        {
-          begin: /\bself\b/,
-        },
-        {
-          beginKeywords: 'if',
-          relevance: 0,
-        },
-        string,
-        commentType,
-        hljs.HASH_COMMENT_MODE,
-        {
-          contains: [
-            hljs.UNDERSCORE_TITLE_MODE,
-            params,
-            {
-              begin: /->/,
-              endsWithParent: true,
-              keywords,
-            },
-          ],
-          end: /:/,
-          illegal: /[${=;\n,]/,
-          variants: [
-            {
-              beginKeywords: 'def',
-              className: 'function',
-            },
-            {
-              beginKeywords: 'class',
-              className: 'class',
-            },
-          ],
-        },
-        {
-          begin: /^[\t ]*@/,
-          className: 'meta',
-          contains: [number, params, string],
-          end: /(?=#)|$/,
-        },
-      ],
-      illegal: /(<\/|->|\?)|=>/,
-      keywords,
-      name: 'Python',
-    };
-  };
-  // The vendored grammar stays lexical to its single plugin owner.
-  const ensureStablePythonGrammar = (
-    lowlight: CodeHighlightLowlight,
-    language: string | null | undefined
-  ) => {
-    if (
-      language !== 'python' ||
-      patchedLowlights.has(lowlight) ||
-      !isCodeHighlightRegistry(lowlight)
-    ) {
-      return;
-    }
-
-    lowlight.register('python', pythonBrowserSafe);
-    lowlight.registerAlias('python', stablePythonAliases);
-    patchedLowlights.add(lowlight);
-  };
   const blockDecorations = new Map<string, CodeHighlightCache>();
   let nextSyntaxKey = 0;
   let observers = 0;
@@ -1273,7 +846,6 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
           return previous.decorations;
         }
 
-        ensureStablePythonGrammar(lowlight, language);
         let highlighted: HighlightResult;
         let warning: CodeHighlightWarning | undefined;
 

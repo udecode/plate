@@ -10,5 +10,4 @@ export * from './element-id/index';
 export * from './element-state/index';
 export * from './html/index';
 export * from './input-rules/index';
-export * from './override/index';
 export * from './paragraph/index';

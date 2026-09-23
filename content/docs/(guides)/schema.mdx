@@ -43,7 +43,7 @@ const editor = createEditor({
 });
 ```
 
-Omit `root` for Plate's standard nonempty paragraph grammar. A custom root requires a positive integer `min`. Pass the installed plugin descriptor to `schema.content.element`; use `schema.content.elements` for several permitted element families. Its first descriptor supplies the construction default.
+Omit `root` for Plate's standard nonempty paragraph grammar. A custom root must require at least one child, either through `min` or a required prefix. Pass the installed plugin descriptor to `schema.content.element`; use `schema.content.elements` for several permitted element families. Its first descriptor supplies the construction default.
 
 Structural children use the same content grammar. Set `blockContent: false` on internal structures that must not participate in normal-flow block content. Use `plugins.blockContent(...)` when a container accepts normal-flow blocks.
 
@@ -60,12 +60,39 @@ Structural children use the same content grammar. Set `blockContent: false` on i
 | `schema.content.any(rules, ...)` | At least one nested rule |
 | `schema.content.all(rules, ...)` | Every nested rule |
 | `schema.content.not(rule, ...)` | Content outside the nested rule |
+| `schema.content.prefix(required, rest)` | Exact required positions followed by one ordinary content rule |
 
 `min`, `max`, and `default` control cardinality and construction. A required rule needs a constructable default. The compiled schema uses the same grammar to construct nodes, find wrapping, validate values, and fit imported content.
 
 `not` is a complement and can admit undeclared types outside its excluded rule. Inspect `allowsUnknownElements`, `allowedElementTypes`, and `allowsText` on compiled element content when an integration needs to distinguish open and closed grammar.
 
 The compiler owns structural groups such as `element`, `text`, `block`, `inline`, and `textBlock`. Application groups can extend other groups. Do not duplicate derived membership in every plugin.
+
+## Require a title
+
+Use a prefix when the first block must have a specific type and property values. The remaining blocks follow the ordinary content rule:
+
+```ts
+import { BaseHeadingPlugin, schema } from 'platejs';
+import { createEditor } from 'platejs/react';
+
+const ArticleSchema = {
+  root: schema.content.prefix(
+    [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+    schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    })
+  ),
+} as const;
+
+const editor = createEditor({
+  plugins: [BaseHeadingPlugin],
+  schema: ArticleSchema,
+});
+```
+
+The descriptor gives `properties` its inferred keys and values. A raw persisted type can be used instead; the compiler then checks its properties against the installed schema. Each required position contributes one child to the root minimum. The rest rule supplies any additional minimum and the default used to construct missing body blocks. The same contract validates local edits, constructs missing positions, and fits imported content. For example, pasting a table before the title can create the missing title while preserving the table if the rest rule accepts tables. An authored change that turns the title into an H2 is rejected. Use a separate application schema for an editor that does not require this shape.
 
 ## Properties
 
@@ -88,7 +115,7 @@ editor.read.schema.assertFragment(children);
 
 Validation checks the complete document or closed children against the compiled schema. It does not publish content. Unknown vocabulary, invalid property values, illegal root ownership, and grammar violations cannot become a partially accepted document.
 
-Use `editor.read.schema.create(...)` to construct valid nodes and `isMarkableVoid`, `isInline`, `isVoid`, `isIsolating`, and `isKeyboardSelectable` for behavior queries. The exact read methods live in [Editor API](/docs/api/editor-api#schema-behavior).
+Use `editor.read.schema.create(...)` to construct valid nodes and `isMarkableVoid`, `isInline`, `isVoid`, `isIsolating`, and `isObject` for behavior queries. The exact read methods live in [Editor API](/docs/api/editor-api#schema-behavior).
 
 ## Fit external content
 

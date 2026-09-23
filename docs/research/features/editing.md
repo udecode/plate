@@ -8,19 +8,35 @@ Question: Which insertion, deletion, normalization and escape rules belong to ca
 
 ## Current decision
 
-Unassessed. No review conclusion is recorded.
+[2026-09-23-editing-structural-rule-admission](../review-records/2026-09-23-editing-structural-rule-admission.json) — **pursue**. Pursue deleting the feature-owned shadow-document validator. It reconstructs and validates a guessed replacement before the real rule deletes the marker and issues a separate command. This fixed two prefix interactions, but admission and success remain split: Plite block commands can silently decline, while generic block/list rules delete markers first. Design one atomic accept-or-decline path at the Plite transaction/command boundary and let Plate rules fall through on decline. Keep canonical schema.content.prefix and the declarative rule system; do not approve a particular speculative API or its scale cost without design and proof.
 
-Compiled decision: not associated. Source observation: unknown. Source matching is not behavior proof.
+Compiled decision: [editing-command-ownership.md](../decisions/editing-command-ownership.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **planned**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
+Execution: **completed**. Proof: **partial**. Package-wide core lint remains red on unrelated pre-existing diagnostics while touched-file lint is green. The 20-block timing cohort is noisy; the owner-scale proxy lacks an exact old checkout and allocation data, and quote/list lack matched timing runs. Browser proof covers valid heading/list/code-fence input, while forbidden required-title placement is covered at package level.
+
+Outcome: [2026-09-23-editing-structural-rule-admission-implementation-execution](../review-records/2026-09-23-editing-structural-rule-admission-implementation-execution.json). Governing reviews: [2026-09-23-editing-structural-rule-admission](../review-records/2026-09-23-editing-structural-rule-admission.json). Work kind: implementation. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [editor-commands.ts](../../../packages/plitejs/src/core/editor-commands.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [CodeBlockRules.ts](../../../packages/platejs/src/features/code-block/lib/CodeBlockRules.ts), [BaseListPlugin.ts](../../../packages/platejs/src/features/list/lib/BaseListPlugin.ts), [plugin-input-rules.mdx](../../../content/docs/(guides)/plugin-input-rules.mdx), [inputRules.spec.tsx](../../../packages/platejs/src/react/utils/inputRules.spec.tsx), `packages/platejs/src/features/basic-nodes/lib/canApplyBlockChanges.internal.ts` (historical input unavailable), [BaseHeadingPlugins.ts](../../../packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts), [BaseBlockPlugins.ts](../../../packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts), [BaseBlockPlugins.spec.tsx](../../../packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.spec.tsx), [InputRulesPlugin.ts](../../../packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts), [createInputRules.ts](../../../packages/platejs/src/lib/plugins/input-rules/createInputRules.ts). Changed directories: [input-rules](../../../packages/platejs/src/lib/plugins/input-rules), [basic-nodes](../../../packages/platejs/src/features/basic-nodes). Changed source groups: none identified.
+
+- **unbound-plan**: [2026-07-01-plate-next-input-rules-before-api.md](../../plans/2026-07-01-plate-next-input-rules-before-api.md).
+
+- **unbound-plan**: [2026-07-22-plite-plate-agent-native-api-shape-audit.md](../../plans/2026-07-22-plite-plate-agent-native-api-shape-audit.md).
+
+- **completed-plan-without-current-outcome**: [2026-07-22-plite-plate-agent-native-api-shape-audit.md](../../plans/2026-07-22-plite-plate-agent-native-api-shape-audit.md).
 
 - **unbound-plan**: [2026-08-26-media-caption-block-reset-api.md](../../plans/2026-08-26-media-caption-block-reset-api.md).
+
+- **stale-execution-proof**: [2026-09-21-editing-command-input-rule-convergence-execution](../review-records/2026-09-21-editing-command-input-rule-convergence-execution.json).
+
+- **stale-execution-proof**: [2026-09-22-editing-document-structure-execution](../review-records/2026-09-22-editing-document-structure-execution.json).
+
+- **stale-execution-proof**: [2026-09-22-editing-document-structure-repair-execution](../review-records/2026-09-22-editing-document-structure-repair-execution.json).
+
+- **stale-execution-proof**: [2026-09-23-editing-structural-rule-admission-design-execution](../review-records/2026-09-23-editing-structural-rule-admission-design-execution.json).
 
 ## Plans and execution
 
@@ -28,23 +44,204 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
+| [2026-07-01-plate-next-input-rules-before-api.md](../../plans/2026-07-01-plate-next-input-rules-before-api.md) | unknown | unknown | unbound |
+| [2026-07-22-plite-plate-agent-native-api-shape-audit.md](../../plans/2026-07-22-plite-plate-agent-native-api-shape-audit.md) | completed | unknown | unbound |
 | [2026-08-26-media-caption-block-reset-api.md](../../plans/2026-08-26-media-caption-block-reset-api.md) | unknown | implementation | unbound |
+| [2026-09-21-editing-command-and-input-rule-convergence.md](../../plans/2026-09-21-editing-command-and-input-rule-convergence.md) | completed | implementation | [2026-09-21-editing-command-final-pass](../review-records/2026-09-21-editing-command-final-pass.json) |
+| [2026-09-22-document-structure-editing-repair.md](../../plans/2026-09-22-document-structure-editing-repair.md) | completed | implementation | [2026-09-22-editing-document-structure-post-implementation](../review-records/2026-09-22-editing-document-structure-post-implementation.json) |
+| [2026-09-22-document-structure-in-the-canonical-schema.md](../../plans/2026-09-22-document-structure-in-the-canonical-schema.md) | completed | implementation | [2026-09-22-editing-document-structure](../review-records/2026-09-22-editing-document-structure.json) |
+| [2026-09-23-structural-input-rule-admission-implementation.md](../../plans/2026-09-23-structural-input-rule-admission-implementation.md) | completed | implementation | [2026-09-23-editing-structural-rule-admission](../review-records/2026-09-23-editing-structural-rule-admission.json) |
+| [2026-09-23-structural-input-rule-admission.md](../../plans/2026-09-23-structural-input-rule-admission.md) | completed | design | [2026-09-23-editing-structural-rule-admission](../review-records/2026-09-23-editing-structural-rule-admission.json) |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
+- [2026-09-23-editing-structural-rule-admission-design-execution](../review-records/2026-09-23-editing-structural-rule-admission-design-execution.json): completed; binding **current**; Completed a source-backed design plan for structural input-rule admission: discard a matched rule's detached spec on explicit decline, use truthful structural command outcomes, delete the shadow-document validator, and migrate heading, quote, generic block and list rules with direct runtime and scale gates. No product implementation is claimed. Proof: stale / partial. Design proof only. The proposed API has no implementation, matched scale probe, schema-error classification proof, package test, or browser proof. Earlier required-title repair evidence is historical and its source match is stale.
+- [2026-09-23-editing-structural-rule-admission-implementation-execution](../review-records/2026-09-23-editing-structural-rule-admission-implementation-execution.json): completed; binding **current**; Implemented atomic structural input-rule decline with truthful Plite change outcomes, migrated heading, quote, generic block, list, code-fence and horizontal-rule shorthand, removed the shadow validator, and updated public docs and durable doctrine. Source-mode Chromium and focused package tests pass. Proof: matching / partial. Package-wide core lint remains red on unrelated pre-existing diagnostics while touched-file lint is green. The 20-block timing cohort is noisy; the owner-scale proxy lacks an exact old checkout and allocation data, and quote/list lack matched timing runs. Browser proof covers valid heading/list/code-fence input, while forbidden required-title placement is covered at package level.
 
 ## Inspected documents
 
 - [2026-08-26-media-caption-block-reset-api.md](../../plans/2026-08-26-media-caption-block-reset-api.md) — plan, historical. Add `tx.blocks.reset()` as the canonical schema-default block mutation, migrate the proven consumers, and keep Enter in a media caption splitting into a paragraph instead of another media node. 
+- [editing-command-ownership.md](../decisions/editing-command-ownership.md) — decision, active. Current bounded editing API/architecture assessment with complete census and current runtime probes.
+- [2026-07-01-plate-next-input-rules-before-api.md](../../plans/2026-07-01-plate-next-input-rules-before-api.md) — plan, historical. Inspected adoption of neutral point-before matching and structural toggles into Plite; old-package proof retained as historical.
+- [2026-07-22-plite-plate-agent-native-api-shape-audit.md](../../plans/2026-07-22-plite-plate-agent-native-api-shape-audit.md) — plan, historical. Inspected earlier helper-injection cut and installed-editor command inference exception; the proposed inputRule namespace was not adopted.
+- [editor-behavior-architecture.md](../systems/editor-behavior-architecture.md) — report, historical. Inspected one-execution-model and feature policy/promotion law; prospective structural helpers remain candidates.
+- [current-kit-autoformat-normalization-split.md](../decisions/current-kit-autoformat-normalization-split.md) — decision, historical. Inspected historical Enter-owned fence/HR target; current kits still choose match-triggered completion.
+- [autoformat-families-are-input-assist-surfaces.md](../decisions/autoformat-families-are-input-assist-surfaces.md) — decision, historical. Inspected independent block/mark/substitution jobs; input assists are not parser law or an automatic packaging unit.
 
 ## Chronological history and alternatives
 
 Earlier conclusions and rejected alternatives remain question-specific. A newer paint observation does not automatically reopen topology or resize ownership.
 
-No immutable history recorded.
+### 2026-09-21: 2026-09-21-editing-command-and-structural-ownership
+
+[Immutable record](../review-records/2026-09-21-editing-command-and-structural-ownership.json) — review; pursue; observation stale.
+
+Pursue consolidating editing outcomes at the canonical command owner, cutting global rules.match and the type-only NormalizeTypes language, and repairing structural selection/admission. Current probes reproduce input-rule mutation/fallback divergence, ignored enabled customization, two-selected-block command insertion exceeding maxLength, and lift/unwrap converting backward selections to forward. Retain compact feature-owned declarations, raw command/transaction distinctions, neutral primitives, app input-assist policy, and separate single-block/single-line jobs. All 33 groups accounted for: 16 pursue, 15 stop, two defer; runtime targets remain provisional.
+
+Question: Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?
+
+- Keep current architecture and patch two input-rule branches: repairs immediate inconsistencies but preserves competing outcome, continuation, family and priority semantics; inadequate durable target.
+- Delete all rule declarations and require raw command handlers everywhere: reject. Heading split/reset, callout break policy, empty-link correction, merge retention and affinity are useful concise declarations.
+- Consolidate useful rule declarations under canonical command outcomes and retain only a proven private trigger index: pursue further design. Delete the public executor/factory protocols where they lack an independent job; measure complete operation cost before accepting lowering.
+- Delete rules.match and its global string-query scanner: pursue. The two production ancestry/property matcher jobs belong to blockquote/list command or read behavior; preserve scalar feature policy.
+- Move all policy into Plite or schema: reject. Product input assists, select-first behavior and content conversion are not neutral grammar. Retain schema validation and structural operations in Plite.
+- Cut NormalizeTypes in favor of complete app-owned positional correction using schema-valid construction: pursue. Current h1-only consumer conflicts with the heading-plus-level schema. Do not invent support for arbitrary positional constraints in current schema grammar.
+- Consolidate exit rules and shortcuts on one schema-aware operation: pursue; compare existing block insertion owners before creating any new public exit API. Keep app shortcut policy.
+- Merge SingleBlock and SingleLine into one mode plugin: stop. Their independent user jobs survive; repair non-text admission/preservation and truthfully demonstrate editor recreation.
+- Delete unwrap/deletion adjacent-text rescans in favor of canonical representation: defer runtime acceptance until intermediate selection mapping, spacers, schema behavior and complete-operation locality/performance are proved.
+- Change nested block-void fallback to parent-default insertion: defer exact choice until parent grammar and named-root cases are executed.
+- Keep public structural primitives but remove duplicate implementation bodies and hand-coded range reconstruction: pursue the narrow cuts, preserving command-versus-primitive policy differences.
+- Delete app substitution policy or promote all autoformat into core: stop. Keep explicit feature activation and app glyph tables; remove orphan tutorial values and repair inaccurate docs/test claims.
+- retains [2026-09-11-commands-remove-default-build](../review-records/2026-09-11-commands-remove-default-build.json) (What is the smallest command contract that shares availability and intent between headless calls, shortcuts and UI controls?): The current command contract retains installed dispatch and immutable unpublished continuations while the default-only public build path is absent. This audit targets duplicated rule outcome semantics above that owner, not reversal of the core decision; historical full-handoff gaps remain historical.
+
+Proof limits: Current baseline: 35 pass, zero fail, three input-rule test files, 85 assertions. Two runtime probe artifacts reproduce four classes of inconsistency; single-block maxLength command/transaction control passes. No product implementation, new tests, public API adoption, browser/device, collaboration, undo of probe cases, nested-grammar proof or candidate performance comparison. Single-content non-text deletion and trailing nested correction/callback lifetime are source-backed risks, not replayed failures. Existing raw/browser/policy tests were inspected but not rerun. Two census Defer rows explicitly retain structural grammar/representation gates. No runtime replacement is accepted; Task design plan owns inference, priority, native-equivalence, scale, adoption and doctrine repair.
+
+References: [editing-command-ownership.md](../decisions/editing-command-ownership.md), [coverage.json](../../plans/artifacts/editing-api-review/coverage.json), [proof.json](../../plans/artifacts/editing-api-review/proof.json), [input-rule-probe.ts](../../plans/artifacts/editing-api-review/input-rule-probe.ts), [structural-probe.ts](../../plans/artifacts/editing-api-review/structural-probe.ts), [2026-08-26-media-caption-block-reset-api.md](../../plans/2026-08-26-media-caption-block-reset-api.md), [2026-07-01-plate-next-input-rules-before-api.md](../../plans/2026-07-01-plate-next-input-rules-before-api.md), [2026-07-22-plite-plate-agent-native-api-shape-audit.md](../../plans/2026-07-22-plite-plate-agent-native-api-shape-audit.md), [plite-core-ownership.md](../decisions/plite-core-ownership.md), [editor-behavior-architecture.md](../systems/editor-behavior-architecture.md), [autoformat-families-are-input-assist-surfaces.md](../decisions/autoformat-families-are-input-assist-surfaces.md), [current-kit-autoformat-normalization-split.md](../decisions/current-kit-autoformat-normalization-split.md), [markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md), [InputRulesPlugin.ts](../../../packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts), `packages/platejs/src/lib/plugins/input-rules/createRuleFactory.ts` (historical input unavailable), `packages/platejs/src/lib/plugins/override/OverridePlugin.ts` (historical input unavailable), [editor-commands.ts](../../../packages/plitejs/src/core/editor-commands.ts), [lift-nodes.ts](../../../packages/plitejs/src/transforms-node/lift-nodes.ts), [unwrap-nodes.ts](../../../packages/plitejs/src/transforms-node/unwrap-nodes.ts).
+
+### 2026-09-21: 2026-09-21-editing-command-final-pass
+
+[Immutable record](../review-records/2026-09-21-editing-command-final-pass.json) — review; pursue; observation stale.
+
+Pursue a narrower editing redesign. Keep declarative input rules and their private trigger index because they already compile into canonical Plite command middleware and own real activation, ordering, context and feature-factory jobs. Make every rule attempt atomic, align consume/decline/continue with command outcomes, hide the always-installed executor, cut unused helper-injection authoring, and redesign rather than pre-delete the package-author factory capability. Retain the prior cuts of global rules.match, NormalizeTypes, duplicate singular insertion and orphan examples, plus the structural admission/selection repairs. Coverage remains 33/33: 16 pursue, 15 stop, two defer.
+
+Question: Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?
+
+- Delete declarative input rules and require feature command middleware everywhere: stop. It duplicates activation and matcher boilerplate, loses the compiled trigger index, and contradicts current package families plus mature editor practice.
+- Keep input rules as a declarative feature layer compiled into canonical commands, but evaluate each matched rule in an isolated candidate transaction and publish only an accepted consume or continue outcome: pursue. This fixes the reproduced leak without inventing another runtime.
+- Patch only insertData fallback: reject as the durable target. It leaves shared speculative writes able to leak when a later rule consumes, and it leaves consume, decline and continuation semantics divergent by target.
+- Delete createRuleFactory outright: do not preselect. Eighteen production definitions use required/default options and descriptor-bound transaction inference. Compare its seven-family overload surface with direct feature factories and a smaller bound definition helper.
+- Keep InputRulesPlugin public because it implements the executor: reject unless design finds a current configuration job. The always-installed descriptor is implementation ownership, not by itself a public user job.
+- Delete inputRules: ({ rule }) => ... and its builder/context types: pursue. The bounded production census has no caller; explicit arrays and named feature factories cover current use.
+- Keep global rules.match and patch its affinity/type inconsistencies: reject. Its first-match family shadowing is a false global owner; compare owner-local command policy with exact per-rule predicates.
+- Cut NormalizeTypes in favor of complete app-owned positional correction using schema-valid construction: pursue. Its path/type-only language cannot express the current heading schema.
+- Merge SingleBlock and SingleLine: stop. Preserve their separate multiline and single-line jobs while repairing non-text admission and truthful demo lifecycle.
+- Delete representation cleanup rescans or change nested block-void insertion immediately: defer. Intermediate mapping, parent grammar and complete-operation performance remain unproved.
+- supersedes [2026-09-21-editing-command-and-structural-ownership](../review-records/2026-09-21-editing-command-and-structural-ownership.json) (Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?): Retain its complete census, executed probes and all structural cuts, but replace its headline deletion of the input-rule continuation/runtime layer and preselected factory deletion. Input rules already execute as canonical command middleware, and the production factory census proves a package-author job.
+- retains [2026-09-11-commands-remove-default-build](../review-records/2026-09-11-commands-remove-default-build.json) (What is the smallest command contract that shares availability and intent between headless calls, shortcuts and UI controls?): Installed command dispatch, immutable unpublished continuations and next.after(prefix) remain the canonical execution boundary. Atomic input-rule candidates should compose through that contract rather than create another runtime.
+
+Proof limits: No product implementation, new test, browser/device run, collaboration proof or candidate performance comparison was performed. The prior source-matching probes still reproduce input-rule mutation/fallback divergence, caller enabled-precedence failure, maxLength bypass and backward-selection reversal. External source comparison is architectural evidence, not Plate runtime proof. Two census rows remain Defer, and the exact atomic-outcome API, factory shape, rules.match replacement and adoption sequence belong to the Task design plan.
+
+References: [2026-09-21-editing-command-and-structural-ownership.json](../review-records/2026-09-21-editing-command-and-structural-ownership.json), [editing-command-ownership.md](../decisions/editing-command-ownership.md), [final-pass.md](../../plans/artifacts/editing-api-review/final-pass.md), [coverage.json](../../plans/artifacts/editing-api-review/coverage.json), [proof.json](../../plans/artifacts/editing-api-review/proof.json), [input-rule-probe.ts](../../plans/artifacts/editing-api-review/input-rule-probe.ts), [structural-probe.ts](../../plans/artifacts/editing-api-review/structural-probe.ts), [2026-08-26-media-caption-block-reset-api.md](../../plans/2026-08-26-media-caption-block-reset-api.md), [2026-07-01-plate-next-input-rules-before-api.md](../../plans/2026-07-01-plate-next-input-rules-before-api.md), [2026-07-22-plite-plate-agent-native-api-shape-audit.md](../../plans/2026-07-22-plite-plate-agent-native-api-shape-audit.md), [plite-core-ownership.md](../decisions/plite-core-ownership.md), [editor-behavior-architecture.md](../systems/editor-behavior-architecture.md), [autoformat-families-are-input-assist-surfaces.md](../decisions/autoformat-families-are-input-assist-surfaces.md), [current-kit-autoformat-normalization-split.md](../decisions/current-kit-autoformat-normalization-split.md), [markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md), [InputRulesPlugin.ts](../../../packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts), `packages/platejs/src/lib/plugins/input-rules/createRuleFactory.ts` (historical input unavailable), [resolvePlugins.ts](../../../packages/platejs/src/internal/plugin/resolvePlugins.ts), `packages/platejs/src/lib/plugins/override/OverridePlugin.ts` (historical input unavailable), [editor-commands.ts](../../../packages/plitejs/src/core/editor-commands.ts), [lift-nodes.ts](../../../packages/plitejs/src/transforms-node/lift-nodes.ts), [unwrap-nodes.ts](../../../packages/plitejs/src/transforms-node/unwrap-nodes.ts).
+
+### 2026-09-21: 2026-09-21-editing-command-input-rule-convergence-execution
+
+[Immutable record](../review-records/2026-09-21-editing-command-input-rule-convergence-execution.json) — execution; completed; observation stale.
+
+Implemented atomic match-before-transaction input rules, typed owner-bound authoring, exact structural policies, Plite insertion/selection repairs, utility policy hard cuts, adoption, docs and generated registry output. Native math and autolink continuation were repaired before final browser proof.
+
+
+Proof limits: Full shared-checkout CI is not green: the Plite React authority audit has two failures in concurrently edited selection-void-target.ts, aggregate check:plite:dev sees @platejs/test partition-cache misses, and package lint has unrelated media/object-selection errors. Local proof does not establish publication or deployment.
+
+References: [2026-09-21-editing-command-and-input-rule-convergence.md](../../plans/2026-09-21-editing-command-and-input-rule-convergence.md).
+
+### 2026-09-22: 2026-09-22-editing-document-structure
+
+[Immutable record](../review-records/2026-09-22-editing-document-structure.json) — review; pursue; observation stale.
+
+Pursue declarative fixed document structure in the existing Plite schema. Retain deletion of the path/type-only NormalizeTypes API, but supersede its app-owned repair replacement. The current playground fails a property-only heading-level update and only repairs after a later structural edit. Four selected units reviewed; unrelated editing decisions retained. Exact ordered/property contract, fitting policy and performance remain provisional design work.
+
+Question: Should fixed document structure be enforced by app-owned corrections after deleting NormalizeTypesPlugin, or by the canonical schema?
+
+- Keep the callback and change its event: rejects only the local trigger defect, retaining caller-owned fitting and preservation mechanics.
+- Restore NormalizeTypes unchanged: reject its path/type-only construction and retagging contract.
+- Add a richer Plate LayoutPlugin: weaker neutral owner because raw Plite has the same job; duplicates canonical schema authority.
+- Extend existing Plite schema with minimal ordered structure and required property/default construction: pursue design; app owns policy, schema/transaction runtime owns enforcement.
+- Full regex language, arbitrary path slots, new root or mandatory persisted Title type: not justified. Compare minimal required prefix with sequence; do not invent semantic nodes merely to encode heading level.
+- Keep general corrections as an advanced semantic escape hatch: retain.
+- supersedes [2026-09-21-editing-command-final-pass](../review-records/2026-09-21-editing-command-final-pass.json) (Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?): Supersede only the Normalize Types app-owned correction target; retain the obsolete API deletion and all unrelated editing conclusions. The repeated consumer mechanics, missing ordered schema contract and executed property-only failure contradict that ownership choice.
+- retains [2026-09-21-editing-command-input-rule-convergence-execution](../review-records/2026-09-21-editing-command-input-rule-convergence-execution.json) (Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?): Retain the implementation/proof record as evidence of the prior plan execution, including its limits. It does not establish the disputed ownership decision or cover the newly reproduced property-only invariant.
+- supersedes [2026-09-21-editing-command-and-structural-ownership](../review-records/2026-09-21-editing-command-and-structural-ownership.json) (Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?): Retain rejecting path/type-only construction; supersede app-owned positional repair as the durable normal path.
+
+Proof limits: One headless probe executed against the exact live demo callback and source imports. No browser, history/collaboration replay, candidate runtime or performance benchmark ran. The direction merits pursuit, but exact contract and runtime architecture remain provisional. Prior full CI limitations remain historical; this audit does not claim to repair them. Four scoped units reviewed, none excluded within that set, no unresolved value verdicts; not a re-audit of the other editing units.
+
+References: [normalize-types-audit.md](../../plans/artifacts/editing-api-review/normalize-types-audit.md), [normalize-types-audit-probe.ts](../../plans/artifacts/editing-api-review/normalize-types-audit-probe.ts), [normalize-types-audit-probe.jsonl](../../plans/artifacts/editing-api-review/normalize-types-audit-probe.jsonl), [playground-demo.tsx](../../../apps/www/src/registry/examples/playground-demo.tsx), [forced-layout.tsx](../../../apps/www/src/app/(app)/examples/plite/_examples/forced-layout.tsx), [schema.ts](../../../packages/plitejs/src/interfaces/schema.ts), [schema-definition.ts](../../../packages/plitejs/src/core/schema-definition.ts), [schema-compiler.ts](../../../packages/plitejs/src/core/schema-compiler.ts), [correct-document.ts](../../../packages/plitejs/src/editor/correct-document.ts), [BaseHeadingPlugins.ts](../../../packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts), [editing-command-ownership.md](../decisions/editing-command-ownership.md), [2026-09-21-editing-command-final-pass.json](../review-records/2026-09-21-editing-command-final-pass.json), [2026-09-21-editing-command-input-rule-convergence-execution.json](../review-records/2026-09-21-editing-command-input-rule-convergence-execution.json).
+
+### 2026-09-22: 2026-09-22-editing-document-structure-execution
+
+[Immutable record](../review-records/2026-09-22-editing-document-structure-execution.json) — execution; completed; observation stale.
+
+Implemented fixed required document prefixes in the canonical Plite schema, including exact slot properties, construction, validation, fitting, identity and typed Plate adoption. Replaced both app-owned forced-layout corrections, merged public docs into schema, and generated registry/API reference outputs.
+
+
+Proof limits: The strict architecture benchmark still fails the older equivalent-reconfiguration ratio gate (5.42x/19.7x versus 1.05x); the added prefix compiler gate passes. The broad suggestion Chromium run was 28/30: paste was fixed and targeted retest passed; an unrelated discussion-count assertion still fails with the new schema disabled. No saved-document migration, publication or deployment is claimed.
+
+References: [2026-09-22-document-structure-in-the-canonical-schema.md](../../plans/2026-09-22-document-structure-in-the-canonical-schema.md).
+
+### 2026-09-22: 2026-09-22-editing-document-structure-post-implementation
+
+[Immutable record](../review-records/2026-09-22-editing-document-structure-post-implementation.json) — review; pursue; observation stale.
+
+Pursue repair of prefix editing semantics while retaining Plite schema.content.prefix as the canonical declaration. Selected-title closed-table paste returns success but loses the table; full-range deletion throws; the playground heading input rule silently consumes ## when H2 is forbidden; blockquote wrapping throws, and nested prefix fitting rejects an otherwise valid closed block. Five selected units reviewed, none excluded. Existing production locality and p95 evidence do not close the plan gate.
+
+Question: Does the implemented fixed-prefix schema satisfy complete, atomic editing and its stated proof gates?
+
+- Delete prefix and restore app correction: reject; both Plate and raw Plite need the same invariant, and caller-owned repair cannot make fitting or commands atomic.
+- Move required title to a separate root or mandatory title node: reject as a general target; changes document/selection ontology for a styling rule and still requires complete fitting and deletion semantics.
+- Replace prefix with a general sequence grammar: reject without another consumer; broader grammar does not repair current transaction, slice or rule admission defects.
+- Keep prefix in Plite, repair canonical construction and slice fitting at root/element boundaries, and make Plate semantic commands/input rules respect an atomic accept-or-decline outcome: pursue; prove source-bound user interactions and production scale before closure.
+- retains [2026-09-22-editing-document-structure](../review-records/2026-09-22-editing-document-structure.json) (Should fixed document structure be enforced by app-owned corrections after deleting NormalizeTypesPlugin, or by the canonical schema?): Retain the neutral schema owner and deletion of app-owned positional correction. The prior review left exact fitting and performance provisional; new runtime counterexamples reopen implementation acceptance, not the original direction.
+- reopens [2026-09-22-editing-document-structure-execution](../review-records/2026-09-22-editing-document-structure-execution.json) (Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?): The execution receipt truthfully records checks that ran, but its lossless-fitting and scale-closure interpretation is contradicted by selected-range table loss, full-range deletion error, rule/command failures, and the actual benchmark gate and sampling method. Adoption remains implemented; operational proof is incomplete.
+
+Proof limits: Fresh in-memory public-editor probes establish the listed counterexamples, but no browser run, undo/redo/Yjs replay, repaired candidate or matched performance control ran in this audit. The nested and named-root variants were reproduced by an independent read-only fitter pass. The existing construction receipt has one timing sample per prefix cohort and reads changed span after the body edit; the strict architecture equivalent-reconfiguration gate is red without a matched pre-feature control. The verdict is a repair direction, not a completed design or corrected behavior. Five selected units reviewed, zero excluded, zero without disposition; unrelated editing units were not re-audited.
+
+References: [post-implementation-audit.md](../../plans/artifacts/document-structure/post-implementation-audit.md), [2026-09-22-document-structure-in-the-canonical-schema.md](../../plans/2026-09-22-document-structure-in-the-canonical-schema.md), [2026-09-22-editing-document-structure.json](../review-records/2026-09-22-editing-document-structure.json), [2026-09-22-editing-document-structure-execution.json](../review-records/2026-09-22-editing-document-structure-execution.json), [compiled-slice-fitter.ts](../../../packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts), [representation.ts](../../../packages/plitejs/src/core/representation.ts), [slice-fit-contract.test.ts](../../../packages/plitejs/test/slice-fit-contract.test.ts), [BaseHeadingPlugins.ts](../../../packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts), [BaseBlockPlugins.ts](../../../packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts), [basic-blocks.tsx](../../../apps/www/src/registry/components/editor/basic-blocks.tsx), [plite-schema-construction-benchmark.ts](../../../benchmarks/editor/benchmarks/plite-schema-construction-benchmark.ts), [construction-benchmark.json](../../plans/artifacts/document-structure/construction-benchmark.json).
+
+### 2026-09-22: 2026-09-22-editing-document-structure-repair-execution
+
+[Immutable record](../review-records/2026-09-22-editing-document-structure-repair-execution.json) — execution; completed; observation stale.
+
+Repaired required-prefix editing in Plite's canonical construction and slice fitting, with atomic Plate heading and quote rule fallback. Closed selected and nested table paste, required-slot deletion, selection/history/replay, installed playground interactions and the matched production-path prefix p95 gate.
+
+
+Proof limits: The paired benchmark forces garbage collection before each timed arm and does not establish length-independent whole-editor latency or exact validation visits. The older unrelated schema-architecture equivalent-reconfiguration ratio remains historically red without matched pre-feature attribution. No saved-document migration, publication or deployed-site result is claimed.
+
+References: [2026-09-22-document-structure-editing-repair.md](../../plans/2026-09-22-document-structure-editing-repair.md).
+
+### 2026-09-23: 2026-09-23-editing-structural-rule-admission
+
+[Immutable record](../review-records/2026-09-23-editing-structural-rule-admission.json) — review; pursue; observation stale.
+
+Pursue deleting the feature-owned shadow-document validator. It reconstructs and validates a guessed replacement before the real rule deletes the marker and issues a separate command. This fixed two prefix interactions, but admission and success remain split: Plite block commands can silently decline, while generic block/list rules delete markers first. Design one atomic accept-or-decline path at the Plite transaction/command boundary and let Plate rules fall through on decline. Keep canonical schema.content.prefix and the declarative rule system; do not approve a particular speculative API or its scale cost without design and proof.
+
+Question: Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?
+
+- Keep canApplyBlockChanges: preserves the two proven prefix fallbacks without a new public API, but duplicates the transformation, copies ancestor arrays, validates the whole document and leaves other marker-first rules exposed to silent command decline.
+- Replace the helper with schema.canContainAt: smaller and local, but that query checks slot admissibility, not the complete candidate or the actual command result; configured wrapper properties and child grammar can still disagree.
+- Move only the helper into Plite: rejects the Plate-owned replacement callback but preserves a shadow-document preflight and two sources of truth.
+- Delete input rules or the canonical prefix schema: rejects current priority/composition and shared raw-editor structure jobs without solving atomic command admission.
+- Let the actual structural operation produce an applied/declined result inside an atomic transaction attempt, and compose marker deletion only when admitted: pursue as the design direction. The detailed API and cost remain open.
+- retains [2026-09-22-editing-document-structure-post-implementation](../review-records/2026-09-22-editing-document-structure-post-implementation.json) (Does the implemented fixed-prefix schema satisfy complete, atomic editing and its stated proof gates?): Its canonical Plite schema owner and atomic accept-or-decline requirement remain correct. This review challenges only the subsequent feature-owned preflight implementation.
+- reopens [2026-09-22-editing-document-structure-repair-execution](../review-records/2026-09-22-editing-document-structure-repair-execution.json) (Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?): The reported required-title heading and quote behavior and its source-matched proof stand. The implementation's canApplyBlockChanges copy is a second admission path that can drift from actual commands and requires whole-document validation on matching input.
+- retains [2026-09-21-editing-command-final-pass](../review-records/2026-09-21-editing-command-final-pass.json) (Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?): Its explicit direction to keep declarative rules while making every attempt atomic and aligning decline with command outcomes directly governs this narrower follow-up.
+
+Proof limits: Source inspection establishes two helper callers and other marker-first structural rules, but it does not prove that the other rules currently fail on a live schema, quantify whole-document validation cost, or validate a replacement transaction primitive. The September 22 tests/browser receipt prove only the repaired required-title cases. A design must test exact commands, nested/named roots, fallback marker preservation, undo/replay and any new repeated runtime cost before adoption.
+
+References: `packages/platejs/src/features/basic-nodes/lib/canApplyBlockChanges.internal.ts` (historical input unavailable), [BaseHeadingPlugins.ts](../../../packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts), [BaseBlockPlugins.ts](../../../packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts), [BaseHeadingPlugins.spec.tsx](../../../packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.spec.tsx), [BaseBlockPlugins.spec.tsx](../../../packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.spec.tsx), [InputRulesPlugin.ts](../../../packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts), [createInputRules.ts](../../../packages/platejs/src/lib/plugins/input-rules/createInputRules.ts), [BaseListPlugin.ts](../../../packages/platejs/src/features/list/lib/BaseListPlugin.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [editor-schema.ts](../../../packages/plitejs/src/core/editor-schema.ts), [2026-09-21-editing-command-final-pass.json](../review-records/2026-09-21-editing-command-final-pass.json), [2026-09-22-editing-document-structure-post-implementation.json](../review-records/2026-09-22-editing-document-structure-post-implementation.json), [2026-09-22-editing-document-structure-repair-execution.json](../review-records/2026-09-22-editing-document-structure-repair-execution.json), [2026-09-22-document-structure-editing-repair.md](../../plans/2026-09-22-document-structure-editing-repair.md).
+
+### 2026-09-23: 2026-09-23-editing-structural-rule-admission-design-execution
+
+[Immutable record](../review-records/2026-09-23-editing-structural-rule-admission-design-execution.json) — execution; completed; observation stale.
+
+Completed a source-backed design plan for structural input-rule admission: discard a matched rule's detached spec on explicit decline, use truthful structural command outcomes, delete the shadow-document validator, and migrate heading, quote, generic block and list rules with direct runtime and scale gates. No product implementation is claimed.
+
+
+Proof limits: Design proof only. The proposed API has no implementation, matched scale probe, schema-error classification proof, package test, or browser proof. Earlier required-title repair evidence is historical and its source match is stale.
+
+References: [2026-09-23-structural-input-rule-admission.md](../../plans/2026-09-23-structural-input-rule-admission.md).
+
+### 2026-09-23: 2026-09-23-editing-structural-rule-admission-implementation-execution
+
+[Immutable record](../review-records/2026-09-23-editing-structural-rule-admission-implementation-execution.json) — execution; completed; observation matching.
+
+Implemented atomic structural input-rule decline with truthful Plite change outcomes, migrated heading, quote, generic block, list, code-fence and horizontal-rule shorthand, removed the shadow validator, and updated public docs and durable doctrine. Source-mode Chromium and focused package tests pass.
+
+
+Proof limits: Package-wide core lint remains red on unrelated pre-existing diagnostics while touched-file lint is green. The 20-block timing cohort is noisy; the owner-scale proxy lacks an exact old checkout and allocation data, and quote/list lack matched timing runs. Browser proof covers valid heading/list/code-fence input, while forbidden required-title placement is covered at package level.
+
+References: [2026-09-23-structural-input-rule-admission-implementation.md](../../plans/2026-09-23-structural-input-rule-admission-implementation.md).
+
 ## Retrieval boundaries
 
 26 unclassified candidates. Filename matches are discovery leads, not adopted decisions.
@@ -81,14 +278,14 @@ No immutable history recorded.
 
 ## Owners and evidence entrypoints
 
-Owners: [insert-text.ts](../../../packages/plitejs/src/editor/insert-text.ts).
+Owners: [editor-commands.ts](../../../packages/plitejs/src/core/editor-commands.ts), [insert-text.ts](../../../packages/plitejs/src/editor/insert-text.ts), [input-rules](../../../packages/platejs/src/lib/plugins/input-rules), [OverridePlugin.ts](../../../packages/platejs/src/internal/plugin/OverridePlugin.ts), [ExitBreakPlugin.ts](../../../packages/platejs/src/utils/plugins/ExitBreakPlugin.ts), [SingleBlockPlugin.ts](../../../packages/platejs/src/utils/plugins/SingleBlockPlugin.ts), [SingleLinePlugin.ts](../../../packages/platejs/src/utils/plugins/SingleLinePlugin.ts), [TrailingBlockPlugin.ts](../../../packages/platejs/src/utils/plugins/TrailingBlockPlugin.ts).
 
 Consumers: [basic-nodes](../../../packages/platejs/src/features/basic-nodes).
 
 Proof entrypoints: [content-slice-laws.test.ts](../../../packages/plitejs/test/content-slice-laws.test.ts), [block-insertion.spec.ts](../../../packages/platejs/src/lib/plugin/block-insertion.spec.ts), [autoformat.spec.ts](../../../apps/www/tests/browser/autoformat.spec.ts). These links alone are not proof of a passing run.
 
-Inspection: Current owner, consumer and proof entrypoints located; this queue is not a completed feature review.
+Inspection: 2026-09-21 source/consumer audit: all 33 editing source groups, 35 Plite implementation files and two barrels; command, rule, correction, example and documentation boundaries reconciled. Focused input-rule baseline and public runtime probes recorded.
 
-Limits: Behavior, native/device coverage, performance and adoption require a scoped review and matching execution evidence.
+Limits: No replacement runtime or scale acceptance. Nested void parent grammar and duplicate representation cleanup remain deferred; non-text single-content preservation, nested trailing correction delivery, native/browser and broader adoption proof remain open. See the decision and source-bound review for claim limits.
 
 Related questions: [history](history.md), [clipboard](clipboard.md), [native](native.md), [styles](styles.md).

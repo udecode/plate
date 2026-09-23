@@ -355,6 +355,8 @@ const validateFiles = (
 type InternalTask = {
   controller: AbortController;
   kind: UploadKind;
+  /** Node keys belong to the editor view that admitted the draft. */
+  owner: UploadNodeReader;
   state: ReturnType<typeof createZustandStore<UploadTaskState>>;
   token: object;
 };
@@ -406,8 +408,8 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
 
     const currentSlot = (
       key: NodeKey,
-      kind?: UploadKind,
-      owner: UploadNodeReader = editor
+      kind: UploadKind | undefined,
+      owner: UploadNodeReader
     ) => {
       const entry = owner.read.nodes.get(key);
 
@@ -510,6 +512,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       const task: InternalTask = {
         controller,
         kind: upload.kind,
+        owner,
         state,
         token: {},
       };
@@ -670,7 +673,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           if (!commit.changed.hasAny('document')) return;
 
           for (const [key, task] of tasks) {
-            if (!currentSlot(key, task.kind)) cancel(key, task);
+            if (!currentSlot(key, task.kind, task.owner)) cancel(key, task);
           }
         },
       },
@@ -680,15 +683,20 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           options: UploadSubmitOptions = {}
         ) => {
           const files = Array.from(input);
-          if (files.length === 0 || editor.read.view.isReadOnly()) return false;
+          if (files.length === 0 || updateEditor.read.view.isReadOnly()) {
+            return false;
+          }
 
           const state = store.get();
           const slot = 'slot' in options ? options.slot : undefined;
-          const slotEntry = slot ? currentSlot(slot) : undefined;
+          const slotEntry = slot
+            ? currentSlot(slot, undefined, updateEditor)
+            : undefined;
 
           if (
             slot &&
-            (!slotEntry || editor.read.nodes.elementReadOnly({ at: slot }))
+            (!slotEntry ||
+              updateEditor.read.nodes.elementReadOnly({ at: slot }))
           ) {
             return false;
           }

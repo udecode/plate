@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 227,
+  "latestVersion": 233,
   "versions": [
     {
       "version": 0,
@@ -2629,6 +2629,74 @@
         "Keep shared client and UI behavior in the provider-neutral base registry item, with browser-local demo behavior in its own explicit provider item.",
         "Give each persistent provider item its adapter, route, environment contract, and provider dependencies while reusing one shared gateway security and access-policy owner.",
         "Remove runtime environment provider switches and prove generated payloads keep backend routes and dependencies out of the base item and sibling provider items."
+      ]
+    },
+    {
+      "version": 228,
+      "date": "2026-09-21",
+      "doctrineFingerprint": "sha256:9bf3c1b0d57fa34010f33e78662c046c9aecfaf660169d5d1455da0dafe12608",
+      "summary": "Editing policy admits input rules before one atomic transaction and resolves structural conditions at exact rule leaves.",
+      "migrationChecks": [
+        "Make input-rule enabled and resolve phases read-only, open one transaction only for the first accepted rule, and compose at most one typed continuation after its prefix.",
+        "Replace injected input-rule builders and parallel package factory languages with ordinary functions plus defineInputRule, binding an owner descriptor only for capability inference.",
+        "Keep input-rule and structural-rule executor descriptors private, and replace global structural matching with exact leaf resolvers whose undefined result delegates and whose false result is terminal.",
+        "Prove feature adoption, throw rollback, continuation history, exact structural precedence, generated docs and registry output, and final production-path performance."
+      ]
+    },
+    {
+      "version": 229,
+      "date": "2026-09-21",
+      "doctrineFingerprint": "sha256:7c57fbdd9549c701d453cb9ae4b78dfcd33e57c938373484e90231d7cfe6fcb3",
+      "summary": "Model independently meaningful blocks with editable children as schema objects, deriving owner protection and selection-shaped transfer from one fact.",
+      "migrationChecks": [
+        "Replace keyboardSelectable media flags with object: true and derive isolation, non-emptiness, owner selection, and generic split boundaries from the compiled role.",
+        "Keep caption text selection open while whole-owner NodeSelection transfers closed; prove partial, boundary, and fully covered slices without owner smuggling.",
+        "Move media caption suffixes to fresh default blocks on Enter without duplicating owners, then verify package, browser, documentation, and release surfaces."
+      ]
+    },
+    {
+      "version": 230,
+      "date": "2026-09-22",
+      "doctrineFingerprint": "sha256:92dd1955cc9e149d98e3b7cad0660172d032d00addafef89c6b607c13405ce04",
+      "summary": "Keep code construction and insertion policy on the feature, move optional JSON actions to copied UI, and configure caller-owned syntax resources before reads.",
+      "migrationChecks": [
+        "Construct code blocks in their final schema shape and retain authored insert/upsert only for its distinct selection and empty-block behavior; remove intermediate default-type inputs and retyping.",
+        "Keep JSON prettifying in the copied button, use canonical text edits, and prove exact annotation ranges, selection direction and one-step undo.",
+        "Do not mutate a supplied syntax registry while decorating; configure the copied native/static lowlight resource before use and prove Python aliases and browser behavior.",
+        "Update package tests, generated registry and API reference, public docs, and behavior-law evidence without compatibility aliases."
+      ]
+    },
+    {
+      "version": 231,
+      "date": "2026-09-22",
+      "doctrineFingerprint": "sha256:7454be3f801af98f1f3ecc71ffe16eb45d6045401509623db6ea0645d6ea4cbe",
+      "summary": "Keep current compiled schema fingerprints in the structured JSON contract and runtime identity without a duplicate generated TypeScript constant.",
+      "migrationChecks": [
+        "Remove the redundant fingerprint export from generated current TypeScript contracts while retaining the authoritative JSON schema fingerprint and separate historical migration snapshot fingerprints.",
+        "Prove a behavior-only schema change updates JSON identity without rewriting otherwise identical generated TypeScript, and regenerate affected application artifacts.",
+        "Update public generator teaching and exact-contract checks without changing ordinary editor setup or persisted schema lineage."
+      ]
+    },
+    {
+      "version": 232,
+      "date": "2026-09-22",
+      "doctrineFingerprint": "sha256:b58d3b1f57d6c11246329db91b94ac222c92521d1b1dacdc9b7a102e7174e4d3",
+      "summary": "Declare required document positions and exact properties in the compiled schema instead of app-owned layout corrections.",
+      "migrationChecks": [
+        "Use schema.content.prefix for required child positions and a single ordinary remainder; preserve descriptor inference and effective root minimum.",
+        "Prove property-only admission, complete slice fitting, construction, schema identity, browser editing and collaboration before replacing app-owned corrections.",
+        "Teach the canonical schema recipe and remove obsolete forced-layout correction guidance without changing general semantic corrections."
+      ]
+    },
+    {
+      "version": 233,
+      "date": "2026-09-23",
+      "doctrineFingerprint": "sha256:89008fe72b097df721827f25544710e104a94c65b47f999d50a475323f590904",
+      "summary": "Structural input rules consume shorthand only after a real staged conversion and decline atomically when schema admission or command outcome fails.",
+      "migrationChecks": [
+        "Use truthful structural command outcomes for heading, quote, list, code fence, horizontal rule, and generic block shorthand; do not predict admission through a feature-local shadow document.",
+        "Keep enabled and resolve read-only; make apply return decline() when conversion cannot apply, discarding the candidate before original input while preserving next() prefix composition.",
+        "Prove required-position fallback retains literal marker and typed input, accepted conversion retains undo and selection behavior, and docs/type inference teach the current contract."
       ]
     }
   ],

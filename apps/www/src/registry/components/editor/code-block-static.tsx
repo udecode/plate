@@ -1,7 +1,8 @@
-import { all, createLowlight } from 'lowlight';
 import { BaseCodeBlockPlugin, BaseCodeHighlightPlugin } from 'platejs';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
+
+import { createCodeBlockLowlight } from '@/registry/components/editor/code-block-lowlight';
 
 const codeBlockLanguages: Array<{ label: string; value: string }> = [
   { label: 'Auto', value: 'auto' },
@@ -165,7 +166,7 @@ export function CodeBlockElementDocx(
   );
 }
 
-const lowlight = createLowlight(all);
+const lowlight = createCodeBlockLowlight();
 
 export const BaseCodeBlockKit = [
   BaseCodeBlockPlugin.configure({

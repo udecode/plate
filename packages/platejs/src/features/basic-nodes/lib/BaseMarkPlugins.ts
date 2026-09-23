@@ -1,6 +1,7 @@
 import {
   definePlugin,
-  createRuleFactory,
+  createMarkInputRule,
+  type MarkInputRuleConfig,
   someHtmlElement,
   property,
   PLUGINS,
@@ -19,68 +20,91 @@ const scriptValues = ['sub', 'sup'] as const;
 
 export type ScriptValue = (typeof scriptValues)[number];
 
+type MarkdownMarkRuleOptions = Pick<
+  MarkInputRuleConfig,
+  'enabled' | 'priority'
+>;
+
 export const BoldRules = {
-  markdown: createRuleFactory<{}, { variant: '*' | '_' }>({
-    type: 'mark',
-    variant: '*',
-    end: ({ variant }) => variant,
-    start: ({ variant }) => variant.repeat(2),
-    trigger: ({ variant }) => variant,
-  }),
+  markdown: ({
+    variant = '*',
+    ...options
+  }: MarkdownMarkRuleOptions & { variant?: '*' | '_' } = {}) =>
+    createMarkInputRule({
+      ...options,
+      end: variant,
+      start: variant.repeat(2),
+      trigger: variant,
+    }),
 };
 
 export const CodeRules = {
-  markdown: createRuleFactory({
-    type: 'mark',
-    start: '`',
-    trigger: '`',
-  }),
+  markdown: (options: MarkdownMarkRuleOptions = {}) =>
+    createMarkInputRule({
+      ...options,
+      start: '`',
+      trigger: '`',
+    }),
 };
 
 export const HighlightRules = {
-  markdown: createRuleFactory<{}, { variant: '==' | '≡' }>({
-    type: 'mark',
-    variant: '==',
-    end: ({ variant }) => (variant === '≡' ? undefined : '='),
-    start: ({ variant }) => (variant === '≡' ? '≡' : '=='),
-    trigger: ({ variant }) => (variant === '≡' ? '≡' : '='),
-  }),
+  markdown: ({
+    variant = '==',
+    ...options
+  }: MarkdownMarkRuleOptions & { variant?: '==' | '≡' } = {}) =>
+    createMarkInputRule({
+      ...options,
+      end: variant === '≡' ? undefined : '=',
+      start: variant === '≡' ? '≡' : '==',
+      trigger: variant === '≡' ? '≡' : '=',
+    }),
 };
 
 export const ItalicRules = {
-  markdown: createRuleFactory<{}, { variant: '*' | '_' }>({
-    type: 'mark',
-    variant: '*',
-    start: ({ variant }) => variant,
-    trigger: ({ variant }) => variant,
-  }),
+  markdown: ({
+    variant = '*',
+    ...options
+  }: MarkdownMarkRuleOptions & { variant?: '*' | '_' } = {}) =>
+    createMarkInputRule({
+      ...options,
+      start: variant,
+      trigger: variant,
+    }),
 };
 
 export const ScriptRules = {
-  markdown: createRuleFactory<{ value: ScriptValue }>({
-    type: 'mark',
-    start: ({ value }) => (value === 'sub' ? '~' : '^'),
-    trigger: ({ value }) => (value === 'sub' ? '~' : '^'),
-    value: ({ value }) => value,
-  }),
+  markdown: ({
+    value,
+    ...options
+  }: MarkdownMarkRuleOptions & {
+    value: ScriptValue;
+  }) =>
+    createMarkInputRule({
+      ...options,
+      start: value === 'sub' ? '~' : '^',
+      trigger: value === 'sub' ? '~' : '^',
+      value,
+    }),
 };
 
 export const StrikethroughRules = {
-  markdown: createRuleFactory({
-    type: 'mark',
-    end: '~',
-    start: '~~',
-    trigger: '~',
-  }),
+  markdown: (options: MarkdownMarkRuleOptions = {}) =>
+    createMarkInputRule({
+      ...options,
+      end: '~',
+      start: '~~',
+      trigger: '~',
+    }),
 };
 
 export const UnderlineRules = {
-  markdown: createRuleFactory({
-    type: 'mark',
-    end: '_',
-    start: '__',
-    trigger: '_',
-  }),
+  markdown: (options: MarkdownMarkRuleOptions = {}) =>
+    createMarkInputRule({
+      ...options,
+      end: '_',
+      start: '__',
+      trigger: '_',
+    }),
 };
 
 type MarkComboVariant =
@@ -91,31 +115,34 @@ type MarkComboVariant =
 
 /** Markdown rules that atomically apply combinations of independent marks. */
 export const MarkComboRules = {
-  markdown: createRuleFactory<{ variant: MarkComboVariant }>({
-    type: 'mark',
-    end: ({ variant }) =>
-      ({
+  markdown: ({
+    variant,
+    ...options
+  }: MarkdownMarkRuleOptions & {
+    variant: MarkComboVariant;
+  }) =>
+    createMarkInputRule({
+      ...options,
+      end: {
         boldItalic: '*',
         boldItalicUnderline: '**',
         boldUnderline: '*',
         italicUnderline: '*',
-      })[variant],
-    marks: ({ variant }) =>
-      ({
+      }[variant],
+      marks: {
         boldItalic: ['bold', 'italic'],
         boldItalicUnderline: ['underline', 'bold', 'italic'],
         boldUnderline: ['underline', 'bold'],
         italicUnderline: ['underline', 'italic'],
-      })[variant],
-    start: ({ variant }) =>
-      ({
+      }[variant],
+      start: {
         boldItalic: '**',
         boldItalicUnderline: '___',
         boldUnderline: '__',
         italicUnderline: '__',
-      })[variant],
-    trigger: () => '*',
-  }),
+      }[variant],
+      trigger: '*',
+    }),
 };
 
 /** Enables support for bold formatting. */

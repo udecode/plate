@@ -288,7 +288,7 @@
     },
     {
       "id": "plite-schema-construction",
-      "question": "Does a schema-backed sparse edit keep the changed representation span and untouched boundary identities local inside one deep, wide top-level node?",
+      "question": "Do schema-backed sparse edits and one- or two-slot required prefixes preserve local changes and existing required-node identity, with bounded property-edit p95 overhead against a matched plain schema, across 100 to 50,000 siblings?",
       "owner": "plite",
       "family": "core-schema",
       "kind": "current",
@@ -299,11 +299,11 @@
         "direction": "lower",
         "unit": "tokens",
         "printsMetric": true,
-        "upgrade": "A sparse schema-backed edit must retain untouched boundary identities and change fewer than 64 tokens. The 100/1,000/10,000/50,000 timing rows are labeled immutable-publication diagnostic because they measure immutable DocumentChange ancestor publication, not schema construction."
+        "upgrade": "A sparse schema-backed edit must retain untouched boundary identities and change fewer than 64 tokens. For one- and two-slot prefixes at 100/1,000/10,000/50,000 body siblings, alternate identical prefix/plain property updates after three warmups with 20 samples per arm, force full garbage collection before each timed arm, and retain raw paired deltas. The p95 of paired prefix-minus-plain deltas must be <= max(2 ms, 25% of matched plain p95). Cold startup, unrelated body edit, prefix-boundary paste, full validation and contract bytes remain diagnostics; strict locality and retention gates remain. Whole-editor times include immutable publication but exclude unrelated collection pauses and do not imply length-independent latency or exact validation visits."
       },
       "correctness": {
         "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/slice-fit-contract.test.ts ./benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts",
-        "policy": "Promotion requires contextual fitter laws, strict direct-write rejection, mapped selection/runtime identity, canonical idempotence, a sentinel proving the benchmark's compiled schema is active, and the strict locality benchmark."
+        "policy": "Promotion requires contextual fitter laws, strict direct-write rejection, mapped selection/runtime identity, canonical idempotence, a sentinel proving the benchmark's compiled schema is active, strict plain/prefix locality and retention checks, and matched repeated prefix/plain property p95 overhead within the frozen budget. The changed-span guard is captured immediately after each property edit; it measures published token ranges, not schema validation visits."
       },
       "artifacts": [
         {
@@ -314,11 +314,12 @@
       "docs": {
         "sources": [
           "docs/plans/2026-07-18-wordgard-plite-full-architecture-ledger.md",
-          "docs/plans/2026-07-21-wordgard-plite-schema-contribution-architecture.md"
+          "docs/plans/2026-07-21-wordgard-plite-schema-contribution-architecture.md",
+          "docs/plans/2026-09-22-document-structure-in-the-canonical-schema.md"
         ]
       },
       "thresholds": {
-        "promotion": "plite_schema_construction_compiled_schema_active=1 and plite_schema_construction_max_changed_span<64 and plite_schema_construction_boundary_identity_preserved=1"
+        "promotion": "plite_schema_construction_compiled_schema_active=1 and plite_schema_construction_max_changed_span<64 and plite_schema_construction_boundary_identity_preserved=1 and plite_schema_construction_prefix_max_changed_span<64 and plite_schema_construction_prefix_boundary_identity_preserved=1 and plite_schema_construction_prefix_property_p95_within_budget=1"
       }
     },
     {
@@ -358,7 +359,7 @@
     },
     {
       "id": "plite-schema-architecture",
-      "question": "Does schema architecture stay bounded across 1/100/1,000 contributions, 100/1,000 Plate descriptors, local construction and schema deltas, equivalent/non-equivalent configuration, 10k-block migration, projected clipboard, type inference, and the established compiled corpus?",
+      "question": "Does schema architecture stay bounded across contributions, Plate descriptors, one- and two-slot prefix compilation, local construction and schema deltas, reconfiguration, migration, projected clipboard, type inference, and the established compiled corpus?",
       "owner": "plite",
       "family": "core-schema",
       "kind": "current",
@@ -369,10 +370,10 @@
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "Preserve every established compile/query/validation/invalidation/cache/heap gate. Add exact 1/100/1,000 contribution compile/cache counts; 100/1,000 Plate descriptor resolution plus cold and structurally cached startup; isolated schema.create construction-plan cardinality across 100/1,000 irrelevant defaults; equivalent and non-equivalent Plate publication; 1k/10k explicit migration; fixed two-node canonical open-edge projected clipboard locality across 1k/50k documents; and 100/1,000 TypeScript fixture budgets with an explicit 1,000-plugin widening boundary."
+        "upgrade": "Preserve every established compile/query/validation/invalidation/cache/heap gate. Add one- and two-slot prefix compile p95 under the same 16 ms ceiling; exact 1/100/1,000 contribution compile/cache counts; 100/1,000 Plate descriptor resolution plus cold and structurally cached startup; isolated schema.create construction-plan cardinality across 100/1,000 irrelevant defaults; equivalent and non-equivalent Plate publication; 1k/10k explicit migration; fixed two-node canonical open-edge projected clipboard locality across 1k/50k documents; and 100/1,000 TypeScript fixture budgets with an explicit 1,000-plugin widening boundary."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/schema-target-model-oracle.test.ts ./packages/plitejs/test/schema-compiler-laws.test.ts ./packages/plitejs/test/schema-compiler.test.ts ./packages/plitejs/test/incremental-schema-validation.test.ts ./packages/plitejs/test/react/schema-runtime-invalidation-contract.test.ts ./packages/platejs/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/projected-clipboard-contract.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/schema-target-model-oracle.test.ts ./packages/plitejs/test/schema-compiler-laws.test.ts ./packages/plitejs/test/schema-compiler.test.ts ./packages/plitejs/test/schema-contract-generation.test.ts ./packages/plitejs/test/incremental-schema-validation.test.ts ./packages/plitejs/test/react/schema-runtime-invalidation-contract.test.ts ./packages/platejs/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/projected-clipboard-contract.test.ts",
         "policy": "Promotion keeps the existing compiler/property/incremental/schema-delta contracts and additionally requires Plate model publication, canonical projected clipboard behavior, exact workload cohorts, explicit type widening, and every strict execution budget."
       },
       "artifacts": [
@@ -389,7 +390,7 @@
         ]
       },
       "thresholds": {
-        "promotion": "plite_schema_architecture_compile_p95_ms<16 and comparable type/exact-property/prefix/declared-wrapper ratios<=0.5 and plite_schema_architecture_wrapper_plan_searches_after_first=0 and plite_schema_architecture_schema_invalidation_document_width_ratio<=1.5 and plite_schema_architecture_schema_invalidation_changed_type_ratio<=2 and plite_schema_architecture_schema_invalidation_property_affected_runtime_ids=64 and plite_schema_architecture_equivalent_reconfigure_compile_count=0 and equivalent-reconfiguration ratio<=1.05 and worst-sample plite_schema_architecture_retained_heap_baseline_ratio<=0.75; plus plite_schema_architecture_contribution_1000_compile_p95_ms<100 and plite_schema_architecture_contribution_1000_structural_cache_p95_ms<25 and plite_schema_architecture_contribution_1000_previous_revision_cache_p95_ms<50 and plite_schema_architecture_contribution_1000_cache_compile_count=0 and plite_schema_architecture_plate_descriptor_resolution_width_ratio<=2 and plite_schema_architecture_plate_startup_1000_p95_ms<2500 and plite_schema_architecture_plate_startup_per_descriptor_ratio<=2.5 and plite_schema_architecture_construction_1000_default_property_ids=1 and plite_schema_architecture_construction_1000_property_ids=1 and plite_schema_architecture_construction_property_width_ratio<=2 and plite_schema_architecture_large_document_migration_10000_p95_ms<2000 and plite_schema_architecture_large_document_migration_width_ratio<=15 and plite_schema_architecture_large_document_migration_10000_configuration_commit_count=10 and plite_schema_architecture_large_document_migration_10000_migration_call_count=10 and plite_schema_architecture_projected_clipboard_width_ratio<=1.5 and plite_schema_architecture_projected_clipboard_root_validation_property_reads=0 and plite_schema_architecture_projected_clipboard_host_width_ratio<=2 and plite_schema_architecture_projected_clipboard_selected_nodes=2 and plite_schema_architecture_projected_clipboard_open_start=1 and plite_schema_architecture_projected_clipboard_open_end=1 and plite_schema_architecture_typecheck_1000_check_ms<5000 and plite_schema_architecture_typecheck_1000_instantiations<5000000 and plite_schema_architecture_typecheck_1000_memory_bytes<1342177280 and plite_schema_architecture_typecheck_check_time_ratio<=2 and plite_schema_architecture_typecheck_instantiation_ratio<=1.25; structurally cached Plate startup, unknown-wrapper first/warm timing, group, allowed-parent, compile-scope, cold/warm full-validation, cold invalidation index, and retained-representation-proxy metrics are baseline-only"
+        "promotion": "plite_schema_architecture_compile_p95_ms<16 and plite_schema_architecture_prefix_compile_p95_ms<16 and comparable type/exact-property/prefix/declared-wrapper ratios<=0.5 and plite_schema_architecture_wrapper_plan_searches_after_first=0 and plite_schema_architecture_schema_invalidation_document_width_ratio<=1.5 and plite_schema_architecture_schema_invalidation_changed_type_ratio<=2 and plite_schema_architecture_schema_invalidation_property_affected_runtime_ids=64 and plite_schema_architecture_equivalent_reconfigure_compile_count=0 and equivalent-reconfiguration ratio<=1.05 and worst-sample plite_schema_architecture_retained_heap_baseline_ratio<=0.75; plus plite_schema_architecture_contribution_1000_compile_p95_ms<100 and plite_schema_architecture_contribution_1000_structural_cache_p95_ms<25 and plite_schema_architecture_contribution_1000_previous_revision_cache_p95_ms<50 and plite_schema_architecture_contribution_1000_cache_compile_count=0 and plite_schema_architecture_plate_descriptor_resolution_width_ratio<=2 and plite_schema_architecture_plate_startup_1000_p95_ms<2500 and plite_schema_architecture_plate_startup_per_descriptor_ratio<=2.5 and plite_schema_architecture_construction_1000_default_property_ids=1 and plite_schema_architecture_construction_1000_property_ids=1 and plite_schema_architecture_construction_property_width_ratio<=2 and plite_schema_architecture_large_document_migration_10000_p95_ms<2000 and plite_schema_architecture_large_document_migration_width_ratio<=15 and plite_schema_architecture_large_document_migration_10000_configuration_commit_count=10 and plite_schema_architecture_large_document_migration_10000_migration_call_count=10 and plite_schema_architecture_projected_clipboard_width_ratio<=1.5 and plite_schema_architecture_projected_clipboard_root_validation_property_reads=0 and plite_schema_architecture_projected_clipboard_host_width_ratio<=2 and plite_schema_architecture_projected_clipboard_selected_nodes=2 and plite_schema_architecture_projected_clipboard_open_start=1 and plite_schema_architecture_projected_clipboard_open_end=1 and plite_schema_architecture_typecheck_1000_check_ms<5000 and plite_schema_architecture_typecheck_1000_instantiations<5000000 and plite_schema_architecture_typecheck_1000_memory_bytes<1342177280 and plite_schema_architecture_typecheck_check_time_ratio<=2 and plite_schema_architecture_typecheck_instantiation_ratio<=1.25; structurally cached Plate startup, unknown-wrapper first/warm timing, group, allowed-parent, compile-scope, cold/warm full-validation, cold invalidation index, and retained-representation-proxy metrics are baseline-only"
       }
     },
     {

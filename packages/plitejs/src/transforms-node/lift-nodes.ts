@@ -22,7 +22,7 @@ import type {
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
-import { deselect, select } from '../transforms-selection';
+import { deselect } from '../transforms-selection';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { moveNodes } from './move-nodes';
@@ -189,24 +189,26 @@ export const liftNodes = ((
       return;
     }
 
-    const wrapperIndex = startParentPath[0];
-    const selectedBaseIndex = wrapperIndex + (startIndex > 0 ? 1 : 0);
+    const anchor = editor.anchor(target.anchor, { deletion: 'drop' });
+    const focus = editor.anchor(target.focus, { deletion: 'drop' });
 
-    for (let childIndex = endIndex; childIndex >= startIndex; childIndex -= 1) {
-      liftNodeAtPath([...startParentPath, childIndex]);
+    try {
+      for (
+        let childIndex = endIndex;
+        childIndex >= startIndex;
+        childIndex -= 1
+      ) {
+        liftNodeAtPath([...startParentPath, childIndex]);
+      }
+    } finally {
+      const nextAnchor = anchor.release();
+      const nextFocus = focus.release();
+
+      if (nextAnchor && nextFocus) {
+        tx.setSelection(
+          SelectionApi.text({ anchor: nextAnchor, focus: nextFocus })
+        );
+      }
     }
-
-    const mapPoint = (point: typeof start) => ({
-      path: [
-        selectedBaseIndex + (point.path[1] - startIndex),
-        ...point.path.slice(2),
-      ],
-      offset: point.offset,
-    });
-
-    select(editor, {
-      anchor: mapPoint(start),
-      focus: mapPoint(end),
-    });
   });
 }) as NodeMutationMethods['liftNodes'];

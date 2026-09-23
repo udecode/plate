@@ -10,7 +10,7 @@ import { definePlugin } from '../../react/plugin/definePlugin';
 import { toReactPlugin } from '../../react/plugin/toReactPlugin';
 import { createEditor } from '../editor';
 import type { NodeInsertOptions } from '../editor/pluginRuntimeTypes';
-import { createRuleFactory } from '../plugins/input-rules/createRuleFactory';
+import { defineInputRule } from '../plugins/input-rules/defineInputRule';
 import type { BasePluginOverride } from './BasePlugin';
 import { definePlugin as defineHeadlessPlugin } from './definePlugin';
 import type { DefinitionOf, NodeComponent } from './PluginDefinition';
@@ -386,13 +386,13 @@ const assertTypedInputRuleConfiguration = () => {
   const BaseRulePlugin = defineHeadlessPlugin('typedInputRuleOwner', {
     read: () => ({ enabled: () => true }),
   });
-  const rule = createRuleFactory(BaseRulePlugin)({
+  const rule = defineInputRule(BaseRulePlugin, {
     apply: () => {},
     resolve: ({ editor }) =>
       editor.plugin(BaseRulePlugin).read.enabled() ? true : undefined,
+    target: 'insertText',
     trigger: ' ',
-    type: 'insertText',
-  })();
+  });
 
   toReactPlugin(BaseRulePlugin).configure({ inputRules: [rule] });
 };

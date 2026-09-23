@@ -285,7 +285,8 @@ const createDefaultPlainTextHostCodec = <V extends Value>(
 
       if (SelectionApi.isNode(semanticSelection)) {
         const defaultChild = state.schema.createDefaultRootChild(
-          semanticSelection.root
+          semanticSelection.root,
+          semanticSelection.paths[0][0]
         );
 
         if (!defaultChild || !NodeApi.isElement(defaultChild)) return null;

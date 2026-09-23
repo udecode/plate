@@ -28,7 +28,7 @@ Most editing behavior belongs in `plugin.rules`. Reach for an explicit transacti
 | Decide whether an empty sibling disappears during a merge. | `rules.merge` |
 | Remove empty nodes during normalization. | `rules.normalize` |
 | Control mark or inline boundaries while typing and moving. | `rules.selection` |
-| Apply one plugin's rules to another node type. | `rules.match` |
+| Apply a conditional action to another plugin's node. | A resolver on the exact structural rule leaf |
 | Run a product-specific mutation that rules cannot express. | A constructor `update` contribution or an explicit `editor.update(...)` |
 | Compose reusable Enter, Delete, or text-input behavior. | A Plate command handler declared through the constructor's root `commands` field |
 
@@ -40,7 +40,7 @@ Plate resolves plugins first, then installs the Plate schema and plugin fragment
 
 | Layer | Owner | Handles |
 | --- | --- | --- |
-| `OverridePlugin` | Core runtime | Node flags, break rules, delete rules, merge rules, normalize rules. |
+| Structural rule runtime | Core runtime | Break rules, delete rules, merge rules, and normalize rules. |
 | `AffinityPlugin` | Core runtime | `rules.selection` for mark and inline boundaries. |
 | Feature plugins | Feature packages | Default rules for headings, callouts, lists, links, tables, marks, and other nodes. |
 | App plugins | Your app | Local rules, explicit transaction commands, and Plate command or correction plugins. |
@@ -58,6 +58,12 @@ key press or command
 ```
 
 Input rules are for text patterns such as markdown shortcuts and autolinks. Plugin rules are for node behavior such as "a heading resets to paragraph on Backspace" or "a callout inserts soft breaks on Enter."
+
+Every structural rule leaf can be a direct value or a resolver. A resolver
+receives the owning plugin context plus the current `node` and `path`. Return an
+action to decide that exact leaf, or `undefined` to delegate it. Boolean
+`false` is a final decision; it does not delegate. This keeps a conditional
+merge policy from shadowing unrelated break or delete behavior.
 
 ## Break behavior
 
@@ -257,7 +263,11 @@ kind into Plate's schema before selection and transaction logic runs.
 | Empty inline element disappears. | `rules.normalize.removeEmpty: true` |
 | Link boundary follows cursor direction. | `rules.selection.affinity: 'directional'` |
 
-For list metadata and code-block children, use `rules.match` so the feature plugin can apply its rule to the child block that actually contains the selection.
+For list metadata and code-block children, put the predicate on the exact leaf
+that needs it. For example,
+`rules.merge.removeEmpty: ({ node }) => isListItem(node) ? false : undefined`
+lets the list feature protect list items while leaving every other merge rule
+with its canonical owner.
 
 ## API Reference
 
@@ -268,7 +278,6 @@ For list metadata and code-block children, use `rules.match` so the feature plug
 | `rules.merge` | Core rule engine plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesmerge) |
 | `rules.normalize` | Core rule engine plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesnormalize) |
 | `rules.selection` | Affinity core plugin plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesselection) |
-| `rules.match` | Core rule lookup plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesmatch) |
 | `tx.nodes.merge(...)` | Plate transaction command | [Transforms](/docs/api/editor-transforms#txnodesmergeoptions) |
 | `editorReads.nodes.shouldMergeNodesRemovePrevNode` | Internal Plate descriptor extended by Plate merge-rule middleware | [Plugin Rules](/docs/plugin-rules#rulesmerge) |
 | `tx.plugin(TablePlugin).merge()` | Table feature package | [Table](/docs/table#editing-behavior) |

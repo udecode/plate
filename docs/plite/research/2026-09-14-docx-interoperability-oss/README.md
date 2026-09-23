@@ -4,7 +4,7 @@ Status: Research and final adversarial reassessment complete; canonical records 
 
 Question: Which laws should DOCX import, export and Word paste share, and which fidelity boundaries must be explicit?
 
-Scope: `documents`; current Plate source and seven bounded source families: Mammoth, html-to-docx, docx, docx-preview, CKEditor 5, SuperDoc, and Pandoc. Compare semantic conversion, direct OOXML mapping, document preservation, Word HTML paste, comments/revisions, external resources, and diagnostics. Other feature reviews stay separate.
+Scope: `documents`; current Plate source and six bounded source families: Mammoth, html-to-docx, docx, docx-preview, SuperDoc, and Pandoc. Compare semantic conversion, direct OOXML mapping, document preservation, Word HTML paste, comments/revisions, external resources, and diagnostics. Other feature reviews stay separate.
 
 Stop rule: finish official discovery and strongest relevant source reads for each corpus, reconcile current owners and prior decisions, then record one evidence-backed Stop/Pursue/Defer assessment. No exhaustive repository audit, universal state-of-the-art ranking, native Word certification or downstream implementation is claimed.
 
@@ -22,10 +22,10 @@ Artifact: `docs/plite/research/2026-09-14-docx-interoperability-oss/`. Ledgers r
 
 ## Results and evidence
 
-- Seven repository families discovered and inspected at exact current default-branch revisions; 67 selected current external files including licenses/metadata, plus 10 main current Plate/runner read receipts and the broader Plate sidecar. This is bounded strongest-source investigation, not exhaustive source coverage.
-- Six corpus dispositions are evidenced for their scoped jobs; SuperDoc retains an evidence gap for its proprietary current engine. CKEditor's proprietary file converters are also outside its evidenced OSS paste lane.
-- Ten semantic leads; eight promoted for design/proof, one no-code boundary decision, one deferred. Six explicit rejection/deduplication rows; nine promotion rows across five packets. The earlier no-universal-rich-AST rejection was reused with current support.
-- Zero upstream issue bodies, PR bodies or comments read; zero upstream tests or benchmarks executed. Eight web queries plus official repository/commit/release metadata supplied discovery, not unverified implementation conclusions.
+- Six repository families retained from the bounded comparison at exact current default-branch revisions; 47 selected current external files including licenses/metadata, plus 10 main current Plate/runner read receipts and the broader Plate sidecar. This is bounded strongest-source investigation, not exhaustive source coverage.
+- Five corpus dispositions are evidenced for their scoped jobs; SuperDoc retains an evidence gap for its proprietary current engine.
+- Nine semantic leads; seven promoted for design/proof, one no-code boundary decision, one deferred. Six explicit rejection/deduplication rows; eight promotion rows across four packets. The earlier no-universal-rich-AST rejection was reused with current support.
+- Zero upstream issue bodies, PR bodies or comments read; zero upstream tests or benchmarks executed. Official discovery queries and repository/commit/release metadata supplied leads, not unverified implementation conclusions.
 - Main replayed 123 existing package tests and two historical bug probes. A worker observed 12 additional fixture/demo tests. Do not count its duplicate 123-test run as extra coverage.
 - All ten documents census units are mapped. Other feature reviews, including skipped `diff`, remain independent. Inventory refresh only reconciles current fingerprint observations; it does not refresh unrelated reviews or proof.
 
@@ -43,12 +43,12 @@ Detailed receipts:
   [promotions](promoted-ledger.tsv), and [owner packets](promotion-packets.md).
 - [Current Plate audit](shards/plate-audit.md),
   [final adversarial reassessment](shards/final-reassessment.md),
-  [CKEditor/SuperDoc](shards/ckeditor-superdoc.md), and
+  [SuperDoc](shards/superdoc.md), and
   [Pandoc/docx-preview](shards/pandoc-preview.md).
 - [Proof receipt](proof/receipt.json) and
   [historical bug observations](reproductions/sidecar-authority.spec.ts).
-- [Artifact validation](validation.json): selected-file hashes, TSV structure,
-  corpus dispositions and local links.
+- [Historical validation receipt](validation.json). Source evidence was redacted
+  afterward; its original link and hash checks are not current proof.
 
 To recover an external read whose checkout remains older:
 `git -C <manifest-local-path> show <full-commit>:<repo-relative-file>`.

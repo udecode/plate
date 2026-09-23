@@ -1937,6 +1937,68 @@ describe('schema compiler', () => {
     }
   });
 
+  it('compiles object identity only for editable selectable block owners', () => {
+    const base = {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      object: true,
+    } as const;
+    const ObjectSchema = defineEditorSchema('schema:object-behavior', {
+      elements: { object: base },
+      id: 'object-behavior',
+      root: schema.content.type('object'),
+      unknown: 'reject',
+      version: 1,
+    });
+    const compiled = compileEditorSchemaContributions([
+      record(ObjectSchema.name, ObjectSchema.schema),
+    ]);
+    const WithoutObject = defineEditorSchema('schema:object-behavior', {
+      elements: { object: { content: base.content } },
+      id: 'object-behavior',
+      root: schema.content.type('object'),
+      unknown: 'reject',
+      version: 1,
+    });
+    const baseline = compileEditorSchemaContributions([
+      record(WithoutObject.name, WithoutObject.schema),
+    ]);
+
+    assert.equal(compiled.elements.byType.get('object')?.behavior.object, true);
+    assert.equal(
+      compiled.elements.byType.get('object')?.behavior.isolating,
+      true
+    );
+    assert.notEqual(
+      compiled.identity.fingerprint,
+      baseline.identity.fingerprint
+    );
+
+    for (const [name, overrides] of [
+      ['inline', { inline: true }],
+      ['void', { void: 'block' }],
+      ['atom', { atom: true }],
+      ['selection', { selectable: false }],
+      ['isolation', { isolating: false }],
+      ['context', { slice: { preserveContext: true } }],
+    ] as const) {
+      const Invalid = defineEditorSchema(`schema:invalid-object-${name}`, {
+        elements: { object: { ...base, ...overrides } },
+        id: `invalid-object-${name}`,
+        root: schema.content.type('object'),
+        unknown: 'reject',
+        version: 1,
+      });
+
+      assert.throws(
+        () =>
+          compileEditorSchemaContributions([
+            record(Invalid.name, Invalid.schema),
+          ]),
+        /incompatible object behavior/
+      );
+    }
+  });
+
   it('reuses compiled schema while publishing a new descriptor identity', () => {
     const slot = definePluginSlot('article-schema');
     const create = () =>

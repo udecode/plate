@@ -1,38 +1,49 @@
-import type { PluginReference } from '../../../core';
-import { BaseParagraphPlugin, createRuleFactory } from '../../../core';
+import type { PluginReference, SelectionInputRuleContext } from '../../../core';
+import { BaseParagraphPlugin, createBlockFenceInputRule } from '../../../core';
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 
-const createCodeBlockRule = createRuleFactory(BaseCodeBlockPlugin);
-
 export const CodeBlockRules = {
-  markdown: createCodeBlockRule<
-    { on: 'break' | 'match' },
-    { block: PluginReference | string; fence: string }
-  >({
-    type: 'blockFence',
-    fence: '```',
-    block: BaseParagraphPlugin,
-    enabled: ({ editor }) =>
-      !editor.read.nodes.some({
-        type: BaseCodeBlockPlugin,
-      }),
-    priority: 100,
-    apply: ({ editor, tx }, match) => {
-      tx.nodes.replace(
-        {
-          children: [{ text: '' }],
-          type: editor.plugin(BaseCodeBlockPlugin).schema.type,
-        },
-        { at: match.path }
-      );
+  markdown: ({
+    block = BaseParagraphPlugin,
+    enabled,
+    fence = '```',
+    on,
+    priority = 100,
+  }: {
+    block?: PluginReference | string;
+    enabled?: (context: SelectionInputRuleContext) => boolean;
+    fence?: string;
+    on: 'break' | 'match';
+    priority?: number;
+  }) =>
+    createBlockFenceInputRule({
+      block,
+      fence,
+      on,
+      priority,
+      enabled: (context) =>
+        (!enabled || enabled(context)) &&
+        !context.editor.read.nodes.some({
+          type: BaseCodeBlockPlugin,
+        }),
+      apply: ({ decline, editor, tx }, match) => {
+        if (
+          !tx.nodes.replace(
+            {
+              children: [{ text: '' }],
+              type: editor.plugin(BaseCodeBlockPlugin).schema.type,
+            },
+            { at: match.path }
+          )
+        ) {
+          return decline();
+        }
 
-      const start = tx.points.start(match.path);
+        const start = tx.points.start(match.path);
 
-      if (start) {
-        tx.selection.set(start);
-      }
-
-      return true;
-    },
-  }),
+        if (start) {
+          tx.selection.set(start);
+        }
+      },
+    }),
 };

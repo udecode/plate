@@ -1,12 +1,21 @@
 /** @jsxRuntime classic */
 /** @jsx jsxt */
 
-import { createEditor as createPliteEditor, type Value } from '../../facade';
+import {
+  createEditor as createPliteEditor,
+  property,
+  type Value,
+} from '../../facade';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import { createEditorWithEditor } from '../../react/editor/withPlate';
 import { jsxt, type TestEditor } from '../../testing';
 import { SingleLinePlugin } from './SingleLinePlugin';
 
 jsxt;
+
+const TestMarkPlugin = definePlugin('testSingleLineMark', {
+  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+});
 
 const input = (
   <editor>
@@ -129,5 +138,30 @@ describe('SingleLinePlugin', () => {
     editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(expectedOutput.children);
+  });
+
+  it('preserves marks while removing line separators and joining blocks', () => {
+    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+      plugins: [SingleLinePlugin, TestMarkPlugin],
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'first\n', testSingleLineMark: true }],
+        },
+        {
+          type: 'paragraph',
+          children: [{ text: 'second', testSingleLineMark: true }],
+        },
+      ],
+    });
+
+    editor.update.value.repair();
+
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'paragraph',
+        children: [{ text: 'firstsecond', testSingleLineMark: true }],
+      },
+    ]);
   });
 });

@@ -3,6 +3,9 @@ import {
   type Editor,
   type Element,
   type ElementOf,
+  type InsertBreakInputRuleReadContext,
+  type InsertDataInputRuleReadContext,
+  type InsertTextInputRuleReadContext,
   type Location,
   type MaximizeMode,
   NodeApi,
@@ -12,7 +15,7 @@ import {
   RangeApi,
   type Text,
   type TextInsertFragmentOptions,
-  createRuleFactory,
+  defineInputRule,
   definePlugin,
   editorCommands,
   isDefined,
@@ -21,7 +24,6 @@ import {
   sanitizeUrl,
   schema,
 } from '../../../core';
-import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 
 const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\//i;
 
@@ -350,7 +352,13 @@ export const BaseLinkPlugin = definePlugin('link', {
 
         const nextPoint = tx.points.after(link[1]);
 
-        if (nextPoint) {
+        if (
+          nextPoint &&
+          PathApi.equals(
+            PathApi.parent(nextPoint.path),
+            PathApi.parent(link[1])
+          )
+        ) {
           tx.selection.set(nextPoint);
         } else {
           const nextPath = PathApi.next(link[1]);
@@ -626,7 +634,17 @@ export const BaseLinkPlugin = definePlugin('link', {
   .extend(({ plugin }) => ({
     commands: ({ around }) => [
       around(editorCommands.insertText, ({ input, state, next }) => {
-        if (input.options?.at) return next();
+        const target = input.options?.at;
+        const currentSelection = state.selection();
+
+        if (
+          target &&
+          (!currentSelection ||
+            !RangeApi.isRange(target) ||
+            !RangeApi.equals(target, currentSelection))
+        ) {
+          return next();
+        }
 
         const selection = state.selection();
 
@@ -655,141 +673,151 @@ export const BaseLinkPlugin = definePlugin('link', {
 export type LinkElement = ElementOf<typeof BaseLinkPlugin>;
 export type BaseLinkDefinition = DefinitionOf<typeof BaseLinkPlugin>;
 
-const createLinkRule = createRuleFactory(BaseLinkPlugin);
+type InputRuleOptions<TContext> = {
+  enabled?: (context: TContext) => boolean;
+  priority?: number;
+};
 
-const breakAutolinkRule = createLinkRule<{}, {}, LinkTextAutolinkMatch>({
-  type: 'insertBreak',
-  resolve: ({ editor }) => editor.plugin(BaseLinkPlugin).read.findAutolink(),
-  apply: (context, match) => {
-    context.tx.selection.set(match.range);
+const breakAutolinkRule = (
+  options: InputRuleOptions<InsertBreakInputRuleReadContext> = {}
+) =>
+  defineInputRule(BaseLinkPlugin, {
+    ...options,
+    target: 'insertBreak',
+    resolve: ({ editor }) => editor.plugin(BaseLinkPlugin).read.findAutolink(),
+    apply: ({ next, tx }, match) => {
+      tx.selection.set(match.range);
 
-    if (
-      !context.tx.link.upsert({
-        url: match.url,
-      })
-    ) {
-      return undefined;
-    }
+      if (!tx.link.upsert({ url: match.url })) return;
 
-    context.tx.selection.collapse({ edge: 'end' });
+      tx.selection.collapse({ edge: 'end' });
+      tx.link.exitEnd();
 
-    context.tx.link.exitEnd();
+      return next();
+    },
+  });
 
-    context.insertBreak();
+const pasteAutolinkRule = (
+  options: InputRuleOptions<InsertDataInputRuleReadContext> = {}
+) =>
+  defineInputRule(BaseLinkPlugin, {
+    ...options,
+    target: 'insertData',
+    resolve: (context) => {
+      if (!context.text) return undefined;
 
-    return true;
-  },
-});
+      const { getUrlHref } = context.editor.plugin(BaseLinkPlugin).store.get();
+      const url = getUrlHref?.(context.text) ?? context.text;
 
-const pasteAutolinkRule = createLinkRule<
-  {},
-  {},
-  { shouldLink: boolean; text: string; url: string }
->({
-  type: 'insertData',
-  resolve: (context) => {
-    if (!context.text) return undefined;
+      if (!context.editor.plugin(BaseLinkPlugin).api.validateUrl(url)) {
+        return undefined;
+      }
 
-    const { getUrlHref } = context.editor.plugin(BaseLinkPlugin).store.get();
-    const url = getUrlHref?.(context.text) ?? context.text;
+      const selection = context.editor.read.selection();
+      let shouldLink = false;
 
-    if (!context.editor.plugin(BaseLinkPlugin).api.validateUrl(url)) {
-      return undefined;
-    }
+      const codeBlock = context.editor.plugin(PLUGINS.codeBlock);
 
-    const selection = context.editor.read.selection();
-    let shouldLink = false;
+      if (
+        selection &&
+        context.editor.read.selection.nodes().length === 0 &&
+        (!codeBlock.installed ||
+          !context.editor.read.nodes.above({
+            at: selection,
+            type: codeBlock.schema.type,
+          }))
+      ) {
+        shouldLink =
+          !context.editor.read.selection.isCollapsed() ||
+          !MARKDOWN_LINK_SOURCE_PATTERN.test(
+            context.getBlockTextBeforeSelection()
+          );
+      }
 
-    const codeBlockDescriptor = getCompiledPlatePlugin(
-      context.editor,
-      PLUGINS.codeBlock
-    );
+      return { shouldLink, text: context.text, url };
+    },
+    apply: ({ editor, tx }, match) => {
+      if (match.shouldLink) {
+        const { keepSelectedTextOnPaste } = editor
+          .plugin(BaseLinkPlugin)
+          .store.get();
+        const inserted = tx.link.upsert({
+          insertTextInLink: true,
+          text: keepSelectedTextOnPaste ? undefined : match.url,
+          url: match.url,
+        });
 
-    if (
-      selection &&
-      context.editor.read.selection.nodes().length === 0 &&
-      (!codeBlockDescriptor ||
-        !context.editor.read.nodes.above({
-          at: selection,
-          type: context.editor.plugin(codeBlockDescriptor).schema.type,
-        }))
-    ) {
-      shouldLink =
-        !context.editor.read.selection.isCollapsed() ||
-        !MARKDOWN_LINK_SOURCE_PATTERN.test(
-          context.getBlockTextBeforeSelection()
-        );
-    }
+        if (inserted) return;
+      }
 
-    return { shouldLink, text: context.text, url };
-  },
-  apply: (context, match) => {
-    if (match.shouldLink) {
-      const { keepSelectedTextOnPaste } = context.editor
-        .plugin(BaseLinkPlugin)
-        .store.get();
-      const inserted = context.tx.link.upsert({
-        insertTextInLink: true,
-        text: keepSelectedTextOnPaste ? undefined : match.url,
-        url: match.url,
-      });
+      tx.text.insert(match.text);
+    },
+  });
 
-      if (inserted) return true;
-    }
+const spaceAutolinkRule = (
+  options: InputRuleOptions<InsertTextInputRuleReadContext> = {}
+) =>
+  defineInputRule(BaseLinkPlugin, {
+    ...options,
+    target: 'insertText',
+    trigger: ' ',
+    resolve: (context) => {
+      const target = context.options?.at;
+      const selection = context.editor.read.selection();
 
-    context.tx.text.insert(match.text);
+      if (
+        target &&
+        (!selection ||
+          !RangeApi.isRange(target) ||
+          !RangeApi.equals(target, selection))
+      ) {
+        return undefined;
+      }
 
-    return true;
-  },
-});
+      return context.editor.plugin(BaseLinkPlugin).read.findAutolink();
+    },
+    apply: ({ text, tx }, match) => {
+      tx.selection.set(match.range);
 
-const spaceAutolinkRule = createLinkRule<{}, {}, LinkTextAutolinkMatch>({
-  type: 'insertText',
-  trigger: ' ',
-  resolve: (context) =>
-    context.text === ' '
-      ? context.editor.plugin(BaseLinkPlugin).read.findAutolink()
-      : undefined,
-  apply: (context, match) => {
-    context.tx.selection.set(match.range);
+      if (!tx.link.upsert({ url: match.url })) return;
 
-    if (
-      !context.tx.link.upsert({
-        url: match.url,
-      })
-    ) {
-      return undefined;
-    }
-
-    context.tx.selection.collapse({ edge: 'end' });
-
-    context.tx.link.exitEnd();
-
-    context.insertText(context.text, context.options);
-
-    return true;
-  },
-});
+      tx.selection.collapse({ edge: 'end' });
+      tx.link.exitEnd();
+      tx.text.insert(text);
+    },
+  });
 
 export const LinkRules = {
-  markdown: createLinkRule<{}, {}, { range: Range; text: string; url: string }>(
-    {
-      type: 'insertText',
+  markdown: (
+    ruleOptions: InputRuleOptions<InsertTextInputRuleReadContext> = {}
+  ) =>
+    defineInputRule(BaseLinkPlugin, {
+      ...ruleOptions,
+      target: 'insertText',
       trigger: ')',
       resolve: ({ editor, options, text }) => {
-        if (text !== ')' || options?.at) return undefined;
+        if (text !== ')') return undefined;
+
+        const target = options?.at;
+        const currentSelection = editor.read.selection();
+
+        if (
+          target &&
+          (!currentSelection ||
+            !RangeApi.isRange(target) ||
+            !RangeApi.equals(target, currentSelection))
+        ) {
+          return undefined;
+        }
 
         const selection = editor.read.selection();
 
         if (!selection || !editor.read.selection.isCollapsed()) {
           return undefined;
         }
-        const codeBlockDescriptor = getCompiledPlatePlugin(
-          editor,
-          PLUGINS.codeBlock
-        );
-        const codeBlockType = codeBlockDescriptor
-          ? editor.plugin(codeBlockDescriptor).schema.type
+        const codeBlock = editor.plugin(PLUGINS.codeBlock);
+        const codeBlockType = codeBlock.installed
+          ? codeBlock.schema.type
           : undefined;
 
         if (
@@ -831,25 +859,22 @@ export const LinkRules = {
           url,
         };
       },
-      apply: (context, match) => {
-        const inserted = context.tx.link.upsert({
+      apply: ({ next, options, text, tx }, match) => {
+        const inserted = tx.link.upsert({
           insertNodesOptions: { at: match.range },
           text: match.text,
           url: match.url,
         });
 
         if (inserted) {
-          context.tx.link.exitEnd();
+          tx.link.exitEnd();
 
-          return true;
+          return;
         }
 
-        context.insertText(context.text, context.options);
-
-        return true;
+        return next(text, options);
       },
-    }
-  ),
+    }),
   autolink: (
     options:
       | ({ variant: 'break' } & NonNullable<

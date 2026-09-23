@@ -3,8 +3,13 @@
 
 import { createEditor } from 'platejs/react';
 
-import { createEditor as createPliteEditor, type Value } from '../../facade';
+import {
+  createEditor as createPliteEditor,
+  property,
+  type Value,
+} from '../../facade';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import { createEditorWithEditor } from '../../react/editor/withPlate';
 import { jsxt, type TestEditor } from '../../testing';
 import { SingleBlockPlugin } from './SingleBlockPlugin';
@@ -12,6 +17,35 @@ import { SingleLinePlugin } from './SingleLinePlugin';
 import { TrailingBlockPlugin } from './TrailingBlockPlugin';
 
 jsxt;
+
+const TestMarkPlugin = definePlugin('testMark', {
+  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+});
+
+const TestInlineVoidPlugin = definePlugin('testInlineVoid', {
+  schema: {
+    element: {
+      inline: true,
+      void: 'inline',
+    },
+  },
+});
+
+const TestContainerPlugin = definePlugin('testContainer', {
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent(),
+    },
+  }),
+});
+
+const TestBlockVoidPlugin = definePlugin('testBlockVoid', {
+  schema: {
+    element: {
+      void: 'block',
+    },
+  },
+});
 
 const input = (
   <editor>
@@ -132,6 +166,71 @@ describe('SingleBlockPlugin', () => {
     editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(expectedOutput.children);
+  });
+
+  it('preserves marks and inline voids while joining blocks', () => {
+    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+      plugins: [SingleBlockPlugin, TestMarkPlugin, TestInlineVoidPlugin],
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'first', testMark: true }],
+        },
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'second', testMark: true },
+            { type: 'testInlineVoid', children: [{ text: '' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update.value.repair();
+
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'first\nsecond', testMark: true },
+          { type: 'testInlineVoid', children: [{ text: '' }] },
+          { text: '' },
+        ],
+      },
+    ]);
+  });
+
+  it.each([
+    {
+      plugins: [TestContainerPlugin],
+      second: {
+        type: 'testContainer',
+        children: [{ type: 'paragraph', children: [{ text: 'nested' }] }],
+      },
+      title: 'nested block content',
+    },
+    {
+      plugins: [TestBlockVoidPlugin],
+      second: {
+        type: 'testBlockVoid',
+        children: [{ text: '' }],
+      },
+      title: 'a block void',
+    },
+  ])('rejects $title instead of losing it', ({ plugins, second }) => {
+    const initialValue: Value = [
+      { type: 'paragraph', children: [{ text: 'first' }] },
+      second,
+    ];
+    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+      plugins: [SingleBlockPlugin, ...plugins],
+      initialValue,
+    });
+
+    expect(() => editor.update.value.repair()).toThrow(
+      'SingleBlockPlugin cannot preserve'
+    );
+    expect(editor.read.children()).toEqual(initialValue);
   });
 
   it.each([

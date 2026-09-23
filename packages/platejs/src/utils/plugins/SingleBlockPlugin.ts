@@ -1,6 +1,7 @@
-import { editorCommands, NodeApi } from '../../facade';
+import { editorCommands } from '../../facade';
 import { definePlugin } from '../../lib/plugin/definePlugin';
 import { PLUGINS } from '../plate-keys';
+import { joinNextRootBlock } from './joinSingleRootBlock.internal';
 
 /** Forces editor to only have one block. */
 export const SingleBlockPlugin = definePlugin(PLUGINS.singleBlock, {
@@ -16,31 +17,7 @@ export const SingleBlockPlugin = definePlugin(PLUGINS.singleBlock, {
       event: 'children',
       query: 'root',
       correct({ tx }) {
-        const children = tx.nodes.children();
-
-        if (children.length > 1) {
-          const secondNode = children[1];
-          const secondText = NodeApi.string(secondNode);
-          const [lastNode, relativePath] = NodeApi.last(children[0], []);
-
-          if (!NodeApi.isText(lastNode)) {
-            return;
-          }
-          const firstBlockEnd = {
-            offset: lastNode.text.length,
-            path: [0, ...relativePath],
-          };
-
-          if (secondText.length === 0) {
-            tx.nodes.remove({ at: [1] });
-          } else {
-            tx.nodes.merge({
-              at: [1],
-              match: (_, path) => path.length === 1,
-            });
-          }
-          tx.text.insert('\n', { at: firstBlockEnd });
-        }
+        joinNextRootBlock(tx, '\n', 'SingleBlockPlugin');
       },
     },
   ],

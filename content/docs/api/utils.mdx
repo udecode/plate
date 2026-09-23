@@ -114,14 +114,12 @@ type MyValue = ValueOf<Editor>;
 | Export                 | Name                   | Behavior                                                                         |
 | ---------------------- | ---------------------- | -------------------------------------------------------------------------------- |
 | `ExitBreakPlugin`      | `PLUGINS.exitBreak`       | Adds transaction commands around `insertExitBreak`.                              |
-| `NormalizeTypesPlugin` | `PLUGINS.normalizeTypes`  | Normalizes configured root paths to a required `type` or `strictType`.           |
 | `SingleBlockPlugin`    | `PLUGINS.singleBlock`     | Forces the editor value into one block and turns hard breaks into soft breaks.   |
 | `SingleLinePlugin`     | `PLUGINS.singleLine`      | Forces one block and strips line-break characters from text nodes.               |
 | `TrailingBlockPlugin`  | `PLUGINS.trailingBlock`   | Ensures a trailing block exists at the configured level and type.                |
-| `withTrailingBlock`    | Override editor helper | Implements the trailing block normalization logic used by `TrailingBlockPlugin`. |
 
 Use the plugin guide pages for options and examples:
-[Exit Break](/docs/exit-break), [Forced Layout](/docs/forced-layout),
+[Exit Break](/docs/exit-break), [Schema](/docs/schema#require-a-title),
 [Single Block](/docs/single-block), and [Trailing Block](/docs/trailing-block).
 
 ## React hooks

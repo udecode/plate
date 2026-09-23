@@ -15,6 +15,7 @@ export default function CodeBlockHugeDemo({ id }: { id: string }) {
   const editor = useCreateEditor({
     plugins: EditorKit,
     initialValue: createValue(id),
+    userId: 'demo',
   });
 
   return (

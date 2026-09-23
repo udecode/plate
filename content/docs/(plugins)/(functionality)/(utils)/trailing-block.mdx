@@ -4,8 +4,8 @@ description: Keep a required block at the end of an editor or nested level.
 docs:
   - route: /docs/single-block
     title: Single Block
-  - route: /docs/forced-layout
-    title: Forced Layout
+  - route: /docs/schema
+    title: Schema
 ---
 
 Trailing Block inserts a required block when the last node at a target level is missing or has the wrong type. The standard registry editor plugins include `TrailingBlockPlugin` so full Plate editors always end with a paragraph. Single-block and single-line editors disable it because they intentionally keep one root block.
@@ -18,7 +18,8 @@ Trailing Block inserts a required block when the last node at a target level is 
 - Empty-editor protection.
 - Root or nested target level.
 - Optional last-node matching through `initialState.match`.
-- Custom insertion wrapper through `initialState.insert`.
+- Schema-created trailing nodes with required defaults.
+- Correction in the active document root, including named roots.
 - Included in the standard registry editor plugins.
 
 </PackageInfo>
@@ -125,12 +126,13 @@ Use nested levels when a constrained container must always end with a text block
 | Case | Result |
 |------|--------|
 | Empty editor | Inserts a block at `[0]`. |
-| Last node already matches `type` | Falls through to the base `normalizeNode`. |
+| Last node already matches `type` | Leaves the value unchanged. |
 | Last node has another type and matches `initialState.match` | Inserts the trailing block at `PathApi.next(lastChildPath)`. |
 | Last node does not match `initialState.match` | Does not insert. |
 
-The correction inserts `{ children: [{ text: '' }], type: trailingType }`
-through the active transaction.
+The correction calls `tx.schema.create(trailingType)` and inserts the complete
+schema-valid node through the active transaction. Required properties and
+default children therefore come from the installed schema.
 
 ## API Reference
 
@@ -139,5 +141,4 @@ through the active transaction.
 | `TrailingBlockPlugin` | `platejs` | Normalizer that ensures a trailing block exists. |
 | `TrailingBlockPluginState.type` | `platejs` | Block type to insert. Defaults to the editor paragraph type. |
 | `TrailingBlockPluginState.level` | `platejs` | Depth used by `tx.nodes.last`. Defaults to `0`. |
-| `TrailingBlockPluginState.insert` | `platejs` | Custom wrapper around the generated insertion. |
 | `TrailingBlockPluginState.match` | `platejs` node match | Limits insertion to matching last nodes. |

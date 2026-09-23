@@ -22,7 +22,6 @@ adopt before detailed design?
 
 - ProseMirror mapped decorations and bookmarks.
 - Lexical comments, marks, and dirty-node reconciliation.
-- CKEditor live positions/ranges and markers.
 - CodeMirror range sets and view decorations.
 - Monaco tracked decorations.
 - Yjs relative positions and Automerge cursors.

@@ -19,6 +19,7 @@ import {
   string as editorString,
   subscribe as editorSubscribe,
 } from '../src/internal';
+
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],

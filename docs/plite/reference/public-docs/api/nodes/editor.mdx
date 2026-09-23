@@ -365,7 +365,6 @@ const TableSchema = defineEditorSchema("schema:table-document", {
   elements: {
     tableCell: schema.element.textBlock({
       isolating: true,
-      keyboardSelectable: true,
       properties: {
         colSpan: property.number({ default: 1, omitDefault: true }),
         rowSpan: property.number({ default: 1, omitDefault: true }),
@@ -392,7 +391,7 @@ const behavior = editor.read((state) => ({
     state.schema.element("tableCell")?.content?.allowsUnknownElements,
   colSpan: state.schema.getElementProperty(cell, colSpan),
   isolating: state.schema.isIsolating(cell),
-  keyboardSelectable: state.schema.isKeyboardSelectable(cell),
+  object: state.schema.isObject(cell),
 }));
 ```
 
@@ -414,7 +413,7 @@ Common schema checks include:
 - `state.schema.isElementTypeInGroup(type, group)`
 - `state.schema.isInline(element)`
 - `state.schema.isIsolating(element)`
-- `state.schema.isKeyboardSelectable(element)`
+- `state.schema.isObject(element)`
 - `state.schema.isReadOnly(element)`
 - `state.schema.isVoid(element)`
 - `state.schema.isMarkableVoid(element)`

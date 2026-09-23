@@ -1,0 +1,125 @@
+{
+  "id": "2026-09-22-media-object-arrow-navigation-audit",
+  "scope": "media",
+  "kind": "review",
+  "date": "2026-09-22",
+  "question": "Does keyboard traversal select each media object before entering its editable caption, and do the behavior law and tests prove it?",
+  "model": null,
+  "method": "best-api-review/history-v3",
+  "trigger": "The user reported ArrowRight skipping an image owner and requested a full media API audit against deployed docs, the editor-behavior law, and current tests.",
+  "requirements": [
+    "A selectable media asset is one keyboard stop; its direct caption children are the next editable stop in reading order, with reverse traversal back through the owner.",
+    "Image, file, audio, video, and media embed use the same object role and must not gain divergent keyboard policy merely because their chrome differs.",
+    "Keep the accepted non-void object model, direct editable children, whole-owner NodeSelection, and child TextSelection unless evidence defeats those laws.",
+    "Model and DOM selection must agree after arrows; editor-behavior rows and tests must name and prove actual keyboard transitions."
+  ],
+  "evidenceReuse": "Rechecked the accepted media object review, design, execution and five-project browser proof against current source and current tests. The April void-image navigation plan is a historical comparator, not proof for this non-void object model. Reproduced the current route in headless Chromium against the dev server rooted at this checkout. Inspected the deployed media page as a versioned public comparator; it still describes void media with CaptionPlugin and is not authority for the local next model.",
+  "summary": "Pursue one Plite-owned object-navigation repair, not another media plugin or public schema flag. In the live editor, ArrowRight from the preceding paragraph goes directly to image caption text and ArrowRight from an image NodeSelection does nothing. ArrowUp from caption start also goes to the preceding paragraph, contrary to the accepted vertical law, although ArrowDown from the selected asset enters caption start. The generic caret engine only offers an owner transition for vertical arrows and rejects NodeSelection before horizontal movement; the exact interception causing the observed ArrowUp escape still needs isolation. All five Plate media descriptors have the same object role, so the target is a single substrate traversal contract plus honest law and browser proof, not five feature-specific handlers. The current browser and package tests do not assert these arrow transitions despite two matrix rows marked tested. The prior implementation/proof remains valid for its executed scope, but not for this newly observed interaction.",
+  "verdict": "pursue",
+  "previous": "2026-09-21-media-object-editable-content-final-pass",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-21-media-object-editable-content-final-pass",
+      "question": "Does Plite need an object-like schema role for selectable media with editable children, or can narrower intrinsic-content and existing flag repairs solve the job more cleanly?",
+      "action": "retains",
+      "reason": "Retain the object role and direct editable children. Reopen only the unaddressed horizontal keyboard traversal and observed vertical escape; neither symptom justifies void, atom, nested editor, or caption wrapper replacement."
+    },
+    {
+      "record": "2026-09-21-object-elements-editable-children-design",
+      "question": "What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?",
+      "action": "reopens",
+      "reason": "The design specified owner-to-caption ArrowDown and reverse ArrowUp but omitted ArrowRight/ArrowLeft. Its claim that existing React tests covered vertical transitions is not borne out by the cited current tests, and the live route contradicts ArrowUp."
+    },
+    {
+      "record": "2026-09-22-object-elements-editable-children-execution",
+      "question": "What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?",
+      "action": "retains",
+      "reason": "The object role, five media adoptions, and caption Enter/selection-shaped transfer are implemented. This audit does not challenge those completed implementation units; it identifies a keyboard path they did not settle."
+    },
+    {
+      "record": "2026-09-22-object-elements-full-browser-proof-execution",
+      "question": "What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?",
+      "action": "reopens",
+      "reason": "Retain the five-project passing result for its actual assertions. Reopen any claim that it proved media owner/caption keyboard traversal: the direct browser specimen skips the owner on ArrowRight and escapes the owner on ArrowUp, while the cited tests contain no matching assertions."
+    }
+  ],
+  "alternatives": [
+    "Strongest hard cut: remove the newly introduced Plite object role and return media to void plus a separate CaptionPlugin. Reject: this removes direct editable child content and reopens the previously proven emptiness, transfer, and caption-editing problems; the deployed docs describe that older model, not a superior solution to this traversal bug.",
+    "Keep the schema and add five Plate media keydown handlers or a new MediaNavigationPlugin. Reject: the selection transition is generic to selectable non-void object owners and would duplicate the same policy across media and other object consumers.",
+    "Keep source behavior and only edit docs or accept caption-first ArrowRight. Reject: owner selection becomes keyboard-unreachable from adjacent text and the live ArrowUp path contradicts the already locked law; click selection alone is not enough.",
+    "Use Plite's existing selection/caret owner to define adjacent-text to NodeSelection to child-text traversal and reverse, including actual ArrowUp/Down handling. Pursue without a new public flag or package; separate word/selection-extension and RTL cases during implementation proof."
+  ],
+  "proofLimits": "A direct headless Chromium probe on /blocks/editor-ai reproduced the image path only; it is not a cross-browser or five-media runtime pass, and the exact cause of ArrowUp falling through remains unisolated. Source inspection proves shared schema descriptors and missing cited test assertions, not how every media chrome behaves. The deployed website describes an earlier void/CaptionPlugin API and does not define this branch's arrow semantics. This review does not authorize product implementation or publication.",
+  "references": [
+    "docs/research/decisions/media-object-content.md",
+    "docs/plans/2026-09-21-object-elements-with-editable-children.md",
+    "docs/research/raw/2026-09-22-media-arrow-browser-observation.md",
+    "packages/plitejs/src/react/editable/caret-engine.ts",
+    "packages/plitejs/src/react/editable/selection-void-target.ts",
+    "packages/plitejs/src/react/editable/runtime-keyboard-events.ts",
+    "packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts",
+    "apps/www/tests/browser/media-caption.spec.ts",
+    "docs/editor-behavior/editor-protocol-matrix.md",
+    "docs/editor-behavior/markdown-editing-spec.md",
+    "content/docs/(plugins)/(elements)/media.mdx",
+    "docs/plans/2026-04-27-plite-image-keyboard-navigation.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/media.tsx": "a3a10aee7b55a1cf1f6304d49d3c6ea901b8268b85ff6b41e32947aa2a66f491",
+      "apps/www/src/registry/components/editor/caption.tsx": "19c1ad2e59243ed6512a4de33c90c0d800d51def83afa56b8e96659784399597",
+      "packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts": "f7a64b4302ad8e93241920d7e1de4772c52aff0882812c8ec39482cc3357ced9",
+      "apps/www/tests/browser/media-caption.spec.ts": "c9fe7b756fb4840d68a16fdb016c282a9613c855d30519be0646db24ce4446cf",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "981f135c7dcd70df7b60a07fa40fcdf008fe7e01b1b6a014eccc1629f8a722a9",
+      "packages/plitejs/src/react/editable/caret-engine.ts": "c749c211c85a7bba4fe1a685c117a8582170c609f43aee24a8d9de7604f26bc4",
+      "packages/plitejs/src/react/editable/selection-void-target.ts": "98a002324e26c9591b03a89d7fa3b2d27ba4b62fa3c79fc9b5181df229afd05a",
+      "packages/plitejs/src/react/editable/runtime-keyboard-events.ts": "791e2133a2c757b2df59a41ed5a60e6c44d3fd529f46f245963f64d56359f9b4",
+      "packages/plitejs/test/react/caret-engine-contract.test.ts": "4ebc148bf0239b8b7e4d3755831746732f83691aa0c950520019231da86250ac",
+      "packages/plitejs/test/react/dom-coverage-boundary-contract.tsx": "1a5b903010bfee7781e8faaba5d340aeb76e3995c33c7826c1daed2434ca682f",
+      "docs/editor-behavior/markdown-editing-spec.md": "5b2231370a622bba2e718b726d00c8dd27355b5311a2b9aefc2c0cdd37492e88",
+      "docs/editor-behavior/editor-protocol-matrix.md": "ee54cdf56ef014a2b9e6c7c3f93503655c0a3bdd71042637a9f06b648dfadb74",
+      "content/docs/(plugins)/(elements)/media.mdx": "f6e7ec1b920836b4447cc9834d1762344f4cdf6355b3d5f04802991e12fa0d4e",
+      "docs/plans/2026-09-21-object-elements-with-editable-children.md": "d71570a96cdb95aea3ff4dfd939aef746f707304d74d217cde9f75f13971f186",
+      "docs/research/raw/2026-09-22-media-arrow-browser-observation.md": "352cf9437e5066a5a33d514386ccd2d63f6350ae1ed6b5cfc54e5bce624f165d",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "c30b05901aa8f2ecb6c6a62b6e37d963ed743eb8538c444517cd3117ae202a17",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
+    },
+    "directories": {
+      "packages/platejs/src/features/media": "dd5aa8c23ad3d709386e4a8b5cc322b9b5edeb6e381f45bf73e1718140a4d008"
+    },
+    "features": {
+      "browser/media-caption": "fdf2611434cc90c6b50a687b3ad75b264e1974bd838ad602d76765b0395b70b6",
+      "capability/audio": "ae49f55d350b96c0cc35fb236140621a8fa0b52608b4a07b03e776c364982ed1",
+      "capability/file": "278eda43d0fe3c96319838d32640e972b2232c91051cfc3c8e58a8c1dbcb3862",
+      "capability/image": "311befabf973797a1909488bd6dd7c37da48d7a93d14acb80cf923d4b90bfb85",
+      "capability/mediaEmbed": "475199e91defe61a246943e53c0538a9c94cdc80635157b247a7cf5641c1318c",
+      "capability/video": "ae49f55d350b96c0cc35fb236140621a8fa0b52608b4a07b03e776c364982ed1",
+      "example/plite/embeds": "10c7c76155c9915c7c74a9dea9e60317de88e8b865f3546588a6d9de422b09de",
+      "example/plite/images": "ea227cc055033ceac45f6dd4f4448c35683b4f10715be368086791b54f6f17c6",
+      "example/registry/image-pro-demo": "e58afb88e01cc707ba3b9fa121c47300984ff8a2ca90f002433fc9145d2f46a2",
+      "example/value/media-value": "948297ee10ce56abfc1a99ab9e143c502dd2af0361cd468778f0094256b298b8",
+      "export/platejs/./media": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "export/platejs/./media/react": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "export/platejs/./resizable/react": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "platejs/media": "48b93a05a810d6f33e23395e829bb1b20979c138d45a1dc6e3eeee34cae1686c",
+      "ui/caption": "3ee98c4522ce8401ddd68c163be390bc4f0bdff69dce79eb497f97143b448b67",
+      "ui/media": "2663c399060ef10fa1e840c6d4b4e97b93251ce2e97d192798fe7b44ed731eca",
+      "ui/media-audio": "5163b122373cd359cac13e1b63480066453cfb83d2bd0e45688038a0f164cf6c",
+      "ui/media-embed": "27d6b3144964a060d200aad6659dae230c86daab78907aa20abd14ec0e6e5da8",
+      "ui/media-file": "a1b71cb16238b6f5482995c73627455f5a14d257b7ed61d08bc80d8d88cf7e01",
+      "ui/media-image": "b3f89949792cfea962bbcc141d2b565cb58a76eb79cb0091a4e43ece23c06842",
+      "ui/media-preview-dialog": "42bba9945cb37437fad16ff7730aff987fed9a0d99238f76ce26150b8ab87c5f",
+      "ui/media-toolbar": "b4329cdc937b8ff78b3bb4d5658895c830ed1d5187765d9fcab4b3528296185f",
+      "ui/media-toolbar-button": "bf6390bc419a5f69450a7f30e805f46c42e20a9b2545b080b1f5c36eda094bbd",
+      "ui/media-video": "13ec23b18d970a8e929655612e67eea216db849de2d0b7d425be961c2de4609a",
+      "ui/resize-handle": "355d9898808b16b0d66ef5d948c3d0b5355bee50e9209ade998d7184c0159b36"
+    },
+    "upstreams": []
+  }
+}

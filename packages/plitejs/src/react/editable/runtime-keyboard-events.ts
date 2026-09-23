@@ -12,7 +12,7 @@ import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY } from '../root-key';
 import { readPliteViewSelection } from '../view-selection';
 import type { MountedTopLevelRange } from '../viewport-commands';
-import { getKeyboardSelectableVerticalNavigationTarget } from './caret-engine';
+import { getSelectableOwnerVerticalNavigationTarget } from './caret-engine';
 import {
   getContentRootNavigationTarget,
   readContentRootAwareSelection,
@@ -308,8 +308,8 @@ export const useRuntimeKeyboardEvents = ({
           resolveVerticalGoalX(editor, verticalFocus) ??
           undefined)
         : undefined;
-      const keyboardSelectableVerticalTarget = isPhysicalVerticalMove
-        ? getKeyboardSelectableVerticalNavigationTarget({
+      const selectableOwnerVerticalTarget = isPhysicalVerticalMove
+        ? getSelectableOwnerVerticalNavigationTarget({
             editor,
             event,
             selection: snapshotSelection,
@@ -387,7 +387,7 @@ export const useRuntimeKeyboardEvents = ({
         !event.altKey &&
         !event.ctrlKey &&
         !event.metaKey &&
-        !keyboardSelectableVerticalTarget &&
+        !selectableOwnerVerticalTarget &&
         !modelOwnsVerticalShift &&
         !modelOwnsContentRootVerticalShift &&
         !modelOwnsContentRootVerticalMove &&

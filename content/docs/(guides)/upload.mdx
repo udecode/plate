@@ -8,6 +8,25 @@ your application owns the gateway, document access, and durable download URLs.
 Add the [media plugins](/docs/media) for the completed image, video, audio, and
 file nodes.
 
+## Preview
+
+<DevelopmentOnly>
+
+### Cloudflare R2
+
+This local development preview stores files in the `plate-dev` R2 bucket.
+
+<ComponentPreview name="upload-demo" provider="r2" />
+
+</DevelopmentOnly>
+
+### Browser-local
+
+This preview keeps files in the current browser tab and releases them when the
+editor unmounts.
+
+<ComponentPreview name="upload-demo" provider="browser" />
+
 ## Installation
 
 Install the copied media UI, then choose one upload provider. Each provider
@@ -17,7 +36,7 @@ installs the shared `upload` UI:
 
 ### Browser-local
 
-<ComponentInstallation name="upload-ephemeral" inline />
+<ComponentInstallation name="upload-browser" inline />
 
 Use this for demos and disposable editors. Files become object URLs in the
 current browser tab and disappear on refresh, unmount, or sharing.

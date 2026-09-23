@@ -13,6 +13,7 @@ import type {
 import { createEditor } from '../../lib/editor';
 import { createEditorWithEditor } from '../../lib/editor/withPlite';
 import { definePlugin } from '../../lib/plugin';
+import { defineInputRule } from '../../lib/plugins/input-rules';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import {
   getCompiledPlateModel,
@@ -329,9 +330,9 @@ describe('Plate model publication', () => {
 
   it('keeps private compiled registries safe for reserved property names', () => {
     const Plugin = definePlugin('toString', {
-      inputRules: ({ rule }) => [
-        rule.insertText({
-          apply: () => true,
+      inputRules: [
+        defineInputRule({
+          apply: () => {},
           target: 'insertText',
           trigger: 'constructor',
         }),
@@ -536,7 +537,7 @@ describe('Plate model publication', () => {
     const Plugin = definePlugin('frozenRuntimeIndexes', {}).configure({
       inputRules: [
         {
-          apply: () => true,
+          apply: () => {},
           target: 'insertText',
           trigger: '*',
         },
@@ -586,7 +587,9 @@ describe('Plate model publication', () => {
     expect(Object.isFrozen(pluginCache.slots)).toBe(true);
     expect(Object.isFrozen(pluginCache.slots.wrapContent)).toBe(true);
     expect(Object.isFrozen(pluginCache.rules)).toBe(true);
-    expect(Object.isFrozen(pluginCache.rules.match)).toBe(true);
+    for (const candidates of Object.values(pluginCache.rules)) {
+      expect(Object.isFrozen(candidates)).toBe(true);
+    }
     expect(Object.isFrozen(pluginCache.useViewElementAttributes)).toBe(true);
     expect(() =>
       Object.defineProperty(pluginCache.node, 'mutated', { value: 'mutated' })

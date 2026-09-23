@@ -529,6 +529,37 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     await session.close();
   }, 60_000);
 
+  it('keeps generated types stable when only compiled schema behavior changes', async () => {
+    const { entryPath } = createFixture();
+    const session = new NativeTypeScriptSession(packageRoot);
+
+    try {
+      const first = await generateEditor(entryPath, {}, session);
+      const firstTypes = readFileSync(first.typesPath, 'utf-8');
+      const firstFingerprint = JSON.parse(
+        readFileSync(first.schemaPath, 'utf-8')
+      ).fingerprint;
+
+      writeFileSync(
+        entryPath,
+        readFileSync(entryPath, 'utf-8').replace(
+          "type: 'callout_node',",
+          "object: true,\n      type: 'callout_node',"
+        )
+      );
+
+      const second = await generateEditor(entryPath, {}, session);
+
+      expect(readFileSync(second.typesPath, 'utf-8')).toBe(firstTypes);
+      expect(
+        JSON.parse(readFileSync(second.schemaPath, 'utf-8')).fingerprint
+      ).not.toBe(firstFingerprint);
+      await generateEditor(entryPath, { check: true }, session);
+    } finally {
+      await session.close();
+    }
+  }, 60_000);
+
   it('keeps virtual helpers in an explicitly listed editor project', async () => {
     const { directory, entryPath } = createFixture();
     const configPath = join(directory, 'tsconfig.json');
