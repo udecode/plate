@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-09-21-keep-comment-selection-visible-on-flip",
+      "href": "/registry/changelog/2026-09-21-keep-comment-selection-visible-on-flip.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Comment popovers keep selected text visible when opening above it",
+      "change": {
+        "type": "source",
+        "date": "2026-09-21",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion", "floating-popover"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-18-comment-discovery",
       "href": "/registry/changelog/2026-09-18-comment-discovery.json",
       "status": "draft",

@@ -117,6 +117,13 @@ const EMPTY_DISCUSSION_SNAPSHOT: DiscussionSnapshot = Object.freeze({
   target: null,
 });
 const DISCUSSION_PAGE_SIZE = 20;
+const DISCUSSION_POPOVER_MAX_HEIGHT_RATIO = 0.5;
+const DISCUSSION_POPOVER_SIDE_OFFSET = 4;
+const DISCUSSION_POPOVER_VIEWPORT_MARGIN = 24;
+const DISCUSSION_POPOVER_COLLISION_PADDING = {
+  bottom: DISCUSSION_POPOVER_VIEWPORT_MARGIN,
+  top: DISCUSSION_POPOVER_VIEWPORT_MARGIN,
+};
 
 const sortDiscussionItems = (items: readonly DiscussionItem[]) =>
   items.toSorted(
@@ -1127,7 +1134,8 @@ function DiscussionPopover({
   const editor = useEditor();
   const rootElement = useEditorRootElement(editor);
   const store = useDiscussionStore();
-  const popoverRef = React.useRef<HTMLDivElement>(null);
+  const [popoverElement, setPopoverElement] =
+    React.useState<HTMLDivElement | null>(null);
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const pending = usePendingComment();
   const activeCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
@@ -1217,20 +1225,55 @@ function DiscussionPopover({
 
         if (!domRange) return blockRect ?? new DOMRect();
 
+        // Collision handling can place the popover above the selection. Keep
+        // every selected line inside its anchor so either side remains clear.
+        const rangeRect = domRange.getBoundingClientRect();
+
+        if (rangeRect.height === 0 && rangeRect.width === 0) {
+          return blockRect ?? rangeRect;
+        }
+        const popover = popoverElement;
+        const viewportHeight =
+          rootElement?.ownerDocument.defaultView?.innerHeight;
+
+        if (popover && viewportHeight && popover.scrollHeight > 0) {
+          // Measure the content, not its constrained box: using the clipped
+          // height would alternate between the full-range and last-line anchors.
+          const contentHeight = Math.min(
+            popover.scrollHeight + popover.offsetHeight - popover.clientHeight,
+            viewportHeight * DISCUSSION_POPOVER_MAX_HEIGHT_RATIO
+          );
+          const availableHeight = Math.max(
+            rangeRect.top,
+            viewportHeight - rangeRect.bottom
+          );
+
+          if (
+            availableHeight >=
+            contentHeight +
+              DISCUSSION_POPOVER_SIDE_OFFSET +
+              DISCUSSION_POPOVER_VIEWPORT_MARGIN
+          ) {
+            return rangeRect;
+          }
+        }
+        // Keep the composer usable before it can be measured or when neither
+        // side of the complete selection has enough room for its content.
         const clientRect = Array.from(domRange.getClientRects()).findLast(
           ({ height, width }) => height > 0 || width > 0
         );
 
-        if (clientRect) return clientRect;
-
-        const rangeRect = domRange.getBoundingClientRect();
-
-        return rangeRect.height > 0 || rangeRect.width > 0
-          ? rangeRect
-          : (blockRect ?? rangeRect);
+        return clientRect ?? rangeRect;
       },
     };
-  }, [anchorBlockKey, anchorRangeJson, editor, rootElement, store]);
+  }, [
+    anchorBlockKey,
+    anchorRangeJson,
+    editor,
+    popoverElement,
+    rootElement,
+    store,
+  ]);
   const anchorElement = target?.anchor ?? (anchorRange ? virtualAnchor : null);
   const open = Boolean(
     anchorElement && (pending || activeItems.length > 0 || targetGroup)
@@ -1274,10 +1317,11 @@ function DiscussionPopover({
         <FloatingPopoverContent
           align="center"
           aria-label={pending ? 'New comment' : 'Discussion items'}
-          className="max-h-[min(50dvh,calc(-24px+var(--floating-popover-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] gap-0 overflow-y-auto p-0 data-[state=closed]:opacity-0"
+          className="w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] gap-0 overflow-y-auto p-0 data-[state=closed]:opacity-0"
+          collisionPadding={DISCUSSION_POPOVER_COLLISION_PADDING}
           data-discussion-popover=""
           data-editor-keep-selection-visible
-          ref={popoverRef}
+          ref={setPopoverElement}
           tabIndex={-1}
           onFinalFocus={(event) => {
             event.preventDefault();
@@ -1287,7 +1331,7 @@ function DiscussionPopover({
               !openRef.current &&
               (!active ||
                 active === document?.body ||
-                popoverRef.current?.contains(active))
+                popoverElement?.contains(active))
             ) {
               editableRef.current?.focus();
             }
@@ -1297,6 +1341,10 @@ function DiscussionPopover({
             if (pending) setPlacedPending(pending);
           }}
           side="bottom"
+          sideOffset={DISCUSSION_POPOVER_SIDE_OFFSET}
+          style={{
+            maxHeight: `min(${DISCUSSION_POPOVER_MAX_HEIGHT_RATIO * 100}dvh, var(--floating-popover-available-height))`,
+          }}
         >
           {pending ? (
             <div className="p-4">
@@ -1316,11 +1364,11 @@ function DiscussionPopover({
                         if (!snapshot.target && item.kind === 'suggestion') {
                           requestAnimationFrame(() => {
                             comments.setActive(item.threadIds);
-                            popoverRef.current?.focus();
+                            popoverElement?.focus();
                           });
                           return;
                         }
-                        popoverRef.current?.focus();
+                        popoverElement?.focus();
                       }}
                     />
                   </div>
