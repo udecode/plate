@@ -113,7 +113,7 @@ describe('AIChatPlugin submit', () => {
 
   it.each(['accept', 'replaceSelection', 'insertBelow'] as const)(
     'applies %s to a backward text selection spanning paragraphs',
-    (action) => {
+    async (action) => {
       const editor = createEditor(mock());
       const ai = editor.plugin(AIChatPlugin);
       editor.update.selection.set({
@@ -122,7 +122,7 @@ describe('AIChatPlugin submit', () => {
       });
       ai.api.submit('edit');
       ai.api.setPreview('NEW');
-      const before = editor.read.value();
+      const before = structuredClone(editor.read.children());
       const historyDepth = editor.read.history().undos.length;
 
       ai.api[action]();
@@ -133,8 +133,43 @@ describe('AIChatPlugin submit', () => {
           .map((_, index) => editor.read.text.string([index]))
       ).toEqual(action === 'insertBelow' ? ['one', 'two', 'NEW'] : ['oNEWo']);
       expect(editor.read.history().undos).toHaveLength(historyDepth + 1);
-      editor.api.history.undo();
-      expect(editor.read.value()).toEqual(before);
+      const after = structuredClone(editor.read.children());
+      const appliedChanges = editor.read.authored.changes().items;
+      expect(appliedChanges).toHaveLength(1);
+      const appliedChange = appliedChanges[0]!;
+      expect(appliedChange).toMatchObject({
+        authorId: 'alice',
+        status: 'accepted',
+      });
+
+      expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+      expect(editor.read.children()).toEqual(before);
+      expect(editor.read.history().undos).toHaveLength(historyDepth);
+      // Undo restores content by adding a compensating authored change.
+      expect(editor.read.authored.change(appliedChange.id)).toMatchObject({
+        authorId: 'alice',
+        id: appliedChange.id,
+        status: 'accepted',
+      });
+      const undoChanges = editor.read.authored.changes().items;
+      expect(undoChanges).toHaveLength(2);
+      expect(undoChanges).toContainEqual(
+        expect.objectContaining({
+          authorId: 'alice',
+          dependencies: [appliedChange.id],
+          status: 'accepted',
+        })
+      );
+
+      expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
+      expect(editor.read.children()).toEqual(after);
+      expect(editor.read.history().undos).toHaveLength(historyDepth + 1);
+      expect(editor.read.authored.change(appliedChange.id)).toMatchObject({
+        authorId: 'alice',
+        id: appliedChange.id,
+        status: 'accepted',
+      });
+      expect(editor.read.authored.changes().items).toHaveLength(3);
     }
   );
 

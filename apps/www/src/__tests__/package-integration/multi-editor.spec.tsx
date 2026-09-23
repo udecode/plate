@@ -376,7 +376,9 @@ for (const base of ['base', 'radix'] as const) {
       text: 'main',
       fontSize: '24px',
     });
-    fireEvent.click(result.getByRole('button', { name: 'Undo' }));
+    await act(async () => {
+      fireEvent.click(result.getByRole('button', { name: 'Undo' }));
+    });
     await waitFor(() =>
       expect(
         document.activeElement ===
@@ -479,14 +481,18 @@ test('shared undo and redo use the selected model history and restore the exact 
   const sibling = selected!;
   expect(sibling).not.toBe(original);
   expect(sibling.plugin(BoldPlugin).read.isActive()).toBe(true);
-  fireEvent.click(result.getByRole('button', { name: 'Undo' }));
+  await act(async () => {
+    fireEvent.click(result.getByRole('button', { name: 'Undo' }));
+  });
   expect(sibling.plugin(BoldPlugin).read.isActive()).toBe(false);
   await waitFor(() =>
     expect(document.activeElement).toBe(
       result.getByRole('textbox', { name: 'a-copy' })
     )
   );
-  fireEvent.click(result.getByRole('button', { name: 'Redo' }));
+  await act(async () => {
+    fireEvent.click(result.getByRole('button', { name: 'Redo' }));
+  });
   expect(sibling.plugin(BoldPlugin).read.isActive()).toBe(true);
   await act(async () => result.getByRole('textbox', { name: 'b' }).focus());
   expect(

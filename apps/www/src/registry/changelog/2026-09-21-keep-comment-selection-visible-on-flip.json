@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-21-keep-comment-selection-visible-on-flip",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-21-keep-comment-selection-visible-on-flip.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-21",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Comment popovers keep selected text visible when opening above it",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-21-discussion-keep-text-visible-above-9999d760",
+      "kind": "fix",
+      "summary": "Comment popovers stay clear of the complete selected range when space permits and remain usable for viewport-spanning selections.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-21",
+          "entry": "2026-09-21-keep-comment-selection-visible-on-flip",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-21-keep-comment-selection-visible-on-flip-2",
+      "kind": "behavior",
+      "summary": "Forward collision padding to the Base UI or Radix positioner so reserved viewport space is included when choosing a side.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-popover"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-21",
+          "entry": "2026-09-21-keep-comment-selection-visible-on-flip",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

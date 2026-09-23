@@ -26,6 +26,29 @@
       "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
       "2025-11-20-biome-ultracite"
     ],
+    "discussion": [
+      "2026-09-21-keep-comment-selection-visible-on-flip",
+      "2026-09-18-comment-discovery",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-14-fix-comments-selection-visibility",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-03-fix-comment-anchor-history",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "floating-popover": [
+      "2026-09-21-keep-comment-selection-visible-on-flip",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-07-provider-lifetimes",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-31-inline-component-props",
+      "2026-08-25-base-first-registry"
+    ],
     "comment-toolbar-button": [
       "2026-09-18-comment-discovery",
       "2026-09-02-comments-ownership",
@@ -48,20 +71,6 @@
       "2026-08-25-base-first-registry",
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
-    ],
-    "discussion": [
-      "2026-09-18-comment-discovery",
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-14-fix-comments-selection-visibility",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-03-fix-comment-anchor-history",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry"
     ],
     "fixed-toolbar": [
       "2026-09-18-comment-discovery",
@@ -107,13 +116,6 @@
       "2026-09-07-playground-details",
       "2026-08-14-author-editor-runtime",
       "2026-07-23-explicit-editor-kit-composition"
-    ],
-    "floating-popover": [
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-07-provider-lifetimes",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-31-inline-component-props",
-      "2026-08-25-base-first-registry"
     ],
     "editor-dropdown-menu": [
       "2026-09-18-item-focus-block-upsert",

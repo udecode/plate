@@ -71,6 +71,7 @@ export function FloatingPopoverContent({
   align = 'center',
   alignOffset,
   className,
+  collisionPadding,
   onFinalFocus,
   onEscapeKeyDown,
   onInitialFocus,
@@ -82,6 +83,9 @@ export function FloatingPopoverContent({
 }: Omit<React.ComponentProps<'div'>, 'onAbort'> & {
   align?: 'center' | 'end' | 'start';
   alignOffset?: number;
+  collisionPadding?: React.ComponentProps<
+    typeof PopoverPrimitive.Content
+  >['collisionPadding'];
   onFinalFocus?: (event: Event) => void;
   onEscapeKeyDown?: (event: KeyboardEvent) => void;
   onInitialFocus?: (event: Event) => void;
@@ -96,6 +100,7 @@ export function FloatingPopoverContent({
         {...props}
         align={align}
         alignOffset={alignOffset}
+        collisionPadding={collisionPadding}
         className={cn(
           'cn-popover-content z-50 w-72 origin-(--radix-popover-content-transform-origin) outline-hidden',
           className

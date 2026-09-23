@@ -3207,6 +3207,7 @@
         "typecheck:partition:combobox",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:table"
       ],

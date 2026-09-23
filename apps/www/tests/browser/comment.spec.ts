@@ -177,8 +177,10 @@ const getDemo = (page: Page) => {
   };
 };
 
-const openDemo = async (page: Page) => {
-  await page.goto('/blocks/discussion-proof', { waitUntil: 'commit' });
+const openDemo = async (page: Page, base?: 'base' | 'radix') => {
+  await page.goto(`/blocks/discussion-proof${base ? `?base=${base}` : ''}`, {
+    waitUntil: 'commit',
+  });
   await expect(page.getByLabel('Static annotated document')).toBeVisible({
     timeout: 20_000,
   });
@@ -721,6 +723,234 @@ for (const entryPath of commentEntryPaths) {
       await expect(editor).toBeFocused();
       await page.keyboard.press('ArrowRight');
       expect(await harness.get.modelValue()).toEqual(initialValue);
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+}
+
+const readCommentGeometry = (popover: Locator) =>
+  popover.evaluate((element) => {
+    const rect = (target: Element) => {
+      const { bottom, height, left, right, top, width } =
+        target.getBoundingClientRect();
+
+      return { bottom, height, left, right, top, width };
+    };
+    const composer = element.querySelector('[role="textbox"]');
+
+    return {
+      composer: composer ? rect(composer) : null,
+      popup: rect(element),
+      selectedRects: Array.from(
+        document.querySelectorAll(
+          '[data-comment-editor="primary"] [data-editor-inactive-selection]'
+        )
+      ).flatMap((selected) =>
+        Array.from(
+          selected.getClientRects(),
+          ({ bottom, left, right, top }) => ({
+            bottom,
+            left,
+            right,
+            top,
+          })
+        )
+      ),
+      viewport: { height: innerHeight, width: innerWidth },
+    };
+  });
+
+const expectCommentComposerVisible = (
+  geometry: Awaited<ReturnType<typeof readCommentGeometry>>
+) => {
+  const { composer, popup, selectedRects, viewport } = geometry;
+
+  expect(composer).not.toBeNull();
+  expect(composer!.height).toBeGreaterThan(0);
+  expect(composer!.top).toBeGreaterThanOrEqual(popup.top);
+  expect(composer!.bottom).toBeLessThanOrEqual(popup.bottom);
+  expect(selectedRects.length).toBeGreaterThan(1);
+  expect(popup.top).toBeGreaterThanOrEqual(0);
+  expect(popup.bottom).toBeLessThanOrEqual(viewport.height);
+  expect(popup.left).toBeGreaterThanOrEqual(0);
+  expect(popup.right).toBeLessThanOrEqual(viewport.width);
+};
+
+for (const base of ['base', 'radix'] as const) {
+  for (const width of [946, 976]) {
+    test(`keeps the complete selection visible when the comment composer flips above it (${base}${width === 976 ? ', two lines' : ''})`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize({ height: 420, width });
+      const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+      try {
+        await openDemo(page, base);
+        const { editor, popover } = getDemo(page);
+        const harness = createBrowserEditorHarness(
+          page,
+          'comment-composer-flipped-selection',
+          editor
+        );
+
+        await physicallyPlaceCaret(
+          page,
+          editor.locator('[data-editor-node="element"]').first(),
+          0
+        );
+        for (let index = 0; index < 6; index++) {
+          await page.keyboard.press('Enter');
+        }
+        const blocks = editor.locator('[data-editor-node="element"]');
+        const lastBlockText = await blocks.nth(7).innerText();
+
+        await page.keyboard.press(
+          process.platform === 'darwin'
+            ? 'Meta+Shift+ArrowDown'
+            : 'Control+Shift+End'
+        );
+        await expect
+          .poll(() => page.evaluate(() => getSelection()?.toString() ?? ''))
+          .toBe(`${FIRST_BLOCK}\n${lastBlockText.trim()}`);
+        const initialValue = await harness.get.modelValue();
+
+        await page.keyboard.press(commentHotkey);
+        const composer = popover.getByRole('textbox', { name: 'New comment' });
+
+        await expect(composer).toBeFocused();
+        const assertPlacement = async () => {
+          const geometry = await readCommentGeometry(popover);
+
+          expectCommentComposerVisible(geometry);
+          await expect(popover).toHaveAttribute('data-side', 'top');
+          expect(
+            new Set(geometry.selectedRects.map((rect) => rect.top)).size
+          ).toBe(width === 976 ? 2 : 3);
+          for (const bounds of geometry.selectedRects) {
+            expect(bounds.top).toBeGreaterThanOrEqual(0);
+            expect(bounds.bottom).toBeLessThanOrEqual(geometry.viewport.height);
+            expect(bounds.left).toBeGreaterThanOrEqual(0);
+            expect(bounds.right).toBeLessThanOrEqual(geometry.viewport.width);
+          }
+          expect(geometry.popup.bottom).toBeLessThanOrEqual(
+            Math.min(...geometry.selectedRects.map((rect) => rect.top)) - 3
+          );
+          await expect(composer).toBeFocused();
+        };
+
+        await expect(assertPlacement).toPass({ timeout: 8000 });
+        await testInfo.attach('comment-composer-flipped-selection', {
+          body: await page.screenshot(),
+          contentType: 'image/png',
+        });
+        await afterPaint(page);
+        await expect(assertPlacement).toPass({ timeout: 8000 });
+        await testInfo.attach('comment-composer-flipped-geometry', {
+          body: JSON.stringify(await readCommentGeometry(popover)),
+          contentType: 'application/json',
+        });
+        await page.keyboard.insertText('A comment at the viewport edge');
+        await expect(composer).toContainText('A comment at the viewport edge');
+        await expect(assertPlacement).toPass({ timeout: 8000 });
+        expect(await harness.get.modelValue()).toEqual(initialValue);
+        await page.keyboard.press('Escape');
+        await expect(popover).toHaveCount(0);
+        await expect(editor).toBeFocused();
+        runtimeErrors.assertNone();
+      } finally {
+        runtimeErrors.stop();
+      }
+    });
+  }
+
+  test(`keeps the comment composer usable for a viewport-spanning selection (${base})`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ height: 420, width: 946 });
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+    try {
+      await openDemo(page, base);
+      const { editor, popover } = getDemo(page);
+      const harness = createBrowserEditorHarness(
+        page,
+        'comment-composer-large-selection',
+        editor
+      );
+
+      await physicallyPlaceCaret(
+        page,
+        editor.locator('[data-editor-node="element"]').first(),
+        0
+      );
+      await page.keyboard.press('Enter');
+      await page.keyboard.press('ArrowUp');
+      const selectedText = Array.from(
+        { length: 15 },
+        (_, index) => `Selected context line ${index + 1}`
+      ).join('\n');
+
+      await page.keyboard.insertText(selectedText);
+      await page.keyboard.press(
+        process.platform === 'darwin'
+          ? 'Meta+Shift+ArrowUp'
+          : 'Control+Shift+Home'
+      );
+      await expect
+        .poll(() => page.evaluate(() => getSelection()?.toString() ?? ''))
+        .toBe(selectedText);
+      await page.evaluate(() => scrollTo(0, 90));
+      await editor.locator('xpath=..').evaluate((element) => {
+        element.scrollTop = 0;
+      });
+      await afterPaint(page);
+      const range = await page.evaluate(() => {
+        const { bottom, height, top } = getSelection()!
+          .getRangeAt(0)
+          .getBoundingClientRect();
+
+        return { bottom, height, top };
+      });
+
+      expect(range.height).toBeGreaterThan(300);
+      expect(range.top).toBeGreaterThanOrEqual(0);
+      expect(range.top).toBeLessThan(50);
+      expect(range.bottom).toBeGreaterThan(370);
+      expect(range.bottom).toBeLessThanOrEqual(420);
+      const initialValue = await harness.get.modelValue();
+
+      await page.keyboard.press(commentHotkey);
+      const composer = popover.getByRole('textbox', { name: 'New comment' });
+      const assertPlacement = async () => {
+        expectCommentComposerVisible(await readCommentGeometry(popover));
+        await expect(composer).toBeFocused();
+      };
+
+      await expect(assertPlacement).toPass({ timeout: 8000 });
+      await testInfo.attach('comment-composer-large-selection', {
+        body: await page.screenshot(),
+        contentType: 'image/png',
+      });
+      await afterPaint(page);
+      await expect(assertPlacement).toPass({ timeout: 8000 });
+      await testInfo.attach('comment-composer-large-geometry', {
+        body: JSON.stringify({
+          range,
+          ...(await readCommentGeometry(popover)),
+        }),
+        contentType: 'application/json',
+      });
+      await page.keyboard.insertText('A comment on the complete selection');
+      await expect(composer).toContainText(
+        'A comment on the complete selection'
+      );
+      await expect(assertPlacement).toPass({ timeout: 8000 });
+      expect(await harness.get.modelValue()).toEqual(initialValue);
+      await page.keyboard.press('Escape');
+      await expect(popover).toHaveCount(0);
+      await expect(editor).toBeFocused();
       runtimeErrors.assertNone();
     } finally {
       runtimeErrors.stop();

@@ -1,0 +1,15 @@
+---
+id: 2026-09-21-keep-comment-selection-visible-on-flip
+date: 2026-09-21
+status: draft
+kind: fix
+summary: 'Comment popovers keep selected text visible when opening above it'
+change: { 'type': 'source', 'date': '2026-09-21', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-21-discussion-keep-text-visible-above-9999d760","kind":"fix","migrationNotes":[]} -->
+
+- **`discussion`**: Comment popovers stay clear of the complete selected range when space permits and remain usable for viewport-spanning selections.
+- **`floating-popover`**: Forward collision padding to the Base UI or Radix positioner so reserved viewport space is included when choosing a side.
