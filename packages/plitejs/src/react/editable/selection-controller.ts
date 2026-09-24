@@ -456,6 +456,8 @@ const importProjectedDOMSelection = ({
   editorElement: HTMLElement;
   inputController: EditableInputController;
 }) => {
+  if (inputController.state.isNativeSelectionDragActive) return false;
+
   const projectedSelection = resolveProjectedDOMSelection({
     domSelection,
     editor,

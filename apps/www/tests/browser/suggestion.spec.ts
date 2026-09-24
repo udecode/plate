@@ -20,6 +20,62 @@ type SuggestionPaintSnapshot = {
   text: string;
 };
 
+const afterPaint = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      })
+  );
+
+const capturePixels = async (
+  page: Page,
+  clip: { height: number; width: number; x: number; y: number }
+) => {
+  const png = await page.screenshot({
+    animations: 'disabled',
+    caret: 'hide',
+    clip,
+  });
+  const pixels = await page.evaluate(async (base64) => {
+    const bytes = Uint8Array.from(atob(base64), (value) => value.charCodeAt(0));
+    const bitmap = await createImageBitmap(
+      new Blob([bytes], { type: 'image/png' })
+    );
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext('2d');
+
+    if (!context) throw new Error('Unable to decode screenshot pixels.');
+    context.drawImage(bitmap, 0, 0);
+    return Array.from(
+      context.getImageData(0, 0, bitmap.width, bitmap.height).data
+    );
+  }, png.toString('base64'));
+
+  return { pixels, png };
+};
+
+const pixelDifference = (left: number[], right: number[]) => {
+  expect(left.length).toBe(right.length);
+  let changed = 0;
+
+  for (let index = 0; index < left.length; index += 4) {
+    if (
+      Math.max(
+        ...[0, 1, 2].map((channel) =>
+          Math.abs(left[index + channel] - right[index + channel])
+        )
+      ) > 12
+    ) {
+      changed += 1;
+    }
+  }
+
+  return changed;
+};
+
 const enterSuggestionMode = async (page: Page) => {
   await page.getByRole('button', { name: 'Editing', exact: true }).click();
   await page
@@ -1717,10 +1773,98 @@ test('paints one caret inside redlined text during pointer and arrow navigation'
   runtimeErrors.assertNone();
 });
 
+test('keeps ordinary and inserted-only pointer selections native', async ({
+  page,
+}) => {
+  const { editor, root, runtimeErrors } = await openSuggestions(page);
+  const authoredIdentities = await root
+    .locator('[data-editor-authored-change]')
+    .evaluateAll((elements) =>
+      elements.map((element) =>
+        element.getAttribute('data-editor-authored-change')
+      )
+    );
+  const points = await root.evaluate((element) => {
+    const findText = (value: string) => {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      let text: Node | null;
+      while ((text = walker.nextNode())) {
+        if (text.textContent?.includes(value)) return text;
+      }
+      throw new Error(`Missing text: ${value}`);
+    };
+    const pointAt = (text: Node, offset: number) => {
+      const range = document.createRange();
+      range.setStart(text, offset);
+      range.collapse(true);
+      const rect = range.getBoundingClientRect();
+      return { x: rect.left, y: rect.top + rect.height / 2 };
+    };
+    const insertion = findText('collaboratively ');
+    const ordinary = findText('Try typing your own suggestion here.');
+
+    return {
+      insertEnd: pointAt(insertion, 8),
+      insertStart: pointAt(insertion, 1),
+      ordinaryEnd: pointAt(ordinary, 16),
+      ordinaryStart: pointAt(ordinary, 4),
+    };
+  });
+
+  for (const { from, selectedTextLength, to } of [
+    {
+      from: points.ordinaryStart,
+      selectedTextLength: 12,
+      to: points.ordinaryEnd,
+    },
+    {
+      from: points.insertStart,
+      selectedTextLength: 7,
+      to: points.insertEnd,
+    },
+  ]) {
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    try {
+      await page.mouse.move(to.x, to.y, { steps: 8 });
+      await expect
+        .poll(() => editor.get.displayedSelection())
+        .toMatchObject({
+          doubleHighlighted: false,
+          hasVisibleSelection: true,
+          native: { textLength: selectedTextLength },
+          source: 'native',
+        });
+    } finally {
+      await page.mouse.up();
+    }
+  }
+
+  expect(
+    await root
+      .locator('[data-editor-authored-change]')
+      .evaluateAll((elements) =>
+        elements.map((element) =>
+          element.getAttribute('data-editor-authored-change')
+        )
+      )
+  ).toEqual(authoredIdentities);
+  runtimeErrors.assertNone();
+});
+
 test('expands a pointer selection across deleted text boundaries', async ({
+  context,
   page,
 }, testInfo) => {
   const { editor, root, runtimeErrors } = await openSuggestions(page);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const authoredIdentities = await root
+    .locator('[data-editor-authored-change]')
+    .evaluateAll((elements) =>
+      elements.map((element) =>
+        element.getAttribute('data-editor-authored-change')
+      )
+    );
   const points = await root.evaluate((element) => {
     const findText = (value: string) => {
       const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
@@ -1745,8 +1889,190 @@ test('expands a pointer selection across deleted text boundaries', async ({
       deletedStart: pointAt(deleted, 4),
       prefix: pointAt(prefix, 5),
       suffix: pointAt(suffix, 3),
+      suffixFar: pointAt(suffix, 12),
+      suffixNear: pointAt(suffix, 2),
     };
   });
+
+  const displayedTextLength = (
+    selection: Awaited<ReturnType<typeof editor.get.displayedSelection>>
+  ) =>
+    selection.source === 'native'
+      ? selection.native.textLength
+      : selection.view.textLength;
+
+  await page.mouse.move(points.prefix.x, points.prefix.y);
+  await page.mouse.down();
+  try {
+    await page.mouse.move(points.suffixNear.x, points.suffixNear.y, {
+      steps: 8,
+    });
+    await expect
+      .poll(() => editor.get.displayedSelection())
+      .toMatchObject({
+        doubleHighlighted: false,
+        hasVisibleSelection: true,
+      });
+    await expect
+      .poll(async () =>
+        displayedTextLength(await editor.get.displayedSelection())
+      )
+      .toBe(24);
+
+    await page.mouse.move(points.suffixFar.x, points.suffixFar.y, {
+      steps: 8,
+    });
+    await expect
+      .poll(async () =>
+        displayedTextLength(await editor.get.displayedSelection())
+      )
+      .toBe(34);
+
+    expect(await editor.get.displayedSelection()).toMatchObject({
+      doubleHighlighted: false,
+      hasVisibleSelection: true,
+      source: 'view',
+    });
+
+    const selectedBounds = await root
+      .locator('[data-editor-view-selection="true"]')
+      .evaluateAll((elements) => {
+        const rects = elements.map((element) =>
+          element.getBoundingClientRect()
+        );
+        return {
+          bottom: Math.max(...rects.map((rect) => rect.bottom)),
+          left: Math.min(...rects.map((rect) => rect.left)),
+          right: Math.max(...rects.map((rect) => rect.right)),
+          top: Math.min(...rects.map((rect) => rect.top)),
+        };
+      });
+    const clip = {
+      height: Math.ceil(selectedBounds.bottom) - Math.floor(selectedBounds.top),
+      width: Math.ceil(selectedBounds.right) - Math.floor(selectedBounds.left),
+      x: Math.floor(selectedBounds.left),
+      y: Math.floor(selectedBounds.top),
+    };
+    const setPaintControl = async (
+      state: 'absent' | 'duplicate' | 'single' | null
+    ) => {
+      await page.evaluate((nextState) => {
+        document.querySelector('[data-selection-paint-control]')?.remove();
+        if (!nextState) return;
+        const style = document.createElement('style');
+        style.setAttribute('data-selection-paint-control', '');
+        style.textContent =
+          nextState === 'absent'
+            ? '[data-editor-view-selection="true"] { background: transparent !important; color: inherit !important; }'
+            : nextState === 'duplicate'
+              ? '[data-editor-view-selection="true"] { background: color-mix(in srgb, Highlight 55%, black) !important; }'
+              : '';
+        document.head.append(style);
+      }, state);
+      await afterPaint(page);
+    };
+
+    await afterPaint(page);
+    const actual = await capturePixels(page, clip);
+    await setPaintControl('single');
+    const single = await capturePixels(page, clip);
+    await setPaintControl('absent');
+    const absent = await capturePixels(page, clip);
+    const absentAgain = await capturePixels(page, clip);
+    await setPaintControl('duplicate');
+    const duplicate = await capturePixels(page, clip);
+    await setPaintControl(null);
+
+    for (const [name, capture] of Object.entries({
+      absent,
+      actual,
+      duplicate,
+      single,
+    })) {
+      await testInfo.attach(`deleted-selection-${name}`, {
+        body: capture.png,
+        contentType: 'image/png',
+      });
+    }
+
+    const classification = {
+      actual: pixelDifference(actual.pixels, single.pixels),
+      duplicate: pixelDifference(duplicate.pixels, single.pixels),
+      negative: pixelDifference(absent.pixels, absentAgain.pixels),
+      positive: pixelDifference(single.pixels, absent.pixels),
+    };
+    await testInfo.attach('deleted-selection-pixel-classification', {
+      body: JSON.stringify(classification),
+      contentType: 'application/json',
+    });
+    expect(classification.positive, 'positive-control: pass').toBeGreaterThan(
+      20
+    );
+    expect(
+      classification.negative,
+      'negative-control: pass'
+    ).toBeLessThanOrEqual(2);
+    expect(classification.duplicate, 'duplicate-control: pass').toBeGreaterThan(
+      20
+    );
+    expect(
+      classification.actual,
+      'one visible projected selection layer remains unobscured'
+    ).toBeLessThanOrEqual(2);
+
+    await testInfo.attach('ordinary-endpoints-retained-crossing-held.png', {
+      body: await page.screenshot({
+        caret: 'initial',
+        path: testInfo.outputPath(
+          'ordinary-endpoints-retained-crossing-held.png'
+        ),
+      }),
+      contentType: 'image/png',
+    });
+
+    await page.mouse.move(points.suffixNear.x, points.suffixNear.y, {
+      steps: 8,
+    });
+    await expect
+      .poll(async () =>
+        displayedTextLength(await editor.get.displayedSelection())
+      )
+      .toBe(24);
+    expect(await editor.get.displayedSelection()).toMatchObject({
+      doubleHighlighted: false,
+      hasVisibleSelection: true,
+    });
+
+    await page.mouse.move(points.suffixFar.x, points.suffixFar.y, {
+      steps: 8,
+    });
+    await expect
+      .poll(async () =>
+        displayedTextLength(await editor.get.displayedSelection())
+      )
+      .toBe(34);
+  } finally {
+    await page.mouse.up();
+  }
+
+  await expect
+    .poll(async () =>
+      displayedTextLength(await editor.get.displayedSelection())
+    )
+    .toBe(34);
+  await page.keyboard.press('ControlOrMeta+C');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    'this redundant phrase out of the f'
+  );
+  expect(
+    await root
+      .locator('[data-editor-authored-change]')
+      .evaluateAll((elements) =>
+        elements.map((element) =>
+          element.getAttribute('data-editor-authored-change')
+        )
+      )
+  ).toEqual(authoredIdentities);
 
   const dragAndAssert = async ({
     anchor,
@@ -1763,8 +2089,33 @@ test('expands a pointer selection across deleted text boundaries', async ({
   }) => {
     await page.mouse.move(from.x, from.y);
     await page.mouse.down();
-    await page.mouse.move(to.x, to.y, { steps: 8 });
-    await page.mouse.up();
+    try {
+      await page.mouse.move(to.x, to.y, { steps: 8 });
+      await expect
+        .poll(() => editor.get.displayedSelection())
+        .toMatchObject({
+          doubleHighlighted: false,
+          hasVisibleSelection: true,
+          source: 'view',
+          view: {
+            active: true,
+            textLength: selectedTextLength,
+          },
+        });
+      await expect(
+        root.locator(
+          '[data-editor-retained="delete"] [data-editor-view-selection]'
+        )
+      ).toHaveText(retainedText);
+      const displayed = await editor.get.displayedSelection();
+      if (anchor === 'retained') {
+        expect(displayed.model).toBeNull();
+      } else {
+        expect(displayed.model?.anchor).toEqual(displayed.model?.focus);
+      }
+    } finally {
+      await page.mouse.up();
+    }
 
     await expect
       .poll(() => editor.get.displayedSelection())
@@ -1777,17 +2128,6 @@ test('expands a pointer selection across deleted text boundaries', async ({
           textLength: selectedTextLength,
         },
       });
-    await expect(
-      root.locator(
-        '[data-editor-retained="delete"] [data-editor-view-selection]'
-      )
-    ).toHaveText(retainedText);
-    const displayed = await editor.get.displayedSelection();
-    if (anchor === 'retained') {
-      expect(displayed.model).toBeNull();
-    } else {
-      expect(displayed.model?.anchor).toEqual(displayed.model?.focus);
-    }
   };
 
   await dragAndAssert({

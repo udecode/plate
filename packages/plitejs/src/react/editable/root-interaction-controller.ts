@@ -937,11 +937,13 @@ const applyProjectedDragSelectionFromEvent = ({
     return false;
   }
 
-  const shouldUseView = shouldUseViewProjectedDragSelection({
-    anchor: projectedDrag.endpoint,
-    editor: projectedDrag.editor,
-    focus,
-  });
+  const shouldUseView =
+    !!readPliteViewSelection(projectedDrag.editor) ||
+    shouldUseViewProjectedDragSelection({
+      anchor: projectedDrag.endpoint,
+      editor: projectedDrag.editor,
+      focus,
+    });
   const appliedView =
     shouldUseView &&
     applyProjectedDragSelection({

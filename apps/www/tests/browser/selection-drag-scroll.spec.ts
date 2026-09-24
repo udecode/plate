@@ -104,6 +104,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
       editor: 'visible',
       text: 'Welcome to the Plate Playground!',
     });
+    const originalValue = await editor.get.modelValue();
 
     const heading = editorRoot
       .locator('[data-editor-string="true"]')
@@ -444,6 +445,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
     await editorRoot.press('ArrowRight');
     await expect(editorRoot).toBeFocused();
     expect(await editor.get.selection()).not.toBeNull();
+    expect(await editor.get.modelValue()).toEqual(originalValue);
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();
