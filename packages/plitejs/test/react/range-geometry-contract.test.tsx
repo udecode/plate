@@ -21,7 +21,10 @@ import { EditorRoot } from '../../src/react/components/plite';
 import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
 import { useSelectionGeometry } from '../../src/react/hooks/use-selection-geometry';
 import { createEditor, type Editor } from '../../src/react/plugin/with-react';
-import { createRangeGeometryOwner } from '../../src/react/range-geometry';
+import {
+  createRangeGeometryOwner,
+  measureDOMElementsGeometry,
+} from '../../src/react/range-geometry';
 
 const paragraph = (text: string) => ({
   children: [{ text }],
@@ -172,6 +175,29 @@ const flushViewState = async (runtime: DOMRootRuntime) => {
 };
 
 describe('range geometry', () => {
+  test('unions visible view-selection marker geometry', () => {
+    const first = document.createElement('span');
+    const second = document.createElement('span');
+
+    vi.spyOn(first, 'getClientRects').mockReturnValue([
+      viewportRect(10, 20, 40, 18),
+      viewportRect(10, 40, 20, 18),
+    ] as unknown as DOMRectList);
+    vi.spyOn(second, 'getClientRects').mockReturnValue([
+      viewportRect(30, 60, 50, 18),
+    ] as unknown as DOMRectList);
+
+    expect(measureDOMElementsGeometry([first, second])).toEqual({
+      boundingRect: viewportRect(10, 20, 70, 58),
+      focusRect: null,
+      rects: [
+        viewportRect(10, 20, 40, 18),
+        viewportRect(10, 40, 20, 18),
+        viewportRect(30, 60, 50, 18),
+      ],
+    });
+  });
+
   test('measures expanded and collapsed selections in the exact Editable', async () => {
     const editor = createEditor();
     const restoreRects = installRangeRects({

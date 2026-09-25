@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-24-fix-floating-toolbar-suggestion-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-24-fix-floating-toolbar-suggestion-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the floating toolbar visible for selections across suggested deletions",
+  "targets": [
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-24-floating-toolbar-suggestion-selection-46",
+      "kind": "fix",
+      "summary": "Keep the toolbar visible and positioned over the full selection after releasing a drag across suggested deletions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-24",
+          "entry": "2026-09-24-fix-floating-toolbar-suggestion-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

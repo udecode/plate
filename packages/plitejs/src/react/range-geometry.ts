@@ -126,6 +126,25 @@ const unionRects = (rects: readonly ViewportRect[]): ViewportRect | null => {
   });
 };
 
+export const measureDOMElementsGeometry = (
+  elements: Iterable<Element>
+): RangeGeometry | null => {
+  const rects = Array.from(elements).flatMap((element) =>
+    Array.from(element.getClientRects())
+      .filter(hasUsableDOMRect)
+      .map(toViewportRect)
+  );
+  const boundingRect = unionRects(rects);
+
+  if (!boundingRect) return null;
+
+  return Object.freeze({
+    boundingRect,
+    focusRect: null,
+    rects: Object.freeze(rects),
+  });
+};
+
 const isWithinEditable = (editable: HTMLElement, node: Node) =>
   editable === node || editable.contains(node);
 
@@ -411,7 +430,7 @@ const getGeometryCoordinator = (
   return coordinator;
 };
 
-const resolveRangeGeometry = (
+export const measureRangeGeometry = (
   editor: GeometryEditor,
   editable: HTMLElement,
   range: Range
@@ -513,7 +532,7 @@ export function createRangeGeometryOwner(
         ? 'measure' in source
           ? source.measure(view, editable)
           : range
-            ? resolveRangeGeometry(view, editable, range)
+            ? measureRangeGeometry(view, editable, range)
             : null
         : null;
 

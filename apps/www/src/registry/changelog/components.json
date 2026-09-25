@@ -1,6 +1,23 @@
 {
   "schemaVersion": 1,
   "components": {
+    "floating-toolbar": [
+      "2026-09-24-fix-floating-toolbar-suggestion-selection",
+      "2026-09-08-editor-ui-lifetime",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-inline-component-props",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-26-fix-comment-popover-position",
+      "2026-08-24-preserve-toolbar-focus",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
     "ai-menu": [
       "2026-09-21-ai-edit-suggestions",
       "2026-09-17-ai-comment-recovery",
@@ -450,22 +467,6 @@
       "2026-06-15-editor-fix-preserved-space-wrapping",
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
-    ],
-    "floating-toolbar": [
-      "2026-09-08-editor-ui-lifetime",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-inline-component-props",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-26-fix-comment-popover-position",
-      "2026-08-24-preserve-toolbar-focus",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
     ],
     "multiple-editors-demo": [
       "2026-09-08-editor-ui-lifetime",

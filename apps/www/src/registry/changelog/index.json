@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-24-fix-floating-toolbar-suggestion-selection",
+      "href": "/registry/changelog/2026-09-24-fix-floating-toolbar-suggestion-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the floating toolbar visible for selections across suggested deletions",
+      "change": {
+        "type": "source",
+        "date": "2026-09-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-21-ai-edit-suggestions",
       "href": "/registry/changelog/2026-09-21-ai-edit-suggestions.json",
       "status": "draft",
