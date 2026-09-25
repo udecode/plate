@@ -71,6 +71,7 @@ import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
   resolveProjectedDOMSelection,
+  resolveProjectedSelectionDOMCaret,
   resolveViewBoundaryDOMPoint,
 } from './selection-projected-dom';
 import {
@@ -199,46 +200,52 @@ const getActiveElementInDocument = (targetDocument: Document) => {
   return activeElement;
 };
 
-const removeDOMSelectionRangesPreservingEditableFocus = ({
+const collapseDOMSelectionToProjectedCaret = ({
   domSelection,
   editor,
   editorElement,
+  viewSelection,
 }: {
   domSelection: globalThis.Selection;
   editor: ReactRuntimeEditor;
   editorElement: HTMLElement;
+  viewSelection: NonNullable<ReturnType<typeof readPliteViewSelection>>;
 }) => {
-  const root = editorElement.getRootNode() as Document | ShadowRoot;
-  const ownedFocus = root.activeElement === editorElement;
+  const projectedCaret = resolveProjectedSelectionDOMCaret(
+    editor,
+    editorElement,
+    viewSelection
+  );
+  const nativeCaretCandidates = [
+    projectedCaret,
+    domSelection.focusNode
+      ? ([domSelection.focusNode, domSelection.focusOffset] as const)
+      : null,
+    domSelection.anchorNode
+      ? ([domSelection.anchorNode, domSelection.anchorOffset] as const)
+      : null,
+  ];
 
-  domSelection.removeAllRanges();
-  if (
-    !ownedFocus ||
-    !editorElement.isConnected ||
-    editorElement.getRootNode() !== root
-  ) {
-    return;
-  }
+  for (const point of nativeCaretCandidates) {
+    if (!point || !editorElement.contains(point[0])) continue;
 
-  const rootActiveElement = root.activeElement;
-  const documentActiveElement = editorElement.ownerDocument.activeElement;
-  const shadowHost = 'host' in root ? root.host : null;
-  const lostToInactiveHost =
-    rootActiveElement === editorElement.ownerDocument.body ||
-    rootActiveElement === editorElement.ownerDocument.documentElement ||
-    (rootActiveElement === null &&
-      (documentActiveElement === null ||
-        documentActiveElement === editorElement.ownerDocument.body ||
-        documentActiveElement === editorElement.ownerDocument.documentElement ||
-        documentActiveElement === shadowHost));
+    const element = isDOMElement(point[0])
+      ? point[0]
+      : isDOMText(point[0])
+        ? point[0].parentElement
+        : null;
 
-  if (lostToInactiveHost) {
-    editorElement.focus({ preventScroll: true });
-    if (root.activeElement === editorElement) {
-      IS_FOCUSED.set(editor, true);
-      setEditorFocused(editor, true);
+    if (element?.closest('[data-editor="true"]') !== editorElement) continue;
+
+    try {
+      domSelection.collapse(point[0], point[1]);
+      return true;
+    } catch {
+      // Try the next exact-view caret candidate.
     }
   }
+
+  return false;
 };
 
 export const executeEditableSelectionImport = ({
@@ -530,11 +537,32 @@ const importProjectedDOMSelection = ({
     selectionSource: 'model-owned',
   });
   if (!isPliteViewSelectionCollapsed(projectedSelection)) {
-    removeDOMSelectionRangesPreservingEditableFocus({
+    inputController.state.isUpdatingSelection = true;
+    inputController.state.selectionChangeOrigin = 'programmatic-export';
+    const collapsed = collapseDOMSelectionToProjectedCaret({
       domSelection,
       editor,
       editorElement,
+      viewSelection: projectedSelection,
     });
+    if (collapsed) {
+      const runtime = getMountedEditableDOMRuntime(editor, editorElement);
+
+      if (runtime) {
+        runtime.domPhaseScheduler.schedule(
+          'selection-repair',
+          'clear-imported-view-selection-caret-update',
+          () => {
+            inputController.state.isUpdatingSelection = false;
+          },
+          { timing: 'timeout' }
+        );
+      } else {
+        inputController.state.isUpdatingSelection = false;
+      }
+    } else {
+      inputController.state.isUpdatingSelection = false;
+    }
   }
   return true;
 };
@@ -1551,24 +1579,30 @@ export const syncEditableDOMSelectionToEditor = ({
     if (viewSelection || !projectedSelection) {
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
-      removeDOMSelectionRangesPreservingEditableFocus({
-        domSelection,
-        editor,
-        editorElement,
-      });
-      const clearNativeSelection = () => {
-        const current = readPliteViewSelection(editor);
-        if (
-          viewSelection &&
-          (!current || isPliteViewSelectionCollapsed(current))
-        ) {
-          return;
-        }
-        removeDOMSelectionRangesPreservingEditableFocus({
+      if (viewSelection) {
+        collapseDOMSelectionToProjectedCaret({
           domSelection,
           editor,
           editorElement,
+          viewSelection,
         });
+      } else {
+        domSelection.removeAllRanges();
+      }
+      const clearNativeSelection = () => {
+        const current = readPliteViewSelection(editor);
+        if (viewSelection) {
+          if (!current || isPliteViewSelectionCollapsed(current)) return;
+
+          collapseDOMSelectionToProjectedCaret({
+            domSelection,
+            editor,
+            editorElement,
+            viewSelection: current,
+          });
+        } else {
+          domSelection.removeAllRanges();
+        }
       };
       const label = viewSelection
         ? 'view-selection'

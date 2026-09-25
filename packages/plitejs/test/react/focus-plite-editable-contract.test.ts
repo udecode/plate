@@ -51,6 +51,15 @@ const createCollapsedProjectedSelection = () => {
   });
 };
 
+const createExpandedProjectedSelection = () => {
+  const graph = createPliteViewBoundaryGraph([{ path: [0], root: 'main' }]);
+
+  return createPliteViewSelection(graph, {
+    anchor: { point: { path: [0, 0], offset: 1 } },
+    focus: { point: { path: [0, 0], offset: 4 } },
+  });
+};
+
 const createFocusableEditor = () => {
   const element = document.createElement('div');
 
@@ -185,6 +194,46 @@ describe('focusPliteEditable', () => {
 
     expect(focus).not.toHaveBeenCalled();
     expect(element.ownerDocument.activeElement).toBe(element);
+  });
+
+  it('installs a collapsed native caret for an expanded projected view selection', () => {
+    const { editor, element, focus } = createFocusableEditor();
+    const runtime = new EditableDOMRuntime({ editor });
+    const text = document.createTextNode('focus');
+    const domSelection = document.getSelection();
+
+    if (!domSelection) {
+      throw new Error('Expected document selection');
+    }
+
+    element.setAttribute('data-editor', 'true');
+    element.append(text);
+    runtime.setRoot(element);
+    runtime.connect();
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'focus' }] }],
+      selection: null,
+    });
+    vi.spyOn(DOMEditor, 'resolveDOMPoint').mockReturnValue([text, 1]);
+    writePliteViewSelection(editor, createExpandedProjectedSelection());
+
+    try {
+      focusPliteEditable(editor);
+
+      expect(focus).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(element);
+      expect(domSelection.rangeCount).toBe(1);
+      expect(domSelection.isCollapsed).toBe(true);
+      expect(domSelection.anchorNode).toBe(text);
+      expect(domSelection.anchorOffset).toBe(1);
+      expect(runtime.inputController.state.isUpdatingSelection).toBe(true);
+
+      runtime.domPhaseScheduler.flush();
+      expect(runtime.inputController.state.isUpdatingSelection).toBe(false);
+    } finally {
+      runtime.destroy();
+      domSelection.removeAllRanges();
+    }
   });
 
   it('does not export a model selection when repair focus preserves an active projected view selection', () => {

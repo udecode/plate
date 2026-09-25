@@ -8,7 +8,7 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 
 ## Current decision
 
-[2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json) — **stop**. Stop a toolbar gate, inactive-selection API, public selection primitive or owner merge. Keep projected selection, native input, exact-view focus and copied UI geometry separate. Repair the existing projected-selection DOM transition so a native-range clear preserves the exact Editable's pre-existing focus and first-key capability; geometry may position the toolbar only after that focus invariant holds.
+[2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json) — **pursue**. Pursue replacing the empty browser Selection state with a collapsed native caret resolved by the existing projected-selection owner. Delete the removeAllRanges focus-restoration wrapper; keep projected paint and command targeting private, and keep the toolbar as a focus-gated geometry consumer.
 
 Compiled decision: [plite-view-ownership.md](../decisions/plite-view-ownership.md). Source observation: matching. Source matching is not behavior proof.
 
@@ -28,7 +28,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
-| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
+| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
 
 ### Outcomes recorded after the latest review
 
@@ -65,7 +65,7 @@ References: [plite-view-ownership.md](../decisions/plite-view-ownership.md), [sc
 
 ### 2026-09-25: 2026-09-25-accessibility-projected-selection-focus
 
-[Immutable record](../review-records/2026-09-25-accessibility-projected-selection-focus.json) — review; stop; observation matching.
+[Immutable record](../review-records/2026-09-25-accessibility-projected-selection-focus.json) — review; stop; observation stale.
 
 Stop a toolbar gate, inactive-selection API, public selection primitive or owner merge. Keep projected selection, native input, exact-view focus and copied UI geometry separate. Repair the existing projected-selection DOM transition so a native-range clear preserves the exact Editable's pre-existing focus and first-key capability; geometry may position the toolbar only after that focus invariant holds.
 
@@ -82,6 +82,27 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 Proof limits: The review selects ownership and rejects broader API changes; it is not runtime acceptance. Source-built Chromium reproduces the 16-marker reporter endpoint but remains focused, while the reporter's Chrome shows inactive selection and lost input. The Mac is locked, so exact native Chrome inspection is currently unavailable. A deterministic native-range-clear focus-loss regression, exact endpoint replay, inactive-selection absence and first native key must all pass before local completion; reporter or Preview acceptance remains separate.
 
 References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-12-accessibility-owner-boundaries.json](../review-records/2026-09-12-accessibility-owner-boundaries.json), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [selection-reconciler.ts](../../../packages/plitejs/src/react/editable/selection-reconciler.ts), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [use-runtime-focus-state.ts](../../../packages/plitejs/src/react/hooks/use-runtime-focus-state.ts), [use-selection-geometry.tsx](../../../packages/plitejs/src/react/hooks/use-selection-geometry.tsx), [floating-toolbar.tsx](../../../apps/www/src/registry/components/editor/floating-toolbar.tsx), [suggestion.spec.ts](../../../apps/www/tests/browser/suggestion.spec.ts).
+
+### 2026-09-25: 2026-09-25-accessibility-projected-selection-native-caret
+
+[Immutable record](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json) — review; pursue; observation matching.
+
+Pursue replacing the empty browser Selection state with a collapsed native caret resolved by the existing projected-selection owner. Delete the removeAllRanges focus-restoration wrapper; keep projected paint and command targeting private, and keep the toolbar as a focus-gated geometry consumer.
+
+Question: Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?
+
+- Keep removeAllRanges plus synchronous, microtask, frame or timeout focus restoration: rejected because the browser selection remains empty, external focus races multiply, and the pushed synchronous variant already failed.
+- Close the floating toolbar when inactive-selection paint is present or add another focus flag: rejected because it hides the symptom while leaving keyboard ownership broken and duplicates focus truth.
+- Keep the expanded native range alongside projected paint: rejected because it creates two expanded visual selections and cannot represent retained-fragment semantics as one native range.
+- Move repair into the toolbar, inactive-selection coordinator or React context: rejected because those are consumers of exact-view focus and cannot create a browser editing caret without cross-layer compensation.
+- Delete projected selection and flatten retained fragments into the model selection: rejected because retained identity, authored-view coordinates and multi-segment command targets are current hard jobs.
+- Export an expanded projected selection as a collapsed native caret at an existing writable projected target while projected decorations own expanded paint: chosen because it removes the empty-selection state and reuses the exact mounted selection owner without a public primitive.
+- retains [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The exact Editable, projected selection and copied UI remain separate owners; no public API, toolbar focus call, timer or parallel focus state is justified.
+- supersedes [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The selected synchronous restore after removeAllRanges failed in the reporter browser and preserves an empty native selection state whose later blur can be hidden by isUpdatingSelection.
+
+Proof limits: This review selects the repair owner and invariant from current source plus the reporter contradiction. Per the user's latest instruction, no real-browser proof is run or claimed in this repair turn; browser acceptance remains delegated to the user. Static and focused non-browser checks can reject type and selection-contract errors but cannot certify native focus, caret paint or first-key routing.
+
+References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-projected-selection-focus.json](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [selection-reconciler.ts](../../../packages/plitejs/src/react/editable/selection-reconciler.ts), [focus-plite-editable.ts](../../../packages/plitejs/src/react/hooks/focus-plite-editable.ts), [editable.tsx](../../../packages/plitejs/src/react/components/editable.tsx), [view-selection.ts](../../../packages/plitejs/src/react/view-selection.ts), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [floating-toolbar.tsx](../../../apps/www/src/registry/components/editor/floating-toolbar.tsx).
 
 ## Retrieval boundaries
 

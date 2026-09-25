@@ -24,7 +24,10 @@ import {
   PliteViewBoundaryGraph,
   type PliteViewBoundaryPoint,
 } from '../view-boundary-graph';
-import { createPliteViewSelection } from '../view-selection';
+import {
+  createPliteViewSelection,
+  type PliteViewSelection,
+} from '../view-selection';
 import {
   getContentRootOwnerFromTarget,
   isSameOwner as isSameContentRootOwner,
@@ -34,6 +37,7 @@ import {
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
 } from './content-root-owners';
+import { createProjectedSelectionTarget } from './projected-selection-target';
 import { getEditorRuntime, toInternalRoot } from './runtime-editor-api';
 
 type ProjectedDOMSelectionEndpoint = {
@@ -65,6 +69,62 @@ export const resolveViewBoundaryDOMPoint = (
     );
     if (point) return point;
   }
+  return null;
+};
+
+const isDOMPointInEditable = (
+  editable: HTMLElement,
+  point: readonly [globalThis.Node, number]
+) => {
+  const element = isDOMElement(point[0])
+    ? point[0]
+    : isDOMText(point[0])
+      ? point[0].parentElement
+      : null;
+
+  return (
+    editable.contains(point[0]) &&
+    element?.closest('[data-editor="true"]') === editable
+  );
+};
+
+export const resolveProjectedSelectionDOMCaret = (
+  editor: ReactRuntimeEditor<any>,
+  editable: HTMLElement,
+  selection: PliteViewSelection
+): readonly [globalThis.Node, number] | null => {
+  const target = createProjectedSelectionTarget(editor, selection);
+  const modelPoints = target
+    ? [
+        target.start,
+        ...target.ranges.flatMap((range) => [range.anchor, range.focus]),
+      ]
+    : [];
+
+  for (const modelPoint of modelPoints) {
+    let point: readonly [globalThis.Node, number] | null = null;
+
+    try {
+      point = editor.api.dom.resolveDOMPoint(modelPoint);
+    } catch {
+      // The exact mounted view may not cover this projected model point.
+    }
+
+    if (point && isDOMPointInEditable(editable, point)) return point;
+  }
+
+  for (const boundary of [selection.focus, selection.anchor]) {
+    let point: readonly [globalThis.Node, number] | null = null;
+
+    try {
+      point = resolveViewBoundaryDOMPoint(editor, boundary);
+    } catch {
+      // The projected boundary may belong to an unmounted sibling view.
+    }
+
+    if (point && isDOMPointInEditable(editable, point)) return point;
+  }
+
   return null;
 };
 

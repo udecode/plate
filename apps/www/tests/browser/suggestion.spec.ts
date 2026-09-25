@@ -1409,7 +1409,7 @@ test('keeps the exact retained-crossing release active instead of painting an in
       release: {
         activeElement: 'editor',
         inactiveSelectionCount: 0,
-        nativeRangeCount: 0,
+        nativeRangeCount: 1,
         nativeTextLength: 0,
         projectedSelectionCount: 16,
       },
@@ -1435,7 +1435,7 @@ test('keeps the exact retained-crossing release active instead of painting an in
   runtimeErrors.assertNone();
 });
 
-test('preserves the focused Editable when projected selection clears the native range', async ({
+test('keeps a collapsed native caret for an expanded projected selection', async ({
   page,
 }, testInfo) => {
   test.setTimeout(90_000);
@@ -1597,14 +1597,7 @@ test('preserves the focused Editable when projected selection clears the native 
   const focusOwner = await editor.get.focusOwner();
   const inputState = await readTask46InputState(root);
 
-  expect(result.clears).toEqual([
-    {
-      activeAfterClear: 'BODY',
-      connected: true,
-      display: 'block',
-      visibility: 'visible',
-    },
-  ]);
+  expect(result.clears).toEqual([]);
   expect(result).toMatchObject({
     activeElement: 'editor',
     inactiveSelectionCount: 0,
@@ -1755,7 +1748,7 @@ test('keeps the released suggestion selection available to the toolbar and keybo
       anchor: { offset: 0, path: [2, 0] },
       focus: { offset: 0, path: [2, 0] },
     },
-    native: { rangeCount: 0, textLength: 0 },
+    native: { rangeCount: 1, textLength: 0 },
     source: 'view',
     view: { active: true, textLength: 230 },
   });

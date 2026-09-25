@@ -12,6 +12,7 @@ review_history:
   - ../review-records/2026-09-12-accessibility-owner-boundaries.json
   - ../review-records/2026-09-12-geometry-widget-carrier-cut.json
   - ../review-records/2026-09-25-accessibility-projected-selection-focus.json
+  - ../review-records/2026-09-25-accessibility-projected-selection-native-caret.json
 source_refs:
   - ../../../packages/plitejs/src/react/components/plite.tsx
   - ../../../packages/plitejs/src/react/hooks/use-plite-runtime.tsx
@@ -249,16 +250,17 @@ preserve announcement host lifetime rather than globally deduplicating by
 document identity. Ambient `document` use in Tabbable is a concrete iframe/shadow
 root proof limit, not a supported-environment claim.
 
-The September 25 failed-fix review reaffirms this boundary after TaskHub #46
-exposed an implementation breach: clearing the browser's native ranges for a
-projected selection can leave an inactive selection while copied UI still sees
-stale focus state. The durable target stays private to the exact mounted
-Editable. A projected-selection transition may preserve focus only when that
-same Editable owned focus before the clear and no real external target took
-it. Inactive-selection paint is loss-of-focus evidence; selection geometry and
-floating-toolbar visibility are not focus or input oracles. Do not add a
-toolbar-owned focus call, another focus boolean, a public projected-selection
-API, or a global `removeAllRanges` interception.
+The September 25 failed-fix reviews reaffirm this boundary after TaskHub #46
+exposed an implementation breach: emptying the browser Selection for an
+expanded projected selection can leave an inactive selection while copied UI
+still sees stale focus state. The durable target stays private to the exact
+mounted Editable. The browser Selection keeps one collapsed writable caret;
+projected state owns the expanded semantic range and paint. This removes the
+empty-selection focus gap without retaining two expanded highlights or adding
+a later focus restore. Inactive-selection paint is loss-of-focus evidence;
+selection geometry and floating-toolbar visibility are not focus or input
+oracles. Do not add a toolbar-owned focus call, another focus boolean, a public
+projected-selection API, or a global `removeAllRanges` interception.
 
 ## Evidence limits and next owner
 

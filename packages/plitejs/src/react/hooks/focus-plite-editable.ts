@@ -9,6 +9,7 @@ import {
   setEditorFocused,
 } from '../editable/runtime-editor-api';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
+import { resolveProjectedSelectionDOMCaret } from '../editable/selection-projected-dom';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   isPliteViewSelectionCollapsed,
@@ -139,9 +140,37 @@ const focusPliteEditableForRequest = <
 
   if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
     if (element) {
+      const runtime = getMountedEditableDOMRuntime(editor, element);
+      const caret = resolveProjectedSelectionDOMCaret(
+        editor,
+        element,
+        viewSelection
+      );
+
+      if (runtime && caret) {
+        runtime.inputController.state.isUpdatingSelection = true;
+        runtime.inputController.state.selectionChangeOrigin =
+          'programmatic-export';
+      }
       IS_FOCUSED.set(editor as unknown as Editor, true);
       setEditorFocused(editor as unknown as Editor, true);
       element.focus({ preventScroll: true });
+      if (caret) {
+        const root = element.getRootNode() as Document | ShadowRoot;
+
+        try {
+          getSelection(root)?.collapse(caret[0], caret[1]);
+        } finally {
+          runtime?.domPhaseScheduler.schedule(
+            'selection-repair',
+            'clear-focused-view-selection-caret-update',
+            () => {
+              runtime.inputController.state.isUpdatingSelection = false;
+            },
+            { timing: 'timeout' }
+          );
+        }
+      }
     }
 
     return;

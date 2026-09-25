@@ -510,7 +510,7 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
   }
 });
 
-test('view selection export clears stale native selection ranges', () => {
+test('view selection export keeps a collapsed native caret', () => {
   vi.useFakeTimers();
 
   const editor = createEditor<Value>();
@@ -567,7 +567,10 @@ test('view selection export clears stale native selection ranges', () => {
       state,
     });
 
-    expect(domSelection.rangeCount).toBe(0);
+    expect(domSelection.rangeCount).toBe(1);
+    expect(domSelection.isCollapsed).toBe(true);
+    expect(domSelection.anchorNode).toBe(staleText);
+    expect(domSelection.anchorOffset).toBe(staleText.textContent.length);
     expect(state.isUpdatingSelection).toBe(true);
 
     vi.runOnlyPendingTimers();
@@ -941,6 +944,7 @@ test('projected DOM selection import publishes its anchor selection commit', () 
   const domSelection = {
     anchorNode: mainTextNode,
     anchorOffset: 1,
+    collapse: vi.fn(),
     focusNode: childTextNode,
     focusOffset: 3,
     isCollapsed: false,
@@ -1023,7 +1027,8 @@ test('projected DOM selection import publishes its anchor selection commit', () 
     expect(readPliteViewSelection(editor)?.focus.point.root).toBe(
       PROJECTED_SELECTION_ROOT
     );
-    expect(domSelection.removeAllRanges).toHaveBeenCalledOnce();
+    expect(domSelection.removeAllRanges).not.toHaveBeenCalled();
+    expect(domSelection.collapse).toHaveBeenCalledWith(mainTextNode, 1);
     expect(commits).toHaveLength(1);
     expect(commits[0]?.selectionChanged).toBe(true);
     expect(commits[0]?.changed.has('selection')).toBe(true);

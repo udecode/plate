@@ -1,6 +1,7 @@
 ---
 review_scopes: [accessibility, authored, selection, suggestions]
 review_basis:
+  - 2026-09-25-accessibility-projected-selection-native-caret
   - 2026-09-25-accessibility-projected-selection-focus
   - 2026-09-12-selection-distinct-lifetimes
   - 2026-09-23-suggestions-direct-delete-retained-selection
@@ -9,7 +10,7 @@ work_kind: implementation
 
 # taskhub 46 suggestion release repair
 
-Status: Review
+Status: In progress
 
 Fill the review metadata with affected scope IDs and governing review IDs, or
 leave empty when none applies. Choose work_kind for the actual outcome. Keep
@@ -47,9 +48,19 @@ Failed-fix ledger:
   boundary. A toolbar shown while the editor is unfocused must be closed and
   is an explicit regression.
 - The reporter identified the visible retained highlight after focus loss as
-  Plite's inactive selection. `data-plite-inactive-selection` (including its
+  Plite's inactive selection. `data-editor-inactive-selection` (including its
   collapsed-caret variant) is therefore a direct visual failure oracle for the
   release path, not evidence that an active editable selection survived.
+- Attempt 2 was pushed to `origin/next` as
+  `4183236efe73772467d18e46143f02278ef9d084`. It wrapped
+  `removeAllRanges()` with a synchronous exact-Editable focus restore.
+- Failure kind: `reporter-contradiction`. The reporter confirmed that attempt 2
+  still loses the real editor cursor/focus. Its green browser runs, TaskHub
+  `review` transition and pushed completion claim are revoked.
+- Latest reporter delta: visually retained selection is inactivity selection;
+  neither projected paint nor an open floating toolbar proves active editor
+  focus. The reporter owns all further real-browser testing; this repair turn
+  may use only source, unit-contract and type/lint checks.
 - TaskHub #46 was conditionally returned from `review` to `in_progress` and
   immediately read back as `in_progress` on 2026-09-25.
 
@@ -154,29 +165,32 @@ Blocked condition:
 
 Task state:
 
-- current_phase: authorized delivery
-- next: commit the verified whole-checkout packet, push it directly to
-  `origin/next`, then read back the remote SHA and clean worktree
+- current_phase: source repair complete; direct `origin/next` delivery
+  authorized; browser acceptance delegated and open
+- next: deliver the exact #46 packet and read back the remote SHA, then the
+  reporter replays the real release/focus/first-key interaction in their browser
 
 Work Checklist:
 
 - [x] Every applicable user, method, reference and template obligation maps to a source-linked row here or an existing linked ledger; exclusions have reasons.
-- [x] Final reconciliation against the original checklists found no omitted requirement; evidence and applicable semantic/completion checks cover the full scope.
+- [ ] Final reconciliation remains open until reporter-owned browser acceptance.
 - [x] Capture the full outcome, acceptance criteria, scope and actual authority.
 - [x] Inspect the named source, current owners and relevant evidence.
 - [x] Make the change at its durable owner and adopt every affected consumer.
 - [x] Run applicable local proof and resolve verified in-scope findings.
 - [x] Record the local outcome, evidence, material limits and next action.
 - [x] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
-- [x] Browser pack: Browser proof is used for normal app surfaces; Chrome proof
+- [ ] Browser pack: reporter-owned real-browser proof remains pending; this turn
+      does not launch or drive a browser.
+- [ ] Browser pack: Browser proof is used for normal app surfaces; Chrome proof
       is used directly for native downloads, print/print-preview, file
       picker/uploads, clipboard, dialogs/permissions, profile/extension state,
       or exact Chrome rendering; Computer Use is used when native Chrome/OS UI
       needs visual inspection and Chrome automation cannot read it.
-- [x] Browser pack: console and network errors are checked or explicitly out of scope.
-- [x] Browser pack: screenshot or visual waiver happens only after the
+- [ ] Browser pack: console and network errors are checked or explicitly out of scope.
+- [ ] Browser pack: screenshot or visual waiver happens only after the
       applicable Browser->Chrome->Computer path cannot inspect the state.
-- [x] Browser pack: a reporter-visible paint claim is proved from classified
+- [ ] Browser pack: a reporter-visible paint claim is proved from classified
       pixels captured in the named interaction phase, with known-correct
       single-layer, known-absent, and known-invalid duplicate-layer controls
       through the identical capture path. The proof records
@@ -185,15 +199,14 @@ Work Checklist:
       an unclassified screenshot are diagnostics, not final paint proof.
 - [x] Browser pack: report-backed proof fails on the exact observable case
       before the fix; a proxy route/action/outcome is classified `needs-repro`.
-- [x] Browser pack: final proof uses a fresh page/session on the final code
+- [ ] Browser pack: final proof uses a fresh page/session on the final code
       state, rechecks every applicable model/DOM/selection/caret/focus/popup/
       toolbar/paint/error/follow-up-input field after the interaction ends, and
       records the ref plus production/test/fixture/harness fingerprints.
-- [x] Browser pack: direct `origin/next` delivery was separately authorized
-      after exact reporter-profile proof. The final remote SHA, clean worktree,
-      and post-commit replay are closeout receipts rather than evidence inferred
-      from the earlier local candidate.
-- [x] Browser pack: native selection/paint, focus, DnD, compositor, or React DOM
+- [x] Browser pack: direct `origin/next` delivery was separately authorized on
+      2026-09-25. The final remote SHA and scoped worktree read-back are delivery
+      receipts; they do not replace reporter-owned browser acceptance.
+- [ ] Browser pack: native selection/paint, focus, DnD, compositor, or React DOM
       lifecycle cases pass 5/5 retry-free warm runs. When Chrome is the reported
       surface, the entire final replay and warm ledger run in exact Chrome;
       otherwise the limitation blocks fixed/completed wording.
@@ -205,24 +218,24 @@ Decisions and tradeoffs:
 | Decision | Owner and source | Chosen fix | Material alternative rejected | Proof |
 | --- | --- | --- | --- | --- |
 | Revoke geometry-only completion | Failed-fix reporter contradiction | Keep the geometry work only as secondary positioning behavior; it cannot establish focus or input health | Treating floating-toolbar visibility as the release oracle | Pushed `c894307d14` is explicitly revoked as completion authority |
-| Preserve focus at the projected-selection transition | `packages/plitejs/src/react/editable/selection-controller.ts` and `2026-09-25-accessibility-projected-selection-focus` | Wrap only projected-selection native-range clears; if the exact Editable owned focus before the clear and focus falls to an inactive document/shadow host, restore that same Editable immediately and reconcile Plite focus truth | Toolbar-owned focus, delayed retry, another focus boolean, public API, or global `removeAllRanges` interception | Deterministic red `BODY`/16-marker/first-key failure becomes active Editable, zero projected markers after input, and editor-targeted `keydown`/`beforeinput` |
-| Preserve real external focus | Exact mounted Editable focus owner | Never restore when the clear leaves a connected real external target active | Unconditional focus restoration that steals toolbar, dialog, or embedded-control focus | Guard is restricted to body/document-element/null or the exact shadow host |
+| Preserve browser input ownership at the projected-selection transition | `selection-controller.ts`, `selection-projected-dom.ts`, and `2026-09-25-accessibility-projected-selection-native-caret` | Delete the empty native-selection state. Collapse the browser Selection to an exact-view writable caret while projected decorations keep the expanded semantic range and paint | Synchronous/delayed focus restoration, toolbar gates, another focus boolean, public API, or keeping two expanded selection paints | Selection-controller contract now requires one collapsed native range; 38/38 focused contracts pass |
+| Preserve focus API behavior for an expanded projected selection | `focus-plite-editable.ts` | Programmatic focus also installs the same projected native caret instead of focusing an editing host with no browser selection | A second focus-only repair path that leaves native selection empty | Focus contracts pass 12/12; real browser acceptance remains delegated |
 | Preserve #45 interaction lifetime | `docs/plans/45-taskhub-45-retained-suggestion-selection-drag-repair.md` | Leave held-drag import suppression unchanged and repair only post-release range clearing | Reverting #45's drag-active guard | `selection-drag-scroll.spec.ts` 1/1 plus retained endpoint/reverse coverage |
 
 Completion Gates:
 
 | Gate                                 | Applies | Required action                                                                                                                   | Evidence |
 | ------------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| AC1 exact two-selection sequence     | yes     | Replay retained-containing selection, then ordinary control, in sequence                                                          | Exact homepage test passes; ordinary second selection replaces projected state and types `3` |
-| AC2 focus-gated toolbar geometry     | yes     | Toolbar remains closed whenever the editor is unfocused, renders an inactive selection, or lacks a usable caret/selection; after genuine focus is proved, its bounds track the same semantic selection | Source-built replay in the reporter's Chrome profile has the exact Editable active, zero inactivity-selection markers, 16 projected markers, zero focusouts, and usable first input before toolbar evidence; released-selection screenshot shows active blue paint |
-| AC3 immediate and paused replacement | yes     | Type `2`/`222` with real keyboard immediately and after a normal pause; capture event target, beforeinput, and final document     | Real keydown/beforeinput target editor; `2d Editing` and `222d Editing` asserted |
-| AC4 Backspace/Delete/undo            | yes     | Fresh identical fixtures; verify final text, suggestion identity, and exactly one undo restoration                                | Backspace and Delete both pass on fresh pages; authored identities and one-undo restoration asserted |
-| AC5 direction and retained endpoints | yes     | Ordinary endpoints with retained inside, retained start/end, forward/reverse; compare native/model/view and single-layer paint    | Existing endpoint/reverse suite plus exact classified selection paint pass |
-| AC6 unaffected controls              | yes     | Ordinary, comment-only, and insert-only selection toolbar/replacement/deletion; second selection clears stale state               | Targeted 7/7 browser group passes, including ordinary, comment-only, and insert-only controls |
-| AC7 focus plus next input            | yes     | Before any toolbar assertion, observe inactive-selection DOM/paint, native caret/selection, DOM focus API, React focus context, focusin/focusout, and the actual first native key without polling or forced focus | Deterministic clear-focus red records `BODY` and 16 surviving projected markers; fixed run records exact editor DOM/Plite focus, zero inactive markers, and editor-targeted `keydown`/`beforeinput` for the immediate first key |
-| AC8 #45 regression                   | yes     | Re-run held drag, scroll, reverse drag, and projected-selection preservation                                                      | Drag-scroll 1/1 plus retained endpoint/reverse tests, zero retries |
-| AC9 proof integrity                  | yes     | Source-built repo runner, exact route/browser/ref/fingerprints, strict errors; no model-only or mouseup-pre-only evidence         | Local source-built runners, exact Chrome profile replay, strict runtime errors, issue-owned SHA-256 fingerprints, and explicit uncommitted-base boundary pass |
-| Implementation review                | yes     | Verify Plate implementation review of ownership, consumers, and generated/public surface                                          | Best API Review `2026-09-25-accessibility-projected-selection-focus` stops broader API/UI repair and selects the private projected-selection transition; generated review, registry, and changelog artifacts are reconciled |
+| AC1 exact two-selection sequence     | yes     | Reporter replays retained-containing selection, then ordinary control, in sequence                                                | delegated/open |
+| AC2 focus-gated toolbar geometry     | yes     | Toolbar remains closed whenever the editor is unfocused, renders an inactive selection, or lacks a usable caret/selection; after genuine focus is proved, its bounds track the same semantic selection | delegated/open; old Chrome greens revoked |
+| AC3 immediate and paused replacement | yes     | Type `2`/`222` with real keyboard immediately and after a normal pause; capture event target, beforeinput, and final document     | delegated/open |
+| AC4 Backspace/Delete/undo            | yes     | Fresh identical fixtures; verify final text, suggestion identity, and exactly one undo restoration                                | delegated/open |
+| AC5 direction and retained endpoints | yes     | Ordinary endpoints with retained inside, retained start/end, forward/reverse; compare native/model/view and single-layer paint    | delegated/open |
+| AC6 unaffected controls              | yes     | Ordinary, comment-only, and insert-only selection toolbar/replacement/deletion; second selection clears stale state               | delegated/open |
+| AC7 focus plus next input            | yes     | Before any toolbar assertion, observe inactive-selection DOM/paint, native caret/selection, DOM focus API, React focus context, focusin/focusout, and the actual first native key without polling or forced focus | source invariant now retains one collapsed native caret; real browser delegated/open |
+| AC8 #45 regression                   | yes     | Re-run held drag, scroll, reverse drag, and projected-selection preservation                                                      | delegated/open |
+| AC9 proof integrity                  | yes     | Source-built repo runner, exact route/browser/ref/fingerprints, strict errors; no model-only or mouseup-pre-only evidence         | delegated/open; no browser claim from this turn |
+| Implementation review                | yes     | Verify Plate implementation review of ownership, consumers, and generated/public surface                                          | Best API Review `2026-09-25-accessibility-projected-selection-native-caret` supersedes the failed clear-and-restore mechanism and retains private exact-view ownership |
 
 Select proof from the actual change. Verify Plate owns package, browser,
 native-device, CLI and artifact claims; Testing owns test value. Generated
@@ -239,91 +252,71 @@ from creating this file.
 
 | Proof gate | Status | Required action | Evidence |
 | ---------- | ------ | --------------- | -------- |
-| Browser interaction proof | pass | Exercise target route/interaction with Browser for normal app surfaces or Chrome/Computer for native browser/OS surfaces; otherwise record blocker | Repo Playwright Chromium drove physical mouse release and real keyboard events on source-built `/` |
-| Browser console/network check | pass | Record console/network state or why it is not applicable | Strict page/runtime errors stayed empty; no unexpected failed request affected the route |
-| Browser final proof artifact | pass | Record screenshot/trace/route/native proof or exact caveat | Existing geometry receipt remains revoked. Fresh source-built proof in the reporter's Chrome `Feng` profile records exact DOM/event state and a visually inspected active-selection screenshot before the first key; no inactivity selection or focusout occurs |
-| Exact case replay | pass | For report-backed behavior, prove the exact case and all applicable end-state claim fields; otherwise N/A with reason | Exact `[2,0]:5` to `[5,2]:6` release produces 16 projected markers, active Editable, zero inactivity markers, then editor-targeted native `keydown`/`beforeinput` and the exact `Colla2s …` model replacement in the reporter profile |
-| Final ref and fingerprints | delivery pending | Record the replayed commit/ref and issue-owned production/test/fixture/harness SHA-256 fingerprints; any later code or generated change invalidates the result | Candidate fingerprints are recorded in `docs/plans/artifacts/taskhub-46-suggestion-release-repair/proof.md`; the authorized delivery closeout will append the committed and remote SHA after push |
-| Clean final runtime | delivery pending | Before fixed/completed wording, start a fresh process from a clean checkout at the exact final pushed ref or immutable CI artifact and prove zero tracked/untracked issue-owned runtime-input differences; local candidates record N/A with exact unpushed status | Exact local and reporter-profile proof is complete; post-commit replay, remote read-back, and clean-tree receipt remain in the authorized delivery step |
-| Retry-free stability | pass | For native selection/paint, focus, DnD, compositor, or React DOM lifecycle, record 5/5 warm runs with no retry in the exact reported browser/device; otherwise N/A with reason | Exact release and first-key interaction passes 5/5 fresh reloads, zero retries, in the reporter's Chrome `Feng` profile. Chrome for Testing 149 and fresh-profile Chrome 153 retain their separate 10/10 ledgers; the prior toolbar-first 5/5 stays revoked |
+| Browser interaction proof | delegated/open | Reporter performs the real release/focus/first-key replay | No browser was launched in this turn; all earlier green runs are revoked by the latest contradiction |
+| Browser console/network check | delegated/open | Reporter records runtime errors if the interaction still fails | Not executed in this turn |
+| Browser final proof artifact | delegated/open | Reporter checks active editor focus before treating selection paint or toolbar visibility as success | Not executed in this turn |
+| Exact case replay | delegated/open | Replay `[2,0]:5` to `[5,2]:6`, then type without clicking or focusing | Not executed in this turn |
+| Source contracts | pass | Exercise the owning projected selection and focus contracts | `selection-controller-contract` 38/38; `focus-plite-editable-contract` 12/12 |
+| Source type/lint | pass with package-runner caveat | Typecheck changed Plite React source/tests and run focused formatting/lint | Direct entrypoint React and package-test TypeScript checks pass; direct oxfmt/oxlint pass. Aggregate `pnpm --filter plitejs typecheck` is blocked before TypeScript by four pre-existing AWS SDK minimum-release-age violations |
+| Final ref and fingerprints | delivery authorized | Commit the exact #46 packet, push to `origin/next`, and read back the remote ref | Source fingerprints are bound below; remote SHA is a delivery receipt, not browser proof |
+| Retry-free stability | delegated/open | Reporter owns warm real-browser repeats | Not executed in this turn |
 
 Verification evidence:
 
-- The unmodified exact 16-marker replay remains focused after the owning fix in
-  Chrome for Testing, fresh-profile installed Chrome, and the reporter's real
-  Chrome `Feng` profile. The pre-fix reporter failure is preserved through the
-  deterministic release-clear mechanism red rather than inferred from toolbar
-  state.
-- Deterministic mechanism red before the owning fix: arm only the projected
-  selection's release-time native-range clear, simulate the browser dropping
-  the exact Editable to `BODY`, then send the first native `2` without any
-  focus assertion or compensating focus call. The result was `BODY`, zero
-  native ranges, 16 projected markers, and no replacement.
-- Green after the owning fix: the same injected clear still records the
-  one-time `BODY` drop inside the browser primitive, then the exact Editable is
-  active, Plite input state is focused, no inactive-selection marker exists,
-  `keydown` and `beforeinput` target the editor, and the projected markers are
-  consumed by replacement.
-- `suggestion.spec.ts` focus/selection group: 7/7 pass, one worker, zero
-  retries. It covers exact endpoints, the deterministic focus-loss mechanism,
-  the released toolbar/control path, Backspace, Delete, ordinary/insert-only
-  selection, and deleted-boundary expansion.
-- `selection-drag-scroll.spec.ts`: 1/1 pass, one worker, zero retries.
-- `plitejs` React package proof: 88 files and 1,306 tests pass; React entrypoint
-  typecheck passes; targeted Ultracite and `git diff --check` pass.
-- Final focus-first warm replay: exact release plus deterministic focus-loss
-  mechanism pass 10/10 total (5/5 each), one worker, zero retries. The
-  mechanism case also asserts the exact replacement model text
-  `Colla2s ⌘+J or Space in an empty line to:`.
-- Installed Google Chrome `153.0.8010.53` replay through the same source-built
-  Playwright route and oracle also passes 10/10 total (5/5 each), one worker,
-  zero retries. It uses an automation profile and narrows browser-version risk.
-- Reporter Chrome `Feng` profile replay on the same installed Chrome
-  `153.0.8010.53` and source-built route passes 5/5 fresh reloads, zero
-  retries. Every release records active exact Editable, zero inactivity
-  markers, 16 projected markers, zero native ranges and zero focusouts; every
-  first key records editor-targeted `keydown` and `beforeinput`, zero projected
-  markers afterward, and exact replacement text. Browser error/warning log is
-  empty.
-- Registry build and changelog generation/check pass; issue-owned SHA-256
-  fingerprints are recorded in the local proof artifact. The user accepted the
-  candidate for direct `origin/next` delivery; commit/push receipt remains.
+- Previous geometry and focus-restore browser greens are historical failed-fix
+  evidence only. The latest reporter contradiction revokes them all.
+- The new source invariant replaces an empty browser Selection with one
+  collapsed native caret inside the exact Editable. Projected selection remains
+  the expanded semantic range and visual owner, so the caret stays hidden by
+  the existing `caretColor: transparent` rule without a second expanded paint.
+- `selection-controller-contract.test.ts`: 38/38 pass. The owner contract now
+  rejects `removeAllRanges()` for expanded projected selection and requires a
+  collapsed native range.
+- `focus-plite-editable-contract.test.ts`: 12/12 pass. Programmatic focus now
+  directly requires one collapsed native caret for an expanded projected
+  selection.
+- Direct Plite React entrypoint TypeScript and package-test TypeScript checks
+  pass. Focused `oxfmt --check` and `oxlint` pass.
+- Aggregate package typecheck and the publication `pnpm check` did not reach
+  project checks because the current lockfile fails the repository's
+  minimum-release-age policy for four AWS SDK entries. This repair does not
+  change the lockfile.
+- Per the reporter's explicit instruction, no real browser was opened or driven
+  for the new candidate. Native focus, inactivity paint and first-key acceptance
+  remain delegated/open.
 
 Findings and remaining work:
 
-- Root cause of the contradicted result: projected-selection import/export
-  intentionally clears browser ranges, but that transition did not preserve
-  the exact Editable's pre-existing focus if a browser/environment dropped it
-  to an inactive host. Because selection-update reconciliation can suppress
-  the matching blur, React/Plite focus truth can remain stale while projected
-  markers still paint and the floating toolbar opens.
-- Owning fix: every projected-selection native-range clear now captures exact
-  Editable ownership, performs the clear, and restores only from an inactive
-  body/document/shadow host. A connected external focus target is never
-  overwritten. Successful restoration reconciles both DOM and Plite focus
-  truth synchronously for the first key.
-- The pushed geometry change remains secondary: it may position UI only after
-  focus/input health is established. No toolbar-owned focus, timer, public API,
-  extra focus state, or global native-selection interception was added.
-- Local implementation, warm stability, generated output, issue-owned
-  fingerprints, and reporter/native-Chrome proof are complete. Only the
-  separately authorized direct-`next` delivery closeout remains.
+- Root cause of attempt 2's escape: it preserved the empty native Selection
+  design and sampled focus only synchronously around `removeAllRanges()`.
+  `isUpdatingSelection` can suppress the corresponding blur reconciliation, so
+  Plite/React focus truth may remain true and open the toolbar after the browser
+  no longer owns an editable caret.
+- Owning fix: projected-selection import/export and programmatic focus resolve a
+  writable point from the existing projected target and collapse the browser
+  Selection there. Scheduled repair re-applies that caret instead of clearing
+  every range. The old focus-restoration helper is deleted.
+- Toolbar geometry remains secondary and unchanged in this recovery. It may
+  render only when the existing focus consumer says the editor is focused; the
+  browser acceptance must verify that state is true, not infer it from toolbar
+  visibility.
+- Remaining work is reporter-owned browser acceptance. A failure should report
+  the first divergence among native caret/range, activeElement, Plite/React
+  focus state, inactivity selection, keydown and beforeinput.
 
 Final handoff:
 
-- Outcome and owning fix: local candidate repairs the exact projected-selection
-  focus lifecycle, using inactive-selection state and first native input as the
-  oracle rather than floating-toolbar visibility.
-- Proof and limits: deterministic mechanism red/green, exact 16-marker control,
-  7/7 affected browser cases, 10/10 in Chrome for Testing 149, another 10/10
-  in fresh-profile installed Chrome 153, and 5/5 in the reporter's real Chrome
-  `Feng` profile; #45 drag-scroll, 1,306 React tests, typecheck and lint pass.
-- Local / integrated / published state: delivery-authorized recovery packet on
-  top of pushed failed commit `c894307d14`; deployment and release remain out
-  of scope.
-- Next action or completion: commit the full verified checkout, replay the
-  exact focus/first-key cases on the committed code, push to `origin/next`, and
-  read back the remote SHA plus clean worktree. Keep TaskHub #46 in `review`.
+- Outcome: local source candidate keeps one collapsed browser caret under an
+  expanded projected selection instead of clearing native selection and trying
+  to restore focus afterward.
+- Proof and limits: 50 focused unit contracts plus direct source/test type and
+  lint checks pass; no browser success is claimed.
+- Local / integrated / published state: the exact source-only packet is
+  authorized for direct `origin/next` delivery; TaskHub #46 remains
+  `in_progress` because browser acceptance is open.
+- Next action: complete Git delivery and remote read-back, then the reporter
+  performs the real browser replay and reports acceptance or the first
+  divergent phase.
 
 Timeline:
 
@@ -356,18 +349,28 @@ Timeline:
   screenshot, and empty browser error logs were all observed directly.
 - 2026-09-25 TaskHub #46 conditionally transitioned from `in_progress` to
   `review`; immediate read-back confirmed the state. No Git delivery occurred.
+- 2026-09-25 The reporter contradicted pushed attempt 2 (`4183236efe`) and took
+  ownership of all further real-browser testing. TaskHub #46 returned to
+  `in_progress`; old browser completion evidence was revoked.
+- 2026-09-25 Best API Review
+  `2026-09-25-accessibility-projected-selection-native-caret` superseded the
+  clear-and-restore mechanism. The source repair now keeps a collapsed native
+  caret, and 50 focused unit contracts plus direct type/lint checks pass.
+- 2026-09-25 Direct delivery to `origin/next` was authorized. Publication
+  `pnpm check` was attempted and stopped before project checks on four existing
+  AWS SDK minimum-release-age violations; the lockfile is outside this repair.
 
 Open risks:
 
-- The original reporter video file remains unavailable, so its historic pixels
-  cannot be re-opened. The TaskHub-recorded exact endpoints, interaction order,
-  live Chrome profile, focus/event state and final document outcome are all
-  covered directly.
-- A clean pushed-ref replay is not applicable until Git delivery is separately
-  authorized. The current proof certifies the local uncommitted candidate.
-- Global review-ledger `check` is independently blocked by the historical
-  missing `docs/plans/artifacts/plite-core-api-review/verification.json`; the
-  new immutable accessibility review itself is recorded and rendered.
+- Real browser focus/caret/input behavior is intentionally unverified in this
+  turn and remains the reporter's acceptance boundary.
+- The aggregate Plite package command is blocked before TypeScript by the
+  existing lockfile supply-chain policy; direct affected typechecks passed.
+- Direct `origin/next` delivery is authorized, but it does not establish the
+  still-delegated browser acceptance.
+- Global review-ledger `check` is independently blocked by concurrent stale
+  `application/ai-command` inventory. The new immutable accessibility review
+  itself is recorded and rendered; this repair does not alter the AI owner.
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -376,4 +379,4 @@ Start Gates:
 | Browser route / app surface identified | yes | Source-built `www` Playground `/`; focused suggestion fixture is diagnostic only |
 | Browser tool decision recorded | yes | Repo Playwright Chromium runner supplies deterministic mouse/keyboard/events/pixels; screenshots are opened with local image inspection |
 | Console/network caveat policy recorded | yes | Fail on page errors and unexpected console errors; record unexpected failed requests, while known local dev noise must be identified rather than silently ignored |
-| Observable browser case captured | pass | Case `TH46-post-release-retained-focus-input`: pushed failed base is `c894307d14a052577164b8437798341492d5ebe8`; local deterministic clear-focus red/green plus exact 5/5 reporter-profile release/focus/first-key proof are captured |
+| Observable browser case captured | delegated/open | Case `TH46-post-release-retained-focus-input`: both pushed attempts `c894307d14` and `4183236efe` are reporter-contradicted; the reporter owns the next real-browser replay of the local native-caret candidate |

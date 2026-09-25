@@ -13071,6 +13071,10 @@
     {
       "path": "docs/research/review-records/2026-09-25-accessibility-projected-selection-focus.json",
       "sha256": "21dceb43f2427e1b125ffbe8609fce2bbda1d67952f30bd10cc9575d969ca01f"
+    },
+    {
+      "path": "docs/research/review-records/2026-09-25-accessibility-projected-selection-native-caret.json",
+      "sha256": "be8a1c7333dbc041d611102c7ced5f6a7e6875d335427baae7b77a7ed9637558"
     }
   ],
   "reviewGroups": [
