@@ -2,4 +2,4 @@
 'plitejs': patch
 ---
 
-Return the full selection geometry after pointer selections cross suggested deletions so selection UI stays positioned after release.
+Keep the editor focused and preserve immediate keyboard input after releasing pointer selections across suggested deletions, while positioning selection UI over the full range.

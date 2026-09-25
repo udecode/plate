@@ -70,14 +70,6 @@
       "source": "apps/www/src/app/api/ai/command/route.ts"
     },
     {
-      "id": "application/ai-copilot",
-      "scope": "ai",
-      "disposition": "grouped",
-      "count": 1,
-      "fingerprint": "5c60b7b6ffad2bed4106d1bc8a7d32f93f479e3bf72195e1da4eb7ffb804dfea",
-      "source": "apps/www/src/app/api/ai/copilot/route.ts"
-    },
-    {
       "id": "application/plite-examples",
       "scope": "ui",
       "disposition": "grouped",
@@ -13075,6 +13067,10 @@
     {
       "path": "docs/research/review-records/2026-09-23-mixed-suggestion-selection-deletion-execution.json",
       "sha256": "98ebecd5b0349f0d4fa53ce85cda5589042365451246baa9aa04bd5d30d92ea5"
+    },
+    {
+      "path": "docs/research/review-records/2026-09-25-accessibility-projected-selection-focus.json",
+      "sha256": "21dceb43f2427e1b125ffbe8609fce2bbda1d67952f30bd10cc9575d969ca01f"
     }
   ],
   "reviewGroups": [

@@ -1299,6 +1299,348 @@ const openSuggestions = async (page: Page) => {
   return { editor, root, runtimeErrors };
 };
 
+test('keeps the exact retained-crossing release active instead of painting an inactive selection', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(90_000);
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  await page.setViewportSize({ height: 1026, width: 1540 });
+  await page.goto('/', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'exact released suggestion selection focus',
+    root
+  );
+
+  await editor.ready({
+    editor: 'visible',
+    text: 'Welcome to the Plate Playground!',
+  });
+  await root.evaluate((element) => {
+    const events: Array<Record<string, unknown>> = [];
+    const record = (event: Event) => {
+      const input = event as InputEvent;
+      const keyboard = event as KeyboardEvent;
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      const selection = element.ownerDocument.getSelection();
+
+      events.push({
+        activeElement:
+          element.ownerDocument.activeElement === element
+            ? 'editor'
+            : (element.ownerDocument.activeElement?.tagName ?? null),
+        data: input.data ?? null,
+        inactiveSelectionCount: element.querySelectorAll(
+          '[data-editor-inactive-selection], [data-editor-inactive-selection-caret]'
+        ).length,
+        key: keyboard.key ?? null,
+        rangeCount: selection?.rangeCount ?? 0,
+        target:
+          target?.closest('[data-editor="true"]') === element
+            ? 'editor'
+            : (target?.tagName ?? null),
+        type: event.type,
+      });
+    };
+
+    for (const type of [
+      'beforeinput',
+      'focusin',
+      'focusout',
+      'keydown',
+      'selectionchange',
+    ]) {
+      element.ownerDocument.addEventListener(type, record, { capture: true });
+    }
+    Object.assign(window, { __task46ExactFocusTrace: events });
+  });
+
+  await dragPhysicalTextSelection({
+    end: { offset: 6, text: '. Press ' },
+    page,
+    root,
+    start: { offset: 5, text: 'Collaborative Editing' },
+  });
+
+  const release = await root.evaluate((element) => {
+    const selection = element.ownerDocument.getSelection();
+
+    return {
+      activeElement:
+        element.ownerDocument.activeElement === element
+          ? 'editor'
+          : (element.ownerDocument.activeElement?.tagName ?? null),
+      inactiveSelectionCount: element.querySelectorAll(
+        '[data-editor-inactive-selection], [data-editor-inactive-selection-caret]'
+      ).length,
+      nativeRangeCount: selection?.rangeCount ?? 0,
+      nativeTextLength: selection?.toString().length ?? 0,
+      projectedSelectionCount: element.querySelectorAll(
+        '[data-editor-view-selection="true"]'
+      ).length,
+    };
+  });
+  const displayedSelection = await editor.get.displayedSelection();
+  const focusOwner = await editor.get.focusOwner();
+  const inputState = await readTask46InputState(root);
+
+  await page.keyboard.type('2');
+  const trace = await page.evaluate(
+    () =>
+      (
+        window as typeof window & {
+          __task46ExactFocusTrace?: Array<Record<string, unknown>>;
+        }
+      ).__task46ExactFocusTrace ?? []
+  );
+
+  expect({ displayedSelection, focusOwner, inputState, release }).toMatchObject(
+    {
+      displayedSelection: {
+        hasVisibleSelection: true,
+        source: 'view',
+        view: { active: true, textLength: 286 },
+      },
+      focusOwner: { kind: 'editor' },
+      inputState: { focused: true },
+      release: {
+        activeElement: 'editor',
+        inactiveSelectionCount: 0,
+        nativeRangeCount: 0,
+        nativeTextLength: 0,
+        projectedSelectionCount: 16,
+      },
+    }
+  );
+  expect(trace).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        activeElement: 'editor',
+        key: '2',
+        target: 'editor',
+        type: 'keydown',
+      }),
+      expect.objectContaining({
+        activeElement: 'editor',
+        data: '2',
+        target: 'editor',
+        type: 'beforeinput',
+      }),
+    ])
+  );
+  expect(trace.some((entry) => entry.type === 'focusout')).toBe(false);
+  runtimeErrors.assertNone();
+});
+
+test('preserves the focused Editable when projected selection clears the native range', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(90_000);
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  await page.setViewportSize({ height: 1026, width: 1540 });
+  await page.goto('/', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'projected selection native clear focus',
+    root
+  );
+
+  await editor.ready({
+    editor: 'visible',
+    text: 'Welcome to the Plate Playground!',
+  });
+  const originalBlocks = await editor.get.modelBlockTexts();
+  await root.evaluate((element) => {
+    const selection = element.ownerDocument.getSelection();
+
+    if (!selection) throw new Error('Missing document selection.');
+
+    const originalRemoveAllRanges = selection.removeAllRanges;
+    let armed = false;
+    const clears: Array<Record<string, unknown>> = [];
+    const inputEvents: Array<Record<string, unknown>> = [];
+
+    const recordInputEvent = (event: Event) => {
+      const input = event as InputEvent;
+      const keyboard = event as KeyboardEvent;
+      const target = event.target instanceof HTMLElement ? event.target : null;
+
+      inputEvents.push({
+        activeElement:
+          element.ownerDocument.activeElement === element
+            ? 'editor'
+            : (element.ownerDocument.activeElement?.tagName ?? null),
+        data: input.data ?? null,
+        key: keyboard.key ?? null,
+        target:
+          target?.closest('[data-editor="true"]') === element
+            ? 'editor'
+            : (target?.tagName ?? null),
+        type: event.type,
+      });
+    };
+
+    for (const type of ['beforeinput', 'focusin', 'focusout', 'keydown']) {
+      element.ownerDocument.addEventListener(type, recordInputEvent, {
+        capture: true,
+      });
+    }
+
+    Object.defineProperty(selection, 'removeAllRanges', {
+      configurable: true,
+      value() {
+        const ownedFocus = element.ownerDocument.activeElement === element;
+
+        originalRemoveAllRanges.call(selection);
+        if (armed && ownedFocus) {
+          armed = false;
+          (element as HTMLElement).blur();
+          clears.push({
+            activeAfterClear:
+              element.ownerDocument.activeElement === element
+                ? 'editor'
+                : (element.ownerDocument.activeElement?.tagName ?? null),
+            connected: element.isConnected,
+            display: getComputedStyle(element).display,
+            visibility: getComputedStyle(element).visibility,
+          });
+        }
+      },
+    });
+    Object.assign(window, {
+      __task46NativeClearFocusLoss: {
+        arm: () => {
+          armed = true;
+        },
+        clears,
+        inputEvents,
+        restore: () => {
+          for (const type of [
+            'beforeinput',
+            'focusin',
+            'focusout',
+            'keydown',
+          ]) {
+            element.ownerDocument.removeEventListener(type, recordInputEvent, {
+              capture: true,
+            });
+          }
+          delete (selection as Selection & { removeAllRanges?: () => void })
+            .removeAllRanges;
+        },
+      },
+    });
+  });
+
+  const [from, to] = await Promise.all([
+    getPhysicalTextPoint(root, 'Collaborative Editing', 5),
+    getPhysicalTextPoint(root, '. Press ', 6),
+  ]);
+
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 12 });
+  await page.evaluate(() => {
+    (
+      window as typeof window & {
+        __task46NativeClearFocusLoss?: { arm: () => void };
+      }
+    ).__task46NativeClearFocusLoss?.arm();
+  });
+  await page.mouse.up();
+  await page.keyboard.type('2');
+
+  const result = await root.evaluate((element) => {
+    const control = (
+      window as typeof window & {
+        __task46NativeClearFocusLoss?: {
+          clears: Array<Record<string, unknown>>;
+          inputEvents: Array<Record<string, unknown>>;
+          restore: () => void;
+        };
+      }
+    ).__task46NativeClearFocusLoss;
+    const selection = element.ownerDocument.getSelection();
+    const snapshot = {
+      activeElement:
+        element.ownerDocument.activeElement === element
+          ? 'editor'
+          : (element.ownerDocument.activeElement?.tagName ?? null),
+      clears: control?.clears ?? [],
+      inactiveSelectionCount: element.querySelectorAll(
+        '[data-editor-inactive-selection], [data-editor-inactive-selection-caret]'
+      ).length,
+      inputEvents: control?.inputEvents ?? [],
+      nativeRangeCount: selection?.rangeCount ?? 0,
+      projectedSelectionCount: element.querySelectorAll(
+        '[data-editor-view-selection="true"]'
+      ).length,
+    };
+
+    control?.restore();
+    delete (
+      window as typeof window & {
+        __task46NativeClearFocusLoss?: unknown;
+      }
+    ).__task46NativeClearFocusLoss;
+
+    return snapshot;
+  });
+  const displayedSelection = await editor.get.displayedSelection();
+  const finalBlocks = await editor.get.modelBlockTexts();
+  const focusOwner = await editor.get.focusOwner();
+  const inputState = await readTask46InputState(root);
+
+  expect(result.clears).toEqual([
+    {
+      activeAfterClear: 'BODY',
+      connected: true,
+      display: 'block',
+      visibility: 'visible',
+    },
+  ]);
+  expect(result).toMatchObject({
+    activeElement: 'editor',
+    inactiveSelectionCount: 0,
+    nativeRangeCount: 1,
+    projectedSelectionCount: 0,
+  });
+  expect(result.inputEvents).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        activeElement: 'editor',
+        key: '2',
+        target: 'editor',
+        type: 'keydown',
+      }),
+      expect.objectContaining({
+        activeElement: 'editor',
+        data: '2',
+        target: 'editor',
+        type: 'beforeinput',
+      }),
+    ])
+  );
+  expect(displayedSelection).toMatchObject({
+    hasVisibleSelection: false,
+  });
+  expect(finalBlocks.slice(0, 4)).toEqual([
+    originalBlocks[0],
+    originalBlocks[1],
+    'Colla2s ⌘+J or Space in an empty line to:',
+    originalBlocks[6],
+  ]);
+  expect(focusOwner).toMatchObject({ kind: 'editor' });
+  expect(inputState).toMatchObject({ focused: true });
+  runtimeErrors.assertNone();
+});
+
 test('keeps the released suggestion selection available to the toolbar and keyboard', async ({
   page,
 }, testInfo) => {

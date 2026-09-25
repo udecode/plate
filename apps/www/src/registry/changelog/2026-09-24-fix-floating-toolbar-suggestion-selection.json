@@ -15,7 +15,7 @@
     "status": "unresolved"
   },
   "kind": "fix",
-  "summary": "Keep the floating toolbar visible for selections across suggested deletions",
+  "summary": "Keep the editor focused for selections across suggested deletions",
   "targets": [
     {
       "name": "floating-toolbar",
@@ -28,7 +28,7 @@
     {
       "id": "2026-09-24-floating-toolbar-suggestion-selection-46",
       "kind": "fix",
-      "summary": "Keep the toolbar visible and positioned over the full selection after releasing a drag across suggested deletions.",
+      "summary": "Keep the editor focused and preserve immediate keyboard input after releasing a drag across suggested deletions, then position the toolbar from that active selection.",
       "details": [],
       "migrationNotes": [],
       "targets": ["floating-toolbar"],

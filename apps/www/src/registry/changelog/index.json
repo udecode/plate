@@ -6,7 +6,7 @@
       "href": "/registry/changelog/2026-09-24-fix-floating-toolbar-suggestion-selection.json",
       "status": "draft",
       "kind": "fix",
-      "summary": "Keep the floating toolbar visible for selections across suggested deletions",
+      "summary": "Keep the editor focused for selections across suggested deletions",
       "change": {
         "type": "source",
         "date": "2026-09-24",

@@ -199,6 +199,48 @@ const getActiveElementInDocument = (targetDocument: Document) => {
   return activeElement;
 };
 
+const removeDOMSelectionRangesPreservingEditableFocus = ({
+  domSelection,
+  editor,
+  editorElement,
+}: {
+  domSelection: globalThis.Selection;
+  editor: ReactRuntimeEditor;
+  editorElement: HTMLElement;
+}) => {
+  const root = editorElement.getRootNode() as Document | ShadowRoot;
+  const ownedFocus = root.activeElement === editorElement;
+
+  domSelection.removeAllRanges();
+  if (
+    !ownedFocus ||
+    !editorElement.isConnected ||
+    editorElement.getRootNode() !== root
+  ) {
+    return;
+  }
+
+  const rootActiveElement = root.activeElement;
+  const documentActiveElement = editorElement.ownerDocument.activeElement;
+  const shadowHost = 'host' in root ? root.host : null;
+  const lostToInactiveHost =
+    rootActiveElement === editorElement.ownerDocument.body ||
+    rootActiveElement === editorElement.ownerDocument.documentElement ||
+    (rootActiveElement === null &&
+      (documentActiveElement === null ||
+        documentActiveElement === editorElement.ownerDocument.body ||
+        documentActiveElement === editorElement.ownerDocument.documentElement ||
+        documentActiveElement === shadowHost));
+
+  if (lostToInactiveHost) {
+    editorElement.focus({ preventScroll: true });
+    if (root.activeElement === editorElement) {
+      IS_FOCUSED.set(editor, true);
+      setEditorFocused(editor, true);
+    }
+  }
+};
+
 export const executeEditableSelectionImport = ({
   importSelection,
   selectionPolicy,
@@ -488,7 +530,11 @@ const importProjectedDOMSelection = ({
     selectionSource: 'model-owned',
   });
   if (!isPliteViewSelectionCollapsed(projectedSelection)) {
-    domSelection.removeAllRanges();
+    removeDOMSelectionRangesPreservingEditableFocus({
+      domSelection,
+      editor,
+      editorElement,
+    });
   }
   return true;
 };
@@ -1505,7 +1551,11 @@ export const syncEditableDOMSelectionToEditor = ({
     if (viewSelection || !projectedSelection) {
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
-      domSelection.removeAllRanges();
+      removeDOMSelectionRangesPreservingEditableFocus({
+        domSelection,
+        editor,
+        editorElement,
+      });
       const clearNativeSelection = () => {
         const current = readPliteViewSelection(editor);
         if (
@@ -1514,7 +1564,11 @@ export const syncEditableDOMSelectionToEditor = ({
         ) {
           return;
         }
-        domSelection.removeAllRanges();
+        removeDOMSelectionRangesPreservingEditableFocus({
+          domSelection,
+          editor,
+          editorElement,
+        });
       };
       const label = viewSelection
         ? 'view-selection'
