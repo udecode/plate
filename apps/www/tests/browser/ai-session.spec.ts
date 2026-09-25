@@ -440,7 +440,7 @@ test('AI edit renders beside the homepage seeded suggestions', async ({
 
 test('AI edit preserves unchanged blocks and suggests only added emoji', async ({
   page,
-}) => {
+}, info) => {
   const errors = recordBrowserRuntimeErrors(page, { strict: true });
   const response = `${[
     { type: 'start', messageId: 'cross-block-edit' },
@@ -451,8 +451,8 @@ test('AI edit preserves unchanged blocks and suggests only added emoji', async (
       ' Editing 🤖✍️\n\n',
       'Boost your productivity with integrated [AI SDK](/docs/ai). Press ',
       '<kbd>⌘+J</kbd> or <kbd>Space</kbd> in an empty line to:\n\n',
-      '* Generate content (continue writing, summarize, explain)\n',
-      '* Edit existing text (improve, fix grammar, change tone)',
+      '* Generate content (continue writing, summarize, explain) 📝\n',
+      '* Edit existing text (improve, fix grammar, change tone) ✍️',
     ].map((delta) => ({ type: 'text-delta', id: 'text', delta })),
     { type: 'text-end', id: 'text' },
     { type: 'finish' },
@@ -515,7 +515,7 @@ test('AI edit preserves unchanged blocks and suggests only added emoji', async (
       await root
         .locator(`[data-editor-authored-change="${changeId}"]`)
         .allTextContents()
-    ).toEqual([' 🤖✍️']);
+    ).toEqual([' 🤖✍️', ' 📝', ' ✍️']);
     await expect(
       root.locator(
         `[data-editor-authored-change="${changeId}"][data-editor-retained="delete"]`
@@ -524,6 +524,13 @@ test('AI edit preserves unchanged blocks and suggests only added emoji', async (
     expect(((await editor.get.modelValue()) as typeof before).children).toEqual(
       before.children
     );
+    await root
+      .getByRole('heading', { name: 'AI-Powered Editing 🤖✍️' })
+      .evaluate((element) => element.scrollIntoView({ block: 'start' }));
+    await info.attach('ai-separated-emoji-suggestions', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
 
     await page.getByRole('option', { name: 'Accept', exact: true }).click();
     await expect
@@ -533,7 +540,13 @@ test('AI edit preserves unchanged blocks and suggests only added emoji', async (
       })
       .toEqual(
         before.children.map((node, index) =>
-          index === 4 ? 'AI-Powered Editing 🤖✍️' : textContent(node)
+          index === 4
+            ? 'AI-Powered Editing 🤖✍️'
+            : index === 6
+              ? 'Generate content (continue writing, summarize, explain) 📝'
+              : index === 7
+                ? 'Edit existing text (improve, fix grammar, change tone) ✍️'
+                : textContent(node)
         )
       );
     errors.assertNone();

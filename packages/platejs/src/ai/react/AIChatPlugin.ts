@@ -1135,7 +1135,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         return false;
       }
     }
-    if (!capturedSelection && !suggestionTarget) {
+    if (!suggestionPaths && !suggestionTarget) {
       const proposedView = createEditorView(authoredEditor, {
         authored: { intent: 'edit', projection: 'proposed' },
         ...(root ? { root } : {}),
@@ -1152,13 +1152,27 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       const first = ordered[0];
       const last = ordered.at(-1);
       if (!first || !last) return false;
-      suggestionPaths = ordered.map(([, path]) => path);
       const anchor = proposedView.read.points.start(first[1]);
       const focus = proposedView.read.points.end(last[1]);
-      suggestionTarget =
-        anchor && focus
-          ? { anchor, focus }
-          : (proposedView.read.ranges.fromEntries(ordered) ?? null);
+      const capturedEdges = capturedSelection
+        ? RangeApi.edges(capturedSelection)
+        : null;
+      const coversWholeBlocks =
+        !capturedEdges ||
+        (!!anchor &&
+          !!focus &&
+          PointApi.equals(capturedEdges[0], anchor) &&
+          PointApi.equals(capturedEdges[1], focus));
+
+      suggestionPaths = coversWholeBlocks
+        ? ordered.map(([, path]) => path)
+        : [];
+      if (!capturedSelection) {
+        suggestionTarget =
+          anchor && focus
+            ? { anchor, focus }
+            : (proposedView.read.ranges.fromEntries(ordered) ?? null);
+      }
     }
     const target = capturedSelection ?? suggestionTarget;
     if (!target) return false;

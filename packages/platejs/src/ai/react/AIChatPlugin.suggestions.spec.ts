@@ -360,6 +360,44 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.read.text.string([])).toBe(output);
   });
 
+  it('tracks separated emoji insertions across a text selection', () => {
+    const chatNodes = [
+      { children: [{ text: 'title' }], type: 'paragraph' },
+      { children: [{ text: 'unchanged' }], type: 'paragraph' },
+      { children: [{ text: 'tail' }], type: 'paragraph' },
+    ];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 4, path: [2, 0] },
+    });
+    const ai = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    ai.store.set({ toolName: 'edit' });
+
+    ai.api.setPreview('title ✨\n\nunchanged\n\ntail ✍️');
+
+    const changeId = ai.store.get('_changeId');
+    if (!changeId) throw new Error('Expected an AI change');
+    const details = editor.read.authored.details(changeId);
+    const parts =
+      details?.parts.status === 'available' ? details.parts.items : [];
+
+    expect(details?.change.kind).toBe('insert');
+    expect(parts.flatMap((part) => (part.before ? [part.before] : []))).toEqual(
+      []
+    );
+    expect(
+      parts.flatMap((part) =>
+        part.after?.location?.kind === 'range'
+          ? [editor.read.text.string(part.after.location.range)]
+          : []
+      )
+    ).toEqual([' ✨', ' ✍️']);
+    ai.api.accept();
+    expect(editor.read.text.string([])).toBe('title ✨unchangedtail ✍️');
+  });
+
   it('inserts expanded AI edits after the restored block selection', async () => {
     const chatNodes = [
       { children: [{ text: 'old-a' }], type: 'paragraph' },
