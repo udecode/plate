@@ -1,4 +1,4 @@
-import { replace as editorReplace } from '../../src/internal';
+import { replace as editorReplace, setEditorFocused } from '../../src/internal';
 import { ReactUpdatePolicy } from '../../src/react';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
@@ -68,6 +68,40 @@ test('inactive selection focus blocks even forced model-to-DOM selection export'
 
   expect(shouldSkipDOMSelection(editor, { force: true })).toBe(false);
   expect(shouldSkipSelectionFocus(editor)).toBe(false);
+});
+
+test('a focused editor cannot enter inactive selection policy', async () => {
+  const editor = createEditor();
+  const store = createPliteInactiveSelectionStore(editor);
+  const unsubscribe = store.subscribe(() => {});
+
+  setEditorFocused(editor, true);
+  store.setVisible(true);
+
+  expect(store.getSnapshot()).toBe(false);
+  expect(shouldSkipDOMSelection(editor, { force: true })).toBe(false);
+  expect(shouldSkipSelectionFocus(editor)).toBe(false);
+
+  setEditorFocused(editor, false);
+  store.setVisible(true);
+
+  expect(store.getSnapshot()).toBe(true);
+  expect(shouldSkipDOMSelection(editor, { force: true })).toBe(true);
+  expect(shouldSkipSelectionFocus(editor)).toBe(true);
+
+  setEditorFocused(editor, true);
+
+  expect(store.getSnapshot()).toBe(false);
+  expect(shouldSkipDOMSelection(editor, { force: true })).toBe(false);
+  expect(shouldSkipSelectionFocus(editor)).toBe(false);
+
+  await new Promise<void>((resolve) => {
+    queueMicrotask(resolve);
+  });
+  setEditorFocused(editor, false);
+
+  expect(store.getSnapshot()).toBe(false);
+  unsubscribe();
 });
 
 test('selection preservation policy suppresses repair focus without skipping selection sync', () => {

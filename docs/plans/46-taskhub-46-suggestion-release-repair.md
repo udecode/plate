@@ -1,6 +1,7 @@
 ---
 review_scopes: [accessibility, authored, selection, suggestions]
 review_basis:
+  - 2026-09-26-accessibility-inactive-focus-invariant
   - 2026-09-25-accessibility-confirmed-inactive-focus
   - 2026-09-25-accessibility-projected-drag-dom-handoff
   - 2026-09-25-accessibility-projected-selection-native-caret
@@ -89,6 +90,18 @@ Failed-fix ledger:
   That predicted focus transfer paints inactivity and can make selection side
   effects suppress the projected caret handoff even when focus never leaves
   the editor.
+- Attempt 5 was pushed to `origin/next` as
+  `4c5165e348ef10389be92d5c8005a39c2464127f`. It deferred inactive-selection
+  activation until a marked control received `focusin`.
+- Failure kind: `reporter-contradiction`. The reporter confirmed that input is
+  now stable but inactive selection still renders reliably. The apparent
+  coexistence is itself invalid: inactive selection means the editor has lost
+  input focus, so a focused, writable editor must never paint or enforce the
+  inactive-selection policy.
+- Root-cause delta: document focus-event history is routing evidence, not the
+  canonical editor-input truth. The inactive store could still activate from
+  a marked `focusin` while its mounted editor view remained focused, leaving
+  visual state and selection-side-effect policy inconsistent with input.
 
 Goal plan:
 docs/plans/46-taskhub-46-suggestion-release-repair.md
@@ -153,9 +166,9 @@ Verification surface:
 
 Constraints:
 
-- Local code, tests, plan, TaskHub status, and one direct commit/push to
-  `origin/next` are authorized. PR, merge, release, deployment, and external
-  publication are not authorized.
+- Local code, tests, plan repair, and one direct commit/push to `origin/next`
+  are authorized by the user's latest request. PR, merge, release, deployment,
+  and external publication are not authorized.
 - Use the exact first selection that includes retained suggestion content; an
   ordinary second selection is a control, not a substitute.
 - The actual event target, keydown/beforeinput path, stable focus state, and
@@ -192,11 +205,11 @@ Blocked condition:
 
 Task state:
 
-- current_phase: fifth source candidate passed non-browser verification;
+- current_phase: sixth source candidate passes non-browser verification;
   direct `origin/next` delivery authorized; browser acceptance delegated and
   open
-- next: reporter replays the real release/focus/first-key interaction in their
-  browser against the delivered source
+- next: commit and push the verified packet, then the reporter replays the real
+  release/focus/first-key interaction against the delivered source
 
 Work Checklist:
 
@@ -249,6 +262,7 @@ Decisions and tradeoffs:
 | Preserve browser input ownership at the projected-selection transition | `selection-controller.ts`, `selection-projected-dom.ts`, and `2026-09-25-accessibility-projected-selection-native-caret` | Delete the empty native-selection state. Collapse the browser Selection to an exact-view writable caret while projected decorations keep the expanded semantic range and paint | Synchronous/delayed focus restoration, toolbar gates, another focus boolean, public API, or keeping two expanded selection paints | Selection-controller contract requires one collapsed native range; reporter contradiction proved this owner alone was incomplete |
 | Preserve focus during the root drag ownership handoff | `root-interaction-controller.ts` and `2026-09-25-accessibility-projected-drag-dom-handoff` | When the browser-owned drag becomes a projected view selection, delegate to `syncDOMSelectionToEditor({ preserveScroll: true })` instead of independently clearing every native range | Mouseup focus restoration, delayed focus, toolbar/inactivity gates, or another native-caret owner | Root interaction contract proves the projected branch calls DOM export and does not call `removeAllRanges`; selection export contract proves that owner retains one collapsed caret |
 | Activate inactive selection only after confirmed focus transfer | `inactive-selection.ts` and `2026-09-25-accessibility-confirmed-inactive-focus` | A blur only makes the originating store pending; the document coordinator activates it only when a marked control receives the subsequent real `focusin` | Trust `blur.relatedTarget`, clear inactivity from root interaction, or let toolbar/input consumers override the store | Owner-level red/green contract rejects inactive paint between the predictive blur and confirmed focusin; real browser acceptance remains delegated |
+| Make focused and inactive mutually exclusive | `inactive-selection.ts` and `2026-09-26-accessibility-inactive-focus-invariant` | The inactive store rejects activation while its mounted editor view is focused, rechecks that focus on every snapshot/policy read, and clears active state when focus is published | Treat marked `focusin` as final input truth, hide the paint in copied UI, or special-case keyboard callers | The old source fails both the paint and policy invariants; 117 affected contracts plus source-first React typechecks pass locally; browser acceptance remains delegated |
 | Preserve focus API behavior for an expanded projected selection | `focus-plite-editable.ts` | Programmatic focus also installs the same projected native caret instead of focusing an editing host with no browser selection | A second focus-only repair path that leaves native selection empty | Focus contracts pass 12/12; real browser acceptance remains delegated |
 | Preserve #45 interaction lifetime | `docs/plans/45-taskhub-45-retained-suggestion-selection-drag-repair.md` | Leave held-drag import suppression unchanged and repair only post-release range clearing | Reverting #45's drag-active guard | `selection-drag-scroll.spec.ts` 1/1 plus retained endpoint/reverse coverage |
 
@@ -265,7 +279,7 @@ Completion Gates:
 | AC7 focus plus next input            | yes     | Before any toolbar assertion, observe inactive-selection DOM/paint, native caret/selection, DOM focus API, React focus context, focusin/focusout, and the actual first native key without polling or forced focus | source invariant now retains one collapsed native caret; real browser delegated/open |
 | AC8 #45 regression                   | yes     | Re-run held drag, scroll, reverse drag, and projected-selection preservation                                                      | delegated/open |
 | AC9 proof integrity                  | yes     | Source-built repo runner, exact route/browser/ref/fingerprints, strict errors; no model-only or mouseup-pre-only evidence         | delegated/open; no browser claim from this turn |
-| Implementation review                | yes     | Verify Plate implementation review of ownership, consumers, and generated/public surface                                          | Best API Review `2026-09-25-accessibility-confirmed-inactive-focus` deletes eager blur prediction at the existing coordinator; no new observer, timer, state, public API, toolbar workaround, or input workaround is added |
+| Implementation review                | yes     | Verify Plate implementation review of ownership, consumers, and generated/public surface                                          | Best API Review `2026-09-26-accessibility-inactive-focus-invariant` makes mounted editor focus the inactive store's shared paint/policy truth; no timer, public API, toolbar workaround, or input workaround is added |
 
 Select proof from the actual change. Verify Plate owns package, browser,
 native-device, CLI and artifact claims; Testing owns test value. Generated

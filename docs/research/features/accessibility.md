@@ -8,7 +8,7 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 
 ## Current decision
 
-[2026-09-25-accessibility-confirmed-inactive-focus](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json) — **pursue**. Pursue deleting predictive inactive-selection activation from blur.relatedTarget. Blur leaves the originating store pending; only the existing document focusin observer may activate it after a marked control genuinely receives focus, so a canceled or transient transfer cannot paint inactivity or suppress the projected caret handoff.
+[2026-09-26-accessibility-inactive-focus-invariant](../review-records/2026-09-26-accessibility-inactive-focus-invariant.json) — **pursue**. Pursue one impossible-state invariant inside the existing inactive-selection store: activation is rejected while the owning editor view is focused, reads and selection-side-effect policy recheck that same focus truth, and a later focus transition clears any active store before it can reappear. Keep the document coordinator only for marked-control lifecycle routing.
 
 Compiled decision: [plite-view-ownership.md](../decisions/plite-view-ownership.md). Source observation: matching. Source matching is not behavior proof.
 
@@ -28,7 +28,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
-| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-25-accessibility-confirmed-inactive-focus](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json), [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
+| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-26-accessibility-inactive-focus-invariant](../review-records/2026-09-26-accessibility-inactive-focus-invariant.json), [2026-09-25-accessibility-confirmed-inactive-focus](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json), [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
 
 ### Outcomes recorded after the latest review
 
@@ -126,7 +126,7 @@ References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-
 
 ### 2026-09-25: 2026-09-25-accessibility-confirmed-inactive-focus
 
-[Immutable record](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json) — review; pursue; observation matching.
+[Immutable record](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json) — review; pursue; observation stale.
 
 Pursue deleting predictive inactive-selection activation from blur.relatedTarget. Blur leaves the originating store pending; only the existing document focusin observer may activate it after a marked control genuinely receives focus, so a canceled or transient transfer cannot paint inactivity or suppress the projected caret handoff.
 
@@ -142,6 +142,24 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 Proof limits: The owner-level contract fails on the prior eager activation and passes when blur remains pending until focusin; existing marked-control behavior and 103 affected Plite React contracts pass. Per the reporter's instruction no browser is launched, so native event ordering, stable inactivity paint, and intermittent first-key behavior remain delegated and open.
 
 References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-projected-drag-dom-handoff.json](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [editable-text-blocks.tsx](../../../packages/plitejs/src/react/components/editable-text-blocks.tsx), [selection-side-effect-policy.ts](../../../packages/plitejs/src/react/editable/selection-side-effect-policy.ts), [root-interaction-controller.ts](../../../packages/plitejs/src/react/editable/root-interaction-controller.ts), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [editable-behavior.tsx](../../../packages/plitejs/test/react/editable-behavior.tsx).
+
+### 2026-09-26: 2026-09-26-accessibility-inactive-focus-invariant
+
+[Immutable record](../review-records/2026-09-26-accessibility-inactive-focus-invariant.json) — review; pursue; observation matching.
+
+Pursue one impossible-state invariant inside the existing inactive-selection store: activation is rejected while the owning editor view is focused, reads and selection-side-effect policy recheck that same focus truth, and a later focus transition clears any active store before it can reappear. Keep the document coordinator only for marked-control lifecycle routing.
+
+Question: Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?
+
+- Keep focusin-only activation and add another event-order repair: rejected because repeated reporter contradictions show event history can diverge from the editor input owner.
+- Hide inactive paint or bypass its policy in the floating toolbar and input callers: rejected because it preserves contradictory shared state and makes consumers compensate independently.
+- Delete inactive selection entirely: rejected because genuinely focused marked controls still need retained selection presentation while the editor is inactive.
+- Gate activation, snapshot reads, and selection-side-effect suppression on the owning editor view focus state and clear the store on focus-state publication: chosen because the existing focus owner becomes the single truth without a timer, caller workaround, or public API.
+- supersedes [2026-09-25-accessibility-confirmed-inactive-focus](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): Confirmed focusin remains necessary for marked-control routing but is not sufficient authority for inactive presentation when the owning editor view still reports focused and accepts input.
+
+Proof limits: The new contracts fail on the prior implementation and pass after focus truth becomes the inactive-store invariant; six affected Plite React files pass 117 tests and both source-first React typecheck lanes pass. Per the reporter instruction no browser is launched, so the real retained-suggestion release, inactive-selection absence, and first native key remain delegated and open.
+
+References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-confirmed-inactive-focus.json](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [editable-text-blocks.tsx](../../../packages/plitejs/src/react/components/editable-text-blocks.tsx), [selection-side-effect-policy.ts](../../../packages/plitejs/src/react/editable/selection-side-effect-policy.ts), [editable-behavior.tsx](../../../packages/plitejs/test/react/editable-behavior.tsx), [selection-side-effect-policy-contract.test.ts](../../../packages/plitejs/test/react/selection-side-effect-policy-contract.test.ts).
 
 ## Retrieval boundaries
 

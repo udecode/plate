@@ -2,9 +2,9 @@
 title: Plite view ownership
 type: decision
 status: proposed
-updated: 2026-09-25
+updated: 2026-09-26
 review_scope: plite-view
-current_review: 2026-09-25-accessibility-confirmed-inactive-focus
+current_review: 2026-09-26-accessibility-inactive-focus-invariant
 review_history:
   - ../review-records/2026-07-23-api-react.json
   - ../review-records/2026-09-12-react-public-runtime-cut.json
@@ -16,6 +16,7 @@ review_history:
   - ../review-records/2026-09-25-accessibility-projected-selection-native-caret.json
   - ../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json
   - ../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json
+  - ../review-records/2026-09-26-accessibility-inactive-focus-invariant.json
 source_refs:
   - ../../../packages/plitejs/src/react/components/plite.tsx
   - ../../../packages/plitejs/src/react/hooks/use-plite-runtime.tsx
@@ -285,6 +286,16 @@ it only from that confirmed focus event. A canceled or transient transfer
 therefore cannot block the projected DOM export or make active editor content
 look inactive. Keep this lifecycle inside Plite; root interaction, keyboard
 input and copied toolbars must not clear or override a falsely activated store.
+
+The subsequent reporter contradiction shows that confirmed document
+`focusin` is still routing evidence rather than the editor input truth. The
+[focused inactive invariant review](../review-records/2026-09-26-accessibility-inactive-focus-invariant.json)
+makes inactive presentation impossible while the owning mounted editor view
+reports focused: activation is rejected, snapshot and selection-policy reads
+recheck the same focus state, and a published focus transition clears the
+store. A genuinely focused marked control still activates inactive selection
+after the editor view reports focus loss. This preserves one lifecycle owner
+without asking the floating toolbar or keyboard input path to compensate.
 
 ## Evidence limits and next owner
 

@@ -3,6 +3,7 @@ import { isDOMNode } from '../dom';
 import type { DecorationSource } from './decoration-source';
 import {
   getSnapshot as editorGetSnapshot,
+  subscribeEditorViewState,
   subscribeSource as editorSubscribeSource,
 } from './editable/runtime-editor-api';
 import { readRuntimeSelectionRange } from './editable/runtime-selection-state';
@@ -34,7 +35,9 @@ const EDITOR_TO_INACTIVE_SELECTION_COUNT = new WeakMap<
 
 export const isPliteInactiveSelectionVisible = (
   editor: ReactRuntimeEditor<any>
-) => (EDITOR_TO_INACTIVE_SELECTION_COUNT.get(editor) ?? 0) > 0;
+) =>
+  !editor.read.view.isFocused() &&
+  (EDITOR_TO_INACTIVE_SELECTION_COUNT.get(editor) ?? 0) > 0;
 
 const getPliteDocumentFocusCoordinator = (
   document: Document
@@ -154,33 +157,49 @@ export const createPliteInactiveSelectionStore = (
   editor?: ReactRuntimeEditor<any>
 ): PliteInactiveSelectionStore => {
   const listeners = new Set<() => void>();
+  const isEditorFocused = () => editor?.read.view.isFocused() ?? false;
+  let unsubscribeViewState: (() => void) | null = null;
   let visible = false;
+  const setVisible = (nextVisible: boolean) => {
+    const visibleWithFocus = nextVisible && !isEditorFocused();
+
+    if (visible === visibleWithFocus) return;
+
+    visible = visibleWithFocus;
+    if (editor) {
+      const nextCount = Math.max(
+        0,
+        (EDITOR_TO_INACTIVE_SELECTION_COUNT.get(editor) ?? 0) +
+          (visible ? 1 : -1)
+      );
+
+      if (nextCount === 0) {
+        EDITOR_TO_INACTIVE_SELECTION_COUNT.delete(editor);
+      } else {
+        EDITOR_TO_INACTIVE_SELECTION_COUNT.set(editor, nextCount);
+      }
+    }
+    listeners.forEach((listener) => listener());
+  };
 
   return Object.freeze({
-    getSnapshot: () => visible,
-    setVisible(nextVisible) {
-      if (visible === nextVisible) return;
-
-      visible = nextVisible;
-      if (editor) {
-        const nextCount = Math.max(
-          0,
-          (EDITOR_TO_INACTIVE_SELECTION_COUNT.get(editor) ?? 0) +
-            (visible ? 1 : -1)
-        );
-
-        if (nextCount === 0) {
-          EDITOR_TO_INACTIVE_SELECTION_COUNT.delete(editor);
-        } else {
-          EDITOR_TO_INACTIVE_SELECTION_COUNT.set(editor, nextCount);
-        }
-      }
-      listeners.forEach((listener) => listener());
-    },
+    getSnapshot: () => visible && !isEditorFocused(),
+    setVisible,
     subscribe(listener) {
       listeners.add(listener);
+      if (listeners.size === 1 && editor) {
+        unsubscribeViewState = subscribeEditorViewState(editor, () => {
+          if (isEditorFocused()) setVisible(false);
+        });
+      }
 
-      return () => listeners.delete(listener);
+      return () => {
+        listeners.delete(listener);
+        if (listeners.size > 0) return;
+
+        unsubscribeViewState?.();
+        unsubscribeViewState = null;
+      };
     },
   });
 };

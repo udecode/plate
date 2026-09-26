@@ -13083,6 +13083,10 @@
     {
       "path": "docs/research/review-records/2026-09-25-accessibility-confirmed-inactive-focus.json",
       "sha256": "0aa00238b73dfb64104724ec64c8b490c7cfeba510c413b7b2ee0f2b0bcfcd6f"
+    },
+    {
+      "path": "docs/research/review-records/2026-09-26-accessibility-inactive-focus-invariant.json",
+      "sha256": "96c8a5d90d597632415b1d0fedfb75154944e0cd44fe81c557330b021239e65c"
     }
   ],
   "reviewGroups": [
