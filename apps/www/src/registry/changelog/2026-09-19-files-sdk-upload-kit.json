@@ -57,7 +57,7 @@
       "migrationNotes": [],
       "targets": ["upload", "files-api", "editor-plugins"],
       "source": {
-        "line": 14,
+        "line": 12,
         "row": 1,
         "legacyRelease": {
           "date": "2026-09-19",
@@ -74,7 +74,7 @@
       "migrationNotes": [],
       "targets": ["media", "editor-plugins-static"],
       "source": {
-        "line": 16,
+        "line": 14,
         "row": 2,
         "legacyRelease": {
           "date": "2026-09-19",

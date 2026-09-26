@@ -8,19 +8,19 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 
 ## Current decision
 
-[2026-09-26-accessibility-inactive-focus-invariant](../review-records/2026-09-26-accessibility-inactive-focus-invariant.json) — **pursue**. Pursue one impossible-state invariant inside the existing inactive-selection store: activation is rejected while the owning editor view is focused, reads and selection-side-effect policy recheck that same focus truth, and a later focus transition clears any active store before it can reappear. Keep the document coordinator only for marked-control lifecycle routing.
+[2026-09-12-accessibility-owner-boundaries](../review-records/2026-09-12-accessibility-owner-boundaries.json) — **stop**. Keep announcement, exact-view focus and optional product Tab traversal as distinct responsibilities. Preserve provider-scoped announcement hosting through the proposed React setup cut.
 
-Compiled decision: [plite-view-ownership.md](../decisions/plite-view-ownership.md). Source observation: matching. Source matching is not behavior proof.
+Compiled decision: [plite-view-ownership.md](../decisions/plite-view-ownership.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **in-progress**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
+Execution: **not-assessed**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [runtime-focus-mouse-events.ts](../../../packages/plitejs/src/react/editable/runtime-focus-mouse-events.ts), [editor-announcement-live-region.tsx](../../../packages/plitejs/src/react/components/editor-announcement-live-region.tsx), [use-plite-runtime.tsx](../../../packages/plitejs/src/react/hooks/use-plite-runtime.tsx), [editable-voids.tsx](../../../apps/www/src/app/(app)/examples/plite/_examples/editable-voids.tsx), [tabbable.tsx](../../../apps/www/src/registry/components/editor/tabbable.tsx), [screen-reader-announcement.test.tsx](../../../packages/plitejs/test/react/screen-reader-announcement.test.tsx), [editable-read-only-transition.test.tsx](../../../packages/plitejs/test/react/editable-read-only-transition.test.tsx), [package.json](../../../apps/www/package.json), [package.json](../../../packages/plitejs/package.json), [tsconfig.json](../../../packages/plitejs/tsconfig.json), [plite.md](../../vision/plite.md), [SKILL.md](../../../.agents/skills/best-api/SKILL.md), [VISION.md](../../../VISION.md), [package.json](../../../package.json), [pnpm-lock.yaml](../../../pnpm-lock.yaml), [SKILL.md](../../../.agents/skills/best-api-review/SKILL.md), [best-api-review.md](../../../.agents/rules/task/references/best-api-review.md). Changed directories: [tabbable](../../../packages/platejs/src/tabbable). Changed source groups: capability/blockPlaceholder, capability/navigationFeedback, capability/placeholder, capability/tabbable, example/plite/custom-placeholder, example/plite/editable-voids, example/plite/hidden-content-blocks, example/registry/editable-voids-demo, example/registry/inactive-selection-demo, example/registry/tabbable-demo, export/platejs/./tabbable, export/platejs/./tabbable/react, platejs/tabbable, plitejs/react/editable/caret-engine, plitejs/react/editable/content-root-navigation, plitejs/react/editable/runtime-focus-mouse-events, plitejs/react/editable/selection-void-target, ui/tabbable.
 
-No structural tracking gap detected. This does not certify the architectural conclusion.
+- **missing-current-decision**: [plite-view-ownership.md](../decisions/plite-view-ownership.md).
 
 ## Plans and execution
 
@@ -28,7 +28,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
-| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-26-accessibility-inactive-focus-invariant](../review-records/2026-09-26-accessibility-inactive-focus-invariant.json), [2026-09-25-accessibility-confirmed-inactive-focus](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json), [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
+| No associated plan | unknown | unknown | unbound |
 
 ### Outcomes recorded after the latest review
 
@@ -62,104 +62,6 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 Proof limits: No test, browser or assistive-technology session run. Assertions inspected do not prove speech output or full Tab/iframe/shadow-root behavior; Tabbable ambient document access is an explicit environment limit. No global announcement deduplication or changed runtime accepted.
 
 References: [plite-view-ownership.md](../decisions/plite-view-ownership.md), [screen-reader-announcement.ts](../../../packages/plitejs/src/core/screen-reader-announcement.ts), [editor-announcement-live-region.tsx](../../../packages/plitejs/src/react/components/editor-announcement-live-region.tsx), [use-plite-runtime.tsx](../../../packages/plitejs/src/react/hooks/use-plite-runtime.tsx), [runtime-focus-mouse-events.ts](../../../packages/plitejs/src/react/editable/runtime-focus-mouse-events.ts), [TabbableEffects.internal.tsx](../../../packages/platejs/src/tabbable/react/TabbableEffects.internal.tsx), [tabbable.tsx](../../../apps/www/src/registry/components/editor/tabbable.tsx), [editable-voids.tsx](../../../apps/www/src/app/(app)/examples/plite/_examples/editable-voids.tsx).
-
-### 2026-09-25: 2026-09-25-accessibility-projected-selection-focus
-
-[Immutable record](../review-records/2026-09-25-accessibility-projected-selection-focus.json) — review; stop; observation stale.
-
-Stop a toolbar gate, inactive-selection API, public selection primitive or owner merge. Keep projected selection, native input, exact-view focus and copied UI geometry separate. Repair the existing projected-selection DOM transition so a native-range clear preserves the exact Editable's pre-existing focus and first-key capability; geometry may position the toolbar only after that focus invariant holds.
-
-Question: Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?
-
-- Keep the c894307d14 geometry-only repair: rejected because it opens a floating toolbar over an inactive selection and leaves the first-key failure untouched.
-- Gate the floating toolbar on inactive-selection markers or add another focused boolean: rejected because it hides the new toolbar symptom while preserving the lost editor focus and creates competing focus truth.
-- Call editor.api.dom.focus() from the floating toolbar or after a delay: rejected because copied UI would repair a substrate transition after the fact and could steal intentional external focus.
-- Keep the browser's expanded native range instead of the projected selection: rejected because retained fragments need projected identity and one visible semantic selection, while duplicate native and projected paint reintroduces the earlier drag defect.
-- Add a public projected-selection or focus-restoration API: rejected because no caller job exists; the transition already has the exact Editable, native Selection and mounted lifecycle required to preserve focus privately.
-- Preserve focus inside the projected-selection native-range clear only when that exact Editable owned focus immediately before the clear, and never restore over a real external focus target: chosen local repair within the existing owner.
-- retains [2026-09-12-accessibility-owner-boundaries](../review-records/2026-09-12-accessibility-owner-boundaries.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The failure is an implementation breach inside the existing exact-view focus and projected-selection lifetimes, not evidence that announcements, focus, traversal, selection, geometry or copied UI need a merged owner or new public contract.
-
-Proof limits: The review selects ownership and rejects broader API changes; it is not runtime acceptance. Source-built Chromium reproduces the 16-marker reporter endpoint but remains focused, while the reporter's Chrome shows inactive selection and lost input. The Mac is locked, so exact native Chrome inspection is currently unavailable. A deterministic native-range-clear focus-loss regression, exact endpoint replay, inactive-selection absence and first native key must all pass before local completion; reporter or Preview acceptance remains separate.
-
-References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-12-accessibility-owner-boundaries.json](../review-records/2026-09-12-accessibility-owner-boundaries.json), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [selection-reconciler.ts](../../../packages/plitejs/src/react/editable/selection-reconciler.ts), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [use-runtime-focus-state.ts](../../../packages/plitejs/src/react/hooks/use-runtime-focus-state.ts), [use-selection-geometry.tsx](../../../packages/plitejs/src/react/hooks/use-selection-geometry.tsx), [floating-toolbar.tsx](../../../apps/www/src/registry/components/editor/floating-toolbar.tsx), [suggestion.spec.ts](../../../apps/www/tests/browser/suggestion.spec.ts).
-
-### 2026-09-25: 2026-09-25-accessibility-projected-selection-native-caret
-
-[Immutable record](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json) — review; pursue; observation matching.
-
-Pursue replacing the empty browser Selection state with a collapsed native caret resolved by the existing projected-selection owner. Delete the removeAllRanges focus-restoration wrapper; keep projected paint and command targeting private, and keep the toolbar as a focus-gated geometry consumer.
-
-Question: Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?
-
-- Keep removeAllRanges plus synchronous, microtask, frame or timeout focus restoration: rejected because the browser selection remains empty, external focus races multiply, and the pushed synchronous variant already failed.
-- Close the floating toolbar when inactive-selection paint is present or add another focus flag: rejected because it hides the symptom while leaving keyboard ownership broken and duplicates focus truth.
-- Keep the expanded native range alongside projected paint: rejected because it creates two expanded visual selections and cannot represent retained-fragment semantics as one native range.
-- Move repair into the toolbar, inactive-selection coordinator or React context: rejected because those are consumers of exact-view focus and cannot create a browser editing caret without cross-layer compensation.
-- Delete projected selection and flatten retained fragments into the model selection: rejected because retained identity, authored-view coordinates and multi-segment command targets are current hard jobs.
-- Export an expanded projected selection as a collapsed native caret at an existing writable projected target while projected decorations own expanded paint: chosen because it removes the empty-selection state and reuses the exact mounted selection owner without a public primitive.
-- retains [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The exact Editable, projected selection and copied UI remain separate owners; no public API, toolbar focus call, timer or parallel focus state is justified.
-- supersedes [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The selected synchronous restore after removeAllRanges failed in the reporter browser and preserves an empty native selection state whose later blur can be hidden by isUpdatingSelection.
-
-Proof limits: This review selects the repair owner and invariant from current source plus the reporter contradiction. Per the user's latest instruction, no real-browser proof is run or claimed in this repair turn; browser acceptance remains delegated to the user. Static and focused non-browser checks can reject type and selection-contract errors but cannot certify native focus, caret paint or first-key routing.
-
-References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-projected-selection-focus.json](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [selection-reconciler.ts](../../../packages/plitejs/src/react/editable/selection-reconciler.ts), [focus-plite-editable.ts](../../../packages/plitejs/src/react/hooks/focus-plite-editable.ts), [editable.tsx](../../../packages/plitejs/src/react/components/editable.tsx), [view-selection.ts](../../../packages/plitejs/src/react/view-selection.ts), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [floating-toolbar.tsx](../../../apps/www/src/registry/components/editor/floating-toolbar.tsx).
-
-### 2026-09-25: 2026-09-25-accessibility-projected-drag-dom-handoff
-
-[Immutable record](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json) — review; pursue; observation matching.
-
-Pursue one ownership handoff: when root interaction converts a native drag to a projected view selection, call the existing DOM selection export with preserveScroll so it installs the projected collapsed caret. Keep removeAllRanges only for the non-projected fallback, and keep toolbar and inactive-selection consumers out of the repair.
-
-Question: Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?
-
-- Delete projected selection and flatten retained content into the model range: rejected because retained fragment identity and multi-segment command targeting are independent current jobs.
-- Focus the Editable on mouseup or in a timer: rejected because it repairs after ownership was already destroyed and can steal a genuine external focus transfer.
-- Close the floating toolbar or clear inactivity paint when focus is missing: rejected because it hides the visible symptoms while the keyboard target remains broken.
-- Keep the root removeAllRanges call and add another collapsed caret afterward: rejected because it preserves the destructive intermediate state and duplicates the existing DOM selection export owner.
-- Route the projected root-drag handoff through syncDOMSelectionToEditor with preserveScroll: chosen because the selection controller already resolves the exact writable projected caret and the interaction still owns the native drag at that synchronous boundary.
-- retains [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The expanded projected selection still needs one collapsed native caret owned by the exact Editable, and toolbar visibility remains only a downstream consumer.
-- supersedes [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The prior repair incorrectly treated selection-controller as the only native range clearer and left the root projected-drag handoff calling removeAllRanges.
-
-Proof limits: This review identifies the previously unmodified removeAllRanges call and selects the private handoff owner. Focused unit contracts can prove that the projected branch delegates to DOM export without clearing the browser range and that export collapses to one caret. Per the user's instruction, real browser focus, inactivity paint and first-key behavior remain unverified and delegated to the user.
-
-References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-projected-selection-native-caret.json](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [root-interaction-controller.ts](../../../packages/plitejs/src/react/editable/root-interaction-controller.ts), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [runtime-root-engine.ts](../../../packages/plitejs/src/react/editable/runtime-root-engine.ts), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [floating-toolbar.tsx](../../../apps/www/src/registry/components/editor/floating-toolbar.tsx), [root-interaction-controller.test.tsx](../../../packages/plitejs/test/react/root-interaction-controller.test.tsx), [selection-controller-contract.ts](../../../packages/plitejs/test/react/selection-controller-contract.ts).
-
-### 2026-09-25: 2026-09-25-accessibility-confirmed-inactive-focus
-
-[Immutable record](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json) — review; pursue; observation stale.
-
-Pursue deleting predictive inactive-selection activation from blur.relatedTarget. Blur leaves the originating store pending; only the existing document focusin observer may activate it after a marked control genuinely receives focus, so a canceled or transient transfer cannot paint inactivity or suppress the projected caret handoff.
-
-Question: Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?
-
-- Keep eager blur.relatedTarget activation and clear it from root interaction or selection export: rejected because it makes selection owners compensate for presentation state and preserves the race that blocks their work.
-- Hide inactive paint or ignore its policy from the floating toolbar and text-input callers: rejected because multiple consumers would disagree while the store remains falsely active.
-- Delete inactive selection entirely: rejected because genuinely focused marked controls need one retained selection representation while the Editable is inactive.
-- Defer the store on blur and activate only from the existing document focusin observer when its composed path contains the marker: chosen because one lifecycle owner observes the real focus transfer without a timer, new state, or public API.
-- retains [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): Root interaction must still delegate projected drag DOM selection to the existing export owner and must not clear the native range independently.
-- supersedes [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The prior review kept inactive-selection consumers outside the repair, but the reporter contradiction and deterministic red show its eager activation is an upstream selection-policy owner, not a downstream paint-only consumer.
-
-Proof limits: The owner-level contract fails on the prior eager activation and passes when blur remains pending until focusin; existing marked-control behavior and 103 affected Plite React contracts pass. Per the reporter's instruction no browser is launched, so native event ordering, stable inactivity paint, and intermittent first-key behavior remain delegated and open.
-
-References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-projected-drag-dom-handoff.json](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [editable-text-blocks.tsx](../../../packages/plitejs/src/react/components/editable-text-blocks.tsx), [selection-side-effect-policy.ts](../../../packages/plitejs/src/react/editable/selection-side-effect-policy.ts), [root-interaction-controller.ts](../../../packages/plitejs/src/react/editable/root-interaction-controller.ts), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [editable-behavior.tsx](../../../packages/plitejs/test/react/editable-behavior.tsx).
-
-### 2026-09-26: 2026-09-26-accessibility-inactive-focus-invariant
-
-[Immutable record](../review-records/2026-09-26-accessibility-inactive-focus-invariant.json) — review; pursue; observation matching.
-
-Pursue one impossible-state invariant inside the existing inactive-selection store: activation is rejected while the owning editor view is focused, reads and selection-side-effect policy recheck that same focus truth, and a later focus transition clears any active store before it can reappear. Keep the document coordinator only for marked-control lifecycle routing.
-
-Question: Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?
-
-- Keep focusin-only activation and add another event-order repair: rejected because repeated reporter contradictions show event history can diverge from the editor input owner.
-- Hide inactive paint or bypass its policy in the floating toolbar and input callers: rejected because it preserves contradictory shared state and makes consumers compensate independently.
-- Delete inactive selection entirely: rejected because genuinely focused marked controls still need retained selection presentation while the editor is inactive.
-- Gate activation, snapshot reads, and selection-side-effect suppression on the owning editor view focus state and clear the store on focus-state publication: chosen because the existing focus owner becomes the single truth without a timer, caller workaround, or public API.
-- supersedes [2026-09-25-accessibility-confirmed-inactive-focus](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): Confirmed focusin remains necessary for marked-control routing but is not sufficient authority for inactive presentation when the owning editor view still reports focused and accepts input.
-
-Proof limits: The new contracts fail on the prior implementation and pass after focus truth becomes the inactive-store invariant; six affected Plite React files pass 117 tests and both source-first React typecheck lanes pass. Per the reporter instruction no browser is launched, so the real retained-suggestion release, inactive-selection absence, and first native key remain delegated and open.
-
-References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-confirmed-inactive-focus.json](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [editable-text-blocks.tsx](../../../packages/plitejs/src/react/components/editable-text-blocks.tsx), [selection-side-effect-policy.ts](../../../packages/plitejs/src/react/editable/selection-side-effect-policy.ts), [editable-behavior.tsx](../../../packages/plitejs/test/react/editable-behavior.tsx), [selection-side-effect-policy-contract.test.ts](../../../packages/plitejs/test/react/selection-side-effect-policy-contract.test.ts).
 
 ## Retrieval boundaries
 

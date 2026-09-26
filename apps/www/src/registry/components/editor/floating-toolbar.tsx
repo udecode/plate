@@ -124,15 +124,19 @@ function TextFloatingToolbar({
   const editorFocused = useEditorFocused();
   const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
   const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
-  const geometry = useSelectionGeometry({ editableRef });
-  const selectionExpanded = Boolean(geometry?.rects.length);
-  const selectionRange = useEditorSelector((innerEditor) =>
-    innerEditor.read.selection()
+  const selectionExpanded = useEditorSelector((innerEditor) =>
+    innerEditor.read.selection.isExpanded()
+  );
+  const selectionText = useEditorSelector((innerEditor2) =>
+    innerEditor2.read.text.string()
+  );
+  const selectionRange = useEditorSelector((innerEditor3) =>
+    innerEditor3.read.selection()
   );
   const waitForCollapsedSelection = useEditorSelector(
-    (innerEditor2, previous = false) => {
-      if (!innerEditor2.read.selection.isExpanded()) return false;
-      if (!innerEditor2.read.view.isFocused()) return true;
+    (innerEditor4, previous = false) => {
+      if (!innerEditor4.read.selection.isExpanded()) return false;
+      if (!innerEditor4.read.view.isFocused()) return true;
 
       return previous;
     }
@@ -146,6 +150,7 @@ function TextFloatingToolbar({
   const [ownedOverlayOpen, setOwnedOverlayOpen] = React.useState(false);
   const open =
     selectionExpanded &&
+    !!selectionText &&
     (editorFocused || ownedOverlayOpen) &&
     !isFloatingLinkOpen &&
     !isAIChatOpen &&
@@ -185,7 +190,6 @@ function TextFloatingToolbar({
   return (
     <PositionedFloatingToolbar
       editableRef={editableRef}
-      geometry={geometry}
       onOpenChange={(nextOpen) => {
         setDismissedSelection(nextOpen ? null : selectionRange);
       }}
@@ -198,14 +202,14 @@ function TextFloatingToolbar({
 
 function PositionedFloatingToolbar({
   children,
-  geometry,
+  editableRef,
   onOpenChange,
   onOverlayOpenChange,
 }: React.PropsWithChildren<EditableSiblingProps> & {
-  geometry: ReturnType<typeof useSelectionGeometry>;
   onOpenChange: (open: boolean) => void;
   onOverlayOpenChange: (open: boolean) => void;
 }) {
+  const geometry = useSelectionGeometry({ editableRef });
   const floating = useFloatingRect(geometry?.boundingRect ?? null, {
     open: true,
     middleware: [

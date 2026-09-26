@@ -2,9 +2,8 @@
 title: Plite view ownership
 type: decision
 status: proposed
-updated: 2026-09-26
+updated: 2026-09-12
 review_scope: plite-view
-current_review: 2026-09-26-accessibility-inactive-focus-invariant
 review_history:
   - ../review-records/2026-07-23-api-react.json
   - ../review-records/2026-09-12-react-public-runtime-cut.json
@@ -12,11 +11,6 @@ review_history:
   - ../review-records/2026-09-12-native-input-authority.json
   - ../review-records/2026-09-12-accessibility-owner-boundaries.json
   - ../review-records/2026-09-12-geometry-widget-carrier-cut.json
-  - ../review-records/2026-09-25-accessibility-projected-selection-focus.json
-  - ../review-records/2026-09-25-accessibility-projected-selection-native-caret.json
-  - ../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json
-  - ../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json
-  - ../review-records/2026-09-26-accessibility-inactive-focus-invariant.json
 source_refs:
   - ../../../packages/plitejs/src/react/components/plite.tsx
   - ../../../packages/plitejs/src/react/hooks/use-plite-runtime.tsx
@@ -253,49 +247,6 @@ benefit; no new public accessibility primitive is justified. The React cut must
 preserve announcement host lifetime rather than globally deduplicating by
 document identity. Ambient `document` use in Tabbable is a concrete iframe/shadow
 root proof limit, not a supported-environment claim.
-
-The September 25 failed-fix reviews reaffirm this boundary after TaskHub #46
-exposed an implementation breach: emptying the browser Selection for an
-expanded projected selection can leave an inactive selection while copied UI
-still sees stale focus state. The durable target stays private to the exact
-mounted Editable. The browser Selection keeps one collapsed writable caret;
-projected state owns the expanded semantic range and paint. This removes the
-empty-selection focus gap without retaining two expanded highlights or adding
-a later focus restore. Inactive-selection paint is loss-of-focus evidence;
-selection geometry and floating-toolbar visibility are not focus or input
-oracles. Do not add a toolbar-owned focus call, another focus boolean, a public
-projected-selection API, or a global `removeAllRanges` interception.
-
-The later reporter contradiction narrows that breach to the root interaction
-handoff as well as selection import/export. When a browser-owned drag becomes a
-projected view selection, root interaction must delegate the browser Selection
-to the existing DOM export owner so it installs the same collapsed writable
-caret with preserved scroll. It must not independently call
-`removeAllRanges()` for that projected branch. This keeps focus continuously
-owned by the exact Editable instead of trying to restore it on mouseup; the
-non-projected model fallback retains its separate clear/export behavior.
-
-The
-[confirmed inactive-focus review](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json)
-reopens inactive-selection activation rather than the projected caret target.
-`FocusEvent.relatedTarget` is only a proposed transfer;
-it cannot activate inactivity paint or selection side-effect suppression before
-the marked control receives a real document `focusin`. Blur leaves the exact
-Editable store pending, and the existing document focus coordinator activates
-it only from that confirmed focus event. A canceled or transient transfer
-therefore cannot block the projected DOM export or make active editor content
-look inactive. Keep this lifecycle inside Plite; root interaction, keyboard
-input and copied toolbars must not clear or override a falsely activated store.
-
-The subsequent reporter contradiction shows that confirmed document
-`focusin` is still routing evidence rather than the editor input truth. The
-[focused inactive invariant review](../review-records/2026-09-26-accessibility-inactive-focus-invariant.json)
-makes inactive presentation impossible while the owning mounted editor view
-reports focused: activation is rejected, snapshot and selection-policy reads
-recheck the same focus state, and a published focus transition clears the
-store. A genuinely focused marked control still activates inactive selection
-after the editor view reports focus loss. This preserves one lifecycle owner
-without asking the floating toolbar or keyboard input path to compensate.
 
 ## Evidence limits and next owner
 

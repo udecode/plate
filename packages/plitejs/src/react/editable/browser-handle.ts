@@ -611,7 +611,6 @@ export const attachPliteBrowserHandle = ({
           false);
       return {
         activeIntent: inputController.state.activeIntent,
-        focused: editor.read.view.isFocused(),
         isProjectingSelection: inputController.state.isProjectingSelection,
         modelOwnedTextInputGuard:
           inputController.state.modelOwnedTextInputGuard ?? 0,

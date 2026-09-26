@@ -71,7 +71,6 @@ import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
   resolveProjectedDOMSelection,
-  resolveProjectedSelectionDOMCaret,
   resolveViewBoundaryDOMPoint,
 } from './selection-projected-dom';
 import {
@@ -198,54 +197,6 @@ const getActiveElementInDocument = (targetDocument: Document) => {
   }
 
   return activeElement;
-};
-
-const collapseDOMSelectionToProjectedCaret = ({
-  domSelection,
-  editor,
-  editorElement,
-  viewSelection,
-}: {
-  domSelection: globalThis.Selection;
-  editor: ReactRuntimeEditor;
-  editorElement: HTMLElement;
-  viewSelection: NonNullable<ReturnType<typeof readPliteViewSelection>>;
-}) => {
-  const projectedCaret = resolveProjectedSelectionDOMCaret(
-    editor,
-    editorElement,
-    viewSelection
-  );
-  const nativeCaretCandidates = [
-    projectedCaret,
-    domSelection.focusNode
-      ? ([domSelection.focusNode, domSelection.focusOffset] as const)
-      : null,
-    domSelection.anchorNode
-      ? ([domSelection.anchorNode, domSelection.anchorOffset] as const)
-      : null,
-  ];
-
-  for (const point of nativeCaretCandidates) {
-    if (!point || !editorElement.contains(point[0])) continue;
-
-    const element = isDOMElement(point[0])
-      ? point[0]
-      : isDOMText(point[0])
-        ? point[0].parentElement
-        : null;
-
-    if (element?.closest('[data-editor="true"]') !== editorElement) continue;
-
-    try {
-      domSelection.collapse(point[0], point[1]);
-      return true;
-    } catch {
-      // Try the next exact-view caret candidate.
-    }
-  }
-
-  return false;
 };
 
 export const executeEditableSelectionImport = ({
@@ -537,32 +488,7 @@ const importProjectedDOMSelection = ({
     selectionSource: 'model-owned',
   });
   if (!isPliteViewSelectionCollapsed(projectedSelection)) {
-    inputController.state.isUpdatingSelection = true;
-    inputController.state.selectionChangeOrigin = 'programmatic-export';
-    const collapsed = collapseDOMSelectionToProjectedCaret({
-      domSelection,
-      editor,
-      editorElement,
-      viewSelection: projectedSelection,
-    });
-    if (collapsed) {
-      const runtime = getMountedEditableDOMRuntime(editor, editorElement);
-
-      if (runtime) {
-        runtime.domPhaseScheduler.schedule(
-          'selection-repair',
-          'clear-imported-view-selection-caret-update',
-          () => {
-            inputController.state.isUpdatingSelection = false;
-          },
-          { timing: 'timeout' }
-        );
-      } else {
-        inputController.state.isUpdatingSelection = false;
-      }
-    } else {
-      inputController.state.isUpdatingSelection = false;
-    }
+    domSelection.removeAllRanges();
   }
   return true;
 };
@@ -1579,30 +1505,16 @@ export const syncEditableDOMSelectionToEditor = ({
     if (viewSelection || !projectedSelection) {
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
-      if (viewSelection) {
-        collapseDOMSelectionToProjectedCaret({
-          domSelection,
-          editor,
-          editorElement,
-          viewSelection,
-        });
-      } else {
-        domSelection.removeAllRanges();
-      }
+      domSelection.removeAllRanges();
       const clearNativeSelection = () => {
         const current = readPliteViewSelection(editor);
-        if (viewSelection) {
-          if (!current || isPliteViewSelectionCollapsed(current)) return;
-
-          collapseDOMSelectionToProjectedCaret({
-            domSelection,
-            editor,
-            editorElement,
-            viewSelection: current,
-          });
-        } else {
-          domSelection.removeAllRanges();
+        if (
+          viewSelection &&
+          (!current || isPliteViewSelectionCollapsed(current))
+        ) {
+          return;
         }
+        domSelection.removeAllRanges();
       };
       const label = viewSelection
         ? 'view-selection'

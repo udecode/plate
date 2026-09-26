@@ -5,17 +5,10 @@ import type { Editor } from '../../index';
 import { getSnapshot } from '../../interfaces/editor';
 import {
   createRangeGeometryOwner,
-  measureDOMElementsGeometry,
-  measureRangeGeometry,
   type RangeGeometry,
   type RangeGeometryOwner,
   useRangeGeometryOwner,
 } from '../range-geometry';
-import {
-  isPliteViewSelectionCollapsed,
-  readPliteViewSelection,
-  subscribePliteViewSelection,
-} from '../view-selection';
 import { useEditorContext } from './use-editor-context';
 
 /** Identifies the exact mounted Editable used to resolve selection geometry. */
@@ -30,38 +23,11 @@ export const createSelectionGeometryOwner = (
   createRangeGeometryOwner(
     editor,
     {
-      measure: (view, editable) => {
-        const viewSelection = readPliteViewSelection(view);
-
-        if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
-          return measureDOMElementsGeometry(
-            editable.querySelectorAll('[data-editor-view-selection="true"]')
-          );
-        }
-
-        const selection = getSelectionDOMRange(
-          view,
-          getSnapshot(view).selection
-        );
-
-        return selection
-          ? measureRangeGeometry(view, editable, selection)
-          : null;
-      },
-      subscribe: (view, listener) => {
-        const unsubscribeCommit = view.subscribeCommit((commit) => {
+      read: (view) => getSelectionDOMRange(view, getSnapshot(view).selection),
+      subscribe: (view, listener) =>
+        view.subscribeCommit((commit) => {
           if (commit.selectionChanged) listener();
-        });
-        const unsubscribeViewSelection = subscribePliteViewSelection(
-          view,
-          listener
-        );
-
-        return () => {
-          unsubscribeCommit();
-          unsubscribeViewSelection();
-        };
-      },
+        }),
     },
     editableRef
   );

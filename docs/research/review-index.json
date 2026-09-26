@@ -70,6 +70,14 @@
       "source": "apps/www/src/app/api/ai/command/route.ts"
     },
     {
+      "id": "application/ai-copilot",
+      "scope": "ai",
+      "disposition": "grouped",
+      "count": 1,
+      "fingerprint": "5c60b7b6ffad2bed4106d1bc8a7d32f93f479e3bf72195e1da4eb7ffb804dfea",
+      "source": "apps/www/src/app/api/ai/copilot/route.ts"
+    },
+    {
       "id": "application/plite-examples",
       "scope": "ui",
       "disposition": "grouped",
@@ -13067,26 +13075,6 @@
     {
       "path": "docs/research/review-records/2026-09-23-mixed-suggestion-selection-deletion-execution.json",
       "sha256": "98ebecd5b0349f0d4fa53ce85cda5589042365451246baa9aa04bd5d30d92ea5"
-    },
-    {
-      "path": "docs/research/review-records/2026-09-25-accessibility-projected-selection-focus.json",
-      "sha256": "21dceb43f2427e1b125ffbe8609fce2bbda1d67952f30bd10cc9575d969ca01f"
-    },
-    {
-      "path": "docs/research/review-records/2026-09-25-accessibility-projected-selection-native-caret.json",
-      "sha256": "be8a1c7333dbc041d611102c7ced5f6a7e6875d335427baae7b77a7ed9637558"
-    },
-    {
-      "path": "docs/research/review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json",
-      "sha256": "1386864fdc07805ec017343686db9b64130a17c44996c126a4f03d07d9381b91"
-    },
-    {
-      "path": "docs/research/review-records/2026-09-25-accessibility-confirmed-inactive-focus.json",
-      "sha256": "0aa00238b73dfb64104724ec64c8b490c7cfeba510c413b7b2ee0f2b0bcfcd6f"
-    },
-    {
-      "path": "docs/research/review-records/2026-09-26-accessibility-inactive-focus-invariant.json",
-      "sha256": "96c8a5d90d597632415b1d0fedfb75154944e0cd44fe81c557330b021239e65c"
     }
   ],
   "reviewGroups": [

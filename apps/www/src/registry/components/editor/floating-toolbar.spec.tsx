@@ -9,7 +9,6 @@ const setFloating = mock();
 const useFloatingRectMock = mock();
 let floatingOptions: { onOpenChange: (open: boolean) => void };
 let editorFocused = true;
-let geometryExpanded = true;
 let selectedNodeCount = 0;
 let selectionExpanded = true;
 let selectionRange: unknown;
@@ -63,7 +62,7 @@ mock.module('platejs/react', () => ({
   useSelectionGeometry: () => ({
     boundingRect: new DOMRect(),
     focusRect: null,
-    rects: geometryExpanded ? [new DOMRect()] : [],
+    rects: [],
   }),
 }));
 
@@ -145,7 +144,6 @@ mock.module('@/registry/components/editor/toolbar', () => ({
 describe('FloatingToolbar', () => {
   beforeEach(() => {
     editorFocused = true;
-    geometryExpanded = true;
     selectedNodeCount = 0;
     selectionExpanded = true;
     selectionRange = {
@@ -189,7 +187,6 @@ describe('FloatingToolbar', () => {
 
   it('mounts positioning only while visible and resumes after collapse', async () => {
     selectionExpanded = false;
-    geometryExpanded = false;
     const { FloatingToolbar } = await import(
       `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
     );
@@ -201,7 +198,6 @@ describe('FloatingToolbar', () => {
     expect(useFloatingRectMock).not.toHaveBeenCalled();
 
     selectionExpanded = true;
-    geometryExpanded = true;
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
@@ -209,7 +205,6 @@ describe('FloatingToolbar', () => {
     expect(useFloatingRectMock).toHaveBeenCalled();
 
     selectionExpanded = false;
-    geometryExpanded = false;
     useFloatingRectMock.mockClear();
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
@@ -218,28 +213,9 @@ describe('FloatingToolbar', () => {
     expect(useFloatingRectMock).not.toHaveBeenCalled();
 
     selectionExpanded = true;
-    geometryExpanded = true;
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
-    expect(view.getByText('toolbar')).toBeTruthy();
-    expect(useFloatingRectMock).toHaveBeenCalled();
-  });
-
-  it('uses expanded view-selection geometry when the model selection is collapsed', async () => {
-    selectionExpanded = false;
-    selectionRange = {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    };
-
-    const { FloatingToolbar } = await import(
-      `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
-    );
-    const view = render(
-      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
-    );
-
     expect(view.getByText('toolbar')).toBeTruthy();
     expect(useFloatingRectMock).toHaveBeenCalled();
   });
@@ -258,14 +234,12 @@ describe('FloatingToolbar', () => {
     expect(view.queryByText('toolbar')).toBeNull();
 
     selectionExpanded = false;
-    geometryExpanded = false;
     selectionRange = null;
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
 
     selectionExpanded = true;
-    geometryExpanded = true;
     selectionRange = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
@@ -289,7 +263,6 @@ describe('FloatingToolbar', () => {
 
     editorFocused = false;
     selectionExpanded = false;
-    geometryExpanded = false;
     selectionRange = {
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
@@ -308,7 +281,6 @@ describe('FloatingToolbar', () => {
     expect(view.queryByText('toolbar')).toBeNull();
 
     selectionExpanded = true;
-    geometryExpanded = true;
     selectionRange = {
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 9, path: [0, 0] },

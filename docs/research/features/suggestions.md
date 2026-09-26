@@ -70,8 +70,6 @@ Changed files: [authored.ts](../../../packages/plitejs/src/authored/authored.ts)
 
 - **completed-plan-without-current-outcome**: [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md).
 
-- **completed-plan-without-current-outcome**: [45-taskhub-45-retained-suggestion-selection-drag-repair.md](../../plans/45-taskhub-45-retained-suggestion-selection-drag-repair.md).
-
 - **unbound-plan**: [5086-seeded-removal-suggestion-crash-regression.md](../../plans/5086-seeded-removal-suggestion-crash-regression.md).
 
 ## Plans and execution
@@ -105,8 +103,6 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-09-16-slash-ai-suggested-paragraph.md](../../plans/2026-09-16-slash-ai-suggested-paragraph.md) | completed | implementation | unbound |
 | [2026-09-17-authored-direct-editing-with-visible-suggestions.md](../../plans/2026-09-17-authored-direct-editing-with-visible-suggestions.md) | completed | implementation | [2026-09-17-suggestions-authored-editing-final](../review-records/2026-09-17-suggestions-authored-editing-final.json) |
 | [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md) | completed | implementation | [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
-| [45-taskhub-45-retained-suggestion-selection-drag-repair.md](../../plans/45-taskhub-45-retained-suggestion-selection-drag-repair.md) | completed | implementation | [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json) |
-| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-26-accessibility-inactive-focus-invariant](../review-records/2026-09-26-accessibility-inactive-focus-invariant.json), [2026-09-25-accessibility-confirmed-inactive-focus](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json), [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
 | [5086-seeded-removal-suggestion-crash-regression.md](../../plans/5086-seeded-removal-suggestion-crash-regression.md) | unknown | implementation | unbound |
 
 ### Outcomes recorded after the latest review
