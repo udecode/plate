@@ -30,6 +30,8 @@ Changed files: [ai.tsx](../../../apps/www/src/registry/components/editor/ai.tsx)
 
 - **unbound-plan**: [2026-09-16-slash-ai-suggested-paragraph.md](../../plans/2026-09-16-slash-ai-suggested-paragraph.md).
 
+- **completed-plan-without-current-outcome**: [2026-09-25-ai-separated-suggestion-diff-repair.md](../../plans/2026-09-25-ai-separated-suggestion-diff-repair.md).
+
 - **unreconciled-execution**: [2026-09-18-recovered-2026-09-16-ai-continuation-render-recovery](../review-records/2026-09-18-recovered-2026-09-16-ai-continuation-render-recovery.json).
 
 - **unreconciled-execution**: [2026-09-18-recovered-2026-09-16-slash-ai-suggested-paragraph](../review-records/2026-09-18-recovered-2026-09-16-slash-ai-suggested-paragraph.json).
@@ -45,6 +47,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-09-10-repair-markdown-streaming-demo-correction-cycle.md](../../plans/2026-09-10-repair-markdown-streaming-demo-correction-cycle.md) | superseded | research | unbound |
 | [2026-09-16-ai-continuation-render-recovery.md](../../plans/2026-09-16-ai-continuation-render-recovery.md) | completed | implementation | unbound |
 | [2026-09-16-slash-ai-suggested-paragraph.md](../../plans/2026-09-16-slash-ai-suggested-paragraph.md) | completed | implementation | unbound |
+| [2026-09-25-ai-separated-suggestion-diff-repair.md](../../plans/2026-09-25-ai-separated-suggestion-diff-repair.md) | completed | implementation | [2026-09-16-ai-main-regression-closure](../review-records/2026-09-16-ai-main-regression-closure.json) |
 
 ### Outcomes recorded after the latest review
 

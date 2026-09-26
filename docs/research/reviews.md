@@ -168,7 +168,7 @@ Review the Plate plugin/facade contract together with its public package boundar
 | <a id="toc"></a>[Table of contents](features/toc.md) | unassessed | unbound | unknown | 4 |
 | <a id="date"></a>[Dates](features/date.md) | unassessed | planned | unknown | 2 |
 | <a id="diff"></a>[Document comparison](features/diff.md) | pursue: Keep ordinary schema-valid JSON; use one structural comparison for revisions and branch-preserving three-way review. | planned | unknown | 1 |
-| <a id="ai"></a>[AI editing and copilot](features/ai.md) | stop: Confirm the repaired AI lifetimes and main parity audit on the final formatted source. | unbound | unknown | 7 |
+| <a id="ai"></a>[AI editing and copilot](features/ai.md) | stop: Confirm the repaired AI lifetimes and main parity audit on the final formatted source. | unbound | unknown | 8 |
 
 ## Retrieval limits
 
