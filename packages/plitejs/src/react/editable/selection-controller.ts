@@ -70,6 +70,8 @@ import {
 import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
+  canUseNativeViewSelection,
+  resolveNativeViewSelectionDOMRange,
   resolveProjectedDOMSelection,
   resolveViewBoundaryDOMPoint,
 } from './selection-projected-dom';
@@ -487,7 +489,10 @@ const importProjectedDOMSelection = ({
     reason: 'viewport-backed',
     selectionSource: 'model-owned',
   });
-  if (!isPliteViewSelectionCollapsed(projectedSelection)) {
+  if (
+    !isPliteViewSelectionCollapsed(projectedSelection) &&
+    !canUseNativeViewSelection(editor, projectedSelection)
+  ) {
     domSelection.removeAllRanges();
   }
   return true;
@@ -1439,6 +1444,8 @@ export const syncEditableDOMSelectionToEditor = ({
   const viewSelection = readPliteViewSelection(editor);
   const collapsedViewSelection =
     viewSelection && isPliteViewSelectionCollapsed(viewSelection);
+  const nativeViewSelection =
+    viewSelection && canUseNativeViewSelection(editor, viewSelection);
   const projectedSelection = getSelectionDOMRange(editor, selection);
   const selectionHasDOMCoverage =
     !!projectedSelection &&
@@ -1456,8 +1463,10 @@ export const syncEditableDOMSelectionToEditor = ({
 
   if (
     (viewportBackedSelection && selectionHasDOMCoverage) ||
-    (!selection && !collapsedViewSelection) ||
-    (!collapsedViewSelection && !isSelectionInEditorView(editor, selection)) ||
+    (!selection && !collapsedViewSelection && !nativeViewSelection) ||
+    (!collapsedViewSelection &&
+      !nativeViewSelection &&
+      !isSelectionInEditorView(editor, selection)) ||
     shouldSkipDOMSelection(editor, { force: options?.forceModelExport })
   ) {
     return;
@@ -1493,6 +1502,51 @@ export const syncEditableDOMSelectionToEditor = ({
 
     const preserveScroll =
       options?.preserveScroll || shouldSkipSelectionScroll(editor);
+    if (nativeViewSelection) {
+      const range = resolveNativeViewSelectionDOMRange(
+        editor,
+        viewSelection,
+        editorElement
+      );
+      if (!range) return;
+      const [anchorNode, anchorOffset, focusNode, focusOffset] = viewSelection
+        .segments.backward
+        ? ([
+            range.endContainer,
+            range.endOffset,
+            range.startContainer,
+            range.startOffset,
+          ] as const)
+        : ([
+            range.startContainer,
+            range.startOffset,
+            range.endContainer,
+            range.endOffset,
+          ] as const);
+      if (
+        domSelection.anchorNode === anchorNode &&
+        domSelection.anchorOffset === anchorOffset &&
+        domSelection.focusNode === focusNode &&
+        domSelection.focusOffset === focusOffset
+      ) {
+        return;
+      }
+
+      state.isUpdatingSelection = true;
+      state.selectionChangeOrigin = 'programmatic-export';
+      const restoreScroll = preserveScroll
+        ? captureScrollOffsets(editorElement)
+        : null;
+      domSelection.setBaseAndExtent(
+        anchorNode,
+        anchorOffset,
+        focusNode,
+        focusOffset
+      );
+      restoreScrollOffsets(restoreScroll, domPhaseScheduler);
+      scheduleClearSelectionUpdate('clear-exported-view-range-update');
+      return;
+    }
     if (collapsedViewSelection) {
       const point = resolveViewBoundaryDOMPoint(editor, viewSelection.focus);
       if (!point) return;
@@ -1508,6 +1562,7 @@ export const syncEditableDOMSelectionToEditor = ({
       domSelection.removeAllRanges();
       const clearNativeSelection = () => {
         const current = readPliteViewSelection(editor);
+        if (current && canUseNativeViewSelection(editor, current)) return;
         if (
           viewSelection &&
           (!current || isPliteViewSelectionCollapsed(current))

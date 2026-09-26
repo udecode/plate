@@ -411,7 +411,7 @@ const getGeometryCoordinator = (
   return coordinator;
 };
 
-const resolveRangeGeometry = (
+export const resolveRangeGeometry = (
   editor: GeometryEditor,
   editable: HTMLElement,
   range: Range
@@ -437,6 +437,20 @@ const resolveRangeGeometry = (
     return null;
   }
 
+  return resolveDOMRangeGeometry(
+    editable,
+    domRange,
+    focusDOMRange,
+    RangeApi.isCollapsed(range)
+  );
+};
+
+export const resolveDOMRangeGeometry = (
+  editable: HTMLElement,
+  domRange: globalThis.Range,
+  focusDOMRange: globalThis.Range,
+  collapsed: boolean
+): RangeGeometry | null => {
   if (
     !isWithinEditable(editable, domRange.startContainer) ||
     !isWithinEditable(editable, domRange.endContainer) ||
@@ -462,7 +476,7 @@ const resolveRangeGeometry = (
   const focusRect = hasUsableDOMRect(focusDOMRect)
     ? toViewportRect(focusDOMRect)
     : null;
-  const rects = RangeApi.isCollapsed(range)
+  const rects = collapsed
     ? []
     : Array.from(domRange.getClientRects(), toViewportRect);
   const boundingRect = unionRects(rects) ?? focusRect;

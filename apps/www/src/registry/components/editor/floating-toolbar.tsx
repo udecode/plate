@@ -124,22 +124,8 @@ function TextFloatingToolbar({
   const editorFocused = useEditorFocused();
   const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
   const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
-  const selectionExpanded = useEditorSelector((innerEditor) =>
-    innerEditor.read.selection.isExpanded()
-  );
-  const selectionText = useEditorSelector((innerEditor2) =>
-    innerEditor2.read.text.string()
-  );
-  const selectionRange = useEditorSelector((innerEditor3) =>
-    innerEditor3.read.selection()
-  );
-  const waitForCollapsedSelection = useEditorSelector(
-    (innerEditor4, previous = false) => {
-      if (!innerEditor4.read.selection.isExpanded()) return false;
-      if (!innerEditor4.read.view.isFocused()) return true;
-
-      return previous;
-    }
+  const [selectionRange, setSelectionRange] = React.useState<Range | null>(
+    null
   );
   const readOnly = useEditorReadOnly();
   const [dismissedSelection, setDismissedSelection] =
@@ -149,13 +135,11 @@ function TextFloatingToolbar({
   );
   const [ownedOverlayOpen, setOwnedOverlayOpen] = React.useState(false);
   const open =
-    selectionExpanded &&
-    !!selectionText &&
+    selectionRange !== null &&
     (editorFocused || ownedOverlayOpen) &&
     !isFloatingLinkOpen &&
     !isAIChatOpen &&
     !readOnly &&
-    (!waitForCollapsedSelection || ownedOverlayOpen) &&
     mouseDownOpen !== false &&
     dismissedSelection !== selectionRange;
   const openStateRef = React.useRef(open);
@@ -169,7 +153,38 @@ function TextFloatingToolbar({
 
     if (!document) return undefined;
 
+    const readSelection = () => {
+      const editable = editableRef.current;
+      const root = editable?.getRootNode() as Document | ShadowRoot | undefined;
+      const selection =
+        root && 'getSelection' in root
+          ? root.getSelection()
+          : document.getSelection();
+      const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+      const next =
+        range &&
+        !range.collapsed &&
+        selection?.toString() &&
+        editable?.contains(range.startContainer) &&
+        editable.contains(range.endContainer)
+          ? range
+          : null;
+      setSelectionRange((previous) => {
+        if (!next) return null;
+        if (
+          previous &&
+          previous.startContainer === next.startContainer &&
+          previous.startOffset === next.startOffset &&
+          previous.endContainer === next.endContainer &&
+          previous.endOffset === next.endOffset
+        ) {
+          return previous;
+        }
+        return next.cloneRange();
+      });
+    };
     const onMouseUp = () => {
+      readSelection();
       setMouseDownOpen(null);
     };
     const onMouseDown = () => {
@@ -178,10 +193,13 @@ function TextFloatingToolbar({
 
     document.addEventListener('mouseup', onMouseUp);
     document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('selectionchange', readSelection);
+    readSelection();
 
     return () => {
       document.removeEventListener('mouseup', onMouseUp);
       document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('selectionchange', readSelection);
     };
   }, [editableRef]);
 

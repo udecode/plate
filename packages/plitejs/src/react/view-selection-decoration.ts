@@ -2,11 +2,14 @@ import { useSyncExternalStore } from 'react';
 
 import { PathApi, RangeApi, type Range, type Value } from '..';
 import { readAuthoredFragmentView } from '../core/authored-runtime';
+import { subscribeEditorDOMScope } from '../dom/plugin/dom-editor';
+import { readDOMFragmentParent } from '../dom/plugin/dom-fragment-view';
 import type { Decoration, DecorationSource } from './decoration-source';
 import {
   getSnapshot as editorGetSnapshot,
   toInternalRoot,
 } from './editable/runtime-editor-api';
+import { canUseNativeViewSelection } from './editable/selection-projected-dom';
 import type { ReactRuntimeEditor } from './plugin/react-editor';
 import {
   createPliteViewBoundaryRootMap,
@@ -57,7 +60,11 @@ const readDecorations = <V extends Value>(
 ): readonly Decoration[] => {
   const selection = readPliteViewSelection(editor);
 
-  if (!selection || isPliteViewSelectionCollapsed(selection)) {
+  if (
+    !selection ||
+    isPliteViewSelectionCollapsed(selection) ||
+    canUseNativeViewSelection(editor, selection)
+  ) {
     return EMPTY_DECORATIONS;
   }
 
@@ -136,22 +143,32 @@ export const createPliteViewSelectionDecorationSource = <V extends Value>(
   return Object.freeze({
     id: PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID,
     observe: ({ refresh }) => {
-      let previousInputKeys = getInputKeys(editor, resolveDecorations());
-
-      refresh({ nodeKeys: previousInputKeys });
-
-      return subscribePliteViewSelection(editor, (notification) => {
+      let previousInputKeys = getInputKeys(editor, cachedDecorations);
+      const update = (forceInvalidate = false) => {
         cachedSelection = readPliteViewSelection(editor);
         cachedDecorations = readDecorations(editor, ownerKey);
         const nextInputKeys = getInputKeys(editor, cachedDecorations);
 
         refresh({
-          nodeKeys: notification?.forceInvalidate
+          nodeKeys: forceInvalidate
             ? 'all'
             : [...new Set([...previousInputKeys, ...nextInputKeys])],
         });
         previousInputKeys = nextInputKeys;
-      });
+      };
+      update();
+      const stopSelection = subscribePliteViewSelection(
+        editor,
+        (notification) => update(notification?.forceInvalidate)
+      );
+      const stopDOM = subscribeEditorDOMScope(
+        readDOMFragmentParent(editor) ?? editor,
+        () => update()
+      );
+      return () => {
+        stopSelection();
+        stopDOM();
+      };
     },
     read: ({ entry: [, path] }) =>
       resolveDecorations().filter(({ range }) =>
@@ -173,9 +190,11 @@ const FRAGMENT_KEYS = new WeakMap<
   Readonly<{ identity: string; keys: readonly string[] }>
 >();
 
-const readViewSelectionFragmentKeys = (editor: object) => {
+const readViewSelectionFragmentKeys = (editor: ReactRuntimeEditor<any>) => {
   const selection = readPliteViewSelection(editor);
-  if (!selection) return EMPTY_FRAGMENT_KEYS;
+  if (!selection || canUseNativeViewSelection(editor, selection)) {
+    return EMPTY_FRAGMENT_KEYS;
+  }
   const keys = [
     ...new Set(
       selection.segments.parts.flatMap(({ fragment }) =>
@@ -193,7 +212,9 @@ const readViewSelectionFragmentKeys = (editor: object) => {
   return snapshot;
 };
 
-export const usePliteViewSelectionFragmentKeys = (editor: object) =>
+export const usePliteViewSelectionFragmentKeys = (
+  editor: ReactRuntimeEditor<any>
+) =>
   useSyncExternalStore(
     (listener) => subscribePliteViewSelection(editor, listener),
     () => readViewSelectionFragmentKeys(editor),

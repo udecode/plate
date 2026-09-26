@@ -1,4 +1,12 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+} from 'bun:test';
 
 import { act, render } from '@testing-library/react';
 import * as React from 'react';
@@ -14,6 +22,20 @@ let selectionExpanded = true;
 let selectionRange: unknown;
 let toolbarOverlayOpenChange: (open: boolean) => void;
 const editableRef = { current: document.createElement('div') };
+
+function setNativeSelection(start: number, end: number) {
+  const range = document.createRange();
+
+  range.setStart(editableRef.current.firstChild!, start);
+  range.setEnd(editableRef.current.firstChild!, end);
+  act(() => {
+    const nativeSelection = document.getSelection()!;
+
+    nativeSelection.removeAllRanges();
+    nativeSelection.addRange(range);
+    document.dispatchEvent(new Event('selectionchange'));
+  });
+}
 
 const selection = Object.assign(() => selectionRange, {
   isExpanded: () => selectionExpanded,
@@ -143,6 +165,11 @@ mock.module('@/registry/components/editor/toolbar', () => ({
 
 describe('FloatingToolbar', () => {
   beforeEach(() => {
+    editableRef.current = document.createElement('div');
+    editableRef.current.contentEditable = 'true';
+    editableRef.current.textContent = 'selected text';
+    document.body.append(editableRef.current);
+    setNativeSelection(0, 4);
     editorFocused = true;
     selectedNodeCount = 0;
     selectionExpanded = true;
@@ -153,6 +180,13 @@ describe('FloatingToolbar', () => {
     floatingUpdate.mockClear();
     setFloating.mockClear();
     useFloatingRectMock.mockClear();
+  });
+
+  afterEach(() => {
+    act(() => {
+      editableRef.current.remove();
+      document.getSelection()?.removeAllRanges();
+    });
   });
 
   afterAll(() => {
@@ -187,6 +221,7 @@ describe('FloatingToolbar', () => {
 
   it('mounts positioning only while visible and resumes after collapse', async () => {
     selectionExpanded = false;
+    setNativeSelection(4, 4);
     const { FloatingToolbar } = await import(
       `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
     );
@@ -198,6 +233,7 @@ describe('FloatingToolbar', () => {
     expect(useFloatingRectMock).not.toHaveBeenCalled();
 
     selectionExpanded = true;
+    setNativeSelection(0, 4);
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
@@ -205,6 +241,7 @@ describe('FloatingToolbar', () => {
     expect(useFloatingRectMock).toHaveBeenCalled();
 
     selectionExpanded = false;
+    setNativeSelection(4, 4);
     useFloatingRectMock.mockClear();
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
@@ -213,6 +250,7 @@ describe('FloatingToolbar', () => {
     expect(useFloatingRectMock).not.toHaveBeenCalled();
 
     selectionExpanded = true;
+    setNativeSelection(0, 4);
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
@@ -233,8 +271,12 @@ describe('FloatingToolbar', () => {
     act(() => floatingOptions.onOpenChange(false));
     expect(view.queryByText('toolbar')).toBeNull();
 
+    act(() => document.dispatchEvent(new Event('selectionchange')));
+    expect(view.queryByText('toolbar')).toBeNull();
+
     selectionExpanded = false;
     selectionRange = null;
+    setNativeSelection(4, 4);
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
@@ -244,6 +286,7 @@ describe('FloatingToolbar', () => {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     };
+    setNativeSelection(0, 4);
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
@@ -267,6 +310,7 @@ describe('FloatingToolbar', () => {
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     };
+    setNativeSelection(4, 4);
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
@@ -285,11 +329,56 @@ describe('FloatingToolbar', () => {
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 9, path: [0, 0] },
     };
+    setNativeSelection(5, 9);
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
 
     expect(view.getByText('toolbar')).toBeTruthy();
+  });
+
+  it('requires editor focus for a native retained range with a collapsed model range', async () => {
+    selectionExpanded = false;
+    selectionRange = {
+      anchor: { offset: 4, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    };
+    const retained = document.createElement('span');
+
+    retained.contentEditable = 'false';
+    retained.textContent = 'deleted';
+    editableRef.current.append(retained, document.createTextNode(' after'));
+    const range = document.createRange();
+
+    range.selectNodeContents(editableRef.current);
+    act(() => {
+      const nativeSelection = document.getSelection()!;
+
+      nativeSelection.removeAllRanges();
+      nativeSelection.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    const { FloatingToolbar } = await import(
+      `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
+
+    expect(document.getSelection()?.toString()).toBe(
+      'selected textdeleted after'
+    );
+    expect(view.getByText('toolbar')).toBeTruthy();
+
+    editorFocused = false;
+    view.rerender(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
+
+    expect(document.getSelection()?.toString()).toBe(
+      'selected textdeleted after'
+    );
+    expect(view.queryByText('toolbar')).toBeNull();
   });
 
   it('keeps an owned toolbar interaction open across editor blur', async () => {

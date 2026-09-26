@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-26-floating-toolbar-retained-selections",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-26-floating-toolbar-retained-selections.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Show the floating toolbar for native text selections that include retained suggestions.",
+  "targets": [
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-26-floating-toolbar-native-text-selections-that-0a7c2c7d",
+      "kind": "fix",
+      "summary": "Show the floating toolbar for native text selections that include retained suggestions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-26",
+          "entry": "2026-09-26-floating-toolbar-retained-selections",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

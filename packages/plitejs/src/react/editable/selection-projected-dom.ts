@@ -17,6 +17,7 @@ import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
 import {
   getMountedDOMFragmentEditors,
   readDOMFragmentEditor,
+  readDOMFragmentParent,
 } from '../../dom/plugin/dom-fragment-view';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
@@ -24,7 +25,11 @@ import {
   PliteViewBoundaryGraph,
   type PliteViewBoundaryPoint,
 } from '../view-boundary-graph';
-import { createPliteViewSelection } from '../view-selection';
+import {
+  createPliteViewSelection,
+  isPliteViewSelectionCollapsed,
+  type PliteViewSelection,
+} from '../view-selection';
 import {
   getContentRootOwnerFromTarget,
   isSameOwner as isSameContentRootOwner,
@@ -34,6 +39,7 @@ import {
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
 } from './content-root-owners';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { getEditorRuntime, toInternalRoot } from './runtime-editor-api';
 
 type ProjectedDOMSelectionEndpoint = {
@@ -46,7 +52,8 @@ type ProjectedDOMSelectionEndpoint = {
 
 export const resolveViewBoundaryDOMPoint = (
   editor: ReactRuntimeEditor<any>,
-  boundary: PliteViewBoundaryPoint
+  boundary: PliteViewBoundaryPoint,
+  editorElement?: HTMLElement
 ) => {
   if (
     (boundary.point.root ?? MAIN_ROOT_KEY) !==
@@ -60,12 +67,71 @@ export const resolveViewBoundaryDOMPoint = (
     const point = resolveDOMPointInRoot(
       view,
       boundary.point,
-      undefined,
+      editorElement,
       boundary.affinity
     );
     if (point) return point;
   }
   return null;
+};
+
+export const canUseNativeViewSelection = (
+  editor: ReactRuntimeEditor<any>,
+  selection: PliteViewSelection
+) => {
+  const parent = (readDOMFragmentParent(editor) ??
+    editor) as ReactRuntimeEditor<any>;
+  const runtime = getMountedEditableDOMRuntime(parent);
+  const root = parent.read.view.root() ?? MAIN_ROOT_KEY;
+
+  return (
+    !!runtime &&
+    !runtime.viewportRuntime &&
+    !isPliteViewSelectionCollapsed(selection) &&
+    selection.segments.parts.every(
+      (part) =>
+        part.root === root &&
+        !part.owner &&
+        part.nodes.every((node) => !!node.text)
+    )
+  );
+};
+
+export const resolveNativeViewSelectionDOMRange = (
+  editor: ReactRuntimeEditor<any>,
+  selection: PliteViewSelection,
+  editorElement: HTMLElement
+) => {
+  if (!canUseNativeViewSelection(editor, selection)) return null;
+
+  const anchor = resolveViewBoundaryDOMPoint(
+    editor,
+    selection.anchor,
+    editorElement
+  );
+  const focus = resolveViewBoundaryDOMPoint(
+    editor,
+    selection.focus,
+    editorElement
+  );
+  if (!anchor || !focus) return null;
+  if (
+    ![anchor[0], focus[0]].every(
+      (node) =>
+        editorElement.contains(node) &&
+        getDOMEditorElementForNode(node) === editorElement
+    )
+  ) {
+    return null;
+  }
+
+  const range = editorElement.ownerDocument.createRange();
+  const [start, end] = selection.segments.backward
+    ? [focus, anchor]
+    : [anchor, focus];
+  range.setStart(start[0], start[1]);
+  range.setEnd(end[0], end[1]);
+  return range;
 };
 
 const getDOMElementForNode = (node: globalThis.Node | null) =>

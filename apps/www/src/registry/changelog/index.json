@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-26-floating-toolbar-retained-selections",
+      "href": "/registry/changelog/2026-09-26-floating-toolbar-retained-selections.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show the floating toolbar for native text selections that include retained suggestions.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-21-ai-edit-suggestions",
       "href": "/registry/changelog/2026-09-21-ai-edit-suggestions.json",
       "status": "draft",

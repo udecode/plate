@@ -57,6 +57,10 @@ import {
   getProjectedViewSelectionSlice,
   writeProjectedViewSelectionClipboardData,
 } from '../../src/react/editable/projected-clipboard';
+import {
+  applyEditableDOMSelectionChange,
+  syncEditableDOMSelectionToEditor,
+} from '../../src/react/editable/selection-controller';
 import { resolvePliteRangeFromDOMTextRange } from '../../src/react/editable/selection-dom-range';
 import {
   resolveProjectedDOMSelection,
@@ -89,6 +93,178 @@ const EditorRoot = ({ editor, ...props }: any) => (
 );
 
 const editingMarkup = { intent: 'edit', projection: 'markup' } as const;
+
+it.each([
+  {
+    name: 'forward',
+    anchor: [0, 1],
+    focus: [2, 1],
+    text: 'AXYZB',
+    result: 'L!R',
+  },
+  {
+    name: 'backward',
+    anchor: [2, 1],
+    focus: [0, 1],
+    text: 'AXYZB',
+    result: 'L!R',
+  },
+  {
+    name: 'retained focus',
+    anchor: [0, 1],
+    focus: [1, 2],
+    text: 'AXY',
+    result: 'L!BR',
+  },
+  {
+    name: 'retained anchor',
+    anchor: [1, 1],
+    focus: [2, 1],
+    text: 'YZB',
+    result: 'LA!R',
+  },
+] as const)(
+  'preserves the released retained native selection for $name',
+  async ({ anchor, focus, text, result }) => {
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('LAXYZBR')],
+    });
+    const parent = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: markup })
+    );
+    parent.update.text.delete({ at: { anchor: point(2), focus: point(5) } });
+    parent.api.authored.setView(editingMarkup);
+    const mounted = render(
+      <EditorRoot editor={parent}>
+        <Editable />
+      </EditorRoot>
+    );
+    const root = mounted.getByRole('textbox');
+    const runtime = getMountedEditableDOMRuntime(parent, root);
+    const native = window.getSelection();
+    assert.ok(runtime && native);
+    await act(async () => {
+      root.focus();
+      runtime.domPhaseScheduler.flush();
+    });
+    const strings = [...root.querySelectorAll('[data-editor-string]')].map(
+      (node) => node.firstChild
+    );
+    const anchorNode = strings[anchor[0]];
+    const focusNode = strings[focus[0]];
+    assert.ok(anchorNode && focusNode);
+    native.setBaseAndExtent(anchorNode, anchor[1], focusNode, focus[1]);
+    assert.equal(native.toString(), text);
+
+    await act(async () => {
+      applyEditableDOMSelectionChange({
+        androidInputManager: null,
+        editor: parent,
+        inputController: runtime.inputController,
+        processing: { current: false },
+        readOnly: false,
+        rerunOnDirtyNodeMap: () => {},
+      });
+    });
+    await act(async () => {
+      syncEditableDOMSelectionToEditor({
+        editor: parent,
+        editorElement: root,
+        scrollSelectionIntoView: () => {},
+        viewportBackedSelection: false,
+        state: runtime.state,
+      });
+      runtime.domPhaseScheduler.flush();
+    });
+
+    assert.equal(document.activeElement, root);
+    assert.equal(parent.api.dom.isFocused(), true);
+    assert.equal(parent.read.view.isFocused(), true);
+    assert.ok(readPliteViewSelection(parent));
+    assert.equal(native.rangeCount, 1);
+    assert.equal(native.toString(), text);
+    assert.equal(native.anchorNode, anchorNode);
+    assert.equal(native.anchorOffset, anchor[1]);
+    assert.equal(native.focusNode, focusNode);
+    assert.equal(native.focusOffset, focus[1]);
+    assert.equal(
+      root.querySelector(
+        '[data-editor-view-selection], [data-editor-inactive-selection], [data-editor-inactive-selection-caret]'
+      ),
+      null
+    );
+    assert.equal(
+      getProjectedViewSelectionSlice(parent)
+        ?.content.map(NodeApi.string)
+        .join(''),
+      text
+    );
+    const input = new InputEvent('beforeinput', {
+      bubbles: true,
+      cancelable: true,
+      data: '!',
+      inputType: 'insertText',
+    });
+    await act(async () => {
+      root.dispatchEvent(input);
+    });
+    assert.equal(input.defaultPrevented, true);
+    assert.deepEqual(source.read.children(), [paragraph(result)]);
+    assert.deepEqual(parent.read.children(), [paragraph(result)]);
+    assert.equal(readPliteViewSelection(parent), null);
+    assert.equal(document.activeElement, root);
+    mounted.unmount();
+  }
+);
+
+it('keeps one native selection layer when a retained selection precedes mounting', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [paragraph('AXYZB')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
+  parent.update.selection.set(point(0));
+  writePliteViewSelection(
+    parent,
+    createPliteViewSelection(createContentRootViewBoundaryGraph(parent, []), {
+      anchor: { point: point(0) },
+      focus: { point: point(2) },
+    })
+  );
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable />
+    </EditorRoot>
+  );
+  const root = mounted.getByRole('textbox');
+  const runtime = getMountedEditableDOMRuntime(parent, root);
+  const native = window.getSelection();
+  assert.ok(runtime && native);
+  await act(async () => {
+    root.focus();
+    syncEditableDOMSelectionToEditor({
+      editor: parent,
+      editorElement: root,
+      scrollSelectionIntoView: () => {},
+      viewportBackedSelection: false,
+      state: runtime.state,
+    });
+    runtime.domPhaseScheduler.flush();
+  });
+  assert.equal(native.rangeCount, 1);
+  assert.equal(native.toString(), 'AXYZB');
+  assert.equal(document.activeElement, root);
+  assert.equal(root.querySelectorAll('[data-editor-view-selection]').length, 0);
+  assert.equal(
+    root.querySelectorAll('[data-editor-inactive-selection]').length,
+    0
+  );
+  mounted.unmount();
+});
 
 it('shares retained projection state while keeping mounted DOM views independent', async () => {
   const authoring = authored({ authorId: 'alice' });
@@ -627,7 +803,9 @@ for (const input of [
 }
 
 for (const nested of [false, true]) {
-  it(`types after a restored paragraph end with default affinity${nested ? ' inside a table cell' : ''}`, async () => {
+  it(`types after a restored paragraph end with default affinity${
+    nested ? ' inside a table cell' : ''
+  }`, async () => {
     const paragraphs = [paragraph('AB'), paragraph('CD')];
     const value = nested
       ? [
@@ -1231,6 +1409,14 @@ it('maps a retained selection through accepted edits and releases it on a decisi
       <Editable />
     </EditorRoot>
   );
+  const root = mounted.getByRole('textbox');
+  const runtime = getMountedEditableDOMRuntime(parent, root);
+  const native = window.getSelection();
+  assert.ok(runtime && native);
+  await act(async () => {
+    root.focus();
+    runtime.domPhaseScheduler.flush();
+  });
   const { id } = source.read.authored.changes().items[0];
   const fragment = readAuthoredViewFragments(parent, id)[0];
   await act(async () =>
@@ -1243,21 +1429,31 @@ it('maps a retained selection through accepted edits and releases it on a decisi
     )
   );
   await act(async () => {
+    syncEditableDOMSelectionToEditor({
+      editor: parent,
+      editorElement: root,
+      scrollSelectionIntoView: () => {},
+      viewportBackedSelection: false,
+      state: runtime.state,
+    });
+    runtime.domPhaseScheduler.flush();
+  });
+  assert.equal(native.toString(), 'iddl');
+  await act(async () => {
     source.update.text.insert('Prefix ', { at: point(0) });
     source.update.text.insert('X', { at: point(17) });
   });
+  await act(async () => runtime.domPhaseScheduler.flush());
   assert.equal(
     getProjectedViewSelectionSlice(parent)
       ?.content.map(NodeApi.string)
       .join(''),
     'idXdl'
   );
-  assert.equal(
-    [...mounted.container.querySelectorAll('[data-editor-view-selection]')]
-      .map((node) => node.textContent)
-      .join(''),
-    'idXdl'
-  );
+  assert.equal(native.rangeCount, 1);
+  assert.equal(native.toString(), 'idXdl');
+  assert.equal(document.activeElement, root);
+  assert.equal(root.querySelector('[data-editor-view-selection]'), null);
   await act(async () =>
     source.update.authored.decide({
       action: 'reject',
@@ -1705,6 +1901,14 @@ it('copies retained blocks in visible order without merging their paragraph boun
       <Editable />
     </EditorRoot>
   );
+  const root = mounted.getByRole('textbox');
+  const runtime = getMountedEditableDOMRuntime(parent, root);
+  const native = window.getSelection();
+  assert.ok(runtime && native);
+  await act(async () => {
+    root.focus();
+    runtime.domPhaseScheduler.flush();
+  });
   const selection = createPliteViewSelection(
     createContentRootViewBoundaryGraph(parent, []),
     {
@@ -1713,16 +1917,28 @@ it('copies retained blocks in visible order without merging their paragraph boun
     }
   );
   await act(async () => writePliteViewSelection(parent, selection));
+  await act(async () => {
+    syncEditableDOMSelectionToEditor({
+      editor: parent,
+      editorElement: root,
+      scrollSelectionIntoView: () => {},
+      viewportBackedSelection: false,
+      state: runtime.state,
+    });
+    runtime.domPhaseScheduler.flush();
+  });
   assert.deepEqual(
     getProjectedViewSelectionSlice(parent)?.content.map(NodeApi.string),
     ['ore', 'Deleted', 'Af']
   );
+  assert.equal(native.rangeCount, 1);
   assert.deepEqual(
-    [...mounted.container.querySelectorAll('[data-editor-view-selection]')].map(
+    [...native.getRangeAt(0).cloneContents().childNodes].map(
       (node) => node.textContent
     ),
     ['ore', 'Deleted', 'Af']
   );
+  assert.equal(root.querySelector('[data-editor-view-selection]'), null);
   mounted.unmount();
 });
 
@@ -1941,6 +2157,12 @@ it('selects, copies and protects native retained content across both document af
   const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
   const domSelection = window.getSelection();
   assert.ok(root && domSelection);
+  const runtime = getMountedEditableDOMRuntime(parent, root);
+  assert.ok(runtime);
+  await act(async () => {
+    root.focus();
+    runtime.domPhaseScheduler.flush();
+  });
   const select = (
     anchor: number,
     anchorOffset: number,
@@ -1979,6 +2201,16 @@ it('selects, copies and protects native retained content across both document af
       1
     );
     await act(async () => writePliteViewSelection(parent, selected));
+    await act(async () => {
+      syncEditableDOMSelectionToEditor({
+        editor: parent,
+        editorElement: root,
+        scrollSelectionIntoView: () => {},
+        viewportBackedSelection: false,
+        state: runtime.state,
+      });
+      runtime.domPhaseScheduler.flush();
+    });
     const slice = getProjectedViewSelectionSlice(parent);
     assert.ok(slice);
     assert.deepEqual(slice.content.map(NodeApi.string), ['XYZ']);
@@ -1993,12 +2225,9 @@ it('selects, copies and protects native retained content across both document af
       true
     );
     assert.equal(data.get('text/plain'), 'XYZ');
-    assert.equal(
-      mounted.container.querySelector(
-        '[data-editor-retained] [data-editor-view-selection]'
-      )?.textContent,
-      'XYZ'
-    );
+    assert.equal(domSelection.rangeCount, 1);
+    assert.equal(domSelection.toString(), 'XYZ');
+    assert.equal(root.querySelector('[data-editor-view-selection]'), null);
     for (const command of [
       { kind: 'insert-text', text: '!' },
       { kind: 'delete', direction: 'backward' },

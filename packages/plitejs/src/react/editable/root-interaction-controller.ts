@@ -94,7 +94,10 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { writeRuntimeSelection } from './runtime-mutation-state';
-import { resolveProjectedDOMSelectionEndpoint } from './selection-projected-dom';
+import {
+  canUseNativeViewSelection,
+  resolveProjectedDOMSelectionEndpoint,
+} from './selection-projected-dom';
 
 export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selection-replay';
 
@@ -972,7 +975,15 @@ const applyProjectedDragSelectionFromEvent = ({
   }
 
   event.preventDefault();
-  clearDOMSelectionFromEvent(event);
+  const viewSelection = readPliteViewSelection(projectedDrag.editor);
+  if (
+    viewSelection &&
+    canUseNativeViewSelection(projectedDrag.editor, viewSelection)
+  ) {
+    selectionBridge?.syncDOMSelectionToEditor({ preserveScroll: true });
+  } else {
+    clearDOMSelectionFromEvent(event);
+  }
 
   return true;
 };
