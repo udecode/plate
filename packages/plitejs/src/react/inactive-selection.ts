@@ -19,10 +19,7 @@ export type PliteInactiveSelectionStore = Readonly<{
 
 type PliteDocumentFocusCoordinator = Readonly<{
   register: (store: PliteInactiveSelectionStore) => () => void;
-  resolveBlur: (
-    store: PliteInactiveSelectionStore,
-    relatedTarget: EventTarget | null
-  ) => void;
+  resolveBlur: (store: PliteInactiveSelectionStore) => void;
   setVisible: (store: PliteInactiveSelectionStore, visible: boolean) => void;
 }>;
 
@@ -132,16 +129,7 @@ const getPliteDocumentFocusCoordinator = (
         }
       };
     },
-    resolveBlur(
-      store: PliteInactiveSelectionStore,
-      relatedTarget: EventTarget | null
-    ) {
-      if (keepsPliteSelectionVisible(relatedTarget)) {
-        activate(store);
-
-        return;
-      }
-
+    resolveBlur(store: PliteInactiveSelectionStore) {
       defer(store);
     },
     setVisible(store: PliteInactiveSelectionStore, visible: boolean) {
@@ -234,10 +222,8 @@ export const registerPliteInactiveSelectionFocus = (
 
 export const resolvePliteInactiveSelectionBlur = (
   document: Document,
-  store: PliteInactiveSelectionStore,
-  relatedTarget: EventTarget | null
-) =>
-  getPliteDocumentFocusCoordinator(document).resolveBlur(store, relatedTarget);
+  store: PliteInactiveSelectionStore
+) => getPliteDocumentFocusCoordinator(document).resolveBlur(store);
 
 export const setPliteInactiveSelectionVisible = (
   document: Document,

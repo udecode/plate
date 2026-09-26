@@ -13079,6 +13079,10 @@
     {
       "path": "docs/research/review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json",
       "sha256": "1386864fdc07805ec017343686db9b64130a17c44996c126a4f03d07d9381b91"
+    },
+    {
+      "path": "docs/research/review-records/2026-09-25-accessibility-confirmed-inactive-focus.json",
+      "sha256": "0aa00238b73dfb64104724ec64c8b490c7cfeba510c413b7b2ee0f2b0bcfcd6f"
     }
   ],
   "reviewGroups": [

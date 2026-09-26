@@ -1580,8 +1580,7 @@ const EditableInner = <TElement extends ElementNode>({
     (event) => {
       resolvePliteInactiveSelectionBlur(
         event.currentTarget.ownerDocument,
-        inactiveSelectionStore,
-        event.relatedTarget
+        inactiveSelectionStore
       );
       onBlurCapture?.(event);
     },

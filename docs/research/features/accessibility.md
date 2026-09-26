@@ -8,7 +8,7 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 
 ## Current decision
 
-[2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json) — **pursue**. Pursue one ownership handoff: when root interaction converts a native drag to a projected view selection, call the existing DOM selection export with preserveScroll so it installs the projected collapsed caret. Keep removeAllRanges only for the non-projected fallback, and keep toolbar and inactive-selection consumers out of the repair.
+[2026-09-25-accessibility-confirmed-inactive-focus](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json) — **pursue**. Pursue deleting predictive inactive-selection activation from blur.relatedTarget. Blur leaves the originating store pending; only the existing document focusin observer may activate it after a marked control genuinely receives focus, so a canceled or transient transfer cannot paint inactivity or suppress the projected caret handoff.
 
 Compiled decision: [plite-view-ownership.md](../decisions/plite-view-ownership.md). Source observation: matching. Source matching is not behavior proof.
 
@@ -20,7 +20,7 @@ Imported scope flags (unbound historical claims): adoption not-assessed, proof n
 
 Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
 
-- **missing-current-decision**: [plite-view-ownership.md](../decisions/plite-view-ownership.md).
+No structural tracking gap detected. This does not certify the architectural conclusion.
 
 ## Plans and execution
 
@@ -28,7 +28,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
-| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
+| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-25-accessibility-confirmed-inactive-focus](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json), [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
 
 ### Outcomes recorded after the latest review
 
@@ -123,6 +123,25 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 Proof limits: This review identifies the previously unmodified removeAllRanges call and selects the private handoff owner. Focused unit contracts can prove that the projected branch delegates to DOM export without clearing the browser range and that export collapses to one caret. Per the user's instruction, real browser focus, inactivity paint and first-key behavior remain unverified and delegated to the user.
 
 References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-projected-selection-native-caret.json](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [root-interaction-controller.ts](../../../packages/plitejs/src/react/editable/root-interaction-controller.ts), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [runtime-root-engine.ts](../../../packages/plitejs/src/react/editable/runtime-root-engine.ts), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [floating-toolbar.tsx](../../../apps/www/src/registry/components/editor/floating-toolbar.tsx), [root-interaction-controller.test.tsx](../../../packages/plitejs/test/react/root-interaction-controller.test.tsx), [selection-controller-contract.ts](../../../packages/plitejs/test/react/selection-controller-contract.ts).
+
+### 2026-09-25: 2026-09-25-accessibility-confirmed-inactive-focus
+
+[Immutable record](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json) — review; pursue; observation matching.
+
+Pursue deleting predictive inactive-selection activation from blur.relatedTarget. Blur leaves the originating store pending; only the existing document focusin observer may activate it after a marked control genuinely receives focus, so a canceled or transient transfer cannot paint inactivity or suppress the projected caret handoff.
+
+Question: Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?
+
+- Keep eager blur.relatedTarget activation and clear it from root interaction or selection export: rejected because it makes selection owners compensate for presentation state and preserves the race that blocks their work.
+- Hide inactive paint or ignore its policy from the floating toolbar and text-input callers: rejected because multiple consumers would disagree while the store remains falsely active.
+- Delete inactive selection entirely: rejected because genuinely focused marked controls need one retained selection representation while the Editable is inactive.
+- Defer the store on blur and activate only from the existing document focusin observer when its composed path contains the marker: chosen because one lifecycle owner observes the real focus transfer without a timer, new state, or public API.
+- retains [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): Root interaction must still delegate projected drag DOM selection to the existing export owner and must not clear the native range independently.
+- supersedes [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The prior review kept inactive-selection consumers outside the repair, but the reporter contradiction and deterministic red show its eager activation is an upstream selection-policy owner, not a downstream paint-only consumer.
+
+Proof limits: The owner-level contract fails on the prior eager activation and passes when blur remains pending until focusin; existing marked-control behavior and 103 affected Plite React contracts pass. Per the reporter's instruction no browser is launched, so native event ordering, stable inactivity paint, and intermittent first-key behavior remain delegated and open.
+
+References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-projected-drag-dom-handoff.json](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [editable-text-blocks.tsx](../../../packages/plitejs/src/react/components/editable-text-blocks.tsx), [selection-side-effect-policy.ts](../../../packages/plitejs/src/react/editable/selection-side-effect-policy.ts), [root-interaction-controller.ts](../../../packages/plitejs/src/react/editable/root-interaction-controller.ts), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [editable-behavior.tsx](../../../packages/plitejs/test/react/editable-behavior.tsx).
 
 ## Retrieval boundaries
 

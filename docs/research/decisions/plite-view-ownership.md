@@ -4,6 +4,7 @@ type: decision
 status: proposed
 updated: 2026-09-25
 review_scope: plite-view
+current_review: 2026-09-25-accessibility-confirmed-inactive-focus
 review_history:
   - ../review-records/2026-07-23-api-react.json
   - ../review-records/2026-09-12-react-public-runtime-cut.json
@@ -14,6 +15,7 @@ review_history:
   - ../review-records/2026-09-25-accessibility-projected-selection-focus.json
   - ../review-records/2026-09-25-accessibility-projected-selection-native-caret.json
   - ../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json
+  - ../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json
 source_refs:
   - ../../../packages/plitejs/src/react/components/plite.tsx
   - ../../../packages/plitejs/src/react/hooks/use-plite-runtime.tsx
@@ -271,6 +273,18 @@ caret with preserved scroll. It must not independently call
 `removeAllRanges()` for that projected branch. This keeps focus continuously
 owned by the exact Editable instead of trying to restore it on mouseup; the
 non-projected model fallback retains its separate clear/export behavior.
+
+The
+[confirmed inactive-focus review](../review-records/2026-09-25-accessibility-confirmed-inactive-focus.json)
+reopens inactive-selection activation rather than the projected caret target.
+`FocusEvent.relatedTarget` is only a proposed transfer;
+it cannot activate inactivity paint or selection side-effect suppression before
+the marked control receives a real document `focusin`. Blur leaves the exact
+Editable store pending, and the existing document focus coordinator activates
+it only from that confirmed focus event. A canceled or transient transfer
+therefore cannot block the projected DOM export or make active editor content
+look inactive. Keep this lifecycle inside Plite; root interaction, keyboard
+input and copied toolbars must not clear or override a falsely activated store.
 
 ## Evidence limits and next owner
 

@@ -294,6 +294,46 @@ describe('plite-react editable behavior', () => {
     expect((editable as HTMLElement).style.zIndex).toBe('');
   });
 
+  test('waits for a marked control to receive focus before showing an inactive selection', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <div>
+        <EditorRoot editor={editor}>
+          <Editable />
+        </EditorRoot>
+        <button data-editor-keep-selection-visible type="button">
+          Keep selection
+        </button>
+      </div>
+    );
+    const editable = rendered.container.querySelector('[data-editor]')!;
+    const control = rendered.getByRole('button', { name: 'Keep selection' });
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+      fireEvent.blur(editable, { relatedTarget: control });
+    });
+
+    expect(
+      rendered.container.querySelector('[data-editor-inactive-selection]')
+    ).toBeNull();
+
+    await act(async () => {
+      fireEvent.focusIn(control, { relatedTarget: editable });
+    });
+
+    expect(
+      rendered.container.querySelector('[data-editor-inactive-selection]')
+    ).toHaveTextContent('es');
+  });
+
   test('shows an expanded selection while focus is in a marked control', async () => {
     const editor = createEditor({
       initialValue: [{ type: 'block', children: [{ text: 'test' }] }],

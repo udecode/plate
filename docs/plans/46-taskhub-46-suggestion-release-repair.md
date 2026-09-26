@@ -1,6 +1,7 @@
 ---
 review_scopes: [accessibility, authored, selection, suggestions]
 review_basis:
+  - 2026-09-25-accessibility-confirmed-inactive-focus
   - 2026-09-25-accessibility-projected-drag-dom-handoff
   - 2026-09-25-accessibility-projected-selection-native-caret
   - 2026-09-25-accessibility-projected-selection-focus
@@ -75,6 +76,19 @@ Failed-fix ledger:
   a projected selection. That path bypassed the repaired selection controller,
   so the real interaction could still lose focus and render inactivity
   selection.
+- Attempt 4 was pushed to `origin/next` as
+  `84bff82d4c8c0df7df66cb767dd27a8e505d2cb6`. It delegated the projected
+  root-drag handoff to the existing DOM selection export owner.
+- Failure kind: `reporter-contradiction`. The reporter confirmed that typing
+  and the floating toolbar can work, but inactive selection is still activated
+  incorrectly and typing still fails intermittently. The earlier claim that a
+  whole-paragraph selection always fails was explicitly corrected to an
+  intermittent input failure; range shape is not accepted as the cause.
+- Root-cause delta: the inactive-selection coordinator eagerly activated from
+  `blur.relatedTarget` before the marked control received a real `focusin`.
+  That predicted focus transfer paints inactivity and can make selection side
+  effects suppress the projected caret handoff even when focus never leaves
+  the editor.
 
 Goal plan:
 docs/plans/46-taskhub-46-suggestion-release-repair.md
@@ -139,8 +153,9 @@ Verification surface:
 
 Constraints:
 
-- Local code, tests, plan, and TaskHub status are authorized. Commit, push, PR,
-  merge, release, deployment, and external publication are not authorized.
+- Local code, tests, plan, TaskHub status, and one direct commit/push to
+  `origin/next` are authorized. PR, merge, release, deployment, and external
+  publication are not authorized.
 - Use the exact first selection that includes retained suggestion content; an
   ordinary second selection is a control, not a substitute.
 - The actual event target, keydown/beforeinput path, stable focus state, and
@@ -177,10 +192,11 @@ Blocked condition:
 
 Task state:
 
-- current_phase: fourth source candidate and non-browser closure checks complete;
-  browser acceptance delegated and open; no new Git delivery authorized
+- current_phase: fifth source candidate passed non-browser verification;
+  direct `origin/next` delivery authorized; browser acceptance delegated and
+  open
 - next: reporter replays the real release/focus/first-key interaction in their
-  browser, then separately authorizes Git delivery if accepted
+  browser against the delivered source
 
 Work Checklist:
 
@@ -232,6 +248,7 @@ Decisions and tradeoffs:
 | Revoke geometry-only completion | Failed-fix reporter contradiction | Keep the geometry work only as secondary positioning behavior; it cannot establish focus or input health | Treating floating-toolbar visibility as the release oracle | Pushed `c894307d14` is explicitly revoked as completion authority |
 | Preserve browser input ownership at the projected-selection transition | `selection-controller.ts`, `selection-projected-dom.ts`, and `2026-09-25-accessibility-projected-selection-native-caret` | Delete the empty native-selection state. Collapse the browser Selection to an exact-view writable caret while projected decorations keep the expanded semantic range and paint | Synchronous/delayed focus restoration, toolbar gates, another focus boolean, public API, or keeping two expanded selection paints | Selection-controller contract requires one collapsed native range; reporter contradiction proved this owner alone was incomplete |
 | Preserve focus during the root drag ownership handoff | `root-interaction-controller.ts` and `2026-09-25-accessibility-projected-drag-dom-handoff` | When the browser-owned drag becomes a projected view selection, delegate to `syncDOMSelectionToEditor({ preserveScroll: true })` instead of independently clearing every native range | Mouseup focus restoration, delayed focus, toolbar/inactivity gates, or another native-caret owner | Root interaction contract proves the projected branch calls DOM export and does not call `removeAllRanges`; selection export contract proves that owner retains one collapsed caret |
+| Activate inactive selection only after confirmed focus transfer | `inactive-selection.ts` and `2026-09-25-accessibility-confirmed-inactive-focus` | A blur only makes the originating store pending; the document coordinator activates it only when a marked control receives the subsequent real `focusin` | Trust `blur.relatedTarget`, clear inactivity from root interaction, or let toolbar/input consumers override the store | Owner-level red/green contract rejects inactive paint between the predictive blur and confirmed focusin; real browser acceptance remains delegated |
 | Preserve focus API behavior for an expanded projected selection | `focus-plite-editable.ts` | Programmatic focus also installs the same projected native caret instead of focusing an editing host with no browser selection | A second focus-only repair path that leaves native selection empty | Focus contracts pass 12/12; real browser acceptance remains delegated |
 | Preserve #45 interaction lifetime | `docs/plans/45-taskhub-45-retained-suggestion-selection-drag-repair.md` | Leave held-drag import suppression unchanged and repair only post-release range clearing | Reverting #45's drag-active guard | `selection-drag-scroll.spec.ts` 1/1 plus retained endpoint/reverse coverage |
 
@@ -248,7 +265,7 @@ Completion Gates:
 | AC7 focus plus next input            | yes     | Before any toolbar assertion, observe inactive-selection DOM/paint, native caret/selection, DOM focus API, React focus context, focusin/focusout, and the actual first native key without polling or forced focus | source invariant now retains one collapsed native caret; real browser delegated/open |
 | AC8 #45 regression                   | yes     | Re-run held drag, scroll, reverse drag, and projected-selection preservation                                                      | delegated/open |
 | AC9 proof integrity                  | yes     | Source-built repo runner, exact route/browser/ref/fingerprints, strict errors; no model-only or mouseup-pre-only evidence         | delegated/open; no browser claim from this turn |
-| Implementation review                | yes     | Verify Plate implementation review of ownership, consumers, and generated/public surface                                          | Best API Review `2026-09-25-accessibility-projected-drag-dom-handoff` supersedes the incomplete selection-controller-only repair and retains private exact-view ownership |
+| Implementation review                | yes     | Verify Plate implementation review of ownership, consumers, and generated/public surface                                          | Best API Review `2026-09-25-accessibility-confirmed-inactive-focus` deletes eager blur prediction at the existing coordinator; no new observer, timer, state, public API, toolbar workaround, or input workaround is added |
 
 Select proof from the actual change. Verify Plate owns package, browser,
 native-device, CLI and artifact claims; Testing owns test value. Generated
@@ -269,9 +286,9 @@ from creating this file.
 | Browser console/network check | delegated/open | Reporter records runtime errors if the interaction still fails | Not executed in this turn |
 | Browser final proof artifact | delegated/open | Reporter checks active editor focus before treating selection paint or toolbar visibility as success | Not executed in this turn |
 | Exact case replay | delegated/open | Replay `[2,0]:5` to `[5,2]:6`, then type without clicking or focusing | Not executed in this turn |
-| Source contracts | pass | Exercise the owning projected selection, drag handoff and focus contracts | Root interaction, selection controller and focus contracts pass 61/61 |
+| Source contracts | pass | Exercise inactive selection plus the owning projected selection, drag handoff and focus contracts | Six Plite React files pass 103/103, including the new failed-fix red/green contract and existing marked-control behavior |
 | Source type/lint | pass with package-runner caveat | Typecheck changed Plite React source/tests and run focused formatting/lint | Direct Plite React entrypoint and package-test TypeScript checks pass; direct oxfmt/oxlint and `git diff --check` pass. `pnpm exec` remains blocked before the tool by four pre-existing AWS SDK minimum-release-age violations |
-| Final ref and fingerprints | not authorized | Leave the fourth candidate local and report its exact scope | Attempt 3 remote SHA is failed-fix history, not delivery authority for this candidate |
+| Final ref and fingerprints | authorized | Commit and push only the fifth candidate packet to `origin/next`, then read back the remote SHA | Attempt 4 remote SHA remains failed-fix history; browser acceptance stays open after delivery |
 | Retry-free stability | delegated/open | Reporter owns warm real-browser repeats | Not executed in this turn |
 
 Verification evidence:
@@ -282,10 +299,21 @@ Verification evidence:
   collapsed native caret inside the exact Editable. Projected selection remains
   the expanded semantic range and visual owner, so the caret stays hidden by
   the existing `caretColor: transparent` rule without a second expanded paint.
-- The fourth candidate fixes the path attempt 3 missed: root interaction no
-  longer clears the browser Selection when a native drag becomes a projected
-  view selection. It synchronously reuses the DOM export owner with preserved
-  scroll, which installs the existing projected caret without a focus call.
+- Attempt 4 fixed the path attempt 3 missed: root interaction no longer clears
+  the browser Selection when a native drag becomes a projected view selection.
+  The reporter confirmed partial improvement but contradicted completion after
+  inactive selection still activated and input still failed intermittently.
+- The fifth candidate removes eager inactive-selection activation from
+  `blur.relatedTarget`. Blur records only a pending store; the existing
+  document-level `focusin` observer is the sole activation point after a
+  marked control actually receives focus.
+- The new owner-level contract was red on the pushed attempt-4 behavior: a
+  marked `relatedTarget` painted inactive selection before any `focusin`. It is
+  green after the change and still proves the selection becomes inactive once
+  the marked control receives confirmed focus.
+- Six affected Plite React files pass 103/103. Direct Plite React source and
+  package-test TypeScript checks, focused `oxfmt`, `oxlint`, and
+  `git diff --check` pass.
 - Root interaction, selection controller and focus contracts pass 61/61. The
   handoff contract rejects `removeAllRanges()` for the projected branch, while
   the projected-drag export contract proves that an active native drag still
@@ -318,9 +346,10 @@ Findings and remaining work:
 - Root cause of attempt 3's escape: the root pointer-drag transition had a
   second, independent `removeAllRanges()` call after it created the projected
   selection. Selection-controller contracts never exercised that transition.
-- Current owning fix: the projected root-drag branch delegates to the existing
-  DOM selection export. No focus is restored after the fact, and copied toolbar
-  or inactivity-selection code remains unchanged.
+- Current owning fix: the inactive-selection coordinator no longer predicts a
+  focus transfer from blur metadata. This keeps inactivity paint and its DOM
+  selection/focus suppression inactive during a canceled or transient transfer,
+  while preserving the marked-control behavior after confirmed `focusin`.
 - Toolbar geometry remains secondary and unchanged in this recovery. It may
   render only when the existing focus consumer says the editor is focused; the
   browser acceptance must verify that state is true, not infer it from toolbar
@@ -331,15 +360,16 @@ Findings and remaining work:
 
 Final handoff:
 
-- Outcome: local source candidate preserves the projected collapsed caret
-  during the root pointer-drag ownership handoff instead of clearing the native
-  Selection in a second owner.
-- Proof and limits: 61 focused root-interaction, selection-controller and focus
-  contracts plus direct type/format/lint checks pass; no browser success is
-  claimed.
-- Local / integrated / published state: the fourth candidate is local,
-  uncommitted and unpushed. TaskHub #46 remains `in_progress`; no new Git
-  delivery is authorized.
+- Outcome: local source candidate activates inactive selection only after a
+  marked control receives real focus instead of using `blur.relatedTarget` as
+  a prediction.
+- Proof and limits: 103/103 focused inactive-selection, root-interaction,
+  selection-controller and focus contracts plus direct type/format/lint checks
+  pass; no browser success is claimed.
+- Local / integrated / published state: attempt 4 is pushed and
+  reporter-contradicted; the fifth candidate is authorized for one direct
+  commit/push to `origin/next`. TaskHub #46 remains `in_progress` until the
+  reporter-owned browser replay passes.
 - Next action: the reporter performs the real browser replay and reports
   acceptance or the first divergent phase.
 
@@ -391,6 +421,13 @@ Timeline:
 - 2026-09-25 The fourth source candidate passed 61 focused contracts, direct
   Plite React source/test typechecks, formatting, lint and diff checks. No
   browser, commit or push occurred.
+- 2026-09-25 Attempt 4 was committed and pushed as `84bff82d4c`; the reporter
+  then confirmed the toolbar and input could work but reported stable erroneous
+  inactivity paint plus intermittent input failure.
+- 2026-09-25 Best API Review
+  `2026-09-25-accessibility-confirmed-inactive-focus` reopened the
+  inactive-selection activation edge and selected confirmed `focusin` as its
+  sole activation authority.
 
 Open risks:
 
@@ -398,8 +435,8 @@ Open risks:
   turn and remains the reporter's acceptance boundary.
 - The aggregate Plite package command is blocked before TypeScript by the
   existing lockfile supply-chain policy; direct affected typechecks passed.
-- The fourth candidate is not authorized for Git delivery, and the
-  reporter-owned browser acceptance is still open.
+- The fifth candidate is authorized for direct Git delivery, while the
+  reporter-owned browser acceptance remains open.
 - Global review-ledger `check` is independently blocked by concurrent stale
   `application/ai-command` inventory. The new immutable accessibility review
   itself is recorded and rendered; this repair does not alter the AI owner.
