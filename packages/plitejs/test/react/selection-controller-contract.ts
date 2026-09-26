@@ -510,7 +510,7 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
   }
 });
 
-test('view selection export keeps a collapsed native caret', () => {
+test('projected drag view export keeps a collapsed native caret', () => {
   vi.useFakeTimers();
 
   const editor = createEditor<Value>();
@@ -554,10 +554,15 @@ test('view selection export keeps a collapsed native caret', () => {
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
 
-  const state = Object.assign(createEditableInputControllerState(), {
-    isUpdatingSelection: false,
-    selectionChangeOrigin: null,
-  });
+  const runtime = new EditableDOMRuntime({ editor });
+
+  runtime.setRoot(editorElement);
+  runtime.connect();
+  runtime.inputController.state.isNativeSelectionDragActive = true;
+  runtime.inputController.state.isProjectingSelection = true;
+  testRuntimes.add(runtime);
+
+  const { state } = runtime.inputController;
 
   try {
     syncEditableDOMSelectionToEditor({

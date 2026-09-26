@@ -8,7 +8,7 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 
 ## Current decision
 
-[2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json) — **pursue**. Pursue replacing the empty browser Selection state with a collapsed native caret resolved by the existing projected-selection owner. Delete the removeAllRanges focus-restoration wrapper; keep projected paint and command targeting private, and keep the toolbar as a focus-gated geometry consumer.
+[2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json) — **pursue**. Pursue one ownership handoff: when root interaction converts a native drag to a projected view selection, call the existing DOM selection export with preserveScroll so it installs the projected collapsed caret. Keep removeAllRanges only for the non-projected fallback, and keep toolbar and inactive-selection consumers out of the repair.
 
 Compiled decision: [plite-view-ownership.md](../decisions/plite-view-ownership.md). Source observation: matching. Source matching is not behavior proof.
 
@@ -28,7 +28,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
-| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
+| [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md) | in-progress | implementation | [2026-09-25-accessibility-projected-drag-dom-handoff](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json), [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [2026-09-25-accessibility-projected-selection-focus](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
 
 ### Outcomes recorded after the latest review
 
@@ -103,6 +103,26 @@ Question: Which focus and navigation guarantees must hold for voids, owned contr
 Proof limits: This review selects the repair owner and invariant from current source plus the reporter contradiction. Per the user's latest instruction, no real-browser proof is run or claimed in this repair turn; browser acceptance remains delegated to the user. Static and focused non-browser checks can reject type and selection-contract errors but cannot certify native focus, caret paint or first-key routing.
 
 References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-projected-selection-focus.json](../review-records/2026-09-25-accessibility-projected-selection-focus.json), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [selection-reconciler.ts](../../../packages/plitejs/src/react/editable/selection-reconciler.ts), [focus-plite-editable.ts](../../../packages/plitejs/src/react/hooks/focus-plite-editable.ts), [editable.tsx](../../../packages/plitejs/src/react/components/editable.tsx), [view-selection.ts](../../../packages/plitejs/src/react/view-selection.ts), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [floating-toolbar.tsx](../../../apps/www/src/registry/components/editor/floating-toolbar.tsx).
+
+### 2026-09-25: 2026-09-25-accessibility-projected-drag-dom-handoff
+
+[Immutable record](../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json) — review; pursue; observation matching.
+
+Pursue one ownership handoff: when root interaction converts a native drag to a projected view selection, call the existing DOM selection export with preserveScroll so it installs the projected collapsed caret. Keep removeAllRanges only for the non-projected fallback, and keep toolbar and inactive-selection consumers out of the repair.
+
+Question: Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?
+
+- Delete projected selection and flatten retained content into the model range: rejected because retained fragment identity and multi-segment command targeting are independent current jobs.
+- Focus the Editable on mouseup or in a timer: rejected because it repairs after ownership was already destroyed and can steal a genuine external focus transfer.
+- Close the floating toolbar or clear inactivity paint when focus is missing: rejected because it hides the visible symptoms while the keyboard target remains broken.
+- Keep the root removeAllRanges call and add another collapsed caret afterward: rejected because it preserves the destructive intermediate state and duplicates the existing DOM selection export owner.
+- Route the projected root-drag handoff through syncDOMSelectionToEditor with preserveScroll: chosen because the selection controller already resolves the exact writable projected caret and the interaction still owns the native drag at that synchronous boundary.
+- retains [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The expanded projected selection still needs one collapsed native caret owned by the exact Editable, and toolbar visibility remains only a downstream consumer.
+- supersedes [2026-09-25-accessibility-projected-selection-native-caret](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json) (Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?): The prior repair incorrectly treated selection-controller as the only native range clearer and left the root projected-drag handoff calling removeAllRanges.
+
+Proof limits: This review identifies the previously unmodified removeAllRanges call and selects the private handoff owner. Focused unit contracts can prove that the projected branch delegates to DOM export without clearing the browser range and that export collapses to one caret. Per the user's instruction, real browser focus, inactivity paint and first-key behavior remain unverified and delegated to the user.
+
+References: [46-taskhub-46-suggestion-release-repair.md](../../plans/46-taskhub-46-suggestion-release-repair.md), [plite-view-ownership.md](../decisions/plite-view-ownership.md), [2026-09-25-accessibility-projected-selection-native-caret.json](../review-records/2026-09-25-accessibility-projected-selection-native-caret.json), [root-interaction-controller.ts](../../../packages/plitejs/src/react/editable/root-interaction-controller.ts), [selection-controller.ts](../../../packages/plitejs/src/react/editable/selection-controller.ts), [runtime-root-engine.ts](../../../packages/plitejs/src/react/editable/runtime-root-engine.ts), [inactive-selection.ts](../../../packages/plitejs/src/react/inactive-selection.ts), [floating-toolbar.tsx](../../../apps/www/src/registry/components/editor/floating-toolbar.tsx), [root-interaction-controller.test.tsx](../../../packages/plitejs/test/react/root-interaction-controller.test.tsx), [selection-controller-contract.ts](../../../packages/plitejs/test/react/selection-controller-contract.ts).
 
 ## Retrieval boundaries
 

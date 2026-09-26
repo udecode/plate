@@ -888,6 +888,23 @@ const clearDOMSelectionFromEvent = (event: MouseEvent<HTMLElement>) => {
   domSelection?.removeAllRanges();
 };
 
+export const handoffProjectedDragDOMSelection = ({
+  event,
+  projected,
+  selectionBridge,
+}: {
+  event: MouseEvent<HTMLElement>;
+  projected: boolean;
+  selectionBridge?: RootInteractionControllerOptions['selectionBridge'];
+}) => {
+  if (projected && selectionBridge) {
+    selectionBridge.syncDOMSelectionToEditor({ preserveScroll: true });
+    return;
+  }
+
+  clearDOMSelectionFromEvent(event);
+};
+
 const shouldIgnoreDragTarget = (event: MouseEvent<HTMLElement>) => {
   const target = resolveRootInteractionTarget({
     currentTarget: event.currentTarget,
@@ -972,7 +989,11 @@ const applyProjectedDragSelectionFromEvent = ({
   }
 
   event.preventDefault();
-  clearDOMSelectionFromEvent(event);
+  handoffProjectedDragDOMSelection({
+    event,
+    projected: appliedView,
+    selectionBridge,
+  });
 
   return true;
 };

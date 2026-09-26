@@ -13,6 +13,7 @@ import {
   applyDragAutoScrollFrame,
   canScrollY,
   getDragAutoScrollTarget,
+  handoffProjectedDragDOMSelection,
   type RootInteractionEditor,
   useRootInteractionController,
 } from '../../src/react/editable/root-interaction-controller';
@@ -193,6 +194,56 @@ describe('root interaction controller', () => {
         clientY: 99,
       })
     );
+  });
+
+  test('hands projected drag selection to DOM export without clearing the browser selection', () => {
+    const editable = document.createElement('div');
+    const text = document.createTextNode('projected selection');
+    const domSelection = document.getSelection();
+
+    if (!domSelection) throw new Error('Expected document selection');
+
+    editable.append(text);
+    document.body.append(editable);
+
+    const range = document.createRange();
+    range.setStart(text, 0);
+    range.setEnd(text, text.textContent.length);
+    domSelection.removeAllRanges();
+    domSelection.addRange(range);
+
+    const removeAllRanges = vi.spyOn(domSelection, 'removeAllRanges');
+    const syncDOMSelectionToEditor = vi.fn();
+
+    try {
+      handoffProjectedDragDOMSelection({
+        event: createMouseCaptureEvent({
+          clientX: 20,
+          clientY: 10,
+          currentTarget: editable,
+          target: editable,
+        }),
+        projected: true,
+        selectionBridge: {
+          beginProjectedDrag: vi.fn(),
+          beforeModelSelection: vi.fn(),
+          finishProjectedDrag: vi.fn(),
+          importDOMSelection: vi.fn(),
+          isViewportBackedSelection: vi.fn(() => false),
+          syncDOMSelectionToEditor,
+        },
+      });
+
+      expect(syncDOMSelectionToEditor).toHaveBeenCalledWith({
+        preserveScroll: true,
+      });
+      expect(removeAllRanges).not.toHaveBeenCalled();
+      expect(domSelection.rangeCount).toBe(1);
+    } finally {
+      editable.remove();
+      domSelection.removeAllRanges();
+      vi.restoreAllMocks();
+    }
   });
 
   test('ignores stale downward drag autoscroll ranges that would reverse selection', () => {

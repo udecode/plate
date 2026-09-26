@@ -1,6 +1,7 @@
 ---
 review_scopes: [accessibility, authored, selection, suggestions]
 review_basis:
+  - 2026-09-25-accessibility-projected-drag-dom-handoff
   - 2026-09-25-accessibility-projected-selection-native-caret
   - 2026-09-25-accessibility-projected-selection-focus
   - 2026-09-12-selection-distinct-lifetimes
@@ -63,6 +64,17 @@ Failed-fix ledger:
   may use only source, unit-contract and type/lint checks.
 - TaskHub #46 was conditionally returned from `review` to `in_progress` and
   immediately read back as `in_progress` on 2026-09-25.
+- Attempt 3 was pushed to `origin/next` as
+  `ae7f2a83c87a511169a5aab56d0fc5ccc1e9adbc`. It replaced selection-controller
+  range clearing with a projected collapsed caret.
+- Failure kind: `reporter-contradiction`. The reporter confirmed that attempt 3
+  still loses editor focus. Its source contracts remain evidence for the caret
+  export owner, but its completion and delivery claim are revoked.
+- Root-cause delta: `applyProjectedDragSelectionFromEvent` independently called
+  `removeAllRanges()` when root interaction converted the browser-owned drag to
+  a projected selection. That path bypassed the repaired selection controller,
+  so the real interaction could still lose focus and render inactivity
+  selection.
 
 Goal plan:
 docs/plans/46-taskhub-46-suggestion-release-repair.md
@@ -165,10 +177,10 @@ Blocked condition:
 
 Task state:
 
-- current_phase: source repair complete; direct `origin/next` delivery
-  authorized; browser acceptance delegated and open
-- next: deliver the exact #46 packet and read back the remote SHA, then the
-  reporter replays the real release/focus/first-key interaction in their browser
+- current_phase: fourth source candidate and non-browser closure checks complete;
+  browser acceptance delegated and open; no new Git delivery authorized
+- next: reporter replays the real release/focus/first-key interaction in their
+  browser, then separately authorizes Git delivery if accepted
 
 Work Checklist:
 
@@ -218,7 +230,8 @@ Decisions and tradeoffs:
 | Decision | Owner and source | Chosen fix | Material alternative rejected | Proof |
 | --- | --- | --- | --- | --- |
 | Revoke geometry-only completion | Failed-fix reporter contradiction | Keep the geometry work only as secondary positioning behavior; it cannot establish focus or input health | Treating floating-toolbar visibility as the release oracle | Pushed `c894307d14` is explicitly revoked as completion authority |
-| Preserve browser input ownership at the projected-selection transition | `selection-controller.ts`, `selection-projected-dom.ts`, and `2026-09-25-accessibility-projected-selection-native-caret` | Delete the empty native-selection state. Collapse the browser Selection to an exact-view writable caret while projected decorations keep the expanded semantic range and paint | Synchronous/delayed focus restoration, toolbar gates, another focus boolean, public API, or keeping two expanded selection paints | Selection-controller contract now requires one collapsed native range; 38/38 focused contracts pass |
+| Preserve browser input ownership at the projected-selection transition | `selection-controller.ts`, `selection-projected-dom.ts`, and `2026-09-25-accessibility-projected-selection-native-caret` | Delete the empty native-selection state. Collapse the browser Selection to an exact-view writable caret while projected decorations keep the expanded semantic range and paint | Synchronous/delayed focus restoration, toolbar gates, another focus boolean, public API, or keeping two expanded selection paints | Selection-controller contract requires one collapsed native range; reporter contradiction proved this owner alone was incomplete |
+| Preserve focus during the root drag ownership handoff | `root-interaction-controller.ts` and `2026-09-25-accessibility-projected-drag-dom-handoff` | When the browser-owned drag becomes a projected view selection, delegate to `syncDOMSelectionToEditor({ preserveScroll: true })` instead of independently clearing every native range | Mouseup focus restoration, delayed focus, toolbar/inactivity gates, or another native-caret owner | Root interaction contract proves the projected branch calls DOM export and does not call `removeAllRanges`; selection export contract proves that owner retains one collapsed caret |
 | Preserve focus API behavior for an expanded projected selection | `focus-plite-editable.ts` | Programmatic focus also installs the same projected native caret instead of focusing an editing host with no browser selection | A second focus-only repair path that leaves native selection empty | Focus contracts pass 12/12; real browser acceptance remains delegated |
 | Preserve #45 interaction lifetime | `docs/plans/45-taskhub-45-retained-suggestion-selection-drag-repair.md` | Leave held-drag import suppression unchanged and repair only post-release range clearing | Reverting #45's drag-active guard | `selection-drag-scroll.spec.ts` 1/1 plus retained endpoint/reverse coverage |
 
@@ -235,7 +248,7 @@ Completion Gates:
 | AC7 focus plus next input            | yes     | Before any toolbar assertion, observe inactive-selection DOM/paint, native caret/selection, DOM focus API, React focus context, focusin/focusout, and the actual first native key without polling or forced focus | source invariant now retains one collapsed native caret; real browser delegated/open |
 | AC8 #45 regression                   | yes     | Re-run held drag, scroll, reverse drag, and projected-selection preservation                                                      | delegated/open |
 | AC9 proof integrity                  | yes     | Source-built repo runner, exact route/browser/ref/fingerprints, strict errors; no model-only or mouseup-pre-only evidence         | delegated/open; no browser claim from this turn |
-| Implementation review                | yes     | Verify Plate implementation review of ownership, consumers, and generated/public surface                                          | Best API Review `2026-09-25-accessibility-projected-selection-native-caret` supersedes the failed clear-and-restore mechanism and retains private exact-view ownership |
+| Implementation review                | yes     | Verify Plate implementation review of ownership, consumers, and generated/public surface                                          | Best API Review `2026-09-25-accessibility-projected-drag-dom-handoff` supersedes the incomplete selection-controller-only repair and retains private exact-view ownership |
 
 Select proof from the actual change. Verify Plate owns package, browser,
 native-device, CLI and artifact claims; Testing owns test value. Generated
@@ -256,25 +269,31 @@ from creating this file.
 | Browser console/network check | delegated/open | Reporter records runtime errors if the interaction still fails | Not executed in this turn |
 | Browser final proof artifact | delegated/open | Reporter checks active editor focus before treating selection paint or toolbar visibility as success | Not executed in this turn |
 | Exact case replay | delegated/open | Replay `[2,0]:5` to `[5,2]:6`, then type without clicking or focusing | Not executed in this turn |
-| Source contracts | pass | Exercise the owning projected selection and focus contracts | `selection-controller-contract` 38/38; `focus-plite-editable-contract` 12/12 |
-| Source type/lint | pass with package-runner caveat | Typecheck changed Plite React source/tests and run focused formatting/lint | Direct entrypoint React and package-test TypeScript checks pass; direct oxfmt/oxlint pass. Aggregate `pnpm --filter plitejs typecheck` is blocked before TypeScript by four pre-existing AWS SDK minimum-release-age violations |
-| Final ref and fingerprints | delivery authorized | Commit the exact #46 packet, push to `origin/next`, and read back the remote ref | Source fingerprints are bound below; remote SHA is a delivery receipt, not browser proof |
+| Source contracts | pass | Exercise the owning projected selection, drag handoff and focus contracts | Root interaction, selection controller and focus contracts pass 61/61 |
+| Source type/lint | pass with package-runner caveat | Typecheck changed Plite React source/tests and run focused formatting/lint | Direct Plite React entrypoint and package-test TypeScript checks pass; direct oxfmt/oxlint and `git diff --check` pass. `pnpm exec` remains blocked before the tool by four pre-existing AWS SDK minimum-release-age violations |
+| Final ref and fingerprints | not authorized | Leave the fourth candidate local and report its exact scope | Attempt 3 remote SHA is failed-fix history, not delivery authority for this candidate |
 | Retry-free stability | delegated/open | Reporter owns warm real-browser repeats | Not executed in this turn |
 
 Verification evidence:
 
 - Previous geometry and focus-restore browser greens are historical failed-fix
   evidence only. The latest reporter contradiction revokes them all.
-- The new source invariant replaces an empty browser Selection with one
+- Attempt 3's source invariant replaces an empty browser Selection with one
   collapsed native caret inside the exact Editable. Projected selection remains
   the expanded semantic range and visual owner, so the caret stays hidden by
   the existing `caretColor: transparent` rule without a second expanded paint.
-- `selection-controller-contract.test.ts`: 38/38 pass. The owner contract now
-  rejects `removeAllRanges()` for expanded projected selection and requires a
-  collapsed native range.
-- `focus-plite-editable-contract.test.ts`: 12/12 pass. Programmatic focus now
-  directly requires one collapsed native caret for an expanded projected
-  selection.
+- The fourth candidate fixes the path attempt 3 missed: root interaction no
+  longer clears the browser Selection when a native drag becomes a projected
+  view selection. It synchronously reuses the DOM export owner with preserved
+  scroll, which installs the existing projected caret without a focus call.
+- Root interaction, selection controller and focus contracts pass 61/61. The
+  handoff contract rejects `removeAllRanges()` for the projected branch, while
+  the projected-drag export contract proves that an active native drag still
+  reaches the one-caret export path.
+- Direct Plite React entrypoint and package-test TypeScript checks pass. Direct
+  `oxfmt`, `oxlint`, and `git diff --check` pass. `pnpm exec` cannot reach its
+  tool because the existing lockfile still fails the four AWS SDK
+  minimum-release-age checks; no lockfile change was made.
 - Direct Plite React entrypoint TypeScript and package-test TypeScript checks
   pass. Focused `oxfmt --check` and `oxlint` pass.
 - Aggregate package typecheck and the publication `pnpm check` did not reach
@@ -292,10 +311,16 @@ Findings and remaining work:
   `isUpdatingSelection` can suppress the corresponding blur reconciliation, so
   Plite/React focus truth may remain true and open the toolbar after the browser
   no longer owns an editable caret.
-- Owning fix: projected-selection import/export and programmatic focus resolve a
+- Attempt 3's partial owner: projected-selection import/export and programmatic focus resolve a
   writable point from the existing projected target and collapse the browser
   Selection there. Scheduled repair re-applies that caret instead of clearing
   every range. The old focus-restoration helper is deleted.
+- Root cause of attempt 3's escape: the root pointer-drag transition had a
+  second, independent `removeAllRanges()` call after it created the projected
+  selection. Selection-controller contracts never exercised that transition.
+- Current owning fix: the projected root-drag branch delegates to the existing
+  DOM selection export. No focus is restored after the fact, and copied toolbar
+  or inactivity-selection code remains unchanged.
 - Toolbar geometry remains secondary and unchanged in this recovery. It may
   render only when the existing focus consumer says the editor is focused; the
   browser acceptance must verify that state is true, not infer it from toolbar
@@ -306,17 +331,17 @@ Findings and remaining work:
 
 Final handoff:
 
-- Outcome: local source candidate keeps one collapsed browser caret under an
-  expanded projected selection instead of clearing native selection and trying
-  to restore focus afterward.
-- Proof and limits: 50 focused unit contracts plus direct source/test type and
-  lint checks pass; no browser success is claimed.
-- Local / integrated / published state: the exact source-only packet is
-  authorized for direct `origin/next` delivery; TaskHub #46 remains
-  `in_progress` because browser acceptance is open.
-- Next action: complete Git delivery and remote read-back, then the reporter
-  performs the real browser replay and reports acceptance or the first
-  divergent phase.
+- Outcome: local source candidate preserves the projected collapsed caret
+  during the root pointer-drag ownership handoff instead of clearing the native
+  Selection in a second owner.
+- Proof and limits: 61 focused root-interaction, selection-controller and focus
+  contracts plus direct type/format/lint checks pass; no browser success is
+  claimed.
+- Local / integrated / published state: the fourth candidate is local,
+  uncommitted and unpushed. TaskHub #46 remains `in_progress`; no new Git
+  delivery is authorized.
+- Next action: the reporter performs the real browser replay and reports
+  acceptance or the first divergent phase.
 
 Timeline:
 
@@ -359,6 +384,13 @@ Timeline:
 - 2026-09-25 Direct delivery to `origin/next` was authorized. Publication
   `pnpm check` was attempted and stopped before project checks on four existing
   AWS SDK minimum-release-age violations; the lockfile is outside this repair.
+- 2026-09-25 The reporter contradicted pushed attempt 3 (`ae7f2a83c8`). Best
+  API Review `2026-09-25-accessibility-projected-drag-dom-handoff` found the
+  independent root-interaction `removeAllRanges()` path and selected the
+  existing DOM selection export as the sole projected handoff owner.
+- 2026-09-25 The fourth source candidate passed 61 focused contracts, direct
+  Plite React source/test typechecks, formatting, lint and diff checks. No
+  browser, commit or push occurred.
 
 Open risks:
 
@@ -366,8 +398,8 @@ Open risks:
   turn and remains the reporter's acceptance boundary.
 - The aggregate Plite package command is blocked before TypeScript by the
   existing lockfile supply-chain policy; direct affected typechecks passed.
-- Direct `origin/next` delivery is authorized, but it does not establish the
-  still-delegated browser acceptance.
+- The fourth candidate is not authorized for Git delivery, and the
+  reporter-owned browser acceptance is still open.
 - Global review-ledger `check` is independently blocked by concurrent stale
   `application/ai-command` inventory. The new immutable accessibility review
   itself is recorded and rendered; this repair does not alter the AI owner.
@@ -379,4 +411,4 @@ Start Gates:
 | Browser route / app surface identified | yes | Source-built `www` Playground `/`; focused suggestion fixture is diagnostic only |
 | Browser tool decision recorded | yes | Repo Playwright Chromium runner supplies deterministic mouse/keyboard/events/pixels; screenshots are opened with local image inspection |
 | Console/network caveat policy recorded | yes | Fail on page errors and unexpected console errors; record unexpected failed requests, while known local dev noise must be identified rather than silently ignored |
-| Observable browser case captured | delegated/open | Case `TH46-post-release-retained-focus-input`: both pushed attempts `c894307d14` and `4183236efe` are reporter-contradicted; the reporter owns the next real-browser replay of the local native-caret candidate |
+| Observable browser case captured | delegated/open | Case `TH46-post-release-retained-focus-input`: pushed attempts `c894307d14`, `4183236efe`, and `ae7f2a83c8` are reporter-contradicted; the reporter owns the next real-browser replay of the local root-handoff candidate |

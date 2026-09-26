@@ -13075,6 +13075,10 @@
     {
       "path": "docs/research/review-records/2026-09-25-accessibility-projected-selection-native-caret.json",
       "sha256": "be8a1c7333dbc041d611102c7ced5f6a7e6875d335427baae7b77a7ed9637558"
+    },
+    {
+      "path": "docs/research/review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json",
+      "sha256": "1386864fdc07805ec017343686db9b64130a17c44996c126a4f03d07d9381b91"
     }
   ],
   "reviewGroups": [

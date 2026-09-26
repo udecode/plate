@@ -13,6 +13,7 @@ review_history:
   - ../review-records/2026-09-12-geometry-widget-carrier-cut.json
   - ../review-records/2026-09-25-accessibility-projected-selection-focus.json
   - ../review-records/2026-09-25-accessibility-projected-selection-native-caret.json
+  - ../review-records/2026-09-25-accessibility-projected-drag-dom-handoff.json
 source_refs:
   - ../../../packages/plitejs/src/react/components/plite.tsx
   - ../../../packages/plitejs/src/react/hooks/use-plite-runtime.tsx
@@ -261,6 +262,15 @@ a later focus restore. Inactive-selection paint is loss-of-focus evidence;
 selection geometry and floating-toolbar visibility are not focus or input
 oracles. Do not add a toolbar-owned focus call, another focus boolean, a public
 projected-selection API, or a global `removeAllRanges` interception.
+
+The later reporter contradiction narrows that breach to the root interaction
+handoff as well as selection import/export. When a browser-owned drag becomes a
+projected view selection, root interaction must delegate the browser Selection
+to the existing DOM export owner so it installs the same collapsed writable
+caret with preserved scroll. It must not independently call
+`removeAllRanges()` for that projected branch. This keeps focus continuously
+owned by the exact Editable instead of trying to restore it on mouseup; the
+non-projected model fallback retains its separate clear/export behavior.
 
 ## Evidence limits and next owner
 
