@@ -157,18 +157,25 @@ export const CsvPlugin = definePlugin(PLUGINS.csv, {
       },
     }),
   }))
-  .extend(({ api, defineCodecs }) => ({
-    codecs: defineCodecs({
-      'text/plain': {
+  .extend(({ api }) => ({
+    dataTransferFormats: [
+      {
+        mimeType: 'text/plain',
         priority: 20,
         scope: 'document',
         decode: ({ data }) => {
           const content = api.deserialize({ data });
 
-          return content ? ContentSlice.closed(content) : null;
+          return content
+            ? Object.freeze({
+                diagnostics: Object.freeze([]),
+                ok: true as const,
+                slice: ContentSlice.closed(content),
+              })
+            : null;
         },
       },
-    }),
+    ],
   }));
 
 export type CsvDefinition = DefinitionOf<typeof CsvPlugin>;

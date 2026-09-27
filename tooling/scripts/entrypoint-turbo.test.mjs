@@ -96,8 +96,10 @@ test('generates DOM-free SSR behavior from each SSR proof adapter', () => {
   );
   const source = createSsrRuntimeProofSource(rows);
 
+  assert.match(source, /from "platejs\/html\/server"/u);
+  assert.match(source, /parseSsrHtml/u);
   assert.match(source, /from "platejs\/static"/u);
-  assert.match(source, /renderSsrHtml0/u);
+  assert.match(source, /renderSsrHtml/u);
   assert.match(source, /typeof globalThis\.document/u);
   assert.throws(
     () =>

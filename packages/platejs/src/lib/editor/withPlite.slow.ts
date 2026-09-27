@@ -45,9 +45,9 @@ const coreNames = [
 
 const TestBoldPlugin = defineHeadlessPlugin('bold', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: () => true,
         encode: ({ value }) => (value ? { tag: 'strong' } : null),
         match: [{ tag: ['strong', 'b'] }],

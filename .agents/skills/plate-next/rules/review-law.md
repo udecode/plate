@@ -244,7 +244,7 @@ editor.read.selection.nodes()` is a regression: it
 - Clipboard ingress is the typed Plite `domCommands.insertData` command, never
   a root plugin field or contribution registry. Put `handle` or `around`
   interceptors in `commands`, build pure specs through `state.transaction(...)`,
-  and delegate to the shared exact-slice, host-codec, and plain-text fallback
+    and delegate to the shared exact-slice, data-transfer-format, and plain-text fallback
   with `next()`. `handle` returning `false` continues fallback. `around` owns
   the invocation unless it calls `next()` or `next.after(prefix)`; `false` is a
   terminal rejection. Preserve contextual transaction inference without
@@ -289,7 +289,8 @@ editor.read.selection.nodes()` is a regression: it
   - `read`: pure, replayable queries over supplied document state;
   - `update`: document mutation through the active transaction;
   - flat native Plite fields: genuine editor-wide substrate;
-  - `codecs`: format declarations.
+  - `formats`: semantic HTML, Markdown, and plain-text node mappings;
+  - `dataTransferFormats`: whole-payload MIME negotiation.
     Reject document reads hidden in `api`, document mutations outside `update`,
     impure selectors/reads, plugin-scoped behavior smuggled into native fields,
     and any contribution with no honest row.
@@ -408,8 +409,8 @@ editor.read.selection.nodes()` is a regression: it
   external declaration it adapts. Keep the contribution inferred; when a real
   public contract needs an explicit generic, type the contribution object, not
   callback parameters or the plugin export. If that loses inference, fix Plate foundation.
-- Apply the creator's codec, flat-native-field, and active-transaction laws
-  directly. In particular, keep independent codecs and native fields in the
+- Apply the creator's format-mapping, flat-native-field, and active-transaction laws
+  directly. In particular, keep independent mappings and native fields in the
   constructor, keep private implementation fragments lexical, read staged API
   lazily from runtime callback context, and reuse earlier mutations through
   `tx.plugin(Plugin)` when the caller owns the descriptor or
@@ -422,32 +423,32 @@ editor.read.selection.nodes()` is a regression: it
   may use the direct `tx.pluginName` group. Never index the transaction object
   with a runtime plugin name or use a nested editor portal one-shot. Raw Plite
   and Plate share the selector semantics.
-- For a Plate-owned custom MDX element codec, bind `schema: { type }` in the
-  codec factory and use that resolved type for `from`, the decoded element
+- For a Plate-owned custom MDX element mapping, bind `schema: { type }` in the
+  format factory and use that resolved type for `from`, the decoded element
   `type`, and the encoded MDX `name`. Fixed MDAST, HTML, and MDX syntax remains
   literal because it belongs to the external format. Migrate old persisted
-  tags before normal codec handling; never keep dual codec aliases. Enforce
-  this law for constructor-owned and staged codec contributions.
+  tags before normal mapping handling; never keep dual mapping aliases. Enforce
+  this law for constructor-owned and staged mapping contributions.
 - One-operation Markdown decode overrides are keyed by invariant plugin
   capability name; encode overrides are keyed by persisted schema identity.
-  Codec dispatch resolves the decode owner before consulting the override. A
+  Mapping dispatch resolves the decode owner before consulting the override. A
   claimed source that returns `undefined` never falls through to a persisted-tag
   override alias.
-- Keep custom MDX codecs on their schema-owning plugin. A foreign
-  `defineCodecs(TargetPlugin, ...)` contribution cannot author configurable MDX
+- Keep custom MDX mappings on their schema-owning plugin. A foreign
+  `defineFormats(TargetPlugin, ...)` contribution cannot author configurable MDX
   identity; move it to the target. Staged enforcement reads schema bindings
-  from the owning callback, not only the returned `codecs` property.
-- Enforce every identity leg a codec actually declares. Decode-only custom MDX
-  codecs still bind `from` and decoded `type`; encode-only codecs still bind
+  from the owning callback, not only the returned `formats` property.
+- Enforce every identity leg a mapping actually declares. Decode-only custom MDX
+  mappings still bind `from` and decoded `type`; encode-only mappings still bind
   the emitted MDX `name`.
 - A fixed external `from` or encoded `name` exempts only that external-format
   leg. Every decoder that constructs a Plate element still uses the resolved
   target schema type.
 - Spread parsed or conditional properties before `children` and resolved
   `type`. Format attributes never override Plate structural fields.
-- A codec that accepts only phrasing content decodes the external paragraph's
+- A mapping that accepts only phrasing content decodes the external paragraph's
   phrasing children directly. Never decode a Plate wrapper and unwrap an
-  arbitrary resulting element: another codec may legitimately promote that
+  arbitrary resulting element: another mapping may legitimately promote that
   source paragraph to a block.
 - Public Markdown rule-name unions include every supported canonical rule key,
   including `audio`, `file`, and `video`; hard cuts rename keys without dropping
@@ -734,7 +735,7 @@ Concrete correction:
   `targetPlugins`, and other descriptor fields directly beside `api`, `read`,
   `update`, `store`, and `installed`. Never add `portal.plugin`; callback
   authoring contexts alone may expose the current raw descriptor as `plugin`.
-  Keep callback-only `editor` and `defineCodecs` off consumer portals. Cut standalone/editor alternatives (`getBasePlugin`,
+  Keep callback-only `editor` and `defineFormats` off consumer portals. Cut standalone/editor alternatives (`getBasePlugin`,
   `getEditorPlugin`, `getPlugin`, name/type/container reverse lookups, and
   `getInjectProps`). Use portal `.name` after lookup when the normalized runtime
   identity is needed. An absent descriptor exposes `installed: false`; it does
@@ -749,7 +750,7 @@ Concrete correction:
   optional chaining, non-null assertions, or raw-string fallbacks. Keep
   reverse/container/render caches private,
   answer public node questions through schema, read injection from
-  `portal.inject.nodeProps`, and group codec mapping under `registry`.
+  `portal.inject.nodeProps`, and group format mapping under `registry`.
 - Existing public plugin concepts still need an API decision before renaming.
   One-use helpers such as `withScrolling`, `withPlate`, `withPlite`,
   `withStatic`, or `withHOC`, and helper-named tests, are not frozen: inline,

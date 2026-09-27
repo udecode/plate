@@ -26,6 +26,11 @@ import {
   IS_NODE_MAP_DIRTY,
 } from '../utils/weak-maps';
 import {
+  type DataTransferReport,
+  getDataTransferReportSink,
+  setDataTransferReportSink,
+} from './data-transfer-format';
+import {
   clearDOMClipboardFormatKey,
   domCommands,
   getDOMClipboardFormatKey,
@@ -121,6 +126,11 @@ export interface DOMEditorOptions {
    * Plite writes and reads `application/${clipboardFormatKey}`.
    */
   clipboardFormatKey?: string;
+  /** Observe one settled transfer negotiation after insertion or writing. */
+  onDataTransferReport?: (
+    report: DataTransferReport,
+    editor: EditorType
+  ) => void;
 }
 
 export type DOMPluginTypes<TClipboard extends boolean = true> = {
@@ -176,6 +186,7 @@ export function dom(
       const { editor } = context;
       const previousActivation = DOM_ACTIVATION.get(editor);
       const previousClipboardFormatKey = getDOMClipboardFormatKey(editor);
+      const previousDataTransferReportSink = getDataTransferReportSink(editor);
       const previousElements = EDITOR_TO_KEY_TO_ELEMENT.get(editor);
       const activation = {};
 
@@ -190,6 +201,7 @@ export function dom(
             DOM_ACTIVATION.delete(editor);
           }
           setDOMClipboardFormatKey(editor, previousClipboardFormatKey);
+          setDataTransferReportSink(editor, previousDataTransferReportSink);
           if (previousElements) {
             EDITOR_TO_KEY_TO_ELEMENT.set(editor, previousElements);
           } else {
@@ -201,11 +213,18 @@ export function dom(
         DOM_ACTIVATION.delete(editor);
         destroyEditorDOMPhaseSchedulerFallback(editor);
         clearDOMClipboardFormatKey(editor);
+        setDataTransferReportSink(editor, undefined);
         EDITOR_TO_KEY_TO_ELEMENT.delete(editor);
       });
       setDOMClipboardFormatKey(
         editor,
         options.clipboardFormatKey ?? DEFAULT_CLIPBOARD_FORMAT_KEY
+      );
+      setDataTransferReportSink(
+        editor,
+        options.onDataTransferReport
+          ? (report) => options.onDataTransferReport?.(report, editor)
+          : undefined
       );
       if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
         EDITOR_TO_KEY_TO_ELEMENT.set(editor, new WeakMap());

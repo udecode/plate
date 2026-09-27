@@ -1,0 +1,50 @@
+{
+  "contract": {
+    "action": "Parse through parse5, serialize its repaired tree, and materialize the canonical HTML in LinkeDOM.",
+    "baseline": "The rejected happy-dom adapter uses one isolated Window and DOMParser per operation.",
+    "correctness": "Element count and sentinel text survive, valid input has no parse5 errors, and source scripts do not execute.",
+    "independentVariables": [
+      "source bytes",
+      "element count",
+      "operations"
+    ],
+    "noiseRule": "Fresh process per cohort; pass every frozen p95, peak-RSS-delta, and retained-heap budget.",
+    "proposed": "platejs/html/server owns parse5 repair plus a LinkeDOM DOM facade.",
+    "repeatedUnit": "One parse5 node and one LinkeDOM node per source element.",
+    "userOperation": "Detached HTML document or ContentSlice parsing in Node."
+  },
+  "environment": {
+    "architecture": "arm64",
+    "linkedom": {
+      "commit": "fcd88e02b6dd3e616f5de512b15713b663d16ab7",
+      "version": "0.18.13"
+    },
+    "lockfileSha256": "fc434e928ce02e264a2060c3a0ad4b0a18c5b3f4824d1a4afa39c2a269bf0181",
+    "node": "v22.22.1",
+    "parse5": "8.0.1",
+    "platform": "darwin"
+  },
+  "result": "pass",
+  "results": [
+    {
+      "budget": {
+        "maxPeakRssDeltaBytes": 1200000000,
+        "maxRetainedBytes": 512000000,
+        "p95Ms": 3000
+      },
+      "canonicalBytes": 3166836,
+      "elements": 96002,
+      "inputBytes": 3166823,
+      "pass": true,
+      "peakRssDeltaBytes": 128925696,
+      "retainedBytes": 3239680,
+      "samples": 3,
+      "timing": {
+        "max": 969.9595840000002,
+        "p50": 779.0850419999997,
+        "p95": 969.9595840000002
+      },
+      "name": "pathological"
+    }
+  ]
+}

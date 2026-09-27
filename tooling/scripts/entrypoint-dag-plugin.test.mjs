@@ -118,6 +118,8 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'packages/platejs/src/history/index.ts',
     'packages/platejs/src/history/plite-history.internal.ts',
     'packages/platejs/src/hyperscript/index.ts',
+    'packages/platejs/src/internal/createProjectedEditorView.ts',
+    'packages/platejs/src/internal/plugin/compilePlainTextMappings.ts',
     'packages/platejs/src/internal/plugin/resolvePlugins.ts',
     'packages/platejs/src/internal/utils/mergePlugins.ts',
     'packages/platejs/src/lib/editor/withPlite.ts',
@@ -424,7 +426,7 @@ test('every public entrypoint has one canonical runtime', () => {
     rows
       .filter(({ runtime }) => runtime === 'ssr')
       .map(({ specifier }) => specifier),
-    ['platejs/static']
+    ['platejs/html/server', 'platejs/static']
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin').length,
@@ -433,7 +435,12 @@ test('every public entrypoint has one canonical runtime', () => {
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin-client')
       .length,
-    14
+    15
+  );
+  assert.equal(
+    rows.filter(({ runtimeProof }) => runtimeProof === 'plate-html-server')
+      .length,
+    1
   );
 });
 

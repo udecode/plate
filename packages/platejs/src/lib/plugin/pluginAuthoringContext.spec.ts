@@ -1,28 +1,28 @@
 import { definePlugin } from './definePlugin';
-import { createDefinePluginCodecs } from './pluginAuthoringContext';
+import { createDefinePluginFormats } from './pluginAuthoringContext';
 
-describe('createDefinePluginCodecs', () => {
-  it('preserves a combined self-codec map', () => {
-    const defineCodecs = createDefinePluginCodecs();
+describe('createDefinePluginFormats', () => {
+  it('preserves a combined self-format map', () => {
+    const defineFormats = createDefinePluginFormats();
     const html = { decode: () => ({}) };
     const markdown = { kind: 'node' };
-    const declaration = Reflect.apply(defineCodecs, undefined, [
+    const declaration = Reflect.apply(defineFormats, undefined, [
       {
-        'text/html': html,
-        'text/markdown': markdown,
+        html,
+        markdown,
       },
     ]);
 
-    expect(declaration['text/html']).toBe(html);
-    expect(declaration['text/markdown']).toBe(markdown);
+    expect(declaration.html).toBe(html);
+    expect(declaration.markdown).toBe(markdown);
   });
 
   it('binds every node declaration in a foreign-target tuple', () => {
     const TargetPlugin = definePlugin('target', {});
-    const defineCodecs = createDefinePluginCodecs();
+    const defineFormats = createDefinePluginFormats();
     const first = { kind: 'node' };
     const second = { kind: 'node' };
-    const declaration = Reflect.apply(defineCodecs, undefined, [
+    const declaration = Reflect.apply(defineFormats, undefined, [
       TargetPlugin,
       { 'application/x-node': [first, second] },
     ]);

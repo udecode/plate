@@ -43,6 +43,17 @@ const createEditor = (
     ...options,
   });
 
+const parseHtmlChildren = (
+  editor: ReturnType<typeof createEditor>,
+  html: string
+) => {
+  const result = editor.api.html.parse(html);
+
+  if (!result.ok) throw new TypeError('Expected decoded HTML document');
+
+  return result.document.children;
+};
+
 describe('BaseListPlugin canonical model', () => {
   it('accepts signed integer starts and rejects fractional ordinals', () => {
     const editor = createEditor();
@@ -759,10 +770,10 @@ describe('BaseListPlugin canonical model', () => {
     const editor = createEditor({ selection: undefined });
 
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<ol start="4"><li>One</li><li>Two</li></ol><ul style="list-style-type: square"><li>Three</li></ul>',
-      })
+      parseHtmlChildren(
+        editor,
+        '<ol start="4"><li>One</li><li>Two</li></ol><ul style="list-style-type: square"><li>Three</li></ul>'
+      )
     ).toMatchObject([
       {
         children: [{ text: 'One' }],
@@ -790,9 +801,10 @@ describe('BaseListPlugin canonical model', () => {
       const editor = createEditor({ selection: undefined });
 
       expect(
-        editor.api.html.deserialize({
-          element: `<li aria-level="2" style="list-style-type: ${listStyle}">Item</li>`,
-        })
+        parseHtmlChildren(
+          editor,
+          `<li aria-level="2" style="list-style-type: ${listStyle}">Item</li>`
+        )
       ).toMatchObject([{ indent: 2, listStyle, listType }]);
     }
   );
@@ -801,14 +813,15 @@ describe('BaseListPlugin canonical model', () => {
     const editor = createEditor({ selection: undefined });
 
     expect(
-      editor.api.html.deserialize({
-        element: '<ol start="5"><li data-list-type="numbered">Five</li></ol>',
-      })
+      parseHtmlChildren(
+        editor,
+        '<ol start="5"><li data-list-type="numbered">Five</li></ol>'
+      )
     ).toMatchObject([{ listStart: 5, listType: 'numbered' }]);
-    const sequence = editor.api.html.deserialize({
-      element:
-        '<ol start="5"><li data-list-type="numbered">Five</li></ol><ol start="6"><li data-list-type="numbered">Six</li></ol>',
-    });
+    const sequence = parseHtmlChildren(
+      editor,
+      '<ol start="5"><li data-list-type="numbered">Five</li></ol><ol start="6"><li data-list-type="numbered">Six</li></ol>'
+    );
 
     if (!sequence) throw new TypeError('Expected decoded list sequence');
 
@@ -817,63 +830,65 @@ describe('BaseListPlugin canonical model', () => {
       { listType: 'numbered' },
     ]);
     expect(sequence[1]).not.toHaveProperty('listStart');
-    const externalBoundary = editor.api.html.deserialize({
-      element: '<ol><li>One</li></ol><ol start="5"><li>Five</li></ol>',
-    });
+    const externalBoundary = parseHtmlChildren(
+      editor,
+      '<ol><li>One</li></ol><ol start="5"><li>Five</li></ol>'
+    );
 
     expect(externalBoundary).toMatchObject([
       { listType: 'numbered' },
       { listRestart: 5, listType: 'numbered' },
     ]);
     expect(
-      editor.api.html.deserialize({
-        element: '<ol><li>One</li></ol><ol><li>One again</li></ol>',
-      })
+      parseHtmlChildren(
+        editor,
+        '<ol><li>One</li></ol><ol><li>One again</li></ol>'
+      )
     ).toMatchObject([
       { listType: 'numbered' },
       { listRestart: 1, listType: 'numbered' },
     ]);
-    const multiItemSequence = editor.api.html.deserialize({
-      element:
-        '<ol start="4"><li data-list-type="numbered">Four</li><li data-list-type="numbered">Five</li></ol><ol start="6"><li data-list-type="numbered">Six</li></ol>',
-    });
+    const multiItemSequence = parseHtmlChildren(
+      editor,
+      '<ol start="4"><li data-list-type="numbered">Four</li><li data-list-type="numbered">Five</li></ol><ol start="6"><li data-list-type="numbered">Six</li></ol>'
+    );
 
     if (!multiItemSequence) {
       throw new TypeError('Expected decoded multi-item list sequence');
     }
 
     expect(multiItemSequence[2]).not.toHaveProperty('listStart');
-    const conditional = editor.api.html.deserialize({
-      element:
-        '<ol start="4"><li data-list-start="4" data-list-type="numbered">Four</li></ol>',
-    });
+    const conditional = parseHtmlChildren(
+      editor,
+      '<ol start="4"><li data-list-start="4" data-list-type="numbered">Four</li></ol>'
+    );
 
     expect(conditional).toMatchObject([{ listStart: 4, listType: 'numbered' }]);
     expect(conditional?.[0]).not.toHaveProperty('listRestart');
-    const mixedRootIndents = editor.api.html.deserialize({
-      element:
-        '<ol start="1"><li data-list-type="numbered">One</li></ol><ol start="2"><li data-indent="1" data-list-type="numbered">Two</li></ol>',
-    });
+    const mixedRootIndents = parseHtmlChildren(
+      editor,
+      '<ol start="1"><li data-list-type="numbered">One</li></ol><ol start="2"><li data-indent="1" data-list-type="numbered">Two</li></ol>'
+    );
 
     if (!mixedRootIndents) {
       throw new TypeError('Expected decoded root list sequence');
     }
 
     expect(mixedRootIndents[1]).not.toHaveProperty('listStart');
-    const mixedDefaultStyles = editor.api.html.deserialize({
-      element:
-        '<ol start="1"><li data-list-style="decimal" data-list-type="numbered">One</li></ol><ol start="2"><li data-list-type="numbered">Two</li></ol>',
-    });
+    const mixedDefaultStyles = parseHtmlChildren(
+      editor,
+      '<ol start="1"><li data-list-style="decimal" data-list-type="numbered">One</li></ol><ol start="2"><li data-list-type="numbered">Two</li></ol>'
+    );
 
     if (!mixedDefaultStyles) {
       throw new TypeError('Expected decoded default-marker sequence');
     }
 
     expect(mixedDefaultStyles[1]).not.toHaveProperty('listStart');
-    const nestedSequence = editor.api.html.deserialize({
-      element:
-        '<ol start="1"><li data-indent="1" data-list-type="numbered">One</li></ol><ol start="1"><li data-indent="2" data-list-type="numbered">Nested</li></ol><ol start="2"><li data-indent="1" data-list-type="numbered">Two</li></ol>',
-    });
+    const nestedSequence = parseHtmlChildren(
+      editor,
+      '<ol start="1"><li data-indent="1" data-list-type="numbered">One</li></ol><ol start="1"><li data-indent="2" data-list-type="numbered">Nested</li></ol><ol start="2"><li data-indent="1" data-list-type="numbered">Two</li></ol>'
+    );
 
     if (!nestedSequence) {
       throw new TypeError('Expected decoded nested list sequence');
@@ -881,10 +896,10 @@ describe('BaseListPlugin canonical model', () => {
 
     expect(nestedSequence[2]).not.toHaveProperty('listStart');
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<ol start="5"><li data-list-restart="5" data-list-type="numbered">Five</li></ol>',
-      })
+      parseHtmlChildren(
+        editor,
+        '<ol start="5"><li data-list-restart="5" data-list-type="numbered">Five</li></ol>'
+      )
     ).toMatchObject([{ listRestart: 5, listType: 'numbered' }]);
   });
 
@@ -892,9 +907,7 @@ describe('BaseListPlugin canonical model', () => {
     const editor = createEditor({ selection: undefined });
 
     expect(
-      editor.api.html.deserialize({
-        element: '<ul><li data-checked="false">Task</li></ul>',
-      })
+      parseHtmlChildren(editor, '<ul><li data-checked="false">Task</li></ul>')
     ).toMatchObject([
       {
         checked: false,

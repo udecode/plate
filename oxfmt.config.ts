@@ -6,7 +6,6 @@ const projectIgnorePatterns = [
   '.claude/**',
   '.codex/**',
   'AGENTS.md',
-  'CLAUDE.md',
   'docs/**',
   'skills/**',
   'templates/**',

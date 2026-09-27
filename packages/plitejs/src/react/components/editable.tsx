@@ -3,6 +3,7 @@ import React, { useCallback, useSyncExternalStore } from 'react';
 import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
 import { type DOMRange, isDOMNode } from '../../dom';
 import { createDOMGeometryKernel } from '../../dom/internal';
+import type { EditableHistoryReplayEvent } from '../editable/editable-dom-runtime';
 import type {
   EditableRepairRequest,
   InputIntent,
@@ -264,6 +265,7 @@ export const EditableDOMRoot = (
     viewportRuntime?: EditableViewportRuntime | null;
     ignoreBlankEditableRootClicks?: boolean;
     onDOMBeforeInput?: EditableDOMBeforeInputHandler;
+    onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
     onKeyDown?: EditableKeyDownHandler;
     readOnly?: boolean;
     scrollSelectionIntoView?: (
@@ -285,6 +287,7 @@ export const EditableDOMRoot = (
     ignoreBlankEditableRootClicks = false,
     onKeyDown: propsOnKeyDown,
     onDOMBeforeInput: propsOnDOMBeforeInput,
+    onHistoryReplay,
     readOnly: readOnlyProp = false,
     scrollSelectionIntoView = defaultScrollSelectionIntoView,
     style: userStyle = {},
@@ -313,6 +316,7 @@ export const EditableDOMRoot = (
     deferNativeTextInputRepair,
     viewportRuntime,
     onDOMBeforeInput: propsOnDOMBeforeInput,
+    onHistoryReplay,
     onKeyDown: propsOnKeyDown,
     readOnly: readOnlyProp,
     scrollSelectionIntoView,

@@ -26,6 +26,33 @@ export const convertTextsSerialize = (
   let textTemp = '';
   for (let j = 0; j < slateTexts.length; j++) {
     const cur = slateTexts[j];
+
+    Object.entries(cur).forEach(([key, value]) => {
+      if (
+        key === 'text' ||
+        !value ||
+        basicMarkdownMarkSet.has(key) ||
+        customLeaf.includes(key) ||
+        plainMarkSet.has(key)
+      ) {
+        return;
+      }
+      const location = options.modelLocation(cur);
+
+      options.report({
+        action: 'dropped',
+        code: 'markdown-unsupported-node',
+        message: `Text property "${key}" has no installed Markdown mapping.`,
+        model: {
+          ...location,
+          property: key,
+        },
+        nodeType: key,
+        owner: key,
+        phase: 'serialize',
+        severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
+      });
+    });
     textTemp += cur.text;
 
     const prevStarts = starts.slice();

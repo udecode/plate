@@ -16,7 +16,7 @@ deletion:
    dimension, state whether the surviving return type widens that accumulator
    or merely carries the old type through. Check initial state, the single
    descriptor API, read/update groups, selectors, dependencies, schema, native
-   plugin fields, events, and codecs when they apply.
+   plugin fields, events, and format mappings when they apply.
 2. Require compile-only parity for callback contextual inference, literals,
    overloads, repeated-stage accumulation, dependency composition, arbitrary
    named-group keys, root and typed-portal projection, plugin conversion,
@@ -51,7 +51,7 @@ API syntax.
   returns `unknown` and must be narrowed; a caller-selected property-result
   type is an assertion, not schema inference.
 
-Apply the same test to selectors, stores, codecs, and host adapters: if changing
+Apply the same test to selectors, stores, format mappings, and host adapters: if changing
 only a type argument can change what the caller believes without changing a
 checked value, delete that generic and repair the owner.
 
@@ -94,7 +94,7 @@ stay in that family. Do not retain a second `handlers` bucket. `schema`,
   root plugin field or contribution registry. Intercept it in `commands` with
   `handle` or `around`; read the `DataTransfer` from `input`, compose a pure
   spec with `state.transaction(...)`, and call `next()` to preserve exact-slice,
-  host-codec, and plain-text fallback. The owning plugin or Plate stage must
+  data-transfer-format, and plain-text fallback. The owning plugin or Plate stage must
   infer the transaction capabilities without callback annotations or editor
   type arguments.
 - Plite plugins have no `config` channel. Immutable construction inputs,

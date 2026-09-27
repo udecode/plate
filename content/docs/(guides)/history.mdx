@@ -19,14 +19,19 @@ import { createEditor } from "platejs";
 const editor = createEditor();
 
 const canUndo = editor.read.history.hasUndo();
+const pending = editor.read.history.pending();
 const result = await editor.api.history.undo();
 
 editor.update({ history: "skip" }).text.insert("draft");
 ```
 
-`undo()` and `redo()` each await one complete replay. Use `hasUndo()` and
-`hasRedo()` for controls, and inspect `editor.read.history()` when you need the full
-immutable stacks.
+`undo()` and `redo()` claim their next batch in call order. Ordinary document
+batches settle immediately. A batch with a live-session effect publishes its
+pending direction while its external owner finishes. Editing, selection, and
+remote collaboration continue during that wait.
+
+Use `hasUndo()`, `hasRedo()`, and `pending()` for controls. Inspect
+`editor.read.history()` when you need the full immutable stacks.
 
 Configure retention and automatic grouping on `HistoryPlugin`:
 
@@ -44,6 +49,50 @@ const editor = createEditor({
 
 `maxDepth` defaults to `100`. `newBatchDelay` defaults to `500` milliseconds.
 The configured values apply to the next accepted update or replay.
+
+## External history effects
+
+Use one local effect when undo or redo must replay state outside the document.
+The `history` value owns its replay callback, so a replayable effect cannot be
+declared without the code that settles it.
+
+```typescript
+import { createEditor, defineEffect, definePlugin } from "platejs";
+
+type Transition = Readonly<{ previous: string; value: string }>;
+
+const externalValue = { current: "" };
+const externalValueEffect = defineEffect<Transition>({
+  history: {
+    replay: (_editor, transition) => {
+      if (externalValue.current !== transition.previous) {
+        return { reason: "external-value-changed", status: "blocked" };
+      }
+
+      externalValue.current = transition.value;
+      return { status: "applied", value: transition };
+    },
+  },
+  invert: ({ previous, value }) => ({ previous: value, value: previous }),
+  key: "external-value.set",
+});
+const ExternalValuePlugin = definePlugin("external-value", {
+  effectTypes: [externalValueEffect],
+});
+const editor = createEditor({ plugins: [ExternalValuePlugin] });
+
+const previous = externalValue.current;
+externalValue.current = "saved";
+editor.update((tx) => {
+  tx.effects.emit(externalValueEffect, { previous, value: "saved" });
+});
+```
+
+The effect is local, effect-only, excluded from serialized History, and never
+merged with another batch. Return `{ status: "blocked", reason }` when the
+external owner cannot apply the transition. An applied result returns the exact
+transition the owner applied, including any canonical value returned by that
+owner.
 
 ## History object
 
@@ -141,6 +190,12 @@ Return whether the undo branch has a surviving mapped batch.
 
 Return whether the redo branch has a surviving mapped batch.
 
+#### `editor.read.history.pending(): "undo" | "redo" | null`
+
+Return the live-session replay direction currently waiting for its external
+owner. Pending state belongs to this editor's runtime and is absent from
+History JSON, snapshots, and collaboration.
+
 #### `editor.api.history.undo(): Promise<HistoryResult>`
 
 Run one complete update that replays the current undo batch.
@@ -155,11 +210,14 @@ conflict returns `{ status: "blocked", conflicts }`, where `conflicts` contains
 the immutable contribution IDs that block replay. A live-session effect can
 return `{ status: "blocked", reason }` when its external state changed or its
 mutation failed. A blocked replay leaves the same batch at the branch head.
-Other failures throw.
+A replay requested while another live-session replay is pending returns
+`{ status: "busy" }` without claiming another batch. Other failures reject.
 
 Call these services outside `editor.read(...)` and `editor.update(...)`. A
 history batch can cover several document roots; replay always applies the
-complete batch.
+complete batch. Live-session batches are effect-only, local to the current
+session, excluded from serialized History, and never merged with another
+batch.
 
 #### `tx.history.restore(history): void`
 

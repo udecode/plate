@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { createEditor, ElementApi, schema, PLUGINS } from '../../../core';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import {
   MentionInputPlugin,
   MentionPlugin,
@@ -153,35 +154,32 @@ describe('BaseMentionPlugin', () => {
     expect(element?.getAttribute('data-editor-mention-label')).toBe('Ada');
     expect(element?.textContent).toBe('@Ada');
 
-    expect(editor.api.html.deserialize({ element: html })).toEqual([
+    expect(parseHtmlSliceContent(editor, html)).toEqual([
       {
         children: [
-          { text: '' },
           {
             children: [{ text: '' }],
             ref: 'user-1',
             type: 'mention',
             label: 'Ada',
           },
-          { text: '' },
         ],
         type: 'paragraph',
       },
     ]);
   });
 
-  it('ignores blank mention refs from external codecs', () => {
+  it('ignores blank mention refs from external formats', () => {
     const editor = createEditor({ plugins: [BaseMentionPlugin] });
 
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<span data-editor-mention data-editor-mention-ref=" ">@blank</span>',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<span data-editor-mention data-editor-mention-ref=" ">@blank</span>'
+      )
     ).toEqual([
       {
-        children: [{ text: '@blank' }],
-        type: 'paragraph',
+        text: '@blank',
       },
     ]);
   });

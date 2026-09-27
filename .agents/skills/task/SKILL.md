@@ -109,3 +109,12 @@ The Plate workflow owns the single explicit-review/PR-closeout budget and the
 ban on Autoreview on `next`. Do not add another closure panel or two-clean-pass
 ritual. Relevant package, registry, docs, doctrine and release safeguards stay
 with their owners. Publication requires actual authority and final read-back.
+
+For every task that changes repository files, keep affected `lint:fix` as the
+final checklist item, including Autogoal plans and short-task direct checks.
+Run the narrowest owning package script after all edits and generated output;
+use root `pnpm lint:fix` when the change crosses owners or has no narrower
+script. Do not run Prettier directly on source files covered by `lint:fix`: it
+can bypass the repository's Oxfmt configuration. Inspect formatter repairs,
+rerun any proof they invalidate, and finish with `lint:fix` again if those
+repairs required further edits.

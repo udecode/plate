@@ -14,6 +14,9 @@ export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
   api: ({ editor }) => ({
     setMode: (mode: keyof typeof suggestionModes) => {
       const authored = editor.plugin(DefaultAuthoredPlugin);
+      if (mode === suggestionModes.suggesting && !authored.read.canPropose()) {
+        throw new Error('An author ID is required for proposal mode.');
+      }
       const current = authored.read.view();
       authored.api.setView(
         mode === suggestionModes.editing

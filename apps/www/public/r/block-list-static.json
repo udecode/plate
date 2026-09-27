@@ -3,6 +3,7 @@
   "name": "block-list-static",
   "dependencies": [
     "platejs",
+    "diff-match-patch-ts@^0.6.0",
     "lucide-react"
   ],
   "registryDependencies": [],

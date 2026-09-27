@@ -8,7 +8,7 @@ import {
   definePlugin,
   defineEffect,
   defineStateField,
-  defineValueCodec,
+  type EditorJsonValue,
   valueCodecs,
 } from '../../src/index';
 import { yjs } from '../../src/yjs/core/plugin';
@@ -38,10 +38,10 @@ describe('plitejs/yjs shared effect compaction', () => {
       collab: 'shared',
       initial: () => 'A',
       key: 'compaction.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const announce = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       key: 'compaction.announce',
@@ -197,10 +197,10 @@ describe('plitejs/yjs shared effect compaction', () => {
       collab: 'shared',
       initial: () => 'A',
       key: 'custom-latest.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const mirror = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       collab: 'shared',
       collabReplay: 'latest',
       collabSnapshot: (state) => state.getField(title),
@@ -280,7 +280,7 @@ describe('plitejs/yjs shared effect compaction', () => {
       collab: 'shared',
       initial: () => 'A',
       key: 'late-authority.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const state = definePlugin('late-authority-state', {
       stateFields: [title],
@@ -356,7 +356,7 @@ describe('plitejs/yjs shared effect compaction', () => {
       collab: 'shared',
       initial: () => 'A',
       key: 'latest-controller-recreation.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const state = definePlugin('latest-controller-recreation-state', {
       stateFields: [title],
@@ -394,7 +394,7 @@ describe('plitejs/yjs shared effect compaction', () => {
       collab: 'shared',
       initial: () => 'A',
       key: 'authority.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const state = definePlugin('single-authority-state', {
       stateFields: [title],
@@ -451,10 +451,10 @@ describe('plitejs/yjs shared effect compaction', () => {
       collab: 'shared',
       initial: () => 'A',
       key: 'stable-authority-restart.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const announce = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       key: 'stable-authority-restart.announce',
@@ -623,7 +623,7 @@ describe('plitejs/yjs shared effect compaction', () => {
   it('targets live effects only to active peers and preserves retry on reconnect', () => {
     const rootName = 'live-recipient-lifecycle';
     const announce = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       key: 'live-recipient-lifecycle.announce',
@@ -738,7 +738,7 @@ describe('plitejs/yjs shared effect compaction', () => {
   it('lets the authority retire one crashed peer generation without replaying its live tail', () => {
     const rootName = 'retired-live-recipient';
     const announce = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       key: 'retired-live-recipient.announce',
@@ -853,7 +853,7 @@ describe('plitejs/yjs shared effect compaction', () => {
       collab: 'shared',
       initial: () => 'A',
       key: 'unsafe-watermarks.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const state = definePlugin('unsafe-watermarks-state', {
       stateFields: [title],
@@ -892,7 +892,7 @@ describe('plitejs/yjs shared effect compaction', () => {
     const doc = new Y.Doc();
     const source = String(doc.clientID);
     const announce = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       key: 'non-contiguous-effect-sequence.announce',
@@ -996,11 +996,11 @@ describe('plitejs/yjs shared effect compaction', () => {
     storedEvent.effect.value.nested.value = 'tampered';
 
     const effect = defineEffect<Payload>({
-      codec: defineValueCodec({
+      persist: {
         decode: (value) => value as Payload,
-        encode: (value) => value,
+        encode: (value) => value as unknown as EditorJsonValue,
         version: 1,
-      }),
+      },
       collab: 'shared',
       collabReplay: 'live',
       key: 'immutable-pending-event.effect',
@@ -1028,10 +1028,10 @@ describe('plitejs/yjs shared effect compaction', () => {
       collab: 'shared',
       initial: () => 'A',
       key: 'atomic-checkpoint.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const announce = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       key: 'atomic-checkpoint.announce',

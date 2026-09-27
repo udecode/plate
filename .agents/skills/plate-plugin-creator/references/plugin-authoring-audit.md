@@ -36,7 +36,8 @@ Copy:
 
 - no fake React layer;
 - semantic ownership is direct;
-- parsers/codecs and their API remain with the semantic owner.
+- parsers/mappings and their API remain with the semantic owner; whole-payload
+  MIME negotiation uses root `dataTransferFormats`.
 
 ## Direct React Plugin
 
@@ -126,9 +127,9 @@ Copy:
 - independent contributions stay in the constructor; repeated `.extend()`
   stages require imported/prebuilt adaptation, a constructor-inaccessible
   shared factory, or a real earlier-capability type dependency;
-- codec owners destructure `defineCodecs` inline, use
-  `defineCodecs(map)` for self/product maps, and use
-  `defineCodecs(TargetPlugin, map)` for foreign maps without manual targets;
+- mapping owners destructure `defineFormats` inline, use
+  `defineFormats(map)` for self/product maps, and use
+  `defineFormats(TargetPlugin, map)` for foreign maps without manual targets;
 - Plate authoring objects and callback returns stay plain; context capture
   stays inline, extracted helpers receive domain inputs, and independently
   reusable standalone descriptors use Plite `definePlugin`;
@@ -185,8 +186,8 @@ Reject:
 - duplicate plugin API and editor-plugin API implementations;
 - redundant portal nesting such as `table.update.insert.table`;
 - a second node-component channel instead of root `component`;
-- direct codec maps, manual codec `target` fields, or a global codec helper
-  instead of the callback's context-bound `defineCodecs`;
+- direct mapping maps, manual mapping `target` fields, or a global mapping helper
+  instead of the callback's context-bound `defineFormats`;
 - `editor.update.*` inside an active transaction;
 - broad normalization without a named invariant;
 - render subscriptions used only by later callbacks;

@@ -758,94 +758,112 @@ export const publishConfiguredPluginRegistry = <TEditor extends Editor>(
 };
 
 const assertEffectType = (pluginName: string, type: EditorEffectType): void => {
-  if (!type.key) {
+  const candidate = type as unknown as Record<string, unknown>;
+  const { key } = candidate;
+
+  if (typeof key !== 'string' || !key) {
     throw new Error(
       `Editor plugin "${pluginName}" cannot install an effect with an empty key.`
     );
   }
   if (!Object.isFrozen(type)) {
     throw new Error(
-      `Editor effect "${type.key}" from "${pluginName}" must be created with defineEffect().`
+      `Editor effect "${key}" from "${pluginName}" must be created with defineEffect().`
     );
   }
-  if (type.collab !== 'local' && type.collab !== 'shared') {
+  if (candidate.collab !== 'local' && candidate.collab !== 'shared') {
     throw new Error(
-      `Editor effect "${type.key}" has invalid collaboration policy "${String(
-        type.collab
-      )}".`
-    );
-  }
-  if (
-    (type.collab === 'shared' &&
-      type.collabReplay !== 'latest' &&
-      type.collabReplay !== 'live') ||
-    (type.collab === 'local' && type.collabReplay !== 'live')
-  ) {
-    throw new Error(
-      `Editor effect "${
-        type.key
-      }" has invalid collaboration replay policy "${String(
-        type.collabReplay
-      )}".`
+      `Editor effect "${key}" has invalid collaboration policy "${String(
+        candidate.collab
+      )}."`
     );
   }
   if (
-    (type.collabReplay === 'latest' &&
-      typeof type.collabSnapshot !== 'function') ||
-    (type.collabReplay !== 'latest' && type.collabSnapshot !== undefined)
+    (candidate.collab === 'shared' &&
+      candidate.collabReplay !== 'latest' &&
+      candidate.collabReplay !== 'live') ||
+    (candidate.collab === 'local' && candidate.collabReplay !== 'live')
   ) {
     throw new Error(
-      `Editor effect "${type.key}" has an invalid collaboration snapshot policy.`
+      `Editor effect "${key}" has invalid collaboration replay policy "${String(
+        candidate.collabReplay
+      )}."`
     );
   }
   if (
-    type.history !== 'push' &&
-    type.history !== 'skip' &&
-    type.history !== 'session'
+    (candidate.collabReplay === 'latest' &&
+      typeof candidate.collabSnapshot !== 'function') ||
+    (candidate.collabReplay !== 'latest' &&
+      candidate.collabSnapshot !== undefined)
   ) {
     throw new Error(
-      `Editor effect "${type.key}" has invalid history policy "${String(
-        type.history
-      )}".`
+      `Editor effect "${key}" has an invalid collaboration snapshot policy.`
+    );
+  }
+  const effectHistory = candidate.history;
+  const sessionHistory =
+    typeof effectHistory === 'object' &&
+    effectHistory !== null &&
+    !Array.isArray(effectHistory) &&
+    Object.isFrozen(effectHistory) &&
+    Object.keys(effectHistory).length === 1 &&
+    Object.hasOwn(effectHistory, 'replay') &&
+    typeof (effectHistory as { replay?: unknown }).replay === 'function';
+
+  if (effectHistory !== 'push' && effectHistory !== 'skip' && !sessionHistory) {
+    throw new Error(
+      `Editor effect "${key}" has invalid history policy "${String(
+        effectHistory
+      )}."`
+    );
+  }
+  if (sessionHistory && candidate.collab !== 'local') {
+    throw new Error(
+      `Editor effect "${key}" has an invalid session history replay policy.`
     );
   }
   if (
-    (type.history === 'session' &&
-      (type.collab !== 'local' || typeof type.historyReplay !== 'function')) ||
-    (type.history !== 'session' && type.historyReplay !== undefined)
+    typeof candidate.invert !== 'function' ||
+    typeof candidate.map !== 'function'
   ) {
     throw new Error(
-      `Editor effect "${type.key}" has an invalid session history replay policy.`
+      `Editor effect "${key}" must define invert and map functions.`
     );
   }
-  if (typeof type.invert !== 'function' || typeof type.map !== 'function') {
-    throw new Error(
-      `Editor effect "${type.key}" must define invert and map functions.`
-    );
-  }
+  const persistence = candidate.persist as
+    | {
+        decode?: unknown;
+        encode?: unknown;
+        version?: unknown;
+      }
+    | undefined;
+
   if (
-    type.codec &&
-    (!Number.isSafeInteger(type.codec.version) ||
-      type.codec.version < 1 ||
-      typeof type.codec.encode !== 'function' ||
-      typeof type.codec.decode !== 'function')
+    persistence &&
+    (!Number.isSafeInteger(persistence.version) ||
+      typeof persistence.version !== 'number' ||
+      persistence.version < 1 ||
+      typeof persistence.encode !== 'function' ||
+      typeof persistence.decode !== 'function')
   ) {
-    throw new Error(`Editor effect "${type.key}" has an invalid codec.`);
+    throw new Error(`Editor effect "${key}" has invalid persistence.`);
   }
-  if (type.collab === 'shared' && !type.codec) {
-    throw new Error(
-      `Shared editor effect "${type.key}" requires a persistence codec.`
-    );
+  if (candidate.collab === 'shared' && !persistence) {
+    throw new Error(`Shared editor effect "${key}" requires persistence.`);
   }
+  const collabTransport = candidate.collabTransport as
+    | { decode?: unknown; encode?: unknown }
+    | undefined;
+
   if (
-    type.collabTransport &&
-    (type.collab !== 'shared' ||
-      !type.codec ||
-      typeof type.collabTransport.encode !== 'function' ||
-      typeof type.collabTransport.decode !== 'function')
+    collabTransport &&
+    (candidate.collab !== 'shared' ||
+      !persistence ||
+      typeof collabTransport.encode !== 'function' ||
+      typeof collabTransport.decode !== 'function')
   ) {
     throw new Error(
-      `Editor effect "${type.key}" has an invalid collaboration transport.`
+      `Editor effect "${key}" has an invalid collaboration transport.`
     );
   }
 };

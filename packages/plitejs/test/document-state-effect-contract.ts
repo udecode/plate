@@ -7,10 +7,11 @@ import {
   definePlugin,
   defineEffect,
   defineStateField,
-  defineValueCodec,
   DocumentChange,
   type Element,
   type EditorEffect,
+  type EditorJsonValue,
+  type EditorValuePersistence,
   invertEffect,
   mapEffect,
   valueCodecs,
@@ -35,7 +36,7 @@ describe('document state effect contract', () => {
       collab: 'shared',
       history: 'push',
       initial: () => 'Untitled',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const children: Element[] = [paragraph('body')];
     const editor = createEditor({
@@ -89,7 +90,7 @@ describe('document state effect contract', () => {
     assert.throws(
       () =>
         defineStringEffect({
-          codec: valueCodecs.string,
+          persist: { ...valueCodecs.string, version: 1 },
           collab: 'shared',
           collabReplay: 'latest',
           key: 'missing-latest-snapshot',
@@ -101,7 +102,7 @@ describe('document state effect contract', () => {
   it('supports compact shared state transitions as domain effects', () => {
     type LargeCounter = { body: string; count: number };
     const increment = defineEffect<number>({
-      codec: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       history: 'push',
@@ -111,7 +112,7 @@ describe('document state effect contract', () => {
     const largeCounter = defineStateField<LargeCounter>({
       key: 'document.large-counter',
       initial: () => ({ body: 'x'.repeat(40_000), count: 0 }),
-      persist: defineValueCodec<LargeCounter>({
+      persist: {
         decode(value) {
           if (
             typeof value !== 'object' ||
@@ -124,9 +125,9 @@ describe('document state effect contract', () => {
 
           return value as LargeCounter;
         },
-        encode: (value) => value,
+        encode: (value) => value as unknown as EditorJsonValue,
         version: 1,
-      }),
+      },
       reduce: (value, effect) =>
         effect.type === increment
           ? { ...value, count: value.count + effect.value }
@@ -174,7 +175,7 @@ describe('document state effect contract', () => {
       key: 'document.title',
       history: 'push',
       initial: () => 'Untitled',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const editor = createEditor({
       plugins: [
@@ -202,16 +203,16 @@ describe('document state effect contract', () => {
 
   it('deeply freezes emitted, mapped, inverted, and decoded effect values', () => {
     type Payload = { nested: { count: number } };
-    const codec = defineValueCodec<Payload>({
+    const persistence = {
       decode: (value) => value as Payload,
-      encode: (value) => value,
+      encode: (value) => value as unknown as EditorJsonValue,
       version: 1,
-    });
+    } satisfies EditorValuePersistence<Payload, EditorJsonValue>;
     const effect = defineEffect<Payload>({
-      codec,
       invert: (value) => ({ nested: { count: -value.nested.count } }),
       key: 'nested-effect-value',
       map: (value) => ({ nested: { count: value.nested.count + 1 } }),
+      persist: persistence,
     });
     const editor = createEditor({
       plugins: [

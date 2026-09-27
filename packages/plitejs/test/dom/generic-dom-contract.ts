@@ -6,7 +6,12 @@ import {
   type Node as PliteNode,
   type Value,
 } from 'plitejs';
-import { dom, domCommands, type HostCodec, hostCodecs } from 'plitejs/dom';
+import {
+  dom,
+  domCommands,
+  type DataTransferFormat,
+  dataTransferFormats,
+} from 'plitejs/dom';
 
 type CustomText = {
   text: string;
@@ -26,20 +31,30 @@ declare const pliteNode: PliteNode;
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: '' }] },
 ];
-const jsonCodec: HostCodec<CustomValue> = {
-  format: 'application/x-custom-value+json',
+const jsonFormat: DataTransferFormat<CustomValue> = {
+  mimeType: 'application/x-custom-value+json',
   key: 'custom-value-json',
-  parse: ({ data, state }) => {
+  decode: ({ data, state }) => {
     const children: readonly ParagraphElement[] = state.children();
 
-    return data ? ContentSlice.closed<CustomValue>(children) : null;
+    return data
+      ? {
+          diagnostics: [],
+          ok: true,
+          slice: ContentSlice.closed<CustomValue>(children),
+        }
+      : null;
   },
-  owns: [{ kind: 'schema' }],
-  serialize: ({ slice, state }) => {
+  claims: [{ kind: 'schema' }],
+  encode: ({ slice, state }) => {
     const content: ReadonlyArray<CustomText | ParagraphElement> = slice.content;
     const children: readonly ParagraphElement[] = state.children();
 
-    return JSON.stringify({ children, content });
+    return {
+      data: JSON.stringify({ children, content }),
+      diagnostics: [],
+      ok: true,
+    };
   },
 };
 
@@ -74,9 +89,17 @@ const ClipboardPlugin = definePlugin('clipboard-handler', {
     }),
   ],
 });
-const HostCodecsPlugin = hostCodecs('custom-value-host-codecs', [jsonCodec]);
+const DataTransferFormatsPlugin = dataTransferFormats(
+  'custom-value-data-transfer-formats',
+  [jsonFormat]
+);
 const editor = createEditor({
-  plugins: [DomPlugin, HostCodecsPlugin, ClipboardPlugin, TypedClipboardPlugin],
+  plugins: [
+    DomPlugin,
+    DataTransferFormatsPlugin,
+    ClipboardPlugin,
+    TypedClipboardPlugin,
+  ],
   initialValue,
 });
 

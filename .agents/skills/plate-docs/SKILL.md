@@ -97,7 +97,7 @@ Verify changed examples through the existing proof owners below.
 | New page, substantial rewrite or a docs gap/topology decision | [Page shapes](./references/lanes.md); select only the matching lane |
 | MDX components, navigation, installation requirements or release routes | [MDX and routes](./references/mdx.md) |
 | Public schema, identity, migration, decoration or renderer examples | [Public API examples](./references/api-examples.md) |
-| Plugin setup, kit/manual paths, codecs, events or API examples | [Plugin documentation](./references/plugin.md) |
+| Plugin setup, kit/manual paths, format mappings, events or API examples | [Plugin documentation](./references/plugin.md) |
 
 For a gap review, compare the nearest concept guide, public reference and
 feature page before adding a page. Put exact signatures in their reference,

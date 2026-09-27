@@ -12,6 +12,7 @@ export {
   editorCommands,
   editorReads,
   ElementApi,
+  EditorSchemaValidationError,
   getCompiledEditorSchemaFromApi,
   getEditorCommitSnapshot,
   getEditorRuntimeOwner,
@@ -88,6 +89,7 @@ export type {
   EditorSchemaContract,
   EditorSchemaDerivedDefinition,
   EditorSchemaElement,
+  EditorSchemaValidationDiagnostic,
   EditorSchemaPlugin,
   EditorSchemaPluginProvider,
   EditorSchemaIdentity,
@@ -113,6 +115,7 @@ export type {
   EditorUpdateTransaction,
   EditorUpdateTransactionOf,
   EditorUpdateTransactionProvider,
+  EditorUpdateValueFromPlugin as RuntimeEditorUpdateValueFromPlugin,
   EditorValueFromPlugins,
   EditorValueFromOptions,
   EditorValueTypeProvider,
@@ -141,7 +144,7 @@ export type {
   DecorationAttributes,
   DecorationRefresh,
   Point,
-  PropertyJsonValue,
+  EditorJsonValue,
   PropertyOptionsOf,
   PropertyValueDescriptor,
   PropertyValueOf,
@@ -196,7 +199,12 @@ export type {
 
 export type { AnyEditor as RuntimeAnyEditor } from 'plitejs/internal';
 export type { InternalEditorSchemaApi } from 'plitejs/internal';
-export type { NativeAuthoredDocumentCapability } from 'plitejs/internal';
+export type {
+  NativeAuthoredDocumentCapability,
+  NativeAuthoredDocumentProjection,
+  NativeAuthoredProjectionDiagnostic,
+  StructuralPlainTextDiagnostic,
+} from 'plitejs/internal';
 export {
   assertDetachedSelectionSupported,
   completePersistedDocumentFields,

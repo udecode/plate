@@ -183,7 +183,7 @@ const compileSamples = Array.from({ length: iterations }, () => {
 });
 const compileMs = summarize(compileSamples);
 const prefixCompileRows = ([1, 2] as const).map((prefixLength) => {
-  const definition = defineEditorSchema(
+  const prefixDefinition = defineEditorSchema(
     `schema:architecture-prefix-${prefixLength}`,
     {
       elements: {
@@ -213,7 +213,10 @@ const prefixCompileRows = ([1, 2] as const).map((prefixLength) => {
   const samples = Array.from({ length: iterations }, () => {
     const before = performance.now();
     const compiled = compileEditorSchemaContributions([
-      { contribution: definition.schema, pluginName: definition.name },
+      {
+        contribution: prefixDefinition.schema,
+        pluginName: prefixDefinition.name,
+      },
     ]);
 
     assert.equal(compiled.primaryRoot.content.min, prefixLength + 1);

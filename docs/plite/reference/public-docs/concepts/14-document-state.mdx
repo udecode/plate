@@ -27,8 +27,8 @@ type EditorDocumentValue = {
 content roots, synced blocks, captions, and other editable regions owned by the
 same editor.
 
-`meta` stores fields whose descriptors define a versioned `persist` codec.
-Plite encodes those fields in `editor.read.value()` and validates their codec
+`meta` stores fields whose descriptors define versioned `persist` declarations.
+Plite encodes those fields in `editor.read.value()` and validates their
 version when loading `initialValue`.
 
 ## Save the document
@@ -199,7 +199,7 @@ const commit = editor.read.lastCommit();
 ```
 
 Replay decoded shared effects through `tx.effects.emit(...)`. The field's
-`persist` codec also versions the generated transition effect; `plitejs/yjs`
+`persist` declaration also versions the generated transition effect; `plitejs/yjs`
 owns the registry and remote policy for Yjs documents.
 
 ```tsx

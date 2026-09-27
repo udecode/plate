@@ -141,12 +141,14 @@ export function useEditorChat(
             if (id) comments.api.discardDraft(id);
           };
           try {
+            const parsed = markdownApi.parse(aiComment.content);
+
+            if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
             id = comments.api.createDraft({
               target: { range, type: 'range' },
               body: createCommentValue(aiComment.comment),
-              excerpt: markdownApi
-                .deserialize(aiComment.content)
-                .children.map((node) => NodeApi.string(node))
+              excerpt: parsed.document.children
+                .map((node) => NodeApi.string(node))
                 .join('\n'),
             });
             if (!id) {

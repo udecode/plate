@@ -1,32 +1,44 @@
-import { createEditor, DocumentChange } from 'platejs';
+import {
+  createEditor,
+  DocumentChange,
+  type EditorDocumentValue,
+  type EditorValueFromPlugins,
+} from 'platejs';
 import {
   authored,
   createAuthoredReviewDocument,
-  deserializeAuthoredJson,
-  readAuthoredFormatSnapshot,
-  serializeAuthoredJson,
-  type AuthoredFormatDiagnostic,
+  parseAuthoredDocument,
+  projectAuthoredDocument,
+  projectAuthoredReview,
+  type AuthoredProjectionDiagnostic,
 } from 'platejs/authored';
-import { exportToDocx, type DocxExportResult } from 'platejs/docx/export';
+import { exportDocx, type DocxExportResult } from 'platejs/docx/export';
 import {
   DocxSource,
   importDocx,
   type DocxImportOptions,
 } from 'platejs/docx/import';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { renderAuthoredHtml } from 'platejs/static';
+import { renderStaticHtml } from 'platejs/static';
 
+const plugins = [authored({ authorId: 'alice' }), MarkdownPlugin] as const;
 const editor = createEditor({
-  plugins: [authored({ authorId: 'alice' }), MarkdownPlugin],
+  plugins,
   initialValue: [{ children: [{ text: 'Document' }], type: 'paragraph' }],
 });
-const snapshot = readAuthoredFormatSnapshot(editor);
-const json = serializeAuthoredJson(editor, { projection: 'review' });
-const markdown = editor.api.markdown.serializeAuthored({
+const snapshot = projectAuthoredReview(editor.read.value());
+const projection = projectAuthoredDocument(editor.read.value(), {
+  projection: 'proposed',
+});
+const json = {
+  data: JSON.stringify(snapshot.review),
+  diagnostics: snapshot.diagnostics,
+};
+const markdown = editor.api.markdown.serialize({
   projection: 'accepted',
 });
-const html = renderAuthoredHtml(editor, { projection: 'proposed' });
-const docx = exportToDocx(editor, { projection: 'review' });
+const html = renderStaticHtml(editor, { projection: 'proposed' });
+const docx = exportDocx(editor, { projection: 'review' });
 const imported = createAuthoredReviewDocument({
   accepted: snapshot.accepted,
   revisions: [
@@ -40,31 +52,38 @@ const imported = createAuthoredReviewDocument({
 });
 
 void (json.data satisfies string);
-void (json.diagnostics satisfies readonly AuthoredFormatDiagnostic[]);
-void (markdown.data satisfies string);
+void (projection.document satisfies typeof snapshot.proposed);
+void (projection.unresolved.conflicted satisfies number);
+void (json.diagnostics satisfies readonly AuthoredProjectionDiagnostic[]);
+if (markdown.ok) void (markdown.data satisfies string);
 void (html satisfies Promise<{ data: string }>);
 void (docx satisfies Promise<DocxExportResult>);
-void (deserializeAuthoredJson(json.data) satisfies typeof imported);
+void (parseAuthoredDocument(json.data) satisfies typeof imported);
 
 async function verifyDocxSourceTypes() {
-  const ordinary = await importDocx(editor, new Blob());
+  const ordinary = await importDocx(new Blob(), { plugins });
 
   if (ordinary.ok) {
+    void (ordinary.document satisfies EditorDocumentValue<
+      EditorValueFromPlugins<typeof plugins>
+    >);
     // @ts-expect-error Default imports do not retain a DOCX source.
     ordinary.source.dispose();
   }
-  const retained = await importDocx(editor, new Blob(), {
+  const retained = await importDocx(new Blob(), {
+    plugins,
     retainSource: true,
   });
 
   if (retained.ok) {
-    void exportToDocx(editor, {
+    void exportDocx(editor, {
       projection: 'review',
       source: retained.source,
     });
     retained.source.dispose();
   }
-  const disabled = await importDocx(editor, new Blob(), {
+  const disabled = await importDocx(new Blob(), {
+    plugins,
     retainSource: false,
   });
 
@@ -72,10 +91,11 @@ async function verifyDocxSourceTypes() {
     // @ts-expect-error Literal false imports do not retain a DOCX source.
     disabled.source.dispose();
   }
-  const dynamicOptions: DocxImportOptions = {
+  const dynamicOptions: DocxImportOptions<typeof plugins, boolean> = {
+    plugins,
     retainSource: Math.random() > 0.5,
   };
-  const dynamic = await importDocx(editor, new Blob(), dynamicOptions);
+  const dynamic = await importDocx(new Blob(), dynamicOptions);
 
   if (dynamic.ok && 'source' in dynamic) dynamic.source.dispose();
   // @ts-expect-error DOCX sources are created only by retained imports.
@@ -87,9 +107,9 @@ async function verifyDocxSourceTypes() {
 void verifyDocxSourceTypes;
 
 // @ts-expect-error Authored serialization requires an explicit valid projection.
-editor.api.markdown.serializeAuthored({ projection: 'markup' });
+editor.api.markdown.serialize({ projection: 'markup' });
 // @ts-expect-error DOCX review export requires an explicit valid projection.
-void exportToDocx(editor, { projection: 'markup' });
+void exportDocx(editor, { projection: 'markup' });
 createAuthoredReviewDocument({
   accepted: snapshot.accepted,
   revisions: [

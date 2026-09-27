@@ -82,18 +82,19 @@ const COMMENT_CREATION_HISTORY_REPLAYERS = new WeakMap<
 
 const commentCreationHistoryEffect =
   defineEffect<CommentCreationHistoryTransition>({
-    history: 'session',
-    historyReplay: (editor, transition) => {
-      const replay = COMMENT_CREATION_HISTORY_REPLAYERS.get(
-        getEditorRuntimeOwner(editor)
-      );
+    history: {
+      replay: (editor, transition) => {
+        const replay = COMMENT_CREATION_HISTORY_REPLAYERS.get(
+          getEditorRuntimeOwner(editor)
+        );
 
-      return replay
-        ? replay(transition)
-        : {
-            reason: 'comments-owner-unavailable',
-            status: 'blocked',
-          };
+        return replay
+          ? replay(transition)
+          : {
+              reason: 'comments-owner-unavailable',
+              status: 'blocked',
+            };
+      },
     },
     invert: ({ previous, value, ...transition }) => ({
       ...transition,
@@ -586,6 +587,82 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       refreshIds([...previous, ...next]);
     });
   };
+  const replaceComments = (value: CommentsJSON) => {
+    if (destroyed) return false;
+
+    const decoded = decodeComments(value);
+    const nextAnchors = new Map<string, Anchor<Range>>();
+
+    try {
+      for (const target of decoded.ranges) {
+        if (!target.range) continue;
+        const anchor = editor.anchor.restore(target.range);
+
+        try {
+          if (anchor.root !== undefined) {
+            throw new Error('Comment ranges must address the primary document');
+          }
+          const range = anchor.resolve();
+          if (range) validateRange(range);
+          nextAnchors.set(target.threadId, anchor);
+        } catch (error) {
+          anchor.release();
+          throw error;
+        }
+      }
+    } catch (error) {
+      nextAnchors.forEach((anchor) => anchor.release());
+      throw error;
+    }
+
+    const changedIds = new Set([
+      ...threads.keys(),
+      ...decoded.threads.map((thread) => thread.id),
+    ]);
+    const previousSnapshot = snapshot;
+    const retiredQueues = [...queues];
+    const next = Object.freeze({
+      draftThreadIds: Object.freeze([]),
+      pending: null,
+      threadIds: Object.freeze(decoded.threads.map((thread) => thread.id)),
+      visibleThreadIds: Object.freeze(
+        decoded.threads
+          .filter((thread) => !thread.resolution)
+          .map((thread) => thread.id)
+      ),
+    });
+
+    queues.clear();
+    retiredQueues.forEach(([id, queue]) => {
+      const generation = (generations.get(id) ?? 0) + 1;
+
+      generations.set(id, generation);
+      void queue.then(() => {
+        if (!queues.has(id) && generations.get(id) === generation) {
+          generations.delete(id);
+        }
+      });
+    });
+    pendingAnchor?.release();
+    pendingAnchor = null;
+    anchors.forEach((anchor) => anchor.release());
+    anchors.clear();
+    nextAnchors.forEach((anchor, id) => anchors.set(id, anchor));
+    threads = new Map(decoded.threads.map((thread) => [thread.id, thread]));
+    syncSource();
+    snapshot = next;
+    viewIndexes.forEach(({ annotations }) => annotations.refresh());
+    setActive([]);
+
+    publish(next, {
+      draft: previousSnapshot.draftThreadIds.length > 0,
+      pending: previousSnapshot.pending !== null,
+      threads: [...changedIds],
+      visible: true,
+    });
+
+    return true;
+  };
   const setThread = (
     id: string,
     thread: CommentThread | null,
@@ -745,66 +822,98 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     if (!thread) {
       return { reason: 'comments-thread-changed', status: 'blocked' };
     }
-    const current = threads.get(thread.id) ?? null;
-    if (
-      !sameThread(current, transition.previous) ||
-      thread.messages.length !== 1 ||
-      thread.messages[0]?.id !== transition.messageId
-    ) {
-      return { reason: 'comments-thread-changed', status: 'blocked' };
-    }
-
-    let restoredAnchor: Anchor<Range> | undefined;
-    try {
-      if (transition.value?.target.type === 'range') {
-        if (!transition.attachment) {
-          return {
-            reason: 'comments-attachment-unavailable',
-            status: 'blocked',
-          };
-        }
-        restoredAnchor = editor.anchor.restore(transition.attachment);
-        if (!restoredAnchor.resolve()) {
-          restoredAnchor.release();
-          return {
-            reason: 'comments-attachment-unavailable',
-            status: 'blocked',
-          };
-        }
-      }
-
-      const result = await commitMutation(
-        thread.id,
-        transition.value ? 'createThread' : 'removeThread',
-        transition.value,
-        restoredAnchor,
-        () => sameThread(threads.get(thread.id) ?? null, transition.previous)
-      );
-
-      if (result.status !== 'applied') {
-        restoredAnchor?.release();
+    const result = await enqueue<
+      EditorEffectHistoryReplayResult<CommentCreationHistoryTransition>
+    >(thread.id, async () => {
+      const current = threads.get(thread.id) ?? null;
+      if (
+        !sameThread(current, transition.previous) ||
+        thread.messages.length !== 1 ||
+        thread.messages[0]?.id !== transition.messageId
+      ) {
         return {
-          reason:
-            result.status === 'rejected' && result.code
-              ? `comments-${result.code}`
-              : `comments-${result.status}`,
-          status: 'blocked',
+          status: 'applied',
+          value: {
+            reason: 'comments-thread-changed',
+            status: 'blocked',
+          } as const,
         };
       }
 
-      const value = threads.get(thread.id) ?? null;
-      return {
-        status: 'applied',
-        value: Object.freeze({
-          ...transition,
-          previous: current,
-          value,
-        }),
-      };
-    } catch {
-      restoredAnchor?.release();
-      return { reason: 'comments-mutation-failed', status: 'blocked' };
-    }
+      let restoredAnchor: Anchor<Range> | undefined;
+      try {
+        if (transition.value?.target.type === 'range') {
+          if (!transition.attachment) {
+            return {
+              status: 'applied',
+              value: {
+                reason: 'comments-attachment-unavailable',
+                status: 'blocked',
+              } as const,
+            };
+          }
+          restoredAnchor = editor.anchor.restore(transition.attachment);
+          if (!restoredAnchor.resolve()) {
+            restoredAnchor.release();
+            return {
+              status: 'applied',
+              value: {
+                reason: 'comments-attachment-unavailable',
+                status: 'blocked',
+              } as const,
+            };
+          }
+        }
+
+        const mutation = await commitMutation(
+          thread.id,
+          transition.value ? 'createThread' : 'removeThread',
+          transition.value,
+          restoredAnchor,
+          () => sameThread(threads.get(thread.id) ?? null, transition.previous)
+        );
+
+        if (mutation.status !== 'applied') {
+          restoredAnchor?.release();
+          return {
+            status: 'applied',
+            value: {
+              reason:
+                mutation.status === 'rejected' && mutation.code
+                  ? `comments-${mutation.code}`
+                  : `comments-${mutation.status}`,
+              status: 'blocked',
+            } as const,
+          };
+        }
+
+        const value = threads.get(thread.id) ?? null;
+        return {
+          status: 'applied',
+          value: {
+            status: 'applied',
+            value: Object.freeze({
+              ...transition,
+              previous: current,
+              value,
+            }),
+          } as const,
+        };
+      } catch {
+        restoredAnchor?.release();
+        return {
+          status: 'applied',
+          value: {
+            reason: 'comments-mutation-failed',
+            status: 'blocked',
+          } as const,
+        };
+      }
+    });
+
+    return result.status === 'applied'
+      ? result.value
+      : { reason: `comments-${result.status}`, status: 'blocked' };
   };
   const mutateThread = (
     id: string,
@@ -1064,6 +1173,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         /** Read live semantic records. Use toJSON for persistence. */
         getThreads: (): readonly CommentThread[] =>
           Object.freeze([...threads.values()]),
+        /** Replace the complete saved snapshot for the exact current document. */
+        replace: replaceComments,
         /** Export published conversations and opaque targets for this exact document. */
         toJSON: (): CommentsJSON => {
           const records = [...threads.values()].filter(

@@ -1,184 +1,139 @@
 ---
 title: Node.js
-description: 在Node.js环境中安装和配置Plate
+description: 在 Node.js 中安装并配置 Plate conversion 与 document workflow。
 ---
 
-本指南演示如何在Node.js环境中使用Plate。这对于后端任务非常有用，例如数据处理、内容迁移、验证，或任何需要在不使用浏览器或完整React前端的情况下与Plate编辑器内容交互的场景。
+在 Node.js 中使用 Plate 可以验证、转换、解析或序列化完整 editor document，
+无需挂载 React。
 
-<Callout type="warning" title="Node.js关键限制">
-  在Node.js环境中使用Plate时，**绝对不要**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`platejs`而不是`platejs/react`）。
-
-  这意味着你不能使用`platejs/react`中的`createEditor`。应改用`platejs`中的`createEditor`。
+<Callout type="warning" title="使用 server-safe import">
+  Editor runtime 从 `platejs` import，不要使用 `platejs/react`。Markdown 使用
+  `platejs/markdown`。Node HTML parsing 使用 `platejs/html/server`。
 </Callout>
 
 <Steps>
 
-### 安装Plate
-
-安装核心Plate包以及数据处理所需的特定插件包。
+### 安装 package
 
 ```bash
 npm install platejs
 ```
 
--   `platejs`: Plate编辑器的核心功能
--   `platejs`: 提供基础节点（如标题、粗体、斜体、下划线等）的插件
+只有进程需要解析 HTML 时才安装可选 server DOM peer：
 
-### 创建编辑器实例
+```bash
+npm install linkedom
+```
 
-在Node.js脚本中，使用`platejs`的`createEditor`初始化编辑器实例。此函数与框架无关，不依赖React或浏览器API。
+`platejs/html/server` 只提供 ESM。`parse5` 是 Plate 的 direct dependency；
+`linkedom` 只存在于 server graph，不会进入 browser bundle。
 
-```typescript title="scripts/process-content.ts"
-import { createEditor } from 'platejs';
-import {
-  BaseBoldPlugin,
-  BaseItalicPlugin,
-  BaseUnderlinePlugin,
-  BaseHeadingPlugin,
-  
-  
-  BaseBlockquotePlugin,
-} from 'platejs';
+### 创建 headless editor
 
-const initialValue = [
-  {
-    type: 'heading', level: 3,
-    children: [{ text: '文档标题' }],
-  },
-  {
-    type: 'blockquote',
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: '这是一段引用。' }],
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    children: [
-      { text: '包含一些' },
-      { text: '粗体', bold: true },
-      { text: '强调文本！' },
-    ],
-  },
-];
+```ts title="scripts/process-content.ts"
+import { BaseBoldPlugin, BaseHeadingPlugin, createEditor } from 'platejs';
 
 const editor = createEditor({
-  plugins: [
-    BaseBoldPlugin,
-    BaseItalicPlugin,
-    BaseUnderlinePlugin,
-    BaseHeadingPlugin,
-    
-    
-    BaseBlockquotePlugin,
-  ],
-  initialValue,
-});
-
-console.debug('编辑器内容:', editor.read.children());
-```
-
-<Callout type="info">
-  `createEditor`创建一个原始的Plate编辑器实例，适用于服务端逻辑、数据转换或准备静态渲染内容。它提供与React版本相同的API，但没有浏览器依赖。
-</Callout>
-
-### 内容操作
-
-Plate在Node.js中的主要用例是程序化内容操作：
-
-```typescript title="scripts/transform-content.ts"
-import { createEditor } from 'platejs';
-import {
-  BaseBoldPlugin,
-  BaseItalicPlugin,
-  BaseHeadingPlugin,
-  
-  
-  BaseBlockquotePlugin,
-} from 'platejs';
-
-async function processDocument(value: any[]) {
-  const editor = createEditor({
-    plugins: [
-      BaseBoldPlugin,
-      BaseItalicPlugin,
-      BaseHeadingPlugin,
-      
-      
-      BaseBlockquotePlugin,
-    ],
-    initialValue: value,
-  });
-
-  // 提取文本内容
-  const textContent = editor.read.text.string([]);
-  console.debug('提取的文本:', textContent);
-
-  // 将所有H1转换为H2
-  editor.update((tx) => {
-    tx.nodes.set(
-      { type: 'heading', level: 2 },
-      { at: [], match: (node) => 'type' in node && node.type === 'heading' && node.level === 1 }
-    );
-  });
-
-  // 在末尾添加新段落
-  editor.update((tx) => {
-    tx.nodes.insert(
-      [{ type: 'paragraph', children: [{ text: '由Node.js脚本添加！' }] }],
-      { at: [tx.children().length] }
-    );
-  });
-
-  return {
-    textContent,
-    transformedValue: editor.read.children(),
-  };
-}
-
-// 使用示例
-const mySlateValue = [
-  { type: 'heading', level: 1, children: [{ text: '原始文档标题' }] },
-  { type: 'paragraph', children: [{ text: '段落内容。' }] },
-  {
-    type: 'paragraph',
+  plugins: [BaseHeadingPlugin, BaseBoldPlugin],
+  initialValue: {
     children: [
-      { text: '包含' },
-      { text: '粗体', bold: true },
-      { text: '格式的文本。' },
+      { type: 'heading', level: 1, children: [{ text: '文档标题' }] },
+      { type: 'paragraph', children: [{ text: '正文' }] },
     ],
   },
-];
+});
 
-processDocument(mySlateValue).then(result => {
-  console.debug('处理完成:', result);
+const document = editor.read.value();
+```
+
+`editor.read.value()` 返回完整 document，包括 named root 与持久化 metadata。
+原子转换使用 `editor.update(...)`。
+
+### 解析与序列化 Markdown
+
+不需要 editor lifecycle 时，使用 direct function：
+
+```ts title="scripts/markdown-io.ts"
+import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
+import { parseMarkdown, serializeMarkdown } from 'platejs/markdown';
+
+const plugins = [BaseHeadingPlugin, BaseBoldPlugin] as const;
+const parsed = parseMarkdown('# 标题\n\n**正文**', { plugins });
+
+if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
+
+const output = serializeMarkdown(parsed.document, {
+  plugins,
+  projection: 'accepted',
+});
+
+if (output.ok) console.info(output.data);
+```
+
+多次 operation 需要复用同一个 editor 的 compiled target 时，安装
+`MarkdownPlugin`：
+
+```ts
+import { MarkdownPlugin } from 'platejs/markdown';
+
+const editor = createEditor({
+  plugins: [BaseHeadingPlugin, BaseBoldPlugin, MarkdownPlugin],
+});
+
+const parsed = editor.api.markdown.parse(source);
+const output = editor.api.markdown.serialize({ projection: 'proposed' });
+```
+
+### 解析 HTML
+
+```ts title="scripts/html-import.ts"
+import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
+import { parseHtml } from 'platejs/html/server';
+
+const result = parseHtml(source, {
+  plugins: [BaseHeadingPlugin, BaseBoldPlugin],
+});
+
+if (!result.ok) throw new Error(result.diagnostics[0].message);
+```
+
+Server 与 browser parser 共享同一棵 parse5 tree 和安全策略。server adapter
+不会安装 ambient DOM global、执行 script 或加载 resource。
+
+### 导入 DOCX
+
+DOCX import 是 detached、browser/client-only operation。完整 plugin target 放进
+`options`，不要传入 editor。
+
+```ts
+import { importDocx } from 'platejs/docx/import';
+
+const result = await importDocx(file, {
+  plugins: EditorKit,
+  signal,
 });
 ```
 
-### 可用API
-
--   **[`editor.read`](/docs/api/editor-api)**: 查询已提交的编辑器状态：
-    -   `editor.read.nodes.entries({ at: [], match })`: 查找特定节点
-    -   `editor.read.text.string([])`: 提取文本内容
-    -   [HTML序列化](/docs/html)
-    -   [Markdown序列化](/docs/markdown)
-
--   **[`editor.update`](/docs/api/editor-transforms)**: 使用事务修改编辑器内容：
-    -   `tx.nodes.insert(nodes, opts)`: 插入新节点
-    -   `tx.nodes.remove(opts)`: 删除节点
-    -   `tx.nodes.set(props, opts)`: 更新现有节点属性
-    -   `editor.update.value.repair()`: 修复所有文档根
+该 operation 使用 browser 或 client worker。Headless editor runtime 不表示支持
+server-side DOCX conversion。
 
 </Steps>
 
-### 后续步骤
+## Runtime boundary
 
-在Node.js环境中配置好Plate后，您可以：
+| Runtime | Import | 用途 |
+| --- | --- | --- |
+| Node editor | `platejs` | 读取、验证与转换 document。 |
+| Node Markdown | `platejs/markdown` | 解析与序列化 Markdown。 |
+| Node HTML parse | `platejs/html/server` | 解析完整 HTML document 或 slice。 |
+| Semantic HTML serialize | `platejs/html` | 序列化 detached Plate document。 |
+| Static rendering | `platejs/static` | 渲染 server-safe static component。 |
+| React editor | `platejs/react` 与 feature `/react` path | 已挂载 editing UI 与 hook。 |
 
-*   **构建内容管道**: 创建脚本将其他系统的内容迁移到Plate格式
-*   **批量操作**: 对现有Plate文档执行批量更新或转换
-*   **数据提取**: 验证内容结构或从文档中提取特定数据
-*   **后端集成**: 与其他后端服务集成构建内容处理管道
-*   **静态生成**: 探索[Markdown序列化](/docs/markdown)、[HTML序列化](/docs/html)和[`EditorStatic`](/docs/static)生成静态内容
+## 相关文档
+
+- [HTML](/docs/html)
+- [Markdown](/docs/markdown)
+- [DOCX](/docs/docx)
+- [Serializing](/docs/serializing)
+- [Editor API](/docs/api/editor-api)

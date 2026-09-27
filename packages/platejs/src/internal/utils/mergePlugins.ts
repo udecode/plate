@@ -16,7 +16,7 @@ export type PluginDescriptorMetadata = Readonly<{
   configured: boolean;
   configurationLayers: readonly ErasedPluginConfigurationLayer[];
   sourceReferences: readonly RuntimePluginReference[];
-  htmlCodecContributions: ReadonlyArray<
+  htmlMappingContributions: ReadonlyArray<
     Readonly<{
       factory: ErasedPluginCallable;
       targetPlugin: string | null;
@@ -31,7 +31,7 @@ const pluginDescriptorMetadata = new WeakMap<
   PluginDescriptorMetadata
 >();
 const pluginSchemaFamilies = new WeakMap<object, object>();
-const htmlCodecSchemaFamilies = new WeakMap<
+const htmlMappingSchemaFamilies = new WeakMap<
   (...args: never[]) => unknown,
   Readonly<{
     owner: object | null;
@@ -162,7 +162,7 @@ export const brandPluginDescriptor = <T extends object>(
           : {
               configured: false,
               configurationLayers: Object.freeze([]),
-              htmlCodecContributions: Object.freeze([]),
+              htmlMappingContributions: Object.freeze([]),
               resolved: false,
               sourceReferences: Object.freeze([]),
               stages: Object.freeze([]),
@@ -215,14 +215,14 @@ export const isResolvedPluginDescriptor = (value: object) =>
 export const getPluginSchemaFamily = (value: object): object | null =>
   pluginSchemaFamilies.get(value) ?? null;
 
-export const registerHtmlCodecSchemaFamilies = <
+export const registerHtmlMappingSchemaFamilies = <
   T extends (...args: never[]) => unknown,
 >(
   factory: T,
   owner: object,
   target: object
 ): T => {
-  htmlCodecSchemaFamilies.set(
+  htmlMappingSchemaFamilies.set(
     factory,
     Object.freeze({
       owner: getPluginSchemaFamily(owner),
@@ -233,9 +233,9 @@ export const registerHtmlCodecSchemaFamilies = <
   return factory;
 };
 
-export const getHtmlCodecSchemaFamilies = (
+export const getHtmlMappingSchemaFamilies = (
   factory: (...args: never[]) => unknown
-) => htmlCodecSchemaFamilies.get(factory);
+) => htmlMappingSchemaFamilies.get(factory);
 
 const hasStringIdentity = (value: object): value is NominalPluginReference => {
   const name = Object.getOwnPropertyDescriptor(value, 'name');

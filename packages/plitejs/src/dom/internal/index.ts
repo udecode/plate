@@ -3,7 +3,7 @@ export {
   getDOMClipboardFormatKey,
   readDOMFragmentData,
   setDOMClipboardFormatKey,
-  writeDOMHostFragmentData,
+  writeDOMDataTransferFragment,
 } from '../plugin/dom-clipboard-runtime';
 export type {
   DOMCoverageBoundary,
@@ -103,7 +103,6 @@ export {
   setDOMTextFlowRecordIndexes,
   setDOMTextFlowIndex,
 } from '../plugin/dom-text-flow-index';
-export { parseDOMClipboardHtml } from '../plugin/dom-html';
 export type {
   DOMPhase,
   DOMPhaseScheduleOptions,

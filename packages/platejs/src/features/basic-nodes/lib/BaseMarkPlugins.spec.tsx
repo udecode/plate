@@ -4,6 +4,7 @@
 import { jsxt } from '#platejs-test-internal';
 
 import { createEditor, NodeApi, SelectionApi } from '../../../core';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -75,7 +76,7 @@ const getDecodedMarkReader = (plugin: MarkPlugin) => {
   });
 
   return (element: HTMLElement) => {
-    const fragment = editor.api.html.deserialize({ element });
+    const fragment = parseHtmlSliceContent(editor, element);
     const key = getMarkKey(editor, plugin);
 
     if (!fragment || key === undefined) return false;
@@ -233,9 +234,7 @@ describe('BaseMarkPlugins', () => {
           },
         ],
       });
-      const decoded = editor.api.html.deserialize({
-        element: `<p>${input}</p>`,
-      });
+      const decoded = parseHtmlSliceContent(editor, `<p>${input}</p>`);
       const decodedText = decoded
         ? Array.from(NodeApi.texts({ children: decoded, type: 'root' }))[0]?.[0]
         : undefined;
@@ -276,9 +275,10 @@ describe('BaseMarkPlugins', () => {
         },
       ],
     });
-    const decoded = editor.api.html.deserialize({
-      element: '<p><strong><em><u>text</u></em></strong></p>',
-    });
+    const decoded = parseHtmlSliceContent(
+      editor,
+      '<p><strong><em><u>text</u></em></strong></p>'
+    );
     const decodedText = decoded
       ? Array.from(NodeApi.texts({ children: decoded, type: 'root' }))[0]?.[0]
       : undefined;

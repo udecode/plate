@@ -5,7 +5,7 @@ import {
   type Path,
 } from '../../../../core';
 import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
-import { getColSpan, getRowSpan } from './codec';
+import { getColSpan, getRowSpan } from './tableCellHtml';
 
 export type TableGridProblem =
   | Readonly<{

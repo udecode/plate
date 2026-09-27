@@ -1,4 +1,8 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 
 const createTableEditor = () => createTestEditor();
 
@@ -10,7 +14,7 @@ describe('markdown tables', () => {
     const expected =
       '| Name  | Value |\n| ----- | ----- |\n| Alpha | Beta  |\n| Gamma | Delta |\n';
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -69,10 +73,10 @@ describe('markdown tables', () => {
       },
     ]);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
   it('keeps unescaped less-than text inside table cells when MDX fallback is used', () => {
@@ -80,7 +84,9 @@ describe('markdown tables', () => {
     const input =
       '| Dimension | Basis |\n| --- | --- |\n| Volume trend | a<b |\n';
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input, {
+      recovery: 'incomplete-stream',
+    });
 
     expect(value.children).toMatchObject([
       {
@@ -135,7 +141,9 @@ describe('markdown tables', () => {
       'After',
     ].join('\n');
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input, {
+      recovery: 'incomplete-stream',
+    });
 
     expect(value.children).toMatchObject([
       {
@@ -196,7 +204,9 @@ describe('markdown tables', () => {
       '| Later | Table |',
     ].join('\n');
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input, {
+      recovery: 'incomplete-stream',
+    });
 
     expect(value.children).toMatchObject([
       {
@@ -286,7 +296,9 @@ describe('markdown tables', () => {
       '\n'
     );
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input, {
+      recovery: 'incomplete-stream',
+    });
 
     expect(value.children).toMatchObject([
       {
@@ -374,12 +386,12 @@ describe('markdown tables', () => {
     const expected =
       '| Name           | Value |\n| -------------- | ----- |\n| Alpha<br/>Beta | Gamma |\n';
 
-    const markdown = editor.api.markdown.serialize({
-      value: { children: input },
-    });
+    const markdown = serializeTestMarkdown(editor, {
+      document: { children: input },
+    }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown).children).toMatchObject([
+    expect(parseTestMarkdown(editor, markdown).children).toMatchObject([
       {
         type: 'table',
         children: [
@@ -408,11 +420,7 @@ describe('markdown tables', () => {
                 children: [
                   {
                     type: 'paragraph',
-                    children: [
-                      { text: 'Alpha' },
-                      { text: '\n' },
-                      { text: 'Beta' },
-                    ],
+                    children: [{ text: 'Alpha\nBeta' }],
                   },
                 ],
               },
@@ -434,33 +442,34 @@ describe('markdown tables', () => {
     (span) => {
       const editor = createTableEditor();
 
-      expect(() =>
-        editor.api.markdown.serialize({
-          value: {
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      {
-                        ...span,
-                        children: [
-                          {
-                            children: [{ text: 'merged' }],
-                            type: 'paragraph',
-                          },
-                        ],
-                        type: 'tableCell',
-                      },
-                    ],
-                    type: 'tableRow',
-                  },
-                ],
-                type: 'table',
-              },
-            ],
-          },
-        })
+      expect(
+        () =>
+          serializeTestMarkdown(editor, {
+            document: {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          ...span,
+                          children: [
+                            {
+                              children: [{ text: 'merged' }],
+                              type: 'paragraph',
+                            },
+                          ],
+                          type: 'tableCell',
+                        },
+                      ],
+                      type: 'tableRow',
+                    },
+                  ],
+                  type: 'table',
+                },
+              ],
+            },
+          }).data
       ).toThrow('Markdown tables cannot represent rowSpan or colSpan.');
     }
   );

@@ -6,7 +6,8 @@ import {
   schema,
   PLUGINS,
 } from '../../../core';
-import { writeHostFragmentData } from '../../../dom';
+import { writeDataTransferFragment } from '../../../dom';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { createPluginContext } from '../../../lib/plugin/createPluginContext.internal';
 import {
   BaseFontBackgroundColorPlugin,
@@ -44,18 +45,14 @@ describe('BaseFontBackgroundColorPlugin', () => {
       })?.value.kind
     ).toBe('string');
     expect(
-      editor.api.html.deserialize({
-        element: '<span style="background-color: rgb(255, 255, 0)">text</span>',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<span style="background-color: rgb(255, 255, 0)">text</span>'
+      )
     ).toMatchObject([
       {
-        children: [
-          {
-            backgroundColor: 'rgb(255, 255, 0)',
-            text: 'text',
-          },
-        ],
-        type: 'paragraph',
+        backgroundColor: 'rgb(255, 255, 0)',
+        text: 'text',
       },
     ]);
   });
@@ -110,18 +107,14 @@ describe('BaseFontColorPlugin', () => {
       })?.value.kind
     ).toBe('string');
     expect(
-      editor.api.html.deserialize({
-        element: '<span style="color: rgb(255, 0, 0)">text</span>',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<span style="color: rgb(255, 0, 0)">text</span>'
+      )
     ).toMatchObject([
       {
-        children: [
-          {
-            color: 'rgb(255, 0, 0)',
-            text: 'text',
-          },
-        ],
-        type: 'paragraph',
+        color: 'rgb(255, 0, 0)',
+        text: 'text',
       },
     ]);
   });
@@ -176,18 +169,14 @@ describe('BaseFontFamilyPlugin', () => {
       })?.value.kind
     ).toBe('string');
     expect(
-      editor.api.html.deserialize({
-        element: '<span style="font-family: Fira Code, monospace">text</span>',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<span style="font-family: Fira Code, monospace">text</span>'
+      )
     ).toMatchObject([
       {
-        children: [
-          {
-            fontFamily: '"Fira Code", monospace',
-            text: 'text',
-          },
-        ],
-        type: 'paragraph',
+        fontFamily: '"Fira Code", monospace',
+        text: 'text',
       },
     ]);
   });
@@ -234,18 +223,11 @@ describe('BaseFontSizePlugin', () => {
       })?.value.kind
     ).toBe('string');
     expect(
-      editor.api.html.deserialize({
-        element: '<span style="font-size: 18px">text</span>',
-      })
+      parseHtmlSliceContent(editor, '<span style="font-size: 18px">text</span>')
     ).toMatchObject([
       {
-        children: [
-          {
-            fontSize: '18px',
-            text: 'text',
-          },
-        ],
-        type: 'paragraph',
+        fontSize: '18px',
+        text: 'text',
       },
     ]);
   });
@@ -294,18 +276,14 @@ describe('BaseFontWeightPlugin', () => {
       })?.value.kind
     ).toBe('string');
     expect(
-      editor.api.html.deserialize({
-        element: '<span style="font-weight: 700">text</span>',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<span style="font-weight: 700">text</span>'
+      )
     ).toMatchObject([
       {
-        children: [
-          {
-            fontWeight: '700',
-            text: 'text',
-          },
-        ],
-        type: 'paragraph',
+        fontWeight: '700',
+        text: 'text',
       },
     ]);
   });
@@ -380,9 +358,7 @@ describe('BaseLineHeightPlugin', () => {
     });
 
     expect(
-      editor.api.html.deserialize({
-        element: '<p style="line-height: 2">text</p>',
-      })
+      parseHtmlSliceContent(editor, '<p style="line-height: 2">text</p>')
     ).toMatchObject([
       {
         lineHeight: 2,
@@ -439,9 +415,7 @@ describe('BaseLineHeightPlugin', () => {
     });
 
     expect(
-      editor.api.html.deserialize({
-        element: '<p style="line-height: 2">text</p>',
-      })
+      parseHtmlSliceContent(editor, '<p style="line-height: 2">text</p>')
     ).toMatchObject([
       {
         children: [{ text: 'text' }],
@@ -516,9 +490,7 @@ describe('BaseTextAlignPlugin', () => {
     });
 
     expect(
-      editor.api.html.deserialize({
-        element: '<p style="text-align: center">text</p>',
-      })
+      parseHtmlSliceContent(editor, '<p style="text-align: center">text</p>')
     ).toMatchObject([
       {
         textAlign: 'center',
@@ -576,9 +548,7 @@ describe('BaseTextAlignPlugin', () => {
     });
 
     expect(
-      editor.api.html.deserialize({
-        element: '<p style="text-align: center">text</p>',
-      })
+      parseHtmlSliceContent(editor, '<p style="text-align: center">text</p>')
     ).toMatchObject([
       {
         textAlign: 'center',
@@ -663,9 +633,7 @@ describe('BaseTextIndentPlugin', () => {
     });
 
     expect(
-      editor.api.html.deserialize({
-        element: '<p style="text-indent: 20em">Indented</p>',
-      })
+      parseHtmlSliceContent(editor, '<p style="text-indent: 20em">Indented</p>')
     ).toEqual([
       {
         children: [{ text: 'Indented' }],
@@ -723,17 +691,17 @@ describe('BaseTextIndentPlugin', () => {
   });
 });
 
-describe('basic style HTML codecs', () => {
+describe('basic style HTML formats', () => {
   it('keeps nested mark values over inherited parent values', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseFontSizePlugin],
     });
 
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<p style="font-size: 12pt">before <span style="font-size: 18pt">inside</span> after</p>',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<p style="font-size: 12pt">before <span style="font-size: 18pt">inside</span> after</p>'
+      )
     ).toEqual([
       {
         children: [
@@ -780,7 +748,7 @@ describe('basic style HTML codecs', () => {
     });
     const serialized = new Map<string, string>();
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       editor,
       {
         setData: (format, value) => serialized.set(format, value),
@@ -789,7 +757,7 @@ describe('basic style HTML codecs', () => {
     );
     const html = serialized.get('text/html');
 
-    if (!html) throw new Error('Missing HTML codec serialization');
+    if (!html) throw new Error('Missing HTML mapping serialization');
 
     const { body } = new DOMParser().parseFromString(html, 'text/html');
     const paragraph = body.querySelector('p') as HTMLElement;
@@ -818,7 +786,7 @@ describe('basic style HTML codecs', () => {
     expect(
       styledElements.some((element) => element.style.fontWeight === '700')
     ).toBe(true);
-    expect(editor.api.html.deserialize({ element: html })).toEqual([
+    expect(parseHtmlSliceContent(editor, html)).toEqual([
       ...editor.read.children(),
     ]);
   });

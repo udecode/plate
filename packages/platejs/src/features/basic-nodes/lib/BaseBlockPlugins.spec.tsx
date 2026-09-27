@@ -10,6 +10,7 @@ import {
   schema,
   SelectionApi,
 } from '../../../core';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import {
   BaseBlockquotePlugin,
   BaseHorizontalRulePlugin,
@@ -85,9 +86,7 @@ describe('BaseBlockquotePlugin', () => {
     const data = new DataTransfer();
 
     expect(
-      editor.api.html.deserialize({
-        element: '<blockquote><p>Quote</p></blockquote>',
-      })
+      parseHtmlSliceContent(editor, '<blockquote><p>Quote</p></blockquote>')
     ).toEqual([
       {
         children: [{ children: [{ text: 'Quote' }], type: 'paragraph' }],
@@ -327,11 +326,7 @@ describe('BaseHorizontalRulePlugin', () => {
     });
     const data = new DataTransfer();
 
-    expect(
-      editor.api.html.deserialize({
-        element: '<hr>',
-      })
-    ).toEqual([
+    expect(parseHtmlSliceContent(editor, '<hr>')).toEqual([
       {
         children: [{ text: '' }],
         type: 'horizontalRule',

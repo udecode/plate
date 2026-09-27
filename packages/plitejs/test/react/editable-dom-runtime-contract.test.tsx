@@ -1,5 +1,12 @@
-import { renderHook } from '@testing-library/react';
-import type { Anchor, Point, Range, Value } from 'plitejs';
+import { renderHook, waitFor } from '@testing-library/react';
+import {
+  type Anchor,
+  defineEffect,
+  definePlugin,
+  type Point,
+  type Range,
+  type Value,
+} from 'plitejs';
 import { history } from 'plitejs/history';
 import { type CompositionEvent, type ReactNode, StrictMode } from 'react';
 
@@ -21,6 +28,7 @@ import {
 } from '../../src/react/editable/composition-state';
 import {
   EditableDOMRuntime,
+  type EditableHistoryReplayResult,
   subscribeEditableRuntimeFocus,
 } from '../../src/react/editable/editable-dom-runtime';
 import {
@@ -35,6 +43,63 @@ import { createEditor } from '../../src/react/plugin/with-react';
 const strictMode = ({ children }: { children: ReactNode }) => (
   <StrictMode>{children}</StrictMode>
 );
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+
+  return { promise, resolve };
+};
+
+let nextSessionEffect = 1;
+
+const createPendingReplayEditor = ({ throws = false } = {}) => {
+  const gate = deferred<void>();
+  const initialValue: Value = [
+    { type: 'paragraph', children: [{ text: 'a' }] },
+  ];
+  const sessionEffect = defineEffect<
+    Readonly<{ previous: string; value: string }>
+  >({
+    history: {
+      replay: async (_editor, transition) => {
+        await gate.promise;
+        if (throws) throw new Error('history owner failed');
+
+        return { status: 'applied', value: transition };
+      },
+    },
+    invert: ({ previous, value }) => ({ previous: value, value: previous }),
+    key: `react.runtime.history.session.${nextSessionEffect}`,
+  });
+  nextSessionEffect += 1;
+  const editor = createEditor({
+    initialValue,
+    plugins: [
+      history(),
+      definePlugin(`react-runtime-history-${nextSessionEffect}`, {
+        effectTypes: [sessionEffect],
+      }),
+    ],
+  });
+
+  editor.update((tx) => {
+    tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+  });
+
+  return { editor, gate };
+};
+
+const dispatchHistory = (
+  runtime: EditableDOMRuntime,
+  direction: 'redo' | 'undo',
+  focusPolicy?: 'none' | 'preserve' | 'restore-root'
+) =>
+  new Promise<EditableHistoryReplayResult>((resolve) => {
+    runtime.dispatchHistory(direction, focusPolicy, resolve);
+  });
 
 test('owns mounted history replay and applies presentation only after success', async () => {
   const initialValue: Value = [
@@ -56,7 +121,7 @@ test('owns mounted history replay and applies presentation only after success', 
     tx.text.insert('b', { at: { path: [0, 0], offset: 1 } });
   });
 
-  expect(await runtime.replayHistory('undo', 'restore-root')).toEqual({
+  expect(await dispatchHistory(runtime, 'undo', 'restore-root')).toEqual({
     status: 'applied',
   });
   expect(editorString(editor, [])).toBe('a');
@@ -64,7 +129,7 @@ test('owns mounted history replay and applies presentation only after success', 
   expect(focus).toHaveBeenCalledWith('restore-root');
 
   focus.mockClear();
-  expect(await runtime.replayHistory('undo')).toEqual({ status: 'empty' });
+  expect(await dispatchHistory(runtime, 'undo')).toEqual({ status: 'empty' });
   expect(focus).not.toHaveBeenCalled();
   runtime.destroy();
 });
@@ -81,7 +146,7 @@ test('rejects history replay before settlement while composing or unmounted', as
   const settle = vi.fn();
 
   runtime.updateHistorySettleHandler(settle);
-  expect(await runtime.replayHistory('undo')).toEqual({
+  expect(await dispatchHistory(runtime, 'undo')).toEqual({
     reason: 'unmounted',
     status: 'unavailable',
   });
@@ -89,12 +154,97 @@ test('rejects history replay before settlement while composing or unmounted', as
   runtime.setRoot(document.createElement('div'));
   runtime.connect();
   runtime.inputController.state.isComposing = true;
-  expect(await runtime.replayHistory('undo')).toEqual({
+  expect(await dispatchHistory(runtime, 'undo')).toEqual({
     reason: 'composing',
     status: 'unavailable',
   });
   expect(settle).not.toHaveBeenCalled();
   runtime.destroy();
+});
+
+test('reports settlement after unmount without late focus repair', async () => {
+  const { editor, gate } = createPendingReplayEditor();
+  const onHistoryReplay = vi.fn();
+  const focus = vi.fn();
+  const runtime = new EditableDOMRuntime({ editor, onHistoryReplay });
+
+  runtime.setRoot(document.createElement('div'));
+  runtime.connect();
+  runtime.updateHistoryFocusHandler(focus);
+  runtime.dispatchHistory('undo');
+
+  expect(editor.read.history.pending()).toBe('undo');
+  runtime.destroy();
+  gate.resolve();
+
+  await waitFor(() => {
+    expect(onHistoryReplay).toHaveBeenCalledWith({
+      direction: 'undo',
+      result: { status: 'applied' },
+    });
+  });
+  expect(focus).not.toHaveBeenCalled();
+});
+
+test('does not repair focus after a later focus interaction', async () => {
+  const { editor, gate } = createPendingReplayEditor();
+  const onHistoryReplay = vi.fn();
+  const focus = vi.fn();
+  const runtime = new EditableDOMRuntime({ editor, onHistoryReplay });
+  const root = document.createElement('div');
+
+  runtime.setRoot(root);
+  runtime.connect();
+  runtime.updateHistoryFocusHandler(focus);
+  runtime.dispatchHistory('undo');
+
+  expect(editor.read.history.pending()).toBe('undo');
+  document.dispatchEvent(new FocusEvent('focusin'));
+  gate.resolve();
+
+  await waitFor(() => {
+    expect(onHistoryReplay).toHaveBeenCalledWith({
+      direction: 'undo',
+      result: { status: 'applied' },
+    });
+  });
+  expect(focus).not.toHaveBeenCalled();
+  runtime.destroy();
+});
+
+test('reports a replay rejection once through the platform error sink', async () => {
+  const { editor, gate } = createPendingReplayEditor({ throws: true });
+  const onHistoryReplay = vi.fn();
+  const reportError = vi.fn();
+  const runtime = new EditableDOMRuntime({ editor, onHistoryReplay });
+  const previousReportError = (globalThis as { reportError?: unknown })
+    .reportError;
+
+  (globalThis as { reportError?: (error: unknown) => void }).reportError =
+    reportError;
+  runtime.setRoot(document.createElement('div'));
+  runtime.connect();
+
+  try {
+    runtime.dispatchHistory('undo');
+    gate.resolve();
+
+    await waitFor(() => {
+      expect(reportError).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'history owner failed' })
+      );
+    });
+    expect(reportError).toHaveBeenCalledTimes(1);
+    expect(onHistoryReplay).not.toHaveBeenCalled();
+  } finally {
+    runtime.destroy();
+    if (previousReportError) {
+      (globalThis as { reportError?: unknown }).reportError =
+        previousReportError;
+    } else {
+      delete (globalThis as { reportError?: unknown }).reportError;
+    }
+  }
 });
 
 test('keeps one runtime per mount without render fan-out and tears it down', () => {

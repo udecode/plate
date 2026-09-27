@@ -7,10 +7,16 @@ import {
   PLUGINS,
 } from '../../../core';
 
+const DEFAULT_CALLOUT_ICON = '💡';
+
 export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children }) => children,
+      },
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ decode, decoration, isInline, node, parseAttributes }) => {
@@ -37,6 +43,10 @@ export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
           return {
             ...props,
             children: content,
+            icon:
+              typeof props.icon === 'string'
+                ? props.icon
+                : DEFAULT_CALLOUT_ICON,
             type,
           };
         },
@@ -61,7 +71,10 @@ export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
     element: schema.element.textBlock({
       properties: {
         backgroundColor: property.string(),
-        icon: property.string({ default: '💡', omitDefault: false }),
+        icon: property.string({
+          default: DEFAULT_CALLOUT_ICON,
+          omitDefault: false,
+        }),
         variant: property.string(),
       },
     }),

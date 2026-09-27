@@ -54,7 +54,7 @@ export const useRuntimeBrowserHandle = ({
       forceRender,
       flushPendingNativeTextInput,
       isViewportBackedSelection,
-      replayHistory: runtime.replayHistory.bind(runtime),
+      dispatchHistory: runtime.dispatchHistory.bind(runtime),
       scrollPathIntoView,
       setExplicitViewportBackedSelection,
     });

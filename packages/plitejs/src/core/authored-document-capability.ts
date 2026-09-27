@@ -8,6 +8,23 @@ type NativeAuthoredDocumentAdmissionOptions = Readonly<{
   schema?: InternalEditorSchemaApi;
 }>;
 
+export type NativeAuthoredProjectionDiagnostic = Readonly<{
+  code:
+    | 'authored-conflict'
+    | 'authored-lossy-projection'
+    | 'authored-review-unsupported-node'
+    | 'authored-review-unsupported-property'
+    | 'authored-review-unsupported-revision';
+  message: string;
+  severity: 'warning';
+}>;
+
+export type NativeAuthoredDocumentProjection = Readonly<{
+  diagnostics: readonly NativeAuthoredProjectionDiagnostic[];
+  document: EditorDocumentValue;
+  review: EditorDocumentValue;
+}>;
+
 export type NativeAuthoredDocumentCapability = Readonly<{
   createCheckpoint: (
     input: NativeAuthoredDocumentAdmissionOptions &
@@ -30,6 +47,11 @@ export type NativeAuthoredDocumentCapability = Readonly<{
     state: unknown,
     options?: NativeAuthoredDocumentAdmissionOptions
   ) => Readonly<{ state: unknown }>;
+  parse: (data: string) => EditorDocumentValue;
+  project: (
+    document: EditorDocumentValue,
+    projection: 'accepted' | 'proposed' | 'review'
+  ) => NativeAuthoredDocumentProjection;
 }>;
 
 export const authoredDocumentCapabilityPoint: PluginPoint<NativeAuthoredDocumentCapability> =

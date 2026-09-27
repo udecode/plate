@@ -19,7 +19,7 @@ import {
   target,
   TextApi,
 } from 'plitejs';
-import { domCommands, isHotkey, parseDOMClipboardHtml } from 'plitejs/dom';
+import { domCommands, isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
   Editable,
@@ -35,6 +35,7 @@ import type React from 'react';
 import type { MouseEvent, PointerEvent } from 'react';
 
 import { Button, Icon, Toolbar } from './components';
+import { parseExampleHtml } from './parse-html';
 import { deserialize, isPlainTextClipboardHtml } from './paste-html-import';
 
 const TEXT_MARK_TYPES = ['bold', 'italic', 'underline', 'code'] as const;
@@ -384,7 +385,7 @@ const RichTextPlugin = definePlugin('richtext', {
         return next();
       }
 
-      const parsed = parseDOMClipboardHtml(html);
+      const parsed = parseExampleHtml(html);
       const fragment = normalizeRichTextHtmlFragment(deserialize(parsed.body));
 
       return state.transaction((tx) => {

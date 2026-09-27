@@ -76,6 +76,19 @@ export const createClientRuntimeProofSource = (rows) => {
 };
 
 const ssrProofFactories = {
+  'plate-html-server': ({ index, specifier }) => ({
+    imports: [
+      `import { BaseParagraphPlugin as SsrParagraphPlugin${index} } from 'platejs';`,
+      `import { parseHtml as parseSsrHtml${index} } from ${quoted(specifier)};`,
+    ],
+    proof: [
+      `const ssrHtml${index} = parseSsrHtml${index}('<p>SSR entrypoint ${index}</p>', {`,
+      `  plugins: [SsrParagraphPlugin${index}],`,
+      '});',
+      `runtimeEqual(ssrHtml${index}.ok, true);`,
+      `runtimeEqual(ssrHtml${index}.ok && ssrHtml${index}.document.children[0]?.children[0]?.text, 'SSR entrypoint ${index}');`,
+    ],
+  }),
   'plate-static-html': ({ index, specifier }) => ({
     imports: [
       `import { BaseParagraphPlugin as SsrParagraphPlugin${index}, createEditor as createSsrEditor${index} } from 'platejs';`,
@@ -88,7 +101,8 @@ const ssrProofFactories = {
       `    initialValue: [{ children: [{ text: 'SSR entrypoint ${index}' }], type: 'paragraph' }],`,
       '  })',
       ');',
-      `runtimeEqual(ssrHtml${index}.includes('SSR entrypoint ${index}'), true);`,
+      `runtimeEqual(ssrHtml${index}.data.includes('SSR entrypoint ${index}'), true);`,
+      `runtimeEqual(Array.isArray(ssrHtml${index}.diagnostics), true);`,
     ],
   }),
 };

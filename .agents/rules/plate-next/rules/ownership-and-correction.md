@@ -57,7 +57,7 @@ against rules that still teach the rejected shape.
 
 Editor selection is closed core truth: text selection plus one directional
 exact node selection. Cut custom selection kinds, plugin selection payloads,
-parallel selected-node stores, duplicate codecs, and feature-owned mapping or
+parallel selected-node stores, duplicate format mappings, and feature-owned mapping or
 history protocols. Feature plugins write core exact nodes and derive only the
 geometry their domain owns.
 Complete content transfer owns content, open depths, and the reachable named-root

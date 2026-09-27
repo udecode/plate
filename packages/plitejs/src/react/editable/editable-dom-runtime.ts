@@ -37,7 +37,6 @@ import {
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 import {
-  readPliteViewSelection,
   readPliteViewSelectionHistoryGroup,
   writePliteViewSelection,
 } from '../view-selection';
@@ -72,6 +71,7 @@ export type EditorHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
 
 type ModelHistoryResult =
   | Readonly<{ status: 'applied' | 'empty' }>
+  | Readonly<{ status: 'busy' }>
   | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>
   | Readonly<{ reason: string; status: 'blocked' }>;
 
@@ -81,6 +81,11 @@ export type EditableHistoryReplayResult =
       reason: 'composing' | 'not-installed' | 'unmounted';
       status: 'unavailable';
     }>;
+
+export type EditableHistoryReplayEvent = Readonly<{
+  direction: 'redo' | 'undo';
+  result: EditableHistoryReplayResult;
+}>;
 
 type CancelableCallback = {
   cancel: () => void;
@@ -269,6 +274,7 @@ export const subscribeEditableRuntimeFocus = <
 type EditableDOMRuntimeUpdate = {
   viewportRuntime: EditableViewportRuntime | null;
   onComposingChange: (nextValue: boolean) => void;
+  onHistoryReplay: (event: EditableHistoryReplayEvent) => void;
   onViewportBackedSelectionChange: (nextValue: boolean) => void;
   readOnly: boolean;
 };
@@ -319,6 +325,9 @@ export class EditableDOMRuntime {
 
   private historySettleHandler: () => void = () => {};
 
+  private historyReplayHandler: (event: EditableHistoryReplayEvent) => void =
+    () => {};
+
   private externalMouseGesture = false;
 
   private readonly nativeInputHandlers: {
@@ -368,6 +377,7 @@ export class EditableDOMRuntime {
     viewportRuntime = null,
     editor,
     onComposingChange = () => {},
+    onHistoryReplay = () => {},
     onViewportBackedSelectionChange = () => {},
     readOnly = false,
     testRootFacts,
@@ -378,6 +388,7 @@ export class EditableDOMRuntime {
     this.viewportRuntimeValue = viewportRuntime;
     this.editorValue = editor;
     this.onComposingChange = onComposingChange;
+    this.historyReplayHandler = onHistoryReplay;
     this.onViewportBackedSelectionChange = onViewportBackedSelectionChange;
     this.readOnlyValue = readOnly;
     this.rootRuntime = new DOMRootRuntime({
@@ -905,7 +916,7 @@ export class EditableDOMRuntime {
     this.historySettleHandler = handler;
   }
 
-  async replayHistory(
+  private async replayHistory(
     direction: 'redo' | 'undo',
     focusPolicy: EditorHistoryFocusPolicy = 'restore-root'
   ): Promise<EditableHistoryReplayResult> {
@@ -951,50 +962,116 @@ export class EditableDOMRuntime {
       return { reason: 'not-installed', status: 'unavailable' };
     }
 
-    const previousViewSelection = readPliteViewSelection(this.editorValue);
+    const targetDocument = root.ownerDocument;
+    let presentationInvalidated = false;
+    const invalidatePresentation = () => {
+      presentationInvalidated = true;
+    };
+    const version =
+      this.editorValue.read((state) => state.lastCommit()?.version) ?? 0;
     const run = () => history[direction]();
 
-    writePliteViewSelection(this.editorValue, null);
-    try {
-      const result = await (focusPolicy === 'preserve'
+    targetDocument.addEventListener('focusin', invalidatePresentation, true);
+    targetDocument.addEventListener(
+      'pointerdown',
+      invalidatePresentation,
+      true
+    );
+
+    const resultPromise =
+      focusPolicy === 'preserve'
         ? withUpdateTagContext(
             this.editorValue,
             PLITE_REACT_PRESERVE_SELECTION_TAGS,
             run
           )
-        : run());
+        : run();
+    const pending = this.editorValue.read((state) => {
+      const { history: historyState } = state as unknown as {
+        history?: { pending?: () => 'redo' | 'undo' | null };
+      };
 
-      if (result.status !== 'applied') {
-        writePliteViewSelection(this.editorValue, previousViewSelection);
-        return result;
-      }
+      return historyState?.pending?.() ?? null;
+    });
+    let result: ModelHistoryResult;
 
-      const receipt = readEditorHistoryReplayReceipt(result);
-
-      if (
-        !receipt ||
-        this.editorValue.read((state) => state.lastCommit()?.version) !==
-          receipt.version
-      ) {
-        return result;
-      }
-
-      writePliteViewSelection(
-        this.editorValue,
-        readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null
+    try {
+      result = await resultPromise;
+    } finally {
+      targetDocument.removeEventListener(
+        'focusin',
+        invalidatePresentation,
+        true
       );
-      this.historyFocusHandler(focusPolicy);
-      return result;
-    } catch (error) {
-      writePliteViewSelection(this.editorValue, previousViewSelection);
-      throw error;
+      targetDocument.removeEventListener(
+        'pointerdown',
+        invalidatePresentation,
+        true
+      );
     }
+
+    if (result.status !== 'applied') return result;
+
+    const receipt = readEditorHistoryReplayReceipt(result);
+    const expectedVersion = version + (pending === direction ? 2 : 1);
+
+    if (
+      !receipt ||
+      !this.connected ||
+      this.rootElement !== root ||
+      presentationInvalidated ||
+      receipt.version !== expectedVersion ||
+      this.editorValue.read((state) => state.lastCommit()?.version) !==
+        receipt.version
+    ) {
+      return result;
+    }
+
+    writePliteViewSelection(
+      this.editorValue,
+      readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null
+    );
+    this.historyFocusHandler(focusPolicy);
+    return result;
+  }
+
+  dispatchHistory(
+    direction: 'redo' | 'undo',
+    focusPolicy: EditorHistoryFocusPolicy = 'restore-root',
+    onFulfilled?: (result: EditableHistoryReplayResult) => void
+  ): void {
+    void this.replayHistory(direction, focusPolicy)
+      .then((result) => {
+        runAllRuntimeSteps([
+          () => this.historyReplayHandler({ direction, result }),
+          () => onFulfilled?.(result),
+        ]);
+      })
+      .catch((error: unknown) => {
+        const { reportError } = globalThis as {
+          reportError?: (error: unknown) => void;
+        };
+
+        if (reportError) {
+          reportError(error);
+          return;
+        }
+        this.domPhaseScheduler.schedule(
+          'post-selection',
+          'report-history-replay-error',
+          () => {
+            throw error;
+          },
+          { timing: 'microtask' }
+        );
+      });
   }
 
   update(update: EditableDOMRuntimeUpdate) {
     const readOnlyChanged = this.readOnlyValue !== update.readOnly;
     this.viewportRuntimeValue = update.viewportRuntime;
     this.onComposingChange = update.onComposingChange;
+    this.historyReplayHandler = update.onHistoryReplay;
     this.onViewportBackedSelectionChange =
       update.onViewportBackedSelectionChange;
     this.readOnlyValue = update.readOnly;

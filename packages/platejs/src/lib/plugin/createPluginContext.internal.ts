@@ -40,7 +40,7 @@ import type {
   AnyPluginBase,
   BasePluginContext,
 } from './BasePlugin';
-import { createDefinePluginCodecs } from './pluginAuthoringContext';
+import { createDefinePluginFormats } from './pluginAuthoringContext';
 import type {
   AnyBasePluginDefinition,
   PluginReference,
@@ -664,7 +664,8 @@ const createPluginAccess = (
   }) as PluginStore;
   const context = {} as Record<PropertyKey, unknown>;
   if (authoring) {
-    context.defineCodecs = createDefinePluginCodecs<AnyBasePluginDefinition>();
+    context.defineFormats =
+      createDefinePluginFormats<AnyBasePluginDefinition>();
     context.editor = editor;
     Object.defineProperty(context, 'plugin', {
       enumerable: true,

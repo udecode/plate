@@ -20,30 +20,47 @@ Return whether the undo branch has a surviving mapped batch.
 
 Return whether the redo branch has a surviving mapped batch.
 
+#### `editor.read.history.pending(): "undo" | "redo" | null`
+
+Return the replay direction currently waiting for a live-session owner. Pending
+state belongs to this editor runtime and is not included in History JSON,
+snapshots, or collaboration.
+
 Use `editor.read.history().undos` and `editor.read.history().redos` when you need
 the full immutable arrays. The same group is available as `state.history` inside
 `editor.read((state) => ...)`.
 
 ## Replay service
 
-#### `editor.api.history.undo(): HistoryResult`
+#### `editor.api.history.undo(): Promise<HistoryResult>`
 
-Replay the current undo batch in one complete update.
+Claim and replay the current undo batch.
 
-#### `editor.api.history.redo(): HistoryResult`
+#### `editor.api.history.redo(): Promise<HistoryResult>`
 
-Replay the current redo batch in one complete update.
+Claim and replay the current redo batch.
 
 ```typescript
 type HistoryResult =
-  | Readonly<{ status: "applied" | "empty" }>
-  | Readonly<{ status: "blocked"; conflicts: readonly string[] }>;
+  | Readonly<{ status: "applied" | "busy" | "empty" }>
+  | Readonly<{
+      status: "blocked";
+      conflicts?: readonly string[];
+      reason?: string;
+    }>;
 ```
 
-`blocked` reports an authored dependency conflict. Invalid runtime use and
-other failures throw. Invoke replay outside an active read or update. Replay
-always applies the complete document-wide batch, including changes in other
-roots.
+Both methods claim the current branch head before returning. Ordinary document
+batches settle in that call. A live-session batch publishes its pending
+direction while its external owner finishes. Document edits, selection updates,
+and collaborative imports continue during that wait; another replay returns
+`busy` without claiming a batch.
+
+`blocked` reports an authored dependency conflict or a refusal from the
+live-session owner and keeps that batch at the branch head. Invalid runtime use
+and other failures reject. Invoke replay outside an active read or update.
+Replay always applies the complete document-wide batch, including changes in
+other roots.
 
 ## Transaction API
 

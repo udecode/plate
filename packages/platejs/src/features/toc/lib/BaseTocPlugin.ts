@@ -20,9 +20,9 @@ export type TocPluginState = {
 };
 
 export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ decode, decoration, node }) => ({

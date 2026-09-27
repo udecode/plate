@@ -1,4 +1,8 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 
 const commonmarkAstCorpus = [
   { input: '# Heading', title: 'ATX heading' },
@@ -121,13 +125,15 @@ describe('commonmark package surfaces', () => {
 
     createMarkdownStressCases().forEach((input, caseIndex) => {
       try {
-        const first = editor.api.markdown.deserialize(input);
-        const canonical = editor.api.markdown.serialize({ value: first });
-        const second = editor.api.markdown.deserialize(canonical);
-        const replay = editor.api.markdown.serialize({ value: second });
+        const first = parseTestMarkdown(editor, input);
+        const canonical = serializeTestMarkdown(editor, {
+          document: first,
+        }).data;
+        const second = parseTestMarkdown(editor, canonical);
+        const replay = serializeTestMarkdown(editor, { document: second }).data;
 
         expect(second).toEqual(first);
-        expect(editor.api.markdown.deserialize(replay)).toEqual(second);
+        expect(parseTestMarkdown(editor, replay)).toEqual(second);
       } catch (error) {
         throw new Error(
           `Markdown stress failure: seed=${MARKDOWN_STRESS_SEED} case=${caseIndex} input=${JSON.stringify(input)}`,
@@ -141,13 +147,13 @@ describe('commonmark package surfaces', () => {
     'keeps the parsed AST stable for $title',
     ({ input }) => {
       const editor = createTestEditor();
-      const first = editor.api.markdown.deserialize(input);
-      const canonical = editor.api.markdown.serialize({ value: first });
-      const second = editor.api.markdown.deserialize(canonical);
-      const replay = editor.api.markdown.serialize({ value: second });
+      const first = parseTestMarkdown(editor, input);
+      const canonical = serializeTestMarkdown(editor, { document: first }).data;
+      const second = parseTestMarkdown(editor, canonical);
+      const replay = serializeTestMarkdown(editor, { document: second }).data;
 
       expect(second).toEqual(first);
-      expect(editor.api.markdown.deserialize(replay)).toEqual(second);
+      expect(parseTestMarkdown(editor, replay)).toEqual(second);
     }
   );
 
@@ -191,14 +197,14 @@ describe('commonmark package surfaces', () => {
   ])('$title', ({ expected, input, output }) => {
     const editor = createTestEditor();
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject(output);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
   it.each([
@@ -223,7 +229,7 @@ describe('commonmark package surfaces', () => {
     },
   ])('$title', ({ alt, expected, imageTitle, input }) => {
     const editor = createTestEditor();
-    const document = editor.api.markdown.deserialize(input);
+    const document = parseTestMarkdown(editor, input);
     const image = document.children[0];
 
     expect(image).toMatchObject({
@@ -235,7 +241,7 @@ describe('commonmark package surfaces', () => {
     });
     expect(document).not.toHaveProperty('roots');
 
-    expect(editor.api.markdown.serialize({ value: document })).toBe(expected);
+    expect(serializeTestMarkdown(editor, { document }).data).toBe(expected);
   });
 
   it.each([
@@ -263,12 +269,12 @@ describe('commonmark package surfaces', () => {
           },
         ],
       };
-      const markdown = editor.api.markdown.serialize({ value });
+      const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
       expect(markdown).toContain('<figure>');
       expect(markdown).toContain(`<img alt="${alt}" src="/image.png" />`);
       expect(markdown).toContain('<figcaption>');
-      expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+      expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
     }
   );
 
@@ -317,14 +323,14 @@ describe('commonmark package surfaces', () => {
   ])('$title', ({ expected, input, output }) => {
     const editor = createTestEditor();
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject(output);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
   it('round-trips hard line breaks through the markdown package surfaces', () => {
@@ -332,7 +338,7 @@ describe('commonmark package surfaces', () => {
     const input = 'alpha\\\nbeta';
     const expected = 'alpha\\\nbeta\n';
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -341,10 +347,10 @@ describe('commonmark package surfaces', () => {
       },
     ]);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
   it('round-trips hard line breaks embedded inside one text leaf', () => {
@@ -362,12 +368,12 @@ describe('commonmark package surfaces', () => {
       ],
     };
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(
       'Text followed by two empty lines\\\n\\\n\\\nFollowed by more text.\n'
     );
-    expect(editor.api.markdown.deserialize(markdown).children).toMatchObject([
+    expect(parseTestMarkdown(editor, markdown).children).toMatchObject([
       {
         children: [
           { text: 'Text followed by two empty lines' },
@@ -385,8 +391,8 @@ describe('commonmark package surfaces', () => {
     const editor = createTestEditor();
 
     expect(
-      editor.api.markdown.serialize({
-        value: {
+      serializeTestMarkdown(editor, {
+        document: {
           children: [
             {
               children: [{ text: 'alpha\n' }],
@@ -394,7 +400,7 @@ describe('commonmark package surfaces', () => {
             },
           ],
         },
-      })
+      }).data
     ).toBe('alpha\n<br />\n');
   });
 
@@ -409,7 +415,7 @@ describe('commonmark package surfaces', () => {
       ],
     };
 
-    expect(editor.api.markdown.serialize({ value })).toBe(
+    expect(serializeTestMarkdown(editor, { document: value }).data).toBe(
       '> Block quote\\ \n> <br />\n'
     );
   });
@@ -419,7 +425,7 @@ describe('commonmark package surfaces', () => {
     const input = '> > inner\\\n> > tail';
     const expected = '> > inner\\\n> > tail\n';
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -438,9 +444,9 @@ describe('commonmark package surfaces', () => {
       },
     ]);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 });

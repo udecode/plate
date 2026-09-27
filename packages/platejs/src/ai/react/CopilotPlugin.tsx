@@ -14,7 +14,11 @@ import {
   defineStateField,
   editorCommands,
 } from '../../core';
-import { type MarkdownEditor, MarkdownPlugin } from '../../markdown';
+import {
+  type MarkdownEditor,
+  type MarkdownSerializeResult,
+  MarkdownPlugin,
+} from '../../markdown';
 import {
   type Editor,
   definePlugin,
@@ -88,6 +92,12 @@ const copilotSuggestionField = defineStateField<CopilotSuggestionState>({
 
 const dependencies = [MarkdownPlugin] as const;
 
+const requireMarkdownData = (result: MarkdownSerializeResult) => {
+  if (result.ok) return result.data;
+
+  throw new Error(result.diagnostics.map(({ message }) => message).join('\n'));
+};
+
 const initialState: CopilotPluginState = {
   abortController: null,
   completeOptions: null,
@@ -142,9 +152,11 @@ const initialState: CopilotPluginState = {
     const block = editor.read.nodes.block({ mode: 'highest' });
 
     return block
-      ? editor.api.markdown.serialize({
-          value: { children: [block[0]] },
-        })
+      ? requireMarkdownData(
+          editor.api.markdown.serialize({
+            document: { children: [block[0]] },
+          })
+        )
       : '';
   },
   triggerQuery: ({ editor }) =>
@@ -169,12 +181,12 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
         const { suggestionText } = store.get();
 
         if (!suggestionText?.length) return false;
+        const parsed = editor.api.markdown.parseInline(suggestionText);
 
+        if (!parsed.ok) return false;
         tx.tags.add(COPILOT_SKIP_ABORT_TAG);
         setSuggestion({ nodeKey: null, text: null });
-        tx.fragment.replace(
-          editor.api.markdown.deserializeInline(suggestionText)
-        );
+        tx.slice.replace(parsed.slice);
 
         return undefined;
       },
@@ -186,13 +198,15 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
         const { firstWord, remainingText } = getNextWord({
           text: suggestionText,
         });
+        const parsed = editor.api.markdown.parseInline(firstWord);
 
+        if (!parsed.ok) return false;
         tx.tags.add(COPILOT_SKIP_ABORT_TAG);
         setSuggestion({
           nodeKey: remainingText.length ? (suggestionNodeKey ?? null) : null,
           text: remainingText,
         });
-        tx.fragment.replace(editor.api.markdown.deserializeInline(firstWord));
+        tx.slice.replace(parsed.slice);
 
         return undefined;
       },

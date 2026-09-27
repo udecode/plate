@@ -2,7 +2,11 @@
 
 import { jsxt } from '#platejs-test-internal';
 
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 
 jsxt;
 
@@ -67,16 +71,16 @@ describe('mdx mark package surfaces', () => {
           type: 'paragraph',
         },
       ],
-      title: 'composes every feature-owned span mark codec',
+      title: 'composes every feature-owned span mark mapping',
     },
   ])('$title', ({ expected, input, output }) => {
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject(output);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 });

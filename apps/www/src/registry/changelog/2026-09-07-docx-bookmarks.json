@@ -46,7 +46,7 @@
     {
       "id": "2026-09-07-docx-keep-bookmark-names-inside-24df8030",
       "kind": "wiring",
-      "summary": "Install the paste and import plugins; call `exportToDocx` with a document snapshot from the export action.",
+      "summary": "Install the paste and import plugins; call `exportDocx` with a document snapshot from the export action.",
       "details": [],
       "migrationNotes": [],
       "targets": ["docx"],

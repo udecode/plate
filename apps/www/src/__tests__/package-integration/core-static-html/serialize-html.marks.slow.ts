@@ -15,11 +15,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('<span><strong><span>bold</span></strong></span>');
   });
@@ -36,11 +32,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('<span><em><span>italic</span></em></span>');
   });
@@ -57,11 +49,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('<span><u><span>underlined</span></u></span>');
   });
@@ -78,11 +66,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('<span><s><span>strikethrough</span></s></span>');
   });
@@ -99,11 +83,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('<span><code><span>some code</span></code></span>');
   });
@@ -120,11 +100,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('<span><sub><span>subscripted</span></sub></span>');
   });
@@ -141,11 +117,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain(
       '<span><sup><span>superscripted</span></sup></span>'
@@ -164,11 +136,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain(
       '<span><kbd><span>keyboard shortcut</span></kbd></span>'
@@ -187,11 +155,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain(
       '<span><em><strong><span>bold and italic</span></strong></em></span>'

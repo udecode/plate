@@ -20,6 +20,7 @@ import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { usePendingInsertionMarksEffect } from './composition-state';
 import { useDecorationDOMRepairBridge } from './decoration-repair-bridge';
 import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
+import type { EditableHistoryReplayEvent } from './editable-dom-runtime';
 import { getModelOwnedHistoryFocusRepair } from './history-focus';
 import { useEditableRootRef } from './input-router';
 import {
@@ -98,6 +99,7 @@ export const useEditableRootRuntime = ({
   forwardedRef,
   viewportRuntime,
   onDOMBeforeInput,
+  onHistoryReplay,
   onKeyDown,
   readOnly: readOnlyProp,
   scrollSelectionIntoView,
@@ -109,6 +111,7 @@ export const useEditableRootRuntime = ({
   forwardedRef?: ForwardedRef<HTMLDivElement>;
   viewportRuntime: EditableViewportRuntime | null;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
+  onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onKeyDown?: EditableKeyDownHandler;
   readOnly: boolean;
   scrollSelectionIntoView: (
@@ -132,6 +135,7 @@ export const useEditableRootRuntime = ({
   const rootRuntimeState = useEditableRootRuntimeState({
     viewportRuntime,
     editor,
+    onHistoryReplay,
     readOnly,
   });
   const {

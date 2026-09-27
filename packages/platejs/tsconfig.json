@@ -37,6 +37,8 @@
       "platejs/footnote": ["./src/features/footnote/index.ts"],
       "platejs/footnote/react": ["./src/react/features/footnote/index.ts"],
       "platejs/history": ["./src/history/index.ts"],
+      "platejs/html": ["./src/html/index.ts"],
+      "platejs/html/server": ["./src/html/server/index.ts"],
       "platejs/hyperscript": ["./src/hyperscript/index.ts"],
       "platejs/layout": ["./src/features/layout/index.ts"],
       "platejs/layout/react": ["./src/react/features/layout/index.ts"],

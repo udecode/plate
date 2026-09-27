@@ -26,7 +26,7 @@ const documentTitle = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => 'Untitled',
-  persist: valueCodecs.string,
+  persist: { ...valueCodecs.string, version: 1 },
 });
 
 const privateNote = defineStateField({
@@ -34,7 +34,7 @@ const privateNote = defineStateField({
   collab: 'local',
   history: 'push',
   initial: () => '',
-  persist: valueCodecs.string,
+  persist: { ...valueCodecs.string, version: 1 },
 });
 
 const documentStatePlugin = definePlugin('document-state', {

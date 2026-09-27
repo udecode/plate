@@ -57,9 +57,13 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
       blockContent: false,
     },
   }),
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children }) => children,
+      },
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ decode, decoration, node, parseAttributes }) => ({
@@ -153,9 +157,13 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
       content: schema.content.element(BaseColumnItemPlugin, { min: 2 }),
     },
   },
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children }) => children,
+      },
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ decode, decoration, node, parseAttributes }) => ({

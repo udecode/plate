@@ -22,16 +22,34 @@
   "include": ["../src/docx/export/**/*"],
   "references": [
     {
+      "path": "./callout.json"
+    },
+    {
       "path": "./core.json"
     },
     {
       "path": "./docx-internal.json"
     },
     {
+      "path": "./layout.json"
+    },
+    {
+      "path": "./math.json"
+    },
+    {
       "path": "./proxies.json"
     },
     {
+      "path": "./standard-basic-nodes.json"
+    },
+    {
+      "path": "./standard-code-block.json"
+    },
+    {
       "path": "./static.json"
+    },
+    {
+      "path": "./toc.json"
     }
   ]
 }

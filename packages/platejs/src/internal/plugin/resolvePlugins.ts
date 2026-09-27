@@ -4,9 +4,10 @@ import {
 } from 'plitejs/internal';
 
 import type {
-  RuntimePluginDefinitionInput,
   EditorReadMethodTree,
   EditorStateSchemaApi,
+  RuntimePluginDefinitionInput,
+  RuntimePluginReference,
 } from '../../facade';
 import {
   getCompiledEditorSchemaFromApi,
@@ -21,7 +22,10 @@ import type {
   BasePlugins,
   Editor,
 } from '../../lib';
-import type { EditorSchemaIdentity } from '../../lib/editor/editorApplicationSchema';
+import type {
+  EditorApplicationSchema,
+  EditorSchemaIdentity,
+} from '../../lib/editor/editorApplicationSchema';
 import type {
   BlockInsertOptions,
   BlockUpsertOptions,
@@ -716,6 +720,8 @@ const publishCompiledSchemaHandles = (
 export const createPlateModelPublication = (
   editor: Editor,
   identity: EditorSchemaIdentity | null,
+  applicationSchema: EditorApplicationSchema | undefined,
+  pluginInputs: readonly RuntimePluginReference[],
   model: CompiledPlateModel,
   pluginList: readonly AnyBasePlugin[],
   schemaApi: EditorStateSchemaApi,
@@ -983,11 +989,13 @@ export const createPlateModelPublication = (
 
   return Object.freeze({
     apiByPlugin,
+    applicationSchema,
     genericElementToggles,
     identity,
     inputRules: snapshotApiValue(createPluginInputRules(publishedPluginList)),
     model: publishedModel,
     pluginCache: publishedPluginCache,
+    pluginInputs,
     pluginList: Object.freeze(publishedPluginList),
     plugins: Object.freeze(plugins),
     shortcutTable: shortcutRuntime.shortcutTable,
@@ -1985,7 +1993,8 @@ const getPresentNames = (
 const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
   'activate',
   'api',
-  'codecs',
+  'dataTransferFormats',
+  'formats',
   'commands',
   'conflicts',
   'configure',

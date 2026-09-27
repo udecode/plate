@@ -105,7 +105,7 @@ export function SuggestionEditor() {
 
 Replace `'alice'` with the authenticated user's ID in both `userId` and Comments' `currentUserId`. `userId` attributes document changes. `currentUserId` identifies the person writing replies, while `users` supplies names and optional avatars.
 
-`SuggestionPlugin` depends on `DefaultAuthoredPlugin`, which reads the editor's `userId` once per transaction. A missing identity rejects tracked document writes. Do not install another `authored(...)` descriptor alongside the kit.
+`SuggestionPlugin` depends on `DefaultAuthoredPlugin`, which reads the editor's `userId` once per write transaction. Suggestion mode is unavailable without a current author, and programmatic attempts to enter it throw. Do not install another `authored(...)` descriptor alongside the kit.
 
 </Steps>
 
@@ -259,7 +259,10 @@ Persist the document and `CommentsJSON` atomically for the same application revi
 
 Create a fresh editor with the saved document as `initialValue` and `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`. Local undo starts empty. The document preserves each change's author and ID, so replies can locate the same suggestions. Set `userId` to the current author; loading another author's suggestions does not require changing it or replaying their edits. For historical previews and restores, [join current conversations with the selected revision's targets](/docs/comment#document-history-and-versions).
 
-For JSON, Markdown, HTML, or DOCX, choose an explicit [export projection](/docs/authored-changes#export-explicit-projections). Accepted and proposed exports omit review records; use `review` when the saved format must preserve them.
+Choose an explicit [export projection](/docs/authored-changes#export-explicit-projections).
+HTML and Markdown carry visible `accepted` or `proposed` content only. Save
+authored JSON when Plate must recover exact review records, or use DOCX
+`review` export for Word revisions.
 
 ## Headless usage
 

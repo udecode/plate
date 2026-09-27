@@ -1,7 +1,9 @@
 import juice from 'juice';
 
 import {
+  ContentSlice,
   definePlugin,
+  HtmlPlugin,
   isHtmlBlockElement,
   removeHtmlNodesBetweenComments,
   traverseHtmlElements,
@@ -9,7 +11,7 @@ import {
   ElementApi,
   PLUGINS,
 } from '../../../core';
-import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
+import { decodeHtmlDataTransfer } from '../../../lib/plugins/html/HtmlPlugin';
 import { cleanWordHtml, isWordHtml } from '../../html/cleanWordHtml.internal';
 
 const DECIMAL_COMPONENT_PATTERN = /^\d+$/;
@@ -130,267 +132,274 @@ const hasStructuralBoundary = (
   return sibling !== current;
 };
 
-/** Inlines pasted CSS and normalizes Word HTML and RTF before HTML decoding. */
+const isWordPayload = (html: string) =>
+  isWordHtml(new DOMParser().parseFromString(html, 'text/html').body);
+
+const prepareWordHtml = (input: string, rtf: string) => {
+  // Juice skips the first CSS rule behind Word's opening style comment.
+  const data = juice(input.replaceAll(/<style>\s*<!--/g, '<style>'));
+  const document = new DOMParser().parseFromString(data, 'text/html');
+  const { body } = document;
+
+  if (!isWordHtml(body)) return null;
+
+  const getIndent = (
+    element: HTMLElement,
+    property: 'marginLeft' | 'textIndent'
+  ) => {
+    const value = element.style[property];
+
+    if (!value || value.startsWith('-')) return 0;
+
+    let number = value.replace(NON_NUMERIC_PATTERN, '');
+
+    if (number.startsWith('.')) number = `0${number}`;
+
+    const parsed = Number.parseFloat(number);
+
+    if (!parsed) return 0;
+
+    return Math.round(value.includes('in') ? (parsed * 72) / 36 : parsed / 36);
+  };
+  const orderedStyleBySequence = new Map<string, string>();
+  const lastOrdinalBySequence = new Map<string, number>();
+  const activeSequenceByIndent = new Map<number, string>();
+  const declaredListStyles = getDeclaredListStyles(input);
+  let previousListElement: HTMLElement | undefined;
+
+  body.querySelectorAll('p, h1, h2, h3, h4, h5, h6').forEach((element) => {
+    const htmlElement = element as HTMLElement;
+    const style = element.getAttribute('style') ?? '';
+
+    if (
+      MSO_LIST_PATTERN.test(style) &&
+      ([...element.querySelectorAll('[style]')].some((child) =>
+        MSO_LIST_IGNORE_PATTERN.test(child.getAttribute('style') ?? '')
+      ) ||
+        element.outerHTML.includes('<!--[if !supportLists]-->'))
+    ) {
+      if (
+        previousListElement &&
+        hasStructuralBoundary(previousListElement, element)
+      ) {
+        activeSequenceByIndent.clear();
+      }
+      const listItem = document.createElement(
+        element.tagName === 'P' ? 'li' : element.tagName.toLowerCase()
+      );
+      const clonedElement = element.cloneNode(true) as Element;
+
+      Array.from(element.attributes).forEach(({ name, value }) => {
+        listItem.setAttribute(name, value);
+      });
+      removeHtmlNodesBetweenComments(
+        clonedElement,
+        '[if !supportLists]',
+        '[endif]'
+      );
+      traverseHtmlElements(clonedElement, (child) => {
+        if (MSO_LIST_IGNORE_PATTERN.test(child.getAttribute('style') ?? '')) {
+          child.remove();
+        }
+
+        return true;
+      });
+
+      const level = LEVEL_PATTERN.exec(style)?.[1];
+      const visualIndent = getIndent(htmlElement, 'marginLeft');
+
+      const indent = level
+        ? Math.max(Number.parseInt(level, 10), visualIndent)
+        : Math.max(1, visualIndent);
+
+      listItem.dataset.indent = String(indent);
+
+      const markerText =
+        Array.from(element.querySelectorAll<HTMLElement>('[style]'))
+          .find((child) =>
+            MSO_LIST_IGNORE_PATTERN.test(child.getAttribute('style') ?? '')
+          )
+          ?.textContent?.trim() ??
+        element.textContent?.trimStart() ??
+        '';
+      const identity = LIST_IDENTITY_PATTERN.exec(style);
+      const declaredListStyle =
+        identity?.[1] && level
+          ? declaredListStyles.get(`${identity[1]}:${level}`)
+          : undefined;
+      const marker = LIST_MARKER_PATTERN.exec(markerText)?.[1]
+        .split('.')
+        .at(-1);
+      let listStyle =
+        declaredListStyle ??
+        (marker && DECIMAL_COMPONENT_PATTERN.test(marker)
+          ? marker.length > 1 && marker.startsWith('0')
+            ? 'decimal-leading-zero'
+            : 'decimal'
+          : marker && LOWER_ROMAN_PATTERN.test(marker)
+            ? 'lower-roman'
+            : marker && LOWER_ALPHA_PATTERN.test(marker)
+              ? 'lower-alpha'
+              : marker && UPPER_ROMAN_PATTERN.test(marker)
+                ? 'upper-roman'
+                : marker && UPPER_ALPHA_PATTERN.test(marker)
+                  ? 'upper-alpha'
+                  : 'disc');
+      const sequenceKey = `${identity?.[1] ?? 'list'}:${
+        identity?.[2] ?? ''
+      }:${indent}`;
+      const previousStyle = orderedStyleBySequence.get(sequenceKey);
+
+      if (previousStyle === 'lower-alpha' && listStyle === 'lower-roman') {
+        listStyle = 'lower-alpha';
+      } else if (
+        previousStyle === 'upper-alpha' &&
+        listStyle === 'upper-roman'
+      ) {
+        listStyle = 'upper-alpha';
+      }
+      if (listStyle !== 'disc') {
+        orderedStyleBySequence.set(sequenceKey, listStyle);
+      }
+      listItem.dataset.listType =
+        listStyle === 'disc' ? 'bulleted' : 'numbered';
+      if (listStyle !== 'disc' && listStyle !== 'decimal') {
+        listItem.dataset.listStyle = listStyle;
+      }
+      for (const activeIndent of activeSequenceByIndent.keys()) {
+        if (activeIndent > indent) {
+          activeSequenceByIndent.delete(activeIndent);
+        }
+      }
+      if (listStyle !== 'disc') {
+        const ordinal = parseListOrdinal(markerText, listStyle);
+        const activeSequence = activeSequenceByIndent.get(indent);
+        const activeStyle = activeSequence
+          ? orderedStyleBySequence.get(activeSequence)
+          : undefined;
+        const activeOrdinal = activeSequence
+          ? lastOrdinalBySequence.get(activeSequence)
+          : undefined;
+        const expectedOrdinal =
+          activeStyle === listStyle && activeOrdinal !== undefined
+            ? activeOrdinal + 1
+            : 1;
+        const needsBoundary =
+          ordinal !== undefined &&
+          (ordinal !== expectedOrdinal ||
+            (activeSequence !== undefined && activeSequence !== sequenceKey));
+
+        if (needsBoundary) {
+          listItem.dataset.listRestart = String(ordinal);
+        }
+        if (ordinal !== undefined) {
+          lastOrdinalBySequence.set(sequenceKey, ordinal);
+        }
+        activeSequenceByIndent.set(indent, sequenceKey);
+      } else {
+        activeSequenceByIndent.delete(indent);
+      }
+      listItem.innerHTML = clonedElement.innerHTML;
+      element.replaceWith(listItem);
+      previousListElement = listItem;
+
+      return;
+    }
+
+    activeSequenceByIndent.clear();
+    previousListElement = undefined;
+    const indent = getIndent(htmlElement, 'marginLeft');
+    const textIndent = getIndent(htmlElement, 'textIndent');
+
+    if (indent) {
+      htmlElement.dataset.indent = String(indent);
+    }
+    if (textIndent) {
+      htmlElement.dataset.textIndent = String(textIndent);
+    }
+  });
+
+  const cleanedDocument = new DOMParser().parseFromString(
+    cleanWordHtml(body.innerHTML, rtf),
+    'text/html'
+  );
+
+  cleanedDocument.body.querySelectorAll('img').forEach((element) => {
+    element.remove();
+  });
+
+  return cleanedDocument.body.outerHTML;
+};
+
+const cleanWordSlice = (
+  slice: ContentSlice,
+  tableType: string | undefined,
+  tableCellType: string | undefined
+) => {
+  const cleanNode = (node: Descendant): Descendant => {
+    if (!ElementApi.isElement(node)) return node;
+
+    const children = node.children.map(cleanNode);
+
+    if (tableType && node.type === tableType) {
+      const { columnWidths: _columnWidths, ...table } = node;
+
+      return { ...table, children };
+    }
+    if (tableCellType && node.type === tableCellType) {
+      const { borders: _borders, size: _size, ...cell } = node;
+
+      return { ...cell, children };
+    }
+
+    return { ...node, children };
+  };
+
+  return ContentSlice.fromJSON({
+    ...slice,
+    content: slice.content.map(cleanNode),
+    ...(slice.roots
+      ? {
+          roots: Object.fromEntries(
+            Object.entries(slice.roots).map(([root, children]) => [
+              root,
+              children.map(cleanNode),
+            ])
+          ),
+        }
+      : {}),
+  });
+};
+
+/** Normalizes Word clipboard payloads before the installed HTML parser runs. */
 export const WordPastePlugin = definePlugin(PLUGINS.wordPaste, {
+  dependencies: [HtmlPlugin],
   editOnly: true,
-  codecs: ({ defineCodecs, editor }) => {
-    const tableCellDescriptor = getCompiledPlatePlugin(
-      editor,
-      PLUGINS.tableCell
-    );
-    const tableCellType = tableCellDescriptor
-      ? editor.plugin(tableCellDescriptor).schema.type
-      : undefined;
-    const tableDescriptor = getCompiledPlatePlugin(editor, PLUGINS.table);
-    const tableType = tableDescriptor
-      ? editor.plugin(tableDescriptor).schema.type
-      : undefined;
+}).extend(() => ({
+  dataTransferFormats: [
+    {
+      accept: ({ data }) => isWordPayload(data),
+      decode: (context) => {
+        const { data, registry, snapshot } = context;
+        const html = prepareWordHtml(data, snapshot.getData('text/rtf'));
 
-    return defineCodecs({
-      'text/html': {
-        transformData: ({ data: input, source }) => {
-          // Juice skips the first CSS rule behind Word's opening style comment.
-          const data = juice(input.replaceAll(/<style>\s*<!--/g, '<style>'));
-          const document = new DOMParser().parseFromString(data, 'text/html');
-          const { body } = document;
-          const rtf = source.getData('text/rtf');
+        if (!html) return null;
+        const result = decodeHtmlDataTransfer({ ...context, data: html });
 
-          if (!isWordHtml(body)) return cleanWordHtml(data, rtf);
+        if (!result || !result.ok) return result;
 
-          const getIndent = (
-            element: HTMLElement,
-            property: 'marginLeft' | 'textIndent'
-          ) => {
-            const value = element.style[property];
-
-            if (!value || value.startsWith('-')) return 0;
-
-            let number = value.replace(NON_NUMERIC_PATTERN, '');
-
-            if (number.startsWith('.')) number = `0${number}`;
-
-            const parsed = Number.parseFloat(number);
-
-            if (!parsed) return 0;
-
-            return Math.round(
-              value.includes('in') ? (parsed * 72) / 36 : parsed / 36
-            );
-          };
-          const orderedStyleBySequence = new Map<string, string>();
-          const lastOrdinalBySequence = new Map<string, number>();
-          const activeSequenceByIndent = new Map<number, string>();
-          const declaredListStyles = getDeclaredListStyles(input);
-          let previousListElement: HTMLElement | undefined;
-
-          body
-            .querySelectorAll('p, h1, h2, h3, h4, h5, h6')
-            .forEach((element) => {
-              const htmlElement = element as HTMLElement;
-              const style = element.getAttribute('style') ?? '';
-
-              if (
-                MSO_LIST_PATTERN.test(style) &&
-                ([...element.querySelectorAll('[style]')].some((child) =>
-                  MSO_LIST_IGNORE_PATTERN.test(
-                    child.getAttribute('style') ?? ''
-                  )
-                ) ||
-                  element.outerHTML.includes('<!--[if !supportLists]-->'))
-              ) {
-                if (
-                  previousListElement &&
-                  hasStructuralBoundary(previousListElement, element)
-                ) {
-                  activeSequenceByIndent.clear();
-                }
-                const listItem = document.createElement(
-                  element.tagName === 'P' ? 'li' : element.tagName.toLowerCase()
-                );
-                const clonedElement = element.cloneNode(true) as Element;
-
-                Array.from(element.attributes).forEach(({ name, value }) => {
-                  listItem.setAttribute(name, value);
-                });
-                removeHtmlNodesBetweenComments(
-                  clonedElement,
-                  '[if !supportLists]',
-                  '[endif]'
-                );
-                traverseHtmlElements(clonedElement, (child) => {
-                  if (
-                    MSO_LIST_IGNORE_PATTERN.test(
-                      child.getAttribute('style') ?? ''
-                    )
-                  ) {
-                    child.remove();
-                  }
-
-                  return true;
-                });
-
-                const level = LEVEL_PATTERN.exec(style)?.[1];
-                const visualIndent = getIndent(htmlElement, 'marginLeft');
-
-                const indent = level
-                  ? Math.max(Number.parseInt(level, 10), visualIndent)
-                  : Math.max(1, visualIndent);
-
-                listItem.dataset.indent = String(indent);
-
-                const markerText =
-                  Array.from(element.querySelectorAll<HTMLElement>('[style]'))
-                    .find((child) =>
-                      MSO_LIST_IGNORE_PATTERN.test(
-                        child.getAttribute('style') ?? ''
-                      )
-                    )
-                    ?.textContent?.trim() ??
-                  element.textContent?.trimStart() ??
-                  '';
-                const identity = LIST_IDENTITY_PATTERN.exec(style);
-                const declaredListStyle =
-                  identity?.[1] && level
-                    ? declaredListStyles.get(`${identity[1]}:${level}`)
-                    : undefined;
-                const marker = LIST_MARKER_PATTERN.exec(markerText)?.[1]
-                  .split('.')
-                  .at(-1);
-                let listStyle =
-                  declaredListStyle ??
-                  (marker && DECIMAL_COMPONENT_PATTERN.test(marker)
-                    ? marker.length > 1 && marker.startsWith('0')
-                      ? 'decimal-leading-zero'
-                      : 'decimal'
-                    : marker && LOWER_ROMAN_PATTERN.test(marker)
-                      ? 'lower-roman'
-                      : marker && LOWER_ALPHA_PATTERN.test(marker)
-                        ? 'lower-alpha'
-                        : marker && UPPER_ROMAN_PATTERN.test(marker)
-                          ? 'upper-roman'
-                          : marker && UPPER_ALPHA_PATTERN.test(marker)
-                            ? 'upper-alpha'
-                            : 'disc');
-                const sequenceKey = `${identity?.[1] ?? 'list'}:${
-                  identity?.[2] ?? ''
-                }:${indent}`;
-                const previousStyle = orderedStyleBySequence.get(sequenceKey);
-
-                if (
-                  previousStyle === 'lower-alpha' &&
-                  listStyle === 'lower-roman'
-                ) {
-                  listStyle = 'lower-alpha';
-                } else if (
-                  previousStyle === 'upper-alpha' &&
-                  listStyle === 'upper-roman'
-                ) {
-                  listStyle = 'upper-alpha';
-                }
-                if (listStyle !== 'disc') {
-                  orderedStyleBySequence.set(sequenceKey, listStyle);
-                }
-                listItem.dataset.listType =
-                  listStyle === 'disc' ? 'bulleted' : 'numbered';
-                if (listStyle !== 'disc' && listStyle !== 'decimal') {
-                  listItem.dataset.listStyle = listStyle;
-                }
-                for (const activeIndent of activeSequenceByIndent.keys()) {
-                  if (activeIndent > indent) {
-                    activeSequenceByIndent.delete(activeIndent);
-                  }
-                }
-                if (listStyle !== 'disc') {
-                  const ordinal = parseListOrdinal(markerText, listStyle);
-                  const activeSequence = activeSequenceByIndent.get(indent);
-                  const activeStyle = activeSequence
-                    ? orderedStyleBySequence.get(activeSequence)
-                    : undefined;
-                  const activeOrdinal = activeSequence
-                    ? lastOrdinalBySequence.get(activeSequence)
-                    : undefined;
-                  const expectedOrdinal =
-                    activeStyle === listStyle && activeOrdinal !== undefined
-                      ? activeOrdinal + 1
-                      : 1;
-                  const needsBoundary =
-                    ordinal !== undefined &&
-                    (ordinal !== expectedOrdinal ||
-                      (activeSequence !== undefined &&
-                        activeSequence !== sequenceKey));
-
-                  if (needsBoundary) {
-                    listItem.dataset.listRestart = String(ordinal);
-                  }
-                  if (ordinal !== undefined) {
-                    lastOrdinalBySequence.set(sequenceKey, ordinal);
-                  }
-                  activeSequenceByIndent.set(indent, sequenceKey);
-                } else {
-                  activeSequenceByIndent.delete(indent);
-                }
-                listItem.innerHTML = clonedElement.innerHTML;
-                element.replaceWith(listItem);
-                previousListElement = listItem;
-
-                return;
-              }
-
-              activeSequenceByIndent.clear();
-              previousListElement = undefined;
-              const indent = getIndent(htmlElement, 'marginLeft');
-              const textIndent = getIndent(htmlElement, 'textIndent');
-
-              if (indent) {
-                htmlElement.dataset.indent = String(indent);
-              }
-              if (textIndent) {
-                htmlElement.dataset.textIndent = String(textIndent);
-              }
-            });
-
-          const cleanedDocument = new DOMParser().parseFromString(
-            cleanWordHtml(body.innerHTML, rtf),
-            'text/html'
-          );
-
-          cleanedDocument.body.querySelectorAll('img').forEach((element) => {
-            element.remove();
-          });
-
-          return cleanedDocument.body.outerHTML;
-        },
-        transformFragment: ({ fragment, source }) => {
-          const document = new DOMParser().parseFromString(
-            source.getData('text/html'),
-            'text/html'
-          );
-
-          if (!isWordHtml(document.body)) return fragment;
-
-          const cleanNode = (node: Descendant): Descendant => {
-            if (!ElementApi.isElement(node)) return node;
-
-            const children = node.children.map(cleanNode);
-
-            if (tableType && node.type === tableType) {
-              const { columnWidths: _columnWidths, ...innerTable } = node;
-
-              return { ...innerTable, children };
-            }
-
-            if (!tableCellType || node.type !== tableCellType) {
-              return { ...node, children };
-            }
-
-            const { borders: _borders, size: _size, ...cell } = node;
-
-            return { ...cell, children };
-          };
-
-          return fragment.map(cleanNode);
-        },
+        return Object.freeze({
+          ...result,
+          slice: cleanWordSlice(
+            result.slice,
+            registry.type(PLUGINS.table),
+            registry.type(PLUGINS.tableCell)
+          ),
+        });
       },
-    });
-  },
-});
+      mimeType: 'text/html',
+      priority: 100,
+      scope: 'document',
+    },
+  ],
+}));

@@ -63,6 +63,7 @@ import type {
   NodeKey,
   Selection,
   Value,
+  ValueOf,
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import { RangeApi, type Range } from '../interfaces/range';
@@ -89,6 +90,11 @@ import {
   type AuthoredProjection,
 } from './decisions';
 import {
+  parseAuthoredDocument,
+  projectAuthoredDocument,
+  projectAuthoredReview,
+} from './format';
+import {
   authoredFragmentIndexNodeKeys,
   authoredFragmentBucket,
   createAuthoredFragmentIndex,
@@ -101,6 +107,7 @@ import {
   inheritAuthoredFragmentProjection,
   readAuthoredMarkupFragments,
 } from './markup';
+import { createEditorAuthoredProjectionContext } from './projection-context';
 import {
   readAuthoredChange,
   readAuthoredChangeDetails,
@@ -164,6 +171,8 @@ import type {
 } from './types';
 
 type AuthoredRead = {
+  /** Whether the current editor identity can author proposals. */
+  canPropose: () => boolean;
   view: () => AuthoredView;
   change: (id: string) => AuthoredChange | null;
   changes: (query?: AuthoredQuery) => AuthoredPage;
@@ -202,6 +211,11 @@ export type AuthoredPlugin = Plugin<{
   stateFields: true;
   update: AuthoredUpdate;
 }>;
+
+export type AuthoredEditor<V extends Value = Value> = Editor<
+  V,
+  readonly [AuthoredPlugin]
+>;
 
 type AuthoredTransaction = {
   finishing: boolean;
@@ -280,6 +294,12 @@ const mapDirectAuthoredChange = (input: DirectAuthoredMappingInput) => {
 };
 
 const RUNTIMES = new WeakMap<Editor, AuthoredRuntime>();
+
+/** Narrow an editor only when the native authored capability is active. */
+export const isAuthoredEditor = <TEditor extends Editor>(
+  editor: TEditor
+): editor is TEditor & AuthoredEditor<ValueOf<TEditor>> =>
+  RUNTIMES.has(getEditorRuntimeOwner(editor));
 const VIEWS = new WeakMap<
   ReturnType<typeof getEditorRuntime>,
   { composition: { changeId: string | null } | null; policy: AuthoredView }
@@ -644,6 +664,19 @@ const readViewSelection = (view: Editor, live: AuthoredRuntime) => {
   };
 };
 
+const currentAuthorId = (state: AuthoredRuntime): string | null => {
+  const identity =
+    typeof state.options.authorId === 'function'
+      ? state.options.authorId(state.source)
+      : state.options.authorId;
+
+  return typeof identity === 'string' &&
+    identity.length > 0 &&
+    !identity.includes('\u0000')
+    ? identity
+    : null;
+};
+
 const setAuthoredView = (editor: Editor, value: AuthoredView) => {
   if (FRAGMENT_VIEWS.has(getEditorRuntime(editor))) {
     throw new Error('Retained content follows its parent markup view.');
@@ -736,15 +769,8 @@ const actor = (state: AuthoredRuntime): string => {
     throw new Error('Document replacement cannot mix with authored writes.');
   }
   if (state.active.actor) return state.active.actor;
-  const identity =
-    typeof state.options.authorId === 'function'
-      ? state.options.authorId(state.source)
-      : state.options.authorId;
-  if (
-    typeof identity !== 'string' ||
-    !identity ||
-    identity.includes('\u0000')
-  ) {
+  const identity = currentAuthorId(state);
+  if (identity === null) {
     throw new Error('An author ID is required for authored writes.');
   }
   state.active.actor = identity;
@@ -1257,6 +1283,25 @@ const AUTHORED_DOCUMENT_CAPABILITY = Object.freeze({
       options
     );
   },
+  parse: parseAuthoredDocument,
+  project(document, projection) {
+    if (projection === 'review') {
+      const result = projectAuthoredReview(document);
+
+      return Object.freeze({
+        diagnostics: result.diagnostics,
+        document: result.proposed,
+        review: result.review,
+      });
+    }
+    const result = projectAuthoredDocument(document, { projection });
+
+    return Object.freeze({
+      diagnostics: result.diagnostics,
+      document: result.document,
+      review: result.review,
+    });
+  },
 }) satisfies NativeAuthoredDocumentCapability;
 
 export const authored = (options: AuthoredOptions): AuthoredPlugin =>
@@ -1469,7 +1514,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           }
           const segments = profileCoreDuration('authored-render-scope', () =>
             composeAuthoredRenderSegments(
-              view,
+              createEditorAuthoredProjectionContext(view),
               children,
               root,
               scope,
@@ -1538,10 +1583,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
             live
           );
           if (!projection || change?.status !== 'pending') return null;
-          const authorId =
-            typeof live.options.authorId === 'function'
-              ? live.options.authorId(source)
-              : live.options.authorId;
+          const authorId = currentAuthorId(live);
           if (!authorId || authorId !== change.authorId) return null;
           schema.assertDocument(projection.value as EditorDocumentValue);
           const spec = view.read((current) => current.transaction(update));
@@ -3017,6 +3059,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         );
       };
       return {
+        canPropose: () => currentAuthorId(runtime(editor)) !== null,
         view: () => authoredView(editor),
         change(identity) {
           const value = readRecord(

@@ -77,7 +77,7 @@ const pageSettings = defineStateField<PageSettings>({
   history: 'push',
   initial: () => ({ margins: 96, preset: 'a4' }),
   key: 'layout.page',
-  persist: pageSettingsCodec,
+  persist: { ...pageSettingsCodec, version: 1 },
 });
 
 const pageSettingsPlugin = definePlugin('pageSettings', {

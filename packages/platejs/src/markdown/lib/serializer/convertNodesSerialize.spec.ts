@@ -2,10 +2,14 @@ import type { Descendant } from '../../../core';
 import {
   createTestEditor,
   getTestSerializeOptions,
+  withTestSerializeDocument,
 } from '../__tests__/createTestEditor';
 import type { MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
-import { buildMdastNode, convertNodesSerialize } from './convertNodesSerialize';
+import {
+  buildMdastNode as buildMdastNodeWithContext,
+  convertNodesSerialize as convertNodesSerializeWithContext,
+} from './convertNodesSerialize';
 
 describe('convertNodesSerialize', () => {
   const editor = createTestEditor();
@@ -69,6 +73,27 @@ describe('convertNodesSerialize', () => {
   ];
 
   const baseOptions: SerializeMdContext = getTestSerializeOptions(editor);
+
+  const convertNodesSerialize = (
+    nodes: Parameters<typeof convertNodesSerializeWithContext>[0],
+    options: SerializeMdContext,
+    isBlock?: boolean
+  ) =>
+    convertNodesSerializeWithContext(
+      nodes,
+      withTestSerializeDocument(options, nodes),
+      isBlock
+    );
+  const buildMdastNode = (
+    node: Parameters<typeof buildMdastNodeWithContext>[0],
+    options: SerializeMdContext,
+    isBlock?: boolean
+  ) =>
+    buildMdastNodeWithContext(
+      node,
+      withTestSerializeDocument(options, [node]),
+      isBlock
+    );
 
   const expectMdNodes = (actual: MdRootContent[], expected: MdRootContent[]) =>
     expect(actual).toEqual(expected);

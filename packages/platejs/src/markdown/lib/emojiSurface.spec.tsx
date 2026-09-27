@@ -1,4 +1,8 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 
 describe('emoji shortcode package surfaces', () => {
   it.each([
@@ -18,7 +22,7 @@ describe('emoji shortcode package surfaces', () => {
       input: 'Launch :fire: soon',
       output: [
         {
-          children: [{ text: 'Launch ' }, { text: '🔥' }, { text: ' soon' }],
+          children: [{ text: 'Launch 🔥 soon' }],
           type: 'paragraph',
         },
       ],
@@ -27,11 +31,11 @@ describe('emoji shortcode package surfaces', () => {
   ])('$title', ({ expected, input, output }) => {
     const editor = createTestEditor();
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject(output);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
   });

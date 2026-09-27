@@ -1,0 +1,166 @@
+---
+title: 序列化
+description: 保存完整 Plate document，并与 text、HTML、Markdown 或 DOCX 相互转换。
+---
+
+另一个 Plate editor 需要恢复可编辑 document 时，保存 Plate JSON。Content 跨越
+应用边界时，使用对应格式自己的 parser 或 serializer。
+
+## 选择 surface
+
+| 任务 | Surface |
+| --- | --- |
+| 持久化完整 editor document | `editor.read.value()` |
+| 持久化完整 proposal 与 decision | `projectAuthoredReview` 与 `parseAuthoredDocument` |
+| 转换 semantic HTML | `platejs/html`；Node parsing 使用 `platejs/html/server` |
+| 转换 Markdown | `platejs/markdown` |
+| 导入或导出 Word | `platejs/docx/import` 与 `platejs/docx/export` |
+| 渲染带 component 样式的 HTML | `platejs/static` |
+| 交换 browser clipboard MIME payload | `platejs/dom` 的 `DataTransferFormat` |
+
+Plate 不提供 universal document converter。每个格式自己拥有 syntax、diagnostic、
+loss policy、limit 与 retained source。
+
+## 保存 Plate JSON
+
+`editor.read.value()` 包含主 children、named root 与持久化 metadata。
+
+```ts
+const document = editor.read.value();
+const schema = editor.read.schema.identity();
+
+await saveDocument({ document, schema });
+```
+
+只保存 `children` 会丢失 root 与 metadata。Stored document 需要版本迁移时，
+同时持久化 application schema identity。发布到 editor 前，先验证迁移后的数据。
+
+完整 authored review state 是 canonical JSON-compatible model data：
+
+```ts
+import { parseAuthoredDocument, projectAuthoredReview } from 'platejs/authored';
+
+const snapshot = projectAuthoredReview(editor.read.value());
+const json = JSON.stringify(snapshot.review);
+const document = parseAuthoredDocument(json);
+```
+
+HTML 与 Markdown 不会把 authored document 隐藏在输出中。
+
+## 序列化 plain text
+
+```ts
+import { serializePlainText } from 'platejs';
+
+const result = serializePlainText(editor, { projection: 'accepted' });
+```
+
+Feature plugin 通过 `formats`/`defineFormats` 提供 structural `plainText`
+mapping。Plain text 是单向输出，不是 universal parser 或 persistence format。
+
+## 转换 HTML
+
+Detached operation 使用 direct function：
+
+```ts
+import { parseHtml, serializeHtml } from 'platejs/html';
+
+const parsed = parseHtml(source, { plugins: EditorKit });
+const output = serializeHtml(document, {
+  plugins: EditorKit,
+  projection: 'accepted',
+});
+```
+
+Node.js 从 `platejs/html/server` import `parseHtml` 与 `parseHtmlSlice`，并安装
+server-only DOM adapter `linkedom`。
+
+配置好的 editor 安装 `HtmlPlugin` 后，可使用 `editor.api.html.parse`、
+`parseSlice` 与 `serialize`。参阅 [HTML](/docs/html)。
+
+## 转换 Markdown
+
+```ts
+import { parseMarkdown, serializeMarkdown } from 'platejs/markdown';
+
+const parsed = parseMarkdown(source, { plugins: EditorKit });
+const output = serializeMarkdown(document, {
+  plugins: EditorKit,
+  projection: 'proposed',
+});
+```
+
+安装 `MarkdownPlugin` 后，可使用 `editor.api.markdown.parse`、`parseSlice`、
+`parseInline` 与 `serialize`。参阅 [Markdown](/docs/markdown)。
+
+## 转换 DOCX
+
+DOCX import 是 detached operation。Operation 开始前传入完整 plugin target，
+然后显式发布成功结果。
+
+```ts
+import { importDocx } from 'platejs/docx/import';
+
+const result = await importDocx(file, { plugins: EditorKit });
+
+if (result.ok) {
+  editor.update((tx) => tx.value.replace(result.document));
+}
+```
+
+DOCX export 捕获配置好的 editor，因为 static rendering、comment、retained
+source 与 Word revision 都属于 package workflow。
+
+```ts
+import { exportDocx } from 'platejs/docx/export';
+
+const result = await exportDocx(editor, { projection: 'review' });
+```
+
+Cancellation、package limit、comment、retained source 与 authored trust 参阅
+[DOCX](/docs/docx)。
+
+## 处理 result
+
+HTML、Markdown 与 DOCX 使用格式自己的 diagnosed result。Success 包含 warning
+和请求的 document、slice、string 或 Blob。Failure 包含非空、error-first 的
+diagnostic tuple，且没有可发布 carrier。
+
+```ts
+const result = editor.api.markdown.serialize({ projection: 'accepted' });
+
+showDiagnostics(result.diagnostics);
+if (!result.ok) return;
+
+downloadMarkdown(result.data);
+```
+
+预期 source failure 与表示损失通过 diagnostics 返回。配置错误、mapping bug
+与无效 serializer model data 会抛出。`lossPolicy` 默认为 `'reject'`；只有调用方
+接受精确报告的损失时才选择 `'allow'`。
+
+## 定义 feature mapping
+
+Feature plugin 通过 `formats` 与 `defineFormats` 声明语义 mapping，key 为
+`html`、`markdown` 与 `plainText`。窄 authoring callback 不能读取 live editor
+或 store。
+
+完整 browser MIME payload 使用 `DataTransferFormat`，不使用 feature mapping。
+Clipboard insertion 保留 destination authority，并可保留 native open edge 与
+detached root。参阅 [Plugin Methods](/docs/plugin-methods) 与
+[Clipboard](/docs/clipboard)。
+
+## Document 与 slice authority
+
+完整 parse 返回 `EditorDocumentValue`。直接 syntax slice 或 inline parse 返回
+闭合、无 root 的 `ContentSlice`。Destination 已知后，insertion owner 才 fit
+该 slice。
+
+```ts
+const result = editor.api.markdown.parseSlice(source);
+
+if (result.ok) editor.update.slice.replace(result.slice);
+```
+
+不要在 replacement 前把完整 document 缩成 `children`；这会丢失 named root
+与 metadata。Detached parser 也不应虚构 destination。

@@ -9,7 +9,6 @@ import {
   defineEditorSchema,
   definePluginSlot,
   defineStateField,
-  defineValueCodec,
   DocumentChange,
   type Element,
   type Range,
@@ -54,7 +53,7 @@ const title = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => 'Untitled',
-  persist: valueCodecs.string,
+  persist: { ...valueCodecs.string, version: 1 },
 });
 const titlePlugin = definePlugin('document-title', {
   stateFields: [title],
@@ -619,14 +618,14 @@ describe('versioned history persistence', () => {
 
   it('round-trips registered domain effects', () => {
     const increment = defineEffect<number>({
-      codec: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       invert: (value) => -value,
       key: 'counter.increment',
     });
     const counter = defineStateField({
       key: 'counter',
       initial: () => 0,
-      persist: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
@@ -658,8 +657,9 @@ describe('versioned history persistence', () => {
 
   it('omits live-session effects while preserving durable history order', async () => {
     const sessionEffect = defineEffect<string>({
-      history: 'session',
-      historyReplay: (_editor, value) => ({ status: 'applied', value }),
+      history: {
+        replay: (_editor, value) => ({ status: 'applied', value }),
+      },
       key: 'history.session-persistence',
     });
     const sessionPlugin = definePlugin('history-session-persistence', {
@@ -760,11 +760,11 @@ describe('versioned history persistence', () => {
 
   it('rejects history encoded by a stale installed effect descriptor', () => {
     const incrementV1 = defineEffect<number>({
-      codec: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       key: 'counter.stale-increment',
     });
     const incrementV2 = defineEffect<number>({
-      codec: defineValueCodec({
+      persist: {
         decode(value) {
           if (typeof value !== 'number') {
             throw new Error('Expected a numeric increment.');
@@ -774,7 +774,7 @@ describe('versioned history persistence', () => {
         },
         encode: (value) => value,
         version: 2,
-      }),
+      },
       key: incrementV1.key,
     });
     const source = createEditor({

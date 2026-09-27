@@ -155,9 +155,9 @@ describe('Editor core package', () => {
     it('exposes link api after extending a plate plugin', () => {
       const editor = createEditor({
         plugins: [
-          LinkPlugin.extend(({ defineCodecs }) => ({
-            codecs: defineCodecs({
-              'text/html': {
+          LinkPlugin.extend(({ defineFormats }) => ({
+            formats: defineFormats({
+              html: {
                 query: () => true,
               },
             }),

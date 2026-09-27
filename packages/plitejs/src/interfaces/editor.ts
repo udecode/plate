@@ -80,6 +80,7 @@ import type {
   TextUnit,
   TextUnitAdjustment,
 } from '../types/types';
+import type { EditorJsonValue } from './json';
 import type { NodeMatch, NodeTypeSelector } from './node';
 import type {
   EditorSchemaDeclaration,
@@ -387,9 +388,6 @@ export type StateFieldCollabPolicy = 'local' | 'shared';
 
 export type StateFieldHistoryPolicy = 'push' | 'skip';
 
-/** Whether an effect is durable history state or live-session replay work. */
-export type EditorEffectHistoryPolicy = StateFieldHistoryPolicy | 'session';
-
 /** Result of replaying one live-session history effect. */
 export type EditorEffectHistoryReplayResult<TValue = unknown> =
   | Readonly<{ status: 'applied'; value: TValue }>
@@ -397,41 +395,53 @@ export type EditorEffectHistoryReplayResult<TValue = unknown> =
 
 export type StateFieldInitial<TValue> = TValue | (() => TValue);
 
-/** Versioned encoder and validator for persisted editor values. */
-export type EditorValueCodec<TValue = unknown> = Readonly<{
+/** Versioned persistence for one live editor value. */
+export type EditorValuePersistence<
+  TValue = unknown,
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+> = Readonly<{
   decode: (value: unknown) => TValue;
-  encode: (value: TValue) => unknown;
-  /** Decoders for supported persisted versions older than `version`. */
-  previousVersions?: Readonly<Record<number, (value: unknown) => TValue>>;
+  encode: (value: TValue) => TEncoded;
+  legacyDecoders?: Readonly<Record<number, (value: unknown) => TValue>>;
+  /** Current positive integer envelope version. */
   version: number;
 }>;
 
-/** JSON envelope produced by a versioned editor value codec. */
-export type SerializedEditorValue = Readonly<{
-  value: unknown;
+/** JSON envelope produced by versioned editor value persistence. */
+export type SerializedEditorValue<
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+> = Readonly<{
+  value: TEncoded;
   version: number;
 }>;
 
 /** JSON envelope for one typed editor effect. */
-export type SerializedEditorEffect = SerializedEditorValue &
+export type SerializedEditorEffect<
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+> = SerializedEditorValue<TEncoded> &
   Readonly<{
     key: string;
   }>;
 
 /** JSON envelope for one installed editor selection kind. */
-export type SerializedEditorSelection = SerializedEditorValue &
+export type SerializedEditorSelection<
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+> = SerializedEditorValue<TEncoded> &
   Readonly<{
     kind: string;
   }>;
 
-export type StateFieldDescriptor<TValue = unknown> = Readonly<{
+export type StateFieldDescriptor<
+  TValue = unknown,
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+> = Readonly<{
   collab?: StateFieldCollabPolicy;
   /** Suppresses transitions whose stored values are semantically equal. */
   compare?: (left: TValue, right: TValue) => boolean;
   history?: StateFieldHistoryPolicy;
   initial?: StateFieldInitial<TValue>;
   key: string;
-  persist?: EditorValueCodec<TValue>;
+  persist?: EditorValuePersistence<TValue, TEncoded>;
   reduce?: (value: TValue, effect: EditorEffect) => TValue;
 }>;
 
@@ -444,13 +454,16 @@ export type StateFieldTransition<TValue> = Readonly<{
   value: TValue;
 }>;
 
-export type EditorStateField<TValue = unknown> = PluginDefinitionInput &
+export type EditorStateField<
+  TValue = unknown,
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+> = PluginDefinitionInput &
   Readonly<{ name: string }> &
-  Omit<StateFieldDescriptor<TValue>, 'compare'> & {
+  Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {
     compare: (left: TValue, right: TValue) => boolean;
     deserialize: (value: unknown) => TValue;
     effect: EditorEffectType<StateFieldTransition<TValue>>;
-    serialize: (value: TValue) => SerializedEditorValue;
+    serialize: (value: TValue) => SerializedEditorValue<TEncoded>;
   };
 
 /** Yjs-agnostic helpers supplied by a collaboration adapter while encoding. */
@@ -486,28 +499,76 @@ export type EditorEffectCollabTransport<TValue = unknown> = Readonly<{
  */
 export type EditorEffectCollabReplay = 'latest' | 'live';
 
-export type EditorEffectType<TValue = any> = Readonly<{
-  codec?: EditorValueCodec<TValue>;
-  collab: StateFieldCollabPolicy;
-  collabReplay: EditorEffectCollabReplay;
-  /** Pure capture of the current absolute value for late-join checkpoints. */
-  collabSnapshot?: (state: EditorStateView<Value, any>) => TValue | undefined;
-  collabTransport?: EditorEffectCollabTransport<TValue>;
-  history: EditorEffectHistoryPolicy;
-  /** Apply fallible live-session work before History moves its branch. */
-  historyReplay?: (
-    editor: BaseEditor,
-    value: TValue
-  ) =>
-    | EditorEffectHistoryReplayResult<TValue>
-    | Promise<EditorEffectHistoryReplayResult<TValue>>;
+type EditorEffectHistoryReplay<TValue> = (
+  editor: Editor,
+  value: TValue
+) =>
+  | EditorEffectHistoryReplayResult<TValue>
+  | Promise<EditorEffectHistoryReplayResult<TValue>>;
+
+type EditorEffectSessionHistory<TValue> = Readonly<{
+  replay: EditorEffectHistoryReplay<TValue>;
+}>;
+
+type EditorEffectTypeBase<TValue, TEncoded extends EditorJsonValue> = Readonly<{
   invert: (value: TValue) => TValue;
   key: string;
   map: (value: TValue, changes: DocumentChange) => TValue | undefined;
+  persist?: EditorValuePersistence<TValue, TEncoded>;
 }>;
 
-export type EditorEffect<TValue = any> = Readonly<{
-  type: EditorEffectType<TValue>;
+type EditorEffectLocalType<
+  TValue,
+  TEncoded extends EditorJsonValue,
+> = EditorEffectTypeBase<TValue, TEncoded> &
+  Readonly<{
+    collab: 'local';
+    collabReplay: 'live';
+    collabSnapshot?: never;
+    collabTransport?: never;
+    history: EditorEffectSessionHistory<TValue> | StateFieldHistoryPolicy;
+  }>;
+
+type EditorEffectSharedLiveType<
+  TValue,
+  TEncoded extends EditorJsonValue,
+> = EditorEffectTypeBase<TValue, TEncoded> &
+  Readonly<{
+    persist: EditorValuePersistence<TValue, TEncoded>;
+    collab: 'shared';
+    collabReplay: 'live';
+    collabSnapshot?: never;
+    collabTransport?: EditorEffectCollabTransport<TValue>;
+    history: StateFieldHistoryPolicy;
+  }>;
+
+type EditorEffectSharedLatestType<
+  TValue,
+  TEncoded extends EditorJsonValue,
+> = EditorEffectTypeBase<TValue, TEncoded> &
+  Readonly<{
+    persist: EditorValuePersistence<TValue, TEncoded>;
+    collab: 'shared';
+    collabReplay: 'latest';
+    /** Pure capture of the current absolute value for late-join checkpoints. */
+    collabSnapshot: (state: EditorStateView<Value, any>) => TValue | undefined;
+    collabTransport?: EditorEffectCollabTransport<TValue>;
+    history: StateFieldHistoryPolicy;
+  }>;
+
+export type EditorEffectType<
+  TValue = any,
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+> =
+  | EditorEffectLocalType<TValue, TEncoded>
+  | EditorEffectSharedLatestType<TValue, TEncoded>
+  | EditorEffectSharedLiveType<TValue, TEncoded>;
+
+export type EditorEffect<
+  TValue = any,
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+> = Readonly<{
+  type: EditorEffectType<TValue, TEncoded>;
   value: TValue;
 }>;
 
@@ -1295,7 +1356,7 @@ export type EditorTransactionTextApi = EditorStateTextApi & {
   ) => void;
 };
 
-/** Concrete registered schema targets available to host codecs. */
+/** Concrete registered schema targets available to DataTransfer formats. */
 export type EditorSchemaVocabulary = Readonly<{
   elementTypes: readonly string[];
   groupNames: readonly string[];
@@ -2520,10 +2581,10 @@ export type EditorLifecycleError<TEditor = Editor> =
       cause: unknown;
       editor: TEditor;
       pluginName: string;
-      format: string;
+      mimeType: string;
       key: string;
-      phase: 'parse' | 'query' | 'serialize';
-      source: 'host-codec';
+      phase: 'accept' | 'decode' | 'encode' | 'notify';
+      source: 'data-transfer-format';
     }>;
 
 export type EditorLifecycleErrorSink<TEditor = Editor> = (

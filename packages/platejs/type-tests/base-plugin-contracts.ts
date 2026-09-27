@@ -225,44 +225,69 @@ const BoldPlugin = definePlugin('bold', {
   },
 });
 
-const CodecContractPlugin = definePlugin('codecContract', {
-  codecs: ({ defineCodecs, editor, plugin }) =>
-    defineCodecs({
-      'application/x-codec-contract': {
-        scope: 'document',
-        decode: ({ data, format, source, state }) => {
-          const exactData: string = data;
-          const exactEditorId: string = editor.id;
-          const exactFormat: string = format;
-          const exactName: 'codecContract' = plugin.name;
-          const exactSchema: object = state.schema;
-          const exactTypes: readonly string[] = source.types;
+const FormatContractPlugin = definePlugin('formatContract', {
+  initialState: { label: 'snapshot' as const },
+  dataTransferFormats: [
+    {
+      mimeType: 'application/x-format-contract',
+      scope: 'document',
+      decode: ({
+        data,
+        mimeType,
+        name,
+        pluginState,
+        registry,
+        schema: schemaView,
+        snapshot,
+      }) => {
+        const exactData: string = data;
+        const exactFormat: string = mimeType;
+        const exactLabel: 'snapshot' = pluginState.label;
+        const exactName: 'formatContract' = name;
+        const exactTypes: readonly string[] = snapshot.types;
 
-          void exactData;
-          void exactEditorId;
-          void exactFormat;
-          void exactName;
-          void exactSchema;
-          void exactTypes;
+        void exactData;
+        void exactFormat;
+        void exactLabel;
+        void exactName;
+        void exactTypes;
+        void (registry.has(FormatContractPlugin) satisfies boolean);
+        void (schemaView.getVocabulary()
+          .elementTypes satisfies readonly string[]);
 
-          return ContentSlice.closed([{ text: data }]);
-        },
-        encode: ({ format, slice, state }) => {
-          const exactFormat: string = format;
-          const exactOpenStart: number = slice.openStart;
-          const exactSchema: object = state.schema;
-
-          void exactFormat;
-          void exactOpenStart;
-          void exactSchema;
-
-          return 'encoded';
-        },
+        return {
+          diagnostics: [],
+          ok: true,
+          slice: ContentSlice.closed([{ text: data }]),
+        };
       },
-    }),
+      encode: ({ mimeType, pluginState, slice, state }) => {
+        const exactFormat: string = mimeType;
+        const exactLabel: 'snapshot' = pluginState.label;
+        const exactOpenStart: number = slice.openStart;
+        const exactSchema: object = state.schema;
+
+        void exactFormat;
+        void exactLabel;
+        void exactOpenStart;
+        void exactSchema;
+
+        return { data: 'encoded', diagnostics: [], ok: true };
+      },
+    },
+  ],
 });
 
-const MarkdownCodecContractPlugin = definePlugin('markdownCodecContract', {
+definePlugin('invalidContextualDataTransferFormat', {
+  // @ts-expect-error DataTransfer declarations are static; operation callbacks receive captured state.
+  dataTransferFormats: ({ editor }) => {
+    void editor;
+
+    return [];
+  },
+});
+
+const MarkdownFormatContractPlugin = definePlugin('markdownFormatContract', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -271,14 +296,14 @@ const MarkdownCodecContractPlugin = definePlugin('markdownCodecContract', {
       },
     },
   },
-  codecs: ({ defineCodecs, schema: innerSchema }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: innerSchema }) =>
+    defineFormats({
+      html: {
         decode: () => ({}),
         encode: ({ content }) => ({ children: content, tag: 'p' }),
         match: [{ tag: 'p' }],
       },
-      'text/markdown': {
+      markdown: {
         decode: ({ node }) => {
           const exactSource: MdParagraph = node;
           const sourceIsAny: IsAny<typeof node> = false;
@@ -319,7 +344,7 @@ const MarkdownCodecContractPlugin = definePlugin('markdownCodecContract', {
     }),
 });
 
-void MarkdownCodecContractPlugin;
+void MarkdownFormatContractPlugin;
 
 const MarkdownSchemaFactoryParagraphPlugin = definePlugin(
   'markdownSchemaFactoryParagraph',
@@ -332,8 +357,8 @@ const MarkdownSchemaFactoryParagraphPlugin = definePlugin(
   }
 );
 
-const MarkdownSchemaFactoryCodecContractPlugin = definePlugin(
-  'markdownSchemaFactoryCodecContract',
+const MarkdownSchemaFactoryFormatContractPlugin = definePlugin(
+  'markdownSchemaFactoryFormatContract',
   {
     schema: ({ plugins }) => ({
       element: {
@@ -346,9 +371,9 @@ const MarkdownSchemaFactoryCodecContractPlugin = definePlugin(
         },
       },
     }),
-    codecs: ({ defineCodecs, schema: innerSchema2 }) =>
-      defineCodecs({
-        'text/html': {
+    formats: ({ defineFormats, schema: innerSchema2 }) =>
+      defineFormats({
+        html: {
           decode: () => ({}),
           encode: ({ content, node }) => {
             const contentIsAny: IsAny<typeof content> = false;
@@ -367,7 +392,7 @@ const MarkdownSchemaFactoryCodecContractPlugin = definePlugin(
           },
           match: [{ tag: 'p' }],
         },
-        'text/markdown': {
+        markdown: {
           decode: ({ node }) => {
             const exactSource: MdParagraph = node;
             const sourceIsAny: IsAny<typeof node> = false;
@@ -409,15 +434,15 @@ const MarkdownSchemaFactoryCodecContractPlugin = definePlugin(
   }
 );
 
-void MarkdownSchemaFactoryCodecContractPlugin;
+void MarkdownSchemaFactoryFormatContractPlugin;
 
-const MarkdownMarkCodecContractPlugin = definePlugin(
-  'markdownMarkCodecContract',
+const MarkdownMarkFormatContractPlugin = definePlugin(
+  'markdownMarkFormatContract',
   {
     schema: { mark: property.string() },
-    codecs: ({ defineCodecs, schema: innerSchema3 }) =>
-      defineCodecs({
-        'text/html': {
+    formats: ({ defineFormats, schema: innerSchema3 }) =>
+      defineFormats({
+        html: {
           decode: ({ element }) => element.style.color || undefined,
           encode: ({ value }) => ({
             style: { color: value },
@@ -425,7 +450,7 @@ const MarkdownMarkCodecContractPlugin = definePlugin(
           }),
           match: [{ style: { color: '*' } }],
         },
-        'text/markdown': {
+        markdown: {
           decode: ({ decode, decoration, node }) =>
             decode(node.children, {
               ...decoration,
@@ -445,7 +470,7 @@ const MarkdownMarkCodecContractPlugin = definePlugin(
   }
 );
 
-void MarkdownMarkCodecContractPlugin;
+void MarkdownMarkFormatContractPlugin;
 
 const HtmlParagraphContractPlugin = definePlugin('htmlParagraphContract', {
   schema: {
@@ -453,9 +478,9 @@ const HtmlParagraphContractPlugin = definePlugin('htmlParagraphContract', {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => {
           const readonlyElement: Readonly<HTMLElement> = element;
 
@@ -545,9 +570,9 @@ const assertForeignHtmlTarget = () => {
   });
 
   const Owner = definePlugin('foreignTargetOwner', {
-    codecs: ({ defineCodecs }) =>
-      defineCodecs(Target, {
-        'text/html': {
+    formats: ({ defineFormats }) =>
+      defineFormats(Target, {
+        html: {
           decode: () => true,
           decodeOnly: true,
           match: [{ tag: 'strong' }],
@@ -564,9 +589,9 @@ const HtmlBoldContractPlugin = definePlugin('htmlBoldContract', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           element.tagName === 'STRONG' ? true : undefined,
         encode: ({ node, value }) => {
@@ -585,10 +610,10 @@ const HtmlBoldContractPlugin = definePlugin('htmlBoldContract', {
 
 void HtmlBoldContractPlugin;
 
-definePlugin('rawHtmlCodecContract', {
-  // @ts-expect-error Codec declarations must be branded by defineCodecs. @plate-schema-adoption-negative-codec
-  codecs: () => ({
-    'text/html': {
+definePlugin('rawHtmlMappingContract', {
+  // @ts-expect-error Format declarations must be branded by defineFormats. @plate-schema-adoption-negative-format
+  formats: () => ({
+    html: {
       decode: () => true,
       decodeOnly: true,
       match: [{ tag: 'strong' }],
@@ -596,11 +621,11 @@ definePlugin('rawHtmlCodecContract', {
   }),
 });
 
-definePlugin('tupleHtmlCodecContract', {
+definePlugin('tupleHtmlMappingContract', {
   schema: { mark: property.boolean() },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': [
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: [
         {
           decode: () => true,
           decodeOnly: true,
@@ -617,10 +642,10 @@ definePlugin('tupleHtmlCodecContract', {
 
 definePlugin('invalidHtmlMarkOutput', {
   schema: { mark: property.boolean() },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
+  formats: ({ defineFormats }) =>
+    defineFormats({
       // @ts-expect-error Mark encoders return a childless wrapper with a tag.
-      'text/html': {
+      html: {
         decode: () => true,
         encode: () => ({ style: { fontWeight: 'bold' } }),
         match: [{ tag: 'strong' }],
@@ -636,9 +661,9 @@ const HtmlAlignContractPlugin = definePlugin('htmlAlignContract', {
       }),
     },
   },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => element.style.textAlign || undefined,
         encode: ({ node, value }) => {
           const exactType: string = node.type;
@@ -664,10 +689,10 @@ definePlugin('invalidHtmlPropertyOutput', {
       }),
     },
   },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
+  formats: ({ defineFormats }) =>
+    defineFormats({
       // @ts-expect-error Ordinary element-property encoders cannot replace the tag.
-      'text/html': {
+      html: {
         decode: () => 'left',
         encode: () => ({ tag: 'p' }),
         match: [{ style: { textAlign: '*' } }],
@@ -687,9 +712,9 @@ const HtmlListContractPlugin = definePlugin('htmlListContract', {
     },
   },
   targetPlugins: [HtmlParagraphContractPlugin],
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         createsElement: true,
         decode: ({ element }) => ({
           listStart: Number(element.getAttribute('start')) || undefined,
@@ -739,9 +764,9 @@ const HtmlMixedListContractPlugin = definePlugin('htmlMixedListContract', {
     },
   },
   targetPlugins: [HtmlParagraphContractPlugin],
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': [
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: [
         {
           createsElement: true,
           decode: ({ element }) => ({
@@ -769,10 +794,10 @@ const HtmlMixedListContractPlugin = definePlugin('htmlMixedListContract', {
 void HtmlMixedListContractPlugin;
 
 const PrefixHtmlContractPlugin = definePlugin('prefixHtmlContract', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      // @ts-expect-error HTML codecs require exact owned schema-property keys.
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      // @ts-expect-error HTML formats require exact owned schema-property keys.
+      html: {
         decode: () => ({}),
         decodeOnly: true,
         match: [{ tag: 'p' }],
@@ -806,9 +831,9 @@ const ConfiguredHtmlForeignTarget = definePlugin(
 ).configure({});
 
 const HtmlForeignContractPlugin = definePlugin('htmlForeignContract', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs(ConfiguredHtmlForeignTarget, {
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats(ConfiguredHtmlForeignTarget, {
+      html: {
         decode: ({ element }) => ({ variant: element.dataset.variant }),
         encode: ({ content, node }) => {
           const exactType: 'configuredHtmlForeignTarget' = node.type;
@@ -827,10 +852,10 @@ const HtmlForeignContractPlugin = definePlugin('htmlForeignContract', {
 void HtmlForeignContractPlugin;
 
 definePlugin('invalidForeignCreatesElement', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs(HtmlAlignContractPlugin, {
-      // @ts-expect-error Foreign property codecs cannot create element identity.
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats(HtmlAlignContractPlugin, {
+      // @ts-expect-error Foreign property formats cannot create element identity.
+      html: {
         createsElement: true,
         decode: () => 'left',
         encode: () => ({ style: { textAlign: 'left' } }),
@@ -839,75 +864,69 @@ definePlugin('invalidForeignCreatesElement', {
     }),
 });
 
-definePlugin('arrayCodecContract', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'application/x-array-contract': {
-        // @ts-expect-error Codec decode returns an exact ContentSlice, never an array.
-        decode: () => [{ text: 'invalid' }],
-        scope: 'document',
-      },
-    }),
+definePlugin('arrayFormatContract', {
+  dataTransferFormats: [
+    {
+      mimeType: 'application/x-array-contract',
+      // @ts-expect-error DataTransfer decode returns an exact ContentSlice, never an array.
+      decode: () => [{ text: 'invalid' }],
+      scope: 'document',
+    },
+  ],
 });
 
-const manualIdentityCodec = {
-  'application/x-identity-contract': {
+const manualIdentityFormat = [
+  {
     decode: () => null,
+    mimeType: 'application/x-identity-contract',
     owner: 'manual',
     scope: 'document',
   },
-} as const;
+] as const;
 
-definePlugin('identityCodecContract', {
-  codecs: ({ defineCodecs }) =>
-    // @ts-expect-error Codec owner identity is inferred from the plugin.
-    defineCodecs(manualIdentityCodec),
+definePlugin('identityFormatContract', {
+  // @ts-expect-error DataTransfer format owner identity is inferred from the plugin.
+  dataTransferFormats: manualIdentityFormat,
 });
 
 definePlugin('invalidGenericHtmlContract', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      // @ts-expect-error Generic product codecs cannot claim text/html.
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      // @ts-expect-error Generic product formats cannot claim text/html.
+      html: {
         decode: () => null,
         scope: 'document',
       },
     }),
 });
 
-definePlugin('documentMarkdownCodecContract', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/markdown': {
-        decode: ({ data }) => ContentSlice.closed([{ text: data }]),
-        scope: 'document',
-      },
-    }),
+definePlugin('documentMarkdownFormatContract', {
+  dataTransferFormats: [
+    {
+      mimeType: 'text/markdown',
+      decode: ({ data }) => ({
+        diagnostics: [],
+        ok: true,
+        slice: ContentSlice.closed([{ text: data }]),
+      }),
+      scope: 'document',
+    },
+  ],
 });
 
-definePlugin('invalidUnscopedMarkdownCodecContract', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      // @ts-expect-error Document Markdown codecs require document scope.
-      'text/markdown': {
-        decode: ({ data }) => ContentSlice.closed([{ text: data }]),
-      },
-    }),
-});
+const ConfiguredFormatContractPlugin = FormatContractPlugin.configure({});
 
-const ConfiguredCodecContractPlugin = CodecContractPlugin.configure({});
-
-// @ts-expect-error Consumer configuration is terminal for codec authoring.
-ConfiguredCodecContractPlugin.extend(({ defineCodecs }) => ({
-  codecs: defineCodecs({}),
+// @ts-expect-error Consumer configuration is terminal for format authoring.
+ConfiguredFormatContractPlugin.extend(({ defineFormats }) => ({
+  formats: defineFormats({}),
 }));
 
 const ConfiguredHtmlContractPlugin = HtmlParagraphContractPlugin.configure({});
 
-// @ts-expect-error Consumer configuration is terminal for HTML codec authoring.
-ConfiguredHtmlContractPlugin.extend(({ defineCodecs }) => ({
-  codecs: defineCodecs({
-    'text/html': {
+// @ts-expect-error Consumer configuration is terminal for HTML format authoring.
+ConfiguredHtmlContractPlugin.extend(({ defineFormats }) => ({
+  formats: defineFormats({
+    html: {
       decode: () => ({}),
       decodeOnly: true,
       match: [{ tag: 'p' }],
@@ -1376,8 +1395,8 @@ basePlateEditor.plugin(BoldPlugin).store.get().enabled = 'yes';
 // @ts-expect-error consumer portals do not expose callback-only editor context
 void basePlateEditor.plugin(BoldPlugin).editor;
 
-// @ts-expect-error consumer portals do not expose codec authoring helpers
-void basePlateEditor.plugin(BoldPlugin).defineCodecs;
+// @ts-expect-error consumer portals do not expose format authoring helpers
+void basePlateEditor.plugin(BoldPlugin).defineFormats;
 
 const originalOverridePortalApi = overrideEditor.plugin(
   OriginalOverridePlugin

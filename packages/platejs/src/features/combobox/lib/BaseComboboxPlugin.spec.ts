@@ -183,8 +183,6 @@ describe('combobox input completion', () => {
         throw new Error('foreign');
       })
     ).toBe(false);
-    expect(combobox.api.undo(input)).toBe(false);
-    expect(combobox.api.redo(input)).toBe(false);
     expect(editor.read.children()).toEqual(before);
     editor.runtime.userId = 'owner';
     expect(combobox.read.canEdit(input)).toBe(true);
@@ -260,11 +258,11 @@ describe('combobox input completion', () => {
     expect(editor.read.lastCommit()!.version).toBe(version);
   });
 
-  it('supports undo from the input and a fresh renderer after history restores it', () => {
+  it('supports a fresh renderer after history restores the input', async () => {
     const { editor, input, combobox } = setup();
-    expect(combobox.api.undo(input)).toBe(true);
+    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(combobox.api.cancel(input, { text: '@stale' })).toBe(false);
-    editor.api.history.redo();
+    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
     const restored = editor.key(editor.read.children()[1].children[1]);
     expect(
       editor.plugin(BaseComboboxPlugin).api.cancel(restored, { text: '@fresh' })

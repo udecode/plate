@@ -1,5 +1,5 @@
 import { type Descendant, definePlugin, schema } from 'plitejs';
-import { domCommands, parseDOMClipboardHtml } from 'plitejs/dom';
+import { domCommands } from 'plitejs/dom';
 import { jsx } from 'plitejs/hyperscript';
 
 import { failInvariant } from '../../../../../lib/failInvariant';
@@ -8,6 +8,7 @@ import type {
   CustomElementType,
   CustomText,
 } from './custom-types.d';
+import { parseExampleHtml } from './parse-html';
 
 interface ElementAttributes {
   type: CustomElementType;
@@ -110,7 +111,7 @@ export const isPlainTextClipboardHtml = (html: string, text: string) => {
     return !!text;
   }
 
-  const parsed = parseDOMClipboardHtml(html);
+  const parsed = parseExampleHtml(html);
 
   return parsed.body.textContent === text && parsed.body.children.length === 0;
 };
@@ -690,7 +691,7 @@ export const html = () =>
         // Prediction/autocorrect paste can carry plain text as identical or wrapper-only HTML.
         if (isPlainTextClipboardHtml(innerHtml, text)) return next();
 
-        const parsed = parseDOMClipboardHtml(innerHtml);
+        const parsed = parseExampleHtml(innerHtml);
         const deserialized = deserialize(
           getCommentBoundedFragmentRoot(parsed.body)
         );

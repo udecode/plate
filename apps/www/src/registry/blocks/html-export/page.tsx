@@ -113,8 +113,8 @@ export default async function HtmlExportBlock() {
   const theme = 'light';
 
   // Get the editor content HTML using EditorStatic
-  const editorHtml = await renderStaticHtml(editor, {
-    editorComponent: EditorStatic,
+  const { data: editorHtml } = await renderStaticHtml(editor, {
+    component: EditorStatic,
     props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
   });
 

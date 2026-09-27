@@ -1,4 +1,5 @@
 import type { EditorNodeTypeProvider } from '../interfaces/editor';
+import type { EditorJsonValue } from '../interfaces/json';
 import type {
   EditorSchemaDeclaration,
   EditorSchemaDerivedDefinition,
@@ -8,7 +9,6 @@ import type {
   PropertyEnumDescriptor,
   PropertyJsonDescriptor,
   PropertyJsonOptions,
-  PropertyJsonValue,
   PropertyNumberDescriptor,
   PropertyBooleanDescriptor,
   PropertySetDescriptor,
@@ -612,15 +612,15 @@ const defineEnum = <
 };
 
 type PropertyJsonOptionsWithoutValidation = Readonly<{
-  default?: PropertyJsonValue;
-  generate?: () => PropertyJsonValue;
+  default?: EditorJsonValue;
+  generate?: () => EditorJsonValue;
   omitDefault?: boolean;
   required?: boolean;
   validate?: never;
   validationVersion?: never;
 }>;
 
-type JsonValueGuard = (value: unknown) => value is PropertyJsonValue;
+type JsonValueGuard = (value: unknown) => value is EditorJsonValue;
 
 type GuardedJsonValue<TGuard extends JsonValueGuard> = TGuard extends ((
   value: unknown
@@ -629,8 +629,8 @@ type GuardedJsonValue<TGuard extends JsonValueGuard> = TGuard extends ((
   : never;
 
 type PropertyJsonOptionsWithValidation = Readonly<{
-  default?: PropertyJsonValue;
-  generate?: () => PropertyJsonValue;
+  default?: EditorJsonValue;
+  generate?: () => EditorJsonValue;
   omitDefault?: boolean;
   required?: boolean;
   validate: JsonValueGuard;
@@ -641,7 +641,7 @@ function defineJson<
   const TOptions extends PropertyJsonOptionsWithoutValidation = {},
 >(
   options?: PropertyJsonOptionsWithoutValidation & TOptions
-): PropertyJsonDescriptor<PropertyJsonValue, TOptions>;
+): PropertyJsonDescriptor<EditorJsonValue, TOptions>;
 function defineJson<const TOptions extends PropertyJsonOptionsWithValidation>(
   options: TOptions &
     Readonly<{
@@ -652,7 +652,7 @@ function defineJson<const TOptions extends PropertyJsonOptionsWithValidation>(
   TOptions & PropertyValueOptions<GuardedJsonValue<TOptions['validate']>>
 >;
 function defineJson<
-  TValue = PropertyJsonValue,
+  TValue = EditorJsonValue,
   const TOptions extends PropertyJsonOptions<TValue> = {},
 >(
   options: PropertyJsonOptions<TValue> = {}
@@ -778,12 +778,12 @@ type SchemaElementContentOptions = Omit<SchemaContentOptions, 'default'>;
 type PrefixElementSource = string | Readonly<{ name: string }>;
 type PrefixInput = Readonly<{
   element: PrefixElementSource;
-  properties?: Readonly<Record<string, PropertyJsonValue>>;
+  properties?: Readonly<Record<string, EditorJsonValue>>;
 }>;
 type PrefixSourceProperties<TSource> =
   TSource extends EditorNodeTypeProvider<infer TElement, infer _TText>
     ? Omit<ReturnType<TElement>, 'children' | 'type'>
-    : Readonly<Record<string, PropertyJsonValue>>;
+    : Readonly<Record<string, EditorJsonValue>>;
 type CheckedPrefixInput<TInput> =
   TInput extends Readonly<{
     element: infer TSource;

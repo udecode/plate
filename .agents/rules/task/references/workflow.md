@@ -113,8 +113,8 @@ own durable product law; local code and proof establish current behavior.
 An audit inspects its whole named scope and records findings. Product repairs
 require implementation authority. A named workflow repair may fix the owned
 instructions or helper that failed. Protect vendor/package skills and every
-Next dev loop copy. Edit `.agents/AGENTS.md`, `.agents/rules/` and project
-templates; regenerate with `pnpm install`. Shared skill edits belong in Dotai,
+Next dev loop copy. Edit `AGENTS.md`, `.agents/rules/` and project templates;
+regenerate agent-specific outputs with one Skiller apply. Shared skill edits belong in Dotai,
 followed by a named install. Never hand-edit generated skill mirrors.
 
 Before nontrivial source mutation, check only `git branch --show-current`.

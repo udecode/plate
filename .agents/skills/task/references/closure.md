@@ -148,7 +148,7 @@ closure until the changes are actually in this checkout and proof runs here.
 Resolve the in-scope coherence findings and applicable proof:
 
 1. **Requirement checkpoint:** read latest user request, active plan, root
-   `VISION.md`, `.agents/AGENTS.md`, and the relevant `docs/vision/*.md`.
+   `VISION.md`, `AGENTS.md`, and the relevant `docs/vision/*.md`.
 2. **Changed-surface map:** list changed files, untracked files, generated
    outputs, package exports, docs, tests, examples, agent rules, and browser
    surfaces in scope. For PR/range targets not applied to this checkout, use

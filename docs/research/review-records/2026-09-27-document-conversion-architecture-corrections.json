@@ -1,0 +1,163 @@
+{
+  "id": "2026-09-27-document-conversion-architecture-corrections",
+  "kind": "execution",
+  "date": "2026-09-27",
+  "scopes": [
+    "imports",
+    "exports"
+  ],
+  "reviewBasis": [
+    "2026-09-27-imports-adversarial-audit-feedback",
+    "2026-09-27-exports-adversarial-audit-feedback"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-27-document-conversion-architecture-corrections.md",
+    "sha256": "3c1f45b5cbecdaddd14cacb88711c57c6d4c606f0daa50e0de8738f2a40c935a"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Unified document conversion around format-owned parse and serialize operations, one inert HTML admission path, exact reported transfer loss, explicit Markdown document/slice/inline jobs, finalized AI output ownership, detached DOCX lifecycle, canonical proposed-coordinate export attachments, atomic Comments replacement, and flat typed persistence. Registry imports prepare a complete replacement editor and swap ownership only after document, comments, users, and retained source are ready.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-27-document-conversion-architecture-corrections.md",
+        "sha256": "3c1f45b5cbecdaddd14cacb88711c57c6d4c606f0daa50e0de8738f2a40c935a",
+        "claim": "Records the completed architecture, adoption slices, exact verification counts, final adversarial review, registry fingerprint, and proof limits."
+      },
+      {
+        "path": "packages/plitejs/test/dom/data-transfer-format.test.ts",
+        "sha256": "e0900919fe0895474c2cfd2da5987228a8e669c3a5d7464d2c1e666233ecef65",
+        "claim": "The final source passed the focused Plite data-transfer contract tests for exact slices and reported fallback or loss."
+      },
+      {
+        "path": "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts",
+        "sha256": "55191a2421cc0a01c1e53fdabbd2838e9554a94d62b6c9b62fafc6211c77242d",
+        "claim": "The final source passed 214 Markdown tests covering document, slice, inline, diagnostics, and installed typed API behavior."
+      },
+      {
+        "path": "packages/platejs/src/ai/react/AIChatPlugin.spec.ts",
+        "sha256": "216e87f9c7a9dd7394b04d00d9df4785c34bd445c5e6a1084ad967cafe2c6021",
+        "claim": "The final source passed 85 AI React tests covering preview and finalized conversion ownership."
+      },
+      {
+        "path": "packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts",
+        "sha256": "6e815ae8554cc20aa8545ed535482ecc7f8f02440df006e48eae4ab4353fd002",
+        "claim": "The final source passed 57 Comments tests, including atomic snapshot replacement before attachment notification."
+      },
+      {
+        "path": "packages/platejs/src/docx/import/lib/importDocx.spec.ts",
+        "sha256": "0439b93a6db6da9f1ab8be66eec9597a43933a32e6a2c1c32e767beabfa0933a",
+        "claim": "The final source passed 21 DOCX import tests covering detached compilation, cancellation, source retention, and diagnostics."
+      },
+      {
+        "path": "packages/platejs/src/docx/export/lib/exportDocx.spec.ts",
+        "sha256": "d5d869f3bbf39cf5adfd4b9e38fb3e67c8deeb261b63996ff6cdf2e955edcd95",
+        "claim": "The final source passed 107 DOCX export tests covering projection, comments, cancellation, source reuse, and package output."
+      },
+      {
+        "path": "apps/www/src/registry/components/editor/import-toolbar-button.spec.tsx",
+        "sha256": "2e39928b1b074067771da21c68596aed23d0e551664293bbebc061f1642a3dba",
+        "claim": "The final source passed the detached import regressions: failed candidates preserve the mounted editor and dispose retained source; successful candidates preserve mounted document and history."
+      },
+      {
+        "path": "apps/www/src/registry/components/editor/export-toolbar-button.spec.tsx",
+        "sha256": "aaaec48cc72456961e8dba9d47314a1059d9aa434ff71a77040e22a15f11a92c",
+        "claim": "The final source passed the export integration regression proving comment targets are read in canonical proposed coordinates."
+      },
+      {
+        "path": "apps/www/tests/browser/clipboard.spec.ts",
+        "sha256": "9567f40de901d5e5804e7dcb6fffa6620476218af65c4870ce4eb5791b6aa686",
+        "claim": "Chromium passed 2 clipboard conversion interactions on the final conversion source."
+      },
+      {
+        "path": "apps/www/tests/browser/ai-session.spec.ts",
+        "sha256": "bd71757945d99fda5c1b1366c82ede161a12bafbada2322275d3d0d0fcd652a4",
+        "claim": "Chromium passed 18 AI session interactions on the final conversion source."
+      },
+      {
+        "path": "apps/www/tests/browser/docx.spec.ts",
+        "sha256": "27884d7ac1dab3a87ec19e0d1f0a8d3bf1a8d0e265709d0b05b12f296911ad12",
+        "claim": "Chromium passed 3 DOCX interactions: invalid-file atomicity, import/export, and one projection across formats."
+      },
+      {
+        "path": ".agents/rules/plate-next/versions.json",
+        "sha256": "ddf83ba3c8284f1118ad585f4beec8ed23fa849cfadf0d40cf7491bf6e594ae7",
+        "claim": "Plate Next v243 validates the editor-owner replacement doctrine and preserves immutable prior versions."
+      }
+    ],
+    "limits": "Verification is bound to this uncommitted local checkout. No pushed-ref, clean-checkout, release, Firefox/WebKit, native Word viewer, or production deployment proof was run. Third-party converter internals are covered through Plate boundaries rather than independently verified."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "e870acf92410760dbaf6d3a7e9e14f1d8c5d66fe09ac70d98c3d12a9347c38a5",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "e7441d6b258778a4a13935376509f5e6d0056aa1ae117d0e39aa5838a42fbd90",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "edcaac0ea46dc7f0691dd925f68186ec84f6fbb4e20af08919b5b00446bc9ac2",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "999850e12b5fbd28d2287c194b469deb7f631a5598fbbc16fafda397beab2318",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "08f10d9848e4ff0c5562c53b0de522305d757140ce568d840084a1fbbf811450",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "ce017969c0a1d0f5798538c9274348a6dbb65b0d91a3024bc85bb8037948a3b0",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts": "f4463f4d80f5e3abef0747bad380e2f732d4196ec4137ce16dee5a6718561710",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "55191a2421cc0a01c1e53fdabbd2838e9554a94d62b6c9b62fafc6211c77242d",
+      "packages/platejs/src/docx/import/lib/importDocx.spec.ts": "0439b93a6db6da9f1ab8be66eec9597a43933a32e6a2c1c32e767beabfa0933a",
+      "docs/analysis/editor-architecture-candidates.md": "14a88723e948ca14db76a0a585c0c5561c1d396abb5ade4ba8d31c620e79765d",
+      "docs/research/decisions/documents-conversion-fidelity.md": "5fb0180c2b81cfae47ed40abd33e344f5685a6e684219dbd558d05235c4d065d",
+      "docs/research/decisions/persistence-ownership.md": "ba8d50f5450f067eb6f3ea0096ee7fd408be03da09fbbb8c18df5df0d4138866",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "6e9232116ec17850ea276145afc73a9f424b5a3d91b49d0bd4e24aa4f030a1da",
+      "packages/platejs/src/static/deserialize/htmlStringToEditorDOM.ts": "37598aeff4da1e7d3308f851185ac933657672d967817f1faedc7925f22dcc32",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "dffc576c3a974de9d6a4240a6769a5fb25ae62e340a481634a139ffc3da274ad",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "77787a74cbf9d9d79d8edf7f22f18570e8e6c6969fbda188006252a5a9800345",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "4d30d2506f7a5c0ad61659fe406e9ff204faaa91783ec169a7061167b1390395",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "856a1765f506f1d1df06d897bff42628b7238e0ed8b73cba5aaaf57b23f267e3",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "b21beeb5201fc81061493957b2e4177b92a74859f1f65e9304e2c7675fc971af",
+      "packages/plitejs/src/core/persisted-document.ts": "e605b0ed6d719d0b68f393bf531bd64e257fbe402851c77463fbbfac40281575",
+      "packages/platejs/src/migrations/documentMigrations.ts": "6a823432296edd3372d0e79aa0186f2ef10ce461b57801264302e6485bae5a99",
+      "content/docs/(guides)/serializing.mdx": "df772d4f701ccc2bcca35fff60797c31694aa564ba14ac912ee0d5111efe43f1",
+      "content/docs/(plugins)/(serializing)/html.mdx": "848c032261951da9328e48255f872505f08d5733666a2e8ceaf36f9f15039d09",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "d4d152787dcc55a452e1b9d4e1c26bcee58e46348b5ef99778230c034c0c067c",
+      "content/docs/(plugins)/(serializing)/docx.mdx": "e34d1299002a355297c9d91235e73625917c93c7702d1806540af99fff9dac40",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "fc434e928ce02e264a2060c3a0ad4b0a18c5b3f4824d1a4afa39c2a269bf0181",
+      "apps/www/src/registry/examples/docx-demo.tsx": "4df0970d5c0eaab610d8789c0dd654fbb46b871a84107f0d6addc5bf5c502afd",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "3f372041ba2ce7c7fa5a4d185798223fa36e462dc129fd91e622da49ba0334ae",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "86497d4b05fda7a51d6389e21f89731a1ddaefc714765c4b93e48713c554523b",
+      "packages/platejs/type-tests/authored-format-contracts.ts": "d32099f041187ddd3be56bce9f956d4226c4e3d0341a578da8dac874880369ff",
+      "packages/plitejs/src/authored/format.ts": "eaa1a2e0ce3cedeea9df0a9f6241214c08cfc97776038a833fac5567770b706c",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/registry-editor.ts": "95491326193b354802a076551bb117fc05f2f1431bd29f4635dac7e4a6b80cf4",
+      "content/docs/examples/export.mdx": "ea8211b880a268e0c1eb81c7efcbcb31f866f0d84c5204da14813d2f24cfc255",
+      "content/docs/(guides)/authored-changes.mdx": "fe2c368f18bdc0aaa40753d3c6ce98efdf0bebe5e85be54d00aee8dffdbd8223",
+      "docs/vision/plate.md": "a3f981f0083ae1a3cbce0b248a00b0643499ae623712b758d339fc51ba2a2d84",
+      "docs/vision/plite.md": "88b094f95aa0231a645eec7aee346a6a714e4cf1075eb2c611d0b0da56fb1812",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "apps/www/src/registry/components/editor/docx-export.tsx": "85830dfdc863f1fe81778e52e755852c9605a9e722c964f9a0bb3d9c7a76abbe",
+      "apps/www/src/app/(app)/docs/examples/server-side/page.tsx": "4c2106f553a327308910078ad5ff6b5d543044815bf16782753d6f47e6166270",
+      "packages/platejs/src/static/editor/withStatic.tsx": "a7049ff7b1f5a91235238bb502a9c39c05220eebcb6d74c85afaff9467e70d33",
+      "packages/platejs/src/static/components/PlateStatic.tsx": "d6f8e0684e0fbd3030382abbf5823b00f5e71cfee7690f0ea190bc8c33eded80",
+      "packages/platejs/src/lib/editor/withPlite.ts": "96a647990ffc886a1bb0e8843bf9085fe77215724cdf5b8a9ce4ff9b428a32f4",
+      "packages/platejs/src/internal/plugin/compilePlateModel.ts": "326cd9dae47df6c70342e74032a02807caa947cf1007b25c730af0fa12f61793",
+      "packages/platejs/src/internal/plugin/compilePlateFormats.ts": "6eae7b90a4a90cba006a162ac1c16b5a895cbb2c8cb43378f090e931ba8df2f9",
+      "packages/platejs/src/markdown/lib/types.ts": "52aa5d0fe69c70d226eb96cde8bcce57622b83475bebd02762cb83e644dd592a",
+      "packages/plitejs/src/authored/checkpoint.ts": "adadcfedbd7a0c75d4cec96af91f7665091155ee3613148832c7bdf023925b2a",
+      "content/docs/api/node.mdx": "6cf96d7dfb56d46a82ec64d540ec7ee3355a2756dca5b3b7444bc729592f5008",
+      "packages/plitejs/src/interfaces/node.ts": "e75fafa20ae004deb7db029c784bd30323408bea5fd244905a2018c626b96166",
+      "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts": "aa22f99721147952c479ff627d800fc634b7650f24e46f7ebeb7d683db24d764",
+      "packages/platejs/src/react/features/table/TablePlugin.tsx": "b1ab39fbb540828b32839c1123a5b6fec45d622f55032c73f00db6e36984a26a",
+      "packages/platejs/src/static/renderStaticHtml.node-props.spec.ts": "3f117091c0d4225cf97e3bf29413931cb94a21e0163e4a08f23eb3b498395e53",
+      "docs/plite/research/2026-09-24-export-architecture/shards/002-final-reassessment.md": "612865507a714a57495d19399a63fc79c4329c68381c0837b989209b9b79e0b4"
+    },
+    "directories": {},
+    "features": {
+      "example/plite/parse-html": "8ebfcea1d39948b0fd313147864130c49ad8bfe56035bdeb84a2c37c0304fc66",
+      "plitejs/core/plain-text": "a1ced6bc55a354d3c2a5fee11384907e01b7c913af4a2ef95939ee752bf9c92b",
+      "ui/export-toolbar-button": "9cc42e7754393c96a7275858520c7fd836cd762cadd1f3964ead22455a45ed7f"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-27-document-conversion-architecture-corrections.md"
+  ]
+}

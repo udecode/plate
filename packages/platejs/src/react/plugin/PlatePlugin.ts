@@ -30,7 +30,7 @@ import type {
   BasePluginDefinitionInput,
   BaseTransformOptions,
   ConfiguredPluginDescriptor,
-  DefinePluginCodecs,
+  DefinePluginFormats,
   EditOnlyConfig,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
@@ -53,7 +53,6 @@ import type {
   PluginUpdate,
   PluginBaseContext,
   PluginPortalContext,
-  PluginCodecMapDeclaration,
   PluginDefinitionWitness,
   PluginReference,
   PluginSelectorMethods,
@@ -230,7 +229,7 @@ export type PluginPortal<
 
 /** Type-erased React authoring context used while compiling callbacks. */
 export type AnyPluginContext = Omit<DynamicPluginPortal, 'schema'> & {
-  readonly defineCodecs: AnyBasePluginContext['defineCodecs'];
+  readonly defineFormats: AnyBasePluginContext['defineFormats'];
   readonly editor: Editor;
   readonly plugin: AnyResolvedPlugin;
   readonly schema: AnyBasePluginContext['schema'];
@@ -240,7 +239,7 @@ export type PluginContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = Omit<PluginPortal<C>, keyof PluginBaseContext<C>> &
   PluginBaseContext<C> & {
-    defineCodecs: DefinePluginCodecs<C>;
+    defineFormats: DefinePluginFormats<C>;
     editor: PluginContextEditor<C> &
       Readonly<{
         api: Readonly<Record<C['name'], InferApi<C>>>;
@@ -503,7 +502,8 @@ export type Shortcuts = Record<string, Shortcut | null | undefined>;
 type PluginAuthorFields<C extends AnyBasePluginDefinition> = Omit<
   BasePluginDefinitionInput<C>,
   | 'api'
-  | 'codecs'
+  | 'dataTransferFormats'
+  | 'formats'
   | 'component'
   | 'decorate'
   | 'dependencies'
@@ -517,9 +517,8 @@ type PluginAuthorFields<C extends AnyBasePluginDefinition> = Omit<
   | 'update'
 > & {
   api?: (context: PluginContext<C>) => InferApi<C>;
-  codecs?:
-    | PluginCodecMapDeclaration
-    | ((context: PluginContext<C>) => PluginCodecMapDeclaration);
+  dataTransferFormats?: BasePluginDefinitionInput<C>['dataTransferFormats'];
+  formats?: BasePluginDefinitionInput<C>['formats'];
   component?: NodeComponent;
   decorate?: Decorate<C>;
   dependencies?: AnyBasePlugin['dependencies'];

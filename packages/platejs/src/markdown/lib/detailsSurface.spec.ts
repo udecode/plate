@@ -1,4 +1,8 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 
 describe('markdown Details surface', () => {
   it('round-trips nested Details with direct body blocks', () => {
@@ -16,7 +20,7 @@ describe('markdown Details surface', () => {
 </details>
 `;
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -35,7 +39,7 @@ describe('markdown Details surface', () => {
       },
     ]);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(`<details>
   <summary>
@@ -53,18 +57,19 @@ describe('markdown Details surface', () => {
   </details>
 </details>
 `);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
   it('ignores persisted disclosure attributes', () => {
     const editor = createTestEditor();
-    const value = editor.api.markdown.deserialize(
+    const value = parseTestMarkdown(
+      editor,
       '<details open name="shared">\n  <summary>Summary</summary>\n\n  Body\n</details>'
     );
 
     expect(value.children[0]).not.toHaveProperty('open');
     expect(value.children[0]).not.toHaveProperty('name');
-    expect(editor.api.markdown.serialize({ value })).toBe(
+    expect(serializeTestMarkdown(editor, { document: value }).data).toBe(
       '<details>\n  <summary>\n    Summary\n  </summary>\n\n  Body\n</details>\n'
     );
   });

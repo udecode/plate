@@ -355,6 +355,38 @@ describe('required document prefix', () => {
     ]);
   });
 
+  it('fits open multiline text into positional prefix slots', () => {
+    const editor = createEditor({
+      plugins: [PrefixSchema],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Body'),
+      ],
+    });
+    const openText = ContentSlice.fromJSON({
+      content: [
+        { children: [{ text: 'Alpha' }], level: 1, type: 'heading' },
+        { children: [{ text: 'Beta' }], level: 1, type: 'heading' },
+      ],
+      openEnd: 1,
+      openStart: 1,
+    });
+
+    assert.equal(
+      editor.update.slice.replace(openText, {
+        at: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 4, path: [1, 0] },
+        },
+      }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'Alpha' }], level: 1, type: 'heading' },
+      paragraph('Beta'),
+    ]);
+  });
+
   it('reconstructs a removed required slot even when later siblings meet the minimum', () => {
     for (const removed of [0, 1]) {
       const initialValue = [

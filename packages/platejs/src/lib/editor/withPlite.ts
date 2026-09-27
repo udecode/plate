@@ -1,10 +1,15 @@
 import type { EditorStateField } from 'plitejs';
 import {
-  compileEditorSchemaCapabilityEntries,
+  cloneEditorJsonValue,
   type CompiledEditorSchema,
+  createDetachedEditorSchema,
+  getEditorAuthoredDocumentCapability,
   initializePluginEntries,
   type InternalPluginPublicationEntry,
   type NativeAuthoredDocumentCapability,
+  type NativeAuthoredDocumentProjection,
+  withCompiledEditorSchemaCapabilityEntries,
+  withEditorDocumentProjection,
   withPluginPortalCandidates,
 } from 'plitejs/internal';
 
@@ -14,7 +19,9 @@ import {
   defineRuntimePlugin,
   defineEditorSchema,
   type Editor as RuntimeEditor,
+  type EditorCoreStateView,
   type EditorDocumentValue,
+  type EditorStateSchemaApi,
   type EditorSchemaContract,
   type RuntimePluginReference,
   type EditorLifecycleErrorSink,
@@ -32,7 +39,7 @@ import {
   setEditorTransactionViewTransform,
 } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
-import { compilePlateCodecs } from '../../internal/plugin/compilePlateCodecs';
+import { compilePlateFormats } from '../../internal/plugin/compilePlateFormats';
 import {
   attachPlateModelPublication,
   applyEditorApplicationSchema,
@@ -416,6 +423,8 @@ const createPlateSchemaPlugins = (
   model: ReturnType<typeof compilePlateModel>,
   pluginList: readonly AnyBasePlugin[],
   runtimePlugins: readonly RuntimePluginReference[],
+  publicationSchema: EditorApplicationSchema | undefined,
+  pluginInputs: readonly RuntimePluginReference[],
   applicationSchema?: ReturnType<typeof compileEditorApplicationSchema>,
   applicationName?: string
 ): readonly InternalPluginPublicationEntry[] => {
@@ -438,7 +447,7 @@ const createPlateSchemaPlugins = (
           version: identityOptions.version,
         })
       : defineEditorSchema('schema:derived', definition);
-  const { codecPlugin, runtime } = withCompiledPlateModelCandidate(
+  const { formatPlugins, runtime } = withCompiledPlateModelCandidate(
     editor,
     model,
     () => {
@@ -451,7 +460,7 @@ const createPlateSchemaPlugins = (
       );
 
       return {
-        codecPlugin: compilePlateCodecs(editor, model, pluginList),
+        formatPlugins: compilePlateFormats(editor, model, pluginList),
         runtime: innerRuntime,
       };
     }
@@ -478,6 +487,8 @@ const createPlateSchemaPlugins = (
       publication ??= createPlateModelPublication(
         editor,
         identityOptions ?? null,
+        publicationSchema,
+        pluginInputs,
         model,
         pluginList,
         schemaApi,
@@ -495,7 +506,7 @@ const createPlateSchemaPlugins = (
     ...runtimePlugins.map((plugin) => ({ plugin })),
     ...(applicationSchemaPlugin ? [{ plugin: applicationSchemaPlugin }] : []),
     { plugin: modelPlugin },
-    ...(codecPlugin ? [{ plugin: codecPlugin }] : []),
+    ...formatPlugins.map((plugin) => ({ plugin })),
   ]);
 };
 
@@ -504,6 +515,7 @@ const createPlateConfiguration = (
   identity: EditorSchemaIdentity | undefined,
   pluginList: readonly AnyBasePlugin[],
   plugins: readonly RuntimePluginReference[],
+  userPlugins: readonly BasePluginInput[],
   schema?: EditorApplicationSchema
 ) =>
   withCompiledPlatePluginCandidate(editor, pluginList, () => {
@@ -522,6 +534,8 @@ const createPlateConfiguration = (
       model,
       pluginList,
       plugins,
+      schema,
+      Object.freeze([...userPlugins, ...plugins]),
       applicationSchema,
       schema?.id
     );
@@ -650,6 +664,7 @@ const installPlateRuntimePlugins = (
   editor: Editor,
   identity: EditorSchemaIdentity | undefined,
   plugins: readonly RuntimePluginReference[],
+  userPlugins: readonly BasePluginInput[],
   initialization?: Readonly<{
     initialize?: (tx: EditorTransactionSpecBuilder<Value, any>) => void;
     initialValue?: () => SnapshotInput;
@@ -664,6 +679,7 @@ const installPlateRuntimePlugins = (
       identity,
       getPlateRuntime(editor).pluginList,
       plugins,
+      userPlugins,
       schema
     );
 
@@ -951,6 +967,7 @@ const prepareInitialPlatePlugins = (
     return {
       identity,
       restore,
+      userPlugins: sourcePlugins.user,
       withSchemaCandidate: <T>(run: () => T): T =>
         withPlatePluginPortalCandidates(editor, sourcePlugins, () =>
           withEditorApplicationSchemaCandidate(
@@ -1021,7 +1038,7 @@ export const applyEditor = <
       },
       pluginConfig
     );
-    const { identity } = prepared;
+    const { identity, userPlugins } = prepared;
 
     prepared.withSchemaCandidate(() => {
       installPlateRuntimePlugins(
@@ -1033,6 +1050,7 @@ export const applyEditor = <
             })
           : undefined,
         pluginInputs.runtime,
+        userPlugins,
         skipInitialization
           ? undefined
           : {
@@ -1097,13 +1115,16 @@ export type PlateEditorTargetCompilation = Readonly<{
   schema: CompiledEditorSchema;
 }>;
 
-/** @internal */
-export const compilePlateEditorTarget = (
+type PlateEditorTargetCompilationContext = PlateEditorTargetCompilation &
+  Readonly<{ editor: Editor }>;
+
+const withPlateEditorTargetCompilation = <T>(
   options: Pick<
     EditorOptions<readonly RuntimePluginReference[]>,
     'plugins' | 'schema'
-  >
-): PlateEditorTargetCompilation => {
+  >,
+  run: (context: PlateEditorTargetCompilationContext) => T
+): T => {
   const editor = createPliteEditor() as unknown as Editor;
   const pluginInputs = partitionPluginInputs(options.plugins ?? []);
   let prepared: ReturnType<typeof prepareInitialPlatePlugins> | undefined;
@@ -1122,48 +1143,206 @@ export const compilePlateEditorTarget = (
         current.identity,
         getPlateRuntime(editor).pluginList,
         pluginInputs.runtime,
+        current.userPlugins,
         options.schema
       );
-      const capability = withCompiledPlateModelCandidate(
-        editor,
-        configuration.model,
-        () =>
-          compileEditorSchemaCapabilityEntries(editor, configuration.entries)
+      return withCompiledPlateModelCandidate(editor, configuration.model, () =>
+        withCompiledEditorSchemaCapabilityEntries(
+          editor,
+          configuration.entries,
+          (capability) => {
+            const publication = getPlateModelPublication(editor);
+
+            if (!publication) {
+              throw new Error(
+                'Editor compilation requires a validated Plate model.'
+              );
+            }
+            const artifact: EditorCompilation = Object.freeze({
+              bindings: Object.freeze(
+                publication.model.bindings.map((binding) =>
+                  Object.freeze({
+                    ...(publication.updateMethods[binding.name]?.includes(
+                      'toggle'
+                    )
+                      ? { authoredToggle: true as const }
+                      : {}),
+                    ...(binding.propertyKey
+                      ? { key: binding.propertyKey }
+                      : {}),
+                    name: binding.name,
+                    ...(binding.elementType
+                      ? { type: binding.elementType }
+                      : {}),
+                  })
+                )
+              ),
+              schema: capability.contract,
+            });
+
+            return run(
+              Object.freeze({
+                artifact,
+                ...(capability.authored
+                  ? { authored: capability.authored }
+                  : {}),
+                editor,
+                fields: capability.fields,
+                schema: capability.schema,
+              })
+            );
+          }
+        )
       );
-      const schema = capability.contract;
-      const publication = getPlateModelPublication(editor);
-
-      if (!publication) {
-        throw new Error('Editor compilation requires a validated Plate model.');
-      }
-      const artifact: EditorCompilation = Object.freeze({
-        bindings: Object.freeze(
-          publication.model.bindings.map((binding) =>
-            Object.freeze({
-              ...(publication.updateMethods[binding.name]?.includes('toggle')
-                ? { authoredToggle: true as const }
-                : {}),
-              ...(binding.propertyKey ? { key: binding.propertyKey } : {}),
-              name: binding.name,
-              ...(binding.elementType ? { type: binding.elementType } : {}),
-            })
-          )
-        ),
-        schema,
-      });
-
-      return Object.freeze({
-        artifact,
-        ...(capability.authored ? { authored: capability.authored } : {}),
-        fields: capability.fields,
-        schema: capability.schema,
-      });
     });
   } finally {
     prepared?.restore();
     clearPlateRuntimeCandidate(editor);
   }
 };
+
+/** @internal */
+export const compilePlateEditorTarget = (
+  options: Pick<
+    EditorOptions<readonly RuntimePluginReference[]>,
+    'plugins' | 'schema'
+  >
+): PlateEditorTargetCompilation =>
+  withPlateEditorTargetCompilation(options, ({ editor: _editor, ...result }) =>
+    Object.freeze(result)
+  );
+
+const projectFormatDocument = (
+  document: EditorDocumentValue,
+  projection: 'accepted' | 'proposed' | 'review',
+  authored: NativeAuthoredDocumentCapability | undefined
+): NativeAuthoredDocumentProjection => {
+  if (document.meta?.authored === undefined) {
+    return Object.freeze({
+      diagnostics: Object.freeze([]),
+      document,
+      review: document,
+    });
+  }
+  if (!authored) {
+    throw new TypeError(
+      'Authored document projection requires the authored plugin in the editor configuration.'
+    );
+  }
+
+  return authored.project(document, projection);
+};
+
+/** Project one format document through the editor's installed authored capability. @internal */
+export const projectPlateFormatDocument = (
+  editor: Editor,
+  document: EditorDocumentValue,
+  projection: 'accepted' | 'proposed' | 'review'
+): NativeAuthoredDocumentProjection => {
+  const schema: EditorStateSchemaApi = editor.read.schema;
+
+  schema.assertDocument(document);
+  const projected = projectFormatDocument(
+    document,
+    projection,
+    getEditorAuthoredDocumentCapability(editor)
+  );
+
+  schema.assertDocument(projected.document);
+
+  return projected;
+};
+
+/** Parse one native authored envelope through the editor's installed capability. @internal */
+export const parsePlateAuthoredDocument = (
+  editor: Editor,
+  data: string
+): EditorDocumentValue => {
+  const authored = getEditorAuthoredDocumentCapability(editor);
+
+  if (!authored) {
+    throw new TypeError(
+      'Authored document parsing requires the authored plugin in the editor configuration.'
+    );
+  }
+
+  return authored.parse(data);
+};
+
+/** Run one format conversion against compiled plugin/schema facts without activation. @internal */
+export const withPlateFormatCompilation = <T>(
+  options: Pick<
+    EditorOptions<readonly RuntimePluginReference[]>,
+    'plugins' | 'schema'
+  >,
+  run: (
+    context: Readonly<{
+      editor: Editor;
+      projectDocument: (
+        document: EditorDocumentValue,
+        projection: 'accepted' | 'proposed' | 'review'
+      ) => NativeAuthoredDocumentProjection;
+      readState: <R>(read: (state: EditorCoreStateView) => R) => R;
+      readDocument: <R>(
+        document: EditorDocumentValue,
+        read: (state: EditorCoreStateView, document: EditorDocumentValue) => R
+      ) => R;
+    }>
+  ) => T
+): T =>
+  withPlateEditorTargetCompilation(options, ({ authored, editor, schema }) => {
+    const emptyDocument = Object.freeze({
+      children: Object.freeze([]),
+    }) as EditorDocumentValue;
+    const detachedSchema: ReturnType<typeof createDetachedEditorSchema> =
+      createDetachedEditorSchema(schema, emptyDocument);
+
+    return run(
+      Object.freeze({
+        editor,
+        projectDocument: (document, projection) => {
+          detachedSchema.assertDocument(document);
+          const projected = projectFormatDocument(
+            document,
+            projection,
+            authored
+          );
+
+          detachedSchema.assertDocument(projected.document);
+
+          return projected;
+        },
+        readState: (read) =>
+          editor.read((state) =>
+            read(
+              Object.freeze({
+                ...state,
+                schema: detachedSchema,
+              }) satisfies EditorCoreStateView
+            )
+          ),
+        readDocument: (document, read) => {
+          const owned = cloneEditorJsonValue(document);
+          const operationSchema: ReturnType<typeof createDetachedEditorSchema> =
+            createDetachedEditorSchema(schema, owned);
+
+          operationSchema.assertDocument(owned);
+
+          return withEditorDocumentProjection(editor, owned, () =>
+            editor.read((state) => {
+              const detachedState = Object.freeze({
+                ...state,
+                schema: operationSchema,
+                value: () => owned,
+              }) satisfies EditorCoreStateView;
+
+              return read(detachedState, owned);
+            })
+          );
+        },
+      })
+    );
+  });
 
 /** @internal */
 export const compilePlateEditor = (
@@ -1252,10 +1431,13 @@ export function createEditorWithEditor<
  * // Server-side editor with feature-owned HTML conversion
  * const editor = createEditor({
  *   plugins: [ParagraphPlugin, HtmlPlugin],
- *   initialValue: ({ editor }) =>
- *     editor.api.html.deserialize({
- *       element: '<p>HTML content</p>',
- *     }),
+ *   initialValue: ({ editor }) => {
+ *     const result = editor.api.html.parse('<p>HTML content</p>');
+ *
+ *     if (!result.ok) throw new Error(result.diagnostics[0].message);
+ *
+ *     return result.document;
+ *   },
  * });
  *
  * // Name the schema only when persisted or collaborative state needs lineage.

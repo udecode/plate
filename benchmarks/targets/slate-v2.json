@@ -1501,7 +1501,7 @@
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "Primary metric is the worst measured p95 across issue-shaped paste, copy, and cut work only. Supporting metrics isolate setup and correctness inspection, DOM encode/decode, HostCodec parse, detached fit, slice commit, changed spans, structural retention, heap deltas, retained heap with exposed GC, correctness failures, and fixed issue-budget failures. Untimed full-copy work guards require zero missing-DOM identity builds and zero preserve-only property visits."
+        "upgrade": "Primary metric is the worst measured p95 across issue-shaped paste, copy, and cut work only. Supporting metrics isolate setup and correctness inspection, DOM encode/decode, DataTransferFormat decode, detached fit, slice commit, changed spans, structural retention, heap deltas, retained heap with exposed GC, correctness failures, and fixed issue-budget failures. Untimed full-copy work guards require zero missing-DOM identity builds and zero preserve-only property visits."
       },
       "correctness": {
         "command": "bun test benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts",

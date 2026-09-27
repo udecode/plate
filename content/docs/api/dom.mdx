@@ -212,8 +212,8 @@ a plugin inserts content. The DOM adapter dispatches `domCommands.insertData`;
 typed plugin command interceptors can claim the payload, transform it, or return
 `next()` to continue. The accepted command spec commits through one transaction.
 
-The default command path reads the editor fragment format, then configured host
-codecs, then plain text.
+The default command path reads the editor fragment format, then configured
+DataTransfer formats, then plain text.
 
 #### `editor.api.dom.clipboard.insertFragmentData(data: DataTransfer): boolean`
 
@@ -236,13 +236,14 @@ Write the current selection to a `DataTransfer`.
 
 #### `editor.api.dom.clipboard.writeSlice(data: Pick<DataTransfer, 'getData' | 'setData'>, payload: ClipboardSliceWrite): void`
 
-Write one exact `ContentSlice` plus optional host MIME formats.
+Write one exact `ContentSlice` plus optional browser MIME representations.
 
 Plate writes plain text, HTML, and an internal editor fragment payload. The
 fragment payload uses `application/${clipboardFormatKey}` and the HTML fallback
 is tagged with the same key, so differently configured editors do not blindly
 import each other's internal JSON.
-Use [Clipboard](/docs/clipboard) for copy, paste, drop, host codec ordering, and fitted slice replacement.
+Use [Clipboard](/docs/clipboard) for copy, paste, drop, DataTransfer format
+ordering, and fitted slice replacement.
 
 ## Resolution failures
 
@@ -258,13 +259,14 @@ A successful model lookup does not prove that its DOM is mounted.
 ## Host utilities
 
 `platejs/dom` exports `isHotkey` for platform-aware keyboard matching and
-`domCommands`, `hostCodecs`, `parseDOMClipboardHtml`, and
-`writeHostFragmentData` for host-format integration. Most application formats
-belong in the owning plugin's [codecs](/docs/plugin-methods#declare-product-codecs).
+`domCommands`, `dataTransferFormats`, and `writeDataTransferFragment` for
+browser transfer integration. Semantic HTML,
+Markdown, and plain-text node mappings belong in the owning plugin's
+`formats` declaration.
 
 Its public types describe DOM primitives (`DOMNode`, `DOMElement`, `DOMText`,
 `DOMPoint`, `DOMRange`, `DOMStaticRange`, `DOMSelection`), mounted editor services
-(`DOMApi`, `DOMClipboardApi`), clipboard slices, host codecs,
+(`DOMApi`, `DOMClipboardApi`), clipboard slices, DataTransfer formats,
 keyboard matching, visual caret movement, and scrolling.
 
 See [Selection](/docs/selection) for the interaction between model selection and

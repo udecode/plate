@@ -336,7 +336,7 @@ issue. Do not leave a blanket `completed` label on an unresolved workflow.
    - `docs/vision/plite.md` for Plite substrate;
    - `docs/vision/plate.md` for Plate framework/product/docs;
    - `docs/vision/sync.md` only for doctrine sync.
-5. `.agents/AGENTS.md` for repo command/authority policy.
+5. `AGENTS.md` for repo command/authority policy.
 6. Public intake docs when they apply:
    - `CONTRIBUTING.md`;
    - `.github/PULL_REQUEST_TEMPLATE.md` for PR work;

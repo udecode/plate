@@ -1,0 +1,177 @@
+{
+  "id": "2026-09-25-imports-schema-admission-recovery",
+  "scope": "imports",
+  "kind": "review",
+  "date": "2026-09-25",
+  "question": "Which schema should validate canonical editor documents, when may import recover, what must export reject, and does Plite need another validation layer?",
+  "model": "GPT-6 / Codex",
+  "method": "best-api-review/history-v3",
+  "trigger": "The user challenged whether plugin schema validation is sufficient for import/export, asked for hard versus recoverable failure semantics, and requested harsh feedback on whether Best API Review must precede implementation.",
+  "requirements": [
+    "Keep one canonical model grammar compiled from the installed Plite plugin application schema; do not duplicate it in Zod or Standard Schema.",
+    "Separate canonical validation, source recovery, destination insertion fitting, and target-format representability so no stage silently assumes another stage's authority.",
+    "Make successful results contain a schema-valid carrier and warnings only; make failures carry no carrier and begin with an error.",
+    "Diagnose every framework-owned repair or loss with stable semantic identity and reject lossy import recovery by default.",
+    "Never reinterpret an unknown canonical block as a paragraph through generic schema fallback.",
+    "Assert captured and authored-projected model data on export; never fit or repair it during serialization.",
+    "Keep persistence, native authored payloads, and collaboration strict after explicit migrations.",
+    "Preserve the settled boolean paste API while carrying rejected, unfit, selected, and written DataTransfer diagnostics to one post-acceptance report.",
+    "Retain Plite incremental validation, named-root, property, placement, and immutable-diagnostic laws without a speculative aggregate validation API."
+  ],
+  "evidenceReuse": "Reused the fixed conversion ontology and prior import/export, persistence, DOCX, authored, and clipboard decisions only where their hard laws still held. Rechecked current Plite schema assertion, document fitting, slice fitting, transfer negotiation, public types, and focused schema tests. Re-read ProseMirror, Tiptap, CKEditor, Lexical, and Slate at the fixed local commits recorded below. Three bounded independent audits challenged candidate parity, every mutating fit branch, and the proposed plan; their disagreements were resolved against current source. The review specifically rejected the prior one-input/one-output trace and found the DataTransfer ContentSlice-or-null diagnostic hole.",
+  "summary": "Pursue the document-conversion plan only with a corrected admission contract. Plite's plugin-compiled schema is the sole canonical model validator and is the strongest publication invariant among the compared editors, but its admission layer is incomplete until coercive fitting emits a transactional semantic report with zero-to-many locations and per-repair loss impact. Import may use that report and defaults to rejecting lossy recovery; export, persistence, native authored state, and collaboration assert and never fit. Unknown canonical elements do not become paragraphs. Zod or Standard Schema may validate envelopes and application metadata, never a second editor grammar. DataTransfer keeps boolean insertion but gains diagnosed attempt results and one report after accepted commit, completed write, or final refusal.",
+  "verdict": "pursue",
+  "previous": "2026-09-25-imports-codec-ontology-closure",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-25-imports-codec-ontology-closure",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "supersedes",
+      "reason": "Retains direct format-owned conversion, impossible-state results, schema ownership, explicit loss policy, DataTransfer ownership, and no universal converter. Supersedes the under-specified fitting trace, unqualified recovery language, and ContentSlice-or-null transfer decoding that could not preserve diagnostics."
+    },
+    {
+      "record": "2026-09-25-document-conversion-contracts-design",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "supersedes",
+      "reason": "The research and package direction remain valid, but the recorded design used one-to-one trace provenance, did not fully separate invalid model data from format unrepresentability, and had no truthful transfer diagnostic path. The amended plan replaces that design outcome."
+    },
+    {
+      "record": "2026-09-24-exports-final-reassessment",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retains document-first per-format export and authored projection ownership. This review makes the validation consequence explicit: assert the captured document and projection, then assess representability; export never fits."
+    },
+    {
+      "record": "2026-09-13-clipboard-transfer-convergence",
+      "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+      "action": "reopens",
+      "reason": "Retains the canonical DOM command, boolean handled result, atomic insertion, and ordered format fallback. Reopens only the transfer decoder result: direct format diagnostics cannot be represented by ContentSlice or null, so attempt reporting must occur without changing insertData into an analysis API."
+    }
+  ],
+  "alternatives": [
+    "Duplicate the plugin grammar in Zod or Standard Schema: Stop; it would drift from roots, placement, element behavior, property ownership, plugin reconfiguration, and incremental validation.",
+    "Expose generic safeParseDocument, validateDocument, or aggregate schema issues: Stop for now; assertDocument already owns rejection and no current caller branches on an aggregate issue set.",
+    "Use assertions only and leave fitting opaque: Stop; import recovery would mutate or discard model facts without accountable policy.",
+    "Expose one-input/optional-output fit traces with raw before/after JSON: Stop; defaults, drops, merges, splits, grouped wrapping, root creation, and generated properties are zero-to-many semantic repairs.",
+    "Add a private transactional fit report with stable repair codes and per-event loss impact: Pursue; it serves framework admission owners while public fitDocument stays explicitly coercive.",
+    "Convert unknown canonical nodes to paragraphs: Stop; it can turn missing plugins, tables, media, roots, and custom properties into plausible-looking corruption.",
+    "Fit captured model data during export: Stop; invalid canonical input is a boundary bug and valid unrepresentable input belongs to the target format loss policy.",
+    "Keep DataTransfer decode as ContentSlice or null: Stop; it erases rich-format failure, recovery, fallback, and all-formats-fail diagnostics.",
+    "Replace per-format results with one universal conversion result: Stop; syntax coordinates, retained source, cancellation, extras, and representability remain format-owned."
+  ],
+  "proofLimits": "Design and source audit only; no product API or runtime behavior was implemented. Plite assertions are currently fail-fast, so this review does not claim aggregate schema diagnostics. The semantic fit report, mutation instrumentation, impact classification, transfer attempt collector, post-commit reporting, direct format adapters, insertion conservation, package declarations, browser routes, performance, packed consumers, DOCX artifacts, and native viewers remain implementation proof. Candidate findings are fixed to the local commits and files recorded below. The current ContentSlice-or-null transfer path still drops format diagnostics until the plan is implemented.",
+  "references": [
+    "docs/plans/2026-09-25-document-conversion-contracts.md",
+    "docs/research/decisions/import-fidelity.md",
+    "docs/analysis/editor-architecture-candidates.md",
+    "docs/plite/research/2026-09-25-document-codec-architecture/shards/002-typed-codecs.md",
+    "docs/plite/research/2026-09-25-document-codec-architecture/shards/004-editors-and-cross-language-controls.md",
+    "packages/plitejs/src/core/editor-schema.ts",
+    "packages/plitejs/src/core/schema-validation.ts",
+    "packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts",
+    "packages/plitejs/src/dom/plugin/host-codec.ts",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/test/schema-validation-diagnostics.test.ts",
+    "packages/plitejs/test/schema-laws.test.ts",
+    "packages/plitejs/test/slice-fit-laws.test.ts"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "d5dec861656500c6e504d72c5e5703929f8d1df1cd3b129fdfc2d60b8d9c45ff",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "746b788c2b9233b7a7597de6f7438fca5dcb226d1366f9884a02a8b6843e96f3",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "770dadf334b09ce1e33b68fd13239322decbb266cd6682620fe0d2f3ef5792e2",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "1adcafdfbd8a290e2c22092168cdfecc9865f5559b611311f99d2749b22048cd",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "27f35dee22d352884b17238617093a51deac981dea65d76d0b648d2aa15f345e",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "53a4ff08653f384e604f7cb826eeb38497339c7f3b0245933166c40b28050546",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts": "1ea27703b417eadae2cc299933cd918cb63a708f0fec5217d26c826ea8ecea6f",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "ae5a7deb9f8b8cd6644815af7f1dbe293e298fe5c002a8cb3b736e1d05d1b1a7",
+      "packages/platejs/src/docx/import/lib/importDocx.spec.ts": "1b676e9dc7268006a35c80eedd3681b1d8e3c321b4a9f295f57d40956efa77a7",
+      "docs/analysis/editor-architecture-candidates.md": "14a88723e948ca14db76a0a585c0c5561c1d396abb5ade4ba8d31c620e79765d",
+      "docs/research/decisions/export-fidelity.md": "1af48265b63b98f9144e838f71ab3576903f72eb961012e73652fbd32ec05101",
+      "docs/research/decisions/documents-conversion-fidelity.md": "5fb0180c2b81cfae47ed40abd33e344f5685a6e684219dbd558d05235c4d065d",
+      "docs/research/decisions/persistence-ownership.md": "ba8d50f5450f067eb6f3ea0096ee7fd408be03da09fbbb8c18df5df0d4138866",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "6a1b0715a5ffaf30dc482a659fffb70551d605d78d7d2df3ca45561ed6ffd446",
+      "packages/platejs/src/static/deserialize/htmlStringToEditorDOM.ts": "37598aeff4da1e7d3308f851185ac933657672d967817f1faedc7925f22dcc32",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "3f34ed4c7f13d7103ece24f6b9dae000fa8a93f228beaa57e41a8c6bd5d9c5e0",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "8cf475bc202a58416e8aafb2f6e1ddcb4747ff6b3da8f754637b0834ac4b6ffb",
+      "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "017caea75d0925bcce66aef52f652ede70c26f41167307cc6a02692107e0a5fb",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "ef1e23f3436263470e57fbddfd820db22b38090e0760cc2ede3346484a334526",
+      "packages/plitejs/src/dom/plugin/host-codec.ts": "eee0e986bc5162ecec43652e58ec8597b98d96abf94e040fe91bbb9271cff841",
+      "packages/plitejs/src/core/persisted-document.ts": "efc8e669b9cb6cd77cb42e265dc8ce53ccb397ea2e21254b0a31e0117d831a6a",
+      "packages/platejs/src/migrations/documentMigrations.ts": "6a823432296edd3372d0e79aa0186f2ef10ce461b57801264302e6485bae5a99",
+      "content/docs/(guides)/serializing.mdx": "a18d214a655516f6778911301c70fa5caf281cbdfbef06229c2441c9545cbaf3",
+      "content/docs/(plugins)/(serializing)/html.mdx": "4e73d8529dc8f6f4ba6bea9962636a0c29373164f0cd960d1664cba7a710b060",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "1b4de9bf951dcb0614c90bf44bcb822a12fc8717da5a371364e09338ff850b87",
+      "content/docs/(plugins)/(serializing)/docx.mdx": "45ecba09a7c086ea9bfb26d693308574f5d3ac5cfe27b9f37c7ba36654ef1f81",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "271bdf6da40799f15a72c7237e96434f431f949b7d72ec2a6b541f952da7eb4b",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "packages/plitejs/src/core/editor-schema.ts": "88051add9b1dcbfed55db2f2d29d524af339130f1d92c38d7917072c340dd060",
+      "packages/plitejs/src/core/schema-validation.ts": "d76e4411f9bba943a19f83f29bd1fdb0771d8d1efeaa46230f11442188cf180e",
+      "packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts": "cdfd3c29035b9eab33829310b62ce2a1c9b4b0a9a42a2c0e32953edf30e9fd3e",
+      "packages/plitejs/src/interfaces/editor.ts": "92496a20d6fa8b4474f35bd13c8d962ce986e3835c3577c07171932c90b26a42",
+      "packages/plitejs/test/schema-validation-diagnostics.test.ts": "d45d41d43aeefcfb91d883d73fa857f2f173418fd3bf2d43cdd47d98e309844a",
+      "packages/plitejs/test/schema-laws.test.ts": "98093690dd82112c330ef4653779c75d590e4a17f589dfafc2d75b55bcac8524",
+      "packages/plitejs/test/slice-fit-laws.test.ts": "59298688f6dbddcb1dd4c985eead333a28f05ed3d5e57623e278081fb01bbadc"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": [
+      {
+        "checkout": "/Users/zbeyens/git/prosemirror-model",
+        "commit": "6264de069d8439131e88f8ba06973551916184e4",
+        "files": {
+          "package.json": "c582c5c0cd6c434f47ab12c75fced824d9a62fc8b487d459bcdb32fce0e8e3a0",
+          "LICENSE": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8",
+          "src/node.ts": "7eb4526395d7af5a8c0d596778e951471ac5008584259aa52df37dd2913d19ab",
+          "src/schema.ts": "e7eb493c877d6f50db1ee0f0c3cbb35dc6d898e43491bbf51ddd502a7b23af2c",
+          "src/from_dom.ts": "b8495dcdd5a593729e3a6237d1620edfebfdda683bf454278d38d5751670d66d"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/tiptap",
+        "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+        "files": {
+          "LICENSE.md": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9",
+          "packages/core/package.json": "180a69bffd0f47c22f8681c10a8504afd5cf8774d4927d89af3416cd9b858eaa",
+          "packages/core/src/helpers/createNodeFromContent.ts": "399d60743cd3b01ced419eaae915583b837314150eb88f743dcae0e31eb54aa6"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/ckeditor5",
+        "commit": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+        "files": {
+          "LICENSE.md": "6226a1b6b05e07d887f516a40bc000bb7617a4fa0f36721234453ca436ba7d23",
+          "packages/ckeditor5-engine/package.json": "da7ff7834dc7bb980c40ee404615de3d77fb50eea9005bbe60bcd3f6bfeb74d9",
+          "packages/ckeditor5-engine/src/model/schema.ts": "2343fc02565f2c0a8f327bbaedbf62f034856f2946e73f93576f1ad57dc7d071",
+          "packages/ckeditor5-engine/src/model/writer.ts": "8e4d262857c1ac6d69f8ca16dcec2fb998357e845b81e714f5ab0ffd96ed5e87",
+          "packages/ckeditor5-engine/src/conversion/upcastdispatcher.ts": "0ae06f0b905913a95f3f164682b268fcea1b3a8839d39c1c6aab83a7fec095b1"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/lexical",
+        "commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+        "files": {
+          "LICENSE": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+          "packages/lexical/package.json": "75696887b03dbef111eeeda68625b3d688f4c9f45e6b0e7b5348057404de700d",
+          "packages/lexical/src/LexicalUpdates.ts": "c79c97ab54801fdc2b50ba6c5cb7256a3858e66fd6301a2c428478711cae387a",
+          "packages/lexical/src/LexicalEditor.ts": "b25f4c9273a1a18432be3cbf1c473f9ee2718b8c4edf6829348b9745254084db"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/slate",
+        "commit": "945a484df2497e4c448b33f417b0de2a49840032",
+        "files": {
+          "License.md": "519c180a1c7b62ae33d2beb749abd57dda92eddada65eb81daca7686fa1fef40",
+          "packages/slate/package.json": "d9df6fc765171ea06736ed31396abad2cc07c610ee08c0578bd1b915e9d34f2e",
+          "packages/slate/src/core/normalize-node.ts": "b816caf2332ef5bb6d96f2684fddb29f4fc03df6cc04111a2b1ae0bd4ec792e0",
+          "packages/slate/src/create-editor.ts": "2bb252c1664622915d7482a783c861b069278a8e51eb7ff9d7a8f038df5ac4c2"
+        }
+      }
+    ]
+  }
+}

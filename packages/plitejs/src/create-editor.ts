@@ -27,6 +27,7 @@ import {
 } from './core/editor-schema';
 import {
   createEditorViewPluginApis,
+  getPluginContributions,
   prepareInitialPluginPublication,
   prepareScopedPluginPublication,
   setEditorLifecycleErrorSink,
@@ -412,15 +413,18 @@ export const compileEditorSchemaContractEntries = (
 };
 
 /** Compile immutable schema and persistent-field authority without publishing it. @internal */
-export const compileEditorSchemaCapabilityEntries = (
+export const withCompiledEditorSchemaCapabilityEntries = <T>(
   editor: AnyEditor,
-  entries: readonly InternalPluginPublicationEntry[]
-): Readonly<{
-  authored?: NativeAuthoredDocumentCapability;
-  contract: EditorSchemaContract;
-  fields: ReadonlyArray<EditorStateField<any>>;
-  schema: CompiledEditorSchema;
-}> => {
+  entries: readonly InternalPluginPublicationEntry[],
+  run: (
+    compilation: Readonly<{
+      authored?: NativeAuthoredDocumentCapability;
+      contract: EditorSchemaContract;
+      fields: ReadonlyArray<EditorStateField<any>>;
+      schema: CompiledEditorSchema;
+    }>
+  ) => T
+): T => {
   assertPluginPublicationInactive(editor);
   const hasDocument = assertEditorSchemaBootstrap(editor);
 
@@ -452,15 +456,50 @@ export const compileEditorSchemaCapabilityEntries = (
       );
     }
 
-    return Object.freeze({
-      ...(authored[0] ? { authored: authored[0] } : {}),
-      contract: publication.schemaContract(),
-      fields: compilation.fields,
-      schema: compilation.schema,
-    });
+    return run(
+      Object.freeze({
+        ...(authored[0] ? { authored: authored[0] } : {}),
+        contract: publication.schemaContract(),
+        fields: compilation.fields,
+        schema: compilation.schema,
+      })
+    );
   } finally {
     publication.rollback();
   }
+};
+
+export const compileEditorSchemaCapabilityEntries = (
+  editor: AnyEditor,
+  entries: readonly InternalPluginPublicationEntry[]
+): Readonly<{
+  authored?: NativeAuthoredDocumentCapability;
+  contract: EditorSchemaContract;
+  fields: ReadonlyArray<EditorStateField<any>>;
+  schema: CompiledEditorSchema;
+}> =>
+  withCompiledEditorSchemaCapabilityEntries(
+    editor,
+    entries,
+    (result) => result
+  );
+
+/** Read the single published authored document capability, when installed. @internal */
+export const getEditorAuthoredDocumentCapability = (
+  editor: AnyEditor
+): NativeAuthoredDocumentCapability | undefined => {
+  const capabilities = getPluginContributions(
+    editor,
+    authoredDocumentCapabilityPoint
+  );
+
+  if (capabilities.length > 1) {
+    throw new Error(
+      'Editor schema contains multiple authored document capabilities.'
+    );
+  }
+
+  return capabilities[0];
 };
 
 /** Replace the derived base schema on one unchanged raw editor. @internal */

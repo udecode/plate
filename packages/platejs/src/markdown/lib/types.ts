@@ -1,16 +1,27 @@
+import type { Root as MdRoot } from 'mdast';
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
-import type { Pluggable } from 'unified';
+import type { Pluggable, Processor, Transformer } from 'unified';
 import type { Node as UnistNode } from 'unist';
 
-import type { AuthoredFormatDiagnostic } from '../../authored';
 import type {
+  ContentSlice,
   MarkdownPluginRegistry,
   Descendant,
+  EditorApplicationSchema,
+  EditorCoreStateView,
   EditorDocumentValue,
+  EditorValueFromPlugins,
+  EditorSchemaValidationDiagnostic,
   Element,
   Nullable,
+  RootKey,
   Text,
+  Value,
 } from '../../core';
+import type {
+  NativeAuthoredProjectionDiagnostic,
+  RuntimePluginReference,
+} from '../../facade';
 import type { ListElement } from '../../features/list';
 import type {
   MdBlockquote,
@@ -48,51 +59,258 @@ import 'mdast-util-mdx';
 
 export type * as unistLib from 'unist';
 
-export type AllowNodeConfig = {
+export type MarkdownParseLimits = Readonly<{
+  maxBytes: number;
+  maxDepth: number;
+  maxNodes: number;
+}>;
+
+export type MarkdownSourceLocation = Readonly<{
+  end?: Readonly<{ column: number; line: number; offset?: number }>;
+  excerpt?: string;
+  nodeType?: string;
+  start?: Readonly<{ column: number; line: number; offset?: number }>;
+}>;
+
+export type MarkdownModelLocation = Readonly<{
+  path?: readonly number[];
+  property?: string;
+  root?: RootKey;
+}>;
+
+type MarkdownDiagnosticContext = Readonly<{
+  model?: MarkdownModelLocation;
+  source?: MarkdownSourceLocation;
+}>;
+
+type PolicyDiagnostic<T extends object> =
+  | Readonly<T & { severity: 'error' }>
+  | Readonly<T & { severity: 'warning' }>;
+
+type EditorSchemaRepairCode =
+  | 'canonicalize-set-property'
+  | 'create-root'
+  | 'default-property'
+  | 'drop-unplaceable-text'
+  | 'flatten-block-content'
+  | 'generate-property'
+  | 'insert-empty-text'
+  | 'insert-inline-spacer'
+  | 'insert-required-content'
+  | 'merge-text'
+  | 'omit-default-property'
+  | 'remove-empty-text'
+  | 'remove-noncanonical-child'
+  | 'replace-element-shell'
+  | 'resolve-exclusive-property'
+  | 'wrap-content';
+
+export type MarkdownDiagnostic =
+  | NativeAuthoredProjectionDiagnostic
+  | Readonly<{
+      actual: number;
+      code: 'markdown-inline-blocks';
+      message: string;
+      severity: 'error';
+    }>
+  | (MarkdownDiagnosticContext &
+      Readonly<{
+        code: 'markdown-fallback';
+        message: string;
+        reason: 'incomplete-stream';
+        severity: 'warning';
+      }>)
+  | (MarkdownDiagnosticContext &
+      Readonly<{
+        code: 'markdown-filtered-node';
+        message: string;
+        nodeType: string;
+        severity: 'warning';
+      }>)
+  | (MarkdownDiagnosticContext &
+      Readonly<{
+        code: 'markdown-invalid-source';
+        message: string;
+        reason: 'parser-failure';
+        severity: 'error';
+      }>)
+  | (MarkdownDiagnosticContext &
+      Readonly<{
+        actual: number;
+        code: 'markdown-limit-exceeded';
+        limit: keyof MarkdownParseLimits;
+        maximum: number;
+        message: string;
+        severity: 'error';
+      }>)
+  | (MarkdownDiagnosticContext &
+      Readonly<{
+        code: 'markdown-schema-invalid';
+        message: string;
+        schema: EditorSchemaValidationDiagnostic;
+        severity: 'error';
+      }>)
+  | (MarkdownDiagnosticContext &
+      PolicyDiagnostic<{
+        code: 'markdown-schema-repair';
+        impact: 'lossless' | 'lossy';
+        inputs: readonly MarkdownModelLocation[];
+        message: string;
+        outputs: readonly MarkdownModelLocation[];
+        owner: 'document' | 'grammar' | 'property' | 'representation';
+        repair: EditorSchemaRepairCode;
+      }>)
+  | Readonly<{
+      code: 'markdown-unsupported-metadata';
+      key: string;
+      message: string;
+      severity: 'warning';
+    }>
+  | (MarkdownDiagnosticContext &
+      PolicyDiagnostic<{
+        action: 'dropped' | 'replaced' | 'unwrapped';
+        code: 'markdown-unsupported-node';
+        message: string;
+        nodeType: string;
+        owner: string;
+        phase: 'parse' | 'serialize';
+      }>)
+  | Readonly<{
+      code: 'markdown-unsupported-root';
+      message: string;
+      root: RootKey;
+      severity: 'warning';
+    }>;
+
+export type MarkdownWarningDiagnostic = Extract<
+  MarkdownDiagnostic,
+  { severity: 'warning' }
+>;
+
+export type MarkdownErrorDiagnostic = Extract<
+  MarkdownDiagnostic,
+  { severity: 'error' }
+>;
+
+export type MarkdownDocumentParseResult<V extends Value = Value> =
+  | Readonly<{
+      diagnostics: readonly MarkdownWarningDiagnostic[];
+      document: EditorDocumentValue<V>;
+      ok: true;
+    }>
+  | Readonly<{
+      diagnostics: readonly [MarkdownErrorDiagnostic, ...MarkdownDiagnostic[]];
+      ok: false;
+    }>;
+
+export type MarkdownSliceParseResult<V extends Value = Value> =
+  | Readonly<{
+      diagnostics: readonly MarkdownWarningDiagnostic[];
+      ok: true;
+      slice: ContentSlice<V>;
+    }>
+  | Readonly<{
+      diagnostics: readonly [MarkdownErrorDiagnostic, ...MarkdownDiagnostic[]];
+      ok: false;
+    }>;
+
+export type MarkdownSerializeResult =
+  | Readonly<{
+      data: string;
+      diagnostics: readonly MarkdownWarningDiagnostic[];
+      ok: true;
+    }>
+  | Readonly<{
+      diagnostics: readonly [MarkdownErrorDiagnostic, ...MarkdownDiagnostic[]];
+      ok: false;
+    }>;
+
+/**
+ * A unified transformer admitted to Plate's synchronous Markdown pipeline.
+ *
+ * Unified's public transformer type includes callback and Promise forms even
+ * for plugins whose implementation is synchronous. Plate accepts that
+ * ecosystem type here, then rejects callback-style and thenable behavior at
+ * the runtime boundary.
+ */
+export type MarkdownSyncTransformer = Transformer<MdRoot, MdRoot>;
+
+export type MarkdownSyncPlugin<
+  TParameters extends readonly unknown[] = readonly never[],
+> = (
+  this: Processor,
+  ...parameters: TParameters
+) => MarkdownSyncTransformer | void;
+
+export type MarkdownSyncPluggable =
+  | MarkdownSyncPlugin
+  | readonly [MarkdownSyncPlugin, ...unknown[]];
+
+export type AllowNodeConfig = Readonly<{
   /** Custom filter function for nodes during deserialization. */
   deserialize?: (node: UnistNode & { type: MarkdownNodeName }) => boolean;
   /** Custom filter function for nodes during serialization. */
   serialize?: (node: Descendant) => boolean;
-};
-
-export type DeserializeMdOptions = {
-  allowedNodes?: MarkdownNodeName[] | null;
-  allowNode?: AllowNodeConfig;
-  disallowedNodes?: MarkdownNodeName[] | null;
-  preserveEmptyParagraphs?: boolean;
-  remarkPlugins?: Pluggable[];
-  rules?: MdRules | null;
-  splitLineBreaks?: boolean;
-  withoutMdx?: boolean;
-  onError?: (error: Error) => void;
-};
-
-export type SerializeMdOptions = {
-  allowedNodes?: MarkdownNodeName[] | null;
-  allowNode?: AllowNodeConfig;
-  disallowedNodes?: MarkdownNodeName[] | null;
-  /** Marks to treat as plain text without applying markdown formatting. */
-  plainMarks?: MarkdownNodeName[] | null;
-  preserveEmptyParagraphs?: boolean;
-  remarkPlugins?: Pluggable[];
-  remarkStringifyOptions?: Readonly<RemarkStringifyOptions> | null;
-  rules?: MdRules;
-  spread?: boolean;
-  value?: EditorDocumentValue;
-  withBlockId?: boolean;
-};
-
-export type AuthoredMarkdownResult = Readonly<{
-  data: string;
-  diagnostics: readonly AuthoredFormatDiagnostic[];
 }>;
 
-export type SerializeAuthoredMarkdownOptions = Omit<
-  SerializeMdOptions,
-  'value'
-> & {
-  projection: 'accepted' | 'proposed' | 'review';
-};
+export type MarkdownParsePolicy = Readonly<{
+  allowedNodes?: readonly MarkdownNodeName[] | null;
+  allowNode?: AllowNodeConfig;
+  disallowedNodes?: readonly MarkdownNodeName[] | null;
+  limits?: Partial<MarkdownParseLimits>;
+  lossPolicy?: 'allow' | 'reject';
+  preserveEmptyParagraphs?: boolean;
+  recovery?: 'incomplete-stream';
+  remarkPlugins?: readonly MarkdownSyncPluggable[];
+  splitLineBreaks?: boolean;
+  withoutMdx?: boolean;
+}>;
+
+export type MarkdownSerializePolicy = Readonly<{
+  allowedNodes?: readonly MarkdownNodeName[] | null;
+  allowNode?: AllowNodeConfig;
+  disallowedNodes?: readonly MarkdownNodeName[] | null;
+  lossPolicy?: 'allow' | 'reject';
+  /** Marks to treat as plain text without applying markdown formatting. */
+  plainMarks?: readonly MarkdownNodeName[] | null;
+  preserveEmptyParagraphs?: boolean;
+  projection?: 'accepted' | 'proposed';
+  remarkPlugins?: readonly MarkdownSyncPluggable[];
+  remarkStringifyOptions?: Readonly<RemarkStringifyOptions> | null;
+  spread?: boolean;
+  withBlockId?: boolean;
+}>;
+
+export type MarkdownParseOptions<
+  TPlugins extends readonly RuntimePluginReference[],
+> = MarkdownParsePolicy &
+  Readonly<{
+    plugins: TPlugins;
+    schema?: EditorApplicationSchema;
+  }>;
+
+export type MarkdownSerializeOptions<
+  TPlugins extends readonly RuntimePluginReference[],
+> = MarkdownSerializePolicy &
+  Readonly<{
+    plugins: TPlugins;
+    schema?: EditorApplicationSchema;
+  }>;
+
+export type MarkdownEditorSerializeOptions = MarkdownSerializePolicy &
+  Readonly<{ document?: EditorDocumentValue }>;
+
+export type MarkdownDocumentParseResultFromPlugins<
+  TPlugins extends readonly RuntimePluginReference[],
+> = MarkdownDocumentParseResult<EditorValueFromPlugins<TPlugins>>;
+
+export type MarkdownSliceParseResultFromPlugins<
+  TPlugins extends readonly RuntimePluginReference[],
+> = MarkdownSliceParseResult<EditorValueFromPlugins<TPlugins>>;
+
+export type MarkdownDocumentValueFromPlugins<
+  TPlugins extends readonly RuntimePluginReference[],
+> = EditorDocumentValue<EditorValueFromPlugins<TPlugins>>;
 
 export type MarkdownConversionContext = Readonly<{
   isBlock: (node: Descendant) => boolean;
@@ -101,31 +319,43 @@ export type MarkdownConversionContext = Readonly<{
 }>;
 
 /** Prepared Markdown deserialization context supplied to conversion rules. */
-export type DeserializeMdContext = Readonly<DeserializeMdOptions> &
+export type DeserializeMdContext = Readonly<
+  Omit<MarkdownParsePolicy, 'limits' | 'remarkPlugins'>
+> &
   MarkdownConversionContext & {
     /** Whether the optional ElementIdPlugin owns persisted block identity. */
     elementIds?: boolean;
     /**
-     * Compiled feature-owned Markdown node codecs.
+     * Compiled feature-owned Markdown node formats.
      *
      * @internal
      */
-    compiledCodecs?: import('./internal/markdownCodecs').CompiledMarkdownCodecs;
-    /**
-     * Operation or configured rules that override compiled codecs.
-     *
-     * @internal
-     */
-    ruleOverrides?: MdRules;
+    compiledMappings?: import('./internal/markdownMappings').CompiledMarkdownMappings;
+    limits: MarkdownParseLimits;
+    lossPolicy: 'allow' | 'reject';
+    report: (diagnostic: MarkdownDiagnostic) => void;
+    remarkPlugins: Pluggable[];
+    rules: MdRules;
+    sourceLocation: (node: UnistNode) => MarkdownSourceLocation | undefined;
+    state: EditorCoreStateView;
   };
 
 /** Prepared Markdown serialization context supplied to conversion rules. */
 export type SerializeMdContext = Readonly<
-  Omit<SerializeMdOptions, 'value'> & { value: readonly Descendant[] }
+  Omit<MarkdownSerializePolicy, 'projection' | 'remarkPlugins'> & {
+    value: readonly Descendant[];
+  }
 > &
   MarkdownConversionContext & {
     /** Read the configured persisted element ID through its schema owner. */
     blockId?: (element: Element) => string | undefined;
+    document: EditorDocumentValue;
+    lossPolicy: 'allow' | 'reject';
+    modelLocation: (node: Descendant) => MarkdownModelLocation | undefined;
+    report: (diagnostic: MarkdownDiagnostic) => void;
+    remarkPlugins: Pluggable[];
+    rules: MdRules;
+    state: EditorCoreStateView;
   };
 
 export type MdRules = Partial<{

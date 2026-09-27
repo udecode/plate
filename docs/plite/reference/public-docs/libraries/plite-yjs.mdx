@@ -230,7 +230,7 @@ import { createEditor, definePlugin, defineEffect, valueCodecs } from "plitejs";
 import { yjs } from "plitejs/yjs";
 
 const incrementCounter = defineEffect<number>({
-  codec: valueCodecs.number,
+  persist: { ...valueCodecs.number, version: 1 },
   collab: "shared",
   collabReplay: "live",
   key: "counter.increment",

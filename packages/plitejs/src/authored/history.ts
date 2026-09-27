@@ -1,5 +1,5 @@
 import { defineEffect } from '../core/transaction-values';
-import { defineValueCodec } from '../core/value-codec';
+import type { EditorJsonValue } from '../interfaces/json';
 import {
   decodeAuthoredViewSelection,
   type AuthoredViewSelection,
@@ -16,8 +16,7 @@ type AuthoredHistory = Readonly<{
 export const authoredHistoryEffect = defineEffect<AuthoredHistory>({
   key: 'authored.history',
   history: 'skip',
-  codec: defineValueCodec<AuthoredHistory>({
-    version: 1,
+  persist: {
     decode(value) {
       if (!value || typeof value !== 'object' || Array.isArray(value)) {
         throw new Error('Invalid authored history operation.');
@@ -53,6 +52,7 @@ export const authoredHistoryEffect = defineEffect<AuthoredHistory>({
           : {}),
       };
     },
-    encode: (value) => value,
-  }),
+    encode: (value) => value as unknown as EditorJsonValue,
+    version: 1,
+  },
 });

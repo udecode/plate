@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 
+import { throwIfDocxAborted } from '../../internal/abort';
 import {
   DocxPackageError,
   readBoundedDocxPackage,
@@ -40,12 +41,6 @@ type Candidate =
         | 'external-relationship'
         | 'unreachable';
     }>;
-
-const throwIfAborted = (signal: AbortSignal | undefined) => {
-  if (!signal?.aborted) return;
-
-  throw signal.reason ?? new DOMException('Aborted', 'AbortError');
-};
 
 const parseXml = (source: string) => {
   const document = new DOMParser().parseFromString(source, 'application/xml');
@@ -433,18 +428,23 @@ export const preserveDocxSource = async (
 ): Promise<
   Readonly<{ blob: Blob; diagnostics: readonly DocxDiagnostic[] }>
 > => {
-  throwIfAborted(signal);
+  throwIfDocxAborted(signal);
   const [sourcePackage, generatedBytes] = await Promise.all([
     readBoundedDocxPackage(source.blob, source.limits, signal),
     generated.arrayBuffer(),
   ]);
+  throwIfDocxAborted(signal);
   const generatedZip = await JSZip.loadAsync(generatedBytes);
+  throwIfDocxAborted(signal);
   const generatedEntries = new Map<string, Uint8Array>();
 
   for (const [name, entry] of Object.entries(generatedZip.files)) {
-    if (!entry.dir) generatedEntries.set(name, await entry.async('uint8array'));
+    if (!entry.dir) {
+      generatedEntries.set(name, await entry.async('uint8array'));
+      throwIfDocxAborted(signal);
+    }
   }
-  throwIfAborted(signal);
+  throwIfDocxAborted(signal);
   const sourceContentTypesSource = sourcePackage.entries.get(
     '[Content_Types].xml'
   );
@@ -694,18 +694,20 @@ export const preserveDocxSource = async (
     diagnose(part, activePart(part) ? 'active-content' : 'unreachable');
   }
 
-  throwIfAborted(signal);
+  throwIfDocxAborted(signal);
   const blob = await generatedZip.generateAsync({
     compression: 'DEFLATE',
     compressionOptions: { level: 6 },
     mimeType: DOCX_MIME,
     type: 'blob',
   });
+  throwIfDocxAborted(signal);
 
   try {
     await readBoundedDocxPackage(blob, source.limits, signal);
+    throwIfDocxAborted(signal);
   } catch (error) {
-    if (signal?.aborted) throwIfAborted(signal);
+    if (signal?.aborted) throwIfDocxAborted(signal);
     if (!(error instanceof DocxPackageError)) throw error;
 
     return Object.freeze({

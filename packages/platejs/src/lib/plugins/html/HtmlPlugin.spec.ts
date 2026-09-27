@@ -10,7 +10,7 @@ describe('HtmlPlugin', () => {
     expect('parser' in editor.plugin(HtmlPlugin)).toBe(false);
   });
 
-  it('deserializes the document body through one exact-slice codec', () => {
+  it('deserializes the document body through one exact-slice mapping', () => {
     const editor = createEditor();
     const transfer = new DataTransfer();
 
@@ -20,5 +20,27 @@ describe('HtmlPlugin', () => {
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'Hello' }], type: 'paragraph' },
     ]);
+  });
+
+  it('serializes one complete document and reports unrepresented data', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [{ children: [{ text: 'Hello' }], type: 'paragraph' }],
+        meta: { revision: 4 },
+      },
+    });
+    const result = editor.api.html.serialize();
+
+    expect(result.data).toBe('<p>Hello</p>');
+    expect(result.diagnostics.map(({ code }) => code)).toEqual([
+      'html-unsupported-metadata',
+    ]);
+    const parsed = editor.api.html.parse(result.data);
+
+    if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
+
+    expect(parsed.document).toEqual({
+      children: [{ children: [{ text: 'Hello' }], type: 'paragraph' }],
+    });
   });
 });

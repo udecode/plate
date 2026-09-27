@@ -1,11 +1,13 @@
 import type {
   AnyEditor as Editor,
   EditorDocumentValue,
+  EditorValuePersistence,
   EditorSelectionMapContext,
   RootKey,
   SerializedEditorSelection,
   SnapshotIndex,
 } from '../interfaces/editor';
+import type { EditorJsonValue } from '../interfaces/json';
 import { PathApi, type Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
@@ -149,127 +151,109 @@ const getLegacyNodeSelectionOptions = (range: Range) => {
   return root ? { root } : {};
 };
 
-const TEXT_SELECTION_CODEC = Object.freeze({
-  decode(value: unknown) {
+const TEXT_SELECTION_PERSISTENCE = {
+  decode(value) {
     if (!SelectionApi.isText(value)) {
       throw new Error('Invalid text editor selection.');
     }
 
     return value;
   },
-  encode(value: SelectionValue) {
+  encode(value) {
     if (!SelectionApi.isText(value)) {
       throw new Error('Invalid text editor selection.');
     }
+    assertBuiltInSelection(value);
 
-    return value;
+    return value as unknown as EditorJsonValue;
   },
   version: 1,
-});
+} satisfies EditorValuePersistence<SelectionValue, EditorJsonValue>;
 
-const NODE_SELECTION_CODEC = Object.freeze({
-  decode(value: unknown) {
+const NODE_SELECTION_PERSISTENCE = {
+  decode(value) {
     if (!SelectionApi.isNode(value)) {
       throw new Error('Invalid node editor selection.');
     }
 
     return value;
   },
-  encode(value: SelectionValue) {
+  encode(value) {
     if (!SelectionApi.isNode(value)) {
       throw new Error('Invalid node editor selection.');
     }
 
-    return value;
+    return value as unknown as EditorJsonValue;
+  },
+  legacyDecoders: {
+    1(value) {
+      if (
+        !isRecord(value) ||
+        !hasOnlyKeys(value, ['anchor', 'focus', 'kind', 'path']) ||
+        value.kind !== 'node'
+      ) {
+        throw new Error('Invalid legacy node editor selection.');
+      }
+
+      const { kind: _kind, path, ...range } = value;
+
+      if (!RangeApi.isRange(range) || !PathApi.isPath(path)) {
+        throw new Error('Invalid legacy node editor selection.');
+      }
+
+      return SelectionApi.nodes([path], getLegacyNodeSelectionOptions(range));
+    },
+    2(value) {
+      if (
+        !isRecord(value) ||
+        !hasOnlyKeys(value, ['anchor', 'focus', 'kind', 'paths']) ||
+        value.kind !== 'node'
+      ) {
+        throw new Error('Invalid legacy node editor selection.');
+      }
+
+      const { kind: _kind, paths, ...range } = value;
+
+      if (
+        !RangeApi.isRange(range) ||
+        !Array.isArray(paths) ||
+        paths.length === 0 ||
+        !paths.every(PathApi.isPath)
+      ) {
+        throw new Error('Invalid legacy node editor selection.');
+      }
+
+      return SelectionApi.nodes(
+        paths as [Path, ...Path[]],
+        getLegacyNodeSelectionOptions(range)
+      );
+    },
+    3(value) {
+      if (
+        !isRecord(value) ||
+        !hasOnlyKeys(value, ['kind', 'paths', 'root']) ||
+        value.kind !== 'node' ||
+        !Array.isArray(value.paths) ||
+        value.paths.length === 0 ||
+        !value.paths.every(PathApi.isPath) ||
+        (value.root !== undefined &&
+          (typeof value.root !== 'string' || value.root === 'main'))
+      ) {
+        throw new Error('Invalid legacy node editor selection.');
+      }
+
+      return SelectionApi.nodes(
+        value.paths as [Path, ...Path[]],
+        value.root === undefined ? {} : { root: value.root }
+      );
+    },
   },
   version: 4,
-});
+} satisfies EditorValuePersistence<SelectionValue, EditorJsonValue>;
 
-const LEGACY_NODE_SELECTION_CODEC = Object.freeze({
-  decode(value: unknown) {
-    if (
-      !isRecord(value) ||
-      !hasOnlyKeys(value, ['anchor', 'focus', 'kind', 'path']) ||
-      value.kind !== 'node'
-    ) {
-      throw new Error('Invalid legacy node editor selection.');
-    }
-
-    const { kind: _kind, path, ...range } = value;
-
-    if (!RangeApi.isRange(range) || !PathApi.isPath(path)) {
-      throw new Error('Invalid legacy node editor selection.');
-    }
-
-    return SelectionApi.nodes([path], getLegacyNodeSelectionOptions(range));
-  },
-  encode() {
-    throw new Error('Legacy node editor selections are decode-only.');
-  },
-  version: 1,
-});
-
-const LEGACY_NODE_SELECTION_V2_CODEC = Object.freeze({
-  decode(value: unknown) {
-    if (
-      !isRecord(value) ||
-      !hasOnlyKeys(value, ['anchor', 'focus', 'kind', 'paths']) ||
-      value.kind !== 'node'
-    ) {
-      throw new Error('Invalid legacy node editor selection.');
-    }
-
-    const { kind: _kind, paths, ...range } = value;
-
-    if (
-      !RangeApi.isRange(range) ||
-      !Array.isArray(paths) ||
-      paths.length === 0 ||
-      !paths.every(PathApi.isPath)
-    ) {
-      throw new Error('Invalid legacy node editor selection.');
-    }
-
-    return SelectionApi.nodes(
-      paths as [Path, ...Path[]],
-      getLegacyNodeSelectionOptions(range)
-    );
-  },
-  encode() {
-    throw new Error('Legacy node editor selections are decode-only.');
-  },
-  version: 2,
-});
-
-const LEGACY_NODE_SELECTION_V3_CODEC = Object.freeze({
-  decode(value: unknown) {
-    if (
-      !isRecord(value) ||
-      !hasOnlyKeys(value, ['kind', 'paths', 'root']) ||
-      value.kind !== 'node' ||
-      !Array.isArray(value.paths) ||
-      value.paths.length === 0 ||
-      !value.paths.every(PathApi.isPath) ||
-      (value.root !== undefined &&
-        (typeof value.root !== 'string' || value.root === 'main'))
-    ) {
-      throw new Error('Invalid legacy node editor selection.');
-    }
-
-    return SelectionApi.nodes(
-      value.paths as [Path, ...Path[]],
-      value.root === undefined ? {} : { root: value.root }
-    );
-  },
-  encode() {
-    throw new Error('Legacy node editor selections are decode-only.');
-  },
-  version: 3,
-});
-
-const getSelectionCodec = (kind: string) => {
-  if (kind === 'text') return TEXT_SELECTION_CODEC;
-  if (kind === 'node') return NODE_SELECTION_CODEC;
+const getSelectionPersistence = (kind: string) => {
+  if (kind === 'text') return TEXT_SELECTION_PERSISTENCE;
+  if (kind === 'node') return NODE_SELECTION_PERSISTENCE;
 
   throw new Error(`Unsupported editor selection kind "${kind}".`);
 };
@@ -292,7 +276,7 @@ export const encodeEditorSelection = (
   return Object.freeze({
     kind,
     ...encodeVersionedValue(
-      getSelectionCodec(kind),
+      getSelectionPersistence(kind),
       selection,
       `editor selection "${kind}"`
     ),
@@ -315,15 +299,7 @@ export const decodeEditorSelection = (
 
   const { kind } = input as { kind: string };
   const selection = decodeVersionedValue(
-    kind === 'node'
-      ? input.version === 1
-        ? LEGACY_NODE_SELECTION_CODEC
-        : input.version === 2
-          ? LEGACY_NODE_SELECTION_V2_CODEC
-          : input.version === 3
-            ? LEGACY_NODE_SELECTION_V3_CODEC
-            : getSelectionCodec(kind)
-      : getSelectionCodec(kind),
+    getSelectionPersistence(kind),
     input,
     `editor selection "${kind}"`
   );

@@ -22,6 +22,7 @@ export default function UploadDemo({
 }: {
   provider?: 'browser' | 'r2';
 }) {
+  const [delayMs, setDelayMs] = React.useState(0);
   const session = React.useMemo(() => {
     const browserUploads =
       provider === 'browser' ? createBrowserUploadKit() : null;
@@ -45,21 +46,41 @@ export default function UploadDemo({
       ],
     });
 
-    return { dispose: browserUploads?.dispose, editor };
+    return { browserUploads, editor };
   }, [provider]);
 
-  React.useEffect(() => session.dispose, [session]);
+  React.useEffect(() => session.browserUploads?.dispose, [session]);
+  React.useEffect(() => {
+    session.browserUploads?.setSimulatedDelayMs(delayMs);
+  }, [delayMs, session]);
 
   return (
-    <EditorRoot editor={session.editor}>
-      <EditorFrame>
-        <Toolbar>
-          <MediaToolbarButton plugin={BaseImagePlugin} />
-        </Toolbar>
-        <EditorContainer>
-          <Editor placeholder="Drop or paste files here..." />
-        </EditorContainer>
-      </EditorFrame>
-    </EditorRoot>
+    <>
+      {provider === 'browser' && (
+        <label className="flex items-center gap-3 px-4 py-2 text-sm">
+          <span>Simulated upload time</span>
+          <input
+            className="w-40 accent-primary"
+            max={5000}
+            min={0}
+            onChange={(event) => setDelayMs(Number(event.target.value))}
+            step={500}
+            type="range"
+            value={delayMs}
+          />
+          <output>{delayMs === 0 ? 'Instant' : `${delayMs / 1000}s`}</output>
+        </label>
+      )}
+      <EditorRoot editor={session.editor}>
+        <EditorFrame>
+          <Toolbar>
+            <MediaToolbarButton plugin={BaseImagePlugin} />
+          </Toolbar>
+          <EditorContainer>
+            <Editor placeholder="Drop or paste files here..." />
+          </EditorContainer>
+        </EditorFrame>
+      </EditorRoot>
+    </>
   );
 }

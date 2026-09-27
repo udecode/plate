@@ -1,0 +1,87 @@
+{
+  "id": "2026-09-24-exports-audit",
+  "scope": "exports",
+  "kind": "review",
+  "date": "2026-09-24",
+  "question": "What does each export format promise, and should DOM raster capture, static HTML and document codecs share anything beyond a menu?",
+  "model": "Claude Opus 5.5 (claude-opus-5-5[1m]) / Claude Code",
+  "method": "best-api-review/history-v3; audit mode; redesign-from-first-principles; source probe",
+  "trigger": "User invoked /best-api-review audit exports; first review of the unassessed exports scope.",
+  "requirements": [
+    "One export action must produce the document projection the user chose or can see; it must not silently mix accepted, proposed and markup content across formats.",
+    "Accepted roots stay the canonical document; accepted, proposed and markup are exact view projections (docs/vision/plite.md). Pending authored changes must not become another saved document.",
+    "Serialization packages own format semantics and conversion; copied registry or app source owns optional presentation presets and may pass one exact stylesheet (docs/vision/plate.md).",
+    "Lossy exports report loss; a valid file is not proof of preservation (retained from the 2026-09-14 DOCX audit finding 8).",
+    "Heavy converters stay lazily imported client-side; export must not require a server.",
+    "Exports describe the document, not transient session paint (selection, placeholders, review chrome)."
+  ],
+  "evidenceReuse": "Reused the DOCX conclusions in the documents scope (explicit projection, diagnostics, retained source, registry-owned DOCX presentation from docs/plans/2026-09-04-move-docx-export-presentation-to-registry.md) and the 2026-09-14 plate-audit note that the copied export action lacked authored projection. Freshly read export-toolbar-button.tsx, the html-export block, authoredHtml.ts, MarkdownPlugin.ts serialize/serializeAuthored, exportToDocx.tsx capture/render, the authored-changes guide and the export example page. A new source probe replayed the menu HTML and Markdown inputs under accepted, proposed and markup views.",
+  "summary": "Pursue. The five formats share exactly one law beyond the menu: which authored projection is exported, with loss reported. The copied menu violates it: on a proposing or markup view, HTML exports the view children (proposed), Markdown serializes accepted content, Word exports proposed or review, and PDF/PNG screenshot the markup paint; only Word reports loss (probe log). The package already owns per-format projection adapters (renderAuthoredHtml, markdown.serializeAuthored, exportToDocx), but HTML and Markdown adapters throw when authored is not installed while DOCX tolerates it, and renderAuthoredHtml cannot render a live editor capture through a static kit the way exportToDocx does privately. Strongest cut: delete live-DOM raster capture. The PDF is one image-only page sized to the canvas, with no text layer or pagination, and the capture forces a sans-serif font on every descendant of the first contenteditable, so code and math lose their fonts. Replace PDF with browser print of the same static projection HTML and delete PNG unless design names a current job. HTML should stop linking https://platejs.org/tailwind.css from copied source and share one registry-owned document shell with the html-export block. Stop on any package-level cross-format export noun: codecs differ in options, results and lazy dependency weight, and a shared exportDocument/Export plugin removes no caller work.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-15-documents-retained-source-implementation",
+      "question": "Which document conversion laws should DOCX file import, export and Word paste share, and where must fidelity limits be explicit?",
+      "action": "retains",
+      "reason": "Word export already has explicit projection, diagnostics and retained-source handling; this audit only asks the menu to feed it the same projection as the other formats."
+    }
+  ],
+  "alternatives": [
+    "Keep the menu as-is: rejected. One click set yields four different projections and silent loss in three formats (probe).",
+    "Package-level cross-format export noun (editor.api.export(format), ExportPlugin, exportDocument): Stop. HTML, Markdown and DOCX have different options, results and lazy dependencies; the only shared inputs are projection and a download, which the copied menu can own in a few lines.",
+    "Merge renderStaticHtml/renderAuthoredHtml and serialize/serializeAuthored into single projection-aware entrypoints: rejected for this scope. Canonical string codecs have independent jobs (clipboard, AI, persistence); forcing result/diagnostic wrapping on them adds cost without fixing the menu.",
+    "Change existing projection adapters to match exportToDocx: accept editors without authored installed (trivial snapshot, as DOCX captureExportSnapshot does), and give renderAuthoredHtml the DOCX-style editorPlugins capture so a live editor renders its projection through a static kit. Pursue as a design candidate; it removes caller branching and lets DOCX reuse one package capture+render path.",
+    "Keep raster PDF/PNG but fix the font override and selector: rejected as the target. It still exports session paint, is DOM-bounded (future omission), subject to canvas/PDF page limits, and yields an image-only PDF.",
+    "Replace raster PDF with print of the static projection HTML (hidden iframe, @page CSS): strongest PDF target. Vector, selectable and paginated text with links, and no html2canvas-pro or pdf-lib. The cost is a print dialog step.",
+    "Delete PDF from the free menu and leave PDF to Plus server export: viable fallback if print output fails design proof.",
+    "Rasterize the static projection for PNG instead of the live editable: only if design names a current PNG job; otherwise delete PNG with html2canvas-pro.",
+    "HTML stylesheet: keep the platejs.org link (rejected: copied output depends on Plate site CSS and version, not the app); registry preset like DOCX_EXPORT_STYLES or inlining app stylesheets at export time are the design candidates; one shell shared with the html-export block."
+  ],
+  "proofLimits": "Source review plus one bun source probe (docs/plans/artifacts/2026-09-24-exports-review/projection-probe.log) that replays the menu HTML input (view.read.children into a static editor) and Markdown serialize on accepted, proposed and markup views with one insertion and one deletion. The probe uses api.markdown.serialize on the view; the menu calls editor.plugin(MarkdownPlugin).api.serialize on useEditor(), which is assumed to be the same view API. No browser download, PDF/PNG render, font or canvas-limit measurement, file-viewer or print-output proof ran. The claimed raster font and code/math loss is a source inference from the onclone override, not a pixel observation. DOM omission is not active in the current editor; its effect on raster capture is a future risk only.",
+  "references": [
+    "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx",
+    "docs/plans/artifacts/2026-09-24-exports-review/projection-probe.log",
+    "apps/www/src/registry/components/editor/export-toolbar-button.tsx",
+    "apps/www/src/registry/blocks/html-export/page.tsx",
+    "apps/www/src/registry/examples/docx-demo.tsx",
+    "packages/platejs/src/static/authoredHtml.ts",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/docx/export/lib/exportToDocx.tsx",
+    "content/docs/examples/export.mdx",
+    "content/docs/(guides)/authored-changes.mdx",
+    "docs/plans/2026-09-04-move-docx-export-presentation-to-registry.md",
+    "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/plate-audit.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "c6a957ea93ed73198eb1509b3c1f8356166871330d54e2760227874459091c12",
+      "apps/www/src/registry/examples/docx-demo.tsx": "fe917f5d5a5bf651fa19c358c22644441176f800d8563a771cf382963a8c9337",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "378bf330f000d9d942290ee2387649ceffd257450d94c35e576a2be97cabae25",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/authoredHtml.ts": "46eec042c2b8ba52610699bf99760a6a5f732e6c74c2ee013653d01639425c32",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "d598a7e01d0feb6f344e4ecfba0eba085c53d95828a809cb925bcbc6d7f4aa46",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "6c9f4fe2375319cf35f397e46adc3d471ecc20b0f0f458036d9a317ed7b98596",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "db8ad5e16b2df9f6b12abf8d092deaab5761dc870c7a06c89f4dbb4187f5b542",
+      "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "ebc1b64876c8184035e10afdbe3ce0a329d5f60a9a2dadd6877b62da40bd31f1",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "content/docs/examples/export.mdx": "6a1d26e74a00f24ed96b3eea1ad2cd79c28e78530e6b0b2f61c369b67adc417f",
+      "content/docs/(guides)/authored-changes.mdx": "52a0adea48a8575c2fe125fd98cbde40437d856b62940f359d1094e3aaac1e61",
+      "docs/vision/plate.md": "8e21e0c1783d79d5f5c4389af7e79e6455de92b3f22b494dbd506695828ec4dc",
+      "docs/vision/plite.md": "aefd3df5a578003e90fffa6688c317bdbb49837b80cb4874863f8decdecf31f8",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77bf6f360dc7b3199b947dc167649fbc39007b81b4f9bd5364660757e7d4a703",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
+    },
+    "directories": {},
+    "features": {
+      "ui/export-toolbar-button": "8b624bd8adca5a087729de9fc73ead8b188995ed335e8233beb25735a9bb33cb"
+    },
+    "upstreams": []
+  }
+}

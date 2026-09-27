@@ -1,41 +1,74 @@
 ---
 title: 导出
+description: 将 Plate 文档导出为 HTML、Markdown 或 Word。
+docs:
+  - route: https://pro.platejs.org/docs/examples/export
+    title: Plus
 ---
 
-<ComponentPreview name="playground-demo" id="basic-blocks" />
+registry 中的 `export-toolbar-button` 在浏览器中将当前文档下载为 HTML、Markdown 或 Word。示例将它挂载在固定工具栏中。
 
-<PackageInfo>
+## 示例
 
-## 功能特性
+<ComponentPreview name="docx-demo" />
 
-- 将编辑器内容导出为：
-- 纯客户端导出，无需服务器依赖
+## 工具栏源码
 
-</PackageInfo>
+安装 [导出工具栏按钮](/docs/components/export-toolbar-button) 组件，将导出菜单添加到编辑器工具栏。
 
-## 使用方法
+<ComponentSource name="export-toolbar-button" />
 
-安装 [导出工具栏按钮](/docs/components/export-toolbar-button) 组件。
+## 导出格式
 
-## Plate Plus 增强版
+| 格式 | 实现 | 输出 |
+| ---- | ---- | ---- |
+| HTML | `platejs/static` 的 `renderStaticHtml(model, { component: EditorStatic, projection })` | `plate.html` |
+| Markdown | `model.api.markdown.serialize({ projection })` | `plate.md` |
+| Word | `platejs/docx/export` 的 `exportDocx(model, { component: EditorStatic, projection, stylesheet: DOCX_EXPORT_STYLES })` | `plate.docx` |
 
-- 服务端 PDF 导出：
-  - 高质量 PDF 生成
-  - 自定义字体与样式
-  - 页眉页脚支持
-  - 页码功能
-  - 可选字体
-- 高级导出选项：
-  - 纸张尺寸选择
-  - 边距控制
-  - 页面方向设置
-  - 压缩级别
-{/* - 企业级功能： */}
-  {/* - 批量处理 */}
-  {/* - 水印功能 */}
-  {/* - 自定义模板 */}
-  {/* - 密码保护 */}
+所有格式都从 `useModelEditor()` 捕获同一份完整 document 和明确的 authored
+projection。导出读取 model，而不是 DOM，因此 selection、placeholder 和 review
+decoration 不会进入文件。当前 editor 提供已编译的 schema、format mapping 和 static
+component 绑定；导出不会创建第二个 conversion editor。
 
-体验我们的服务端 PDF 导出功能：
+HTML 文件内联应用自身的 stylesheet，并复制页面的 `body` class。跨域
+stylesheet 保留为 link。
+
+## Suggestions
+
+当 document 包含未解决的 [suggestion](/docs/suggestion) 时，菜单显示
+**Unresolved suggestions** 选项：
+
+| 选项 | Projection | 结果 |
+| ---- | ---------- | ---- |
+| Include suggested changes | `proposed` | 应用 pending suggestion 的 document |
+| Exclude suggested changes | `accepted` | 不含 pending suggestion 的 document |
+
+初始选项跟随已挂载的 view。HTML、Markdown 和 Word 使用同一个选择。
+**Export as Word with tracked changes** 使用 `review`，把 pending suggestion
+写成 Word revision。Conflict 无法忠实表示为 Word revision，因此 review
+导出会返回错误，直到 conflict 被解决。
+
+没有未解决 suggestion 时，Word 导出使用 `review`。保留且未修改的已导入
+DOCX 可以逐字节返回。每个 exporter 都返回 diagnostic，菜单会显示对应的
+warning 或 error toast。
+
+## DOCX 展示样式
+
+DOCX 包负责 Plate code block、column、equation、callout、heading 和目录的
+语义映射。Registry 只保留可复制的视觉 stylesheet：
+
+<ComponentSource name="docx-export" />
+
+## Plus 导出
+
+Plate Plus 提供服务端 PDF 导出流程，支持页面设置。
 
 <ComponentPreviewPro name="export-pro" />
+
+## 相关
+
+- [DOCX](/docs/docx) 介绍 DOCX 粘贴、文件导入与导出 API。
+- [Markdown](/docs/markdown) 介绍 Markdown 序列化。
+- [静态渲染](/docs/static) 介绍静态编辑器渲染与 HTML 序列化。
+- [Authored Changes](/docs/authored-changes) 介绍 HTML/Markdown 的 visible projection、authored JSON 与 DOCX review。

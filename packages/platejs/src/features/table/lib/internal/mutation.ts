@@ -12,7 +12,6 @@ import type {
 import { ElementApi } from '../../../../core';
 import { failInvariant } from '../../internal/failInvariant';
 import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
-import { getColSpan, getRowSpan, setSpan } from './codec';
 import { createDetachedTableContext, type TableContext } from './context';
 import {
   compileTableGrid,
@@ -20,6 +19,7 @@ import {
   type TableGridAnchor,
   type TableGridProblem,
 } from './grid';
+import { getColSpan, getRowSpan, setSpan } from './tableCellHtml';
 
 type MutableDescendant = MutableElement | Text;
 type TableMutationTransaction = Omit<

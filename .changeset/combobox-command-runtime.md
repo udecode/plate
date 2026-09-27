@@ -4,7 +4,7 @@
 
 Require React and React DOM 19.2 or newer.
 
-Copy `inline-combobox` for input focus, query state, keyboard navigation, and presentation. `BaseComboboxPlugin` owns cancellation, completion, and guarded history actions using the live input's `NodeKey`.
+Copy `inline-combobox` for input focus, query state, keyboard navigation, and presentation. `BaseComboboxPlugin` owns cancellation and completion using the live input's `NodeKey`; the copied component routes undo and redo through `useEditorHistory`.
 
 - Handle trigger-combobox insertion through the typed `insertText` command
 - Keep transient collaboration metadata on inserted combobox inputs and reject completion from a foreign, removed, or read-only input

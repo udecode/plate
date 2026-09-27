@@ -1,5 +1,6 @@
 import { ContentSlice } from '../../../core';
-import { writeHostFragmentData } from '../../../dom';
+import { writeDataTransferFragment } from '../../../dom';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { createEditor } from '../../editor';
 import { BaseParagraphPlugin } from './BaseParagraphPlugin';
 
@@ -8,9 +9,7 @@ describe('BaseParagraphPlugin', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin],
     });
-    const fragment = editor.api.html.deserialize({
-      element: '<p>Paragraph</p>',
-    });
+    const fragment = parseHtmlSliceContent(editor, '<p>Paragraph</p>');
     const data = new DataTransfer();
 
     expect(fragment).toEqual([
@@ -20,7 +19,7 @@ describe('BaseParagraphPlugin', () => {
       },
     ]);
     expect(
-      writeHostFragmentData(editor, data, ContentSlice.closed(fragment!))
+      writeDataTransferFragment(editor, data, ContentSlice.closed(fragment!))
     ).toContain('text/html');
     expect(data.getData('text/html')).toBe('<p>Paragraph</p>');
   });

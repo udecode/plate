@@ -1,12 +1,10 @@
 import type {
   AuthoredChange,
   AuthoredFormatSegment,
-  AuthoredFormatSnapshot,
+  AuthoredReviewProjection,
 } from '../../../authored';
 import {
-  definePlugin,
   ElementApi,
-  property,
   TextApi,
   type Descendant,
   type EditorDocumentValue,
@@ -17,13 +15,6 @@ import {
   type Value,
 } from '../../../core';
 import type { DocxDiagnostic } from '../../internal/types';
-
-const SEGMENT_MARK = 'docxReviewSegment';
-
-export const DocxReviewSegmentPlugin = definePlugin(SEGMENT_MARK, {
-  component: ({ children }) => children,
-  schema: { mark: { property: property.number() } },
-});
 
 type RevisionMarkup = Readonly<{
   authorId: string;
@@ -75,7 +66,7 @@ const markupFor = (
 });
 
 export const createReviewProjection = (
-  snapshot: AuthoredFormatSnapshot
+  snapshot: AuthoredReviewProjection
 ): ReviewProjection => {
   const changes = new Map(
     snapshot.changes.map((change) => [change.id, change])
@@ -120,7 +111,6 @@ export const createReviewProjection = (
   const structures = new Map<string, RevisionMarkup>();
   const textSegments: ReviewTextSegment[] = [];
   const diagnostics: DocxDiagnostic[] = [];
-  let segmentId = 0;
   const build = (
     segments: readonly AuthoredFormatSegment[],
     root: string,
@@ -189,12 +179,7 @@ export const createReviewProjection = (
         }
         if (textWrappers.length > 0) wrappers.set(key, textWrappers);
 
-        segmentId += 1;
-
-        return {
-          ...segment.node,
-          [SEGMENT_MARK]: segmentId,
-        };
+        return segment.node;
       }
       const structureId =
         structuralProperties.get(sourceKey) ??
@@ -339,6 +324,7 @@ export const applyReviewProjection = (
 
     if (!host) {
       diagnostics.push({
+        action: 'replaced',
         code: 'unsupported-content',
         feature: 'review-text-wrapper',
         message:
@@ -370,6 +356,7 @@ export const applyReviewProjection = (
 
     if (!host) {
       diagnostics.push({
+        action: 'replaced',
         code: 'unsupported-content',
         feature: 'review-structure-wrapper',
         message:

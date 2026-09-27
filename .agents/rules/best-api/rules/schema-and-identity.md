@@ -20,7 +20,7 @@ standard:
   migration.
 - Keep ordinary domain access direct (`node.indent`, `cell.header`). Use
   `SchemaElementHandle` and `SchemaPropertyHandle` for generic construction,
-  matching, codecs, inspection, and typed property reads.
+  matching, format mappings, inspection, and typed property reads.
 - Inside a plugin `update`, use one object-patch law for node properties:
   `tx.nodes.set({ lineHeight: value }, options)`. Infer owned keys and values
   from the current plugin plus its required dependencies through a shallow
@@ -189,7 +189,7 @@ actual persisted identity of this element occurrence. Name a persisted
 association token `ref` or `refs`, including a token shared by definitions and
 references or one pointing to an external entity. A node may therefore carry
 both its own `id` and a relation `ref`; repeated mentions of one entity share
-`ref` while retaining distinct element IDs. External codec vocabulary such as
+`ref` while retaining distinct element IDs. External format vocabulary such as
 MDAST `identifier` stays at the adapter boundary. Keep semantic addresses such
 as `url` instead of renaming every pointer-like domain field. DOM bindings for live nodes use
 `data-plite-node-key`; feature-owned DOM attributes carrying node keys follow
@@ -249,7 +249,8 @@ Choose the capability by semantics, not by which callback is easiest to type:
 | `read`              | pure, replayable queries over supplied document state                                                                      | it mutates, performs I/O, writes plugin state, or depends on ambient live state |
 | `update`            | document reads and mutations through the active transaction                                                                | it opens a nested one-shot update or owns unrelated I/O                         |
 | native Plite fields | genuine editor-wide substrate through flat fields such as `commands`, `corrections`, `contributions`, `on`, and `activate` | it merely republishes plugin-scoped state, API, reads, or updates               |
-| `codecs`            | format encode/decode declarations                                                                                          | it owns runtime service or mutation behavior                                    |
+| `formats`            | semantic HTML, Markdown, and plain-text node mappings                                                                      | it owns runtime service, mutation behavior, or whole-payload MIME negotiation  |
+| `dataTransferFormats` | whole-payload MIME negotiation                                                                                             | it describes feature syntax rather than a browser transfer representation      |
 
 `api` being immutable describes publication of the method object, not method
 purity. A service may have external or store effects. It may also own a complete

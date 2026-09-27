@@ -1,31 +1,31 @@
 import type {
-  DefinePluginCodecs,
-  PluginCodecMapDeclaration,
+  DefinePluginFormats,
+  PluginFormatMapDeclaration,
 } from './BasePlugin';
 import type {
   AnyBasePluginDefinition,
   PluginReference,
 } from './PluginDefinition';
 
-export const pluginCodecMapDeclaration = Symbol('plate.pluginCodecMap');
+export const pluginFormatMapDeclaration = Symbol('plate.pluginFormatMap');
 
-export function createDefinePluginCodecs<
+export function createDefinePluginFormats<
   C extends AnyBasePluginDefinition,
->(): DefinePluginCodecs<C> {
-  function defineCodecs(
+>(): DefinePluginFormats<C> {
+  function defineFormats(
     ...args:
-      | readonly [codecs: Readonly<Record<string, unknown>>]
+      | readonly [formats: Readonly<Record<string, unknown>>]
       | readonly [
           target: PluginReference,
-          codecs: Readonly<Record<string, unknown>>,
+          formats: Readonly<Record<string, unknown>>,
         ]
-  ): PluginCodecMapDeclaration {
+  ): PluginFormatMapDeclaration {
     const target = args.length === 2 ? args[0] : undefined;
-    const codecs = args.length === 2 ? args[1] : args[0];
-    const html = codecs['text/html'];
+    const formats = args.length === 2 ? args[1] : args[0];
+    const { html } = formats;
     const withTarget = (rule: unknown) =>
       typeof rule === 'object' && rule !== null ? { ...rule, target } : rule;
-    const withNodeCodecTarget = (declaration: unknown) => {
+    const withNodeMappingTarget = (declaration: unknown) => {
       if (target === undefined) return declaration;
       if (Array.isArray(declaration)) {
         return declaration.every(
@@ -51,24 +51,24 @@ export function createDefinePluginCodecs<
     };
     const declaration =
       target === undefined
-        ? codecs
+        ? formats
         : Object.fromEntries(
-            Object.entries(codecs).map(([format, codec]) => [
+            Object.entries(formats).map(([format, mapping]) => [
               format,
-              format === 'text/html'
+              format === 'html'
                 ? Array.isArray(html)
                   ? html.map(withTarget)
                   : withTarget(html)
-                : withNodeCodecTarget(codec),
+                : withNodeMappingTarget(mapping),
             ])
           );
-    const branded: PluginCodecMapDeclaration = {
+    const branded: PluginFormatMapDeclaration = {
       ...declaration,
-      [pluginCodecMapDeclaration]: true,
+      [pluginFormatMapDeclaration]: true,
     };
 
     return branded;
   }
 
-  return defineCodecs;
+  return defineFormats;
 }

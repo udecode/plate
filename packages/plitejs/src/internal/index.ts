@@ -159,12 +159,18 @@ export {
 } from '../core/change/mapping';
 export {
   compileEditorSchemaCapabilityEntries,
+  getEditorAuthoredDocumentCapability,
+  withCompiledEditorSchemaCapabilityEntries,
   compileEditorSchemaContractEntries,
   type PluginsFromOptions,
   type EditorValueFromOptions,
   initializePluginEntries,
   initializePlugins,
 } from '../create-editor';
+export type {
+  NativeAuthoredDocumentProjection,
+  NativeAuthoredProjectionDiagnostic,
+} from '../core/authored-document-capability';
 export {
   areEditorSchemaIdentitiesEqual,
   compileEditorSchemaContributions,
@@ -218,11 +224,13 @@ export type {
   EditorSchemaSourceProvider,
 } from '../core/schema-source.internal';
 export {
+  getEditorRuntimeRoot,
   getEditorRuntime,
   getEditorRuntimeOwner,
   hasEditorRuntime,
   setEditorRuntime,
 } from '../core/editor-runtime';
+export { createEditorReadApi } from '../core/editor-lifecycle-api';
 export type {
   InternalCompiledPluginPublicationEntry,
   InternalPluginPublicationEntry,
@@ -233,6 +241,13 @@ export {
   inheritPluginRegistry,
 } from '../core/plugin-registry';
 export { exportContentSlice } from '../core/editor-read-execution';
+export {
+  serializeStructuralPlainText,
+  type StructuralPlainTextDiagnostic,
+  type StructuralPlainTextEncodeContext,
+  type StructuralPlainTextEncoder,
+  type StructuralPlainTextResult,
+} from '../core/plain-text';
 export {
   applyBuiltDocumentChange,
   getActiveEditorTransaction,
@@ -252,6 +267,7 @@ export {
   getLiveText as getEditorLiveText,
   getSnapshotVersion,
   withTransactionSpecDraftRead,
+  withEditorDocumentProjection,
   getStateFieldEffectTypes,
   repairEditorValue,
   runTrustedUpdate,
@@ -289,6 +305,7 @@ export { createEditorEffect } from '../core/transaction-values';
 export {
   areEditorJsonValuesEqual,
   assertEditorJsonValue,
+  cloneEditorJsonValue,
   snapshotEditorJsonValue,
   decodeEditorEffect,
   decodeVersionedValue,

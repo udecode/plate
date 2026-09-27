@@ -66,9 +66,9 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
   },
   initialState,
 
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/html': [
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      html: [
         {
           decode: ({ element }) => {
             const iframe =
@@ -152,7 +152,7 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
           match: [{ tag: 'iframe' }],
         },
       ],
-      'text/markdown': [
+      markdown: [
         {
           from: type,
           kind: 'node',

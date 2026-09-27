@@ -8,7 +8,7 @@ import {
   type Point,
   type RootKey,
 } from 'plitejs';
-import { hostCodecs } from 'plitejs/dom';
+import { dataTransferFormats } from 'plitejs/dom';
 import type { ClipboardEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -78,13 +78,20 @@ const contentRootPlugin = defineEditorSchema(
     version: 1,
   }
 );
-const projectedHostCodecs = hostCodecs('projected-clipboard-host', [
-  {
-    format: 'text/html',
-    key: 'projected-html',
-    serialize: () => '<article data-projected-host="true">host</article>',
-  },
-]);
+const projectedDataTransferFormats = dataTransferFormats(
+  'projected-clipboard-host',
+  [
+    {
+      mimeType: 'text/html',
+      key: 'projected-html',
+      encode: () => ({
+        data: '<article data-projected-host="true">host</article>',
+        diagnostics: [],
+        ok: true,
+      }),
+    },
+  ]
+);
 
 const paragraph = (
   text: string,
@@ -145,7 +152,7 @@ const createFixture = (
     ? paragraph('Inside', { blockTone: 'cool', emphasis: true })
     : paragraph('Inside');
   const runtime = createEditor({
-    plugins: [contentRootPlugin, projectedHostCodecs],
+    plugins: [contentRootPlugin, projectedDataTransferFormats],
     initialValue: {
       children: [
         mainParagraph,
@@ -493,7 +500,7 @@ describe('projected clipboard', () => {
     ).toEqual(expected);
   });
 
-  it('uses the editor clipboard format key for projected Plite fragment data', () => {
+  it('uses the editor clipboard mimeType key for projected Plite fragment data', () => {
     const { editor } = createFixture();
     const clipboardData = createClipboardData();
 
@@ -519,7 +526,7 @@ describe('projected clipboard', () => {
     );
   });
 
-  it('uses the runtime clipboard format key when projected copy runs from a view editor', () => {
+  it('uses the runtime clipboard mimeType key when projected copy runs from a view editor', () => {
     const { editor } = createFixture();
     const clipboardData = createClipboardData();
     const runtimeEditor = getEditorRuntimeOwner(editor) as ReactRuntimeEditor;

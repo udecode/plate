@@ -1,4 +1,8 @@
-import { createTestEditor } from '../__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from '../__tests__/createTestEditor';
 
 describe('paragraph breaks preservation', () => {
   const editor = createTestEditor();
@@ -40,16 +44,16 @@ describe('paragraph breaks preservation', () => {
     ];
 
     // Serialize to markdown
-    const serialized = editor.api.markdown.serialize({
-      value: { children: originalValue },
-    });
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
 
     // Check that zero-width space is used in serialization
     expect(serialized).toContain('\u200B');
     expect(serialized).toMatch(/line 1\n\n\u200B\n\nline 2\n\nline 3/);
 
     // Deserialize back to Plate AST
-    const deserialized = editor.api.markdown.deserialize(serialized);
+    const deserialized = parseTestMarkdown(editor, serialized);
 
     // Check that the empty paragraph is preserved
     expect(deserialized.children).toHaveLength(4);
@@ -82,10 +86,10 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = editor.api.markdown.serialize({
-      value: { children: originalValue },
-    });
-    const deserialized = editor.api.markdown.deserialize(serialized);
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
+    const deserialized = parseTestMarkdown(editor, serialized);
 
     expect(deserialized.children).toHaveLength(4);
     expect(deserialized.children[1].children[0].text).toBe('');
@@ -120,10 +124,10 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = editor.api.markdown.serialize({
-      value: { children: originalValue },
-    });
-    const deserialized = editor.api.markdown.deserialize(serialized);
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
+    const deserialized = parseTestMarkdown(editor, serialized);
 
     expect(deserialized.children).toHaveLength(6);
     expect(deserialized.children[0].children[0].text).toBe('');
@@ -156,10 +160,10 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = editor.api.markdown.serialize({
-      value: { children: originalValue },
-    });
-    const deserialized = editor.api.markdown.deserialize(serialized);
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
+    const deserialized = parseTestMarkdown(editor, serialized);
 
     expect(deserialized.children).toHaveLength(3);
     expect(deserialized.children[0].children).toHaveLength(3);
@@ -181,10 +185,10 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = editor.api.markdown.serialize({
-      value: { children: originalValue },
-    });
-    const deserialized = editor.api.markdown.deserialize(serialized);
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
+    const deserialized = parseTestMarkdown(editor, serialized);
 
     // The zero-width space in actual text content should be preserved
     expect(deserialized.children[0].children[0].text).toBe(

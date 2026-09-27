@@ -1,0 +1,372 @@
+{
+  "scope_id": "exports",
+  "review_id": "2026-09-24-exports-first-principles-architecture",
+  "checked_at": "2026-09-24",
+  "source_revision": "6a6e8f660f10ede916b90e90b2849e02d95e7d84",
+  "note": "Product files are working-tree observations, not assertions of equality to HEAD. Prior decision rows capture the summary before this review reconciles it; immutable prior reviews retain history. Line bounds clipped to inspected file end.",
+  "reads": [
+    {
+      "id": "plate-menu",
+      "path": "apps/www/src/registry/components/editor/export-toolbar-button.tsx",
+      "lines": [
+        [
+          55,
+          245
+        ]
+      ],
+      "takeaway": "Menu projection warnings and temporary BaseEditorKit conversion",
+      "hash": "fbd13343e1216a55f4c178095b5a929748ef110db76a0937fc72a2b3cb3082fd",
+      "lineCount": 282
+    },
+    {
+      "id": "plate-word-kit",
+      "path": "apps/www/src/registry/components/editor/docx-export.tsx",
+      "lines": [
+        [
+          1,
+          147
+        ]
+      ],
+      "takeaway": "Required Word mappings alongside optional CSS",
+      "hash": "7b1a5dac141e08d3d4357026db7ef36f6c9db0e09ee0114929d7ef2161be0c5d",
+      "lineCount": 147
+    },
+    {
+      "id": "plate-styled-html",
+      "path": "apps/www/src/registry/components/editor/html-export.tsx",
+      "lines": [
+        [
+          1,
+          111
+        ]
+      ],
+      "takeaway": "App-owned document shell and theme",
+      "hash": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "lineCount": 111
+    },
+    {
+      "id": "plate-html-server",
+      "path": "apps/www/src/registry/blocks/html-export/page.tsx",
+      "lines": [
+        [
+          70,
+          145
+        ]
+      ],
+      "takeaway": "Server static-editor rendering and CSS",
+      "hash": "378bf330f000d9d942290ee2387649ceffd257450d94c35e576a2be97cabae25",
+      "lineCount": 161
+    },
+    {
+      "id": "plate-md-server",
+      "path": "apps/www/src/app/(app)/docs/examples/server-side/page.tsx",
+      "lines": [
+        [
+          45,
+          85
+        ]
+      ],
+      "takeaway": "Server creates editor to serialize Markdown",
+      "hash": "6f4d2fde8c659bc4a3f94ad65d265fac556d061c65e79aa0f12a16f501c232d9",
+      "lineCount": 97
+    },
+    {
+      "id": "plate-ai-md",
+      "path": "packages/platejs/src/ai/react/AIChatPlugin.ts",
+      "lines": [
+        [
+          430,
+          475
+        ]
+      ],
+      "takeaway": "Whole/block/selection/table value inputs",
+      "hash": "128279a813755dfcc68204c7ed46635db092ddfa81de35f829f51caf12225acc",
+      "lineCount": 1833
+    },
+    {
+      "id": "plate-static",
+      "path": "packages/platejs/src/static/renderStaticHtml.tsx",
+      "lines": [
+        [
+          1,
+          57
+        ]
+      ],
+      "takeaway": "Awaits before consuming supplied editor",
+      "hash": "d598a7e01d0feb6f344e4ecfba0eba085c53d95828a809cb925bcbc6d7f4aa46",
+      "lineCount": 57
+    },
+    {
+      "id": "plate-authored-html",
+      "path": "packages/platejs/src/static/authoredHtml.ts",
+      "lines": [
+        [
+          1,
+          140
+        ]
+      ],
+      "takeaway": "Captured projection uses new editor; review envelope",
+      "hash": "28f878672a2a7d3f797b11ac1458fcd697e33b0ce6b7490ccea06ee32f83c48d",
+      "lineCount": 141
+    },
+    {
+      "id": "plate-static-construction",
+      "path": "packages/platejs/src/static/editor/withStatic.tsx",
+      "lines": [
+        [
+          1,
+          86
+        ]
+      ],
+      "takeaway": "Static constructor still creates runtime",
+      "hash": "a7049ff7b1f5a91235238bb502a9c39c05220eebcb6d74c85afaff9467e70d33",
+      "lineCount": 94
+    },
+    {
+      "id": "plate-static-slots",
+      "path": "packages/platejs/src/static/components/PlateStatic.tsx",
+      "lines": [
+        [
+          1,
+          230
+        ]
+      ],
+      "takeaway": "Schema content root slots and cycles",
+      "hash": "f78b148302b2ad83d21a4d4649048900f9c2656257bc8b779911c0069e5384d3",
+      "lineCount": 449
+    },
+    {
+      "id": "plate-editor-construction",
+      "path": "packages/platejs/src/lib/editor/withPlite.ts",
+      "lines": [
+        [
+          650,
+          700
+        ],
+        [
+          1313,
+          1354
+        ]
+      ],
+      "takeaway": "createEditor initializes plugin runtime",
+      "hash": "ff180fe794f1f67050d340807bdb30dc1e4b494071ffa493f24428a6b56546ce",
+      "lineCount": 1354
+    },
+    {
+      "id": "plate-html-compiler",
+      "path": "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+      "lines": [
+        [
+          2530,
+          2995
+        ]
+      ],
+      "takeaway": "Semantic encoder; host fallback; deserialize-only API",
+      "hash": "7f54efe008ba66070193c7152de69824aaf281e340a8b789dd731f2e8b5806f0",
+      "lineCount": 3009
+    },
+    {
+      "id": "plate-model-compile",
+      "path": "packages/platejs/src/internal/plugin/compilePlateModel.ts",
+      "lines": [
+        [
+          1,
+          165
+        ]
+      ],
+      "takeaway": "Publication bindings and editor-bound schema evaluation",
+      "hash": "326cd9dae47df6c70342e74032a02807caa947cf1007b25c730af0fa12f61793",
+      "lineCount": 1891
+    },
+    {
+      "id": "plate-host-adapter",
+      "path": "packages/platejs/src/internal/plugin/compilePlateCodecs.ts",
+      "lines": [
+        [
+          1,
+          360
+        ]
+      ],
+      "takeaway": "MIME dispatch and fallback",
+      "hash": "efbd38042ea499f3426a1d423e5f17d1419ff8c76e86757722ec4e359691c22f",
+      "lineCount": 383
+    },
+    {
+      "id": "plate-md-owner",
+      "path": "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+      "lines": [
+        [
+          1,
+          290
+        ]
+      ],
+      "takeaway": "Installed config/integration; separate authored serializer",
+      "hash": "dea940b45e0d3ec9fdd6a3ae4d156723deba50a58e360a55e1549525a60f2997",
+      "lineCount": 290
+    },
+    {
+      "id": "plate-md-runtime",
+      "path": "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",
+      "lines": [
+        [
+          1,
+          220
+        ]
+      ],
+      "takeaway": "Detached value path closes over editor lookups",
+      "hash": "fdd4c6d79b132f2023c8f7b0f05083a70fb75e9c8d39d431c8e2264c60ce056b",
+      "lineCount": 533
+    },
+    {
+      "id": "plate-md-contract",
+      "path": "packages/platejs/src/markdown/lib/types.ts",
+      "lines": [
+        [
+          1,
+          310
+        ]
+      ],
+      "takeaway": "Filtering/remark/rules/value and result types",
+      "hash": "eb5716e2804e79d6cd5c574eae3ae36bc73cf625bfbd5b44f8e828ded247117c",
+      "lineCount": 378
+    },
+    {
+      "id": "plate-md-loss",
+      "path": "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts",
+      "lines": [
+        [
+          1,
+          217
+        ]
+      ],
+      "takeaway": "Missing handler warns and returns undefined",
+      "hash": "8cf475bc202a58416e8aafb2f6e1ddcb4747ff6b3da8f754637b0834ac4b6ffb",
+      "lineCount": 217
+    },
+    {
+      "id": "plate-docx",
+      "path": "packages/platejs/src/docx/export/lib/exportToDocx.tsx",
+      "lines": [
+        [
+          1,
+          550
+        ]
+      ],
+      "takeaway": "Snapshot/source; per-body editors; HTML bridge",
+      "hash": "0e2247ec87fefcf449595b278a16f5fa2080fdf33e506a47af09577c1f76ba1a",
+      "lineCount": 550
+    },
+    {
+      "id": "plate-csv",
+      "path": "packages/platejs/src/csv/lib/CsvPlugin.ts",
+      "lines": [
+        [
+          1,
+          130
+        ]
+      ],
+      "takeaway": "Import/paste job",
+      "hash": "ef1e23f3436263470e57fbddfd820db22b38090e0760cc2ede3346484a334526",
+      "lineCount": 175
+    },
+    {
+      "id": "plite-authored-format",
+      "path": "packages/plitejs/src/authored/format.ts",
+      "lines": [
+        [
+          94,
+          115
+        ],
+        [
+          302,
+          413
+        ]
+      ],
+      "takeaway": "Targeted/full projection and JSON",
+      "hash": "2b10df8e8e2490e51dd346b34741ec834c7e8f02f600980342f3f3e98a34b690",
+      "lineCount": 413
+    },
+    {
+      "id": "plite-authored-admission",
+      "path": "packages/plitejs/src/authored/checkpoint.ts",
+      "lines": [
+        [
+          323,
+          394
+        ]
+      ],
+      "takeaway": "Internal detached admission",
+      "hash": "adadcfedbd7a0c75d4cec96af91f7665091155ee3613148832c7bdf023925b2a",
+      "lineCount": 451
+    },
+    {
+      "id": "plite-host-codec",
+      "path": "packages/plitejs/src/dom/plugin/host-codec.ts",
+      "lines": [
+        [
+          1,
+          170
+        ],
+        [
+          790,
+          846
+        ]
+      ],
+      "takeaway": "Synchronous ContentSlice and fallback",
+      "hash": "eee0e986bc5162ecec43652e58ec8597b98d96abf94e040fe91bbb9271cff841",
+      "lineCount": 846
+    },
+    {
+      "id": "plite-persistence",
+      "path": "packages/plitejs/src/core/persisted-document.ts",
+      "lines": [
+        [
+          1,
+          82
+        ]
+      ],
+      "takeaway": "Canonical metadata/snapshot ownership",
+      "hash": "efc8e669b9cb6cd77cb42e265dc8ce53ccb397ea2e21254b0a31e0117d831a6a",
+      "lineCount": 82
+    },
+    {
+      "id": "plate-export-docs",
+      "path": "content/docs/examples/export.mdx",
+      "lines": [
+        [
+          1,
+          94
+        ]
+      ],
+      "takeaway": "Menu promises and Plus server PDF",
+      "hash": "aa2cd91c01e1f93c4c9dbc9a62318336ec43a96fd2b0f733bc96a6f4ab779e01",
+      "lineCount": 94
+    },
+    {
+      "id": "prior-exports-decision",
+      "path": "docs/research/decisions/export-fidelity.md",
+      "lines": [
+        [
+          1,
+          170
+        ]
+      ],
+      "takeaway": "Retain repair; reopen topology",
+      "hash": "36c2e008a079e14e209f8f9d6f7e233b114dac5954fce05705fb28c8609d00f3",
+      "lineCount": 170
+    },
+    {
+      "id": "prior-docx-decision",
+      "path": "docs/research/decisions/documents-conversion-fidelity.md",
+      "lines": [
+        [
+          1,
+          220
+        ]
+      ],
+      "takeaway": "Source artifact retained; direct OOXML still provisional",
+      "hash": "5fb0180c2b81cfae47ed40abd33e344f5685a6e684219dbd558d05235c4d065d",
+      "lineCount": 251
+    }
+  ]
+}

@@ -12,8 +12,9 @@ import {
   defineEditorSchema,
   definePlugin,
   defineStateField,
-  defineValueCodec,
   type EditorEffect,
+  type EditorJsonValue,
+  type EditorValuePersistence,
   ElementApi,
   type Point,
   PointApi,
@@ -100,7 +101,7 @@ describe('plitejs/yjs remote import contract', () => {
       key: 'document.title',
       collab: 'shared',
       initial: () => 'Q2 Plan',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const documentState = definePlugin('shared-document-state', {
       stateFields: [documentTitle],
@@ -137,7 +138,7 @@ describe('plitejs/yjs remote import contract', () => {
 
   it('transports registered domain effects exactly once', () => {
     const increment = defineEffect<number>({
-      codec: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       key: 'counter.increment',
       collab: 'shared',
       collabReplay: 'live',
@@ -192,7 +193,7 @@ describe('plitejs/yjs remote import contract', () => {
 
   it('transports a shared effect without a state reducer', () => {
     const announce = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       key: 'announcement.effect-only',
       collab: 'shared',
       collabReplay: 'live',
@@ -257,11 +258,11 @@ describe('plitejs/yjs remote import contract', () => {
   it('preserves effect type identity and deeply frozen values through Yjs', () => {
     type Payload = { nested: { count: number } };
     const nested = defineEffect<Payload>({
-      codec: defineValueCodec<Payload>({
+      persist: {
         decode: (value) => value as Payload,
-        encode: (value) => value,
+        encode: (value) => value as unknown as EditorJsonValue,
         version: 1,
-      }),
+      },
       collab: 'shared',
       collabReplay: 'live',
       key: 'effect-codec-identity.nested',
@@ -339,7 +340,7 @@ describe('plitejs/yjs remote import contract', () => {
 
   it('converges concurrent shared effects exactly once', () => {
     const increment = defineEffect<number>({
-      codec: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       key: 'counter.concurrent-increment',
       collab: 'shared',
       collabReplay: 'live',
@@ -415,13 +416,13 @@ describe('plitejs/yjs remote import contract', () => {
 
   it('blocks unknown shared effects until the application retries with the codec', () => {
     const effectA = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       key: 'source-a.effect',
       collab: 'shared',
       collabReplay: 'live',
     });
     const effectB = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       key: 'source-b.effect',
       collab: 'shared',
       collabReplay: 'live',
@@ -523,7 +524,7 @@ describe('plitejs/yjs remote import contract', () => {
 
   it('imports a document change and its shared effect atomically', () => {
     const increment = defineEffect<number>({
-      codec: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       key: 'counter.atomic-increment',
       collab: 'shared',
       collabReplay: 'live',
@@ -610,13 +611,13 @@ describe('plitejs/yjs remote import contract', () => {
 
   it('retries shared effects after the matching codec is installed', () => {
     const incrementV1 = defineEffect<number>({
-      codec: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       key: 'counter.versioned-increment',
       collab: 'shared',
       collabReplay: 'live',
     });
     const incrementV2 = defineEffect<number>({
-      codec: defineValueCodec({
+      persist: {
         decode(value) {
           if (typeof value !== 'number') {
             throw new Error('Expected a numeric increment.');
@@ -626,7 +627,7 @@ describe('plitejs/yjs remote import contract', () => {
         },
         encode: (value) => value,
         version: 2,
-      }),
+      },
       key: incrementV1.key,
       collab: 'shared',
       collabReplay: 'live',
@@ -711,7 +712,7 @@ describe('plitejs/yjs remote import contract', () => {
   it('maps shared effect positions through concurrent Yjs document changes', () => {
     type RelativeTargets = { point: Point; range: Range };
 
-    const targetsCodec = defineValueCodec<RelativeTargets>({
+    const targetsPersistence = {
       decode(value) {
         if (
           typeof value !== 'object' ||
@@ -724,11 +725,10 @@ describe('plitejs/yjs remote import contract', () => {
 
         return value as RelativeTargets;
       },
-      encode: (value) => value,
+      encode: (value) => value as unknown as EditorJsonValue,
       version: 1,
-    });
+    } satisfies EditorValuePersistence<RelativeTargets, EditorJsonValue>;
     const focus = defineEffect<RelativeTargets>({
-      codec: targetsCodec,
       collab: 'shared',
       collabReplay: 'live',
       collabTransport: {
@@ -745,6 +745,7 @@ describe('plitejs/yjs remote import contract', () => {
           range: context.range(value.range),
         }),
       },
+      persist: targetsPersistence,
       history: 'skip',
       key: 'collab.focus-targets',
     });

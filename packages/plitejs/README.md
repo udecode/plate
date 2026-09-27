@@ -52,7 +52,7 @@ editor.update.fragment.replace([
 ]);
 ```
 
-Persist state fields and shared effects through versioned codecs. Primitive values use `valueCodecs`; custom values use `defineValueCodec`. Install each standalone effect descriptor once through an plugin's `effects` resource.
+Persist state fields and shared effects through `EditorValuePersistence`. Its `decode` and `encode` functions map live and JSON values; `version` and `legacyDecoders` own stored envelope history. Primitive mappings use `valueCodecs`. Install each standalone effect descriptor once through a plugin's `effectTypes` resource.
 
 ```ts
 import { defineStateField, valueCodecs } from 'plitejs';
@@ -60,7 +60,7 @@ import { defineStateField, valueCodecs } from 'plitejs';
 const documentTitle = defineStateField({
   key: 'document.title',
   initial: () => 'Untitled',
-  persist: valueCodecs.string,
+  persist: { ...valueCodecs.string, version: 1 },
 });
 ```
 

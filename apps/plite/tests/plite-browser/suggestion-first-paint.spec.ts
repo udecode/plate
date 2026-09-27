@@ -59,7 +59,7 @@ test('paints the first typed character after restoring suggestions', async ({
 
   expect(secondPaint).toMatchObject({
     model: 'Before React. wwcapabilities',
-    spans: ['w', 'w'],
+    spans: ['ww'],
   });
   expect(secondPaint.text).toContain('. wwcapabilities');
   expect(errors).toEqual([]);

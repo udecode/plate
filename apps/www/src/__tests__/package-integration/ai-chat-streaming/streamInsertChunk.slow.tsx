@@ -24,8 +24,10 @@ const streamChunks = (chunks: string[]) => {
 
 const getStreamedMarkdown = (chunks: string[]) => {
   const editor = streamChunks(chunks);
-  const deserialized = editor.api.markdown.deserialize(chunks.join(''));
-  const { editor: expectedEditor } = createTestEditor(deserialized);
+  const parsed = editor.api.markdown.parse(chunks.join(''));
+
+  if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
+  const { editor: expectedEditor } = createTestEditor(parsed.document);
 
   return { editor, expected: expectedEditor.read.children() };
 };
@@ -312,7 +314,7 @@ describe('AIChatPlugin response drafts', () => {
           '- [ ] Task list item 1',
         ],
       ],
-    ])('matches editor.api.markdown.deserialize for %s', (_label, chunks) => {
+    ])('matches editor.api.markdown.parse for %s', (_label, chunks) => {
       const { editor, expected } = getStreamedMarkdown(chunks);
 
       expect(editor.read.children()).toEqual(expected);

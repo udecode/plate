@@ -566,6 +566,27 @@ describe('native authored views', () => {
     assert.equal(proposed.read.text.string([]), 'Base');
   });
 
+  it('reports whether the current identity can own proposal writes', () => {
+    let authorId: string | null = null;
+    const editor = createEditor({
+      plugins: [authored({ authorId: () => authorId })],
+      initialValue: [paragraph('Base')],
+    });
+
+    assert.equal(editor.read.authored.canPropose(), false);
+    editor.api.authored.setView(proposal);
+    assert.throws(
+      () => editor.update.text.insert(' draft', { at: point(4) }),
+      /author ID is required/
+    );
+    assert.deepEqual(editor.read.authored.view(), proposal);
+
+    authorId = 'alice';
+    assert.equal(editor.read.authored.canPropose(), true);
+    editor.update.text.insert(' draft', { at: point(4) });
+    assert.equal(editor.read.authored.changes().items.length, 1);
+  });
+
   it('retains a named-root caret through decisions and a projection switch', () => {
     const source = createEditor({
       plugins: [authored({ authorId: 'alice' })],

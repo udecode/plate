@@ -6,7 +6,13 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { type Descendant, type Element, NodeApi } from 'plitejs';
+import {
+  type Descendant,
+  defineEffect,
+  definePlugin,
+  type Element,
+  NodeApi,
+} from 'plitejs';
 import { authored } from 'plitejs/authored';
 import { history } from 'plitejs/history';
 import type { ReactNode } from 'react';
@@ -25,6 +31,46 @@ const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+
+  return { promise, resolve };
+};
+
+let nextSessionEffect = 1;
+
+const createPendingHistoryEditor = () => {
+  const gate = deferred<void>();
+  const sessionEffect = defineEffect<
+    Readonly<{ previous: string; value: string }>
+  >({
+    history: {
+      replay: async (_editor, transition) => {
+        await gate.promise;
+
+        return { status: 'applied', value: transition };
+      },
+    },
+    invert: ({ previous, value }) => ({ previous: value, value: previous }),
+    key: `react.history.session.${nextSessionEffect}`,
+  });
+  nextSessionEffect += 1;
+  const editor = createEditor({
+    plugins: [
+      history(),
+      definePlugin(`react-history-session-${nextSessionEffect}`, {
+        effectTypes: [sessionEffect],
+      }),
+    ],
+    initialValue: [paragraph('body')],
+  });
+
+  return { editor, gate, sessionEffect };
+};
 
 const editorText = (editor: {
   read: <T>(
@@ -94,23 +140,135 @@ describe('useEditorHistory', () => {
       });
     });
 
-    let undoResult: Awaited<ReturnType<typeof result.current.undo>> | undefined;
+    let undoResult: unknown;
     await act(async () => {
-      undoResult = await result.current.undo();
+      undoResult = result.current.undo();
     });
 
-    expect(undoResult).toEqual({ status: 'applied' });
+    expect(undoResult).toBeUndefined();
     expect(editorText(editor)).toBe('body');
     expect(result.current.canUndo).toBe(false);
     expect(result.current.canRedo).toBe(true);
 
     await act(async () => {
-      await result.current.redo();
+      result.current.redo();
     });
 
     expect(editorText(editor)).toBe('body!');
     expect(result.current.canUndo).toBe(true);
     expect(result.current.canRedo).toBe(false);
+  });
+
+  test('disables controls while pending and reports a repeated shortcut as busy', async () => {
+    const { editor, gate, sessionEffect } = createPendingHistoryEditor();
+    const onHistoryReplay = vi.fn();
+    let controller!: ReturnType<typeof useEditorHistory>;
+
+    const Controls = () => {
+      controller = useEditorHistory();
+
+      return (
+        <input aria-label="History shortcut" onKeyDown={controller.onKeyDown} />
+      );
+    };
+
+    render(
+      <EditorRoot editor={editor}>
+        <Editable
+          aria-label="History editor"
+          onHistoryReplay={onHistoryReplay}
+        />
+        <Controls />
+      </EditorRoot>
+    );
+
+    act(() => {
+      editor.update({ history: 'new-batch' }, (tx) => {
+        tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+      });
+    });
+
+    expect(editor.read.history.hasUndo()).toBe(true);
+    let replayResult: unknown;
+    act(() => {
+      replayResult = controller.undo();
+    });
+    expect(replayResult).toBeUndefined();
+
+    expect(editor.read.history.pending()).toBe('undo');
+    await waitFor(() => {
+      expect(controller.pending).toBe('undo');
+      expect(controller.canUndo).toBe(false);
+      expect(controller.canRedo).toBe(false);
+    });
+
+    fireEvent.keyDown(screen.getByLabelText('History shortcut'), {
+      code: 'KeyZ',
+      ctrlKey: true,
+      key: 'z',
+    });
+
+    await waitFor(() => {
+      expect(onHistoryReplay).toHaveBeenCalledWith({
+        direction: 'undo',
+        result: { status: 'busy' },
+      });
+    });
+
+    gate.resolve();
+
+    await waitFor(() => {
+      expect(controller.pending).toBeNull();
+      expect(onHistoryReplay).toHaveBeenCalledWith({
+        direction: 'undo',
+        result: { status: 'applied' },
+      });
+    });
+    expect(onHistoryReplay).toHaveBeenCalledTimes(2);
+  });
+
+  test('reports keyboard replay only to the initiating editable', async () => {
+    const editor = createEditor({
+      plugins: [history()],
+      initialValue: [paragraph('body')],
+    });
+    const firstReplay = vi.fn();
+    const secondReplay = vi.fn();
+
+    render(
+      <EditorRoot editor={editor}>
+        <Editable
+          aria-label="First history editor"
+          onHistoryReplay={firstReplay}
+        />
+        <Editable
+          aria-label="Second history editor"
+          onHistoryReplay={secondReplay}
+        />
+      </EditorRoot>
+    );
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+    });
+
+    const first = screen.getByLabelText('First history editor');
+
+    first.focus();
+    fireEvent.keyDown(first, {
+      code: 'KeyZ',
+      ctrlKey: true,
+      key: 'z',
+    });
+
+    await waitFor(() => {
+      expect(firstReplay).toHaveBeenCalledWith({
+        direction: 'undo',
+        result: { status: 'applied' },
+      });
+    });
+    expect(firstReplay).toHaveBeenCalledTimes(1);
+    expect(secondReplay).not.toHaveBeenCalled();
   });
 
   for (const action of ['accept', 'reject'] as const) {

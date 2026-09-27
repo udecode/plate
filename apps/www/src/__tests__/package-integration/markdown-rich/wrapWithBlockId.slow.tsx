@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@platejs/test';
-import type { MdParagraph } from 'platejs/markdown';
+import type { Paragraph as MdParagraph } from 'mdast';
 
 import { wrapWithBlockId } from '../../../../../../packages/platejs/src/markdown/lib/serializer/wrapWithBlockId';
 import { createTestEditor } from './createTestEditor';
@@ -9,6 +9,15 @@ import { createTestEditor } from './createTestEditor';
 jsx;
 
 const editor = createTestEditor({ elementIds: true });
+const serializeMarkdown = (
+  options: Parameters<typeof editor.api.markdown.serialize>[0]
+) => {
+  const result = editor.api.markdown.serialize(options);
+
+  if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+  return result.data;
+};
 
 describe('wrapWithBlockId', () => {
   describe('unit tests', () => {
@@ -59,8 +68,8 @@ describe('wrapWithBlockId', () => {
         },
       ];
 
-      const result = editor.api.markdown.serialize({
-        value: { children: slateNodes },
+      const result = serializeMarkdown({
+        document: { children: slateNodes },
         withBlockId: true,
       });
 
@@ -76,8 +85,8 @@ describe('wrapWithBlockId', () => {
       ];
 
       expect(() =>
-        editor.api.markdown.serialize({
-          value: { children: slateNodes },
+        serializeMarkdown({
+          document: { children: slateNodes },
           withBlockId: true,
         })
       ).toThrow('Element ID must be a non-empty string.');
@@ -98,8 +107,8 @@ describe('wrapWithBlockId', () => {
         },
       ];
 
-      const result = editor.api.markdown.serialize({
-        value: { children: slateNodes },
+      const result = serializeMarkdown({
+        document: { children: slateNodes },
         withBlockId: true,
       });
 
@@ -128,8 +137,8 @@ describe('wrapWithBlockId', () => {
         </htable>
       );
 
-      const result = editor.api.markdown.serialize({
-        value: { children: [slateNodes] },
+      const result = serializeMarkdown({
+        document: { children: [slateNodes] },
         withBlockId: true,
       });
 
@@ -167,8 +176,8 @@ describe('wrapWithBlockId', () => {
         },
       ];
 
-      const result = editor.api.markdown.serialize({
-        value: { children: slateNodes },
+      const result = serializeMarkdown({
+        document: { children: slateNodes },
         withBlockId: true,
       });
 
@@ -193,8 +202,8 @@ describe('wrapWithBlockId', () => {
         },
       ];
 
-      const result = editor.api.markdown.serialize({
-        value: { children: slateNodes },
+      const result = serializeMarkdown({
+        document: { children: slateNodes },
         withBlockId: true,
       });
 

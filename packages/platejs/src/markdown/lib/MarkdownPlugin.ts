@@ -1,12 +1,7 @@
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
-import type { Pluggable } from 'unified';
 
 import {
-  readAuthoredFormatSnapshot,
-  type AuthoredFormatDiagnostic,
-} from '../../authored';
-import {
-  ContentSlice,
+  type ContentSlice,
   definePlugin,
   ElementApi,
   NodeApi,
@@ -14,28 +9,45 @@ import {
   type DefinitionOf,
   type Descendant,
   type Editor,
+  type EditorApplicationSchema,
   type EditorCoreStateView,
   type EditorDocumentValue,
+  type Element,
+  TextApi,
+  type Value,
   isUrl,
 } from '../../core';
+import type { RuntimePluginReference } from '../../facade';
 import {
-  appendAuthoredMarkdownEnvelope,
-  readAuthoredMarkdownEnvelope,
-} from './internal/authoredMarkdown';
+  projectPlateFormatDocument,
+  withPlateFormatCompilation,
+} from '../../lib/editor/withPlite';
 import {
+  createMarkdownOperationRuntime,
   createMarkdownRuntime,
-  deserializeInlineMdWithRuntime,
-  deserializeMdWithRuntime,
-  serializeMdWithRuntime,
+  parseMarkdownDocumentWithRuntime,
+  parseMarkdownInlineWithRuntime,
+  parseMarkdownSliceWithRuntime,
+  prepareMarkdownRuntime,
+  serializeMarkdownWithRuntime,
   withMarkdownRuntime,
 } from './internal/markdownConversion';
+import { markdownMappingsRegistryKey } from './internal/markdownMappings';
 import type {
   AllowNodeConfig,
-  AuthoredMarkdownResult,
-  DeserializeMdOptions,
+  MarkdownDocumentParseResult,
+  MarkdownDocumentParseResultFromPlugins,
+  MarkdownDocumentValueFromPlugins,
+  MarkdownEditorSerializeOptions,
+  MarkdownParseOptions,
+  MarkdownParsePolicy,
   MarkdownNodeName,
-  SerializeMdOptions,
-  SerializeAuthoredMarkdownOptions,
+  MarkdownSerializeOptions,
+  MarkdownSerializeResult,
+  MarkdownSliceParseResult,
+  MarkdownSliceParseResultFromPlugins,
+  MarkdownSyncPluggable,
+  MarkdownWarningDiagnostic,
 } from './types';
 
 export type MarkdownPluginState = {
@@ -48,39 +60,28 @@ export type MarkdownPluginState = {
   /** Marks serialized as plain text. */
   plainMarks: readonly MarkdownNodeName[] | null;
   /** Remark plugins used for parsing and serialization. */
-  remarkPlugins: readonly Pluggable[];
+  remarkPlugins: readonly MarkdownSyncPluggable[];
   /** Options passed to `remark-stringify`. */
   remarkStringifyOptions: RemarkStringifyOptions | null;
 };
 
-export type MarkdownApi = {
-  deserialize: (
-    data: string,
-    options?: DeserializeMdOptions
-  ) => EditorDocumentValue;
-  deserializeInline: (
-    text: string,
-    options?: DeserializeMdOptions
-  ) => Descendant[];
-  serializeAuthored: (
-    options: SerializeAuthoredMarkdownOptions
-  ) => AuthoredMarkdownResult;
-  serialize: (options?: SerializeMdOptions) => string;
+export type MarkdownApi<V extends Value = Value> = {
+  parse: (
+    source: string,
+    options?: MarkdownParsePolicy
+  ) => MarkdownDocumentParseResult<V>;
+  parseInline: (
+    source: string,
+    options?: MarkdownParsePolicy
+  ) => MarkdownSliceParseResult<V>;
+  parseSlice: (
+    source: string,
+    options?: MarkdownParsePolicy
+  ) => MarkdownSliceParseResult<V>;
+  serialize: (
+    options?: MarkdownEditorSerializeOptions
+  ) => MarkdownSerializeResult;
 };
-
-const lossyProjectionDiagnostic = (
-  projection: 'accepted' | 'proposed',
-  count: number
-): readonly AuthoredFormatDiagnostic[] =>
-  count === 0
-    ? []
-    : [
-        Object.freeze({
-          code: 'authored-lossy-projection' as const,
-          message: `${projection} projection omits ${count} pending authored change${count === 1 ? '' : 's'}.`,
-          severity: 'warning' as const,
-        }),
-      ];
 
 const shouldParseMarkdown = (
   data: string,
@@ -92,169 +93,344 @@ const shouldParseMarkdown = (
   return true;
 };
 
-export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
-  codecs: ({ defineCodecs, editor, store }) => {
-    const decode = (data: string, state: EditorCoreStateView) => {
-      const document = deserializeMdWithRuntime(
-        createMarkdownRuntime(editor, store.get(), state),
-        data
-      );
+type MarkdownRuntime = ReturnType<typeof createMarkdownOperationRuntime>;
 
-      return ContentSlice.closed(document.children);
-    };
-    return defineCodecs({
-      'text/markdown': {
-        scope: 'document',
-        decode: ({ data, state }) => decode(data, state),
-        encode: ({ slice, state }) => {
-          const runtime = createMarkdownRuntime(editor, store.get(), state);
-          const serialize = (children: readonly Descendant[]) =>
-            serializeMdWithRuntime(runtime, undefined, {
-              children: [...children],
-            });
+const createMarkdownDocument = (
+  runtime: MarkdownRuntime,
+  children: readonly Descendant[],
+  roots?: Readonly<Record<string, readonly Descendant[]>>
+): EditorDocumentValue => {
+  const output: Element[] = [];
+  let inline: Descendant[] = [];
+  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const flushInline = () => {
+    if (inline.length === 0) return;
+    output.push({ children: inline, type: paragraphType });
+    inline = [];
+  };
 
-          if (slice.openStart === 0 && slice.openEnd === 0) {
-            return serialize(slice.content);
-          }
+  children.forEach((node) => {
+    if (TextApi.isText(node) || runtime.state.schema.isInline(node)) {
+      inline.push(node);
 
-          const paragraphType =
-            runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+      return;
+    }
+    flushInline();
+    output.push(node as Element);
+  });
+  flushInline();
 
-          function serializeOpenNodes(
-            nodes: readonly Descendant[],
-            openStart: number,
-            openEnd: number
-          ): string {
-            const lastIndex = nodes.length - 1;
+  return {
+    children: output,
+    ...(roots ? { roots: roots as Readonly<Record<string, Value>> } : {}),
+  };
+};
 
-            return nodes
-              .map((node, index) =>
-                serializeOpenNode(
-                  node,
-                  index === 0 ? openStart : 0,
-                  index === lastIndex ? openEnd : 0
-                )
-              )
-              .join('\n\n');
-          }
+const serializeMarkdownDataTransferSlice = (
+  runtime: MarkdownRuntime,
+  slice: ContentSlice,
+  state: EditorCoreStateView
+): MarkdownSerializeResult => {
+  if (slice.openStart === 0 && slice.openEnd === 0) {
+    return serializeMarkdownWithRuntime(
+      runtime,
+      createMarkdownDocument(runtime, slice.content, slice.roots)
+    );
+  }
+  const diagnostics: MarkdownWarningDiagnostic[] = [];
+  let failure: Extract<MarkdownSerializeResult, { ok: false }> | null = null;
+  const serialize = (children: readonly Descendant[]) => {
+    const result = serializeMarkdownWithRuntime(
+      runtime,
+      createMarkdownDocument(runtime, children)
+    );
 
-          function serializeOpenNode(
-            node: Descendant,
-            openStart: number,
-            openEnd: number
-          ): string {
-            if (
-              (openStart === 0 && openEnd === 0) ||
-              !ElementApi.isElement(node)
-            ) {
-              return serialize([node]).trimEnd();
-            }
+    if (!result.ok) {
+      failure = result;
 
-            if (typeof node.rawCode === 'string') return node.rawCode;
+      return '';
+    }
+    diagnostics.push(...result.diagnostics);
 
-            const hasOnlyInlineChildren = node.children.every(
-              (child) =>
-                !ElementApi.isElement(child) || state.schema.isInline(child)
-            );
+    return result.data;
+  };
+  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const serializeOpenNodes = (
+    nodes: readonly Descendant[],
+    openStart: number,
+    openEnd: number
+  ): string => {
+    const lastIndex = nodes.length - 1;
 
-            if (
-              hasOnlyInlineChildren &&
-              state.schema.element(node.type)?.slice.preserveContext
-            ) {
-              return NodeApi.string(node);
-            }
+    return nodes
+      .map((node, index) =>
+        serializeOpenNode(
+          node,
+          index === 0 ? openStart : 0,
+          index === lastIndex ? openEnd : 0
+        )
+      )
+      .join('\n\n');
+  };
+  const serializeOpenNode = (
+    node: Descendant,
+    openStart: number,
+    openEnd: number
+  ): string => {
+    if ((openStart === 0 && openEnd === 0) || !ElementApi.isElement(node)) {
+      return serialize([node]).trimEnd();
+    }
+    if (typeof node.rawCode === 'string') return node.rawCode;
 
-            if (hasOnlyInlineChildren) {
-              return serialize([
-                {
-                  children: node.children,
-                  type: paragraphType,
-                },
-              ]).trimEnd();
-            }
+    const hasOnlyInlineChildren = node.children.every(
+      (child) => !ElementApi.isElement(child) || state.schema.isInline(child)
+    );
 
-            const unwrapped = serializeOpenNodes(
-              node.children,
-              Math.max(0, openStart - 1),
-              Math.max(0, openEnd - 1)
-            );
-
-            return unwrapped.trim()
-              ? unwrapped
-              : node.children.map(NodeApi.string).join('\n');
-          }
-
-          if (slice.content.length === 0) return '';
-
-          return `${serializeOpenNodes(
-            slice.content,
-            slice.openStart,
-            slice.openEnd
-          )}\n`;
+    if (
+      hasOnlyInlineChildren &&
+      state.schema.element(node.type)?.slice.preserveContext
+    ) {
+      return NodeApi.string(node);
+    }
+    if (hasOnlyInlineChildren) {
+      return serialize([
+        {
+          children: node.children,
+          type: paragraphType,
         },
-        query: ({ data, source }) => shouldParseMarkdown(data, source),
-      },
-      'text/plain': {
-        scope: 'document',
-        decode: ({ data, state }) => decode(data, state),
-        query: ({ data, source }) => shouldParseMarkdown(data, source),
-      },
-    });
+      ]).trimEnd();
+    }
+    const unwrapped = serializeOpenNodes(
+      node.children,
+      Math.max(0, openStart - 1),
+      Math.max(0, openEnd - 1)
+    );
+
+    return unwrapped.trim()
+      ? unwrapped
+      : node.children.map(NodeApi.string).join('\n');
+  };
+  const data =
+    slice.content.length === 0
+      ? ''
+      : `${serializeOpenNodes(
+          slice.content,
+          slice.openStart,
+          slice.openEnd
+        )}\n`;
+
+  if (failure) return failure;
+
+  return Object.freeze({
+    data,
+    diagnostics: Object.freeze(diagnostics),
+    ok: true,
+  });
+};
+
+export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
+  dataTransferFormats: [
+    {
+      mimeType: 'text/markdown',
+      scope: 'document',
+      decode: ({ data, pluginState, registry, schema, state }) =>
+        parseMarkdownSliceWithRuntime(
+          createMarkdownOperationRuntime({
+            pluginState,
+            registry,
+            schema,
+            state,
+          }),
+          data
+        ),
+      encode: ({ pluginState, registry, schema, slice, state }) =>
+        serializeMarkdownDataTransferSlice(
+          createMarkdownOperationRuntime({
+            pluginState,
+            registry,
+            schema,
+            state,
+          }),
+          slice,
+          state
+        ),
+      accept: ({ data, snapshot }) => shouldParseMarkdown(data, snapshot),
+    },
+    {
+      mimeType: 'text/plain',
+      scope: 'document',
+      decode: ({ data, pluginState, registry, schema, state }) =>
+        parseMarkdownSliceWithRuntime(
+          createMarkdownOperationRuntime({
+            pluginState,
+            registry,
+            schema,
+            state,
+          }),
+          data
+        ),
+      accept: ({ data, snapshot }) => shouldParseMarkdown(data, snapshot),
+    },
+  ],
+  initialState: (): MarkdownPluginState =>
+    ({
+      [markdownMappingsRegistryKey]: {},
+      allowNode: {},
+      allowedNodes: null,
+      disallowedNodes: null,
+      plainMarks: null,
+      remarkPlugins: [],
+      remarkStringifyOptions: null,
+    }) as MarkdownPluginState,
+  validate: ({ editor }) => {
+    prepareMarkdownRuntime(editor, editor.plugin(MarkdownPlugin).store.get());
   },
-  initialState: (): MarkdownPluginState => ({
-    allowNode: {},
-    allowedNodes: null,
-    disallowedNodes: null,
-    plainMarks: null,
-    remarkPlugins: [],
-    remarkStringifyOptions: null,
-  }),
 }).extend(({ editor, store }) => ({
   api: (): MarkdownApi => ({
-    deserialize: (data, options) => {
-      const authoredDocument = readAuthoredMarkdownEnvelope(data);
+    parse: (source, options) =>
+      withMarkdownRuntime(editor, store.get(), (runtime) =>
+        parseMarkdownDocumentWithRuntime(runtime, source, options)
+      ),
+    parseInline: (source, options) =>
+      withMarkdownRuntime(editor, store.get(), (runtime) =>
+        parseMarkdownInlineWithRuntime(runtime, source, options)
+      ),
+    parseSlice: (source, options) =>
+      withMarkdownRuntime(editor, store.get(), (runtime) =>
+        parseMarkdownSliceWithRuntime(runtime, source, options)
+      ),
+    serialize: (options = {}) => {
+      const document = options.document ?? editor.read.value();
 
-      return (
-        authoredDocument ??
-        withMarkdownRuntime(editor, store.get(), (runtime) =>
-          deserializeMdWithRuntime(runtime, data, options)
+      assertMarkdownProjection(document, options.projection);
+      const projected = projectPlateFormatDocument(
+        editor,
+        document,
+        options.projection ?? 'proposed'
+      );
+
+      return withMarkdownRuntime(editor, store.get(), (runtime) =>
+        serializeMarkdownWithRuntime(
+          runtime,
+          projected.document,
+          options,
+          projected.diagnostics
         )
       );
-    },
-    deserializeInline: (text, options) =>
-      withMarkdownRuntime(editor, store.get(), (runtime) =>
-        deserializeInlineMdWithRuntime(runtime, text, options)
-      ),
-    serialize: (options) =>
-      withMarkdownRuntime(editor, store.get(), (runtime) =>
-        serializeMdWithRuntime(runtime, options)
-      ),
-    serializeAuthored: ({ projection, ...options }) => {
-      const snapshot = readAuthoredFormatSnapshot(editor as never);
-      const document =
-        projection === 'accepted' ? snapshot.accepted : snapshot.proposed;
-      const markdown = withMarkdownRuntime(editor, store.get(), (runtime) =>
-        serializeMdWithRuntime(runtime, options, document)
-      );
-
-      return Object.freeze({
-        data:
-          projection === 'review'
-            ? appendAuthoredMarkdownEnvelope(markdown, editor.read.value())
-            : markdown,
-        diagnostics:
-          projection === 'review'
-            ? Object.freeze([])
-            : Object.freeze(
-                lossyProjectionDiagnostic(projection, snapshot.changes.length)
-              ),
-      });
     },
   }),
 }));
 
+const assertMarkdownProjection = (
+  document: EditorDocumentValue,
+  projection: 'accepted' | 'proposed' | undefined
+) => {
+  if (document.meta?.authored !== undefined && !projection) {
+    throw new TypeError(
+      'Markdown serialization requires a projection for authored documents.'
+    );
+  }
+};
+
+const withDetachedMarkdownRuntime = <T>(
+  options: Readonly<{
+    plugins: readonly RuntimePluginReference[];
+    schema?: EditorApplicationSchema;
+  }>,
+  run: (runtime: ReturnType<typeof createMarkdownRuntime>) => T
+) =>
+  withPlateFormatCompilation(
+    {
+      plugins: [MarkdownPlugin, ...options.plugins],
+      ...(options.schema ? { schema: options.schema } : {}),
+    },
+    ({ editor }) =>
+      editor.read((state) =>
+        run(
+          createMarkdownRuntime(
+            editor,
+            editor.plugin(MarkdownPlugin).store.get(),
+            state
+          )
+        )
+      )
+  );
+
+export const parseMarkdown = <
+  const TPlugins extends readonly RuntimePluginReference[],
+>(
+  source: string,
+  options: MarkdownParseOptions<TPlugins>
+): MarkdownDocumentParseResultFromPlugins<TPlugins> => {
+  const { plugins, schema, ...policy } = options;
+
+  return withDetachedMarkdownRuntime({ plugins, schema }, (runtime) =>
+    parseMarkdownDocumentWithRuntime(runtime, source, policy)
+  ) as MarkdownDocumentParseResultFromPlugins<TPlugins>;
+};
+
+export const parseMarkdownSlice = <
+  const TPlugins extends readonly RuntimePluginReference[],
+>(
+  source: string,
+  options: MarkdownParseOptions<TPlugins>
+): MarkdownSliceParseResultFromPlugins<TPlugins> => {
+  const { plugins, schema, ...policy } = options;
+
+  return withDetachedMarkdownRuntime({ plugins, schema }, (runtime) =>
+    parseMarkdownSliceWithRuntime(runtime, source, policy)
+  ) as MarkdownSliceParseResultFromPlugins<TPlugins>;
+};
+
+export const parseMarkdownInline = <
+  const TPlugins extends readonly RuntimePluginReference[],
+>(
+  source: string,
+  options: MarkdownParseOptions<TPlugins>
+): MarkdownSliceParseResultFromPlugins<TPlugins> => {
+  const { plugins, schema, ...policy } = options;
+
+  return withDetachedMarkdownRuntime({ plugins, schema }, (runtime) =>
+    parseMarkdownInlineWithRuntime(runtime, source, policy)
+  ) as MarkdownSliceParseResultFromPlugins<TPlugins>;
+};
+
+export const serializeMarkdown = <
+  const TPlugins extends readonly RuntimePluginReference[],
+>(
+  document: MarkdownDocumentValueFromPlugins<TPlugins>,
+  options: MarkdownSerializeOptions<TPlugins>
+): MarkdownSerializeResult => {
+  const { plugins, schema, ...policy } = options;
+
+  assertMarkdownProjection(document, policy.projection);
+
+  return withPlateFormatCompilation(
+    { plugins: [MarkdownPlugin, ...plugins], ...(schema ? { schema } : {}) },
+    ({ editor, projectDocument, readDocument }) => {
+      const projected = projectDocument(
+        document,
+        policy.projection ?? 'proposed'
+      );
+
+      return readDocument(projected.document, (state, ownedDocument) =>
+        serializeMarkdownWithRuntime(
+          createMarkdownRuntime(
+            editor,
+            editor.plugin(MarkdownPlugin).store.get(),
+            state
+          ),
+          ownedDocument,
+          policy,
+          projected.diagnostics
+        )
+      );
+    }
+  );
+};
+
 export type MarkdownDefinition = DefinitionOf<typeof MarkdownPlugin>;
 
-export type MarkdownEditor<E = Editor> = E & {
-  readonly api: { markdown: MarkdownApi };
+export type MarkdownEditor<E = Editor, V extends Value = Value> = E & {
+  readonly api: { markdown: MarkdownApi<V> };
 };

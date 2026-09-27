@@ -97,7 +97,7 @@ export function CommentsEditor({ value, initialComments, users, currentUserId }:
 }
 ```
 
-`initialComments` initializes each editor once. Verify that it belongs to `value` before mounting. To load another revision, create a fresh editor with that revision's document and Comments JSON. Updating initial props does not replace the current records.
+`initialComments` initializes each editor once. Verify that it belongs to `value` before mounting. Updating initial props does not replace the current records.
 
 </Steps>
 
@@ -197,6 +197,44 @@ await repository.put(revision, { ifMatch: previousRevision });
 ```
 
 Before loading, verify the document revision and conversation generation in your storage layer. Construct a fresh editor from `revision.document` and pass `revision.comments` as `initialComments`, using the same content plugins. Comments validates the envelope version, duplicate IDs, timestamps, target agreement, and range restoration before mounting. It cannot identify a foreign document with otherwise valid-looking coordinates.
+
+For an explicit full-document import, construct the complete replacement editor
+with the imported document, comments and users before changing the mounted
+editor. Swap the editor instance only after construction succeeds. This keeps
+the previous document, comments, users, history, drafts and pending work intact
+when preparation fails.
+
+```ts
+import { createEditor } from 'platejs';
+
+const candidate = createEditor({
+  initialValue: importedDocument,
+  plugins: [
+    ...documentPlugins,
+    CommentsPlugin.configure({
+      initialState: {
+        currentUserId,
+        initialComments: importedComments,
+        users: importedUsers,
+      },
+    }),
+  ],
+  userId: currentUserId,
+});
+
+setEditor(candidate);
+```
+
+`replace` validates and stages the complete comment snapshot before atomic
+publication, releases the prior attachments, clears drafts and the pending
+composer, and fences late mutation results. It does not invoke `mutate` or add
+comment history. Use it to prepare an authoritative snapshot against its
+matching detached document, never to apply one server mutation. Replacing the
+document and Comments snapshot separately on a mounted editor is not atomic:
+rollback cannot restore cleared document history, comment drafts, pending
+composer state or retired mutation queues. Applications that must preserve the
+editor instance need one owner that can commit or discard all of those runtime
+resources together.
 
 If saved opaque ranges contain Authored bindings, install the same Authored runtime used for the saved document when loading `initialComments`. `SuggestionKit` supplies `DefaultAuthoredPlugin`; for a headless Comments-only setup, add the matching Authored plugin from `platejs/authored`. Preserve the full saved document and required authored history. A missing runtime or missing history rejects restoration; saved bindings do not fall back to plain coordinates. Authored remains optional for ordinary range comments.
 

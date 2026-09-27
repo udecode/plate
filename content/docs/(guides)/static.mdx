@@ -286,7 +286,11 @@ This renders the content to HTML on the server without needing a client-side Jav
 
 For server-rendering the static Plate tree to an HTML string, use
 `renderStaticHtml`. It renders `<EditorStatic>` through React DOM Server; it is
-not a semantic HTML codec.
+not a semantic HTML interchange serializer.
+
+`EditorStatic` renders configured node components and render attributes. It
+omits editing-surface slots such as `slots.wrapContent`; wrap `result.data` in
+application presentation when the exported document needs an outer shell.
 
 ```ts title="lib/html-serializer.ts"
 import { createEditor } from 'platejs';
@@ -299,12 +303,12 @@ async function getDocumentAsHtml(value: any[]) {
     initialValue: value,
   });
 
-  const html = await renderStaticHtml(editor, {
-    // editorComponent: EditorStatic, // Optional: Defaults to EditorStatic
+  const result = await renderStaticHtml(editor, {
+    // component: EditorStatic, // Optional: Defaults to EditorStatic
     props: { className: 'prose max-w-none' }, // Example: Pass props to the root div
   });
 
-  return html;
+  return result.data;
 }
 
 // Example Usage:

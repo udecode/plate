@@ -156,7 +156,7 @@ const customHtmlResult: 'custom-html' =
   customCoreEditor.api.html.customDeserialize();
 
 // @ts-expect-error An explicit same-name plugin replaces the built-in Core capability.
-customCoreEditor.api.html.deserialize({ element: '<p>core</p>' });
+customCoreEditor.api.html.parse('<p>core</p>');
 
 void customHtmlResult;
 

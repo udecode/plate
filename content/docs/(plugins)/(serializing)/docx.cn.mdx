@@ -3,7 +3,7 @@ title: DOCX
 description: 粘贴 Word 内容、导入受限的 DOCX 文件，并导出显式的文档投影。
 ---
 
-剪贴板内容使用 `WordPastePlugin`。文件导入和导出分别使用 `importDocx` 与 `exportToDocx`。三种操作拥有独立的入口和依赖。
+剪贴板内容使用 `WordPastePlugin`。文件导入和导出分别使用 `importDocx` 与 `exportDocx`。三种操作拥有独立的入口和依赖。
 
 <ComponentPreview name="docx-demo" />
 
@@ -86,7 +86,9 @@ const editor = createEditor({
 });
 
 export async function importFile(file: File) {
-  const result = await importDocx(editor, file);
+  const result = await importDocx(file, {
+    plugins: BaseEditorKit,
+  });
 
   if (!result.ok) {
     return { diagnostics: result.diagnostics };
@@ -105,13 +107,14 @@ export async function importFile(file: File) {
 
 ### 保留源文件用于后续导出
 
-同一个编辑器需要导入、编辑并导出 Word 文件时，请设置 `retainSource: true`。导入成功后会返回 `DocxSource`。应用负责保存该对象，将它传给 `exportToDocx`，并在文档关闭或被其他文件替换时调用 `dispose()`。
+同一个编辑器需要导入、编辑并导出 Word 文件时，请设置 `retainSource: true`。导入成功后会返回 `DocxSource`。应用负责保存该对象，将它传给 `exportDocx`，并在文档关闭或被其他文件替换时调用 `dispose()`。
 
 ```tsx title="components/editor/docx-roundtrip.tsx" showLineNumbers
-import { exportToDocx } from "platejs/docx/export";
+import { exportDocx } from "platejs/docx/export";
 import { importDocx } from "platejs/docx/import";
 
-const imported = await importDocx(editor, file, {
+const imported = await importDocx(file, {
+  plugins: BaseEditorKit,
   retainSource: true,
 });
 
@@ -119,8 +122,7 @@ if (!imported.ok) return imported.diagnostics;
 
 editor.update.value.replace(imported.document);
 
-const exported = await exportToDocx(editor, {
-  editorPlugins,
+const exported = await exportDocx(editor, {
   projection: "review",
   source: imported.source,
   stylesheet,
@@ -143,26 +145,22 @@ imported.source.dispose();
 
 ## 导出 DOCX 文件
 
-`exportToDocx` 在异步渲染前只捕获一次编辑器。必须显式传入可见投影。
+`exportDocx` 在异步渲染前只捕获一次编辑器。必须显式传入可见投影。
 
 ```bash
 npm install platejs @tanstack/react-virtual color-name html-to-vdom jszip juice mime-types virtual-dom xmlbuilder2
 ```
 
 ```tsx title="components/editor/export-docx.tsx"
-import { exportToDocx } from "platejs/docx/export";
+import { exportDocx } from "platejs/docx/export";
 import { createEditor } from "platejs/react";
 import { BaseEditorKit } from "@/components/editor/plugins-static";
-import {
-  DOCX_EXPORT_STYLES,
-  DocxExportKit,
-} from "@/components/editor/docx-export";
+import { DOCX_EXPORT_STYLES } from "@/components/editor/docx-export";
 
 const editor = createEditor({ plugins: BaseEditorKit });
 
 export async function downloadEditorDocx() {
-  const result = await exportToDocx(editor, {
-    editorPlugins: [...BaseEditorKit, ...DocxExportKit],
+  const result = await exportDocx(editor, {
     orientation: "portrait",
     projection: "proposed",
     stylesheet: DOCX_EXPORT_STYLES,
@@ -184,15 +182,24 @@ export async function downloadEditorDocx() {
 }
 ```
 
-`accepted` 忽略待定变更，`proposed` 应用待定变更，`review` 写入 Word tracked-change 标记。Accepted 和 proposed 导出会报告被省略的 authored change。Review 导出还写入受对应关系校验的原生 envelope，以支持未改动 Plate 文档的精确往返。
+`accepted` 忽略待定变更，`proposed` 应用待定变更，`review` 写入 Word tracked-change 标记。Accepted 与 proposed 导出会警告被省略的 pending change，以及被解析到一侧的冲突。只要存在冲突，review 导出就返回 `ok: false` 和 `authored-conflict` 错误，因为 Word 修订无法忠实表达该状态。
 
-导入器始终先转换 Word 可见包，再检查 envelope。只有 envelope 版本、已安装 schema、所有包部件摘要和 accepted/proposed Word 投影全部匹配时，才恢复原生元数据和命名根。文件被编辑或损坏时，导入器使用 Word 派生文档，并返回 `native-data-ignored` diagnostic。
+普通 Word 输出默认不包含 Plate 专有文档状态。只有可信的精确往返需要该状态时，才在 `review` 导出中设置 `nativeState: "attach"`：
+
+```tsx
+const result = await exportDocx(editor, {
+  nativeState: "attach",
+  projection: "review",
+});
+```
+
+导入器始终先转换 Word 可见包，再检查附加的 envelope。只有 envelope 版本、已安装 schema、所有包部件摘要和 accepted/proposed Word 投影全部匹配时，才恢复原生元数据和命名根。文件被编辑或损坏时，导入器使用 Word 派生文档，并返回 `native-data-ignored` diagnostic。
 
 ### 使用源文件导出
 
 传入有效 `source` 时，未改动的 `review` 导出会逐字节返回导入的文件。精确复用要求使用同一个编译 schema、review 文档未改动、批注未传入或完全相同，并且没有传入 `title`、`margins`、`orientation` 或 `pageSize`。该路径不会重新生成内容，因此也不会调用静态渲染器。
 
-精确检查不通过时，`exportToDocx` 会重新生成完整正文。内部关系闭合、可达、无名称冲突、且不含活动内容或外部关系时，可以保留下列 source 单元：
+精确检查不通过时，`exportDocx` 会重新生成完整正文。内部关系闭合、可达、无名称冲突、且不含活动内容或外部关系时，可以保留下列 source 单元：
 
 - 单节文档的页眉和页脚，以及它们引用的内部图片和资源；
 - 从包根关系文件可达的包级子图。
@@ -206,18 +213,19 @@ export async function downloadEditorDocx() {
 传入使用编辑器 proposed 投影坐标的批注。导出会在渲染前把这些范围映射到 accepted 或 review 输出：
 
 ```tsx
-const result = await exportToDocx(editor, {
+const result = await exportDocx(editor, {
   comments,
-  editorPlugins: [...BaseEditorKit, ...DocxExportKit],
   projection: "review",
 });
 ```
 
 主文档和富文本批注正文使用同一套静态渲染器。范围不完整的批注会被省略，并返回 diagnostic。
 
-### DOCX 导出 Kit
+### Static rendering 与样式
 
-应用内的 `DocxExportKit` 提供代码块、分栏、公式、callout、标题和目录的静态渲染器。`DOCX_EXPORT_STYLES` 提供可复制的视觉样式。
+DOCX 包拥有 code block、column、equation、callout、heading 和目录的语义
+static mapping。应用提供展示 CSS；需要不同 wrapper 时可以传入自定义 root
+`component`。`DOCX_EXPORT_STYLES` 是 registry 可复制的展示预设。
 
 <ComponentSource name="docx-export" />
 
@@ -225,7 +233,7 @@ const result = await exportToDocx(editor, {
 
 | 内容                                          | 行为                                                                       |
 | --------------------------------------------- | -------------------------------------------------------------------------- |
-| 段落、标题、支持的 mark 和 property           | 通过已安装的 HTML codec 解码，并通过配置的静态渲染器导出                   |
+| 段落、标题、支持的 mark 和 property           | 通过已安装的 HTML mapping 解码，并通过配置的静态渲染器导出                 |
 | 列表、链接、书签、行、单元格和 span           | 保留支持的语义结构；省略 Word 布局细节并返回 diagnostic                    |
 | Tracked revision                              | 保留支持的 insert、delete、move、run-property 和 paragraph-property change |
 | 主文档批注                                    | 存在时保留富文本正文、范围、作者/日期、durable ID、回复和 resolved 状态    |
@@ -233,7 +241,7 @@ const result = await exportToDocx(editor, {
 | 单节文档的页眉和页脚                          | 使用 source 导出时保留安全且闭合的子图，但不映射到编辑器文档                |
 | 多节页眉和页脚、脚注和尾注                    | 检查并限制对应包部件；编辑 source 后省略并返回 diagnostic                    |
 | 字段、文本框、形状、图表、SmartArt 和嵌入对象 | 转换可访问时保留纯文本，否则报告不支持或省略的内容                         |
-| Plate 命名根和元数据                          | 只通过完全匹配的 review envelope 保留；可见 Word 投影会报告省略            |
+| Plate 命名根和元数据                          | 普通 Word 输出会省略；仅当 `nativeState: "attach"` 写入可信对应 part 时保留 |
 | 自定义 Plate、数学、emoji 和媒体节点          | 使用已配置的静态序列化器；不支持的输出返回 diagnostic                      |
 
 ## API 参考
@@ -244,19 +252,22 @@ const result = await exportToDocx(editor, {
 | ------------------------- | --------------------- |
 | `WordPastePlugin`         | `platejs/docx/paste`  |
 | `importDocx` 和导入类型   | `platejs/docx/import` |
-| `exportToDocx` 和导出类型 | `platejs/docx/export` |
+| `exportDocx` 和导出类型 | `platejs/docx/export` |
 
 ### `importDocx`
 
 ```ts
 importDocx(
-  editor: Editor,
   source: ArrayBuffer | Blob,
-  options?: DocxImportOptions
+  options: DocxImportOptions
 ): Promise<DocxImportResult>
 ```
 
-`DocxImportOptions` 接受协作式 `signal`、部分 `limits` 覆盖和 `retainSource`。每个限制都必须是正的安全整数。字面量 `retainSource: true` 会在成功结果中加入 `source`；省略或传入字面量 `false` 时没有该字段。
+`DocxImportOptions` 必须包含 `plugins`，并可包含 `schema`、`authoredTrust`、
+协作式 `signal`、`lossPolicy`、部分 `limits` 覆盖和 `retainSource`。Import 会在
+第一次 await 前捕获 detached target，之后不会读取 live editor 或 mutable plugin
+store。每个限制都必须是正的安全整数。字面量 `retainSource: true` 会在成功结果中
+加入 `source`；省略或传入字面量 `false` 时没有该字段。
 
 | 默认限制           |      值 |
 | ------------------ | ------: |
@@ -283,10 +294,10 @@ class DocxSource {
 
 只有 `importDocx` 可以创建 `DocxSource`。该对象只能在当前进程中使用，不能序列化或重新绑定。应用重新加载后如需继续使用 source 导出，请保存原始文件并再次导入。
 
-### `exportToDocx`
+### `exportDocx`
 
 ```ts
-exportToDocx(
+exportDocx(
   editor: Editor,
   options: DocxExportOptions
 ): Promise<DocxExportResult>
@@ -297,12 +308,12 @@ exportToDocx(
 | `projection`            | `'accepted' \| 'proposed' \| 'review'`   | 必填的可见文档投影               |
 | `comments`              | `readonly DocxComment[]`                 | 使用 proposed 投影坐标的批注记录 |
 | `allowRemoteImages`     | `boolean`                                | 获取远程 HTTP 图片；默认 `false` |
-| `editorPlugins`         | `readonly BasePluginInput[]`             | 静态渲染使用的描述符             |
-| `editorStaticComponent` | `React.ComponentType<EditorStaticProps>` | 静态编辑器包装组件               |
+| `component`             | `React.ComponentType<EditorStaticProps>` | 可选 static editor wrapper       |
 | `fontFamily`            | `string`                                 | 文档正文字体                     |
 | `margins`               | `Margins`                                | 以二十分之一磅为单位的页边距     |
 | `orientation`           | `'landscape' \| 'portrait'`              | 页面方向                         |
 | `pageSize`              | `PageSize`                               | 以二十分之一磅为单位的页面尺寸   |
+| `nativeState`           | `'attach'`                               | 仅在 review 导出中附加 Plate 原生状态 |
 | `signal`                | `AbortSignal`                            | 协作式取消信号                   |
 | `source`                | `DocxSource`                             | 用于精确或安全导出的 source 对应关系 |
 | `stylesheet`            | `string`                                 | DOCX 转换前应用的 CSS            |

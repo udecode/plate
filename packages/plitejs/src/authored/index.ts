@@ -1,24 +1,30 @@
-export { authored, type AuthoredPlugin } from './authored';
+export {
+  authored,
+  isAuthoredEditor,
+  type AuthoredEditor,
+  type AuthoredPlugin,
+} from './authored';
 export {
   proposeAuthoredComparison,
   type AuthoredComparisonImportResult,
 } from './comparison';
-export { projectAuthoredRange } from '../core/authored-runtime';
 export {
+  authoredProjectionDiagnostics,
   createAuthoredImportedRevisionChange,
   createAuthoredReviewDocument,
-  deserializeAuthoredJson,
-  readAuthoredFormatSnapshot,
-  serializeAuthoredJson,
-  type AuthoredFormatDiagnostic,
+  parseAuthoredDocument,
+  projectAuthoredDocument,
+  projectAuthoredRange,
+  projectAuthoredReview,
+  type AuthoredDocumentProjection,
   type AuthoredFormatProjection,
   type AuthoredFormatPropertyChange,
   type AuthoredFormatSegment,
-  type AuthoredFormatSnapshot,
   type AuthoredImportedRevision,
   type AuthoredImportedRevisionSection,
-  type AuthoredJsonProjection,
-  type AuthoredJsonResult,
+  type AuthoredProjectionDiagnostic,
+  type AuthoredReviewProjection,
+  type AuthoredUnresolvedChangeCounts,
 } from './format';
 export type {
   AuthoredChange,

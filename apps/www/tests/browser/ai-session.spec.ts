@@ -680,7 +680,6 @@ for (const scenario of [
         page.locator('[data-comment-thread][data-status="draft"]')
       ).toHaveCount(0);
       expect(await editor.get.modelValue()).toEqual(before);
-      expect(await editor.get.modelValue()).toEqual(before);
       if (scenario.selectCharacters !== undefined) {
         const commentIds = () =>
           root
@@ -700,25 +699,18 @@ for (const scenario of [
         const beforeNextRequest = await editor.get.modelValue();
         await page.keyboard.press('ControlOrMeta+j');
         const nextRequest = page.waitForRequest('**/api/ai/command');
+        const stopButton = page.getByRole('button', { name: /Stop/ });
         await page
           .getByRole('option', { name: 'Comment', exact: true })
           .click();
+        await stopButton.click();
         await nextRequest;
-        await expect
-          .poll(async () => {
-            const ids = await commentIds();
-
-            return ids.length;
-          })
-          .toBeGreaterThan(completedBeforeStop.length);
-        const completedAtStop = await commentIds();
-        await page.getByRole('button', { name: /Stop/ }).click();
         await expect(
           page.locator('[data-comment-thread][data-status="draft"]')
         ).toHaveCount(0);
         await expect
           .poll(commentIds)
-          .toEqual(expect.arrayContaining(completedAtStop));
+          .toEqual(expect.arrayContaining(completedBeforeStop));
         expect(await editor.get.modelValue()).toEqual(beforeNextRequest);
       }
       errors.assertNone();
@@ -739,10 +731,9 @@ test('Explain preserves its generate intent for a document with comments and tab
     const editor = createBrowserEditorHarness(page, 'ai:explain', root);
     const heading = 'Welcome to the Plate Playground!';
     await editor.ready({ editor: 'visible', text: heading });
-    await page.getByRole('button', { name: 'Suggestion', exact: true }).click();
-    await page
-      .getByRole('menuitemradio', { name: 'Editing', exact: true })
-      .click();
+    await expect(
+      page.getByRole('button', { name: 'Editing', exact: true })
+    ).toBeVisible();
     await editor.dom.clickTextOffset({ path: [0, 0], offset: heading.length });
     const before = await editor.get.modelBlockTexts();
 

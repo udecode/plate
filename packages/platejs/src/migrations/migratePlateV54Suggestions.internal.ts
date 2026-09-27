@@ -1,7 +1,7 @@
 import type {
   Descendant,
   EditorDocumentValue,
-  PropertyJsonValue,
+  EditorJsonValue,
 } from '../facade';
 import { ElementApi } from '../facade';
 
@@ -9,8 +9,8 @@ type LegacySuggestionData = Readonly<{
   createdAt: number;
   id: string;
   isLineBreak?: boolean;
-  newProperties?: Readonly<Record<string, PropertyJsonValue>>;
-  properties?: Readonly<Record<string, PropertyJsonValue>>;
+  newProperties?: Readonly<Record<string, EditorJsonValue>>;
+  properties?: Readonly<Record<string, EditorJsonValue>>;
   type: 'insert' | 'remove' | 'update';
   userId: string;
 }>;
@@ -51,7 +51,7 @@ const UPDATE_DATA_KEYS = new Set([
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const isJsonValue = (value: unknown): value is PropertyJsonValue => {
+const isJsonValue = (value: unknown): value is EditorJsonValue => {
   if (
     value === null ||
     typeof value === 'boolean' ||
@@ -68,7 +68,7 @@ const isJsonValue = (value: unknown): value is PropertyJsonValue => {
 
 const isJsonRecord = (
   value: unknown
-): value is Readonly<Record<string, PropertyJsonValue>> =>
+): value is Readonly<Record<string, EditorJsonValue>> =>
   isRecord(value) && Object.values(value).every(isJsonValue);
 
 const jsonEqual = (left: unknown, right: unknown): boolean => {

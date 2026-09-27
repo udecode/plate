@@ -43,14 +43,20 @@ Use a synchronous initializer when decoding requires the compiled plugin model:
 ```ts
 const editor = createEditor({
   plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
-  initialValue: ({ editor }) =>
-    editor.api.html.deserialize({
-      element: "<p>This is <b>bold</b> and <i>italic</i> text!</p>",
-    }),
+  initialValue: ({ editor }) => {
+    const result = editor.api.html.parse(
+      "<p>This is <b>bold</b> and <i>italic</i> text!</p>"
+    );
+
+    if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+    return result.document;
+  },
 });
 ```
 
-See [Plugin Deserialization Rules](/docs/html#plugin-html-codec-overview) for the plugins that support HTML string deserialization.
+See [HTML mappings](/docs/html#define-html-mappings) for custom element and
+mark conversion.
 
 ### Schema identity
 

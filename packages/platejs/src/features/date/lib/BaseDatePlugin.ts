@@ -8,9 +8,9 @@ import {
 import { normalizeDateValue, parseCanonicalDateValue } from './dateValue';
 
 export const BaseDatePlugin = definePlugin(PLUGINS.date, {
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ node, parseAttributes }) => {

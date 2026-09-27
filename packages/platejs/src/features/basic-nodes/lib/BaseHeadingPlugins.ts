@@ -40,9 +40,9 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
       },
     },
   },
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => ({
           level: Number(element.tagName.slice(1)) as HeadingLevel,
         }),
@@ -53,7 +53,7 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
         match: [{ tag: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'heading',
         kind: 'node',
         decode: ({ decode, decoration, node }) =>

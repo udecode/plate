@@ -48,6 +48,91 @@ const deferred = <T>() => {
 };
 
 describe('Comments durable mutations', () => {
+  it('replaces a complete saved snapshot and fences an in-flight mutation', async () => {
+    const gate = deferred<CommentMutationDecision>();
+    const entered = deferred<void>();
+    const { api } = setup(undefined, (request) => {
+      if (request.operation === 'reply') {
+        entered.resolve();
+        return gate.promise;
+      }
+
+      return { status: 'commit', thread: request.proposed };
+    });
+    const lateReply = api.reply('thread', body('Late reply'));
+
+    await entered.promise;
+    const replacement = commentsFixture([
+      { range, thread: thread('imported-thread') },
+    ]);
+
+    expect(api.replace(replacement)).toBe(true);
+    expect(api.toJSON()).toEqual(replacement);
+    expect(api.getThread('thread')).toBeUndefined();
+    expect(api.attachment('imported-thread')).toEqual({
+      type: 'range',
+      status: 'attached',
+      range,
+    });
+
+    gate.resolve({
+      status: 'commit',
+      thread: {
+        ...thread(),
+        messages: [...thread().messages, thread('reply').messages[0]],
+      },
+    });
+    expect(await lateReply).toEqual({ status: 'stale' });
+    expect(api.toJSON()).toEqual(replacement);
+  });
+
+  it('keeps the current snapshot when replacement validation fails', () => {
+    const { api } = setup();
+    const before = api.toJSON();
+
+    expect(() =>
+      api.replace({
+        ...before,
+        threads: [...before.threads, before.threads[0]],
+      })
+    ).toThrow('Duplicate comment thread ID');
+    expect(api.toJSON()).toEqual(before);
+  });
+
+  it('publishes the complete replacement before attachment notifications', () => {
+    const { api } = setup();
+    const observed: unknown[] = [];
+    const replacement = commentsFixture([
+      { range, thread: thread('imported-thread') },
+    ]);
+
+    api.subscribeAttachments(() => {
+      observed.push({
+        attachment: api.attachment('imported-thread'),
+        snapshot: api.getSnapshot(),
+        thread: api.getThread('imported-thread'),
+      });
+    });
+    api.replace(replacement);
+
+    expect(observed).toEqual([
+      {
+        attachment: {
+          range,
+          status: 'attached',
+          type: 'range',
+        },
+        snapshot: {
+          draftThreadIds: [],
+          pending: null,
+          threadIds: ['imported-thread'],
+          visibleThreadIds: ['imported-thread'],
+        },
+        thread: thread('imported-thread'),
+      },
+    ]);
+  });
+
   it.each(['identity', 'target', 'status', 'message'] as const)(
     'rejects a canonical record with invalid %s without publication',
     async (field) => {
@@ -850,6 +935,84 @@ describe('Comments mapping and conversation history', () => {
     expect(
       api.getThreads().filter(({ id }) => id === 'local-thread')
     ).toHaveLength(1);
+  });
+
+  it('records a second creation while the first creation undo is pending', async () => {
+    const removal = deferred<CommentMutationDecision>();
+    const removalEntered = deferred<void>();
+    const { editor, api } = setup(null, (request) => {
+      if (request.operation === 'removeThread') {
+        removalEntered.resolve();
+        return removal.promise;
+      }
+
+      return { status: 'commit', thread: request.proposed };
+    });
+
+    await api.createThread({
+      id: 'first-thread',
+      body: body('First'),
+      target: { type: 'range', range },
+    });
+    const pendingUndo = editor.api.history.undo();
+
+    await removalEntered.promise;
+    expect(editor.read.history.pending()).toBe('undo');
+    await expect(
+      api.createThread({
+        id: 'second-thread',
+        body: body('Second'),
+        target: { type: 'range', range },
+      })
+    ).resolves.toEqual({ status: 'applied', value: 'second-thread' });
+
+    removal.resolve({ status: 'commit', thread: null });
+    await expect(pendingUndo).resolves.toEqual({ status: 'applied' });
+    expect(api.getThread('first-thread')).toBeUndefined();
+    expect(api.getThread('second-thread')).toBeDefined();
+
+    await expect(editor.api.history.undo()).resolves.toEqual({
+      status: 'applied',
+    });
+    expect(api.getThread('second-thread')).toBeUndefined();
+  });
+
+  it('validates creation undo after an earlier queued reply settles', async () => {
+    const replyGate = deferred<CommentMutationDecision>();
+    const replyEntered = deferred<CommentMutationRequest>();
+    const operations: Array<CommentMutationRequest['operation']> = [];
+    const { editor, api } = setup(null, (request) => {
+      operations.push(request.operation);
+      if (request.operation === 'reply') {
+        replyEntered.resolve(request);
+        return replyGate.promise;
+      }
+
+      return { status: 'commit', thread: request.proposed };
+    });
+
+    await api.createThread({
+      id: 'local-thread',
+      body: body('First'),
+      target: { type: 'range', range },
+    });
+    const reply = api.reply('local-thread', body('Reply'));
+    const replyRequest = await replyEntered.promise;
+    const pendingUndo = editor.api.history.undo();
+
+    expect(editor.read.history.pending()).toBe('undo');
+    replyGate.resolve({ status: 'commit', thread: replyRequest.proposed });
+    await expect(reply).resolves.toEqual({
+      status: 'applied',
+      value: undefined,
+    });
+    await expect(pendingUndo).resolves.toEqual({
+      reason: 'comments-thread-changed',
+      status: 'blocked',
+    });
+    expect(api.getThread('local-thread')?.messages).toHaveLength(2);
+    expect(operations).toEqual(['createThread', 'reply']);
+    expect(editor.read.history.hasUndo()).toBe(true);
   });
 
   it('blocks local creation undo after its canonical thread diverges', async () => {

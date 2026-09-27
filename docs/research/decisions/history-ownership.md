@@ -2,13 +2,21 @@
 title: History ownership
 type: decision
 status: accepted
-updated: 2026-09-23
+updated: 2026-09-24
 review_scope: history
-current_review: 2026-09-23-history-async-replay-api
+current_review: 2026-09-23-history-session-effect-authoring-final
+reconciled_executions:
+  - 2026-09-23-history-replay-lifecycle-design
+  - 2026-09-23-history-replay-lifecycle-revised-design
+  - 2026-09-23-history-replay-lifecycle-implementation
+  - 2026-09-24-history-session-effect-authoring-implementation
 review_history:
   - ../review-records/2026-09-15-history-replay-boundary.json
   - ../review-records/2026-09-16-history-post-adoption-reassessment.json
   - ../review-records/2026-09-23-history-async-replay-api.json
+  - ../review-records/2026-09-23-history-post-implementation-api-cut.json
+  - ../review-records/2026-09-23-history-post-implementation-api-cut-correction.json
+  - ../review-records/2026-09-23-history-session-effect-authoring-final.json
 source_refs:
   - ../../../packages/plitejs/src/history/history-plugin.ts
   - ../../../packages/plitejs/src/history/history-state.ts
@@ -21,21 +29,80 @@ related:
 
 # History ownership
 
-**Pursue one explicit replay lifecycle while retaining
-`Promise<HistoryResult>` for `undo()` and `redo()`.** A Promise is the honest
-single return type when the current branch head can await a server-first
-comment mutation. The current implementation does not yet earn the final API:
-ordinary replay mutates before returning a resolved Promise, session replay
-crosses an asynchronous boundary, native callers commonly discard the result,
-and the pending session path rejects editor publication without exposing its
-state.
+**Keep the implemented replay lifecycle and adopt one final bounded cut in
+session-effect authoring.** `undo()` and `redo()` retain
+`Promise<HistoryResult>`, call-order claims, per-editor pending state, live
+local and remote publication, single-flight `busy` results and one mounted
+result owner. Those pieces each prevent a proved failure and should not be
+reopened.
 
-The target schedules every replay through one queue, exposes pending direction
-and state, and makes mounted input, controls, blocked outcomes, and errors obey
-that lifecycle. Detailed design must choose whether later interaction is
-disabled, buffered, or safely cancelled. Do not restore synchronous replay,
-return a sync-or-Promise union, add separate sync and async undo methods, or
-create a Comments history stack.
+The current public contract is weaker than the behavior it protects.
+`defineEffect` exposes `history: "session"` and `historyReplay` as independent
+optional fields, so TypeScript accepts both a session effect without a replay
+owner and a replay callback without session history. Runtime validation then
+throws for both invalid states. The accepted authoring target collapses them
+into one discriminated value:
+
+```ts
+defineEffect({
+  history: {
+    replay: (editor, value) => saveExternalValue(editor, value),
+  },
+  key: "comments.creation",
+});
+```
+
+`history` is exactly `"push" | "skip" | { replay }` for a local effect. Shared
+effects accept only `"push" | "skip"`, so narrowing an object-valued history
+also proves `collab === "local"`. The normalized `EditorEffectType` must encode
+the same union rather than relying on `defineEffect` alone. `replay` receives
+the public `Editor` type and the inferred effect value; callers add no parameter
+annotations. `defineEffect` freezes the normalized history object and retains
+runtime validation for JavaScript and erased boundaries.
+
+Remove the `"session"` literal, sibling `historyReplay` property and standalone
+`EditorEffectHistoryPolicy` export. Keep
+`EditorEffectHistoryReplayResult<TValue>` for extracted callback owners such as
+Comments. Do not add `SessionHistory`, `defineSessionEffect`, a history registry
+or a compatibility alias. The
+[compile-only prototype](../../plans/artifacts/2026-09-23-history-session-effect-api/proposed-api.probe.ts)
+proves contextual callback inference, local narrowing, valid shared effects and
+rejection of all three invalid shapes.
+
+Internally, retain the private request-to-claim map: update annotations
+`structuredClone` their values, while the claim carries activation, branch and
+redo-anchor identity tokens that later use strict equality. Replacing those
+tokens with scalar IDs adds more machinery than this bounded synchronous bridge
+removes. Permanently blocked-head recovery remains a separate product and API
+decision.
+
+The completed
+[revised design](../../plans/2026-09-23-history-replay-lifecycle-revised.md)
+supersedes the first replay-lifecycle design while retaining its single-flight
+claims in call order. Every replay claims its branch entry before it returns. A
+document batch applies in that call. An effect-only session batch publishes
+`editor.read.history.pending()` and settles when its owner finishes. Edits,
+selection and remote imports keep publishing, while overlapping replays resolve
+`{ status: "busy" }`. A four-case settlement table places the claimed entry by
+call order. Edits are never disabled or buffered; only overlapping replays are
+refused.
+
+`editor.api.history.undo()` and `redo()` remain the sole awaited replay API.
+`useEditorHistory` is a mounted controller whose `undo` and `redo` dispatch and
+return `void`. One exact-runtime `Editable.onHistoryReplay` callback receives
+fulfilled mounted outcomes, and the same dispatcher reports Promise
+rejections. Pending is observable per-editor runtime lifecycle state; it is not
+persisted, snapshotted or shared through collaboration. If history is retired
+while an external owner is pending, the call returns that owner's actual
+applied, blocked or rejected outcome without settling into the retired or a
+replacement activation.
+
+A permanently blocked branch head remains in place under TaskHub-22: the next
+undo targets the newer eligible batch and never silently discards the blocked
+entry. A public skip or discard action is a separate API decision. Do not
+restore synchronous replay, return a sync-or-Promise union, add separate sync
+and async undo methods, create a Comments history stack or auto-skip blocked
+history.
 
 **The earlier configuration Stop remains in force.** Keep the Plate history
 adapter and its live getters. Plite owns exact descriptors whose immutable
@@ -44,14 +111,24 @@ structure, inference, terminal configuration and mutable per-editor store. The
 adapter is the honest boundary between those contracts, not a redundant second
 history owner.
 
-Status: Replay-lifecycle redesign accepted; implementation and proof remain
-open. The earlier
+Status: Revised replay-lifecycle design and the final session-effect authoring
+cut are implemented and verified
+([lifecycle outcome](../review-records/2026-09-23-history-replay-lifecycle-implementation.json),
+[authoring outcome](../review-records/2026-09-24-history-session-effect-authoring-implementation.json)).
+The post-implementation
+[final API review](../review-records/2026-09-23-history-session-effect-authoring-final.json)
+retains that behavior and the private identity bridge. Product code, public
+types, Comments, docs, package reference data and release notes use the accepted
+single-value authoring contract. The
+[first design execution](../review-records/2026-09-23-history-replay-lifecycle-design.json)
+is the immutable predecessor superseded by this correction. The earlier
 [Task plan](../../plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md)
 adopts and verifies the synchronous replay boundary, grouping, Plate adapter,
 and existing mounted ownership. The
-[latest review](../review-records/2026-09-23-history-async-replay-api.json)
-reopens only the later asynchronous session-replay lifecycle introduced for
-comment creation.
+[async replay review](../review-records/2026-09-23-history-async-replay-api.json)
+opened the later session-replay lifecycle introduced for comment creation; the
+post-implementation review retains that lifecycle and narrows the remaining
+work to effect authoring.
 
 Objective: Review all 10 history ledger units, their public contracts and
 materially different consumers; compare keeping, cutting, merging and replacing
@@ -70,11 +147,13 @@ does not choose the target.
 History also owns the single session order for fallible local effects whose
 durable mutation lives outside the document. Such an effect is local,
 effect-only, non-mergeable and excluded from persisted History JSON. Replay
-awaits its owner before moving the branch, and a typed block leaves the same
-head in place. The public `undo()` and `redo()` results remain promises so
-mounted focus repair and callers can observe the settled external mutation and
-document branch together. Pending replay must become an explicit lifecycle;
-an invisible editor-wide publication fence is not the final interaction model.
+claims the branch head before returning, publishes per-editor pending state and
+settles the claimed entry after its owner finishes. New document batches remain
+above that claimed entry according to the four-case settlement table. A blocked
+result leaves the same head eligible for a later replay. The public `undo()` and
+`redo()` results remain promises so API callers can observe the settled external
+mutation and document branch together; mounted controls dispatch through one
+result and error owner.
 
 Acceptance:
 
@@ -181,13 +260,13 @@ is no history-owned follow-up plan or consolation backlog.
 The [disposable probes](../../plans/artifacts/2026-09-15-history-review/transaction.probe.test.ts)
 start with two separate batches inserting `a` and `b`:
 
-| Operation | Observed result |
-| --- | --- |
-| Two separate `editor.update.history.undo()` calls | Empty text, zero undo entries, two redo entries. |
-| `tx.history.undo(); tx.history.undo()` in one update | Throws `Cannot apply change length 6 to document length 5`. The second call selects the same published head. |
-| `tx.history.undo(); tx.history.redo()` in one update | Text stays `a`; redo sees the pre-commit empty redo branch. |
-| Undo, then insert `X` in one update; undo again | Text becomes `X`: the new edit was absorbed into historic replay, and the later undo removes the earlier `a`. |
-| Separate undo, edit `X`, undo updates | Text correctly returns to `a`. |
+| Operation                                            | Observed result                                                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Two separate `editor.update.history.undo()` calls    | Empty text, zero undo entries, two redo entries.                                                              |
+| `tx.history.undo(); tx.history.undo()` in one update | Throws `Cannot apply change length 6 to document length 5`. The second call selects the same published head.  |
+| `tx.history.undo(); tx.history.redo()` in one update | Text stays `a`; redo sees the pre-commit empty redo branch.                                                   |
+| Undo, then insert `X` in one update; undo again      | Text becomes `X`: the new edit was absorbed into historic replay, and the later undo removes the earlier `a`. |
+| Separate undo, edit `X`, undo updates                | Text correctly returns to `a`.                                                                                |
 
 The mixed-edit diagnostic does not settle whether a future combined operation
 should form one new group or several. It establishes that today's surface
@@ -288,8 +367,8 @@ const outcome = editor.api.history.undo();
 editor.api.history.redo();
 
 // Edit policy still belongs to the current transaction.
-editor.update({ history: 'new-batch' }, (tx) => {
-  tx.text.insert('Hello');
+editor.update({ history: "new-batch" }, (tx) => {
+  tx.text.insert("Hello");
 });
 
 // Atomic document and history loading remains possible.
@@ -306,15 +385,15 @@ guards and accepted-commit publication. `HistoryResult`, lazy head availability,
 nested-call rejection and exact mounted binding are implemented contracts;
 public branch discard is deleted.
 
-| Lane | Verdict and reason |
-| --- | --- |
-| Keep/configure | Keep inverse canonical changes, skipped-change mapping, bounded branches, effects, schema validation and exact root selection. Caller discipline cannot correct the demonstrated replay composition failures. |
-| Repair transaction composition | Strongest alternative to the service: stage stack heads, mapping/recovery, repeated actions and mixed edits in the transaction, then publish atomically. AI cancellation is real pressure for it. Compare this against removing AI's branch surgery at its preview/authored owner; the service cut is provisional until that adoption is concrete. |
-| Change API and move ownership | Pursue whole-batch replay through the current history owner's `api`, with honest outcomes and narrow availability/next-entry reads. Preserve transactional policy, atomic load and intentional branch discard. |
-| Delete/merge/inline | Pursue cutting transaction replay after atomic cancellation adoption, remove React's competing grouping clock, and consolidate duplicated mounted replay orchestration. Remove full-stack inspection from control paths. Retain Plate's facade and native focus/input adapters because they own distribution and browser jobs. |
-| Add primitive | Reject a generic history backend/session/manager abstraction. Existing plugin capability, canonical transaction and commit owners can host the needed service. A new availability read must remove actual traversal and preserve dropped-batch semantics. |
-| Replace with document snapshots | Reject: undo must preserve skipped/remote changes, domain effects and anchor/root identity. Replacing the entire document with an old snapshot loses those laws. |
-| Replace with Yjs or authored history everywhere | Reject: raw offline/local history has an independent job; authored selective reversal has attribution, retention and conflict semantics that an interaction stack cannot replace. |
+| Lane                                            | Verdict and reason                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Keep/configure                                  | Keep inverse canonical changes, skipped-change mapping, bounded branches, effects, schema validation and exact root selection. Caller discipline cannot correct the demonstrated replay composition failures.                                                                                                                                      |
+| Repair transaction composition                  | Strongest alternative to the service: stage stack heads, mapping/recovery, repeated actions and mixed edits in the transaction, then publish atomically. AI cancellation is real pressure for it. Compare this against removing AI's branch surgery at its preview/authored owner; the service cut is provisional until that adoption is concrete. |
+| Change API and move ownership                   | Pursue whole-batch replay through the current history owner's `api`, with honest outcomes and narrow availability/next-entry reads. Preserve transactional policy, atomic load and intentional branch discard.                                                                                                                                     |
+| Delete/merge/inline                             | Pursue cutting transaction replay after atomic cancellation adoption, remove React's competing grouping clock, and consolidate duplicated mounted replay orchestration. Remove full-stack inspection from control paths. Retain Plate's facade and native focus/input adapters because they own distribution and browser jobs.                     |
+| Add primitive                                   | Reject a generic history backend/session/manager abstraction. Existing plugin capability, canonical transaction and commit owners can host the needed service. A new availability read must remove actual traversal and preserve dropped-batch semantics.                                                                                          |
+| Replace with document snapshots                 | Reject: undo must preserve skipped/remote changes, domain effects and anchor/root identity. Replacing the entire document with an old snapshot loses those laws.                                                                                                                                                                                   |
+| Replace with Yjs or authored history everywhere | Reject: raw offline/local history has an independent job; authored selective reversal has attribution, retention and conflict semantics that an interaction stack cannot replace.                                                                                                                                                                  |
 
 The September 15 **Pursue** verdict is adopted. Matched
 frozen-baseline/final-source packets
@@ -329,18 +408,18 @@ Expected: **10** units; reviewed: **10**; excluded: **0**; unreviewed or
 disposition-unresolved: **0**. Adoption and proof are complete for all ten
 history units.
 
-| Ledger unit | Disposition |
-| --- | --- |
-| `capability/history` | Keep one installed capability; replay, reads and transaction policy share its inferred types. |
-| `export/platejs/./history` | Keep the Plate facade for Plate consumers and package declarations. |
-| `export/plitejs/./history` | Keep optional raw installation, codecs and headless use. |
-| `platejs/history` | Keep the forwarding/configuration adapter; it does not own another stack. |
-| `plitejs/history` | Keep the explicit replay service, lazy availability, snapshot inspection, canonical mapping, effects and validated persistence. |
-| `plitejs/react/editable/history-focus` | Keep exact mounted-root focus restoration after complete model replay. |
-| `plitejs/react/editable/history-keyboard` | Keep native event decoding; it owns no history state or grouping clock. |
-| `plitejs/react/editable/input-history` | Keep native session/path/root annotations; the canonical history owner alone decides time grouping. |
-| `plitejs/react/editable/mutation-history` | Keep the native event adapter that settles input and delegates to the mounted replay owner. |
-| `ui/history-toolbar-button` | Keep the copied UI and public controller over lazy availability and mounted replay. |
+| Ledger unit                               | Disposition                                                                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `capability/history`                      | Keep one installed capability; replay, reads and transaction policy share its inferred types.                                   |
+| `export/platejs/./history`                | Keep the Plate facade for Plate consumers and package declarations.                                                             |
+| `export/plitejs/./history`                | Keep optional raw installation, codecs and headless use.                                                                        |
+| `platejs/history`                         | Keep the forwarding/configuration adapter; it does not own another stack.                                                       |
+| `plitejs/history`                         | Keep the explicit replay service, lazy availability, snapshot inspection, canonical mapping, effects and validated persistence. |
+| `plitejs/react/editable/history-focus`    | Keep exact mounted-root focus restoration after complete model replay.                                                          |
+| `plitejs/react/editable/history-keyboard` | Keep native event decoding; it owns no history state or grouping clock.                                                         |
+| `plitejs/react/editable/input-history`    | Keep native session/path/root annotations; the canonical history owner alone decides time grouping.                             |
+| `plitejs/react/editable/mutation-history` | Keep the native event adapter that settles input and delegates to the mounted replay owner.                                     |
+| `ui/history-toolbar-button`               | Keep the copied UI and public controller over lazy availability and mounted replay.                                             |
 
 ## Prior evidence and proof limits
 

@@ -112,15 +112,23 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
       }),
     },
   }),
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children }) =>
+          children
+            .split('\n')
+            .map((line) => `> ${line}`)
+            .join('\n'),
+      },
+      html: {
         decode: () => ({}),
         encode: ({ content }) => ({ children: content, tag: 'blockquote' }),
         match: [{ tag: 'blockquote' }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'blockquote',
         kind: 'node',
         decode: ({
@@ -246,15 +254,19 @@ export const BaseHorizontalRulePlugin = definePlugin(PLUGINS.horizontalRule, {
       void: 'block',
     },
   },
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: () => '---',
+      },
+      html: {
         decode: () => ({}),
         encode: () => ({ tag: 'hr' }),
         match: [{ tag: 'hr' }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'thematicBreak',
         kind: 'node',
         decode: () => ({

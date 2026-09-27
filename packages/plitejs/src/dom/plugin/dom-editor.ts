@@ -247,7 +247,7 @@ export interface DOMEditorClipboardCapability<V extends Value = Value> {
    */
   writeSelection: (data: Pick<DataTransfer, 'getData' | 'setData'>) => void;
 
-  /** Write one exact editor slice plus optional host formats. */
+  /** Write one exact editor slice plus optional DataTransfer formats. */
   writeSlice: (
     data: Pick<DataTransfer, 'getData' | 'setData'>,
     payload: ClipboardSliceWrite<V>

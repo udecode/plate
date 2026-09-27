@@ -14,22 +14,26 @@ type IsAny<T> = 0 extends 1 & T ? true : false;
 type AssertFalse<T extends false> = T;
 type AssertTrue<T extends true> = T;
 
-const ConfiguredPlateCodecContractPlugin = definePlugin(
-  'configuredPlateCodecContract',
+const ConfiguredPlateFormatContractPlugin = definePlugin(
+  'configuredPlateFormatContract',
   {
-    codecs: ({ defineCodecs }) =>
-      defineCodecs({
-        'application/x-plate-codec-contract': {
-          decode: () => ContentSlice.closed([{ text: 'value' }]),
-          scope: 'document',
-        },
-      }),
+    dataTransferFormats: [
+      {
+        mimeType: 'application/x-plate-codec-contract',
+        decode: () => ({
+          diagnostics: [],
+          ok: true,
+          slice: ContentSlice.closed([{ text: 'value' }]),
+        }),
+        scope: 'document',
+      },
+    ],
   }
 ).configure({});
 
-// @ts-expect-error Consumer configuration is terminal for React codec authoring.
-ConfiguredPlateCodecContractPlugin.extend(({ defineCodecs }) => ({
-  codecs: defineCodecs({}),
+// @ts-expect-error Consumer configuration is terminal for React format authoring.
+ConfiguredPlateFormatContractPlugin.extend(({ defineFormats }) => ({
+  formats: defineFormats({}),
 }));
 
 export const MinimalPlateDefinitionPlugin = definePlugin(
@@ -565,9 +569,7 @@ const inferredFactoryApiMode: 'inferredFactory' =
   stateInferenceEditor.api.inferredFactoryStateInference.getMode();
 const inferredFactoryReadMode: 'inferredFactory' =
   stateInferenceEditor.read.inferredFactoryStateInference.getMode();
-const htmlValue = createdPlateEditor.api.html.deserialize({
-  element: '<p>HTML</p>',
-});
+const htmlValue = createdPlateEditor.api.html.parseSlice('<p>HTML</p>');
 type CreatedPlateEditorApiKeys = keyof typeof createdPlateEditor.api;
 const explicitPluginApiKey: Extract<
   CreatedPlateEditorApiKeys,

@@ -234,7 +234,7 @@ test('Plite-family test edits do not invalidate runtime dependents', () => {
     'packages/plitejs/test/document-change-laws.test.ts',
   ]);
   const domTest = createAffectedPlan([
-    'packages/plitejs/test/dom/host-codec.test.ts',
+    'packages/plitejs/test/dom/data-transfer-format.test.ts',
   ]);
 
   assert.deepEqual(coreTest.packageNames, ['plitejs']);

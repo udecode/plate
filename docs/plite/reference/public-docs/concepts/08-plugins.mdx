@@ -412,7 +412,7 @@ DOM clipboard ingress is a typed plugin point owned by
 `plitejs/dom`. Intercept `domCommands.insertData` through `commands`. The
 interceptor receives the `DataTransfer` as `input`; return a transaction spec
 from `state.transaction(...)` when it owns the payload, or `next()` to continue
-Plite's slice, host-codec, and plain-text import path. See
+Plite's slice, DataTransfer-format, and plain-text import path. See
 [Clipboard And Paste](17-clipboard-and-paste).
 
 Wrap `editorReads.slice.export` with `readMiddleware` to sanitize copied or

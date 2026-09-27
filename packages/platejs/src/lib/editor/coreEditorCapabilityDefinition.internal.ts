@@ -8,7 +8,7 @@ import type { AffinityPluginUpdate } from '../plugins/affinity/AffinityPlugin';
 import type { DebugApi } from '../plugins/debug/DebugPlugin';
 import type { DomApi, DomPluginUpdate } from '../plugins/dom/DOMPlugin';
 import type { ElementStateApi } from '../plugins/element-state/ElementStatePlugin';
-import type { HtmlApi } from '../plugins/html/HtmlPlugin';
+import type { HtmlApi } from '../plugins/html/htmlTypes';
 
 /**
  * Non-recursive capability leaf for the plugins installed by every Base

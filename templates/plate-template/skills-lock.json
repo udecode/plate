@@ -1,55 +1,20 @@
 {
   "version": 1,
   "skills": {
-    "autogoal": {
-      "source": "udecode/dotai",
-      "sourceType": "github",
-      "computedHash": "b39af211b4e83be092b60f376eac2b58aad58089d904a73058d33f36610ad93a"
-    },
-    "autoreview": {
-      "source": "openclaw/agent-skills",
-      "sourceType": "github",
-      "computedHash": "d4504560d06faeb839c45dce60958d61fff9f18a7530e5e4b343775457799345"
-    },
-    "debug": {
-      "source": "udecode/dotai",
-      "sourceType": "github",
-      "computedHash": "0c74e2022d4b01170526cc5aabd386dd76f9a65e8b23df92a947bb52504e26b1"
-    },
-    "orchestrator": {
-      "source": "udecode/dotai",
-      "sourceType": "github",
-      "computedHash": "02a6d9c3931f0af4b6d0a04344082c90dd7d9cb9dbe1e4962bd98471591f02d8"
-    },
-    "react-useeffect": {
-      "source": "softaworks/agent-toolkit",
-      "sourceType": "github",
-      "computedHash": "8c24990b50f431a570f3ad1f60632dee154431861547103047f6ce80092ca734"
-    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
-      "computedHash": "ac9d0d69caac7de1d1e5647f3db3bcd2f13af355d6b3a78780fbf7fc80e8dca0"
+      "computedHash": "f615de216e085a84e31593ad0fa9062232adc40cd87b7c7ab2b8e49abf6500be"
     },
-    "tdd": {
-      "source": "udecode/dotai",
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
       "sourceType": "github",
-      "computedHash": "117755128a6b66a3faf32d0bb9740837b1ab4471286dda6c4c5674d803fbbbe5"
-    },
-    "typescript-advanced-types": {
-      "source": "wshobson/agents",
-      "sourceType": "github",
-      "computedHash": "8cbf2bf600f392d7260e476e3202932a876e2281cda3b15a8b6a5a43f383252d"
+      "computedHash": "f98931159fa9c7fed043bcd18a891a46dcf89ababa38df13a4c5b7b30dc0ce07"
     },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
-    },
-    "video-transcripts": {
-      "source": "udecode/dotai",
-      "sourceType": "github",
-      "computedHash": "dfce0b8ea81350223ee9967acbad18eb589e17aebf91e87e94b07dfaa86db471"
     }
   }
 }

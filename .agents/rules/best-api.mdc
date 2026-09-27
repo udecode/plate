@@ -114,7 +114,7 @@ entrypoints distinguish implementations without a second branded vocabulary.
 Use `data-editor-*` for owned DOM attributes (`data-editor` for the editable
 host). Mutation repair recognizes exact owned attributes, never every attribute
 with the same prefix. Neutral output markers preserve supported saved-data
-readers at their existing codecs; public export aliases do not earn a second API.
+readers at their existing format owners; public export aliases do not earn a second API.
 
 ### Maximum-Value Hard-Cut Gate
 
@@ -167,8 +167,44 @@ real job, but it must not inject a hidden product theme or expose an additive
 package only when focused proof shows that exact rule is required for format
 correctness or fidelity.
 
+An asynchronous document converter captures one complete source revision at
+entry, before its first await. Derive its visible projection, diagnostics, and
+any format-owned retained source or native artifact from that capture. A hidden
+native payload inside a semantic interchange format needs its own proven current
+caller and one unambiguous authority; round-trip possibility alone does not
+earn a second persistence channel. Prefer the canonical native persistence
+format for exact state and the semantic format for visible interchange.
+Delete APIs that combine a caller-supplied old snapshot with live editor reads.
+A narrower public capture helper earns its place only for a current standalone
+read job with measured material savings; it stays on the document-state owner
+instead of becoming an export subsystem, cache, or live view.
+
+A format serializer consumes one complete document and returns format data with
+structured diagnostics. Authored projection is an option on that format's
+ordinary serializer, not a parallel authored method or caller-built conversion
+editor. An editor method reuses the editor's compiled format configuration; a
+standalone serializer compiles supplied declarations without activating
+plugins, publishing editor state, or constructing an editing runtime. Keep
+semantic output separate from component-rendered presentation, and let feature
+mappings own structural plain-text behavior shared with clipboard egress.
+
+Name conversion operations after their actual law. Use `parse`/`serialize` for
+text syntax and model conversion, `import`/`export` for file or package
+workflows with artifact lifecycle, and `encode`/`decode` only for a typed paired
+representation with explicit direction laws. The default parse consumes the
+format's complete document; suffix only exceptional carriers such as a slice or
+inline fragment. Do not force one verb pair across formats whose lifecycle and
+result contracts differ.
+
+A versioned persistence declaration directly owns its current `decode` and
+`encode` directions, current positive version, and decode-only historical
+versions. Do not wrap that single job in a separately named codec, identity
+factory, or persistence builder. Preserve exact encoded-output inference at the
+field or effect declaration that consumes it, validate unknown input before
+publication, and keep historical decoders incapable of encoding new state.
+
 One-shot file conversion belongs in a standalone operation when it owns no
-installed state, lifecycle, codecs, or editor commands. Needing the editor's
+installed state, lifecycle, format mappings, or editor commands. Needing the editor's
 configured decoder does not justify a plugin that only captures an editor;
 pass the editor at that boundary. Keep clipboard integration on its installed
 plugin. Shared conversion dependencies stay private, and independently used
@@ -288,6 +324,16 @@ to an existing command editor without allocating another runtime. Capture that
 editor for an interaction's lifetime; removal rejects stale writes instead of
 silently targeting a replacement. Preserve an independently useful initial
 selection policy before focus.
+
+An awaited model service and a mounted event controller do not need matching
+return shapes. Keep the truthful Promise on the model service when completion
+can cross an external boundary. When mounted controls only dispatch from event
+handlers, return `void` and let one private dispatcher consume that Promise.
+Deliver each expected fulfilled outcome once to the exact initiating mounted
+view, and report each rejection once through its host error channel. Do not
+publish a second Promise-returning controller whose production callers discard
+the result, or let every keyboard, toolbar, native-input, and adapter caller own
+its own `void`/error path.
 
 Whole-document controls bind to the complete model editor, not a mounted root
 view. In Plate React, use `useModelEditor()` for canonical document load,
@@ -512,7 +558,7 @@ for this local admission job.
 Choose an existing lifetime owner before naming a public view abstraction.
 Temporary AI output belongs to the AI session's draft, outside document changes
 and history. Publish accumulated response text through the installed Markdown
-codec; never reserialize rendered output as the next parser input. Copied UI
+parser; never reserialize rendered output as the next parser input. Copied UI
 owns draft color and the streaming indicator. Apply a draft once through normal
 editor commands under the invoking view's current intent. Discard releases its
 mapped targets without undoing other edits. AI generation must not enter
@@ -640,7 +686,21 @@ outside document undo; suggestion Accept/Reject uses document history and
 preserves conversations. Ordinary reload creates a fresh editor and local undo
 stack because session effects are not serialized. A generic checkpoint, live
 record-replacement API or separate comment undo stack needs an independent
-supported job; Comments does not require one.
+supported job. Authoritative full-document import is such a job only when the
+application first validates and stages the complete comment snapshot against a
+detached candidate containing the matching document. Candidate failure
+preserves the mounted editor, comments, users, history and transient plugin
+state. When the application owns editor instances, finish the candidate and
+swap the editor owner with a keyed remount. Do not simulate atomic import by
+sequencing document, comment and user replacement on the mounted editor:
+rollback cannot reconstruct cleared history, drafts, pending composers or
+retired mutation queues. Preserving the editor instance requires one owning
+transaction that can publish or discard every affected runtime resource as a
+unit; absent that owner, reject the import before mutation. Successful snapshot
+publication bypasses ordinary mutation and history, clears transient composer
+state, and fences late work from the retired snapshot. Do not expose per-thread
+replacement through that operation or read saved attachments through a mounted
+projection when a format expects canonical proposed-document coordinates.
 
 A published conversation outlives the current visibility of its document
 target. Exact current-view coverage alone owns inline paint, block counts and

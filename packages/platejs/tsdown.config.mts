@@ -52,6 +52,8 @@ export const plateAdditionalEntries = [
   'src/excalidraw/index.ts',
   'src/excalidraw/react/index.ts',
   'src/history/index.ts',
+  'src/html/index.ts',
+  'src/html/server/index.ts',
   'src/hyperscript/index.ts',
   'src/markdown/index.ts',
   'src/math/index.ts',

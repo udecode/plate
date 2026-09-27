@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import { NodeApi } from 'platejs';
-import {
-  DefaultAuthoredPlugin,
-  readAuthoredFormatSnapshot,
-} from 'platejs/authored';
+import { DefaultAuthoredPlugin, projectAuthoredReview } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
@@ -34,7 +31,7 @@ const loadExample = (
 describe('saved rich-text playground', () => {
   it('restores the three authors and exact review content with linked discussion records', () => {
     const editor = loadExample();
-    const snapshot = readAuthoredFormatSnapshot(editor);
+    const snapshot = projectAuthoredReview(editor.read.value());
 
     expect(
       snapshot.changes
@@ -115,7 +112,7 @@ describe('saved rich-text playground', () => {
       JSON.parse(JSON.stringify(editor.read.value())),
       JSON.parse(JSON.stringify(editor.plugin(CommentsPlugin).api.toJSON()))
     );
-    expect(readAuthoredFormatSnapshot(restored)).toEqual(snapshot);
+    expect(projectAuthoredReview(restored.read.value())).toEqual(snapshot);
     expect(restored.plugin(CommentsPlugin).api.getThreads()).toEqual(threads);
     expect(
       restored.plugin(CommentsPlugin).api.attachment('discussion1')
@@ -221,7 +218,7 @@ describe('saved rich-text playground', () => {
       }).status
     ).toBe('applied');
 
-    const { proposed } = readAuthoredFormatSnapshot(editor);
+    const { proposed } = projectAuthoredReview(editor.read.value());
     expect(NodeApi.get(proposed.children[3], [1])).toEqual({
       children: [{ text: 'comments' }],
       type: 'link',

@@ -453,7 +453,7 @@ from the actual repository root, then read `clawpatch status --json`. Do not
 repeat broad typecheck/lint/test sequences merely because an old run used them.
 
 For generated skills in `plate-2`, after editing `.agents/rules/*.mdc` or
-`.agents/AGENTS.md`, run:
+`AGENTS.md`, run:
 
 ```bash
 pnpm install

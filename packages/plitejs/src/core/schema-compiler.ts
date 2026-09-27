@@ -1,3 +1,4 @@
+import type { EditorJsonValue } from '../interfaces/json';
 import type {
   EditorSchemaDerivedDefinition,
   EditorSchemaDefinition,
@@ -6,7 +7,6 @@ import type {
   EditorSchemaIdentity,
   EditorSchemaElementStructure,
   EditorSchemaUnknownPolicy,
-  PropertyJsonValue,
   PropertyValueDescriptor,
   PropertyValueKind,
   SchemaContent,
@@ -291,7 +291,7 @@ export type CompiledSchemaConstructionPlan =
   | Readonly<{ kind: 'text' }>;
 
 export type CompiledSchemaContentPrefixSlot = Readonly<{
-  properties: Readonly<Record<string, PropertyJsonValue>>;
+  properties: Readonly<Record<string, EditorJsonValue>>;
   type: string;
 }>;
 
@@ -2794,8 +2794,8 @@ const canonicalizePropertyValue = (
   descriptor: PropertyValueDescriptor,
   value: unknown,
   source: Source<unknown>
-): PropertyJsonValue => {
-  let canonical!: PropertyJsonValue;
+): EditorJsonValue => {
+  let canonical!: EditorJsonValue;
 
   if (descriptor.kind === 'set') {
     if (!Array.isArray(value)) {
@@ -2820,7 +2820,7 @@ const canonicalizePropertyValue = (
         source.path
       );
     }
-    const items = new Map<string, PropertyJsonValue>();
+    const items = new Map<string, EditorJsonValue>();
 
     for (const item of value as readonly unknown[]) {
       const compiled = canonicalizePropertyValue(
@@ -2839,7 +2839,7 @@ const canonicalizePropertyValue = (
     );
   } else {
     try {
-      canonical = canonicalJson(value) as PropertyJsonValue;
+      canonical = canonicalJson(value) as EditorJsonValue;
     } catch (error) {
       compileFailure(
         'invalid-property-default',
@@ -3010,7 +3010,7 @@ const clonePropertyDescriptor = (
   }
 
   const hasDefault = Object.hasOwn(descriptor, 'default');
-  let defaultValue: PropertyJsonValue | undefined;
+  let defaultValue: EditorJsonValue | undefined;
 
   if (hasDefault) {
     defaultValue = canonicalizePropertyValue(

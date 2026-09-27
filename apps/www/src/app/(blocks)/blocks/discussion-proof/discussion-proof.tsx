@@ -8,9 +8,18 @@ import {
   type Range,
 } from 'platejs';
 import { createAuthoredReviewDocument } from 'platejs/authored';
-import { BaseCommentsPlugin, type CommentsJSON } from 'platejs/comments';
+import {
+  BaseCommentsPlugin,
+  type CommentMutationDecision,
+  type CommentMutationRequest,
+  type CommentsJSON,
+} from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import {
+  type EditableHistoryReplayEvent,
+  EditorRoot,
+  useCreateEditor,
+} from 'platejs/react';
 import { BaseSuggestionPlugin } from 'platejs/suggestion';
 import * as React from 'react';
 
@@ -35,6 +44,10 @@ import {
   FixedToolbar,
   FixedToolbarPlugin,
 } from '@/registry/components/editor/fixed-toolbar';
+import {
+  RedoToolbarButton,
+  UndoToolbarButton,
+} from '@/registry/components/editor/history-toolbar-button';
 import { ModeToolbarButton } from '@/registry/components/editor/mode-toolbar-button';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
@@ -184,10 +197,37 @@ const initialState = {
   },
 };
 
+const createPersistenceGate = () => {
+  let armed = false;
+  let settle: ((decision: 'apply' | 'block') => void) | undefined;
+
+  return {
+    arm() {
+      armed = true;
+    },
+    settle(decision: 'apply' | 'block') {
+      settle?.(decision);
+    },
+    wait() {
+      if (!armed) return null;
+
+      armed = false;
+
+      return new Promise<'apply' | 'block'>((resolve) => {
+        settle = resolve;
+      }).finally(() => {
+        settle = undefined;
+      });
+    },
+  };
+};
+
 const DiscussionDemoToolbarPlugin = FixedToolbarPlugin.configure({
   slots: {
     beforeContainer: () => (
       <FixedToolbar className="justify-end gap-1">
+        <UndoToolbarButton />
+        <RedoToolbarButton />
         <CommentToolbarButton />
         <AllCommentsButton />
         <ModeToolbarButton />
@@ -209,6 +249,34 @@ const DiscussionReviewerToolbarPlugin = FixedToolbarPlugin.configure({
 
 export default function DiscussionProof() {
   const [loadError, setLoadError] = React.useState(false);
+  const [historyReplayEvents, setHistoryReplayEvents] = React.useState<
+    EditableHistoryReplayEvent[]
+  >([]);
+  const [persistenceStatus, setPersistenceStatus] = React.useState<
+    'armed' | 'idle' | 'pending'
+  >('idle');
+  const [persistenceGate] = React.useState(createPersistenceGate);
+  const mutate = React.useCallback(
+    async (
+      request: CommentMutationRequest
+    ): Promise<CommentMutationDecision> => {
+      const pendingDecision =
+        request.operation === 'removeThread' ? persistenceGate.wait() : null;
+
+      if (pendingDecision) {
+        setPersistenceStatus('pending');
+        const decision = await pendingDecision;
+
+        setPersistenceStatus('idle');
+        if (decision === 'block') {
+          return { code: 'proof-refusal', status: 'reject' };
+        }
+      }
+
+      return { status: 'commit', thread: request.proposed };
+    },
+    [persistenceGate]
+  );
   const [initialRevision] = React.useState(createInitialRevision);
   const [loaded, setLoaded] = React.useState(initialRevision);
   const editor = useCreateEditor(
@@ -218,13 +286,17 @@ export default function DiscussionProof() {
         ...DiscussionKit,
         DiscussionDemoToolbarPlugin,
         CommentsPlugin.configure({
-          initialState: { ...initialState, initialComments: loaded.comments },
+          initialState: {
+            ...initialState,
+            initialComments: loaded.comments,
+            mutate,
+          },
         }),
       ],
       userId: 'alice',
       initialValue: loaded.document,
     },
-    [loaded]
+    [loaded, mutate]
   );
   const reviewerEditor = useCreateEditor({
     plugins: [
@@ -306,12 +378,58 @@ export default function DiscussionProof() {
         </span>
       </div>
 
+      <div
+        aria-label="History persistence controls"
+        className="flex items-center gap-2"
+        role="group"
+      >
+        <Button
+          disabled={persistenceStatus === 'pending'}
+          onClick={() => {
+            persistenceGate.arm();
+            setPersistenceStatus('armed');
+          }}
+          size="sm"
+          variant="outline"
+        >
+          Hold next comment removal
+        </Button>
+        <Button
+          disabled={persistenceStatus !== 'pending'}
+          onClick={() => persistenceGate.settle('apply')}
+          size="sm"
+          variant="outline"
+        >
+          Apply pending comment removal
+        </Button>
+        <Button
+          disabled={persistenceStatus !== 'pending'}
+          onClick={() => persistenceGate.settle('block')}
+          size="sm"
+          variant="outline"
+        >
+          Refuse pending comment removal
+        </Button>
+        <output aria-label="History persistence status">
+          {persistenceStatus}
+        </output>
+        <output aria-label="History replay events">
+          {JSON.stringify(historyReplayEvents)}
+        </output>
+      </div>
+
       <div className="grid gap-4">
         <div className="min-w-0" data-comment-editor="primary">
           <EditorRoot editor={editor} key={editor.id}>
             <EditorFrame className="h-[520px]">
               <EditorContainer>
-                <Editor className="px-8" variant="fullWidth" />
+                <Editor
+                  className="px-8"
+                  onHistoryReplay={(event) => {
+                    setHistoryReplayEvents((events) => [...events, event]);
+                  }}
+                  variant="fullWidth"
+                />
               </EditorContainer>
             </EditorFrame>
           </EditorRoot>

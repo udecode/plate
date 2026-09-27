@@ -39,9 +39,9 @@ export type {
   DeclaredPluginShortcutInput,
   EditorShortcut,
   HtmlAttributes,
-  HtmlCodecHooks,
   HtmlContentToken,
   HtmlElementPatch,
+  HtmlMappingDiagnosticInput,
   HtmlMatcher,
   HtmlMatchValue,
   HtmlNodeSpec,
@@ -50,6 +50,10 @@ export type {
   LeafStaticProps,
   NodeStaticProps,
   PartialBasePlugin,
+  PluginFormatContext,
+  PluginFormatModelView,
+  PluginFormatRegistry,
+  PluginFormatSchemaView,
   PluginShortcutInput,
   RenderStaticNodeWrapper,
   RenderStaticNodeWrapperFunction,
@@ -58,8 +62,13 @@ export type {
   TransformOptions,
 } from './lib/plugin/BasePlugin';
 export type { HandlerReturnType } from './lib/plugin/HandlerReturnType';
-export type * from './lib/plugin/MarkdownNodeCodec';
-export type { ElementWith, TextWith } from './lib/plugin/pluginNodeTypes';
+export type * from './lib/plugin/MarkdownNodeMapping';
+export type * from './lib/plugin/PlainTextNodeMapping';
+export type {
+  ElementWith,
+  PluginFormatNode,
+  TextWith,
+} from './lib/plugin/pluginNodeTypes';
 export type {
   BaseInjectProps,
   BasePluginDefinition,
@@ -69,9 +78,6 @@ export type {
   EditOnlyConfig,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
-  HtmlParserOptions,
-  HtmlPluginContext,
-  HtmlPluginRegistry,
   InferApi,
   InferConflicts,
   InferDependencies,
@@ -132,10 +138,8 @@ export * from './lib/plugins/element-id/index';
 export * from './lib/plugins/element-state/index';
 export {
   collapseWhiteSpace,
-  type HtmlApi,
   htmlBrToNewLine,
   HtmlPlugin,
-  htmlStringToDOMNode,
   htmlTextNodeToString,
 } from './lib/plugins/html/HtmlPlugin';
 export { someHtmlElement } from './lib/plugins/html/htmlDom';

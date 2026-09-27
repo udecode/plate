@@ -40,7 +40,7 @@ Let builders and initializers own contextual typing.
   Do not append `satisfies`, cast the callback, or annotate every parameter.
 - Put every independent author contribution in the headless or React
   `definePlugin()` call: `api`, `read`, `selectors`, `update`, flat native
-  Plite fields, `codecs`, and ordinary Plate fields. There is no nested
+  Plite fields, `formats`, and ordinary Plate fields. There is no nested
   `extension` wrapper. Constructor callbacks already receive typed authoring
   context; context access alone never justifies `.extend()`. Use `.extend()`
   only to adapt an imported/prebuilt plugin descriptor, call a shared factory
@@ -50,19 +50,19 @@ Let builders and initializers own contextual typing.
   When a later API, read, update, native field, event, or required dependent
   needs an earlier capability, add an earlier `.extend()` stage with the
   applicable `api`, `read`, `selectors`, `update`, native Plite field, or
-  `codecs` field and consume its accumulated inferred surface. Multiple stages
+  `formats` field and consume its accumulated inferred surface. Multiple stages
   require a real type dependency and remain preferable to parameter-threaded
   helper functions.
-- Author codecs through the constructor's context-bound callback:
-  `codecs: ({ defineCodecs }) => defineCodecs(map)`.
-  `defineCodecs(map)` handles self and product maps;
-  `defineCodecs(TargetPlugin, map)` handles a foreign map and injects the
-  target. The map remains MIME-keyed, and `'text/html'` accepts one
-  schema-aware rule or a non-empty ordered rule tuple. Keep multiple HTML
-  representations owned by one plugin in the same map; rule count is not a
-  staged type dependency. Move the callback to `.extend()` only when it
-  consumes an earlier capability. This is the one inline codec inference anchor. Do
-  not write direct `codecs: { ... }`, manual `target` fields, a global helper,
+- Author mappings through the constructor's context-bound callback:
+  `formats: ({ defineFormats }) => defineFormats(map)`.
+  `defineFormats(map)` handles self and product maps;
+  `defineFormats(TargetPlugin, map)` handles a foreign map and injects the
+  target. The map uses semantic `html`, `markdown`, and `plainText` keys;
+  whole-payload MIME negotiation belongs to root `dataTransferFormats`. Keep
+  multiple HTML matches owned by one plugin in the same mapping; match count is
+  not a staged type dependency. Move the callback to `.extend()` only when it
+  consumes an earlier capability. This is the one inline mapping inference anchor. Do
+  not write direct `formats: { ... }`, manual `target` fields, a global helper,
   casts, or callback annotations.
 - Stage only an honest scoped capability that consumers, required dependents,
   or durable plugin operations should discover. Do not publish a private
@@ -212,7 +212,7 @@ of defining another model.
 | `read`              | pure queries over the supplied document snapshot/state                                                                                              | replayable for the same state and arguments; no mutation, I/O, or store writes            |
 | `update`            | document mutation and transaction-local reads through the active `tx`                                                                               | no nested one-shot update and no unrelated I/O                                            |
 | native Plite fields | genuine editor-wide substrate through flat `readMiddleware`, commands, corrections, declarations, contributions, events, activation, and validation | not an escape hatch for plugin-scoped state, reads, services, or updates                  |
-| `codecs`            | format encode/decode declarations                                                                                                                   | not runtime service or mutation ownership                                                 |
+| `formats`            | format encode/decode declarations                                                                                                                   | not runtime service or mutation ownership                                                 |
 
 Choose in this order:
 
@@ -256,7 +256,7 @@ before repeating it; `.extend()` is not generic array concatenation.
 
 Deleted builder shortcuts are forbidden. Hard-delete `extendApi`,
 `extendEditorApi`, `extendSelectors`, `extendTx`, `extendTxGroup`,
-`extendExtension`, `extendCodecs`, and `extendHtmlCodec`. Do not author,
+`extendExtension`, `extendMappings`, and `extendHtmlMapping`. Do not author,
 restore, alias, document, or preserve them; use the constructor or an honest
 staged `.extend()` contribution. Classify the receiver before editing:
 same-named methods on Zustand stores or other non-plugin builders are not
@@ -320,9 +320,9 @@ State and native plugin mechanics:
   `editor.plugin(FooPlugin).store.get/set/subscribe`.
 - React subscriptions use `usePluginStore` with an installed typed descriptor.
 - Never add a second top-level `options` or `config` channel for immutable,
-  compile-time, parser, codec, schema, or host-policy values.
+  compile-time, parser, mapping, schema, or host-policy values.
 - Schema factories receive the configured `initialState` snapshot; parser,
-  codec, API, read, update, and native-field callbacks use inferred `store`.
+  mapping, API, read, update, and native-field callbacks use inferred `store`.
 - Live store updates do not rebuild compiled schema. Configure
   schema-affecting initial state before editor construction.
 - Plite editor plugins have no `config` contract. Immutable construction
@@ -354,7 +354,7 @@ State and native plugin mechanics:
 - Clipboard ingress is the `domCommands.insertData` command. Add a `handle` or
   `around` interceptor to `commands`, read the `DataTransfer` from `input`, and
   return a pure spec from `state.transaction(...)`. Use `next()` for the shared
-  exact-slice, host-codec, and plain-text fallback. Keep transaction capability
+  exact-slice, data-transfer-format, and plain-text fallback. Keep transaction capability
   inference in the owning plugin or Plate stage; do not annotate the callback
   or pass editor type arguments.
 - Keep Plate-context capture inside the owning flat authoring callback and
@@ -429,7 +429,7 @@ transitive coincidence is not an installation contract.
   `render`, `initialState`, and `targetPlugins` sit directly beside scoped
   `api`, `read`, `update`, `store`, and `installed`. Never add `portal.plugin`;
   callback authoring contexts alone may expose the current raw descriptor as
-  `plugin`. Keep callback-only `editor` and `defineCodecs` off consumer portals. Do not export standalone or
+  `plugin`. Keep callback-only `editor` and `defineFormats` off consumer portals. Do not export standalone or
   editor-method alternatives for descriptor, name/type reverse, container, or
   injection lookup. Use portal `.name` after lookup when the normalized plugin
   name is needed. Missing descriptors expose `installed: false`; they do not
@@ -441,7 +441,7 @@ transitive coincidence is not an installation contract.
   non-optional, but absent and wrong-kind access throws. Guard optional
   integration with `installed`. Keep compiler caches private,
   use schema predicates for public node questions, read compiled injection at
-  `portal.inject.nodeProps`, and expose codec installation membership
+  `portal.inject.nodeProps`, and expose mapping installation membership
   without name/type translation.
 - All discovery paths expose the same descriptor-owned API. Publish it once
   through the root `api` field and let the compiler namespace it by `name`.
@@ -586,7 +586,7 @@ Schema authoring follows the Plite owner exactly:
   or thread a resolved `type` through a helper merely to feed a selector. This
   applies to node reads/transforms, selection queries, corrections, and nested
   insertion selectors such as `split.type`. Keep persisted strings or schema
-  handles only for raw Plite, AST construction and comparisons, codecs or
+  handles only for raw Plite, AST construction and comparisons, mappings or
   external formats, deliberate fixtures, or a generic schema boundary with no
   descriptor. At a mixed `PluginReference | string` structural boundary, pass
   descriptors through and treat strings only as persisted schema types; a

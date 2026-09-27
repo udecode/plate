@@ -1,26 +1,40 @@
-import type { Pluggable, Preset, Settings } from 'unified';
-
 import { authored } from '../../authored';
 import {
   BaseParagraphPlugin,
   ContentSlice,
   createEditor,
   createEditorView,
+  definePlugin,
   ElementIdPlugin,
   PLUGINS,
+  schema,
   type BasePluginInput,
   type CreateEditorOptions,
   type InitialValue,
   type Value,
 } from '../../core';
-import { writeHostFragmentData } from '../../dom';
+import { writeDataTransferFragment } from '../../dom';
 import { BaseBoldPlugin } from '../../features/basic-nodes';
 import { BaseFontColorPlugin } from '../../features/basic-styles';
 import { BaseListPlugin } from '../../features/list';
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 import { createMarkdownRuntime } from './internal/markdownConversion';
-import { MarkdownPlugin } from './MarkdownPlugin';
+import {
+  MarkdownPlugin,
+  parseMarkdown,
+  parseMarkdownInline,
+  parseMarkdownSlice,
+  serializeMarkdown,
+} from './MarkdownPlugin';
 import { remarkMdx } from './plugins';
+import type {
+  MarkdownDocumentValueFromPlugins,
+  MarkdownSyncPluggable,
+} from './types';
 import { materializeRemarkPlugins } from './utils/getRemarkPluginsWithoutMdx';
 
 const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
@@ -54,7 +68,7 @@ const createDataTransfer = ({
 };
 
 describe('MarkdownPlugin', () => {
-  it('exports explicit authored projections and reloads the review envelope', () => {
+  it('exports authored documents only through explicit semantic projections', () => {
     const editor = createEditor({
       plugins: [
         BaseParagraphPlugin,
@@ -71,31 +85,28 @@ describe('MarkdownPlugin', () => {
       at: { offset: 4, path: [0, 0] },
     });
 
-    expect(editor.api.markdown.serialize()).toBe('Base\n');
-    const accepted = editor.api.markdown.serializeAuthored({
+    expect(() => serializeTestMarkdown(editor)).toThrow(
+      'Markdown serialization requires a projection'
+    );
+    const accepted = serializeTestMarkdown(editor, {
       projection: 'accepted',
     });
-    const proposed = editor.api.markdown.serializeAuthored({
+    const proposed = serializeTestMarkdown(editor, {
       projection: 'proposed',
-    });
-    const review = editor.api.markdown.serializeAuthored({
-      projection: 'review',
     });
 
     expect(accepted.data).toBe('Base\n');
     expect(proposed.data).toBe('Base draft\n');
     expect(accepted.diagnostics[0]?.code).toBe('authored-lossy-projection');
-    expect(review.data).toContain('<!--plate-authored:v1:');
-    expect(review.diagnostics).toEqual([]);
-    expect(editor.api.markdown.deserialize(review.data)).toEqual(
-      editor.read.value()
-    );
+    expect(proposed.data).not.toContain('plate-authored');
   });
 
-  it('reads live codec options without changing document schema identity', () => {
+  it('reads live Markdown options without changing document schema identity', () => {
     const remarkPlugin = () => undefined;
     const editor = createFixtureEditor({
       plugins: [
+        BaseParagraphPlugin,
+        BaseListPlugin,
         MarkdownPlugin.configure({
           initialState: {
             remarkPlugins: [remarkPlugin],
@@ -116,7 +127,7 @@ describe('MarkdownPlugin', () => {
     const serializeHost = () => {
       const data = new DataTransfer();
 
-      writeHostFragmentData(editor, data, ContentSlice.closed(value));
+      writeDataTransferFragment(editor, data, ContentSlice.closed(value));
 
       return data.getData('text/markdown');
     };
@@ -124,31 +135,26 @@ describe('MarkdownPlugin', () => {
     expect(editor.plugin(MarkdownPlugin).store.get().remarkPlugins?.[0]).toBe(
       remarkPlugin
     );
-    expect(editor.api.markdown.serialize({ value: { children: value } })).toBe(
-      '+ Item\n'
-    );
+    expect(
+      serializeTestMarkdown(editor, { document: { children: value } }).data
+    ).toBe('+ Item\n');
     expect(serializeHost()).toBe('+ Item\n');
 
     editor.plugin(MarkdownPlugin).store.set({
       remarkStringifyOptions: { bullet: '*' },
     });
 
-    expect(editor.api.markdown.serialize({ value: { children: value } })).toBe(
-      '* Item\n'
-    );
+    expect(
+      serializeTestMarkdown(editor, { document: { children: value } }).data
+    ).toBe('* Item\n');
     expect(serializeHost()).toBe('* Item\n');
     expect(editor.read.schema.identity()).toEqual(identity);
   });
 
-  it('materializes frozen plugin presets only at the unified boundary', () => {
-    const remarkPlugin = () => undefined;
-    const joins: NonNullable<Settings['join']> = [];
-    const nestedPlugins: Pluggable[] = [remarkPlugin];
-    const preset: Preset = {
-      plugins: nestedPlugins,
-      settings: { join: joins },
-    };
-    const configuredPlugins: Pluggable[] = [preset];
+  it('materializes frozen sync plugin tuples only at the unified boundary', () => {
+    const remarkPlugin = (_options: { label: string }) => undefined;
+    const tuple = [remarkPlugin, { label: 'configured' }] as const;
+    const configuredPlugins: MarkdownSyncPluggable[] = [tuple];
     const editor = createFixtureEditor({
       plugins: [
         MarkdownPlugin.configure({
@@ -158,59 +164,43 @@ describe('MarkdownPlugin', () => {
     });
     const snapshot =
       editor.plugin(MarkdownPlugin).store.get().remarkPlugins ?? [];
-    const snapshotPreset = snapshot[0];
+    const snapshotTuple = snapshot[0];
 
     if (
-      !snapshotPreset ||
-      typeof snapshotPreset === 'function' ||
-      !('plugins' in snapshotPreset) ||
-      !snapshotPreset.plugins ||
-      !('settings' in snapshotPreset) ||
-      !snapshotPreset.settings?.join
+      !snapshotTuple ||
+      typeof snapshotTuple === 'function' ||
+      !Array.isArray(snapshotTuple)
     ) {
-      throw new Error('Expected a frozen remark preset.');
+      throw new Error('Expected a frozen remark plugin tuple.');
     }
 
     configuredPlugins.push(() => undefined);
-    nestedPlugins.push(() => undefined);
 
     expect(snapshot).toHaveLength(1);
-    expect(snapshotPreset.plugins).toHaveLength(1);
     expect(Object.isFrozen(snapshot)).toBe(true);
-    expect(Object.isFrozen(snapshotPreset.plugins)).toBe(true);
-    expect(Object.isFrozen(snapshotPreset.settings.join)).toBe(true);
+    expect(Object.isFrozen(snapshotTuple)).toBe(true);
 
     const materialized = materializeRemarkPlugins(snapshot);
-    const materializedPreset = materialized[0];
+    const materializedTuple = materialized[0];
 
     if (
-      !materializedPreset ||
-      typeof materializedPreset === 'function' ||
-      !('plugins' in materializedPreset) ||
-      !('settings' in materializedPreset)
+      !materializedTuple ||
+      typeof materializedTuple === 'function' ||
+      !Array.isArray(materializedTuple)
     ) {
-      throw new Error('Expected a materialized remark preset.');
+      throw new Error('Expected a materialized remark plugin tuple.');
     }
 
     expect(materialized).not.toBe(snapshot);
-    expect(materializedPreset.plugins).not.toBe(snapshotPreset.plugins);
-    expect(materializedPreset.settings?.join).not.toBe(
-      snapshotPreset.settings.join
-    );
-    expect(Object.isFrozen(materializedPreset.plugins)).toBe(false);
-    expect(Object.isFrozen(materializedPreset.settings?.join)).toBe(false);
-    if (!materializedPreset.plugins) {
-      throw new Error('Expected materialized remark plugins.');
-    }
-
-    materializedPreset.plugins.push(() => undefined);
-    expect(snapshotPreset.plugins).toHaveLength(1);
-    expect(typeof editor.api.markdown.serialize()).toBe('string');
+    expect(materializedTuple).not.toBe(snapshotTuple);
+    expect(materializedTuple[1]).toBe(snapshotTuple[1]);
+    expect(typeof serializeTestMarkdown(editor).data).toBe('string');
   });
 
-  it('exposes default options, root markdown api, and codec deserialization', () => {
+  it('exposes the final parse and serialize API', () => {
+    const plugins = [BaseBoldPlugin, MarkdownPlugin] as const;
     const editor = createFixtureEditor({
-      plugins: [BaseBoldPlugin, MarkdownPlugin],
+      plugins,
     });
     const plugin = editor.plugin(MarkdownPlugin);
 
@@ -221,26 +211,240 @@ describe('MarkdownPlugin', () => {
       remarkPlugins: [],
       remarkStringifyOptions: null,
     });
-    expect(typeof editor.api.markdown.deserialize).toBe('function');
-    expect(typeof editor.api.markdown.deserializeInline).toBe('function');
+    expect(typeof editor.api.markdown.parse).toBe('function');
+    expect(typeof editor.api.markdown.parseInline).toBe('function');
+    expect(typeof editor.api.markdown.parseSlice).toBe('function');
     expect(typeof editor.api.markdown.serialize).toBe('function');
     expect(Reflect.ownKeys(editor.plugin(MarkdownPlugin).api)).toEqual([
-      'deserialize',
-      'deserializeInline',
+      'parse',
+      'parseInline',
+      'parseSlice',
       'serialize',
-      'serializeAuthored',
     ]);
-    expect(editor.plugin(MarkdownPlugin).api.deserialize('**bold**')).toEqual(
-      editor.api.markdown.deserialize('**bold**')
+    expect(editor.plugin(MarkdownPlugin).api.parse('**bold**')).toEqual(
+      editor.api.markdown.parse('**bold**')
     );
+    const portalResult = editor.plugin(MarkdownPlugin).api.parse('**bold**');
+    const editorResult = editor.api.markdown.parse('**bold**');
+
+    if (portalResult.ok && editorResult.ok) {
+      const portalDocument: MarkdownDocumentValueFromPlugins<typeof plugins> =
+        portalResult.document;
+      const editorDocument: MarkdownDocumentValueFromPlugins<typeof plugins> =
+        editorResult.document;
+
+      void portalDocument;
+      void editorDocument;
+    }
     expect('parser' in plugin).toBe(false);
-    expect(editor.api.markdown.deserialize('**bold**')).toEqual({
+    expect(parseTestMarkdown(editor, '**bold**')).toEqual({
       children: [
         {
           children: [{ bold: true, text: 'bold' }],
           type: 'paragraph',
         },
       ],
+    });
+  });
+
+  it('keeps direct and editor operations on the same result contract', () => {
+    const plugins = [
+      BaseParagraphPlugin,
+      BaseBoldPlugin,
+      MarkdownPlugin,
+    ] as const;
+    const editor = createEditor({ plugins });
+    const direct = parseMarkdown('**bold**', { plugins });
+    const throughEditor = editor.api.markdown.parse('**bold**');
+
+    expect(direct).toEqual(throughEditor);
+    if (!direct.ok) throw new Error('Expected Markdown parsing.');
+    const directSerialized = serializeMarkdown(direct.document, { plugins });
+    const editorSerialized = editor.api.markdown.serialize({
+      document: direct.document,
+    });
+
+    expect(directSerialized).toEqual(editorSerialized);
+  });
+
+  it('returns closed rootless slices from direct slice and inline parsing', () => {
+    const plugins = [
+      BaseParagraphPlugin,
+      BaseBoldPlugin,
+      MarkdownPlugin,
+    ] as const;
+    const slice = parseMarkdownSlice('**bold**', { plugins });
+    const inline = parseMarkdownInline(' **bold** ', { plugins });
+
+    expect(slice.ok).toBe(true);
+    expect(inline.ok).toBe(true);
+    if (!slice.ok || !inline.ok) throw new Error('Expected Markdown slices.');
+    expect(slice.slice).toMatchObject({ openEnd: 0, openStart: 0 });
+    expect(inline.slice).toMatchObject({ openEnd: 0, openStart: 0 });
+    expect(slice.slice.roots).toBeUndefined();
+    expect(inline.slice.roots).toBeUndefined();
+  });
+
+  it('rejects multiple blocks in inline parsing instead of truncating', () => {
+    const result = parseMarkdownInline('one\n\ntwo', {
+      plugins: [BaseParagraphPlugin, MarkdownPlugin],
+    });
+
+    expect(result).toMatchObject({
+      diagnostics: [
+        {
+          actual: 2,
+          code: 'markdown-inline-blocks',
+          severity: 'error',
+        },
+      ],
+      ok: false,
+    });
+  });
+
+  it('reports limits and reserves fallback for explicit streaming recovery', () => {
+    const plugins = [
+      BaseParagraphPlugin,
+      MarkdownPlugin.configure({
+        initialState: { remarkPlugins: [remarkMdx] },
+      }),
+    ] as const;
+    const limited = parseMarkdown('three bytes', {
+      limits: { maxBytes: 2 },
+      plugins,
+    });
+    const strict = parseMarkdown('<u>', { plugins });
+    const recovered = parseMarkdown('<u>', {
+      plugins,
+      recovery: 'incomplete-stream',
+    });
+
+    expect(limited).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({ code: 'markdown-limit-exceeded' }),
+      ],
+      ok: false,
+    });
+    expect(strict.ok).toBe(false);
+    expect(recovered).toMatchObject({
+      diagnostics: [expect.objectContaining({ code: 'markdown-fallback' })],
+      ok: true,
+    });
+  });
+
+  it('fails unknown visible nodes unless the caller allows a diagnosed drop', () => {
+    const UnknownPlugin = definePlugin('unknownMarkdownNode', {
+      schema: { element: schema.element.textBlock() },
+    });
+    const plugins = [
+      BaseParagraphPlugin,
+      UnknownPlugin,
+      MarkdownPlugin,
+    ] as const;
+    const document = {
+      children: [
+        {
+          children: [{ text: 'visible' }],
+          type: 'unknownMarkdownNode',
+        },
+      ],
+    } as const;
+    const rejected = serializeMarkdown(document, { plugins });
+    const allowed = serializeMarkdown(document, {
+      lossPolicy: 'allow',
+      plugins,
+    });
+
+    expect(rejected).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'markdown-unsupported-node',
+          severity: 'error',
+        }),
+      ],
+      ok: false,
+    });
+    expect(allowed).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'markdown-unsupported-node',
+          severity: 'warning',
+        }),
+      ],
+      ok: true,
+    });
+  });
+
+  it('diagnoses caller-requested node filtering', () => {
+    const plugins = [
+      BaseParagraphPlugin,
+      BaseBoldPlugin,
+      MarkdownPlugin,
+    ] as const;
+    const result = parseMarkdown('**bold**', {
+      disallowedNodes: ['bold'],
+      plugins,
+    });
+
+    expect(result).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'markdown-filtered-node',
+          severity: 'warning',
+        }),
+      ],
+      ok: true,
+    });
+  });
+
+  it('returns schema-fit repairs as typed diagnostics', () => {
+    const FittedPlugin = definePlugin('fittedMarkdownNode', {
+      formats: ({ defineFormats, schema: { type } }) =>
+        defineFormats({
+          markdown: {
+            decode: () => ({
+              children: [{ text: 'fit' }, { text: 'ted' }],
+              type,
+            }),
+            from: 'paragraph',
+            kind: 'node',
+          },
+        }),
+      schema: { element: schema.element.textBlock() },
+    });
+    const result = parseMarkdown('fitted', {
+      plugins: [BaseParagraphPlugin, FittedPlugin, MarkdownPlugin],
+    });
+
+    expect(result).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'markdown-schema-repair',
+          impact: 'lossless',
+          repair: 'merge-text',
+          severity: 'warning',
+        }),
+      ],
+      document: {
+        children: [expect.objectContaining({ children: [{ text: 'fitted' }] })],
+      },
+      ok: true,
+    });
+
+    expect(
+      parseMarkdownSlice('fitted', {
+        plugins: [BaseParagraphPlugin, FittedPlugin, MarkdownPlugin],
+      })
+    ).toMatchObject({
+      diagnostics: [],
+      ok: true,
+      slice: {
+        content: [
+          expect.objectContaining({
+            children: [{ text: 'fit' }, { text: 'ted' }],
+          }),
+        ],
+      },
     });
   });
 
@@ -261,10 +465,10 @@ describe('MarkdownPlugin', () => {
       ],
     });
 
-    const markdown = editor.api.markdown.serialize({ withBlockId: true });
+    const markdown = serializeTestMarkdown(editor, { withBlockId: true }).data;
 
     expect(markdown).toContain('<block id="block-1">');
-    expect(editor.api.markdown.deserialize(markdown)).toEqual({
+    expect(parseTestMarkdown(editor, markdown)).toEqual({
       children: [
         {
           children: [{ text: 'Hello' }],
@@ -303,11 +507,11 @@ describe('MarkdownPlugin', () => {
       ],
     });
 
-    const markdown = editor.api.markdown.serialize({ withBlockId: true });
+    const markdown = serializeTestMarkdown(editor, { withBlockId: true }).data;
 
     expect(markdown).toContain('<block id="list-1">');
     expect(markdown).toContain('<block id="list-2">');
-    expect(editor.api.markdown.deserialize(markdown).children).toEqual([
+    expect(parseTestMarkdown(editor, markdown).children).toEqual([
       expect.objectContaining({ id: 'list-1' }),
       expect.objectContaining({ id: 'list-2' }),
     ]);
@@ -323,38 +527,8 @@ describe('MarkdownPlugin', () => {
     });
 
     expect(() =>
-      editor.api.markdown.deserialize(
-        '<block id="block-1">\n\nHello\n\n</block>'
-      )
+      parseTestMarkdown(editor, '<block id="block-1">\n\nHello\n\n</block>')
     ).toThrow('requires ElementIdPlugin');
-  });
-
-  it('applies one-operation overrides by installed feature name', () => {
-    const editor = createTestEditor();
-
-    expect(
-      editor.api.markdown.deserialize('```ts\nconst answer = 42;\n```', {
-        rules: {
-          codeBlock: {
-            deserialize: () => ({
-              children: [{ text: '' }],
-              lang: 'ts',
-              rawCode: 'const answer = 42;',
-              type: 'codeBlock',
-            }),
-          },
-        },
-      })
-    ).toEqual({
-      children: [
-        {
-          children: [{ text: '' }],
-          lang: 'ts',
-          rawCode: 'const answer = 42;',
-          type: 'codeBlock',
-        },
-      ],
-    });
   });
 
   it('checks optional plugins through their installed portal state', () => {
@@ -446,25 +620,29 @@ describe('MarkdownPlugin', () => {
     ]);
   });
 
-  it('registers Markdown serialization with the host codec registry', () => {
+  it('registers Markdown serialization with the host format registry', () => {
     const editor = createFixtureEditor({
       plugins: [BaseBoldPlugin, MarkdownPlugin],
     });
     const data = new DataTransfer();
-    const fragment = editor.api.markdown.deserialize('**bold**');
+    const fragment = parseTestMarkdown(editor, '**bold**');
 
-    writeHostFragmentData(editor, data, ContentSlice.closed(fragment.children));
+    writeDataTransferFragment(
+      editor,
+      data,
+      ContentSlice.closed(fragment.children)
+    );
 
     expect(data.getData('text/markdown')).toBe('**bold**\n');
   });
 
-  it('projects only primary content through the Markdown host codec', () => {
+  it('projects only primary content through the Markdown host format', () => {
     const editor = createFixtureEditor({
       plugins: [MarkdownPlugin],
     });
     const data = new DataTransfer();
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       editor,
       data,
       ContentSlice.fromJSON({
@@ -488,10 +666,10 @@ describe('MarkdownPlugin', () => {
   it('keeps inline marks while unwrapping an open nested fragment', () => {
     const editor = createTestEditor();
     const data = new DataTransfer();
-    const blockquote = editor.api.markdown.deserialize('> alpha **beta** gamma')
+    const blockquote = parseTestMarkdown(editor, '> alpha **beta** gamma')
       .children[0];
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       editor,
       data,
       ContentSlice.fromJSON({
@@ -507,11 +685,10 @@ describe('MarkdownPlugin', () => {
   it('unwraps every open depth without inventing nested block markers', () => {
     const editor = createTestEditor();
     const data = new DataTransfer();
-    const blockquote = editor.api.markdown.deserialize(
-      '> # alpha **beta** gamma'
-    ).children[0];
+    const blockquote = parseTestMarkdown(editor, '> # alpha **beta** gamma')
+      .children[0];
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       editor,
       data,
       ContentSlice.fromJSON({
@@ -527,10 +704,10 @@ describe('MarkdownPlugin', () => {
   it('does not invent a heading marker for an open clipboard fragment', () => {
     const editor = createTestEditor();
     const data = new DataTransfer();
-    const heading = editor.api.markdown.deserialize('# alpha **beta** gamma')
+    const heading = parseTestMarkdown(editor, '# alpha **beta** gamma')
       .children[0];
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       editor,
       data,
       ContentSlice.fromJSON({
@@ -546,11 +723,12 @@ describe('MarkdownPlugin', () => {
   it('does not invent code fences for an open clipboard fragment', () => {
     const editor = createTestEditor();
     const data = new DataTransfer();
-    const codeBlock = editor.api.markdown.deserialize(
+    const codeBlock = parseTestMarkdown(
+      editor,
       '```ts\nconst alpha = 1;\nconst beta = 2;\n```'
     ).children[0];
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       editor,
       data,
       ContentSlice.fromJSON({
@@ -571,7 +749,7 @@ describe('MarkdownPlugin', () => {
     });
     const data = new DataTransfer();
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       editor,
       data,
       ContentSlice.fromJSON({
@@ -591,12 +769,12 @@ describe('MarkdownPlugin', () => {
     expect(data.getData('text/markdown')).toBe('partial item\n');
   });
 
-  it('round-trips image alt through the Markdown host codec', () => {
+  it('round-trips image alt through the Markdown host format', () => {
     const source = createTestEditor();
-    const document = source.api.markdown.deserialize('![Caption](/image.png)');
+    const document = parseTestMarkdown(source, '![Caption](/image.png)');
     const data = new DataTransfer();
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       source,
       data,
       ContentSlice.fromJSON({
@@ -635,7 +813,8 @@ describe('MarkdownPlugin', () => {
     const editor = createFixtureEditor({
       plugins: [BaseFontColorPlugin, MarkdownPlugin],
     });
-    const value = editor.api.markdown.deserialize(
+    const value = parseTestMarkdown(
+      editor,
       '<span style="color: #93C47D;">colored</span>',
       { remarkPlugins: [remarkMdx] }
     );
@@ -662,11 +841,11 @@ describe('MarkdownPlugin', () => {
 
     expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
     expect(editor.read.children()).toEqual(
-      editor.api.markdown.deserialize('**bold**').children
+      parseTestMarkdown(editor, '**bold**').children
     );
   });
 
-  it('round-trips a leaf property through the Markdown host codec', () => {
+  it('round-trips a leaf property through the Markdown host format', () => {
     const value = [
       { children: [{ bold: true, text: 'bold' }], type: 'paragraph' },
     ];
@@ -680,7 +859,7 @@ describe('MarkdownPlugin', () => {
     });
     const data = new DataTransfer();
 
-    writeHostFragmentData(source, data, ContentSlice.closed(value));
+    writeDataTransferFragment(source, data, ContentSlice.closed(value));
 
     expect(target.api.dom.clipboard.insertData(data)).toBe(true);
     expect(target.read.children()).toEqual(value);

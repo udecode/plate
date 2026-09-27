@@ -115,12 +115,13 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 </APIItem>
 
 <APIItem
-  name="codecs"
-  type="PluginCodecMapDeclaration | ((context: PluginContext<D>) => PluginCodecMapDeclaration)"
+  name="formats"
+  type="PluginFormatMapDeclaration | ((context: PluginFormatAuthoringContext<D>) => PluginFormatMapDeclaration)"
 >
-  Schema-aware product 和 foreign format mapping。Self/product codec 使用
-  contextual `defineCodecs(map)`；foreign contribution 使用
-  `defineCodecs(TargetPlugin, map)`。
+  Schema-aware HTML、Markdown 与 plain-text node mapping。Authoring context
+  暴露 `defineFormats` 与静态 schema binding。Self mapping 使用
+  `defineFormats(map)`；foreign contribution 使用
+  `defineFormats(TargetPlugin, map)`。
 </APIItem>
 
 <APIItem name="on" type="PluginChangeHandlers & DOMHandlers">
@@ -320,18 +321,6 @@ update method。
 值不能定义 `name`、`dependencies`、`schema` 或另一个 `override`。贡献者按 priority
 和源顺序解析，目标的直接 `.configure()` 值优先。对等插件可以替换目标
 `component`；需要禁用已安装的可选目标时使用 `{ enabled: false }`。
-</APIItem>
-
-<APIItem name="parsers" type="object">
-定义完整输入的 HTML 解析行为。
-
-<APISubList>
-<APISubListItem parent="parsers" name="html" type="Nullable<HtmlParser<WithAnyName<D>>>" optional>
-完整输入 HTML 钩子。`query`、`transformData` 和 `transformFragment`
-是扁平的同级字段。节点、mark 和 property 映射使用 context-bound
-`defineCodecs` 返回的 schema-aware `'text/html'` map。
-</APISubListItem>
-</APISubList>
 </APIItem>
 
 <APIItem name="render" type="object">
@@ -591,19 +580,19 @@ factory，或使用前一阶段新增类型。
 - `readMiddleware`、`commands`、`corrections`、`stateFields`、
   `effectTypes`、`contributions`、
   `on`、`activate` 和 `validate`：直接声明在插件上的编辑器能力
-- `codecs`：context-bound `defineCodecs` 返回的 declaration
+- `formats`：context-bound `defineFormats` 返回的 declaration
 
 独立复用的 standalone Plate descriptor 使用从 `platejs` import 的
 `definePlugin`。Plate 插件在根级声明相同的原生能力。
 
-Self/product codec 使用 `defineCodecs(map)`；foreign codec 使用
-`defineCodecs(TargetPlugin, map)`，helper 会注入 foreign target。Map 保持
-MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule tuple。
-`defineCodecs` 是唯一的 inline inference anchor；不要直接声明 codec map，
-也不要手动添加 `target`。
+Self mapping 使用 `defineFormats(map)`；foreign mapping 使用
+`defineFormats(TargetPlugin, map)`，helper 会注入 foreign target。Map 保持
+语义 key `html`、`markdown` 与 `plainText`；`html` 接受单个 schema-aware
+rule 或非空有序 tuple。Whole-payload MIME 处理属于 `dataTransferFormats`。
+不要直接声明 format map、手动添加 `target` 或标注 mapping callback 参数。
 
 `definePlugin()` / `definePlugin()` 拥有所有互相独立的 declaration
-字段，包括 `api`、`read`、`selectors`、`update`、编辑器字段和 `codecs`。
+字段，包括 `api`、`read`、`selectors`、`update`、编辑器字段和 `formats`。
 
 </APIItem>
 </APIMethods>
@@ -620,18 +609,17 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
       回调提供的当前插件。让构造器或扩展推断其类型。消费方将描述符传给
       `editor.plugin(MyPlugin)` 或 `useEditor().plugin(MyPlugin)` 获取 portal。
     </APIItem>
-    <APIItem name="defineCodecs" type="DefinePluginCodecs<D>">
-      在 constructor 的 `codecs` callback 中创建 schema-checked codec
-      declaration；只有 codec 需要前一阶段能力时才放进 `.extend()`。
-      Self/product codec 传入一个 MIME-keyed map；foreign contribution 传入
-      target plugin 和 map。
-    </APIItem>
     <APIItem name="store" type="PluginStore<D>">
       读取、更新和订阅当前插件的 editor-local state。命名 selector 是该 state
       的纯函数。
     </APIItem>
   </APIAttributes>
 </API>
+
+`formats` callback 接收 `PluginFormatAuthoringContext<D>`，不是一般 plugin
+context。它只包含 `defineFormats` 与 `schema`，不暴露 `editor`、`store`、
+selection、metadata 或 field。Runtime mapping callback 接收冻结的 plugin
+state，以及本次 operation 的 registry、schema、model 与 diagnostic context。
 
 有关 Plate 插件特定方面的更详细信息，请参阅 [插件配置](/docs/plugin)、[插件方法](/docs/plugin-methods)、[插件上下文](/docs/plugin-context)、[插件组件](/docs/plugin-components) 和 [插件快捷键](/docs/plugin-shortcuts) 的单独指南。
 

@@ -8,7 +8,7 @@ import {
 } from '../../core/authored-runtime';
 import {
   assertEditorJsonValue,
-  supportsEditorValueCodecVersion,
+  supportsEditorValuePersistenceVersion,
 } from '../../core/value-codec';
 import {
   decodeEditorEffect,
@@ -19,6 +19,7 @@ import {
   type EditorEffectType,
   type SerializedEditorEffect,
 } from '../../index';
+import type { EditorJsonValue } from '../../interfaces/json';
 import type { YjsEditor } from './editor-types';
 import {
   pointToYjsRelativePosition,
@@ -122,7 +123,7 @@ const readSerializedEffect = (
     assertEditorJsonValue(input.value, 'Yjs shared effect value');
     return Object.freeze({
       key: input.key,
-      value: deepFreeze(structuredClone(input.value)),
+      value: deepFreeze(structuredClone(input.value)) as EditorJsonValue,
       version: input.version as number,
     });
   } catch {
@@ -567,7 +568,7 @@ export class YjsSharedEffectLog {
 
       return Object.freeze({
         ...encoded,
-        value: deepFreeze(structuredClone(value)),
+        value: deepFreeze(structuredClone(value)) as EditorJsonValue,
       });
     });
   }
@@ -828,8 +829,8 @@ export class YjsSharedEffectLog {
 
     if (!transport) return decodeEditorEffect(type, serialized);
     if (
-      !type.codec ||
-      !supportsEditorValueCodecVersion(type.codec, serialized.version)
+      !type.persist ||
+      !supportsEditorValuePersistenceVersion(type.persist, serialized.version)
     ) {
       throw new Error(
         `Unsupported Yjs shared effect "${type.key}" version ${String(

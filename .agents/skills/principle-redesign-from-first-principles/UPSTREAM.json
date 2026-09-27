@@ -9,14 +9,15 @@
       "upstream": "skills/principle-redesign-from-first-principles/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "9ae97b35d6338cc9e34c7023c995a39cb7afdaf4bfd41e1d3d665da04d7515d5",
-      "destinationSha256": "ae8417181b932a467d1dbc74f2f8401cee34ca3b0d0b3a2371258339912b5f4d",
+      "destinationSha256": "939ff7899540f2f89d70aa00575dde0cd9b34f3a7a674e1453dcdabb0fb15fee",
       "status": "adapted",
       "reasons": [
         "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
-        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow.",
+        "Pair the redesign with a simplicity check: prefer the simplest target, reuse and prior art before invention, and require each added concept, layer or state to name the requirement that pays for it."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-redesign-from-first-principles/SKILL.md\n+++ skills/principle-redesign-from-first-principles/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-redesign-from-first-principles\n-description: \"Apply when integrating a new requirement into an existing design. Redesign as if the requirement had been a foundational assumption from day one, instead of bolting it on.\"\n-disable-model-invocation: true\n+description: \"Reconsider an unsettled design when current requirements conflict with inherited structure.\"\n ---\n \n # Redesign From First Principles\n"
+      "unifiedDiff": "--- skills/principle-redesign-from-first-principles/SKILL.md\n+++ skills/principle-redesign-from-first-principles/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-redesign-from-first-principles\n-description: \"Apply when integrating a new requirement into an existing design. Redesign as if the requirement had been a foundational assumption from day one, instead of bolting it on.\"\n-disable-model-invocation: true\n+description: \"Reconsider an unsettled design when current requirements conflict with inherited structure.\"\n ---\n \n # Redesign From First Principles\n@@ -10,6 +9,9 @@\n \n - Read all affected files and understand the current design holistically\n - Ask: \"if we were writing this from scratch with this new requirement, what would we build?\"\n+- Keep it simple: choose the simplest design that meets the requirements. Delete, merge, inline or reuse existing components before adding new ones\n+- Check prior art before inventing. Choose a novel design only when it clearly beats established solutions\n+- Compare complexity with the current design. A target that adds concepts, layers or states names the requirement that pays for each; otherwise simplify it\n - Propagate the change through every reference: types, docs, examples, rationale sections\n - Think about the redesign holistically, then deliver it incrementally\n \n"
     }
   ],
   "ownedFiles": [

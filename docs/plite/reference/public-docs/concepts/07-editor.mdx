@@ -129,7 +129,7 @@ Framework and feature packages own presets for their behavior. For example,
 `SuggestionUpdatePolicy.skip` add the exact tags their runtimes consume. Plite
 core does not know those product policies.
 
-Use state fields without a `persist` codec for local provenance UI that should
+Use state fields without `persist` for local provenance UI that should
 follow the runtime but stay out of saved document JSON. Runtime ids are useful for local
 projection and debug links; semantic product ids belong in your own model when
 they need to persist.

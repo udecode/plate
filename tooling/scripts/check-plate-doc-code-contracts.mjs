@@ -93,6 +93,7 @@ const pluginAuthoringMethods = new Set([
 ]);
 const deletedPlatePluginDefinitionKeys = new Set([
   'clipboard',
+  'codecs',
   'config',
   'extension',
   'handlers',
@@ -819,7 +820,7 @@ const getStaticPluginProperties = (contribution, bindings) => {
   return [];
 };
 
-const isDefineCodecsCall = (property) => {
+const isDefineFormatsCall = (property) => {
   if (property?.type !== 'ObjectProperty') return false;
 
   let value = unwrapTypedExpression(property.value);
@@ -831,7 +832,7 @@ const isDefineCodecsCall = (property) => {
   return (
     value?.type === 'CallExpression' &&
     value.callee.type === 'Identifier' &&
-    value.callee.name === 'defineCodecs'
+    value.callee.name === 'defineFormats'
   );
 };
 
@@ -1301,13 +1302,13 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             );
           }
 
-          if (key === 'codecs' && !isDefineCodecsCall(property)) {
+          if (key === 'formats' && !isDefineFormatsCall(property)) {
             issues.push(
               createIssue(
                 file,
                 fence,
                 property,
-                'plugin codec declarations must use the context-bound defineCodecs(...) helper'
+                'plugin format declarations must use the context-bound defineFormats(...) helper'
               )
             );
           }
@@ -1456,13 +1457,13 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             );
           }
 
-          if (key === 'codecs' && !isDefineCodecsCall(property)) {
+          if (key === 'formats' && !isDefineFormatsCall(property)) {
             issues.push(
               createIssue(
                 file,
                 fence,
                 property,
-                'plugin codec declarations must use the context-bound defineCodecs(...) helper'
+                'plugin format declarations must use the context-bound defineFormats(...) helper'
               )
             );
           }

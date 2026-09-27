@@ -69,9 +69,9 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
   PLUGINS.backgroundColor,
   {
     schema: { mark: property.string() },
-    codecs: ({ defineCodecs, schema: { key } }) =>
-      defineCodecs({
-        'text/html': {
+    formats: ({ defineFormats, schema: { key } }) =>
+      defineFormats({
+        html: {
           decode: ({ element }) => element.style.backgroundColor || undefined,
           encode: ({ value }) => ({
             style: { backgroundColor: value },
@@ -80,7 +80,7 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
           match: [{ style: { backgroundColor: '*' } }],
         },
 
-        'text/markdown': {
+        markdown: {
           from: 'span',
           kind: 'node',
           mark: true,
@@ -119,9 +119,9 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
 
 export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
   schema: { mark: property.string() },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => element.style.color || undefined,
         encode: ({ value }) => ({
           style: { color: value },
@@ -130,7 +130,7 @@ export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
         match: [{ style: { color: '*' } }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'span',
         kind: 'node',
         mark: true,
@@ -166,9 +166,9 @@ export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
 
 export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
   schema: { mark: property.string() },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => element.style.fontFamily || undefined,
         encode: ({ value }) => ({
           style: { fontFamily: value },
@@ -177,7 +177,7 @@ export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
         match: [{ style: { fontFamily: '*' } }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'span',
         kind: 'node',
         mark: true,
@@ -212,9 +212,9 @@ export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
 
 export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
   schema: { mark: property.string() },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => element.style.fontSize || undefined,
         encode: ({ value }) => ({
           style: { fontSize: value },
@@ -223,7 +223,7 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
         match: [{ style: { fontSize: '*' } }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'span',
         kind: 'node',
         mark: true,
@@ -258,9 +258,9 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
 
 export const BaseFontWeightPlugin = definePlugin(PLUGINS.fontWeight, {
   schema: { mark: property.string() },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           element.style.fontWeight === 'normal'
             ? undefined
@@ -272,7 +272,7 @@ export const BaseFontWeightPlugin = definePlugin(PLUGINS.fontWeight, {
         match: [{ style: { fontWeight: '*' } }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'span',
         kind: 'node',
         mark: true,
@@ -324,9 +324,9 @@ export const BaseLineHeightPlugin = definePlugin(PLUGINS.lineHeight, {
     },
   }),
   targetPlugins: [BaseParagraphPlugin],
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => {
           if (!element.style.lineHeight) return undefined;
 
@@ -381,9 +381,9 @@ export const BaseTextAlignPlugin = definePlugin(PLUGINS.textAlign, {
     },
   }),
   targetPlugins: [BaseParagraphPlugin],
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           isAlignment(element.style.textAlign)
             ? element.style.textAlign
@@ -446,11 +446,11 @@ export const BaseTextIndentPlugin = definePlugin(PLUGINS.textIndent, {
     },
   }),
   targetPlugins: [BaseParagraphPlugin],
-  codecs: ({ defineCodecs, store }) =>
-    defineCodecs({
-      'text/html': {
-        decode: ({ element }) => {
-          const { offset, unit } = store.get();
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        decode: ({ element, pluginState }) => {
+          const { offset, unit } = pluginState;
           const dataValue = element.dataset.textIndent;
 
           if (dataValue) {
@@ -472,8 +472,8 @@ export const BaseTextIndentPlugin = definePlugin(PLUGINS.textIndent, {
 
           return Number.isFinite(value) && value !== 0 ? value : undefined;
         },
-        encode: ({ value }) => {
-          const { offset, unit } = store.get();
+        encode: ({ pluginState, value }) => {
+          const { offset, unit } = pluginState;
 
           return {
             attributes: { 'data-text-indent': value },

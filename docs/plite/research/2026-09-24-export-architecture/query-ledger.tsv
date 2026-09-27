@@ -1,0 +1,11 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+history-exports	review-ledger	lookup exports; research export; research export:	current common history	not-counted	relevant reviews and decisions	none	retain/reopen decisions	local census
+local-export-census	rg/source	exportToDocx; renderStaticHtml; serializeAuthored; readAuthoredProjection; compiler/runtime callers	Plate and Plite; real menu/server/AI/clipboard	27 local reads	27	local/plate-2	see lead ledger	external source shards
+local-editor-comparison	local-source	Selected owner files in seven existing clones	source revisions and fingerprints in shards	98 read rows	98	seven external registry entries	five design leads plus retained/deferred conclusions	none; evidence sufficient
+web-official-static	web-open	https://tiptap.dev/docs/editor/api/utilities/static-renderer	official docs	1	1	already known	supports document input	verify local source
+web-official-docx	web-open	https://www.blocknotejs.org/docs/features/export/docx	official docs	1	1	already known	supports direct DOCX mapping	verify local source
+web-official-lexical	web-open	https://lexical.dev/docs/concepts/serialization	official docs	0 (internal error)	0	none	none	local source sufficient
+github-blocknote-export-docx	gh-search-issues	export docx	repo TypeCellOS/BlockNote; limit 4	0	0	none	none	local source
+github-lexical-export-html	gh-search-issues	export html	repo facebook/lexical; limit 4	4	2 issue bodies	already known	support selection/data and slice proof boundaries	none
+github-lexical-issue-bodies	gh-issue-view	5192;6086	historical reports; body/title/status/updatedAt	2	2	already known	support existing leads only	none; not current-defect proof
+web-initial-discovery	web-search	Tiptap static; BlockNote formats/math/DOCX; CKEditor PDF	initial discovery URLs retained in source note; exact query wording not retained	unknown	official results	already known	source leads only	local source verification

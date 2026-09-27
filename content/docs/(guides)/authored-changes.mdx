@@ -44,7 +44,10 @@ const editor = createEditor({
 const authored = editor.plugin(DefaultAuthoredPlugin);
 ```
 
-Use an authenticated, stable user ID. A missing identity rejects tracked document writes.
+Use an authenticated, stable user ID. `authored.read.canPropose()` reports
+whether the resolver currently supplies one. `SuggestionPlugin` rejects
+entering Suggestion mode without an author, and native authored writes reject
+missing identity at the transaction boundary.
 
 For a custom resolver or retained accepted history, create one descriptor and use that same descriptor for portal access:
 
@@ -260,69 +263,79 @@ Historical previews and restores retain current conversations and use only the s
 
 ## Export explicit projections
 
-Choose `accepted` or `proposed` for a document without review records, or `review` to preserve the authored envelope. The first two return an `authored-lossy-projection` diagnostic when pending review records are omitted. The proposed projection still includes proposed content.
-
-JSON defaults to `accepted` when options are omitted. Markdown, HTML, and DOCX require a `projection` option.
+Choose `accepted` or `proposed` for a clean document, or `review` when the
+format can preserve review records. Clean projections report diagnostics when
+they omit pending work or resolve a conflict to one side. Every helper accepts
+or captures a complete document, including named roots and metadata.
 
 ### JSON
 
+Use the pure authored projection helpers for detached documents:
+
 ```tsx
 import {
-  deserializeAuthoredJson,
-  serializeAuthoredJson,
+  parseAuthoredDocument,
+  projectAuthoredDocument,
+  projectAuthoredReview,
 } from "platejs/authored";
 
-const json = serializeAuthoredJson(editor, { projection: "review" });
-const document = deserializeAuthoredJson(json.data);
+const source = editor.read.value();
+const accepted = projectAuthoredDocument(source, {
+  projection: "accepted",
+});
+const review = projectAuthoredReview(source);
+const json = JSON.stringify(review.review);
+const document = parseAuthoredDocument(json);
 ```
 
-`deserializeAuthoredJson` parses the document envelope. Load the result into an editor to validate the installed schema and authored records.
+`parseAuthoredDocument` validates the document envelope. Loading it into an
+editor applies the installed application schema and authored-record checks.
 
-### Markdown
-
-Install `MarkdownPlugin` from `platejs/markdown` with the content plugins used by the document:
+### Plain text and Markdown
 
 ```tsx
-import { MarkdownPlugin } from "platejs/markdown";
+import { serializePlainText } from "platejs";
 
-const markdownEditor = createEditor({
-  plugins: [BaseParagraphPlugin, DefaultAuthoredPlugin, MarkdownPlugin],
-  initialValue: editor.read.value(),
-  userId: "alice",
-});
+const text = serializePlainText(editor, { projection: "accepted" });
+const markdown = editor.api.markdown.serialize({ projection: "proposed" });
 
-const markdown = markdownEditor.api.markdown.serializeAuthored({
-  projection: "review",
-});
-const document = markdownEditor.api.markdown.deserialize(markdown.data);
+if (markdown.ok) downloadMarkdown(markdown.data);
 ```
 
-Review output contains proposed Markdown followed by a Plate authored envelope. The envelope preserves review records; the visible Markdown is the proposed result.
+Plain text and Markdown carry visible content only. Feature-owned format
+mappings preserve the structures they can represent and report omitted roots,
+metadata, pending work, and unsupported nodes. Markdown does not contain a
+hidden Plate document and cannot restore exact review state.
 
 ### HTML and DOCX
 
-Use an editor configured with [static components](/docs/static) for HTML output and the content plugins required by [DOCX export](/docs/docx). Server code imports from base package paths such as `platejs`; avoid `/react` imports in server-side conversion code.
-
 ```tsx
-import { exportToDocx } from "platejs/docx/export";
-import { renderAuthoredHtml } from "platejs/static";
+import { exportDocx } from "platejs/docx/export";
+import { renderStaticHtml } from "platejs/static";
 
-const html = await renderAuthoredHtml(editor, { projection: "review" });
-const docx = await exportToDocx(editor, { projection: "review" });
+const semanticHtml = editor.api.html.serialize({ projection: "proposed" });
+const styledHtml = await renderStaticHtml(editor, { projection: "proposed" });
+const docx = await exportDocx(editor, { projection: "review" });
 ```
 
-HTML returns its string in `html.data`. A successful DOCX result returns a `Blob` in `docx.blob`. Both results include `diagnostics`.
+`renderStaticHtml` uses the current editor's static components. Semantic HTML
+uses feature mappings and no application styling. Both HTML forms carry visible
+accepted or proposed content only. A successful DOCX result returns a `Blob` in
+`docx.blob`. Every serializer returns structured `diagnostics`.
 
-| Format   | Accepted or proposed     | Review                                                          |
-| -------- | ------------------------ | --------------------------------------------------------------- |
-| JSON     | Plain projected document | Canonical authored document envelope                            |
-| Markdown | Plain Markdown           | Proposed Markdown plus a Plate authored envelope                |
-| HTML     | Static projected HTML    | Proposed HTML plus an escaped authored JSON script              |
-| DOCX     | Projected Word document  | Word tracked revisions plus the canonical authored package part |
+| Format | Accepted or proposed | Review |
+| ------ | -------------------- | ------ |
+| JSON | Plain projected document | Canonical authored document |
+| Plain text | Structural text | Not supported |
+| Markdown | Plain Markdown | Not supported; save authored JSON |
+| Semantic HTML | Feature-mapped HTML | Not supported; save authored JSON |
+| Static HTML | Component-rendered HTML | Not supported; save authored JSON |
+| DOCX | Projected Word document | Word revisions plus the canonical authored package part |
 
-`deserializeAuthoredHtml(editor, data)` from `platejs/static` returns a detached document. A successful `importDocx(...)` call from `platejs/docx/import` returns one complete `document` and lists unsupported Word revision constructs in `diagnostics`.
-
-Review DOCX export reports `lossy-content` or `unsupported-content` when Word markup cannot express a native construct. The native envelope restores exact authored data only while the Word package remains unchanged and corresponding.
+DOCX review export reports `lossy-content` or `unsupported-content` when Word
+cannot express a native construct. The DOCX authored part restores exact data
+only when the caller grants authored trust and the visible Word content still
+corresponds to that part.
 
 ## Collaboration
 
@@ -354,6 +367,7 @@ After `const authored = editor.plugin(DefaultAuthoredPlugin)`, use these methods
 | Surface                                   | Purpose                                                                            |
 | ----------------------------------------- | ---------------------------------------------------------------------------------- |
 | `tx.authored.propose(options?)`           | Start a proposal, assign a new `{ changeId }`, or amend an owned pending change.   |
+| `authored.read.canPropose()`              | Report whether the current identity can author proposals.                          |
 | `authored.read.view()`                    | Read this view's intent and projection.                                            |
 | `authored.read.change(id)`                | Read one logical change, or `null`.                                                |
 | `authored.read.details(id)`               | Read one change with semantic parts and decision history, or `null`.               |
@@ -371,4 +385,18 @@ After `const authored = editor.plugin(DefaultAuthoredPlugin)`, use these methods
 
 ### Types and format helpers
 
-`platejs/authored` exports the authored plugin descriptors, change and decision types, format snapshots and diagnostics, JSON serialization helpers, and `createAuthoredReviewDocument` for trusted cumulative imported revisions.
+`platejs/authored` exports the authored plugin descriptors, change and decision
+types, immutable projection results and diagnostics, and
+`createAuthoredReviewDocument` for trusted cumulative imported revisions.
+
+`projectAuthoredDocument(document, { projection })` returns one accepted or
+proposed `document`, the exact captured `review` document, diagnostics, and
+separate `unresolved.pending` and `unresolved.conflicted` counts.
+`projectAuthoredReview(document)` also exposes stable visible markup segments
+and property counterparts. Both helpers are pure document operations: they do
+not construct, activate, or subscribe an editor runtime.
+
+`projectAuthoredRange(projection, range)` maps proposed coordinates into the
+accepted document captured by the same projection. `parseAuthoredDocument`
+parses a JSON document envelope; the target editor remains responsible for its
+application schema.

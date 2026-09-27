@@ -1,0 +1,161 @@
+---
+title: 剪贴板与粘贴
+description: 通过 Plate editor、DOM 与 plugin layer 处理 copy、paste、drop 与 fitted slice replacement。
+---
+
+Clipboard operation 横跨 browser event、Plate fragment、transaction 与 DOM。
+每个 policy 应由实际拥有该边界的 surface 处理。
+
+## 选择正确的 surface
+
+| 需求 | Surface | Owner |
+| --- | --- | --- |
+| 单个 editor 需要本地 paste/drop hook | plugin `on.paste` 或 `on.drop` | `platejs/react` |
+| 可复用 package 拥有 paste/drop policy | `domCommands.insertData` interceptor | `platejs/dom` |
+| Browser MIME representation 需要 decode/encode | `dataTransferFormats` 中的 `DataTransferFormat` | `platejs/dom` |
+| Framework 需要导入 `DataTransfer` | `editor.api.dom.clipboard.insertData(data)` | `platejs/dom` |
+| 已有 decoded structural content | `tx.slice.replace(slice)` | `platejs` |
+| Detached parent 需要 fit content | `state.slice.fitContent(slice, { parent, root? })` | `platejs` |
+
+Local event interception 使用 plugin `on` handler。所有安装该 plugin 的 React
+surface 都应复用同一策略时，使用 DOM insert-data command。
+
+## Runtime pipeline
+
+1. Browser 生成带 `DataTransfer` 的 paste、copy、cut、dragstart 或 drop event。
+2. `EditorContent` handler 可以处理 event，或让 Plate 继续。
+3. `domCommands.insertData` interceptor 可以 claim、transform 或 delegate。
+4. Plate 依次尝试 internal fragment、注册的 DataTransfer format 与 plain text。
+5. Decoded slice 在实际 range 处 fit，并通过一次 canonical replacement 提交。
+
+## Plugin clipboard policy
+
+Feature 拥有可复用 DOM import 规则时，intercept `domCommands.insertData`。
+
+```ts
+import { definePlugin } from 'platejs';
+import { domCommands } from 'platejs/dom';
+
+const PasteTodoPlugin = definePlugin('pasteTodo', {
+  commands: ({ around }) => [
+    around(domCommands.insertData, ({ input, next, state }) => {
+      const text = input.getData('text/plain');
+
+      if (!text.startsWith('todo:')) return next();
+
+      return state.transaction((tx) => {
+        tx.text.insert(text.slice('todo:'.length).trim());
+      });
+    }),
+  ],
+});
+```
+
+Interceptor 通过 `input` 接收 `DataTransfer`，并返回纯 transaction spec。Plate
+应继续 internal slice、DataTransfer-format 与 plain-text 路径时，返回 `next()`。
+Headless command 从 `ContentSlice` 开始，不让 `DataTransfer` 离开 DOM boundary。
+
+## DOM clipboard API
+
+```ts
+editor.api.dom.clipboard.insertData(dataTransfer);
+editor.api.dom.clipboard.insertFragmentData(dataTransfer);
+editor.api.dom.clipboard.insertTextData(dataTransfer);
+editor.api.dom.clipboard.readSlice(dataTransfer);
+editor.api.dom.clipboard.writeSelection(dataTransfer);
+editor.api.dom.clipboard.writeSlice(dataTransfer, { slice });
+```
+
+`readSlice` 区分 `{ kind: 'absent' }`、`{ kind: 'invalid', source }` 与
+`{ kind: 'slice', slice }`。`writeSlice` 写入一份精确 `ContentSlice` 与可选
+browser MIME representation。调用方显式提供的 representation 具有 authority，
+包括故意写入的空 string。
+
+Plate 写入 plain text、HTML 与 internal Plate fragment payload。Fragment MIME
+使用 `application/${clipboardFormatKey}`，避免配置不同的 editor 盲目导入彼此
+的 internal JSON。
+
+## DataTransferFormat
+
+通过 plugin 的 `dataTransferFormats` array 注册 `DataTransferFormat` declaration。
+每条 declaration 有一个 `mimeType`，并可提供 `accept`、`decode`、`encode`、
+`priority` 与 document `scope`。Plate 根据 owner plugin 与 schema 生成稳定 key
+和 claim。
+
+```ts
+const ProductTransferPlugin = definePlugin('productTransfer', {
+  dataTransferFormats: [
+    {
+      mimeType: 'application/x-product+json',
+      scope: 'document',
+      accept: ({ snapshot }) =>
+        snapshot.types.includes('application/x-product+json'),
+      decode: ({ data }) => decodeProductSlice(data),
+      encode: ({ slice }) => encodeProductSlice(slice),
+    },
+  ],
+});
+```
+
+`accept: false`，或 `decode`/`encode` 返回 `null`，表示 mismatch，不创建
+attempt。Expected source failure 返回 `{ ok: false, diagnostics }`，然后 Plate
+尝试下一个独立 format。Decoded slice 无法 fit 时不修改 transaction，并继续
+fallback。
+
+Callback exception 会被隔离并报告为 `data-transfer-format` lifecycle error，
+不会阻止后续 format。配置 `DOMPlugin` 可以在 public boundary settle 后观察
+rejected、unfit、selected、written 与 unhandled outcome：
+
+```ts
+DOMPlugin.configure({
+  initialState: {
+    onDataTransferReport: (report) => {
+      // 处理一次已 settle 的 transfer report。
+    },
+  },
+});
+```
+
+Feature 的 HTML、Markdown 与 structural plain-text node mapping 属于
+`formats`/`defineFormats`。完整 `text/html`、`text/markdown` 或其他 MIME payload
+policy 属于 `DataTransferFormat`。
+
+## Fragment 与 slice replacement
+
+已知闭合 node 使用 `tx.fragment.replace`：
+
+```ts
+editor.update((tx) => {
+  tx.fragment.replace([
+    { type: 'paragraph', children: [{ text: 'Pasted paragraph' }] },
+  ]);
+});
+```
+
+需要保留 open edge 或 detached secondary root 时使用 `ContentSlice`：
+
+```ts
+import { ContentSlice } from 'platejs';
+
+const slice = ContentSlice.fromJSON({
+  content: decodedContent,
+  openEnd: 1,
+  openStart: 1,
+  roots: { 'note:1': decodedNote },
+});
+
+editor.update.slice.replace(slice);
+```
+
+直接 HTML/Markdown `parseSlice` 产生闭合、无 root 的 slice。只有 native fragment
+transport 可以为 open edge 与 detached root 提供 authority。Destination-specific
+fit 在 insertion owner 处发生。
+
+## Browser proof
+
+真实 clipboard defect 需要覆盖失败所在层：model content、DOM payload、focus、
+native selection 与 follow-up typing。只验证 model 不能证明 browser event 或
+clipboard payload 正确。
+
+参阅 [Browser](/docs/browser)、[Editing Behavior](/docs/editing-behavior) 与
+[DOM Coverage Boundaries](/docs/dom-coverage)。

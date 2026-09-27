@@ -261,7 +261,7 @@ editor.plugin(AIChatTransportPlugin).store.set({
 ## 流式传输
 
 使用 `aiChat.api.setPreview(content, { requestId })` 发布完整的累计 Markdown 响应。
-插件通过编辑器已安装的 Markdown codecs 解析内容，并存入 `previewValue`。
+插件通过编辑器已安装的 Markdown mappings 解析内容，并存入 `previewValue`。
 `useAIChat` 为 AI SDK transport 管理此过程。结构化表格响应使用
 `aiChat.api.setTablePreview({ ref, content }, { requestId })`。
 

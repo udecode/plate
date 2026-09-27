@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 
 import type { EditorDocumentValue } from '../../../core';
+import { throwIfDocxAborted } from '../../internal/abort';
 import {
   AUTHORED_DOCX_CONTENT_TYPE,
   AUTHORED_DOCX_PART,
@@ -33,6 +34,21 @@ const addXmlDeclaration = (
   return source.replace(closingTag, `${declaration}${closingTag}`);
 };
 
+const removeXmlDeclaration = (
+  source: string,
+  tag: string,
+  attribute: string,
+  value: string
+) => {
+  const escaped = value.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(
+    `<${tag}\\b(?=[^>]*\\b${attribute}=(?:"${escaped}"|'${escaped}'))[^>]*\\/?>`,
+    'g'
+  );
+
+  return source.replace(pattern, '');
+};
+
 const nextRelationshipId = (source: string, base: string) => {
   let suffix = 0;
   let id = base;
@@ -45,15 +61,17 @@ const nextRelationshipId = (source: string, base: string) => {
   return id;
 };
 
-const packageEntries = async (zip: JSZip) => {
+const packageEntries = async (zip: JSZip, signal?: AbortSignal) => {
   const entries = new Map<string, Uint8Array>();
 
   await Promise.all(
     Object.values(zip.files).map(async (file) => {
       if (file.dir || file.name === AUTHORED_DOCX_PART) return;
       entries.set(file.name, await file.async('uint8array'));
+      throwIfDocxAborted(signal);
     })
   );
+  throwIfDocxAborted(signal);
 
   return entries;
 };
@@ -64,10 +82,13 @@ export const addAuthoredDocxEnvelope = async (
   document: EditorDocumentValue,
   signal?: AbortSignal
 ) => {
-  if (signal?.aborted) {
-    throw signal.reason ?? new DOMException('Aborted', 'AbortError');
-  }
-  const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+  throwIfDocxAborted(signal);
+  const source = await blob.arrayBuffer();
+
+  throwIfDocxAborted(signal);
+  const zip = await JSZip.loadAsync(source);
+
+  throwIfDocxAborted(signal);
   const contentTypesFile = requireFile(zip, '[Content_Types].xml');
   const relationshipsFile = requireFile(zip, '_rels/.rels');
   const [contentTypes, relationships] = await Promise.all([
@@ -75,6 +96,7 @@ export const addAuthoredDocxEnvelope = async (
     relationshipsFile.async('string'),
   ]);
 
+  throwIfDocxAborted(signal);
   zip.file(
     '[Content_Types].xml',
     addXmlDeclaration(
@@ -91,11 +113,13 @@ export const addAuthoredDocxEnvelope = async (
       `<Relationship Id="${nextRelationshipId(relationships, 'rIdPlateAuthored')}" Type="${AUTHORED_DOCX_RELATIONSHIP}" Target="/${AUTHORED_DOCX_PART}"/>`
     )
   );
-  const entries = await packageEntries(zip);
+  const entries = await packageEntries(zip, signal);
+  throwIfDocxAborted(signal);
   const [parts, projections] = await Promise.all([
     getDocxPartManifest(entries),
     getDocxProjectionDigests(entries),
   ]);
+  throwIfDocxAborted(signal);
   const envelope: AuthoredDocxEnvelopeV1 = {
     document,
     parts,
@@ -106,5 +130,58 @@ export const addAuthoredDocxEnvelope = async (
   zip.file(AUTHORED_DOCX_PART, JSON.stringify(envelope));
   const bytes = await zip.generateAsync({ type: 'arraybuffer' });
 
+  throwIfDocxAborted(signal);
+
   return new Blob([bytes], { type: DOCX_MIME });
+};
+
+/** Remove Plate native review state and its package declarations. */
+export const removeAuthoredDocxEnvelope = async (
+  blob: Blob,
+  signal?: AbortSignal
+) => {
+  throwIfDocxAborted(signal);
+  const source = await blob.arrayBuffer();
+
+  throwIfDocxAborted(signal);
+  const zip = await JSZip.loadAsync(source);
+
+  throwIfDocxAborted(signal);
+  const contentTypesFile = requireFile(zip, '[Content_Types].xml');
+  const relationshipsFile = requireFile(zip, '_rels/.rels');
+  const [contentTypes, relationships] = await Promise.all([
+    contentTypesFile.async('string'),
+    relationshipsFile.async('string'),
+  ]);
+
+  throwIfDocxAborted(signal);
+  const nextContentTypes = removeXmlDeclaration(
+    contentTypes,
+    'Override',
+    'PartName',
+    `/${AUTHORED_DOCX_PART}`
+  );
+  const nextRelationships = removeXmlDeclaration(
+    relationships,
+    'Relationship',
+    'Type',
+    AUTHORED_DOCX_RELATIONSHIP
+  );
+  const removed =
+    zip.file(AUTHORED_DOCX_PART) !== null ||
+    nextContentTypes !== contentTypes ||
+    nextRelationships !== relationships;
+
+  if (!removed) return Object.freeze({ blob, removed: false as const });
+  zip.remove(AUTHORED_DOCX_PART);
+  zip.file('[Content_Types].xml', nextContentTypes);
+  zip.file('_rels/.rels', nextRelationships);
+  const bytes = await zip.generateAsync({ type: 'arraybuffer' });
+
+  throwIfDocxAborted(signal);
+
+  return Object.freeze({
+    blob: new Blob([bytes], { type: blob.type || DOCX_MIME }),
+    removed: true as const,
+  });
 };

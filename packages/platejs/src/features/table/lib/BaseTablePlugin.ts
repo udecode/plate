@@ -15,6 +15,7 @@ import {
   type ElementOf,
   type Location,
   type Node,
+  NodeApi,
   type Path,
   PathApi,
   PLUGINS,
@@ -31,18 +32,6 @@ import {
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { fitSlicePlacements } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
-import {
-  getColSpan,
-  getImportedTableCellColSpan,
-  getRowSpan,
-  getTableCellHtmlCodecProps,
-  getTableCellHtmlProps,
-  MAX_IMPORTED_TABLE_COLUMNS,
-  parseHtmlColSpan,
-  parseHtmlRowSpan,
-  parseTableCellHtml,
-  resetImportedTableCellSpans,
-} from './internal/codec';
 import {
   createDetachedTableContext,
   type createTableContext,
@@ -70,6 +59,18 @@ import {
   readTableSelection,
   type TableSelectionView,
 } from './internal/selection';
+import {
+  getColSpan,
+  getImportedTableCellColSpan,
+  getRowSpan,
+  getTableCellHtmlMappingProps,
+  getTableCellHtmlProps,
+  MAX_IMPORTED_TABLE_COLUMNS,
+  parseHtmlColSpan,
+  parseHtmlRowSpan,
+  parseTableCellHtml,
+  resetImportedTableCellSpans,
+} from './internal/tableCellHtml';
 import type {
   BorderDirection,
   TableAxisInsertOptions,
@@ -344,21 +345,21 @@ export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
       blockContent: false,
     },
   }),
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => ({
           ...parseTableCellHtml(element),
           ...(element.tagName === 'TH' ? { header: true } : {}),
         }),
         encode: ({ content, node }) => ({
-          ...getTableCellHtmlCodecProps(node),
+          ...getTableCellHtmlMappingProps(node),
           children: content,
           tag: node.header ? 'th' : 'td',
         }),
         match: [{ tag: 'td' }, { tag: 'th' }],
       },
-      'text/markdown': {
+      markdown: {
         encode: ({ encode, isPhrasing, node }) => {
           if (getColSpan(node) > 1 || getRowSpan(node) > 1) {
             throw new Error(
@@ -412,9 +413,9 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
       blockContent: false,
     },
   },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => {
           const height = parsePositiveHtmlCssNumber(
             element.style.height || element.getAttribute('height')
@@ -431,7 +432,7 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
         }),
         match: [{ tag: 'tr' }],
       },
-      'text/markdown': {
+      markdown: {
         encode: ({ encode, node }) => {
           const children = encode(node.children);
 
@@ -566,9 +567,23 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
       },
     },
   },
-  codecs: ({ defineCodecs, editor, schema: { type } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ node }) =>
+          node.children
+            .map((row) =>
+              ElementApi.isElement(row)
+                ? row.children
+                    .filter((cell) => ElementApi.isElement(cell))
+                    .map((cell) => NodeApi.string(cell).replace(/\n/g, ' '))
+                    .join('\t')
+                : ''
+            )
+            .join('\n'),
+      },
+      html: {
         decode: ({ element }) => {
           resetImportedTableCellSpans(element as HTMLTableElement);
 
@@ -882,11 +897,17 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
         }),
         match: [{ tag: 'table' }],
       },
-      'text/markdown': {
-        decode: ({ decode, decoration, isBlock, isInline, node }) => {
-          const cellType = editor.plugin(BaseTableCellPlugin).schema.type;
-          const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
-          const rowType = editor.plugin(BaseTableRowPlugin).schema.type;
+      markdown: {
+        decode: ({ decode, decoration, isBlock, isInline, node, registry }) => {
+          const cellType = registry.type(BaseTableCellPlugin);
+          const paragraphType = registry.type(BaseParagraphPlugin);
+          const rowType = registry.type(BaseTableRowPlugin);
+
+          if (!cellType || !paragraphType || !rowType) {
+            throw new Error(
+              'Table Markdown decoding requires table cells, table rows, and paragraphs.'
+            );
+          }
           const rows = node.children.map((row, rowIndex) => ({
             children: row.children.map((cell) => {
               const children = decode(cell.children, decoration);

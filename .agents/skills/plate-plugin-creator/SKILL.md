@@ -105,7 +105,7 @@ later migration pass or wait for the user to notice the drift.
   never serialize a `NodeKey` or alias the plugin-authored `id` property.
   Persisted associations use `ref` / `refs`, so one node may carry its own
   occurrence `id` plus a relation `ref`. Keep external names such as MDAST
-  `identifier` in codecs and keep domain addresses such as `url` semantic.
+  `identifier` in mappings and keep domain addresses such as `url` semantic.
 - Plate owns product composition: plugins, React integration, UI, app/registry
   kits, product commands, defaults, and docs/examples.
 - Do not wrap Plite APIs under second Plate names. If clean authoring needs

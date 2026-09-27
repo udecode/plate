@@ -666,25 +666,25 @@ test('keeps Core lowering carriers out of public docs', () => {
   );
 });
 
-test('requires context-bound codec declarations in docs', () => {
+test('requires context-bound format declarations in docs', () => {
   const rejected = [
     '```ts',
-    `Plugin.extend(() => ({ codecs: { 'text/html': rule } }));`,
-    `Plugin.extend({ codecs: productCodecs });`,
+    `Plugin.extend(() => ({ formats: { html: rule } }));`,
+    `Plugin.extend({ formats: productFormats });`,
     '```',
   ].join('\n');
   const accepted = [
     '```ts',
-    `definePlugin('p', {codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': rule }) });`,
-    `definePlugin('p', {codecs: ({ defineCodecs }) => defineCodecs(TargetPlugin, { 'text/html': rule }) });`,
-    `Plugin.extend(({ defineCodecs }) => ({ codecs: defineCodecs({ 'text/html': rule }) }));`,
-    `Plugin.extend(({ defineCodecs }) => ({ codecs: defineCodecs(TargetPlugin, { 'text/html': rule }) }));`,
+    `definePlugin('p', { formats: ({ defineFormats }) => defineFormats({ html: rule }) });`,
+    `definePlugin('p', { formats: ({ defineFormats }) => defineFormats(TargetPlugin, { html: rule }) });`,
+    `Plugin.extend(({ defineFormats }) => ({ formats: defineFormats({ html: rule }) }));`,
+    `Plugin.extend(({ defineFormats }) => ({ formats: defineFormats(TargetPlugin, { html: rule }) }));`,
     '```',
   ].join('\n');
 
   assert.equal(
     auditPlateDocCode(rejected).filter((issue) =>
-      issue.reason.includes('context-bound defineCodecs')
+      issue.reason.includes('context-bound defineFormats')
     ).length,
     2
   );

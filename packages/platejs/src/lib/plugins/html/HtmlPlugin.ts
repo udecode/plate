@@ -1,72 +1,88 @@
 import isEqual from 'lodash/isEqual.js';
 
 import type {
-  HostCodec,
-  HostCodecParseContext,
-  HostCodecSerializeContext,
+  DataTransferFormat,
+  DataTransferDecodeContext,
+  DataTransferEncodeContext,
 } from '../../../dom/plite-dom.internal';
-import { parseDOMClipboardHtml } from '../../../dom/plite-dom.internal';
 import {
   ContentSlice,
+  EditorSchemaValidationError,
   ElementApi,
   getCompiledEditorSchemaFromApi,
   schema as schemaDefinition,
   reportEditorLifecycleError,
   TextApi,
-  toEditorCoreStateView,
   type Descendant,
-  type DescendantIn,
   type EditorCoreStateView,
-  type EditorStateSchemaApi,
+  type EditorDocumentValue,
   type Element as EditorElement,
+  type InternalEditorSchemaApi,
+  type Path,
   type PropertyValueDescriptor,
+  type RootKey,
   type SchemaProperty,
   type SchemaTarget,
   type Text,
-  type Value,
 } from '../../../facade';
+import { createProjectedEditorView } from '../../../internal/createProjectedEditorView';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
   getCompiledPlateModel,
-  getCompiledPlatePlugin,
-  getCompiledPlatePluginList,
-  hasCompiledPlatePluginCandidate,
   type CompiledPlateModel,
   type CompiledModelBinding,
 } from '../../../internal/plugin/compilePlateModel';
-import { getPluginStore } from '../../../internal/plugin/pluginStore';
 import {
-  getHtmlCodecSchemaFamilies,
+  createPluginFormatModelView,
+  createPluginFormatOperationContext,
+} from '../../../internal/plugin/pluginFormatOperation';
+import {
+  getHtmlMappingSchemaFamilies,
   getPluginDescriptorMetadata,
   getPluginSchemaFamily,
 } from '../../../internal/utils/mergePlugins';
 import type { Editor } from '../../editor';
+import { projectPlateFormatDocument } from '../../editor/withPlite';
 import type {
   AnyBasePlugin,
-  AnyBasePluginDefinition,
   DefinitionOf,
   ErasedPluginCallable,
-  HtmlCodecHooks,
   HtmlContentToken,
+  HtmlMappingDiagnosticInput,
   HtmlMatcher,
-  HtmlParserOptions,
-  HtmlPluginContext,
-  HtmlPluginRegistry,
-  PluginReference,
 } from '../../plugin';
 import { definePlugin } from '../../plugin';
 import { createPluginContext } from '../../plugin/createPluginContext.internal';
+import {
+  createBrowserHtmlDocument,
+  getHtmlAstPlainText,
+  materializeHtmlAst,
+  parseHtmlAst,
+} from './htmlAst';
 import { isHtmlBlockElement, isHtmlElement, isHtmlText } from './htmlDom';
+import type {
+  HtmlApi,
+  HtmlDiagnostic,
+  HtmlDocumentParseResult,
+  HtmlEditorParseOptions,
+  HtmlEditorSerializeOptions,
+  HtmlErrorDiagnostic,
+  HtmlModelLocation,
+  HtmlSerializeResult,
+  HtmlSliceParseResult,
+  HtmlSourceLocation,
+  HtmlWarningDiagnostic,
+} from './htmlTypes';
+
+export type { HtmlApi } from './htmlTypes';
 
 type HtmlRuleDeclaration = Readonly<{
   createsElement?: true;
-  decode: (context: {
-    element: HTMLElement;
-    state: EditorCoreStateView;
-  }) => unknown;
+  decode: (context: Record<string, unknown>) => unknown;
   decodeOnly?: true;
   encode?: (context: Record<string, unknown>) => unknown;
   match: readonly HtmlMatcher[];
+  prepareDocument?: (context: Record<string, unknown>) => void;
   priority?: number;
 }>;
 
@@ -81,6 +97,7 @@ type CompiledHtmlRule = Readonly<{
   declaration: HtmlRuleDeclaration;
   kind: 'element' | 'element-property' | 'mark';
   owner: string;
+  plugin: AnyBasePlugin;
   properties: readonly CompiledHtmlProperty[];
   rulePriority: number;
   targetType: string | null;
@@ -122,6 +139,7 @@ const HTML_RULE_FIELDS = new Set([
   'decodeOnly',
   'encode',
   'match',
+  'prepareDocument',
   'priority',
 ]);
 const HTML_MATCHER_FIELDS = new Set([
@@ -191,9 +209,6 @@ type CollapseWhiteSpaceState = {
   } | null;
   whiteSpaceRule: 'normal' | 'pre' | 'pre-line';
 };
-
-export const htmlStringToDOMNode = (html: string) =>
-  parseDOMClipboardHtml(html).body;
 
 export const htmlTextNodeToString = (node: ChildNode | HTMLElement) => {
   if (!isHtmlText(node)) return undefined;
@@ -380,241 +395,19 @@ export const collapseWhiteSpace = (element: HTMLElement) => {
 };
 
 type CompiledPlateHtmlArtifact = Readonly<{
+  editor: Editor;
+  getFormatContext: ReturnType<typeof createPluginFormatOperationContext>;
   matcherIndex: CompiledHtmlMatcherIndex;
+  prepareDocument: readonly CompiledHtmlRule[];
   rules: readonly CompiledHtmlRule[];
   serializerIndex: CompiledHtmlSerializerIndex;
 }>;
 
 const COMPILED_PLATE_HTML = new WeakMap<object, CompiledPlateHtmlArtifact>();
-
-type PreparedHtmlPluginEntry<
-  C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
-> = Readonly<{
-  context: Omit<HtmlPluginContext<C>, 'pluginState' | 'state'>;
-  getPluginState: () => HtmlPluginContext<C>['pluginState'];
-  name: string;
-  query?: HtmlCodecHooks<C>['query'];
-  transformData?: HtmlCodecHooks<C>['transformData'];
-  transformFragment?: HtmlCodecHooks<C>['transformFragment'];
-}>;
-
-type PreparedHtmlRegistry = Readonly<{
-  plugins: readonly PreparedHtmlPluginEntry[];
-  public: HtmlPluginRegistry;
-}>;
-
-const EDITOR_PARSER_REGISTRIES = new WeakMap<
-  Editor,
-  Readonly<{
-    modelRevision: object | undefined;
-    pluginList: readonly AnyBasePlugin[];
-    registry: PreparedHtmlRegistry;
-  }>
+const COMPILED_PLATE_HTML_BY_SCHEMA = new WeakMap<
+  object,
+  CompiledPlateHtmlArtifact
 >();
-
-const preparePlugin = <P extends AnyBasePlugin & PluginReference>(
-  editor: Editor,
-  plugin: P,
-  registry: HtmlPluginRegistry
-): PreparedHtmlPluginEntry<DefinitionOf<P>> => {
-  const installed =
-    getCompiledPlatePlugin(editor, plugin) ??
-    failInvariant('Expected value to be defined');
-  const parserValue =
-    typeof installed.codecs === 'object' && installed.codecs !== null
-      ? Reflect.get(installed.codecs, 'text/html')
-      : undefined;
-  const parser =
-    typeof parserValue === 'object' && parserValue !== null
-      ? (parserValue as HtmlCodecHooks<DefinitionOf<P>>)
-      : undefined;
-
-  return Object.freeze({
-    context: Object.freeze({
-      name: plugin.name,
-      registry,
-    }),
-    getPluginState: () =>
-      getPluginStore<DefinitionOf<P>>(editor, plugin.name)?.public.get() ??
-      installed.initialState,
-    name: plugin.name,
-    ...(parser?.query ? { query: parser.query } : {}),
-    ...(parser?.transformData ? { transformData: parser.transformData } : {}),
-    ...(parser?.transformFragment
-      ? { transformFragment: parser.transformFragment }
-      : {}),
-  });
-};
-
-const prepareCompiledPlugin = (
-  editor: Editor,
-  installed: AnyBasePlugin,
-  registry: HtmlPluginRegistry
-): PreparedHtmlPluginEntry => {
-  const parserValue =
-    typeof installed.codecs === 'object' && installed.codecs !== null
-      ? Reflect.get(installed.codecs, 'text/html')
-      : undefined;
-  const parser =
-    typeof parserValue === 'object' && parserValue !== null ? parserValue : {};
-  const query = Reflect.get(parser, 'query');
-  const transformData = Reflect.get(parser, 'transformData');
-  const transformFragment = Reflect.get(parser, 'transformFragment');
-  const prepared: PreparedHtmlPluginEntry = {
-    context: Object.freeze({
-      name: installed.name,
-      registry,
-    }),
-    getPluginState: () =>
-      getPluginStore(editor, installed.name)?.public.get() ??
-      installed.initialState,
-    name: installed.name,
-    ...(typeof query === 'function'
-      ? {
-          query: (options) => Reflect.apply(query, undefined, [options]),
-        }
-      : {}),
-    ...(typeof transformData === 'function'
-      ? {
-          transformData: (options) =>
-            Reflect.apply(transformData, undefined, [options]),
-        }
-      : {}),
-    ...(typeof transformFragment === 'function'
-      ? {
-          transformFragment: (options) =>
-            Reflect.apply(transformFragment, undefined, [options]),
-        }
-      : {}),
-  };
-
-  return Object.freeze(prepared);
-};
-
-/** Snapshot the flat whole-input HTML hooks for one compiled Plate model. */
-export const prepareHtmlRegistry = (editor: Editor): PreparedHtmlRegistry => {
-  const pluginList = getCompiledPlatePluginList(editor);
-  const model = getCompiledPlateModel(editor);
-  const isCandidate = hasCompiledPlatePluginCandidate(editor);
-  const cached = isCandidate ? undefined : EDITOR_PARSER_REGISTRIES.get(editor);
-
-  if (
-    cached?.pluginList === pluginList &&
-    cached.modelRevision === model.revision
-  ) {
-    return cached.registry;
-  }
-
-  const names = new Set(pluginList.map((plugin) => plugin.name));
-  const publicRegistry = Object.freeze({
-    has: (name: string) => names.has(name),
-  });
-  const prepared = Object.freeze({
-    plugins: Object.freeze(
-      pluginList.map((plugin) =>
-        prepareCompiledPlugin(editor, plugin, publicRegistry)
-      )
-    ),
-    public: publicRegistry,
-  });
-
-  if (!isCandidate) {
-    EDITOR_PARSER_REGISTRIES.set(
-      editor,
-      Object.freeze({
-        modelRevision: model.revision,
-        pluginList,
-        registry: prepared,
-      })
-    );
-  }
-
-  return prepared;
-};
-
-const createHtmlPluginContext = <
-  C extends AnyBasePluginDefinition,
-  V extends Value,
->(
-  plugin: PreparedHtmlPluginEntry<C>,
-  state: EditorCoreStateView<V>
-): HtmlPluginContext<C> =>
-  Object.freeze({
-    ...plugin.context,
-    pluginState: Object.freeze({ ...plugin.getPluginState() }),
-    state: toEditorCoreStateView(state) as unknown as EditorCoreStateView,
-  });
-
-export const pipePreparedInsertDataQuery = (
-  state: EditorCoreStateView,
-  plugins: readonly PreparedHtmlPluginEntry[],
-  options: HtmlParserOptions
-) =>
-  plugins.every(
-    (plugin) =>
-      !plugin.query ||
-      plugin.query({
-        ...options,
-        ...createHtmlPluginContext(plugin, state),
-      })
-  );
-
-const pipeTransformData = (
-  state: EditorCoreStateView,
-  plugins: readonly PreparedHtmlPluginEntry[],
-  { data: initialData, ...options }: HtmlParserOptions
-) => {
-  let data = initialData;
-  plugins.forEach((plugin) => {
-    if (!plugin.transformData) return;
-
-    data = plugin.transformData({
-      data,
-      ...options,
-      ...createHtmlPluginContext(plugin, state),
-    });
-  });
-
-  return data;
-};
-
-const pipeTransformFragment = (
-  state: EditorCoreStateView,
-  plugins: readonly PreparedHtmlPluginEntry[],
-  {
-    fragment: initialFragment,
-    ...options
-  }: HtmlParserOptions & { fragment: readonly Descendant[] }
-) => {
-  let fragment = initialFragment;
-  plugins.forEach((plugin) => {
-    if (!plugin.transformFragment) return;
-
-    fragment = plugin.transformFragment({
-      fragment,
-      ...options,
-      ...createHtmlPluginContext(plugin, state),
-    });
-  });
-
-  return fragment;
-};
-
-/** Build one parser context factory for focused package proof. */
-export const prepareHtmlPluginContext = <
-  P extends AnyBasePlugin & PluginReference,
->(
-  editor: Editor,
-  plugin: P
-): (<V extends Value>(
-  state: EditorCoreStateView<V>
-) => HtmlPluginContext<DefinitionOf<P>>) => {
-  const registry = prepareHtmlRegistry(editor);
-  const prepared = preparePlugin(editor, plugin, registry.public);
-
-  return <V extends Value>(state: EditorCoreStateView<V>) =>
-    createHtmlPluginContext(prepared, state);
-};
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -729,7 +522,7 @@ const assertSafeStyleValue = (
   }
 };
 
-// Codec-local priority owns HTML precedence; plugin application order does not.
+// Mapping-local priority owns HTML precedence; plugin application order does not.
 const compareRules = (left: CompiledHtmlRule, right: CompiledHtmlRule) =>
   right.rulePriority - left.rulePriority ||
   left.owner.localeCompare(right.owner);
@@ -757,7 +550,7 @@ const compileMatcher = (
   matcher: unknown,
   index: number
 ): HtmlMatcher => {
-  const label = `Plate HTML codec "${owner}" matcher ${index}`;
+  const label = `Plate HTML mapping "${owner}" matcher ${index}`;
 
   if (!isRecord(matcher)) throw new Error(`${label} must be an object.`);
   const fields = Object.keys(matcher);
@@ -862,7 +655,7 @@ const compileProperties = (
   binding.properties.forEach((property) => {
     if (typeof property.key !== 'string') {
       throw new Error(
-        `Plate HTML codec "${owner}" cannot claim prefix schema properties.`
+        `Plate HTML mapping "${owner}" cannot claim prefix schema properties.`
       );
     }
     const { id } = schemaDefinition.handle.property(property);
@@ -943,24 +736,32 @@ const compileRule = (
   ): asserts value is HtmlRuleDeclaration {
     if (!isRecord(value)) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" callback must return an object.`
+        `Plate HTML mapping "${ownerPlugin.name}" callback must return an object.`
       );
     }
     Object.keys(value).forEach((field) => {
       if (!HTML_RULE_FIELDS.has(field)) {
         throw new Error(
-          `Plate HTML codec "${ownerPlugin.name}" has unknown field "${field}".`
+          `Plate HTML mapping "${ownerPlugin.name}" has unknown field "${field}".`
         );
       }
     });
     if (!Array.isArray(value.match) || value.match.length === 0) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" match must be a non-empty array.`
+        `Plate HTML mapping "${ownerPlugin.name}" match must be a non-empty array.`
       );
     }
     if (typeof value.decode !== 'function') {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" decode must be a function.`
+        `Plate HTML mapping "${ownerPlugin.name}" decode must be a function.`
+      );
+    }
+    if (
+      value.prepareDocument !== undefined &&
+      typeof value.prepareDocument !== 'function'
+    ) {
+      throw new Error(
+        `Plate HTML mapping "${ownerPlugin.name}" prepareDocument must be a function.`
       );
     }
     if (
@@ -968,45 +769,45 @@ const compileRule = (
       (typeof value.priority !== 'number' || !Number.isFinite(value.priority))
     ) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" priority must be finite.`
+        `Plate HTML mapping "${ownerPlugin.name}" priority must be finite.`
       );
     }
     if (value.createsElement !== undefined && value.createsElement !== true) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" createsElement must be true when present.`
+        `Plate HTML mapping "${ownerPlugin.name}" createsElement must be true when present.`
       );
     }
     if (value.decodeOnly !== undefined && value.decodeOnly !== true) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" decodeOnly must be true when present.`
+        `Plate HTML mapping "${ownerPlugin.name}" decodeOnly must be true when present.`
       );
     }
     if (value.decodeOnly === true) {
       if (value.encode !== undefined) {
         throw new Error(
-          `Plate HTML codec "${ownerPlugin.name}" cannot define encode with decodeOnly.`
+          `Plate HTML mapping "${ownerPlugin.name}" cannot define encode with decodeOnly.`
         );
       }
     } else if (typeof value.encode !== 'function') {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" must define encode or decodeOnly: true.`
+        `Plate HTML mapping "${ownerPlugin.name}" must define encode or decodeOnly: true.`
       );
     }
   }
 
   if (target === ownerPlugin.name) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.name}" must use the self overload for its own schema.`
+      `Plate HTML mapping "${ownerPlugin.name}" must use the self overload for its own schema.`
     );
   }
   const targetPlugin = target ? pluginsByName.get(target) : ownerPlugin;
 
   if (!targetPlugin || targetPlugin.enabled === false) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.name}" targets missing or disabled plugin "${target}".`
+      `Plate HTML mapping "${ownerPlugin.name}" targets missing or disabled plugin "${target}".`
     );
   }
-  const authoredFamilies = getHtmlCodecSchemaFamilies(factory);
+  const authoredFamilies = getHtmlMappingSchemaFamilies(factory);
 
   if (
     !authoredFamilies ||
@@ -1014,14 +815,14 @@ const compileRule = (
     getPluginSchemaFamily(targetPlugin) !== authoredFamilies.target
   ) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.name}" owner or target "${targetPlugin.name}" belongs to a different schema family than its authored descriptor.`
+      `Plate HTML mapping "${ownerPlugin.name}" owner or target "${targetPlugin.name}" belongs to a different schema family than its authored descriptor.`
     );
   }
   const binding = model.byName[targetPlugin.name];
 
   if (!binding) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.name}" target "${targetPlugin.name}" has no compiled model binding.`
+      `Plate HTML mapping "${ownerPlugin.name}" target "${targetPlugin.name}" has no compiled model binding.`
     );
   }
   const declaration = Reflect.apply(factory, undefined, [
@@ -1031,7 +832,7 @@ const compileRule = (
   assertDeclaration(declaration);
   if (target && declaration.createsElement) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.name}" cannot use createsElement for foreign target "${target}".`
+      `Plate HTML mapping "${ownerPlugin.name}" cannot use createsElement for foreign target "${target}".`
     );
   }
 
@@ -1044,7 +845,7 @@ const compileRule = (
     properties.some(({ property }) => property.placement !== 'element')
   ) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.name}" element targets cannot mix element and text property claims.`
+      `Plate HTML mapping "${ownerPlugin.name}" element targets cannot mix element and text property claims.`
     );
   }
   if (binding.kind === 'element') {
@@ -1062,14 +863,14 @@ const compileRule = (
     kind = 'element-property';
   } else {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.name}" target "${targetPlugin.name}" must own one element or properties of one placement.`
+      `Plate HTML mapping "${ownerPlugin.name}" target "${targetPlugin.name}" must own one element or properties of one placement.`
     );
   }
 
   if (declaration.createsElement) {
     if (kind !== 'element-property' || target) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" can use createsElement only for self-owned element properties.`
+        `Plate HTML mapping "${ownerPlugin.name}" can use createsElement only for self-owned element properties.`
       );
     }
     const primaryTarget = targetPlugin.targetPlugins[0];
@@ -1088,7 +889,7 @@ const compileRule = (
       !primaryBinding.elementType
     ) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" createsElement requires installed element targetPlugins[0].`
+        `Plate HTML mapping "${ownerPlugin.name}" createsElement requires installed element targetPlugins[0].`
       );
     }
     targetType = primaryBinding.elementType;
@@ -1104,7 +905,7 @@ const compileRule = (
 
     if (unsupported) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" configured primary "${targetType}" does not satisfy property "${unsupported.key}".`
+        `Plate HTML mapping "${ownerPlugin.name}" configured primary "${targetType}" does not satisfy property "${unsupported.key}".`
       );
     }
   }
@@ -1121,6 +922,7 @@ const compileRule = (
     }),
     kind,
     owner: ownerPlugin.name,
+    plugin: ownerPlugin,
     properties,
     rulePriority: declaration.priority ?? 0,
     targetType,
@@ -1246,10 +1048,8 @@ const getMatchedRules = (
   element.classList.forEach((className) => {
     add(index.classes.get(className));
   });
-  for (let offset = 0; offset < element.style.length; offset++) {
-    const style = element.style.item(offset);
-
-    if (style) add(index.styles.get(normalizeStyleName(style)));
+  for (const style of Array.from(element.style)) {
+    add(index.styles.get(normalizeStyleName(style)));
   }
 
   return [...candidates]
@@ -1336,7 +1136,7 @@ const assertStaticConflicts = (rules: readonly CompiledHtmlRule[]) => {
         rightElementCandidate
       ) {
         throw new Error(
-          `Plate HTML codecs "${left.owner}" and "${right.owner}" have equal priority and overlapping element candidates.`
+          `Plate HTML formats "${left.owner}" and "${right.owner}" have equal priority and overlapping element candidates.`
         );
       }
       const rightClaims = new Set(ruleClaimKeys(right));
@@ -1346,12 +1146,12 @@ const assertStaticConflicts = (rules: readonly CompiledHtmlRule[]) => {
 
       if (overlap && decodeClaimsOverlap) {
         throw new Error(
-          `Plate HTML codecs "${left.owner}" and "${right.owner}" have equal priority and overlapping "${overlap}" match claims.`
+          `Plate HTML formats "${left.owner}" and "${right.owner}" have equal priority and overlapping "${overlap}" match claims.`
         );
       }
       if (overlap && bothEncode) {
         throw new Error(
-          `Plate HTML codecs "${left.owner}" and "${right.owner}" have equal priority and competing encode claim "${overlap}".`
+          `Plate HTML formats "${left.owner}" and "${right.owner}" have equal priority and competing encode claim "${overlap}".`
         );
       }
       if (
@@ -1361,7 +1161,7 @@ const assertStaticConflicts = (rules: readonly CompiledHtmlRule[]) => {
         right.kind === 'mark'
       ) {
         throw new Error(
-          `Plate HTML codec "${left.owner}" has unresolved wrapper ordering; assign distinct rule priorities.`
+          `Plate HTML mapping "${left.owner}" has unresolved wrapper ordering; assign distinct rule priorities.`
         );
       }
     }
@@ -1455,10 +1255,10 @@ const reportDecodeError = (
       ),
       editor,
       pluginName: 'plate:html',
-      format: HTML_FORMAT,
+      mimeType: HTML_FORMAT,
       key: `plate:${rule.owner}:html:decode`,
-      phase: 'parse' as const,
-      source: 'host-codec' as const,
+      phase: 'decode' as const,
+      source: 'data-transfer-format' as const,
     })
   );
 };
@@ -1468,20 +1268,47 @@ const invokeDecode = <T>(
   rule: CompiledHtmlRule,
   element: HTMLElement,
   state: EditorCoreStateView,
-  normalize: (value: unknown) => T
+  getFormatContext: ReturnType<typeof createPluginFormatOperationContext>,
+  operationKey: object,
+  source: HtmlSourceLocation,
+  onLoss: ((loss: HtmlMappingLoss) => void) | undefined,
+  normalize: (value: unknown) => T,
+  reportErrors: boolean
 ): T | undefined => {
   try {
     const before = element.outerHTML;
-    const result = rule.declaration.decode(Object.freeze({ element, state }));
+    const report = (diagnostic: HtmlMappingDiagnosticInput) => {
+      if (!onLoss) {
+        throw new Error(
+          `Plate HTML format "${rule.owner}" reported unsupported content without a diagnostic collector.`
+        );
+      }
+      onLoss(
+        Object.freeze({
+          ...diagnostic,
+          owner: rule.owner,
+          source,
+        })
+      );
+    };
+    const result = rule.declaration.decode(
+      Object.freeze({
+        ...getFormatContext(rule.plugin, state, operationKey),
+        element,
+        report,
+      })
+    );
 
     if (element.outerHTML !== before) {
       throw new Error(
-        `Plate HTML codec "${rule.owner}" decode must not mutate its element.`
+        `Plate HTML mapping "${rule.owner}" decode must not mutate its element.`
       );
     }
 
     return result === undefined ? undefined : normalize(result);
   } catch (error) {
+    if (!reportErrors) throw error;
+
     reportDecodeError(editor, rule, element, error);
   }
 
@@ -1497,11 +1324,14 @@ const encodeWithRule = <T>(
   rule: CompiledHtmlRule,
   node: EditorElement | Text,
   parentType: string | null,
-  run: () => T
+  run: () => T,
+  reportErrors = true
 ): T => {
   try {
     return run();
   } catch (error) {
+    if (!reportErrors) throw error;
+
     reportEditorLifecycleError(
       Object.freeze({
         cause: new Error(
@@ -1510,10 +1340,10 @@ const encodeWithRule = <T>(
         ),
         editor,
         pluginName: 'plate:html',
-        format: HTML_FORMAT,
+        mimeType: HTML_FORMAT,
         key: `plate:${rule.owner}:html:encode`,
-        phase: 'serialize' as const,
-        source: 'host-codec' as const,
+        phase: 'encode' as const,
+        source: 'data-transfer-format' as const,
       })
     );
 
@@ -1527,7 +1357,7 @@ const elementValuesFromDecode = (
 ): Record<string, unknown> => {
   if (!isRecord(value)) {
     throw new Error(
-      `Plate HTML codec "${rule.owner}" element decode must return an object.`
+      `Plate HTML mapping "${rule.owner}" element decode must return an object.`
     );
   }
   const fields = new Set([
@@ -1538,12 +1368,12 @@ const elementValuesFromDecode = (
 
   if (unknownField) {
     throw new Error(
-      `Plate HTML codec "${rule.owner}" element decode returned unowned field "${unknownField}".`
+      `Plate HTML mapping "${rule.owner}" element decode returned unowned field "${unknownField}".`
     );
   }
   if (Object.hasOwn(value, 'children') && !Array.isArray(value.children)) {
     throw new Error(
-      `Plate HTML codec "${rule.owner}" element decode children must be an array.`
+      `Plate HTML mapping "${rule.owner}" element decode children must be an array.`
     );
   }
   rule.properties.forEach((property) => {
@@ -1552,7 +1382,7 @@ const elementValuesFromDecode = (
       !isValidPropertyValue(property, value[property.key])
     ) {
       throw new Error(
-        `Plate HTML codec "${rule.owner}" returned invalid property "${property.key}".`
+        `Plate HTML mapping "${rule.owner}" returned invalid property "${property.key}".`
       );
     }
   });
@@ -1580,7 +1410,7 @@ const validateExplicitDecodedChildren = (
     state.schema.assertFragment([{ ...parent, children }]);
   } catch {
     throw new Error(
-      `Plate HTML codec "${rule.owner}" returned children outside target "${rule.targetType}" schema.`
+      `Plate HTML mapping "${rule.owner}" returned children outside target "${rule.targetType}" schema.`
     );
   }
 
@@ -1673,7 +1503,7 @@ const propertyValuesFromDecode = (rule: CompiledHtmlRule, value: unknown) => {
   if (rule.properties.length === 1) {
     if (!isValidPropertyValue(rule.properties[0], value)) {
       throw new Error(
-        `Plate HTML codec "${rule.owner}" returned invalid property "${rule.properties[0].key}".`
+        `Plate HTML mapping "${rule.owner}" returned invalid property "${rule.properties[0].key}".`
       );
     }
 
@@ -1681,7 +1511,7 @@ const propertyValuesFromDecode = (rule: CompiledHtmlRule, value: unknown) => {
   }
   if (!isRecord(value)) {
     throw new Error(
-      `Plate HTML codec "${rule.owner}" multi-property decode must return an object.`
+      `Plate HTML mapping "${rule.owner}" multi-property decode must return an object.`
     );
   }
   const fields = new Set(rule.properties.map(({ key }) => key));
@@ -1689,7 +1519,7 @@ const propertyValuesFromDecode = (rule: CompiledHtmlRule, value: unknown) => {
 
   if (unknownField) {
     throw new Error(
-      `Plate HTML codec "${rule.owner}" multi-property decode returned unowned field "${unknownField}".`
+      `Plate HTML mapping "${rule.owner}" multi-property decode returned unowned field "${unknownField}".`
     );
   }
   rule.properties.forEach((property) => {
@@ -1698,7 +1528,7 @@ const propertyValuesFromDecode = (rule: CompiledHtmlRule, value: unknown) => {
       !isValidPropertyValue(property, value[property.key])
     ) {
       throw new Error(
-        `Plate HTML codec "${rule.owner}" returned invalid property "${property.key}".`
+        `Plate HTML mapping "${rule.owner}" returned invalid property "${property.key}".`
       );
     }
   });
@@ -1917,14 +1747,14 @@ const shouldBrBecomeEmptyParagraph = (node: HTMLElement) => {
   let sibling: Node | null = node.previousSibling;
 
   while (sibling) {
-    if (sibling.nodeType === Node.TEXT_NODE && sibling.textContent?.trim()) {
+    if (sibling.nodeType === 3 && sibling.textContent?.trim()) {
       return false;
     }
     sibling = sibling.previousSibling;
   }
   sibling = node.nextSibling;
   while (sibling) {
-    if (sibling.nodeType === Node.TEXT_NODE && sibling.textContent?.trim()) {
+    if (sibling.nodeType === 3 && sibling.textContent?.trim()) {
       return false;
     }
     sibling = sibling.nextSibling;
@@ -1933,16 +1763,49 @@ const shouldBrBecomeEmptyParagraph = (node: HTMLElement) => {
   return true;
 };
 
+const htmlTreeLocation = (
+  root: HTMLElement,
+  element: HTMLElement
+): HtmlSourceLocation => {
+  const path: number[] = [];
+  let current: Node | null = element;
+
+  while (current && current !== root) {
+    const parent: ParentNode | null = current.parentNode;
+
+    if (!parent) break;
+    path.unshift(Array.prototype.indexOf.call(parent.childNodes, current));
+    current = parent as Node;
+  }
+
+  return Object.freeze({
+    kind: 'tree' as const,
+    path: Object.freeze(path),
+    tag: element.tagName.toLowerCase(),
+  });
+};
+
+type HtmlDecodeOperation = Readonly<{
+  fitSchema?: boolean;
+  onLoss?: (loss: HtmlMappingLoss) => void;
+  operationKey: object;
+  reportMappingErrors?: boolean;
+}>;
+
 const decodeCompiledHtml = (
   editor: Editor,
   root: HTMLElement,
-  matcherIndex: CompiledHtmlMatcherIndex,
-  state: EditorCoreStateView
+  artifact: CompiledPlateHtmlArtifact,
+  state: EditorCoreStateView,
+  operation: HtmlDecodeOperation
 ): Descendant[] => {
+  const reportMappingErrors = operation.reportMappingErrors ?? true;
+  const fitSchema = operation.fitSchema ?? true;
   const decodeElementProperties = (
     element: HTMLElement,
     matched: readonly CompiledHtmlRule[],
     targetType: string,
+    source: HtmlSourceLocation,
     initial: Readonly<Record<string, unknown>> = {}
   ) => {
     const properties: Record<string, unknown> = { ...initial };
@@ -1958,8 +1821,17 @@ const decodeCompiledHtml = (
       );
 
       if (!hasUnresolvedApplicableProperty) continue;
-      const decoded = invokeDecode(editor, rule, element, state, (value) =>
-        propertyValuesFromDecode(rule, value)
+      const decoded = invokeDecode(
+        editor,
+        rule,
+        element,
+        state,
+        artifact.getFormatContext,
+        operation.operationKey,
+        source,
+        operation.onLoss,
+        (value) => propertyValuesFromDecode(rule, value),
+        reportMappingErrors
       );
 
       if (decoded === undefined) continue;
@@ -2014,7 +1886,8 @@ const decodeCompiledHtml = (
     if (breakLine) return [{ text: breakLine }];
     if (!isSafeDecodedElement(element)) return [];
 
-    const matched = getMatchedRules(matcherIndex, element);
+    const matched = getMatchedRules(artifact.matcherIndex, element);
+    const source = htmlTreeLocation(root, element);
     const elementRules = matched.filter(
       (rule) => rule.kind === 'element' || rule.createsElement
     );
@@ -2034,12 +1907,22 @@ const decodeCompiledHtml = (
       ) {
         continue;
       }
-      const result = invokeDecode(editor, rule, element, state, (value) =>
-        validateExplicitDecodedChildren(
-          rule,
-          elementValuesFromDecode(rule, value),
-          state
-        )
+      const result = invokeDecode(
+        editor,
+        rule,
+        element,
+        state,
+        artifact.getFormatContext,
+        operation.operationKey,
+        source,
+        operation.onLoss,
+        (value) =>
+          validateExplicitDecodedChildren(
+            rule,
+            elementValuesFromDecode(rule, value),
+            state
+          ),
+        reportMappingErrors
       );
 
       if (result === undefined) continue;
@@ -2084,8 +1967,17 @@ const decodeCompiledHtml = (
       ) {
         continue;
       }
-      const decoded = invokeDecode(editor, rule, element, state, (value) =>
-        propertyValuesFromDecode(rule, value)
+      const decoded = invokeDecode(
+        editor,
+        rule,
+        element,
+        state,
+        artifact.getFormatContext,
+        operation.operationKey,
+        source,
+        operation.onLoss,
+        (value) => propertyValuesFromDecode(rule, value),
+        reportMappingErrors
       );
 
       if (decoded === undefined) continue;
@@ -2124,6 +2016,7 @@ const decodeCompiledHtml = (
           element,
           matched,
           createdType,
+          source,
           initialProperties
         )
       : initialProperties;
@@ -2140,11 +2033,9 @@ const decodeCompiledHtml = (
           fallbackRootElement.type,
           properties
         );
-        const children = tryFitDecodedChildren(
-          markedChildren,
-          createdElement,
-          state
-        );
+        const children = fitSchema
+          ? tryFitDecodedChildren(markedChildren, createdElement, state)
+          : [...markedChildren];
 
         if (children) {
           return [
@@ -2161,11 +2052,13 @@ const decodeCompiledHtml = (
           return markedChildren;
         }
 
-        return fitDecodedChildren(
-          markedChildren,
-          state.schema.create(parentType),
-          state
-        );
+        return fitSchema
+          ? fitDecodedChildren(
+              markedChildren,
+              state.schema.create(parentType),
+              state
+            )
+          : markedChildren;
       }
 
       return markedChildren;
@@ -2177,7 +2070,7 @@ const decodeCompiledHtml = (
       properties
     );
     const children =
-      hasDecodedChildren && !hasExplicitChildren
+      fitSchema && hasDecodedChildren && !hasExplicitChildren
         ? fitDecodedChildren(markedChildren, createdElement, state)
         : markedChildren;
 
@@ -2190,13 +2083,13 @@ const decodeCompiledHtml = (
     ];
   };
 
+  const decoded =
+    root.tagName === 'BODY'
+      ? decodeChildren(root, null)
+      : decodeNode(root, null);
+
   return coalesceAdjacentText(
-    wrapRootInlineRuns(
-      root.tagName === 'BODY'
-        ? decodeChildren(root, null)
-        : decodeNode(root, null),
-      state
-    )
+    fitSchema ? wrapRootInlineRuns(decoded, state) : decoded
   );
 };
 
@@ -2545,14 +2438,52 @@ const hasContentValue = (
   );
 };
 
-const assertSupportedProperties = (
+type HtmlMappingLoss = Readonly<{
+  action: 'dropped' | 'replaced' | 'unwrapped';
+  kind: 'attribute' | 'element' | 'style';
+  message: string;
+  model?: HtmlModelLocation;
+  owner: string;
+  source?: HtmlSourceLocation;
+}>;
+
+type HtmlEncodeOperation = Readonly<{
+  document?: EditorDocumentValue;
+  getFormatContext: ReturnType<typeof createPluginFormatOperationContext>;
+  onLoss?: (loss: HtmlMappingLoss) => void;
+  operationKey: object;
+  reportMappingErrors?: boolean;
+}>;
+
+type HtmlStateReader = <T>(read: (state: EditorCoreStateView) => T) => T;
+
+const reportUnsupportedProperties = (
   node: EditorElement | Text,
   parentType: string | null,
   supportedPropertyIds: ReadonlySet<string>,
-  state: EditorCoreStateView
+  state: EditorCoreStateView,
+  onLoss?: (loss: HtmlMappingLoss) => void
 ) => {
   const placement = ElementApi.isElement(node) ? 'element' : 'text';
   const type = ElementApi.isElement(node) ? node.type : parentType;
+  const reported = new Set<string>();
+  const unsupported = (key: string, id?: string) => {
+    const identity = id ?? key;
+
+    if (reported.has(identity)) return;
+    reported.add(identity);
+    const message = `Plate HTML encode has no encoder for content property "${key}".`;
+
+    if (!onLoss) throw new Error(message);
+    onLoss(
+      Object.freeze({
+        action: 'dropped' as const,
+        kind: 'attribute' as const,
+        message,
+        owner: 'plate:html',
+      })
+    );
+  };
 
   for (const key of Object.keys(node)) {
     if (key === 'children' || key === 'text' || key === 'type') continue;
@@ -2567,9 +2498,7 @@ const assertSupportedProperties = (
       !supportedPropertyIds.has(property.id) &&
       hasContentValue(node, key, property)
     ) {
-      throw new Error(
-        `Plate HTML encode has no encoder for content property "${key}".`
-      );
+      unsupported(key, property.id);
     }
   }
   const propertyIds = ElementApi.isElement(node)
@@ -2609,9 +2538,7 @@ const assertSupportedProperties = (
       !supportedPropertyIds.has(id) &&
       hasContentValue(node, property.key, property)
     ) {
-      throw new Error(
-        `Plate HTML encode has no encoder for content property "${property.key}".`
-      );
+      unsupported(property.key, id);
     }
   }
 };
@@ -2620,7 +2547,12 @@ const encodeContext = (
   rule: CompiledHtmlRule,
   node: EditorElement | Text,
   state: EditorCoreStateView,
-  parentType: string | null
+  parentType: string | null,
+  document: EditorDocumentValue,
+  path: Path,
+  getFormatContext: ReturnType<typeof createPluginFormatOperationContext>,
+  operationKey: object,
+  onLoss?: (loss: HtmlMappingLoss) => void
 ) => {
   const values = new Map<string, unknown>();
 
@@ -2631,21 +2563,43 @@ const encodeContext = (
   });
   const record = Object.fromEntries(values);
 
+  const model = createPluginFormatModelView(document, node, path, 'main');
+  const report = (diagnostic: HtmlMappingDiagnosticInput) => {
+    if (!onLoss) {
+      throw new Error(
+        `Plate HTML format "${rule.owner}" reported unsupported content without a diagnostic collector.`
+      );
+    }
+    onLoss(
+      Object.freeze({
+        ...diagnostic,
+        model: Object.freeze({ path, root: 'main' as const }),
+        owner: rule.owner,
+      })
+    );
+  };
+  const operationContext = Object.freeze({
+    ...getFormatContext(rule.plugin, state, operationKey),
+    ...model,
+    report,
+  });
+
   return {
     context:
       rule.properties.length === 1 && rule.kind !== 'element'
         ? Object.freeze({
-            node,
-            state,
+            ...operationContext,
             value: values.get(rule.properties[0].key),
           })
         : rule.kind === 'element' || rule.createsElement
           ? Object.freeze({
+              ...operationContext,
               content: HTML_CONTENT_TOKEN,
-              node,
-              state,
             })
-          : Object.freeze({ node, state, values: Object.freeze(record) }),
+          : Object.freeze({
+              ...operationContext,
+              values: Object.freeze(record),
+            }),
     hasValues: values.size > 0,
   };
 };
@@ -2670,15 +2624,38 @@ const encodeCompiledHtml = (
   editor: Editor,
   slice: ContentSlice,
   serializerIndex: CompiledHtmlSerializerIndex,
-  state: EditorCoreStateView
+  state: EditorCoreStateView,
+  operation: HtmlEncodeOperation
 ) => {
-  const encodeNode = (node: Descendant, parentType: string | null): string => {
+  const reportMappingErrors = operation.reportMappingErrors ?? true;
+  const document = operation.document ?? state.value();
+  const reportLoss = (path: Path) =>
+    operation.onLoss
+      ? (loss: HtmlMappingLoss) =>
+          operation.onLoss?.(
+            loss.model
+              ? loss
+              : Object.freeze({
+                  ...loss,
+                  model: Object.freeze({ path, root: 'main' as const }),
+                })
+          )
+      : undefined;
+  const encodeNode = (
+    node: Descendant,
+    parentType: string | null,
+    relativePath: Path
+  ): string => {
+    const path = state.nodes.path(node) ?? relativePath;
+    const onLoss = reportLoss(path);
+
     if (TextApi.isText(node)) {
-      assertSupportedProperties(
+      reportUnsupportedProperties(
         node,
         parentType,
         serializerIndex.encodablePropertyIds,
-        state
+        state,
+        onLoss
       );
       const wrappers: Array<
         Readonly<{
@@ -2698,21 +2675,39 @@ const encodeCompiledHtml = (
         );
 
         if (pending.length === 0) continue;
-        const { context } = encodeContext(rule, node, state, parentType);
-        const root = encodeWithRule(editor, rule, node, parentType, () => {
-          const value = (
-            rule.declaration.encode ??
-            failInvariant('Expected value to be defined')
-          )(context);
+        const { context } = encodeContext(
+          rule,
+          node,
+          state,
+          parentType,
+          document,
+          path,
+          operation.getFormatContext,
+          operation.operationKey,
+          onLoss
+        );
+        const root = encodeWithRule(
+          editor,
+          rule,
+          node,
+          parentType,
+          () => {
+            const value = (
+              rule.declaration.encode ??
+              failInvariant('Expected value to be defined')
+            )(context);
 
-          if (value === null) {
-            throw new Error(
-              `Plate HTML codec "${rule.owner}" returned null for a present mark.`
-            );
-          }
+            return value === null ? null : compileWrapperSpec(value);
+          },
+          reportMappingErrors
+        );
 
-          return compileWrapperSpec(value);
-        });
+        if (root === null) {
+          pending.forEach(({ id }) => {
+            handled.add(id);
+          });
+          continue;
+        }
 
         wrappers.push(Object.freeze({ root, rule }));
         pending.forEach(({ id }) => {
@@ -2724,30 +2719,46 @@ const encodeCompiledHtml = (
       for (let index = wrappers.length - 1; index >= 0; index--) {
         const wrapper = wrappers[index];
 
-        html = encodeWithRule(editor, wrapper.rule, node, parentType, () =>
-          renderNodeSpec(wrapper.root, html)
+        html = encodeWithRule(
+          editor,
+          wrapper.rule,
+          node,
+          parentType,
+          () => renderNodeSpec(wrapper.root, html),
+          reportMappingErrors
         );
       }
 
       return html;
     }
     if (!ElementApi.isElement(node)) return '';
-    assertSupportedProperties(
+    reportUnsupportedProperties(
       node,
       parentType,
       serializerIndex.encodablePropertyIds,
-      state
+      state,
+      onLoss
     );
 
     const content = node.children
-      .map((child) => encodeNode(child, node.type))
+      .map((child, index) => encodeNode(child, node.type, [...path, index]))
       .join('');
     const structuralRules = serializerIndex.elementsByType.get(node.type) ?? [];
     let structuralRule: CompiledHtmlRule | undefined;
     let structuralContext: Record<string, unknown> | undefined;
 
     for (const rule of structuralRules) {
-      const encoded = encodeContext(rule, node, state, parentType);
+      const encoded = encodeContext(
+        rule,
+        node,
+        state,
+        parentType,
+        document,
+        path,
+        operation.getFormatContext,
+        operation.operationKey,
+        onLoss
+      );
 
       if (rule.createsElement && !encoded.hasValues) continue;
       structuralRule = rule;
@@ -2755,9 +2766,19 @@ const encodeCompiledHtml = (
       break;
     }
     if (!structuralRule || !structuralRule.declaration.encode) {
-      throw new Error(
-        `Plate HTML encode has no encoder for element "${node.type}".`
+      const message = `Plate HTML encode has no encoder for element "${node.type}".`;
+
+      if (!onLoss) throw new Error(message);
+      onLoss(
+        Object.freeze({
+          action: 'unwrapped' as const,
+          kind: 'element' as const,
+          message,
+          owner: 'plate:html',
+        })
       );
+
+      return content;
     }
     const encoded = encodeWithRule(
       editor,
@@ -2777,9 +2798,12 @@ const encodeCompiledHtml = (
           patchTarget: findPatchTarget(innerRoot),
           root: innerRoot,
         });
-      }
+      },
+      reportMappingErrors
     );
-    if (encoded === null) return '';
+    if (encoded === null) {
+      return '';
+    }
     const { patchTarget, root } = encoded;
     const handledProperties = new Set<string>(
       structuralRule.properties.map(({ id }) => id)
@@ -2794,50 +2818,181 @@ const encodeCompiledHtml = (
       );
 
       if (pending.length === 0) continue;
-      const { context } = encodeContext(rule, node, state, parentType);
+      const { context } = encodeContext(
+        rule,
+        node,
+        state,
+        parentType,
+        document,
+        path,
+        operation.getFormatContext,
+        operation.operationKey,
+        onLoss
+      );
 
-      encodeWithRule(editor, rule, node, parentType, () => {
-        const patch = (
-          rule.declaration.encode ??
-          failInvariant('Expected value to be defined')
-        )(context);
+      const patch = encodeWithRule(
+        editor,
+        rule,
+        node,
+        parentType,
+        () =>
+          (
+            rule.declaration.encode ??
+            failInvariant('Expected value to be defined')
+          )(context),
+        reportMappingErrors
+      );
 
-        if (patch === null) {
-          throw new Error(
-            `Plate HTML codec "${rule.owner}" returned null for a present property.`
-          );
-        }
+      if (patch !== null) {
         applyPatch(patchTarget, patch);
-      });
+      }
       pending.forEach(({ id }) => {
         handledProperties.add(id);
       });
     }
 
-    return encodeWithRule(editor, structuralRule, node, parentType, () =>
-      renderNodeSpec(
-        root,
-        content,
-        state.schema.element(node.type)?.behavior.void === true
-      )
+    return encodeWithRule(
+      editor,
+      structuralRule,
+      node,
+      parentType,
+      () =>
+        renderNodeSpec(
+          root,
+          content,
+          state.schema.element(node.type)?.behavior.void === true
+        ),
+      reportMappingErrors
     );
   };
 
-  return slice.content.map((node) => encodeNode(node, null)).join('');
+  return slice.content
+    .map((node, index) => encodeNode(node, null, [index]))
+    .join('');
 };
 
-export const compilePlateHtmlCodec = (
+const prepareHtmlDocument = (
+  artifact: CompiledPlateHtmlArtifact,
+  document: Document,
+  state: EditorCoreStateView,
+  operationKey: object,
+  onLoss?: (loss: HtmlMappingLoss) => void
+) => {
+  artifact.prepareDocument.forEach((rule) => {
+    const prepare =
+      rule.declaration.prepareDocument ??
+      failInvariant('Expected value to be defined');
+    const report = (diagnostic: HtmlMappingDiagnosticInput) => {
+      if (!onLoss) {
+        throw new Error(
+          `Plate HTML format "${rule.owner}" reported unsupported content without a diagnostic collector.`
+        );
+      }
+      onLoss(Object.freeze({ ...diagnostic, owner: rule.owner }));
+    };
+
+    prepare(
+      Object.freeze({
+        ...artifact.getFormatContext(rule.plugin, state, operationKey),
+        document,
+        report,
+      })
+    );
+  });
+};
+
+const htmlMappingDiagnostics = (
+  losses: readonly HtmlMappingLoss[],
+  phase: 'parse' | 'serialize',
+  lossPolicy: 'allow' | 'reject'
+): readonly HtmlDiagnostic[] => {
+  const seen = new Set<string>();
+  const diagnostics: HtmlDiagnostic[] = [];
+
+  losses.forEach((loss) => {
+    const key = JSON.stringify([
+      phase,
+      loss.owner,
+      'html-unsupported-content',
+      loss.source ?? null,
+      loss.model ?? null,
+      loss.action,
+    ]);
+
+    if (seen.has(key)) return;
+    seen.add(key);
+    diagnostics.push(
+      Object.freeze({
+        ...loss,
+        code: 'html-unsupported-content' as const,
+        phase,
+        severity: lossPolicy === 'reject' ? 'error' : 'warning',
+      })
+    );
+  });
+
+  return Object.freeze(diagnostics);
+};
+
+const restoreAppleConvertedSpaces = (root: HTMLElement) => {
+  root.querySelectorAll('span.Apple-converted-space').forEach((span) => {
+    if (span.childNodes.length !== 1 || span.textContent !== '\u00A0') return;
+
+    span.replaceWith(root.ownerDocument.createTextNode(' '));
+  });
+};
+
+const decodeHtmlTransferWithArtifact = (
+  artifact: CompiledPlateHtmlArtifact,
+  context: DataTransferDecodeContext
+) => {
+  const parsed = parseHtmlAst(context.data, 'slice');
+
+  if (!parsed.ok) return parsed;
+  const plainText = context.snapshot.getData('text/plain');
+
+  if (plainText && getHtmlAstPlainText(parsed.ast) === plainText) return null;
+  const document = createBrowserHtmlDocument();
+  const root = materializeHtmlAst(parsed.ast, document);
+  restoreAppleConvertedSpaces(root);
+  const result = decodeMaterializedHtmlWithEditor(
+    artifact.editor,
+    'slice',
+    document,
+    root,
+    parsed.ast.diagnostics,
+    { lossPolicy: 'allow' },
+    (read) => read(context.state),
+    context.snapshot,
+    true
+  ) as HtmlSliceParseResult;
+
+  return result.ok && result.slice.content.length === 0 ? null : result;
+};
+
+/** Decode HTML through the format already compiled for an operation state. @internal */
+export const decodeHtmlDataTransfer = (context: DataTransferDecodeContext) => {
+  const artifact = COMPILED_PLATE_HTML_BY_SCHEMA.get(context.state.schema);
+
+  if (!artifact) {
+    throw new Error('Plate HTML format is not compiled for this editor state.');
+  }
+
+  return decodeHtmlTransferWithArtifact(artifact, context);
+};
+
+export const compilePlateHtmlFormat = (
   editor: Editor,
   model: CompiledPlateModel,
   plugins: readonly AnyBasePlugin[]
-): HostCodec => {
+): DataTransferFormat => {
   const pluginsByName = new Map(
     plugins.map((plugin) => [plugin.name, plugin] as const)
   );
   const rules = Object.freeze(
     plugins
       .flatMap((plugin) =>
-        getPluginDescriptorMetadata(plugin).htmlCodecContributions.map(
+        getPluginDescriptorMetadata(plugin).htmlMappingContributions.map(
           ({ factory, targetPlugin }) =>
             compileRule(
               editor,
@@ -2855,76 +3010,75 @@ export const compilePlateHtmlCodec = (
   assertStaticConflicts(rules);
   const matcherIndex = compileMatcherIndex(rules);
   const serializerIndex = compileSerializerIndex(model, rules);
+  const prepareDocument = Object.freeze(
+    rules.filter((rule) => rule.declaration.prepareDocument)
+  );
+  const preparedOwners = new Set<string>();
+
+  prepareDocument.forEach((rule) => {
+    if (preparedOwners.has(rule.owner)) {
+      throw new Error(
+        `Plate HTML format owner "${rule.owner}" may declare prepareDocument once.`
+      );
+    }
+    preparedOwners.add(rule.owner);
+  });
 
   const htmlPlugin = pluginsByName.get(HTML_PLUGIN_NAME);
 
   if (!htmlPlugin) throw new Error('Plate HTML plugin is not installed.');
-  const registry = prepareHtmlRegistry(editor);
-  const flatPipeline = registry.plugins;
-  const isPlainTextEquivalent = (context: HostCodecParseContext) => {
-    const plainText = context.source.getData('text/plain');
-
-    if (!plainText) return false;
-
-    const { body } = parseDOMClipboardHtml(context.data);
-
-    return body.childElementCount === 0 && body.textContent === plainText;
-  };
-  const parse = (context: HostCodecParseContext) => {
-    const options = {
-      data: context.data,
-      format: context.format,
-      source: context.source,
-    };
-    const transformedData = pipeTransformData(
-      context.state,
-      flatPipeline,
-      options
-    );
-    const document = parseDOMClipboardHtml(transformedData);
-    const root = collapseWhiteSpace(document.body);
-    const fragment = decodeCompiledHtml(
+  const artifact = Object.freeze({
+    editor,
+    getFormatContext: createPluginFormatOperationContext(
       editor,
-      root,
-      matcherIndex,
-      context.state
-    );
-    const transformedFragment = pipeTransformFragment(
-      context.state,
-      flatPipeline,
-      {
-        ...options,
-        data: transformedData,
-        fragment,
-      }
-    );
+      model,
+      plugins
+    ),
+    matcherIndex,
+    prepareDocument,
+    rules,
+    serializerIndex,
+  });
+  const schemaApi = editor.read((state) => state.schema);
+  COMPILED_PLATE_HTML.set(model.revision, artifact);
+  COMPILED_PLATE_HTML_BY_SCHEMA.set(schemaApi, artifact);
 
-    if (transformedFragment.length === 0) return null;
-    context.state.schema.assertFragment(transformedFragment);
-
-    return ContentSlice.closed(transformedFragment);
-  };
-
-  const codec: HostCodec = Object.freeze({
-    format: HTML_FORMAT,
+  const mapping: DataTransferFormat = Object.freeze({
+    mimeType: HTML_FORMAT,
     key: HTML_HOST_KEY,
-    owns: Object.freeze([{ kind: 'schema' as const }]),
-    parse,
-    query: (context: HostCodecParseContext) =>
-      !isPlainTextEquivalent(context) &&
-      pipePreparedInsertDataQuery(context.state, flatPipeline, {
-        data: context.data,
-        format: context.format,
-        source: context.source,
-      }),
-    serialize: (context: HostCodecSerializeContext) => {
+    claims: Object.freeze([{ kind: 'schema' as const }]),
+    decode: (context: DataTransferDecodeContext) =>
+      decodeHtmlTransferWithArtifact(artifact, context),
+    encode: (context: DataTransferEncodeContext) => {
+      const losses: HtmlMappingLoss[] = [];
+
       try {
-        return encodeCompiledHtml(
+        const data = encodeCompiledHtml(
           editor,
           context.slice,
           serializerIndex,
-          context.state
+          context.state,
+          {
+            getFormatContext: artifact.getFormatContext,
+            onLoss: (loss) => losses.push(loss),
+            operationKey: context.slice,
+          }
         );
+        const diagnostics = htmlMappingDiagnostics(
+          losses,
+          'serialize',
+          'reject'
+        );
+
+        if (diagnostics.length > 0) {
+          return failedHtmlDiagnostics(diagnostics);
+        }
+
+        return Object.freeze({
+          data,
+          diagnostics: Object.freeze([]),
+          ok: true as const,
+        });
       } catch (error) {
         if (error instanceof ReportedHtmlEncodeError) return null;
 
@@ -2933,75 +3087,459 @@ export const compilePlateHtmlCodec = (
     },
   });
 
-  COMPILED_PLATE_HTML.set(
-    model.revision,
-    Object.freeze({
-      matcherIndex,
-      rules,
-      serializerIndex,
-    })
-  );
-
-  return codec;
+  return mapping;
 };
 
-export type HtmlApi<V extends Value = Value> = {
-  deserialize: (options: {
-    collapseWhiteSpace?: boolean;
-    element: HTMLElement | string;
-  }) => Array<DescendantIn<V>> | null;
+/** Capture one detached DOM decoder while the compiled format target is active. @internal */
+export const compileHtmlElementDecoder = (
+  editor: Editor,
+  state: EditorCoreStateView
+) => {
+  const model = getCompiledPlateModel(editor);
+  const artifact = COMPILED_PLATE_HTML.get(model.revision);
+
+  if (!artifact) throw new Error('Plate HTML format is not compiled.');
+  const operationKey = Object.freeze({});
+
+  for (const plugin of new Set(artifact.rules.map((rule) => rule.plugin))) {
+    artifact.getFormatContext(plugin, state, operationKey);
+  }
+
+  return (
+    element: HTMLElement,
+    {
+      collapseWhitespace: shouldCollapseWhiteSpace = true,
+    }: Readonly<{ collapseWhitespace?: boolean }> = {}
+  ): Descendant[] => {
+    const rejectLoss = (loss: HtmlMappingLoss): never => {
+      throw new Error(loss.message);
+    };
+
+    prepareHtmlDocument(
+      artifact,
+      element.ownerDocument,
+      state,
+      operationKey,
+      rejectLoss
+    );
+    const normalized = shouldCollapseWhiteSpace
+      ? collapseWhiteSpace(element)
+      : element;
+
+    return decodeCompiledHtml(editor, normalized, artifact, state, {
+      fitSchema: false,
+      onLoss: rejectLoss,
+      operationKey,
+      reportMappingErrors: false,
+    });
+  };
+};
+
+/** Decode one already parsed detached DOM root through the compiled HTML map. @internal */
+export const decodeHtmlElement = (
+  editor: Editor,
+  element: HTMLElement,
+  options: Readonly<{ collapseWhitespace?: boolean }> = {}
+): Descendant[] => {
+  const fragment = editor.read((state) =>
+    compileHtmlElementDecoder(editor, state)(element, options)
+  );
+
+  return fragment;
+};
+
+type HtmlSchemaRepair = ReturnType<
+  InternalEditorSchemaApi['fitDocumentWithReport']
+>['repairs'][number];
+
+const failedHtml = (
+  diagnostic: HtmlErrorDiagnostic,
+  diagnostics: readonly HtmlDiagnostic[] = []
+) => {
+  const ordered = [diagnostic, ...diagnostics];
+  const partitioned = [
+    ...ordered.filter((item) => item.severity === 'error'),
+    ...ordered.filter((item) => item.severity === 'warning'),
+  ] as [HtmlErrorDiagnostic, ...HtmlDiagnostic[]];
+
+  return Object.freeze({
+    diagnostics: Object.freeze(partitioned),
+    ok: false as const,
+  });
+};
+
+const failedHtmlDiagnostics = (diagnostics: readonly HtmlDiagnostic[]) => {
+  const error = diagnostics.find(
+    (diagnostic): diagnostic is HtmlErrorDiagnostic =>
+      diagnostic.severity === 'error'
+  );
+
+  if (!error) {
+    throw new Error('Failed HTML result requires at least one error.');
+  }
+
+  return failedHtml(
+    error,
+    diagnostics.filter((diagnostic) => diagnostic !== error)
+  );
+};
+
+const schemaDiagnostic = (
+  error: EditorSchemaValidationError
+): HtmlErrorDiagnostic => {
+  const schema = error.diagnostics[0];
+
+  if (!schema) throw error;
+
+  return Object.freeze({
+    code: 'html-schema-invalid' as const,
+    message: schema.message,
+    model: Object.freeze({
+      path: schema.path,
+      ...(schema.property ? { property: schema.property.key } : {}),
+      ...(schema.root === null ? {} : { root: schema.root as RootKey }),
+    }),
+    schema,
+    severity: 'error' as const,
+  });
+};
+
+const schemaFailure = (
+  error: unknown,
+  diagnostics: readonly HtmlDiagnostic[]
+) => {
+  if (!(error instanceof EditorSchemaValidationError)) throw error;
+
+  return failedHtmlDiagnostics([...diagnostics, schemaDiagnostic(error)]);
+};
+
+const repairAction = (
+  code: HtmlSchemaRepair['code']
+): 'dropped' | 'replaced' | 'unwrapped' => {
+  switch (code) {
+    case 'drop-unplaceable-text':
+    case 'omit-default-property':
+    case 'remove-empty-text':
+    case 'remove-noncanonical-child': {
+      return 'dropped';
+    }
+    case 'flatten-block-content': {
+      return 'unwrapped';
+    }
+    default: {
+      return 'replaced';
+    }
+  }
+};
+
+const repairLocation = (location: HtmlSchemaRepair['inputs'][number]) =>
+  Object.freeze({
+    path: location.path,
+    ...(location.property ? { property: location.property } : {}),
+    root: location.root,
+  });
+
+const repairDiagnostic = (
+  repair: HtmlSchemaRepair,
+  lossPolicy: 'allow' | 'reject'
+): HtmlDiagnostic => {
+  const severity =
+    repair.impact === 'lossy' && lossPolicy === 'reject'
+      ? ('error' as const)
+      : ('warning' as const);
+
+  return Object.freeze({
+    action: repairAction(repair.code),
+    code: 'html-schema-repair' as const,
+    impact: repair.impact,
+    inputs: Object.freeze(repair.inputs.map(repairLocation)),
+    message: `HTML schema repair "${repair.code}" was ${repair.impact}.`,
+    outputs: Object.freeze(repair.outputs.map(repairLocation)),
+    owner: repair.owner,
+    repair: repair.code,
+    severity,
+  });
+};
+
+const decodeMaterializedHtmlWithEditor = (
+  editor: Editor,
+  kind: 'document' | 'slice',
+  ownerDocument: Document,
+  root: HTMLElement,
+  parserDiagnostics: readonly HtmlWarningDiagnostic[],
+  options: HtmlEditorParseOptions,
+  readState: HtmlStateReader,
+  operationKey: object = root,
+  // Transfer negotiation isolates each mapping candidate so one failing
+  // mapping delegates to a lower candidate; direct parsing reports it by throwing.
+  isolateMappingErrors = false
+): HtmlDocumentParseResult | HtmlSliceParseResult => {
+  const model = getCompiledPlateModel(editor);
+  const artifact = COMPILED_PLATE_HTML.get(model.revision);
+
+  if (!artifact) throw new Error('Plate HTML format is not compiled.');
+  const losses: HtmlMappingLoss[] = [];
+  const { children, schema } = readState((state) => {
+    prepareHtmlDocument(artifact, ownerDocument, state, operationKey, (loss) =>
+      losses.push(loss)
+    );
+    const normalized =
+      (options.collapseWhitespace ?? true) ? collapseWhiteSpace(root) : root;
+
+    return Object.freeze({
+      children: decodeCompiledHtml(editor, normalized, artifact, state, {
+        fitSchema: false,
+        onLoss: (loss) => losses.push(loss),
+        operationKey,
+        reportMappingErrors: isolateMappingErrors,
+      }),
+      schema: state.schema as InternalEditorSchemaApi,
+    });
+  });
+  const mappingDiagnostics = htmlMappingDiagnostics(
+    losses,
+    'parse',
+    options.lossPolicy ?? 'reject'
+  );
+  const parseDiagnostics = Object.freeze([
+    ...parserDiagnostics,
+    ...mappingDiagnostics,
+  ]);
+  if (kind === 'slice') {
+    const slice = ContentSlice.closed(children);
+    const assertContentSliceForSchema: InternalEditorSchemaApi['assertContentSliceForSchema'] =
+      schema.assertContentSliceForSchema;
+
+    try {
+      assertContentSliceForSchema(slice);
+    } catch (error) {
+      return schemaFailure(error, parseDiagnostics);
+    }
+    if (
+      mappingDiagnostics.some((diagnostic) => diagnostic.severity === 'error')
+    ) {
+      return failedHtmlDiagnostics(parseDiagnostics);
+    }
+
+    return Object.freeze({
+      diagnostics: parseDiagnostics as readonly HtmlWarningDiagnostic[],
+      ok: true as const,
+      slice,
+    });
+  }
+
+  let fitted: ReturnType<InternalEditorSchemaApi['fitDocumentWithReport']>;
+
+  try {
+    fitted = schema.fitDocumentWithReport(
+      Object.freeze({
+        children: Object.freeze(children),
+      }) as unknown as EditorDocumentValue
+    );
+  } catch (error) {
+    return schemaFailure(error, parseDiagnostics);
+  }
+  const repairDiagnostics = fitted.repairs.map((repair) =>
+    repairDiagnostic(repair, options.lossPolicy ?? 'reject')
+  );
+  const failureIndex = repairDiagnostics.findIndex(
+    (diagnostic) => diagnostic.severity === 'error'
+  );
+
+  if (failureIndex !== -1) {
+    return failedHtmlDiagnostics([...parseDiagnostics, ...repairDiagnostics]);
+  }
+  if (
+    mappingDiagnostics.some((diagnostic) => diagnostic.severity === 'error')
+  ) {
+    return failedHtmlDiagnostics([...parseDiagnostics, ...repairDiagnostics]);
+  }
+
+  return Object.freeze({
+    diagnostics: Object.freeze([
+      ...parseDiagnostics,
+      ...(repairDiagnostics as readonly HtmlWarningDiagnostic[]),
+    ]) as readonly HtmlWarningDiagnostic[],
+    document: fitted.document,
+    ok: true as const,
+  });
+};
+
+const decodeHtmlAstWithEditor = (
+  editor: Editor,
+  source: string,
+  kind: 'document' | 'slice',
+  ownerDocument: Document,
+  options: HtmlEditorParseOptions,
+  readState: HtmlStateReader
+): HtmlDocumentParseResult | HtmlSliceParseResult => {
+  const parsed = parseHtmlAst(source, kind, options.limits);
+
+  if (!parsed.ok) return parsed;
+  const root = materializeHtmlAst(parsed.ast, ownerDocument);
+
+  return decodeMaterializedHtmlWithEditor(
+    editor,
+    kind,
+    ownerDocument,
+    root,
+    parsed.ast.diagnostics,
+    options,
+    readState
+  );
+};
+
+export const parseHtmlWithEditor = (
+  editor: Editor,
+  source: string,
+  options: HtmlEditorParseOptions = {},
+  ownerDocument = createBrowserHtmlDocument(),
+  readState: HtmlStateReader = (read) => editor.read(read)
+): HtmlDocumentParseResult =>
+  decodeHtmlAstWithEditor(
+    editor,
+    source,
+    'document',
+    ownerDocument,
+    options,
+    readState
+  ) as HtmlDocumentParseResult;
+
+export const parseHtmlSliceWithEditor = (
+  editor: Editor,
+  source: string,
+  options: HtmlEditorParseOptions = {},
+  ownerDocument = createBrowserHtmlDocument(),
+  readState: HtmlStateReader = (read) => editor.read(read)
+): HtmlSliceParseResult =>
+  decodeHtmlAstWithEditor(
+    editor,
+    source,
+    'slice',
+    ownerDocument,
+    options,
+    readState
+  ) as HtmlSliceParseResult;
+
+const htmlDocumentDiagnostics = (
+  document: EditorDocumentValue
+): readonly HtmlWarningDiagnostic[] => {
+  const roots = Object.keys(document.roots ?? {});
+  const metadata = Object.keys(document.meta ?? {}).filter(
+    (key) => key !== 'authored'
+  );
+
+  return Object.freeze([
+    ...roots.map((root) =>
+      Object.freeze({
+        code: 'html-unsupported-root' as const,
+        message: `Semantic HTML omits document root "${root}" because no installed HTML mapping owns its placement.`,
+        root,
+        severity: 'warning' as const,
+      })
+    ),
+    ...metadata.map((key) =>
+      Object.freeze({
+        code: 'html-unsupported-metadata' as const,
+        key,
+        message: `Semantic HTML omits document metadata "${key}".`,
+        severity: 'warning' as const,
+      })
+    ),
+  ]);
+};
+
+export const serializeHtmlDocumentWithState = (
+  editor: Editor,
+  state: EditorCoreStateView,
+  outputDocument: EditorDocumentValue,
+  projectionDiagnostics: readonly HtmlWarningDiagnostic[],
+  lossPolicy: 'allow' | 'reject'
+): HtmlSerializeResult => {
+  const model = getCompiledPlateModel(editor);
+  const artifact = COMPILED_PLATE_HTML.get(model.revision);
+
+  if (!artifact) throw new Error('Plate HTML format is not compiled.');
+  const losses: HtmlMappingLoss[] = [];
+  const operationKey = Object.freeze({});
+  const data = encodeCompiledHtml(
+    editor,
+    ContentSlice.closed(outputDocument.children),
+    artifact.serializerIndex,
+    state,
+    {
+      document: outputDocument,
+      getFormatContext: artifact.getFormatContext,
+      onLoss: (loss) => losses.push(loss),
+      operationKey,
+      reportMappingErrors: false,
+    }
+  );
+  const lossDiagnostics = htmlMappingDiagnostics(
+    losses,
+    'serialize',
+    lossPolicy
+  );
+  const warnings = Object.freeze([
+    ...projectionDiagnostics,
+    ...htmlDocumentDiagnostics(outputDocument),
+  ]);
+  const failureIndex = lossDiagnostics.findIndex(
+    (diagnostic) => diagnostic.severity === 'error'
+  );
+
+  if (failureIndex !== -1) {
+    return failedHtmlDiagnostics([...warnings, ...lossDiagnostics]);
+  }
+
+  return Object.freeze({
+    data,
+    diagnostics: Object.freeze([
+      ...warnings,
+      ...(lossDiagnostics as readonly HtmlWarningDiagnostic[]),
+    ]),
+    ok: true as const,
+  });
+};
+
+export const serializeHtmlWithEditor = (
+  editor: Editor,
+  options: HtmlEditorSerializeOptions = {}
+): HtmlSerializeResult => {
+  const document = options.document ?? editor.read.value();
+
+  if (
+    document.meta?.authored !== undefined &&
+    options.projection === undefined
+  ) {
+    throw new TypeError(
+      'HTML serialization requires projection when the document contains authored changes.'
+    );
+  }
+  const projected = projectPlateFormatDocument(
+    editor,
+    document,
+    options.projection ?? 'proposed'
+  );
+  const outputDocument = projected.document;
+  const view = createProjectedEditorView(editor, outputDocument);
+  return view.read((state) =>
+    serializeHtmlDocumentWithState(
+      view,
+      state,
+      outputDocument,
+      projected.diagnostics as readonly HtmlWarningDiagnostic[],
+      options.lossPolicy ?? 'reject'
+    )
+  );
 };
 
 export const HtmlPlugin = definePlugin(HTML_PLUGIN_NAME, {
   api: ({ editor }): HtmlApi => ({
-    deserialize: ({
-      collapseWhiteSpace: shouldCollapseWhiteSpace = true,
-      element,
-    }: {
-      collapseWhiteSpace?: boolean;
-      element: HTMLElement | string;
-    }): Descendant[] | null => {
-      const model = getCompiledPlateModel(editor);
-      const artifact = COMPILED_PLATE_HTML.get(model.revision);
-
-      if (!artifact) {
-        throw new Error('Plate HTML codec is not compiled.');
-      }
-      const root =
-        typeof element === 'string' ? htmlStringToDOMNode(element) : element;
-      const normalized = shouldCollapseWhiteSpace
-        ? collapseWhiteSpace(root)
-        : root;
-
-      try {
-        const fragment = editor.read((state) =>
-          decodeCompiledHtml(editor, normalized, artifact.matcherIndex, state)
-        );
-
-        const schema: EditorStateSchemaApi = editor.read.schema;
-
-        schema.assertFragment(fragment);
-
-        return fragment;
-      } catch (error) {
-        reportEditorLifecycleError(
-          Object.freeze({
-            cause: new Error(
-              `Plate HTML direct decode returned an invalid fragment for <${normalized.tagName.toLowerCase()}>: ${normalized.outerHTML.slice(0, 512)}`,
-              { cause: error }
-            ),
-            editor,
-            pluginName: 'plate:html',
-            format: HTML_FORMAT,
-            key: 'plate:html:decode',
-            phase: 'parse' as const,
-            source: 'host-codec' as const,
-          })
-        );
-
-        return null;
-      }
-    },
+    parse: (source, options) => parseHtmlWithEditor(editor, source, options),
+    parseSlice: (source, options) =>
+      parseHtmlSliceWithEditor(editor, source, options),
+    serialize: (options) => serializeHtmlWithEditor(editor, options),
   }),
 });
 

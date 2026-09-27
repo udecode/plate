@@ -12,11 +12,11 @@ import {
 
 import {
   type Descendant,
-  defineValueCodec,
   type Editor as EditorType,
   type EditorStateField,
   type Element,
   type ElementOf,
+  type EditorJsonValue,
   type NamedRootKey,
   NodeApi,
   type Path,
@@ -44,6 +44,19 @@ export type PageMargins =
 
 export type PageSettings = Readonly<{
   margins: PageMargins;
+  preset: PagePreset;
+}>;
+
+export type PageSettingsJson = Readonly<{
+  [key: string]: EditorJsonValue;
+  margins:
+    | number
+    | Readonly<{
+        bottom: number;
+        left: number;
+        right: number;
+        top: number;
+      }>;
   preset: PagePreset;
 }>;
 
@@ -270,10 +283,10 @@ const decodePageSettings = (value: unknown): PageSettings => {
   };
 };
 
-export const pageSettingsCodec = defineValueCodec<PageSettings>({
+export const pageSettingsCodec = Object.freeze({
   decode: decodePageSettings,
-  encode: decodePageSettings,
-  version: 1,
+  encode: (value: PageSettings) =>
+    decodePageSettings(value) as PageSettingsJson,
 });
 
 const normalizeMargins = (margins: PageMargins) =>

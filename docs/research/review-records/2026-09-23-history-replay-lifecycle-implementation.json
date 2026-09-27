@@ -1,0 +1,134 @@
+{
+  "id": "2026-09-23-history-replay-lifecycle-implementation",
+  "kind": "execution",
+  "date": "2026-09-23",
+  "scopes": [
+    "history"
+  ],
+  "reviewBasis": [
+    "2026-09-23-history-async-replay-api"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-23-history-replay-lifecycle-implementation.md",
+    "sha256": "d20243bd780fc5564cf4c24d81b64675b058af557dd617075cd3796156e9933b"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Implemented call-order history replay with per-editor pending state, live local and remote publication, single-flight busy results, one mounted result/error dispatcher, void pending-aware React controls, and serialized Comments replay. Updated browser UI, docs, doctrine, changesets and generated registry artifacts, with full package and Chromium proof.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-23-history-replay-lifecycle-implementation.md",
+        "sha256": "d20243bd780fc5564cf4c24d81b64675b058af557dd617075cd3796156e9933b",
+        "claim": "Records the completed slices, source-to-plan reconciliation, exact verification commands and observed results."
+      },
+      {
+        "path": "packages/plitejs/test/history/history-branch-contract.spec.ts",
+        "sha256": "e811b347f397aab98d47212e2e782af1bb68241832cb157fb0d28041897854aa",
+        "claim": "Locks claim order, busy overlap, live edits, mapping journals, retirement semantics and repeated document replay above a session entry."
+      },
+      {
+        "path": "packages/plitejs/test/react/editable-dom-runtime-contract.test.tsx",
+        "sha256": "61679d354282c0e80af288a1a6e8d96dc228512e896f42af0f764146f033e433",
+        "claim": "Locks exact mounted completion, rejection reporting and guarded focus repair across unmount and settlement."
+      },
+      {
+        "path": "apps/www/tests/browser/comment.spec.ts",
+        "sha256": "f620f61b5ed61cd73c27bd9ca19a12f3a7540ea0a8de8ad2ef8dd244191a9955",
+        "claim": "Exercises delayed and refused comment replay, live typing, pending toolbar state, exact outcome delivery and repeated browser history cycles."
+      }
+    ],
+    "limits": "Product copy for refused replay and a public recovery action for a permanently blocked head remain separate decisions. Chromium automation covers browser input and deterministic delayed persistence, but does not claim physical IME-device coverage. No release or deployment was performed."
+  },
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/history-toolbar-button.tsx": "a88142a36831b228b5d3d9c0aa124ffbed5ed1c27a7298631185fd6986f491d3",
+      "packages/plitejs/test/history/index.spec.ts": "517d92bf162409fa664981075ce7ab5e546eb6a9c2493f0c063f800991544208",
+      "packages/plitejs/test/history/anchor-history-contract.ts": "f190afe59143ad7c4e343d852a28621782239092f71824a8b4d0cf2832f42366",
+      "packages/plitejs/test/history/announcement-history-contract.test.ts": "ec175d7d999de582bc6e9a50f21832a77af63ddc4112c7c5485ca521373df189",
+      "packages/plitejs/test/history/history-branch-contract.spec.ts": "e811b347f397aab98d47212e2e782af1bb68241832cb157fb0d28041897854aa",
+      "packages/plitejs/test/history/history-persistence-contract.spec.ts": "29e4e37cf5b4230ec34ffecf4bf23f1990d8039018b9c420834ad236f784e744",
+      "packages/plitejs/test/authored-history-contract.test.ts": "5c7b229f30ead2f7004e985544699b82420e655cd00db5fb8cb7910ec7839586",
+      "packages/plitejs/test/yjs/authored-contract.spec.ts": "f6e680e84cdf6848ef454935a56b5fcf303ad40ed6ce846629b0ca30eea00fa3",
+      "packages/plitejs/test/authored-revert-contract.test.ts": "7e011c49e4606cc4615348dfe0ba24baeb792f8af0cc6feb5d3dcb4abd25ea6a",
+      "packages/plitejs/test/authored-retention-contract.test.ts": "36a6cd03bdb31cfd2a761a8d49342662af8d727dc7a6533a5f5690be18e45e7c",
+      "packages/plitejs/test/authored-ingress-contract.test.ts": "f830ff4b0df4ce24acace427a45e1c515d6901ccd0bf6b295bec305733fbd23e",
+      "packages/plitejs/test/authored-view-contract.test.ts": "616769d13a54e7843bff99ba2b38eb2689e85ee1843c8fbd4043ce221bc69295",
+      "docs/plans/artifacts/2026-09-15-history-review/transaction.probe.test.ts": "3c01a2e6fa5e64a9833d58c38456248a6985e97608dcaf0d1cf2196b67468153",
+      "docs/plans/artifacts/2026-09-15-history-review/availability.probe.test.ts": "fbd4d13f21d8386222afe2dda9b08a0295841a9665de6efcdc9059b5b7d81372",
+      "docs/plans/artifacts/2026-09-15-history-review/grouping.probe.test.ts": "c7397ddd36af9d2a021a31ae5e1a4f76b35f658f0428f05736c8fa2f40af42d2",
+      "docs/plans/artifacts/2026-09-15-history-design/proof.md": "5d36ec17edea4cc6b420db810611bbe857817bbd79721a86cb24f660ec1bddb9",
+      "docs/plans/artifacts/2026-09-15-history-design/scale-final-receipt.md": "ba5e7080402164d51b0c98f2e12f9113273448dbbe6a0dc2436af24a2cd72322",
+      "docs/plans/artifacts/2026-09-15-history-design/publication-merge-receipt.md": "f61cacd4573ca005469e8d55ff34cec52615c0c0ae17ee304fd7c84518b7271d",
+      "docs/plans/artifacts/2026-09-15-history-design/publication-timing-receipt.md": "0234ae729da330668e597c82976f36344110a7425f7ba497652723f85da3ebe8",
+      "docs/plans/artifacts/2026-09-15-history-design/ai-timing-corrected-receipt.md": "dc6a20c123d16bd3fd74c51463e44e7b1a154ff7d847f91ba492a5ca67ba36cc",
+      "docs/plans/artifacts/2026-09-15-history-design/production-harness-receipt.md": "81ab4c14a397d13f9f910e34949019fb2092f827e1b9e32c8644b372da553226",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "dcc90d02a70c286c9a7c8502092848b145e581b39f57b4ad63e92fc004df53f7",
+      "packages/plitejs/test/history/history-contract.ts": "f56ea773e9cc24b5235f0750555a977e7f2f0424aa75689c2bddc05b4bdb84cb",
+      "packages/plitejs/test/history/document-state-history-contract.ts": "a56945a4d49177896b4ded8785f742a1fe5acbfc6f1fbbff45f5817754a19705",
+      "packages/plitejs/test/history/generic-history-contract.ts": "c85bd99d30ab7f84539ac86635f67ac079e7edbf5bcd8ccc8d565e60374cb195",
+      "packages/plitejs/src/core/command-registry.ts": "0ca28b54f1f36e8e10d491e1e04c2dc8a1de436e3797c48a999d4dd0c09ba181",
+      "packages/plitejs/src/core/public-state.ts": "72b78a5bcae1ff77e642e479e573d8b698844b15f9c92be4559fc52980a9a43c",
+      "packages/plitejs/src/core/editor-lifecycle-api.ts": "72fab9f5a995e0226c92718c6dd257d3ae7b9feec157c39a799ec7b8fc77cef4",
+      "packages/plitejs/src/react/editable/history-focus.ts": "1997a6e2a8ca8ef427918b5fe9b519d780e13fad15cdb71edc54f565a93cf91d",
+      "packages/plitejs/src/react/editable/history-keyboard.ts": "f218428d395fe66317f2cfdacef1ffd434afa79b7009e0ffd6820b2950dabf53",
+      "packages/plitejs/src/react/editable/input-history.ts": "263802a7b46eed1a4f956db6e450dd6583cc58f482e559548dd123b8aa9d7e8d",
+      "packages/plitejs/src/react/editable/mutation-history.ts": "e56bc611aa41fa5a78647f1847d806e35f0f41c67d7b4fe6c108196e0a775d7a",
+      "packages/plitejs/src/react/editable/runtime-keyboard-events.ts": "1571b58654ab98c4185357f583ffbe553be8315b3521baed170fe63ea74cba84",
+      "packages/plitejs/src/react/editable/composition-state.ts": "6250ca297538250869b467e01c4acff2f625e137ff479103c66a626e9119ae24",
+      "packages/plitejs/src/react/hooks/use-plite-history.ts": "363ac93c101b33e65c133fb41b557618cc2d5b42531a910e1b50d58602c74942",
+      "packages/plitejs/src/react/view-selection.ts": "cb58b384745dc100fdb83a5cf09be2e1fe7abea848e007491d94dbd057ccb67f",
+      "packages/plitejs/test/react/input-history-contract.test.ts": "1fb8ca8014bffa173751c2cb017379d69e3cbc81d101241b42fc901f8ed3cf3b",
+      "packages/plitejs/test/react/use-plite-history.test.tsx": "17064ad2d64ce62cfe0573444d5938fef92b1fe8b9cd7fa3af4c6f83196965c3",
+      "packages/plitejs/src/authored/authored.ts": "4e10fb213fc4b57244064959ca18b23b51ac29ddba5b1772f128ee4381722205",
+      "packages/plitejs/src/yjs/core/editor-adapter.ts": "13ab451f5039fb93f949905452caf54aed9199d67cc7014f326feaac3e6c6757",
+      "packages/plitejs/src/yjs/core/controller.ts": "a9dbd17625eb1d4f22f65e7fadbcf0525a638fffbf325b0cc53e0d44532beee9",
+      "packages/plitejs/test/yjs/support/collaboration.ts": "d3559b05d48c8a33ec3a0d659659d98132839235617504c3a84b27891561cf33",
+      "packages/platejs/src/lib/plugins/HistoryPlugin.ts": "f0305db6fcbaa20344470abd5ec00a186068bb888c7a0b8987cc2c6bb9e322a2",
+      "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts": "30348b05f1a713adea0e3a59250e657cfdc1d8743ab55d9a2c5a815fd50de3a7",
+      "packages/platejs/src/ai/lib/BaseAIPlugin.ts": "ec9a120a9a036dbf453ca5b5389625853d736e61378c481383ce2988d36b3fad",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "df84f26d9cff3cbb7bf1a12e09592df28fb1e9575293bf5d9e40e19f1302a14b",
+      "apps/www/src/registry/examples/collaboration-demo.tsx": "d611ee897e702d34ca4df7da9cf1a7f252e8fcbe95dd0f28fdbadb40a55ac9d7",
+      "apps/www/src/registry/examples/version-history-demo.tsx": "e7b0572eac3f8a4e80d45b159da9d97ad6f68359176d8fc41fc2c54bd46361f2",
+      "apps/www/src/registry/bases/base/toolbar.tsx": "e4f9d761a57fac0f38eaced77ef70dd9c0a2667b353751128732ec1a78ac1d52",
+      "content/docs/(guides)/history.mdx": "23f805bf08631a8dce82a8e50240c05701de084dfc6323c34a16e50eca55d190",
+      "docs/vision/plite.md": "aefd3df5a578003e90fffa6688c317bdbb49837b80cb4874863f8decdecf31f8",
+      "docs/vision/plate.md": "8e21e0c1783d79d5f5c4389af7e79e6455de92b3f22b494dbd506695828ec4dc",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "tooling/config/bunTestSetup.ts": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e",
+      "tooling/config/tsconfig.test.json": "92b87c9c794877d2c9e4e3a2867c3f450f33560d6baded6a7f23b26e8880f0e8",
+      "tooling/scripts/run-entrypoint-task.mjs": "2a7c478035f55226129436c0cf4ce4988edc52d8317de27500ecf33a3ab7e3ec",
+      "docs/plans/artifacts/2026-09-15-history-review/proof.md": "b6b7c865f37200b33f844e5341eac0e4bdd2f407a8d80fda543f93aa0867218e",
+      ".agents/skills/best-api/SKILL.md": "426b59c1fea3386b556164fb2dc7463111dcb9cdf390e8b3ec3d79665b4329c7",
+      ".agents/skills/principle-redesign-from-first-principles/SKILL.md": "ae8417181b932a467d1dbc74f2f8401cee34ca3b0d0b3a2371258339912b5f4d",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77bf6f360dc7b3199b947dc167649fbc39007b81b4f9bd5364660757e7d4a703"
+    },
+    "directories": {
+      "packages/plitejs/src/history": "04e6b2aa5dc489d49a6221f7d361c843a9d875c31cf2ed83a110b22d528a69a9",
+      "packages/platejs/src/history": "5b9167535e6d99804e5c3b8dffabb45d4e6b05bcaba1ae84134f8d5fb6fa0583"
+    },
+    "features": {
+      "capability/history": "8135a4e0b278b55c07b824cfc66c5a1e164e6fba2a80f496a683a355d802d9b4",
+      "export/platejs/./history": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "export/plitejs/./history": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "platejs/history": "5b9167535e6d99804e5c3b8dffabb45d4e6b05bcaba1ae84134f8d5fb6fa0583",
+      "plitejs/history": "04e6b2aa5dc489d49a6221f7d361c843a9d875c31cf2ed83a110b22d528a69a9",
+      "plitejs/react/editable/history-focus": "33b50189cf870fb05e0c21bf9a805dc8f8bd2c5514a650fa94e8bd29a6de6903",
+      "plitejs/react/editable/history-keyboard": "52838d5eadab7d522054d2713895cccc32963fb9fe6da7270e6f5c4cf521a20b",
+      "plitejs/react/editable/input-history": "a70d6350199df1b54acbbb02979846b4a17291e6ef4f4233096a5fab816bbfaa",
+      "plitejs/react/editable/mutation-history": "5c4aec79dfb35c56c80ca0fce43b127e32844ecde50a648632cce88f0861db49",
+      "ui/history-toolbar-button": "32443956b3c5be38232a1f96176a6e636c47ba1c24c9913f7b6e48adf7eea007"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-23-history-replay-lifecycle-implementation.md"
+  ]
+}

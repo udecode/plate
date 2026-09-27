@@ -1,6 +1,6 @@
 import juice from 'juice';
 
-import type { DocxExportOptions } from './exportToDocx';
+import type { DocxExportOptions } from './exportDocx';
 import { htmlToDocxBlob } from './html-to-docx.internal';
 import type { Margins } from './internal/types';
 

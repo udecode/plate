@@ -750,7 +750,6 @@ export const registryFeatures: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/docx-export.tsx',
@@ -758,14 +757,6 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'docx-export',
-    registryDependencies: [
-      '@plate/callout-static',
-      '@plate/code-block-static',
-      '@plate/column-static',
-      '@plate/math-static',
-      '@plate/heading-static',
-      '@plate/toc-static',
-    ],
     type: 'registry:component',
   },
   {

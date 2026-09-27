@@ -655,7 +655,7 @@ describe('element-owned root lifecycle', () => {
     const title = defineStateField({
       initial: 'Untitled',
       key: 'document.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const editor = createEditor({
       plugins: [

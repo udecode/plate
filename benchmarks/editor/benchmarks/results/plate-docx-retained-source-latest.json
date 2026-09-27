@@ -24,38 +24,38 @@
       "baselineCommentBytes": 2,
       "baselineDocumentBytes": 11006,
       "baselineImport": {
-        "coldMs": 65.00420799999995,
-        "eventLoopDelayP95Ms": 6.339416999999912,
-        "heapDeltaMaxBytes": 2999681,
-        "medianMs": 19.0787499999999,
-        "p95Ms": 21.514458000000104,
-        "rssDeltaMaxBytes": 9617408
+        "coldMs": 63.015540999999985,
+        "eventLoopDelayP95Ms": 7.903291999999965,
+        "heapDeltaMaxBytes": 2942068,
+        "medianMs": 18.21504099999993,
+        "p95Ms": 22.67533400000002,
+        "rssDeltaMaxBytes": 9191424
       },
       "budgets": {
-        "exactExportP95Ms": 6.711687500000153,
-        "importColdMs": 107.50631199999992,
-        "importP95Ms": 32.96879540000013,
+        "exactExportP95Ms": 5.526791499999945,
+        "importColdMs": 104.52331149999998,
+        "importP95Ms": 34.47793420000003,
         "retainedBytes": 33651,
-        "overlayExportP95Ms": 91.66248213195831,
-        "overlayRssDeltaBytes": 73746777,
-        "targetRssDeltaBytes": 26439910
+        "overlayExportP95Ms": 89.2926901319579,
+        "overlayRssDeltaBytes": 73091417,
+        "targetRssDeltaBytes": 26013926
       },
       "compressedBytes": 22643,
       "documentXmlBytes": 1936,
       "exactExport": {
-        "coldMs": 0.6990420000001905,
-        "eventLoopDelayP95Ms": 2.3240420000001905,
-        "heapDeltaMaxBytes": 78070,
-        "medianMs": 0.4365829999997004,
-        "p95Ms": 0.5858749999997599,
-        "rssDeltaMaxBytes": 65536
+        "coldMs": 2.5738750000000437,
+        "eventLoopDelayP95Ms": 2.1796669999998812,
+        "heapDeltaMaxBytes": 0,
+        "medianMs": 1.6109160000000884,
+        "p95Ms": 1.9618749999999636,
+        "rssDeltaMaxBytes": 409600
       },
       "overlayExport": {
-        "eventLoopDelayP95Ms": 7.690542000000278,
-        "heapDeltaMaxBytes": 5830013,
-        "medianMs": 17.046000000000276,
-        "p95Ms": 18.297749999999724,
-        "rssDeltaMaxBytes": 11354112,
+        "eventLoopDelayP95Ms": 6.704665999999634,
+        "heapDeltaMaxBytes": 5529789,
+        "medianMs": 14.520207999999911,
+        "p95Ms": 15.624124999999822,
+        "rssDeltaMaxBytes": 7438336,
         "work": {
           "copiedParts": 8,
           "finalPackageValidationLoads": 1,
@@ -68,20 +68,20 @@
       },
       "retainedBytes": 33651,
       "semanticExport": {
-        "coldMs": 24.065624999999727,
-        "eventLoopDelayP95Ms": 8.748125000000073,
-        "heapDeltaMaxBytes": 912502,
-        "medianMs": 12.034249999999702,
-        "p95Ms": 13.423375000000306,
-        "rssDeltaMaxBytes": 6569984
+        "coldMs": 17.982666999999765,
+        "eventLoopDelayP95Ms": 8.697999999999865,
+        "heapDeltaMaxBytes": 793986,
+        "medianMs": 9.16170800000009,
+        "p95Ms": 11.05358299999989,
+        "rssDeltaMaxBytes": 5914624
       },
       "targetImport": {
-        "coldMs": 29.00679100000002,
-        "eventLoopDelayP95Ms": 6.183791999999812,
-        "heapDeltaMaxBytes": 2876483,
-        "medianMs": 18.815958000000137,
-        "p95Ms": 22.83637500000009,
-        "rssDeltaMaxBytes": 10256384
+        "coldMs": 30.043499999999995,
+        "eventLoopDelayP95Ms": 7.066874999999982,
+        "heapDeltaMaxBytes": 2916716,
+        "medianMs": 18.020708000000013,
+        "p95Ms": 24.441749999999956,
+        "rssDeltaMaxBytes": 12386304
       },
       "work": {
         "baseline": {
@@ -126,38 +126,38 @@
       "baselineCommentBytes": 2,
       "baselineDocumentBytes": 43704,
       "baselineImport": {
-        "coldMs": 61.26250000000073,
-        "eventLoopDelayP95Ms": 8.530166000000463,
-        "heapDeltaMaxBytes": 13803401,
-        "medianMs": 53.43425000000025,
-        "p95Ms": 54.91479199999958,
-        "rssDeltaMaxBytes": 5619712
+        "coldMs": 52.24929200000042,
+        "eventLoopDelayP95Ms": 9.214249999999993,
+        "heapDeltaMaxBytes": 15198716,
+        "medianMs": 48.45899999999983,
+        "p95Ms": 50.74141700000018,
+        "rssDeltaMaxBytes": 7815168
       },
       "budgets": {
-        "exactExportP95Ms": 9.257395999999972,
-        "importColdMs": 101.89375000000109,
-        "importP95Ms": 76.38922959999945,
+        "exactExportP95Ms": 9.029104000000189,
+        "importColdMs": 88.37393800000063,
+        "importP95Ms": 70.96384210000024,
         "retainedBytes": 1131904,
-        "overlayExportP95Ms": 249.1827645646972,
-        "overlayRssDeltaBytes": 74977362,
-        "targetRssDeltaBytes": 24573324
+        "overlayExportP95Ms": 248.72618056469764,
+        "overlayRssDeltaBytes": 77221970,
+        "targetRssDeltaBytes": 26768780
       },
       "compressedBytes": 1088198,
       "documentXmlBytes": 4755,
       "exactExport": {
-        "coldMs": 0.8348750000004657,
-        "eventLoopDelayP95Ms": 2.4141250000011496,
+        "coldMs": 5.27191700000003,
+        "eventLoopDelayP95Ms": 5.6148339999999735,
         "heapDeltaMaxBytes": 0,
-        "medianMs": 0.5172080000011192,
-        "p95Ms": 0.5569999999988795,
-        "rssDeltaMaxBytes": 540672
+        "medianMs": 4.7352499999997235,
+        "p95Ms": 5.022000000000844,
+        "rssDeltaMaxBytes": 49152
       },
       "overlayExport": {
-        "eventLoopDelayP95Ms": 13.417916999998852,
-        "heapDeltaMaxBytes": 10154942,
-        "medianMs": 53.74479199999951,
-        "p95Ms": 60.763833999999406,
-        "rssDeltaMaxBytes": 22282240,
+        "eventLoopDelayP95Ms": 13.534374999999272,
+        "heapDeltaMaxBytes": 16169974,
+        "medianMs": 49.744958000001134,
+        "p95Ms": 58.17683399999987,
+        "rssDeltaMaxBytes": 26296320,
         "work": {
           "copiedParts": 64,
           "finalPackageValidationLoads": 1,
@@ -170,20 +170,20 @@
       },
       "retainedBytes": 1131904,
       "semanticExport": {
-        "coldMs": 26.820666000001438,
-        "eventLoopDelayP95Ms": 13.423791999999594,
-        "heapDeltaMaxBytes": 663201,
-        "medianMs": 17.528165999998237,
-        "p95Ms": 18.514791999999943,
-        "rssDeltaMaxBytes": 4603904
+        "coldMs": 18.226834000000053,
+        "eventLoopDelayP95Ms": 15.057416999999987,
+        "heapDeltaMaxBytes": 1326394,
+        "medianMs": 16.341542000000118,
+        "p95Ms": 18.058208000000377,
+        "rssDeltaMaxBytes": 6848512
       },
       "targetImport": {
-        "coldMs": 54.21783300000061,
-        "eventLoopDelayP95Ms": 11.249166999999943,
-        "heapDeltaMaxBytes": 15086786,
-        "medianMs": 54.25283399999989,
-        "p95Ms": 56.13349999999991,
-        "rssDeltaMaxBytes": 6012928
+        "coldMs": 49.74474999999984,
+        "eventLoopDelayP95Ms": 9.16570800000045,
+        "heapDeltaMaxBytes": 14975675,
+        "medianMs": 48.804833000000144,
+        "p95Ms": 50.97954200000004,
+        "rssDeltaMaxBytes": 4866048
       },
       "work": {
         "baseline": {
@@ -228,38 +228,38 @@
       "baselineCommentBytes": 2,
       "baselineDocumentBytes": 133427,
       "baselineImport": {
-        "coldMs": 286.23195900000064,
-        "eventLoopDelayP95Ms": 27.03229199999987,
-        "heapDeltaMaxBytes": 20206715,
-        "medianMs": 289.801958,
-        "p95Ms": 306.9473340000004,
-        "rssDeltaMaxBytes": 17563648
+        "coldMs": 252.1617920000008,
+        "eventLoopDelayP95Ms": 23.872584000000643,
+        "heapDeltaMaxBytes": 30430598,
+        "medianMs": 259.4352919999983,
+        "p95Ms": 271.9961669999975,
+        "rssDeltaMaxBytes": 17367040
       },
       "budgets": {
-        "exactExportP95Ms": 23.775729499999215,
-        "importColdMs": 439.34793850000096,
-        "importP95Ms": 404.0315342000005,
+        "exactExportP95Ms": 36.36054150000018,
+        "importColdMs": 388.2426880000012,
+        "importP95Ms": 358.59501709999677,
         "retainedBytes": 8619571,
-        "overlayExportP95Ms": 1336.5038096164535,
-        "overlayRssDeltaBytes": 370652922,
-        "targetRssDeltaBytes": 51313148
+        "overlayExportP95Ms": 1361.6734336164554,
+        "overlayRssDeltaBytes": 369899258,
+        "targetRssDeltaBytes": 51116540
       },
       "compressedBytes": 8486142,
       "documentXmlBytes": 13467,
       "exactExport": {
-        "coldMs": 1.775166999999783,
-        "eventLoopDelayP95Ms": 3.0241669999995793,
+        "coldMs": 15.109791999999288,
+        "eventLoopDelayP95Ms": 14.841749999999593,
         "heapDeltaMaxBytes": 0,
-        "medianMs": 0.9847500000032596,
-        "p95Ms": 1.0845829999998386,
-        "rssDeltaMaxBytes": 32768
+        "medianMs": 13.84991699999955,
+        "p95Ms": 14.453667000001587,
+        "rssDeltaMaxBytes": 81920
       },
       "overlayExport": {
-        "eventLoopDelayP95Ms": 34.738124999999854,
-        "heapDeltaMaxBytes": 39444002,
-        "medianMs": 269.87004100000195,
-        "p95Ms": 277.67795900000056,
-        "rssDeltaMaxBytes": 37240832,
+        "eventLoopDelayP95Ms": 38.44245800000135,
+        "heapDeltaMaxBytes": 28208812,
+        "medianMs": 274.4983749999992,
+        "p95Ms": 287.1454169999997,
+        "rssDeltaMaxBytes": 35962880,
         "work": {
           "copiedParts": 256,
           "finalPackageValidationLoads": 1,
@@ -272,20 +272,20 @@
       },
       "retainedBytes": 8619571,
       "semanticExport": {
-        "coldMs": 70.37341599999854,
-        "eventLoopDelayP95Ms": 37.473957999998674,
-        "heapDeltaMaxBytes": 1200313,
-        "medianMs": 45.033582999996725,
-        "p95Ms": 47.55145899999843,
-        "rssDeltaMaxBytes": 278085632
+        "coldMs": 56.56712499999776,
+        "eventLoopDelayP95Ms": 44.05462500000067,
+        "heapDeltaMaxBytes": 1592929,
+        "medianMs": 44.83950000000186,
+        "p95Ms": 72.72108300000036,
+        "rssDeltaMaxBytes": 277331968
       },
       "targetImport": {
-        "coldMs": 310.1380829999998,
-        "eventLoopDelayP95Ms": 25.405166999997164,
-        "heapDeltaMaxBytes": 26906649,
-        "medianMs": 287.21387499999764,
-        "p95Ms": 302.48091699999713,
-        "rssDeltaMaxBytes": 17530880
+        "coldMs": 248.64458299999933,
+        "eventLoopDelayP95Ms": 29.07354099999975,
+        "heapDeltaMaxBytes": 22535982,
+        "medianMs": 262.6289169999982,
+        "p95Ms": 325.8892500000002,
+        "rssDeltaMaxBytes": 17498112
       },
       "work": {
         "baseline": {
@@ -330,38 +330,38 @@
       "baselineCommentBytes": 2,
       "baselineDocumentBytes": 274025,
       "baselineImport": {
-        "coldMs": 1030.908124999998,
-        "eventLoopDelayP95Ms": 141.8259160000016,
-        "heapDeltaMaxBytes": 55131082,
-        "medianMs": 1190.6942080000008,
-        "p95Ms": 1265.7151659999945,
-        "rssDeltaMaxBytes": 52133888
+        "coldMs": 901.3678749999999,
+        "eventLoopDelayP95Ms": 69.23687500000233,
+        "heapDeltaMaxBytes": 194784283,
+        "medianMs": 872.2550829999964,
+        "p95Ms": 908.6259589999972,
+        "rssDeltaMaxBytes": 27246592
       },
       "budgets": {
         "exactExportP95Ms": 50,
-        "importColdMs": 1556.3621874999972,
-        "importP95Ms": 1650.429715799993,
+        "importColdMs": 1362.0518124999999,
+        "importP95Ms": 1186.2137466999964,
         "retainedBytes": 25719289,
-        "overlayExportP95Ms": 3896.2742595441887,
-        "overlayRssDeltaBytes": 146033322,
-        "targetRssDeltaBytes": 119801628
+        "overlayExportP95Ms": 3858.947259544191,
+        "overlayRssDeltaBytes": 143608490,
+        "targetRssDeltaBytes": 94914332
       },
       "compressedBytes": 25445262,
       "documentXmlBytes": 29863,
       "exactExport": {
-        "coldMs": 3.8650000000052387,
-        "eventLoopDelayP95Ms": 2.7472500000003492,
+        "coldMs": 34.53545799999847,
+        "eventLoopDelayP95Ms": 35.762833999993745,
         "heapDeltaMaxBytes": 0,
-        "medianMs": 1.9542919999948936,
-        "p95Ms": 2.7017500000001746,
-        "rssDeltaMaxBytes": 16384
+        "medianMs": 32.255292000001646,
+        "p95Ms": 35.675083000001905,
+        "rssDeltaMaxBytes": 1900544
       },
       "overlayExport": {
-        "eventLoopDelayP95Ms": 115.47200000000157,
-        "heapDeltaMaxBytes": 71714313,
-        "medianMs": 1063.6188750000001,
-        "p95Ms": 1169.4012500000026,
-        "rssDeltaMaxBytes": 67813376,
+        "eventLoopDelayP95Ms": 100.55783299999894,
+        "heapDeltaMaxBytes": 79839308,
+        "medianMs": 873.2884999999951,
+        "p95Ms": 892.5015829999975,
+        "rssDeltaMaxBytes": 107364352,
         "work": {
           "copiedParts": 900,
           "finalPackageValidationLoads": 1,
@@ -374,20 +374,20 @@
       },
       "retainedBytes": 25719289,
       "semanticExport": {
-        "coldMs": 150.53729100000055,
-        "eventLoopDelayP95Ms": 145.82649999999558,
-        "heapDeltaMaxBytes": 512823,
-        "medianMs": 153.29229199999827,
-        "p95Ms": 181.30033299999923,
-        "rssDeltaMaxBytes": 2588672
+        "coldMs": 155.75012500000594,
+        "eventLoopDelayP95Ms": 110.000208999998,
+        "heapDeltaMaxBytes": 3267305,
+        "medianMs": 126.97325000000274,
+        "p95Ms": 143.97333300000173,
+        "rssDeltaMaxBytes": 163840
       },
       "targetImport": {
-        "coldMs": 1011.0232500000056,
-        "eventLoopDelayP95Ms": 86.76304199999868,
-        "heapDeltaMaxBytes": 41933162,
-        "medianMs": 1182.7019169999985,
-        "p95Ms": 1290.8397079999995,
-        "rssDeltaMaxBytes": 51363840
+        "coldMs": 867.3489579999987,
+        "eventLoopDelayP95Ms": 71.83000000000175,
+        "heapDeltaMaxBytes": 45567308,
+        "medianMs": 913.575125000003,
+        "p95Ms": 932.6339169999992,
+        "rssDeltaMaxBytes": 28606464
       },
       "work": {
         "baseline": {
@@ -423,12 +423,12 @@
     }
   ],
   "sourceIdentity": {
-    "packages/platejs/src/docx/import/lib/importDocx.ts": "6f4865a4bb3fb5550052f9b30fb65f74cb2e8b03e4a28506c031d281c0b3896f",
-    "packages/platejs/src/docx/internal/docxPackage.ts": "1d9dfc12dbf2c0dc975b17bdde8df6ab6f8a923f99e802c8a8e7d14d9edd5a5d",
+    "packages/platejs/src/docx/import/lib/importDocx.ts": "546a9e331992611fab9a04e100e85962ac310fe6d20398f02c113e3444a38f5e",
+    "packages/platejs/src/docx/internal/docxPackage.ts": "3b8966b98530f1aefdca24c9f3cabdead545d183ed0024d2bbe3a683d1756599",
     "packages/platejs/src/docx/internal/source.ts": "4a0249c93993df3bc79b28eb312626289c6b98cd93fda81ba0a655f6124d289e",
-    "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "ebc1b64876c8184035e10afdbe3ce0a329d5f60a9a2dadd6877b62da40bd31f1",
+    "packages/platejs/src/docx/export/lib/exportDocx.tsx": "95cded1ad45e78966b00352f76f57032685fcc536a425142a7e300a757c60e7d",
     "packages/platejs/src/docx/export/lib/sourcePreservation.ts": "17f0bb5e51fece459a8cc93061d6e4ebda68bb1d68e7f029cfea8f3fb6999afd",
     "packages/plitejs/src/core/change/document-change.ts": "3ce815e12a547089e16da06a860a8dfd846be84fadfdeb60d97ffafb3f5009f5",
-    "benchmarks/editor/benchmarks/plate-docx-retained-source-benchmark.test.ts": "3d17888679f2af5993cbaa53ebdd41f253109fa5dcb49350fff937e0172aea60"
+    "benchmarks/editor/benchmarks/plate-docx-retained-source-benchmark.test.ts": "58ae06392edb1c6a7f217753616c00f81fd508aef73a2b8f74f577a4b9513a1b"
   }
 }

@@ -10,7 +10,6 @@ import {
 } from '../core/change/tokens';
 import { snapshotEditorJsonValue } from '../core/value-codec';
 import type { Point } from '../interfaces/point';
-import type { Range } from '../interfaces/range';
 import type { AuthoredRangeProjection } from './anchors';
 import { authoredContentLocations } from './counterparts';
 import {
@@ -117,7 +116,7 @@ export const readAuthoredChange = (
   );
   if (cached) return cached.result;
 
-  const ranges: Range[] = [];
+  const spans: Array<{ from: number; root: string; to: number }> = [];
   const seen = new Set<string>();
   const indexes = new Map<string, DocumentIndex>();
   const document = (root: string) => {
@@ -134,15 +133,7 @@ export const readAuthoredChange = (
     const key = `${root}:${from}:${to}`;
     if (seen.has(key)) return;
     seen.add(key);
-    const native = document(root);
-    const anchor = native.pointAt(from, 1);
-    const focus = from === to ? anchor : native.pointAt(to, -1);
-    if (anchor && focus) {
-      ranges.push({
-        anchor: { ...anchor, ...(root === 'main' ? {} : { root }) },
-        focus: { ...focus, ...(root === 'main' ? {} : { root }) },
-      });
-    }
+    spans.push({ from, root, to });
   };
   for (const [, id] of records(change.operations)) {
     const operation = readRecord(state.operations, id);
@@ -212,6 +203,44 @@ export const readAuthoredChange = (
       }
     }
   }
+  const coalesced = spans
+    .toSorted(
+      (left, right) =>
+        left.root.localeCompare(right.root) ||
+        left.from - right.from ||
+        left.to - right.to
+    )
+    .reduce<Array<{ from: number; root: string; to: number }>>(
+      (result, span) => {
+        const coalescedPrevious = result.at(-1);
+
+        if (
+          coalescedPrevious?.root === span.root &&
+          coalescedPrevious.to >= span.from
+        ) {
+          coalescedPrevious.to = Math.max(coalescedPrevious.to, span.to);
+        } else {
+          result.push({ ...span });
+        }
+
+        return result;
+      },
+      []
+    );
+  const ranges = coalesced.flatMap(({ from, root, to }) => {
+    const native = document(root);
+    const anchor = native.pointAt(from, 1);
+    const focus = from === to ? anchor : native.pointAt(to, -1);
+
+    return anchor && focus
+      ? [
+          {
+            anchor: { ...anchor, ...(root === 'main' ? {} : { root }) },
+            focus: { ...focus, ...(root === 'main' ? {} : { root }) },
+          },
+        ]
+      : [];
+  });
   const result = snapshotEditorJsonValue(
     {
       authorId: change.authorId,

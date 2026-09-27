@@ -25,11 +25,12 @@ contribution:
 | `selectors` | Pure state-first derivations, including React subscriptions. |
 | `update` | Transaction-bound plugin mutations. |
 | Editor fields | Read middleware, commands, corrections, state/effect/facet/selection descriptors, contributions, lifecycle, activation, and validation. |
-| `codecs` | Plugin-owned format decoding and encoding. |
+| `formats` | Plugin-owned format decoding and encoding. |
 
-Callbacks receive the inferred [Plugin Context](/docs/plugin-context), including
-`editor`, `plugin`, `api`, `read`, `defineCodecs`, `store`, and the active `tx`
-inside update contributions.
+Ordinary callbacks receive their inferred [Plugin Context](/docs/plugin-context),
+including the capabilities appropriate to that field. Update contributions get
+the active `tx`. The `formats` field is deliberately narrower: its authoring
+callback receives only `defineFormats` and static schema bindings.
 
 ## Use constructor context
 
@@ -171,34 +172,34 @@ rejects the command and stops fallback. `next.after(prefix)` evaluates downstrea
 behavior against the state produced by that prefix. Plugin order determines
 handler order; the descriptor preserves input inference.
 
-## Declare product codecs
+## Declare feature format mappings
 
-Build the MIME-keyed map with the callback's `defineCodecs`. This is the one
-inline inference anchor for codec callbacks.
+`formats` describes how one plugin's schema maps to semantic HTML, Markdown,
+and structural plain text. Its narrow authoring callback exposes
+`defineFormats` and static schema bindings only.
 
-```ts title="records-plugin.ts" showLineNumbers
-import { ContentSlice } from 'platejs';
-import { definePlugin } from 'platejs';
+```ts title="strong-plugin.ts" showLineNumbers
+import { definePlugin, property } from 'platejs';
 
-export const RecordsPlugin = definePlugin('records', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'application/json': {
-        scope: 'document',
-        decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
-        encode: ({ slice }) => JSON.stringify(slice),
+export const StrongPlugin = definePlugin('strong', {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        decode: () => true,
+        decodeOnly: true,
+        match: [{ tag: 'strong' }],
       },
     }),
+  schema: { mark: property.boolean() },
 });
 ```
 
-Use document scope only when the format represents the complete document.
-Use `defineCodecs(map)` for self and product codecs. Use
-`defineCodecs(TargetPlugin, map)` for a foreign codec; the helper injects the
-target into every HTML rule. The map's `'text/html'` value accepts one
-schema-aware rule or a non-empty ordered rule tuple when the plugin owns
-multiple HTML representations. Keep that tuple in the same map. Do not author
-a direct codec map or add `target` manually.
+Use `defineFormats(map)` for self mappings and
+`defineFormats(TargetPlugin, map)` for a foreign mapping. The helper injects
+the target into every HTML rule. The semantic keys are `html`, `markdown`, and
+`plainText`; an HTML mapping may be one rule or a non-empty ordered tuple.
+Whole-payload MIME admission and emission belongs to `dataTransferFormats`.
+Do not annotate mapping callback parameters.
 
 ## Bind a component
 

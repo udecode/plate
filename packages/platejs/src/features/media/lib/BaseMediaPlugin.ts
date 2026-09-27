@@ -415,9 +415,16 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
       properties: mediaElementProperties,
     }),
   },
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children, node }) =>
+          children && children !== node.url
+            ? `${children} (${node.url})`
+            : node.url,
+      },
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ caption, decode, node, parseAttributes }) => {
@@ -470,9 +477,17 @@ export const BaseFilePlugin = definePlugin(PLUGINS.file, {
       },
     }),
   },
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children, node }) => {
+          const label = children || node.name || node.url;
+
+          return label === node.url ? node.url : `${label} (${node.url})`;
+        },
+      },
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ caption, decode, node, parseAttributes }) => {
@@ -526,9 +541,16 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
       },
     }),
   },
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children, node }) =>
+          children && children !== node.url
+            ? `${children} (${node.url})`
+            : node.url,
+      },
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ caption, decode, node, parseAttributes }) => {

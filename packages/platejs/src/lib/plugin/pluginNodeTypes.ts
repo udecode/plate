@@ -1,15 +1,23 @@
 import type {
+  Descendant,
   Element,
+  EditorSchemaSourceProvider,
   PropertyValueDescriptor,
   PropertyValueOf,
   PropertyOptionsOf,
   SchemaKeyPrefix,
+  SchemaElementShapeFor,
+  SchemaElementTypes,
   Text,
 } from '../../facade';
 import type { AnyBasePlugin } from './BasePlugin';
 import type { AnyBasePluginDefinition } from './PluginDefinition';
 import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';
-import type { InferPluginWritablePropertyEntries } from './pluginSchemaModel.internal';
+import type {
+  InferExactPluginSchemaContribution,
+  InferPluginDocumentType,
+  InferPluginWritablePropertyEntries,
+} from './pluginSchemaModel.internal';
 
 type PluginDefinitionOf<P> =
   InternalPluginDefinitionOf<P> extends infer D
@@ -162,3 +170,47 @@ export type TextWith<
   > = never,
 > = Text &
   SchemaPropertyShape<SchemaPropertyEntriesOf<TSource, 'text'>, TRequired>;
+
+type FormatContribution<D extends AnyBasePluginDefinition> =
+  InferExactPluginSchemaContribution<D>;
+
+type FormatContributionSource<D extends AnyBasePluginDefinition> =
+  EditorSchemaSourceProvider<() => FormatContribution<D>>;
+
+type FormatContributionElementType<D extends AnyBasePluginDefinition> = Extract<
+  InferPluginDocumentType<D>,
+  SchemaElementTypes<FormatContributionSource<D>>
+>;
+
+type FormatElementNode<D extends AnyBasePluginDefinition> = [
+  FormatContributionElementType<D>,
+] extends [never]
+  ? never
+  : Extract<
+      SchemaElementShapeFor<
+        FormatContributionSource<D>,
+        FormatContributionElementType<D>
+      >,
+      Element
+    >;
+
+type FormatPropertyEntries<
+  D extends AnyBasePluginDefinition,
+  TPlacement extends 'element' | 'text',
+> = Extract<
+  InferPluginWritablePropertyEntries<D>,
+  Readonly<{ placement: TPlacement }>
+>;
+
+/** Node narrowed from the format mapping target's schema contribution. */
+export type PluginFormatNode<D extends AnyBasePluginDefinition> = [
+  FormatElementNode<D>,
+] extends [never]
+  ? [FormatPropertyEntries<D, 'text'>] extends [never]
+    ? [FormatPropertyEntries<D, 'element'>] extends [never]
+      ? Descendant
+      : ElementWith<D>
+    : [FormatPropertyEntries<D, 'element'>] extends [never]
+      ? TextWith<D>
+      : TextWith<D> | ElementWith<D>
+  : FormatElementNode<D>;

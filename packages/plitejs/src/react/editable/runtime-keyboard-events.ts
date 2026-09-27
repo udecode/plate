@@ -272,7 +272,7 @@ export const useRuntimeKeyboardEvents = ({
     EditableDOMRuntime,
     | 'clearVerticalGoal'
     | 'readVerticalGoalX'
-    | 'replayHistory'
+    | 'dispatchHistory'
     | 'setVerticalGoalX'
   >;
   viewportBackedSelection: boolean;
@@ -446,8 +446,8 @@ export const useRuntimeKeyboardEvents = ({
             onKeyDown,
             preferredVerticalX,
             readOnly,
-            replayHistory:
-              verticalNavigation.replayHistory.bind(verticalNavigation),
+            dispatchHistory:
+              verticalNavigation.dispatchHistory.bind(verticalNavigation),
             setExplicitViewportBackedSelection,
             setComposing: runtime.composition.setComposing,
             viewportBackedSelection,
@@ -594,8 +594,8 @@ export const useRuntimeKeyboardEvents = ({
         getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
         onKeyDown,
         readOnly,
-        replayHistory:
-          verticalNavigation.replayHistory.bind(verticalNavigation),
+        dispatchHistory:
+          verticalNavigation.dispatchHistory.bind(verticalNavigation),
         setExplicitViewportBackedSelection,
         setComposing: runtime.composition.setComposing,
         viewportBackedSelection,

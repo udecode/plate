@@ -4,11 +4,11 @@ import type { Node as UnistNode } from 'unist';
 import type { Descendant } from '../../../core';
 import { PLUGINS } from '../../../core';
 import { failInvariant } from '../../internal/failInvariant';
-import { runMarkdownDecodeCodecs } from '../internal/markdownCodecs';
 import {
   MarkdownBlockIdError,
   serializeUnknownMdxNode,
 } from '../internal/markdownDocument';
+import { runMarkdownDecodeMappings } from '../internal/markdownMappings';
 import type { MdRootContent } from '../mdast';
 import type { DeserializeMdContext, MdDecoration } from '../types';
 import { mdastToRule } from '../types';
@@ -19,9 +19,18 @@ export const convertNodesDeserialize = (
   options: DeserializeMdContext
 ): Descendant[] =>
   nodes.reduce<Descendant[]>((acc, node) => {
-    // Only process nodes that pass the filtering
     if (shouldIncludeNode(node, options)) {
       acc.push(...buildSlateNode(node, deco, options));
+    } else {
+      const nodeType = mdastToRule(node.type);
+
+      options.report({
+        code: 'markdown-filtered-node',
+        message: `Markdown node "${nodeType}" was omitted by the active filter.`,
+        nodeType,
+        severity: 'warning',
+        source: options.sourceLocation(node),
+      });
     }
     return acc;
   }, []);
@@ -95,17 +104,16 @@ export const buildSlateNode = (
 
     if (type) {
       const hasCompiledSource =
-        options.compiledCodecs?.decodeBySource.has(
+        options.compiledMappings?.decodeBySource.has(
           source ?? failInvariant('Expected value to be defined')
         ) ?? false;
-      const compiled = options.compiledCodecs
-        ? runMarkdownDecodeCodecs(
-            options.compiledCodecs,
+      const compiled = options.compiledMappings
+        ? runMarkdownDecodeMappings(
+            options.compiledMappings,
             source ?? failInvariant('Expected value to be defined'),
             mdastNode,
             deco,
-            options,
-            (pluginName) => runParser(options.ruleOverrides?.[pluginName])
+            options
           )
         : undefined;
 
@@ -114,20 +122,24 @@ export const buildSlateNode = (
       }
 
       if (!hasCompiledSource) {
-        const overridden = runParser(options.ruleOverrides?.[type]);
-
-        if (overridden) return overridden;
-
         const fallback = runParser(options.rules?.[type]);
 
         if (fallback) return fallback;
       }
-    } else {
-      console.warn(
-        'This MDX node does not have a parser for deserialization',
-        mdastNode
-      );
     }
+
+    const nodeType = source || mdastNode.type;
+
+    options.report({
+      action: 'replaced',
+      code: 'markdown-unsupported-node',
+      message: `Markdown node "${nodeType}" has no installed mapping and was preserved as source text.`,
+      nodeType,
+      owner: 'markdown',
+      phase: 'parse',
+      severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
+      source: options.sourceLocation(mdastNode),
+    });
 
     if (mdastNode.type === 'mdxJsxTextElement') {
       return [{ text: serializeUnknownMdxNode(mdastNode) }];
@@ -146,15 +158,14 @@ export const buildSlateNode = (
 
   const type = mdastToRule(mdastNode.type);
   const hasCompiledSource =
-    options.compiledCodecs?.decodeBySource.has(mdastNode.type) ?? false;
-  const compiled = options.compiledCodecs
-    ? runMarkdownDecodeCodecs(
-        options.compiledCodecs,
+    options.compiledMappings?.decodeBySource.has(mdastNode.type) ?? false;
+  const compiled = options.compiledMappings
+    ? runMarkdownDecodeMappings(
+        options.compiledMappings,
         mdastNode.type,
         mdastNode,
         deco,
-        options,
-        (pluginName) => runParser(options.ruleOverrides?.[pluginName])
+        options
       )
     : undefined;
 
@@ -163,14 +174,21 @@ export const buildSlateNode = (
   }
 
   if (!hasCompiledSource) {
-    const overridden = runParser(options.ruleOverrides?.[type]);
-
-    if (overridden) return overridden;
-
     const fallback = runParser(options.rules?.[type]);
 
     if (fallback) return fallback;
   }
+  options.report({
+    action: 'dropped',
+    code: 'markdown-unsupported-node',
+    message: `Markdown node "${mdastNode.type}" has no installed mapping.`,
+    nodeType: mdastNode.type,
+    owner: 'markdown',
+    phase: 'parse',
+    severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
+    source: options.sourceLocation(mdastNode),
+  });
+
   return [];
 };
 
@@ -189,7 +207,6 @@ const shouldIncludeNode = (
 
   const type = mdastToRule(node.type);
 
-  // First check allowedNodes/disallowedNodes
   if (
     allowedNodes &&
     disallowedNodes &&
@@ -200,16 +217,13 @@ const shouldIncludeNode = (
   }
 
   if (allowedNodes) {
-    // If allowedNodes is specified, only include if the type is in allowedNodes
     if (!allowedNodes.includes(type)) {
       return false;
     }
   } else if (disallowedNodes?.includes(type)) {
-    // If using disallowedNodes, exclude if the type is in disallowedNodes
     return false;
   }
 
-  // Finally, check allowNode if provided
   if (allowNode?.deserialize) {
     return allowNode.deserialize({
       ...node,

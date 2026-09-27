@@ -237,13 +237,20 @@ export const BaseLinkPlugin = definePlugin('link', {
       },
     },
   },
-  codecs: ({ defineCodecs, store, schema: { type } }) =>
-    defineCodecs({
-      'text/html': {
-        decode: ({ element }) => {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children, node }) =>
+          !node.url || children === node.url
+            ? children || node.url
+            : `${children} (${node.url})`,
+      },
+      html: {
+        decode: ({ element, pluginState }) => {
           const url = element.getAttribute('href');
 
-          if (!url || !validateUrlWithOptions(store.get(), url)) {
+          if (!url || !validateUrlWithOptions(pluginState, url)) {
             return undefined;
           }
 
@@ -252,8 +259,8 @@ export const BaseLinkPlugin = definePlugin('link', {
             url,
           };
         },
-        encode: ({ content, node }) => {
-          const { allowedSchemes, dangerouslySkipSanitization } = store.get();
+        encode: ({ content, node, pluginState }) => {
+          const { allowedSchemes, dangerouslySkipSanitization } = pluginState;
           const url = typeof node.url === 'string' ? node.url : '';
           const href = dangerouslySkipSanitization
             ? url
@@ -272,7 +279,7 @@ export const BaseLinkPlugin = definePlugin('link', {
         },
         match: [{ tag: 'a' }],
       },
-      'text/markdown': {
+      markdown: {
         from: 'link',
         kind: 'node',
         decode: ({ decode, decoration, node }) => ({

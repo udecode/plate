@@ -23,6 +23,11 @@ import {
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import {
+  createBrowserHtmlDocument,
+  materializeHtmlAst,
+  parseHtmlAst,
+} from '../../../lib/plugins/html/htmlAst';
 
 const CODE_LANGUAGE_CLASS_RE = /(?:^|\s)language-([^\s]+)/;
 const NON_WHITESPACE = /\S/;
@@ -134,6 +139,36 @@ const offsetToLinePoint = (text: string, offset: number) => {
 };
 
 export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
+  dataTransferFormats: [
+    {
+      accept: ({ registry, state }) => {
+        const selection = state.selection();
+        const type = registry.type(PLUGINS.codeBlock);
+
+        return (
+          !!selection && !!type && state.nodes.some({ at: selection, type })
+        );
+      },
+      decode: ({ data, snapshot }) => {
+        const plainText = snapshot.getData('text/plain');
+        const parsed = parseHtmlAst(data, 'slice');
+
+        if (!parsed.ok) return parsed;
+        const htmlText =
+          materializeHtmlAst(parsed.ast, createBrowserHtmlDocument())
+            .textContent || '';
+        const text = plainText && plainText !== data ? plainText : htmlText;
+
+        return Object.freeze({
+          diagnostics: Object.freeze([]),
+          ok: true as const,
+          slice: ContentSlice.closed([{ text }]),
+        });
+      },
+      mimeType: 'text/html',
+      priority: 200,
+    },
+  ],
   read: ({ plugin, state }) => {
     const entry = ({
       at,
@@ -188,9 +223,13 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
   },
 
   component: 'pre',
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children }) => children,
+      },
+      html: {
         decode: ({ element }) => {
           const languageClass = element
             .querySelector(':scope > code')
@@ -226,13 +265,8 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           { style: { fontFamily: 'Consolas' }, tag: 'p' },
         ],
         priority: 10,
-        query: ({ state }) => {
-          const selection = state.selection();
-
-          return !selection || !state.nodes.some({ at: selection, type });
-        },
       },
-      'text/markdown': {
+      markdown: {
         from: 'code',
         kind: 'node',
         decode: ({ node }) => ({

@@ -63,17 +63,23 @@ import {
   shouldRestoreHistoricSelection,
 } from './history-selection';
 import {
+  beginHistoryReplay,
   captureHistoryState,
   clearHistoryState,
   completeHistoryAction,
   configureHistoryState,
+  dropPendingHistoryReplayEntry,
   getHistory,
   getWorkingHistory,
+  markPendingHistoryReplayEdited,
   peekHistoryEntry,
+  queuePendingHistoryReplayMapping,
   queueHistoryMapping,
+  readPendingHistoryReplay,
   replaceHistoryHead,
   replaceHistoryState,
   restoreHistoryState,
+  settlePendingHistoryReplay,
   withHistoryStateDraft,
   withPublishedHistoryState,
   writeHistory,
@@ -88,10 +94,13 @@ export type HistoryStateApi<V extends Value = Value> = (() => History<V>) & {
   hasRedo: () => boolean;
   /** Return whether the undo branch has a surviving mapped batch. */
   hasUndo: () => boolean;
+  /** Return the replay currently waiting for its session owner. */
+  pending: () => HistoryAction | null;
 };
 
 export type HistoryResult =
   | Readonly<{ status: 'applied' | 'empty' }>
+  | Readonly<{ status: 'busy' }>
   | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>
   | Readonly<{ reason: string; status: 'blocked' }>;
 
@@ -201,15 +210,44 @@ const historyReplayRequest = defineUpdateAnnotation<number>({
   key: 'history.replay-request',
 });
 
+type HistoryReplayClaim = Readonly<{
+  activation: object;
+  direction: HistoryAction;
+  identity: object;
+  request: number;
+  undoAnchor: object | null;
+}>;
+
+const historyReplayClaim = defineUpdateAnnotation<number>({
+  combine: (_previous, next) => next,
+  key: 'history.replay-claim',
+});
+
+type HistoryReplaySettlement = Readonly<{
+  request: number;
+  status: 'applied' | 'blocked';
+}>;
+
+const historyReplaySettlement = defineUpdateAnnotation<HistoryReplaySettlement>(
+  {
+    combine: (_previous, next) => next,
+    key: 'history.replay-settlement',
+  }
+);
+
 type PreparedHistoryReplay = Readonly<{
   receipt: EditorHistoryReplayReceipt;
   request: number;
 }>;
 
 const PREPARED_HISTORY_REPLAYS = new Map<number, EditorHistoryReplayReceipt>();
+const PENDING_HISTORY_REPLAY_CLAIMS = new Map<number, HistoryReplayClaim>();
 let nextHistoryReplayRequest = 1;
 const EMPTY_HISTORY_RESULT = Object.freeze({
   status: 'empty',
+}) satisfies HistoryResult;
+const BUSY_HISTORY_RESULT = Object.freeze({
+  status: 'busy',
 }) satisfies HistoryResult;
 
 const historyRestore = defineUpdateAnnotation<HistoryJSON>({
@@ -522,9 +560,6 @@ const createHistoryPlugin = <
 >(
   options: HistoryOptions<TEnabled> = {}
 ): HistoryPlugin<TEnabled> => {
-  let sessionReplayPending = false;
-  let replayQueue: Promise<void> | null = null;
-
   const reduceHistory = ({
     after,
     commit,
@@ -562,8 +597,46 @@ const createHistoryPlugin = <
     const restoredHistoryJSON = commit.annotations[historyRestore.key] as
       | HistoryJSON
       | undefined;
+    const replayClaimRequest = commit.annotations[historyReplayClaim.key] as
+      | number
+      | undefined;
+    const replaySettlement = commit.annotations[historyReplaySettlement.key] as
+      | HistoryReplaySettlement
+      | undefined;
+
+    if (replayClaimRequest !== undefined) {
+      const replayClaim = PENDING_HISTORY_REPLAY_CLAIMS.get(replayClaimRequest);
+      if (!replayClaim) {
+        throw new Error('History replay claim is missing its owning request.');
+      }
+      beginHistoryReplay(editor, replayClaim);
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      return undefined;
+    }
+
+    if (replaySettlement) {
+      const identity = settlePendingHistoryReplay(editor, {
+        ...(replaySettlement.status === 'applied'
+          ? { change: inverseChanges, effects }
+          : {}),
+        request: replaySettlement.request,
+        status: replaySettlement.status,
+      });
+
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      return identity
+        ? Object.freeze({
+            receipt: Object.freeze({
+              group: identity,
+              version: commit.version,
+            }),
+            request: replaySettlement.request,
+          })
+        : undefined;
+    }
 
     if (restoredHistoryJSON) {
+      dropPendingHistoryReplayEntry(editor);
       replaceHistoryState(
         editor,
         decodeHistoryValue(editor, restoredHistoryJSON, {
@@ -575,6 +648,7 @@ const createHistoryPlugin = <
     }
 
     if (commit.annotations[documentReplacement.key]) {
+      dropPendingHistoryReplayEntry(editor);
       if (!restoredHistoryJSON) {
         replaceHistoryState(
           editor,
@@ -630,13 +704,14 @@ const createHistoryPlugin = <
       if (!commit.tags.includes('historic') && !changes.empty) {
         const before = inverseChanges.apply(toChangeValue(after));
 
+        queuePendingHistoryReplayMapping(editor, changes, before);
         queueHistoryMapping(editor, changes, before);
       }
       return undefined;
     }
 
     const sessionEffects = effects.filter(
-      (effect) => effect.type.history === 'session'
+      (effect) => typeof effect.type.history === 'object'
     );
 
     if (
@@ -657,10 +732,11 @@ const createHistoryPlugin = <
 
     if (!prepared) return undefined;
 
+    const pendingReplayEdited = markPendingHistoryReplayEdited(editor);
     const preparedBatch = prepared.batch;
     const lastEntry = peekHistoryEntry(editor, 'undos');
     const lastEntryHasSessionEffect = lastEntry?.batch.effects.some(
-      (effect) => effect.type.history === 'session'
+      (effect) => typeof effect.type.history === 'object'
     );
     const currentTime = globalThis.performance.now();
     const currentStartedAt = getEditorCommitStartedAt(commit);
@@ -696,6 +772,7 @@ const createHistoryPlugin = <
         lastEntry?.group?.native?.composition
     );
     const merge =
+      !pendingReplayEdited &&
       lastEntry != null &&
       !lastEntryHasSessionEffect &&
       sessionEffects.length === 0 &&
@@ -857,47 +934,109 @@ const createHistoryPlugin = <
             'History replay cannot run inside editor.update or a transaction spec.'
           );
         }
+        if (readPendingHistoryReplay(editor)) return BUSY_HISTORY_RESULT;
+
         const source = direction === 'undo' ? 'undos' : 'redos';
         const entry = peekHistoryEntry(editor, source);
 
         if (!entry) return EMPTY_HISTORY_RESULT;
 
-        let replayBatch = entry.batch;
+        const replayBatch = entry.batch;
         const sessionEffect = replayBatch.effects.find(
-          (effect) => effect.type.history === 'session'
+          (effect) => typeof effect.type.history === 'object'
         );
 
-        if (sessionEffect) {
-          const replayEffect = sessionEffect.type.historyReplay;
+        if (!sessionEffect) return applyReplay(direction, replayBatch);
 
-          if (!replayEffect) {
-            throw new Error(
-              `Session history effect "${sessionEffect.type.key}" has no replay owner.`
-            );
-          }
+        const sessionHistory = sessionEffect.type.history;
 
-          sessionReplayPending = true;
-          try {
-            const result = await replayEffect(editor, sessionEffect.value);
-
-            if (result.status === 'blocked') return result;
-            if (peekHistoryEntry(editor, source)?.identity !== entry.identity) {
-              throw new Error(
-                'History changed while a session effect was replaying.'
-              );
-            }
-            replayBatch = Object.freeze({
-              ...replayBatch,
-              effects: Object.freeze([
-                createEditorEffect(sessionEffect.type, result.value),
-              ]),
-            });
-          } finally {
-            sessionReplayPending = false;
-          }
+        if (typeof sessionHistory !== 'object') {
+          throw new Error(
+            `Session history effect "${sessionEffect.type.key}" has no replay owner.`
+          );
         }
 
-        return applyReplay(direction, replayBatch);
+        const activation = HISTORY_ACTIVATION.get(owner);
+        if (!activation) return EMPTY_HISTORY_RESULT;
+
+        const request = nextHistoryReplayRequest;
+        nextHistoryReplayRequest += 1;
+        const root = getEditorUpdateRoot(editor);
+
+        PENDING_HISTORY_REPLAY_CLAIMS.set(request, {
+          activation,
+          direction,
+          identity: entry.identity,
+          request,
+          undoAnchor:
+            direction === 'redo'
+              ? (peekHistoryEntry(editor, 'undos')?.identity ?? null)
+              : null,
+        });
+        try {
+          editor.update((tx) => {
+            tx.annotations.set(historyReplayClaim, request);
+          });
+        } finally {
+          PENDING_HISTORY_REPLAY_CLAIMS.delete(request);
+        }
+
+        let ownerResult;
+        try {
+          ownerResult = await sessionHistory.replay(
+            editor,
+            sessionEffect.value
+          );
+        } catch (error) {
+          if (HISTORY_ACTIVATION.get(owner) === activation) {
+            editor.update((tx) => {
+              tx.annotations.set(historyReplaySettlement, {
+                request,
+                status: 'blocked',
+              });
+            });
+          }
+          throw error;
+        }
+
+        if (HISTORY_ACTIVATION.get(owner) !== activation) {
+          return ownerResult.status === 'applied'
+            ? Object.freeze({ status: 'applied' })
+            : ownerResult;
+        }
+
+        if (ownerResult.status === 'blocked') {
+          editor.update((tx) => {
+            tx.annotations.set(historyReplaySettlement, {
+              request,
+              status: 'blocked',
+            });
+          });
+          return ownerResult;
+        }
+
+        const replayedEffect = createEditorEffect(
+          sessionEffect.type,
+          ownerResult.value
+        );
+        editor.update((tx) => {
+          runHistoricUpdate(root, tx, replayBatch, () => {
+            tx.effects.emit(replayedEffect.type, replayedEffect.value);
+          });
+          tx.annotations.set(historyReplaySettlement, {
+            request,
+            status: 'applied',
+          });
+        });
+
+        const receipt = PREPARED_HISTORY_REPLAYS.get(request);
+        PREPARED_HISTORY_REPLAYS.delete(request);
+        const result = Object.freeze({
+          status: 'applied',
+        }) satisfies HistoryResult;
+
+        if (receipt) recordEditorHistoryReplayReceipt(result, receipt);
+        return result;
       };
 
       const replay = (direction: HistoryAction): Promise<HistoryResult> => {
@@ -908,28 +1047,19 @@ const createHistoryPlugin = <
             'History replay cannot run inside editor.update or a transaction spec.'
           );
         }
-        const source = direction === 'undo' ? 'undos' : 'redos';
-        const session = peekHistoryEntry(editor, source)?.batch.effects.some(
-          (effect) => effect.type.history === 'session'
-        );
-
-        if (!replayQueue && !session) {
-          return Promise.resolve(applyReplay(direction));
+        if (readPendingHistoryReplay(editor)) {
+          return Promise.resolve(BUSY_HISTORY_RESULT);
         }
 
-        const run = () => replayNow(direction);
-        const result = replayQueue ? replayQueue.then(run, run) : run();
-        const settled = result.then(
-          () => {},
-          () => {}
+        const source = direction === 'undo' ? 'undos' : 'redos';
+        const session = peekHistoryEntry(editor, source)?.batch.effects.some(
+          (effect) => typeof effect.type.history === 'object'
         );
 
-        replayQueue = settled;
-        void settled.then(() => {
-          if (replayQueue === settled) replayQueue = null;
-        });
-
-        return result;
+        if (!session) {
+          return Promise.resolve(applyReplay(direction));
+        }
+        return replayNow(direction);
       };
 
       return {
@@ -949,6 +1079,11 @@ const createHistoryPlugin = <
           withPublishedHistoryState(
             editor,
             () => peekHistoryEntry(editor, 'undos') !== undefined
+          ),
+        pending: () =>
+          withPublishedHistoryState(
+            editor,
+            () => readPendingHistoryReplay(editor)?.direction ?? null
           ),
       }) satisfies HistoryStateApi;
     },
@@ -970,7 +1105,8 @@ const createHistoryPlugin = <
     },
     activate(context) {
       const { editor } = context;
-      const previousActivation = HISTORY_ACTIVATION.get(editor);
+      const owner = getEditorRuntimeOwner(editor);
+      const previousActivation = HISTORY_ACTIVATION.get(owner);
       const previousPendingSchemaActivation =
         PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor);
       const previousAutomaticGroupTime =
@@ -987,7 +1123,7 @@ const createHistoryPlugin = <
       const activationState = configured.state;
       let activationPublished = false;
 
-      HISTORY_ACTIVATION.set(editor, activation);
+      HISTORY_ACTIVATION.set(owner, activation);
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
       context.onCleanup(
         registerEditorHistoryRuntime(editor, {
@@ -998,16 +1134,7 @@ const createHistoryPlugin = <
       );
       context.onCleanup(
         registerEditorTransactionGuard(editor, ({ after, commit, schema }) => {
-          if (HISTORY_ACTIVATION.get(editor) !== activation) return undefined;
-          if (
-            sessionReplayPending &&
-            commit.annotations[historyReplayRequest.key] === undefined
-          ) {
-            throw new Error(
-              'Editor updates cannot publish while a session history effect is replaying.'
-            );
-          }
-
+          if (HISTORY_ACTIVATION.get(owner) !== activation) return undefined;
           const beforeTime = LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
           const restoreTime = (time: number | undefined) => {
             if (time === undefined) {
@@ -1050,14 +1177,14 @@ const createHistoryPlugin = <
         if (PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor) === activation) {
           PENDING_HISTORY_SCHEMA_ACTIVATION.delete(editor);
         }
-        if (HISTORY_ACTIVATION.get(editor) !== activation) return;
+        if (HISTORY_ACTIVATION.get(owner) !== activation) return;
 
         if (reason === 'rollback') {
           restoreHistoryState(editor, previousState);
           if (previousActivation) {
-            HISTORY_ACTIVATION.set(editor, previousActivation);
+            HISTORY_ACTIVATION.set(owner, previousActivation);
           } else {
-            HISTORY_ACTIVATION.delete(editor);
+            HISTORY_ACTIVATION.delete(owner);
           }
           if (previousPendingSchemaActivation) {
             PENDING_HISTORY_SCHEMA_ACTIVATION.set(
@@ -1076,7 +1203,7 @@ const createHistoryPlugin = <
 
         clearHistoryState(editor);
         LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
-        HISTORY_ACTIVATION.delete(editor);
+        HISTORY_ACTIVATION.delete(owner);
       });
       if (configured.result) {
         PENDING_HISTORY_SCHEMA_ACTIVATION.set(editor, activation);
@@ -1084,7 +1211,7 @@ const createHistoryPlugin = <
       context.afterPublish(() => {
         if (
           !activationPublished &&
-          HISTORY_ACTIVATION.get(editor) === activation
+          HISTORY_ACTIVATION.get(owner) === activation
         ) {
           restoreHistoryState(editor, activationState);
           activationPublished = true;

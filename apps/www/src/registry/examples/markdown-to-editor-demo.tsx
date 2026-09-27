@@ -118,17 +118,17 @@ export default function MarkdownDemo() {
   const markdownApi = editor.api.markdown;
 
   React.useEffect(() => {
-    editor.update.value.replace(
-      markdownApi.deserialize(debouncedMarkdownValue, {
-        remarkPlugins: [
-          remarkMath,
-          remarkGfm,
-          remarkMdx,
-          remarkMention,
-          remarkEmoji,
-        ],
-      })
-    );
+    const result = markdownApi.parse(debouncedMarkdownValue, {
+      remarkPlugins: [
+        remarkMath,
+        remarkGfm,
+        remarkMdx,
+        remarkMention,
+        remarkEmoji,
+      ],
+    });
+
+    if (result.ok) editor.update.value.replace(result.document);
   }, [debouncedMarkdownValue, editor, markdownApi]);
 
   return (

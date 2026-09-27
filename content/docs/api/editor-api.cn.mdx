@@ -124,3 +124,28 @@ editor.update({ history: "skip" }).text.insert("Imported");
 文档修改放在 `editor.update` 下。参见
 [Editor Transforms](/docs/api/editor-transforms) 和
 [Plate transform reference](/docs/api/editor-transforms)。
+
+### 已安装的 format API
+
+HTML 与 Markdown plugin 提供 convenience API。每次 operation 会复用 editor
+已编译的 schema、mapping 与冻结 plugin state。
+
+```ts
+const html = editor.api.html.parse(source);
+const markdown = editor.api.markdown.parse(source);
+const inline = editor.api.markdown.parseInline(source);
+
+const output = editor.api.markdown.serialize({
+  document: editor.read.value(),
+  projection: "accepted",
+});
+```
+
+`parse` 返回完整 `EditorDocumentValue`。`parseSlice` 与 `parseInline` 返回闭合、
+无 root 的 `ContentSlice`。Serialize 在没有 `document` 时使用当前 document。
+预期内的 source 或 format failure 都通过 diagnosed result 返回；读取 carrier 前
+先判断 `ok`。
+
+没有 installed editor 时，使用 standalone `parseHtml`、`parseMarkdown` 与对应
+serialize function。Node HTML parsing 使用 `platejs/html/server`。DOCX import
+与 export 是 standalone package workflow，不属于 editor API。

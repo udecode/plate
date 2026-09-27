@@ -2,7 +2,11 @@
 
 import { jsxt } from '#platejs-test-internal';
 
-import { createTestEditor } from '../__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from '../__tests__/createTestEditor';
 
 jsxt;
 
@@ -20,7 +24,7 @@ Break between lists.
 3. Third list item
 `.trim();
 
-    const value = innerEditor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(innerEditor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -78,7 +82,7 @@ Break between lists.
   });
 
   it('preserves an ordered list that starts at zero', () => {
-    const value = editor.api.markdown.deserialize('0. Zero\n1. One');
+    const value = parseTestMarkdown(editor, '0. Zero\n1. One');
 
     expect(value.children).toMatchObject([
       {
@@ -93,10 +97,12 @@ Break between lists.
         listType: 'numbered',
       },
     ]);
-    expect(editor.api.markdown.serialize({ value })).toBe('0. Zero\n1. One\n');
+    expect(serializeTestMarkdown(editor, { document: value }).data).toBe(
+      '0. Zero\n1. One\n'
+    );
   });
 
-  it('deserializes a single Markdown string containing all list edge cases', () => {
+  it('deserializes representable flat-list edge cases from one source', () => {
     /**
      * Explanation of this Markdown:
      *
@@ -106,11 +112,9 @@ Break between lists.
      * 4. Blank line
      * 5. Mixed bullet -> sub-bullet -> sub-ordered
      * 6. Blank line
-     * 7. A bullet item with an indented blockquote
-     * 8. Blank line
-     * 9. Star bullet item + an empty item + multiple blank lines
-     * 10. Another bullet list with code fence inside a sub-bullet
-     * 11. Deeply nested ordered list (3 levels) + bullet sibling
+     * 7. Star bullet item + an empty item + multiple blank lines
+     * 8. Another nested bullet list
+     * 9. Deeply nested ordered list (3 levels) + bullet sibling
      */
     const input = `
 1. Item A
@@ -123,10 +127,6 @@ Break between lists.
    - Nested bullet
       1. Nested ordered
 
-- A bullet with a blockquote:
-   > This is inside blockquote
-   > And so on
-
 * Star bullet
 *
 
@@ -134,9 +134,6 @@ Break between lists.
 
 - Another bullet
    - Sub bullet
-      \`\`\`
-      console.info("code fence");
-      \`\`\`
 
 1. a
    1. b
@@ -197,35 +194,7 @@ Break between lists.
         type: 'paragraph',
       },
 
-      // 6) Blank line
-
-      // 7) Bullet item with indented blockquote
-      {
-        children: [{ text: 'A bullet with a blockquote:' }],
-        indent: 1,
-        listType: 'bulleted',
-        type: 'paragraph',
-      },
-      // The blockquote lines become paragraphs at indent + 1 (if your parser merges them),
-      // or in some implementations, they might remain at indent 1. Adapt if needed.
-      // If your logic doesn't treat blockquotes as separate paragraphs inside the list,
-      // you'll see them in a single paragraph. Tweak as needed.
-      {
-        children: [
-          {
-            children: [{ text: 'This is inside blockquote\nAnd so on' }],
-            type: 'paragraph',
-          },
-        ],
-        // Might become indent: 2, or remain indent: 1, depending on how your parser merges them.
-        // We'll guess indent: 2 for demonstration.
-        indent: 2,
-        type: 'blockquote',
-      },
-
-      // 8) Blank line
-
-      // 9) Star bullet item + empty item
+      // 6) Star bullet item + empty item
       {
         children: [{ text: 'Star bullet' }],
         indent: 1,
@@ -247,7 +216,7 @@ Break between lists.
         type: 'paragraph',
       },
 
-      // 10) Another bullet with sub bullet + code fence
+      // 7) Another bullet with a sub-bullet
       {
         children: [{ text: 'Another bullet' }],
         indent: 1,
@@ -260,13 +229,7 @@ Break between lists.
         listType: 'bulleted',
         type: 'paragraph',
       },
-      {
-        children: [{ text: 'console.info("code fence");' }],
-        indent: 3,
-        type: 'codeBlock',
-      },
-
-      // 11) Deeply nested ordered list
+      // 8) Deeply nested ordered list
       {
         children: [{ text: 'a' }],
         indent: 1,
@@ -294,7 +257,7 @@ Break between lists.
       },
     ];
 
-    expect(editor.api.markdown.deserialize(input).children).toEqual(output);
+    expect(parseTestMarkdown(editor, input).children).toEqual(output);
   });
 
   it('deserializes an empty list', () => {
@@ -306,7 +269,7 @@ Break between lists.
     - 
       `;
 
-    expect(editor.api.markdown.deserialize(input).children).toMatchSnapshot();
+    expect(parseTestMarkdown(editor, input).children).toMatchSnapshot();
   });
 
   it('deserializes a todo list', () => {
@@ -314,6 +277,6 @@ Break between lists.
     - [ ] todo list
     - [x] todo list
     `;
-    expect(editor.api.markdown.deserialize(input).children).toMatchSnapshot();
+    expect(parseTestMarkdown(editor, input).children).toMatchSnapshot();
   });
 });

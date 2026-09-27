@@ -901,6 +901,38 @@ const TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS = new WeakMap<
   TransactionSpec,
   readonly TransactionAfterCommitHandler[]
 >();
+
+/** Attach one observer to a prepared transaction without changing its contents. */
+export const attachTransactionSpecAfterCommit = <
+  V extends Value,
+  TPlugins extends readonly unknown[],
+>(
+  spec: TransactionSpec,
+  handler: EditorCommitHandler<Editor<V, TPlugins>>
+) => {
+  const editor = TRANSACTION_SPEC_BASE.get(spec)?.editor as
+    | Editor<V, TPlugins>
+    | undefined;
+
+  if (!editor) {
+    throw new Error('Transaction spec is missing its opaque base.');
+  }
+  assertTransactionSpecBase(editor, spec);
+  const previous = TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS.get(spec) ?? [];
+
+  TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS.set(
+    spec,
+    Object.freeze([
+      ...previous,
+      {
+        handler: handler as EditorCommitHandler<Editor>,
+        root: getCurrentChildrenRoot(editor),
+      },
+    ])
+  );
+
+  return spec;
+};
 const PREPARED_TRANSACTION_SPECS = new WeakMap<
   TransactionSpec,
   Readonly<{
@@ -1713,7 +1745,7 @@ export const activateStateField = <TValue>(
       if (!isStateFieldHydrated(editor, field.key)) {
         if (!field.persist) {
           throw new Error(
-            `State field "${field.key}" cannot load persisted metadata without a codec.`
+            `State field "${field.key}" cannot load persisted metadata without persistence.`
           );
         }
 
@@ -9675,7 +9707,7 @@ const deserializeSnapshotMeta = (
       if (!field) return [key, cloneFrozen(value)];
       if (!field.persist) {
         throw new Error(
-          `State field "${key}" cannot load persisted metadata without a codec.`
+          `State field "${key}" cannot load persisted metadata without persistence.`
         );
       }
 

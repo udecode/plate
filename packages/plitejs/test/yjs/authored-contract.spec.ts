@@ -11,8 +11,9 @@ import {
   defineEffect,
   definePlugin,
   defineStateField,
-  defineValueCodec,
   DocumentChange,
+  type EditorJsonValue,
+  type EditorValuePersistence,
   type InitialValue,
   NodeApi,
   type Point,
@@ -739,19 +740,19 @@ describe('authored Yjs collaboration', () => {
       it(`maps shared effect targets into the same ${mode} update in ${root}`, () => {
         type Targets = { point: Point; range: Range };
         let rejectTargets = false;
-        const targetsCodec = defineValueCodec<Targets>({
-          version: 1,
-          encode: (value) => value,
+        const targetsPersistence = {
+          encode: (value) => value as unknown as EditorJsonValue,
           decode(value) {
             assert.ok(value && typeof value === 'object');
             assert.ok('point' in value && PointApi.isPoint(value.point));
             assert.ok('range' in value && RangeApi.isRange(value.range));
             return { point: value.point, range: value.range };
           },
-        });
+          version: 1,
+        } satisfies EditorValuePersistence<Targets, EditorJsonValue>;
         const focus = defineEffect<Targets>({
           key: 'authored.focus-targets',
-          codec: targetsCodec,
+          persist: targetsPersistence,
           collab: 'shared',
           collabReplay: 'live',
           collabTransport: {
@@ -774,7 +775,7 @@ describe('authored Yjs collaboration', () => {
         });
         const marker = defineEffect<string>({
           key: 'authored.target-marker',
-          codec: valueCodecs.string,
+          persist: { ...valueCodecs.string, version: 1 },
           collab: 'shared',
           collabReplay: 'live',
           history: 'skip',

@@ -35,19 +35,24 @@ const editor = createEditor({
 当一个编辑器拥有内容根或其他命名区域时，传入包含 `children`、`roots` 和持久化
 `meta` 的 `EditorDocumentValue`。Plate 通过 `onValueChange` 返回同一完整结构。
 
-也可以使用 HTML 字符串和关联插件初始化编辑器：
+需要已编译 plugin model 才能解析初始 HTML 时，使用同步 initializer：
 
 ```ts
 const editor = createEditor({
   plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
-  initialValue: ({ editor }) =>
-    editor.api.html.deserialize({
-      element: "<p>这是<b>加粗</b>和<i>斜体</i>文本！</p>",
-    }),
+  initialValue: ({ editor }) => {
+    const result = editor.api.html.parse(
+      "<p>这是<b>加粗</b>和<i>斜体</i>文本！</p>"
+    );
+
+    if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+    return result.document;
+  },
 });
 ```
 
-支持 HTML 字符串反序列化的插件参见[插件反序列化规则](/docs/html#plugin-html-codec-overview)。
+自定义 element 与 mark 转换参见 [HTML mapping](/docs/html#define-html-mappings)。
 
 ### Schema 身份
 

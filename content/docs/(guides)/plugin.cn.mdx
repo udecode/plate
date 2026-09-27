@@ -168,9 +168,9 @@ const ExamplePlugin = definePlugin("example", {
 import { PLUGINS, property, schema, target } from "platejs";
 
 const TextAlignPlugin = definePlugin("textAlign", {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      "text/html": {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => element.style.textAlign || undefined,
         encode: ({ value }) => ({ style: { textAlign: value } }),
         match: [
@@ -205,8 +205,8 @@ const TextAlignPlugin = definePlugin("textAlign", {
 });
 ```
 
-`inject.nodeProps` 负责渲染，constructor 的 `codecs` callback 把双向 HTML
-声明绑定到插件 schema。`defineCodecs` 根据 property 声明推断 `value`。两条
+`inject.nodeProps` 负责渲染，constructor 的 `formats` callback 把双向 HTML
+声明绑定到插件 schema。`defineFormats` 根据 property 声明推断 `value`。两条
 路径都使用 author callback 的 `schema.properties.textAlign` 编译 handle；consumer
 通过类型化节点字段或插件语义能力访问数据，而不读取该 property 映射。`name`
 只标识能力 namespace。`.configure()` 和 `.extend()` 不更改 schema identity。传给
@@ -428,28 +428,16 @@ program，并返回 `{ key, attributes }[]`。`render.attributes` 与
 使用 `decorate`，结构化输出使用 component 或 slot。参见
 [Plate Plugin API](/docs/api/core/plate-plugin#properties-attrs-render)。
 
-### HTML 输入钩子
+### HTML document preparation
 
-使用插件 `'text/html'` codec 上的扁平钩子决定插件是否参与 HTML 输入、转换源字符串，
-或转换已解码的 fragment。
+当 node matching 需要先规范化 DOM 时，HTML mapping 可以声明一次
+`prepareDocument`。Callback 接收 inert、operation-owned detached document，
+以及其他 HTML callback 使用的冻结 mapping context。它不能读取 browser
+`DataTransfer` 或 live editor。
 
-```ts
-const HtmlCleanupPlugin = definePlugin("htmlCleanup", {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      "text/html": {
-        query: ({ data, source }) =>
-          source.types.includes("text/html") &&
-          data.includes("<!--StartFragment-->"),
-        transformData: ({ data }) =>
-          data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ""),
-      },
-    }),
-});
-```
-
-`query`、`transformData` 和 `transformFragment` 都直接位于
-`'text/html'` codec 上。节点级 HTML 转换与这些完整输入钩子分开。
+Whole-payload admission、source-string cleanup、Word/RTF 处理与 post-decode
+slice repair 属于 `DataTransferFormat`。该 owner 可以准备 payload、调用
+`parseHtmlSlice`，然后返回 slice。
 
 ## 类型化插件
 

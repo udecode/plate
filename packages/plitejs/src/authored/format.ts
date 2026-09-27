@@ -1,46 +1,41 @@
-import {
-  readAuthoredViewFragments,
-  readAuthoredViewRenderSegments,
-  type NativeAuthoredRenderSegment,
-} from '../core/authored-runtime';
+import type { NativeAuthoredProjectionDiagnostic } from '../core/authored-document-capability';
+import type { NativeAuthoredRenderSegment } from '../core/authored-runtime';
 import {
   createInternalRootChangeFromNodeSections,
   type DocumentChange,
 } from '../core/change/document-change';
-import { createEditorViewRuntime } from '../editor-runtime-view';
-import type {
-  AnyEditor,
-  EditorDocumentValue,
-  Value,
-} from '../interfaces/editor';
+import { jsonEqual } from '../core/change/tokens';
+import type { EditorDocumentValue } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
-import type { Text } from '../interfaces/text';
+import type { Range } from '../interfaces/range';
+import { TextApi, type Text } from '../interfaces/text';
+import {
+  projectAuthoredDocumentRange,
+  type AuthoredRangeProjection,
+} from './anchors';
 import {
   admitAuthoredReviewDocument,
   assertAuthoredDocumentValue,
   createAuthoredReviewCheckpoint,
 } from './checkpoint';
+import {
+  authoredFragmentBucket,
+  compileAuthoredFragmentIndex,
+  type AuthoredFragmentIndex,
+} from './fragment-index';
+import { readAuthoredMarkupFragments } from './markup';
+import { createDetachedAuthoredProjectionContext } from './projection-context';
+import { readAuthoredChange } from './read';
+import { readRecord } from './record-tree';
+import { composeAuthoredRenderSegments } from './render';
+import { matchingAuthoredChanges } from './state';
+import { authoredRootNodes } from './steps';
 import type { AuthoredChange } from './types';
 
 export type AuthoredFormatProjection = 'accepted' | 'markup' | 'proposed';
 
-export type AuthoredFormatDiagnostic = Readonly<{
-  code:
-    | 'authored-lossy-projection'
-    | 'authored-review-unsupported-node'
-    | 'authored-review-unsupported-property'
-    | 'authored-review-unsupported-revision';
-  message: string;
-  severity: 'warning';
-}>;
-
-export type AuthoredJsonProjection = 'accepted' | 'proposed' | 'review';
-
-export type AuthoredJsonResult = Readonly<{
-  data: string;
-  diagnostics: readonly AuthoredFormatDiagnostic[];
-}>;
+export type AuthoredProjectionDiagnostic = NativeAuthoredProjectionDiagnostic;
 
 export type AuthoredImportedRevision = Readonly<{
   authorId: string;
@@ -88,83 +83,75 @@ export type AuthoredFormatSegment = Readonly<{
   textRange: Readonly<{ end: number; start: number }> | null;
 }>;
 
-export type AuthoredFormatSnapshot = Readonly<{
+export type AuthoredReviewProjection = Readonly<{
   accepted: EditorDocumentValue;
   changes: readonly AuthoredChange[];
+  diagnostics: readonly AuthoredProjectionDiagnostic[];
   markup: Readonly<Record<string, readonly AuthoredFormatSegment[]>>;
   properties: readonly AuthoredFormatPropertyChange[];
   proposed: EditorDocumentValue;
   /** Exact persisted authored document captured with every derived projection. */
   review: EditorDocumentValue;
+  unresolved: AuthoredUnresolvedChangeCounts;
 }>;
 
-type AuthoredEditor = AnyEditor & {
-  read: AnyEditor['read'] & {
-    authored: {
-      changes: (query?: {
-        cursor?: string;
-        limit?: number;
-        status?: 'pending';
-      }) => { cursor: string | null; items: readonly AuthoredChange[] };
-      changesAt: (range: {
-        anchor: { offset: number; path: Path };
-        focus: { offset: number; path: Path };
-      }) => readonly AuthoredChange[];
-    };
-  };
+export type AuthoredUnresolvedChangeCounts = Readonly<{
+  conflicted: number;
+  pending: number;
+}>;
+
+export type AuthoredDocumentProjection = Readonly<{
+  diagnostics: readonly AuthoredProjectionDiagnostic[];
+  document: EditorDocumentValue;
+  /** Exact persisted authored document captured with the derived projection. */
+  review: EditorDocumentValue;
+  unresolved: AuthoredUnresolvedChangeCounts;
+}>;
+
+const unresolvedCounts = (
+  changes: ReadonlyArray<Readonly<{ status: string }>>
+): AuthoredUnresolvedChangeCounts => {
+  let conflicted = 0;
+  let pending = 0;
+
+  for (const change of changes) {
+    if (change.status === 'conflicted') conflicted += 1;
+    if (change.status === 'pending') pending += 1;
+  }
+
+  return Object.freeze({ conflicted, pending });
 };
 
-const documentFor = (
-  persisted: EditorDocumentValue,
-  view: AuthoredEditor
-): EditorDocumentValue => {
-  const { authored: _authored, ...meta } = persisted.meta ?? {};
-  const roots = persisted.roots
-    ? Object.fromEntries(
-        Object.keys(persisted.roots).map((root) => [root, view.read.root(root)])
-      )
-    : undefined;
-
-  return Object.freeze({
-    children: view.read.children(),
-    ...(Object.keys(meta).length === 0 ? {} : { meta: Object.freeze(meta) }),
-    ...(roots === undefined ? {} : { roots }),
-  });
-};
-
-const lossyProjectionDiagnostics = (
-  projection: Exclude<AuthoredJsonProjection, 'review'>,
-  changes: readonly AuthoredChange[]
-): readonly AuthoredFormatDiagnostic[] =>
-  changes.length === 0
-    ? []
-    : [
-        Object.freeze({
-          code: 'authored-lossy-projection' as const,
-          message: `${projection} projection omits ${
-            changes.length
-          } pending authored change${changes.length === 1 ? '' : 's'}.`,
-          severity: 'warning' as const,
-        }),
-      ];
-
-const pendingChanges = (editor: AuthoredEditor) => {
-  const result: AuthoredChange[] = [];
-  let cursor: string | undefined;
-
-  do {
-    const page = editor.read.authored.changes({
-      cursor,
-      limit: 200,
-      status: 'pending',
-    });
-
-    result.push(...page.items);
-    cursor = page.cursor ?? undefined;
-  } while (cursor);
-
-  return Object.freeze(result);
-};
+export const authoredProjectionDiagnostics = (
+  projection: 'accepted' | 'proposed',
+  unresolved: AuthoredUnresolvedChangeCounts
+): readonly AuthoredProjectionDiagnostic[] =>
+  Object.freeze([
+    ...(unresolved.pending === 0
+      ? []
+      : [
+          Object.freeze({
+            code: 'authored-lossy-projection' as const,
+            message: `${projection} projection omits ${
+              unresolved.pending
+            } pending authored change${unresolved.pending === 1 ? '' : 's'}.`,
+            severity: 'warning' as const,
+          }),
+        ]),
+    ...(unresolved.conflicted === 0
+      ? []
+      : [
+          Object.freeze({
+            code: 'authored-conflict' as const,
+            message: `${projection} projection resolves ${
+              unresolved.conflicted
+            } conflicted authored change${
+              unresolved.conflicted === 1 ? '' : 's'
+            } to one side; review data remains only in the authored envelope.`,
+            severity: 'warning' as const,
+          }),
+        ]),
+  ]);
 
 const formatSegment = (
   segment: NativeAuthoredRenderSegment,
@@ -217,103 +204,255 @@ const formatSegment = (
   });
 };
 
-/** Materialize one immutable review snapshot for document format adapters. */
-export const readAuthoredFormatSnapshot = <V extends Value>(
-  input: AnyEditor<V> & AuthoredEditor,
-  options: Readonly<{ review?: EditorDocumentValue }> = {}
-): AuthoredFormatSnapshot => {
-  const editor = input as AuthoredEditor;
+const samePath = (left: Path, right: Path) =>
+  left.length === right.length &&
+  left.every((part, index) => part === right[index]);
 
-  if (!editor.read.authored) {
-    throw new Error('Authored changes are not installed.');
-  }
-  const review = options.review ?? editor.read.value();
-  const accepted = createEditorViewRuntime(input, {
-    authored: { intent: 'edit', projection: 'accepted' },
-  }) as unknown as AuthoredEditor;
-  const proposed = createEditorViewRuntime(input, {
-    authored: { intent: 'propose', projection: 'proposed' },
-  }) as unknown as AuthoredEditor;
-  const markup = createEditorViewRuntime(input, {
-    authored: { intent: 'propose', projection: 'markup' },
-  }) as unknown as AuthoredEditor;
-  const changes = pendingChanges(markup);
+const sameList = (left: readonly string[], right: readonly string[]) =>
+  left.length === right.length &&
+  left.every((value, index) => value === right[index]);
+
+const sameTextProperties = (left: Text, right: Text) => {
+  const { text: _leftText, ...leftProperties } = left;
+  const { text: _rightText, ...rightProperties } = right;
+
+  return jsonEqual(leftProperties, rightProperties);
+};
+
+const coalesceFormatSegments = (
+  segments: readonly AuthoredFormatSegment[]
+): readonly AuthoredFormatSegment[] => {
+  const normalized = segments.map((segment) => {
+    if (!segment.children) return segment;
+
+    const children = coalesceFormatSegments(segment.children);
+
+    return Object.freeze({
+      ...segment,
+      children,
+      node: Object.freeze({
+        ...segment.node,
+        children: Object.freeze(children.map((child) => child.node)),
+      }),
+    });
+  });
+
+  return Object.freeze(
+    normalized.reduce<AuthoredFormatSegment[]>((result, segment) => {
+      const previous = result.at(-1);
+
+      if (
+        previous &&
+        TextApi.isText(previous.node) &&
+        TextApi.isText(segment.node) &&
+        previous.root === segment.root &&
+        samePath(previous.path, segment.path) &&
+        sameList(previous.changeIds, segment.changeIds) &&
+        jsonEqual(previous.retained, segment.retained) &&
+        previous.textRange &&
+        segment.textRange &&
+        previous.textRange.end === segment.textRange.start &&
+        sameTextProperties(previous.node, segment.node)
+      ) {
+        result[result.length - 1] = Object.freeze({
+          ...previous,
+          node: Object.freeze({
+            ...previous.node,
+            text: previous.node.text + segment.node.text,
+          }),
+          textRange: Object.freeze({
+            end: segment.textRange.end,
+            start: previous.textRange.start,
+          }),
+        });
+      } else {
+        result.push(segment);
+      }
+
+      return result;
+    }, [])
+  );
+};
+
+const projectAuthoredReviewDocument = (
+  review: EditorDocumentValue
+): AuthoredReviewProjection => {
+  const admitted = admitAuthoredReviewDocument(review);
+  const accepted: AuthoredRangeProjection = {
+    mode: 'accepted',
+    positions: admitted.positions.accepted,
+    state: admitted.state,
+    value: admitted.accepted,
+  };
+  const proposed: AuthoredRangeProjection = {
+    mode: 'proposed',
+    positions: admitted.positions.proposed,
+    state: admitted.state,
+    value: admitted.proposed,
+  };
+  let fragmentIndex: AuthoredFragmentIndex | null = null;
+  const context = createDetachedAuthoredProjectionContext((nodeKey, root) =>
+    fragmentIndex
+      ? (readRecord(
+          fragmentIndex.buckets,
+          authoredFragmentBucket(root, nodeKey)
+        )?.slots ?? [])
+      : []
+  );
+
+  fragmentIndex = compileAuthoredFragmentIndex(context, accepted, proposed);
+  const changes = Object.freeze(
+    [...matchingAuthoredChanges(admitted.state, { status: 'pending' })].map(
+      ({ change }) =>
+        readAuthoredChange(
+          change,
+          admitted.state,
+          admitted.positions.proposed,
+          admitted.proposed
+        )
+    )
+  );
   const pending = new Set(changes.map(({ id }) => id));
   const roots = ['main', ...Object.keys(review.roots ?? {})];
   const segments = Object.fromEntries(
     roots.map((root) => {
-      const children =
-        root === 'main' ? markup.read.children() : markup.read.root(root);
-      const rendered = readAuthoredViewRenderSegments(
-        markup,
+      const children = authoredRootNodes(
+        admitted.proposed,
+        root
+      ) as readonly Descendant[];
+      const rendered = composeAuthoredRenderSegments(
+        context,
         children,
         root,
-        []
+        [],
+        accepted,
+        proposed
       );
 
       return [
         root,
         Object.freeze(
-          rendered.map((segment) => formatSegment(segment, pending, root))
+          coalesceFormatSegments(
+            rendered.map((segment) => formatSegment(segment, pending, root))
+          )
         ),
       ];
     })
   );
   const properties = changes.flatMap((change) =>
-    readAuthoredViewFragments(markup, change.id).flatMap((fragment) =>
-      fragment.kind === 'properties'
-        ? [
-            Object.freeze({
-              after: fragment.after,
-              before: fragment.before,
-              changeId: change.id,
-              nodeKind: fragment.nodeKind,
-              path: fragment.path,
-              root: fragment.root,
-            }),
-          ]
-        : []
+    readAuthoredMarkupFragments(change.id, accepted, proposed).flatMap(
+      (fragment) =>
+        fragment.kind === 'properties'
+          ? [
+              Object.freeze({
+                after: fragment.after,
+                before: fragment.before,
+                changeId: change.id,
+                nodeKind: fragment.nodeKind,
+                path: fragment.path,
+                root: fragment.root,
+              }),
+            ]
+          : []
     )
   );
 
   return Object.freeze({
-    accepted: documentFor(review, accepted),
+    accepted: admitted.accepted,
     changes,
+    diagnostics: Object.freeze(
+      admitted.changes.some(({ status }) => status === 'conflicted')
+        ? [
+            Object.freeze({
+              code: 'authored-conflict' as const,
+              message: `Review projection preserves ${unresolvedCounts(admitted.changes).conflicted} conflicted authored change${unresolvedCounts(admitted.changes).conflicted === 1 ? '' : 's'} in the native document; visible review markup represents pending changes only.`,
+              severity: 'warning' as const,
+            }),
+          ]
+        : []
+    ),
     markup: Object.freeze(segments),
     properties: Object.freeze(properties),
-    proposed: documentFor(review, proposed),
+    proposed: admitted.proposed,
     review,
+    unresolved: unresolvedCounts(admitted.changes),
   });
 };
 
-/** Serialize an authored document as an explicit projection or its full review envelope. */
-export const serializeAuthoredJson = <V extends Value>(
-  editor: AnyEditor<V> & AuthoredEditor,
-  options: Readonly<{ projection?: AuthoredJsonProjection }> = {}
-): AuthoredJsonResult => {
-  const projection = options.projection ?? 'accepted';
-  const snapshot = readAuthoredFormatSnapshot(editor);
-  const document =
-    projection === 'review'
-      ? snapshot.review
-      : projection === 'accepted'
-        ? snapshot.accepted
-        : snapshot.proposed;
+/** Project one detached document without requiring an editor runtime. */
+export const projectAuthoredDocument = (
+  document: EditorDocumentValue,
+  options: Readonly<{
+    projection: Exclude<AuthoredFormatProjection, 'markup'>;
+  }>
+): AuthoredDocumentProjection => {
+  if (document.meta?.authored === undefined) {
+    return Object.freeze({
+      diagnostics: Object.freeze([]),
+      document,
+      review: document,
+      unresolved: Object.freeze({ conflicted: 0, pending: 0 }),
+    });
+  }
+  const admitted = admitAuthoredReviewDocument(document);
+  const unresolved = unresolvedCounts(admitted.changes);
 
   return Object.freeze({
-    data: JSON.stringify(document),
-    diagnostics:
-      projection === 'review'
-        ? Object.freeze([])
-        : Object.freeze(
-            lossyProjectionDiagnostics(projection, snapshot.changes)
-          ),
+    diagnostics: authoredProjectionDiagnostics(options.projection, unresolved),
+    document:
+      options.projection === 'accepted' ? admitted.accepted : admitted.proposed,
+    review: admitted.document,
+    unresolved,
   });
 };
 
-/** Parse a detached authored JSON envelope. Installed editor schema validates it on load. */
-export const deserializeAuthoredJson = (data: string): EditorDocumentValue =>
+/** Project a detached native review document, including visible markup facts. */
+export const projectAuthoredReview = (
+  document: EditorDocumentValue
+): AuthoredReviewProjection => {
+  if (document.meta?.authored === undefined) {
+    return Object.freeze({
+      accepted: document,
+      changes: Object.freeze([]),
+      diagnostics: Object.freeze([]),
+      markup: Object.freeze({}),
+      properties: Object.freeze([]),
+      proposed: document,
+      review: document,
+      unresolved: Object.freeze({ conflicted: 0, pending: 0 }),
+    });
+  }
+  return projectAuthoredReviewDocument(document);
+};
+
+/** Parse a detached document envelope. Installed editor schema validates it on load. */
+export const parseAuthoredDocument = (data: string): EditorDocumentValue =>
   assertAuthoredDocumentValue(JSON.parse(data));
+
+/** Map a proposed-coordinate range through the exact review captured by a projection. */
+export const projectAuthoredRange = (
+  projection: AuthoredDocumentProjection,
+  range: Range
+): Range | null => {
+  if (projection.document === projection.review) return range;
+  const admitted = admitAuthoredReviewDocument(projection.review);
+
+  return projectAuthoredDocumentRange(
+    {
+      mode: 'proposed',
+      positions: admitted.positions.proposed,
+      state: admitted.state,
+      value: admitted.proposed,
+    },
+    {
+      mode: 'accepted',
+      positions: admitted.positions.accepted,
+      state: admitted.state,
+      value: admitted.accepted,
+    },
+    range
+  );
+};
 
 /** Build one validated native review envelope from sparse imported revisions. */
 export const createAuthoredReviewDocument = (input: {

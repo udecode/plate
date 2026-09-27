@@ -2,6 +2,7 @@
   "extends": "../tsconfig.json",
   "files": [
     "./dom/generic-dom-contract.ts",
+    "./effect-authoring-contract.ts",
     "./generic-value-contract.ts",
     "./generic-command-contract.ts",
     "./generic-editor-api-contract.ts",
@@ -12,7 +13,8 @@
     "./history/generic-history-contract.ts",
     "./public-element-void-kind-contract.ts",
     "./react/generic-react-editor-contract.tsx",
-    "./schema-inference-contract.ts"
+    "./schema-inference-contract.ts",
+    "./value-persistence-contract.ts"
   ],
   "compilerOptions": {
     "composite": false,

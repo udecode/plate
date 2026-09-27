@@ -190,13 +190,16 @@ CopilotPlugin.extend(({ api }) => ({
 
         if (!contextEntry) return '';
 
-        const prompt = editor.api.markdown.serialize({
-          value: { children: [contextEntry[0] as Element] },
+        const result = editor.api.markdown.serialize({
+          document: { children: [contextEntry[0] as Element] },
+          projection: 'proposed',
         });
+
+        if (!result.ok) return '';
 
         return `继续文本直到下一个标点符号：
 """
-${prompt}
+${result.data}
 """`;
       },
     // ... 其他选项

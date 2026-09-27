@@ -9,7 +9,8 @@ import {
   schema,
   target,
 } from '../../../core';
-import { writeHostFragmentData } from '../../../dom';
+import { writeDataTransferFragment } from '../../../dom';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { createPluginContext } from '../../../lib/plugin/createPluginContext.internal';
 import { createEditor } from '../../../react/core';
 import { BaseIndentPlugin } from './BaseIndentPlugin';
@@ -213,9 +214,7 @@ describe('BaseIndentPlugin', () => {
     });
 
     expect(
-      editor.api.html.deserialize({
-        element: '<p style="margin-left: 20em">Indented</p>',
-      })
+      parseHtmlSliceContent(editor, '<p style="margin-left: 20em">Indented</p>')
     ).toEqual([
       {
         children: [{ text: 'Indented' }],
@@ -277,7 +276,7 @@ describe('BaseIndentPlugin', () => {
     });
     const serialized = new Map<string, string>();
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       editor,
       {
         setData: (format, value) => serialized.set(format, value),
@@ -286,7 +285,7 @@ describe('BaseIndentPlugin', () => {
     );
     const html = serialized.get('text/html');
 
-    if (!html) throw new Error('Missing HTML codec serialization');
+    if (!html) throw new Error('Missing HTML mapping serialization');
 
     const paragraph = new DOMParser()
       .parseFromString(html, 'text/html')
@@ -294,7 +293,7 @@ describe('BaseIndentPlugin', () => {
 
     expect(paragraph.dataset.indent).toBe('2');
     expect(paragraph.style.marginLeft).toBe('20em');
-    expect(editor.api.html.deserialize({ element: html })).toEqual([
+    expect(parseHtmlSliceContent(editor, html)).toEqual([
       ...editor.read.children(),
     ]);
   });

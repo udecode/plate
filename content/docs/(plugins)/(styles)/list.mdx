@@ -108,7 +108,10 @@ the same history step. An explicit `at` keeps node-insertion placement, while
 
 HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listStyle. A natural ol start maps to listStart; a following compatible ol boundary maps to listRestart. Plate clipboard HTML carries both fields in private list metadata.
 
-MDAST list.ordered maps to listType. Both start policies serialize as the currently visible list.start, and a non-default structural MDAST start deserializes as listRestart. Markdown cannot retain the conditional-versus-forced distinction. Task checkboxes map to listType task plus checked.
+MDAST `list.ordered` maps to `listType`. Both start policies serialize as the
+currently visible `list.start`, and a non-default structural MDAST start parses
+as `listRestart`. Markdown cannot retain the conditional-versus-forced
+distinction. Task checkboxes map to task `listType` plus `checked`.
 
 ## API Reference
 

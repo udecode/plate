@@ -116,7 +116,7 @@ describe('measurePages', () => {
       history: 'push',
       initial: () => ({ margins: 96, preset: 'a4' }),
       key: 'page.settings',
-      persist: pageSettingsCodec,
+      persist: { ...pageSettingsCodec, version: 1 },
     });
     const editor = createEditor({
       initialValue: [paragraph('State field.')],

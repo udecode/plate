@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 233,
+  "latestVersion": 243,
   "versions": [
     {
       "version": 0,
@@ -2697,6 +2697,122 @@
         "Use truthful structural command outcomes for heading, quote, list, code fence, horizontal rule, and generic block shorthand; do not predict admission through a feature-local shadow document.",
         "Keep enabled and resolve read-only; make apply return decline() when conversion cannot apply, discarding the candidate before original input while preserving next() prefix composition.",
         "Prove required-position fallback retains literal marker and typed input, accepted conversion retains undo and selection behavior, and docs/type inference teach the current contract."
+      ]
+    },
+    {
+      "version": 234,
+      "date": "2026-09-23",
+      "doctrineFingerprint": "sha256:ed9efccfa05efc86754cfe2f1cb728276c1add12715cbba67e297243b54c5a71",
+      "summary": "Keep awaited completion on model services while mounted event controllers dispatch through one outcome and error owner.",
+      "migrationChecks": [
+        "Keep a truthful Promise on a model service when completion can cross an external boundary; do not copy that Promise return onto mounted controllers whose production callers only dispatch events.",
+        "Route mounted keyboard, toolbar, native-input, and adapter calls through one private dispatcher that delivers each fulfilled outcome to the exact initiating view and reports each rejection once.",
+        "Prove pending control state, overlapping busy outcomes, exact-view callback delivery, unmount and focus guards, and direct awaited model usage before cutting caller-owned void/error paths."
+      ]
+    },
+    {
+      "version": 235,
+      "date": "2026-09-23",
+      "doctrineFingerprint": "sha256:3eb002ac86199adb3205b47ac6f36a84227c4af93f3c053e8816f51b9c3d3ed5",
+      "summary": "Finish repository mutations with the owning lint fixer after generated output and inspect every repair before closure.",
+      "migrationChecks": [
+        "Keep affected lint:fix as the final task checklist item after source edits and generated output; use root pnpm lint:fix when work crosses owners or has no narrower script.",
+        "Use the repository lint fixer instead of running Prettier directly on covered source, and inspect formatter repairs rather than treating mutation as proof.",
+        "Rerun proof invalidated by formatter repairs and finish with lint:fix again when those repairs require further edits."
+      ]
+    },
+    {
+      "version": 236,
+      "date": "2026-09-24",
+      "doctrineFingerprint": "sha256:bac8a5b7dbd30def1ab1653a96a6c1732cca20de70a3a776e4d36d9b4e54205f",
+      "summary": "Capture one document revision before asynchronous conversion and keep targeted authored projection reads distinct from full review materialization.",
+      "migrationChecks": [
+        "Capture the visible projection, retained native envelope, diagnostics and source-correspondence inputs before the converter's first await.",
+        "Delete split-source APIs that combine a caller-supplied review document with live editor projections; expose one immutable targeted authored capture only when a current read job and measured savings justify it.",
+        "Report pending and conflicted authored changes separately, and fail review formats that cannot represent a conflict faithfully instead of inventing revision markup."
+      ]
+    },
+    {
+      "version": 237,
+      "date": "2026-09-25",
+      "doctrineFingerprint": "sha256:66ee0e324438dbead0561b9fa9af460073e8a5d0ca9b5b010d242d575633fb44",
+      "summary": "Make every format serializer document-first, projection-aware and lifecycle-free when used standalone.",
+      "migrationChecks": [
+        "Accept one complete document and return format data with structured diagnostics; keep authored projection on the ordinary format operation instead of a parallel authored serializer.",
+        "Reuse compiled editor configuration for editor methods, and compile supplied detached declarations without activating plugins, publishing editor state or constructing an editing runtime.",
+        "Keep semantic HTML distinct from component-rendered static HTML, and back structural plain-text export and clipboard egress with the same feature-owned codecs."
+      ]
+    },
+    {
+      "version": 238,
+      "date": "2026-09-26",
+      "doctrineFingerprint": "sha256:046234fb62f360e2617bac6c6f962090534004507eec7e59456599310883467c",
+      "summary": "Name conversion operations after their real law and require a proven independent job before semantic interchange carries hidden native state.",
+      "migrationChecks": [
+        "Use parse/serialize for text syntax and model conversion, import/export for file or package workflows with artifact lifecycle, and encode/decode only for typed paired representations with explicit direction laws.",
+        "Treat a complete document as the default parse target and suffix only exceptional carriers such as slices or inline fragments.",
+        "Keep exact state in canonical persistence unless a semantic format has a proven current hidden-native job with one unambiguous authority; derive any justified format-owned native artifact from the converter entry capture.",
+        "Regenerate doctrine mirrors and preserve existing package attestations until each package adopts and proves the new API."
+      ]
+    },
+    {
+      "version": 239,
+      "date": "2026-09-26",
+      "doctrineFingerprint": "sha256:ee76b5c1a934e1b10cc24020762aaa762e83de99e836b45ed1003a4de0c5d58f",
+      "summary": "Separate feature-owned semantic format mappings from browser DataTransfer MIME negotiation and freeze mapping context at operation entry.",
+      "migrationChecks": [
+        "Author feature syntax through semantic formats/defineFormats keys such as html, markdown and plainText; remove codec/defineCodecs aliases and MIME-keyed mapping maps.",
+        "Register whole-payload MIME admission and emission through root dataTransferFormats with typed results, fallback and one atomic transfer report.",
+        "Compile installed mappings once and give operation callbacks only frozen plugin state, registry, schema, model context and format-owned diagnostics; remove live editor/store closure access and generic HTML transform hooks.",
+        "Regenerate doctrine mirrors and preserve existing package attestations until each package adopts and proves the new API."
+      ]
+    },
+    {
+      "version": 240,
+      "date": "2026-09-27",
+      "doctrineFingerprint": "sha256:e5a70ec885b9eacbc112c2ca20c453c989746df8836ab72c3cd2cfce4c2060a1",
+      "summary": "Close document conversion around direct format owners, reported boundaries, and the repository-root doctrine source.",
+      "migrationChecks": [
+        "Keep HTML and Markdown document-first with direct parse/serialize operations, structured diagnostics, explicit slice or inline variants, and no hidden authored payloads or caller-built conversion editor.",
+        "Keep DOCX as a detached import/export file workflow, typed persistence as the exact native-state owner, and schema repair reported at the conversion boundary rather than hidden in assertions or side channels.",
+        "Use semantic formats for feature mappings and dataTransferFormats for whole-payload MIME negotiation; capture asynchronous conversion inputs before the first await and remove live editor/store authority from detached operations.",
+        "Fingerprint repository-root AGENTS.md, regenerate every affected doctrine mirror, preserve existing package attestations, and prove docs, registry, package, browser, native-artifact, and immutable-ledger closure."
+      ]
+    },
+    {
+      "version": 241,
+      "date": "2026-09-27",
+      "doctrineFingerprint": "sha256:0bc071519b2d643764a7ef5f78474e0f6353e3218fc427c8b9c9b67230e4718e",
+      "summary": "Keep versioned persistence flat and make authoritative whole-document comment replacement atomic and lifecycle-fenced.",
+      "migrationChecks": [
+        "Declare decode, encode, the current positive version and decode-only historical versions directly on each persisted field or effect; remove redundant codec wrappers and identity factories without widening encoded-output inference.",
+        "Use complete comment-snapshot replacement only with the matching authoritative document replacement; validate and stage every range before atomic snapshot publication, clear transient state, bypass ordinary mutation and history, and fence late work from the retired snapshot.",
+        "After successful document replacement, retire the previous comments before mapping imported comments; mapping or validation failure leaves the new document with an empty comment snapshot and publishes no imported users.",
+        "Reject per-thread replacement through the snapshot operation, regenerate doctrine mirrors, and preserve package attestations until each package adopts and proves the new contract."
+      ]
+    },
+    {
+      "version": 242,
+      "date": "2026-09-27",
+      "doctrineFingerprint": "sha256:1c2481d2683e36a529eac2c11bd434587073b6e28085558c79fa51821207b8f5",
+      "summary": "Stage authoritative comment imports before committing and source format attachments from canonical model coordinates.",
+      "migrationChecks": [
+        "Prepare and validate imported comments against a detached candidate containing the matching document; preparation failure preserves the live document, comment snapshot and users.",
+        "When an existing editor instance must be preserved, capture its document, comments and users before synchronous adoption and restore all three if live publication unexpectedly fails.",
+        "Read format-export attachments from the model or proposed view, then let the format owner project those canonical coordinates exactly once for accepted, proposed or review output.",
+        "Regenerate doctrine mirrors and preserve package attestations until each package adopts and proves the corrected contract."
+      ]
+    },
+    {
+      "version": 243,
+      "date": "2026-09-27",
+      "doctrineFingerprint": "sha256:f47125e3ee96392f53e4a3e6d73f4a690c7709a049d17652b15ea6c386acf082",
+      "summary": "Adopt authoritative full-document imports by replacing a fully prepared editor owner instead of attempting partial live rollback.",
+      "migrationChecks": [
+        "Construct and validate the imported document, comments, users and required plugin state in a detached candidate before changing the mounted editor.",
+        "When the application owns editor instances, swap the completed candidate through a keyed remount so preparation failure preserves document state, history, drafts, pending composers and mutation queues.",
+        "Do not sequence document, comment and user replacement on a mounted editor under a rollback claim; preserving the instance requires one owner that can commit or discard every affected runtime resource atomically.",
+        "Regenerate doctrine mirrors and preserve package attestations until each package adopts and proves the corrected contract."
       ]
     }
   ],

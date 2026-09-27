@@ -13,6 +13,7 @@ export type AuthoredDocxEnvelopeV1 = Readonly<{
     accepted: string;
     proposed: string;
   }>;
+  signature?: string;
   version: 1;
 }>;
 
@@ -24,18 +25,31 @@ const encoder = new TextEncoder();
 const toBytes = (value: string | Uint8Array) =>
   typeof value === 'string' ? encoder.encode(value) : value;
 
-export const sha256 = async (value: string | Uint8Array) => {
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    Uint8Array.from(toBytes(value))
-  );
+export type DocxCorrespondenceAdapter = Readonly<{
+  digestSha256: (value: Uint8Array) => Promise<ArrayBuffer>;
+  parseXml: (source: Uint8Array) => Document;
+  serializeXml: (document: Document) => string;
+}>;
+
+const defaultDigestSha256 = (value: Uint8Array) =>
+  crypto.subtle.digest('SHA-256', Uint8Array.from(value));
+
+export const sha256 = async (
+  value: string | Uint8Array,
+  digestSha256: DocxCorrespondenceAdapter['digestSha256'] = defaultDigestSha256
+) => {
+  const digest = await digestSha256(Uint8Array.from(toBytes(value)));
 
   return [...new Uint8Array(digest)]
     .map((byte) => byte.toString(16).padStart(2, '0'))
     .join('');
 };
 
-const parseDocumentXml = (source: Uint8Array) => {
+const parseDocumentXml = (
+  source: Uint8Array,
+  adapter?: DocxCorrespondenceAdapter
+) => {
+  if (adapter) return adapter.parseXml(source);
   const xml = new TextDecoder().decode(source);
   const document = new DOMParser().parseFromString(xml, 'application/xml');
 
@@ -56,9 +70,10 @@ const unwrap = (element: Element) => {
 
 const projectDocumentXml = (
   source: Uint8Array,
-  projection: 'accepted' | 'proposed'
+  projection: 'accepted' | 'proposed',
+  adapter?: DocxCorrespondenceAdapter
 ) => {
-  const document = parseDocumentXml(source);
+  const document = parseDocumentXml(source, adapter);
 
   for (const change of elements(document)
     .filter((element) => ['pPrChange', 'rPrChange'].includes(element.localName))
@@ -113,25 +128,35 @@ const projectDocumentXml = (
     deletedText.replaceWith(replacement);
   }
 
-  return new XMLSerializer().serializeToString(document);
+  return adapter
+    ? adapter.serializeXml(document)
+    : new XMLSerializer().serializeToString(document);
 };
 
 export const getDocxProjectionDigests = async (
-  entries: ReadonlyMap<string, Uint8Array>
+  entries: ReadonlyMap<string, Uint8Array>,
+  adapter?: DocxCorrespondenceAdapter
 ) => {
   const documentXml = entries.get('word/document.xml');
 
   if (!documentXml) throw new Error('DOCX is missing its main document part.');
   const [accepted, proposed] = await Promise.all([
-    sha256(projectDocumentXml(documentXml, 'accepted')),
-    sha256(projectDocumentXml(documentXml, 'proposed')),
+    sha256(
+      projectDocumentXml(documentXml, 'accepted', adapter),
+      adapter?.digestSha256
+    ),
+    sha256(
+      projectDocumentXml(documentXml, 'proposed', adapter),
+      adapter?.digestSha256
+    ),
   ]);
 
   return Object.freeze({ accepted, proposed });
 };
 
 export const getDocxPartManifest = async (
-  entries: ReadonlyMap<string, Uint8Array>
+  entries: ReadonlyMap<string, Uint8Array>,
+  digestSha256?: DocxCorrespondenceAdapter['digestSha256']
 ) =>
   Object.freeze(
     await Promise.all(
@@ -139,7 +164,7 @@ export const getDocxPartManifest = async (
         .filter(([name]) => name !== AUTHORED_DOCX_PART)
         .sort(([left], [right]) => left.localeCompare(right))
         .map(async ([name, value]) =>
-          Object.freeze({ name, sha256: await sha256(value) })
+          Object.freeze({ name, sha256: await sha256(value, digestSha256) })
         )
     )
   );
@@ -170,13 +195,40 @@ export const parseAuthoredDocxEnvelope = (
     typeof value.projections.accepted !== 'string' ||
     !SHA256_PATTERN.test(value.projections.accepted) ||
     typeof value.projections.proposed !== 'string' ||
-    !SHA256_PATTERN.test(value.projections.proposed)
+    !SHA256_PATTERN.test(value.projections.proposed) ||
+    (value.signature !== undefined &&
+      (typeof value.signature !== 'string' || value.signature.length === 0))
   ) {
     throw new TypeError('Invalid authored DOCX envelope.');
   }
 
   return value as AuthoredDocxEnvelopeV1;
 };
+
+const canonicalizeJson = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(canonicalizeJson);
+  if (!isRecord(value)) return value;
+
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, canonicalizeJson(value[key])])
+  );
+};
+
+export const getAuthoredDocxCanonicalPart = (
+  envelope: AuthoredDocxEnvelopeV1
+): Uint8Array =>
+  encoder.encode(
+    JSON.stringify(
+      canonicalizeJson({
+        document: envelope.document,
+        parts: envelope.parts,
+        projections: envelope.projections,
+        version: envelope.version,
+      })
+    )
+  );
 
 export const docxPartManifestMatches = (
   expected: AuthoredDocxEnvelopeV1['parts'],

@@ -44,7 +44,9 @@ const editor = createEditor({
 const authored = editor.plugin(DefaultAuthoredPlugin);
 ```
 
-使用经过认证且稳定的用户 ID。缺少身份时，受追踪的文档写入会被拒绝。
+使用经过认证且稳定的用户 ID。`authored.read.canPropose()` 可检查 resolver
+当前是否提供作者。没有作者时，`SuggestionPlugin` 会拒绝进入 Suggestion
+模式，原生 authored write 也会在 transaction 边界拒绝缺失的身份。
 
 如需自定义解析器或保留已接受历史，请创建一个描述符，并使用同一个描述符访问 portal：
 
@@ -212,69 +214,77 @@ const restored = createEditor({
 
 ## 导出显式投影
 
-选择 `accepted` 或 `proposed` 可获得不含审阅记录的文档；选择 `review` 可保留 authored envelope。存在待处理审阅记录时，前两种输出会返回 `authored-lossy-projection` diagnostic。Proposed projection 仍包含拟议内容。
-
-未传 options 时，JSON 默认为 `accepted`。Markdown、HTML 和 DOCX 必须提供 `projection`。
+使用 `accepted` 或 `proposed` 得到 clean document；格式能够保留 review
+record 时使用 `review`。Clean projection 在省略 pending change 或把 conflict
+解析到一侧时返回 diagnostic。每个 helper 都接收或捕获完整 document，包括
+named root 和 metadata。
 
 ### JSON
 
+Detached document 使用纯 authored projection helper：
+
 ```tsx
 import {
-  deserializeAuthoredJson,
-  serializeAuthoredJson,
+  parseAuthoredDocument,
+  projectAuthoredDocument,
+  projectAuthoredReview,
 } from "platejs/authored";
 
-const json = serializeAuthoredJson(editor, { projection: "review" });
-const document = deserializeAuthoredJson(json.data);
+const source = editor.read.value();
+const accepted = projectAuthoredDocument(source, {
+  projection: "accepted",
+});
+const review = projectAuthoredReview(source);
+const json = JSON.stringify(review.review);
+const document = parseAuthoredDocument(json);
 ```
 
-`deserializeAuthoredJson` 解析 document envelope。将结果加载到 editor 中，可验证已安装的 schema 和 authored record。
+`parseAuthoredDocument` 验证 document envelope。加载到 editor 时会继续执行已
+安装 application schema 和 authored record 的检查。
 
-### Markdown
-
-安装 `platejs/markdown` 的 `MarkdownPlugin`，并加入文档使用的内容插件：
+### Plain text 与 Markdown
 
 ```tsx
-import { MarkdownPlugin } from "platejs/markdown";
+import { serializePlainText } from "platejs";
 
-const markdownEditor = createEditor({
-  plugins: [BaseParagraphPlugin, DefaultAuthoredPlugin, MarkdownPlugin],
-  initialValue: editor.read.value(),
-  userId: "alice",
-});
+const text = serializePlainText(editor, { projection: "accepted" });
+const markdown = editor.api.markdown.serialize({ projection: "proposed" });
 
-const markdown = markdownEditor.api.markdown.serializeAuthored({
-  projection: "review",
-});
-const document = markdownEditor.api.markdown.deserialize(markdown.data);
+if (markdown.ok) downloadMarkdown(markdown.data);
 ```
 
-Review 输出包含 proposed Markdown，随后是 Plate authored envelope。Envelope 保留审阅记录；可见 Markdown 是拟议结果。
+Plain text 与 Markdown 只携带可见 content。Feature 自己拥有的 format mapping
+会保留可表示的结构，并报告省略的 root、metadata、pending work 与不支持的 node。
+Markdown 不包含隐藏 Plate document，也不能恢复完整 review state。
 
-### HTML 和 DOCX
-
-HTML 输出使用配置了[静态组件](/docs/static)的 editor；DOCX 使用 [DOCX 导出](/docs/docx)所需的内容插件。服务端代码从 `platejs` 等 base package path 导入，不要在服务端转换代码中使用 `/react` import。
+### HTML 与 DOCX
 
 ```tsx
-import { exportToDocx } from "platejs/docx/export";
-import { renderAuthoredHtml } from "platejs/static";
+import { exportDocx } from "platejs/docx/export";
+import { renderStaticHtml } from "platejs/static";
 
-const html = await renderAuthoredHtml(editor, { projection: "review" });
-const docx = await exportToDocx(editor, { projection: "review" });
+const semanticHtml = editor.api.html.serialize({ projection: "proposed" });
+const styledHtml = await renderStaticHtml(editor, { projection: "proposed" });
+const docx = await exportDocx(editor, { projection: "review" });
 ```
 
-HTML 在 `html.data` 中返回字符串。成功的 DOCX 结果在 `docx.blob` 中返回 `Blob`。两者的结果都包含 `diagnostics`。
+`renderStaticHtml` 使用当前 editor 的 static component。需要不含应用样式的
+semantic HTML 时，调用 `editor.api.html.serialize({ projection })`。两种 HTML
+都只携带可见的 accepted 或 proposed content。成功的 DOCX result 在
+`docx.blob` 中返回 `Blob`。每个 serializer 都返回结构化 `diagnostics`。
 
-| 格式     | Accepted 或 proposed | Review                                                    |
-| -------- | -------------------- | --------------------------------------------------------- |
-| JSON     | 普通投影文档         | Canonical authored document envelope                      |
-| Markdown | 普通 Markdown        | Proposed Markdown 加 Plate authored envelope              |
-| HTML     | 静态投影 HTML        | Proposed HTML 加转义后的 authored JSON script             |
-| DOCX     | 投影后的 Word 文档   | Word tracked revisions 加 canonical authored package part |
+| 格式 | Accepted 或 proposed | Review |
+| ---- | -------------------- | ------ |
+| JSON | Plain projected document | Canonical authored document |
+| Plain text | Structural text | 不支持 |
+| Markdown | Plain Markdown | 不支持；保存 authored JSON |
+| Semantic HTML | Feature-mapped HTML | 不支持；保存 authored JSON |
+| Static HTML | Component-rendered HTML | 不支持；保存 authored JSON |
+| DOCX | Projected Word document | Word revision 加 canonical authored package part |
 
-`platejs/static` 的 `deserializeAuthoredHtml(editor, data)` 返回 detached document。成功的 `platejs/docx/import` `importDocx(...)` 调用返回一个完整 `document`，并在 `diagnostics` 中列出不支持的 Word revision construct。
-
-当 Word markup 无法表达原生 construct 时，review DOCX 导出会报告 `lossy-content` 或 `unsupported-content`。只有 Word package 保持未修改且对应关系有效时，原生 envelope 才恢复精确 authored data。
+DOCX review 导出会在 Word 无法表达 native construct 时报告 `lossy-content`
+或 `unsupported-content`。只有调用方授予 authored trust，且可见 Word content
+仍与 authored part 对应时，才能恢复精确 authored data。
 
 ## 协作
 
@@ -306,6 +316,7 @@ Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定�
 | 接口                                      | 用途                                                               |
 | ----------------------------------------- | ------------------------------------------------------------------ |
 | `tx.authored.propose(options?)`           | 开始 proposal、为新 proposal 指定 `{ changeId }`，或修订当前作者的待处理 change。 |
+| `authored.read.canPropose()`              | 检查当前身份是否可以创建 proposal。                                |
 | `authored.read.view()`                    | 读取当前 view 的 intent 和 projection。                            |
 | `authored.read.change(id)`                | 读取一个逻辑 change；不存在时返回 `null`。                         |
 | `authored.read.details(id)`               | 读取一条 change 的语义 part 和决定历史；不存在时返回 `null`。      |
@@ -323,4 +334,17 @@ Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定�
 
 ### 类型和格式辅助函数
 
-`platejs/authored` 导出 authored plugin 描述符、change 与决定类型、format snapshot 与 diagnostic、JSON 序列化辅助函数，以及用于受信任累计 imported revision 的 `createAuthoredReviewDocument`。
+`platejs/authored` 导出 authored plugin 描述符、change 与 decision 类型、
+不可变 projection result 与 diagnostic，以及用于受信任累计 imported
+revision 的 `createAuthoredReviewDocument`。
+
+`projectAuthoredDocument(document, { projection })` 返回 accepted 或
+proposed `document`、同一次捕获的精确 `review` document、diagnostic，以及
+分开的 `unresolved.pending` 与 `unresolved.conflicted` 数量。
+`projectAuthoredReview(document)` 还公开稳定的 visible markup segment 和
+property counterpart。两个 helper 都是纯 document operation：不会构造、
+激活或订阅 editor runtime。
+
+`projectAuthoredRange(projection, range)` 把 proposed coordinate 映射到同一
+projection 捕获的 accepted document。`parseAuthoredDocument` 解析 JSON
+document envelope；目标 editor 仍负责 application schema。

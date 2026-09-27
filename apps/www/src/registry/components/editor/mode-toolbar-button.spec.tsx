@@ -143,3 +143,30 @@ it('tracks authored view policy changes without a document commit', async () => 
   stop();
   view.unmount();
 });
+
+it('does not offer Suggestion mode without a current user', async () => {
+  const editor = createEditor({
+    plugins: SuggestionKit,
+    initialValue: [{ type: 'paragraph', children: [{ text: 'Keep' }] }],
+  });
+  const view = render(
+    <TooltipProvider>
+      <EditorRoot editor={editor}>
+        <Toolbar>
+          <ModeToolbarButton />
+        </Toolbar>
+        <EditorContent />
+      </EditorRoot>
+    </TooltipProvider>
+  );
+
+  fireEvent.keyDown(view.getByRole('button', { name: 'Editing' }), {
+    key: 'Enter',
+  });
+  expect(view.queryByRole('menuitemradio', { name: 'Suggestion' })).toBeNull();
+  expect(() =>
+    editor.plugin(SuggestionPlugin).api.setMode('suggesting')
+  ).toThrow('An author ID is required for proposal mode.');
+  expect(editor.plugin(SuggestionPlugin).read.mode()).toBe('editing');
+  view.unmount();
+});

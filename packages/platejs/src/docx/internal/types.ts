@@ -1,3 +1,4 @@
+import type { AuthoredProjectionDiagnostic } from '../../authored';
 import type { Path, Range, Value } from '../../core';
 
 export type DocxImportLimits = Readonly<{
@@ -12,6 +13,13 @@ export type DocxImportLimits = Readonly<{
   maxXmlNodes: number;
 }>;
 
+export type DocxSourceLocation = Readonly<{
+  endCodeUnit: number;
+  part: string;
+  qName: string;
+  startCodeUnit: number;
+}>;
+
 export type DocxComment = Readonly<{
   author: Readonly<{ initials?: string; name: string }> | null;
   body: Value;
@@ -23,7 +31,17 @@ export type DocxComment = Readonly<{
   target: Readonly<{ range: Range }> | null;
 }>;
 
+type DocxPolicyDiagnostic<T extends object> =
+  | Readonly<T & { severity: 'error' }>
+  | Readonly<T & { severity: 'warning' }>;
+
 export type DocxDiagnostic =
+  | AuthoredProjectionDiagnostic
+  | DocxPolicyDiagnostic<{
+      code: 'authored-conflict';
+      count: number;
+      message: string;
+    }>
   | Readonly<{
       actual: number;
       code: 'limit-exceeded';
@@ -40,6 +58,8 @@ export type DocxDiagnostic =
         | 'digest-mismatch'
         | 'invalid'
         | 'projection-mismatch'
+        | 'signature-invalid'
+        | 'signature-missing'
         | 'unsupported-version';
       severity: 'warning';
     }>
@@ -79,16 +99,37 @@ export type DocxDiagnostic =
       severity: 'warning';
     }>
   | Readonly<{
-      code:
-        | 'converter-message'
-        | 'lossy-content'
-        | 'resource-omitted'
-        | 'unsupported-content';
+      code: 'converter-message';
+      message: string;
+      severity: 'warning';
+    }>
+  | DocxPolicyDiagnostic<{
+      code: 'lossy-content' | 'resource-omitted';
       feature?: string;
       message: string;
       part?: string;
       path?: Path;
       root?: string;
-      severity: 'warning';
       sourceId?: string;
+    }>
+  | DocxPolicyDiagnostic<{
+      action: 'dropped' | 'replaced' | 'unwrapped';
+      code: 'unsupported-content';
+      feature?: string;
+      message: string;
+      part?: string;
+      path?: Path;
+      root?: string;
+      sourceId?: string;
+      sourceLocation?: DocxSourceLocation;
     }>;
+
+export type DocxWarningDiagnostic = Extract<
+  DocxDiagnostic,
+  { severity: 'warning' }
+>;
+
+export type DocxErrorDiagnostic = Extract<
+  DocxDiagnostic,
+  { severity: 'error' }
+>;

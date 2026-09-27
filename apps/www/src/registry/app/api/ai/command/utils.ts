@@ -244,9 +244,13 @@ const removeEscapeSelection = (editor: MarkdownEditor, text: string) => {
 
     if (!node) return newText;
     if (editor.read.schema.isVoid(node[0])) {
-      const voidString = editor.api.markdown.serialize({
-        value: { children: [node[0]] },
+      const result = editor.api.markdown.serialize({
+        document: { children: [node[0]] },
       });
+
+      if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+      const voidString = result.data;
 
       const idx = newText.lastIndexOf(voidString);
 
@@ -273,10 +277,13 @@ export const isMultiBlocks = (editor: Editor) =>
 
 export const serializePromptBlocks = (editor: MarkdownEditor) => {
   const blocks = editor.read.nodes.blocks().map(([node]) => node);
-
-  return editor.api.markdown.serialize({
-    value: { children: blocks },
+  const result = editor.api.markdown.serialize({
+    document: { children: blocks },
   });
+
+  if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+  return result.data;
 };
 
 /** Get markdown with selection markers */

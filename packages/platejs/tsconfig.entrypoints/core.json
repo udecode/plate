@@ -33,6 +33,8 @@
     "../src/excalidraw/**/*",
     "../src/excalidraw/react/**/*",
     "../src/history/**/*",
+    "../src/html/**/*",
+    "../src/html/server/**/*",
     "../src/hyperscript/**/*",
     "../src/markdown/**/*",
     "../src/math/**/*",

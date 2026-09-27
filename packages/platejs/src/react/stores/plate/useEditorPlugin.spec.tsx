@@ -104,7 +104,7 @@ describe('useEditor plugin portal', () => {
     expect(firstPortal.store).toBeDefined();
     expect('plugin' in firstPortal).toBe(false);
     expect('editor' in firstPortal).toBe(false);
-    expect('defineCodecs' in firstPortal).toBe(false);
+    expect('defineFormats' in firstPortal).toBe(false);
 
     rerender();
     expect(result.current).toBe(firstPortal);

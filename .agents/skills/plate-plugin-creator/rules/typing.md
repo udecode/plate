@@ -130,7 +130,7 @@ Use the canonical protocol from `plate-plugin-creator`:
 | `read`         | pure, replayable queries over the supplied document state                    |
 | `update`       | document reads and writes through the active transaction                     |
 | native fields  | flat Plite capabilities such as `commands`, `on`, and `readMiddleware`         |
-| `codecs`       | format declarations                                                           |
+| `formats`       | format declarations                                                           |
 
 The published `api` object is immutable; that does not make every API method
 pure. Document queries still belong in `read`, pure store projections belong in
@@ -148,7 +148,7 @@ Plugin callbacks already expose the typed owner context:
 - `read`
 - `update`
 - `store`
-- `defineCodecs`
+- `defineFormats`
 - active `tx` where the callback is transaction-backed
 
 Keep one-owner behavior inline and capture those values. Do not move a callback
@@ -184,13 +184,13 @@ only expose `editor`; an exact typed portal is correct there. Do not split or
 wrap a coherent declaration solely to capture a shortcut, and do not mistake
 an editor-wide plugin such as `editor.api.dom` for the plugin-scoped `api`.
 
-`defineCodecs` is the one inline inference anchor for codec maps:
+`defineFormats` is the one inline inference anchor for semantic format maps:
 
 ```ts
 export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: () => true,
         decodeOnly: true,
         match: [{ tag: 'strong' }],
@@ -199,19 +199,20 @@ export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
 });
 ```
 
-Use `defineCodecs(map)` for self/product codecs and
-`defineCodecs(TargetPlugin, map)` for foreign codecs. The foreign overload
-injects `TargetPlugin`; do not add `target` to the rule. Keep the map
-MIME-keyed. Its `'text/html'` value is one schema-aware rule or a non-empty
-ordered tuple. Direct `codecs: { ... }`, casts, and callback annotations bypass
-the owner inference and are invalid.
+Use `defineFormats(map)` for self/product mappings and
+`defineFormats(TargetPlugin, map)` for foreign mappings. The foreign overload
+injects `TargetPlugin`; do not add `target` to the rule. Keep the map keyed by
+semantic families such as `html`, `markdown`, and `plainText`; whole-payload
+MIME negotiation belongs to root `dataTransferFormats`. Direct
+`formats: { ... }`, casts, and callback annotations bypass the owner inference
+and are invalid.
 
-A custom Plate-owned MDX element codec binds its final schema identity once:
+A custom Plate-owned MDX element mapping binds its final schema identity once:
 
 ```ts
-codecs: ({ defineCodecs, schema: { type } }) =>
-  defineCodecs({
-    'text/markdown': {
+formats: ({ defineFormats, schema: { type } }) =>
+  defineFormats({
+    markdown: {
       from: type,
       kind: 'node',
       decode: ({ node }) => ({ children: node.children, type }),
@@ -230,12 +231,12 @@ tag. Fixed external format names remain literal. Do not use the capability
 name, an authored default type, or a compatibility alias for persisted tags.
 Structural Plate wrappers and unknown-node fallbacks also resolve their
 installed schema type; only external format nodes keep literal identities.
-Operation decode overrides use the plugin capability name after codec-owner
+Operation decode overrides use the plugin capability name after mapping-owner
 resolution; encode overrides use the persisted schema type or key.
 If a compiled owner claims the decode source and returns `undefined`, do not
-fall through to a persisted-type override alias. Foreign target codecs do not
+fall through to a persisted-type override alias. Foreign target mappings do not
 own configurable custom MDX identity.
-Decode-only codecs still prove `from` and decoded identity; encode-only codecs
+Decode-only mappings still prove `from` and decoded identity; encode-only mappings
 still prove the emitted tag. Phrasing-only wrappers decode source phrasing
 children directly because decoded wrapper elements are not identity witnesses.
 A fixed external source never licenses a literal decoded Plate type. Parsed

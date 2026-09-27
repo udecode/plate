@@ -5,6 +5,7 @@ import {
   createEditor,
   defineEffect,
   definePlugin,
+  definePluginSlot,
   type Element,
 } from 'plitejs';
 
@@ -24,18 +25,95 @@ const deferred = <T>() => {
   return { promise, resolve };
 };
 
+type Transition = Readonly<{ previous: string; value: string }>;
+type ReplayOutcome = 'applied' | 'blocked' | 'throw';
+type ReplayResult =
+  | Readonly<{ status: 'applied'; value: Transition }>
+  | Readonly<{ reason: string; status: 'blocked' }>;
+let nextSessionEffect = 1;
+
+const createSessionHarness = (options: { maxDepth?: number } = {}) => {
+  let external = 'comment';
+  let replay: (transition: Transition) => Promise<ReplayResult> = async (
+    transition
+  ) => {
+    external = transition.value;
+    return { status: 'applied' as const, value: transition };
+  };
+  const sessionEffect = defineEffect<Transition>({
+    history: {
+      replay: (_editor, transition) => replay(transition),
+    },
+    invert: ({ previous, value }) => ({ previous: value, value: previous }),
+    key: `history.session.${nextSessionEffect}`,
+  });
+  nextSessionEffect += 1;
+  const editor = createEditor({
+    plugins: [
+      history(options),
+      definePlugin(`history-session-${nextSessionEffect}`, {
+        effectTypes: [sessionEffect],
+      }),
+    ],
+    initialValue: [paragraph('')],
+  });
+
+  editor.update({ history: 'new-batch' }, (tx) => {
+    tx.text.insert('A', { at: { offset: 0, path: [0, 0] } });
+  });
+  editor.update((tx) => {
+    tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+  });
+
+  return {
+    defer(outcome: ReplayOutcome) {
+      const gate = deferred<void>();
+
+      replay = async (transition) => {
+        await gate.promise;
+        if (outcome === 'throw') throw new Error('owner failed');
+        if (outcome === 'blocked') {
+          return {
+            reason: 'external-diverged',
+            status: 'blocked' as const,
+          };
+        }
+        external = transition.value;
+        return { status: 'applied' as const, value: transition };
+      };
+
+      return gate;
+    },
+    editor,
+    external: () => external,
+    replayAs(outcome: ReplayOutcome) {
+      replay = async (transition) => {
+        if (outcome === 'throw') throw new Error('owner failed');
+        if (outcome === 'blocked') {
+          return {
+            reason: 'external-diverged',
+            status: 'blocked' as const,
+          };
+        }
+        external = transition.value;
+        return { status: 'applied' as const, value: transition };
+      };
+    },
+  };
+};
+
 describe('immutable history branches', () => {
-  it('moves a session batch only after replay and queues the next undo', async () => {
-    type Transition = Readonly<{ previous: string; value: string }>;
+  it('claims a session batch, refuses overlapping replay, and keeps edits live', async () => {
     const gate = deferred<void>();
     let external = 'comment';
     const sessionEffect = defineEffect<Transition>({
-      history: 'session',
-      historyReplay: async (_editor, transition) => {
-        await gate.promise;
-        external = transition.value;
+      history: {
+        replay: async (_editor, transition) => {
+          await gate.promise;
+          external = transition.value;
 
-        return { status: 'applied', value: transition };
+          return { status: 'applied', value: transition };
+        },
       },
       invert: ({ previous, value }) => ({ previous: value, value: previous }),
       key: 'history.session-queue',
@@ -61,36 +139,392 @@ describe('immutable history branches', () => {
     });
 
     assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    const { revision } = editor.read.history();
     const sessionUndo = editor.api.history.undo();
-    const documentUndo = editor.api.history.undo();
 
     assert.equal(editor.read.text.string([]), 'A');
     assert.equal(external, 'comment');
     assert.equal(editor.read.history().undos.length, 2);
-    assert.throws(
-      () =>
-        editor.update((tx) => {
-          tx.text.insert('X');
-        }),
-      /cannot publish while a session history effect is replaying/i
-    );
+    assert.equal(editor.read.history.pending(), 'undo');
+    assert.equal(editor.read.history().revision, revision);
+    assert.equal(Object.hasOwn(editor.read.history(), 'pending'), false);
+    assert.equal(Object.hasOwn(History.toJSON(editor), 'pending'), false);
+    assert.deepEqual(await editor.api.history.undo(), { status: 'busy' });
+
+    editor.update({ history: 'merge' }, (tx) => {
+      tx.text.insert('X', { at: { offset: 1, path: [0, 0] } });
+    });
+
+    assert.equal(editor.read.text.string([]), 'AX');
+    assert.equal(editor.read.history().undos.length, 3);
 
     gate.resolve();
     assert.deepEqual(await sessionUndo, { status: 'applied' });
-    assert.deepEqual(await documentUndo, { status: 'applied' });
     assert.equal(external, '');
+    assert.equal(editor.read.history.pending(), null);
+    assert.equal(editor.read.text.string([]), 'AX');
+    assert.equal(editor.read.history().undos.length, 2);
+    assert.equal(editor.read.history().redos.length, 0);
+
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'A');
+  });
+
+  it('moves an applied session claim between branches when no edit intervenes', async () => {
+    const harness = createSessionHarness();
+    const { editor } = harness;
+
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.equal(harness.external(), '');
+    assert.equal(editor.read.history().undos.length, 1);
+    assert.equal(editor.read.history().redos.length, 1);
+
+    assert.deepEqual(await editor.api.history.redo(), { status: 'applied' });
+    assert.equal(harness.external(), 'comment');
+    assert.equal(editor.read.history().undos.length, 2);
+    assert.equal(editor.read.history().redos.length, 0);
+  });
+
+  it('keeps a document batch above a session batch through repeated replay', async () => {
+    const { editor } = createSessionHarness();
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        },
+      });
+    });
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('N', { at: { offset: 0, path: [0, 0] } });
+    });
+
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
     assert.equal(editor.read.text.string([]), '');
-    assert.equal(editor.read.history().undos.length, 0);
+
+    for (let cycle = 0; cycle < 5; cycle += 1) {
+      assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+      assert.equal(editor.read.text.string([]), 'A');
+      assert.deepEqual(await editor.api.history.redo(), { status: 'applied' });
+      assert.equal(editor.read.text.string([]), '');
+    }
+  });
+
+  it('keeps a blocked undo claim below an intervening edit', async () => {
+    const harness = createSessionHarness();
+    const { editor } = harness;
+    const gate = harness.defer('blocked');
+    const pending = editor.api.history.undo();
+
+    editor.update((tx) => {
+      tx.history.merge();
+      tx.text.insert('X', { at: { offset: 1, path: [0, 0] } });
+    });
+    gate.resolve();
+
+    assert.deepEqual(await pending, {
+      reason: 'external-diverged',
+      status: 'blocked',
+    });
+    assert.equal(editor.read.history().undos.length, 3);
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'A');
+    assert.deepEqual(await editor.api.history.undo(), {
+      reason: 'external-diverged',
+      status: 'blocked',
+    });
+  });
+
+  it('inserts an applied redo claim below an intervening edit', async () => {
+    const harness = createSessionHarness();
+    const { editor } = harness;
+
+    await editor.api.history.undo();
+    const gate = harness.defer('applied');
+    const pending = editor.api.history.redo();
+
+    editor.update((tx) => {
+      tx.text.insert('X', { at: { offset: 1, path: [0, 0] } });
+    });
+    gate.resolve();
+
+    assert.deepEqual(await pending, { status: 'applied' });
+    assert.equal(harness.external(), 'comment');
+    assert.equal(editor.read.history().undos.length, 3);
+    assert.equal(editor.read.history().redos.length, 0);
+
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'A');
+    assert.equal(harness.external(), 'comment');
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'A');
+    assert.equal(harness.external(), '');
+  });
+
+  it('drops a blocked redo claim after an intervening edit clears redo', async () => {
+    const harness = createSessionHarness();
+    const { editor } = harness;
+
+    await editor.api.history.undo();
+    const gate = harness.defer('blocked');
+    const pending = editor.api.history.redo();
+
+    editor.update((tx) => {
+      tx.text.insert('X', { at: { offset: 1, path: [0, 0] } });
+    });
+    gate.resolve();
+
+    assert.deepEqual(await pending, {
+      reason: 'external-diverged',
+      status: 'blocked',
+    });
+    assert.equal(editor.read.history().undos.length, 2);
+    assert.equal(editor.read.history().redos.length, 0);
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'A');
+    assert.equal(harness.external(), '');
+  });
+
+  it('keeps a blocked redo claim at the redo head without an edit', async () => {
+    const harness = createSessionHarness();
+    const { editor } = harness;
+
+    await editor.api.history.undo();
+    harness.replayAs('blocked');
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      assert.deepEqual(await editor.api.history.redo(), {
+        reason: 'external-diverged',
+        status: 'blocked',
+      });
+      assert.equal(editor.read.history().undos.length, 1);
+      assert.equal(editor.read.history().redos.length, 1);
+    }
+  });
+
+  it('publishes selection and skipped document updates during a claim', async () => {
+    const harness = createSessionHarness();
+    const { editor } = harness;
+    const gate = harness.defer('applied');
+    const pending = editor.api.history.undo();
+
+    editor.update((tx) => {
+      tx.selection.set({ offset: 1, path: [0, 0] });
+    });
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.text.insert('R', { at: { offset: 1, path: [0, 0] } });
+    });
+
+    assert.equal(editor.read.text.string([]), 'AR');
+    assert.equal(editor.read.selection()?.anchor.offset, 2);
+    assert.equal(editor.read.selection()?.focus.offset, 2);
+
+    gate.resolve();
+    assert.deepEqual(await pending, { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'AR');
+    assert.equal(editor.read.history().undos.length, 1);
+    assert.equal(editor.read.history().redos.length, 1);
+  });
+
+  it('preserves remote mappings before and after a redo claim detaches', async () => {
+    const harness = createSessionHarness();
+    const { editor } = harness;
+
+    await editor.api.history.undo();
+    const gate = harness.defer('applied');
+    const pending = editor.api.history.redo();
+
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.text.insert('R', { at: { offset: 1, path: [0, 0] } });
+    });
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('X', { at: { offset: 2, path: [0, 0] } });
+    });
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.text.insert('Q', { at: { offset: 3, path: [0, 0] } });
+    });
+
+    gate.resolve();
+    assert.deepEqual(await pending, { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'ARXQ');
+
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'ARQ');
+    assert.equal(harness.external(), 'comment');
+    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'ARQ');
+    assert.equal(harness.external(), '');
+  });
+
+  it('keeps pending replay state isolated between editors sharing a descriptor', async () => {
+    const gate = deferred<void>();
+    const shared = history();
+    const sessionEffect = defineEffect<Transition>({
+      history: {
+        replay: async (_editor, transition) => {
+          await gate.promise;
+          return { status: 'applied', value: transition };
+        },
+      },
+      invert: ({ previous, value }) => ({ previous: value, value: previous }),
+      key: 'history.shared-session',
+    });
+    const sessionPlugin = definePlugin('history-shared-session', {
+      effectTypes: [sessionEffect],
+    });
+    const first = createEditor({
+      plugins: [shared, sessionPlugin],
+      initialValue: [paragraph('')],
+    });
+    const second = createEditor({
+      plugins: [shared, sessionPlugin],
+      initialValue: [paragraph('')],
+    });
+
+    first.update((tx) =>
+      tx.effects.emit(sessionEffect, { previous: '', value: 'comment' })
+    );
+    const pending = first.api.history.undo();
+    second.update((tx) => {
+      tx.text.insert('B', { at: { offset: 0, path: [0, 0] } });
+    });
+
+    assert.equal(first.read.history.pending(), 'undo');
+    assert.equal(second.read.history.pending(), null);
+    assert.equal(second.read.text.string([]), 'B');
+
+    gate.resolve();
+    assert.deepEqual(await pending, { status: 'applied' });
+  });
+
+  it('clears a claim without moving it after replacement or depth clipping', async () => {
+    const replacement = createSessionHarness();
+    const replacementGate = replacement.defer('applied');
+    const replacementUndo = replacement.editor.api.history.undo();
+
+    replacement.editor.update.value.replace({
+      children: [paragraph('replacement')],
+    });
+    replacementGate.resolve();
+
+    assert.deepEqual(await replacementUndo, { status: 'applied' });
+    assert.equal(replacement.editor.read.history.pending(), null);
+    assert.equal(replacement.editor.read.history().undos.length, 0);
+    assert.equal(replacement.editor.read.history().redos.length, 0);
+
+    const restored = createSessionHarness();
+    const restoredGate = restored.defer('applied');
+    const restoredUndo = restored.editor.api.history.undo();
+    const empty = History.fromJSON(restored.editor, {
+      redos: [],
+      schema: restored.editor.read.history().schema,
+      undos: [],
+      version: 4,
+    });
+
+    restored.editor.update((tx) => tx.history.restore(empty));
+    restoredGate.resolve();
+
+    assert.deepEqual(await restoredUndo, { status: 'applied' });
+    assert.equal(restored.editor.read.history.pending(), null);
+    assert.equal(restored.editor.read.history().undos.length, 0);
+    assert.equal(restored.editor.read.history().redos.length, 0);
+
+    const clipped = createSessionHarness({ maxDepth: 2 });
+    const clippedGate = clipped.defer('applied');
+    const clippedUndo = clipped.editor.api.history.undo();
+
+    for (const text of ['X', 'Y']) {
+      clipped.editor.update({ history: 'new-batch' }, (tx) => {
+        tx.text.insert(text, {
+          at: {
+            offset: clipped.editor.read.text.string([]).length,
+            path: [0, 0],
+          },
+        });
+      });
+    }
+    clippedGate.resolve();
+
+    assert.deepEqual(await clippedUndo, { status: 'applied' });
+    assert.equal(clipped.editor.read.history.pending(), null);
+    assert.equal(clipped.editor.read.history().undos.length, 2);
+    assert.equal(clipped.editor.read.history().redos.length, 0);
+  });
+
+  it('clears a live claim and preserves its head when the owner throws', async () => {
+    const harness = createSessionHarness();
+    const gate = harness.defer('throw');
+    const pending = harness.editor.api.history.undo();
+
+    gate.resolve();
+    await assert.rejects(pending, /owner failed/);
+    assert.equal(harness.editor.read.history.pending(), null);
+    assert.equal(harness.editor.read.history().undos.length, 2);
+    assert.equal(harness.editor.read.history().redos.length, 0);
+  });
+
+  it('returns the session owner outcome after history retires', async () => {
+    for (const outcome of ['applied', 'blocked', 'throw'] as const) {
+      const gate = deferred<void>();
+      const slot = definePluginSlot(`history-retirement-${outcome}`);
+      const sessionEffect = defineEffect<Transition>({
+        history: {
+          replay: async (_editor, transition) => {
+            await gate.promise;
+            if (outcome === 'throw') throw new Error('owner failed');
+            if (outcome === 'blocked') {
+              return {
+                reason: 'external-diverged',
+                status: 'blocked' as const,
+              };
+            }
+            return { status: 'applied' as const, value: transition };
+          },
+        },
+        invert: ({ previous, value }) => ({ previous: value, value: previous }),
+        key: `history.retirement.${outcome}`,
+      });
+      const editor = createEditor({
+        plugins: [
+          slot.of(history()),
+          definePlugin(`history-retirement-effect-${outcome}`, {
+            effectTypes: [sessionEffect],
+          }),
+        ],
+        initialValue: [paragraph('')],
+      });
+
+      editor.update((tx) =>
+        tx.effects.emit(sessionEffect, { previous: '', value: 'comment' })
+      );
+      const pending = editor.api.history.undo();
+      editor.update.plugins.reconfigure(slot, []);
+      gate.resolve();
+
+      if (outcome === 'throw') {
+        await assert.rejects(pending, /owner failed/);
+      } else if (outcome === 'blocked') {
+        assert.deepEqual(await pending, {
+          reason: 'external-diverged',
+          status: 'blocked',
+        });
+      } else {
+        assert.deepEqual(await pending, { status: 'applied' });
+      }
+    }
   });
 
   it('keeps a blocked session batch at the branch head', async () => {
     let attempts = 0;
     const sessionEffect = defineEffect<string>({
-      history: 'session',
-      historyReplay: () => {
-        attempts += 1;
+      history: {
+        replay: () => {
+          attempts += 1;
 
-        return { reason: 'external-diverged', status: 'blocked' };
+          return { reason: 'external-diverged', status: 'blocked' };
+        },
       },
       key: 'history.session-blocked',
     });

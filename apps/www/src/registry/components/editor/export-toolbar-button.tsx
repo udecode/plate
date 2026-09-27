@@ -1,164 +1,212 @@
 'use client';
 
 import { ArrowDownToLineIcon } from 'lucide-react';
-import { createEditor } from 'platejs';
+import { createEditorView } from 'platejs';
+import { DefaultAuthoredPlugin, isAuthoredEditor } from 'platejs/authored';
+import { CommentsPlugin } from 'platejs/comments/react';
+import { exportDocx, type DocxComment } from 'platejs/docx/export';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { useEditor, useModelEditor } from 'platejs/react';
+import { useEditor, useEditorSelector, useModelEditor } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import {
-  DOCX_EXPORT_STYLES,
-  DocxExportKit,
-} from '@/registry/components/editor/docx-export';
+import { DOCX_EXPORT_STYLES } from '@/registry/components/editor/docx-export';
 import { useDocxSource } from '@/registry/components/editor/docx-source';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
-import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 import { EditorStatic } from './editor-static';
 
-const siteUrl = 'https://platejs.org';
+type CleanProjection = 'accepted' | 'proposed';
 
-const downloadFile = async (url: string, filename: string) => {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  const blobUrl = window.URL.createObjectURL(blob);
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
 
-  link.href = blobUrl;
+  link.href = url;
   link.download = filename;
   document.body.append(link);
   link.click();
   link.remove();
-  window.URL.revokeObjectURL(blobUrl);
+  URL.revokeObjectURL(url);
+};
+
+const absoluteCssUrls = (css: string, base: string) =>
+  css.replaceAll(
+    /url\((['"]?)([^'")]+)\1\)/g,
+    (match, quote: string, url: string) =>
+      url.startsWith('data:') || url.startsWith('#')
+        ? match
+        : `url(${quote}${new URL(url, base).href}${quote})`
+  );
+
+// Inline the app's own CSS so the file renders with the same styles without
+// depending on a stylesheet URL that changes between deployments.
+const readAppStyles = () =>
+  Array.from(document.styleSheets, (sheet) => {
+    try {
+      const css = Array.from(sheet.cssRules, (rule) => rule.cssText).join('\n');
+
+      return `<style>${absoluteCssUrls(css, sheet.href ?? document.baseURI)}</style>`;
+    } catch {
+      // Cross-origin rules are unreadable; keep the app's link instead.
+      return sheet.href ? `<link rel="stylesheet" href="${sheet.href}" />` : '';
+    }
+  }).join('\n');
+
+const toastWarnings = (
+  diagnostics: ReadonlyArray<Readonly<{ severity: 'error' | 'warning' }>>
+) => {
+  const warningCount = diagnostics.filter(
+    ({ severity }) => severity === 'warning'
+  ).length;
+
+  if (warningCount > 0) {
+    toast.warning(
+      `Exported with ${warningCount} warning${warningCount === 1 ? '' : 's'}.`
+    );
+  }
 };
 
 export function ExportToolbarButton() {
   const editor = useEditor();
   const model = useModelEditor();
-  const [open, setOpen] = React.useState(false);
+  const commentsInstalled = editor.plugin(CommentsPlugin).installed;
   const docxSource = useDocxSource();
+  const [open, setOpen] = React.useState(false);
+  const [projectionChoice, setProjectionChoice] =
+    React.useState<CleanProjection>();
 
-  const getCanvas = async () => {
-    const { default: html2canvas } = await import('html2canvas-pro');
+  const authoredState = useEditorSelector((current) => {
+    const authored = current.plugin(DefaultAuthoredPlugin);
 
-    const editorElement = editor.api.dom.resolveDOMNode(editor);
+    if (!authored.installed) return 'clean:proposed';
 
-    if (!editorElement) {
-      throw new Error('Cannot resolve editor DOM node for export.');
-    }
+    const unresolved = (['pending', 'conflicted'] as const).some(
+      (status) =>
+        authored.read.changes({
+          limit: 1,
+          status,
+        }).items.length > 0
+    );
 
-    const canvas = await html2canvas(editorElement, {
-      onclone: (document: Document) => {
-        const innerEditorElement = document.querySelector(
-          '[contenteditable="true"]'
-        );
-        if (innerEditorElement) {
-          Array.from(innerEditorElement.querySelectorAll('*')).forEach(
-            (element) => {
-              const existingStyle = element.getAttribute('style') || '';
-              element.setAttribute(
-                'style',
-                `${existingStyle}; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important`
-              );
-            }
-          );
-        }
-      },
-    });
-
-    return canvas;
-  };
-
-  const exportToPdf = async () => {
-    const [canvas, PDFLib] = await Promise.all([
-      getCanvas(),
-      import('pdf-lib'),
-    ]);
-    const pdfDoc = await PDFLib.PDFDocument.create();
-    const page = pdfDoc.addPage([canvas.width, canvas.height]);
-    const imageEmbed = await pdfDoc.embedPng(canvas.toDataURL('PNG'));
-    const { height, width } = imageEmbed.scale(1);
-    page.drawImage(imageEmbed, {
-      height,
-      width,
-      x: 0,
-      y: 0,
-    });
-    const pdfBase64 = await pdfDoc.saveAsBase64({ dataUri: true });
-
-    await downloadFile(pdfBase64, 'plate.pdf');
-  };
-
-  const exportToImage = async () => {
-    const canvas = await getCanvas();
-    await downloadFile(canvas.toDataURL('image/png'), 'plate.png');
-  };
+    return `${unresolved ? 'unresolved' : 'clean'}:${authored.read.view().projection}`;
+  });
+  const [authoredStatus, mountedProjection] = authoredState.split(':');
+  const unresolved = authoredStatus === 'unresolved';
+  const projection =
+    projectionChoice ??
+    (mountedProjection === 'accepted' ? 'accepted' : 'proposed');
 
   const exportToHtml = async () => {
-    const editorStatic = createEditor({
-      plugins: BaseEditorKit,
-      initialValue: editor.read.children(),
-    });
-
-    const editorHtml = await renderStaticHtml(editorStatic, {
-      editorComponent: EditorStatic,
+    const result = await renderStaticHtml(model, {
+      component: EditorStatic,
+      projection,
       props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
     });
 
-    const tailwindCss = `<link rel="stylesheet" href="${siteUrl}/tailwind.css">`;
-    const katexCss = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.css" integrity="sha384-9PvLvaiSKCPkFKB1ZsEoTjgnJn+O3KvEwtsz37/XrkYft3DTk2gHdYvd9oWgW3tV" crossorigin="anonymous">`;
-
     const html = `<!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="color-scheme" content="light dark" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400..700&display=swap"
-          rel="stylesheet"
-        />
-        ${tailwindCss}
-        ${katexCss}
-        <style>
-          :root {
-            --font-sans: 'Inter', 'Inter Fallback';
-            --font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback';
-          }
-        </style>
-      </head>
-      <body>
-        ${editorHtml}
-      </body>
-    </html>`;
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    ${readAppStyles()}
+  </head>
+  <body class="${document.body.className}">
+    ${result.data}
+  </body>
+</html>`;
 
-    const url = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
-
-    await downloadFile(url, 'plate.html');
+    downloadBlob(new Blob([html], { type: 'text/html' }), 'plate.html');
+    toastWarnings(result.diagnostics);
   };
 
-  const exportToMarkdown = async () => {
-    const md = editor.plugin(MarkdownPlugin).api.serialize();
-    const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
-    await downloadFile(url, 'plate.md');
+  const exportToMarkdown = () => {
+    const result = model.plugin(MarkdownPlugin).api.serialize({ projection });
+
+    if (!result.ok) {
+      toast.error(
+        result.diagnostics.find(({ severity }) => severity === 'error')
+          ?.message ?? 'Markdown export failed.'
+      );
+
+      return;
+    }
+    downloadBlob(
+      new Blob([result.data], { type: 'text/markdown' }),
+      'plate.md'
+    );
+    toastWarnings(result.diagnostics);
   };
 
-  const exportToWord = async () => {
-    const { exportToDocx } = await import('platejs/docx/export');
-    const result = await exportToDocx(model, {
-      editorPlugins: [...BaseEditorKit, ...DocxExportKit],
-      projection: docxSource ? 'review' : 'proposed',
+  const exportToWord = async (
+    requestedProjection?: CleanProjection | 'review'
+  ) => {
+    let omittedCommentCount = 0;
+    const docxComments: DocxComment[] = [];
+
+    if (commentsInstalled) {
+      const commentEditor = isAuthoredEditor(model)
+        ? createEditorView(model, {
+            authored: { intent: 'edit', projection: 'proposed' },
+          })
+        : model;
+      const comments = commentEditor.plugin(CommentsPlugin);
+      const users = comments.store.get('users');
+
+      comments.api.getThreads().forEach((thread) => {
+        if (thread.status !== 'published') return;
+        const attachment = comments.api.attachment(thread.id);
+
+        if (attachment?.type !== 'range' || attachment.status !== 'attached') {
+          omittedCommentCount += 1;
+
+          return;
+        }
+        const parentId = thread.messages[0]
+          ? `${thread.id}:${thread.messages[0].id}`
+          : null;
+
+        thread.messages.forEach((message, index) => {
+          const user = users[message.userId];
+          const name = user?.name ?? 'Unknown';
+          const initials = name
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((part) => part[0])
+            .join('')
+            .slice(0, 4);
+
+          docxComments.push({
+            author: { ...(initials ? { initials } : {}), name },
+            body: message.body,
+            createdAt: message.createdAt,
+            durableId: null,
+            id: `${thread.id}:${message.id}`,
+            parentId: index === 0 ? null : parentId,
+            resolved: index === 0 ? thread.resolution !== null : null,
+            target: { range: attachment.range },
+          });
+        });
+      });
+    }
+    const wordProjection =
+      requestedProjection ?? (unresolved ? projection : ('review' as const));
+    const result = await exportDocx(model, {
+      comments: docxComments,
+      component: EditorStatic,
+      projection: wordProjection,
       source: docxSource?.source ?? undefined,
       stylesheet: DOCX_EXPORT_STYLES,
     });
@@ -172,28 +220,24 @@ export function ExportToolbarButton() {
       return;
     }
 
-    const url = URL.createObjectURL(result.blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'plate.docx';
-    document.body.append(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-
-    const warningCount = result.diagnostics.filter(
-      ({ severity }) => severity === 'warning'
-    ).length;
-
-    if (warningCount > 0) {
+    downloadBlob(result.blob, 'plate.docx');
+    toastWarnings(result.diagnostics);
+    if (omittedCommentCount > 0) {
       toast.warning(
-        `Exported with ${warningCount} warning${warningCount === 1 ? '' : 's'}.`
+        `${omittedCommentCount} comment thread${omittedCommentCount === 1 ? '' : 's'} could not be attached to the Word document.`
       );
     }
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+    <DropdownMenu
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) setProjectionChoice(undefined);
+        setOpen(nextOpen);
+      }}
+      modal={false}
+    >
       <DropdownMenuTrigger>
         <ToolbarButton
           aria-label="Export"
@@ -206,22 +250,48 @@ export function ExportToolbarButton() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start">
+        {unresolved && (
+          <>
+            <DropdownMenuLabel>Unresolved suggestions</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={projection}
+              onValueChange={(value) =>
+                setProjectionChoice(
+                  value === 'accepted' ? 'accepted' : 'proposed'
+                )
+              }
+            >
+              <DropdownMenuRadioItem
+                value="proposed"
+                onSelect={(event) => event.preventDefault()}
+              >
+                Include suggested changes
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem
+                value="accepted"
+                onSelect={(event) => event.preventDefault()}
+              >
+                Exclude suggested changes
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuGroup>
           <DropdownMenuItem onSelect={exportToHtml}>
             Export as HTML
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToPdf}>
-            Export as PDF
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToImage}>
-            Export as Image
-          </DropdownMenuItem>
           <DropdownMenuItem onSelect={exportToMarkdown}>
             Export as Markdown
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToWord}>
+          <DropdownMenuItem onSelect={() => exportToWord()}>
             Export as Word
           </DropdownMenuItem>
+          {unresolved && (
+            <DropdownMenuItem onSelect={() => exportToWord('review')}>
+              Export as Word with tracked changes
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

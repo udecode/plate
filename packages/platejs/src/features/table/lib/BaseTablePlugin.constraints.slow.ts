@@ -1,4 +1,5 @@
 import type { Element } from '../../../core';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { createTestTableEditor } from './__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from './BaseTablePlugin';
 
@@ -14,9 +15,10 @@ describe('table HTML width constraints', () => {
         `<tr>${'<td><p></p></td>'.repeat(index)}<td colspan="2" style="width:100px"><p>Span</p></td></tr>`
     ).join('');
     const exactRow = `<tr>${'<td><p></p></td>'.repeat(columnCount - 1)}<td style="width:50px"><p>Exact</p></td></tr>`;
-    const table = editor.api.html.deserialize({
-      element: `<table><tbody>${constraintRows}${exactRow}</tbody></table>`,
-    })?.[0] as Element;
+    const table = parseHtmlSliceContent(
+      editor,
+      `<table><tbody>${constraintRows}${exactRow}</tbody></table>`
+    )?.[0] as Element;
     const widths = Reflect.get(table, 'columnWidths') as number[];
 
     expect(widths).toHaveLength(columnCount);

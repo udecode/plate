@@ -4,8 +4,11 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   createEditorView,
+  definePlugin,
   defineEditorSchema,
   DocumentChange,
+  type EditorCommit,
+  type EditorDocumentValue,
   NodeApi,
   schema,
 } from 'plitejs';
@@ -13,10 +16,11 @@ import {
   authored,
   createAuthoredImportedRevisionChange,
   createAuthoredReviewDocument,
-  deserializeAuthoredJson,
+  isAuthoredEditor,
+  parseAuthoredDocument,
+  projectAuthoredDocument,
   projectAuthoredRange,
-  readAuthoredFormatSnapshot,
-  serializeAuthoredJson,
+  projectAuthoredReview,
   type AuthoredFormatSegment,
 } from 'plitejs/authored';
 
@@ -34,12 +38,68 @@ const paragraph = (text: string) => ({
 });
 const point = (offset: number) => ({ path: [0, 0], offset });
 const proposal = { intent: 'propose', projection: 'markup' } as const;
+const serializeProjection = (
+  document: EditorDocumentValue,
+  projection: 'accepted' | 'proposed' | 'review' = 'accepted'
+) => {
+  if (projection === 'review') {
+    return { data: JSON.stringify(document), diagnostics: [] } as const;
+  }
+  const result = projectAuthoredDocument(document, { projection });
+
+  return {
+    data: JSON.stringify(result.document),
+    diagnostics: result.diagnostics,
+  };
+};
 const flatten = (
   segments: readonly AuthoredFormatSegment[]
 ): readonly AuthoredFormatSegment[] =>
   segments.flatMap((segment) => [segment, ...flatten(segment.children ?? [])]);
 
 describe('authored format snapshot', () => {
+  it('narrows optional authored capability access', () => {
+    const plain = createEditor({ initialValue: [paragraph('Plain')] });
+    const nameCollision = createEditor({
+      plugins: [definePlugin('authored', {})],
+      initialValue: [paragraph('Collision')],
+    });
+    const withAuthored = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('Authored')],
+    });
+
+    assert.equal(isAuthoredEditor(plain), false);
+    assert.equal(isAuthoredEditor(nameCollision), false);
+    assert.equal(isAuthoredEditor(withAuthored), true);
+    if (!isAuthoredEditor(withAuthored)) {
+      assert.fail('Authored editor did not narrow.');
+    }
+    assert.deepEqual(withAuthored.read.authored.changes().items, []);
+  });
+
+  it('coalesces one typing contribution into one format segment', () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('Base')],
+    });
+    const view = createEditorView(editor, { authored: proposal });
+
+    view.update.selection.set(point(4));
+    for (const character of ' draft') {
+      view.update({ tags: 'native-text-input' }, (tx) =>
+        tx.text.insert(character)
+      );
+    }
+
+    const paragraphSegment = projectAuthoredReview(editor.read.value()).markup
+      .main[0];
+    assert.deepEqual(
+      paragraphSegment.children?.map((segment) => segment.node),
+      [{ text: 'Base' }, { text: ' draft' }]
+    );
+  });
+
   it('materializes accepted, proposed and review projections with stable IDs', () => {
     let authorId = 'alice';
     const editor = createEditor({
@@ -58,13 +118,20 @@ describe('authored format snapshot', () => {
       .changes()
       .items.find((change) => change.authorId === 'bob');
     assert.ok(insertion);
-    const snapshot = readAuthoredFormatSnapshot(editor);
+    const snapshot = projectAuthoredReview(editor.read.value());
+    const proposed = projectAuthoredDocument(editor.read.value(), {
+      projection: 'proposed',
+    });
     const review = flatten(snapshot.markup.main);
 
     assert.deepEqual(snapshot.accepted.children, [paragraph('ABCDE')]);
     assert.equal(snapshot.accepted.meta, undefined);
     assert.deepEqual(snapshot.proposed.children, [paragraph('ADE!')]);
     assert.deepEqual(snapshot.review, editor.read.value());
+    assert.deepEqual(snapshot.unresolved, { conflicted: 0, pending: 2 });
+    assert.deepEqual(proposed.document, snapshot.proposed);
+    assert.deepEqual(proposed.review, snapshot.review);
+    assert.deepEqual(proposed.unresolved, snapshot.unresolved);
     assert.deepEqual(
       snapshot.changes
         .map(({ authorId: changeAuthorId, id }) => ({
@@ -95,6 +162,62 @@ describe('authored format snapshot', () => {
     );
   });
 
+  it('reports conflicted authored changes without treating them as revisions', () => {
+    const plugin = authored({ authorId: 'alice' });
+    const original = createEditor({
+      plugins: [plugin],
+      initialValue: [paragraph('First')],
+    });
+    let id = '';
+
+    original.update((tx) => {
+      id = tx.authored.propose();
+      tx.text.insert('!', { at: point(5) });
+    });
+    const saved = JSON.parse(JSON.stringify(original.read.value()));
+    const author = createEditor({ plugins: [plugin], initialValue: saved });
+    const reviewer = createEditor({ plugins: [plugin], initialValue: saved });
+    const effects: Array<EditorCommit['effects'][number]> = [];
+
+    for (const peer of [author, reviewer]) {
+      peer.subscribeCommit((commit) => {
+        effects.push(
+          ...commit.effects.filter(
+            ({ type }) => type.key === 'authored.operation'
+          )
+        );
+      });
+    }
+    author.update((tx) => {
+      tx.authored.propose({ changeId: id });
+      tx.text.insert('x', { at: point(6) });
+    });
+    reviewer.update.authored.decide({
+      action: 'accept',
+      selection: reviewer.read.authored.select({ ids: [id] }),
+    });
+    const merged = createEditor({ plugins: [plugin], initialValue: saved });
+
+    merged.update((tx) => {
+      for (const effect of effects) tx.effects.emit(effect.type, effect.value);
+    });
+    const snapshot = projectAuthoredReview(merged.read.value());
+    const projected = projectAuthoredDocument(merged.read.value(), {
+      projection: 'proposed',
+    });
+    const json = serializeProjection(merged.read.value(), 'proposed');
+
+    assert.equal(merged.read.authored.change(id)?.status, 'conflicted');
+    assert.deepEqual(snapshot.changes, []);
+    assert.deepEqual(snapshot.unresolved, { conflicted: 1, pending: 0 });
+    assert.deepEqual(projected.unresolved, snapshot.unresolved);
+    assert.deepEqual(projected.document, snapshot.proposed);
+    assert.deepEqual(
+      json.diagnostics.map(({ code }) => code),
+      ['authored-conflict']
+    );
+  });
+
   it('defaults JSON to accepted content and preserves the review envelope explicitly', () => {
     const editor = createEditor({
       plugins: [authored({ authorId: 'alice' })],
@@ -103,17 +226,17 @@ describe('authored format snapshot', () => {
     const view = createEditorView(editor, { authored: proposal });
 
     view.update.text.insert(' draft', { at: point(4) });
-    const accepted = serializeAuthoredJson(editor);
-    const review = serializeAuthoredJson(editor, { projection: 'review' });
+    const accepted = serializeProjection(editor.read.value());
+    const review = serializeProjection(editor.read.value(), 'review');
 
-    assert.deepEqual(deserializeAuthoredJson(accepted.data), {
+    assert.deepEqual(parseAuthoredDocument(accepted.data), {
       children: [paragraph('Base')],
     });
     assert.equal(accepted.diagnostics[0]?.code, 'authored-lossy-projection');
-    assert.deepEqual(deserializeAuthoredJson(review.data), editor.read.value());
+    assert.deepEqual(parseAuthoredDocument(review.data), editor.read.value());
     assert.deepEqual(review.diagnostics, []);
     assert.throws(
-      () => deserializeAuthoredJson('{"children":[{"text":1}]}'),
+      () => parseAuthoredDocument('{"children":[{"text":1}]}'),
       /valid document envelope/
     );
   });
@@ -328,17 +451,19 @@ describe('authored format snapshot', () => {
 
     assert.deepEqual(
       projectAuthoredRange(
-        editor,
-        { anchor: point(1), focus: point(2) },
-        'accepted'
+        projectAuthoredDocument(editor.read.value(), {
+          projection: 'accepted',
+        }),
+        { anchor: point(1), focus: point(2) }
       ),
       { anchor: point(3), focus: point(4) }
     );
     assert.equal(
       projectAuthoredRange(
-        editor,
-        { anchor: point(3), focus: point(4) },
-        'accepted'
+        projectAuthoredDocument(editor.read.value(), {
+          projection: 'accepted',
+        }),
+        { anchor: point(3), focus: point(4) }
       ),
       null
     );
@@ -352,7 +477,7 @@ describe('authored format snapshot', () => {
     const view = createEditorView(editor, { authored: proposal });
 
     view.update.nodes.set({ bold: true }, { at: [0, 0] });
-    const snapshot = readAuthoredFormatSnapshot(editor);
+    const snapshot = projectAuthoredReview(editor.read.value());
 
     assert.deepEqual(snapshot.accepted.children, [paragraph('Text')]);
     assert.deepEqual(snapshot.proposed.children, [

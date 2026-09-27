@@ -227,7 +227,7 @@ export const attachPliteBrowserHandle = ({
   forceRender,
   flushPendingNativeTextInput,
   isViewportBackedSelection,
-  replayHistory,
+  dispatchHistory,
   scrollPathIntoView,
   setExplicitViewportBackedSelection,
 }: {
@@ -240,7 +240,7 @@ export const attachPliteBrowserHandle = ({
   forceRender: () => void;
   flushPendingNativeTextInput?: () => void;
   isViewportBackedSelection: (selection: Range | null) => boolean;
-  replayHistory: EditableDOMRuntime['replayHistory'];
+  dispatchHistory: EditableDOMRuntime['dispatchHistory'];
   scrollPathIntoView?: (
     path: Path,
     align?: EditableViewportScrollAlign
@@ -743,7 +743,7 @@ export const attachPliteBrowserHandle = ({
       forceRender();
     },
     redo: () => {
-      void replayHistory('redo', 'none').then((result) => {
+      dispatchHistory('redo', 'none', (result) => {
         if (result.status !== 'applied') return;
 
         if (shouldForceRenderAfterModelOwnedHistory(editor)) {
@@ -897,7 +897,7 @@ export const attachPliteBrowserHandle = ({
       );
     },
     undo: () => {
-      void replayHistory('undo', 'none').then((result) => {
+      dispatchHistory('undo', 'none', (result) => {
         if (result.status !== 'applied') return;
 
         if (shouldForceRenderAfterModelOwnedHistory(editor)) {

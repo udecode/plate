@@ -5,26 +5,21 @@ import {
 } from 'platejs';
 import type { Editor } from 'platejs/react';
 
-import type { Descendant } from '../src/core';
+import type { ContentSlice } from '../src/core';
 
 declare const baseEditor: HeadlessEditor;
-declare const expectDescendants: (value: Descendant[] | null) => void;
+declare const expectSlice: (value: ContentSlice | null) => void;
 declare const plateEditor: Editor;
 
 baseEditor.plugin(DebugPlugin).api.log('base');
 plateEditor.plugin(DebugPlugin).api.log('plate');
 
-expectDescendants(
-  baseEditor.plugin(HtmlPlugin).api.deserialize({
-    element: '<p>base</p>',
-  })
-);
+const baseHtml = baseEditor.plugin(HtmlPlugin).api.parseSlice('<p>base</p>');
 
-expectDescendants(
-  plateEditor.plugin(HtmlPlugin).api.deserialize({
-    element: '<p>plate</p>',
-  })
-);
+expectSlice(baseHtml.ok ? baseHtml.slice : null);
+const plateHtml = plateEditor.plugin(HtmlPlugin).api.parseSlice('<p>plate</p>');
+
+expectSlice(plateHtml.ok ? plateHtml.slice : null);
 
 baseEditor.api.history.undo();
 plateEditor.api.history.undo();

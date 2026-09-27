@@ -30,7 +30,7 @@ const registryPath = resolve(root, 'benchmarks/targets/slate-v2.json');
 type BenchmarkLane = {
   inspectionMs: { p95: number };
   metadata: {
-    compilationCallbacks?: number;
+    acceptCallbacks?: number;
     commitCount?: number;
     configurationCommitCount?: number;
     configurationDirtyCommits?: number;
@@ -40,18 +40,15 @@ type BenchmarkLane = {
     encodeCallbacks?: number;
     encodeMs?: number;
     fitted?: boolean;
-    hostParseMs?: number;
-    initialCompilationCallbacks?: number;
+    transferDecodeMs?: number;
+    initialAcceptCallbacks?: number;
     initialDecodeCallbacks?: number;
     initialEncodeCallbacks?: number;
-    initialQueryCallbacks?: number;
     lineCount?: number;
     publishedCommits?: number;
-    queryCallbacks?: number;
-    replacementCompilationCallbacks?: number;
+    replacementAcceptCallbacks?: number;
     replacementDecodeCallbacks?: number;
     replacementEncodeCallbacks?: number;
-    replacementQueryCallbacks?: number;
   };
   retainedHeapDeltaBytes: { samples: number[] } | null;
   setupMs: { p95: number };
@@ -60,7 +57,7 @@ type BenchmarkLane = {
 type BenchmarkSummary = {
   cohorts: {
     stress: {
-      hostCodecInsertMs: BenchmarkLane;
+      dataTransferFormatInsertMs: BenchmarkLane;
       sliceCommitMs: BenchmarkLane;
       sliceFitMs: BenchmarkLane;
     };
@@ -77,11 +74,11 @@ type BenchmarkSummary = {
   correctnessFailures: string[];
   issueTargets: Record<string, BenchmarkLane>;
   metrics: Record<string, number>;
-  plateCodecs: {
-    compilationMs: Pick<BenchmarkLane, 'metadata'>;
-    parseInsert10000Ms: BenchmarkLane;
+  plateDataTransferFormats: {
+    registrationMs: Pick<BenchmarkLane, 'metadata'>;
+    decodeInsert10000Ms: BenchmarkLane;
     reconfigurationMs: BenchmarkLane;
-    serialize10000Ms: BenchmarkLane;
+    encode10000Ms: BenchmarkLane;
   };
   thresholdPolicy: { releaseGate: boolean };
 };
@@ -283,7 +280,7 @@ describe('clipboard large-payload benchmark authority', () => {
   });
 
   it(
-    'runs the live encode, decode, HostCodec, fit, and commit boundaries on a bounded corpus',
+    'runs the live encode, decode, DataTransferFormat, fit, and commit boundaries on a bounded corpus',
     {
       timeout: 30_000,
     },
@@ -362,127 +359,127 @@ describe('clipboard large-payload benchmark authority', () => {
       assert.ok(summary.cohorts.stress.sliceCommitMs.inspectionMs.p95 >= 0);
       assert.ok(summary.cohorts.stress.sliceCommitMs.setupMs.p95 >= 0);
       assert.equal(
-        summary.cohorts.stress.hostCodecInsertMs.metadata.commitCount,
+        summary.cohorts.stress.dataTransferFormatInsertMs.metadata.commitCount,
         1
       );
       assert.ok(
-        (summary.cohorts.stress.hostCodecInsertMs.metadata.hostParseMs ?? -1) >=
-          0
+        (summary.cohorts.stress.dataTransferFormatInsertMs.metadata
+          .transferDecodeMs ?? -1) >= 0
       );
       assert.ok(
         summary.cohorts.stress.sliceCommitMs.retainedHeapDeltaBytes !== null
       );
       assert.equal(Object.keys(summary.issueTargets).length, 3);
       assert.equal(
-        summary.plateCodecs.compilationMs.metadata.compilationCallbacks,
+        summary.plateDataTransferFormats.registrationMs.metadata
+          .acceptCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateDataTransferFormats.reconfigurationMs.metadata
+          .configurationCommitCount,
         1
       );
       assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata.configurationCommitCount,
-        1
-      );
-      assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata
+        summary.plateDataTransferFormats.reconfigurationMs.metadata
           .configurationDirtyCommits,
         1
       );
       assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata
+        summary.plateDataTransferFormats.reconfigurationMs.metadata
           .configurationRevisionDelta,
         1
       );
       assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata
-          .initialCompilationCallbacks,
+        summary.plateDataTransferFormats.reconfigurationMs.metadata
+          .initialAcceptCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateDataTransferFormats.reconfigurationMs.metadata
+          .initialDecodeCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateDataTransferFormats.reconfigurationMs.metadata
+          .initialEncodeCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateDataTransferFormats.reconfigurationMs.metadata
+          .replacementAcceptCallbacks,
         1
       );
       assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata.initialDecodeCallbacks,
-        0
-      );
-      assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata.initialEncodeCallbacks,
-        0
-      );
-      assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata.initialQueryCallbacks,
-        0
-      );
-      assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata
-          .replacementCompilationCallbacks,
-        1
-      );
-      assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata
+        summary.plateDataTransferFormats.reconfigurationMs.metadata
           .replacementDecodeCallbacks,
         1
       );
       assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata
+        summary.plateDataTransferFormats.reconfigurationMs.metadata
           .replacementEncodeCallbacks,
         1
       );
       assert.equal(
-        summary.plateCodecs.reconfigurationMs.metadata
-          .replacementQueryCallbacks,
+        summary.plateDataTransferFormats.decodeInsert10000Ms.metadata
+          .acceptCallbacks,
         1
       );
       assert.equal(
-        summary.plateCodecs.parseInsert10000Ms.metadata.compilationCallbacks,
+        summary.plateDataTransferFormats.decodeInsert10000Ms.metadata
+          .decodeCallbacks,
         1
       );
       assert.equal(
-        summary.plateCodecs.parseInsert10000Ms.metadata.queryCallbacks,
-        1
-      );
-      assert.equal(
-        summary.plateCodecs.parseInsert10000Ms.metadata.decodeCallbacks,
-        1
-      );
-      assert.equal(
-        summary.plateCodecs.parseInsert10000Ms.metadata.encodeCallbacks,
+        summary.plateDataTransferFormats.decodeInsert10000Ms.metadata
+          .encodeCallbacks,
         0
       );
       assert.equal(
-        summary.plateCodecs.parseInsert10000Ms.metadata.commitCount,
+        summary.plateDataTransferFormats.decodeInsert10000Ms.metadata
+          .commitCount,
         1
       );
       assert.equal(
-        summary.plateCodecs.parseInsert10000Ms.metadata.lineCount,
+        summary.plateDataTransferFormats.decodeInsert10000Ms.metadata.lineCount,
         20
       );
       assert.equal(
-        summary.plateCodecs.serialize10000Ms.metadata.compilationCallbacks,
-        1
-      );
-      assert.equal(
-        summary.plateCodecs.serialize10000Ms.metadata.decodeCallbacks,
+        summary.plateDataTransferFormats.encode10000Ms.metadata.acceptCallbacks,
         0
       );
       assert.equal(
-        summary.plateCodecs.serialize10000Ms.metadata.encodeCallbacks,
+        summary.plateDataTransferFormats.encode10000Ms.metadata.decodeCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateDataTransferFormats.encode10000Ms.metadata.encodeCallbacks,
         1
       );
-      assert.equal(summary.plateCodecs.serialize10000Ms.metadata.lineCount, 20);
-      assert.ok(
-        (summary.plateCodecs.parseInsert10000Ms.metadata.decodeMs ?? -1) >= 0
+      assert.equal(
+        summary.plateDataTransferFormats.encode10000Ms.metadata.lineCount,
+        20
       );
       assert.ok(
-        (summary.plateCodecs.serialize10000Ms.metadata.encodeMs ?? -1) >= 0
+        (summary.plateDataTransferFormats.decodeInsert10000Ms.metadata
+          .decodeMs ?? -1) >= 0
       );
       assert.ok(
-        summary.metrics.plite_clipboard_plate_codec_compile_p95_ms >= 0
+        (summary.plateDataTransferFormats.encode10000Ms.metadata.encodeMs ??
+          -1) >= 0
       );
       assert.ok(
-        summary.metrics.plite_clipboard_plate_codec_reconfigure_p95_ms >= 0
+        summary.metrics.plite_clipboard_plate_transfer_registration_p95_ms >= 0
       );
       assert.ok(
-        summary.metrics.plite_clipboard_plate_codec_parse_insert_10000_p95_ms >=
-          0
+        summary.metrics.plite_clipboard_plate_transfer_reconfigure_p95_ms >= 0
       );
       assert.ok(
-        summary.metrics.plite_clipboard_plate_codec_serialize_10000_p95_ms >= 0
+        summary.metrics
+          .plite_clipboard_plate_transfer_decode_insert_10000_p95_ms >= 0
+      );
+      assert.ok(
+        summary.metrics.plite_clipboard_plate_transfer_encode_10000_p95_ms >= 0
       );
     }
   );

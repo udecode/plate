@@ -15,9 +15,9 @@ export type CodeDrawingView = (typeof CODE_DRAWING_VIEWS)[number];
 
 /** Enables support for PlantUML, Graphviz, Flowchart, and Mermaid drawings. */
 export const BaseCodeDrawingPlugin = definePlugin(PLUGINS.codeDrawing, {
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ node, parseAttributes }) => ({

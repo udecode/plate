@@ -31,9 +31,13 @@ const getMathExcludedSelectors = (editor: InputRuleEditor<Editor>) => {
 };
 
 export const BaseEquationPlugin = definePlugin(PLUGINS.equation, {
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ node }) => node.latex,
+      },
+      markdown: {
         from: 'math',
         kind: 'node',
         decode: ({ node }) => ({
@@ -58,9 +62,13 @@ export const BaseEquationPlugin = definePlugin(PLUGINS.equation, {
 });
 
 export const BaseInlineEquationPlugin = definePlugin(PLUGINS.inlineEquation, {
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ node }) => node.latex,
+      },
+      markdown: {
         from: 'inlineMath',
         kind: 'node',
         decode: ({ node }) => ({

@@ -79,7 +79,7 @@ const value = [
 ];
 ~~~
 
-level is semantic Plate data. The HTML codec maps it to an h1 through h6 tag. The Markdown codec maps it to MDAST depth.
+level is semantic Plate data. The HTML mapping maps it to an h1 through h6 tag. The Markdown mapping maps it to MDAST depth.
 
 ## Commands
 
@@ -93,8 +93,7 @@ Calling toggle with the active level resets the selected heading to the root def
 
 | API | Purpose |
 | --- | --- |
-| BaseHeadingPlugin | Headless heading schema, behavior, codecs, and update. |
+| BaseHeadingPlugin | Headless heading schema, behavior, format mappings, and update. |
 | HeadingPlugin | React adapter for BaseHeadingPlugin. |
 | HeadingRules.markdown() | One block-start rule for # through ######. |
 | HeadingLevel | 1, 2, 3, 4, 5, or 6. |
-

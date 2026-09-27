@@ -7,3 +7,5 @@ Add `BaseSuggestionPlugin` at `platejs/suggestion` and `SuggestionPlugin`, `useS
 Configure each mounted editor's suggestion intent and projection with `EditorRoot authored`, while loading saved proposals through the complete document value.
 
 Keep pending suggestions and review controls visible when `SuggestionPlugin` switches subsequent input between suggesting and editing.
+
+Require a current author before entering suggestion mode, and expose `authored.read.canPropose()` so controls can omit unavailable proposal actions.

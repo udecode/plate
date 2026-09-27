@@ -1,5 +1,10 @@
 import type {
-  ContentSlice,
+  DataTransferDecodeContext,
+  DataTransferDecodeResult,
+  DataTransferEncodeContext,
+  DataTransferEncodeResult,
+} from '../../dom/plite-dom.internal';
+import type {
   DefinitionOf as RuntimeDefinitionOf,
   Descendant,
   Element,
@@ -11,7 +16,6 @@ import type {
   EditorReadMethodRecord,
   EditorReadMethodTree,
   EditorNodeChangeContext,
-  EditorCoreStateView,
   EditorTextChangeContext,
   EditorTransactionChangeContext,
   EditorUpdateContext,
@@ -59,8 +63,9 @@ import type {
   LowerBasePlugin,
 } from './basePluginCompiler.internal';
 import type { HandlerReturnType } from './HandlerReturnType';
-import type { MarkdownNodeCodecInput } from './MarkdownNodeCodec';
-import type { pluginCodecMapDeclaration } from './pluginAuthoringContext';
+import type { MarkdownNodeMappingInput } from './MarkdownNodeMapping';
+import type { PlainTextNodeMappingInput } from './PlainTextNodeMapping';
+import type { pluginFormatMapDeclaration } from './pluginAuthoringContext';
 import type {
   AnyBasePluginDefinition,
   BaseInjectProps,
@@ -78,8 +83,6 @@ import type {
   InferSelectors,
   InferUpdate,
   NodeComponent,
-  HtmlParserOptions,
-  HtmlPluginContext,
   BasePluginDefinition,
   BreakRules,
   DeleteRules,
@@ -102,6 +105,11 @@ import type {
   PluginCompatibilityArguments,
   PluginContributionCompatibility,
 } from './pluginDefinitionMerge.internal';
+import type {
+  HtmlMappingDiagnosticInput,
+  PluginFormatContext,
+  PluginFormatModelView,
+} from './PluginFormatContext';
 import type { RequiredPluginState } from './pluginInitialState.internal';
 import type { ElementWith } from './pluginNodeTypes';
 import type {
@@ -216,7 +224,8 @@ type AnyPluginDependencyDescriptor = Readonly<{
 export type AnyBasePlugin = {
   activate?: ErasedPluginCallable;
   api?: object | ErasedPluginCallable<object>;
-  codecs?: object | ErasedPluginCallable<object> | null;
+  dataTransferFormats?: object | ErasedPluginCallable<object> | null;
+  formats?: object | ErasedPluginCallable<object> | null;
   commands?: ErasedPluginCallable;
   component?: NodeComponent | null;
   configure: ErasedPluginCallable;
@@ -273,7 +282,7 @@ export type DynamicBasePluginPortal = Omit<AnyBasePluginPortal, 'schema'> & {
 
 /** Type-erased authoring context used while compiling plugin callbacks. */
 export type AnyBasePluginContext = Omit<DynamicBasePluginPortal, 'schema'> & {
-  readonly defineCodecs: object;
+  readonly defineFormats: object;
   readonly editor: object;
   readonly plugin: AnyPluginBase;
   readonly schema: PluginAuthorSchemaView;
@@ -359,17 +368,6 @@ export type NodeStaticProps<
     ) => AnyObject | undefined)
   | AnyObject;
 
-export type HtmlCodecHooks<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = {
-  query?: (options: HtmlParserOptions & HtmlPluginContext<C>) => boolean;
-  transformData?: (options: HtmlParserOptions & HtmlPluginContext<C>) => string;
-  transformFragment?: (
-    options: HtmlParserOptions &
-      HtmlPluginContext<C> & { fragment: readonly Descendant[] }
-  ) => readonly Descendant[];
-};
-
 export type HtmlMatchValue = string | readonly string[];
 
 type HtmlMatcherFields = {
@@ -421,10 +419,26 @@ export type HtmlNodeSpec = Readonly<{
   tag: string;
 }>;
 
-type HtmlDecodeContext = Readonly<{
-  element: Readonly<HTMLElement>;
-  state: EditorCoreStateView;
-}>;
+export type {
+  HtmlMappingDiagnosticInput,
+  MarkdownMappingDiagnosticInput,
+  PluginFormatContext,
+  PluginFormatModelView,
+  PluginFormatRegistry,
+  PluginFormatSchemaView,
+} from './PluginFormatContext';
+
+type HtmlPluginFormatContext<C extends AnyBasePluginDefinition> =
+  PluginFormatContext<C> &
+    Readonly<{
+      report: (diagnostic: HtmlMappingDiagnosticInput) => void;
+    }>;
+
+type HtmlDecodeContext<C extends AnyBasePluginDefinition> =
+  HtmlPluginFormatContext<C> &
+    Readonly<{
+      element: Readonly<HTMLElement>;
+    }>;
 
 type HtmlElementDecodeResult<TProperties extends object> = Readonly<
   Partial<TProperties> & {
@@ -432,32 +446,43 @@ type HtmlElementDecodeResult<TProperties extends object> = Readonly<
   }
 >;
 
-type HtmlElementEncodeContext<TNode extends Element> = Readonly<{
-  content: HtmlContentToken;
-  node: Readonly<TNode>;
-  state: EditorCoreStateView;
-}>;
+type HtmlModelContext<
+  C extends AnyBasePluginDefinition,
+  TNode,
+> = HtmlPluginFormatContext<C> &
+  Omit<PluginFormatModelView, 'node'> &
+  Readonly<{ node: Readonly<TNode> }>;
 
-type HtmlPropertyEncodeContext<TNode, TValue> = Readonly<{
-  node: Readonly<TNode>;
-  state: EditorCoreStateView;
-  value: TValue;
-}>;
+type HtmlElementEncodeContext<
+  C extends AnyBasePluginDefinition,
+  TNode extends Element,
+> = HtmlModelContext<C, TNode> & Readonly<{ content: HtmlContentToken }>;
 
-type HtmlPropertiesEncodeContext<TNode, TValues extends object> = Readonly<{
-  node: Readonly<TNode>;
-  state: EditorCoreStateView;
-  values: Readonly<TValues>;
-}>;
+type HtmlPropertyEncodeContext<
+  C extends AnyBasePluginDefinition,
+  TNode,
+  TValue,
+> = HtmlModelContext<C, TNode> & Readonly<{ value: TValue }>;
 
-type HtmlRuleDirections<TDecode, TEncodeContext, TEncodeResult> =
+type HtmlPropertiesEncodeContext<
+  C extends AnyBasePluginDefinition,
+  TNode,
+  TValues extends object,
+> = HtmlModelContext<C, TNode> & Readonly<{ values: Readonly<TValues> }>;
+
+type HtmlRuleDirections<
+  TDecodeContext,
+  TDecodeResult,
+  TEncodeContext,
+  TEncodeResult,
+> =
   | Readonly<{
-      decode: (context: HtmlDecodeContext) => TDecode | undefined;
+      decode: (context: TDecodeContext) => TDecodeResult | undefined;
       decodeOnly?: never;
       encode: (context: TEncodeContext) => TEncodeResult | null;
     }>
   | Readonly<{
-      decode: (context: HtmlDecodeContext) => TDecode | undefined;
+      decode: (context: TDecodeContext) => TDecodeResult | undefined;
       decodeOnly: true;
       encode?: never;
     }>;
@@ -555,9 +580,10 @@ type HtmlPropertyDecode<C extends AnyBasePluginDefinition> = [
 type HtmlPropertyEncodeContextFor<C extends AnyBasePluginDefinition> = [
   HtmlSoleExactProperty<C>,
 ] extends [never]
-  ? HtmlPropertiesEncodeContext<Element, HtmlOwnedPropertyMap<C>>
+  ? HtmlPropertiesEncodeContext<C, Element, HtmlOwnedPropertyMap<C>>
   : HtmlSoleExactProperty<C> extends SchemaProperty
     ? HtmlPropertyEncodeContext<
+        C,
         Element,
         PropertyValueOf<HtmlSoleExactProperty<C>['value']>
       >
@@ -566,9 +592,10 @@ type HtmlPropertyEncodeContextFor<C extends AnyBasePluginDefinition> = [
 type HtmlTextEncodeContextFor<C extends AnyBasePluginDefinition> = [
   HtmlSoleExactProperty<C>,
 ] extends [never]
-  ? HtmlPropertiesEncodeContext<Text, HtmlOwnedPropertyMap<C>>
+  ? HtmlPropertiesEncodeContext<C, Text, HtmlOwnedPropertyMap<C>>
   : HtmlSoleExactProperty<C> extends SchemaProperty
     ? HtmlPropertyEncodeContext<
+        C,
         Text,
         PropertyValueOf<HtmlSoleExactProperty<C>['value']>
       >
@@ -576,8 +603,10 @@ type HtmlTextEncodeContextFor<C extends AnyBasePluginDefinition> = [
 
 type HtmlElementRule<C extends AnyBasePluginDefinition> = HtmlRuleBase &
   HtmlRuleDirections<
+    HtmlDecodeContext<C>,
     HtmlElementDecodeResult<HtmlOwnedPropertyMap<C>>,
     HtmlElementEncodeContext<
+      C,
       Element &
         Readonly<{ type: InferPluginDocumentType<C> }> &
         HtmlOwnedPropertyMap<C>
@@ -593,6 +622,7 @@ type HtmlElementPropertyRule<C extends AnyBasePluginDefinition> = HtmlRuleBase &
 type HtmlElementPropertyPatchRule<C extends AnyBasePluginDefinition> =
   HtmlRuleBase &
     HtmlRuleDirections<
+      HtmlDecodeContext<C>,
       HtmlPropertyDecode<C>,
       HtmlPropertyEncodeContextFor<C>,
       HtmlElementPatch
@@ -603,8 +633,9 @@ type HtmlElementPropertyPatchRule<C extends AnyBasePluginDefinition> =
 type HtmlElementPropertyCreateRule<C extends AnyBasePluginDefinition> =
   HtmlRuleBase &
     HtmlRuleDirections<
+      HtmlDecodeContext<C>,
       HtmlElementDecodeResult<HtmlOwnedPropertyMap<C>>,
-      HtmlElementEncodeContext<Element & HtmlOwnedPropertyMap<C>>,
+      HtmlElementEncodeContext<C, Element & HtmlOwnedPropertyMap<C>>,
       HtmlNodeSpec
     > & {
       createsElement: true;
@@ -612,6 +643,7 @@ type HtmlElementPropertyCreateRule<C extends AnyBasePluginDefinition> =
 
 type HtmlTextPropertyRule<C extends AnyBasePluginDefinition> = HtmlRuleBase &
   HtmlRuleDirections<
+    HtmlDecodeContext<C>,
     HtmlPropertyDecode<C>,
     HtmlTextEncodeContextFor<C>,
     HtmlWrapperSpec
@@ -622,6 +654,7 @@ type HtmlTextPropertyRule<C extends AnyBasePluginDefinition> = HtmlRuleBase &
 type HtmlForeignElementPropertyRule<C extends AnyBasePluginDefinition> =
   HtmlRuleBase &
     HtmlRuleDirections<
+      HtmlDecodeContext<C>,
       HtmlPropertyDecode<C>,
       HtmlPropertyEncodeContextFor<C>,
       HtmlElementPatch
@@ -696,18 +729,19 @@ type HtmlForeignRule<C extends AnyBasePluginDefinition> =
         ? HtmlElementRule<C>
         : never;
 
-type ForeignHtmlCodecTarget<
+type ForeignHtmlMappingTarget<
   C extends AnyBasePluginDefinition,
   TTarget extends PluginReference,
 > = TTarget['name'] extends C['name'] ? never : TTarget;
 
-type ForeignCodecDefinition<
+type ForeignFormatDefinition<
   C extends AnyBasePluginDefinition,
   TTarget extends AnyBasePlugin & PluginReference,
   TTargetDefinition extends AnyBasePluginDefinition =
     InternalPluginDefinitionOf<TTarget>,
 > = Omit<C, 'name' | 'schema'> &
   Readonly<{
+    formatOwnerName: C['name'];
     name: TTargetDefinition['name'];
   }> &
   ('schema' extends keyof C
@@ -720,90 +754,86 @@ type ForeignCodecDefinition<
       ? Pick<TTargetDefinition, 'schema'>
       : Readonly<Record<never, never>>);
 
-type CodecDecodeContext = Readonly<{
-  data: string;
-  format: string;
-  source: Readonly<{
-    files: Readonly<{
-      readonly [index: number]: File;
-      readonly length: number;
-      item: (index: number) => File | null;
-    }>;
-    getData: (format: string) => string;
-    types: readonly string[];
-  }>;
-  state: EditorCoreStateView;
+/** Static context for declaring schema-owned format mappings. */
+export type PluginFormatAuthoringContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = Readonly<{
+  defineFormats: DefinePluginFormats<C>;
+  schema: PluginAuthorSchemaView<C>;
 }>;
 
-type CodecEncodeContext = Readonly<{
-  format: string;
-  slice: ContentSlice;
-  state: EditorCoreStateView;
-}>;
+export type PluginDataTransferDecodeContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = DataTransferDecodeContext & PluginFormatContext<C>;
 
-type CodecDeclaration = Readonly<{
-  decode?: (context: CodecDecodeContext) => ContentSlice | null;
-  encode?: (context: CodecEncodeContext) => string | null;
+export type PluginDataTransferEncodeContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = DataTransferEncodeContext & PluginFormatContext<C>;
+
+export type PluginDataTransferFormatDeclaration<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = Readonly<{
+  accept?: (context: PluginDataTransferDecodeContext<C>) => boolean;
+  decode?: (
+    context: PluginDataTransferDecodeContext<C>
+  ) => DataTransferDecodeResult | null;
+  encode?: (
+    context: PluginDataTransferEncodeContext<C>
+  ) => DataTransferEncodeResult | null;
   key?: never;
+  mimeType: string;
   owner?: never;
   priority?: number;
-  query?: (context: CodecDecodeContext) => boolean;
   scope?: 'document';
   target?: never;
 }>;
 
-/** Schema codec declarations registered through `defineCodecs`. */
-export interface PluginProductNodeCodecRegistry<
+/** Schema format mappings registered through `defineFormats`. */
+export interface PluginProductNodeMappingRegistry<
   C extends AnyBasePluginDefinition,
 > {
-  'text/markdown': MarkdownNodeCodecInput<C>;
+  plainText: PlainTextNodeMappingInput<C>;
+  markdown: MarkdownNodeMappingInput<C>;
 }
 
-type PluginProductNodeCodecMap<C extends AnyBasePluginDefinition> = Readonly<
-  Partial<PluginProductNodeCodecRegistry<C>>
+type PluginProductNodeMappingMap<C extends AnyBasePluginDefinition> = Readonly<
+  Partial<PluginProductNodeMappingRegistry<C>>
 >;
 
-type PluginProductNodeCodecOnlyMap<C extends AnyBasePluginDefinition> = {
-  [TFormat in keyof PluginProductNodeCodecRegistry<C>]: Readonly<
-    Pick<PluginProductNodeCodecRegistry<C>, TFormat> &
-      Partial<Omit<PluginProductNodeCodecRegistry<C>, TFormat>> & {
-        'text/html'?: never;
+type PluginProductNodeMappingOnlyMap<C extends AnyBasePluginDefinition> = {
+  [TFormat in keyof PluginProductNodeMappingRegistry<C>]: Readonly<
+    Pick<PluginProductNodeMappingRegistry<C>, TFormat> &
+      Partial<Omit<PluginProductNodeMappingRegistry<C>, TFormat>> & {
+        html?: never;
       }
   >;
-}[keyof PluginProductNodeCodecRegistry<C>];
+}[keyof PluginProductNodeMappingRegistry<C>];
 
-export type PluginProductCodecMap = Readonly<
-  Record<string, CodecDeclaration> & {
-    /** HTML node codecs use the schema-aware `text/html` declaration. */
-    'text/html'?: never;
-    /**
-     * Document-level Markdown codecs must opt into document scope. Feature
-     * node codecs use the schema-aware `text/markdown` declaration instead.
-     */
-    'text/markdown'?: CodecDeclaration & Readonly<{ scope: 'document' }>;
-  }
->;
-
-type PluginSelfHtmlCodec<C extends AnyBasePluginDefinition> =
+type PluginSelfHtmlMapping<C extends AnyBasePluginDefinition> =
   HtmlSelfRule<C> & {
     target?: never;
   };
 
-type PluginHtmlCodecInput<C extends AnyBasePluginDefinition, TRule> =
-  | HtmlCodecHooks<C>
-  | (TRule & HtmlCodecHooks<C>);
+type HtmlPrepareDocument<C extends AnyBasePluginDefinition> = Readonly<{
+  prepareDocument?: (
+    context: HtmlPluginFormatContext<C> & Readonly<{ document: Document }>
+  ) => void;
+}>;
 
-export type PluginSelfHtmlCodecMap<C extends AnyBasePluginDefinition> =
+type PluginHtmlMappingInput<C extends AnyBasePluginDefinition, TRule> = TRule &
+  HtmlPrepareDocument<C>;
+
+export type PluginSelfHtmlMappingMap<C extends AnyBasePluginDefinition> =
   Readonly<{
-    'text/html':
-      | PluginHtmlCodecInput<C, PluginSelfHtmlCodec<C>>
+    html:
+      | PluginHtmlMappingInput<C, PluginSelfHtmlMapping<C>>
       | readonly [
-          PluginHtmlCodecInput<C, PluginSelfHtmlCodec<C>>,
-          ...Array<PluginHtmlCodecInput<C, PluginSelfHtmlCodec<C>>>,
+          PluginHtmlMappingInput<C, PluginSelfHtmlMapping<C>>,
+          ...Array<PluginHtmlMappingInput<C, PluginSelfHtmlMapping<C>>>,
         ];
   }>;
 
-type PluginSelfHtmlElementPropertyCodecMap<
+type PluginSelfHtmlElementPropertyMappingMap<
   C extends AnyBasePluginDefinition,
   TRule,
 > =
@@ -816,132 +846,134 @@ type PluginSelfHtmlElementPropertyCodecMap<
             Exclude<HtmlContributionProperties<C>, SchemaElementProperty>,
           ] extends [never]
         ? Readonly<{
-            'text/html':
-              | PluginHtmlCodecInput<C, TRule>
+            html:
+              | PluginHtmlMappingInput<C, TRule>
               | readonly [
-                  PluginHtmlCodecInput<C, TRule>,
-                  ...Array<PluginHtmlCodecInput<C, TRule>>,
+                  PluginHtmlMappingInput<C, TRule>,
+                  ...Array<PluginHtmlMappingInput<C, TRule>>,
                 ];
-            'text/markdown'?: never;
+            markdown?: never;
           }>
         : never
     : never;
 
-type PluginSelfHtmlCodecMapForRule<
+type PluginSelfHtmlMappingMapForRule<
   C extends AnyBasePluginDefinition,
   TRule,
 > = Readonly<{
-  'text/html':
-    | PluginHtmlCodecInput<C, TRule>
+  html:
+    | PluginHtmlMappingInput<C, TRule>
     | readonly [
-        PluginHtmlCodecInput<C, TRule>,
-        ...Array<PluginHtmlCodecInput<C, TRule>>,
+        PluginHtmlMappingInput<C, TRule>,
+        ...Array<PluginHtmlMappingInput<C, TRule>>,
       ];
-  'text/markdown'?: never;
+  markdown?: never;
 }>;
 
-type PluginTargetedHtmlCreateCodecMap<C extends AnyBasePluginDefinition> =
+type PluginTargetedHtmlCreateMappingMap<C extends AnyBasePluginDefinition> =
   C extends Readonly<{ targetPlugins: ReadonlyArray<PluginReference | string> }>
-    ? PluginSelfHtmlCodecMapForRule<C, HtmlElementPropertyCreateRule<C>>
+    ? PluginSelfHtmlMappingMapForRule<C, HtmlElementPropertyCreateRule<C>>
     : never;
 
-type PluginTargetedHtmlMixedCodecMap<C extends AnyBasePluginDefinition> =
+type PluginTargetedHtmlMixedMappingMap<C extends AnyBasePluginDefinition> =
   C extends Readonly<{ targetPlugins: ReadonlyArray<PluginReference | string> }>
     ? Readonly<{
-        'text/html': readonly [
-          PluginHtmlCodecInput<C, HtmlElementPropertyCreateRule<C>>,
-          PluginHtmlCodecInput<C, HtmlSelfNonCreatingRule<C>>,
-          ...Array<PluginHtmlCodecInput<C, HtmlSelfNonCreatingRule<C>>>,
+        html: readonly [
+          PluginHtmlMappingInput<C, HtmlElementPropertyCreateRule<C>>,
+          PluginHtmlMappingInput<C, HtmlSelfNonCreatingRule<C>>,
+          ...Array<PluginHtmlMappingInput<C, HtmlSelfNonCreatingRule<C>>>,
         ];
-        'text/markdown'?: never;
+        markdown?: never;
       }>
     : never;
 
-type PluginSelfHtmlProductNodeCodecMap<C extends AnyBasePluginDefinition> =
-  PluginSelfHtmlCodecMap<C> &
+type PluginSelfHtmlProductNodeMappingMap<C extends AnyBasePluginDefinition> =
+  PluginSelfHtmlMappingMap<C> &
     Readonly<{
-      'text/markdown': MarkdownNodeCodecInput<C>;
+      plainText?: PlainTextNodeMappingInput<C>;
+      markdown: MarkdownNodeMappingInput<C>;
     }>;
 
-export type PluginForeignHtmlCodecMap<
+export type PluginForeignHtmlMappingMap<
   C extends AnyBasePluginDefinition,
   TTarget extends AnyBasePlugin & PluginReference,
 > = Readonly<{
-  'text/html':
-    | (HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>> & {
-        target: ForeignHtmlCodecTarget<C, TTarget>;
+  html:
+    | (HtmlForeignRule<ForeignFormatDefinition<C, NoInfer<TTarget>>> & {
+        target: ForeignHtmlMappingTarget<C, TTarget>;
       })
     | readonly [
-        HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>> & {
-          target: ForeignHtmlCodecTarget<C, TTarget>;
+        HtmlForeignRule<ForeignFormatDefinition<C, NoInfer<TTarget>>> & {
+          target: ForeignHtmlMappingTarget<C, TTarget>;
         },
         ...Array<
-          HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>> & {
-            target: ForeignHtmlCodecTarget<C, TTarget>;
+          HtmlForeignRule<ForeignFormatDefinition<C, NoInfer<TTarget>>> & {
+            target: ForeignHtmlMappingTarget<C, TTarget>;
           }
         >,
       ];
 }>;
 
-type PluginForeignHtmlCodecInput<
+type PluginForeignHtmlMappingInput<
   C extends AnyBasePluginDefinition,
   TTarget extends AnyBasePlugin & PluginReference,
 > = Readonly<{
-  'text/html':
-    | PluginHtmlCodecInput<
-        ForeignCodecDefinition<C, NoInfer<TTarget>>,
-        HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>>
+  html:
+    | PluginHtmlMappingInput<
+        ForeignFormatDefinition<C, NoInfer<TTarget>>,
+        HtmlForeignRule<ForeignFormatDefinition<C, NoInfer<TTarget>>>
       >
     | readonly [
-        PluginHtmlCodecInput<
-          ForeignCodecDefinition<C, NoInfer<TTarget>>,
-          HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>>
+        PluginHtmlMappingInput<
+          ForeignFormatDefinition<C, NoInfer<TTarget>>,
+          HtmlForeignRule<ForeignFormatDefinition<C, NoInfer<TTarget>>>
         >,
         ...Array<
-          PluginHtmlCodecInput<
-            ForeignCodecDefinition<C, NoInfer<TTarget>>,
-            HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>>
+          PluginHtmlMappingInput<
+            ForeignFormatDefinition<C, NoInfer<TTarget>>,
+            HtmlForeignRule<ForeignFormatDefinition<C, NoInfer<TTarget>>>
           >
         >,
       ];
 }>;
 
-/** Schema-checked codec map produced by `defineCodecs`. */
-export type PluginCodecMapDeclaration = Readonly<Record<string, unknown>> & {
-  readonly [pluginCodecMapDeclaration]: true;
+/** Schema-checked format map produced by `defineFormats`. */
+export type PluginFormatMapDeclaration = Readonly<Record<string, unknown>> & {
+  readonly [pluginFormatMapDeclaration]: true;
 };
 
-/** Context-bound codec definition with exact owner and foreign-target typing. */
-export type DefinePluginCodecs<C extends AnyBasePluginDefinition> = {
-  // Separate overloads preserve exact self-codec inference.
+/** Context-bound format definition with exact owner and foreign-target typing. */
+export type DefinePluginFormats<C extends AnyBasePluginDefinition> = {
+  // Separate overloads preserve exact self-mapping inference.
   bivarianceHack(
-    codecs: PluginSelfHtmlProductNodeCodecMap<C>
-  ): PluginCodecMapDeclaration;
+    formats: PluginSelfHtmlProductNodeMappingMap<C>
+  ): PluginFormatMapDeclaration;
   bivarianceHack(
-    codecs: PluginTargetedHtmlCreateCodecMap<C>
-  ): PluginCodecMapDeclaration;
+    formats: PluginTargetedHtmlCreateMappingMap<C>
+  ): PluginFormatMapDeclaration;
   bivarianceHack(
-    codecs: PluginTargetedHtmlMixedCodecMap<C>
-  ): PluginCodecMapDeclaration;
+    formats: PluginTargetedHtmlMixedMappingMap<C>
+  ): PluginFormatMapDeclaration;
   bivarianceHack(
-    codecs: PluginSelfHtmlCodecMapForRule<C, HtmlSelfNonCreatingRule<C>>
-  ): PluginCodecMapDeclaration;
+    formats: PluginSelfHtmlMappingMapForRule<C, HtmlSelfNonCreatingRule<C>>
+  ): PluginFormatMapDeclaration;
   bivarianceHack(
-    codecs: PluginSelfHtmlElementPropertyCodecMap<
+    formats: PluginSelfHtmlElementPropertyMappingMap<
       C,
       HtmlElementPropertyCreateRule<C>
     >
-  ): PluginCodecMapDeclaration;
+  ): PluginFormatMapDeclaration;
   bivarianceHack(
-    codecs: PluginProductNodeCodecOnlyMap<C>
-  ): PluginCodecMapDeclaration;
-  bivarianceHack(codecs: PluginProductCodecMap): PluginCodecMapDeclaration;
+    formats: PluginProductNodeMappingOnlyMap<C>
+  ): PluginFormatMapDeclaration;
   bivarianceHack<const TTarget extends AnyBasePlugin & PluginReference>(
     target: TTarget,
-    codecs:
-      | PluginForeignHtmlCodecInput<C, TTarget>
-      | PluginProductNodeCodecMap<ForeignCodecDefinition<C, NoInfer<TTarget>>>
-  ): PluginCodecMapDeclaration;
+    formats:
+      | PluginForeignHtmlMappingInput<C, TTarget>
+      | PluginProductNodeMappingMap<
+          ForeignFormatDefinition<C, NoInfer<TTarget>>
+        >
+  ): PluginFormatMapDeclaration;
 }['bivarianceHack'];
 
 export type PartialBasePlugin<
@@ -1151,9 +1183,12 @@ type BasePluginAuthorFields<
       }
     ) => InferUpdate<C>;
   } & Nullable<{
-    codecs?:
-      | PluginCodecMapDeclaration
-      | ((context: BasePluginContext<C>) => PluginCodecMapDeclaration);
+    dataTransferFormats?: ReadonlyArray<PluginDataTransferFormatDeclaration<C>>;
+    formats?:
+      | PluginFormatMapDeclaration
+      | ((
+          context: PluginFormatAuthoringContext<C>
+        ) => PluginFormatMapDeclaration);
     decorate?: Decorate<C>;
   }> &
   BasePluginMethods<C> & {
@@ -1679,7 +1714,8 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   BasePluginInputFields<C>,
   | 'activate'
   | 'api'
-  | 'codecs'
+  | 'dataTransferFormats'
+  | 'formats'
   | 'commands'
   | 'conflicts'
   | 'contributions'
@@ -1711,9 +1747,12 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
 export type BasePluginPortal<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   S = C,
+  TApi = PluginPortalContext<C>['api'],
 > = Omit<ResolvedPlugin<C>, keyof PluginPortalContext<C> | 'schema'> &
   PluginReference<C['name']> &
-  Omit<PluginPortalContext<C>, 'read' | 'update'> & {
+  Omit<PluginPortalContext<C>, 'api' | 'read' | 'update'> & {
+    /** API scoped directly to this plugin. */
+    api: TApi;
     /** State-bound reads scoped directly to this plugin. */
     read: PluginReadCapability<C>;
     /** One-shot updates scoped directly to this plugin. */
@@ -1728,7 +1767,7 @@ type BasePluginContextFields<
   keyof PluginPortalContext<C> | keyof PluginBaseContext<C> | 'schema'
 > &
   PluginBaseContext<C> & {
-    defineCodecs: DefinePluginCodecs<C>;
+    defineFormats: DefinePluginFormats<C>;
     editor: BasePluginContextEditor<C>;
     plugin: ResolvedPlugin<C>;
   };

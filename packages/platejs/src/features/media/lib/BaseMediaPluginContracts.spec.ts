@@ -7,6 +7,7 @@ import {
   definePlugin,
   schema,
 } from '../../../core';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { BaseTextAlignPlugin } from '../../basic-styles/lib/BaseStylePlugins';
 import type { BaseUploadPlugin } from '../../upload/lib/BaseUploadPlugin';
 import {
@@ -545,10 +546,10 @@ describe('Base media plugin contracts', () => {
     });
 
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<img alt="Direct caption owner" src="https://platejs.org/image.png" />',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<img alt="Direct caption owner" src="https://platejs.org/image.png" />'
+      )
     ).toEqual([
       {
         alt: 'Direct caption owner',
@@ -557,14 +558,12 @@ describe('Base media plugin contracts', () => {
         url: 'https://platejs.org/image.png',
       },
     ]);
+    expect(parseHtmlSliceContent(editor, '<img alt="missing" />')).toEqual([]);
     expect(
-      editor.api.html.deserialize({ element: '<img alt="missing" />' })
-    ).toEqual([]);
-    expect(
-      editor.api.html.deserialize({
-        element:
-          '<img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" />',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" />'
+      )
     ).toEqual([
       {
         alt: 'Sized',
@@ -575,10 +574,10 @@ describe('Base media plugin contracts', () => {
       },
     ]);
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<figure class="editor-image"><img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" /><figcaption>Caption</figcaption></figure>',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<figure class="editor-image"><img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" /><figcaption>Caption</figcaption></figure>'
+      )
     ).toEqual([
       {
         alt: 'Sized',
@@ -589,10 +588,10 @@ describe('Base media plugin contracts', () => {
       },
     ]);
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<img data-editor-natural-height="360" data-editor-natural-width="640" height="360" src="https://platejs.org/image.png" width="640" />',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<img data-editor-natural-height="360" data-editor-natural-width="640" height="360" src="https://platejs.org/image.png" width="640" />'
+      )
     ).toEqual([
       {
         children: [{ text: '' }],
@@ -603,10 +602,10 @@ describe('Base media plugin contracts', () => {
       },
     ]);
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<img data-editor-natural-height="180" height="180" src="https://platejs.org/image.png" width="320" />',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<img data-editor-natural-height="180" height="180" src="https://platejs.org/image.png" width="320" />'
+      )
     ).toEqual([
       {
         children: [{ text: '' }],
@@ -617,10 +616,10 @@ describe('Base media plugin contracts', () => {
       },
     ]);
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<img data-editor-natural-height="180.5" data-editor-natural-width="320.5" src="https://platejs.org/image.png" />',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<img data-editor-natural-height="180.5" data-editor-natural-width="320.5" src="https://platejs.org/image.png" />'
+      )
     ).toEqual([
       {
         children: [{ text: '' }],
@@ -668,11 +667,7 @@ describe('Base media plugin contracts', () => {
     expect(figure?.querySelector(':scope > figcaption')?.textContent).toBe(
       'Image caption'
     );
-    expect(
-      editor.api.html.deserialize({
-        element: figure!.outerHTML,
-      })
-    ).toEqual([
+    expect(parseHtmlSliceContent(editor, figure!.outerHTML)).toEqual([
       {
         alt: 'Plate',
         children: [{ text: 'Image caption' }],

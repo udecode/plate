@@ -11,8 +11,8 @@ import {
   BaseHeadingPlugin,
   type Descendant,
 } from 'platejs';
-import { authored, readAuthoredFormatSnapshot } from 'platejs/authored';
-import { exportToDocx } from 'platejs/docx/export';
+import { authored, projectAuthoredReview } from 'platejs/authored';
+import { exportDocx } from 'platejs/docx/export';
 import { importDocx } from 'platejs/docx/import';
 import { BaseParagraphPlugin } from 'platejs/react';
 import React from 'react';
@@ -177,8 +177,9 @@ const paragraphText = (nodes: readonly Descendant[]) =>
   nodes.map((node) => NodeApi.string(node));
 
 const runImport = async (fixture: Fixture) => {
-  const codec = createEditor({ plugins: [BaseParagraphPlugin] });
-  const result = await importDocx(codec, fixture.bytes);
+  const result = await importDocx(fixture.bytes, {
+    plugins: [BaseParagraphPlugin],
+  });
 
   if (!result.ok) throw new Error(result.diagnostics[0]?.message);
   const restored = createEditor({
@@ -308,9 +309,8 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
   view.update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
   authorId = 'dana';
   view.update.nodes.move({ at: [1], to: [0] });
-  const snapshot = readAuthoredFormatSnapshot(editor);
-  const exported = await exportToDocx(editor, {
-    editorPlugins: [BaseParagraphPlugin, HeadingPlugin, BaseBoldPlugin],
+  const snapshot = projectAuthoredReview(editor.read.value());
+  const exported = await exportDocx(editor, {
     projection: 'review',
   });
 
@@ -326,13 +326,13 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
   expect(documentXml).toContain('<w:pPrChange');
   zip.remove('editor/authored.json');
   const imported = await importDocx(
-    editor,
-    await zip.generateAsync({ type: 'arraybuffer' })
+    await zip.generateAsync({ type: 'arraybuffer' }),
+    { plugins }
   );
 
   if (!imported.ok) throw new Error(imported.diagnostics[0]?.message);
   const restored = createEditor({ plugins, initialValue: imported.document });
-  const restoredSnapshot = readAuthoredFormatSnapshot(restored);
+  const restoredSnapshot = projectAuthoredReview(restored.read.value());
 
   expect(restoredSnapshot.accepted.children).toEqual(
     snapshot.accepted.children
@@ -351,7 +351,7 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
     plugins: [BaseParagraphPlugin, BaseBoldPlugin],
     initialValue: [{ children: [{ text: 'Review this.' }], type: 'paragraph' }],
   });
-  const commentExport = await exportToDocx(commentEditor, {
+  const commentExport = await exportDocx(commentEditor, {
     comments: [
       {
         author: { initials: 'AL', name: 'Ada' },
@@ -374,14 +374,13 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
         },
       },
     ],
-    editorPlugins: [BaseParagraphPlugin, BaseBoldPlugin],
     projection: 'proposed',
   });
 
   if (!commentExport.ok) throw new Error(commentExport.diagnostics[0]?.message);
   const commentImport = await importDocx(
-    commentEditor,
-    await commentExport.blob.arrayBuffer()
+    await commentExport.blob.arrayBuffer(),
+    { plugins: [BaseParagraphPlugin, BaseBoldPlugin] }
   );
 
   if (!commentImport.ok) throw new Error(commentImport.diagnostics[0]?.message);
@@ -398,8 +397,7 @@ test('DOCX revision import keeps heavy work constant and sparse', async () => {
     plugins: [BaseParagraphPlugin],
     initialValue: [{ children: [{ text: 'seed' }], type: 'paragraph' }],
   });
-  const base = await exportToDocx(baseEditor, {
-    editorPlugins: [BaseParagraphPlugin],
+  const base = await exportDocx(baseEditor, {
     projection: 'proposed',
   });
 

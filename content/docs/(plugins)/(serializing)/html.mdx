@@ -1,422 +1,240 @@
 ---
 title: HTML
-description: Convert Plate content to HTML and vice-versa.
-toc: true
+description: Parse semantic HTML into Plate documents or slices, and serialize Plate documents to HTML.
 ---
 
-Use `renderStaticHtml` to render a configured static Plate tree to HTML. Use
-`editor.api.html.deserialize(...)` to parse HTML into Plate
-content. Static React rendering and semantic HTML parsing have different
-owners, so this guide treats each direction separately.
+HTML conversion has two jobs:
 
-<ComponentPreview name="html-demo" />
+- Parse semantic HTML into a complete `EditorDocumentValue` or a closed insertion `ContentSlice`.
+- Serialize a schema-valid Plate document into semantic HTML.
 
-## Kit usage
+Use `platejs/html` in the browser. Use `platejs/html/server` when Node.js must parse HTML. Static React rendering is a separate presentation job owned by [`platejs/static`](/docs/static).
 
-<Steps>
+## Parse HTML
 
-### Installation
+### Installed editor
 
-The fastest way to enable HTML serialization is with the `BaseEditorKit`, which includes pre-configured base plugins that support HTML conversion for most common elements and marks.
+Install `HtmlPlugin` to reuse the editor's compiled plugins, schema, and plugin state.
 
-<ComponentSource name="editor-plugins-static" />
-
-### Add kit
-
-```tsx
+```ts
+import { HtmlPlugin } from 'platejs/html';
 import { createEditor } from 'platejs';
-import { renderStaticHtml } from 'platejs/static';
-import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 const editor = createEditor({
-  plugins: BaseEditorKit,
-  initialValue: [
-    { type: 'heading', level: 1, children: [{ text: 'Hello World' }] },
-    { type: 'paragraph', children: [{ text: 'This content will be serialized to HTML.' }] },
-  ],
+  plugins: [BaseParagraphPlugin, BaseBoldPlugin, HtmlPlugin],
 });
 
-// Serialize to HTML
-const html = await renderStaticHtml(editor);
+const result = editor.api.html.parse('<p>Hello <strong>world</strong>.</p>');
+
+if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+editor.update((tx) => tx.value.replace(result.document));
 ```
 
-### Example
+`parse` reads one complete HTML document. If the source contains one
+`[data-editor="true"]` element, its children are the document body. Without a
+marker, Plate reads the HTML `body`. More than one marker is an error.
 
-See a complete server-side HTML generation example:
+Use `parseSlice` for insertion. It returns a closed, rootless `ContentSlice` and
+does not treat an editor marker as complete-document authority.
 
-<ComponentSource name="html-export" />
+```ts
+const result = editor.api.html.parseSlice('<p>Paste me</p>');
 
-</Steps>
+if (result.ok) {
+  editor.update.slice.replace(result.slice);
+  showDiagnostics(result.diagnostics);
+}
+```
 
-## HTML Export
+The insertion owner fits the slice after a destination exists. Direct HTML
+parsing does not invent open edges or detached roots.
 
-Convert Plate editor content (Plate nodes) into an HTML string. This is often done server-side.
+### Detached browser conversion
 
-[View Server-Side Example](/docs/examples/html-export)
+Use the standalone functions when no configured editor owns the operation.
+Pass the plugins that define the document schema and HTML mappings.
 
-<Callout type="warning" title="Key Server-Side Constraint">
-  When using `renderStaticHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `platejs` instead of `platejs/react`).
+```ts
+import { parseHtml, parseHtmlSlice } from 'platejs/html';
 
-  This means you should use `createEditor` from `platejs` for server-side editor instances, not `useCreateEditor` or `createEditor` from `platejs/react`.
-</Callout>
-
-<Steps>
-
-### Basic usage
-
-Provide a server-side editor instance with server-safe components bound to their owning plugins.
-
-```tsx title="lib/generate-html.ts"
-import { createEditor } from 'platejs';
-import { renderStaticHtml } from 'platejs/static'; // Static import
-// Import a server-safe registry kit (NOT from /react package paths)
-import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
-
-const editor = createEditor({
-  plugins: [
-    ...BaseBasicBlocksKit,
-  ],
-  initialValue: [
-    { type: 'heading', level: 1, children: [{ text: 'My Title' }] },
-    { type: 'paragraph', children: [{ text: 'My content.' }] },
-  ],
+const documentResult = parseHtml(source, {
+  plugins: EditorKit,
 });
 
-async function getMyHtml() {
-  const html = await renderStaticHtml(editor);
-
-  return html;
-}
-```
-
-### Styling serialized HTML
-
-`renderStaticHtml` returns only the HTML rendered for the editor content itself.
-If you use styled components such as `EditorStatic` or custom static components
-with classes, include their CSS wherever the HTML is displayed.
-
-This often means wrapping the serialized HTML in a full HTML document that includes your stylesheets:
-
-```tsx title="lib/generate-full-html-document.ts"
-// ... (previous setup from generate-html.ts)
-
-async function getFullHtmlDocument() {
-  const editorHtmlContent = await getMyHtml(); // From previous example
-
-  const fullHtml = `<!DOCTYPE html>
-  <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="/path/to/your-global-styles.css" />
-      <link rel="stylesheet" href="/path/to/tailwind-or-component-styles.css" />
-      <title>Serialized Content</title>
-    </head>
-    <body>
-      <div class="my-document-wrapper prose dark:prose-invert">
-        ${editorHtmlContent}
-      </div>
-    </body>
-  </html>`;
-  return fullHtml;
-}
-```
-
-<Callout type="info" title="Static Output Only">
-  The serialization process converts Plate nodes to static HTML. Interactive features (React event handlers, client-side hooks) or components relying on browser APIs will not function in the serialized output.
-</Callout>
-
-### Using static components
-
-For server-side serialization, you **must** use static versions of your components (no client-only code, no React hooks like `useEffect` or `useState`).
-
-Refer to the [Static Rendering Guide](/docs/static) for detailed instructions on creating server-safe static components for your Plate elements and marks.
-
-```tsx title="components/editor/paragraph-static.tsx"
-import React from 'react';
-import type { BaseParagraphPlugin } from 'platejs';
-import type { EditorElementProps } from 'platejs/static';
-
-// Example static paragraph component
-export function ParagraphElementStatic(
-  props: EditorElementProps<typeof BaseParagraphPlugin>
-) {
-  return (
-    <EditorElement {...props} className={cn('m-0 px-0 py-1')}>
-      {props.children}
-    </EditorElement>
-  );
-}
-```
-
-</Steps>
-
-### Authored-change projections
-
-Use `renderAuthoredHtml` when the editor contains native authored changes:
-
-```tsx
-import { renderAuthoredHtml } from 'platejs/static';
-
-const output = await renderAuthoredHtml(editor, {
-  projection: 'review',
+const sliceResult = parseHtmlSlice(fragment, {
+  plugins: EditorKit,
+  lossPolicy: 'allow',
 });
 ```
 
-`accepted` and `proposed` render the chosen static content and report `authored-lossy-projection` when pending changes are omitted. `review` renders proposed static content and appends an escaped `application/vnd.editor.authored+json` script containing the canonical document envelope.
+Detached functions compile the supplied declarations for this call and discard
+the temporary target afterward. They do not activate plugin handlers, effects,
+or React hooks.
 
-Call `deserializeAuthoredHtml(editor, output.data)` to recover that envelope. HTML without an authored script follows the editor's installed HTML codecs. See [Authored Changes](/docs/authored-changes) for the complete format contract.
+### Node.js
 
----
+Node.js parsing uses the same parse5 tree and diagnostics through the server
+entrypoint:
 
-## HTML to Plate
+```ts
+import { parseHtml } from 'platejs/html/server';
 
-The HTML decoder converts strings or DOM elements back into Plate content. It
-preserves structure, formatting, and attributes when the installed plugins own
-matching codecs.
-
-<Steps>
-
-### Basic usage
-
-Call the root HTML API from a client-side Plate editor.
-
-```tsx title="components/my-html-importer.tsx"
-import { useCreateEditor } from 'platejs/react';
-// Import ALL Plate plugins needed to represent the HTML content
-import { BasicBlocksKit } from '@/components/editor/basic-blocks';
-// ... and so on for bold, italic, tables, lists, etc.
-
-function MyHtmlImporter({ htmlString }: { htmlString: string }) {
-  const editor = useCreateEditor({
-    plugins: [
-      ...BasicBlocksKit, // Paragraph, headings, blockquote, and horizontal rule
-      // ... include all plugins corresponding to the HTML you expect to parse
-    ],
-  });
-
-  const handleImport = () => {
-    const value = editor.api.html.deserialize({ element: htmlString });
-
-    if (!value) return;
-
-    editor.update.value.replace({ children: value });
-  };
-
-  // ... render your editor and a button to trigger handleImport ...
-  return <button onClick={handleImport}>Import HTML</button>;
-}
+const result = parseHtml(source, { plugins: EditorKit });
 ```
 
-<Callout type="warning" title="Client-Side Operation">
-  HTML deserialization through `editor.api.html.deserialize` is
-  typically a client-side operation because it uses the compiled Plate plugin
-  model.
-</Callout>
+Install the optional server DOM peer when a Node process parses HTML:
 
-### Plugin HTML codec overview
+```bash
+npm install platejs linkedom
+```
 
-Each Plate plugin owns the HTML tags, styles, and attributes for its schema
-claim. The same `'text/html'` map returned by context-bound `defineCodecs`
-handles decode and encode.
+Do not import browser parsing from `platejs/html` in Node.js. That entrypoint
+throws an environment error that points to `platejs/html/server`. The server
+entrypoint is ESM.
 
-| HTML Element / Style                                       | Plate Plugin (Typical)  | Notes                                                                    |
-| :--------------------------------------------------------- | :---------------------- | :----------------------------------------------------------------------- |
-| `<strong>`, `<b>`, `font-weight: 600,700,bold`          | [`BoldPlugin`](/docs/bold)            | Converts to `bold: true` mark.                                           |
-| `<em>`, `<i>`, `font-style: italic`                      | [`ItalicPlugin`](/docs/italic)          | Converts to `italic: true` mark.                                         |
-| `<u>`, `text-decoration: underline`                       | [`UnderlinePlugin`](/docs/underline)       | Converts to `underline: true` mark.                                      |
-| `<s>`, `<del>`, `<strike>`, `text-decoration: line-through` | [`StrikethroughPlugin`](/docs/strikethrough)   | Converts to `strikethrough: true` mark.                                  |
-| `<sub>`, `vertical-align: sub`                            | [`ScriptPlugin`](/docs/subscript)       | Converts to `script: 'sub'`.                                      |
-| `<sup>`, `vertical-align: super`                           | [`ScriptPlugin`](/docs/superscript)     | Converts to `script: 'sup'`.                                    |
-| `<code>` (not in `<pre>`), `font-family: Consolas`         | [`CodePlugin`](/docs/code)            | Converts to `code: true` mark (inline code).                             |
-| `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | Converts to `kbd: true` mark.                                            |
-| `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-blocks)       | Converts to paragraph element.                                           |
-| `<h1>` - `<h6>`                                            | [`HeadingPlugin`–`HeadingPlugin`](/docs/heading)    | Converts to corresponding heading elements (`h1` - `h6`).                |
-| `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | Converts list items to blocks with `indent` and `listStyle` properties. |
-| `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | Converts to blockquote element.                                          |
-| `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/code-block)       | Converts to `codeBlock` with one newline-bearing text child.             |
-| `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | Converts to horizontal rule element.                                     |
-| `<a>`                                                      | [`LinkPlugin`](/docs/link)            | Converts to `link` with a `url` property.                                |
-| `<img>`                                                    | [`ImagePlugin`](/docs/media)           | Converts to `image` with a `url` property.                               |
-| `<iframe>`                                                 | [`MediaEmbedPlugin`](/docs/media)      | Converts to media embed element, attempting to parse URL.                |
-| `<table>`                                                  | [`TablePlugin`](/docs/table)           | Converts to `table` element.                                             |
-| `<tr>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `tableRow`.                                                   |
-| `<td>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `tableCell`.                                                  |
-| `<th>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `tableCell` with `header: true`.                              |
-| `style="background-color: ..."`                          | [`FontBackgroundColorPlugin`](/docs/font)    | Converts to `backgroundColor` mark. |
-| `style="color: ..."`                                     | [`FontColorPlugin`](/docs/font)       | Converts to `color` mark.                                                |
-| `style="font-family: ..."`                               | [`FontFamilyPlugin`](/docs/font)      | Converts to `fontFamily` mark.                                           |
-| `style="font-size: ..."`                                 | [`FontSizePlugin`](/docs/font)        | Converts to `fontSize` mark.                                             |
-| `style="font-weight: ..."` (other than bold values)      | [`FontWeightPlugin`](/docs/font)      | Converts to `fontWeight` mark for non-standard bold values.              |
-| `<mark>`                                                   | [`HighlightPlugin`](/docs/highlight)       | Converts to `highlight: true` mark.                                      |
-| `style="text-align: ..."`                                | [`TextAlignPlugin`](/docs/text-align)           | Sets `textAlign` property on block elements.                                 |
-| `style="line-height: ..."`                               | [`LineHeightPlugin`](/docs/line-height)      | Sets `lineHeight` property on block elements.                            |
+Browser and server parsing are inert. Plate does not execute scripts, attach the
+tree, load resources, apply CSS, or install DOM globals. Safety checks reject or
+remove executable elements, event attributes, unsafe URLs, external resource
+attributes, CSS resource loads, and unsafe foreign content before feature
+mappings run.
 
-<Callout type="note" title="Plugin Configuration">
-  Persisted element types come from the installed plugin schema handle (for
-  example, `editor.plugin(ParagraphPlugin).schema.type`). The table shows typical associations.
-  Include the corresponding Plate plugins for these rules to apply.
-</Callout>
+## Serialize HTML
 
-### `defineCodecs`
+### Installed editor
 
-Package authors declare node-level HTML meaning in the constructor's `codecs`
-callback before the app's terminal `.configure()` call. Destructure the
-context-bound `defineCodecs` and pass it the MIME-keyed map. This is the one
-inline inference anchor for the plugin schema and codec callbacks:
+```ts
+const result = editor.api.html.serialize({
+  projection: 'proposed',
+});
 
-- `match` is a non-empty array of tag, class, attribute, or style matchers.
-- `decode` returns only the value or properties owned by the plugin. Element
-  codecs do not return `type`; Plate supplies the installed configured type.
-- `encode` returns a wrapper for a mark, a full node spec for an element, or an
-  attribute/style patch for an element property.
-- An element `encode` may return `null` to omit that element from HTML while
-  preserving serializable siblings. Mark and property encoders cannot omit a
-  present value this way.
-- Import-only mappings set `decodeOnly: true` instead of omitting encode
-  silently.
-- `priority` resolves intentional overlap. Equal-priority exclusive claims
-  fail model compilation instead of depending on plugin array order.
-- One plugin may provide a non-empty ordered rule tuple when it owns multiple
-  HTML representations. Keep that tuple in the same codec map.
+showDiagnostics(result.diagnostics);
+if (result.ok) downloadHtml(result.data);
+```
 
-This element codec maps `<aside>` to a callout and preserves an app-configured
-storage type:
+Pass `document` to serialize a captured document through the installed target:
 
-```tsx title="lib/callout-plugin.ts"
-import { property, schema } from 'platejs';
-import { definePlugin } from 'platejs/react';
+```ts
+const document = editor.read.value();
+const result = editor.api.html.serialize({ document, projection: 'accepted' });
+```
+
+### Detached conversion
+
+```ts
+import { serializeHtml } from 'platejs/html';
+
+const result = serializeHtml(document, {
+  plugins: EditorKit,
+  projection: 'accepted',
+});
+```
+
+Serialization asserts the input document and the selected authored projection.
+Invalid model data throws because it is a programmer or persistence-boundary
+failure. Expected representational loss returns a diagnosed result.
+
+`lossPolicy` defaults to `'reject'`. Under that policy, unsupported visible
+content returns `{ ok: false, diagnostics }` and no `data`. Use
+`lossPolicy: 'allow'` only when the caller accepts the diagnosed drop,
+replacement, or unwrap.
+
+## Authored content
+
+Semantic HTML supports the visible `accepted` and `proposed` projections. It
+does not embed a hidden Plate document or restore review state from HTML.
+
+```ts
+const proposed = editor.api.html.serialize({ projection: 'proposed' });
+const accepted = editor.api.html.serialize({ projection: 'accepted' });
+```
+
+Persist exact proposals, decisions, roots, and metadata with authored JSON. Use
+DOCX review export when Word revisions are required. See
+[Authored Changes](/docs/authored-changes#export-explicit-projections).
+
+## Define HTML mappings
+
+Declare feature mappings on the plugin that owns the node or mark. The
+constructor's `formats` callback receives only `defineFormats` and static schema
+bindings. Mapping callbacks receive frozen operation state, registry and schema
+views, and a format-specific `report` function; they do not receive a live
+editor or store.
+
+```ts
+import { definePlugin } from 'platejs';
 
 const CalloutPlugin = definePlugin('callout', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => ({
-          variant: element.dataset.variant || undefined,
+          type: element.dataset.type ?? 'info',
         }),
-        encode: ({ content, node }) => ({
-          attributes: { 'data-variant': node.variant },
-          children: content,
+        encode: ({ node }) => ({
+          attributes: { 'data-type': node.type },
           tag: 'aside',
         }),
-        match: [{ tag: 'aside' }],
-      },
-    }),
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      properties: {
-        variant: property.string(),
-      },
-    },
-  },
-});
-```
-
-`CalloutPlugin` decodes `<aside>` as a `callout` element because the codec
-targets the installed descriptor. Define a separate named descriptor when a
-different persisted identity is required; `.configure()` does not rename one.
-
-Use `defineCodecs(map)` for self and product codecs. A plugin contributing HTML
-behavior to another descriptor uses `defineCodecs(TargetPlugin, map)`; the
-helper injects that target into every rule. Do not put `target` in the rule
-manually. One plugin may keep multiple HTML representations in a non-empty
-ordered `'text/html'` tuple inside the same map.
-
-### Whole-input HTML hooks
-
-Use `query`, `transformData`, and `transformFragment` on the plugin's
-`'text/html'` codec for work that needs the complete incoming payload. These
-hooks run before or after node decoding; they do not declare node matches.
-
-```ts title="lib/html-cleanup-plugin.ts"
-const HtmlCleanupPlugin = definePlugin('htmlCleanup', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
-        query: ({ source }) => source.types.includes('text/html'),
-        transformData: ({ data }) =>
-          data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
+        match: { tag: 'aside' },
       },
     }),
 });
 ```
 
-</Steps>
+Use `defineFormats(map)` for mappings owned by the current plugin and
+`defineFormats(TargetPlugin, map)` for a foreign target. The semantic key is
+`html`; MIME negotiation does not belong in this map.
+
+If a browser transfer format owns a complete `text/html` payload, register a
+`DataTransferFormat` through `dataTransferFormats`. That owner can inspect the
+whole payload, call `parseHtmlSlice`, and return a diagnosed slice. See
+[Clipboard](/docs/clipboard).
+
+## Results and diagnostics
+
+Parse success contains warning diagnostics and exactly one carrier:
+
+```ts
+type HtmlDocumentParseResult<V> =
+  | { ok: true; document: EditorDocumentValue<V>; diagnostics: HtmlWarningDiagnostic[] }
+  | { ok: false; diagnostics: [HtmlErrorDiagnostic, ...HtmlDiagnostic[]] };
+
+type HtmlSliceParseResult<V> =
+  | { ok: true; slice: ContentSlice<V>; diagnostics: HtmlWarningDiagnostic[] }
+  | { ok: false; diagnostics: [HtmlErrorDiagnostic, ...HtmlDiagnostic[]] };
+```
+
+Serialization success contains `data`; failure does not. Configuration errors,
+mapping bugs, and invalid model input throw. Source errors, resource limits,
+schema recovery, safety actions, and expected format loss are returned as
+diagnostics.
+
+Parsing defaults to these limits:
+
+| Limit | Default |
+| --- | --- |
+| UTF-8 source bytes | `5 * 1024 * 1024` |
+| Tree nodes | `100_000` |
+| Tree depth | `256` |
+
+Override them with `limits`. Plate enforces the byte limit before parsing and
+the node/depth limits while parse5 builds the tree.
 
 ## API Reference
 
-### `renderStaticHtml(editor, options)`
+| API | Import | Purpose |
+| --- | --- | --- |
+| `parseHtml(source, options)` | `platejs/html` | Parse one complete document in a browser. |
+| `parseHtmlSlice(source, options)` | `platejs/html` | Parse one closed insertion slice in a browser. |
+| `serializeHtml(document, options)` | `platejs/html` | Serialize a detached document. |
+| `parseHtml(source, options)` | `platejs/html/server` | Parse one complete document in Node.js. |
+| `parseHtmlSlice(source, options)` | `platejs/html/server` | Parse one closed insertion slice in Node.js. |
+| `editor.api.html.parse(source, options?)` | `HtmlPlugin` | Parse with the installed target. |
+| `editor.api.html.parseSlice(source, options?)` | `HtmlPlugin` | Parse a slice with the installed target. |
+| `editor.api.html.serialize(options?)` | `HtmlPlugin` | Serialize the current or supplied document. |
 
-Converts Plate nodes from `editor.read.children()` (or a provided `value`) into an HTML string. This function is typically used server-side.
-
-<API name="renderStaticHtml">
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    A server-side Plate editor instance created with component-bound plugins.
-  </APIItem>
-  <APIItem name="options" type="RenderStaticHtmlOptions" optional>
-    Static React rendering options.
-  </APIItem>
-</APIParameters>
-<APIOptions type="RenderStaticHtmlOptions<P = EditorStaticProps>">
-  <APIItem name="editorComponent" type="React.ComponentType<P>" optional>
-    A React component to wrap the entire editor content during static rendering. Defaults to `EditorStatic`.
-    The component receives `editor` and any `props` passed here.
-  </APIItem>
-  <APIItem name="props" type="Partial<P>" optional>
-    Props to pass to the `editorComponent`. `P` defaults to `EditorStaticProps`.
-  </APIItem>
-  <APIItem name="preserveClassNames" type="string[]" optional>
-    Class name prefixes to preserve when `stripClassNames` is true. Default preserve list in the stripping helper: `['editor-']`.
-  </APIItem>
-  <APIItem name="stripClassNames" type="boolean" optional>
-    If `true`, removes all class names from the output HTML except those whose prefixes are listed in `preserveClassNames`. Default: `false`.
-  </APIItem>
-  <APIItem name="stripDataAttributes" type="boolean" optional>
-    If `true`, removes all `data-*` attributes from the output HTML. Default: `false`.
-  </APIItem>
-</APIOptions>
-<APIReturns>
-  <APIItem type="Promise<string>">
-    A promise that resolves to the serialized HTML string.
-  </APIItem>
-</APIReturns>
-</API>
-
----
-
-### `editor.api.html.deserialize(options)`
-
-Parses an HTML string or `HTMLElement` into a Plate `Value` (an array of `Descendant` nodes). This is typically used on the client-side with a fully configured Plate editor.
-
-<API name="editor.api.html.deserialize">
-<APIParameters>
-  <APIItem
-    name="options"
-    type="{ element: HTMLElement | string; collapseWhiteSpace?: boolean }"
-  >
-    Options for deserialization.
-  </APIItem>
-</APIParameters>
-<APIOptions>
-  <APIItem name="element" type="HTMLElement | string">
-    The HTML string or `HTMLElement` to deserialize.
-  </APIItem>
-  <APIItem name="collapseWhiteSpace" type="boolean" optional>
-    If `true` (default), collapses whitespace from text nodes similarly to how browsers treat whitespace in HTML. Set to `false` to preserve all whitespace. Default: `true`.
-  </APIItem>
-</APIOptions>
-<APIReturns>
-  <APIItem type="Descendant[] | null">
-    The deserialized Plate `Value`, or `null` when the compiled HTML decoder
-    rejects an invalid or unsupported result.
-  </APIItem>
-</APIReturns>
-</API>
-
-## Next steps
-
--   Explore the [Static Rendering guide](/docs/static) for creating server-safe components.
--   Review individual plugin documentation for specific HTML serialization/deserialization capabilities and default rules.
--   See the [Server-Side HTML Generation Example](/docs/examples/html-export).
+Direct parse options require `plugins` and accept `schema`, `limits`,
+`lossPolicy`, and `collapseWhitespace`. Direct serialization options require
+`plugins` and accept `schema`, `projection`, and `lossPolicy`. Installed editor
+methods omit `plugins` and `schema` because the plugin captures them from the
+editor.

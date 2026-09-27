@@ -13,23 +13,17 @@ describe('static HTML escaping', () => {
       initialValue: [{ type: 'paragraph', children: [{ text }] }],
     });
 
-    for (const strip of [false, true]) {
-      const html = await renderStaticHtml(editor, {
-        preserveClassNames: [],
-        stripClassNames: strip,
-        stripDataAttributes: strip,
-      });
-      const document = new DOMParser().parseFromString(html, 'text/html');
+    const { data: html } = await renderStaticHtml(editor);
+    const document = new DOMParser().parseFromString(html, 'text/html');
 
-      expect(document.body.textContent).toBe(text);
-      expect(document.querySelector('[data-audit-literal]')).toBeNull();
-    }
+    expect(document.body.textContent).toBe(text);
+    expect(document.querySelector('[data-audit-literal]')).toBeNull();
   });
 
   it('preserves quoted attributes from a custom component', async () => {
     const title = 'a" data-injected="yes &lt;b&gt;';
-    const html = await renderStaticHtml(createStaticEditor(), {
-      editorComponent: () => createElement('div', { title }, 'label'),
+    const { data: html } = await renderStaticHtml(createStaticEditor(), {
+      component: () => createElement('div', { title }, 'label'),
     });
     const document = new DOMParser().parseFromString(html, 'text/html');
     const element = document.body.firstElementChild;

@@ -34,6 +34,19 @@ const assertInputRules = (value: PluginRecord) => {
   }
 };
 
+const assertDataTransferFormats = (value: PluginRecord) => {
+  if (
+    Object.hasOwn(value, 'dataTransferFormats') &&
+    value.dataTransferFormats !== null &&
+    value.dataTransferFormats !== undefined &&
+    !Array.isArray(value.dataTransferFormats)
+  ) {
+    throw new Error(
+      'Plate plugin `dataTransferFormats` must be a static array. Read captured plugin state inside each operation callback.'
+    );
+  }
+};
+
 const assertBaseDefinition: (
   value: unknown
 ) => asserts value is PluginRecord = (value) => {
@@ -59,11 +72,13 @@ const assertBaseDefinition: (
     throw new Error('Plate plugin `api` must be a context factory.');
   }
   assertInputRules(value);
+  assertDataTransferFormats(value);
 };
 
 const assertExtendObject = (value: object) => {
   assertNoPrepareDocument(value);
   assertInputRules(value as PluginRecord);
+  assertDataTransferFormats(value as PluginRecord);
 
   if (Object.hasOwn(value, 'component')) {
     throw new Error(
@@ -100,7 +115,8 @@ const assertConfigureObject = (value: object) => {
   for (const field of [
     'activate',
     'api',
-    'codecs',
+    'dataTransferFormats',
+    'formats',
     'commands',
     'conflicts',
     'contributions',
@@ -144,13 +160,15 @@ const snapshotConfiguration = (configuration: object) => {
 };
 
 const createInitialStage = (definition: PluginRecord) => {
-  const { api, codecs, initialState, read, update } = definition;
+  const { api, dataTransferFormats, formats, initialState, read, update } =
+    definition;
   const contextualInitialState =
     typeof initialState === 'function' ? initialState : undefined;
 
   if (
     api === undefined &&
-    codecs === undefined &&
+    dataTransferFormats === undefined &&
+    formats === undefined &&
     contextualInitialState === undefined &&
     read === undefined &&
     update === undefined
@@ -165,12 +183,22 @@ const createInitialStage = (definition: PluginRecord) => {
             api,
           }
         : {}),
-      ...(codecs !== undefined
+      ...(dataTransferFormats !== undefined
         ? {
-            codecs:
-              typeof codecs === 'function'
-                ? Reflect.apply(codecs, undefined, [context])
-                : codecs,
+            dataTransferFormats,
+          }
+        : {}),
+      ...(formats !== undefined
+        ? {
+            formats:
+              typeof formats === 'function'
+                ? Reflect.apply(formats, undefined, [
+                    Object.freeze({
+                      defineFormats: context.defineFormats,
+                      schema: context.schema,
+                    }),
+                  ])
+                : formats,
           }
         : {}),
       ...(contextualInitialState
@@ -315,7 +343,8 @@ const defineBasePluginRuntime = (definition: unknown): MutableBasePlugin => {
 
   const {
     api: _api,
-    codecs: _codecs,
+    dataTransferFormats: _dataTransferFormats,
+    formats: _formats,
     initialState,
     read: _read,
     update: _update,
@@ -351,7 +380,7 @@ const defineBasePluginRuntime = (definition: unknown): MutableBasePlugin => {
   setPluginDescriptorMetadata(plugin, {
     configured: false,
     configurationLayers: Object.freeze([]),
-    htmlCodecContributions: Object.freeze([]),
+    htmlMappingContributions: Object.freeze([]),
     resolved: false,
     sourceReferences: Object.freeze([]),
     stages: createInitialStage(normalizedDefinition),

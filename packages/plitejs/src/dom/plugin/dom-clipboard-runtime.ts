@@ -33,14 +33,16 @@ import {
   isDOMElement,
   isDOMText,
 } from '../utils/dom';
+import {
+  attachDataTransferInsertedReport,
+  createDataTransferTransactionSpec,
+  insertDataTransfer,
+  withDataTransferReportBoundary,
+  writeDataTransferFragment,
+} from './data-transfer-format';
 import type { DOMCoverageBoundary, DOMCoverageSession } from './dom-coverage';
 import { DOMEditor } from './dom-editor';
 import { findEditorDOMRootRuntime } from './dom-root-runtime';
-import {
-  createHostDataTransactionSpec,
-  insertHostData,
-  writeHostFragmentData,
-} from './host-codec';
 
 const PLITE_FRAGMENT_ATTRIBUTE_RE = /\bdata-editor-fragment\s*=/i;
 const OPENING_HTML_TAG_RE = /<[A-Za-z][^<>]*?>/;
@@ -142,7 +144,7 @@ const attachFragmentMetadataToHtml = (
   )}`;
 };
 
-const preserveFragmentMetadataInHostHtml = (
+const preserveFragmentMetadataInTransferHtml = (
   data: Pick<DataTransfer, 'getData' | 'setData'>,
   encoded: string,
   clipboardFormatKey: string,
@@ -385,7 +387,7 @@ export const writeDOMFragmentData = <V extends Value>(
 };
 
 /** Write one exact Plite slice plus every configured host representation. */
-export const writeDOMHostFragmentData = <V extends Value>(
+export const writeDOMDataTransferFragment = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
   payload: DOMFragmentDataPayload<V>,
@@ -409,7 +411,7 @@ export const writeDOMHostFragmentData = <V extends Value>(
   });
 
   const { explicitFormats } = options;
-  const writtenFormats = writeHostFragmentData(
+  const writtenFormats = writeDataTransferFragment(
     editor,
     {
       setData: (format, value) => {
@@ -417,9 +419,9 @@ export const writeDOMHostFragmentData = <V extends Value>(
       },
     },
     payload.slice,
-    { excludeFormats: explicitFormats }
+    { excludeMimeTypes: explicitFormats }
   );
-  preserveFragmentMetadataInHostHtml(
+  preserveFragmentMetadataInTransferHtml(
     data,
     encoded,
     clipboardFormatKey,
@@ -472,7 +474,7 @@ const writeModelBackedRangeData = <V extends Value>(
   range: NodeSelection | Range,
   slice = editor.read.slice.export({ at: range })
 ) => {
-  writeDOMHostFragmentData(editor, data, {
+  writeDOMDataTransferFragment(editor, data, {
     clipboardFormatKey,
     html: ({ clipboardFormatKey: innerClipboardFormatKey, encoded, text }) =>
       `<span data-editor-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(
@@ -656,7 +658,7 @@ export const writeDOMRangeData = <V extends Value>(
   if (!hasPolicyBoundaries) {
     const slice = options.slice ?? editor.read.slice.export({ at: range });
 
-    writeDOMHostFragmentData(editor, data, {
+    writeDOMDataTransferFragment(editor, data, {
       clipboardFormatKey,
       html: ({ encoded }) => {
         attachElement.setAttribute('data-editor-fragment', encoded);
@@ -678,7 +680,10 @@ export const writeDOMRangeData = <V extends Value>(
 export const insertDOMData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
-): boolean => dispatchCommand(editor, domCommands.insertData, data);
+): boolean =>
+  withDataTransferReportBoundary(editor, () =>
+    dispatchCommand(editor, domCommands.insertData, data)
+  );
 
 /** Interpret DOM data into one unpublished transaction spec. */
 export const createDOMDataTransactionSpec = <V extends Value>(
@@ -696,10 +701,12 @@ export const createDOMDataTransactionSpec = <V extends Value>(
       { slice }
     );
 
-    if (result !== false) return result;
+    if (result !== false) {
+      return attachDataTransferInsertedReport(editor, result);
+    }
   }
 
-  return createHostDataTransactionSpec(editor, data, { state });
+  return createDataTransferTransactionSpec(editor, data, { state });
 };
 
 export const readDOMFragmentData = <V extends Value>(
@@ -750,7 +757,7 @@ export const readDOMClipboardSlice = <V extends Value>(
     : Object.freeze({ kind: 'invalid', source: payload.source });
 };
 
-/** Write one exact Plite slice plus optional host formats. */
+/** Write one exact Plite slice plus optional DataTransfer formats. */
 export const writeDOMClipboardSlice = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
@@ -762,7 +769,7 @@ export const writeDOMClipboardSlice = <V extends Value>(
     ...extraFormats
   } = formats;
 
-  writeDOMHostFragmentData(
+  writeDOMDataTransferFragment(
     editor,
     data,
     { html, slice, text },
@@ -791,4 +798,4 @@ export const insertDOMFragmentData = <V extends Value>(
 export const insertDOMTextData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
-): boolean => insertHostData(editor, data, { format: 'text/plain' });
+): boolean => insertDataTransfer(editor, data, { mimeType: 'text/plain' });

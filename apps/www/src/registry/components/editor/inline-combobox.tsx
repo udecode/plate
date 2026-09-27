@@ -20,7 +20,12 @@ import {
   type PluginTransaction,
 } from 'platejs';
 import { BaseComboboxPlugin, filterWords } from 'platejs/combobox';
-import { useComposedRef, useEditor, useElementSelected } from 'platejs/react';
+import {
+  useComposedRef,
+  useEditor,
+  useEditorHistory,
+  useElementSelected,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -95,6 +100,7 @@ const InlineCombobox = ({
 }) => {
   const editor = useEditor();
   const combobox = editor.plugin(BaseComboboxPlugin);
+  const history = useEditorHistory({ editor });
   const inputKey = React.useMemo(() => editor.key(element), [editor, element]);
   const selected = useElementSelected();
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -184,20 +190,12 @@ const InlineCombobox = ({
           return;
         }
 
-        const handled = Hotkeys.isUndo(event)
-          ? combobox.api.undo(inputKey)
-          : Hotkeys.isRedo(event)
-            ? combobox.api.redo(inputKey)
-            : false;
-
-        if (handled) {
-          event.preventDefault();
-          event.stopPropagation();
-          editor.api.dom.focus();
+        if (Hotkeys.isUndo(event) || Hotkeys.isRedo(event)) {
+          history.onKeyDown(event);
         }
       },
     }),
-    [cancelInput, combobox, editor, inputKey]
+    [cancelInput, history]
   );
 
   const [hasEmpty, setHasEmpty] = React.useState(false);

@@ -511,3 +511,131 @@ export const bindAuthoredDocumentRange = (
     },
   };
 };
+
+/** Map one range between immutable authored projections without an editor runtime. */
+export const projectAuthoredDocumentRange = (
+  source: AuthoredRangeProjection,
+  target: AuthoredRangeProjection,
+  range: Range
+): Range | null => {
+  const root = range.anchor.root ?? 'main';
+  const sourcePositions = readRecord(source.positions, root);
+
+  if (!sourcePositions?.present) return null;
+  const sourceDocument = DocumentIndex.fromValue(
+    authoredRootNodes(source.value, root)
+  );
+  const anchor = sourceDocument.positionAt(range.anchor);
+  const focus = sourceDocument.positionAt(range.focus);
+  const from = Math.min(anchor, focus);
+  const to = Math.max(anchor, focus);
+  const direction = RangeApi.isCollapsed(range)
+    ? 'collapsed'
+    : RangeApi.isBackward(range)
+      ? 'backward'
+      : 'forward';
+  const retained: RetainedRange = {
+    anchor: authoredPositionAt(sourcePositions.positions, anchor),
+    content: [
+      ...authoredPositionSpans(sourcePositions.positions, from, to),
+    ].map(({ from: start, to: end, span }) => ({
+      length: Math.min(to, end) - Math.max(from, start),
+      offset: span.offset + Math.max(0, from - start),
+      origin: span.origin,
+    })),
+    direction,
+    documentId: source.state.documentId,
+    focus: authoredPositionAt(sourcePositions.positions, focus),
+    root,
+  };
+
+  if (target.state.documentId !== retained.documentId) return null;
+  const associations = getRangeEndpointAssociations(direction, 'inward');
+
+  if (retained.content.length) {
+    const lineage = authoredContentLineage(
+      target.state,
+      retained.content,
+      'inward'
+    );
+    const live = [...records(target.positions)]
+      .filter(([, positions]) => positions.present)
+      .map(([candidateRoot, positions]) => ({
+        bounds: authoredPositionContentBounds(positions.positions, lineage),
+        root: candidateRoot,
+      }))
+      .filter(
+        (
+          entry
+        ): entry is typeof entry & { bounds: readonly [number, number] } =>
+          entry.bounds !== null
+      );
+
+    if (live.length !== 1) return null;
+    const [{ bounds, root: resolvedRoot }] = live;
+    const document = DocumentIndex.fromValue(
+      authoredRootNodes(target.value, resolvedRoot)
+    );
+    const offsets =
+      direction === 'backward' ? ([bounds[1], bounds[0]] as const) : bounds;
+    const points = offsets.map((offset, index) => {
+      const point = document.pointAt(offset, associations[index]);
+
+      return point
+        ? {
+            ...point,
+            ...(resolvedRoot === 'main' ? {} : { root: resolvedRoot }),
+          }
+        : null;
+    });
+
+    return points[0] && points[1]
+      ? snapshotEditorJsonValue(
+          { anchor: points[0], focus: points[1] },
+          'Resolved editor range'
+        )
+      : null;
+  }
+
+  const pointRoots = [retained.anchor, retained.focus].map(
+    (position, index) =>
+      authoredPositionRoot(
+        target.positions,
+        root,
+        position,
+        associations[index] === -1 ? 'left' : 'right'
+      ) ?? root
+  );
+
+  if (pointRoots[0] !== pointRoots[1]) return null;
+  const resolvedRoot = pointRoots[0];
+  const targetPositions = readRecord(target.positions, resolvedRoot);
+
+  if (!targetPositions?.present) return null;
+  const targetDocument = DocumentIndex.fromValue(
+    authoredRootNodes(target.value, resolvedRoot)
+  );
+  const points = [retained.anchor, retained.focus].map((position, index) => {
+    const offset = resolveAuthoredPosition(
+      targetPositions.positions,
+      position,
+      associations[index] === -1 ? 'left' : 'right',
+      'detach'
+    );
+    const point =
+      offset === null
+        ? null
+        : targetDocument.pointAt(offset, associations[index]);
+
+    return point
+      ? { ...point, ...(resolvedRoot === 'main' ? {} : { root: resolvedRoot }) }
+      : null;
+  });
+
+  return points[0] && points[1]
+    ? snapshotEditorJsonValue(
+        { anchor: points[0], focus: points[1] },
+        'Resolved editor range'
+      )
+    : null;
+};

@@ -3,7 +3,7 @@ title: Plate Document Model
 description: The canonical JSON contract for Plate documents, nodes, schemas, migrations, and format adapters.
 ---
 
-Plate stores editor-native JSON. Plate owns the tree contract; Plate plugins add schema-checked properties and codecs map documents to external formats.
+Plate stores editor-native JSON. Plate owns the tree contract; Plate plugins add schema-checked properties and format mappings project documents to external formats.
 
 ## Core tree
 
@@ -158,11 +158,11 @@ Image naturalWidth and naturalHeight store source-image geometry; media width st
 | Slate | Same practical descendant shape: text leaves and elements with children. Plate adds a compiled application schema. |
 | ProseMirror | Same schema-first discipline. Plate keeps flat editor-native JSON. |
 | UNIST | Conceptual tree vocabulary only. Plate does not require position or data fields. |
-| MDAST | External Markdown AST. Codecs map heading.level to depth and codeBlock.language to lang. |
+| MDAST | External Markdown AST. Format mappings map `heading.level` to `depth` and `codeBlock.language` to `lang`. |
 | Portable Text | A portability reference, not Plate storage. Plate keeps nested editor nodes and live selection semantics. |
 | Block Protocol | A block embedding protocol, not a rich-text AST contract. |
 
-Codecs and adapters map this document contract to external formats.
+Format mappings and format-owned adapters map this document contract to external syntax.
 
 ## Structural constraints
 

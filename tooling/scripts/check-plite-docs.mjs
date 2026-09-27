@@ -468,7 +468,7 @@ function auditSlateV2Docs() {
   }
 
   for (const path of [
-    join(repoRoot, '.agents/AGENTS.md'),
+    join(repoRoot, 'AGENTS.md'),
     ...collectAgentTextFiles(join(repoRoot, '.agents/rules')),
     ...collectAgentTextFiles(join(repoRoot, '.agents/skills')),
   ]) {

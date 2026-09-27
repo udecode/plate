@@ -4,7 +4,7 @@ import React from 'react';
 import { createEditor } from '../../../core';
 import { EditorStatic, type EditorStaticProps } from '../../../static';
 import { importDocx } from '../../import/lib/importDocx';
-import { exportToDocx } from './exportToDocx';
+import { exportDocx } from './exportDocx';
 
 const WORD_NAMESPACE =
   'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
@@ -21,7 +21,7 @@ const createGeneratedSource = async () => {
       { children: [{ text: 'Original body' }], type: 'paragraph' },
     ],
   });
-  const result = await exportToDocx(editor, { projection: 'proposed' });
+  const result = await exportDocx(editor, { projection: 'proposed' });
 
   if (!result.ok) throw new Error('Fixture DOCX generation failed.');
 
@@ -103,7 +103,11 @@ const addSourceParts = async (blob: Blob, multipleSections = false) => {
 };
 
 const importRetained = async (blob: Blob) => {
-  const result = await importDocx(createEditor(), blob, { retainSource: true });
+  const result = await importDocx(blob, {
+    lossPolicy: 'allow',
+    plugins: [],
+    retainSource: true,
+  });
 
   if (!result.ok) throw new Error('Fixture DOCX import failed.');
 
@@ -118,8 +122,8 @@ describe('retained DOCX source', () => {
     const BrokenStatic = () => {
       throw new Error('exact export rendered');
     };
-    const result = await exportToDocx(editor, {
-      editorStaticComponent: BrokenStatic,
+    const result = await exportDocx(editor, {
+      component: BrokenStatic,
       projection: 'review',
       source: imported.source,
     });
@@ -130,6 +134,39 @@ describe('retained DOCX source', () => {
     expect(result.diagnostics).toEqual([]);
   });
 
+  it('removes attached native state unless the export opts into it', async () => {
+    const sourceEditor = createEditor({
+      initialValue: [
+        { children: [{ text: 'Original body' }], type: 'paragraph' },
+      ],
+    });
+    const attached = await exportDocx(sourceEditor, {
+      nativeState: 'attach',
+      projection: 'review',
+    });
+
+    expect(attached.ok).toBe(true);
+    if (!attached.ok) return;
+    const imported = await importRetained(attached.blob);
+    const editor = createEditor({ initialValue: imported.document });
+    const result = await exportDocx(editor, {
+      projection: 'review',
+      source: imported.source,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+
+    expect(zip.file('editor/authored.json')).toBeNull();
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'source-part-omitted',
+        part: 'editor/authored.json',
+      })
+    );
+  });
+
   it('rewrites the body and preserves only safe closed source graphs', async () => {
     const sourceBlob = await addSourceParts(await createGeneratedSource());
     const imported = await importRetained(sourceBlob);
@@ -138,7 +175,7 @@ describe('retained DOCX source', () => {
     editor.update.text.insert(' edited', {
       at: { offset: 'Original body'.length, path: [0, 0] },
     });
-    const result = await exportToDocx(editor, {
+    const result = await exportDocx(editor, {
       projection: 'review',
       source: imported.source,
     });
@@ -202,10 +239,10 @@ describe('retained DOCX source', () => {
         reason: 'unreachable',
       })
     );
-    const reopened = await importDocx(
-      createEditor(),
-      await result.blob.arrayBuffer()
-    );
+    const reopened = await importDocx(await result.blob.arrayBuffer(), {
+      lossPolicy: 'allow',
+      plugins: [],
+    });
 
     expect(reopened.ok).toBe(true);
     if (reopened.ok) expect(reopened.document).toEqual(editor.read.value());
@@ -222,7 +259,7 @@ describe('retained DOCX source', () => {
     editor.update.text.insert(' edited', {
       at: { offset: 'Original body'.length, path: [0, 0] },
     });
-    const result = await exportToDocx(editor, {
+    const result = await exportDocx(editor, {
       projection: 'review',
       source: imported.source,
     });
@@ -250,14 +287,14 @@ describe('retained DOCX source', () => {
 
       return React.createElement(EditorStatic, props);
     };
-    const inFlight = await exportToDocx(editor, {
-      editorStaticComponent: DisposingStatic,
+    const inFlight = await exportDocx(editor, {
+      component: DisposingStatic,
       projection: 'proposed',
       source: imported.source,
     });
 
     expect(inFlight.ok).toBe(true);
-    const later = await exportToDocx(editor, {
+    const later = await exportDocx(editor, {
       projection: 'review',
       source: imported.source,
     });
@@ -275,12 +312,12 @@ describe('retained DOCX source', () => {
     const sourceBlob = await createGeneratedSource();
     const imported = await importRetained(sourceBlob);
     const editor = createEditor({ initialValue: imported.document });
-    const withOption = await exportToDocx(editor, {
+    const withOption = await exportDocx(editor, {
       projection: 'review',
       source: imported.source,
       title: 'Current title',
     });
-    const withComments = await exportToDocx(editor, {
+    const withComments = await exportDocx(editor, {
       comments: [
         {
           author: null,
@@ -296,7 +333,7 @@ describe('retained DOCX source', () => {
       projection: 'review',
       source: imported.source,
     });
-    const projected = await exportToDocx(editor, {
+    const projected = await exportDocx(editor, {
       projection: 'proposed',
       source: imported.source,
     });
@@ -304,11 +341,11 @@ describe('retained DOCX source', () => {
       initialValue: imported.document,
       schema: { id: 'another-document', version: 1 },
     });
-    const mismatched = await exportToDocx(anotherSchema, {
+    const mismatched = await exportDocx(anotherSchema, {
       projection: 'review',
       source: imported.source,
     });
-    const forged = await exportToDocx(editor, {
+    const forged = await exportDocx(editor, {
       projection: 'review',
       source: {} as typeof imported.source,
     });

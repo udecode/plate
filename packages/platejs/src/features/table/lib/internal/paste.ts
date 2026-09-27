@@ -9,7 +9,6 @@ import {
   ElementApi,
 } from '../../../../core';
 import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
-import { getColSpan, getRowSpan, setSpan } from './codec';
 import { createDetachedTableContext, type TableContext } from './context';
 import {
   getTableColumnSizes,
@@ -26,6 +25,7 @@ import {
   type TableOperation,
 } from './mutation';
 import type { TableSelectionBounds } from './selection';
+import { getColSpan, getRowSpan, setSpan } from './tableCellHtml';
 
 export type PreparedTablePaste = Readonly<{
   grid: TableGrid;

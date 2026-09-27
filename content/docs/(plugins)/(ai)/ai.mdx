@@ -267,7 +267,7 @@ Everything under `chatOptions.body` arrives in the route handler, letting you sw
 
 Publish the complete accumulated Markdown response with
 `aiChat.api.setPreview(content, { requestId })`. The plugin parses it with the
-editor's installed Markdown codecs and stores the result in `previewValue`.
+editor's installed Markdown mappings and stores the result in `previewValue`.
 `useAIChat` handles this publication for AI SDK transports. Structured table
 responses use `aiChat.api.setTablePreview({ ref, content }, { requestId })`.
 

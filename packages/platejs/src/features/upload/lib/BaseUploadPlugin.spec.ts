@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import { ContentSlice, createEditor } from '../../../core';
-import { writeHostFragmentData } from '../../../dom';
+import { writeDataTransferFragment } from '../../../dom';
 import { BaseUploadPlugin } from './BaseUploadPlugin';
 
 describe('BaseUploadPlugin', () => {
@@ -36,7 +36,7 @@ describe('BaseUploadPlugin', () => {
     const slice = ContentSlice.closed(editor.read.children());
     const output = new DataTransfer();
 
-    writeHostFragmentData(editor, output, slice);
+    writeDataTransferFragment(editor, output, slice);
 
     expect(slice.content[1]).toEqual({
       children: [{ text: '' }],

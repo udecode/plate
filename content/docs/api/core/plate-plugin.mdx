@@ -128,12 +128,13 @@ reads and updates the installed store through `editor.plugin(MyPlugin).store`.
 </APIItem>
 
 <APIItem
-  name="codecs"
-  type="PluginCodecMapDeclaration | ((context: PluginContext<D>) => PluginCodecMapDeclaration)"
+  name="formats"
+  type="PluginFormatMapDeclaration | ((context: PluginFormatAuthoringContext<D>) => PluginFormatMapDeclaration)"
 >
-  Schema-aware product and foreign format mappings. Use the contextual
-  `defineCodecs(map)` helper for self/product codecs or
-  `defineCodecs(TargetPlugin, map)` for foreign contributions.
+  Schema-aware HTML, Markdown, and plain-text node mappings. The authoring
+  context exposes `defineFormats` and static schema bindings. Use
+  `defineFormats(map)` for self mappings or
+  `defineFormats(TargetPlugin, map)` for foreign contributions.
 </APIItem>
 
 <APIItem name="on" type="PluginChangeHandlers & DOMHandlers">
@@ -342,18 +343,6 @@ priority then source order, and direct target `.configure()` values remain
 authoritative. A peer may replace the target `component`; use
 `{ enabled: false }` when a package plugin must disable an optional installed
 target.
-</APIItem>
-
-<APIItem name="parsers" type="object">
-Defines whole-input HTML parsing behavior.
-
-<APISubList>
-<APISubListItem parent="parsers" name="html" type="Nullable<HtmlParser<WithAnyName<D>>>" optional>
-Whole-input HTML hooks. `query`, `transformData`, and `transformFragment` are
-flat siblings. Node, mark, and property mappings use the schema-aware
-`'text/html'` map returned by context-bound `defineCodecs`.
-</APISubListItem>
-</APISubList>
 </APIItem>
 
 <APIItem name="render" type="object">
@@ -635,22 +624,22 @@ The contribution fields have distinct owners:
 - `readMiddleware`, `commands`, `corrections`, `stateFields`, `effectTypes`,
   `contributions`, `on`, `activate`, and
   `validate`: editor capabilities declared directly on the plugin
-- `codecs`: the declaration returned by context-bound `defineCodecs`
+- `formats`: the declaration returned by context-bound `defineFormats`
 
 Independently reusable standalone Plate descriptors use
 `definePlugin` from `platejs`. Plate plugins declare the same
 native capabilities at their root.
 
-Use `defineCodecs(map)` for self/product codecs and
-`defineCodecs(TargetPlugin, map)` for foreign codecs. The helper injects the
-foreign target. The map remains MIME-keyed; its `'text/html'` value accepts one
-schema-aware rule or a non-empty ordered rule tuple. `defineCodecs` is the one
-inline inference anchor. Do not author direct codec maps or manual `target`
-fields.
+Use `defineFormats(map)` for self mappings and
+`defineFormats(TargetPlugin, map)` for foreign mappings. The helper injects the
+foreign target. The semantic keys are `html`, `markdown`, and `plainText`;
+`html` accepts one schema-aware rule or a non-empty ordered rule tuple.
+Whole-payload MIME handling belongs to `dataTransferFormats`. Do not author
+direct maps, add a manual `target`, or annotate mapping callback parameters.
 
 `definePlugin()` / `definePlugin()` own every independent declaration
 field, including `api`, `read`, `selectors`, `update`, editor fields, and
-`codecs`.
+`formats`.
 
 </APIItem>
 </APIMethods>
@@ -668,18 +657,18 @@ field, including `api`, `read`, `selectors`, `update`, editor fields, and
       plugin infer it. Consumer code obtains its portal by passing the
       descriptor to `editor.plugin(MyPlugin)` or `useEditor().plugin(MyPlugin)`.
     </APIItem>
-    <APIItem name="defineCodecs" type="DefinePluginCodecs<D>">
-      Creates a schema-checked codec declaration inside the constructor's
-      `codecs` callback, or inside `.extend()` when the codec needs an earlier
-      capability. Pass one MIME-keyed map for self/product codecs, or pass a
-      target plugin plus the map for a foreign contribution.
-    </APIItem>
     <APIItem name="store" type="PluginStore<D>">
       Reads, updates, and subscribes to the current plugin's editor-local state.
       Named selectors are pure functions of that state.
     </APIItem>
   </APIAttributes>
 </API>
+
+The `formats` callback receives `PluginFormatAuthoringContext<D>` instead of
+the general plugin context. It contains `defineFormats` and `schema`; it does
+not expose `editor`, `store`, selection, metadata, or fields. Runtime mapping
+callbacks receive frozen plugin state and the operation-specific registry,
+schema, model, and diagnostic context.
 
 For more detailed information on specific aspects of Plate plugins, refer to the individual guides on [Plugin Configuration](/docs/plugin), [Plugin Methods](/docs/plugin-methods), [Plugin Context](/docs/plugin-context), [Plugin Components](/docs/plugin-components), and [Plugin Shortcuts](/docs/plugin-shortcuts).
 

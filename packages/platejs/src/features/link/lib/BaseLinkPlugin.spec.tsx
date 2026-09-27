@@ -13,6 +13,7 @@ import {
   type Value,
 } from '../../../core';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import type { LinkDefinition } from '../../../react/features/link/LinkPlugin';
 import {
   BaseLinkPlugin,
@@ -30,9 +31,10 @@ describe('BaseLinkPlugin', () => {
 
   it('parses valid anchors with a default target', () => {
     const editor = createEditor();
-    const fragment = editor.api.html.deserialize({
-      element: '<a href="https://example.com">Link</a>',
-    });
+    const fragment = parseHtmlSliceContent(
+      editor,
+      '<a href="https://example.com">Link</a>'
+    );
     const link = Array.from(
       NodeApi.elements({ children: fragment ?? [], type: 'root' }),
       ([node]) => node
@@ -48,9 +50,10 @@ describe('BaseLinkPlugin', () => {
 
   it('rejects missing and unsafe href values', () => {
     const editor = createEditor();
-    const fragment = editor.api.html.deserialize({
-      element: '<a>No href</a><a href="javascript:alert(1)">Bad</a>',
-    });
+    const fragment = parseHtmlSliceContent(
+      editor,
+      '<a>No href</a><a href="javascript:alert(1)">Bad</a>'
+    );
     const hasLink = Array.from(
       NodeApi.elements({ children: fragment ?? [], type: 'root' }),
       ([node]) => node
@@ -356,9 +359,10 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
       allowedSchemes: ['mailto'],
       isUrl: () => true,
     });
-    const fragment = editor.api.html.deserialize({
-      element: '<a href="https://example.com">Link</a>',
-    });
+    const fragment = parseHtmlSliceContent(
+      editor,
+      '<a href="https://example.com">Link</a>'
+    );
 
     expect(
       Array.from(

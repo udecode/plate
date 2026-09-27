@@ -88,23 +88,16 @@ import {
 `CAN_USE_DOM` guards SSR-only initialization. Mounted DOM adapters resolve
 browser behavior from their own root.
 
-## Host codecs
+## DataTransfer formats
 
-Install schema-aware clipboard formats as one named plugin with
-`hostCodecs`. Keep a codec inline when that plugin is its only owner; name
-shared definitions with the `HostCodec<V>` type. Each callback receives an
-immutable `EditorCoreStateView`; parse callbacks also receive a snapshot of the
-incoming host formats and files.
+`dataTransferFormats` installs schema-aware browser transfer representations as
+one named plugin. Each `DataTransferFormat` decodes or encodes one MIME type.
+Callbacks receive an immutable editor-state view; decode callbacks also receive
+an immutable snapshot of the incoming types, strings, and files.
 
 ```ts
-import {
-  definePlugin,
-  property,
-  schema,
-  target,
-} from "plitejs";
-import { hostCodecs } from "plitejs/dom";
-import { decodeHtmlSlice, encodeHtmlSlice } from "./html-codec";
+import { ContentSlice, definePlugin, property, schema, target } from "plitejs";
+import { dataTransferFormats } from "plitejs/dom";
 
 const Bold = schema.textProperty("bold", property.boolean(), {
   target: target.type("paragraph"),
@@ -120,13 +113,23 @@ const editor = useEditor({
     definePlugin("app-schema", {
       schema: { properties: [Bold, DataAttribute] },
     }),
-    hostCodecs("app-host-codecs", [
+    dataTransferFormats("app-html-transfer", [
       {
-        format: "text/html",
+        mimeType: "text/html",
         key: "app-html",
-        owns: [{ kind: "element", type: "paragraph" }, Bold, DataAttribute],
-        parse: ({ data, state }) => decodeHtmlSlice(data, state.schema),
-        serialize: ({ slice, state }) => encodeHtmlSlice(slice, state.schema),
+        claims: [{ kind: "element", type: "paragraph" }, Bold, DataAttribute],
+        decode: ({ data }) => ({
+          diagnostics: [],
+          ok: true,
+          slice: ContentSlice.closed([
+            { type: "paragraph", children: [{ text: data }] },
+          ]),
+        }),
+        encode: ({ slice }) => ({
+          data: JSON.stringify(slice),
+          diagnostics: [],
+          ok: true,
+        }),
       },
     ]),
   ],
@@ -134,44 +137,50 @@ const editor = useEditor({
 });
 ```
 
-Parsing returns an intact `ContentSlice`, including its open edge depths. Use
+Successful decode results contain a `ContentSlice` and warning diagnostics.
+Successful encode results contain a string and warning diagnostics. A failed
+result contains at least one error and delegates to the next independent
+format. Return `null` for a mismatch that should not create an attempt. Return
+`false` from `accept` to skip decoding without an attempt.
+
+Decoded slices keep their open edge depths and detached roots. Use
 `ContentSlice.closed(content)` for a closed fragment or
-`ContentSlice.fromJSON(payload)` for a validated open slice. The replace-slice
-command fits the result against the actual paste range. Returning `null` or a
-slice that cannot fit delegates to the next codec without publishing a partial
-write. Codecs run in reverse configuration order, so the last configured codec
-gets the first chance to handle a format.
+`ContentSlice.fromJSON(payload)` for validated open data. Insertion fits the
+slice against the actual target. An unfit result delegates without publishing a
+partial write.
 
-Parse and query callbacks receive `{ data, format, source, state }`.
-Serialization receives `{ format, slice, state }`. Codecs do not receive the
-editor, a live `DataTransfer`, a fitter, or a write transaction. `query` is a
-read-only applicability check; parsing only decodes the payload, and the host
-dispatcher owns fitting and insertion.
+Decode callbacks receive `{ data, mimeType, snapshot, state }`. Encode
+callbacks receive `{ mimeType, slice, state }`. They do not receive the editor,
+a live `DataTransfer`, a fitter, or a transaction. Formats run in reverse
+configuration order, so the last configured format gets the first opportunity
+for its MIME type.
 
-Ownership claims compile against the candidate editor schema before an plugin
+Ownership claims compile against the candidate editor schema before a plugin
 revision publishes. `{ kind: "schema" }` owns the complete schema. Element
 claims use stable element types. Property claims reuse the same
 `schema.elementProperty(...)` or `schema.textProperty(...)` declaration in the
-schema contribution and codec. Matching is structural, not object-identity
+schema contribution and format. Matching is structural, not object-identity
 based. The compiler derives one stable identity from the declaration's
 placement, key, and target, so equal keys with disjoint targets remain
 independently claimable. Key-only claims and raw compiled IDs are not accepted.
-Duplicate codec keys, unknown declarations, and overlapping claims in the same
-MIME format and direction reject the complete configuration revision. Parse
-and serialize ownership are independent.
+Duplicate keys, unknown declarations, and overlapping claims in the same MIME
+type and direction reject the complete configuration revision. Decode and
+encode ownership are independent.
 
-Codec parsing is a pure decode boundary. Return `false` from `query` or `null`
-from `parse` when a payload does not apply; insertion belongs exclusively to
-the fitted replace-slice command. Query, parse, and serialize exceptions go to
-the editor's `lifecycleErrorSink` with `source: "host-codec"`, the codec key,
-format, phase, plugin owner, and original cause. The registry then tries the
-next eligible codec.
+Expected source failures stay in diagnosed results. Exceptions from `accept`,
+`decode`, or `encode` go to the editor's `lifecycleErrorSink` with
+`source: "data-transfer-format"`; negotiation then continues. Configure
+`dom({ onDataTransferReport })` to receive the final immutable report after an
+insert commits, after a write finishes, or after the outer command chain leaves
+the payload unhandled. A rejected or unfit rich attempt remains visible even
+when a later fallback succeeds. Exceptions from the report sink are isolated
+and lifecycle-reported in the `notify` phase.
 
 Framework clipboard writers call
-`writeHostFragmentData(editor, data, slice)` to run registered serializers into
-a `setData`-compatible host sink. Applications normally use
+`writeDataTransferFragment(editor, data, slice)` to run registered encoders into
+a `setData`-compatible sink. Applications normally use
 `editor.api.dom.clipboard.writeSelection(dataTransfer)`, which writes the native
-Plite payload and registered host formats together.
+Plite payload and registered MIME representations together.
 
 ## Public type groups
 
@@ -187,8 +196,10 @@ hidden or virtualized same-root content.
 DOM primitive type names include `DOMNode`, `DOMElement`, `DOMText`, `DOMPoint`,
 `DOMRange`, `DOMStaticRange`, and `DOMSelection`.
 
-Host codec types include `HostCodec`, `HostCodecParseContext`, `HostCodecPhase`,
-`HostCodecSerializeContext`, `HostDataSource`, and `HostCodecSchemaTarget`.
+DataTransfer types include `DataTransferFormat`, `DataTransferDecodeContext`,
+`DataTransferEncodeContext`, `DataTransferSnapshot`,
+`DataTransferSchemaClaim`, `DataTransferDiagnostic`, and
+`DataTransferReport`.
 
 Hotkey and diff helper types include `HotkeySpec`, `HotkeyPlatform`,
 `HotkeyMatchOptions`, `KeyboardEventLike`, `StringDiff`, and `TextDiff`.

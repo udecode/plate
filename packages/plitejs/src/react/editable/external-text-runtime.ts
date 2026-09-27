@@ -906,7 +906,7 @@ export class ExternalTextRuntime {
           entry.host.ownerDocument.activeElement
         );
         this.endComposition(entry);
-        void this.runtime.replayHistory(
+        this.runtime.dispatchHistory(
           direction,
           focused ? 'restore-root' : 'none'
         );

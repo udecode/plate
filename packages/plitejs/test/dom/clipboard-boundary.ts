@@ -23,7 +23,7 @@ import { history } from 'plitejs/history';
 import {
   dom,
   domCommands,
-  hostCodecs,
+  dataTransferFormats,
   writeDOMFragmentData,
   writeDOMRangeData,
 } from '../../src/dom/index';
@@ -69,6 +69,18 @@ class FakeDataTransfer {
     this.store.set(type, value);
   }
 }
+
+const decodeSuccess = (slice: ContentSlice) => ({
+  diagnostics: [],
+  ok: true as const,
+  slice,
+});
+
+const encodeSuccess = (data: string) => ({
+  data,
+  diagnostics: [],
+  ok: true as const,
+});
 
 const createChildren = (): Descendant[] => [
   {
@@ -795,7 +807,7 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
-  it('rejects hostile fragment input before writing any clipboard format', () => {
+  it('rejects hostile fragment input before writing any clipboard mimeType', () => {
     const repeated = {
       children: [{ text: 'repeated' }],
       type: 'paragraph',
@@ -875,23 +887,23 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
-  it('keeps explicit empty clipboard formats authoritative over host codecs', () => {
+  it('keeps explicit empty clipboard formats authoritative over transfer formats', () => {
     const editor = createClipboardEditor(createChildren(), null, undefined, [
-      hostCodecs('explicit-empty-copy', [
+      dataTransferFormats('explicit-empty-copy', [
         {
-          format: 'text/html',
+          mimeType: 'text/html',
           key: 'explicit-empty-html',
-          serialize: () => '<p>host html</p>',
+          encode: () => encodeSuccess('<p>host html</p>'),
         },
         {
-          format: 'text/plain',
+          mimeType: 'text/plain',
           key: 'explicit-empty-text',
-          serialize: () => 'host text',
+          encode: () => encodeSuccess('host text'),
         },
         {
-          format: 'application/example',
+          mimeType: 'application/example',
           key: 'explicit-empty-extra',
-          serialize: () => 'host extra',
+          encode: () => encodeSuccess('host extra'),
         },
       ]),
     ]);
@@ -912,7 +924,7 @@ describe('plite-dom clipboard boundary', () => {
     expect(data.getData('text/plain')).toBe('');
   });
 
-  it('reads clipboard envelopes without crossing custom formats or masking invalid claims', () => {
+  it('reads clipboard envelopes without crossing custom mimeTypes or masking invalid claims', () => {
     const editor = createClipboardEditor(createChildren(), null);
     const custom = createClipboardEditor(
       createChildren(),
@@ -1241,14 +1253,14 @@ describe('plite-dom clipboard boundary', () => {
     expect(editorGetSnapshot(exactTarget).children).toEqual(expected);
     expect(editorGetLastCommit(exactTarget)?.tags).toContain('paste');
 
-    const HostCodec = hostCodecs('content-property-paste', [
+    const DataTransferFormat = dataTransferFormats('content-property-paste', [
       {
-        format: 'application/x-content-property',
+        mimeType: 'application/x-content-property',
         key: 'content-property-paste',
-        parse: () => fragment,
+        decode: () => decodeSuccess(fragment),
       },
     ]);
-    const hostTarget = createTarget([HostCodec]);
+    const hostTarget = createTarget([DataTransferFormat]);
     const host = new FakeDataTransfer();
 
     host.setData('application/x-content-property', 'copied');
@@ -1348,7 +1360,7 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
-  it('keeps the native fragment fallback when a host codec serializes HTML', () => {
+  it('keeps the native fragment fallback when a DataTransfer format serializes HTML', () => {
     withDom((document) => {
       const source = createClipboardEditor(
         createChildren(),
@@ -1359,12 +1371,14 @@ describe('plite-dom clipboard boundary', () => {
         },
         undefined,
         [
-          hostCodecs('host-html-copy', [
+          dataTransferFormats('host-html-copy', [
             {
-              format: 'text/html',
+              mimeType: 'text/html',
               key: 'host-html-copy',
-              serialize: () =>
-                '<strong data-editor-fragment="stale">host-alpha</strong>',
+              encode: () =>
+                encodeSuccess(
+                  '<strong data-editor-fragment="stale">host-alpha</strong>'
+                ),
             },
           ]),
         ]
@@ -1408,7 +1422,7 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
-  it('orders exact v1, host codec, and plain-text fallback deterministically', () => {
+  it('orders exact v1, DataTransfer format, and plain-text fallback deterministically', () => {
     withDom((document) => {
       const createTarget = () => {
         const innerTarget3 = createClipboardEditor(
@@ -1425,18 +1439,20 @@ describe('plite-dom clipboard boundary', () => {
           },
           undefined,
           [
-            hostCodecs('host-html-paste', [
+            dataTransferFormats('host-html-paste', [
               {
-                format: 'text/html',
+                mimeType: 'text/html',
                 key: 'host-html-paste',
-                parse: ({ data }) =>
+                decode: ({ data }) =>
                   data === '<p>host</p>'
-                    ? ContentSlice.closed([
-                        {
-                          type: 'paragraph',
-                          children: [{ text: 'host' }],
-                        },
-                      ])
+                    ? decodeSuccess(
+                        ContentSlice.closed([
+                          {
+                            type: 'paragraph',
+                            children: [{ text: 'host' }],
+                          },
+                        ])
+                      )
                     : null,
               },
             ]),
@@ -1618,7 +1634,7 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
-  it('composes model and exclude coverage into every clipboard format', () => {
+  it('composes model and exclude coverage into every clipboard mimeType', () => {
     withDom((document) => {
       const children: Descendant[] = [
         'Visible',

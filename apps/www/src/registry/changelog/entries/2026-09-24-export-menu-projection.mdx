@@ -1,0 +1,28 @@
+---
+id: 2026-09-24-export-menu-projection
+date: 2026-09-24
+status: draft
+kind: behavior
+summary: 'Export one chosen document projection as HTML, Markdown, or Word'
+change: { 'type': 'source', 'date': '2026-09-24', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-24-export-toolbar-one-chosen-document-projection-505d5250","kind":"behavior","migrationNotes":[]} -->
+
+- **`export-toolbar-button`**: Export HTML, Markdown, and Word from the same captured document revision. With unresolved suggestions, choose **Include suggested changes** or **Exclude suggested changes**. **Export as Word with tracked changes** preserves pending suggestions as Word revisions and reports conflicts that require resolution.
+<!-- entry: {"id":"2026-09-24-export-toolbar-raster-exports-removed","kind":"remove","migrationNotes":["Remove `html2canvas-pro` and `pdf-lib` from your app when no other code uses them."]} -->
+- **`export-toolbar-button`**: Remove **Export as PDF** and **Export as Image**, along with the `html2canvas-pro` and `pdf-lib` dependencies.
+<!-- entry: {"id":"2026-09-24-export-toolbar-html-app-styles","kind":"fix","migrationNotes":[]} -->
+- **`export-toolbar-button`**: Inline the app's own stylesheets in HTML exports instead of linking the platejs.org stylesheet.
+<!-- entry: {"id":"2026-09-24-editor-dropdown-menu-immediate-reopen","kind":"fix","migrationNotes":[]} -->
+- **`editor-dropdown-menu`**: Complete close focus and dismissal before another trigger press so toolbar menus reopen on the first click after selecting an item.
+<!-- entry: {"id":"2026-09-24-docx-demo-suggestion-author","kind":"fix","migrationNotes":[]} -->
+- **`docx-demo`**: Set a current user so Suggestion mode records suggestions, and group contiguous typing into one visible suggestion and Word revision.
+<!-- entry: {"id":"2026-09-24-import-toolbar-docs-route","kind":"fix","migrationNotes":[]} -->
+- **`import-toolbar-button`**: Link its DOCX registry metadata to the DOCX documentation page.
+<!-- entry: {"id":"2026-09-24-export-toolbar-document-first-contracts","kind":"wiring","migrationNotes":[]} -->
+- **`export-toolbar-button`**: Use the current editor's document-first HTML, Markdown, and DOCX exporters directly, with one captured projection and shared diagnostics.
+<!-- entry: {"id":"2026-09-24-docx-export-package-mappings","kind":"wiring","migrationNotes":["Keep `DOCX_EXPORT_STYLES` in copied app code; DOCX semantic mappings come from `platejs/docx/export`."]} -->
+- **`docx-export`**: Keep the dependency-free copied presentation stylesheet while `platejs/docx/export` supplies semantic mappings for code blocks, columns, equations, callouts, headings, and tables of contents.

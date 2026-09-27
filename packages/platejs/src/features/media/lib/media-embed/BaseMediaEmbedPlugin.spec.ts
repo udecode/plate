@@ -7,6 +7,7 @@ import {
   SelectionApi,
   PLUGINS,
 } from '../../../../core';
+import { parseHtmlSliceContent } from '../../../../internal/testing/parseHtmlSliceContent';
 import { parseMediaUrl, parseVideoUrl } from '../media/parseMediaUrl';
 import {
   BaseMediaEmbedPlugin,
@@ -44,9 +45,10 @@ describe('BaseMediaEmbedPlugin', () => {
       )
     ).toBe('https://x.com/platejs/status/1234567890');
     expect(
-      editor.api.html.deserialize({
-        element: '<iframe src="https://example.com/embed"></iframe>',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<iframe src="https://example.com/embed"></iframe>'
+      )
     ).toEqual([
       {
         children: [{ text: '' }],
@@ -54,13 +56,12 @@ describe('BaseMediaEmbedPlugin', () => {
         url: 'https://example.com/embed',
       },
     ]);
+    expect(parseHtmlSliceContent(editor, '<iframe></iframe>')).toEqual([]);
     expect(
-      editor.api.html.deserialize({ element: '<iframe></iframe>' })
-    ).toEqual([]);
-    expect(
-      editor.api.html.deserialize({
-        element: '<iframe src="javascript:alert(1)"></iframe>',
-      })
+      parseHtmlSliceContent(
+        editor,
+        '<iframe src="javascript:alert(1)"></iframe>'
+      )
     ).toEqual([]);
   });
 
@@ -102,11 +103,7 @@ describe('BaseMediaEmbedPlugin', () => {
     expect(figure?.querySelector(':scope > figcaption')?.textContent).toBe(
       'Embed caption'
     );
-    expect(
-      safe.api.html.deserialize({
-        element: figure!.outerHTML,
-      })
-    ).toEqual([
+    expect(parseHtmlSliceContent(safe, figure!.outerHTML)).toEqual([
       {
         children: [{ text: 'Embed caption' }],
         type: 'mediaEmbed',
@@ -115,11 +112,7 @@ describe('BaseMediaEmbedPlugin', () => {
       },
     ]);
     iframe?.remove();
-    expect(
-      safe.api.html.deserialize({
-        element: figure!.outerHTML,
-      })
-    ).toEqual([
+    expect(parseHtmlSliceContent(safe, figure!.outerHTML)).toEqual([
       {
         children: [{ text: 'Embed caption' }],
         type: 'mediaEmbed',
@@ -128,13 +121,13 @@ describe('BaseMediaEmbedPlugin', () => {
       },
     ]);
     expect(
-      safe.api.html.deserialize({
-        element:
-          '<figure class="editor-media-embed" ' +
+      parseHtmlSliceContent(
+        safe,
+        '<figure class="editor-media-embed" ' +
           'data-editor-media-url="https://example.com/embed" ' +
           'data-editor-media-width="not a width">' +
-          '<figcaption>Embed caption</figcaption></figure>',
-      })
+          '<figcaption>Embed caption</figcaption></figure>'
+      )
     ).toEqual([
       {
         children: [{ text: 'Embed caption' }],
@@ -143,16 +136,14 @@ describe('BaseMediaEmbedPlugin', () => {
       },
     ]);
     expect(
-      safe.api.html
-        .deserialize({
-          element:
-            '<figure class="editor-media-embed" ' +
-            'data-editor-media-url="javascript:alert(1)">' +
-            '<figcaption>Embed caption</figcaption></figure>',
-        })
-        ?.some(
-          (node) => NodeApi.isElement(node) && node.type === 'mediaEmbed'
-        ) ?? false
+      parseHtmlSliceContent(
+        safe,
+        '<figure class="editor-media-embed" ' +
+          'data-editor-media-url="javascript:alert(1)">' +
+          '<figcaption>Embed caption</figcaption></figure>'
+      )?.some(
+        (node) => NodeApi.isElement(node) && node.type === 'mediaEmbed'
+      ) ?? false
     ).toBe(false);
 
     const unsafe = createEditor({

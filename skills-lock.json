@@ -175,7 +175,7 @@
     "principle-redesign-from-first-principles": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "f6f65777ce17a1e44cd0e90a84a8726c6f3f1c95fed495cc28627bc82be1056b"
+      "computedHash": "73f4c0d4404e3510c31d14583a43f25dc6da50f0375aa66a085d5b4af31c477a"
     },
     "principle-separate-before-serializing-shared-state": {
       "source": "../dotai",

@@ -2,7 +2,6 @@
 
 import type { Element } from 'platejs';
 import { CopilotPlugin } from 'platejs/ai/react';
-import { stripMarkdown } from 'platejs/markdown';
 import { useEditor, useElement, usePluginStore } from 'platejs/react';
 import * as React from 'react';
 
@@ -23,13 +22,18 @@ export function GhostText() {
 
 function GhostTextContent() {
   const suggestionText = usePluginStore(CopilotPlugin, 'suggestionText');
+  const text = suggestionText
+    ?.replaceAll(/(\*\*|__)(.*?)\1/g, '$2')
+    .replaceAll(/(\*|_)(.*?)\1/g, '$2')
+    .replaceAll(/\[([^\]]+)]\([^)]+\)/g, '$1')
+    .replaceAll(/`(.+?)`/g, '$1');
 
   return (
     <span
       className="pointer-events-none text-muted-foreground/70 max-sm:hidden"
       contentEditable={false}
     >
-      {suggestionText && stripMarkdown(suggestionText)}
+      {text}
     </span>
   );
 }
@@ -63,13 +67,15 @@ export const CopilotKit = [
 
         if (!contextEntry) return '';
 
-        const prompt = editor.api.markdown.serialize({
-          value: { children: [contextEntry[0] as Element] },
+        const result = editor.api.markdown.serialize({
+          document: { children: [contextEntry[0] as Element] },
         });
+
+        if (!result.ok) throw new Error(result.diagnostics[0].message);
 
         return `Continue the text up to the next punctuation mark:
   """
-  ${prompt}
+  ${result.data}
   """`;
       },
     },

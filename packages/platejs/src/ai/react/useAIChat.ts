@@ -59,6 +59,8 @@ function createEditorChat(
   let chatPublishTimer: ReturnType<typeof setTimeout> | null = null;
   let insertStarted = false;
   let insertTimer: ReturnType<typeof setTimeout> | null = null;
+  let latestInsert = '';
+  let latestInsertRequestId: string | null = null;
   let pendingInsert = '';
   let pendingInsertRequestId: string | null = null;
   const getCommandEditor = () => getAIChatCommandEditor(editor);
@@ -124,14 +126,16 @@ function createEditorChat(
     if (insertTimer) clearTimeout(insertTimer);
     insertTimer = null;
     insertStarted = false;
+    latestInsert = '';
+    latestInsertRequestId = null;
     pendingInsert = '';
     pendingInsertRequestId = null;
   };
-  const flushPendingInsert = () => {
+  const flushPendingInsert = ({ final = false } = {}) => {
     if (insertTimer) clearTimeout(insertTimer);
     insertTimer = null;
 
-    const requestId = pendingInsertRequestId;
+    const requestId = final ? latestInsertRequestId : pendingInsertRequestId;
 
     if (
       !isLive() ||
@@ -143,13 +147,14 @@ function createEditorChat(
       return;
     }
 
-    const chunk = pendingInsert;
+    const chunk = final ? latestInsert : pendingInsert;
     pendingInsert = '';
     pendingInsertRequestId = null;
 
     if (!chunk) return;
 
     getCommandEditor().plugin(AIChatPlugin).api.setPreview(chunk, {
+      final,
       requestId,
     });
     publishChat();
@@ -162,6 +167,8 @@ function createEditorChat(
     }
     pendingInsert = chunk;
     pendingInsertRequestId = requestId;
+    latestInsert = chunk;
+    latestInsertRequestId = requestId;
 
     if (defer) {
       insertStarted = true;
@@ -177,7 +184,7 @@ function createEditorChat(
     }
   };
   const finish = () => {
-    flushPendingInsert();
+    flushPendingInsert({ final: true });
     if (store.get('chat')?.stop === stop) {
       store.set({
         streaming: false,
@@ -185,11 +192,10 @@ function createEditorChat(
     }
   };
   const stop = () => {
-    flushPendingInsert();
+    finish();
     request?.abort();
     clearPendingChatPublish();
     clearPendingInsert();
-    finish();
     return chat.stop();
   };
   const retire = () => {

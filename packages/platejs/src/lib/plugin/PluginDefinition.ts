@@ -2,7 +2,6 @@ import type { Draft } from 'mutative';
 
 /** Shared type contracts for Plate plugin definitions. */
 import type {
-  EditorCoreStateView,
   DefinitionOf as RuntimeDefinitionOf,
   RuntimePluginDependencyReference,
   RuntimePluginDefinition,
@@ -55,7 +54,8 @@ type ExactPluginDefinitionOf<P> =
 export type BasePluginDefinition = Readonly<{
   activate?: true;
   api?: object;
-  codecs?: true;
+  dataTransferFormats?: true;
+  formats?: true;
   commands?: true;
   conflicts?: ReadonlyArray<Readonly<{ enabled?: boolean; name: string }>>;
   contributions?: true;
@@ -898,37 +898,6 @@ export type NodeComponent<T = any> =
   | ((props: T) => any)
   | (new (props: T) => any)
   | keyof HTMLElementTagNameMap;
-
-type CodecDataSource = Readonly<{
-  files: Readonly<{
-    readonly [index: number]: File;
-    readonly length: number;
-    item: (index: number) => File | null;
-  }>;
-  getData: (format: string) => string;
-  types: readonly string[];
-}>;
-
-export type HtmlParserOptions = Readonly<{
-  data: string;
-  format: string;
-  source: CodecDataSource;
-}>;
-
-/** Installed-plugin membership available during HTML parsing. */
-export type HtmlPluginRegistry = Readonly<{
-  has: (name: string) => boolean;
-}>;
-
-/** Pure context supplied to HTML parser and node-codec callbacks. */
-export type HtmlPluginContext<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = Readonly<{
-  pluginState: Readonly<InferPluginStoreState<C>>;
-  registry: HtmlPluginRegistry;
-  state: EditorCoreStateView;
-  name: string;
-}>;
 
 export type WithAnyName<
   C extends AnyBasePluginDefinition = BasePluginDefinition,

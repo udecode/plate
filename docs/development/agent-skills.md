@@ -274,7 +274,7 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 
 ## Source ownership
 
-The linked skills and [project instructions](../../.agents/AGENTS.md) own the
+The linked skills and [project instructions](../../AGENTS.md) own the
 current contracts. Edit repository rules in `.agents/rules` and shared methods
 in their canonical package, then regenerate or use a named install. Maintain
 Workflow handles meaningful workflow changes within the requested scope.

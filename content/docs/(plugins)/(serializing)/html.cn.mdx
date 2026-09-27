@@ -1,408 +1,214 @@
 ---
 title: HTML
-description: 将Plate内容转换为HTML及反向转换。
-toc: true
+description: 将 semantic HTML 解析为 Plate document 或 slice，并把 Plate document 序列化为 HTML。
 ---
 
-使用 `renderStaticHtml` 把配置好的静态 Plate React tree 渲染为 HTML。使用 `editor.api.html.deserialize(...)` 把 HTML 解析为 Plate content。这两个方向由不同的 API 负责。
+HTML 转换包含两个方向：
 
-<ComponentPreview name="html-demo" />
+- 将 semantic HTML 解析为完整的 `EditorDocumentValue`，或用于插入的闭合 `ContentSlice`。
+- 将 schema-valid Plate document 序列化为 semantic HTML。
 
-## 套件使用
+浏览器使用 `platejs/html`。Node.js 解析 HTML 时使用
+`platejs/html/server`。通过 React component 生成展示 HTML 属于
+[`platejs/static`](/docs/static)，不是 semantic interchange。
 
-<Steps>
+## 解析 HTML
 
-### 安装
+### 已安装的 editor
 
-启用HTML序列化的最快方式是使用`BaseEditorKit`，它包含预配置的基础插件，支持大多数常见元素和标记的HTML转换。
+安装 `HtmlPlugin` 后，editor API 会复用已编译的 plugin、schema 与 plugin state。
 
-<ComponentSource name="editor-plugins-static" />
-
-### 添加套件
-
-```tsx
+```ts
+import { HtmlPlugin } from 'platejs/html';
 import { createEditor } from 'platejs';
-import { renderStaticHtml } from 'platejs/static';
-import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 const editor = createEditor({
-  plugins: BaseEditorKit,
-  initialValue: [
-    { type: 'heading', level: 1, children: [{ text: 'Hello World' }] },
-    { type: 'paragraph', children: [{ text: '此内容将被序列化为HTML。' }] },
-  ],
+  plugins: [BaseParagraphPlugin, BaseBoldPlugin, HtmlPlugin],
 });
 
-// 序列化为HTML
-const html = await renderStaticHtml(editor);
+const result = editor.api.html.parse('<p>Hello <strong>world</strong>.</p>');
+
+if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+editor.update((tx) => tx.value.replace(result.document));
 ```
 
-### 示例
+`parse` 读取一份完整 HTML document。source 中恰好有一个
+`[data-editor="true"]` 元素时，Plate 读取它的 children；没有 marker 时读取
+`body`；多个 marker 会返回错误。
 
-查看完整的服务端HTML生成示例：
+插入内容使用 `parseSlice`。它返回闭合、无 root 的 `ContentSlice`，不会把
+editor marker 当成完整 document 的权限。
 
-<ComponentSource name="html-export" />
+```ts
+const result = editor.api.html.parseSlice('<p>Paste me</p>');
 
-</Steps>
-
-## HTML 导出
-
-将Plate编辑器内容（Plate节点）转换为HTML字符串。这通常在服务端完成。
-
-[查看服务端示例](/docs/examples/html-export)
-
-<Callout type="warning" title="关键服务端限制">
-  在服务端环境（Node.js, RSC）中使用`renderStaticHtml`或其他Plate工具时，**不得**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`platejs`而非`platejs/react`）。
-
-  这意味着服务端编辑器实例应使用`platejs`中的`createEditor`，而非`platejs/react`中的`useCreateEditor`或`createEditor`。
-</Callout>
-
-<Steps>
-
-### 基础用法
-
-提供服务端编辑器实例，并把服务端安全组件绑定到所属插件。
-
-```tsx title="lib/generate-html.ts"
-import { createEditor } from 'platejs';
-import { renderStaticHtml } from 'platejs/static'; // 静态导入
-// 导入服务端安全的 registry kit（不从 /react 包路径导入）
-import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
-
-const editor = createEditor({
-  plugins: [
-    ...BaseBasicBlocksKit,
-  ],
-  initialValue: [
-    { type: 'heading', level: 1, children: [{ text: '我的标题' }] },
-    { type: 'paragraph', children: [{ text: '我的内容。' }] },
-  ],
-});
-
-async function getMyHtml() {
-  const html = await renderStaticHtml(editor);
-
-  return html;
+if (result.ok) {
+  editor.update.slice.replace(result.slice);
+  showDiagnostics(result.diagnostics);
 }
 ```
 
-### 序列化HTML的样式设置
+只有 insertion destination 已知后，插入 owner 才会 fit slice。直接解析 HTML
+不会虚构 open edge 或 detached root。
 
-`renderStaticHtml`仅返回静态 React tree 渲染出的HTML。如果使用带样式的组件（如`EditorStatic`或具有特定类的自定义静态组件），必须确保最终显示HTML的上下文中包含必要的CSS。
+### 浏览器中的 detached 转换
 
-这通常意味着将序列化的HTML包装在包含样式表的完整HTML文档中：
+没有配置好的 editor 时，直接调用 standalone function，并传入拥有 document
+schema 与 HTML mapping 的 plugin。
 
-```tsx title="lib/generate-full-html-document.ts"
-// ...（来自generate-html.ts的先前设置）
+```ts
+import { parseHtml, parseHtmlSlice } from 'platejs/html';
 
-async function getFullHtmlDocument() {
-  const editorHtmlContent = await getMyHtml(); // 来自之前的示例
-
-  const fullHtml = `<!DOCTYPE html>
-  <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="/path/to/your-global-styles.css" />
-      <link rel="stylesheet" href="/path/to/tailwind-or-component-styles.css" />
-      <title>序列化内容</title>
-    </head>
-    <body>
-      <div class="my-document-wrapper prose dark:prose-invert">
-        ${editorHtmlContent}
-      </div>
-    </body>
-  </html>`;
-  return fullHtml;
-}
-```
-
-<Callout type="info" title="仅静态输出">
-  序列化过程将Plate节点转换为静态HTML。交互功能（React事件处理程序、客户端钩子）或依赖浏览器API的组件在序列化输出中将无法工作。
-</Callout>
-
-### 使用静态组件
-
-对于服务端序列化，**必须**使用组件的静态版本（无仅客户端代码，无React钩子如`useEffect`或`useState`）。
-
-参考[静态渲染指南](/docs/static)获取为Plate元素和标记创建服务端安全静态组件的详细说明。
-
-```tsx title="components/editor/paragraph-static.tsx"
-import React from 'react';
-import type { BaseParagraphPlugin } from 'platejs';
-import type { EditorElementProps } from 'platejs/static';
-
-// 示例静态段落组件
-export function ParagraphElementStatic(
-  props: EditorElementProps<typeof BaseParagraphPlugin>
-) {
-  return (
-    <EditorElement {...props} className={cn('m-0 px-0 py-1')}>
-      {props.children}
-    </EditorElement>
-  );
-}
-```
-
-</Steps>
-
-### Authored-change 投影
-
-Editor 包含原生 authored changes 时，使用 `renderAuthoredHtml`：
-
-```tsx
-import { renderAuthoredHtml } from 'platejs/static';
-
-const output = await renderAuthoredHtml(editor, {
-  projection: 'review',
+const documentResult = parseHtml(source, { plugins: EditorKit });
+const sliceResult = parseHtmlSlice(fragment, {
+  plugins: EditorKit,
+  lossPolicy: 'allow',
 });
 ```
 
-`accepted` 和 `proposed` 渲染指定静态内容；省略 pending change 时返回 `authored-lossy-projection`。`review` 渲染 proposed 静态内容，并追加一个经过转义的 `application/vnd.editor.authored+json` script，其中包含 canonical document envelope。
+Standalone function 只为本次调用编译 declaration，完成后丢弃临时 target。它
+不会激活 handler、effect 或 React hook。
 
-调用 `deserializeAuthoredHtml(editor, output.data)` 可以恢复该 envelope。没有 authored script 的 HTML 仍使用 editor 已安装的 HTML codecs。完整格式 contract 请参阅 [Authored Changes](/docs/authored-changes)。
+### Node.js
 
----
+Node.js 通过 server entrypoint 使用同一棵 parse5 tree 与同一套诊断：
 
-## HTML转Plate
+```ts
+import { parseHtml } from 'platejs/html/server';
 
-HTML反序列化器允许将HTML内容（字符串或DOM元素）转换回Plate格式。这支持往返转换，在存在对应插件规则的情况下保留结构、格式和属性。
-
-<Steps>
-
-### 基础用法
-
-在客户端 Plate 编辑器中调用根级 HTML API。
-
-```tsx title="components/my-html-importer.tsx"
-import { useCreateEditor } from 'platejs/react';
-// 导入表示HTML内容所需的所有Plate插件
-import { BasicBlocksKit } from '@/components/editor/basic-blocks';
-// ... 以及粗体、斜体、表格、列表等的插件
-
-function MyHtmlImporter({ htmlString }: { htmlString: string }) {
-  const editor = useCreateEditor({
-    plugins: [
-      ...BasicBlocksKit, // 用于段落、标题、引用和分隔线
-      // ... 包含与预期解析的HTML对应的所有插件
-    ],
-  });
-
-  const handleImport = () => {
-    const value = editor.api.html.deserialize({ element: htmlString });
-
-    if (!value) return;
-
-    editor.update.value.replace({ children: value });
-  };
-
-  // ... 渲染编辑器及触发handleImport的按钮 ...
-  return <button onClick={handleImport}>导入HTML</button>;
-}
+const result = parseHtml(source, { plugins: EditorKit });
 ```
 
-<Callout type="warning" title="客户端操作">
-  使用 `editor.api.html.deserialize` 的HTML反序列化通常是客户端操作，因为它使用已编译的 Plate plugin model。
-</Callout>
+Node 进程需要解析 HTML 时，安装可选 server DOM peer：
 
-### 插件 HTML Codec 概览
+```bash
+npm install platejs linkedom
+```
 
-每个 Plate 插件拥有其 schema 声明对应的 HTML 标签、样式和属性。
-Context-bound `defineCodecs` 返回的同一个 `'text/html'` map 同时负责 decode
-和 encode。
+不要在 Node.js 中从 `platejs/html` 调用浏览器 parser；该入口会抛出指向
+`platejs/html/server` 的环境错误。server entrypoint 只提供 ESM。
 
-| HTML元素/样式                                       | Plate插件（典型）  | 备注                                                                    |
-| :--------------------------------------------------------- | :---------------------- | :----------------------------------------------------------------------- |
-| `<strong>`, `<b>`, `font-weight: 600,700,bold`          | [`BoldPlugin`](/docs/bold)            | 转换为`bold: true`标记。                                           |
-| `<em>`, `<i>`, `font-style: italic`                      | [`ItalicPlugin`](/docs/italic)          | 转换为`italic: true`标记。                                         |
-| `<u>`, `text-decoration: underline`                       | [`UnderlinePlugin`](/docs/underline)       | 转换为`underline: true`标记。                                      |
-| `<s>`, `<del>`, `<strike>`, `text-decoration: line-through` | [`StrikethroughPlugin`](/docs/strikethrough)   | 转换为`strikethrough: true`标记。                                  |
-| `<sub>`, `vertical-align: sub`                            | [`ScriptPlugin`](/docs/subscript)       | 转换为 `script: 'sub'` 标记。                                      |
-| `<sup>`, `vertical-align: super`                           | [`ScriptPlugin`](/docs/superscript)     | 转换为 `script: 'sup'` 标记。                                    |
-| `<code>` (不在`<pre>`中), `font-family: Consolas`         | [`CodePlugin`](/docs/code)            | 转换为`code: true`标记（内联代码）。                             |
-| `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | 转换为`kbd: true`标记。                                            |
-| `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-blocks)       | 转换为段落元素。                                           |
-| `<h1>` - `<h6>`                                            | [`HeadingPlugin`–`HeadingPlugin`](/docs/heading)    | 转换为对应的标题元素（`h1` - `h6`）。                |
-| `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | 转换为带 `indent` 和 `listStyle` 属性的块。 |
-| `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | 转换为blockquote元素。                                          |
-| `<pre>` (通常内部有`<code>`)                       | [`CodeBlockPlugin`](/docs/code-block)       | 转换为带一个多行文本子节点的`codeBlock`元素。          |
-| `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | 转换为水平线元素。                                     |
-| `<a>`                                                      | [`LinkPlugin`](/docs/link)            | 转换为带 `url` 属性的 `link` 元素。                    |
-| `<img>`                                                    | [`ImagePlugin`](/docs/media)           | 转换为带 `url` 属性的 `image` 元素。                   |
-| `<iframe>`                                                 | [`MediaEmbedPlugin`](/docs/media)      | 转换为媒体嵌入元素，尝试解析URL。                |
-| `<table>`                                                  | [`TablePlugin`](/docs/table)           | 转换为`table`元素。                                             |
-| `<tr>`                                                     | [`TablePlugin`](/docs/table)           | 转换为 `tableRow`。                                    |
-| `<td>`                                                     | [`TablePlugin`](/docs/table)           | 转换为 `tableCell`。                                   |
-| `<th>`                                                     | [`TablePlugin`](/docs/table)           | 转换为带 `header: true` 的 `tableCell`。               |
-| `style="background-color: ..."`                          | [`FontBackgroundColorPlugin`](/docs/font)    | 转换为`backgroundColor`标记。 |
-| `style="color: ..."`                                     | [`FontColorPlugin`](/docs/font)       | 转换为`color`标记。                                                |
-| `style="font-family: ..."`                               | [`FontFamilyPlugin`](/docs/font)      | 转换为`fontFamily`标记。                                           |
-| `style="font-size: ..."`                                 | [`FontSizePlugin`](/docs/font)        | 转换为`fontSize`标记。                                             |
-| `style="font-weight: ..."` (非粗体值)      | [`FontWeightPlugin`](/docs/font)      | 为非标准粗体值转换为`fontWeight`标记。              |
-| `<mark>`                                                   | [`HighlightPlugin`](/docs/highlight)       | 转换为`highlight: true`标记。                                      |
-| `style="text-align: ..."`                                | [`TextAlignPlugin`](/docs/text-align)           | 在块元素上设置`textAlign`属性。                                 |
-| `style="line-height: ..."`                               | [`LineHeightPlugin`](/docs/line-height)      | 在块元素上设置`lineHeight`属性。                            |
+浏览器与 server parser 都是 inert 的。Plate 不执行 script、不挂载 tree、不加载
+resource、不应用 CSS，也不安装全局 DOM。安全策略会在 feature mapping 之前处理
+可执行元素、event attribute、不安全 URL、外部 resource attribute、CSS resource
+load 与不安全 foreign content。
 
-<Callout type="note" title="插件配置">
-  持久化元素类型来自已安装插件的 schema handle（例如
-  `editor.plugin(ParagraphPlugin).schema.type`）。表格显示典型关联。请在编辑器中包含对应的
-  Plate 插件以使这些规则生效。
-</Callout>
+## 序列化 HTML
 
-### `defineCodecs`
+### 已安装的 editor
 
-包作者在应用最终调用 `.configure()` 之前，通过 constructor 的 `codecs`
-callback 声明节点级 HTML 含义。解构 context-bound 的 `defineCodecs`，并传入
-MIME-keyed map。它是插件 schema 和 codec callback 唯一的 inline inference anchor：
+```ts
+const result = editor.api.html.serialize({ projection: 'proposed' });
 
-- `match` 是非空的标签、class、attribute 或 style matcher 数组。
-- `decode` 只返回插件拥有的值或属性。Element codec 不返回 `type`；
-  Plate 使用已安装插件解析后的类型。
-- `encode` 为 mark 返回 wrapper，为 element 返回完整 node spec，
-  为 element property 返回 attribute/style patch。
-- Element 的 `encode` 可以返回 `null`，从 HTML 中省略该 element，同时保留可序列化的
-  兄弟节点。Mark 和 property encoder 不能以这种方式省略已有值。
-- 仅导入的映射显式设置 `decodeOnly: true`。
-- `priority` 处理有意的重叠。相同优先级的排他声明会让 model 编译失败，
-  不依赖插件数组顺序。
-- 一个插件拥有多个 HTML 表示时，可以提供非空有序 rule tuple。该 tuple 保持在
-  同一个 codec map 中。
+showDiagnostics(result.diagnostics);
+if (result.ok) downloadHtml(result.data);
+```
 
-下面的 element codec 把 `<aside>` 映射为 callout，并保留应用配置的存储类型：
+要通过已安装 target 序列化已捕获的 document，请传入 `document`：
 
-```tsx title="lib/callout-plugin.ts"
-import { property, schema } from 'platejs';
-import { definePlugin } from 'platejs/react';
+```ts
+const result = editor.api.html.serialize({
+  document: editor.read.value(),
+  projection: 'accepted',
+});
+```
+
+Detached document 使用 standalone function：
+
+```ts
+import { serializeHtml } from 'platejs/html';
+
+const result = serializeHtml(document, {
+  plugins: EditorKit,
+  projection: 'accepted',
+});
+```
+
+序列化会 assert 输入 document 与选中的 authored projection。无效 model data
+属于 programmer 或 persistence boundary 错误，会直接抛出。预期内的格式表达损失
+通过 result diagnostics 返回。
+
+`lossPolicy` 默认为 `'reject'`。无法表示的可见内容会返回
+`{ ok: false, diagnostics }`，且不包含 `data`。只有调用方明确接受带诊断的 drop、
+replacement 或 unwrap 时，才使用 `lossPolicy: 'allow'`。
+
+## Authored content
+
+Semantic HTML 只支持可见的 `accepted` 与 `proposed` projection。它不会嵌入隐藏
+Plate document，也不会从 HTML 恢复 review state。
+
+完整 proposal、decision、root 与 metadata 使用 authored JSON 持久化。需要 Word
+revision 时使用 DOCX review export。参阅
+[Authored Changes](/docs/authored-changes)。
+
+## 定义 HTML mapping
+
+Feature mapping 声明在拥有 node 或 mark 的 plugin 上。constructor 的 `formats`
+callback 只接收 `defineFormats` 与静态 schema binding。运行时 mapping callback
+接收冻结的 operation state、registry/schema view 与 HTML 专用 `report`，不会接收
+live editor 或 store。
+
+```ts
+import { definePlugin } from 'platejs';
 
 const CalloutPlugin = definePlugin('callout', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => ({
-          variant: element.dataset.variant || undefined,
+          type: element.dataset.type ?? 'info',
         }),
-        encode: ({ content, node }) => ({
-          attributes: { 'data-variant': node.variant },
-          children: content,
+        encode: ({ node }) => ({
+          attributes: { 'data-type': node.type },
           tag: 'aside',
         }),
-        match: [{ tag: 'aside' }],
-      },
-    }),
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      properties: {
-        variant: property.string(),
-      },
-    },
-  },
-});
-```
-
-`CalloutPlugin` 将 `<aside>` 解码为 `callout` element，因为 codec 指向已安装的
-descriptor。需要不同的持久化身份时定义另一个命名 descriptor；`.configure()`
-不会重命名插件。
-
-Self/product codec 使用 `defineCodecs(map)`。向另一个 descriptor 贡献 HTML
-行为时使用 `defineCodecs(TargetPlugin, map)`；helper 会把 target 注入每个
-rule。不要在 rule 中手动添加 `target`。一个插件的多个 HTML 表示应保留在同一个
-map 的非空有序 `'text/html'` tuple 中。
-
-### 完整输入 HTML 钩子
-
-需要整个输入 payload 时，使用 `'text/html'` codec 上的 `query`、
-`transformData` 和 `transformFragment`。这些钩子在节点 decode 前后运行，
-不声明节点 matcher。
-
-```ts title="lib/html-cleanup-plugin.ts"
-const HtmlCleanupPlugin = definePlugin('htmlCleanup', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
-      query: ({ source }) => source.types.includes('text/html'),
-      transformData: ({ data }) =>
-        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
+        match: { tag: 'aside' },
       },
     }),
 });
 ```
 
-</Steps>
+当前 plugin 自己的 mapping 使用 `defineFormats(map)`；foreign target 使用
+`defineFormats(TargetPlugin, map)`。语义 key 是 `html`，MIME negotiation 不属于
+这张 map。
 
-## API 参考
+需要拥有完整 `text/html` browser payload 时，通过 `dataTransferFormats` 注册
+`DataTransferFormat`。该 owner 可以检查完整 payload、调用 `parseHtmlSlice`，再
+返回带诊断的 slice。参阅 [Clipboard](/docs/clipboard)。
 
-### `renderStaticHtml(editor, options)`
+## Result 与 diagnostics
 
-将 `editor.read.children()`（或提供的 `value`）中的 Plate 节点转换为 HTML 字符串。此函数通常在服务端使用。
+Parse success 只包含 warning diagnostics，并且只包含一个 carrier。Serialize
+success 包含 `data`；failure 不包含。配置错误、mapping bug 与无效 model input
+会抛出。source 错误、resource limit、schema recovery、安全处理与预期格式损失
+通过 diagnostics 返回。
 
-<API name="renderStaticHtml">
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    通过 `createEditor` 创建的服务端 Plate 编辑器实例，使用已绑定组件的插件。
-  </APIItem>
-  <APIItem name="options" type="RenderStaticHtmlOptions" optional>
-    静态 React 渲染选项。
-  </APIItem>
-</APIParameters>
-<APIOptions type="RenderStaticHtmlOptions<P = EditorStaticProps>">
-  <APIItem name="editorComponent" type="React.ComponentType<P>" optional>
-    用于在静态渲染期间包装整个编辑器内容的 React 组件。默认为 `EditorStatic`。
-    该组件接收 `editor` 以及此处传递的任何 `props`。
-  </APIItem>
-  <APIItem name="props" type="Partial<P>" optional>
-    传递给 `editorComponent` 的 props。`P` 默认为 `EditorStaticProps`。
-  </APIItem>
-  <APIItem name="preserveClassNames" type="string[]" optional>
-    `stripClassNames` 为 true 时保留的 class name 前缀。
-  </APIItem>
-  <APIItem name="stripClassNames" type="boolean" optional>
-    如果为 `true`，则从输出 HTML 中删除所有类名，但保留 `preserveClassNames` 中列出的前缀。默认值：`false`。
-  </APIItem>
-  <APIItem name="stripDataAttributes" type="boolean" optional>
-    如果为 `true`，则从输出 HTML 中删除所有 `data-*` 属性。默认值：`false`。
-  </APIItem>
-</APIOptions>
-<APIReturns>
-  <APIItem type="Promise<string>">
-    解析为序列化 HTML 字符串的 Promise。
-  </APIItem>
-</APIReturns>
-</API>
+默认解析限制：
 
----
+| 限制 | 默认值 |
+| --- | --- |
+| UTF-8 source bytes | `5 * 1024 * 1024` |
+| Tree nodes | `100_000` |
+| Tree depth | `256` |
 
-### `editor.api.html.deserialize(options)`
+通过 `limits` 覆盖默认值。Plate 在解析前检查 byte limit，并在 parse5 构建 tree
+时检查 node/depth limit。
 
-将 HTML 字符串或 `HTMLElement` 解析为 Plate `Value`（`Descendant` 节点数组）。这通常在客户端与完全配置的 Plate 编辑器一起使用。
+## API Reference
 
-<API name="editor.api.html.deserialize">
-<APIParameters>
-  <APIItem
-    name="options"
-    type="{ element: HTMLElement | string; collapseWhiteSpace?: boolean }"
-  >
-    反序列化选项。
-  </APIItem>
-</APIParameters>
-<APIOptions>
-  <APIItem name="element" type="HTMLElement | string">
-    要反序列化的 HTML 字符串或 `HTMLElement`。
-  </APIItem>
-  <APIItem name="collapseWhiteSpace" type="boolean" optional>
-    如果为 `true`（默认值），则像浏览器处理 HTML 中的空白一样折叠文本节点中的空白。设置为 `false` 以保留所有空白。默认值：`true`。
-  </APIItem>
-</APIOptions>
-<APIReturns>
-  <APIItem type="Descendant[] | null">
-    反序列化的 Plate `Value`；当编译后的 HTML decoder 拒绝无效或不支持的
-    结果时返回 `null`。
-  </APIItem>
-</APIReturns>
-</API>
+| API | Import | 用途 |
+| --- | --- | --- |
+| `parseHtml(source, options)` | `platejs/html` | 在浏览器解析完整 document。 |
+| `parseHtmlSlice(source, options)` | `platejs/html` | 在浏览器解析闭合 insertion slice。 |
+| `serializeHtml(document, options)` | `platejs/html` | 序列化 detached document。 |
+| `parseHtml(source, options)` | `platejs/html/server` | 在 Node.js 解析完整 document。 |
+| `parseHtmlSlice(source, options)` | `platejs/html/server` | 在 Node.js 解析闭合 insertion slice。 |
+| `editor.api.html.parse(source, options?)` | `HtmlPlugin` | 使用已安装 target 解析 document。 |
+| `editor.api.html.parseSlice(source, options?)` | `HtmlPlugin` | 使用已安装 target 解析 slice。 |
+| `editor.api.html.serialize(options?)` | `HtmlPlugin` | 序列化当前或指定 document。 |
 
-## 下一步
-
--   探索[静态渲染指南](/docs/static)以创建服务端安全的组件。
--   查看各个插件文档以了解特定的 HTML 序列化/反序列化功能和默认规则。
--   查看[服务端 HTML 生成示例](/docs/examples/html-export)。
+直接 parse 的 options 必须包含 `plugins`，并可包含 `schema`、`limits`、
+`lossPolicy` 与 `collapseWhitespace`。直接 serialize 的 options 必须包含
+`plugins`，并可包含 `schema`、`projection` 与 `lossPolicy`。editor method 从
+editor 捕获 plugins 与 schema，因此不接受这两个选项。

@@ -69,7 +69,7 @@ describe('BaseCodeBlockPlugin', () => {
     });
   });
 
-  it('injects the html query guard and binds the code block tx group', () => {
+  it('pastes HTML as plain text in code blocks and binds the tx group', () => {
     const editorWithCodeBlock = createFixtureEditor({
       plugins: [BaseCodeBlockPlugin],
       selection: {
@@ -129,7 +129,10 @@ describe('BaseCodeBlockPlugin', () => {
 
     expect(
       editorWithCodeBlock.api.dom.clipboard.insertData(createDataTransfer(html))
-    ).toBe(false);
+    ).toBe(true);
+    expect(editorWithCodeBlock.read.children()).toEqual([
+      { children: [{ text: 'pasted' }], type: 'codeBlock' },
+    ]);
     expect(
       editorWithoutCodeBlock.api.dom.clipboard.insertData(
         createDataTransfer(html)
@@ -161,12 +164,18 @@ describe('BaseCodeBlockPlugin', () => {
       ],
     });
     const data = new DataTransfer();
+    const parse = (source: string) => {
+      const result = editor.api.html.parseSlice(source);
+
+      if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+      return result.slice.content;
+    };
 
     expect(
-      editor.api.html.deserialize({
-        element:
-          '<pre><select>TypeScript</select>const a = 1;\n\nconst b = 2;</pre>',
-      })
+      parse(
+        '<pre><select>TypeScript</select>const a = 1;\n\nconst b = 2;</pre>'
+      )
     ).toEqual([
       {
         children: [{ text: 'const a = 1;\n\nconst b = 2;' }],
@@ -190,15 +199,9 @@ describe('BaseCodeBlockPlugin', () => {
       'const a = 1;\n\nconst b = 2;\n'
     );
     expect(pre.dataset.codeTrailingNewlines).toBe('1');
-    expect(editor.api.html.deserialize({ element: pre })).toEqual([
-      ...editor.read.children(),
-    ]);
+    expect(parse(pre.outerHTML)).toEqual([...editor.read.children()]);
 
-    expect(
-      editor.api.html.deserialize({
-        element: '<pre>const a = 1;<br>const b = 2;</pre>',
-      })
-    ).toEqual([
+    expect(parse('<pre>const a = 1;<br>const b = 2;</pre>')).toEqual([
       {
         children: [{ text: 'const a = 1;\nconst b = 2;' }],
         type: 'codeBlock',
@@ -1001,10 +1004,10 @@ describe('BaseCodeBlockPlugin input rules', () => {
 {
   jsxt;
 
-  const BaseCommentCodecPlugin = definePlugin('commentParser', {
-    codecs: ({ defineCodecs }) =>
-      defineCodecs({
-        'text/plain': {
+  const BaseCommentMappingPlugin = definePlugin('commentParser', {
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        plainText: {
           scope: 'document',
           decode: () => ContentSlice.closed([{ text: 'comment parser' }]),
         },
@@ -1023,7 +1026,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       plugins: [
         BaseParagraphPlugin,
         BaseCodeBlockPlugin,
-        BaseCommentCodecPlugin,
+        BaseCommentMappingPlugin,
       ],
       selection: input.selection,
       initialValue: input.children,
@@ -1187,20 +1190,25 @@ describe('BaseCodeBlockPlugin input rules', () => {
         </editor>
       ) as TestEditor;
       const deserialize = mock(() => [{ text: 'mixed parser' }]);
-      const MixedSelectionCodecPlugin = definePlugin('mixedSelectionParser', {
-        codecs: ({ defineCodecs }) =>
-          defineCodecs({
-            'text/plain': {
-              scope: 'document',
-              decode: () => ContentSlice.closed(deserialize()),
-            },
-          }),
+      const MixedSelectionFormatPlugin = definePlugin('mixedSelectionParser', {
+        dataTransferFormats: [
+          {
+            decode: () => ({
+              diagnostics: [],
+              ok: true,
+              slice: ContentSlice.closed(deserialize()),
+            }),
+            mimeType: 'text/plain',
+            priority: 100,
+            scope: 'document',
+          },
+        ],
       });
       const editor = createFixtureEditor({
         plugins: [
           BaseParagraphPlugin,
           BaseCodeBlockPlugin,
-          MixedSelectionCodecPlugin,
+          MixedSelectionFormatPlugin,
         ],
         selection: input.selection,
         initialValue: input.children,

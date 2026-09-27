@@ -17,7 +17,7 @@ const TAB_RE = /\t/g;
 const sourcePathspecs = [
   'VISION.md',
   'docs/vision',
-  '.agents/AGENTS.md',
+  'AGENTS.md',
   '.agents/rules',
   'docs/plans',
   'docs/sync',
@@ -39,7 +39,7 @@ const excludedPathPrefixes = [
   'docs/sync/shadcn/dashboard.json',
 ];
 
-const exactInputFiles = new Set(['VISION.md', '.agents/AGENTS.md']);
+const exactInputFiles = new Set(['VISION.md', 'AGENTS.md']);
 
 const inputPathPrefixes = [
   '.agents/rules/',

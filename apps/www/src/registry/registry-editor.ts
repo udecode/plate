@@ -141,7 +141,7 @@ export const editorComponents: Registry['items'] = [
       },
     ],
     meta: {
-      docs: [{ route: '/docs/import', title: 'Import' }],
+      docs: [{ route: '/docs/docx', title: 'DOCX' }],
       examples: ['basic-nodes-demo'],
       label: 'New',
     },
@@ -157,8 +157,6 @@ export const editorComponents: Registry['items'] = [
   {
     dependencies: [
       'platejs',
-      'html2canvas-pro',
-      'pdf-lib',
       'lucide-react',
       'color-name',
       'html-to-vdom',
@@ -170,7 +168,7 @@ export const editorComponents: Registry['items'] = [
       'xmlbuilder2',
     ],
     description:
-      'A toolbar button for exporting editor content as HTML, PDF, an image, Markdown, or Word.',
+      'A toolbar button for exporting editor content as HTML, Markdown, or Word.',
     files: [
       {
         path: 'components/editor/export-toolbar-button.tsx',
@@ -178,8 +176,8 @@ export const editorComponents: Registry['items'] = [
       },
     ],
     meta: {
-      docs: [{ route: '/docs/export', title: 'Export' }],
-      examples: ['basic-nodes-demo'],
+      docs: [{ route: '/docs/examples/export', title: 'Export' }],
+      examples: ['docx-demo'],
       label: 'New',
     },
     name: 'export-toolbar-button',

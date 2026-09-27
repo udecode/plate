@@ -9,7 +9,7 @@ import {
   schema,
   PLUGINS,
 } from '../../core';
-import { MarkdownPlugin } from '../../markdown';
+import { MarkdownPlugin, remarkMdx } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
 
@@ -18,9 +18,9 @@ const createEditor = (paragraphType = 'paragraph') => {
     DefaultAuthoredPlugin,
     BaseParagraphPlugin,
     definePlugin(PLUGINS.codeBlock, {
-      codecs: ({ defineCodecs }) =>
-        defineCodecs({
-          'text/markdown': {
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          markdown: {
             kind: 'node',
             encode: ({ node }) => ({
               lang: node.lang,
@@ -39,9 +39,9 @@ const createEditor = (paragraphType = 'paragraph') => {
       },
     }),
     definePlugin(PLUGINS.equation, {
-      codecs: ({ defineCodecs }) =>
-        defineCodecs({
-          'text/markdown': {
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          markdown: {
             kind: 'node',
             encode: ({ node }) => ({
               type: 'math',
@@ -57,9 +57,9 @@ const createEditor = (paragraphType = 'paragraph') => {
       },
     }),
     definePlugin(PLUGINS.heading, {
-      codecs: ({ defineCodecs, schema: { type } }) =>
-        defineCodecs({
-          'text/markdown': {
+      formats: ({ defineFormats, schema: { type } }) =>
+        defineFormats({
+          markdown: {
             from: 'heading',
             kind: 'node',
             decode: ({ decode, decoration, node }) => ({
@@ -77,7 +77,7 @@ const createEditor = (paragraphType = 'paragraph') => {
       },
     }),
     MarkdownPlugin.configure({
-      initialState: { remarkPlugins: [remarkMath] },
+      initialState: { remarkPlugins: [remarkMath, remarkMdx] },
     }),
     AIChatPlugin,
   ] as const;
@@ -103,6 +103,33 @@ const createEditor = (paragraphType = 'paragraph') => {
 };
 
 describe('AIChatPlugin streaming', () => {
+  it('accepts only the current finalized preview', () => {
+    const editor = createEditor();
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.api.setPreview('partial', { final: false });
+    ai.api.accept();
+    expect(editor.read.text.string([])).toBe('');
+
+    ai.api.setPreview('complete');
+    ai.api.accept();
+    expect(editor.read.text.string([])).toBe('complete');
+  });
+
+  it('invalidates a recovered stream when its final parse fails', () => {
+    const editor = createEditor();
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.api.setPreview('previous');
+    ai.api.setPreview('<u>', { final: false });
+    expect(ai.store.get('previewValue')).not.toEqual([]);
+
+    ai.api.setPreview('<u>');
+    expect(ai.store.get('previewValue')).toEqual([]);
+    ai.api.accept();
+    expect(editor.read.text.string([])).toBe('');
+  });
+
   it('keeps streamed output in a draft until one accepted edit', () => {
     const editor = createEditor();
     const ai = editor.plugin(AIChatPlugin);

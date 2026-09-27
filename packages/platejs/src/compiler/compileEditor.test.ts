@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test';
 import { getPluginRegistry } from '../../../plitejs/src/core/plugin-registry';
 import { createEditorSchemaContract } from '../../../plitejs/src/core/schema-compiler';
 import type { RuntimePluginContributionInput } from '../../../plitejs/src/interfaces/editor';
-import { hostCodecs } from '../dom';
+import { dataTransferFormats } from '../dom';
 import { definePlugin, property, schema, target, type Editor } from '../index';
 import { getPlateModelPublication } from '../internal/plugin/compilePlateModel';
 import { getPlateRuntimeCandidate } from '../internal/plugin/plateRuntime';
@@ -140,28 +140,28 @@ describe('compileEditor', () => {
     ).toThrow();
   });
 
-  it('clears the Plate publication when final host-codec validation fails', () => {
+  it('clears the Plate publication when final data-transfer-format validation fails', () => {
     let host: Editor | undefined;
-    const codecs = hostCodecs('compilerInvalidCodec', [
+    const formats = dataTransferFormats('compilerInvalidFormat', [
       {
-        parse: () => null,
-        format: 'application/x-compiler-test',
+        decode: () => null,
+        mimeType: 'application/x-compiler-test',
         key: 'compiler-invalid',
-        owns: [{ kind: 'element', type: 'missing_element' }],
+        claims: [{ kind: 'element', type: 'missing_element' }],
       },
     ]);
-    const Plugin = definePlugin('compilerCodec', {
+    const Plugin = definePlugin('compilerFormat', {
       api: ({ editor }) => {
         host = editor;
         return {};
       },
       contributions:
-        codecs.contributions as readonly RuntimePluginContributionInput[],
+        formats.contributions as readonly RuntimePluginContributionInput[],
       initialState: { ready: true },
     });
 
     expect(() => compileEditor({ plugins: [Plugin] })).toThrow(
-      'owns unknown schema element'
+      'claims unknown schema element'
     );
     expect(getPlateModelPublication(host!)).toBeUndefined();
     expect(getPlateRuntimeCandidate(host!)).toBeUndefined();

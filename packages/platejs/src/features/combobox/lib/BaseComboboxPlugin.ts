@@ -87,32 +87,6 @@ export const BaseComboboxPlugin = definePlugin(PLUGINS.combobox, {
           tx.selection.set(at);
           callback(tx);
         }),
-      /** Undo from an eligible input; return whether history was available. */
-      undo: (input: NodeKey) => {
-        if (
-          !editor.plugin(plugin).read.canEdit(input) ||
-          !editor.read.history.hasUndo()
-        ) {
-          return false;
-        }
-
-        editor.api.history.undo();
-
-        return true;
-      },
-      /** Redo from an eligible input; return whether history was available. */
-      redo: (input: NodeKey) => {
-        if (
-          !editor.plugin(plugin).read.canEdit(input) ||
-          !editor.read.history.hasRedo()
-        ) {
-          return false;
-        }
-
-        editor.api.history.redo();
-
-        return true;
-      },
     };
   },
 }));

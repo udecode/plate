@@ -45,9 +45,9 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
         },
       },
     }),
-    codecs: ({ defineCodecs, schema: { type } }) =>
-      defineCodecs({
-        'text/markdown': {
+    formats: ({ defineFormats, schema: { type } }) =>
+      defineFormats({
+        markdown: {
           from: 'footnoteDefinition',
           kind: 'node',
           decode: ({ decodeNodes, decoration, node, registry }) => {
@@ -132,9 +132,9 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
     triggerQuery: null,
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
   }),
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/markdown': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      markdown: {
         from: 'footnoteReference',
         kind: 'node',
         decode: ({ node }) =>

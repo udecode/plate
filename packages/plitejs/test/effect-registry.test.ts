@@ -62,6 +62,46 @@ describe('installed editor effect registry', () => {
     });
   });
 
+  it('normalizes session replay as one frozen local history policy', () => {
+    const replay = (_editor: unknown, value: string) => ({
+      status: 'applied' as const,
+      value,
+    });
+    const history = { replay };
+    const effect = defineEffect<string>({
+      history,
+      key: 'session.effect',
+    });
+
+    assert.equal(effect.collab, 'local');
+    assert.notEqual(effect.history, history);
+    assert.ok(typeof effect.history === 'object');
+    assert.equal(effect.history.replay, replay);
+    assert.ok(Object.isFrozen(effect.history));
+
+    const defineStringEffect = defineEffect<string>;
+
+    assert.throws(
+      () =>
+        defineStringEffect({
+          history: {},
+          key: 'invalid.session.effect',
+        } as unknown as Parameters<typeof defineStringEffect>[0]),
+      /invalid history policy/
+    );
+    assert.throws(
+      () =>
+        defineStringEffect({
+          persist: { ...valueCodecs.string, version: 1 },
+          collab: 'shared',
+          collabReplay: 'live',
+          history,
+          key: 'shared.session.effect',
+        } as unknown as Parameters<typeof defineStringEffect>[0]),
+      /cannot be shared/
+    );
+  });
+
   it('atomically replaces descriptor identity through plugin slots', () => {
     const first = defineEffect<number>({ key: 'versioned.effect' });
     const second = defineEffect<number>({ key: first.key });
@@ -92,14 +132,14 @@ describe('installed editor effect registry', () => {
       collab: 'cloud',
       key: 'invalid.collab',
     }) as unknown as EditorEffectType;
-    const invalidCodec = Object.freeze({
+    const invalidPersistence = Object.freeze({
       ...base,
-      codec: Object.freeze({
+      persist: Object.freeze({
         decode: (value: unknown) => value,
         encode: (value: unknown) => value,
         version: 0,
       }),
-      key: 'invalid.codec',
+      key: 'invalid.persistence',
     }) as unknown as EditorEffectType;
     const invalidHistory = Object.freeze({
       ...base,
@@ -108,12 +148,26 @@ describe('installed editor effect registry', () => {
     }) as unknown as EditorEffectType;
     const invalidTransport = Object.freeze({
       ...defineEffect({
-        codec: valueCodecs.string,
+        persist: { ...valueCodecs.string, version: 1 },
         collab: 'shared',
         collabReplay: 'live',
         key: 'invalid.transport',
       }),
       collabTransport: Object.freeze({ encode: () => null }),
+    }) as unknown as EditorEffectType;
+    const invalidSessionHistory = Object.freeze({
+      ...defineEffect({
+        persist: { ...valueCodecs.string, version: 1 },
+        collab: 'shared',
+        collabReplay: 'live',
+        key: 'invalid.session-history',
+      }),
+      history: Object.freeze({
+        replay: (_editor: unknown, value: unknown) => ({
+          status: 'applied',
+          value,
+        }),
+      }),
     }) as unknown as EditorEffectType;
 
     assert.throws(
@@ -126,9 +180,9 @@ describe('installed editor effect registry', () => {
     assert.throws(
       () =>
         createEditor({
-          plugins: [owner('invalid-codec', invalidCodec)],
+          plugins: [owner('invalid-persistence', invalidPersistence)],
         }),
-      /invalid codec/
+      /invalid persistence/
     );
     assert.throws(
       () =>
@@ -143,6 +197,13 @@ describe('installed editor effect registry', () => {
           plugins: [owner('invalid-transport', invalidTransport)],
         }),
       /invalid collaboration transport/
+    );
+    assert.throws(
+      () =>
+        createEditor({
+          plugins: [owner('invalid-session-history', invalidSessionHistory)],
+        }),
+      /invalid session history replay policy/
     );
   });
 });

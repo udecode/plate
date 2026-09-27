@@ -169,11 +169,11 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
       },
     };
   },
-  codecs: ({ defineCodecs, store }) =>
-    defineCodecs({
-      'text/html': {
-        decode: ({ element }) => {
-          const { offset = 24, unit = 'px' } = store.get();
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        decode: ({ element, pluginState }) => {
+          const { offset = 24, unit = 'px' } = pluginState;
           const dataValue =
             element.dataset.indent ?? element.getAttribute('aria-level');
 
@@ -194,8 +194,8 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
 
           return Number.isFinite(value) && value > 0 ? value : undefined;
         },
-        encode: ({ value }) => {
-          const { offset = 24, unit = 'px' } = store.get();
+        encode: ({ pluginState, value }) => {
+          const { offset = 24, unit = 'px' } = pluginState;
 
           return {
             attributes: { 'data-indent': value },

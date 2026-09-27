@@ -23,6 +23,10 @@ export type {
   EditableKeyDownHandler,
 } from './components/editable';
 export type {
+  EditableHistoryReplayEvent,
+  EditableHistoryReplayResult,
+} from './editable/editable-dom-runtime';
+export type {
   RenderLeafProps,
   RenderPlaceholderProps,
   RenderTextProps,

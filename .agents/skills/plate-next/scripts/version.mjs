@@ -21,7 +21,7 @@ import {
 const scriptPath = fileURLToPath(import.meta.url);
 const defaultRoot = resolve(dirname(scriptPath), '../../../..');
 export const doctrinePaths = [
-  '.agents/AGENTS.md',
+  'AGENTS.md',
   '.agents/rules/plate-feature.mdc',
   '.agents/rules/plate-feature/rules/manifest.md',
   '.agents/rules/plate-feature/rules/phases.md',

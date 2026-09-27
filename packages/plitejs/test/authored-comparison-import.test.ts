@@ -3,8 +3,8 @@ import { describe, expect, it } from 'bun:test';
 import { createEditor } from 'plitejs';
 import {
   authored,
+  projectAuthoredDocument,
   proposeAuthoredComparison,
-  serializeAuthoredJson,
 } from 'plitejs/authored';
 import { compare, resolveComparison } from 'plitejs/diff';
 
@@ -36,8 +36,8 @@ describe('authored comparison import', () => {
     );
     expect(editor.read.children()).toEqual([paragraph('Before')]);
     expect(
-      JSON.parse(serializeAuthoredJson(editor, { projection: 'proposed' }).data)
-        .children
+      projectAuthoredDocument(editor.read.value(), { projection: 'proposed' })
+        .document.children
     ).toEqual([paragraph('After')]);
 
     expect(proposeAuthoredComparison(editor, { comparison })).toEqual({
@@ -123,8 +123,8 @@ describe('authored comparison import', () => {
         .status
     ).toBe('applied');
     expect(
-      JSON.parse(serializeAuthoredJson(editor, { projection: 'proposed' }).data)
-        .children
+      projectAuthoredDocument(editor.read.value(), { projection: 'proposed' })
+        .document.children
     ).toEqual([paragraph('Remote')]);
   });
 
@@ -164,9 +164,9 @@ describe('authored comparison import', () => {
       groupIds: [first],
     });
     expect(imported.status).toBe('applied');
-    const proposed = JSON.parse(
-      serializeAuthoredJson(editor, { projection: 'proposed' }).data
-    ).children;
+    const proposed = projectAuthoredDocument(editor.read.value(), {
+      projection: 'proposed',
+    }).document.children;
     expect(proposed).not.toEqual(before);
     expect(proposed).not.toEqual(comparison.after.document.children);
   });

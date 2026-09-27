@@ -6,7 +6,7 @@ import {
   type Descendant,
   definePlugin,
   defineStateField,
-  defineValueCodec,
+  type EditorJsonValue,
   valueCodecs,
 } from 'plitejs';
 
@@ -22,7 +22,7 @@ describe('document meta contract', () => {
     const counter = defineStateField({
       initial: 0,
       key: 'document.lazy-counter',
-      persist: defineValueCodec<number>({
+      persist: {
         decode: (value) => value as number,
         encode: (value) => {
           encodeCalls += 1;
@@ -30,7 +30,7 @@ describe('document meta contract', () => {
           return value;
         },
         version: 1,
-      }),
+      },
     });
     const editor = createEditor({
       plugins: [definePlugin('lazy-counter', { stateFields: [counter] })],
@@ -53,7 +53,7 @@ describe('document meta contract', () => {
       collab: 'shared',
       history: 'push',
       initial: () => 'Untitled',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
 
     const explicit = createEditor({
@@ -106,7 +106,7 @@ describe('document meta contract', () => {
     const documentTitle = defineStateField({
       key: 'document.title',
       initial: () => 'Untitled',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const localPanel = defineStateField({
       key: 'local.panel',
@@ -151,15 +151,15 @@ describe('document meta contract', () => {
         return { count: 0 };
       },
       key: 'document.counter',
-      persist: defineValueCodec<{ count: number }>({
+      persist: {
         decode(value) {
           decodeCalls += 1;
 
           return value as { count: number };
         },
-        encode: (value) => value,
+        encode: (value) => value as EditorJsonValue,
         version: 3,
-      }),
+      },
     });
     const local = defineStateField({
       initial: () => ({ open: false }),
@@ -213,11 +213,11 @@ describe('document meta contract', () => {
     const impostor = defineStateField({
       initial: () => ({ count: 0 }),
       key: persisted.key,
-      persist: defineValueCodec<{ count: number }>({
+      persist: {
         decode: (value) => value as { count: number },
-        encode: (value) => value,
+        encode: (value) => value as EditorJsonValue,
         version: 3,
-      }),
+      },
     });
 
     assert.throws(

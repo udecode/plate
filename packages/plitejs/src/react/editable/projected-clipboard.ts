@@ -13,7 +13,7 @@ import { exportContentSlice } from '../../core/editor-read-execution';
 import {
   getDOMClipboardFormatKey,
   readDOMFragmentData,
-  writeDOMHostFragmentData,
+  writeDOMDataTransferFragment,
 } from '../../dom/internal';
 import { readRootChildren } from '../root-key';
 import { resolvePliteViewBoundarySegmentEndpoint } from '../view-boundary-graph';
@@ -287,7 +287,7 @@ export const writeProjectedViewSelectionClipboardData = (
   const runtimeEditor = getCanonicalRuntimeEditor(editor);
   const exported = exportContentSlice(runtimeEditor, slice);
 
-  writeDOMHostFragmentData(runtimeEditor, data, {
+  writeDOMDataTransferFragment(runtimeEditor, data, {
     clipboardFormatKey,
     html: ({ text }) => `<span>${escapeHtmlText(text)}</span>`,
     slice: exported,

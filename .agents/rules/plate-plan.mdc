@@ -140,11 +140,11 @@ rejected shape.
   cost after the target is chosen; never turn compatibility into a permanent
   compromised hybrid. No public aliases, runtime shims, dual signatures, or
   docs for old names.
-- Reject direction words repeated below a namespace that already establishes
-  the format and flow. On the `'text/html'` codec, plan `query`,
-  `transformData`, and `transformFragment` directly; do not preserve an
-  `ingress`/`egress` bucket
-  without an independently consumed lifecycle.
+- Keep semantic format mappings separate from whole-payload transfer policy.
+  HTML mappings may prepare only their operation-owned inert document;
+  admission, source cleanup, RTF access, and post-decode repair belong to
+  `DataTransferFormat`. Do not preserve generic `query`, `transformData`, or
+  `transformFragment` hooks.
 - A private bridge is exceptional. Name its owner, non-public proof, deletion
   trigger, and removal gate in the decision row.
 - For persisted document upgrades, plan one app-owned

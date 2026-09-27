@@ -34,10 +34,12 @@ describe('BaseEditorKit', () => {
       initialValue: playgroundValue,
     });
 
-    const markdown = editor.api.markdown.serialize();
+    const result = editor.api.markdown.serialize();
 
-    expect(markdown).toContain('Welcome to the Plate Playground!');
-    expect(markdown).toContain('<codeDrawing');
-    expect(markdown).toContain('classDiagram');
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.diagnostics[0].message);
+    expect(result.data).toContain('Welcome to the Plate Playground!');
+    expect(result.data).toContain('<codeDrawing');
+    expect(result.data).toContain('classDiagram');
   });
 });

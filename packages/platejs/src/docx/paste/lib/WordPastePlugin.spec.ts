@@ -1,497 +1,292 @@
-import { createEditor } from '../../../core';
+import { createEditor, ElementApi, NodeApi, PLUGINS } from '../../../core';
+import { BaseBoldPlugin } from '../../../features/basic-nodes/lib/BaseMarkPlugins';
+import { BaseTextIndentPlugin } from '../../../features/basic-styles/lib/BaseStylePlugins';
+import { BaseIndentPlugin } from '../../../features/indent/lib/BaseIndentPlugin';
+import { BaseListPlugin } from '../../../features/list/lib/BaseListPlugin';
+import { BaseImagePlugin } from '../../../features/media/lib/image/BaseImagePlugin';
 import {
-  prepareHtmlPluginContext,
-  prepareHtmlRegistry,
-} from '../../../lib/plugins/html/HtmlPlugin';
-import { cleanWordHtml } from '../../html/cleanWordHtml.internal';
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+} from '../../../features/table/lib/BaseTablePlugin';
 import { WordPastePlugin } from './WordPastePlugin';
 
-describe('WordPastePlugin', () => {
+const createTransfer = (html: string, rtf = '') => {
+  const transfer = new DataTransfer();
+
+  transfer.setData('text/html', html);
+  if (rtf) transfer.setData('text/rtf', rtf);
+
+  return transfer;
+};
+
+const insertHtml = (
+  html: string,
+  options: Readonly<{
+    plugins?: Parameters<typeof createEditor>[0]['plugins'];
+    rtf?: string;
+  }> = {}
+) => {
   const editor = createEditor({
-    plugins: [WordPastePlugin],
-  });
-  const createContext = prepareHtmlPluginContext(editor, WordPastePlugin);
-  const context = editor.read((state) => createContext(state));
-  const transformData = prepareHtmlRegistry(editor).plugins.find(
-    ({ name }) => name === WordPastePlugin.name
-  )?.transformData;
-  const source = (dataTransfer: DataTransfer) => ({
-    files: dataTransfer.files,
-    getData: (format: string) => dataTransfer.getData(format),
-    types: [...dataTransfer.types],
+    plugins: [...(options.plugins ?? []), WordPastePlugin],
   });
 
-  it('routes html transformData through cleanWordHtml with rtf input', () => {
-    const html = '<p class="MsoQuote">Quote</p>';
-    const dataTransfer = new DataTransfer();
-    dataTransfer.setData('text/rtf', '{\\rtf1}');
+  expect(
+    editor.api.dom.clipboard.insertData(createTransfer(html, options.rtf))
+  ).toBe(true);
 
-    expect(transformData).toBeDefined();
+  return editor;
+};
 
-    if (!transformData) return;
+describe('WordPastePlugin', () => {
+  it('leaves ordinary html to the installed html format', () => {
+    const editor = insertHtml('<p>plain html</p>');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'plain html' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('cleans Word-only comments and nodes before html parsing', () => {
+    const editor = insertHtml(
+      [
+        '<p class="MsoNormal">Before</p>',
+        '<p><br /><!--[if !supportLineBreakNewLine]--><span>drop</span><!--[endif]-->After</p>',
+        '<img src="file:///C:/word.png" />',
+      ].join(''),
+      { rtf: '{\\rtf1}' }
+    );
 
     expect(
-      transformData({
-        ...context,
-        data: html,
-        format: 'text/html',
-        source: source(dataTransfer),
+      editor.read.children().map((node) => NodeApi.string(node).trim())
+    ).toEqual(['Before', 'After']);
+  });
+
+  it('inlines Word styles before the installed html parser runs', () => {
+    const editor = insertHtml(
+      '<style><!-- .x { font-weight: 700; } --></style><p class="MsoNormal x">Bold</p>',
+      { plugins: [BaseBoldPlugin] }
+    );
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ bold: true, text: 'Bold' }],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('normalizes Word list markers through public DataTransfer insertion', () => {
+    const editor = insertHtml(
+      [
+        '<style>@list l0:level1 {mso-level-number-format:alpha-lower;}</style>',
+        '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">i.</span>Alpha nine</p>',
+      ].join(''),
+      { plugins: [BaseListPlugin] }
+    );
+    const item = editor.read.children()[0];
+
+    expect(NodeApi.string(item)).toBe('Alpha nine');
+    expect(item).toEqual(
+      expect.objectContaining({
+        indent: 1,
+        listRestart: 9,
+        listStyle: 'lower-alpha',
       })
-    ).toBe(cleanWordHtml(html, '{\\rtf1}'));
+    );
   });
 
-  it('normalizes docx list content before node matching', () => {
-    const html =
-      '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.</span><!--[if !supportLists]--><span>drop</span><!--[endif]-->Item</p>';
-    const dataTransfer = new DataTransfer();
+  it('preserves list sequence boundaries and nested ordinals', () => {
+    const editor = insertHtml(
+      [
+        '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>Parent one</p>',
+        '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.</span>Child one</p>',
+        '<p style="mso-list:l1 level1 lfo2"><span style="mso-list:Ignore">1.</span>Restart</p>',
+        '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">2.</span>Child two</p>',
+      ].join(''),
+      { plugins: [BaseListPlugin] }
+    );
+    const children = editor.read.children();
 
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const listItem = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelector('li') as HTMLElement;
-
-    expect(listItem.dataset.indent).toBe('2');
-    expect(listItem.dataset.listType).toBe('numbered');
-    expect(listItem.innerHTML).not.toContain('mso-list:Ignore');
-    expect(listItem.innerHTML).not.toContain('[if !supportLists]');
-    expect(listItem.textContent).toContain('Item');
-  });
-
-  it('recognizes Word list marker declarations with additional styles', () => {
-    const html =
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore;font-family:Symbol">1.</span>Item</p>';
-    const dataTransfer = new DataTransfer();
-
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const item = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelector<HTMLElement>('li');
-
-    expect(item?.dataset.listType).toBe('numbered');
-    expect(item?.textContent).toBe('Item');
+    expect(children.map(NodeApi.string)).toEqual([
+      'Parent one',
+      'Child one',
+      'Restart',
+      'Child two',
+    ]);
+    expect(children.map((node) => Reflect.get(node, 'listRestart'))).toEqual([
+      undefined,
+      undefined,
+      1,
+      2,
+    ]);
   });
 
   it('keeps alpha and roman inference scoped to each Word list identity', () => {
-    const html = [
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">f.</span>Alpha</p>',
-      '<p style="mso-list:l1 level1 lfo2"><span style="mso-list:Ignore">i.</span>Roman</p>',
-    ].join('');
-    const dataTransfer = new DataTransfer();
+    const editor = insertHtml(
+      [
+        '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">f.</span>Alpha</p>',
+        '<p style="mso-list:l1 level1 lfo2"><span style="mso-list:Ignore">i.</span>Roman</p>',
+      ].join(''),
+      { plugins: [BaseListPlugin] }
+    );
 
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const items = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelectorAll<HTMLElement>('li');
-
-    expect(items[0].dataset.listStyle).toBe('lower-alpha');
-    expect(items[1].dataset.listStyle).toBe('lower-roman');
+    expect(
+      editor.read.children().map((node) => Reflect.get(node, 'listStyle'))
+    ).toEqual(['lower-alpha', 'lower-roman']);
   });
 
-  it('prefers Word list declarations for ambiguous markers', () => {
-    const html = [
-      '<style>@list l0:level1 {mso-level-number-format:alpha-lower;}</style>',
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">i.</span>Alpha nine</p>',
-    ].join('');
-    const dataTransfer = new DataTransfer();
+  it.each(['1)', '(1)'])(
+    'recognizes the parenthesized Word marker %s as ordered',
+    (marker) => {
+      const editor = insertHtml(
+        `<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">${marker}</span>Item</p>`,
+        { plugins: [BaseListPlugin] }
+      );
 
-    expect(transformData).toBeDefined();
+      expect(editor.read.children()[0]).toEqual(
+        expect.objectContaining({ listType: 'numbered' })
+      );
+    }
+  );
 
-    if (!transformData) return;
+  it('preserves explicit starts across interleaved Word sequences', () => {
+    const editor = insertHtml(
+      [
+        '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>A1</p>',
+        '<p style="mso-list:l1 level1 lfo2"><span style="mso-list:Ignore">1.</span>B1</p>',
+        '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.</span>A2</p>',
+        '<p style="mso-list:l1 level1 lfo2"><span style="mso-list:Ignore">2.</span>B2</p>',
+      ].join(''),
+      { plugins: [BaseListPlugin] }
+    );
 
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const item = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelector<HTMLElement>('li');
-
-    expect(item?.dataset.listStyle).toBe('lower-alpha');
-    expect(item?.dataset.listRestart).toBe('9');
+    expect(
+      editor.read.children().map((node) => Reflect.get(node, 'listRestart'))
+    ).toEqual([undefined, 1, 2, 2]);
   });
 
-  it('recognizes parenthesized Word list markers as ordered', () => {
-    const html =
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1)</span>Item</p>';
-    const dataTransfer = new DataTransfer();
+  it('uses the final component of compound Word markers', () => {
+    const editor = insertHtml(
+      [
+        '<style>@list l0:level2 {mso-level-number-format:alpha-lower;} @list l1:level2 {mso-level-number-format:roman-lower;}</style>',
+        '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.a.</span>Alpha one</p>',
+        '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.b.</span>Alpha two</p>',
+        '<p style="mso-list:l1 level2 lfo2"><span style="mso-list:Ignore">1.i.</span>Roman one</p>',
+        '<p style="mso-list:l1 level2 lfo2"><span style="mso-list:Ignore">1.ii.</span>Roman two</p>',
+      ].join(''),
+      { plugins: [BaseListPlugin] }
+    );
 
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const item = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelector<HTMLElement>('li');
-
-    expect(item?.dataset.listType).toBe('numbered');
-  });
-
-  it('recognizes Word list markers wrapped in parentheses', () => {
-    const html =
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">(1)</span>Item</p>';
-    const dataTransfer = new DataTransfer();
-
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const item = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelector<HTMLElement>('li');
-
-    expect(item?.dataset.listType).toBe('numbered');
-  });
-
-  it('preserves Word sequence identities and explicit starts', () => {
-    const html = [
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>First</p>',
-      '<p style="mso-list:l1 level1 lfo2"><span style="mso-list:Ignore">1.</span>Restart</p>',
-      '<p style="mso-list:l2 level1 lfo3"><span style="mso-list:Ignore">5)</span>Five</p>',
-    ].join('');
-    const dataTransfer = new DataTransfer();
-
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const items = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelectorAll<HTMLElement>('li');
-
-    expect(items[0].dataset.listRestart).toBeUndefined();
-    expect(items[1].dataset.listRestart).toBe('1');
-    expect(items[2].dataset.listRestart).toBe('5');
-  });
-
-  it('emits boundaries when Word list identities interleave', () => {
-    const html = [
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>A1</p>',
-      '<p style="mso-list:l1 level1 lfo2"><span style="mso-list:Ignore">1.</span>B1</p>',
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.</span>A2</p>',
-      '<p style="mso-list:l1 level1 lfo2"><span style="mso-list:Ignore">2.</span>B2</p>',
-    ].join('');
-    const dataTransfer = new DataTransfer();
-
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const items = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelectorAll<HTMLElement>('li');
-
-    expect([...items].map((item) => item.dataset.listRestart)).toEqual([
-      undefined,
-      '1',
-      '2',
-      '2',
-    ]);
-  });
-
-  it('uses the final component of compound decimal markers', () => {
-    const html = [
-      '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.1</span>Child one</p>',
-      '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.2</span>Child two</p>',
-    ].join('');
-    const dataTransfer = new DataTransfer();
-
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const items = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelectorAll<HTMLElement>('li');
-
-    expect(items[1].dataset.listRestart).toBeUndefined();
-  });
-
-  it('uses the final component of compound alpha and roman markers', () => {
-    const html = [
-      '<style>@list l0:level2 {mso-level-number-format:alpha-lower;} @list l1:level2 {mso-level-number-format:roman-lower;}</style>',
-      '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.a.</span>Alpha one</p>',
-      '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.b.</span>Alpha two</p>',
-      '<p style="mso-list:l1 level2 lfo2"><span style="mso-list:Ignore">1.i.</span>Roman one</p>',
-      '<p style="mso-list:l1 level2 lfo2"><span style="mso-list:Ignore">1.ii.</span>Roman two</p>',
-    ].join('');
-    const dataTransfer = new DataTransfer();
-
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const items = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelectorAll<HTMLElement>('li');
-
-    expect([...items].map((item) => item.dataset.listRestart)).toEqual([
-      undefined,
-      undefined,
-      '1',
-      undefined,
-    ]);
-  });
-
-  it('preserves a nested ordinal after returning to a shallower level', () => {
-    const html = [
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>Parent one</p>',
-      '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.</span>Child one</p>',
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.</span>Parent two</p>',
-      '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">2.</span>Child two</p>',
-    ].join('');
-    const dataTransfer = new DataTransfer();
-
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const items = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelectorAll<HTMLElement>('li');
-
-    expect(items[3].dataset.listRestart).toBe('2');
-  });
-
-  it('emits a boundary when an ordered Word list resumes after a paragraph', () => {
-    const html = [
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>One</p>',
-      '<p class="MsoNormal">Break</p>',
-      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.</span>Two</p>',
-    ].join('');
-    const dataTransfer = new DataTransfer();
-
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const items = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelectorAll<HTMLElement>('li');
-
-    expect(items[1].dataset.listRestart).toBe('2');
+    expect(
+      editor.read.children().map((node) => Reflect.get(node, 'listRestart'))
+    ).toEqual([undefined, undefined, 1, undefined]);
   });
 
   it.each([
-    [
-      'an unmatched block',
+    ['a paragraph', '<p class="MsoNormal">Break</p>'],
+    ['an unmatched block', '<hr>'],
+    ['a container boundary', '</div><div>'],
+  ])('emits a restart after %s', (_label, boundary) => {
+    const editor = insertHtml(
       [
+        boundary === '</div><div>' ? '<div>' : '',
         '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>One</p>',
-        '<hr>',
+        boundary,
         '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.</span>Two</p>',
+        boundary === '</div><div>' ? '</div>' : '',
       ].join(''),
-    ],
-    [
-      'a container boundary',
-      [
-        '<div><p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>One</p></div>',
-        '<div><p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.</span>Two</p></div>',
-      ].join(''),
-    ],
-  ])('emits a boundary after %s', (_, html) => {
-    const dataTransfer = new DataTransfer();
+      { plugins: [BaseListPlugin] }
+    );
+    const listItems = editor.read
+      .children()
+      .filter((node) => Reflect.has(node, 'listType'));
 
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const items = new DOMParser()
-      .parseFromString(result, 'text/html')
-      .body.querySelectorAll<HTMLElement>('li');
-
-    expect(items[1].dataset.listRestart).toBe('2');
+    expect(listItems.at(-1)).toEqual(
+      expect.objectContaining({ listRestart: 2 })
+    );
   });
 
-  it('normalizes paragraph indentation and suppresses docx images', () => {
-    const dataTransfer = new DataTransfer();
-    dataTransfer.setData(
-      'text/rtf',
-      String.raw`\shp shplid2049 jpegblip bliptag ffd8ff}`
+  it('normalizes Word indentation and suppresses Word images only', () => {
+    const wordEditor = insertHtml(
+      [
+        '<p class="MsoNormal" style="margin-left:72pt;text-indent:36pt">Body</p>',
+        '<img src="https://cdn.example.com/word.png" />',
+      ].join(''),
+      {
+        plugins: [BaseImagePlugin, BaseIndentPlugin, BaseTextIndentPlugin],
+      }
     );
 
-    expect(transformData).toBeDefined();
+    expect(wordEditor.read.children()).toEqual([
+      expect.objectContaining({ indent: 2, textIndent: 1, type: 'paragraph' }),
+    ]);
 
-    if (!transformData) return;
+    const plainEditor = insertHtml(
+      '<p>Body</p><img src="https://cdn.example.com/plain.png" />',
+      { plugins: [BaseImagePlugin] }
+    );
 
-    const result = transformData({
-      ...context,
-      data: [
-        '<p class="MsoNormal" style="margin-left:72pt;text-indent:36pt">Body</p>',
-        '<img src="https://cdn.example.com/image.png" />',
-        '<v:shape o:spid="_x0000_s2049"><v:imagedata src="file:///C:/shape.png"></v:imagedata></v:shape>',
-      ].join(''),
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const { body } = new DOMParser().parseFromString(result, 'text/html');
-    const paragraph = body.querySelector('p') as HTMLElement;
-
-    expect(paragraph.dataset.indent).toBe('2');
-    expect(paragraph.dataset.textIndent).toBe('1');
-    expect(body.querySelector('img')).toBeNull();
+    expect(plainEditor.read.children()).toEqual([
+      { children: [{ text: 'Body' }], type: 'paragraph' },
+      expect.objectContaining({
+        type: plainEditor.plugin(BaseImagePlugin).schema.type,
+        url: 'https://cdn.example.com/plain.png',
+      }),
+    ]);
   });
 
-  it('does not suppress images in ordinary html', () => {
-    const dataTransfer = new DataTransfer();
-    const html = '<p>plain html</p><img src="/plain.png" />';
-
-    expect(transformData).toBeDefined();
-
-    if (!transformData) return;
-
-    const result = transformData({
-      ...context,
-      data: html,
-      format: 'text/html',
-      source: source(dataTransfer),
-    });
-    const { body } = new DOMParser().parseFromString(result, 'text/html');
-
-    expect(body.querySelector('p')?.textContent).toBe('plain html');
-    expect(body.querySelector('img')?.getAttribute('src')).toBe('/plain.png');
-  });
-});
-
-describe('WordPastePlugin', () => {
-  it('removes commented style guards before inlining css', () => {
-    const editor = createEditor({
-      plugins: [WordPastePlugin],
-    });
-    const createContext = prepareHtmlPluginContext(editor, WordPastePlugin);
-    const context = editor.read((state) => createContext(state));
-    const transformData = prepareHtmlRegistry(editor).plugins.find(
-      ({ name }) => name === WordPastePlugin.name
-    )?.transformData;
-
-    if (!transformData) {
-      throw new Error('Missing HTML transformData');
-    }
-
-    const dataTransfer = new DataTransfer();
-    const result = transformData({
-      ...context,
-      data: '<style><!-- .x { color: red; } --></style><p class="x">a</p>',
-      format: 'text/html',
-      source: {
-        files: dataTransfer.files,
-        getData: (format: string) => dataTransfer.getData(format),
-        types: [...dataTransfer.types],
-      },
-    });
-
-    expect(result).toContain('style="color: red;"');
-    expect(result).not.toContain('<!--');
-  });
-
-  it('leaves plain html alone when there is nothing to inline', () => {
-    const editor = createEditor({
-      plugins: [WordPastePlugin],
-    });
-    const createContext = prepareHtmlPluginContext(editor, WordPastePlugin);
-    const context = editor.read((state) => createContext(state));
-    const transformData = prepareHtmlRegistry(editor).plugins.find(
-      ({ name }) => name === WordPastePlugin.name
-    )?.transformData;
-
-    if (!transformData) {
-      throw new Error('Missing HTML transformData');
-    }
-
-    const dataTransfer = new DataTransfer();
+  it('strips Word table presentation after html parsing', () => {
+    const tableHtml = [
+      '<table><colgroup><col style="width: 120px" /></colgroup>',
+      '<tbody><tr><td style="border: 2px solid red; width: 120px"><p>Cell</p></td></tr></tbody>',
+      '</table>',
+    ].join('');
+    const plainEditor = createEditor({ plugins: [BaseTablePlugin] });
 
     expect(
-      transformData({
-        ...context,
-        data: '<p>a</p>',
-        format: 'text/html',
-        source: {
-          files: dataTransfer.files,
-          getData: (format: string) => dataTransfer.getData(format),
-          types: [...dataTransfer.types],
-        },
-      })
-    ).toBe('<p>a</p>');
+      plainEditor.api.dom.clipboard.insertData(createTransfer(tableHtml))
+    ).toBe(true);
+
+    const plainTable = plainEditor.read
+      .children()
+      .find(
+        (node) => ElementApi.isElement(node) && node.type === PLUGINS.table
+      );
+    const plainCell = ElementApi.isElement(plainTable)
+      ? plainTable.children
+          .flatMap((row) => (ElementApi.isElement(row) ? row.children : []))
+          .find(
+            (node) =>
+              ElementApi.isElement(node) &&
+              node.type === plainEditor.plugin(BaseTableCellPlugin).schema.type
+          )
+      : undefined;
+
+    expect(plainTable).toHaveProperty('columnWidths', [120]);
+    expect(plainCell).toHaveProperty('borders');
+
+    const editor = insertHtml(`<p class="MsoNormal">Before</p>${tableHtml}`, {
+      plugins: [BaseTablePlugin],
+    });
+    const table = editor.read
+      .children()
+      .find(
+        (node) => ElementApi.isElement(node) && node.type === PLUGINS.table
+      );
+    const cell = ElementApi.isElement(table)
+      ? table.children
+          .flatMap((row) => (ElementApi.isElement(row) ? row.children : []))
+          .find(
+            (node) =>
+              ElementApi.isElement(node) &&
+              node.type === editor.plugin(BaseTableCellPlugin).schema.type
+          )
+      : undefined;
+
+    expect(table).toBeDefined();
+    expect(table).not.toHaveProperty('columnWidths');
+    expect(cell).toBeDefined();
+    expect(cell).not.toHaveProperty('borders');
+    expect(cell).not.toHaveProperty('size');
   });
 });

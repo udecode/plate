@@ -1,10 +1,11 @@
 import type {
   EditorEffect,
   EditorEffectType,
-  EditorValueCodec,
+  EditorValuePersistence,
   SerializedEditorEffect,
   SerializedEditorValue,
 } from '../interfaces/editor';
+import type { EditorJsonValue } from '../interfaces/json';
 import { freezeOwnedJsonValue, isOwnedJsonValue } from './clone';
 import { createEditorEffect } from './transaction-values';
 
@@ -303,9 +304,11 @@ export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
 export const cloneFrozenEditorJsonValue = <T>(value: T): T =>
   snapshotEditorJsonValue(value, 'Editor value');
 
-const assertCodecVersion = (version: number) => {
+const assertPersistenceVersion = (version: number) => {
   if (!Number.isSafeInteger(version) || version < 1) {
-    throw new Error('Editor value codec version must be a positive integer.');
+    throw new Error(
+      'Editor value persistence version must be a positive integer.'
+    );
   }
 };
 
@@ -318,113 +321,134 @@ const assertJsonValue = (value: unknown, label: string) => {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const CODEC_OWNED_CURRENT_INPUTS = new WeakSet<object>();
+const PERSISTENCE_OWNED_CURRENT_INPUTS = new WeakSet<object>();
 
 /**
- * Mark a codec whose current-version decoder validates and detaches its own
- * input before returning an owned editor JSON value.
+ * Mark persistence whose current-version decoder validates and detaches its
+ * own input before returning an owned editor JSON value.
  *
  * @internal
  */
-export const ownCurrentEditorValueCodecInput = <TValue>(
-  codec: EditorValueCodec<TValue>
-): EditorValueCodec<TValue> => {
-  CODEC_OWNED_CURRENT_INPUTS.add(codec);
+export const ownCurrentEditorValuePersistenceInput = <
+  TValue,
+  TEncoded extends EditorJsonValue,
+>(
+  persistence: EditorValuePersistence<TValue, TEncoded>
+): EditorValuePersistence<TValue, TEncoded> => {
+  PERSISTENCE_OWNED_CURRENT_INPUTS.add(persistence);
 
-  return codec;
+  return persistence;
 };
 
-/** Define a versioned codec for persisted editor state and effects. */
-export const defineValueCodec = <TValue>(
-  codec: EditorValueCodec<TValue>
-): EditorValueCodec<TValue> => {
-  assertCodecVersion(codec.version);
+/** @internal */
+export const normalizeEditorValuePersistence = <
+  TValue,
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+>(
+  persistence: EditorValuePersistence<TValue, TEncoded>
+): EditorValuePersistence<TValue, TEncoded> => {
+  if (
+    !persistence ||
+    typeof persistence !== 'object' ||
+    typeof persistence.decode !== 'function' ||
+    typeof persistence.encode !== 'function'
+  ) {
+    throw new Error(
+      'Editor value persistence requires decode and encode functions.'
+    );
+  }
+  assertPersistenceVersion(persistence.version);
 
-  const previousVersions = codec.previousVersions
-    ? Object.freeze({ ...codec.previousVersions })
+  const legacyDecoders = persistence.legacyDecoders
+    ? Object.freeze({ ...persistence.legacyDecoders })
     : undefined;
-  for (const [savedVersion, decode] of Object.entries(previousVersions ?? {})) {
+  for (const [savedVersion, decode] of Object.entries(legacyDecoders ?? {})) {
     const version = Number(savedVersion);
     if (
       !Number.isSafeInteger(version) ||
       version < 1 ||
-      version >= codec.version ||
+      version >= persistence.version ||
       typeof decode !== 'function'
     ) {
       throw new Error(
-        'Editor value codec previous versions must be positive integers below the current version.'
+        'Editor value persistence legacy versions must be positive integers below the current version.'
       );
     }
   }
 
   const defined = Object.freeze({
-    ...codec,
-    ...(previousVersions ? { previousVersions } : {}),
+    decode: persistence.decode,
+    encode: persistence.encode,
+    ...(legacyDecoders ? { legacyDecoders } : {}),
+    version: persistence.version,
   });
-  if (CODEC_OWNED_CURRENT_INPUTS.has(codec)) {
-    CODEC_OWNED_CURRENT_INPUTS.add(defined);
+  if (PERSISTENCE_OWNED_CURRENT_INPUTS.has(persistence)) {
+    PERSISTENCE_OWNED_CURRENT_INPUTS.add(defined);
   }
 
   return defined;
 };
 
 /** @internal */
-export const supportsEditorValueCodecVersion = <TValue>(
-  codec: EditorValueCodec<TValue>,
+export const supportsEditorValuePersistenceVersion = <
+  TValue,
+  TEncoded extends EditorJsonValue,
+>(
+  persistence: EditorValuePersistence<TValue, TEncoded>,
   version: number
 ) =>
-  version === codec.version ||
-  Object.hasOwn(codec.previousVersions ?? {}, version);
+  version === persistence.version ||
+  Object.hasOwn(persistence.legacyDecoders ?? {}, version);
 
 /** Strict codecs for primitive JSON state values. */
 export const valueCodecs = Object.freeze({
-  boolean: defineValueCodec<boolean>({
-    decode(value) {
+  boolean: Object.freeze({
+    decode(value: unknown) {
       if (typeof value !== 'boolean') {
         throw new Error('Expected a boolean editor value.');
       }
 
       return value;
     },
-    encode: (value) => value,
-    version: 1,
+    encode: (value: boolean) => value,
   }),
-  number: defineValueCodec<number>({
-    decode(value) {
+  number: Object.freeze({
+    decode(value: unknown) {
       if (typeof value !== 'number' || !Number.isFinite(value)) {
         throw new Error('Expected a finite numeric editor value.');
       }
 
       return value;
     },
-    encode: (value) => value,
-    version: 1,
+    encode: (value: number) => value,
   }),
-  string: defineValueCodec<string>({
-    decode(value) {
+  string: Object.freeze({
+    decode(value: unknown) {
       if (typeof value !== 'string') {
         throw new Error('Expected a string editor value.');
       }
 
       return value;
     },
-    encode: (value) => value,
-    version: 1,
+    encode: (value: string) => value,
   }),
 });
 
-export const encodeVersionedValue = <TValue>(
-  codec: EditorValueCodec<TValue>,
+export const encodeVersionedValue = <TValue, TEncoded extends EditorJsonValue>(
+  persistence: EditorValuePersistence<TValue, TEncoded>,
   value: TValue,
   label: string
-): SerializedEditorValue =>
+): SerializedEditorValue<TEncoded> =>
   snapshotEditorJsonValue(
-    { value: codec.encode(value), version: codec.version },
+    {
+      value: persistence.encode(value),
+      version: persistence.version,
+    },
     label
   );
 
-export const decodeVersionedValue = <TValue>(
-  codec: EditorValueCodec<TValue>,
+export const decodeVersionedValue = <TValue, TEncoded extends EditorJsonValue>(
+  persistence: EditorValuePersistence<TValue, TEncoded>,
   input: unknown,
   label: string
 ): TValue => {
@@ -436,10 +460,10 @@ export const decodeVersionedValue = <TValue>(
     throw new Error(`Invalid ${label} envelope.`);
   }
   const version = input.version as number;
-  if (!supportsEditorValueCodecVersion(codec, version)) {
+  if (!supportsEditorValuePersistenceVersion(persistence, version)) {
     const supported = [
-      ...Object.keys(codec.previousVersions ?? {}).map(Number),
-      codec.version,
+      ...Object.keys(persistence.legacyDecoders ?? {}).map(Number),
+      persistence.version,
     ].sort((left, right) => left - right);
     throw new Error(
       `Unsupported ${label} version ${String(version)}; expected ${supported.join(
@@ -449,12 +473,15 @@ export const decodeVersionedValue = <TValue>(
   }
 
   const decode =
-    version === codec.version
-      ? codec.decode
-      : codec.previousVersions?.[version];
+    version === persistence.version
+      ? persistence.decode
+      : persistence.legacyDecoders?.[version];
   if (!decode) throw new Error(`Unsupported ${label} version.`);
 
-  if (version === codec.version && CODEC_OWNED_CURRENT_INPUTS.has(codec)) {
+  if (
+    version === persistence.version &&
+    PERSISTENCE_OWNED_CURRENT_INPUTS.has(persistence)
+  ) {
     const decoded = decode(input.value);
     if (
       decoded !== null &&
@@ -470,43 +497,41 @@ export const decodeVersionedValue = <TValue>(
   return decode(cloneFrozenEditorJsonValue(input.value));
 };
 
-export const encodeEditorEffect = <TValue>(
-  effect: EditorEffect<TValue>
-): SerializedEditorEffect => {
-  const { codec } = effect.type;
+export const encodeEditorEffect = <TValue, TEncoded extends EditorJsonValue>(
+  effect: EditorEffect<TValue, TEncoded>
+): SerializedEditorEffect<TEncoded> => {
+  const { persist } = effect.type;
 
-  if (!codec) {
+  if (!persist) {
     throw new Error(
-      `Editor effect "${effect.type.key}" does not define a persistence codec.`
+      `Editor effect "${effect.type.key}" does not define persistence.`
     );
   }
 
   return Object.freeze({
     key: effect.type.key,
     ...encodeVersionedValue(
-      codec,
+      persist,
       effect.value,
       `editor effect "${effect.type.key}"`
     ),
   });
 };
 
-export const decodeEditorEffect = <TValue>(
-  type: EditorEffectType<TValue>,
+export const decodeEditorEffect = <TValue, TEncoded extends EditorJsonValue>(
+  type: EditorEffectType<TValue, TEncoded>,
   input: unknown
 ): EditorEffect<TValue> => {
   if (!isRecord(input) || input.key !== type.key) {
     throw new Error(`Invalid editor effect "${type.key}" envelope.`);
   }
-  if (!type.codec) {
-    throw new Error(
-      `Editor effect "${type.key}" does not define a persistence codec.`
-    );
+  if (!type.persist) {
+    throw new Error(`Editor effect "${type.key}" does not define persistence.`);
   }
 
   return createEditorEffect(
     type,
-    decodeVersionedValue(type.codec, input, `editor effect "${type.key}"`)
+    decodeVersionedValue(type.persist, input, `editor effect "${type.key}"`)
   );
 };
 

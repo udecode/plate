@@ -3,7 +3,11 @@
 
 import { jsxt } from '#platejs-test-internal';
 
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 
 jsxt;
 
@@ -28,19 +32,23 @@ describe('roundTrip', () => {
       </fragment>
     );
 
-    const md = editor.api.markdown.serialize({ value: { children: input } });
-    const slate = editor.api.markdown.deserialize(md);
+    const md = serializeTestMarkdown(editor, {
+      document: { children: input },
+    }).data;
+    const slate = parseTestMarkdown(editor, md);
     expect(slate.children).toEqual(input);
   });
 
   it('serialize callout correctly', () => {
     const input = (
       <fragment>
-        <hcallout>Callout</hcallout>
+        <hcallout icon="💡">Callout</hcallout>
       </fragment>
     );
 
-    const md = editor.api.markdown.serialize({ value: { children: input } });
+    const md = serializeTestMarkdown(editor, {
+      document: { children: input },
+    }).data;
     expect(md).toMatchSnapshot();
   });
 
@@ -51,8 +59,10 @@ describe('roundTrip', () => {
       </fragment>
     );
 
-    const md = editor.api.markdown.serialize({ value: { children: input } });
-    const slate = editor.api.markdown.deserialize(md);
+    const md = serializeTestMarkdown(editor, {
+      document: { children: input },
+    }).data;
+    const slate = parseTestMarkdown(editor, md);
     expect(slate.children).toEqual(input);
   });
 });

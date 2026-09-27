@@ -222,7 +222,8 @@ typed plugin command interceptors can claim the payload, transform it, or return
 `next()` to continue. The accepted command spec commits through one transaction.
 
 The default command path tries an internal Plite slice for the editor's
-configured `clipboardFormatKey`, then host codecs, then plain text.
+configured `clipboardFormatKey`, then registered DataTransfer formats, then
+plain text.
 
 #### `editor.api.dom.clipboard.insertFragmentData(data: DataTransfer): boolean`
 
@@ -245,7 +246,7 @@ Write the current selection to a `DataTransfer`.
 
 #### `editor.api.dom.clipboard.writeSlice(data: Pick<DataTransfer, 'getData' | 'setData'>, payload: ClipboardSliceWrite): void`
 
-Write one exact `ContentSlice` plus optional host MIME formats.
+Write one exact `ContentSlice` plus optional browser MIME representations.
 
 Plite writes plain text, HTML, and an internal Plite fragment payload. The
 fragment payload uses `application/${clipboardFormatKey}` and the HTML fallback

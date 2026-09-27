@@ -1,4 +1,8 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 
 describe('math package surfaces', () => {
   it('round-trips inline math through the markdown package surfaces', () => {
@@ -6,7 +10,7 @@ describe('math package surfaces', () => {
     const input = 'Inline $x+1$ math';
     const expected = 'Inline $x+1$ math\n';
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -23,10 +27,10 @@ describe('math package surfaces', () => {
       },
     ]);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
   it('round-trips block math through the markdown package surfaces', () => {
@@ -34,7 +38,7 @@ describe('math package surfaces', () => {
     const input = '$$\nx+1\n$$';
     const expected = '$$\nx+1\n$$\n';
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -44,9 +48,9 @@ describe('math package surfaces', () => {
       },
     ]);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 });

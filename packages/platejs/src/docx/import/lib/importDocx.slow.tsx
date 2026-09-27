@@ -8,7 +8,6 @@ import { jsx, type TestEditor } from '#platejs-test-internal';
 import type { BasePluginInput } from '../../../core';
 import {
   BaseParagraphPlugin,
-  createEditor,
   definePlugin,
   PLUGINS,
   property,
@@ -40,9 +39,9 @@ const TestLinkPlugin = definePlugin('link', {
       },
     },
   },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => {
           const url = element.getAttribute('href');
 
@@ -65,9 +64,9 @@ const TestTableRowPlugin = definePlugin(PLUGINS.tableRow, {
       content: schema.content.element(TestTableCellPlugin, { min: 1 }),
     },
   }),
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: () => ({}),
         decodeOnly: true,
         match: [{ tag: 'tr' }],
@@ -84,9 +83,9 @@ const TestTableCellPlugin = definePlugin(PLUGINS.tableCell, {
       }),
     },
   }),
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: () => ({}),
         decodeOnly: true,
         match: [{ tag: 'td' }],
@@ -101,9 +100,9 @@ const TestTablePlugin = definePlugin(PLUGINS.table, {
       content: schema.content.element(TestTableRowPlugin, { min: 1 }),
     },
   },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: () => ({}),
         decodeOnly: true,
         match: [{ tag: 'table' }],
@@ -121,23 +120,21 @@ const testDocxImporter = ({
   plugins?: readonly BasePluginInput[];
 }) => {
   it('import', async () => {
-    const editor = createEditor({
-      plugins: [
-        ...plugins,
-        BaseBlockquotePlugin,
-        BaseHeadingPlugin,
+    const targetPlugins = [
+      ...plugins,
+      BaseBlockquotePlugin,
+      BaseHeadingPlugin,
 
-        BaseHorizontalRulePlugin,
-        BaseBoldPlugin,
-        BaseCodePlugin,
-        BaseItalicPlugin,
-        BaseStrikethroughPlugin,
-        BaseScriptPlugin,
-        BaseUnderlinePlugin,
-        TestLinkPlugin,
-        TestTablePlugin,
-      ],
-    });
+      BaseHorizontalRulePlugin,
+      BaseBoldPlugin,
+      BaseCodePlugin,
+      BaseItalicPlugin,
+      BaseStrikethroughPlugin,
+      BaseScriptPlugin,
+      BaseUnderlinePlugin,
+      TestLinkPlugin,
+      TestTablePlugin,
+    ];
 
     const buffer = fs.readFileSync(
       new URL(
@@ -148,7 +145,10 @@ const testDocxImporter = ({
     const arrayBuffer = new ArrayBuffer(buffer.byteLength);
     new Uint8Array(arrayBuffer).set(buffer);
 
-    const result = await importDocx(editor, arrayBuffer);
+    const result = await importDocx(arrayBuffer, {
+      lossPolicy: 'allow',
+      plugins: targetPlugins,
+    });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;

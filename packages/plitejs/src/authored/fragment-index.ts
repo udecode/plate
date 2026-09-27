@@ -1,6 +1,5 @@
 import type { NativeAuthoredFragmentSlot } from '../core/authored-runtime';
 import { DocumentIndex } from '../core/change/document-index';
-import { getEditorProjectionSnapshotIndex } from '../core/public-state';
 import { snapshotEditorJsonValue } from '../core/value-codec';
 import type { AnyEditor as Editor, NodeKey, Value } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
@@ -27,6 +26,10 @@ import {
   readAuthoredMarkupFragments,
 } from './markup';
 import { authoredPositionSpans, type AuthoredPosition } from './positions';
+import {
+  createEditorAuthoredProjectionContext,
+  type AuthoredProjectionContext,
+} from './projection-context';
 import { readAuthoredChange } from './read';
 import {
   readRecord,
@@ -90,7 +93,7 @@ const compareKeys = (left: string, right: string) =>
   left < right ? -1 : left > right ? 1 : 0;
 
 const indexChange = (
-  editor: Editor,
+  context: AuthoredProjectionContext,
   changeId: string,
   accepted: AuthoredRangeProjection,
   proposed: AuthoredRangeProjection
@@ -178,13 +181,12 @@ const indexChange = (
   for (const projection of [accepted, proposed]) {
     const indexes = new Map<
       string,
-      ReturnType<typeof getEditorProjectionSnapshotIndex>
+      ReturnType<AuthoredProjectionContext['index']>
     >();
     const index = (root: string) => {
       let current = indexes.get(root);
       if (!current) {
-        current = getEditorProjectionSnapshotIndex(
-          editor,
+        current = context.index(
           authoredRootNodes(projection.value, root) as Value
         );
         indexes.set(root, current);
@@ -286,9 +288,7 @@ const indexChange = (
         side = 'children';
       }
     }
-    const key = path
-      ? getEditorProjectionSnapshotIndex(editor, nodes).keyAt(path)
-      : null;
+    const key = path ? context.index(nodes).keyAt(path) : null;
     if (path && !key) {
       throw new Error('Missing authored fragment docking node.');
     }
@@ -309,7 +309,7 @@ const indexChange = (
     let scopes = scopesByRoot.get(root);
     if (!scopes) {
       scopes = readAuthoredFragmentRenderScopes(
-        editor,
+        context,
         fragments.filter((current) => current.root === root),
         proposed,
         root
@@ -319,9 +319,7 @@ const indexChange = (
     const scope = scopes.get(fragment.id);
     if (scope) {
       const scopeKey = scope.length
-        ? getDefined(
-            getEditorProjectionSnapshotIndex(editor, nodes).keyAt(scope)
-          )
+        ? getDefined(context.index(nodes).keyAt(scope))
         : undefined;
       bindings.push({
         bucket: authoredFragmentBucket(root, scopeKey),
@@ -449,8 +447,8 @@ const orderBuckets = (
   return buckets === index.buckets ? index : { ...index, buckets };
 };
 
-export const createAuthoredFragmentIndex = (
-  editor: Editor,
+export const compileAuthoredFragmentIndex = (
+  context: AuthoredProjectionContext,
   accepted: AuthoredRangeProjection,
   proposed: AuthoredRangeProjection
 ) => {
@@ -459,7 +457,7 @@ export const createAuthoredFragmentIndex = (
     for (const { change } of matchingAuthoredChanges(proposed.state, {
       status,
     })) {
-      const current = indexChange(editor, change.id, accepted, proposed);
+      const current = indexChange(context, change.id, accepted, proposed);
       if (current) indexed.push([change.id, current]);
     }
   }
@@ -528,6 +526,17 @@ export const createAuthoredFragmentIndex = (
   };
 };
 
+export const createAuthoredFragmentIndex = (
+  editor: Editor,
+  accepted: AuthoredRangeProjection,
+  proposed: AuthoredRangeProjection
+) =>
+  compileAuthoredFragmentIndex(
+    createEditorAuthoredProjectionContext(editor),
+    accepted,
+    proposed
+  );
+
 export const authoredFragmentIndexNodeKeys = (
   index: AuthoredFragmentIndex,
   changeIds?: Iterable<string>
@@ -553,6 +562,7 @@ export const updateAuthoredFragmentIndex = (
   proposed: AuthoredRangeProjection,
   operations: readonly AuthoredOperation[]
 ) => {
+  const context = createEditorAuthoredProjectionContext(editor);
   const affected = new Set<string>();
   const changed = new Set<string>();
   const overlap = (origin: string, from: number, to: number) => {
@@ -621,7 +631,7 @@ export const updateAuthoredFragmentIndex = (
     next = replaceChange(
       next,
       id,
-      indexChange(editor, id, accepted, proposed),
+      indexChange(context, id, accepted, proposed),
       changed
     );
   }

@@ -9,6 +9,7 @@ import {
   DropdownMenuRadioItem as ShadcnDropdownMenuRadioItem,
   DropdownMenuTrigger as ShadcnDropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 export {
   DropdownMenu,
@@ -99,6 +100,7 @@ export function DropdownMenuRadioItem({
 }
 
 export function DropdownMenuContent({
+  className,
   onFinalFocus,
   ...props
 }: Omit<React.ComponentPropsWithoutRef<'div'>, 'onAbort'> & {
@@ -114,6 +116,7 @@ export function DropdownMenuContent({
     <FinalFocusContext.Provider value={finalFocusRef}>
       <ShadcnDropdownMenuContent
         {...props}
+        className={cn('data-[state=closed]:!animate-none', className)}
         onCloseAutoFocus={(event) => {
           const finalFocus = finalFocusRef.current;
 

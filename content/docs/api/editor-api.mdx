@@ -373,6 +373,33 @@ If a feature changes Plate model state, expose it as an `update` group.
 Use `editor.plugin(Plugin).api` when the call site owns the plugin
 descriptor and needs its typed API.
 
+### Installed format APIs
+
+HTML and Markdown plugins expose convenience APIs that reuse the editor's
+compiled schema, mappings, and frozen plugin state for one operation.
+
+```ts
+const html = editor.api.html.parse(source);
+const markdown = editor.api.markdown.parse(source);
+const inline = editor.api.markdown.parseInline(source);
+
+const output = editor.api.markdown.serialize({
+  document: editor.read.value(),
+  projection: "accepted",
+});
+```
+
+`parse` returns a complete `EditorDocumentValue`. `parseSlice` and
+`parseInline` return a closed, rootless `ContentSlice`. Serialization uses the
+current document unless `document` is supplied. Every expected source or format
+failure is a diagnosed result; callers branch on `ok` before reading the
+carrier.
+
+Use standalone `parseHtml`, `parseMarkdown`, and matching serialize functions
+when no installed editor owns the operation. Node HTML parsing uses
+`platejs/html/server`. DOCX import and export remain standalone package
+workflows rather than editor APIs.
+
 ## Subscribing to commits
 
 #### `editor.subscribe(listener) => () => void`

@@ -1,0 +1,100 @@
+{
+  "id": "2026-09-24-exports-authored-capture-closure",
+  "kind": "execution",
+  "date": "2026-09-24",
+  "scopes": [
+    "exports"
+  ],
+  "reviewBasis": [
+    "2026-09-24-exports-model-switch-final-audit"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-24-exports-authored-capture-implementation.md",
+    "sha256": "e3bc80b626098040eb44445a98f7a11efb76eaa0b9be24f237c77cc51c075557"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Supersedes the earlier implementation receipt only to bind the completed exports adoption and its existing proof to the normalized Autogoal plan schema; product behavior, scope and verification remain unchanged.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-24-exports-authored-capture-implementation.md",
+        "sha256": "e3bc80b626098040eb44445a98f7a11efb76eaa0b9be24f237c77cc51c075557",
+        "claim": "Records completed scope, boundaries, final evidence, proof limits and the closed Autogoal checklist."
+      },
+      {
+        "path": "packages/plitejs/test/authored-format-contract.test.ts",
+        "sha256": "9fca9768b2f27d2d4fa9f463f668e45ed3b0967e4c85b8f4d2ebb4700a8541aa",
+        "claim": "Locks exact-runtime narrowing, one-revision accepted/proposed/review parity, separate unresolved counts and conflicted projection diagnostics."
+      },
+      {
+        "path": "packages/platejs/src/static/authoredHtml.spec.tsx",
+        "sha256": "7ccea2979fe18e66892348645b943d4b2abd5bd5b8230a7e4aab624fdad10941",
+        "claim": "Proves asynchronous HTML body, native envelope and diagnostics stay on the pre-mutation captured revision."
+      },
+      {
+        "path": "packages/platejs/src/docx/export/lib/authoredDocx.spec.ts",
+        "sha256": "5b5d670ee097cbe980bb1d837942e20c12d275bfb70f9e31a9df18316a8060eb",
+        "claim": "Proves review DOCX returns an authored-conflict error without a blob and clean projections report conflicts as warnings."
+      },
+      {
+        "path": "apps/www/tests/browser/docx.spec.ts",
+        "sha256": "27884d7ac1dab3a87ec19e0d1f0a8d3bf1a8d0e265709d0b05b12f296911ad12",
+        "claim": "Exercises one menu projection across HTML, Markdown and Word, tracked Word revisions, exported HTML reopening and immediate first-click menu reopening in Chromium."
+      },
+      {
+        "path": "docs/plans/artifacts/2026-09-24-exports-review/projection-performance.final.packet.json",
+        "sha256": "092479f6d72c8a7f622c4dfe1ced8d6eb91f0cd1fcb25479038c77be858fc0c9",
+        "claim": "Captures the final-source benchmark packet whose correctness and normal, large, stress and work budgets all pass."
+      }
+    ],
+    "limits": "Chromium automation opened the exported HTML and inspected Markdown and DOCX package XML, but this execution did not reopen current DOCX artifacts in native Word or Pages. Conflict refusal is package-level because a refused export deliberately has no artifact. Review HTML and Markdown preserve native review data in their envelope while their visible body remains clean; this is not a claim of complete converter fidelity. The Base UI menu adapter retained its existing close lifecycle and has unit focus proof rather than the Radix browser regression proof."
+  },
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "fbd13343e1216a55f4c178095b5a929748ef110db76a0937fc72a2b3cb3082fd",
+      "apps/www/src/registry/examples/docx-demo.tsx": "b149d67140f4199c71ce377b28e70860db6ceace532dab270eeafd9bbd894b82",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "378bf330f000d9d942290ee2387649ceffd257450d94c35e576a2be97cabae25",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/authoredHtml.ts": "28f878672a2a7d3f797b11ac1458fcd697e33b0ce6b7490ccea06ee32f83c48d",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "d598a7e01d0feb6f344e4ecfba0eba085c53d95828a809cb925bcbc6d7f4aa46",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "dea940b45e0d3ec9fdd6a3ae4d156723deba50a58e360a55e1549525a60f2997",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "db8ad5e16b2df9f6b12abf8d092deaab5761dc870c7a06c89f4dbb4187f5b542",
+      "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "0e2247ec87fefcf449595b278a16f5fa2080fdf33e506a47af09577c1f76ba1a",
+      "packages/platejs/type-tests/authored-format-contracts.ts": "b81e84f728db5b6906293927c37bb2a5383d0d83dbdf33b2026ae57c1b2e9682",
+      "packages/plitejs/src/authored/format.ts": "2b10df8e8e2490e51dd346b34741ec834c7e8f02f600980342f3f3e98a34b690",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/registry-editor.ts": "95491326193b354802a076551bb117fc05f2f1431bd29f4635dac7e4a6b80cf4",
+      "content/docs/examples/export.mdx": "aa2cd91c01e1f93c4c9dbc9a62318336ec43a96fd2b0f733bc96a6f4ab779e01",
+      "content/docs/(guides)/authored-changes.mdx": "d3bace0690977500b9126dd05b0b8b5a3ce228d4fbe26e790c0b6a41f76a2a9a",
+      "docs/vision/plate.md": "09692ba7572b42c94797c124a156a20c550e9e4b02626216908e5647793f8e72",
+      "docs/vision/plite.md": "88b094f95aa0231a645eec7aee346a6a714e4cf1075eb2c611d0b0da56fb1812",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "271bdf6da40799f15a72c7237e96434f431f949b7d72ec2a6b541f952da7eb4b",
+      "apps/www/src/registry/bases/radix/dropdown-menu.tsx": "cc94f807af1a009d2eadb4dc8a264f7ff067d6ee77fc837ffe402f4fb76c82ff",
+      "apps/www/tests/browser/docx.spec.ts": "27884d7ac1dab3a87ec19e0d1f0a8d3bf1a8d0e265709d0b05b12f296911ad12",
+      "packages/plitejs/src/authored/authored.ts": "42c5b15aefe8d450c07dea6c7e5746c333f2c187fd86cb163f617c09edb9f87c",
+      "packages/plitejs/test/authored-format-contract.test.ts": "9fca9768b2f27d2d4fa9f463f668e45ed3b0967e4c85b8f4d2ebb4700a8541aa",
+      "packages/platejs/src/static/authoredHtml.spec.tsx": "7ccea2979fe18e66892348645b943d4b2abd5bd5b8230a7e4aab624fdad10941",
+      "packages/platejs/src/docx/export/lib/authoredDocx.spec.ts": "5b5d670ee097cbe980bb1d837942e20c12d275bfb70f9e31a9df18316a8060eb",
+      "packages/platejs/src/internal/plugin/compilePlateModel.ts": "326cd9dae47df6c70342e74032a02807caa947cf1007b25c730af0fa12f61793",
+      "packages/platejs/src/internal/plugin/resolvePlugins.ts": "145990ddb9c5514abd43b0be8a84456bb4df955e88022ac9bc77fd3aa7a0f59c",
+      "packages/platejs/src/lib/editor/withPlite.ts": "ff180fe794f1f67050d340807bdb30dc1e4b494071ffa493f24428a6b56546ce",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection-performance.final.packet.json": "092479f6d72c8a7f622c4dfe1ced8d6eb91f0cd1fcb25479038c77be858fc0c9",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection-performance.final.receipt.md": "58d3623766f9bb84eaf2b369c348efa198e69b2c185e8f3decd0aebc9e2cc592"
+    },
+    "directories": {},
+    "features": {
+      "ui/export-toolbar-button": "40958426b4039bc6cf4011a6677ab575e4d0a34cce54ee234128d477490fec84"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-24-exports-authored-capture-implementation.md"
+  ]
+}

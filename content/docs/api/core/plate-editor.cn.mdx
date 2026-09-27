@@ -14,7 +14,7 @@ description: Plate 编辑器运行时的 API 参考。
 | `Editor`      | `platejs/react` | React 编辑器类型，包含 Plate 插件 API、事务组、lifecycle/DOM 事件、render 和 hooks。     |
 | `Editor`       | `platejs`       | 非 React 编辑器类型，用于服务端和静态编辑器路径。                                        |
 | Plate primitives   | `platejs`      | `read`、核心 `api` 和事务/update 运行时。 |
-| Core plugins       | `platejs`       | debug、HTML 解析、product codecs、length、node id、history、input rules 和基础段落行为。 |
+| Core plugins       | `platejs`       | debug、HTML 解析、product format mappings、length、node id、history、input rules 和基础段落行为。 |
 | React core plugins | `platejs/react` | React 扩展、DOM 集成、event editor、navigation feedback 和 React paragraph plugin。      |
 
 从与构造器相同的入口导入 `Editor` 类型。
@@ -189,11 +189,22 @@ export function useBasicEditor() {
       `throwErrors`。
     </APIItem>
     <APIItem
-      name="editor.api.html.deserialize"
-      type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredName }) => Descendant[]"
+      name="editor.api.html.parse"
+      type="(source: string, options?: HtmlEditorParseOptions) => HtmlDocumentParseResult"
     >
-      将 HTML 反序列化为 Plate nodes。HTML parser 插件会在 `text/html` paste
-      路径调用它。
+      使用已安装 target 解析一份完整 semantic HTML document。
+    </APIItem>
+    <APIItem
+      name="editor.api.html.parseSlice"
+      type="(source: string, options?: HtmlEditorParseOptions) => HtmlSliceParseResult"
+    >
+      使用已安装 target 解析闭合、无 root 的 HTML insertion slice。
+    </APIItem>
+    <APIItem
+      name="editor.api.html.serialize"
+      type="(options?: HtmlEditorSerializeOptions) => HtmlSerializeResult"
+    >
+      序列化当前或指定的完整 document。检查 `result.ok` 后才能读取 `data`。
     </APIItem>
     <APIItem
       name="editor.api.navigation.flashTarget"

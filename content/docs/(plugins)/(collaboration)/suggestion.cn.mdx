@@ -103,7 +103,7 @@ export function SuggestionEditor() {
 
 将 `userId` 和 Comments 的 `currentUserId` 中的 `'alice'` 替换为已认证用户的 ID。`userId` 记录文档修改的作者；`currentUserId` 标识回复作者；`users` 提供姓名和可选头像。
 
-`SuggestionPlugin` 依赖 `DefaultAuthoredPlugin`，后者在每个 transaction 中读取一次 editor 的 `userId`。缺少身份时，受追踪的文档写入会被拒绝。不要在套件旁安装另一个 `authored(...)` 描述符。
+`SuggestionPlugin` 依赖 `DefaultAuthoredPlugin`，后者在每个写入 transaction 中读取一次 editor 的 `userId`。没有当前作者时，Suggestion 模式不可用；通过代码尝试进入该模式会抛出错误。不要在套件旁安装另一个 `authored(...)` 描述符。
 
 </Steps>
 
@@ -255,7 +255,9 @@ const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
 
 创建新 editor，将文档传给 `initialValue`，并配置 `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`。本地 undo stack 从空开始。文档保留每个 change 的作者和 ID，使回复仍可定位同一建议。将 `userId` 设置为当前作者；加载其他作者的建议不需要切换身份或重放编辑。历史预览和恢复请参阅[当前对话与历史目标的关联](/docs/comment#历史版本)。
 
-对于 JSON、Markdown、HTML 或 DOCX，请选择显式的[导出投影](/docs/authored-changes#导出显式投影)。Accepted 和 proposed 导出会省略审阅记录；当保存格式需要保留记录时，使用 `review`。
+选择显式的[导出投影](/docs/authored-changes#导出显式投影)。HTML 与 Markdown
+只携带可见的 `accepted` 或 `proposed` content。Plate 需要恢复完整 review record
+时保存 authored JSON；需要 Word revision 时使用 DOCX `review` export。
 
 ## Headless 用法
 

@@ -15,11 +15,14 @@ import { profileCoreDuration } from '../core/profiling';
 import { defineStateField } from '../core/state-field';
 import { defineEffect } from '../core/transaction-values';
 import {
-  defineValueCodec,
-  ownCurrentEditorValueCodecInput,
+  ownCurrentEditorValuePersistenceInput,
   snapshotEditorJsonValue,
 } from '../core/value-codec';
-import type { EditorEffect } from '../interfaces/editor';
+import type {
+  EditorEffect,
+  EditorValuePersistence,
+} from '../interfaces/editor';
+import type { EditorJsonValue } from '../interfaces/json';
 import { getDefined } from '../internal/get-defined';
 import {
   matchingAuthoredIntervals,
@@ -398,50 +401,44 @@ const decodeEditIdentity = (
   };
 };
 
-const editCodec = defineValueCodec<AuthoredEdit>({
-  version: 1,
-  decode(value) {
-    const data = record(value, [
-      'authorId',
-      'changeId',
-      'clock',
-      'dependencies',
-      'id',
-      'inverseOf',
-      'kind',
-      'parents',
-      'proposal',
-      'replica',
-      'seen',
-      'sequence',
-      'steps',
-      'time',
-      ...(value && typeof value === 'object' && 'retained' in value
-        ? ['retained']
-        : []),
-    ]);
-    if (!Array.isArray(data.steps) || data.steps.length === 0) {
-      throw new Error('Invalid authored operation.');
-    }
-    return snapshotEditorJsonValue(
-      {
-        ...decodeEditIdentity(data),
-        steps: data.steps.map((item) => {
-          const step = record(item, ['forward', 'rootTargets', 'targets']);
-          return {
-            forward: decodeChange(step.forward),
-            rootTargets: decodeRootTargets(step.rootTargets),
-            targets: decodeTargets(step.targets),
-          };
-        }),
-      },
-      'Authored operation'
-    );
-  },
-  encode: (value) => value,
-});
-
-export const decodeAuthoredEdit = (value: unknown) => editCodec.decode(value);
+export const decodeAuthoredEdit = (value: unknown): AuthoredEdit => {
+  const data = record(value, [
+    'authorId',
+    'changeId',
+    'clock',
+    'dependencies',
+    'id',
+    'inverseOf',
+    'kind',
+    'parents',
+    'proposal',
+    'replica',
+    'seen',
+    'sequence',
+    'steps',
+    'time',
+    ...(value && typeof value === 'object' && 'retained' in value
+      ? ['retained']
+      : []),
+  ]);
+  if (!Array.isArray(data.steps) || data.steps.length === 0) {
+    throw new Error('Invalid authored operation.');
+  }
+  return snapshotEditorJsonValue(
+    {
+      ...decodeEditIdentity(data),
+      steps: data.steps.map((item) => {
+        const step = record(item, ['forward', 'rootTargets', 'targets']);
+        return {
+          forward: decodeChange(step.forward),
+          rootTargets: decodeRootTargets(step.rootTargets),
+          targets: decodeTargets(step.targets),
+        };
+      }),
+    },
+    'Authored operation'
+  );
+};
 
 const decodeCompactEdit = (input: unknown): AuthoredCompactEdit => {
   const data = record(input, [
@@ -532,75 +529,71 @@ const decodeCompactEdit = (input: unknown): AuthoredCompactEdit => {
   );
 };
 
-const operationCodec = defineValueCodec<AuthoredOperation>({
-  version: 1,
-  encode: (value) => value,
-  decode(input) {
-    if (record(input).kind === 'edit') {
-      return Object.hasOwn(record(input), 'content')
-        ? decodeCompactEdit(input)
-        : editCodec.decode(input);
-    }
-    const data = record(input, [
-      'action',
-      'authorId',
-      'clock',
-      'id',
-      'kind',
-      'parents',
-      'replica',
-      'seen',
-      'selection',
-      'sequence',
-      'time',
-      'undoOf',
-    ]);
-    if (
-      (data.kind !== 'decide' &&
-        data.kind !== 'resolve' &&
-        data.kind !== 'undo') ||
-      (data.action !== 'accept' && data.action !== 'reject') ||
-      (data.kind === 'undo'
-        ? typeof data.undoOf !== 'string'
-        : data.undoOf !== null) ||
-      data.clock === 0
-    ) {
-      throw new Error('Invalid authored review.');
-    }
-    const selection = record(data.selection, ['changes', 'documentId']);
-    if (!Array.isArray(selection.changes)) {
-      throw new Error('Invalid authored review selection.');
-    }
-    return snapshotEditorJsonValue(
-      {
-        action: data.action,
-        authorId: decodeId(data.authorId),
-        clock: integer(data.clock),
-        id: decodeId(data.id),
-        parents: decodeIds(data.parents),
-        replica: decodeId(data.replica),
-        seen: decodeRecordTree(data.seen, integer),
-        sequence: integer(data.sequence),
-        time: integer(data.time),
-        ...(data.kind === 'undo'
-          ? { kind: data.kind, undoOf: decodeId(data.undoOf) }
-          : { kind: data.kind, undoOf: null }),
-        selection: {
-          documentId: decodeId(selection.documentId),
-          changes: selection.changes.map((value) => {
-            const selected = record(value, ['heads', 'id', 'revision']);
-            return {
-              heads: decodeIds(selected.heads),
-              id: decodeId(selected.id),
-              revision: integer(selected.revision),
-            };
-          }),
-        },
+const decodeAuthoredOperation = (input: unknown): AuthoredOperation => {
+  if (record(input).kind === 'edit') {
+    return Object.hasOwn(record(input), 'content')
+      ? decodeCompactEdit(input)
+      : decodeAuthoredEdit(input);
+  }
+  const data = record(input, [
+    'action',
+    'authorId',
+    'clock',
+    'id',
+    'kind',
+    'parents',
+    'replica',
+    'seen',
+    'selection',
+    'sequence',
+    'time',
+    'undoOf',
+  ]);
+  if (
+    (data.kind !== 'decide' &&
+      data.kind !== 'resolve' &&
+      data.kind !== 'undo') ||
+    (data.action !== 'accept' && data.action !== 'reject') ||
+    (data.kind === 'undo'
+      ? typeof data.undoOf !== 'string'
+      : data.undoOf !== null) ||
+    data.clock === 0
+  ) {
+    throw new Error('Invalid authored review.');
+  }
+  const selection = record(data.selection, ['changes', 'documentId']);
+  if (!Array.isArray(selection.changes)) {
+    throw new Error('Invalid authored review selection.');
+  }
+  return snapshotEditorJsonValue(
+    {
+      action: data.action,
+      authorId: decodeId(data.authorId),
+      clock: integer(data.clock),
+      id: decodeId(data.id),
+      parents: decodeIds(data.parents),
+      replica: decodeId(data.replica),
+      seen: decodeRecordTree(data.seen, integer),
+      sequence: integer(data.sequence),
+      time: integer(data.time),
+      ...(data.kind === 'undo'
+        ? { kind: data.kind, undoOf: decodeId(data.undoOf) }
+        : { kind: data.kind, undoOf: null }),
+      selection: {
+        documentId: decodeId(selection.documentId),
+        changes: selection.changes.map((value) => {
+          const selected = record(value, ['heads', 'id', 'revision']);
+          return {
+            heads: decodeIds(selected.heads),
+            id: decodeId(selected.id),
+            revision: integer(selected.revision),
+          };
+        }),
       },
-      'Authored review'
-    );
-  },
-});
+    },
+    'Authored review'
+  );
+};
 
 const checkpointTuple = (
   input: unknown,
@@ -948,7 +941,7 @@ const decodeCheckpointOperation = (
   }
   if (input[0] === 1) {
     const value = checkpointTuple(input, 2, 'checkpoint operation');
-    return operationCodec.decode(value[1]);
+    return decodeAuthoredOperation(value[1]);
   }
   return decodeDeferredCheckpointEdit(input, encodedSteps, persistedFootprint);
 };
@@ -1272,7 +1265,7 @@ const validateDirectAuthoredState = (state: AuthoredState) => {
 
 const decodeLegacyAuthoredState = (input: unknown): AuthoredState => {
   const data = record(input, ['acceptedPositions', 'documentId', 'operations']);
-  const operations = decodeRecordTree(data.operations, operationCodec.decode);
+  const operations = decodeRecordTree(data.operations, decodeAuthoredOperation);
   for (const [key, operation] of records(operations)) {
     if (key !== operation.id) {
       throw new Error('Invalid authored operation identity.');
@@ -1500,35 +1493,37 @@ const decodeAuthoredStateV5 = (input: unknown) =>
     tupleChanges: true,
   });
 
-const stateCodec = ownCurrentEditorValueCodecInput(
-  defineValueCodec<AuthoredState>({
-    version: 6,
-    previousVersions: {
-      4: decodeAuthoredStateV5,
-      5: decodeAuthoredStateV5,
-      1: decodeLegacyAuthoredState,
-      2: decodeAuthoredStateV2,
-      3: (input) =>
-        decodeDirectAuthoredState(input, {
-          detachOperationBodies: true,
-          encodedSteps: false,
-          persistedFootprints: false,
-          tupleChanges: true,
-        }),
-    },
-    encode: (value) =>
-      profileCoreDuration('authored-checkpoint-encode', () =>
-        encodeDirectAuthoredState(value)
-      ),
-    decode: (input) =>
+const statePersistence = ownCurrentEditorValuePersistenceInput<
+  AuthoredState,
+  EditorJsonValue
+>({
+  encode: (value) =>
+    profileCoreDuration(
+      'authored-checkpoint-encode',
+      () => encodeDirectAuthoredState(value) as EditorJsonValue
+    ),
+  decode: (input) =>
+    decodeDirectAuthoredState(input, {
+      detachOperationBodies: true,
+      encodedSteps: true,
+      persistedFootprints: true,
+      tupleChanges: true,
+    }),
+  legacyDecoders: {
+    4: decodeAuthoredStateV5,
+    5: decodeAuthoredStateV5,
+    1: decodeLegacyAuthoredState,
+    2: decodeAuthoredStateV2,
+    3: (input) =>
       decodeDirectAuthoredState(input, {
         detachOperationBodies: true,
-        encodedSteps: true,
-        persistedFootprints: true,
+        encodedSteps: false,
+        persistedFootprints: false,
         tupleChanges: true,
       }),
-  })
-);
+  },
+  version: 6,
+});
 
 const DECODED_OPERATIONS = new WeakSet<object>();
 
@@ -1591,8 +1586,8 @@ const decodeLegacyAuthoredOperations = (input: unknown): AuthoredOperations => {
     {
       checkpoint,
       documentId: decodeId(data.documentId),
-      operations: data.operations.map(operationCodec.decode),
-      retained: data.retained.map(editCodec.decode),
+      operations: data.operations.map(decodeAuthoredOperation),
+      retained: data.retained.map(decodeAuthoredEdit),
     },
     'Authored operations'
   );
@@ -1628,38 +1623,39 @@ const decodeDirectAuthoredOperations = (
     {
       checkpoint,
       documentId: decodeId(data.documentId),
-      operations: data.operations.map(operationCodec.decode),
-      retained: data.retained.map(editCodec.decode),
+      operations: data.operations.map(decodeAuthoredOperation),
+      retained: data.retained.map(decodeAuthoredEdit),
     },
     'Authored operations'
   );
 };
 
-const operationsCodec = defineValueCodec<AuthoredOperations>({
-  version: 5,
-  previousVersions: {
+const operationsPersistence = {
+  encode: (value) =>
+    snapshotEditorJsonValue<EditorJsonValue>(
+      {
+        ...value,
+        checkpoint: value.checkpoint && {
+          accepted: value.checkpoint.accepted,
+          state: statePersistence.encode(getDefined(value.checkpoint.state)),
+        },
+      } as unknown as EditorJsonValue,
+      'Authored operations'
+    ),
+  decode: (input) =>
+    decodeDirectAuthoredOperations(input, statePersistence.decode),
+  legacyDecoders: {
     3: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV5),
     4: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV5),
     1: decodeLegacyAuthoredOperations,
     2: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV2),
   },
-  encode: (value) =>
-    snapshotEditorJsonValue(
-      {
-        ...value,
-        checkpoint: value.checkpoint && {
-          accepted: value.checkpoint.accepted,
-          state: stateCodec.encode(getDefined(value.checkpoint.state)),
-        },
-      },
-      'Authored operations'
-    ),
-  decode: (input) => decodeDirectAuthoredOperations(input, stateCodec.decode),
-});
+  version: 5,
+} satisfies EditorValuePersistence<AuthoredOperations, EditorJsonValue>;
 
 export const authoredOperationEffect = defineEffect<AuthoredOperations>({
   key: 'authored.operation',
-  codec: operationsCodec,
+  persist: operationsPersistence,
   collab: 'shared',
   collabReplay: 'latest',
   collabSnapshot: (state) => {
@@ -3124,12 +3120,12 @@ export const emptyAuthoredState = (
 export const authoredState = defineStateField<AuthoredState>({
   key: 'authored',
   history: 'skip',
-  persist: stateCodec,
+  persist: statePersistence,
   initial: () => emptyAuthoredState(),
   reduce: (previous, effect) => {
     if (effect.type !== authoredOperationEffect) return previous;
     const batch = profileCoreDuration('authored-operation-decode', () =>
-      operationsCodec.decode(effect.value)
+      operationsPersistence.decode(effect.value)
     );
     let state = previous;
     if (batch.documentId !== state.documentId) {

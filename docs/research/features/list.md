@@ -8,9 +8,9 @@ Question: How should list structure, numbering and indentation compose with gene
 
 ## Current decision
 
-Unassessed. No review conclusion is recorded.
+[2026-09-24-list-audit](../review-records/2026-09-24-list-audit.json) — **pursue**. Pursue. Keep flat list properties, the shared indent axis and the conditional listStart/forced listRestart contract; the container model loses on generic block editing, DOCX mapping and collaborative property edits. The defects sit in the derived-sequence layer, which has no real owner: the ordinal cache is keyed on snapshot-index identity that Plite intentionally reuses in place, so property-only edits leave stale ordinals ([1,2,1,2] instead of [1,2,3,4]); React wrappers read read.ordinal during render with no sibling dependency, so the DOM shows [1,2,2,3] while the model says [1,2,3,4]; and four more sequence engines (Markdown, Word paste, DOCX pixel-margin recovery, frozen migration) re-derive the same law. Strongest target (proposed): one list-owned per-snapshot sequence index keyed by snapshot version, published to views through the existing keyed render.useViewElementAttributes channel and read by static, HTML, Markdown, DOCX, Word paste and DnD; delete the WeakMap-by-index cache, render-time ordinal reads and the zero-consumer GetSiblingListOptions/getSequenceSiblingOptions/isSequenceBoundary/getNext/getPrevious surface. Direct correctness repairs: HTML createsElement must name its element instead of targetPlugins[0] (registry ListKit lists heading first, so every HTML list paste returns null and DOCX import uses the same deserializer); root list items need one canonical indent invariant owned by the list correction (Shift+Tab currently strips indent but keeps listType), with update.list.indent deleted (zero consumers, overwrites kind with bulleted) and list.outdent folded into indent plus correction; the Enter start/restart wrapper duplicates split: drop; task Enter unchecks at end, copies checked mid-split and contradicts locked EDIT-LIST-ENTER-001 (an ID also used twice); static numbered items get double margin; package ListPlugin still ships paint the 09-07 decision assigned to copied UI; public testing JSX still exports the deleted container vocabulary. Coverage: 14 units expected and reviewed, 0 excluded, 0 without verdict; 9 Pursue, 5 Stop. Next owner: Task design plan list.
 
-Compiled decision: not associated. Source observation: unknown. Source matching is not behavior proof.
+Compiled decision: not associated. Source observation: stale. Source matching is not behavior proof.
 
 Execution: **unbound**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
 
@@ -18,17 +18,43 @@ Imported scope flags (unbound historical claims): adoption not-assessed, proof n
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [WordPastePlugin.ts](../../../packages/platejs/src/docx/paste/lib/WordPastePlugin.ts), [importDocx.ts](../../../packages/platejs/src/docx/import/lib/importDocx.ts), [BaseListPlugin.spec.tsx](../../../packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx), [BaseIndentPlugin.spec.ts](../../../packages/platejs/src/features/indent/lib/BaseIndentPlugin.spec.ts), [list.spec.tsx](../../../apps/www/src/registry/components/editor/list.spec.tsx), [BaseIndentPlugin.ts](../../../packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts), [HtmlPlugin.ts](../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts), [VISION.md](../../../VISION.md), [common.md](../../vision/common.md), [pnpm-lock.yaml](../../../pnpm-lock.yaml). Changed directories: [list](../../../packages/platejs/src/features/list). Changed source groups: capability/indent, capability/list, platejs/indent, platejs/list, ui/list.
+
+- **missing-current-decision**: 2026-09-24-list-audit.
+
+- **unbound-plan**: [2026-06-15-4951-block-placeholder-list-item.md](../../plans/2026-06-15-4951-block-placeholder-list-item.md).
+
+- **unbound-plan**: [2026-07-07-plate-next-indent-package-review.md](../../plans/2026-07-07-plate-next-indent-package-review.md).
+
+- **unbound-plan**: [2026-07-12-legacy-list-model-v2-api.md](../../plans/2026-07-12-legacy-list-model-v2-api.md).
+
+- **unbound-plan**: [2026-07-12-list-v2-api.md](../../plans/2026-07-12-list-v2-api.md).
 
 - **unbound-plan**: [2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md](../../plans/2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md).
 
 - **unbound-plan**: [2026-07-12-plate-next-list-markdown-math-package-reviews.md](../../plans/2026-07-12-plate-next-list-markdown-math-package-reviews.md).
 
+- **unbound-plan**: [2026-07-16-execute-list-v2-api.md](../../plans/2026-07-16-execute-list-v2-api.md).
+
+- **completed-plan-without-current-outcome**: [2026-07-16-execute-list-v2-api.md](../../plans/2026-07-16-execute-list-v2-api.md).
+
+- **unbound-plan**: [2026-07-24-plate-next-list-owner-cleanup.md](../../plans/2026-07-24-plate-next-list-owner-cleanup.md).
+
+- **unbound-plan**: [2026-07-26-plate-next-list-read-hard-cut.md](../../plans/2026-07-26-plate-next-list-read-hard-cut.md).
+
 - **unbound-plan**: [2026-08-17-finalize-list-start-and-restart-semantics.md](../../plans/2026-08-17-finalize-list-start-and-restart-semantics.md).
+
+- **unbound-plan**: [2026-08-17-restore-conditional-list-start-semantics.md](../../plans/2026-08-17-restore-conditional-list-start-semantics.md).
 
 - **unbound-plan**: [2026-08-29-unify-list-model.md](../../plans/2026-08-29-unify-list-model.md).
 
 - **unbound-plan**: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
+
+- **unbound-plan**: [4649-liststart-setvalue.md](../../plans/4649-liststart-setvalue.md).
+
+- **unbound-plan**: [4985-ordered-list-heading-paragraph-numbering.md](../../plans/4985-ordered-list-heading-paragraph-numbering.md).
+
+- **completed-plan-without-current-outcome**: [4985-ordered-list-heading-paragraph-numbering.md](../../plans/4985-ordered-list-heading-paragraph-numbering.md).
 
 - **unreconciled-execution**: [2026-09-18-recovered-2026-08-17-finalize-list-start-and-restart-semantics](../review-records/2026-09-18-recovered-2026-08-17-finalize-list-start-and-restart-semantics.json).
 
@@ -40,18 +66,27 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
+| [2026-06-15-4951-block-placeholder-list-item.md](../../plans/2026-06-15-4951-block-placeholder-list-item.md) | unknown | implementation | unbound |
+| [2026-07-07-plate-next-indent-package-review.md](../../plans/2026-07-07-plate-next-indent-package-review.md) | unknown | implementation | unbound |
+| [2026-07-12-legacy-list-model-v2-api.md](../../plans/2026-07-12-legacy-list-model-v2-api.md) | unknown | implementation | unbound |
+| [2026-07-12-list-v2-api.md](../../plans/2026-07-12-list-v2-api.md) | unknown | implementation | unbound |
 | [2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md](../../plans/2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md) | unknown | implementation | unbound |
 | [2026-07-12-plate-next-list-markdown-math-package-reviews.md](../../plans/2026-07-12-plate-next-list-markdown-math-package-reviews.md) | unknown | implementation | unbound |
+| [2026-07-16-execute-list-v2-api.md](../../plans/2026-07-16-execute-list-v2-api.md) | completed | implementation | unbound |
+| [2026-07-24-plate-next-list-owner-cleanup.md](../../plans/2026-07-24-plate-next-list-owner-cleanup.md) | unknown | implementation | unbound |
+| [2026-07-26-plate-next-list-read-hard-cut.md](../../plans/2026-07-26-plate-next-list-read-hard-cut.md) | unknown | implementation | unbound |
 | [2026-08-17-finalize-list-start-and-restart-semantics.md](../../plans/2026-08-17-finalize-list-start-and-restart-semantics.md) | completed | implementation | unbound |
+| [2026-08-17-restore-conditional-list-start-semantics.md](../../plans/2026-08-17-restore-conditional-list-start-semantics.md) | superseded | implementation | unbound |
 | [2026-08-29-unify-list-model.md](../../plans/2026-08-29-unify-list-model.md) | unknown | implementation | unbound |
 | [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md) | completed | implementation | unbound |
+| [4649-liststart-setvalue.md](../../plans/4649-liststart-setvalue.md) | unknown | implementation | unbound |
+| [4985-ordered-list-heading-paragraph-numbering.md](../../plans/4985-ordered-list-heading-paragraph-numbering.md) | completed | implementation | unbound |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-- [2026-09-18-recovered-2026-08-17-finalize-list-start-and-restart-semantics](../review-records/2026-09-18-recovered-2026-08-17-finalize-list-start-and-restart-semantics.json): completed; binding **historical-unbound**; Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review. Proof: unknown / unknown. Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
-- [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json): completed; binding **historical-unbound**; Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review. Proof: unknown / unknown. Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
+No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
 
 ## Inspected documents
 
@@ -61,6 +96,16 @@ Record order is observation order. Historical imports do not establish when exec
 - [2026-08-17-finalize-list-start-and-restart-semantics.md](../../plans/2026-08-17-finalize-list-start-and-restart-semantics.md) — plan, historical. Finalize the public flat-list start/restart contract and its v53 migration; done when the rejected field is absent, focused regressions pass, docs and generated schema agree, and `pnpm check` passes. 
 - [2026-08-29-unify-list-model.md](../../plans/2026-08-29-unify-list-model.md) — plan, historical. Remove the alternative list model completely; done when implementation, exports, registry, docs, generated artifacts, and agent doctrine have zero live references and all scoped proofs pass. 
 - [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md) — plan, historical. Complete a read-only audit of the copied editor UI/package boundary under the repaired extraction rule. Semantic invariants and durable neutral lifecycles qualify with one consumer; visual composition remains local. Task source: User: "ok full audit first with that new rule" after the table ownership cut. Primary template: docs/plans/templates/task.md 
+- [2026-08-17-restore-conditional-list-start-semantics.md](../../plans/2026-08-17-restore-conditional-list-start-semantics.md) — plan, superseded. Proposed unconditional listStart plus listStartIfFirst; replaced the same day by the finalize start/restart plan.
+- [4985-ordered-list-heading-paragraph-numbering.md](../../plans/4985-ordered-list-heading-paragraph-numbering.md) — plan, historical. Established heading/non-heading numbering partitions within equal indent, type and style; retained as a private sequence law.
+- [4649-liststart-setvalue.md](../../plans/4649-liststart-setvalue.md) — plan, superseded. Markdown starts above one as a conditional start; current Markdown decode emits a forced listRestart.
+- [2026-07-12-list-v2-api.md](../../plans/2026-07-12-list-v2-api.md) — plan, historical. Kept list policy in Plate with a declared Indent dependency and split method options; its hooks, isActive signature and normalization-based numbering were later superseded.
+- [2026-07-16-execute-list-v2-api.md](../../plans/2026-07-16-execute-list-v2-api.md) — plan, historical. Execution of the list v2 API; partly superseded by read-time ordinals and the read/update split.
+- [2026-07-12-legacy-list-model-v2-api.md](../../plans/2026-07-12-legacy-list-model-v2-api.md) — plan, superseded. Pending legacy container-model API work made moot by the 2026-08-29 unified list model cut.
+- [2026-07-26-plate-next-list-read-hard-cut.md](../../plans/2026-07-26-plate-next-list-read-hard-cut.md) — plan, historical. Moved snapshot queries to read and pure services to api; the one-stage extend claim is contradicted by five current stages.
+- [2026-07-24-plate-next-list-owner-cleanup.md](../../plans/2026-07-24-plate-next-list-owner-cleanup.md) — plan, historical. One-file list owner, exported isOrderedList and root outdent clearing list fields.
+- [2026-07-07-plate-next-indent-package-review.md](../../plans/2026-07-07-plate-next-indent-package-review.md) — plan, historical. Made BaseIndentPlugin the single indent owner exposed as a transaction group.
+- [2026-06-15-4951-block-placeholder-list-item.md](../../plans/2026-06-15-4951-block-placeholder-list-item.md) — plan, historical. Placeholder utility must not hardcode list or indent element state.
 
 ## Chronological history and alternatives
 
@@ -88,33 +133,53 @@ Proof limits: Historical execution claim only. Complete original source/fixture/
 
 References: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
+### 2026-09-24: 2026-09-24-list-audit
+
+[Immutable record](../review-records/2026-09-24-list-audit.json) — review; pursue; observation stale.
+
+Pursue. Keep flat list properties, the shared indent axis and the conditional listStart/forced listRestart contract; the container model loses on generic block editing, DOCX mapping and collaborative property edits. The defects sit in the derived-sequence layer, which has no real owner: the ordinal cache is keyed on snapshot-index identity that Plite intentionally reuses in place, so property-only edits leave stale ordinals ([1,2,1,2] instead of [1,2,3,4]); React wrappers read read.ordinal during render with no sibling dependency, so the DOM shows [1,2,2,3] while the model says [1,2,3,4]; and four more sequence engines (Markdown, Word paste, DOCX pixel-margin recovery, frozen migration) re-derive the same law. Strongest target (proposed): one list-owned per-snapshot sequence index keyed by snapshot version, published to views through the existing keyed render.useViewElementAttributes channel and read by static, HTML, Markdown, DOCX, Word paste and DnD; delete the WeakMap-by-index cache, render-time ordinal reads and the zero-consumer GetSiblingListOptions/getSequenceSiblingOptions/isSequenceBoundary/getNext/getPrevious surface. Direct correctness repairs: HTML createsElement must name its element instead of targetPlugins[0] (registry ListKit lists heading first, so every HTML list paste returns null and DOCX import uses the same deserializer); root list items need one canonical indent invariant owned by the list correction (Shift+Tab currently strips indent but keeps listType), with update.list.indent deleted (zero consumers, overwrites kind with bulleted) and list.outdent folded into indent plus correction; the Enter start/restart wrapper duplicates split: drop; task Enter unchecks at end, copies checked mid-split and contradicts locked EDIT-LIST-ENTER-001 (an ID also used twice); static numbered items get double margin; package ListPlugin still ships paint the 09-07 decision assigned to copied UI; public testing JSX still exports the deleted container vocabulary. Coverage: 14 units expected and reviewed, 0 excluded, 0 without verdict; 9 Pursue, 5 Stop. Next owner: Task design plan list.
+
+Question: How should list structure, numbering and indentation compose with generic block editing?
+
+- Replace flat properties with a container list model (ul/ol > li > blocks, or prosemirror-flat-list-style item containers): structural numbering and native list semantics, but every generic block operation needs list normalization, indent/outdent become structural moves under collaboration, DOCX needs flattening, and Plate already deleted this model for its permanent cost. Stop.
+- Split list depth from block indentation (separate listLevel and indent): mirrors DOCX ilvl/ind, but breaks the single axis that makes continuation blocks belong to an item and doubles codec work. Stop; keep one indent axis with a canonical root invariant.
+- Only change the ordinal cache key to snapshot version: repairs headless and codec numbering but leaves the React DOM stale because wrappers have no dependency on siblings. Insufficient alone.
+- Per-item runtime selector (useEditorRuntimeState(() => read.ordinal(element)) in each wrapper): minimal API change and correct wakes, but evaluates one selector per numbered item per commit. Viable baseline for the scale comparison.
+- List-owned per-snapshot sequence index published through the existing keyed render.useViewElementAttributes channel, with static and codecs reading the same index: one derivation per commit, wakes only changed nodes, reuses the table-settled host-delivery channel, and lets numbered and bulleted items share one paint path (for example CSS counter-set on display:list-item) instead of one <ol> per item. Pursue as the proposed target pending detailed design and matched scale proof.
+- Pure CSS counters with no model ordinal: cannot express conditional start, heading partitions, or skip deeper non-list blocks, and codecs still need numbers. Reject as the owner; acceptable only as paint fed by the index.
+- Keep GetSiblingListOptions as a customization surface: its only job is a slow test with hypothetical page-container nodes; pagination is view-level and no production consumer exists. Delete; keep the heading partition (#4985) as private law.
+- Keep HTML createsElement = targetPlugins[0]: order-dependent implicit with exactly one user; the React kit's order already breaks paste. Replace with an explicit element (paragraph, matching list insert and Markdown decode).
+- Encode turn-into list exit in schema typeChange: drop: would delete per-surface clear() calls but removes numbered headings created by type change and changes generic blocks.set for API callers. Stop; the copied menus own that product policy.
+- Add a list.check API for the task checkbox: raw nodes.set on a schema-validated property is already the canonical write. Stop.
+- retains [2026-09-18-recovered-2026-08-17-finalize-list-start-and-restart-semantics](../review-records/2026-09-18-recovered-2026-08-17-finalize-list-start-and-restart-semantics.json) (How should list structure, numbering and indentation compose with generic block editing?): The conditional listStart/forced listRestart contract, split drop and read-derived ordinals remain correct and are not persisted. Only the read-time cache implementation is defective; its key relies on snapshot-index identity.
+- retains [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json) (How should list structure, numbering and indentation compose with generic block editing?): List paint belongs in copied registry UI. Adoption is incomplete: packages/platejs ListPlugin still ships a default ol/ul/li renderer that the registry overrides.
+- retains [2026-09-23-editing-structural-rule-admission](../review-records/2026-09-23-editing-structural-rule-admission.json) (Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?): List Markdown input rules already use the migrated atomic decline (marker delete and toggle in one attempt, discarded on decline); input-rule admission stays with Editing.
+- retains [2026-09-23-editing-structural-rule-admission-implementation-execution](../review-records/2026-09-23-editing-structural-rule-admission-implementation-execution.json) (How should list structure, numbering and indentation compose with generic block editing?): Its BaseListPlugin.ts and list.tsx fingerprints match current source; no list input-rule change is proposed here.
+- retains [2026-09-16-snapshot-index-branch-provenance](../review-records/2026-09-16-snapshot-index-branch-provenance.json) (Should path-stable snapshot indexes keep mutating one shared provenance record when authored accepted and projected history can branch from the same source snapshot?): In-place index provenance on the linear path is intended. The list cache wrongly used index identity as a document version; the repair belongs in the list owner, not the index.
+- retains [2026-09-17-table-host-delivery-benchmark-closure](../review-records/2026-09-17-table-host-delivery-benchmark-closure.json) (What owns table topology, cell coordinates, selection, clipboard and layout?): The keyed render.useViewElementAttributes producer is the settled per-node host channel; list numbering should reuse it rather than add a new public channel.
+- retains [2026-09-11-model-document-boundary](../review-records/2026-09-11-model-document-boundary.json) (What is the smallest schema-valid document and identity contract that all editors and codecs must preserve?): The JSON tree with flat element properties is retained; the container list alternative loses on current jobs.
+
+Proof limits: Package probes prove the stale ordinal cache, root Shift+Tab half-state, split-drop redundancy and task split inconsistency. React-DOM probes in the Bun test environment prove stale rendered <ol start> values, null HTML list deserialize with BasicBlocksKit plus ListKit, and double static margins. None of this is real-browser, clipboard-event or native-device proof. DOCX import failure is inferred from importDocx calling the same html.deserialize; DOCX export start/level loss (data-start versus start, px/24 level recovery) is source inference with no list export test. Markdown ordinal divergence was not reproduced (one heading-partition probe agreed). No performance measurement exists for the proposed sequence index, per-item selectors or the current cache; the index target stays provisional until a matched 10k-item wake and commit comparison. The task Enter law contradiction needs a product decision; this review does not decide whether the law or the source is right.
+
+References: [2026-09-24-list-audit-probes.md](../../plans/artifacts/2026-09-24-list-audit-probes.md), [BaseListPlugin.ts](../../../packages/platejs/src/features/list/lib/BaseListPlugin.ts), [BaseIndentPlugin.ts](../../../packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts), [ListPlugin.tsx](../../../packages/platejs/src/react/features/list/ListPlugin.tsx), [HtmlPlugin.ts](../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts), [rendered-attributes.tsx](../../../packages/platejs/src/react/internal/rendered-attributes.tsx), [list.tsx](../../../apps/www/src/registry/components/editor/list.tsx), [list-static.tsx](../../../apps/www/src/registry/components/editor/list-static.tsx), [block-list.tsx](../../../apps/www/src/registry/components/editor/block-list.tsx), [block-list-static.tsx](../../../apps/www/src/registry/components/editor/block-list-static.tsx), [list.spec.tsx](../../../apps/www/src/registry/components/editor/list.spec.tsx), [listToMdastTree.ts](../../../packages/platejs/src/markdown/lib/serializer/listToMdastTree.ts), [WordPastePlugin.ts](../../../packages/platejs/src/docx/paste/lib/WordPastePlugin.ts), [render-document-file.ts](../../../packages/platejs/src/docx/export/lib/internal/render-document-file.ts), [importDocx.ts](../../../packages/platejs/src/docx/import/lib/importDocx.ts), [jsx.ts](../../../packages/plitejs/src/testing/jsx.ts), [markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md), [2026-08-29-unify-list-model.md](../../plans/2026-08-29-unify-list-model.md), [2026-08-17-finalize-list-start-and-restart-semantics.md](../../plans/2026-08-17-finalize-list-start-and-restart-semantics.md), [4985-ordered-list-heading-paragraph-numbering.md](../../plans/4985-ordered-list-heading-paragraph-numbering.md), [2026-09-16-snapshot-index-branch-provenance.json](../review-records/2026-09-16-snapshot-index-branch-provenance.json), [2026-09-17-table-host-delivery-benchmark-closure.json](../review-records/2026-09-17-table-host-delivery-benchmark-closure.json).
+
 ## Retrieval boundaries
 
-28 unclassified candidates. Filename matches are discovery leads, not adopted decisions.
+18 unclassified candidates. Filename matches are discovery leads, not adopted decisions.
 
-- [4985-ordered-list-heading-paragraph-numbering.md](../../plans/4985-ordered-list-heading-paragraph-numbering.md)
-- [4649-liststart-setvalue.md](../../plans/4649-liststart-setvalue.md)
 - [4485-markdown-empty-list-deserialization-error.md](../../plans/4485-markdown-empty-list-deserialization-error.md)
 - [2026-08-26-fix-docs-sidebar-indentation.md](../../plans/2026-08-26-fix-docs-sidebar-indentation.md)
-- [2026-08-17-restore-conditional-list-start-semantics.md](../../plans/2026-08-17-restore-conditional-list-start-semantics.md)
 - [2026-07-28-repair-media-table-list-utils-plugin-ownership.md](../../plans/2026-07-28-repair-media-table-list-utils-plugin-ownership.md)
-- [2026-07-26-plate-next-list-read-hard-cut.md](../../plans/2026-07-26-plate-next-list-read-hard-cut.md)
 - [2026-07-26-plate-next-list-read-audit.md](../../plans/2026-07-26-plate-next-list-read-audit.md)
 - [2026-07-24-unified-extend-list-hard-cut.md](../../plans/2026-07-24-unified-extend-list-hard-cut.md)
 - [2026-07-24-plate-next-list-toggle-owner.md](../../plans/2026-07-24-plate-next-list-toggle-owner.md)
-- [2026-07-24-plate-next-list-owner-cleanup.md](../../plans/2026-07-24-plate-next-list-owner-cleanup.md)
 - [2026-07-24-plate-next-list-colocation.md](../../plans/2026-07-24-plate-next-list-colocation.md)
 - [2026-07-24-one-verb-extend-legacy-list-prototype.md](../../plans/2026-07-24-one-verb-extend-legacy-list-prototype.md)
 - [2026-07-24-list-staged-plugin-api-proof.md](../../plans/2026-07-24-list-staged-plugin-api-proof.md)
 - [2026-07-23-plate-next-legacy-list-colocation.md](../../plans/2026-07-23-plate-next-legacy-list-colocation.md)
-- [2026-07-16-execute-list-v2-api.md](../../plans/2026-07-16-execute-list-v2-api.md)
 - [2026-07-14-plate-next-repair-withinsertbreaklist-drift.md](../../plans/2026-07-14-plate-next-repair-withinsertbreaklist-drift.md)
 - [2026-07-12-plate-next-remove-indent-extracted-files.md](../../plans/2026-07-12-plate-next-remove-indent-extracted-files.md)
 - [2026-07-12-plate-next-footnote-indent-juice-package-reviews.md](../../plans/2026-07-12-plate-next-footnote-indent-juice-package-reviews.md)
-- [2026-07-12-list-v2-api.md](../../plans/2026-07-12-list-v2-api.md)
-- [2026-07-12-legacy-list-model-v2-api.md](../../plans/2026-07-12-legacy-list-model-v2-api.md)
-- [2026-07-07-plate-next-indent-package-review.md](../../plans/2026-07-07-plate-next-indent-package-review.md)
-- [2026-06-15-4951-block-placeholder-list-item.md](../../plans/2026-06-15-4951-block-placeholder-list-item.md)
 - [2026-04-17-selection-coverage-and-list-regression.md](../../plans/2026-04-17-selection-coverage-and-list-regression.md)
 - [2026-04-07-plite-phase10-blockers-checklist.md](../../plans/2026-04-07-plite-phase10-blockers-checklist.md)
 - [2026-04-07-pipe-list-regression-fixes.md](../../plans/2026-04-07-pipe-list-regression-fixes.md)
@@ -128,12 +193,12 @@ References: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-0
 
 Owners: [list](../../../packages/platejs/src/features/list).
 
-Consumers: [list.tsx](../../../apps/www/src/registry/components/editor/list.tsx).
+Consumers: [list.tsx](../../../apps/www/src/registry/components/editor/list.tsx), [list-static.tsx](../../../apps/www/src/registry/components/editor/list-static.tsx), [block-list.tsx](../../../apps/www/src/registry/components/editor/block-list.tsx), [block-list-static.tsx](../../../apps/www/src/registry/components/editor/block-list-static.tsx), [list-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/list-toolbar-button.tsx), [indent.tsx](../../../apps/www/src/registry/components/editor/indent.tsx), [indent-static.tsx](../../../apps/www/src/registry/components/editor/indent-static.tsx), [turn-into-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx), [ListPlugin.tsx](../../../packages/platejs/src/react/features/list/ListPlugin.tsx), [DndStorePlugin.ts](../../../packages/platejs/src/dnd/react/internal/DndStorePlugin.ts), [listToMdastTree.ts](../../../packages/platejs/src/markdown/lib/serializer/listToMdastTree.ts), [WordPastePlugin.ts](../../../packages/platejs/src/docx/paste/lib/WordPastePlugin.ts), [render-document-file.ts](../../../packages/platejs/src/docx/export/lib/internal/render-document-file.ts), [importDocx.ts](../../../packages/platejs/src/docx/import/lib/importDocx.ts).
 
-Proof entrypoints: [BaseIndentPlugin.spec.ts](../../../packages/platejs/src/features/indent/lib/BaseIndentPlugin.spec.ts). These links alone are not proof of a passing run.
+Proof entrypoints: [BaseListPlugin.spec.tsx](../../../packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx), [BaseListPlugin.slow.tsx](../../../packages/platejs/src/features/list/lib/BaseListPlugin.slow.tsx), [BaseIndentPlugin.spec.ts](../../../packages/platejs/src/features/indent/lib/BaseIndentPlugin.spec.ts), [list.spec.tsx](../../../apps/www/src/registry/components/editor/list.spec.tsx). These links alone are not proof of a passing run.
 
-Inspection: Current owner, consumer and proof entrypoints located; this queue is not a completed feature review.
+Inspection: 2026-09-24 audit: owner, indent, React/static/registry paint, HTML/markdown/DOCX/Word/DnD consumers, editor-behavior list law and 20 prior list/indent plans inspected; runtime probes executed in package and React-DOM test environments.
 
-Limits: Behavior, native/device coverage, performance and adoption require a scoped review and matching execution evidence.
+Limits: No real-browser or native proof of list rendering, paste or numbering; DOCX export start/level fidelity is inferred from source only; the Enter-on-checked-task law contradicts source; no scale measurement for a replacement sequence index.
 
 Related questions: [editing](editing.md), [clipboard](clipboard.md), [styles](styles.md).

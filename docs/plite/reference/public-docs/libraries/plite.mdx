@@ -79,7 +79,7 @@ Plugin and schema types include `Plugin`,
 `EditorSchemaContribution`, `EditorSchemaIdentity`, `SchemaElement`,
 `SchemaContent`, `SchemaTarget`, `PropertyValueDescriptor`, `ContentSlice`,
 `EditorStateSliceApi`, `EditorTransactionSliceApi`, `StateFieldDescriptor`,
-`StateFieldValueInput`, `EditorStateField`, `EditorValueCodec`,
+`StateFieldValueInput`, `EditorStateField`, `EditorValuePersistence`,
 `SerializedEditorValue`, and `SerializedEditorEffect`.
 
 `PluginDependencyReference` is shallow and non-generic. Adapter
@@ -94,8 +94,9 @@ Command, read-policy, and debug APIs include `EditorCommand`,
 `EditorSelectabilityGuard`, `EditorExportSliceProjection`,
 `setDebugValueScrubber`, and `DebugValueScrubber`.
 
-Define persisted field and shared-effect values with `defineValueCodec` or the
-strict primitive `valueCodecs`. Adapter authors serialize keyed shared effects
+Define persisted field and shared-effect values with direct
+`EditorValuePersistence` declarations or the strict primitive `valueCodecs`.
+Adapter authors serialize keyed shared effects
 with `encodeEditorEffect` and decode them against an installed descriptor with
 `decodeEditorEffect`.
 

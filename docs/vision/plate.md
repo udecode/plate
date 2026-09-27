@@ -200,7 +200,7 @@ Current priorities:
   author fields or Plate's compiled definition into a private installed record,
   binds the terminal descriptor and eligible ancestors to that record, and
   validates dependencies and conflicts by direct nominal reference. Plate
-  keeps its stages, schema, stores, codecs, rendering and lifecycle policy; it
+  keeps its stages, schema, stores, format mappings, rendering and lifecycle policy; it
   does not allocate replacement raw descriptors, translate topology by name,
   register aliases, or dispatch portals by descriptor kind.
 - Core may internally distinguish contextually typed author source from its
@@ -354,7 +354,7 @@ Current priorities:
   belongs to `ElementIdPlugin` under the canonical schema property `id`.
   Persisted associations use `ref` or `refs`; definitions and references may
   share one `ref`, while separate occurrences keep distinct element IDs.
-  External names such as MDAST `identifier` stay inside codecs, and semantic
+  External names such as MDAST `identifier` stay inside format mappings, and semantic
   addresses such as `url` keep their domain name.
   Exact generated nodes read `element.id`; generic package boundaries convert
   a `NodeKey` through the installed plugin portal. The portal does not accept
@@ -448,13 +448,16 @@ Current priorities:
   preparation hook and no hidden migration side channel. History and Yjs room
   cutovers remain app-owned persistence policy.
 - Plugin constructors own every independent author contribution: `api`,
-  `read`, `selectors`, `update`, flat native Plite fields, `codecs`, and
+  `read`, `selectors`, `update`, flat native Plite fields, `formats`, and
   ordinary Plate fields and their context callbacks. There is no nested
-  plugin-definition wrapper. Codec maps use the constructor callback's context-bound
-  `defineCodecs`: one argument for self/product maps, or
-  `defineCodecs(TargetPlugin, map)` for a foreign contribution with injected
-  targets. This is the one inline codec inference anchor; do not expose direct
-  maps, manual targets, or a global helper. Constructor context alone never
+  plugin-definition wrapper. Semantic format maps use the constructor callback's
+  context-bound `defineFormats`: one argument for self maps, or
+  `defineFormats(TargetPlugin, map)` for a foreign contribution with injected
+  targets. The format callback exposes only static schema bindings and
+  `defineFormats`; operation callbacks receive frozen plugin state, registry,
+  schema, model context, and a format-owned diagnostic reporter. This is the
+  one inline mapping inference anchor; do not expose direct maps, manual
+  targets, a live editor, or a global helper. Constructor context alone never
   justifies `.extend()`. Use `.extend()` only for an imported/prebuilt
   declaration, a shared factory the constructor cannot access, or a real
   earlier-stage type dependency. Keep `.configure()` terminal and non-widening.
@@ -473,7 +476,7 @@ Current priorities:
   overload `read` as middleware.
 - Clipboard ingress is the typed `domCommands.insertData` command. Plugins
   intercept it through `commands`, return pure transaction specs, and delegate
-  with `next()` to preserve the shared exact-slice, host-codec, and plain-text
+  with `next()` to preserve the shared exact-slice, data-transfer format, and plain-text
   fallback. It is never a root plugin field or separate contribution registry.
   A `handle` interceptor may return `false` to continue fallback. An `around`
   interceptor must call `next()` or `next.after(prefix)` to delegate; returning
@@ -498,20 +501,21 @@ Current priorities:
   matcher that shadows an entire rule family. Positional document policy uses
   an app-owned convergent correction that constructs complete schema-valid
   nodes, not a path/type retagging plugin.
-- Core owns the author-facing codec types and MIME registry entry for a
-  universal first-party format when that contract needs only type dependencies.
-  Feature packages must not activate built-in format typing through empty or
-  side-effect type imports. Markdown is the concrete first-party case: Core
-  owns its MDAST-facing authoring types and built-in `text/markdown` registry
-  entry, while `platejs/markdown` owns the optional compiler/runtime. Truly
-  optional or third-party format contracts stay outside Core behind an explicit
-  type path. Installed feature plugins own their shipped format codecs. Compile
-  those declarations once from the installed plugin graph; do not centralize
-  feature rules in the format package or mutable plugin state.
-- A Plate-owned custom MDX element tag is persisted schema identity. Its codec
+- Core owns author-facing semantic mapping types for a universal first-party
+  format when that contract needs only type dependencies. Feature packages must
+  not activate built-in format typing through empty or side-effect type imports.
+  Markdown is the concrete first-party case: Core owns its MDAST-facing mapping
+  types, while `platejs/markdown` owns the optional compiler/runtime and its
+  whole-payload `DataTransferFormat`. Truly optional or third-party format
+  contracts stay outside Core behind an explicit type path. Installed feature
+  plugins own their shipped syntax mappings. Compile those declarations once
+  from the installed plugin graph; do not centralize feature rules in the format
+  package or mutable plugin state. Whole-payload MIME declarations belong to
+  root `dataTransferFormats`, not semantic `formats` maps.
+- A Plate-owned custom MDX element tag is persisted schema identity. Its mapping
   uses the resolved schema type symmetrically for source matching, decoded
   element identity, and encoded tag name. External MDAST, HTML, and MDX syntax
-  remains literal. Legacy tags migrate before codec dispatch; codecs never
+  remains literal. Legacy tags migrate before mapping dispatch; mappings never
   accept both identities.
 - Plate documents stay editor-native: `Text` leaves use `text`, elements use
   `type` and `children`, and feature properties stay flat and schema-owned.
@@ -528,18 +532,18 @@ Current priorities:
   Literal types remain only on the external format tree or when the Plate
   plugin is genuinely absent.
 - Operation decode overrides dispatch by invariant plugin capability name after
-  codec-owner resolution. Encode overrides dispatch by persisted schema
+  mapping-owner resolution. Encode overrides dispatch by persisted schema
   identity because their input is already a Plate node.
-- A compiled codec claim never falls through to a persisted-tag decode override
+- A compiled mapping claim never falls through to a persisted-tag decode override
   alias. Configurable custom MDX identity stays on its schema-owning plugin,
-  not a foreign codec contributor.
+  not a foreign mapping contributor.
 - State that selects a plugin capability stores its descriptor or normalized
   name. It never stores a configurable persisted type or key. Resolve schema
   identity at the AST read/write boundary, including transient-node factories.
 - Generated schema contracts are content-addressed semantic output. Readers
   recompute their authoritative fingerprint, and restoration rejects derived
   tables that differ from current source contributions.
-- Decode-only and encode-only codecs still prove every identity leg they own.
+- Decode-only and encode-only mappings still prove every identity leg they own.
   Phrasing-only wrappers decode external phrasing children directly instead of
   unwrapping an arbitrary decoded Plate element.
 - Fixed external source/name literals exempt only the external leg. Decoded
@@ -693,10 +697,10 @@ Current priorities:
   target-only, both, and both with explicit target configuration. Bare-name use
   is intentionally erased; exact target-option inference requires importing
   the descriptor or definition type. A weak peer may replace the target's
-  root-level `component`. Keep component binding and typed foreign codec contributions authored
-  as `defineCodecs(TargetPlugin, map)` inside the owning declaration callback
+  root-level `component`. Keep component binding and typed foreign mapping contributions authored
+  as `defineFormats(TargetPlugin, map)` inside the owning declaration callback
   as distinct paths. The
-  codec helper injects the target. Do not add a central plugin-name registry,
+  format helper injects the target. Do not add a central plugin-name registry,
   ancestor reach-through methods, recursive child registries, or add/replace
   verbs.
 - Plate rendering has one grammar. Root `component` owns node identity and may
@@ -742,18 +746,19 @@ Current priorities:
   `initialState`, and `targetPlugins` sit directly beside scoped `api`, `read`,
   `update`, `store`, and `installed`. Never nest the descriptor under
   `portal.plugin`; callback authoring contexts alone expose the current raw
-  descriptor as `plugin`, with `editor` and `defineCodecs`. Use portal `.name` after lookup when the normalized
+  descriptor as `plugin`, with `editor`. Format authoring uses its narrower
+  static context. Use portal `.name` after lookup when the normalized
   plugin name is needed. Name every
   descriptor-aware API input `plugin`; call it `name` only after normalization.
   An absent descriptor exposes `installed: false`; capability, descriptor, and
   schema access throws. Reverse/container/render caches are private,
   public node questions use schema, injection is read from
   `portal.inject.nodeProps`,
-  and codec mapping uses one `registry` namespace.
-- Keep operation hooks flat when their parent namespace already fixes format
-  and flow. The `'text/html'` codec directly owns `query`, `transformData`,
-  and `transformFragment`; an `ingress`/`egress` bucket needs a distinct
-  independently consumed lifecycle.
+  and format mapping uses one `registry` namespace.
+- HTML mappings may prepare only their operation-owned inert document before
+  matching. Whole-payload admission, source cleanup, RTF access, and
+  post-decode repair belong to the browser `DataTransferFormat` lifecycle.
+  Generic mapping hooks do not receive host payloads or live editor state.
 - Multiple callers of one plugin operation reuse its plugin-owned API; they do
   not justify a parallel raw helper. Keep the algorithm in the plugin.
   Standalone functions need a real cross-plugin, cross-layer, or
@@ -837,7 +842,27 @@ Current priorities:
   format-required defaults. Copied registry or application source owns optional
   export presentation presets. An exporter may accept one exact caller-owned
   stylesheet, but it never injects a hidden Plate theme or defines an additive
-  override protocol around package styling.
+  override protocol around package styling. An asynchronous document export
+  captures one complete editor revision before its first await; visible output,
+  diagnostics, and any format-owned retained source or native artifact all
+  derive from that capture. A semantic interchange format carries hidden native
+  state only for a proven current job with one unambiguous authority; exact
+  state otherwise uses canonical persistence. A format that cannot represent an
+  unresolved conflict returns an explicit diagnostic or failure instead of
+  inventing review markup.
+  Every serializer accepts one complete document and returns format data with
+  structured diagnostics. Authored projection is an option on the ordinary
+  format operation. Editor methods reuse compiled editor configuration;
+  detached operations compile supplied declarations without activating plugins
+  or constructing an editing runtime. Semantic HTML stays separate from styled
+  static React output. Feature-owned structural plain-text mappings back both
+  explicit serialization and clipboard egress without changing model-offset
+  text reads.
+- Conversion verbs follow the operation law. Text syntax uses
+  `parse`/`serialize`; file and package workflows with artifact lifecycle use
+  `import`/`export`; `encode`/`decode` is reserved for a typed paired
+  representation with explicit direction laws. A complete document is the
+  default parse target, while slice and inline carriers keep explicit suffixes.
 - Code-block commands construct schema-valid code nodes directly, preserving
   their distinct insert/upsert selection policy without exposing an intermediate
   default type. Optional JSON prettifying belongs to copied UI and edits the
@@ -913,7 +938,7 @@ Current priorities:
   payload, sparse provider overlay, index, metadata, manifest, payload hash,
   and generation marker. Publication exposes the marker last; request-time
   readers reject mixed, missing, or corrupted generation members.
-- Root `ListPlugin` owns list schema, transforms, codecs, React behavior, and
+- Root `ListPlugin` owns list schema, transforms, format mappings, React behavior, and
   copied registry UI. Do not create a parallel persisted list model or an
   alternative registry graph.
 - Preferred ecosystem path is npm package distribution plus local app
@@ -1033,7 +1058,7 @@ AI selection edits stream into one request-owned native suggestion. They remain
 visible in an Editing view with markup projection without changing how later
 typing is authored. Accept or Discard decides that suggestion through the
 native authored owner; Stop retains the received proposal for review and retry
-rejects it before replacing the request. The installed Markdown codec parses
+rejects it before replacing the request. The installed Markdown mapping parses
 the accumulated response; generated document nodes are never serialized back
 into the input stream.
 

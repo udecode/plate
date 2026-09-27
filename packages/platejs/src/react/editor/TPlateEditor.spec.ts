@@ -143,9 +143,9 @@ describe('Editor', () => {
   describe('Plugin', () => {
     const BoldPlugin = definePlugin('bold', {
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-      codecs: ({ defineCodecs }) =>
-        defineCodecs({
-          'text/html': {
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
             decode: ({ element }) =>
               someHtmlElement(
                 element,

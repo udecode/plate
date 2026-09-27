@@ -10,7 +10,7 @@ import {
   type Descendant,
 } from 'platejs';
 import { authored } from 'platejs/authored';
-import { exportToDocx } from 'platejs/docx/export';
+import { exportDocx } from 'platejs/docx/export';
 import { importDocx, type DocxImportResult } from 'platejs/docx/import';
 import { BaseParagraphPlugin } from 'platejs/react';
 
@@ -382,8 +382,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
     plugins: [BaseParagraphPlugin],
     initialValue: [{ children: [{ text: 'seed' }], type: 'paragraph' }],
   });
-  const base = await exportToDocx(baseEditor, {
-    editorPlugins: [BaseParagraphPlugin],
+  const base = await exportDocx(baseEditor, {
     projection: 'proposed',
   });
 
@@ -394,10 +393,9 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
   for (const cohort of cohorts) {
     const fixture = await buildFixture(baseBytes, cohort);
     const baselineImport = async () => {
-      const codec = createEditor({
+      const imported = await importDocx(fixture.blob, {
         plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
       });
-      const imported = await importDocx(codec, fixture.blob);
 
       if (!imported.ok) throw new Error(imported.diagnostics[0]?.message);
       assertImport(fixture, imported);
@@ -405,10 +403,8 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       return imported;
     };
     const retainedImport = async () => {
-      const codec = createEditor({
+      const imported = await importDocx(fixture.blob, {
         plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
-      });
-      const imported = await importDocx(codec, fixture.blob, {
         retainSource: true,
       });
 
@@ -448,8 +444,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       initialValue: exactFixture.document,
     });
     const semanticExport = async () => {
-      const result = await exportToDocx(exactEditor, {
-        editorPlugins: [BaseParagraphPlugin],
+      const result = await exportDocx(exactEditor, {
         projection: 'review',
       });
 
@@ -458,8 +453,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       return result.blob;
     };
     const exactExport = async () => {
-      const result = await exportToDocx(exactEditor, {
-        editorPlugins: [BaseParagraphPlugin],
+      const result = await exportDocx(exactEditor, {
         projection: 'review',
         source: exactFixture.source,
       });
@@ -482,8 +476,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
     }
 
     const overlayExport = async () => {
-      const result = await exportToDocx(exactEditor, {
-        editorPlugins: [BaseParagraphPlugin],
+      const result = await exportDocx(exactEditor, {
         projection: 'review',
         source: exactFixture.source,
         title: 'Retained source benchmark',
@@ -535,12 +528,9 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       relationshipEdges: overlayEdges.length,
       sourcePackageLoads: 1,
     };
-    const overlayImport = await importDocx(
-      createEditor({
-        plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
-      }),
-      overlayCorrectness.blob
-    );
+    const overlayImport = await importDocx(overlayCorrectness.blob, {
+      plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
+    });
 
     if (!overlayImport.ok) {
       throw new Error(overlayImport.diagnostics[0]?.message);
@@ -559,7 +549,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       ],
       initialValue: exactFixture.document,
     });
-    const mismatched = await exportToDocx(mismatchedEditor, {
+    const mismatched = await exportDocx(mismatchedEditor, {
       projection: 'review',
       source: exactFixture.source,
     });
@@ -577,7 +567,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
 
     exactFixture.source.dispose();
     exactFixture.source.dispose();
-    const disposed = await exportToDocx(exactEditor, {
+    const disposed = await exportDocx(exactEditor, {
       projection: 'review',
       source: exactFixture.source,
     });
@@ -690,7 +680,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
     'packages/platejs/src/docx/import/lib/importDocx.ts',
     'packages/platejs/src/docx/internal/docxPackage.ts',
     'packages/platejs/src/docx/internal/source.ts',
-    'packages/platejs/src/docx/export/lib/exportToDocx.tsx',
+    'packages/platejs/src/docx/export/lib/exportDocx.tsx',
     'packages/platejs/src/docx/export/lib/sourcePreservation.ts',
     'packages/plitejs/src/core/change/document-change.ts',
     'benchmarks/editor/benchmarks/plate-docx-retained-source-benchmark.test.ts',

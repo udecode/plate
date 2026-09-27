@@ -75,9 +75,13 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
     triggerQuery: null,
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
   }),
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ node }) => `@${node.label ?? node.ref}`,
+      },
+      html: {
         decode: ({ element }) => {
           const ref = element.getAttribute('data-editor-mention-ref');
 
@@ -104,7 +108,7 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
         priority: 10,
       },
 
-      'text/markdown': {
+      markdown: {
         decode: ({ node }) => {
           if (!isNonBlankRef(node.username)) return undefined;
 

@@ -54,9 +54,15 @@ export function buildEditTableMultiCellPrompt(
                 throw new Error('Table cells must contain block elements.');
               }
 
-              return editor.api.markdown
-                .serialize({ value: { children: [child] } })
-                .trim();
+              const result = editor.api.markdown.serialize({
+                document: { children: [child] },
+              });
+
+              if (!result.ok) {
+                throw new Error(result.diagnostics[0].message);
+              }
+
+              return result.data.trim();
             })
             .filter(Boolean)
             .join('<br/>');
@@ -74,9 +80,13 @@ export function buildEditTableMultiCellPrompt(
         throw new Error('Table cells must contain block elements.');
       }
 
-      return `<Cell ref="${ref}">\n${editor.api.markdown
-        .serialize({ value: { children: cell.children } })
-        .trim()}\n</Cell>`;
+      const result = editor.api.markdown.serialize({
+        document: { children: cell.children },
+      });
+
+      if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+      return `<Cell ref="${ref}">\n${result.data.trim()}\n</Cell>`;
     })
     .join('\n\n');
   const tableCellMarkdown =

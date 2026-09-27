@@ -9,7 +9,8 @@ import {
   definePlugin,
   defineEffect,
   defineStateField,
-  defineValueCodec,
+  type EditorJsonValue,
+  type EditorValuePersistence,
   type Range,
   type Editor as EditorType,
   valueCodecs,
@@ -27,7 +28,7 @@ const paragraph = (text: string) =>
     children: [{ text }],
   }) satisfies Descendant;
 
-const optionalStringCodec = defineValueCodec<string | undefined>({
+const optionalStringPersistence = {
   decode(value) {
     if (value !== null && typeof value !== 'string') {
       throw new Error('Expected a nullable string.');
@@ -37,7 +38,7 @@ const optionalStringCodec = defineValueCodec<string | undefined>({
   },
   encode: (value) => value ?? null,
   version: 1,
-});
+} satisfies EditorValuePersistence<string | undefined, string | null>;
 
 const undo = (editor: EditorType) => {
   editor.api.history.undo();
@@ -133,7 +134,7 @@ describe('document meta history contract', () => {
       collab: 'shared',
       history: 'push',
       initial: () => 'Untitled',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const editor = createEditor({
       plugins: [
@@ -215,7 +216,7 @@ describe('document meta history contract', () => {
       key: 'document.stream-state',
       history: 'push',
       initial: () => 'idle',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const editor = createEditor({
       plugins: [
@@ -401,7 +402,7 @@ describe('document meta history contract', () => {
     const optionalSubtitle = defineStateField<string | undefined>({
       key: 'document.subtitle',
       history: 'push',
-      persist: optionalStringCodec,
+      persist: optionalStringPersistence,
     });
     const editor = createEditor({
       plugins: [
@@ -455,7 +456,7 @@ describe('document meta history contract', () => {
     const optionalSubtitle = defineStateField<string | undefined>({
       key: 'document.subtitle',
       history: 'push',
-      persist: optionalStringCodec,
+      persist: optionalStringPersistence,
     });
     const editor = createEditor({
       plugins: [
@@ -496,7 +497,7 @@ describe('document meta history contract', () => {
     };
 
     const increment = defineEffect<number>({
-      codec: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       history: 'push',
@@ -506,7 +507,7 @@ describe('document meta history contract', () => {
     const largeCounter = defineStateField<LargeCounter>({
       key: 'document.large-counter',
       initial: () => ({ body: 'x'.repeat(40_000), count: 0 }),
-      persist: defineValueCodec<LargeCounter>({
+      persist: {
         decode(value) {
           if (
             typeof value !== 'object' ||
@@ -519,9 +520,9 @@ describe('document meta history contract', () => {
 
           return value as LargeCounter;
         },
-        encode: (value) => value,
+        encode: (value) => value as unknown as EditorJsonValue,
         version: 1,
-      }),
+      },
       reduce: (value, effect) =>
         effect.type === increment
           ? { ...value, count: value.count + effect.value }
@@ -577,7 +578,7 @@ describe('document meta history contract', () => {
       collab: 'shared',
       history: 'push',
       initial: () => 'Untitled',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const editor = createEditor({
       plugins: [

@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   authored,
-  readAuthoredFormatSnapshot,
+  projectAuthoredReview,
 } from '../../platejs/src/authored/index';
 import { createEditor, definePlugin, schema } from '../../platejs/src/index';
 import {
@@ -297,8 +297,8 @@ describe('plate migrate run', () => {
       plugins: [RuntimeParagraphPlugin, authored({ authorId: 'reader' })],
       schema: RuntimeSchema,
     });
-    const cli = readAuthoredFormatSnapshot(cliEditor);
-    const runtime = readAuthoredFormatSnapshot(runtimeEditor);
+    const cli = projectAuthoredReview(cliEditor.read.value());
+    const runtime = projectAuthoredReview(runtimeEditor.read.value());
 
     expect(cli.accepted).toEqual(runtime.accepted);
     expect(cli.proposed).toEqual(runtime.proposed);

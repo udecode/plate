@@ -262,7 +262,7 @@ export const encodeHistoryValue = <V extends Value>(
 
   const persistent = (batches: ReadonlyArray<Batch<V>>) =>
     batches.filter((batch) =>
-      batch.effects.every((effect) => effect.type.history !== 'session')
+      batch.effects.every((effect) => typeof effect.type.history !== 'object')
     );
 
   return {

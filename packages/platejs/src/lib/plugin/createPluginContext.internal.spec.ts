@@ -107,7 +107,7 @@ describe('createPluginContext', () => {
     expect(value satisfies string).toBe('initial');
     expect(context.name).toBe('test');
     expect(context).not.toHaveProperty('plugin');
-    expect(context).not.toHaveProperty('defineCodecs');
+    expect(context).not.toHaveProperty('defineFormats');
     expect(context).not.toHaveProperty('editor');
   });
 

@@ -2,9 +2,9 @@ import { schema } from '../../../facade';
 import { definePlugin, type DefinitionOf } from '../../plugin';
 
 export const BaseParagraphPlugin = definePlugin('paragraph', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           element.style.fontFamily === 'Consolas' ? undefined : {},
         encode: ({ content }) => ({ children: content, tag: 'p' }),

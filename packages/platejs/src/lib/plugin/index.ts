@@ -4,7 +4,8 @@
 
 export * from './BasePlugin';
 export * from './HandlerReturnType';
-export * from './MarkdownNodeCodec';
+export * from './MarkdownNodeMapping';
+export * from './PlainTextNodeMapping';
 export * from './PluginDefinition';
 export * from './definePlugin';
 export * from './pluginAuthoringContext';

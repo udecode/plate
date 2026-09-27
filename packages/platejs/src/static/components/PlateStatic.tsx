@@ -13,12 +13,8 @@ import {
   TextApi,
   MAIN_ROOT_KEY,
 } from '../../facade';
-import { failInvariant } from '../../internal/failInvariant';
 import { mergePlateRenderedAttributes } from '../../internal/mergePlateRenderedAttributes';
-import {
-  getCompiledPlatePlugin,
-  getPlateRuntime,
-} from '../../internal/plugin/compilePlateModel';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import type { Editor, RenderElementSlots } from '../../lib';
 import type {
@@ -431,18 +427,5 @@ export function EditorStatic<E = Editor>(props: EditorStaticProps<E>) {
     </div>
   );
 
-  let wrappedContent: React.ReactNode = content;
-
-  getPlateRuntime(editor).pluginCache.slots.wrapContent.forEach((name) => {
-    const plugin =
-      getCompiledPlatePlugin(editor, name) ??
-      failInvariant('Expected value to be defined');
-    const WrapContent = plugin.slots.wrapContent;
-
-    if (WrapContent) {
-      wrappedContent = <WrapContent>{wrappedContent}</WrapContent>;
-    }
-  });
-
-  return wrappedContent;
+  return content;
 }

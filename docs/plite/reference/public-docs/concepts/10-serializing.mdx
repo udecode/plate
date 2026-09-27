@@ -1,179 +1,122 @@
 ---
-title: "Serializing"
-description: "Turn Plite values into plain text, HTML, or app formats and deserialize external input."
+title: "Persistence And Formats"
+description: "Persist Plite JSON values and keep external format conversion with its owning adapter."
 ---
 
-Plite documents are JSON. Serialization is app code that turns your Plite node
-shape into another format, and deserialization turns external input back into
-your node shape.
+Plite owns canonical editor JSON, typed value persistence, schema admission,
+`ContentSlice`, and browser `DataTransferFormat` negotiation. External syntax
+such as HTML, Markdown, or DOCX belongs to a framework or application adapter
+that knows the document schema.
 
-Read the full persisted document through `editor.read.value()`.
-
-## Read the document
+## Save the complete document
 
 ```ts
-const documentValue = editor.read.value();
-const children = documentValue.children;
+const document = editor.read.value();
+const json = JSON.stringify(document);
 ```
 
-For single-root editors, `<Plite onValueChange>` gives the current mounted-root
-value in its callback context. Use `editor.read.value()` when you need extra
-roots or persistent meta fields. See [Document Meta](14-document-state).
+`editor.read.value()` includes primary children, named roots, and persistent
+metadata. Saving only `editor.read.children()` drops roots and metadata.
 
-## Plain text
+Load untrusted JSON through the application's schema and migration boundary
+before publishing it. Persistence must reject malformed, unknown-version, or
+future-version data without mutating the current editor.
 
-Use `NodeApi.string` when plain text is enough.
+## Define value persistence
 
-```ts
-import { NodeApi, type Descendant } from "plitejs";
-
-const serializePlainText = (nodes: readonly Descendant[]) =>
-  nodes.map((node) => NodeApi.string(node)).join("\n");
-```
-
-Plain text intentionally drops block type, marks, links, comments, and other
-schema-specific data.
-
-## HTML
-
-HTML serialization should match your schema. Plite does not guess how your
-custom elements map to HTML.
+`EditorValuePersistence<TValue, TEncoded>` maps one live value to its current
+canonical JSON representation and owns the stored envelope version.
 
 ```ts
-import escapeHtml from "escape-html";
-import { ElementApi, TextApi, type Descendant } from "plitejs";
+import type { EditorValuePersistence } from "plitejs";
 
-const serializeNodeToHtml = (node: Descendant): string => {
-  if (TextApi.isText(node)) {
-    let text = escapeHtml(node.text);
+type Preferences = Readonly<{ compact: boolean }>;
+type PreferencesJson = Readonly<{ compact: boolean }>;
 
-    if (node.bold) {
-      text = `<strong>${text}</strong>`;
+const preferencesPersistence: EditorValuePersistence<
+  Preferences,
+  PreferencesJson
+> = {
+  decode(value) {
+    if (
+      typeof value !== "object" ||
+      value === null ||
+      typeof (value as PreferencesJson).compact !== "boolean"
+    ) {
+      throw new Error("Invalid preferences");
     }
 
-    if (node.italic) {
-      text = `<em>${text}</em>`;
-    }
-
-    return text;
-  }
-
-  if (!ElementApi.isElement(node)) {
-    return "";
-  }
-
-  const children = node.children.map(serializeNodeToHtml).join("");
-
-  switch (node.type) {
-    case "quote":
-      return `<blockquote>${children}</blockquote>`;
-    case "link":
-      return `<a href="${escapeHtml(node.url)}">${children}</a>`;
-    case "paragraph":
-      return `<p>${children}</p>`;
-    default:
-      return children;
-  }
+    return { compact: (value as PreferencesJson).compact };
+  },
+  encode(value) {
+    return { compact: value.compact };
+  },
+  legacyDecoders: {
+    1: (value) => decodeLegacyPreferences(value),
+  },
+  version: 2,
 };
-
-const html = editor.read.children().map(serializeNodeToHtml).join("");
 ```
 
-Escape text and attribute values before writing HTML strings. Keep sanitizer,
-allowed tag, URL, and table policy in your app schema or paste adapter.
+`encode` must return canonical `EditorJsonValue`: finite numbers, strings,
+booleans, `null`, arrays, and plain objects. Plite rejects `undefined`, `bigint`,
+symbols, functions, non-finite numbers, sparse arrays, accessors, cycles, and
+exotic prototypes at owned persistence boundaries.
 
-## Deserializing HTML
+Legacy entries are decode-only. After decoding one, encode the live value with
+the current declaration to produce canonical current JSON. Never substitute current
+defaults for an unknown or malformed version.
 
-Deserialization is the reverse schema mapping. Parse external HTML, decide which
-tags your editor accepts, and return Plite nodes.
+State fields and effect descriptors use `persist` for this contract. A state
+field without `persist` is runtime-only.
+
+## External formats
+
+Plite does not infer HTML or Markdown from arbitrary custom nodes. A format
+owner must:
+
+1. parse its source,
+2. map syntax to the application's node schema,
+3. return a complete document or the correct slice carrier,
+4. report every expected recovery or loss, and
+5. reject invalid canonical model data.
+
+A complete file parse produces `EditorDocumentValue`. An insertion parser
+produces `ContentSlice`. Direct syntax slices should be closed and rootless;
+only a native fragment transport can grant authority for open edges or detached
+roots.
 
 ```ts
-import type { Descendant, Text } from "plitejs";
+const result = parseExternalSlice(source);
 
-type CustomText = Text & {
-  bold?: boolean;
-  italic?: boolean;
-};
-
-type DeserializeMarks = Pick<CustomText, "bold" | "italic">;
-
-const deserializeElement = (
-  node: Node,
-  marks: DeserializeMarks = {}
-): Descendant[] => {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return [{ ...marks, text: node.textContent ?? "" }];
-  }
-
-  if (node.nodeType !== Node.ELEMENT_NODE) {
-    return [];
-  }
-
-  const element = node as HTMLElement;
-  const nextMarks = {
-    ...marks,
-    bold: marks.bold || element.nodeName === "STRONG",
-    italic: marks.italic || element.nodeName === "EM",
-  };
-  const children = Array.from(element.childNodes).flatMap((child) =>
-    deserializeElement(child, nextMarks)
-  );
-  const safeChildren = children.length > 0 ? children : [{ text: "" }];
-
-  switch (element.nodeName) {
-    case "BODY":
-      return children;
-    case "BLOCKQUOTE":
-      return [{ type: "quote", children: safeChildren }];
-    case "A":
-      return [
-        {
-          children: safeChildren,
-          type: "link",
-          url: element.getAttribute("href") ?? "",
-        },
-      ];
-    case "P":
-      return [{ type: "paragraph", children: safeChildren }];
-    default:
-      return children;
-  }
-};
-
-const deserializeHtml = (html: string): Descendant[] => {
-  const document = new DOMParser().parseFromString(html, "text/html");
-  return deserializeElement(document.body);
-};
-
-editor.update.fragment.replace(deserializeHtml(html));
+if (result.ok) editor.update.slice.replace(result.slice);
 ```
 
-`plitejs/hyperscript` is useful for tests and fixtures. Production
-deserialization should use explicit parser code so unsupported tags,
-attributes, marks, and unsafe URLs are handled deliberately.
+The insertion owner fits the slice after the destination parent, root, and
+selection exist. A detached parser should not invent that context.
 
-`fragment.replace` fits known-closed decoded nodes through the compiled schema.
-A parser that preserves open structural boundaries returns a validated
-`ContentSlice` and inserts it through `editor.update.slice.replace(slice)`.
-Generic slice validation rejects malformed JSON and impossible open depths;
-fitting rejects schema vocabulary, property, root, and grammar violations.
+## Browser transfer formats
 
-## Clipboard and persistence
-
-Clipboard serializers usually need a narrower policy than file export. A paste
-adapter might preserve links and marks while rejecting layout-only HTML or
-tables. A persistence serializer should preserve the full document value:
+Use `DataTransferFormat` only for browser MIME representations. Register one or
+more formats through `dataTransferFormats(owner, formats)` from `plitejs/dom`.
 
 ```ts
-const persisted = editor.read.value();
-await saveDocument(JSON.stringify(persisted));
+import { dataTransferFormats } from "plitejs/dom";
+
+const ProductTransferPlugin = dataTransferFormats("product", [
+  {
+    key: "product-json",
+    mimeType: "application/x-product+json",
+    decode: ({ data }) => decodeProductSlice(data),
+    encode: ({ slice }) => encodeProductSlice(slice),
+  },
+]);
 ```
 
-A declared schema validates `initialValue` when the document is loaded. Persist
-`editor.read.schema.identity()` beside the document when the storage system
-needs a schema-version boundary. See [Schema](19-schema) for compiled identity,
-validation, fitting, and atomic migration.
+`accept: false` and `decode` or `encode` returning `null` mean mismatch. A
+diagnosed failure lets the next independent format try. The DOM adapter fits a
+decoded slice at the actual insertion destination and reports rejected, unfit,
+selected, written, or unhandled attempts after the boundary settles.
 
-Keep comment bodies, permissions, audit data, and large external records in app
-or collaboration stores. Store only the ids or state fields that belong to the
-document model.
+See [Clipboard And Paste](17-clipboard-and-paste) for the complete negotiation
+and insertion pipeline.

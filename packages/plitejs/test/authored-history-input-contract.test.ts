@@ -147,6 +147,10 @@ describe('native authored input history', () => {
       view.read.authored.changes({ status: 'pending' }).items.length,
       1
     );
+    assert.equal(
+      view.read.authored.changes({ status: 'pending' }).items[0].ranges.length,
+      1
+    );
     assert.equal(view.read.text.string([]), 'BaseAB');
     assert.equal(source.read.text.string([]), 'BaseA');
   });

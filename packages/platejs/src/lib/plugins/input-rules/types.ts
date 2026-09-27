@@ -5,7 +5,7 @@ import type {
   NodeTarget,
   Path,
   Point,
-  PropertyJsonValue,
+  EditorJsonValue,
   Range,
   TextInsertTextOptions,
 } from '../../../facade';
@@ -161,7 +161,7 @@ export type MarkInputRuleConfig =
     start: string;
     trim?: 'allow' | 'reject';
     trigger: string;
-    value?: PropertyJsonValue;
+    value?: EditorJsonValue;
   };
 
 export type BlockStartInputRuleMatch = {

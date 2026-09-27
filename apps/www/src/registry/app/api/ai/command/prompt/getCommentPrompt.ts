@@ -86,9 +86,13 @@ export function getCommentPrompt(
         );
       }
 
-      const markdown = editor.api.markdown
-        .serialize({ value: { children: [block] } })
-        .trim();
+      const result = editor.api.markdown.serialize({
+        document: { children: [block] },
+      });
+
+      if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+      const markdown = result.data.trim();
 
       return `<block ref="${ref}">${isSelecting ? `<Selection>${markdown}</Selection>` : markdown}</block>`;
     })

@@ -60,9 +60,9 @@ const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
             BaseParagraphPlugin,
             CodeBlockPlugin,
             definePlugin('a', {
-              codecs: ({ defineCodecs }) =>
-                defineCodecs({
-                  'text/plain': {
+              formats: ({ defineFormats }) =>
+                defineFormats({
+                  plainText: {
                     scope: 'document',
                     decode() {
                       return ContentSlice.closed([{ text: 'test' }]);

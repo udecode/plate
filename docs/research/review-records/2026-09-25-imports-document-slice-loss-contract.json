@@ -1,0 +1,160 @@
+{
+  "id": "2026-09-25-imports-document-slice-loss-contract",
+  "scope": "imports",
+  "kind": "review",
+  "date": "2026-09-25",
+  "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+  "model": "gpt-6",
+  "method": "best-api-review/history-v3",
+  "trigger": "User requested a first-principles redesign of all import/export APIs against the repository editor-architecture candidate set after the document-first export work landed.",
+  "requirements": [
+    "Make complete-document, ContentSlice and inline-content conversion jobs explicit so file import cannot silently discard document roots, metadata or authored state.",
+    "Support detached HTML and Markdown document import from source text plus schema and conversion configuration without constructing an editing runtime.",
+    "Capture the complete schema and conversion target before async import work so one operation cannot observe later editor reconfiguration.",
+    "Keep schema and feature codecs at their current owners and preserve format-specific conversion behavior.",
+    "Distinguish expected invalid external input, tolerated fallback or semantic loss, and programmer or configuration invariants.",
+    "Preserve the accepted DOCX retained-source contract and keep persistence, clipboard and CSV at their independent owners.",
+    "Apply the hard-cut counterfactual to universal import/export plugins, public converter objects, format dispatchers and shared result types.",
+    "Review only: no product implementation, public API adoption or runtime proof."
+  ],
+  "evidenceReuse": "Retained the adopted document-first export topology, DOCX retained-source result contract and strict persistence admission for their exact recorded jobs. Re-read current HTML, Markdown, DOCX, CSV, clipboard, migration and registry import source. Compared ProseMirror, Tiptap, Lexical and Portable Text at fixed local commits from the repository candidate list; used their boundaries and failure policies as evidence, not as APIs to copy.",
+  "summary": "Pursue an explicit import boundary and conversion-loss contract while retaining the adopted per-format export architecture. File import currently routes Markdown and HTML through fragment APIs: Markdown strips the document envelope to children, and HTML uses a fragment decoder plus an unsafe first-root DOM selector despite an existing document decoder. Add detached, schema-configured HTML and Markdown document import; name document, slice and inline entrypoints by their actual result; return format-owned diagnostics for invalid input, fallback and semantic loss. Also make Markdown export filters and unsupported nodes observable. Retain the DOCX public result contract but capture its conversion target before async work and collapse redundant internal DOM round trips. Keep persistence, clipboard and CSV at their current owners. No ImportPlugin, ExportPlugin, universal dispatcher, public universal AST or public prepared-converter object earns a job.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-24-exports-final-reassessment",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retains document-first per-format conversion, detached configured codecs and rejection of a universal exporter. This review adds the inverse import boundary and corrects the earlier overclaim that deliberate Markdown filters and unsupported loss were already diagnosed."
+    },
+    {
+      "record": "2026-09-15-documents-retained-source-implementation",
+      "question": "Which document conversion laws should DOCX file import, export and Word paste share, and where must fidelity limits be explicit?",
+      "action": "retains",
+      "reason": "DOCX already has complete-document ownership, a retained source lease and explicit structured outcomes. Retain that public contract while hardening the implementation to capture one immutable conversion target before async work and to avoid redundant HTML reparsing."
+    },
+    {
+      "record": "2026-09-16-persistence-source-closure",
+      "question": "What must a saved document retain, validate and migrate, and which durable-state or migration layers can be eliminated?",
+      "action": "retains",
+      "reason": "Strict JSON admission and migrations remain persistence jobs. External format conversion must not create a second migration system or absorb saved-state ownership."
+    }
+  ],
+  "alternatives": [
+    "Keep current imports and fix only the toolbar: Stop; the public document-versus-fragment ambiguity, editor-only conversion and silent loss remain available to every caller.",
+    "Rename current deserialize methods without changing results: Stop; clearer spelling does not recover discarded roots or make invalid input and semantic loss observable.",
+    "Explicit document, ContentSlice and inline entrypoints plus detached per-format HTML and Markdown document import: Pursue; each caller selects the data shape it actually applies.",
+    "Format-owned success or failure outcomes with structured loss diagnostics: Pursue; expected bad input and tolerated degradation become inspectable while configuration invariants still throw.",
+    "Make Markdown export filters, unsupported nodes and fallbacks observable: Pursue; the adopted no-silent-loss law is currently overclaimed.",
+    "Universal ImportPlugin, ExportPlugin, import(format) dispatcher, public converter/compiler or universal intermediate AST: Stop; the formats share compilation internals but not one lifecycle, fidelity promise or useful public result.",
+    "Merge file import with clipboard insertion: Stop; complete-document replacement and synchronous open-slice fitting have different targets and authority.",
+    "Merge JSON persistence admission with import conversion: Stop; durable schema migration and lossy external representation conversion have different failure laws.",
+    "Fold CSV into whole-document import: Stop; it is table and clipboard ingress and should receive its own failure-semantics review.",
+    "Redesign the adopted DOCX public API: Stop; no new evidence defeats its complete-document, retained-source and diagnostic contract.",
+    "Freeze DOCX conversion state at call entry and collapse redundant DOM parse/serialize passes: Pursue internally; the current async operation can observe later editor schema state and reparses Mammoth HTML repeatedly."
+  ],
+  "proofLimits": "Source-only architecture review. No product implementation, TypeScript declaration proof, browser interaction, native document round-trip, conversion corpus or complete-operation benchmark was added. External evidence is pinned local source; upstream suites and fidelity claims were not executed. Exact TypeScript names, diagnostic taxonomy, HTML root-selection policy, Markdown fallback policy and feature-by-feature loss coverage remain for the owning Task design. Portable Text HTML export lives in a separate package and was not inspected; this comparison uses its locally available HTML import and Markdown conversion source.",
+  "references": [
+    "docs/analysis/editor-architecture-candidates.md",
+    "docs/research/decisions/export-fidelity.md",
+    "docs/research/decisions/documents-conversion-fidelity.md",
+    "docs/research/decisions/persistence-ownership.md",
+    "docs/research/review-records/2026-09-24-exports-final-reassessment.json",
+    "docs/research/review-records/2026-09-25-document-first-export-docx-registry-closure.json"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "d5dec861656500c6e504d72c5e5703929f8d1df1cd3b129fdfc2d60b8d9c45ff",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "746b788c2b9233b7a7597de6f7438fca5dcb226d1366f9884a02a8b6843e96f3",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "770dadf334b09ce1e33b68fd13239322decbb266cd6682620fe0d2f3ef5792e2",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "1adcafdfbd8a290e2c22092168cdfecc9865f5559b611311f99d2749b22048cd",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "27f35dee22d352884b17238617093a51deac981dea65d76d0b648d2aa15f345e",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "53a4ff08653f384e604f7cb826eeb38497339c7f3b0245933166c40b28050546",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts": "1ea27703b417eadae2cc299933cd918cb63a708f0fec5217d26c826ea8ecea6f",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "ae5a7deb9f8b8cd6644815af7f1dbe293e298fe5c002a8cb3b736e1d05d1b1a7",
+      "packages/platejs/src/docx/import/lib/importDocx.spec.ts": "1b676e9dc7268006a35c80eedd3681b1d8e3c321b4a9f295f57d40956efa77a7",
+      "docs/analysis/editor-architecture-candidates.md": "14a88723e948ca14db76a0a585c0c5561c1d396abb5ade4ba8d31c620e79765d",
+      "docs/research/decisions/export-fidelity.md": "1af48265b63b98f9144e838f71ab3576903f72eb961012e73652fbd32ec05101",
+      "docs/research/decisions/documents-conversion-fidelity.md": "5fb0180c2b81cfae47ed40abd33e344f5685a6e684219dbd558d05235c4d065d",
+      "docs/research/decisions/persistence-ownership.md": "ba8d50f5450f067eb6f3ea0096ee7fd408be03da09fbbb8c18df5df0d4138866",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "6a1b0715a5ffaf30dc482a659fffb70551d605d78d7d2df3ca45561ed6ffd446",
+      "packages/platejs/src/static/deserialize/htmlStringToEditorDOM.ts": "37598aeff4da1e7d3308f851185ac933657672d967817f1faedc7925f22dcc32",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "3f34ed4c7f13d7103ece24f6b9dae000fa8a93f228beaa57e41a8c6bd5d9c5e0",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "8cf475bc202a58416e8aafb2f6e1ddcb4747ff6b3da8f754637b0834ac4b6ffb",
+      "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "017caea75d0925bcce66aef52f652ede70c26f41167307cc6a02692107e0a5fb",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "ef1e23f3436263470e57fbddfd820db22b38090e0760cc2ede3346484a334526",
+      "packages/plitejs/src/dom/plugin/host-codec.ts": "eee0e986bc5162ecec43652e58ec8597b98d96abf94e040fe91bbb9271cff841",
+      "packages/plitejs/src/core/persisted-document.ts": "efc8e669b9cb6cd77cb42e265dc8ce53ccb397ea2e21254b0a31e0117d831a6a",
+      "packages/platejs/src/migrations/documentMigrations.ts": "6a823432296edd3372d0e79aa0186f2ef10ce461b57801264302e6485bae5a99",
+      "content/docs/(guides)/serializing.mdx": "a18d214a655516f6778911301c70fa5caf281cbdfbef06229c2441c9545cbaf3",
+      "content/docs/(plugins)/(serializing)/html.mdx": "4e73d8529dc8f6f4ba6bea9962636a0c29373164f0cd960d1664cba7a710b060",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "1b4de9bf951dcb0614c90bf44bcb822a12fc8717da5a371364e09338ff850b87",
+      "content/docs/(plugins)/(serializing)/docx.mdx": "45ecba09a7c086ea9bfb26d693308574f5d3ac5cfe27b9f37c7ba36654ef1f81",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "271bdf6da40799f15a72c7237e96434f431f949b7d72ec2a6b541f952da7eb4b",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": [
+      {
+        "checkout": "/Users/zbeyens/git/prosemirror-model",
+        "commit": "6264de069d8439131e88f8ba06973551916184e4",
+        "files": {
+          "src/node.ts": "7eb4526395d7af5a8c0d596778e951471ac5008584259aa52df37dd2913d19ab",
+          "src/schema.ts": "e7eb493c877d6f50db1ee0f0c3cbb35dc6d898e43491bbf51ddd502a7b23af2c",
+          "src/from_dom.ts": "b8495dcdd5a593729e3a6237d1620edfebfdda683bf454278d38d5751670d66d",
+          "src/to_dom.ts": "cc51da0630f1235af2522029eb92f6b612a20223a79e9ad08788a374e9a44e71"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/prosemirror-markdown",
+        "commit": "221ec60e26bc72005cacdbfc4f0ee43fda143489",
+        "files": {
+          "src/from_markdown.ts": "8f021766089ae38beb47892a8526eb78453cbfc48ee5537ea15bef230cd8283d",
+          "src/to_markdown.ts": "19337ab6dee8b7cb9eb0809efb1b82dd3935d271d2be9b92116e73362b24149a"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/tiptap",
+        "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+        "files": {
+          "packages/core/src/helpers/generateHTML.ts": "1dfb2b7031dca96ef2825431ef55f17fcc9e040ec5528d1ced6b17cbecd38e08",
+          "packages/html/src/server/generateJSON.ts": "4a6d7385e000d205823b8a1805c4cc1b87e2a8b6c955af8261772409635671f8",
+          "packages/markdown/src/MarkdownManager.ts": "3592f9b6fefbd8e4cc206aa6dba7ea5d863a956d573fab7621deb66abf63bebd"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/lexical",
+        "commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+        "files": {
+          "packages/lexical/src/LexicalEditorState.ts": "0de44d82e4bdc1b55e64b8182652de440fd8d6bb851697c1596ddb77d59efcbc",
+          "packages/lexical/src/LexicalEditor.ts": "b25f4c9273a1a18432be3cbf1c473f9ee2718b8c4edf6829348b9745254084db",
+          "packages/lexical-html/src/index.ts": "fc215e7cd09d5ed67fe4cb6278ff2c2475937872e87aee18abfc77b366e01047",
+          "packages/lexical-markdown/src/index.ts": "b5818fbd20b562e453464902397923f43f750ea5a8acb0de06e7a6e0923dd9d3",
+          "packages/lexical-markdown/src/MarkdownExport.ts": "4bac8f8aab5e6374d8b34e83d55535f2db548c6d54bc3902850260fadf219322",
+          "packages/lexical-headless/src/index.ts": "a45aa9c89de3171228de5551a644279423a9aeee5cfdd6e9c3030cdd4ecce1f9",
+          "packages/lexical-headless/src/dom.ts": "0f0f0e931e90818e6683f3b9854e2650dacff994b73c73e787ae597f298e76c0"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/portabletext",
+        "commit": "ad2a52d13d9ffb06b994e5866a37605c840eb72c",
+        "files": {
+          "packages/html/src/html-to-portable-text.ts": "ad730ba6e93ad5167db79b8bd69ff5ee09932e33d1a70da497297f5d4981f326",
+          "packages/markdown/src/to-portable-text/markdown-to-portable-text.ts": "98a2630d50c773076ec0a54544b1d70762563bb186d09fd59eddd7a0f4ccc000",
+          "packages/markdown/src/from-portable-text/portable-text-to-markdown.ts": "e7df08cf03d7a3b342876ca8823bcb440d2cef73d2468cac5b811dcdfc443c34",
+          "packages/markdown/src/to-portable-text/matchers.ts": "24cd9383e506edc59ed614ceaf11b69aa00fbf8a2c8255031ece0a9d757904ff",
+          "packages/markdown/src/from-portable-text/renderers/type.ts": "037aacf133ae95024b8710f427fb8eebe700c4cf97cea2f13ff4c5684b0f1f36",
+          "packages/markdown/src/from-portable-text/renderers/marks.ts": "a867d3d4ff83e8c54baa6b6e22c8ac9244fa8bc29e0510dfab9ae3117ebd23e4",
+          "packages/markdown/src/from-portable-text/renderers/style.ts": "725118d0fea96ac4e426099190ac1081e226b6fdbfcf2c40da929980da83f2d9"
+        }
+      }
+    ]
+  }
+}

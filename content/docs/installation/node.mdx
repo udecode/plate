@@ -1,180 +1,140 @@
 ---
 title: Node.js
-description: Install and configure Plate for Node.js.
+description: Install and configure Plate for Node.js conversion and document work.
 ---
 
-Use Plate in Node.js when you need to read, validate, transform, or serialize editor values outside the browser. Node scripts use the base runtime imports, while React editors use `/react` subpaths. This guide walks through a server-safe editor, Markdown IO, and a content transform.
+Use Plate in Node.js to validate, transform, parse, or serialize complete editor
+documents without mounting React.
 
-## Node.js setup
-
-<Callout type="warning" title="Use base imports">
-  Do not import from `platejs/react` or another `/react` subpath in Node.js
-  scripts. Use `createEditor` from `platejs` and feature APIs from their base
-  `platejs/*` subpaths.
+<Callout type="warning" title="Use server-safe imports">
+  Import the editor runtime from `platejs`, not `platejs/react`. Markdown uses
+  `platejs/markdown`. Node HTML parsing uses `platejs/html/server`.
 </Callout>
 
 <Steps>
 
 ### Install packages
 
-Install the core runtime and the packages your pipeline needs.
-
 ```bash
-npm install platejs marked remark-mdx remark-parse remark-stringify unified
+npm install platejs
 ```
 
-| Package | Owns |
-| --- | --- |
-| `platejs` | `createEditor`, core editor APIs, core paragraph behavior. |
-| `platejs` | Base headings, blockquotes, horizontal rules, and text marks. |
-| `platejs/markdown` | Markdown serialization, deserialization, and the `MarkdownPlugin` API. |
+Install the optional HTML server DOM peer only when the process parses HTML:
 
-### Create a server editor
+```bash
+npm install linkedom
+```
 
-Create the editor with base plugins only. The editor exposes `editor.read(...)`
-for committed state and `editor.update(...)` for writes without mounting a
-React tree.
+`platejs/html/server` is ESM. `parse5` is a direct Plate dependency;
+`linkedom` remains server-only and does not enter browser bundles.
 
-```ts showLineNumbers title="scripts/process-content.ts"
-import type { Value } from 'platejs';
+### Create a headless editor
 
-import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
-import { createEditor } from 'platejs';
-
-const value: Value = [
-  {
-    children: [{ text: 'Document Title' }],
-    type: 'heading', level: 1,
-  },
-  {
-    children: [
-      { text: 'With ' },
-      { bold: true, text: 'bold' },
-      { text: ' text.' },
-    ],
-    type: 'paragraph',
-  },
-];
+```ts title="scripts/process-content.ts"
+import { BaseBoldPlugin, BaseHeadingPlugin, createEditor } from 'platejs';
 
 const editor = createEditor({
   plugins: [BaseHeadingPlugin, BaseBoldPlugin],
-  initialValue: value,
+  initialValue: {
+    children: [
+      { type: 'heading', level: 1, children: [{ text: 'Document title' }] },
+      { type: 'paragraph', children: [{ text: 'Body' }] },
+    ],
+  },
 });
 
-const plainText = editor.read.text.string([]);
-
-console.info(plainText);
+const document = editor.read.value();
 ```
 
-### Read and write Markdown
+`editor.read.value()` returns the complete document, including named roots and
+persistent metadata. Use `editor.update(...)` for atomic transformations.
 
-Add `MarkdownPlugin` when the script needs Markdown conversion. Use the
-editor's `markdown` API for both directions.
+### Parse and serialize Markdown
 
-```ts showLineNumbers title="scripts/markdown-io.ts"
+Use direct functions when an editor lifecycle adds no value:
+
+```ts title="scripts/markdown-io.ts"
 import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
+import { parseMarkdown, serializeMarkdown } from 'platejs/markdown';
+
+const plugins = [BaseHeadingPlugin, BaseBoldPlugin] as const;
+const parsed = parseMarkdown('# Title\n\n**Body**', { plugins });
+
+if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
+
+const output = serializeMarkdown(parsed.document, {
+  plugins,
+  projection: 'accepted',
+});
+
+if (output.ok) console.info(output.data);
+```
+
+Install `MarkdownPlugin` when several operations should reuse one editor's
+compiled target:
+
+```ts
 import { MarkdownPlugin } from 'platejs/markdown';
-import { createEditor } from 'platejs';
 
 const editor = createEditor({
   plugins: [BaseHeadingPlugin, BaseBoldPlugin, MarkdownPlugin],
 });
 
-const value = editor.api.markdown.deserialize(
-  [
-    '# Migration Note',
-    '',
-    'Move legacy content into **EditorRoot** format.',
-  ].join('\n')
-);
-
-const markdown = editor.api.markdown.serialize({ value });
-
-console.info(markdown);
+const parsed = editor.api.markdown.parse(source);
+const output = editor.api.markdown.serialize({ projection: 'proposed' });
 ```
 
-### Transform content
+### Parse HTML
 
-Use transaction groups for migrations and bulk cleanup. Pass `at: []` when the
-operation should scan the whole document.
+```ts title="scripts/html-import.ts"
+import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
+import { parseHtml } from 'platejs/html/server';
 
-```ts showLineNumbers title="scripts/normalize-headings.ts"
-import type { Value } from 'platejs';
+const result = parseHtml(source, {
+  plugins: [BaseHeadingPlugin, BaseBoldPlugin],
+});
 
-import {
-  BaseBoldPlugin,
-  BaseHeadingPlugin,
-} from 'platejs';
-import { MarkdownPlugin } from 'platejs/markdown';
-import { createEditor } from 'platejs';
-
-export function normalizeHeadings(value: Value) {
-  const editor = createEditor({
-    plugins: [BaseHeadingPlugin, BaseBoldPlugin, MarkdownPlugin],
-    initialValue: value,
-  });
-
-  const insertAt = editor.read((state) => [state.children().length]);
-
-  editor.update((tx) => {
-    tx.nodes.set(
-      { type: 'heading', level: 2 },
-      {
-        at: [],
-        match: (node) => 'type' in node && node.type === 'heading' && node.level === 1,
-      }
-    );
-
-    tx.nodes.insert(
-      [{ children: [{ text: 'Imported from the legacy CMS.' }], type: 'paragraph' }],
-      { at: insertAt }
-    );
-  });
-
-  return {
-    markdown: editor.api.markdown.serialize(),
-    text: editor.read((state) => state.text.string([])),
-    value: editor.read((state) => state.children()),
-  };
-}
+if (!result.ok) throw new Error(result.diagnostics[0].message);
 ```
+
+The server parser and browser parser share one parse5 tree and safety policy.
+The server adapter does not install ambient DOM globals, execute scripts, or
+load resources.
+
+### Import DOCX
+
+DOCX import is detached and browser/client-only. Supply the complete plugin
+target in `options`; do not pass an editor.
+
+```ts
+import { importDocx } from 'platejs/docx/import';
+
+const result = await importDocx(file, {
+  plugins: EditorKit,
+  signal,
+});
+```
+
+Use a browser or client worker for that operation. Server-side DOCX conversion
+is not implied by the headless editor runtime.
 
 </Steps>
 
 ## Runtime boundaries
 
-| Runtime | Import from | Use for |
+| Runtime | Import | Use |
 | --- | --- | --- |
-| Node.js scripts | `platejs`, `platejs/*` | Migration, validation, serialization, search indexing. |
-| React editors | `platejs/react`, `platejs/*/react` | Editable UI, hooks, rendered components, toolbar behavior. |
-| Static rendering | `platejs/static` | Server-rendered read-only content. |
+| Node editor | `platejs` | Read, validate, and transform documents. |
+| Node Markdown | `platejs/markdown` | Parse and serialize Markdown. |
+| Node HTML parse | `platejs/html/server` | Parse complete HTML documents or slices. |
+| Semantic HTML serialize | `platejs/html` | Serialize a detached Plate document. |
+| Static rendering | `platejs/static` | Render server-safe static components. |
+| React editor | `platejs/react`, feature `/react` paths | Mounted editing UI and hooks. |
 
-<Callout type="info">
-  Plugin packages can expose both base and React entrypoints. In Node.js, choose
-  the base entrypoint even when the same feature has React components for the
-  browser editor.
-</Callout>
+## Related docs
 
-## API Reference
-
-| API | Package | Notes |
-| --- | --- | --- |
-| `createEditor` | `platejs` | Creates a non-React editor instance. |
-| `editor.read((state) => state.text.string([]))` | `platejs` | Reads text from the whole document. |
-| `editor.update((tx) => tx.nodes.set(...))` | `platejs` | Updates matching nodes. Use `at: []` for document-wide transforms. |
-| `editor.update((tx) => tx.nodes.insert(...))` | `platejs` | Inserts nodes at a path. |
-| `editor.api.markdown.deserialize` | `platejs/markdown` | Converts Markdown into a Plate value. |
-| `editor.api.markdown.serialize` | `platejs/markdown` | Converts the editor value or an explicit `value` option to Markdown. |
-
-## Next steps
-
-| Task | Guide |
-| --- | --- |
-| Serialize to Markdown | [Markdown](/docs/markdown) |
-| Serialize to HTML | [HTML](/docs/html) |
-| Render read-only content | [Static Rendering](/docs/static) |
-| Query editor state | [Editor API](/docs/api/editor-api) |
-| Apply transforms | [Editor Transforms](/docs/api/editor-transforms) |
-
-Done. You now have a server-safe Plate runtime that can power migration scripts,
-validation jobs, and content serialization.
+- [HTML](/docs/html)
+- [Markdown](/docs/markdown)
+- [DOCX](/docs/docx)
+- [Serializing](/docs/serializing)
+- [Editor API](/docs/api/editor-api)

@@ -18,7 +18,7 @@ export const applyModelOwnedHistoryIntent = ({
 }) => {
   if (!runtime) return false;
 
-  void runtime.replayHistory(direction, focusPolicy);
+  runtime.dispatchHistory(direction, focusPolicy);
   return true;
 };
 

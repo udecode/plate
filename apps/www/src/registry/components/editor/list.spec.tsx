@@ -57,12 +57,13 @@ describe('ListKit unordered list rendering', () => {
       plugins: [BaseParagraphPlugin, ...ListTargetSchemaKit, ...BaseListKit],
     });
 
-    expect(
-      editor.api.html.deserialize({
-        element:
-          '<ul><li data-checked="true" data-list-start="3">Task</li></ul>',
-      })
-    ).toEqual([
+    const result = editor.api.html.parseSlice(
+      '<ul><li data-checked="true" data-list-start="3">Task</li></ul>'
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.diagnostics[0].message);
+    expect(result.slice.content).toEqual([
       {
         checked: true,
         children: [{ text: 'Task' }],

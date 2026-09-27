@@ -863,7 +863,7 @@ test('EditableDOMRoot event-worker imports have an explicit event-runtime invent
       rationale:
         'Keyboard event family assembly is in a runtime module and should be composed by the facade in the final shape.',
     },
-    "\\bfrom '../editable/runtime-root-engine'": {
+    '\\bfrom ["\']../editable/runtime-root-engine["\']': {
       count: 1,
       next: 'runtime-facade',
       owner: 'Editable root runtime facade',

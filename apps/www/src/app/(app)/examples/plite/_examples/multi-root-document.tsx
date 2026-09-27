@@ -29,7 +29,7 @@ const documentTitle = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => 'Untitled',
-  persist: valueCodecs.string,
+  persist: { ...valueCodecs.string, version: 1 },
 });
 
 const documentTitlePlugin = definePlugin('documentTitle', {

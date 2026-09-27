@@ -18,7 +18,7 @@ import {
 } from 'platejs/react';
 import { TablePlugin } from 'platejs/table/react';
 import { ContentSlice, property, schema } from 'plitejs';
-import { writeHostFragmentData } from 'plitejs/dom';
+import { writeDataTransferFragment } from 'plitejs/dom';
 import { useState } from 'react';
 
 const CODEC_PROOF_FORMAT = 'application/x-plate-codec-proof';
@@ -35,24 +35,28 @@ const parseCodecProofPayload = (data: string): CodecProofPayload =>
   JSON.parse(data) as CodecProofPayload;
 
 const CodecProofFallbackPlugin = definePlugin('codecProofFallback', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      [CODEC_PROOF_FORMAT]: {
-        scope: 'document',
-        decode: ({ data }) => {
-          const { kind } = parseCodecProofPayload(data);
+  dataTransferFormats: [
+    {
+      mimeType: CODEC_PROOF_FORMAT,
+      scope: 'document',
+      decode: ({ data }) => {
+        const { kind } = parseCodecProofPayload(data);
 
-          if (kind !== 'delegate' && kind !== 'throw') return null;
+        if (kind !== 'delegate' && kind !== 'throw') return null;
 
-          return ContentSlice.closed([
+        return {
+          diagnostics: [],
+          ok: true,
+          slice: ContentSlice.closed([
             {
               children: [{ text: `fallback:${kind}` }],
               type: 'paragraph',
             },
-          ]);
-        },
+          ]),
+        };
       },
-    }),
+    },
+  ],
 });
 
 const codecProofInitialState: CodecProofPluginState = {
@@ -61,21 +65,24 @@ const codecProofInitialState: CodecProofPluginState = {
 
 const CodecProofPlugin = definePlugin('codecProof', {
   initialState: codecProofInitialState,
-  codecs: ({ defineCodecs, editor, store }) =>
-    defineCodecs({
-      [CODEC_PROOF_FORMAT]: {
-        priority: 20,
-        scope: 'document',
-        decode: ({ data }) => {
-          const { kind } = parseCodecProofPayload(data);
-          const { label } = store.get();
+  dataTransferFormats: [
+    {
+      mimeType: CODEC_PROOF_FORMAT,
+      priority: 20,
+      scope: 'document',
+      decode: ({ data, pluginState, registry }) => {
+        const { kind } = parseCodecProofPayload(data);
+        const { label } = pluginState;
 
-          if (kind === 'delegate') return null;
-          if (kind === 'throw') {
-            throw new Error('Expected Plate codec browser proof failure.');
-          }
-          if (kind === 'inline') {
-            return ContentSlice.fromJSON({
+        if (kind === 'delegate') return null;
+        if (kind === 'throw') {
+          throw new Error('Expected Plate codec browser proof failure.');
+        }
+        if (kind === 'inline') {
+          return {
+            diagnostics: [],
+            ok: true,
+            slice: ContentSlice.fromJSON({
               content: [
                 {
                   children: [{ bold: true, text: `${label}:inline` }],
@@ -84,22 +91,30 @@ const CodecProofPlugin = definePlugin('codecProof', {
               ],
               openEnd: 1,
               openStart: 1,
-            });
-          }
-          if (kind === 'code') {
-            return ContentSlice.fromJSON({
+            }),
+          };
+        }
+        if (kind === 'code') {
+          return {
+            diagnostics: [],
+            ok: true,
+            slice: ContentSlice.fromJSON({
               content: [
                 {
                   children: [{ text: `${label}:code` }],
-                  type: editor.plugin(CodeBlockPlugin).schema.type,
+                  type: registry.type(CodeBlockPlugin) ?? 'code_block',
                 },
               ],
               openEnd: 1,
               openStart: 1,
-            });
-          }
+            }),
+          };
+        }
 
-          return ContentSlice.closed([
+        return {
+          diagnostics: [],
+          ok: true,
+          slice: ContentSlice.closed([
             {
               children: [{ text: `${label}:block-a` }],
               type: 'paragraph',
@@ -108,15 +123,19 @@ const CodecProofPlugin = definePlugin('codecProof', {
               children: [{ text: `${label}:block-b` }],
               type: 'paragraph',
             },
-          ]);
-        },
-        encode: ({ slice }) =>
-          JSON.stringify({
-            label: store.get('label'),
-            slice,
-          }),
+          ]),
+        };
       },
-    }),
+      encode: ({ pluginState, slice }) => ({
+        data: JSON.stringify({
+          label: pluginState.label,
+          slice,
+        }),
+        diagnostics: [],
+        ok: true,
+      }),
+    },
+  ],
 });
 
 const AdvancedMarkPlugin = definePlugin('schemaAdvanced', {
@@ -128,9 +147,9 @@ const AdvancedMarkPlugin = definePlugin('schemaAdvanced', {
       typeChange: 'preserve-if-allowed',
     },
   },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           element.getAttribute('data-schema-advanced') ?? undefined,
         encode: ({ value }) => ({
@@ -306,7 +325,7 @@ const PlateSchemaDescriptorControls = () => {
   const encodeRootedSlice = () => {
     const data = new DataTransfer();
 
-    writeHostFragmentData(
+    writeDataTransferFragment(
       editor,
       data,
       ContentSlice.fromJSON({
@@ -343,14 +362,16 @@ const PlateSchemaDescriptorControls = () => {
         <button
           className="rounded border px-3 py-1"
           onClick={() => {
-            const children = editor.api.html.deserialize({
-              element:
-                '<p><strong><span style="font-size: 22px"><mark data-schema-advanced="proof">Descriptor proof</mark></span></strong></p>',
+            const result = editor.api.html.parseSlice(
+              '<p><strong><span style="font-size: 22px"><mark data-schema-advanced="proof">Descriptor proof</mark></span></strong></p>'
+            );
+
+            if (!result.ok) return;
+
+            editor.update.value.replace({
+              children: result.slice.content,
+              selection: null,
             });
-
-            if (!children) return;
-
-            editor.update.value.replace({ children, selection: null });
           }}
           type="button"
         >
@@ -462,13 +483,16 @@ const ApplicationRootControls = () => {
         className="w-fit rounded border px-3 py-1"
         contentEditable={false}
         onClick={() => {
-          const children = editor.api.html.deserialize({
-            element: '<span>HTML inside the application root</span>',
+          const result = editor.api.html.parseSlice(
+            '<span>HTML inside the application root</span>'
+          );
+
+          if (!result.ok) return;
+
+          editor.update.value.replace({
+            children: result.slice.content,
+            selection: null,
           });
-
-          if (!children) return;
-
-          editor.update.value.replace({ children, selection: null });
         }}
         type="button"
       >

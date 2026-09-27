@@ -1,4 +1,8 @@
-import { type EditorUpdateTransaction, defineUpdateAnnotation } from '../..';
+import {
+  type EditorUpdateTransaction,
+  type Value,
+  defineUpdateAnnotation,
+} from '../..';
 import { profilePliteReactDuration } from '../render-profiler';
 import type { Editor } from './runtime-editor-api';
 import { getEditorRuntime } from './runtime-editor-api';
@@ -24,9 +28,9 @@ export const createNativeGroupingId = () => {
 export const getNativeTextInputUpdateTags = () =>
   ['native-text-input'] as const;
 
-export const updateNativeTextInput = (
-  editor: Editor,
-  update: (tx: EditorUpdateTransaction<any, any>) => void,
+export const updateNativeTextInput = <V extends Value>(
+  editor: Editor<V>,
+  update: (tx: EditorUpdateTransaction<V, any>) => void,
   input: NativeGroupingInput
 ) => {
   const tags = profilePliteReactDuration(

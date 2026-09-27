@@ -3,10 +3,10 @@ import cloneDeep from 'lodash/cloneDeep.js';
 import isEqual from 'lodash/isEqual.js';
 
 import {
-  type AuthoredPlugin,
   type AuthoredResult,
   DefaultAuthoredPlugin,
-  readAuthoredFormatSnapshot,
+  isAuthoredEditor,
+  projectAuthoredDocument,
 } from '../../authored';
 import {
   BaseParagraphPlugin,
@@ -47,7 +47,7 @@ import {
   BaseTableRowPlugin,
 } from '../../features/table';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
-import { MarkdownPlugin } from '../../markdown';
+import { type MarkdownSerializeResult, MarkdownPlugin } from '../../markdown';
 import { type Editor, definePlugin } from '../../react/core';
 import type {
   AIChatRequestContext,
@@ -61,6 +61,12 @@ type TComment = {
   blockRef: string;
   comment: string;
   content: string;
+};
+
+const requireMarkdownData = (result: MarkdownSerializeResult) => {
+  if (result.ok) return result.data;
+
+  throw new Error(result.diagnostics.map(({ message }) => message).join('\n'));
 };
 
 export type AIChatAdapter = {
@@ -150,11 +156,6 @@ type AIActionTransaction = EditorUpdateTransaction<
   Value,
   readonly [typeof HistoryPlugin]
 >;
-type AuthoredAIEditor = Editor<Value, readonly [AuthoredPlugin]>;
-type AuthoredAITransaction = EditorUpdateTransaction<
-  Value,
-  readonly [AuthoredPlugin]
->;
 
 const initialState: AIChatPluginState = {
   _blockKey: null,
@@ -184,8 +185,18 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   initialState,
 }).extend((context) => {
   const { editor } = context;
-  const authoredEditor = editor as AuthoredAIEditor;
+  const requireAuthoredEditor = () => {
+    if (!isAuthoredEditor(editor)) {
+      throw new Error('AI Chat requires authored changes.');
+    }
+
+    return editor;
+  };
   let previewAnchor: Anchor<Range> | null = null;
+  let previewOwner: Readonly<{
+    final: boolean;
+    requestId: string | null;
+  }> | null = null;
   let suggestionBase: EditorDocumentValue | null = null;
   let suggestionChange: DocumentChange | null = null;
   let suggestionPaths: Path[] | null = null;
@@ -365,6 +376,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   const decideCurrentChange = (action: 'accept' | 'reject') => {
     const changeId = context.store.get('_changeId');
     if (!changeId) return null;
+    const authoredEditor = requireAuthoredEditor();
     const result = authoredEditor.update.authored.decide({
       action,
       selection: authoredEditor.read.authored.select({ ids: [changeId] }),
@@ -380,6 +392,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     stop();
     previewAnchor?.release();
     previewAnchor = null;
+    previewOwner = null;
     suggestionBase = null;
     suggestionChange = null;
     suggestionPaths = null;
@@ -432,16 +445,23 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     { type }: { type: MarkdownType }
   ) => {
     if (type === 'editor') {
-      return editor.api.markdown.serialize({
-        value: state.value(),
-      });
+      const document = state.value();
+
+      return requireMarkdownData(
+        editor.api.markdown.serialize({
+          document: {
+            children: document.children,
+            ...(document.roots ? { roots: document.roots } : {}),
+          },
+        })
+      );
     }
     if (type === 'block') {
       const blocks = state.nodes.blocks().map(([node]) => node);
 
-      return editor.api.markdown.serialize({
-        value: { children: blocks },
-      });
+      return requireMarkdownData(
+        editor.api.markdown.serialize({ document: { children: blocks } })
+      );
     }
     if (type === 'nodeSelection') {
       const fragment = state.fragment();
@@ -461,9 +481,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         throw new Error('Node selections must contain block elements.');
       }
 
-      return editor.api.markdown.serialize({
-        value: { children: value },
-      });
+      return requireMarkdownData(
+        editor.api.markdown.serialize({ document: { children: value } })
+      );
     }
     if (type !== 'tableCellWithRef') return '';
 
@@ -522,9 +542,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
               throw new Error('Table cells must contain block elements.');
             }
 
-            return editor.api.markdown
-              .serialize({ value: { children: [child] } })
-              .trim();
+            return requireMarkdownData(
+              editor.api.markdown.serialize({
+                document: { children: [child] },
+              })
+            ).trim();
           })
           .filter(Boolean)
           .join('<br/>');
@@ -545,9 +567,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           throw new Error('Table cells must contain block elements.');
         }
 
-        return `<Cell ref="${ref}">\n${editor.api.markdown
-          .serialize({ value: { children: cell.children } })
-          .trim()}\n</Cell>`;
+        return `<Cell ref="${ref}">\n${requireMarkdownData(
+          editor.api.markdown.serialize({
+            document: { children: cell.children },
+          })
+        ).trim()}\n</Cell>`;
       })
       .join('\n\n');
 
@@ -680,7 +704,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       isNodeSelecting: state.selection.nodes().length > 0,
       isSelecting: state.selection.isExpanded(),
     });
-  const deserializeSuggestion = (content: string) => {
+  const parseSuggestion = (content: string) => {
     const snapshots = context.store.get('chatNodes');
     let source: Descendant[] = cloneDeep(snapshots.map(({ node }) => node));
     const first = source[0];
@@ -708,17 +732,31 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       }
     }
 
-    return editor.api.markdown
-      .deserialize(content)
-      .children.map((node, index) =>
-        ElementApi.isElement(node)
-          ? {
-              ...node,
-              ...source[index],
-              children: node.children,
-            }
-          : node
+    const parsed = editor.api.markdown.parseSlice(content);
+
+    if (!parsed.ok) {
+      throw new Error(
+        parsed.diagnostics.map(({ message }) => message).join('\n')
       );
+    }
+
+    return parsed.slice.content.map((node, index) => {
+      const sourceNode = source[index];
+
+      if (
+        !ElementApi.isElement(node) ||
+        !ElementApi.isElement(sourceNode) ||
+        sourceNode.type !== node.type
+      ) {
+        return node;
+      }
+
+      return {
+        ...NodeApi.extractProps(sourceNode),
+        ...node,
+        children: node.children,
+      };
+    });
   };
   const finishCompleteAction = () => {
     resetOptions();
@@ -792,6 +830,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     return true;
   };
   const getActionPreviewSource = () => {
+    if (
+      !previewOwner?.final ||
+      previewOwner.requestId !== context.store.get('_requestId')
+    ) {
+      return undefined;
+    }
     const source = [...context.store.get('previewValue')];
 
     if (source.every((node) => editor.read.nodes.isEmpty(node))) {
@@ -806,7 +850,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     nextNodes: Descendant[]
   ) => {
     const root = commandEditor.read.view.root();
-    const { proposed } = readAuthoredFormatSnapshot(authoredEditor);
+    const authoredEditor = requireAuthoredEditor();
+    const { document: proposed } = projectAuthoredDocument(
+      authoredEditor.read.value(),
+      { projection: 'proposed' }
+    );
     const base = suggestionBase ?? proposed;
     if (
       suggestionChange &&
@@ -1069,8 +1117,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           replaced = tx.slice.replace(
             ContentSlice.fromJSON({
               content: nextNodes,
-              openStart: openTextBlock(nextNodes[0]),
-              openEnd: openTextBlock(nextNodes.at(-1)),
+              openStart: paths ? 0 : openTextBlock(nextNodes[0]),
+              openEnd: paths ? 0 : openTextBlock(nextNodes.at(-1)),
             }),
             { at: selection }
           );
@@ -1118,7 +1166,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     const currentChangeId = state._changeId;
     const capturedSelection = state.chatSelection;
-    const nextNodes = deserializeSuggestion(content);
+    const nextNodes = parseSuggestion(content);
     const targetKeys = state.chatNodes.map(({ nodeKey }) => nodeKey);
     if (
       targetKeys.length === 0 ||
@@ -1127,6 +1175,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       return false;
     }
     if (!capturedSelection) {
+      const authoredEditor = requireAuthoredEditor();
       const acceptedView = createEditorView(authoredEditor, {
         authored: { intent: 'edit', projection: 'accepted' },
         ...(root ? { root } : {}),
@@ -1136,6 +1185,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       }
     }
     if (!suggestionPaths && !suggestionTarget) {
+      const authoredEditor = requireAuthoredEditor();
       const proposedView = createEditorView(authoredEditor, {
         authored: { intent: 'edit', projection: 'proposed' },
         ...(root ? { root } : {}),
@@ -1181,14 +1231,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     let applied = false;
     let publishedChangeId: string | null = null;
-    commandEditor.update((transaction) => {
-      const tx = transaction as unknown as AuthoredAITransaction &
-        AIActionTransaction;
-      const changeId = tx.authored.propose(
+    commandEditor.update((tx) => {
+      const authored = tx.plugin(DefaultAuthoredPlugin);
+      const history = tx.plugin(HistoryPlugin);
+      const changeId = authored.propose(
         currentChangeId ? { changeId: currentChangeId } : undefined
       );
-      if (currentChangeId) tx.history.merge();
-      else tx.history.newBatch();
+      if (currentChangeId) history.merge();
+      else history.newBatch();
       tx.changes.apply(draft.delta);
       publishedChangeId = changeId;
       applied = true;
@@ -1467,6 +1517,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         suggestionChange = null;
         suggestionPaths = null;
         suggestionTarget = null;
+        previewOwner = null;
         context.store.set({
           _blockKey: null,
           _requestId: null,
@@ -1504,7 +1555,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       /** Publish accumulated output to its request-owned review presentation. */
       setPreview: (
         content: string,
-        { requestId }: { requestId?: string | null } = {}
+        {
+          final = true,
+          requestId,
+        }: { final?: boolean; requestId?: string | null } = {}
       ) => {
         const state = context.store.get();
         if (requestId !== undefined && requestId !== state._requestId) return;
@@ -1512,12 +1566,20 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           return applySuggestion(commandEditor, content, { requestId });
         }
 
+        const ownerRequestId = requestId ?? state._requestId;
+        const invalidatePreview = () => {
+          previewOwner = { final: false, requestId: ownerRequestId };
+          context.store.set({ previewValue: [] });
+        };
         let targetKey = state._blockKey;
         if (!targetKey) {
           const selection = previewAnchor
             ? previewAnchor.resolve()
             : (state.chatSelection ?? commandEditor.read.selection());
-          if (previewAnchor && !selection) return;
+          if (previewAnchor && !selection) {
+            invalidatePreview();
+            return;
+          }
           const target =
             state.chatNodes.length > 0 && !state.chatSelection
               ? commandEditor.read.nodes.get(state.chatNodes[0].nodeKey, {
@@ -1526,7 +1588,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
               : commandEditor.read.nodes.block({
                   ...(selection ? { at: RangeApi.start(selection) } : {}),
                 });
-          if (!target) return;
+          if (!target) {
+            invalidatePreview();
+            return;
+          }
           targetKey = commandEditor.key(target[0]);
           if (
             !previewAnchor &&
@@ -1536,13 +1601,34 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             captureSelection(commandEditor, selection);
           }
         }
-        if (!commandEditor.read.nodes.get(targetKey)) return;
+        if (!commandEditor.read.nodes.get(targetKey)) {
+          invalidatePreview();
+          return;
+        }
+        const parsed = content
+          ? commandEditor.api.markdown.parseSlice(content, {
+              ...(final ? {} : { recovery: 'incomplete-stream' }),
+            })
+          : null;
+
+        if (parsed && !parsed.ok) {
+          invalidatePreview();
+          return;
+        }
+        const previewValue = parsed?.slice.content ?? [];
+
+        if (
+          !previewValue.every((node): node is Element =>
+            ElementApi.isElement(node)
+          )
+        ) {
+          invalidatePreview();
+          return;
+        }
+        previewOwner = { final, requestId: ownerRequestId };
         context.store.set({
           _blockKey: targetKey,
-          previewValue: content
-            ? commandEditor.plugin(MarkdownPlugin).api.deserialize(content)
-                .children
-            : [],
+          previewValue,
         });
       },
       /** Publish a complete cell response in the current table draft. */
@@ -1569,10 +1655,18 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             ElementApi.isElement(node) && node.type === tablePlugin.schema.type,
         });
         if (!table) return;
+        const parsed = commandEditor.api.markdown.parseSlice(content);
+
+        if (!parsed.ok) return;
+        if (
+          !parsed.slice.content.every((node): node is Element =>
+            ElementApi.isElement(node)
+          )
+        ) {
+          return;
+        }
         tableDraft.set(target.key, {
-          children: commandEditor
-            .plugin(MarkdownPlugin)
-            .api.deserialize(content).children,
+          children: parsed.slice.content,
           root: target.root,
         });
         const previewNode = (node: Descendant, path: Path): Descendant => {
@@ -1621,6 +1715,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         suggestionChange = null;
         suggestionPaths = null;
         suggestionTarget = null;
+        previewOwner = null;
         if (isOpen && !restoreTarget(commandEditor)) return discarded;
 
         aiChatCommandEditors.set(editor, commandEditor);
@@ -1701,9 +1796,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
         const refs = Object.values(blockRefs);
         const firstIndex = refs.indexOf(blockRef);
-        const nodes = commandEditor.api.markdown.deserialize(
-          comment.content
-        ).children;
+        const parsed = commandEditor.api.markdown.parseSlice(comment.content);
+
+        if (!parsed.ok) return undefined;
+        const nodes = parsed.slice.content;
         const ranges: Range[] = [];
         let previousPath: Path | undefined;
 

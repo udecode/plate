@@ -20,11 +20,6 @@ export type { GeneratedEditorTypeProvider } from './editor/generatedEditorTypes'
 export { createPluginContext } from '../lib/plugin/createPluginContext.internal';
 export * from '../lib/plugins/html/htmlDom';
 export {
-  pipePreparedInsertDataQuery,
-  prepareHtmlPluginContext,
-  prepareHtmlRegistry,
-} from '../lib/plugins/html/HtmlPlugin';
-export {
   compileEditorApplicationSchema,
   getCompiledPlateContainerTypes,
   getCompiledPlatePlugin,
@@ -32,7 +27,7 @@ export {
 } from './plugin/compilePlateModel';
 export { isNominalPluginDescriptor } from './utils/mergePlugins';
 export {
-  getPlateNodeCodecContributions,
-  type NodeCodecContribution,
-} from './plugin/collectPlateNodeCodecs';
+  getPlateNodeMappingContributions,
+  type NodeMappingContribution,
+} from './plugin/collectPlateNodeMappings';
 export type { PlatePluginCache, PlateRuntime } from './plugin/plateRuntime';

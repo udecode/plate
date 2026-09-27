@@ -6,6 +6,7 @@ import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   EditableDOMRuntime,
+  type EditableHistoryReplayEvent,
   isEditableDOMSelectionPartial,
 } from './editable-dom-runtime';
 import { readRuntimeSelectionRange } from './runtime-selection-state';
@@ -13,10 +14,12 @@ import { readRuntimeSelectionRange } from './runtime-selection-state';
 export const useEditableRootRuntimeState = ({
   viewportRuntime,
   editor,
+  onHistoryReplay,
   readOnly,
 }: {
   viewportRuntime: EditableViewportRuntime | null;
   editor: ReactRuntimeEditor;
+  onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   readOnly: boolean;
 }) => {
   const [isComposing, setIsComposing] = useState(false);
@@ -28,6 +31,7 @@ export const useEditableRootRuntimeState = ({
         viewportRuntime,
         editor,
         onComposingChange: setIsComposing,
+        onHistoryReplay,
         onViewportBackedSelectionChange: setExplicitViewportBackedSelection,
         readOnly,
       }),
@@ -39,10 +43,11 @@ export const useEditableRootRuntimeState = ({
     runtime.update({
       viewportRuntime,
       onComposingChange: setIsComposing,
+      onHistoryReplay: onHistoryReplay ?? (() => {}),
       onViewportBackedSelectionChange: setExplicitViewportBackedSelection,
       readOnly,
     });
-  }, [viewportRuntime, readOnly, runtime]);
+  }, [viewportRuntime, onHistoryReplay, readOnly, runtime]);
 
   useIsomorphicLayoutEffect(() => runtime.connect(), [runtime]);
 

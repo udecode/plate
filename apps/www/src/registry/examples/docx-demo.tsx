@@ -1,6 +1,8 @@
 'use client';
 
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import type { Editor as PlateEditor } from 'platejs';
+import { createEditor, EditorRoot } from 'platejs/react';
+import * as React from 'react';
 
 import { DocxKit } from '@/registry/components/editor/docx';
 import { DocxSourceProvider } from '@/registry/components/editor/docx-source';
@@ -22,46 +24,50 @@ import { deserializeDocxValue } from '@/registry/examples/values/deserialize-doc
 
 const docxPluginNames = new Set<string>(DocxKit.map((plugin) => plugin.name));
 
-const DocxFixedToolbarPlugin = FixedToolbarPlugin.configure({
-  slots: {
-    beforeContainer: () => (
-      <FixedToolbar>
-        <FixedToolbarButtons>
-          <ToolbarGroup>
-            <ExportToolbarButton />
-            <ImportToolbarButton />
-          </ToolbarGroup>
-        </FixedToolbarButtons>
-      </FixedToolbar>
-    ),
-  },
-});
-
-const DocxEditorKit = [
+const DocxImportKit = [
   ...EditorKit.filter(
     (plugin) =>
       plugin.name !== FixedToolbarPlugin.name &&
       !docxPluginNames.has(plugin.name)
   ),
   ...DocxKit,
-  DocxFixedToolbarPlugin,
 ] as const;
 
-export default function DocxDemo() {
-  const editor = useCreateEditor({
-    plugins: DocxEditorKit,
-    initialValue: deserializeDocxValue,
-  });
+function DocxEditor() {
+  const [editor, setEditor] = React.useState<PlateEditor>(() =>
+    createEditor({
+      plugins: DocxImportKit,
+      initialValue: deserializeDocxValue,
+      userId: 'alice',
+    })
+  );
 
   return (
+    <EditorRoot editor={editor}>
+      <EditorFrame className="h-[650px]">
+        <FixedToolbar>
+          <FixedToolbarButtons>
+            <ToolbarGroup>
+              <ExportToolbarButton />
+              <ImportToolbarButton
+                onImport={setEditor}
+                plugins={DocxImportKit}
+              />
+            </ToolbarGroup>
+          </FixedToolbarButtons>
+        </FixedToolbar>
+        <EditorContainer>
+          <Editor />
+        </EditorContainer>
+      </EditorFrame>
+    </EditorRoot>
+  );
+}
+
+export default function DocxDemo() {
+  return (
     <DocxSourceProvider>
-      <EditorRoot editor={editor}>
-        <EditorFrame className="h-[650px]">
-          <EditorContainer>
-            <Editor />
-          </EditorContainer>
-        </EditorFrame>
-      </EditorRoot>
+      <DocxEditor />
     </DocxSourceProvider>
   );
 }

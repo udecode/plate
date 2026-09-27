@@ -1,90 +1,20 @@
-import { createTestEditor } from '../__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+} from '../__tests__/createTestEditor';
 import {
   markdownToAstProcessorWithRuntime,
   withMarkdownRuntime,
 } from '../internal/markdownConversion';
 import { MarkdownPlugin } from '../MarkdownPlugin';
 
-describe('editor.api.markdown.deserialize', () => {
-  it('falls back to the safe markdown path for incomplete mdx tails', () => {
-    const editor = createTestEditor();
-    const onError = mock();
-
-    expect(editor.api.markdown.deserialize('<u>', { onError })).toEqual({
-      children: [
-        {
-          children: [{ text: '<u>' }],
-          type: 'paragraph',
-        },
-      ],
-    });
-    expect(onError).toHaveBeenCalledTimes(1);
-  });
-
-  it('falls back to editable text for malformed html-like mdx', () => {
-    const editor = createTestEditor();
-    const onError = mock();
-
-    expect(
-      editor.api.markdown.deserialize(String.raw`</ph\><`, {
-        onError,
-      })
-    ).toEqual({
-      children: [
-        {
-          children: [{ text: '</ph><' }],
-          type: 'paragraph',
-        },
-      ],
-    });
-    expect(onError).toHaveBeenCalledTimes(1);
-  });
-
-  it('wraps top-level text results from custom rules in paragraphs', () => {
-    const editor = createTestEditor();
-
-    expect(
-      editor.api.markdown.deserialize('plain', {
-        rules: {
-          paragraph: {
-            deserialize: () => ({ text: 'wrapped' }),
-          },
-        },
-      })
-    ).toEqual({
-      children: [
-        {
-          children: [{ text: 'wrapped' }],
-          type: 'paragraph',
-        },
-      ],
-    });
-  });
-
-  it('returns an empty result and calls onError when withoutMdx is true and parsing fails', () => {
-    const editor = createTestEditor();
-    const onError = mock();
-    const brokenRemarkPlugin = () => {
-      throw new Error('boom');
-    };
-
-    expect(
-      editor.api.markdown.deserialize('**bold**', {
-        onError,
-        remarkPlugins: [brokenRemarkPlugin],
-        withoutMdx: true,
-      })
-    ).toEqual({ children: [] });
-    expect(onError).toHaveBeenCalledTimes(1);
-    expect(onError.mock.calls[0]?.[0]).toBeInstanceOf(Error);
-    expect(onError.mock.calls[0]?.[0].message).toBe('boom');
-  });
-
+describe('editor.api.markdown.parse', () => {
   it('deserializes blockquotes as container blocks with nested list content', () => {
     const editor = createTestEditor();
 
     expect(
-      editor.api.markdown.deserialize(
+      parseTestMarkdown(
+        editor,
         `Hello!
 > some thing is reference
 > - aaa
@@ -125,7 +55,8 @@ describe('editor.api.markdown.deserialize', () => {
     const editor = createTestEditor();
 
     expect(
-      editor.api.markdown.deserialize(
+      parseTestMarkdown(
+        editor,
         `> outer
 > > inner
 > > tail`
@@ -158,9 +89,7 @@ describe('editor.api.markdown.deserialize', () => {
     const editor = createTestEditor();
 
     expect(
-      editor.api.markdown.deserialize(
-        '```ts\nconst x = 1;\nconsole.log(x)\n```'
-      )
+      parseTestMarkdown(editor, '```ts\nconst x = 1;\nconsole.log(x)\n```')
     ).toEqual({
       children: [
         {
@@ -176,7 +105,8 @@ describe('editor.api.markdown.deserialize', () => {
     const editor = createTestEditor();
 
     expect(
-      editor.api.markdown.deserialize(
+      parseTestMarkdown(
+        editor,
         '# Title\n\n#### Deep title\n\n###### Deepest title'
       )
     ).toEqual({
@@ -204,7 +134,8 @@ describe('editor.api.markdown.deserialize', () => {
     const editor = createTestEditor();
 
     expect(
-      editor.api.markdown.deserialize(
+      parseTestMarkdown(
+        editor,
         '<figure class="hero"><img src="/image.png"></figure>'
       )
     ).toEqual({

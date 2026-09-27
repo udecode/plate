@@ -9,7 +9,6 @@ import {
   isHtmlBlockElement,
   PathApi,
   PLUGINS,
-  postCleanHtml,
   property,
   schema,
   target,
@@ -17,6 +16,7 @@ import {
   traverseHtmlElements,
   type DefinitionOf,
   type Descendant,
+  type EditorDocumentValue,
   type EditorCoreStateView,
   type Element,
   type ElementWith,
@@ -25,6 +25,8 @@ import {
   type NodeEntry,
   type NodeKey,
   type NodeSelection,
+  type Path,
+  type RootKey,
   type BlockInsertOptions,
   type BlockUpsertOptions,
 } from '../../../core';
@@ -228,7 +230,7 @@ const getSequenceSiblingOptions = (
 };
 
 const getListSibling = (
-  state: Pick<EditorCoreStateView, 'nodes'>,
+  state: ListSiblingState,
   [node, path]: NodeEntry<Element>,
   {
     breakOnEqIndentNeqList = true,
@@ -282,31 +284,13 @@ const listOrdinalsByState = new WeakMap<
   }
 >();
 
-const getListOrdinal = (
-  state: Pick<EditorCoreStateView, 'nodes' | 'runtime'>,
-  element: Element,
+const deriveListOrdinal = (
+  state: ListSiblingState,
+  [element, path]: NodeEntry<Element>,
   options: Partial<GetSiblingListOptions> | undefined,
-  headingType: string | undefined
-): number | undefined => {
-  if (element.listType !== ListType.Numbered) return undefined;
-
-  const stateKey = state.runtime.snapshot().index;
-  let cache = listOrdinalsByState.get(stateKey);
-
-  if (
-    !cache ||
-    cache.options !== options ||
-    cache.headingType !== headingType
-  ) {
-    cache = {
-      headingType,
-      options,
-      values: new WeakMap(),
-    };
-    listOrdinalsByState.set(stateKey, cache);
-  }
-  const ordinals = cache.values;
-
+  headingType: string | undefined,
+  ordinals: WeakMap<Element, number>
+) => {
   const cached = ordinals.get(element);
 
   if (cached !== undefined) return cached;
@@ -316,29 +300,15 @@ const getListOrdinal = (
     return element.listRestart;
   }
 
-  const path = state.nodes.path(element);
-
-  if (!path) {
-    const ordinal =
-      typeof element.listStart === 'number' ? element.listStart : 1;
-
-    ordinals.set(element, ordinal);
-    return ordinal;
-  }
-
   const sequenceOptions = getSequenceSiblingOptions(options, headingType);
   const getPreviousEntry =
     sequenceOptions.getPreviousEntry ??
     (([, currentPath]: NodeEntry<Element>) => {
       if (!PathApi.hasPrevious(currentPath)) return undefined;
-      const previousPath = PathApi.previous(currentPath);
-      const previousNode = state.nodes.get(previousPath, {
-        match: ElementApi.isElement,
-      })?.[0];
 
-      return previousNode
-        ? ([previousNode, previousPath] as NodeEntry<Element>)
-        : undefined;
+      return state.nodes.get(PathApi.previous(currentPath), {
+        match: ElementApi.isElement,
+      });
     });
   const pending: Element[] = [];
   let entry: NodeEntry<Element> = [element, path];
@@ -381,6 +351,184 @@ const getListOrdinal = (
   }
 
   return ordinals.get(element);
+};
+
+const getListOrdinal = (
+  state: Pick<EditorCoreStateView, 'nodes' | 'runtime'>,
+  element: Element,
+  options: Partial<GetSiblingListOptions> | undefined,
+  headingType: string | undefined
+): number | undefined => {
+  if (element.listType !== ListType.Numbered) return undefined;
+
+  const stateKey = state.runtime.snapshot().index;
+  let cache = listOrdinalsByState.get(stateKey);
+
+  if (
+    !cache ||
+    cache.options !== options ||
+    cache.headingType !== headingType
+  ) {
+    cache = {
+      headingType,
+      options,
+      values: new WeakMap(),
+    };
+    listOrdinalsByState.set(stateKey, cache);
+  }
+  const ordinals = cache.values;
+  const path = state.nodes.path(element);
+
+  if (!path) {
+    const ordinal =
+      typeof element.listRestart === 'number'
+        ? element.listRestart
+        : typeof element.listStart === 'number'
+          ? element.listStart
+          : 1;
+
+    ordinals.set(element, ordinal);
+    return ordinal;
+  }
+
+  return deriveListOrdinal(
+    state,
+    [element, path],
+    options,
+    headingType,
+    ordinals
+  );
+};
+
+type DocumentListOrdinalCache = {
+  headingType: string | undefined;
+  options: Partial<GetSiblingListOptions> | undefined;
+  state: ListSiblingState;
+  values: WeakMap<Element, number>;
+};
+
+const listOrdinalsByDocument = new WeakMap<
+  EditorDocumentValue,
+  Map<RootKey, DocumentListOrdinalCache[]>
+>();
+
+const getDocumentRoot = (document: EditorDocumentValue, root: RootKey) =>
+  root === 'main' ? document.children : (document.roots?.[root] ?? []);
+
+const getDocumentNode = (
+  document: EditorDocumentValue,
+  root: RootKey,
+  path: Path
+): Descendant | undefined => {
+  let children: readonly Descendant[] = getDocumentRoot(document, root);
+  let node: Descendant | undefined;
+
+  for (const index of path) {
+    node = children[index];
+    if (!node) return undefined;
+    children = ElementApi.isElement(node) ? node.children : [];
+  }
+
+  return node;
+};
+
+const createDocumentListSiblingState = (
+  document: EditorDocumentValue,
+  root: RootKey
+): ListSiblingState => {
+  let paths: WeakMap<Element, Path> | undefined;
+  const pathOf = (element: Element) => {
+    if (!paths) {
+      const nextPaths = new WeakMap<Element, Path>();
+
+      paths = nextPaths;
+      const visit = (children: readonly Descendant[], parentPath: Path) => {
+        children.forEach((child, index) => {
+          if (!ElementApi.isElement(child)) return;
+
+          const path = [...parentPath, index];
+          nextPaths.set(child, path);
+          visit(child.children, path);
+        });
+      };
+
+      visit(getDocumentRoot(document, root), []);
+    }
+
+    return paths.get(element);
+  };
+  const get = ((
+    at: unknown,
+    options?: {
+      match?: (node: Descendant, path: Path) => boolean;
+    }
+  ) => {
+    const path = PathApi.isPath(at)
+      ? at
+      : ElementApi.isElement(at)
+        ? pathOf(at)
+        : undefined;
+
+    if (!path) return undefined;
+
+    const node = getDocumentNode(document, root, path);
+
+    if (!node || (options?.match && !options.match(node, path))) {
+      return undefined;
+    }
+
+    return [node, path];
+  }) as ListSiblingState['nodes']['get'];
+
+  return { nodes: { get } };
+};
+
+const getDocumentListOrdinal = (
+  document: EditorDocumentValue,
+  root: RootKey,
+  element: Element,
+  path: Path,
+  options: Partial<GetSiblingListOptions> | undefined,
+  headingType: string | undefined
+): number | undefined => {
+  if (element.listType !== ListType.Numbered) return undefined;
+
+  let rootCaches = listOrdinalsByDocument.get(document);
+
+  if (!rootCaches) {
+    rootCaches = new Map();
+    listOrdinalsByDocument.set(document, rootCaches);
+  }
+
+  let caches = rootCaches.get(root);
+
+  if (!caches) {
+    caches = [];
+    rootCaches.set(root, caches);
+  }
+
+  let cache = caches.find(
+    (candidate) =>
+      candidate.options === options && candidate.headingType === headingType
+  );
+
+  if (!cache) {
+    cache = {
+      headingType,
+      options,
+      state: createDocumentListSiblingState(document, root),
+      values: new WeakMap(),
+    };
+    caches.push(cache);
+  }
+
+  return deriveListOrdinal(
+    cache.state,
+    [element, path],
+    options,
+    headingType,
+    cache.values
+  );
 };
 
 export type BaseListPluginState = {
@@ -429,11 +577,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
     },
   }),
   targetPlugins: [BaseParagraphPlugin],
-  codecs: ({ defineCodecs, editor, store }) => {
-    const headingDescriptor = getCompiledPlatePlugin(editor, PLUGINS.heading);
-    const headingType = headingDescriptor
-      ? editor.plugin(headingDescriptor).schema.type
-      : undefined;
+  formats: ({ defineFormats }) => {
     const decodeListProperties = ({ element }: { element: HTMLElement }) => {
       const listParent = element.closest('ul, ol') as HTMLElement | null;
       const readNumber = (value: null | string | undefined) => {
@@ -490,11 +634,12 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       let previousItemCount = 0;
 
       while (
-        previousList instanceof HTMLElement &&
+        previousList &&
         (previousList.tagName === 'OL' || previousList.tagName === 'UL')
       ) {
+        const previousListElement = previousList as HTMLElement;
         const candidates = Array.from(
-          previousList.querySelectorAll<HTMLElement>(':scope > li')
+          previousListElement.querySelectorAll<HTMLElement>(':scope > li')
         );
         const candidate = candidates.at(-1);
 
@@ -512,10 +657,9 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
         }
         break;
       }
-      const previousStart =
-        previousList instanceof HTMLElement
-          ? readNumber(previousList.getAttribute('start'))
-          : undefined;
+      const previousStart = previousList
+        ? readNumber(previousList.getAttribute('start'))
+        : undefined;
       const previousEncodedListType = isListType(previousItem?.dataset.listType)
         ? previousItem.dataset.listType
         : undefined;
@@ -526,17 +670,16 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             previousChecked === 'true' ||
             previousChecked === 'false'
           ? ListType.Task
-          : previousList instanceof HTMLElement && previousList.tagName === 'OL'
+          : previousList?.tagName === 'OL'
             ? ListType.Numbered
-            : previousList instanceof HTMLElement &&
-                previousList.tagName === 'UL'
+            : previousList?.tagName === 'UL'
               ? ListType.Bulleted
               : undefined;
       const previousListStyle =
         previousItem?.dataset.listStyle ||
         previousItem?.style.listStyleType ||
-        (previousList instanceof HTMLElement
-          ? previousList.style.listStyleType
+        (previousList
+          ? (previousList as HTMLElement).style.listStyleType
           : undefined) ||
         undefined;
       const hasPreviousCompatibleItem =
@@ -586,15 +729,14 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       };
     };
 
-    return defineCodecs({
-      'text/html': [
+    return defineFormats({
+      html: [
         {
           createsElement: true,
-          transformData: ({ data }) => {
-            const document = new DOMParser().parseFromString(data, 'text/html');
+          prepareDocument: ({ document }) => {
             const { body } = document;
 
-            if (!body.querySelector('ul, ol, li')) return data;
+            if (!body.querySelector('ul, ol, li')) return;
 
             // First pass: flatten nested UL/OL that are inside LI elements
             // We need to move them to be siblings of their parent LI
@@ -642,7 +784,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                 // Process li children and flatten block elements
                 const liChildren: globalThis.Node[] = [];
                 childNodes.forEach((child) => {
-                  if (child.nodeType === Node.ELEMENT_NODE) {
+                  if (child.nodeType === 1) {
                     const childElement = child as globalThis.Element;
                     if (isHtmlBlockElement(childElement)) {
                       // Replace block elements (e.g. p) with their children
@@ -654,7 +796,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                 });
                 element.replaceChildren(...liChildren);
 
-                // Keep explicit codec metadata, then honor Google Docs.
+                // Keep explicit mapping metadata, then honor Google Docs.
                 const dataIndent = htmlElement.dataset.indent;
                 const ariaLevel = element.getAttribute('aria-level');
                 if (dataIndent) {
@@ -701,20 +843,29 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               }
               return true;
             });
-            return postCleanHtml(body.innerHTML);
           },
           decode: decodeListProperties,
-          encode: ({ content, node, state }) => {
+          encode: ({
+            content,
+            document,
+            node,
+            path,
+            pluginState,
+            registry,
+            root,
+          }) => {
             const { checked } = node;
             const { listStart } = node;
             const { listRestart } = node;
             const { listStyle } = node;
             const { listType } = node;
-            const ordinal = getListOrdinal(
-              state,
+            const ordinal = getDocumentListOrdinal(
+              document,
+              root,
               node,
-              store.get().getSiblingListOptions,
-              headingType
+              path,
+              pluginState.getSiblingListOptions,
+              registry.type(PLUGINS.heading)
             );
             return {
               attributes: {
@@ -773,96 +924,114 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
     },
   },
 })
-  .extend(({ defineCodecs, editor }) => {
-    const imageDescriptor = getCompiledPlatePlugin(editor, PLUGINS.image);
-    const imageType = imageDescriptor
-      ? editor.plugin(imageDescriptor).schema.type
-      : undefined;
+  .extend(({ defineFormats }) => ({
+    formats: defineFormats(BaseParagraphPlugin, {
+      plainText: {
+        kind: 'node',
+        priority: 40,
+        encode: ({ children, node }) => {
+          if (!node.listType) return undefined;
 
-    return {
-      codecs: defineCodecs(BaseParagraphPlugin, {
-        'text/markdown': {
-          from: 'list',
-          kind: 'node',
-          priority: 40,
-          decode: ({ build, node, schema: { type } }) => {
-            const parseList = (
-              list: typeof node,
-              indent = 1,
-              startIndex = 1
-            ): Element[] => {
-              const items: Element[] = [];
-              const ordered = Boolean(list.ordered);
+          const indent =
+            'indent' in node && typeof node.indent === 'number'
+              ? node.indent
+              : 1;
+          const depth = Math.max(0, indent - 1);
+          const marker =
+            node.listType === ListType.Task
+              ? `- [${node.checked ? 'x' : ' '}]`
+              : node.listType === ListType.Numbered
+                ? `${node.listRestart ?? 1}.`
+                : '-';
 
-              list.children.forEach((listItem, index) => {
-                const { checked } = listItem;
-                const task = typeof checked === 'boolean';
-                const listType = task
-                  ? ListType.Task
-                  : ordered
-                    ? ListType.Numbered
-                    : ListType.Bulleted;
+          return `${'  '.repeat(depth)}${marker} ${children}`;
+        },
+      },
+      markdown: {
+        from: 'list',
+        kind: 'node',
+        priority: 40,
+        decode: ({ build, node, registry }) => {
+          const imageType = registry.type(PLUGINS.image);
+          const type = registry.type(BaseParagraphPlugin);
 
-                const [paragraph, ...nested] = listItem.children;
-                const nodes: Descendant[] = paragraph
-                  ? build(paragraph)
-                  : [
-                      {
-                        children: [{ text: '' }],
-                        type: 'paragraph',
-                      },
-                    ];
+          if (!type) {
+            throw new Error('List Markdown decoding requires paragraphs.');
+          }
+          const parseList = (
+            list: typeof node,
+            indent = 1,
+            startIndex = 1
+          ): Element[] => {
+            const items: Element[] = [];
+            const ordered = Boolean(list.ordered);
 
-                nodes.forEach((child, childIndex) => {
-                  const element = TextApi.isText(child)
-                    ? {
-                        children: [child],
-                        type: 'paragraph',
-                      }
-                    : child;
-                  items.push({
-                    ...element,
-                    ...(task ? { checked } : {}),
-                    indent,
-                    listType,
-                    ...(ordered &&
-                    index === 0 &&
-                    childIndex === 0 &&
-                    startIndex !== 1
-                      ? { listRestart: startIndex }
-                      : {}),
-                    type:
-                      imageType && element.type === imageType
-                        ? element.type
-                        : type,
-                  });
-                });
+            list.children.forEach((listItem, index) => {
+              const { checked } = listItem;
+              const task = typeof checked === 'boolean';
+              const listType = task
+                ? ListType.Task
+                : ordered
+                  ? ListType.Numbered
+                  : ListType.Bulleted;
 
-                nested.forEach((child) => {
-                  if (child.type === 'list') {
-                    items.push(
-                      ...parseList(child, indent + 1, child.start ?? 1)
-                    );
-                    return;
-                  }
+              const [paragraph, ...nested] = listItem.children;
+              const nodes: Descendant[] = paragraph
+                ? build(paragraph)
+                : [
+                    {
+                      children: [{ text: '' }],
+                      type,
+                    },
+                  ];
 
-                  items.push(
-                    ...build(child)
-                      .filter((item): item is Element => !TextApi.isText(item))
-                      .map((item) => ({ ...item, indent: indent + 1 }))
-                  );
+              nodes.forEach((child, childIndex) => {
+                const element = TextApi.isText(child)
+                  ? {
+                      children: [child],
+                      type,
+                    }
+                  : child;
+                items.push({
+                  ...element,
+                  ...(task ? { checked } : {}),
+                  indent,
+                  listType,
+                  ...(ordered &&
+                  index === 0 &&
+                  childIndex === 0 &&
+                  startIndex !== 1
+                    ? { listRestart: startIndex }
+                    : {}),
+                  type:
+                    imageType && element.type === imageType
+                      ? element.type
+                      : type,
                 });
               });
 
-              return items;
-            };
+              nested.forEach((child) => {
+                if (child.type === 'list') {
+                  items.push(...parseList(child, indent + 1, child.start ?? 1));
+                  return;
+                }
 
-            return parseList(node, 1, node.start ?? 1);
-          },
+                items.push(
+                  ...build(child)
+                    .filter((item): item is Element => !TextApi.isText(item))
+                    .map((item) => ({ ...item, indent: indent + 1 }))
+                );
+              });
+            });
+
+            return items;
+          };
+
+          return parseList(node, 1, node.start ?? 1);
         },
-      }),
-    };
-  })
+      },
+    }),
+  }))
   .extend(({ editor }) => ({
     api: () => {
       const headingDescriptor = getCompiledPlatePlugin(editor, PLUGINS.heading);

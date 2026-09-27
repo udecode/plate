@@ -144,6 +144,22 @@ const VariantPlugin = defineHeadlessPlugin('variant', {
 
 const AtomicParserBPlugin = defineHeadlessPlugin('atomicParserB', {
   component: 'u',
+  dataTransferFormats: [
+    {
+      mimeType: 'application/x-plate-atomic-parser',
+      scope: 'document',
+      decode: () => ({
+        diagnostics: [],
+        ok: true,
+        slice: ContentSlice.closed([
+          {
+            children: [{ atomicParserB: true, text: 'parsed-b' }],
+            type: 'paragraph',
+          },
+        ]),
+      }),
+    },
+  ],
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -154,20 +170,7 @@ const AtomicParserBPlugin = defineHeadlessPlugin('atomicParserB', {
     beforeContainer: () => <span data-testid="container-renderer-b" />,
     beforeEditable: () => <span data-testid="renderer-b" />,
   },
-}).extend(({ defineCodecs }) => ({
-  codecs: defineCodecs({
-    'application/x-plate-atomic-parser': {
-      scope: 'document',
-      decode: () =>
-        ContentSlice.closed([
-          {
-            children: [{ atomicParserB: true, text: 'parsed-b' }],
-            type: 'paragraph',
-          },
-        ]),
-    },
-  }),
-}));
+});
 
 let storeDecorationReadCount = 0;
 
@@ -454,7 +457,7 @@ describe('PlateContent', () => {
     const title = defineStateField({
       initial: 'Untitled',
       key: 'document.title',
-      persist: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
     });
     const editor = createEditor({
       plugins: [
@@ -933,7 +936,7 @@ describe('PlateContent', () => {
     const revision = defineStateField({
       initial: 0,
       key: 'revision',
-      persist: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
     });
     const localState = defineStateField({
       initial: 0,
@@ -1133,7 +1136,7 @@ describe('PlateContent', () => {
     });
   });
 
-  it('publishes the selected parser, codecs, and mounted renderers together', async () => {
+  it('publishes the selected parser, formats, and mounted renderers together', async () => {
     const editor = createEditor({
       plugins: [AtomicParserBPlugin],
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],

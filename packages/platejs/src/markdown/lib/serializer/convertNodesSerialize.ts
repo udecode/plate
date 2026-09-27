@@ -26,9 +26,16 @@ export const convertNodesSerialize = (
     const node = nodes[i];
 
     if (node && TextApi.isText(node)) {
-      // Only add text nodes that pass the filtering
       if (shouldIncludeText(node, options)) {
         textQueue.push(node);
+      } else {
+        options.report({
+          code: 'markdown-filtered-node',
+          message: 'Markdown text was omitted by the active filter.',
+          model: options.modelLocation(node),
+          nodeType: 'text',
+          severity: 'warning',
+        });
       }
     } else {
       if (textQueue.length > 0) {
@@ -37,8 +44,14 @@ export const convertNodesSerialize = (
       textQueue = [];
       if (!node) continue;
 
-      // Skip this node if it doesn't pass the filtering
       if (!shouldIncludeNode(node, options)) {
+        options.report({
+          code: 'markdown-filtered-node',
+          message: `Markdown node "${node.type}" was omitted by the active filter.`,
+          model: options.modelLocation(node),
+          nodeType: node.type,
+          severity: 'warning',
+        });
         continue;
       }
 
@@ -66,11 +79,8 @@ export const convertNodesSerialize = (
           (next.indent ?? 1) === (firstList.indent ?? 1);
 
         if (!isNextIndent || hasDifferentListStyle || hasExplicitRestart) {
-          // Pass the original nodes and isBlock flag to listToMdastTree
-          // so it can handle wrapping individual items with block IDs
           const result = listToMdastTree(listBlock, options, isBlock);
 
-          // Handle fragment type (used when list items have IDs)
           if (result.type === 'fragment') {
             mdastNodes.push(...result.children);
           } else {
@@ -124,7 +134,16 @@ export const buildMdastNode = (
     return mdastNode;
   }
 
-  console.warn(`Unreachable code: ${JSON.stringify(node)}`);
+  options.report({
+    action: 'dropped',
+    code: 'markdown-unsupported-node',
+    message: `Plate node "${node.type}" has no installed Markdown mapping.`,
+    model: options.modelLocation(node),
+    nodeType: node.type,
+    owner: 'markdown',
+    phase: 'serialize',
+    severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
+  });
 
   return undefined;
 };
@@ -146,7 +165,6 @@ const shouldIncludeText = (
   const allowedNodeSet = allowedNodes ? new Set(allowedNodes) : null;
   const disallowedNodeSet = disallowedNodes ? new Set(disallowedNodes) : null;
 
-  // First check allowedNodes/disallowedNodes
   if (
     allowedNodes &&
     disallowedNodes &&
@@ -156,22 +174,18 @@ const shouldIncludeText = (
     throw new Error('Cannot combine allowedNodes with disallowedNodes');
   }
 
-  // Check text properties against allowedNodes/disallowedNodes
   for (const [key, value] of Object.entries(text)) {
     if (key === 'text') continue;
 
     if (allowedNodeSet) {
-      // If allowedNodes is specified, only include if the mark is in allowedNodes
       if (!allowedNodeSet.has(key) && value) {
         return false;
       }
     } else if (disallowedNodeSet?.has(key) && value) {
-      // If using disallowedNodes, exclude if the mark is in disallowedNodes
       return false;
     }
   }
 
-  // Finally, check allowNode if provided
   if (allowNode?.serialize) {
     return allowNode.serialize(text);
   }
@@ -187,7 +201,6 @@ const shouldIncludeNode = (
 
   if (!node.type) return true;
 
-  // First check allowedNodes/disallowedNodes
   if (
     allowedNodes &&
     disallowedNodes &&
@@ -198,16 +211,13 @@ const shouldIncludeNode = (
   }
 
   if (allowedNodes) {
-    // If allowedNodes is specified, only include if the type is in allowedNodes
     if (!allowedNodes.includes(node.type)) {
       return false;
     }
   } else if (disallowedNodes?.includes(node.type)) {
-    // If using disallowedNodes, exclude if the type is in disallowedNodes
     return false;
   }
 
-  // Finally, check allowNode if provided
   if (allowNode?.serialize) {
     return allowNode.serialize(node);
   }

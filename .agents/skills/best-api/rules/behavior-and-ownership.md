@@ -279,7 +279,7 @@ resolved descriptor view: fields such as `name`, `inject`, `render`,
 `store`, and `installed` expose scoped runtime capabilities. Never nest the
 descriptor under `portal.plugin`; the portal already owns the plugin noun.
 Callback authoring contexts may expose `plugin` for the current raw descriptor,
-while `editor` and `defineCodecs` stay off consumer portals. Do not add standalone or editor-method
+while `editor` and `defineFormats` stay off consumer portals. Do not add standalone or editor-method
 alternatives for descriptor lookup, name/type reversal, container discovery,
 or injection lookup. Read `.name` from the portal only after lookup when the
 normalized plugin name is needed. Missing descriptors expose
@@ -289,15 +289,13 @@ Exact installed element and primary-mark portals publish `schema.type` or
 and descriptor fields throw for missing plugins. Reverse,
 container, and renderer caches stay private. Public node questions use schema
 predicates, compiled injection data lives at `portal.inject.nodeProps`,
-and codec registries expose installation membership without name/type
+and format registries expose installation membership without name/type
 translation.
 
-When a parent namespace already fixes the format and flow, keep its operation
-hooks flat. The `'text/html'` codec owns `query`, `transformData`, and
-`transformFragment` directly. Do not add a parallel parser owner or repeat
-that direction with
-`ingress`/`egress` buckets unless the child has a distinct independently
-consumed lifecycle.
+HTML mappings may prepare only their operation-owned inert document before
+matching. Whole-payload admission, source cleanup, RTF access, and post-decode
+repair belong to `DataTransferFormat`. Do not restore generic `query`,
+`transformData`, or `transformFragment` hooks on semantic mappings.
 
 Copied registry UI and genuinely reusable package components are host-agnostic,
 even when one current host supplies a complete kit. They must not import the
@@ -354,8 +352,9 @@ missing.
 
 Plugin authoring has one widening vocabulary. Put every independent
 contribution in the headless or React `definePlugin()` call: plugin-scoped
-`api`, `read`, `selectors`, or `update`, flat native Plite fields, format
-`codecs`, and ordinary Plate fields. There is no nested `extension` wrapper.
+`api`, `read`, `selectors`, or `update`, flat native Plite fields, semantic
+`formats`, whole-payload `dataTransferFormats`, and ordinary Plate fields. There
+is no nested `extension` wrapper.
 Constructor callbacks already receive the typed authoring context; context
 access alone never justifies `.extend()`. Use `.extend()` only to adapt an
 imported/prebuilt plugin descriptor, call a shared factory the constructor
@@ -381,48 +380,49 @@ domain inputs. Independently reusable standalone descriptors use Plite
 `definePlugin` and compose as dependencies; do not pass Plate plugin
 context into their factories or copy them through a nested wrapper.
 
-Author codecs through the constructor callback that supplies their inference
+Author semantic mappings through the constructor callback that supplies their inference
 context:
 
 ```ts
 definePlugin("example", {
-  codecs: ({ defineCodecs }) => defineCodecs(map),
+  formats: ({ defineFormats }) => defineFormats(map),
 });
 ```
 
-`defineCodecs(map)` owns self and product codecs.
-`defineCodecs(TargetPlugin, map)` owns a foreign plugin contribution and
-injects that target into every HTML rule. The map remains MIME-keyed, and
-`'text/html'` accepts one schema-aware rule or a non-empty ordered rule tuple.
-Keep multiple HTML representations owned by one plugin in that single map.
+`defineFormats(map)` owns self and product mappings.
+`defineFormats(TargetPlugin, map)` owns a foreign plugin contribution and
+injects that target into every mapping. The map uses semantic `html`,
+`markdown`, and `plainText` keys. Whole-payload MIME negotiation belongs to
+root `dataTransferFormats`. Keep multiple HTML matches owned by one plugin in
+that single mapping.
 Move the callback to `.extend()` only when it consumes an earlier-stage
 capability or adapts an imported/prebuilt descriptor. This context-bound helper
 is the one inline inference anchor for
-codecs: do not
-teach direct `codecs: { ... }`, manual `target` fields, a global codec helper,
+format mappings: do not
+teach direct `formats: { ... }`, manual `target` fields, a global mapping helper,
 casts, or callback annotations.
 
 Custom Plate-owned MDX element tags are persisted schema identity. Bind
-`schema: { type }` in the codec factory and use the same resolved value for
-the codec `from`, decoded element `type`, and encoded MDX `name`. Never use the
+`schema: { type }` in the format factory and use the same resolved value for
+the mapping `from`, decoded element `type`, and encoded MDX `name`. Never use the
 plugin capability name, an authored default literal, or a dual decode alias.
 Fixed MDAST, HTML, and MDX names remain literal because they belong to the
 external format rather than the Plate schema. Legacy persisted tags migrate
-before normal codec handling.
+before normal mapping handling.
 
 One-operation Markdown decode overrides use the invariant plugin capability
 name because the incoming format identity may differ from the installed schema
 type. Encode overrides use the persisted schema identity because they dispatch
 from Plate nodes. Resolve the compiled decode owner before the override lookup;
 do not make consumers guess the configured persisted type. Once an installed
-codec claims a source, `undefined` declines that codec; it never enables a
+mapping claims a source, `undefined` declines that mapping; it never enables a
 second override lookup by persisted tag.
 
 Custom configurable MDX identity belongs on the schema-owning plugin. Do not
-author it through `defineCodecs(TargetPlugin, ...)`, where the contributor does
+author it through `defineFormats(TargetPlugin, ...)`, where the contributor does
 not own the target's final application schema. Public rule-name unions must
 retain every supported canonical rule key during identity renames.
-Apply identity checks independently to decode-only and encode-only codecs. A
+Apply identity checks independently to decode-only and encode-only mappings. A
 phrasing-only wrapper decodes the external paragraph's children directly; it
 does not infer wrapper identity from an arbitrary decoded Plate element.
 External syntax literals exempt only their format-owned source or emitted name;
@@ -436,8 +436,9 @@ default only when that Plate plugin is genuinely absent.
 
 A universal first-party format authoring contract belongs in Plate foundation when feature
 packages broadly author it and Plate foundation can express it through type-only
-dependencies. Plate foundation directly owns that format's public codec types and built-in
-MIME registry entry; the optional format package still owns the compiler,
+dependencies. Plate foundation directly owns that format's public mapping types;
+the optional format package still owns the compiler and whole-payload
+`DataTransferFormat`,
 intrinsic language behavior, and operation-level escape hatch. Do not create a
 contract-only package whose job is to ambiently augment Plate foundation, and never require
 feature authors to activate a built-in format with an empty or side-effect type

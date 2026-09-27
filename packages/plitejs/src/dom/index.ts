@@ -50,17 +50,26 @@ export {
   writeDOMFragmentData,
   writeDOMRangeData,
 } from './plugin/dom-clipboard-runtime';
-export { hostCodecs, writeHostFragmentData } from './plugin/host-codec';
-export { parseDOMClipboardHtml } from './plugin/dom-html';
+export {
+  dataTransferFormats,
+  writeDataTransferFragment,
+} from './plugin/data-transfer-format';
 export { getEditorDOMRoot } from './plugin/dom-root-runtime';
 export type {
-  HostDataSource,
-  HostCodec,
-  HostCodecParseContext,
-  HostCodecPhase,
-  HostCodecSchemaTarget,
-  HostCodecSerializeContext,
-} from './plugin/host-codec';
+  DataTransferSnapshot,
+  DataTransferAttempt,
+  DataTransferDecodeResult,
+  DataTransferDiagnostic,
+  DataTransferEncodeResult,
+  DataTransferErrorDiagnostic,
+  DataTransferFormat,
+  DataTransferDecodeContext,
+  DataTransferFormatPhase,
+  DataTransferReport,
+  DataTransferSchemaClaim,
+  DataTransferEncodeContext,
+  DataTransferWarningDiagnostic,
+} from './plugin/data-transfer-format';
 
 // Utils
 export { TRIPLE_CLICK } from './utils/constants';

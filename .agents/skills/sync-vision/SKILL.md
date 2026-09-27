@@ -105,7 +105,7 @@ Analyze changed durable inputs, not the whole repo every time:
 
 - `VISION.md`
 - `docs/vision/**`
-- `.agents/AGENTS.md`
+- `AGENTS.md`
 - `.agents/rules/**`
 - `docs/plans/**`
 - `docs/sync/**` except `docs/sync/vision/runs/**`

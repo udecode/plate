@@ -68,7 +68,7 @@ const localRevision = defineStateField<number>({
 });
 
 const blockedSharedEffect = defineEffect<string>({
-  codec: valueCodecs.string,
+  persist: { ...valueCodecs.string, version: 1 },
   collab: 'shared',
   collabReplay: 'live',
   history: 'skip',
@@ -365,7 +365,7 @@ describe('plitejs/yjs admission lifecycle contract', () => {
     const decodeError = new Error('rejected admission effect');
     let rejectDecode = false;
     const delivered = defineEffect<string>({
-      codec: valueCodecs.string,
+      persist: { ...valueCodecs.string, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       collabTransport: {

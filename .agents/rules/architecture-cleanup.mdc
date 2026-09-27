@@ -76,7 +76,7 @@ worker.
    - `docs/vision/common.md` for shared proof, automation, and routing.
    - `docs/vision/plite.md` for Plite substrate architecture.
    - `docs/vision/plate.md` for Plate framework architecture.
-4. `.agents/AGENTS.md` for command and skill ownership policy.
+4. `AGENTS.md` for command and skill ownership policy.
 5. Nearby source, tests, docs, package manifests, exports, and prior plan rows
    for the target surface.
 6. `docs/analysis/editor-architecture-candidates.md` only when the surface is

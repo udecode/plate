@@ -7,3 +7,4 @@ export * from './features/code-block';
 export * from './features/indent';
 export * from './features/link';
 export * from './features/list';
+export * from './plain-text';

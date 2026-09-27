@@ -23,10 +23,11 @@ description: 编写和配置 Plate 插件。
 | `selectors` | 纯 state-first 派生值，包括 React 订阅。 |
 | `update` | 绑定事务的插件变更。 |
 | 编辑器字段 | Read middleware、command、correction、state/effect/facet/selection descriptor、contribution、lifecycle、activation 和 validation。 |
-| `codecs` | 插件拥有的格式解码和编码。 |
+| `formats` | 插件拥有的格式解码和编码。 |
 
-回调接收推断后的[插件上下文](/docs/plugin-context)，包括 `editor`、`plugin`、
-`api`、`read`、`defineCodecs`、`store`，以及 update 贡献中的活动 `tx`。
+普通 callback 会接收该字段对应的推断
+[Plugin Context](/docs/plugin-context)。Update contribution 会得到活动 `tx`。
+`formats` 更窄：authoring callback 只接收 `defineFormats` 与静态 schema binding。
 
 ## 使用 Constructor Context
 
@@ -158,32 +159,33 @@ spec。
 `next.after(prefix)` 会基于 prefix 产生的 state 运行下游行为。插件顺序决定
 handler 顺序；descriptor 会保留 input inference。
 
-## 声明产品 Codec
+## 声明 feature format mapping
 
-使用 callback 中的 `defineCodecs` 构建 MIME-keyed map。它是 codec callback
-唯一的 inline inference anchor。
+`formats` 描述一个插件的 schema 如何映射到 semantic HTML、Markdown 和
+structural plain text。它的窄 authoring callback 只暴露 `defineFormats` 与静态
+schema binding。
 
-```ts title="records-plugin.ts" showLineNumbers
-import { ContentSlice } from 'platejs';
-import { definePlugin } from 'platejs';
+```ts title="strong-plugin.ts" showLineNumbers
+import { definePlugin, property } from 'platejs';
 
-export const RecordsPlugin = definePlugin('records', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'application/json': {
-        scope: 'document',
-        decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
-        encode: ({ slice }) => JSON.stringify(slice),
+export const StrongPlugin = definePlugin('strong', {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        decode: () => true,
+        decodeOnly: true,
+        match: [{ tag: 'strong' }],
       },
-    }),});
+    }),
+  schema: { mark: property.boolean() },
+});
 ```
 
-只有格式表示完整文档时才使用 document scope。
-Self/product codec 使用 `defineCodecs(map)`。Foreign codec 使用
-`defineCodecs(TargetPlugin, map)`；helper 会把 target 注入每个 HTML rule。
-Map 中的 `'text/html'` 接受单个 schema-aware rule 或非空有序 rule tuple。
-一个插件拥有多个 HTML 表示时，该 tuple 保持在同一个 map 中。不要直接声明
-codec map，也不要手动添加 `target`。
+Self mapping 使用 `defineFormats(map)`；foreign mapping 使用
+`defineFormats(TargetPlugin, map)`。语义 key 是 `html`、`markdown` 和
+`plainText`。HTML mapping 可以是单条 rule 或非空有序 tuple。Whole-payload
+MIME admission 与 emission 属于 `dataTransferFormats`。不要标注 mapping
+callback 参数。
 
 ## 绑定组件
 

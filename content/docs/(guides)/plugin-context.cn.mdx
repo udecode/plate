@@ -202,18 +202,20 @@ const LineHeightPlugin = definePlugin('lineHeight', {
 Aliased property 使用 property handle 的精确 key 作为 computed object key。Prefix
 family 和 cross-node behavior 放在语义 plugin update method 中。
 
-### `defineCodecs`
+### `defineFormats`
 
-在 constructor 的 `codecs` callback 中使用 `defineCodecs`。它是 codec map
-唯一的 inference anchor：
+在 constructor 的 `formats` callback 中使用 `defineFormats`。该 callback 只有
+`defineFormats` 与静态 `schema` binding，不能读取 live editor 或 store。运行时
+mapping callback 接收冻结的 `pluginState`、mapping `registry`、schema view 和本次
+conversion 的 context。
 
 ```ts
 import { definePlugin, property } from 'platejs';
 
 const StrongPlugin = definePlugin('strong', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: () => true,
         decodeOnly: true,
         match: [{ tag: 'strong' }],
@@ -222,10 +224,11 @@ const StrongPlugin = definePlugin('strong', {
 });
 ```
 
-Self/product map 使用 `defineCodecs(map)`。Foreign contribution 使用
-`defineCodecs(TargetPlugin, map)`，Plate 会把 target 注入每个 HTML rule。
-Map 保持 MIME-keyed；`'text/html'` 使用单个 rule 或非空有序 rule tuple。
-不要直接声明 codec map，也不要标注 callback 参数。
+Self mapping 使用 `defineFormats(map)`。Foreign contribution 使用
+`defineFormats(TargetPlugin, map)`，Plate 会把 target 注入每个 HTML rule。
+语义 key 是 `html`、`markdown` 和 `plainText`；HTML 使用单个 rule 或非空有序
+rule tuple。Whole-payload browser MIME 处理通过 `dataTransferFormats` 注册。
+不要标注 mapping callback 参数。
 
 ### 原生能力推断
 

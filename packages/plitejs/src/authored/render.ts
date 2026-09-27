@@ -1,12 +1,9 @@
 import { readAuthoredFragmentRoots } from '../core/authored-fragment-view';
-import {
-  readAuthoredViewFragmentSlots,
-  type NativeAuthoredFragment,
-  type NativeAuthoredRenderSegment,
+import type {
+  NativeAuthoredFragment,
+  NativeAuthoredRenderSegment,
 } from '../core/authored-runtime';
 import { DocumentIndex } from '../core/change/document-index';
-import { getEditorProjectionSnapshotIndex } from '../core/public-state';
-import type { AnyEditor as Editor } from '../interfaces/editor';
 import { NodeApi, type Descendant } from '../interfaces/node';
 import { PathApi, type Path } from '../interfaces/path';
 import { getDefined } from '../internal/get-defined';
@@ -27,6 +24,7 @@ import {
   type AuthoredPositions,
   type AuthoredSpan,
 } from './positions';
+import type { AuthoredProjectionContext } from './projection-context';
 import { readRecord } from './record-tree';
 import { authoredOriginOperation } from './state';
 import { authoredRootNodes } from './steps';
@@ -89,7 +87,7 @@ const projectedSource = (
 };
 
 export const readAuthoredFragmentRenderScopes = (
-  editor: Editor,
+  context: AuthoredProjectionContext,
   fragments: readonly NativeAuthoredFragment[],
   proposed: AuthoredRangeProjection,
   root: string
@@ -111,7 +109,7 @@ export const readAuthoredFragmentRenderScopes = (
       path = fragment.placement.point.path.slice(0, -1);
       while (
         path.length &&
-        editor.read.schema.isInline(source.document.node(path) as Descendant)
+        context.isInline(source.document.node(path) as Descendant)
       ) {
         path = path.slice(0, -1);
       }
@@ -160,7 +158,7 @@ export const readAuthoredFragmentRenderScopes = (
 
 /** Reconcile native ancestor identities without constructing another editable document. */
 export const composeAuthoredRenderSegments = (
-  editor: Editor,
+  context: AuthoredProjectionContext,
   children: readonly Descendant[],
   root: string,
   scope: Path,
@@ -192,9 +190,9 @@ export const composeAuthoredRenderSegments = (
   const fragments = new Map<string, readonly NativeAuthoredFragment[]>();
   const slots = new Map<
     string,
-    ReturnType<typeof readAuthoredViewFragmentSlots>
+    ReturnType<AuthoredProjectionContext['slots']>
   >();
-  const nodeIndex = getEditorProjectionSnapshotIndex(editor, children);
+  const nodeIndex = context.index(children);
   const partCounts = new Map<string, number>();
   const reference = (source: Source, path: Path, span?: AuthoredSpan) => {
     const owner =
@@ -203,9 +201,7 @@ export const composeAuthoredRenderSegments = (
       proposed.state,
       owner.placement ?? owner.origin
     );
-    const nodeKey = getDefined(
-      getEditorProjectionSnapshotIndex(editor, source.nodes).keyAt(path)
-    );
+    const nodeKey = getDefined(context.index(source.nodes).keyAt(path));
     const key = JSON.stringify([source.fragment?.id ?? null, nodeKey]);
     const part = partCounts.get(key) ?? 0;
     partCounts.set(key, part + 1);
@@ -237,8 +233,7 @@ export const composeAuthoredRenderSegments = (
     const key = path?.join(',') ?? '';
     let current = slots.get(key);
     if (current) return current;
-    current = readAuthoredViewFragmentSlots(
-      editor,
+    current = context.slots(
       path ? getDefined(nodeIndex.keyAt(path)) : undefined,
       root
     );
@@ -345,10 +340,10 @@ export const composeAuthoredRenderSegments = (
     const location = acceptedLocation(span);
     if (!location || location.root !== root) return ancestors;
     const position = location.offset;
-    const context = baseline.document
+    const openContext = baseline.document
       .openContextAt(position)
       .filter((entry) => entry.kind === 'element');
-    const path = context.at(-1)?.path;
+    const path = openContext.at(-1)?.path;
     if (!path) return ancestors;
     const original = ancestry(baseline, [...path]);
     return original.every((entry) => registry.has(entry.key))
@@ -448,13 +443,13 @@ export const composeAuthoredRenderSegments = (
         offset: entry.span.offset + left - entry.from,
         length: right - left,
       };
-      const context = continuedAncestry(
+      const segmentAncestry = continuedAncestry(
         source.fragment ? ancestors : ordinaryAncestry(span, ancestors)
       );
-      const parent = ensure(context);
+      const parent = ensure(segmentAncestry);
       const segment = Object.freeze({
         ...reference(source, path, span),
-        childIndex: childIndex(source, path, context.at(-1), left),
+        childIndex: childIndex(source, path, segmentAncestry.at(-1), left),
         kind: 'text' as const,
         start: left - from,
         end: right - from,
@@ -524,8 +519,8 @@ export const composeAuthoredRenderSegments = (
     for (const entry of source.document.openContextAt(bounds.to)) {
       if (entry.kind !== 'element') continue;
       const path = [...entry.path];
-      const context = ancestry(source, path);
-      const current = getDefined(context.at(-1));
+      const entryAncestry = ancestry(source, path);
+      const current = getDefined(entryAncestry.at(-1));
       const operation = authoredOriginOperation(
         proposed.state,
         current.span.placement ?? current.span.origin
@@ -544,7 +539,7 @@ export const composeAuthoredRenderSegments = (
         ancestry(baseline, [...originalParent.path]).at(-1)
       );
       // A retained split keeps the original closing token on its final block.
-      continuations.set(originalAncestor.key, continuedAncestry(context));
+      continuations.set(originalAncestor.key, continuedAncestry(entryAncestry));
     }
   };
   const visit = (node: Descendant, path: Path) => {

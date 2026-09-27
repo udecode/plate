@@ -72,7 +72,7 @@ export const editor = createEditor({
 | `math-static` | Registry | Adds static equation components for read-only rendering. |
 | `math` | Registry UI | Renders editable, static, and DOCX equation elements. |
 | `equation-toolbar-button` | Registry UI | Inserts inline equations from the toolbar. |
-| `platejs/markdown` | Package | Serializes and deserializes `math` and `inlineMath` nodes when `remark-math` is configured. |
+| `platejs/markdown` | Package | Serializes and parses `math` and `inlineMath` nodes when `remark-math` is configured. |
 
 Block and inline equations share the `EquationElement` shape, but they are different node types with different plugin names.
 
@@ -223,7 +223,7 @@ x+1
 $$
 ```
 
-Inline math deserializes to `inlineEquation`. Block math deserializes to `equation`. Serialization writes the same Markdown math shapes from `latex`.
+Inline math parses to `inlineEquation`. Block math parses to `equation`. Serialization writes the same Markdown math shapes from `latex`.
 
 ## Plate Plus
 

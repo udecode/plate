@@ -61,7 +61,10 @@ export default function RSCPage() {
     initialValue: [...basicBlocksValue, ...basicMarksValue, ...detailsValue],
   });
 
-  const md = editor.api.markdown.serialize();
+  const markdown = editor.api.markdown.serialize();
+
+  if (!markdown.ok) throw new Error(markdown.diagnostics[0].message);
+  const md = markdown.data;
 
   return (
     <DocContent category="example" doc={mockDoc} toc={[]}>

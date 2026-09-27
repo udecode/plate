@@ -24,8 +24,8 @@ import { createEditor } from '../../src/react/plugin/with-react';
 const testSchedulers = new Set<ReturnType<typeof createDOMPhaseScheduler>>();
 type BrowserHandleOptions = Parameters<typeof attachRuntimeBrowserHandle>[0];
 const attachPliteBrowserHandle = (
-  options: Omit<BrowserHandleOptions, 'domPhaseScheduler' | 'replayHistory'> &
-    Partial<Pick<BrowserHandleOptions, 'replayHistory'>>
+  options: Omit<BrowserHandleOptions, 'dispatchHistory' | 'domPhaseScheduler'> &
+    Partial<Pick<BrowserHandleOptions, 'dispatchHistory'>>
 ) => {
   const domPhaseScheduler = createDOMPhaseScheduler();
 
@@ -34,9 +34,11 @@ const attachPliteBrowserHandle = (
   return attachRuntimeBrowserHandle({
     ...options,
     domPhaseScheduler,
-    replayHistory:
-      options.replayHistory ??
-      (() => Promise.resolve({ reason: 'unmounted', status: 'unavailable' })),
+    dispatchHistory:
+      options.dispatchHistory ??
+      ((_direction, _focusPolicy, onFulfilled) => {
+        onFulfilled?.({ reason: 'unmounted', status: 'unavailable' });
+      }),
   });
 };
 
@@ -204,7 +206,9 @@ test('browser handle leaves text-only multi-root history to direct DOM sync', ()
     forceRender,
     inputController: createInputController(),
     isViewportBackedSelection: () => false,
-    replayHistory: (direction) => editor.api.history[direction](),
+    dispatchHistory: (direction, _focusPolicy, onFulfilled) => {
+      void editor.api.history[direction]().then(onFulfilled);
+    },
     setExplicitViewportBackedSelection: vi.fn(),
   });
 

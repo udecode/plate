@@ -29,14 +29,14 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
       type: 'summary',
     },
   },
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      html: {
         decode: () => ({}),
         encode: ({ content }) => ({ children: content, tag: 'summary' }),
         match: [{ tag: 'summary' }],
       },
-      'text/markdown': {
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ decode, decoration, isInline, node }) => {
@@ -92,14 +92,14 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
       ),
     },
   }),
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      html: {
         decode: () => ({}),
         encode: ({ content }) => ({ children: content, tag: 'details' }),
         match: [{ tag: 'details' }],
       },
-      'text/markdown': {
+      markdown: {
         from: type,
         kind: 'node',
         decode: ({ decode, decoration, node, registry }) => {

@@ -23,11 +23,10 @@ import type {
   AuthoredChangePart,
   AuthoredResult,
 } from 'platejs/authored';
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { DefaultAuthoredPlugin, isAuthoredEditor } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   type EditableSiblingProps,
-  type Editor,
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
   type WrapRootProps,
@@ -62,6 +61,8 @@ import {
   FloatingPopoverAnchor,
   FloatingPopoverContent,
 } from '@/registry/components/editor/floating-popover';
+
+type RuntimeEditor = Parameters<typeof createEditorView>[0];
 
 type DiscussionItem =
   | Readonly<{
@@ -102,10 +103,6 @@ type DiscussionSnapshot = Readonly<{
   revision: number;
   target: DiscussionTarget | null;
 }>;
-
-type AuthoredViewSource = Editor & {
-  read: Editor['read'] & { authored: unknown };
-};
 
 const EMPTY_BLOCK_SNAPSHOT: DiscussionBlockSnapshot = Object.freeze({
   active: false,
@@ -394,7 +391,7 @@ const createDiscussionStore = () => {
       }
     },
     update(
-      currentEditor: Editor,
+      currentEditor: RuntimeEditor,
       items: ReadonlyArray<Extract<DiscussionItem, { kind: 'comment' }>>,
       threads: ReadonlyMap<string, readonly string[]>
     ) {
@@ -622,7 +619,7 @@ const contentPreview = (
 ) => textPreview(contentText(content));
 
 const insertionPartsAreAdjacent = (
-  editor: Editor,
+  editor: RuntimeEditor,
   left: Extract<AuthoredChangePart, { kind: 'content' }>,
   right: Extract<AuthoredChangePart, { kind: 'content' }>
 ) => {
@@ -650,10 +647,13 @@ const insertionPartsAreAdjacent = (
   );
 };
 
-const proposedEditors = new WeakMap<Editor, Editor>();
+const proposedEditors = new WeakMap<RuntimeEditor, RuntimeEditor>();
 
-const getProposedEditor = (editor: Editor) => {
-  const documentEditor = getEditorRuntimeOwner(editor) as AuthoredViewSource;
+const getProposedEditor = (editor: RuntimeEditor) => {
+  const documentEditor = getEditorRuntimeOwner(editor);
+  if (!isAuthoredEditor(documentEditor)) {
+    throw new Error('Suggestion discussions require authored changes.');
+  }
   const existing = proposedEditors.get(documentEditor);
 
   if (existing) return existing;
@@ -751,7 +751,7 @@ const describeSuggestionPart = (
 };
 
 const describeSuggestion = (
-  editor: Editor,
+  editor: RuntimeEditor,
   details: AuthoredChangeDetails | null,
   fallback: AuthoredChange['kind']
 ) => {
@@ -1335,8 +1335,8 @@ function DiscussionPopover({
                       item={item}
                       onDecisionApplied={() => {
                         if (!snapshot.target && item.kind === 'suggestion') {
+                          comments.setActive(item.threadIds);
                           requestAnimationFrame(() => {
-                            comments.setActive(item.threadIds);
                             popoverRef.current?.focus();
                           });
                           return;

@@ -6,6 +6,7 @@ import {
   createEditor,
   createEditorView,
   definePlugin,
+  type EditorCommit,
   property,
   schema,
 } from '../../../core';
@@ -16,22 +17,52 @@ import {
 import { BaseParagraphPlugin } from '../../../lib';
 import { EditorStatic, type EditorStaticProps } from '../../../static';
 import { importDocx } from '../../import/lib/importDocx';
-import { exportToDocx } from './exportToDocx';
+import { exportDocx } from './exportDocx';
 
 describe('authored DOCX', () => {
+  it('writes one tracked insertion for contiguous native typing', async () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
+      initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+
+    view.update.selection.set({ offset: 4, path: [0, 0] });
+    for (const character of ' draft') {
+      view.update({ tags: 'native-text-input' }, (tx) =>
+        tx.text.insert(character)
+      );
+    }
+
+    const result = await exportDocx(editor, {
+      projection: 'review',
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
+
+    expect(documentXml.match(/<w:ins\b/g)).toHaveLength(1);
+    expect(documentXml).toContain(' draft');
+    expect(zip.file('editor/authored.json')).toBeNull();
+  });
+
   it('writes Word revisions and reloads the exact native envelope', async () => {
     let authorId = 'alice';
     const HeadingPlugin = BaseHeadingPlugin.configure({
       component: ({ attributes, children, element }) =>
         React.createElement(`h${element.level}`, attributes, children),
     });
+    const plugins = [
+      BaseParagraphPlugin,
+      HeadingPlugin,
+      BaseBoldPlugin,
+      authored({ authorId: () => authorId }),
+    ] as const;
     const editor = createEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        HeadingPlugin,
-        BaseBoldPlugin,
-        authored({ authorId: () => authorId }),
-      ],
+      plugins,
       initialValue: [{ children: [{ text: 'ABCDE' }], type: 'paragraph' }],
     });
     const view = createEditorView(editor, {
@@ -49,8 +80,8 @@ describe('authored DOCX', () => {
     authorId = 'carol';
     view.update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
 
-    const result = await exportToDocx(editor, {
-      editorPlugins: [BaseParagraphPlugin, HeadingPlugin, BaseBoldPlugin],
+    const result = await exportDocx(editor, {
+      nativeState: 'attach',
       projection: 'review',
     });
     expect(result.ok).toBe(true);
@@ -73,7 +104,10 @@ describe('authored DOCX', () => {
     );
     expect(result.diagnostics).toEqual([]);
 
-    const imported = await importDocx(editor, await result.blob.arrayBuffer());
+    const imported = await importDocx(await result.blob.arrayBuffer(), {
+      authoredTrust: { kind: 'same-application' },
+      plugins,
+    });
 
     expect(imported.ok).toBe(true);
     if (!imported.ok) return;
@@ -88,8 +122,8 @@ describe('authored DOCX', () => {
 
     editedZip.file('word/document.xml', documentXml.replace('>XY<', '>ZZ<'));
     const edited = await importDocx(
-      editor,
-      await editedZip.generateAsync({ type: 'arraybuffer' })
+      await editedZip.generateAsync({ type: 'arraybuffer' }),
+      { authoredTrust: { kind: 'same-application' }, plugins }
     );
 
     expect(edited.ok).toBe(true);
@@ -104,8 +138,8 @@ describe('authored DOCX', () => {
 
     zip.file('editor/authored.json', 'invalid');
     const invalid = await importDocx(
-      editor,
-      await zip.generateAsync({ type: 'arraybuffer' })
+      await zip.generateAsync({ type: 'arraybuffer' }),
+      { authoredTrust: { kind: 'same-application' }, plugins }
     );
 
     expect(invalid.ok).toBe(true);
@@ -118,7 +152,7 @@ describe('authored DOCX', () => {
     );
     zip.remove('editor/authored.json');
     const externalBuffer = await zip.generateAsync({ type: 'arraybuffer' });
-    const external = await importDocx(editor, externalBuffer);
+    const external = await importDocx(externalBuffer, { plugins });
 
     expect(external.ok).toBe(true);
     if (!external.ok) return;
@@ -162,8 +196,8 @@ describe('authored DOCX', () => {
 
     zip.file('word/document.xml', unsupportedXml);
     const unsupported = await importDocx(
-      editor,
-      await zip.generateAsync({ type: 'arraybuffer' })
+      await zip.generateAsync({ type: 'arraybuffer' }),
+      { lossPolicy: 'allow', plugins }
     );
 
     expect(unsupported.ok).toBe(true);
@@ -198,8 +232,9 @@ describe('authored DOCX', () => {
 
       return React.createElement(EditorStatic, props);
     };
-    const result = await exportToDocx(editor, {
-      editorStaticComponent: MutatingStatic,
+    const result = await exportDocx(editor, {
+      component: MutatingStatic,
+      nativeState: 'attach',
       projection: 'review',
     });
 
@@ -229,17 +264,84 @@ describe('authored DOCX', () => {
     view.update.text.insert(' draft', {
       at: { offset: 4, path: [0, 0] },
     });
-    const result = await exportToDocx(editor, {
+    const result = await exportDocx(editor, {
       projection: 'accepted',
     });
 
     expect(result.ok).toBe(true);
-    expect(result.diagnostics[0]?.code).toBe('lossy-content');
+    expect(result.diagnostics[0]?.code).toBe('authored-lossy-projection');
+  });
+
+  it('refuses review output when authored conflicts cannot become Word revisions', async () => {
+    const plugin = authored({ authorId: 'alice' });
+    const plugins = [BaseParagraphPlugin, plugin];
+    const original = createEditor({
+      plugins,
+      initialValue: [{ children: [{ text: 'First' }], type: 'paragraph' }],
+    });
+    let id = '';
+
+    original.update((tx) => {
+      id = tx.authored.propose();
+      tx.text.insert('!', { at: { offset: 5, path: [0, 0] } });
+    });
+    const saved = structuredClone(original.read.value());
+    const author = createEditor({ plugins, initialValue: saved });
+    const reviewer = createEditor({ plugins, initialValue: saved });
+    const effects: Array<EditorCommit['effects'][number]> = [];
+
+    for (const peer of [author, reviewer]) {
+      peer.subscribeCommit((commit) => {
+        effects.push(
+          ...commit.effects.filter(
+            ({ type }) => type.key === 'authored.operation'
+          )
+        );
+      });
+    }
+    author.update((tx) => {
+      tx.authored.propose({ changeId: id });
+      tx.text.insert('x', { at: { offset: 6, path: [0, 0] } });
+    });
+    reviewer.update.authored.decide({
+      action: 'accept',
+      selection: reviewer.read.authored.select({ ids: [id] }),
+    });
+    const merged = createEditor({ plugins, initialValue: saved });
+
+    merged.update((tx) => {
+      for (const effect of effects) tx.effects.emit(effect.type, effect.value);
+    });
+
+    const review = await exportDocx(merged, { projection: 'review' });
+    const accepted = await exportDocx(merged, { projection: 'accepted' });
+
+    expect(review).toEqual({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'authored-conflict',
+          count: 1,
+          severity: 'error',
+        }),
+      ],
+      ok: false,
+    });
+    expect(accepted.ok).toBe(true);
+    expect(accepted.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'authored-conflict',
+        severity: 'warning',
+      })
+    );
   });
 
   it('projects proposed comment ranges into accepted and review output', async () => {
+    const plugins = [
+      BaseParagraphPlugin,
+      authored({ authorId: 'alice' }),
+    ] as const;
     const editor = createEditor({
-      plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
+      plugins,
       initialValue: [{ children: [{ text: 'ABCDE' }], type: 'paragraph' }],
     });
     const view = createEditorView(editor, {
@@ -267,18 +369,17 @@ describe('authored DOCX', () => {
         },
       },
     });
-    const review = await exportToDocx(editor, {
+    const review = await exportDocx(editor, {
       comments: [comment('inserted', 1, 4)],
-      editorPlugins: [BaseParagraphPlugin],
       projection: 'review',
     });
 
     expect(review.ok).toBe(true);
     if (!review.ok) return;
-    const reviewImport = await importDocx(
-      editor,
-      await review.blob.arrayBuffer()
-    );
+    const reviewImport = await importDocx(await review.blob.arrayBuffer(), {
+      lossPolicy: 'allow',
+      plugins,
+    });
 
     expect(reviewImport.ok).toBe(true);
     if (!reviewImport.ok) return;
@@ -289,18 +390,17 @@ describe('authored DOCX', () => {
       },
     });
 
-    const accepted = await exportToDocx(editor, {
+    const accepted = await exportDocx(editor, {
       comments: [comment('unchanged', 4, 6)],
-      editorPlugins: [BaseParagraphPlugin],
       projection: 'accepted',
     });
 
     expect(accepted.ok).toBe(true);
     if (!accepted.ok) return;
-    const acceptedImport = await importDocx(
-      editor,
-      await accepted.blob.arrayBuffer()
-    );
+    const acceptedImport = await importDocx(await accepted.blob.arrayBuffer(), {
+      lossPolicy: 'allow',
+      plugins,
+    });
 
     expect(acceptedImport.ok).toBe(true);
     if (!acceptedImport.ok) return;
@@ -346,8 +446,8 @@ describe('authored DOCX', () => {
     view.update.text.insert(' draft', {
       at: { offset: 4, path: [0, 0] },
     });
-    const result = await exportToDocx(editor, {
-      editorPlugins: [CustomPlugin, CustomMarkPlugin],
+    const result = await exportDocx(editor, {
+      nativeState: 'attach',
       projection: 'review',
     });
     expect(result.ok).toBe(true);

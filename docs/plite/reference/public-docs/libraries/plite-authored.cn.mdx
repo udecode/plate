@@ -119,7 +119,7 @@ History undo 和 redo 保留本地交互生命周期。它们可以反转 author
 
 ## Format helper
 
-`plitejs/authored` 导出 `readAuthoredFormatSnapshot`、`serializeAuthoredJson`、`deserializeAuthoredJson` 和 `createAuthoredReviewDocument`。Plate facade 还提供 Markdown、HTML 和 DOCX adapter。请参阅 [Authored Changes](/docs/authored-changes)。
+`plitejs/authored` 导出纯文档转换。使用 `projectAuthoredDocument(document, { projection })` 获取 accepted 或 proposed 内容，使用 `projectAuthoredReview(document)` 获取完整 review markup 和 property change，使用 `projectAuthoredRange(document, range, { from, to })` 在 projection 之间映射 range。`parseAuthoredDocument(data)` 会先验证持久化 JSON，再返回文档。这些 helper 不会创建或激活 editor runtime。Plate HTML 与 Markdown serializer 只接受可见的 `accepted` 或 `proposed` projection；完整 review state 保存在 authored JSON。DOCX review 导出使用 Word revision 表示可见 change；只有调用者显式请求可信的精确往返任务时，才附加 Plate 原生状态。请参阅 [Authored Changes](/docs/authored-changes)。
 
 ## API 参考
 

@@ -1,0 +1,90 @@
+{
+  "id": "2026-09-24-exports-model-switch-final-audit",
+  "scope": "exports",
+  "kind": "review",
+  "date": "2026-09-24",
+  "question": "What is the smallest truthful export repair after the post-implementation counterexamples, and which adjacent findings actually belong to exports?",
+  "model": null,
+  "method": "best-api-review/history-v3; first-principles hard-cut, Plate/Plite ownership and scale-sensitive target gates",
+  "trigger": "The user switched models and requested one final audit of the completed exports direction and the immediately preceding post-implementation audit.",
+  "requirements": [
+    "Each export action describes one captured editor revision: projected content, review envelope and diagnostics agree, and capture precedes asynchronous work.",
+    "Delete the public split-source input that combines a supplied review document with projections derived from a live editor.",
+    "Pending and conflicted authored states remain explicit. Clean projection is allowed, but review export never silently converts a conflict into ordinary proposed text.",
+    "Reuse the existing authored snapshot and format owners unless a measured current job proves a new primitive is necessary.",
+    "Keep HTML, Markdown and DOCX conversion separate; do not add ExportPlugin, a universal result, a cross-format package or a second snapshot/checkpoint owner.",
+    "Treat the authored capability guard and export trigger as bounded correctness repairs at their existing owners.",
+    "Keep suggestion-mode identity handling under authored/suggestion ownership rather than bundling it into exports.",
+    "Do not select a targeted projection API or other scale-sensitive runtime path without a comparative benchmark."
+  ],
+  "evidenceReuse": "Reused the matching current-source inspection and all bounded probes recorded by 2026-09-24-exports-post-implementation-audit-closure. Rechecked every production call to readAuthoredFormatSnapshot, the public authored docs, checkpoint/admission owners, HTML/Markdown/DOCX consumers, canPropose callers and both dropdown adapters. No behavior probe was rerun because source and captured dependencies match; this pass challenges the prior target and scope rather than repeating established counterexamples.",
+  "summary": "Pursue, but cut the previous audit's implied new capture/checkpoint architecture and narrow the work. The current snapshot API is synchronous, already captures editor.read.value(), and has one harmful extra input: options.review can be old while accepted/proposed/markup still come from live views. Delete that input. HTML must render snapshot.accepted or snapshot.proposed and embed snapshot.review instead of retaining a live view across an await. DOCX/menu capture must occur before their dynamic import or any other await. Conflict handling remains real design work: conflicted accepted/proposed content differs, yet the current pending-only list produces no warning or native revisions; review export should explicitly represent a proven-safe conflict form or refuse/report it, never assume all conflicts are ordinary revisions. Eager construction of every markup segment is observable work but has no comparative timing or memory evidence, so targeted-projection API work is Defer rather than Pursue. isAuthoredEditor and the export trigger are direct correctness repairs, not new architecture. The author-loss toolbar case is real and read.canPropose also violates the documented snapshot-read boundary, but both belong to authored/suggestions, not exports. Coverage: 8 units expected and reviewed, 0 examination exclusions, 1 ownership transfer out of exports, and 1 unresolved benchmark gate; 5 Pursue, 2 Stop, 1 Defer.",
+  "verdict": "pursue",
+  "previous": "2026-09-24-exports-post-implementation-audit-closure",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-24-exports-post-implementation-audit-closure",
+      "question": "Does the completed exports design have one truthful capture, complete unresolved-change accounting, sound authored capability/eligibility boundaries and primitive-owned menu interaction?",
+      "action": "supersedes",
+      "reason": "Retain every reproduced correctness defect and the rejection of a universal export layer, but replace the over-broad target and unit accounting. createAuthoredReviewCheckpoint constructs imported history rather than capturing a live editor, so it is not the repair owner. The existing synchronous snapshot can remain after deleting its split-source review option and making adapters consume its captured outputs. Move suggestion-mode work out of exports and leave the eager-markup optimization evidence-gated."
+    }
+  ],
+  "alternatives": [
+    "UNIT 1 — Format ownership, app CSS and removed raster actions: STOP. Keep separate HTML, Markdown and DOCX codecs plus copied-menu policy. A universal ExportPlugin/result/package cannot delete their distinct dependencies, outputs or review semantics.",
+    "UNIT 2 — Capture lifetime and projection authority: PURSUE at Plite authored plus the three adapters. Delete readAuthoredFormatSnapshot's options.review input. Capture with the existing snapshot synchronously before any await; clean HTML renders snapshot.accepted/proposed in a neutral editor, review HTML embeds snapshot.review, and DOCX/menu must capture before lazy loading. Do not add a second checkpoint, export snapshot service or generic coordinator.",
+    "UNIT 3 — Conflicted authored changes: PURSUE at Plite authored semantics and format adapters. Enumerate unresolved status honestly. Accepted/proposed exports may remain valid with diagnostics; review export must either prove a faithful conflict representation or return an explicit unsupported/error diagnostic. Blindly feeding conflicts into Word revisions is not selected.",
+    "UNIT 4 — Eager markup and property materialization: DEFER to Benchmark inside the design task. The 1,000-paragraph probe establishes 2,000 constructed segments, not material latency or memory value. Do not add readAuthoredProjection or a discriminated snapshot API until a full-snapshot versus targeted path comparison passes the scale gate; accept removal if the correctness repair eliminates the work without new machinery.",
+    "UNIT 5 — isAuthoredEditor: PURSUE as a direct Plite authored repair. The public guard must consult active native capability/runtime identity, not registry name presence. Reuse the existing authored runtime activation/cleanup evidence; reject a generic capability framework. This is an exports dependency, not export architecture.",
+    "UNIT 6 — Author eligibility and mode toolbar: PURSUE separately under authored/suggestions; transfer out of exports. Installation, current view intent and canPropose availability remain separate. The toolbar must always be able to leave proposal intent. canPropose depends on live identity, so the durable API classification is api rather than snapshot-bound read; adopt its two production callers and docs there. The existing probe does not prove post-mount identity reactivity.",
+    "UNIT 7 — Adjacent authored fragment coalescing: STOP. Keep coalescing at authored read/format boundaries. The prior one-run/one-revision proof remains valid and no stronger deletion or ownership move was found.",
+    "UNIT 8 — Export dropdown interaction: PURSUE as a direct copied-component repair. Delete the extra onClick opener so the dropdown primitive owns toggling, then reproduce the original post-export reopen case before touching Radix or Base adapters. This is an export bug, not architecture."
+  ],
+  "proofLimits": "Assessment and review metadata only; no product code, implementation plan, benchmark, commit or publication. Source identities match the preceding audit. Reused probes establish HTML revision drift, split-source snapshots, conflicted-only omission, guard name collision, pre-mount author-loss mode mismatch and current Radix mouse/keyboard trigger behavior. No Microsoft Word, Base UI browser, touch, cross-browser or full-suite rerun. The conflict probe proves silent loss of review presentation while the embedded canonical envelope survives; it does not prove that every conflict can or should become a native Word revision. Segment counts prove construction, not user-visible cost. Dynamic import establishes that menu DOCX capture currently occurs after an await by source inspection; no timing race was replayed. The author-loss result remains outside exports and does not prove a subscription requirement. Expected/reviewed 8/8; examination exclusions 0; ownership transfer 1; unresolved evidence gate 1.",
+  "references": [
+    "docs/research/decisions/export-fidelity.md",
+    "docs/research/review-records/2026-09-24-exports-post-implementation-audit-closure.json"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "ce1295de4542cabe8e32d3d232fb876e2fcdfd58125c8d83a780a851d66d7005",
+      "apps/www/src/registry/examples/docx-demo.tsx": "b149d67140f4199c71ce377b28e70860db6ceace532dab270eeafd9bbd894b82",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "378bf330f000d9d942290ee2387649ceffd257450d94c35e576a2be97cabae25",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/authoredHtml.ts": "4778f24dd2f41245df7f0f50a787af7547f4199139dc253308ac68f6b960c038",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "d598a7e01d0feb6f344e4ecfba0eba085c53d95828a809cb925bcbc6d7f4aa46",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "cfed5c6917dcb7f77a202b02cc9615232a7c8d1682d34742959a0c715f69f57f",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "db8ad5e16b2df9f6b12abf8d092deaab5761dc870c7a06c89f4dbb4187f5b542",
+      "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "6a7e2f3cc15080d2a6175f088a1ccf5cbe1657a8e6c03b2ca37a89fd7f19efc8",
+      "packages/platejs/type-tests/authored-format-contracts.ts": "10bd2cd997e957390c7263240f167867d31266333e8c551f8c45bf76c6608ab2",
+      "packages/plitejs/src/authored/format.ts": "91e275d9586acbfa8b75eb7ee69a7b193190eea6b83e29c1435bbae5652cd9e6",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/registry-editor.ts": "95491326193b354802a076551bb117fc05f2f1431bd29f4635dac7e4a6b80cf4",
+      "content/docs/examples/export.mdx": "894b42766520c95adf3c241fddb33aabe2f69eecdee9208eb186a64bb84bbab2",
+      "content/docs/(guides)/authored-changes.mdx": "5e090b31478870b8f96b206d36af9ced364d0d539474b273711926f8a897ef79",
+      "docs/vision/plate.md": "8e21e0c1783d79d5f5c4389af7e79e6455de92b3f22b494dbd506695828ec4dc",
+      "docs/vision/plite.md": "aefd3df5a578003e90fffa6688c317bdbb49837b80cb4874863f8decdecf31f8",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "271bdf6da40799f15a72c7237e96434f431f949b7d72ec2a6b541f952da7eb4b",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "packages/plitejs/src/authored/authored.ts": "022bc84a7a2264002bc9b934c48194dec408049a5684ee56331f52e7df55f263",
+      "packages/plitejs/src/authored/checkpoint.ts": "adadcfedbd7a0c75d4cec96af91f7665091155ee3613148832c7bdf023925b2a",
+      "packages/plitejs/src/authored/types.ts": "72a1cb122d2306216922b51616172da18a81936e2fe512f885d7334c1bba331f",
+      "packages/platejs/src/authored/PlateAuthoredPlugin.ts": "633fbb13d6573b385b967f10f6ca0560fae4d4c837f97807c1a46ec6834e0faf",
+      "packages/platejs/src/features/suggestion/BaseSuggestionPlugin.ts": "a4ac17d8e9bdad423c8f5ff0104392adc6cf48967a35678ff7b1c1851eea6bec",
+      "apps/www/src/registry/components/editor/mode-toolbar-button.tsx": "a7b2c7c6454e35a6eac2f0327fde02071d811fe4552bab081aadcf35877ee12e",
+      "apps/www/src/registry/bases/radix/dropdown-menu.tsx": "e2c58b59d790658eb4be10375b86b9b06304aa910e10d1bf18f01315b20f2a59",
+      "apps/www/src/registry/bases/base/dropdown-menu.tsx": "67532d0c3aab2074398a19bda26e9134eefdb652e62cddca388393c94dcb6c52",
+      "docs/research/review-records/2026-09-24-exports-post-implementation-audit-closure.json": "18ee2a133652cf81e29ac83afb42aa5093835b07dbc593c5c851a09ca9adbf78"
+    },
+    "directories": {},
+    "features": {
+      "ui/export-toolbar-button": "35329fe8688be3028b742d972c693f828bdade01836c631f9f9869b2bc571204"
+    },
+    "upstreams": []
+  }
+}

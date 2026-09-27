@@ -150,9 +150,9 @@ export const BaseBoldPlugin = definePlugin(PLUGINS.bold, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           someHtmlElement(element, (node) => node.style.fontWeight === 'normal')
             ? undefined
@@ -164,7 +164,7 @@ export const BaseBoldPlugin = definePlugin(PLUGINS.bold, {
         ],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'strong',
         kind: 'node',
         mark: true,
@@ -180,9 +180,9 @@ export const BaseCodePlugin = definePlugin(PLUGINS.code, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => {
           const blockAbove = findHtmlParentElement(element, 'P');
 
@@ -195,7 +195,7 @@ export const BaseCodePlugin = definePlugin(PLUGINS.code, {
         match: [{ tag: 'code' }, { style: { fontFamily: 'Consolas' } }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'inlineCode',
         kind: 'node',
         mark: true,
@@ -218,15 +218,15 @@ export const BaseHighlightPlugin = definePlugin(PLUGINS.highlight, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: () => true,
         encode: ({ value }) => (value ? { tag: 'mark' } : null),
         match: [{ tag: 'mark' }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'mark',
         kind: 'node',
         mark: true,
@@ -249,9 +249,9 @@ export const BaseItalicPlugin = definePlugin(PLUGINS.italic, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           someHtmlElement(element, (node) => node.style.fontStyle === 'normal')
             ? undefined
@@ -260,7 +260,7 @@ export const BaseItalicPlugin = definePlugin(PLUGINS.italic, {
         match: [{ tag: ['em', 'i'] }, { style: { fontStyle: 'italic' } }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'emphasis',
         kind: 'node',
         mark: true,
@@ -276,15 +276,15 @@ export const BaseKbdPlugin = definePlugin(PLUGINS.kbd, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: () => true,
         encode: ({ value }) => (value ? { tag: 'kbd' } : null),
         match: [{ tag: 'kbd' }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'kbd',
         kind: 'node',
         mark: true,
@@ -307,9 +307,9 @@ export const BaseScriptPlugin = definePlugin(PLUGINS.script, {
   schema: {
     mark: property.enum(scriptValues),
   },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           element.tagName === 'SUB' || element.style.verticalAlign === 'sub'
             ? 'sub'
@@ -328,7 +328,7 @@ export const BaseScriptPlugin = definePlugin(PLUGINS.script, {
         ],
       },
 
-      'text/markdown': [
+      markdown: [
         {
           from: 'sub',
           kind: 'node',
@@ -358,9 +358,9 @@ export const BaseStrikethroughPlugin = definePlugin(PLUGINS.strikethrough, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           someHtmlElement(
             element,
@@ -375,7 +375,7 @@ export const BaseStrikethroughPlugin = definePlugin(PLUGINS.strikethrough, {
         ],
       },
 
-      'text/markdown': [
+      markdown: [
         {
           from: 'delete',
           kind: 'node',
@@ -400,9 +400,9 @@ export const BaseUnderlinePlugin = definePlugin(PLUGINS.underline, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs, schema: { key } }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats, schema: { key } }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) =>
           someHtmlElement(
             element,
@@ -414,7 +414,7 @@ export const BaseUnderlinePlugin = definePlugin(PLUGINS.underline, {
         match: [{ tag: 'u' }, { style: { textDecoration: 'underline' } }],
       },
 
-      'text/markdown': {
+      markdown: {
         from: 'u',
         kind: 'node',
         mark: true,

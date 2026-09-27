@@ -3,16 +3,27 @@ import type {
   EditorSchemaSourceProvider,
 } from '../core/schema-source.internal';
 import type { BaseElement } from './element';
+import type { EditorJsonValue } from './json';
 import type { BaseText } from './text';
 
-/** JSON data accepted by schema property defaults. */
-export type PropertyJsonValue =
-  | boolean
-  | null
-  | number
-  | string
-  | readonly PropertyJsonValue[]
-  | Readonly<{ [key: string]: PropertyJsonValue }>;
+/** Stable semantic actions performed by coercive schema fitting. */
+export type EditorSchemaRepairCode =
+  | 'canonicalize-set-property'
+  | 'create-root'
+  | 'default-property'
+  | 'drop-unplaceable-text'
+  | 'flatten-block-content'
+  | 'generate-property'
+  | 'insert-empty-text'
+  | 'insert-inline-spacer'
+  | 'insert-required-content'
+  | 'merge-text'
+  | 'omit-default-property'
+  | 'remove-empty-text'
+  | 'remove-noncanonical-child'
+  | 'replace-element-shell'
+  | 'resolve-exclusive-property'
+  | 'wrap-content';
 
 export type PropertyValueKind =
   | 'boolean'
@@ -92,7 +103,7 @@ export interface PropertyEnumDescriptor<
   readonly values: TValues;
 }
 export interface PropertyJsonDescriptor<
-  TValue = PropertyJsonValue,
+  TValue = EditorJsonValue,
   TOptions extends PropertyValueOptions<TValue> | undefined = undefined,
 > extends PropertyValueDescriptor<TValue, 'json', TOptions> {}
 export interface PropertyNumberDescriptor<
@@ -131,7 +142,7 @@ export type PropertyOptionsOf<TDescriptor> =
 
 export type PropertySetOptions<TItem> = PropertyValueOptions<readonly TItem[]>;
 
-export type PropertyJsonOptions<TValue = PropertyJsonValue> =
+export type PropertyJsonOptions<TValue = EditorJsonValue> =
   PropertyValueOptions<TValue>;
 
 export type SchemaKeyPrefix<TPrefix extends string = string> = Readonly<{
@@ -272,7 +283,7 @@ export type SchemaContentOptions = Readonly<{
 /** One required child at a fixed position before ordinary content. */
 export type SchemaContentPrefixSlot = Readonly<{
   element: string | Readonly<{ source: string; type: string }>;
-  properties?: Readonly<Record<string, PropertyJsonValue>>;
+  properties?: Readonly<Record<string, EditorJsonValue>>;
 }>;
 
 type SchemaContentRuleWitness<TAllowed extends SchemaContentRule> = Readonly<{
@@ -404,7 +415,7 @@ export type EditorSchemaContent = Readonly<{
   min: number;
   prefix?: ReadonlyArray<
     Readonly<{
-      properties: Readonly<Record<string, PropertyJsonValue>>;
+      properties: Readonly<Record<string, EditorJsonValue>>;
       type: string;
     }>
   >;

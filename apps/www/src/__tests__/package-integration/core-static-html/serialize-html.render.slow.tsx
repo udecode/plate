@@ -31,11 +31,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       ],
     });
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain(
       '<ul><li><span><span><span>test render below</span></span></span></li></ul>'
@@ -58,11 +54,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('<span>None encoded string 100%</span>');
     expect(html).toContain('<span>Encoded string 100%25</span>');
@@ -101,11 +93,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       ],
     });
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain(
       '<span><span data-editor-test="node-wrapper"><span><span data-editor-test="leaf-wrapper"><span>test content</span></span></span></span></span>'
@@ -140,11 +128,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       ],
     });
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain(
       '<span><span><span data-editor-test="node-wrapper"><span>test content</span></span></span></span>'
@@ -179,11 +163,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       ],
     });
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain(
       '<span><span data-editor-test="node-wrapper"><span><span>test content</span></span></span></span>'

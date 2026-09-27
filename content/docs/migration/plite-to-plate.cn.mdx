@@ -145,8 +145,8 @@ editor.update((tx) => {
 read middleware、lifecycle、activation、validation 等底层行为使用根级原生 Plite
 字段。互相独立的字段放进 constructor。只有 import/prebuilt declaration、constructor 无法访问的
 shared factory 或前一阶段类型需要 `.extend()`。Codec declaration 通过 constructor 的
-`codecs: ({ defineCodecs }) => defineCodecs(map)` 构建；foreign codec 使用
-`defineCodecs(TargetPlugin, map)`。
+`formats: ({ defineFormats }) => defineFormats(map)` 构建；foreign mapping 使用
+`defineFormats(TargetPlugin, map)`。
 
 有关插件上下文的更多信息，请参阅[插件上下文指南](/docs/plugin-context)。
 

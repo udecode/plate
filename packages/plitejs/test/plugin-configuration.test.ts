@@ -12,7 +12,6 @@ import {
   definePluginSlot,
   definePluginPoint,
   defineStateField,
-  defineValueCodec,
   ElementApi,
   PluginPublicationError,
   editorCommands,
@@ -345,11 +344,11 @@ describe('transactional plugin configuration', () => {
     );
     const persisted = defineStateField({
       key: 'direct-initial-snapshot-field',
-      persist: defineValueCodec<string>({
+      persist: {
         decode: (value) => `decoded:${String(value)}`,
         encode: (value) => value,
         version: 1,
-      }),
+      },
     });
     const stateOwner = definePlugin('direct-initial-snapshot-state', {
       stateFields: [persisted],
@@ -1395,11 +1394,11 @@ describe('transactional plugin configuration', () => {
     const persisted = defineStateField({
       initial: 'installed',
       key: 'failed-configuration-field',
-      persist: defineValueCodec<string>({
+      persist: {
         decode: (value) => String(value),
         encode: (value) => value,
         version: 1,
-      }),
+      },
     });
     const committedStates: Array<{
       field: string;

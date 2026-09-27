@@ -204,6 +204,16 @@
       "import": "./dist/history/index.js",
       "default": "./dist/history/index.js"
     },
+    "./html": {
+      "types": "./dist/html/index.d.ts",
+      "import": "./dist/html/index.js",
+      "default": "./dist/html/index.js"
+    },
+    "./html/server": {
+      "types": "./dist/html/server/index.d.ts",
+      "import": "./dist/html/server/index.js",
+      "default": "./dist/html/server/index.js"
+    },
     "./hyperscript": {
       "types": "./dist/hyperscript/index.d.ts",
       "import": "./dist/hyperscript/index.js",
@@ -420,6 +430,8 @@
     "lint:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs find",
     "lint:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote",
     "lint:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote-react",
+    "lint:partition:html": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs html",
+    "lint:partition:html-server": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs html-server",
     "lint:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs layout",
     "lint:partition:layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs layout-react",
     "lint:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs markdown",
@@ -502,6 +514,8 @@
     "test:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs find",
     "test:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote",
     "test:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote-react",
+    "test:partition:html": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs html",
+    "test:partition:html-server": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs html-server",
     "test:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs layout",
     "test:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs markdown",
     "test:partition:math": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs math",
@@ -578,6 +592,8 @@
     "typecheck:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs find",
     "typecheck:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs footnote",
     "typecheck:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs footnote-react",
+    "typecheck:partition:html": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs html",
+    "typecheck:partition:html-server": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs html-server",
     "typecheck:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs layout",
     "typecheck:partition:layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs layout-react",
     "typecheck:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs markdown",
@@ -644,6 +660,7 @@
     "mutative": "^1.1.0",
     "nanoid": "^5.1.5",
     "optics-ts": "2.4.1",
+    "parse5": "^8.0.1",
     "plitejs": "workspace:*",
     "saxes": "6.0.0",
     "unist-util-visit": "5.0.0",
@@ -678,6 +695,7 @@
     "jszip": "^3.10.1",
     "juice": "^11.0.1",
     "katex": "0.16.22",
+    "linkedom": "0.18.13",
     "lowlight": "^3.3.0",
     "mammoth": "^1.9.0",
     "marked": "^15.0.12",
@@ -725,6 +743,7 @@
     "jszip": "^3.10.1",
     "juice": "^11.0.1",
     "katex": "0.16.22",
+    "linkedom": "^0.18.13",
     "mammoth": "^1.9.0",
     "marked": "^15.0.12",
     "mermaid": "^11.6.1",
@@ -802,6 +821,9 @@
       "optional": true
     },
     "katex": {
+      "optional": true
+    },
+    "linkedom": {
       "optional": true
     },
     "mammoth": {

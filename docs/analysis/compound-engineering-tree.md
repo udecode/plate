@@ -8,7 +8,7 @@ It is grounded in:
 - `.agents/rules/task.mdc` for the default task lane
 - `.agents/rules/major-task.mdc` for the heavyweight architecture/comparison lane
 - `.agents/rules/agent-browser-issue.mdc` for the browser parity escalation
-- `.agents/AGENTS.md` for explicit exclusions
+- `AGENTS.md` for explicit exclusions
 
 This is not the whole plugin zoo. It is the slice Plate actually keeps, where it is wired, and why the rest stays dead.
 

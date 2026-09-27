@@ -7,21 +7,23 @@ import { jsx } from '@platejs/test';
 import {
   type EditorDocumentValue,
   type Node as PliteNode,
+  type PluginReference,
   type Value,
   createEditor,
 } from 'platejs';
-import { exportToDocx } from 'platejs/docx/export';
+import { exportDocx } from 'platejs/docx/export';
 import { importDocx } from 'platejs/docx/import';
 import { renderStaticHtml } from 'platejs/static';
 
-import { DocxExportKit } from '@/registry/components/editor/docx-export';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 jsx;
 
+const docxImportPlugins: readonly PluginReference[] = BaseEditorKit;
+
 const createTestEditor = (value?: Value) =>
   createEditor({
-    plugins: [...BaseEditorKit, ...DocxExportKit],
+    plugins: BaseEditorKit,
     initialValue: value,
   });
 
@@ -32,13 +34,12 @@ const readDocxFixture = (filename: string): Buffer => {
 };
 
 const importDocxBuffer = async (
-  editor: ReturnType<typeof createTestEditor>,
   buffer: Buffer
 ): Promise<EditorDocumentValue> => {
   const arrayBuffer = new ArrayBuffer(buffer.byteLength);
   new Uint8Array(arrayBuffer).set(buffer);
 
-  const result = await importDocx(editor, arrayBuffer);
+  const result = await importDocx(arrayBuffer, { plugins: docxImportPlugins });
 
   if (!result.ok) throw new Error(result.diagnostics[0]?.message);
 
@@ -50,8 +51,7 @@ const exportDocumentToDocx = async (
 ): Promise<Buffer> => {
   const editor = createTestEditor();
   editor.update.value.replace(document);
-  const result = await exportToDocx(editor, {
-    editorPlugins: [...BaseEditorKit, ...DocxExportKit],
+  const result = await exportDocx(editor, {
     projection: 'proposed',
   });
 
@@ -62,7 +62,7 @@ const exportDocumentToDocx = async (
 
 describe('docx roundtrip', () => {
   it('pairs TOC links with export-local heading bookmarks without persisted ids', async () => {
-    const html = await renderStaticHtml(
+    const { data: html } = await renderStaticHtml(
       createTestEditor([
         { children: [{ text: '' }], type: 'toc' },
         { children: [{ text: 'Introduction' }], level: 1, type: 'heading' },
@@ -78,13 +78,8 @@ describe('docx roundtrip', () => {
   it.each(['headers', 'block_quotes', 'tables'])(
     'preserves data for %s',
     async (name) => {
-      const editor = createTestEditor();
-      const importedDocument = await importDocxBuffer(
-        editor,
-        readDocxFixture(name)
-      );
+      const importedDocument = await importDocxBuffer(readDocxFixture(name));
       const roundtrippedDocument = await importDocxBuffer(
-        editor,
         await exportDocumentToDocx(importedDocument)
       );
 
@@ -93,13 +88,8 @@ describe('docx roundtrip', () => {
   );
 
   it('preserves data for links with URL normalization', async () => {
-    const editor = createTestEditor();
-    const importedDocument = await importDocxBuffer(
-      editor,
-      readDocxFixture('links')
-    );
+    const importedDocument = await importDocxBuffer(readDocxFixture('links'));
     const roundtrippedDocument = await importDocxBuffer(
-      editor,
       await exportDocumentToDocx(importedDocument)
     );
 
@@ -117,13 +107,10 @@ describe('docx roundtrip', () => {
   });
 
   it('reimports inline formatting after export without dropping all content', async () => {
-    const editor = createTestEditor();
     const importedDocument = await importDocxBuffer(
-      editor,
       readDocxFixture('inline_formatting')
     );
     const roundtrippedDocument = await importDocxBuffer(
-      editor,
       await exportDocumentToDocx(importedDocument)
     );
 

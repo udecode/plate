@@ -1057,6 +1057,136 @@ test('local comment creation shares document undo order and keeps composer histo
   }
 });
 
+test('pending comment undo keeps typing live, disables history controls, and preserves call order', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  try {
+    await openDemo(page);
+    const { editor, popover, primary } = getDemo(page);
+    const firstBlock = editor.locator('[data-editor-node="element"]').first();
+    const text = () => getEditorText(firstBlock);
+
+    await physicallyPlaceCaret(page, firstBlock, 0);
+    await page.keyboard.type('A');
+    await physicallySelectText(page, firstBlock, 1, 2);
+    await editor.press(commentHotkey);
+    const composer = popover.getByRole('textbox', { name: 'New comment' });
+
+    await composer.fill('Pending history thread');
+    await submitComposer(composer);
+    const thread = popover
+      .locator('[data-comment-thread]')
+      .filter({ hasText: 'Pending history thread' });
+
+    await expect(thread).toBeVisible();
+    const threadId = await thread.getAttribute('data-comment-thread');
+
+    expect(threadId).not.toBeNull();
+    await page
+      .getByRole('button', { name: 'Hold next comment removal' })
+      .click();
+    await physicallyPlaceCaret(page, firstBlock, 1);
+    await page.keyboard.press(undo);
+    await expect(page.getByLabel('History persistence status')).toHaveText(
+      'pending'
+    );
+
+    const undoButton = primary.getByRole('button', { name: 'Undo' });
+
+    await expect(undoButton).toBeDisabled();
+    await expect(undoButton).toHaveAttribute('aria-busy', 'true');
+    await page.keyboard.type('X');
+    await expect.poll(text).toBe(`AX${FIRST_BLOCK}`);
+    await page.keyboard.press(undo);
+    await expect(page.getByLabel('History replay events')).toContainText(
+      '"status":"busy"'
+    );
+    await page
+      .getByRole('button', { name: 'Apply pending comment removal' })
+      .evaluate((button: HTMLButtonElement) => button.click());
+
+    await expect(page.getByLabel('History persistence status')).toHaveText(
+      'idle'
+    );
+    await expect(thread).toHaveCount(0);
+    await expect(
+      primary.locator(`[data-comment-id="${threadId}"]`)
+    ).toHaveCount(0);
+    await expect(page.getByLabel('History replay events')).toContainText(
+      '"status":"applied"'
+    );
+    await expect(editor).toBeFocused();
+
+    await page.keyboard.press(undo);
+    await expect.poll(text).toBe(`A${FIRST_BLOCK}`);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('refused comment undo reports one block and retries the same history head', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  try {
+    await openDemo(page);
+    const { editor, popover, primary } = getDemo(page);
+    const firstBlock = editor.locator('[data-editor-node="element"]').first();
+    const text = () => getEditorText(firstBlock);
+
+    await physicallyPlaceCaret(page, firstBlock, 0);
+    await page.keyboard.type('A');
+    await physicallySelectText(page, firstBlock, 1, 2);
+    await editor.press(commentHotkey);
+    const composer = popover.getByRole('textbox', { name: 'New comment' });
+
+    await composer.fill('Blocked history thread');
+    await submitComposer(composer);
+    const thread = popover
+      .locator('[data-comment-thread]')
+      .filter({ hasText: 'Blocked history thread' });
+    const threadId = await thread.getAttribute('data-comment-thread');
+
+    expect(threadId).not.toBeNull();
+    await page
+      .getByRole('button', { name: 'Hold next comment removal' })
+      .click();
+    await physicallyPlaceCaret(page, firstBlock, 1);
+    await page.keyboard.press(undo);
+    await expect(page.getByLabel('History persistence status')).toHaveText(
+      'pending'
+    );
+    await page
+      .getByRole('button', { name: 'Refuse pending comment removal' })
+      .evaluate((button: HTMLButtonElement) => button.click());
+
+    await expect(page.getByLabel('History persistence status')).toHaveText(
+      'idle'
+    );
+    await expect(page.getByLabel('History replay events')).toContainText(
+      'comments-proof-refusal'
+    );
+    await expect(thread).toBeVisible();
+    await expect.poll(text).toBe(`A${FIRST_BLOCK}`);
+
+    await page.keyboard.press(undo);
+    await expect(thread).toHaveCount(0);
+    await expect(
+      primary.locator(`[data-comment-id="${threadId}"]`)
+    ).toHaveCount(0);
+    await expect.poll(text).toBe(`A${FIRST_BLOCK}`);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
 test('a fully deleted comment stays reachable and exact through repeated history', async ({
   page,
 }, testInfo) => {
@@ -1067,6 +1197,8 @@ test('a fully deleted comment stays reachable and exact through repeated history
     await openDemo(page);
     const { editor, popover, primary } = getDemo(page);
     const firstBlock = editor.locator('[data-editor-node="element"]').first();
+    const undoButton = primary.getByRole('button', { name: 'Undo' });
+    const redoButton = primary.getByRole('button', { name: 'Redo' });
 
     await physicallySelectText(page, firstBlock, 0, 1);
     await editor.press(commentHotkey);
@@ -1131,13 +1263,14 @@ test('a fully deleted comment stays reachable and exact through repeated history
       'Target unavailable in this view'
     );
     await page.keyboard.press('Escape');
-    await editor.press(undo);
+    await expect(allComments).toBeHidden();
+    await undoButton.click();
     await expect
       .poll(() => getEditorText(firstBlock))
       .toBe(FIRST_BLOCK.slice(1));
 
     for (let cycle = 0; cycle < 5; cycle += 1) {
-      await editor.press(undo);
+      await undoButton.click();
       await expect.poll(() => getEditorText(firstBlock)).toBe(FIRST_BLOCK);
       await expect(
         primary.locator(`[data-comment-id="${threadId}"]`)
@@ -1154,8 +1287,9 @@ test('a fully deleted comment stays reachable and exact through repeated history
         .filter({ hasText: 'Last character survives' });
       await expect(thread.locator('..')).toContainText('Attached to document');
       await page.keyboard.press('Escape');
+      await expect(allComments).toBeHidden();
 
-      await editor.press(redo);
+      await redoButton.click();
       await expect
         .poll(() => getEditorText(firstBlock))
         .toBe(FIRST_BLOCK.slice(1));
@@ -1174,6 +1308,7 @@ test('a fully deleted comment stays reachable and exact through repeated history
         'Target unavailable in this view'
       );
       await page.keyboard.press('Escape');
+      await expect(allComments).toBeHidden();
     }
 
     allComments = await openAllComments();

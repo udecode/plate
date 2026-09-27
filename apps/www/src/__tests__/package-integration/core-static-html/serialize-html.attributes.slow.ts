@@ -42,11 +42,7 @@ describe('core static renderStaticHtml attributes', () => {
       }
     );
 
-    const html = await renderStaticHtml(editor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    });
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toEqual(
       '<div><div style="position:relative"><span data-editor-test="text"><em data-editor-test="true"><span data-editor-test="leaf"><strong><span>Right Aligned Heading</span></strong></span></em></span><span data-editor-test="text"><em data-editor-test="true"><span data-editor-test="leaf"><span>Right Aligned Heading</span></span></em></span></div></div>'

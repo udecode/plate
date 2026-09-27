@@ -209,7 +209,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   Persistence checkpoints current authored facts and exact projections
   directly; opening a document never rebuilds them by reducing retained
   operations or replaying pending edits. Checksum-bound retained operation
-  bodies stay cold until a decision or history read needs their content.
+  bodies stay cold until a decision or history read needs their content. A
+  whole-document projection capture returns one accepted or proposed document,
+  the exact review document from the same revision, and separate pending and
+  conflicted counts. Full review markup and property materialization remain an
+  explicit heavier read.
 - Structural comparison reads fixed, schema-valid revisions without installing
   editor state. It returns immutable span correspondence, grouped effects,
   diagnostics, and a canonical `DocumentChange`; three-way resolution keeps
@@ -294,9 +298,12 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   transaction history controls only grouping, skipping, and restoration.
   A fallible session effect may join that one order only when its durable work
   has an independent external owner. It is local, effect-only, non-mergeable,
-  excluded from persisted history, and replays before branch movement. A block
-  preserves the branch head, and no editor update may publish while the effect
-  awaits its owner.
+  and excluded from persisted history. Replay claims the branch entry in call
+  order before awaiting that owner and publishes per-editor pending state.
+  Document edits, selection changes, and remote imports continue while the
+  owner settles; only another replay returns `busy`. Settlement places the
+  claimed entry as if it had completed at claim time. A block preserves the
+  branch head.
 - The primary document root is implicit in public API and docs. Do not expose a
   public `main` root key, config option, or example. Explicit roots are only for
   additional roots.

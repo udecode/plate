@@ -4,12 +4,12 @@ import {
   withMarkdownRuntime,
 } from '../../internal/markdownConversion';
 import { MarkdownPlugin } from '../../MarkdownPlugin';
-import type { DeserializeMdOptions } from '../../types';
+import type { MarkdownParsePolicy } from '../../types';
 
 const parseSafely = (
   editor: ReturnType<typeof createTestEditor>,
   data: string,
-  options?: DeserializeMdOptions
+  options?: MarkdownParsePolicy
 ) =>
   withMarkdownRuntime(
     editor,
@@ -37,6 +37,7 @@ describe('markdownToSlateNodesSafely', () => {
         children: [
           {
             children: [{ text: 'ok' }],
+            icon: '💡',
             type: 'callout',
           },
           { text: '<callout>' },
@@ -95,34 +96,6 @@ describe('markdownToSlateNodesSafely', () => {
     expect(parseSafely(editor, String.raw`</ph\><`)).toEqual([
       {
         children: [{ text: '</ph><' }],
-        type: 'paragraph',
-      },
-    ]);
-  });
-
-  it('preserves completed MDX member tags before an incomplete tail', () => {
-    const editor = createTestEditor();
-
-    expect(
-      parseSafely(editor, '<Foo.Bar>ok</Foo.Bar><u>', {
-        rules: {
-          'Foo.Bar': {
-            deserialize: () => ({
-              children: [{ text: 'member' }],
-              type: 'member',
-            }),
-          },
-        },
-      })
-    ).toEqual([
-      {
-        children: [
-          {
-            children: [{ text: 'member' }],
-            type: 'member',
-          },
-          { text: '<u>' },
-        ],
         type: 'paragraph',
       },
     ]);

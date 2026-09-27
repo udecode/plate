@@ -1,0 +1,16 @@
+---
+id: 2026-09-27-document-conversion-contracts
+date: 2026-09-27
+status: draft
+kind: rename
+summary: 'Use direct conversion contracts and preserve imported review data'
+change: { 'type': 'source', 'date': '2026-09-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-27-import-toolbar-direct-conversion-contracts","kind":"wiring","migrationNotes":["Pass the editor plugin list and an `onImport` editor-owner callback to `ImportToolbarButton`; the button prepares a complete detached replacement before the application swaps editors."]} -->
+
+- **`import-toolbar-button`**: Parse HTML and Markdown through their installed format APIs, show successful conversion warnings, and prepare a replacement editor with imported Word comments through `CommentsPlugin` when available.
+<!-- entry: {"id":"2026-09-27-export-toolbar-direct-conversion-contracts","kind":"rename","migrationNotes":["Use `exportDocx` from `platejs/docx/export`; the `exportToDocx` alias does not exist on `next`."]} -->
+- **`export-toolbar-button`**: Use diagnosed HTML and Markdown serializers plus `exportDocx`, preserve one chosen accepted, proposed, or review projection, and export attached comment threads as Word comments.

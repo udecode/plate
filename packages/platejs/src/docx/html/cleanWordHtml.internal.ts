@@ -1,16 +1,6 @@
 import validator from 'validator';
 
-import {
-  getHtmlComments,
-  isHtmlComment,
-  isHtmlBlockElement,
-  isHtmlText,
-  postCleanHtml,
-  removeHtmlNodesBetweenComments,
-  replaceTagName,
-  traverseHtmlElements,
-  traverseHtmlNode,
-} from '../../core';
+import { postCleanHtml } from '../../core';
 
 type RtfImage = {
   hex: string;
@@ -21,6 +11,154 @@ type RtfImage = {
 const V_SHAPE_ID = /\bid="([^"]+)"/i;
 const V_SHAPE_OPEN_TAG = /<v:shape\b[^>]*>/gi;
 const V_SHAPE_SPID = /\bo:spid="([^"]+)"/i;
+const INLINE_TAG_NAMES = new Set([
+  'A',
+  'ABBR',
+  'B',
+  'BR',
+  'CODE',
+  'DEL',
+  'EM',
+  'FONT',
+  'I',
+  'IMG',
+  'INS',
+  'MARK',
+  'OBJECT',
+  'Q',
+  'S',
+  'SMALL',
+  'SPAN',
+  'STRONG',
+  'SUB',
+  'SUP',
+  'U',
+]);
+
+const isHtmlComment = (node: Node): node is Comment => node.nodeType === 8;
+const isHtmlText = (node: Node): node is Text => node.nodeType === 3;
+const isHtmlElement = (node: Node): node is Element => node.nodeType === 1;
+const isHtmlBlockElement = (node: Node): boolean => {
+  if (!isHtmlElement(node)) return false;
+  const element = node as HTMLElement;
+  const display = element.style.display.split(' ')[0];
+
+  if (display.startsWith('inline')) return false;
+  if (display === 'inherit' && element.parentElement) {
+    return isHtmlBlockElement(element.parentElement);
+  }
+  if (
+    display &&
+    ![
+      'contents',
+      'initial',
+      'none',
+      'revert',
+      'revert-layer',
+      'unset',
+    ].includes(display)
+  ) {
+    return true;
+  }
+
+  return !INLINE_TAG_NAMES.has(element.tagName);
+};
+
+const traverseHtmlNode = (
+  node: Node,
+  callback: (node: Node) => boolean
+): void => {
+  if (!callback(node)) return;
+
+  let child = node.firstChild;
+
+  while (child) {
+    const current = child;
+    const previous = child.previousSibling;
+    child = child.nextSibling;
+    traverseHtmlNode(current, callback);
+
+    if (
+      !current.previousSibling &&
+      !current.nextSibling &&
+      !current.parentNode &&
+      child &&
+      previous !== child.previousSibling &&
+      child.parentNode
+    ) {
+      child = previous ? previous.nextSibling : node.firstChild;
+    } else if (
+      !current.previousSibling &&
+      !current.nextSibling &&
+      !current.parentNode &&
+      child &&
+      !child.previousSibling &&
+      !child.nextSibling &&
+      !child.parentNode
+    ) {
+      if (previous) {
+        child = previous.nextSibling ? previous.nextSibling.nextSibling : null;
+      } else if (node.firstChild) {
+        child = node.firstChild.nextSibling;
+      }
+    }
+  }
+};
+
+const traverseHtmlElements = (
+  root: Node,
+  callback: (element: Element) => boolean
+): void => {
+  traverseHtmlNode(root, (node) =>
+    isHtmlElement(node) ? callback(node) : true
+  );
+};
+
+const getHtmlComments = (root: Node): string[] => {
+  const comments: string[] = [];
+
+  traverseHtmlNode(root, (node) => {
+    if (isHtmlComment(node)) comments.push(node.data);
+
+    return true;
+  });
+
+  return comments;
+};
+
+const removeHtmlNodesBetweenComments = (
+  root: Node,
+  start: string,
+  end: string
+): void => {
+  traverseHtmlNode(root, (node) => {
+    if (!(isHtmlComment(node) && node.data === start)) return true;
+    let sibling = node.nextSibling;
+
+    node.remove();
+    while (sibling && !(isHtmlComment(sibling) && sibling.data === end)) {
+      const next = sibling.nextSibling;
+
+      sibling.remove();
+      sibling = next;
+    }
+    if (sibling) sibling.remove();
+
+    return false;
+  });
+};
+
+const replaceTagName = (element: Element, tagName: string): Element => {
+  const replacement = element.ownerDocument.createElement(tagName);
+
+  replacement.innerHTML = element.innerHTML;
+  for (const { name, value } of element.attributes) {
+    replacement.setAttribute(name, value);
+  }
+  element.replaceWith(replacement);
+
+  return replacement;
+};
 
 const getRtfImageHex = (imageData: string): string | null => {
   const [, bliptagData = ''] = imageData.split('bliptag');
@@ -316,7 +454,12 @@ const cleanWordHtmlListElements = (rootNode: Node): void => {
   });
 };
 
-export const cleanWordHtml = (html: string, rtf: string): string => {
+export const cleanWordHtml = (
+  html: string,
+  rtf: string,
+  parseHtml: (source: string) => Document = (source) =>
+    new DOMParser().parseFromString(source, 'text/html')
+): string => {
   const endIndex = html.lastIndexOf('</html>');
   const withoutTrailing =
     endIndex === -1 ? html : html.slice(0, endIndex + '</html>'.length);
@@ -324,7 +467,7 @@ export const cleanWordHtml = (html: string, rtf: string): string => {
   const normalizedHtml = (
     startIndex === -1 ? withoutTrailing : withoutTrailing.slice(startIndex)
   ).replaceAll(/\r\n|\r/g, '\n');
-  const document = new DOMParser().parseFromString(normalizedHtml, 'text/html');
+  const document = parseHtml(normalizedHtml);
   const { body } = document;
 
   if (!rtf && !isWordHtml(body)) {

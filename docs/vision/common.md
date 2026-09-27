@@ -16,12 +16,17 @@ planning. The current design does not need to fail first.
    native-behavior and runtime laws, plus explicit user constraints.
 2. Sketch what we would build if those requirements had been present from the
    start, before preserving names, layers, state models or package boundaries.
+   Check prior art first: existing Plite primitives, Plate components and the
+   reference editors cloned beside the repository. Invent only when the new
+   design clearly beats them.
 3. Compare the strongest relevant delete, merge, inline, reuse and replacement
    alternatives. Existing Plite primitives and newly proposed abstractions
    face the same test: a current job or hard law must justify their ownership.
-4. Choose the target for material lasting value. Compatibility, sunk effort
-   and implementation difficulty affect adoption order during beta; they do
-   not make a weaker target better. Keeping the current design is a valid win.
+4. Choose the simplest target that delivers material lasting value. A target
+   with more concepts, layers or states than the current design names the job
+   or law that pays for each addition. Compatibility, sunk effort and
+   implementation difficulty affect adoption order during beta; they do not
+   make a weaker target better. Keeping the current design is a valid win.
 5. Carry an authorized change through its types, consumers, docs, examples,
    rationale and proof. Design the whole result and deliver it incrementally.
 

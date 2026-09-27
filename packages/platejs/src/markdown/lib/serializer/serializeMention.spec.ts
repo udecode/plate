@@ -1,4 +1,8 @@
-import { createTestEditor } from '../__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from '../__tests__/createTestEditor';
 
 describe('editor.api.markdown.serialize - mention', () => {
   it('serialize mentions to link format', () => {
@@ -21,7 +25,7 @@ describe('editor.api.markdown.serialize - mention', () => {
       ],
     });
 
-    const markdown = editor.api.markdown.serialize();
+    const markdown = serializeTestMarkdown(editor).data;
     expect(markdown).toBe('Hello [alice](mention:alice) how are you?\n');
   });
 
@@ -51,7 +55,7 @@ describe('editor.api.markdown.serialize - mention', () => {
       ],
     });
 
-    const markdown = editor.api.markdown.serialize();
+    const markdown = serializeTestMarkdown(editor).data;
     expect(markdown).toBe(
       '[bob](mention:bob) mentioned [charlie](mention:charlie) in the discussion\n'
     );
@@ -77,7 +81,7 @@ describe('editor.api.markdown.serialize - mention', () => {
       ],
     });
 
-    const markdown = editor.api.markdown.serialize();
+    const markdown = serializeTestMarkdown(editor).data;
     expect(markdown).toBe('Hey [John Doe](mention:john_doe) check this out\n');
   });
 
@@ -85,9 +89,9 @@ describe('editor.api.markdown.serialize - mention', () => {
     const editor = createTestEditor();
 
     const originalMarkdown = 'Hello [Jane Smith](mention:jane_smith) and @bob!';
-    const value = editor.api.markdown.deserialize(originalMarkdown);
+    const value = parseTestMarkdown(editor, originalMarkdown);
     editor.update.value.replace(value);
-    const serializedMarkdown = editor.api.markdown.serialize();
+    const serializedMarkdown = serializeTestMarkdown(editor).data;
 
     expect(serializedMarkdown).toBe(
       'Hello [Jane Smith](mention:jane_smith) and [bob](mention:bob)!\n'
@@ -120,7 +124,7 @@ describe('editor.api.markdown.serialize - mention', () => {
       ],
     });
 
-    const markdown = editor.api.markdown.serialize();
+    const markdown = serializeTestMarkdown(editor).data;
     expect(markdown).toBe(
       'Assigned to [QA Team (US)](mention:qa_team_us) and [dev-team](mention:dev-team)\n'
     );

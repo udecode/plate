@@ -197,11 +197,23 @@ uses the mounted editor returned by `useEditor()`.
       change logging or `throwErrors`.
     </APIItem>
     <APIItem
-      name="editor.api.html.deserialize"
-      type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredName }) => Descendant[]"
+      name="editor.api.html.parse"
+      type="(source: string, options?: HtmlEditorParseOptions) => HtmlDocumentParseResult"
     >
-      Deserialize an HTML element into Plate nodes. The HTML parser plugin calls
-      this for `text/html` paste data.
+      Parse one complete semantic HTML document with the installed target.
+    </APIItem>
+    <APIItem
+      name="editor.api.html.parseSlice"
+      type="(source: string, options?: HtmlEditorParseOptions) => HtmlSliceParseResult"
+    >
+      Parse one closed, rootless HTML insertion slice with the installed target.
+    </APIItem>
+    <APIItem
+      name="editor.api.html.serialize"
+      type="(options?: HtmlEditorSerializeOptions) => HtmlSerializeResult"
+    >
+      Serialize the current or supplied complete document. Read `data` only
+      after checking `result.ok`.
     </APIItem>
     <APIItem
       name="editor.api.navigation.flashTarget"
@@ -264,10 +276,10 @@ Some core behavior is exposed by routing browser/editor events into the Plate tr
 
 | Surface                | Effect                                                                                                                                                                                                                 |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Product codec registry | Compiles constructor codec declarations created by context-bound `defineCodecs(map)` or `defineCodecs(TargetPlugin, map)`, then delegates exact `ContentSlice` decoding and encoding to the generic clipboard runtime. |
+| Product format registry | Compiles constructor mappings created by context-bound `defineFormats(map)` or `defineFormats(TargetPlugin, map)`, then delegates exact `ContentSlice` decoding and encoding to the generic clipboard runtime. |
 | Plate change events    | Emits committed node and text change contexts through Plate `on.nodeChange` and `on.textChange`.                                                                                                                       |
 | Plate React runtime    | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior.                                                                                                       |
-| `HtmlPlugin`           | Registers the `text/html` parser path and owns HTML element conversion through `editor.api.html.deserialize`.                                                                                                          |
+| `HtmlPlugin`           | Exposes complete-document parse, closed-slice parse, and serialization through `editor.api.html`. Whole `text/html` browser payload policy stays in `DataTransferFormat`.                                              |
 | `BaseParagraphPlugin`  | Registers the default paragraph element under name `paragraph` and maps HTML `<p>` elements, excluding code-font paragraphs.                                                                                           |
 
 ## Type helpers

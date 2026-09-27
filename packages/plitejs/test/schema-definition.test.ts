@@ -10,7 +10,7 @@ import {
   type EditorSchemaContribution,
   type PluginReference,
   type PluginInput,
-  type PropertyJsonValue,
+  type EditorJsonValue,
   type PropertyValueDescriptor,
   type PropertyValueOf,
   property,
@@ -824,7 +824,7 @@ describe('schema declaration builders', () => {
     };
     const broadlyInferredJsonValue: PropertyValueOf<typeof inferredJson> =
       'still-json';
-    const jsonValue: PropertyJsonValue = unconstrainedValue;
+    const jsonValue: EditorJsonValue = unconstrainedValue;
     const validPayload: PropertyValueOf<typeof payload> = { id: 'ok' };
     const validPayloadWithDefault: PropertyValueOf<typeof payloadWithDefault> =
       { id: 'ok' };

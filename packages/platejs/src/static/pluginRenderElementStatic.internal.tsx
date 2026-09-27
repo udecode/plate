@@ -13,6 +13,7 @@ import type {
 } from '../lib';
 import { createPluginContext } from '../lib/plugin/createPluginContext.internal';
 import { EditorElement } from './components/plite-nodes';
+import { getStaticComponentOverride } from './internal/staticComponentOverrides';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps.internal';
 
 export type PliteRenderElement = (
@@ -25,7 +26,8 @@ export const pluginRenderElementStatic = (
 ): PliteRenderElement =>
   function render(initialNodeProps) {
     let nodeProps = initialNodeProps;
-    const nodeComponent = plugin.component;
+    const nodeComponent =
+      getStaticComponentOverride(editor, plugin.name) ?? plugin.component;
     const Component =
       nodeComponent && typeof nodeComponent !== 'string'
         ? nodeComponent

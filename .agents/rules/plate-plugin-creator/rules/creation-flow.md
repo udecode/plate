@@ -118,30 +118,30 @@ authors directly against `plitejs`. If several Plate
 plugins need the same generic primitive, that is evidence for a Plite owner,
 not a shared Plate helper dump.
 
-### Codec contribution
+### Mapping contribution
 
-Keep a plugin's codec map in its semantic owner. Author it only through the
+Keep a plugin's semantic format map in its owner. Author it only through the
 constructor's context-bound
-`codecs: ({ defineCodecs }) => defineCodecs(map)` callback, or
-`defineCodecs(TargetPlugin, map)` inside that callback when contributing to a
+`formats: ({ defineFormats }) => defineFormats(map)` callback, or
+`defineFormats(TargetPlugin, map)` inside that callback when contributing to a
 foreign descriptor. The context helper is the inference owner and injects
-foreign targets; a codec map does not earn another file, builder stage, or
+foreign targets; a format map does not earn another file, builder stage, or
 global helper. Keep it in `.extend()` only when it consumes a real capability
 introduced by an earlier stage.
 
 For a custom Plate-owned MDX element tag, destructure `schema: { type }` from
-the codec context and use it for `from`, the decoded element `type`, and the
+the mapping context and use it for `from`, the decoded element `type`, and the
 encoded MDX `name`. Keep external MDAST, HTML, and MDX syntax literal. Migrate
-old persisted tags before codec dispatch instead of accepting two identities.
+old persisted tags before mapping dispatch instead of accepting two identities.
 Resolve every other synthesized Plate wrapper or fallback through the installed
 application schema; use literals only for external format nodes or when the
 corresponding Plate plugin is genuinely absent.
 Key one-operation decode overrides by the invariant plugin capability name and
-encode overrides by persisted schema identity. Apply the same codec identity
+encode overrides by persisted schema identity. Apply the same mapping identity
 checks to constructor and justified staged contributions.
-Keep configurable custom MDX codecs on their schema-owning plugin; a foreign
-target codec cannot bind the target's final application identity.
-Enforce the available identity legs on decode-only and encode-only codecs. For
+Keep configurable custom MDX mappings on their schema-owning plugin; a foreign
+target mapping cannot bind the target's final application identity.
+Enforce the available identity legs on decode-only and encode-only mappings. For
 phrasing-only wrappers, decode external paragraph children directly instead of
 unwrapping a decoded Plate element.
 Keep fixed external source/name literals without weakening decoded Plate
@@ -154,7 +154,8 @@ Use the canonical boundary from the parent skill before choosing a field:
 for pure store projections, `api` for non-snapshot plugin services, `read` for
 pure supplied-state document queries, `update` for active-transaction document
 mutation, flat native fields for genuine editor-wide Plite substrate, and
-`codecs` for format declarations.
+  `formats` for semantic node mappings, and `dataTransferFormats` for
+  whole-payload MIME negotiation.
 
 Put every independent contribution in the constructor. Use `.extend()` only
 for imported/prebuilt adaptation, a shared factory unavailable to the
@@ -189,7 +190,7 @@ or casts.
 One plugin file may own:
 
 - plugin declaration and real public contract types;
-- initial state, selectors, and schema/parser/codec callbacks;
+- initial state, selectors, and schema/parser/mapping callbacks;
 - API, read, and update builders;
 - commands, corrections, decorators, normalizers, matchers, and prefixless
   `on` callbacks;

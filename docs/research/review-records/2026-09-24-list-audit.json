@@ -1,0 +1,156 @@
+{
+  "id": "2026-09-24-list-audit",
+  "scope": "list",
+  "kind": "review",
+  "date": "2026-09-24",
+  "question": "How should list structure, numbering and indentation compose with generic block editing?",
+  "model": "Claude Opus 5.5 (claude-opus-5-5[1m])",
+  "method": "best-api-review/history-v3",
+  "trigger": "User requested `$best-api-review audit list` for the unassessed Lists and indentation question, asking to reconcile the earlier list-model and start/restart work first.",
+  "requirements": [
+    "Lists are semantic properties of ordinary blocks (bulleted, numbered, task; marker style; conditional start and forced restart; checked), so generic split, merge, move, paste, DnD and type change work without list-specific structure.",
+    "Displayed and exported numbering must equal the derived ordinal of the current document after every commit, in every mounted view, static render and codec.",
+    "Locked editor-behavior list laws (Enter, Backspace, Tab, Shift+Tab ownership and depth changes) hold; any contradiction between law and source is resolved explicitly, never silently.",
+    "HTML, Markdown and DOCX interchange round-trip list kind, depth and numbering intent within each format's expressiveness.",
+    "Indentation of non-list blocks remains an independent user job with its own controls and codecs.",
+    "No new runtime machinery or performance claim is accepted without a matched scale comparison; derived ordinals must not be persisted into following nodes."
+  ],
+  "evidenceReuse": "Reused the 2026-08-17 start/restart contract, the 2026-08-29 unified-model cut, the 2026-09-07 paint-placement decision, the 2026-09-23 editing atomic-decline execution, the 2026-09-16 snapshot-index provenance decision and the 2026-09-17 table host-delivery closure as prior conclusions. Re-read the current list and indent owners, React and static paint, registry kits, the HTML codec createsElement path, Markdown, Word paste, DOCX, DnD, turn-into consumers, the locked list law and 20 prior list/indent plans. Ran fresh package and React-DOM probes (docs/plans/artifacts/2026-09-24-list-audit-probes.md). BaseListPlugin.ts and list.tsx hashes match the 2026-09-23 editing implementation fingerprints.",
+  "summary": "Pursue. Keep flat list properties, the shared indent axis and the conditional listStart/forced listRestart contract; the container model loses on generic block editing, DOCX mapping and collaborative property edits. The defects sit in the derived-sequence layer, which has no real owner: the ordinal cache is keyed on snapshot-index identity that Plite intentionally reuses in place, so property-only edits leave stale ordinals ([1,2,1,2] instead of [1,2,3,4]); React wrappers read read.ordinal during render with no sibling dependency, so the DOM shows [1,2,2,3] while the model says [1,2,3,4]; and four more sequence engines (Markdown, Word paste, DOCX pixel-margin recovery, frozen migration) re-derive the same law. Strongest target (proposed): one list-owned per-snapshot sequence index keyed by snapshot version, published to views through the existing keyed render.useViewElementAttributes channel and read by static, HTML, Markdown, DOCX, Word paste and DnD; delete the WeakMap-by-index cache, render-time ordinal reads and the zero-consumer GetSiblingListOptions/getSequenceSiblingOptions/isSequenceBoundary/getNext/getPrevious surface. Direct correctness repairs: HTML createsElement must name its element instead of targetPlugins[0] (registry ListKit lists heading first, so every HTML list paste returns null and DOCX import uses the same deserializer); root list items need one canonical indent invariant owned by the list correction (Shift+Tab currently strips indent but keeps listType), with update.list.indent deleted (zero consumers, overwrites kind with bulleted) and list.outdent folded into indent plus correction; the Enter start/restart wrapper duplicates split: drop; task Enter unchecks at end, copies checked mid-split and contradicts locked EDIT-LIST-ENTER-001 (an ID also used twice); static numbered items get double margin; package ListPlugin still ships paint the 09-07 decision assigned to copied UI; public testing JSX still exports the deleted container vocabulary. Coverage: 14 units expected and reviewed, 0 excluded, 0 without verdict; 9 Pursue, 5 Stop. Next owner: Task design plan list.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-08-17-finalize-list-start-and-restart-semantics",
+      "question": "How should list structure, numbering and indentation compose with generic block editing?",
+      "action": "retains",
+      "reason": "The conditional listStart/forced listRestart contract, split drop and read-derived ordinals remain correct and are not persisted. Only the read-time cache implementation is defective; its key relies on snapshot-index identity."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "How should list structure, numbering and indentation compose with generic block editing?",
+      "action": "retains",
+      "reason": "List paint belongs in copied registry UI. Adoption is incomplete: packages/platejs ListPlugin still ships a default ol/ul/li renderer that the registry overrides."
+    },
+    {
+      "record": "2026-09-23-editing-structural-rule-admission",
+      "question": "Which insertion, deletion, normalization and escape rules belong to canonical editing commands rather than feature-specific repair?",
+      "action": "retains",
+      "reason": "List Markdown input rules already use the migrated atomic decline (marker delete and toggle in one attempt, discarded on decline); input-rule admission stays with Editing."
+    },
+    {
+      "record": "2026-09-23-editing-structural-rule-admission-implementation-execution",
+      "question": "How should list structure, numbering and indentation compose with generic block editing?",
+      "action": "retains",
+      "reason": "Its BaseListPlugin.ts and list.tsx fingerprints match current source; no list input-rule change is proposed here."
+    },
+    {
+      "record": "2026-09-16-snapshot-index-branch-provenance",
+      "question": "Should path-stable snapshot indexes keep mutating one shared provenance record when authored accepted and projected history can branch from the same source snapshot?",
+      "action": "retains",
+      "reason": "In-place index provenance on the linear path is intended. The list cache wrongly used index identity as a document version; the repair belongs in the list owner, not the index."
+    },
+    {
+      "record": "2026-09-17-table-host-delivery-benchmark-closure",
+      "question": "What owns table topology, cell coordinates, selection, clipboard and layout?",
+      "action": "retains",
+      "reason": "The keyed render.useViewElementAttributes producer is the settled per-node host channel; list numbering should reuse it rather than add a new public channel."
+    },
+    {
+      "record": "2026-09-11-model-document-boundary",
+      "question": "What is the smallest schema-valid document and identity contract that all editors and codecs must preserve?",
+      "action": "retains",
+      "reason": "The JSON tree with flat element properties is retained; the container list alternative loses on current jobs."
+    }
+  ],
+  "alternatives": [
+    "Replace flat properties with a container list model (ul/ol > li > blocks, or prosemirror-flat-list-style item containers): structural numbering and native list semantics, but every generic block operation needs list normalization, indent/outdent become structural moves under collaboration, DOCX needs flattening, and Plate already deleted this model for its permanent cost. Stop.",
+    "Split list depth from block indentation (separate listLevel and indent): mirrors DOCX ilvl/ind, but breaks the single axis that makes continuation blocks belong to an item and doubles codec work. Stop; keep one indent axis with a canonical root invariant.",
+    "Only change the ordinal cache key to snapshot version: repairs headless and codec numbering but leaves the React DOM stale because wrappers have no dependency on siblings. Insufficient alone.",
+    "Per-item runtime selector (useEditorRuntimeState(() => read.ordinal(element)) in each wrapper): minimal API change and correct wakes, but evaluates one selector per numbered item per commit. Viable baseline for the scale comparison.",
+    "List-owned per-snapshot sequence index published through the existing keyed render.useViewElementAttributes channel, with static and codecs reading the same index: one derivation per commit, wakes only changed nodes, reuses the table-settled host-delivery channel, and lets numbered and bulleted items share one paint path (for example CSS counter-set on display:list-item) instead of one <ol> per item. Pursue as the proposed target pending detailed design and matched scale proof.",
+    "Pure CSS counters with no model ordinal: cannot express conditional start, heading partitions, or skip deeper non-list blocks, and codecs still need numbers. Reject as the owner; acceptable only as paint fed by the index.",
+    "Keep GetSiblingListOptions as a customization surface: its only job is a slow test with hypothetical page-container nodes; pagination is view-level and no production consumer exists. Delete; keep the heading partition (#4985) as private law.",
+    "Keep HTML createsElement = targetPlugins[0]: order-dependent implicit with exactly one user; the React kit's order already breaks paste. Replace with an explicit element (paragraph, matching list insert and Markdown decode).",
+    "Encode turn-into list exit in schema typeChange: drop: would delete per-surface clear() calls but removes numbered headings created by type change and changes generic blocks.set for API callers. Stop; the copied menus own that product policy.",
+    "Add a list.check API for the task checkbox: raw nodes.set on a schema-validated property is already the canonical write. Stop."
+  ],
+  "proofLimits": "Package probes prove the stale ordinal cache, root Shift+Tab half-state, split-drop redundancy and task split inconsistency. React-DOM probes in the Bun test environment prove stale rendered <ol start> values, null HTML list deserialize with BasicBlocksKit plus ListKit, and double static margins. None of this is real-browser, clipboard-event or native-device proof. DOCX import failure is inferred from importDocx calling the same html.deserialize; DOCX export start/level loss (data-start versus start, px/24 level recovery) is source inference with no list export test. Markdown ordinal divergence was not reproduced (one heading-partition probe agreed). No performance measurement exists for the proposed sequence index, per-item selectors or the current cache; the index target stays provisional until a matched 10k-item wake and commit comparison. The task Enter law contradiction needs a product decision; this review does not decide whether the law or the source is right.",
+  "references": [
+    "docs/plans/artifacts/2026-09-24-list-audit-probes.md",
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts",
+    "packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts",
+    "packages/platejs/src/react/features/list/ListPlugin.tsx",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "packages/platejs/src/react/internal/rendered-attributes.tsx",
+    "apps/www/src/registry/components/editor/list.tsx",
+    "apps/www/src/registry/components/editor/list-static.tsx",
+    "apps/www/src/registry/components/editor/block-list.tsx",
+    "apps/www/src/registry/components/editor/block-list-static.tsx",
+    "apps/www/src/registry/components/editor/list.spec.tsx",
+    "packages/platejs/src/markdown/lib/serializer/listToMdastTree.ts",
+    "packages/platejs/src/docx/paste/lib/WordPastePlugin.ts",
+    "packages/platejs/src/docx/export/lib/internal/render-document-file.ts",
+    "packages/platejs/src/docx/import/lib/importDocx.ts",
+    "packages/plitejs/src/testing/jsx.ts",
+    "docs/editor-behavior/markdown-editing-spec.md",
+    "docs/plans/2026-08-29-unify-list-model.md",
+    "docs/plans/2026-08-17-finalize-list-start-and-restart-semantics.md",
+    "docs/plans/4985-ordered-list-heading-paragraph-numbering.md",
+    "docs/research/review-records/2026-09-16-snapshot-index-branch-provenance.json",
+    "docs/research/review-records/2026-09-17-table-host-delivery-benchmark-closure.json"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/list.tsx": "7c905126362567c8c8adc2d3deceea368f1bf74c9923d1bd08e7b399fc1c5aaf",
+      "apps/www/src/registry/components/editor/list-static.tsx": "7ed7443e1d97d167efdfbaf64c162549c7115c9041a2cd0749adb13e04c72c09",
+      "apps/www/src/registry/components/editor/block-list.tsx": "db26c166646141ca9b975cb971b229f3250f45726e06ddc379f2226f3b38cb65",
+      "apps/www/src/registry/components/editor/block-list-static.tsx": "f67266002f9fcfabd8b0814b8edcc2adb252c20c7c95ca81517960ad38731cf8",
+      "apps/www/src/registry/components/editor/list-toolbar-button.tsx": "8d5b9ee21882f0294ec0836141b2c0f74fccf3c6f58ff53b501fc4d58e5af406",
+      "apps/www/src/registry/components/editor/indent.tsx": "01cb50fdb49538c282ceb6c4bb2d9492c57440b5007664af87692b865bf27a03",
+      "apps/www/src/registry/components/editor/indent-static.tsx": "4c5e2ca2865204d16edbe116ef5bffcb42ca0302c671fb583a3631bc386f5b3e",
+      "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx": "356c22c7dcf310240a3440ef7bfc52c9d8637ce4b7bb5293f4390a5503462420",
+      "packages/platejs/src/react/features/list/ListPlugin.tsx": "abe954acc0e24bb3300bf9ccd820ddb1705c213a3372b00f6c08de61cb976024",
+      "packages/platejs/src/dnd/react/internal/DndStorePlugin.ts": "87c3624c69bd115662df4cf41dd8fe869241033245b9017afd970b9877c10958",
+      "packages/platejs/src/markdown/lib/serializer/listToMdastTree.ts": "fafd6f4e8585d788771424f8dd0e9a5923b9881998b0e27bef25e78e5e7f4be5",
+      "packages/platejs/src/docx/paste/lib/WordPastePlugin.ts": "6c9a4a873a7570f40ebf50e508609c9addaceb2e1992432d3748424aa1ca0d78",
+      "packages/platejs/src/docx/export/lib/internal/render-document-file.ts": "e430276114a4ef90f2fc05fca2c6f7871674131f74ffeca643fc508b29588729",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "6f4865a4bb3fb5550052f9b30fb65f74cb2e8b03e4a28506c031d281c0b3896f",
+      "packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx": "de59168484f93407c675e92daa5e870500b6066a7817d78cad8b68306c00161c",
+      "packages/platejs/src/features/list/lib/BaseListPlugin.slow.tsx": "c43f3fe59c508d35cff69e889ff5b59229f3270cf7210bf5f4d948ba390eaa46",
+      "packages/platejs/src/features/indent/lib/BaseIndentPlugin.spec.ts": "8f164bc8603ba471e7248254b92dbe3beecdb6ce9ef41ed5bedd4cd5371c9073",
+      "apps/www/src/registry/components/editor/list.spec.tsx": "1663e58c2502feae5b64f725bda6f07ba984b6b996726e372b1bf8c5df2c71b0",
+      "packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts": "68effb3b596f9459139567e6446eb068f429c9ba6df2a635e970916f258ca3ec",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "7f54efe008ba66070193c7152de69824aaf281e340a8b789dd731f2e8b5806f0",
+      "packages/platejs/src/react/internal/rendered-attributes.tsx": "468d52a0f24a65bb7dce201044262ea0b73b8412927b537464d6bac03bce0ff9",
+      "packages/platejs/src/react/utils/pipeRenderElement.internal.tsx": "6a7d4104f2eef8c68693ca2a3b24a29d32d8fdef530312005660231cd3c3b117",
+      "docs/editor-behavior/markdown-editing-spec.md": "9c5669eb247b49702f2525072dbf8eb39e665644004a0b80a63a47022c1276d8",
+      "packages/plitejs/src/testing/jsx.ts": "43b73e051e0b428fa474442f3023ced785e2f4dbd17f81dd650a0db25b3cbdab",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "271bdf6da40799f15a72c7237e96434f431f949b7d72ec2a6b541f952da7eb4b",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
+    },
+    "directories": {
+      "packages/platejs/src/features/list": "589737e816df5ad1155150705489124c1b292f0ca1bf1c5b462fb626ea96edde"
+    },
+    "features": {
+      "capability/indent": "e3c7ba695d280919fc20e9c5f5b2ecac2010b4c04c29cabc3375a39ca0577de2",
+      "capability/list": "cae0615dde4f7c1002a5d8b06bd669a28bbca9c72abf06769ef156612e626b82",
+      "example/plite/check-lists": "b611105088e03e29cc04583750762ee6ac63952043aa53bff2a1142c2482174b",
+      "example/value/indent-value": "d53705e42e614c39d18e9a9d21f863de0dcd846aedd7f9c723e3baace90eb3ae",
+      "example/value/list-value": "4bc83916e0af95a3fa6cfa1e34632bd92de6a43edd92a35b0748bb281bbe7c14",
+      "platejs/indent": "ee9dbdb2e88998e569decbad94d33eda13eb23ab45b2887504172da9f2d0afe2",
+      "platejs/list": "589737e816df5ad1155150705489124c1b292f0ca1bf1c5b462fb626ea96edde",
+      "ui/block-list": "73241ee12c7bae5e0d0200af9e474fa62825cb24b2836763e3b98f139f80a2b3",
+      "ui/indent": "82719c1659c0e7843f1c8b53981970693392023e9347cbffc1a5c605f4d85e00",
+      "ui/indent-toolbar-button": "233620c00e9d81ce98a40ac4a7dea980b365f634a9f67ab05ee9dba0bafdb545",
+      "ui/list": "c2435d529c990368dc10c2585a0b570f15b738652eb0e90f38c85f72869ec705",
+      "ui/list-toolbar-button": "6fd4ed073d8f21db08974f9b7cfb9ae8cd3196f559e2b15677e7ce7df464b4a4"
+    },
+    "upstreams": []
+  }
+}

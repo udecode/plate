@@ -38,6 +38,8 @@ Use `aiChat.api.reset()` to clear the draft and restore the mapped invoking sele
 
 Stop flushes buffered text before cancellation. Each request fences its transport callbacks and retains the captured target for retries; deleted targets fail without replacing another location. The adapter exposes transport errors through `chat.error`. AI comment review publishes or discards only the current request's generated drafts.
 
+Preview publication is request-owned. `setPreview(content, { final, requestId })` distinguishes incremental output from finalized output, invalidates stale or failed final parses, and allows acceptance only for the current finalized source.
+
 Export `AIChatPluginState` and `CopilotPluginState` as the complete mutable state contracts for their descriptors.
 
 Return focus to the invoking mounted editor when closing AI Chat. Preserve the `focus: false` option and reject anchor removal through a retired view.

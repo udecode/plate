@@ -1,6 +1,10 @@
 import { BaseParagraphPlugin, createEditor, schema } from '../../core';
 import { BaseMediaEmbedPlugin } from '../../features/media';
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 import { MarkdownPlugin } from './MarkdownPlugin';
 import { remarkMdx } from './plugins';
 
@@ -12,7 +16,7 @@ describe('media package surfaces', () => {
     const input = `<video src="https://example.com/video.mp4">
 Rich **caption**.
 </video>`;
-    const document = editor.api.markdown.deserialize(input);
+    const document = parseTestMarkdown(editor, input);
     const media = document.children[0];
 
     expect(media).toMatchObject({
@@ -25,7 +29,7 @@ Rich **caption**.
       url: 'https://example.com/video.mp4',
     });
     expect(document).not.toHaveProperty('roots');
-    expect(editor.api.markdown.serialize({ value: document })).toBe(
+    expect(serializeTestMarkdown(editor, { document }).data).toBe(
       `<video src="https://example.com/video.mp4">
   Rich **caption**.
 </video>
@@ -50,7 +54,8 @@ Rich **caption**.
         ],
       },
     });
-    const document = editor.api.markdown.deserialize(
+    const document = parseTestMarkdown(
+      editor,
       '<customMediaEmbed src="https://example.com/embed" />'
     );
 
@@ -61,28 +66,28 @@ Rich **caption**.
         url: 'https://example.com/embed',
       },
     ]);
-    expect(editor.api.markdown.serialize({ value: document })).toBe(
+    expect(serializeTestMarkdown(editor, { document }).data).toBe(
       '<customMediaEmbed src="https://example.com/embed" />\n'
     );
   });
 
-  it('round-trips image attributes through the image plugin codec', () => {
+  it('round-trips image attributes through the image plugin mapping', () => {
     const editor = createMediaEditor();
     const input =
       '<img alt="caption alt" height="180" src="/from-attr.png" width="320" />';
-    const document = editor.api.markdown.deserialize(input);
+    const document = parseTestMarkdown(editor, input);
 
     expect(document.children).toMatchObject([
       {
         alt: 'caption alt',
         children: [{ text: '' }],
-        height: 180,
+        naturalHeight: 180,
         type: 'image',
         url: '/from-attr.png',
         width: 320,
       },
     ]);
-    expect(editor.api.markdown.serialize({ value: document })).toBe(
+    expect(serializeTestMarkdown(editor, { document }).data).toBe(
       '<img alt="caption alt" height="180" width="320" src="/from-attr.png" />\n'
     );
   });
@@ -116,13 +121,12 @@ Rich **caption**.
     },
     {
       expected:
-        '<mediaEmbed id="M7lc1UVf-VE" provider="youtube" sourceUrl="https://www.youtube.com/watch?v=M7lc1UVf-VE" src="https://www.youtube.com/embed/M7lc1UVf-VE" />\n',
+        '<mediaEmbed provider="youtube" sourceUrl="https://www.youtube.com/watch?v=M7lc1UVf-VE" src="https://www.youtube.com/embed/M7lc1UVf-VE" />\n',
       input:
-        '<mediaEmbed id="M7lc1UVf-VE" provider="youtube" sourceUrl="https://www.youtube.com/watch?v=M7lc1UVf-VE" src="https://www.youtube.com/embed/M7lc1UVf-VE" />',
+        '<mediaEmbed provider="youtube" sourceUrl="https://www.youtube.com/watch?v=M7lc1UVf-VE" src="https://www.youtube.com/embed/M7lc1UVf-VE" />',
       output: [
         {
           children: [{ text: '' }],
-          id: 'M7lc1UVf-VE',
           provider: 'youtube',
           sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
           type: 'mediaEmbed',
@@ -132,18 +136,14 @@ Rich **caption**.
       title: 'round-trips media embed nodes with normalized metadata',
     },
     {
-      expected: '<video width={640} src="https://example.com/video.mp4" />\n',
+      expected: '<video width="640" src="https://example.com/video.mp4" />\n',
       input: '<video width={640} src="https://example.com/video.mp4" />',
       output: [
         {
           children: [{ text: '' }],
           type: 'video',
           url: 'https://example.com/video.mp4',
-          width: {
-            data: expect.any(Object),
-            type: 'mdxJsxAttributeValueExpression',
-            value: '640',
-          },
+          width: 640,
         },
       ],
       title: 'round-trips video nodes with numeric attributes',
@@ -151,11 +151,11 @@ Rich **caption**.
   ])('$title', ({ expected, input, output }) => {
     const editor = createMediaEditor();
 
-    const document = editor.api.markdown.deserialize(input);
+    const document = parseTestMarkdown(editor, input);
     const value = document.children;
 
     expect(value).toMatchObject(output);
     expect(document).not.toHaveProperty('roots');
-    expect(editor.api.markdown.serialize({ value: document })).toBe(expected);
+    expect(serializeTestMarkdown(editor, { document }).data).toBe(expected);
   });
 });

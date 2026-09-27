@@ -20,8 +20,8 @@ import type {
   Value,
 } from '../interfaces';
 import { ElementApi, NodeApi } from '../interfaces';
+import type { EditorJsonValue } from '../interfaces/json';
 import type {
-  PropertyJsonValue,
   PropertyValueDescriptor,
   SchemaPropertyHandle,
   SchemaTarget,
@@ -37,6 +37,7 @@ import { DocumentIndex } from './change/document-index';
 import type { DocumentPropertyContext, RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import { cloneFrozen } from './clone';
+import { ContentSlice as ContentSliceValue } from './content-slice';
 import {
   assertEditorDocumentShape,
   getEditorDocumentShapeIssueMessage,
@@ -79,6 +80,13 @@ import {
   type InternalSliceFitOptions,
   type SliceFitRuntimeTargetOptions,
 } from './slice-fit/compiled-slice-fitter';
+import {
+  type EditorSchemaFitReport,
+  type EditorSchemaRepair,
+  type RootCanonicalizationPass,
+  schemaModelLocation,
+  schemaRepair,
+} from './slice-fit/fit-report';
 import { assertEditorJsonValue, snapshotEditorJsonValue } from './value-codec';
 
 /**
@@ -109,6 +117,14 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       document: EditorDocumentValue<V>;
       selection: NonNullable<Selection>;
     }>;
+    /** Fit an external document and retain its committed semantic repairs. */
+    fitDocumentWithReport: <TValue extends Value>(
+      value: EditorDocumentValue<TValue>
+    ) => EditorSchemaFitReport<V>;
+    /** Validate one detached slice without applying destination grammar. */
+    assertContentSliceForSchema: (
+      slice: unknown
+    ) => asserts slice is ContentSlice<V>;
     canonicalizeTextPropertiesAt: (
       properties: Readonly<Record<string, unknown>>,
       path: Path,
@@ -406,15 +422,15 @@ const canonicalizePropertyValue = (
   owner: string,
   descriptor: PropertyValueDescriptor,
   value: unknown
-): PropertyJsonValue => {
-  let canonical: PropertyJsonValue;
+): EditorJsonValue => {
+  let canonical: EditorJsonValue;
 
   if (descriptor.kind === 'set') {
     if (!Array.isArray(value)) {
       throw new EditorSchemaValidationError(`${owner} must be an array.`);
     }
 
-    const items = new Map<string, PropertyJsonValue>();
+    const items = new Map<string, EditorJsonValue>();
 
     const itemDescriptor = (
       descriptor as PropertyValueDescriptor & {
@@ -435,7 +451,7 @@ const canonicalizePropertyValue = (
     );
   } else {
     try {
-      canonical = snapshotEditorJsonValue(value, owner) as PropertyJsonValue;
+      canonical = snapshotEditorJsonValue(value, owner) as EditorJsonValue;
     } catch {
       throw new EditorSchemaValidationError(
         `${owner} must encode to JSON-compatible data.`
@@ -471,7 +487,7 @@ const validatePropertyValue = (
   const canonical = canonicalizePropertyValue(owner, descriptor, value);
   const validateCanonical = (
     currentDescriptor: PropertyValueDescriptor,
-    current: PropertyJsonValue
+    current: EditorJsonValue
   ): void => {
     if (currentDescriptor.kind === 'set') {
       const itemDescriptor = (
@@ -480,7 +496,7 @@ const validatePropertyValue = (
         }
       ).item;
 
-      for (const item of current as readonly PropertyJsonValue[]) {
+      for (const item of current as readonly EditorJsonValue[]) {
         validateCanonical(itemDescriptor, item);
       }
     }
@@ -560,7 +576,9 @@ export const getCompiledEditorSchemaFromApi = (
 
 export const createEditorSchema = <V extends Value = Value>(
   getEditor: () => Editor<V>,
-  getRegistry: () => PluginRegistry<any> = () => getPluginRegistry(getEditor())
+  getRegistry: () => PluginRegistry<any> = () => getPluginRegistry(getEditor()),
+  getDocument: () => EditorDocumentValue<V> = () =>
+    getEditorDocumentValue(getEditor())
 ): InternalEditorSchemaApi<V> => {
   const getDeclarativeSchema = () => {
     const registry = getRegistry().schemaContributions;
@@ -952,7 +970,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const getRootContent = (
     root: RootKey = 'main',
-    value: EditorDocumentValue = getEditorDocumentValue(getEditor())
+    value: EditorDocumentValue = getDocument()
   ) => {
     const schema = getDeclarativeSchema();
 
@@ -1580,9 +1598,234 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   };
 
+  let canonicalizationObserver:
+    | {
+        passes: RootCanonicalizationPass[];
+        root: RootKey;
+      }
+    | undefined;
+  const observeRootCanonicalization = <T>(root: RootKey, run: () => T) => {
+    if (canonicalizationObserver) {
+      throw new Error('Schema fit canonicalization observers cannot nest.');
+    }
+
+    const observer = { passes: [], root } as {
+      passes: RootCanonicalizationPass[];
+      root: RootKey;
+    };
+
+    canonicalizationObserver = observer;
+    try {
+      const value = run();
+
+      return Object.freeze({
+        passes: Object.freeze([...observer.passes]),
+        value,
+      });
+    } finally {
+      canonicalizationObserver = undefined;
+    }
+  };
+
+  const collectPropertyRepairs = (
+    input: readonly Descendant[],
+    output: readonly Descendant[],
+    root: RootKey
+  ): readonly EditorSchemaRepair[] => {
+    if (structurallyEqual(input, output)) return Object.freeze([]);
+    const declarative = getDeclarativeSchema();
+
+    if (!declarative) {
+      throw new Error(
+        `Unclassified property mutation in editor root "${root}" without a compiled schema.`
+      );
+    }
+
+    const repairs: EditorSchemaRepair[] = [];
+    const visit = (
+      before: readonly Descendant[],
+      after: readonly Descendant[],
+      ancestors: readonly Element[],
+      parentPath: readonly number[]
+    ) => {
+      if (before.length !== after.length) {
+        throw new Error(
+          `Property canonicalization changed child topology in editor root "${root}".`
+        );
+      }
+
+      for (const [index, source] of before.entries()) {
+        const targetNode = after[index];
+        const path = [...parentPath, index];
+
+        if (
+          !targetNode ||
+          NodeApi.isText(source) !== NodeApi.isText(targetNode)
+        ) {
+          throw new Error(
+            `Property canonicalization changed node structure in editor root "${root}" at [${path}].`
+          );
+        }
+
+        const placement = NodeApi.isText(source) ? 'text' : 'element';
+        const type = NodeApi.isText(source)
+          ? (getElementType(ancestors[0] ?? {}) ?? '')
+          : getElementType(source);
+
+        if (
+          !type ||
+          (!NodeApi.isText(source) &&
+            type !== getElementType(targetNode as Element))
+        ) {
+          throw new Error(
+            `Property canonicalization changed element identity in editor root "${root}" at [${path}].`
+          );
+        }
+
+        const context = toCompiledTargetContext(type, {
+          ancestors: NodeApi.isText(source) ? ancestors.slice(1) : ancestors,
+          root,
+        });
+        const reserved = new Set(
+          NodeApi.isText(source)
+            ? ['text']
+            : [
+                'children',
+                'type',
+                ...((declarative.elements.byType.get(type)?.contentRoots.size ??
+                  0) > 0
+                  ? ['childRoots']
+                  : []),
+              ]
+        );
+        const sourceRecord = source as unknown as Readonly<
+          Record<string, unknown>
+        >;
+        const targetRecord = targetNode as unknown as Readonly<
+          Record<string, unknown>
+        >;
+        const keys = new Set([
+          ...Object.keys(sourceRecord),
+          ...Object.keys(targetRecord),
+        ]);
+
+        for (const key of keys) {
+          if (reserved.has(key)) continue;
+          const had = Object.hasOwn(sourceRecord, key);
+          const has = Object.hasOwn(targetRecord, key);
+
+          if (
+            had &&
+            has &&
+            structurallyEqual(sourceRecord[key], targetRecord[key])
+          ) {
+            continue;
+          }
+
+          const property = resolveCompiledSchemaProperty(
+            declarative,
+            placement,
+            key,
+            context
+          );
+
+          if (!property) {
+            throw new Error(
+              `Unclassified schema property mutation for "${key}" in editor root "${root}" at [${path}].`
+            );
+          }
+
+          const inputLocation = schemaModelLocation(root, path, key);
+          const outputLocation = schemaModelLocation(root, path, key);
+
+          if (!had && has) {
+            const code = property.descriptor.generate
+              ? 'generate-property'
+              : Object.hasOwn(property.descriptor, 'default')
+                ? 'default-property'
+                : null;
+
+            if (!code) {
+              throw new Error(
+                `Unclassified inserted schema property "${key}" in editor root "${root}" at [${path}].`
+              );
+            }
+            repairs.push(
+              schemaRepair({
+                code,
+                impact: 'lossless',
+                outputs: [outputLocation],
+                owner: 'property',
+              })
+            );
+            continue;
+          }
+          if (had && !has) {
+            const omittedDefault =
+              property.descriptor.omitDefault &&
+              Object.hasOwn(property.descriptor, 'default') &&
+              structurallyEqual(sourceRecord[key], property.descriptor.default);
+            const exclusive =
+              placement === 'text' && property.exclusiveGroupIds.length > 0;
+
+            if (!omittedDefault && !exclusive) {
+              throw new Error(
+                `Unclassified removed schema property "${key}" in editor root "${root}" at [${path}].`
+              );
+            }
+            repairs.push(
+              schemaRepair({
+                code: omittedDefault
+                  ? 'omit-default-property'
+                  : 'resolve-exclusive-property',
+                impact: omittedDefault ? 'lossless' : 'lossy',
+                inputs: [inputLocation],
+                owner: 'property',
+              })
+            );
+            continue;
+          }
+          if (property.descriptor.kind !== 'set') {
+            throw new Error(
+              `Unclassified changed schema property "${key}" in editor root "${root}" at [${path}].`
+            );
+          }
+          repairs.push(
+            schemaRepair({
+              code: 'canonicalize-set-property',
+              impact: 'lossless',
+              inputs: [inputLocation],
+              outputs: [outputLocation],
+              owner: 'property',
+            })
+          );
+        }
+
+        if (!NodeApi.isText(source) && !NodeApi.isText(targetNode)) {
+          visit(
+            source.children,
+            targetNode.children,
+            [source, ...ancestors],
+            path
+          );
+        }
+      }
+    };
+
+    visit(input, output, [], []);
+    if (repairs.length === 0) {
+      throw new Error(
+        `Unclassified property mutation in editor root "${root}".`
+      );
+    }
+
+    return Object.freeze(repairs);
+  };
+
   const representationContext = Object.freeze({ getSchema: () => api });
   const sliceFitter = createCompiledSliceFitterDelegate<V>(() => ({
     canContain,
+    collectPropertyRepairs,
     contentAllows,
     contentAllowsAt,
     createDeclarativeAndFill,
@@ -1603,6 +1846,7 @@ export const createEditorSchema = <V extends Value = Value>(
     indexConstructedRoot,
     isSetValuedProperty,
     nodePropertiesEqual,
+    observeRootCanonicalization,
     revision: getRegistry().schemaRevision,
     schema: getDeclarativeSchema(),
     schemaApi: api,
@@ -1617,6 +1861,8 @@ export const createEditorSchema = <V extends Value = Value>(
   const fitDocument = <TValue extends Value>(
     input: EditorDocumentValue<TValue>
   ): EditorDocumentValue<V> => sliceFitter.fitDocument(input);
+  const fitDocumentWithReport: InternalEditorSchemaApi<V>['fitDocumentWithReport'] =
+    (input) => sliceFitter.fitDocumentWithReport(input);
   const fitDocumentWithSelection: InternalEditorSchemaApi<V>['fitDocumentWithSelection'] =
     (input, options) => sliceFitter.fitDocumentWithSelection(input, options);
   const findWrapping: InternalEditorSchemaApi<V>['findWrapping'] =
@@ -1944,7 +2190,7 @@ export const createEditorSchema = <V extends Value = Value>(
         }
       }
 
-      return schema
+      const canonical = schema
         ? canonicalizeDeclarativeChildren(
             children,
             schema,
@@ -1955,6 +2201,18 @@ export const createEditorSchema = <V extends Value = Value>(
             baseline?.from ?? 0
           )
         : children;
+
+      if (
+        canonicalizationObserver?.root === root &&
+        ancestors.length === 0 &&
+        baseline === undefined
+      ) {
+        canonicalizationObserver.passes.push(
+          Object.freeze({ input: children, output: canonical })
+        );
+      }
+
+      return canonical;
     };
 
   const copyDeclarativeChildren = (
@@ -2056,7 +2314,7 @@ export const createEditorSchema = <V extends Value = Value>(
     path,
     root = 'main'
   ) => {
-    const children = getDocumentRoot(getEditorDocumentValue(getEditor()), root);
+    const children = getDocumentRoot(getDocument(), root);
 
     return copyChildren(
       node ? [node] : [],
@@ -2106,16 +2364,13 @@ export const createEditorSchema = <V extends Value = Value>(
     path: Path,
     root: RootKey = 'main'
   ): RuntimeTextTargetOptions =>
-    getTextTargetOptions(getEditorDocumentValue(getEditor()), path, root);
+    getTextTargetOptions(getDocument(), path, root);
 
   const getElementTargetOptionsAt = (
     path: Path,
     root: RootKey = 'main'
   ): RuntimeTargetOptions => ({
-    ancestors: getElementAncestors(
-      getDocumentRoot(getEditorDocumentValue(getEditor()), root),
-      path
-    ),
+    ancestors: getElementAncestors(getDocumentRoot(getDocument(), root), path),
     root,
   });
 
@@ -2400,11 +2655,11 @@ export const createEditorSchema = <V extends Value = Value>(
             property.descriptor,
             previous
           );
-    const items = new Map<string, PropertyJsonValue>();
+    const items = new Map<string, EditorJsonValue>();
 
     for (const item of [
-      ...(previousItems as readonly PropertyJsonValue[]),
-      ...(canonical as readonly PropertyJsonValue[]),
+      ...(previousItems as readonly EditorJsonValue[]),
+      ...(canonical as readonly EditorJsonValue[]),
     ]) {
       items.set(canonicalPropertyKey(item), item);
     }
@@ -2974,6 +3229,102 @@ export const createEditorSchema = <V extends Value = Value>(
       children.forEach(visitDeclarative);
     }
   };
+
+  const assertContentSliceForSchema: InternalEditorSchemaApi<V>['assertContentSliceForSchema'] =
+    (input): asserts input is ContentSlice<V> => {
+      const slice = ContentSliceValue.fromJSON<V>(input);
+      const declarative = getDeclarativeSchema();
+
+      validateSliceVocabulary(slice.content);
+      for (const children of Object.values(slice.roots ?? {})) {
+        validateSliceVocabulary(children);
+      }
+      if (!declarative) return;
+
+      const detachedRoots = slice.roots ?? {};
+      const reached = new Set<string>();
+      const pending: Array<
+        Readonly<{ children: readonly Descendant[]; root: RootKey }>
+      > = [{ children: slice.content, root: 'main' }];
+
+      while (pending.length > 0) {
+        const current = getDefined(pending.shift());
+
+        if (reached.has(current.root)) continue;
+        reached.add(current.root);
+
+        const visit = (node: Descendant, path: readonly number[]): void => {
+          if (NodeApi.isText(node)) return;
+          const type = getElementType(node);
+          const element = type
+            ? declarative.elements.byType.get(type)
+            : undefined;
+
+          if (element && element.contentRoots.size > 0) {
+            const { childRoots } = node as { childRoots?: unknown };
+
+            if (
+              typeof childRoots !== 'object' ||
+              childRoots === null ||
+              Array.isArray(childRoots)
+            ) {
+              throw new EditorSchemaValidationError(
+                `Detached content slice element "${type}" at ${current.root}:[${path}] is missing its content-root references.`
+              );
+            }
+
+            const references = childRoots as Readonly<Record<string, unknown>>;
+            const unknownSlot = Object.keys(references).find(
+              (slot) => !element.contentRoots.has(slot)
+            );
+
+            if (unknownSlot) {
+              throw new EditorSchemaValidationError(
+                `Detached content slice element "${type}" at ${current.root}:[${path}] has undeclared content-root reference "${unknownSlot}".`
+              );
+            }
+
+            for (const slot of element.contentRoots.keys()) {
+              const childRoot = references[slot];
+
+              if (
+                typeof childRoot !== 'string' ||
+                childRoot.length === 0 ||
+                childRoot === 'main'
+              ) {
+                throw new EditorSchemaValidationError(
+                  `Detached content slice element "${type}" at ${current.root}:[${path}] has an invalid content-root reference for "${slot}".`
+                );
+              }
+              const children = detachedRoots[childRoot];
+
+              if (!children) {
+                throw new EditorSchemaValidationError(
+                  `Detached content slice is missing referenced root "${childRoot}".`
+                );
+              }
+              pending.push({ children, root: childRoot });
+            }
+          }
+
+          node.children.forEach((child, index) =>
+            visit(child, [...path, index])
+          );
+        };
+
+        current.children.forEach((node, index) => visit(node, [index]));
+      }
+
+      const orphan = Object.keys(detachedRoots).find(
+        (root) => !reached.has(root)
+      );
+
+      if (orphan) {
+        throw new EditorSchemaValidationError(
+          `Detached content slice root "${orphan}" is not reachable from its content.`
+        );
+      }
+    };
 
   const validateDeclarativeRootContent = (
     root: RootKey,
@@ -3861,17 +4212,19 @@ export const createEditorSchema = <V extends Value = Value>(
     copyNodeAt,
     elementPropertiesForSplitAt,
     elementPropertiesForTypeChangeAt,
+    assertContentSliceForSchema,
     assertDocument,
     assertFragment,
     create,
     copy: (node, options) =>
       copyNodeAt(node, options.at, options.root ?? 'main') as typeof node,
     createDefaultRootChild,
-    delta: () => getPluginRegistry(getEditor()).schemaContributions.delta,
+    delta: () => getRegistry().schemaContributions.delta,
     element: getPublicElement,
     fit,
     fitContent,
     fitDocument,
+    fitDocumentWithReport,
     fitDocumentWithSelection,
     findWrapping,
     getElementBehavior,
@@ -3924,7 +4277,8 @@ export const createEditorSchema = <V extends Value = Value>(
 
 /** Create immutable schema authority that cannot read or retain a live editor. @internal */
 export const createDetachedEditorSchema = <V extends Value = Value>(
-  schema: CompiledEditorSchema
+  schema: CompiledEditorSchema,
+  document?: EditorDocumentValue<V>
 ): InternalEditorSchemaApi<V> => {
   const registry = {
     schemaContributions: { compiled: schema },
@@ -3935,6 +4289,13 @@ export const createDetachedEditorSchema = <V extends Value = Value>(
     () => {
       throw new Error('Detached editor schema cannot read a live editor.');
     },
-    () => registry
+    () => registry,
+    () => {
+      if (document) return document;
+
+      throw new Error(
+        'Detached editor schema requires an explicit document for document-relative operations.'
+      );
+    }
   );
 };

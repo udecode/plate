@@ -65,6 +65,8 @@ const platePliteBridgePatterns = [
   'packages/platejs/src/history/index.ts',
   'packages/platejs/src/history/plite-history.internal.ts',
   'packages/platejs/src/hyperscript/index.ts',
+  'packages/platejs/src/internal/createProjectedEditorView.ts',
+  'packages/platejs/src/internal/plugin/compilePlainTextMappings.ts',
   'packages/platejs/src/internal/plugin/resolvePlugins.ts',
   'packages/platejs/src/internal/utils/mergePlugins.ts',
   'packages/platejs/src/lib/editor/withPlite.ts',

@@ -53,6 +53,8 @@
         "../platejs/src/react/features/footnote/index.ts"
       ],
       "platejs/history": ["../platejs/src/history/index.ts"],
+      "platejs/html": ["../platejs/src/html/index.ts"],
+      "platejs/html/server": ["../platejs/src/html/server/index.ts"],
       "platejs/hyperscript": ["../platejs/src/hyperscript/index.ts"],
       "platejs/layout": ["../platejs/src/features/layout/index.ts"],
       "platejs/layout/react": ["../platejs/src/react/features/layout/index.ts"],

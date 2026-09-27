@@ -43,12 +43,17 @@ describe('MarkdownKit', () => {
       initialValue: value,
     });
 
-    const markdown = editor.api.markdown.serialize();
+    const serialized = editor.api.markdown.serialize();
+
+    expect(serialized.ok).toBe(true);
+    if (!serialized.ok) throw new Error(serialized.diagnostics[0].message);
+    const { data: markdown } = serialized;
+    const parsed = editor.api.markdown.parse(markdown);
 
     expect(markdown).toContain('<codeDrawing');
-    expect(editor.api.markdown.deserialize(markdown).children).toMatchObject(
-      value
-    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
+    expect(parsed.document.children).toMatchObject(value);
   });
 
   it('composes without duplicating live Footnote plugins', () => {

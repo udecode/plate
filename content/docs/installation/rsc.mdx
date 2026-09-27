@@ -88,10 +88,10 @@ export async function GET() {
   });
 
   const html = await renderStaticHtml(editor, {
-    editorComponent: EditorStatic,
+    component: EditorStatic,
   });
 
-  return new Response(html, {
+  return new Response(html.data, {
     headers: { 'content-type': 'text/html; charset=utf-8' },
   });
 }

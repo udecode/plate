@@ -7,7 +7,12 @@ import {
 import JSZip from 'jszip';
 import { SaxesParser } from 'saxes';
 
-import type { DocxDiagnostic, DocxImportLimits } from './types';
+import { throwIfDocxAborted } from './abort';
+import type {
+  DocxDiagnostic,
+  DocxImportLimits,
+  DocxSourceLocation,
+} from './types';
 
 export const DEFAULT_DOCX_IMPORT_LIMITS: DocxImportLimits = Object.freeze({
   maxComments: 5000,
@@ -64,13 +69,6 @@ const invalidPackage = (message: string) =>
     severity: 'error',
   });
 
-const throwIfAborted = (signal: AbortSignal | undefined) => {
-  if (!signal?.aborted) return;
-  if (signal.reason !== undefined) throw signal.reason;
-
-  throw new DOMException('The operation was aborted.', 'AbortError');
-};
-
 const assertSafePartName = (entry: Entry) => {
   const filename = entry.directory
     ? entry.filename.slice(0, -1)
@@ -95,15 +93,91 @@ const isXmlPart = (name: string) =>
   name.endsWith('.xml') ||
   name.endsWith('.rels');
 
+type DocxXmlDisposition = Readonly<{
+  action: 'dropped' | 'replaced' | 'unwrapped';
+  feature: string;
+  lossy: boolean;
+}>;
+
+export type DocxXmlInventoryEntry = DocxXmlDisposition &
+  Readonly<{ location: DocxSourceLocation }>;
+
+const WORD_NAMESPACE =
+  'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+const MAIN_DOCUMENT_DISPOSITIONS = new Map<string, DocxXmlDisposition>([
+  [
+    'altChunk',
+    Object.freeze({ action: 'dropped', feature: 'alt-chunk', lossy: true }),
+  ],
+  [
+    'customXml',
+    Object.freeze({ action: 'unwrapped', feature: 'custom-xml', lossy: false }),
+  ],
+  [
+    'fldSimple',
+    Object.freeze({ action: 'replaced', feature: 'field', lossy: true }),
+  ],
+  [
+    'instrText',
+    Object.freeze({
+      action: 'replaced',
+      feature: 'field-instruction',
+      lossy: true,
+    }),
+  ],
+  [
+    'object',
+    Object.freeze({
+      action: 'replaced',
+      feature: 'embedded-object',
+      lossy: true,
+    }),
+  ],
+  [
+    'sdt',
+    Object.freeze({
+      action: 'unwrapped',
+      feature: 'structured-document-tag',
+      lossy: false,
+    }),
+  ],
+  [
+    'smartTag',
+    Object.freeze({ action: 'unwrapped', feature: 'smart-tag', lossy: false }),
+  ],
+  [
+    'txbxContent',
+    Object.freeze({ action: 'dropped', feature: 'text-box', lossy: true }),
+  ],
+]);
+
 const inspectXml = (
   source: Uint8Array,
   name: string,
   limits: DocxImportLimits,
-  counters: { relationships: number; xmlNodes: number }
+  counters: { relationships: number; xmlNodes: number },
+  inventory: DocxXmlInventoryEntry[],
+  roots: Map<string, DocxSourceLocation>
 ) => {
+  let text: string;
+
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(source);
+  } catch {
+    throw invalidPackage('DOCX contains XML that is not valid UTF-8.');
+  }
+
   let depth = 0;
   let parseError: Error | undefined;
   const parser = new SaxesParser({ xmlns: true });
+  const frames: Array<
+    Readonly<{
+      disposition?: DocxXmlDisposition;
+      qName: string;
+      root: boolean;
+      startCodeUnit: number;
+    }>
+  > = [];
 
   parser.on('doctype', () => {
     parseError = invalidPackage(
@@ -116,6 +190,24 @@ const inspectXml = (
   parser.on('opentag', (tag) => {
     depth += 1;
     counters.xmlNodes += 1;
+    const qName = tag.name;
+    const startCodeUnit = Math.max(
+      0,
+      text.lastIndexOf('<', Math.max(0, parser.position - 1))
+    );
+    const disposition =
+      name === 'word/document.xml' && tag.uri === WORD_NAMESPACE
+        ? MAIN_DOCUMENT_DISPOSITIONS.get(tag.local)
+        : undefined;
+
+    frames.push(
+      Object.freeze({
+        ...(disposition ? { disposition } : {}),
+        qName,
+        root: depth === 1,
+        startCodeUnit,
+      })
+    );
 
     if (depth > limits.maxXmlDepth) {
       parseError = limitError('maxXmlDepth', limits.maxXmlDepth, depth);
@@ -140,16 +232,23 @@ const inspectXml = (
     }
   });
   parser.on('closetag', () => {
+    const frame = frames.pop();
+
+    if (frame) {
+      const location = Object.freeze({
+        endCodeUnit: parser.position,
+        part: name,
+        qName: frame.qName,
+        startCodeUnit: frame.startCodeUnit,
+      });
+
+      if (frame.root) roots.set(name, location);
+      if (frame.disposition) {
+        inventory.push(Object.freeze({ ...frame.disposition, location }));
+      }
+    }
     depth -= 1;
   });
-
-  let text: string;
-
-  try {
-    text = new TextDecoder('utf-8', { fatal: true }).decode(source);
-  } catch {
-    throw invalidPackage('DOCX contains XML that is not valid UTF-8.');
-  }
 
   try {
     parser.write(text).close();
@@ -162,6 +261,8 @@ const inspectXml = (
 export type BoundedDocxPackage = Readonly<{
   entries: ReadonlyMap<string, Uint8Array>;
   source: Blob;
+  xmlInventory: readonly DocxXmlInventoryEntry[];
+  xmlRoots: ReadonlyMap<string, DocxSourceLocation>;
   toArrayBuffer: (
     replacements?: ReadonlyMap<string, string | Uint8Array>
   ) => Promise<ArrayBuffer>;
@@ -170,14 +271,15 @@ export type BoundedDocxPackage = Readonly<{
 export const readBoundedDocxPackage = async (
   source: ArrayBuffer | Blob,
   limits: DocxImportLimits,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  abortError?: () => unknown
 ): Promise<BoundedDocxPackage> => {
   const blob = source instanceof Blob ? source : new Blob([source]);
 
   if (blob.size > limits.maxInputBytes) {
     throw limitError('maxInputBytes', limits.maxInputBytes, blob.size);
   }
-  throwIfAborted(signal);
+  throwIfDocxAborted(signal, abortError);
   const reader = new ZipReader(new BlobReader(blob), {
     checkCrc32: true,
     checkLocalDirectory: true,
@@ -195,13 +297,15 @@ export const readBoundedDocxPackage = async (
       strictness: 'strict',
     });
 
+    throwIfDocxAborted(signal, abortError);
+
     if (sourceEntries.length > limits.maxEntries) {
       throw limitError('maxEntries', limits.maxEntries, sourceEntries.length);
     }
     let declaredExpandedBytes = 0;
 
     for (const entry of sourceEntries) {
-      throwIfAborted(signal);
+      throwIfDocxAborted(signal, abortError);
       assertSafePartName(entry);
       if (entry.directory) continue;
       if (entry.encrypted || entry.symlink) {
@@ -247,11 +351,13 @@ export const readBoundedDocxPackage = async (
 
     const entries = new Map<string, Uint8Array>();
     const counters = { relationships: 0, xmlNodes: 0 };
+    const inventory: DocxXmlInventoryEntry[] = [];
+    const roots = new Map<string, DocxSourceLocation>();
     let actualExpandedBytes = 0;
 
     for (const entry of sourceEntries) {
       if (entry.directory) continue;
-      throwIfAborted(signal);
+      throwIfDocxAborted(signal, abortError);
       const value = await entry.getData(new Uint8ArrayWriter(), {
         checkCrc32: true,
         checkLocalDirectory: true,
@@ -274,6 +380,8 @@ export const readBoundedDocxPackage = async (
         useWebWorkers: false,
       });
 
+      throwIfDocxAborted(signal, abortError);
+
       if (value.byteLength !== entry.uncompressedSize) {
         throw invalidPackage('DOCX package part size does not match metadata.');
       }
@@ -287,7 +395,7 @@ export const readBoundedDocxPackage = async (
         );
       }
       if (isXmlPart(entry.filename)) {
-        inspectXml(value, entry.filename, limits, counters);
+        inspectXml(value, entry.filename, limits, counters, inventory, roots);
       }
       entries.set(entry.filename, value);
     }
@@ -299,27 +407,34 @@ export const readBoundedDocxPackage = async (
         blob.size,
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       ),
+      xmlInventory: Object.freeze(inventory),
+      xmlRoots: roots,
       async toArrayBuffer(replacements = new Map()) {
-        throwIfAborted(signal);
+        throwIfDocxAborted(signal, abortError);
         const zip = new JSZip();
 
         for (const [name, value] of entries) {
           zip.file(name, replacements.get(name) ?? value);
         }
 
-        return zip.generateAsync({
+        const result = await zip.generateAsync({
           compression: 'DEFLATE',
           compressionOptions: { level: 6 },
           type: 'arraybuffer',
         });
+
+        throwIfDocxAborted(signal, abortError);
+
+        return result;
       },
     });
   } catch (error) {
-    if (signal?.aborted) throwIfAborted(signal);
+    if (signal?.aborted) throwIfDocxAborted(signal, abortError);
     if (error instanceof DocxPackageError) throw error;
 
     throw invalidPackage('DOCX package structure is invalid.');
   } finally {
     await reader.close().catch(() => undefined);
+    throwIfDocxAborted(signal, abortError);
   }
 };

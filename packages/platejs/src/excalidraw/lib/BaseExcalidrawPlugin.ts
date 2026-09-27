@@ -4,16 +4,16 @@ import {
   definePlugin,
   type ElementOf,
   property,
-  type PropertyJsonValue,
+  type EditorJsonValue,
   PLUGINS,
 } from '../../core';
 
 export type ExcalidrawDataState = ImportedDataState;
 
 type ExcalidrawElementData = {
-  elements: readonly PropertyJsonValue[];
-  files?: Readonly<Record<string, PropertyJsonValue>>;
-  state: Readonly<Record<string, PropertyJsonValue>>;
+  elements: readonly EditorJsonValue[];
+  files?: Readonly<Record<string, EditorJsonValue>>;
+  state: Readonly<Record<string, EditorJsonValue>>;
 } | null;
 
 /** Stores an Excalidraw scene in a void block. */

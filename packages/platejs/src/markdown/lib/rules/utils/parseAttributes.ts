@@ -25,7 +25,13 @@ export function parseAttributes(
       if (attr.type === 'mdxJsxAttribute' && attr.value !== undefined) {
         let value: unknown = attr.value;
 
-        if (typeof attr.value === 'string') {
+        if (isAttributeValueExpression(attr.value)) {
+          try {
+            value = JSON.parse(attr.value.value);
+          } catch {
+            ({ value } = attr);
+          }
+        } else if (typeof attr.value === 'string') {
           try {
             value = JSON.parse(attr.value);
           } catch {

@@ -27,8 +27,8 @@ but the editor type is `Editor`.
 | `read` | State-bound reads owned by the current plugin. |
 | `update` | One-shot updates owned by the current plugin. |
 | `store` | Read, update, or subscribe to the current plugin's editor-local state. |
-| `defineCodecs(map)` | Bind a self/product codec map to this plugin's inferred schema. |
-| `defineCodecs(TargetPlugin, map)` | Bind a foreign codec map to an exact descriptor and inject its target. |
+| `defineFormats(map)` | Bind self-owned HTML, Markdown, and plain-text mappings to this plugin's inferred schema. |
+| `defineFormats(TargetPlugin, map)` | Bind a foreign mapping to an exact descriptor and inject its target. |
 
 ## Plugin methods
 
@@ -128,18 +128,21 @@ Use `definePlugin` from `platejs` only for independently
 reusable standalone Plate descriptors. See
 [Plugin Methods](/docs/plugin-methods#commands).
 
-## Codec inference
+## Format mapping inference
 
-Use `defineCodecs` in the constructor's `codecs` callback. It is the codec
-map's single inference anchor:
+Use `defineFormats` in the constructor's `formats` callback. That callback has
+its own narrow authoring context: `defineFormats` and the plugin's static
+`schema` bindings. It cannot read a live editor or store. Runtime mapping
+callbacks receive a frozen `pluginState`, mapping `registry`, schema view, and
+the context for that conversion operation.
 
 ```ts title="strong-plugin.ts" showLineNumbers
 import { definePlugin, property } from 'platejs';
 
 export const StrongPlugin = definePlugin('strong', {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: () => true,
         decodeOnly: true,
         match: [{ tag: 'strong' }],
@@ -149,11 +152,12 @@ export const StrongPlugin = definePlugin('strong', {
 });
 ```
 
-The one-argument form owns self and product maps. For a foreign contribution,
-call `defineCodecs(TargetPlugin, map)`; Plate injects the target into every HTML
-rule. Keep the map MIME-keyed, and use either one `'text/html'` rule or a
-non-empty ordered rule tuple. Do not author direct codec maps or annotate the
-callbacks.
+The one-argument form owns self mappings. For a foreign contribution, call
+`defineFormats(TargetPlugin, map)`; Plate injects the target into every HTML
+rule. The semantic keys are `html`, `markdown`, and `plainText`. Use one HTML
+rule or a non-empty ordered rule tuple. Register whole-payload browser MIME
+handling through `dataTransferFormats`, not `defineFormats`. Do not annotate
+mapping callback parameters.
 
 ## Another plugin
 

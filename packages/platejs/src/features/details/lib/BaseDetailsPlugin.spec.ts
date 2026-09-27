@@ -5,6 +5,7 @@ import {
   schema,
   SelectionApi,
 } from '../../../core';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import {
   BaseDetailsPlugin,
   BaseDetailsSummaryPlugin,
@@ -52,10 +53,10 @@ describe('BaseDetailsPlugin', () => {
         },
       ],
     });
-    const decoded = editor.api.html.deserialize({
-      element:
-        '<details open name="shared"><summary>Title</summary><p>Body</p></details>',
-    });
+    const decoded = parseHtmlSliceContent(
+      editor,
+      '<details open name="shared"><summary>Title</summary><p>Body</p></details>'
+    );
 
     expect(decoded).toMatchObject([
       {

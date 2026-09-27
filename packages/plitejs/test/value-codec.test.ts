@@ -8,28 +8,50 @@ import {
   defineEffect,
   definePlugin,
   defineStateField,
-  defineValueCodec,
+  type EditorJsonValue,
+  type EditorValuePersistence,
 } from 'plitejs';
+
+import {
+  ownCurrentEditorValuePersistenceInput,
+  snapshotEditorJsonValue,
+} from '../src/core/value-codec';
+import { assertEditorValuePersistenceLaws } from './support/value-persistence-laws';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
   children: [{ text }],
 });
 
-const jsonCodec = defineValueCodec<unknown>({
-  decode: (value) => value,
+const jsonPersistence = {
+  decode(value) {
+    if (
+      value !== null &&
+      typeof value !== 'boolean' &&
+      typeof value !== 'number' &&
+      typeof value !== 'string' &&
+      typeof value !== 'object'
+    ) {
+      throw new Error('Expected JSON data.');
+    }
+
+    return value as EditorJsonValue;
+  },
   encode: (value) => value,
   version: 1,
-});
+} satisfies EditorValuePersistence<EditorJsonValue, EditorJsonValue>;
 
-describe('editor value codec contract', () => {
-  it('requires positive integer versions and codecs for shared values', () => {
+describe('editor value persistence contract', () => {
+  it('requires positive integer versions and persistence for shared values', () => {
     assert.throws(
       () =>
-        defineValueCodec({
-          decode: (value) => value,
-          encode: (value) => value,
-          version: 0,
+        defineStateField({
+          key: 'invalid-version',
+          persist: {
+            decode: jsonPersistence.decode,
+            encode: jsonPersistence.encode,
+            version: 0,
+          },
         }),
       /positive integer/
     );
@@ -40,7 +62,7 @@ describe('editor value codec contract', () => {
           collab: 'shared',
           initial: () => 'draft',
         }),
-      /requires a persistence codec/
+      /requires persistence/
     );
     assert.throws(
       () =>
@@ -49,15 +71,19 @@ describe('editor value codec contract', () => {
           collab: 'shared',
           collabReplay: 'live',
         }),
-      /requires a persistence codec/
+      /requires persistence/
     );
   });
 
-  it('rejects non-JSON codec output and unversioned persisted field data', () => {
+  it('rejects non-JSON persistence output and unversioned field data', () => {
     const field = defineStateField({
       key: 'document.payload',
       initial: () => null as unknown,
-      persist: jsonCodec,
+      persist: {
+        decode: (value) => value,
+        encode: (value) => value as EditorJsonValue,
+        version: 1,
+      },
     });
     const circular: Record<string, unknown> = {};
 
@@ -82,13 +108,25 @@ describe('editor value codec contract', () => {
         }),
       /Invalid state field "document.payload" envelope/
     );
+    for (const malformed of [
+      null,
+      {},
+      { value: 'missing-version' },
+      { value: 'string-version', version: '1' },
+      { value: 'fractional-version', version: 1.5 },
+    ]) {
+      assert.throws(
+        () => field.deserialize(malformed as never),
+        /Invalid state field "document.payload" envelope/
+      );
+    }
   });
 
   it('accepts shared JSON references while rejecting cycles', () => {
     const field = defineStateField({
       key: 'document.shared-payload',
       initial: () => null as unknown,
-      persist: jsonCodec,
+      persist: jsonPersistence,
     });
     const shared = { value: 'shared' };
 
@@ -111,7 +149,7 @@ describe('editor value codec contract', () => {
     const field = defineStateField({
       key: 'document.canonical-json',
       initial: () => null as unknown,
-      persist: jsonCodec,
+      persist: jsonPersistence,
     });
     const jsonValue = fc
       .jsonValue({ maxDepth: 4 })
@@ -123,6 +161,11 @@ describe('editor value codec contract', () => {
 
         assert.deepEqual(serialized, { value, version: 1 });
         assert.deepEqual(field.deserialize(serialized), value);
+        assertEditorValuePersistenceLaws({
+          encoded: [value as EditorJsonValue],
+          live: [value as EditorJsonValue],
+          persistence: jsonPersistence,
+        });
       }),
       { numRuns: 100, seed: 0xc_0d_ec }
     );
@@ -132,20 +175,20 @@ describe('editor value codec contract', () => {
     const field = defineStateField({
       initial: () => ({ label: '' }),
       key: 'document.versioned-payload',
-      persist: defineValueCodec<{ label: string }>({
+      persist: {
         decode(value) {
           assert.ok(value && typeof value === 'object' && 'label' in value);
           return { label: String(value.label) };
         },
-        encode: (value) => value,
-        previousVersions: {
+        encode: (value: { label: string }) => ({ label: value.label }),
+        legacyDecoders: {
           1(value) {
             assert.equal(typeof value, 'string');
             return { label: value as string };
           },
         },
         version: 2,
-      }),
+      },
     });
 
     assert.deepEqual(field.deserialize({ value: 'legacy', version: 1 }), {
@@ -166,7 +209,7 @@ describe('editor value codec contract', () => {
     const field = defineStateField({
       key: 'document.pages',
       initial: () => null as unknown,
-      persist: jsonCodec,
+      persist: jsonPersistence,
       reduce: (value, effect) =>
         effect.type === replace ? effect.value : value,
     });
@@ -204,11 +247,38 @@ describe('editor value codec contract', () => {
     );
   });
 
+  it('passes owned current-version input directly to its decoder', () => {
+    const owned = snapshotEditorJsonValue<EditorJsonValue>(
+      { label: 'owned' },
+      'Owned persistence input'
+    );
+    let received: unknown;
+    const persistence = ownCurrentEditorValuePersistenceInput<
+      EditorJsonValue,
+      EditorJsonValue
+    >({
+      decode(value) {
+        received = value;
+
+        return value as EditorJsonValue;
+      },
+      encode: (value) => value,
+      version: 1,
+    });
+    const field = defineStateField({
+      key: 'document.owned-input',
+      persist: persistence,
+    });
+
+    assert.equal(field.deserialize({ value: owned, version: 1 }), owned);
+    assert.equal(received, owned);
+  });
+
   it('detaches initial metadata after registered fields decode', () => {
     const field = defineStateField({
       key: 'document.initial-payload',
       initial: () => null as unknown,
-      persist: jsonCodec,
+      persist: jsonPersistence,
     });
     const fieldValue = { label: 'stored' };
     const unknownValue = { label: 'unknown' };
@@ -245,7 +315,7 @@ describe('editor value codec contract', () => {
     const field = defineStateField({
       key: 'document.cross-realm-json',
       initial: () => null as unknown,
-      persist: jsonCodec,
+      persist: jsonPersistence,
     });
     const value = runInNewContext(
       '({ enabled: true, nested: [1, { label: "foreign" }] })'
@@ -279,7 +349,7 @@ describe('editor value codec contract', () => {
     const field = defineStateField({
       key: 'document.strict-json',
       initial: () => null as unknown,
-      persist: jsonCodec,
+      persist: jsonPersistence,
     });
     const sparse = Array.from({ length: 1 });
     const subclass = new (class extends Array<unknown> {})();
@@ -341,24 +411,21 @@ describe('editor value codec contract', () => {
     }
   });
 
-  it('fails explicitly when local values have no persistence codec', () => {
+  it('fails explicitly when local values have no persistence', () => {
     const local = defineStateField({
       key: 'local.panel',
       initial: () => 'closed',
     });
 
-    assert.throws(
-      () => local.serialize('open'),
-      /does not define a persistence codec/
-    );
+    assert.throws(() => local.serialize('open'), /does not define persistence/);
     assert.throws(
       () => local.deserialize({ value: 'open', version: 1 }),
-      /does not define a persistence codec/
+      /does not define persistence/
     );
   });
 
-  it('snapshots mutable codecs into stable state-field descriptors', () => {
-    const codec = {
+  it('snapshots mutable persistence into stable state-field descriptors', () => {
+    const persistence = {
       decode: (value: unknown) => String(value),
       encode: (value: string) => `original:${value}`,
       version: 1,
@@ -366,12 +433,12 @@ describe('editor value codec contract', () => {
     const field = defineStateField({
       initial: '',
       key: 'document.stable-codec',
-      persist: codec,
+      persist: persistence,
     });
 
-    codec.decode = () => 'mutated';
-    codec.encode = () => 'mutated';
-    codec.version = 2;
+    persistence.decode = () => 'mutated';
+    persistence.encode = () => 'mutated';
+    persistence.version = 2;
 
     assert.equal(Object.isFrozen(field.persist), true);
     assert.deepEqual(field.serialize('value'), {

@@ -3,23 +3,28 @@ title: Serializing
 description: Save complete Plate documents and convert them to text, HTML, Markdown, or DOCX.
 ---
 
-Save the editor's JSON value when you need an editable document. Use a format serializer when you need to exchange content with another application.
+Save Plate JSON when another Plate editor must recover the editable document.
+Use a format parser or serializer when content crosses an application boundary.
 
-## Choose a format
+## Choose a surface
 
-| Task | API or guide |
+| Task | Surface |
 | --- | --- |
-| Save the complete editor document | `editor.read.value()` and [Document Meta](/docs/document-meta) |
-| Export plain text | `NodeApi.string` |
-| Render HTML on the server | `renderStaticHtml` from `platejs/static` and [HTML](/docs/html) |
-| Parse or export Markdown | `MarkdownPlugin` and [Markdown](/docs/markdown) |
-| Import or export Word documents | [DOCX](/docs/docx) |
-| Preserve review proposals in an export | [Authored Changes](/docs/authored-changes#export-explicit-projections) |
-| Control browser copy and paste | [Clipboard](/docs/clipboard) |
+| Persist the complete editor document | `editor.read.value()` |
+| Persist exact proposals and decisions | `projectAuthoredReview` and `parseAuthoredDocument` |
+| Convert semantic HTML | `platejs/html`; Node parsing uses `platejs/html/server` |
+| Convert Markdown | `platejs/markdown` |
+| Import or export Word | `platejs/docx/import` and `platejs/docx/export` |
+| Render component-styled HTML | `platejs/static` |
+| Exchange browser clipboard MIME payloads | `DataTransferFormat` through `platejs/dom` |
 
-## Save the document
+There is no universal document converter. Each format owns its syntax,
+diagnostics, loss policy, limits, and retained source.
 
-`editor.read.value()` includes primary children, named roots, and persistent metadata. `EditorRoot` passes the same complete value to `onValueChange`.
+## Save Plate JSON
+
+`editor.read.value()` includes the primary children, named roots, and persistent
+metadata.
 
 ```ts
 const document = editor.read.value();
@@ -28,53 +33,142 @@ const schema = editor.read.schema.identity();
 await saveDocument({ document, schema });
 ```
 
-Persist an application-owned schema identity with the document when stored data needs versioned upgrades. Load the envelope through the editor's document migration path before schema fitting. See [Document Model](/docs/document-model#application-schema).
+Saving only `children` drops roots and metadata. Persist an application schema
+identity when stored documents require versioned migration. Validate migrated
+data before publishing it to an editor.
 
-Saving only `children` drops named roots and persistent metadata. Store comment bodies, permissions, and audit events in their owning application store; keep document-owned IDs and metadata with the document.
-
-## Plain text
-
-```ts
-import { NodeApi, type Descendant } from 'platejs';
-
-const serializePlainText = (nodes: readonly Descendant[]) =>
-  nodes.map((node) => NodeApi.string(node)).join('\n');
-
-const text = serializePlainText(editor.read.children());
-```
-
-This output intentionally loses block types, marks, links, named roots, and review metadata.
-
-## HTML
-
-Use [Static Rendering](/docs/static) to bind server-safe components to the editor's plugins, then render HTML through `platejs/static`. The [HTML guide](/docs/html) owns complete import and export examples.
-
-The installed plugins define the schema and accepted HTML. Configure the owning plugin's HTML codec for custom tags and attributes. Keep external HTML sanitization, allowed URLs, and application-specific restrictions at the import boundary.
-
-For a custom string serializer, escape both text and attribute values before writing markup. A generic tree walk cannot infer your custom element semantics.
-
-## Markdown and DOCX
-
-Install `MarkdownPlugin` before calling `editor.api.markdown.serialize()` or `deserialize()`. Feature codecs define the representation of their nodes and marks; configure those codecs on the plugin that owns the document shape.
-
-DOCX import and export have separate entrypoints: `platejs/docx/import` and `platejs/docx/export`. Use their diagnostics to decide how the app handles unsupported source content.
-
-Ordinary format output represents document content. To preserve proposals and author history, choose an explicit authored projection and use the authored format helpers described in [Authored Changes](/docs/authored-changes).
-
-## Insert decoded content
-
-Use a closed fragment when the parser has complete nodes:
+Exact authored review state is canonical JSON-compatible model data:
 
 ```ts
-editor.update.fragment.replace(children);
+import { parseAuthoredDocument, projectAuthoredReview } from 'platejs/authored';
+
+const snapshot = projectAuthoredReview(editor.read.value());
+const json = JSON.stringify(snapshot.review);
+const document = parseAuthoredDocument(json);
 ```
 
-Use `ContentSlice` when the input preserves open structural boundaries:
+HTML and Markdown do not hide an authored document in their output.
+
+## Serialize plain text
 
 ```ts
-editor.update.slice.replace(slice);
+import { serializePlainText } from 'platejs';
+
+const result = serializePlainText(editor, { projection: 'accepted' });
 ```
 
-Slice validation rejects malformed JSON and impossible open depths. Fitting checks the installed vocabulary, properties, roots, and grammar before publishing a replacement. Use `editor.read.slice.fitContent` for a detached preview that must not change the document.
+Feature plugins contribute structural `plainText` mappings through
+`formats`/`defineFormats`. Plain text is one-way output; it does not become a
+universal parser or persistence format.
 
-A clipboard policy can be narrower than a file-import policy. Keep those policies with the corresponding codec or `domCommands.insertData` contribution rather than changing the saved document format.
+## Convert HTML
+
+Use direct functions for detached work:
+
+```ts
+import { parseHtml, serializeHtml } from 'platejs/html';
+
+const parsed = parseHtml(source, { plugins: EditorKit });
+const output = serializeHtml(document, {
+  plugins: EditorKit,
+  projection: 'accepted',
+});
+```
+
+In Node.js, import `parseHtml` and `parseHtmlSlice` from
+`platejs/html/server`. Install `linkedom` for that server-only DOM adapter.
+
+Install `HtmlPlugin` when a configured editor should expose
+`editor.api.html.parse`, `parseSlice`, and `serialize`. See [HTML](/docs/html).
+
+## Convert Markdown
+
+```ts
+import { parseMarkdown, serializeMarkdown } from 'platejs/markdown';
+
+const parsed = parseMarkdown(source, { plugins: EditorKit });
+const output = serializeMarkdown(document, {
+  plugins: EditorKit,
+  projection: 'proposed',
+});
+```
+
+Install `MarkdownPlugin` for `editor.api.markdown.parse`, `parseSlice`,
+`parseInline`, and `serialize`. See [Markdown](/docs/markdown).
+
+## Convert DOCX
+
+DOCX import is detached. Supply the complete plugin target before the operation
+starts, then publish a successful document explicitly.
+
+```ts
+import { importDocx } from 'platejs/docx/import';
+
+const result = await importDocx(file, { plugins: EditorKit });
+
+if (result.ok) {
+  editor.update((tx) => tx.value.replace(result.document));
+}
+```
+
+DOCX export captures a configured editor because static rendering, comments,
+retained source, and Word revisions are part of its package workflow.
+
+```ts
+import { exportDocx } from 'platejs/docx/export';
+
+const result = await exportDocx(editor, { projection: 'review' });
+```
+
+Set `nativeState: 'attach'` only when a review file must carry Plate-only state
+for a trusted exact round trip. Ordinary Word export contains the visible Word
+document without an embedded Plate document.
+
+See [DOCX](/docs/docx) for cancellation, package limits, comments, retained
+source, and authored trust.
+
+## Handle results
+
+HTML, Markdown, and DOCX use format-specific diagnosed results. Success carries
+warnings and the requested document, slice, string, or Blob. Failure carries a
+nonempty error-first diagnostic tuple and no publishable carrier.
+
+```ts
+const result = editor.api.markdown.serialize({ projection: 'accepted' });
+
+showDiagnostics(result.diagnostics);
+if (!result.ok) return;
+
+downloadMarkdown(result.data);
+```
+
+Expected source failure and representational loss return diagnostics.
+Configuration errors, mapping bugs, and invalid serializer model data throw.
+`lossPolicy` defaults to `'reject'`; opt into `'allow'` only when the caller
+accepts the exact reported loss.
+
+## Define feature mappings
+
+Feature plugins declare semantic mappings through `formats` and
+`defineFormats` using the `html`, `markdown`, and `plainText` keys. The narrow
+authoring callback cannot read a live editor or store.
+
+Whole browser MIME payloads use `DataTransferFormat`, not feature mappings.
+Clipboard insertion remains destination-aware and can preserve native open
+edges and detached roots. See [Plugin Methods](/docs/plugin-methods) and
+[Clipboard](/docs/clipboard).
+
+## Document and slice authority
+
+A complete parse returns `EditorDocumentValue`. Direct syntax slice or inline
+parsing returns a closed, rootless `ContentSlice`. The insertion owner fits that
+slice once the destination is known.
+
+```ts
+const result = editor.api.markdown.parseSlice(source);
+
+if (result.ok) editor.update.slice.replace(result.slice);
+```
+
+Do not turn a complete document into `children` before replacement; that drops
+named roots and metadata. Do not invent a destination during detached parsing.

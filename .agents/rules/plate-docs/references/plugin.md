@@ -45,15 +45,15 @@ Required shape:
    - never teach a second node-component channel
    - teach renderer attributes and mark placement under `render`, and
      structural composition under `slots`
-   - teach codecs as
-     `codecs: ({ defineCodecs }) => defineCodecs(map)` in the constructor
-   - use `defineCodecs(map)` for self/product maps and
-     `defineCodecs(TargetPlugin, map)` for foreign maps; the helper injects the
+   - teach semantic mappings as
+     `formats: ({ defineFormats }) => defineFormats(map)` in the constructor
+   - use `defineFormats(map)` for self/product maps and
+     `defineFormats(TargetPlugin, map)` for foreign maps; the helper injects the
      target and keeps callback inference local
-   - never teach direct `codecs: { ... }`, manual codec `target` fields, a
-     global codec helper, casts, or callback annotations
-   - document the MIME-keyed map's `'text/html'` value as one rule or a
-     non-empty ordered rule tuple; multiple representations stay in that map
+   - never teach direct `formats: { ... }`, manual mapping `target` fields, a
+     global mapping helper, casts, or callback annotations
+   - document semantic `html`, `markdown`, and `plainText` keys under `formats`;
+     whole-payload MIME negotiation belongs to root `dataTransferFormats`
    - teach Plite-native fields directly on the Plate plugin root:
      `conflicts`, `readMiddleware`, commands, corrections, declarations,
      contributions, `on`, activation, and validation; never teach a nested

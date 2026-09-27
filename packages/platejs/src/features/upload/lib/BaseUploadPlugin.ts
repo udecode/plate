@@ -370,9 +370,9 @@ type PreparedUpload = Readonly<{
 /** Owns persisted upload drafts and editor-lifetime Files SDK requests. */
 export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
   component: () => null,
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: () => undefined,
         encode: () => null,
         match: [

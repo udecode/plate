@@ -249,9 +249,7 @@ test('keeps source, generated skill, modes, rubric, and caps in sync', () => {
     'node --test tooling/scripts/plate-review-score.test.mjs'
   );
 
-  const sourceAgents = readFileSync(join(root, '.agents/AGENTS.md'), 'utf-8');
-  const generatedAgents = readFileSync(join(root, 'AGENTS.md'), 'utf-8');
-  assert.ok(generatedAgents.endsWith(sourceAgents));
+  const sourceAgents = readFileSync(join(root, 'AGENTS.md'), 'utf-8');
   const architectureScoreOwner = sourceAgents
     .split('\n')
     .find((row) => /^\|\s*Read-only architecture score\b/.test(row))

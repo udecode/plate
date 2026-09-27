@@ -17,7 +17,7 @@ insertion ownership.
 | ---------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
 | One editor instance needs a local paste/drop hook    | plugin `on.paste` or `on.drop`                           | `platejs/react`                              |
 | A reusable package owns paste/drop import policy     | `domCommands.insertData` interceptor in plugin `commands` | `platejs/dom`                                |
-| A host format needs parsing or serialization         | Declare the owning plugin's `codecs`                             | `platejs/dom`                                |
+| A browser MIME representation needs decoding or encoding | Register a `DataTransferFormat` in `dataTransferFormats`     | `platejs/dom`                                |
 | Framework code needs to import a `DataTransfer`      | `editor.api.dom.clipboard.insertData(data)`                    | `platejs/dom` through `platejs/react` |
 | Parsed or structural content is already decoded      | `tx.slice.replace(slice, options?)`                        | `platejs`                                    |
 | Decoded content must fit a detached parent           | `state.slice.fitContent(slice, { parent, root? })`         | `platejs`                                    |
@@ -37,7 +37,7 @@ Clipboard data enters Plate through explicit layers.
 | Browser event        | The browser produces `paste`, `cut`, `copy`, `dragstart`, or `drop` with a `DataTransfer`.                             | Browser                                     |
 | EditorContent handler     | App handlers can handle the event or let Plate continue.                                                               | `platejs/react`                      |
 | Insert-data command  | Typed `domCommands.insertData` interceptors can claim, transform, or delegate the payload.                              | `platejs/dom`                        |
-| DOM clipboard import | Plate reads its internal fragment, then registered host codecs, then plain text.                                       | `platejs/dom`                        |
+| DOM clipboard import | Plate reads its internal fragment, then registered DataTransfer formats, then plain text.                                       | `platejs/dom`                        |
 | Transaction          | A parsed slice is fitted at the actual range and applied through one canonical replacement.                            | `platejs`                            |
 | Commit and render    | Plate publishes one change; React renders and repairs selection.                                                       | `platejs` and `platejs/react` |
 | Proof                | Browser tests assert model content, DOM/native selection where needed, focus, clipboard payload, and follow-up typing. | `@platejs/test`                          |
@@ -71,7 +71,7 @@ const pasteTodoPrefix = definePlugin("paste-todo-prefix", {
 
 The interceptor receives the `DataTransfer` as `input` and returns a pure
 transaction spec. Return `next()` when Plate should keep running the internal
-slice, host-codec, and plain-text import path. Keep `DataTransfer` at the DOM
+slice, DataTransfer-format, and plain-text import path. Keep `DataTransfer` at the DOM
 boundary; headless commands start from a `ContentSlice`.
 
 Use this for package-owned import rules such as custom inline syntax, pasted
@@ -98,7 +98,7 @@ one. Command interceptors compose a transaction spec through `state`.
 
 `readSlice` distinguishes `{ kind: "absent" }`, malformed MIME or HTML data as
 `{ kind: "invalid", source }`, and `{ kind: "slice", slice }`. `writeSlice`
-writes one exact `ContentSlice` plus optional host formats. This keeps missing,
+writes one exact `ContentSlice` plus optional transfer formats. This keeps missing,
 invalid, and valid empty clipboard payloads distinct.
 Formats supplied to `writeSlice` are authoritative, including an intentional
 empty string. Installed serializers fill only formats the caller omitted.
@@ -107,18 +107,29 @@ Plate writes plain text, HTML, and an internal Plate fragment payload. The
 fragment payload uses `application/${clipboardFormatKey}`, so editors with
 different keys do not blindly import each other's internal JSON.
 
-Registered host codecs add schema-aware MIME formats without putting DOM types
-in Plate core. A parser returns one intact `ContentSlice`; Plate preserves its
-open edge depths and detached secondary roots, then fits the complete slice
-against the actual paste range. Keep a codec inline in `hostCodecs`; name shared
-definitions with the `HostCodec<V>` type. Configuration
-fails for duplicate codec keys, unknown schema targets, and overlapping
-element/text-property claims. A codec rejects invalid external payloads with
-`null`.
+Registered DataTransfer formats add schema-aware MIME representations without
+putting DOM types in Plate core. Register them through a plugin's
+`dataTransferFormats` array. A decoder returns one diagnosed `ContentSlice`;
+Plate preserves open edges and detached roots, then fits the complete slice at
+the actual insertion range. An expected source failure returns
+`{ ok: false, diagnostics }` and delegates to the next format. Return `null`
+from `decode` or `false` from `accept` for a mismatch that should not create an
+attempt.
+
 Well-formed slices that do not fit leave the transaction untouched and continue
-to the next codec or plain-text fallback. Returning a malformed slice is a codec
-programming error reported to the editor lifecycle error sink; the dispatcher
-continues to the next eligible codec without publishing a partial write.
+to the next format or plain-text fallback. Callback exceptions are isolated,
+reported to the lifecycle error sink as `data-transfer-format`, and cannot block
+a later format. Configure `DOMPlugin` to observe the settled negotiation:
+
+```ts
+DOMPlugin.configure({
+  initialState: {
+    onDataTransferReport: (report) => {
+      // Observe rejected, unfit, selected, written, and unhandled attempts.
+    },
+  },
+});
+```
 
 ## Fragment and slice replacement
 
@@ -136,7 +147,7 @@ editor.update((tx) => {
 });
 ```
 
-Codecs and transport boundaries preserve open edges with `ContentSlice`.
+DataTransfer formats and transport boundaries preserve open edges with `ContentSlice`.
 
 ```ts
 import { ContentSlice } from "platejs";

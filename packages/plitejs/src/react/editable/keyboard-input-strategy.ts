@@ -25,7 +25,10 @@ import type { AndroidInputManager } from '../hooks/android-input-manager/android
 import { focusPliteEditable } from '../hooks/focus-plite-editable';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY } from '../root-key';
-import { readPliteViewSelection } from '../view-selection';
+import {
+  isPliteViewSelectionCollapsed,
+  readPliteViewSelection,
+} from '../view-selection';
 import { isSelectAllHotkey } from '../viewport-commands';
 import {
   applyEditableCaretMovement,
@@ -444,7 +447,7 @@ export const applyEditableKeyDown = ({
   onKeyDown,
   preferredVerticalX,
   readOnly,
-  replayHistory,
+  dispatchHistory,
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
@@ -462,7 +465,7 @@ export const applyEditableKeyDown = ({
   onKeyDown?: EditableKeyDownHandler;
   preferredVerticalX?: number;
   readOnly: boolean;
-  replayHistory?: EditableDOMRuntime['replayHistory'];
+  dispatchHistory?: EditableDOMRuntime['dispatchHistory'];
   getActiveContentRootOwner?: (root: RootKey) => {
     childRoot: RootKey;
     ownerPath: Path;
@@ -478,10 +481,18 @@ export const applyEditableKeyDown = ({
   setComposing: EditableCompositionStateSetter;
   viewportBackedSelection: boolean;
 }): EditableKeyDownResult => {
-  const replay =
-    replayHistory ??
-    ((direction: 'redo' | 'undo') =>
-      getMountedEditableDOMRuntime(editor)?.replayHistory(direction));
+  const replay = (direction: 'redo' | 'undo') => {
+    if (dispatchHistory) {
+      dispatchHistory(direction);
+      return true;
+    }
+
+    const runtime = getMountedEditableDOMRuntime(editor);
+
+    if (!runtime) return false;
+    runtime.dispatchHistory(direction);
+    return true;
+  };
 
   if (isInteractiveInternalTarget(editor, event.target)) {
     const { nativeEvent } = event;
@@ -504,13 +515,15 @@ export const applyEditableKeyDown = ({
       : null;
     const selection =
       nestedSelectionContext?.selection ?? readRuntimeSelection(editor);
-    const projectedCommand =
-      nestedEditableTarget && readPliteViewSelection(editor)
-        ? getEditableCommandFromKeyDown({
-            event,
-            selection,
-          })
-        : null;
+    const projectedSelection = nestedEditableTarget
+      ? readPliteViewSelection(editor)
+      : null;
+    const projectedCommand = projectedSelection
+      ? getEditableCommandFromKeyDown({
+          event,
+          selection,
+        })
+      : null;
 
     const selectionRoot = SelectionApi.root(selection) ?? MAIN_ROOT_KEY;
     const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
@@ -553,6 +566,34 @@ export const applyEditableKeyDown = ({
       }
     }
 
+    if (
+      !readOnly &&
+      projectedSelection &&
+      !isPliteViewSelectionCollapsed(projectedSelection) &&
+      isPlainTextKeyboardInput(nativeEvent) &&
+      !nativeEvent.isComposing &&
+      !ReactEditor.isComposing(editor)
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      const repair = applyModelOwnedTextInput({
+        data: nativeEvent.key,
+        editor,
+        inputController,
+        inputType: 'insertText',
+      });
+
+      return keyDownHandled(
+        repair,
+        getSelectionFocusEditor({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        })
+      );
+    }
+
     if (!readOnly && isEditableEditingEpochCommand(projectedCommand)) {
       event.preventDefault();
       event.stopPropagation();
@@ -571,20 +612,14 @@ export const applyEditableKeyDown = ({
     }
 
     if (!readOnly && Hotkeys.isRedo(nativeEvent)) {
-      const result = replay('redo');
-
-      if (!result) return keyDownUnhandled();
-      void result;
+      if (!replay('redo')) return keyDownUnhandled();
       event.preventDefault();
       event.stopPropagation();
       return keyDownHandled();
     }
 
     if (!readOnly && Hotkeys.isUndo(nativeEvent)) {
-      const result = replay('undo');
-
-      if (!result) return keyDownUnhandled();
-      void result;
+      if (!replay('undo')) return keyDownUnhandled();
       event.preventDefault();
       event.stopPropagation();
       return keyDownHandled();
@@ -669,6 +704,24 @@ export const applyEditableKeyDown = ({
     });
     if (userKeyDownResult.handled) {
       return userKeyDownResult;
+    }
+
+    const projectedSelection = readPliteViewSelection(editor);
+
+    if (
+      projectedSelection &&
+      !isPliteViewSelectionCollapsed(projectedSelection) &&
+      isPlainTextKeyboardInput(nativeEvent)
+    ) {
+      event.preventDefault();
+      const repair = applyModelOwnedTextInput({
+        data: nativeEvent.key,
+        editor,
+        inputController,
+        inputType: 'insertText',
+      });
+
+      return keyDownHandled(repair);
     }
 
     const selection = readContentRootAwareSelection({
@@ -826,19 +879,13 @@ export const applyEditableKeyDown = ({
     // any history stack to undo or redo, so we have to manage these
     // hotkeys ourselves. (2019/11/06)
     if (Hotkeys.isRedo(nativeEvent)) {
-      const result = replay('redo');
-
-      if (!result) return keyDownUnhandled();
-      void result;
+      if (!replay('redo')) return keyDownUnhandled();
       event.preventDefault();
       return keyDownHandled();
     }
 
     if (Hotkeys.isUndo(nativeEvent)) {
-      const result = replay('undo');
-
-      if (!result) return keyDownUnhandled();
-      void result;
+      if (!replay('undo')) return keyDownUnhandled();
       event.preventDefault();
       return keyDownHandled();
     }

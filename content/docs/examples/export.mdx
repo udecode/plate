@@ -1,18 +1,17 @@
 ---
 title: Export
-description: Export a Plate document to HTML, PDF, image, Markdown, or Word.
+description: Export a Plate document to HTML, Markdown, or Word.
 docs:
   - route: https://pro.platejs.org/docs/examples/export
     title: Plus
 ---
 
-This example exports the current Plate editor value from the browser. The
-registry `export-toolbar-button` owns the client-side download menu for HTML,
-PDF, image, Markdown, and Word output.
+The registry `export-toolbar-button` downloads the current document as HTML,
+Markdown, or Word from the browser. The demo mounts it in the fixed toolbar.
 
 ## Demo
 
-<ComponentPreview name="playground-demo" id="basic-blocks" />
+<ComponentPreview name="docx-demo" />
 
 ## Toolbar source
 
@@ -23,30 +22,47 @@ component to add the menu to an editor toolbar.
 
 ## Export formats
 
-| Format   | Implementation                                                                                                | Output       |
-| -------- | ------------------------------------------------------------------------------------------------------------- | ------------ |
-| HTML     | `renderStaticHtml` from `platejs/static` with `BaseEditorKit` and `EditorStatic`                              | `plate.html` |
-| PDF      | `html2canvas-pro` snapshot converted with `pdf-lib`                                                           | `plate.pdf`  |
-| Image    | `html2canvas-pro` snapshot                                                                                    | `plate.png`  |
-| Markdown | `editor.api.markdown.serialize()` from `MarkdownPlugin`                                                       | `plate.md`   |
-| Word     | `exportToDocx(model, { projection, editorPlugins, stylesheet: DOCX_EXPORT_STYLES })` from `platejs/docx/export` | `plate.docx` |
+| Format   | Implementation | Output |
+| -------- | -------------- | ------ |
+| HTML     | `renderStaticHtml(model, { component: EditorStatic, projection })` from `platejs/static` | `plate.html` |
+| Markdown | `model.api.markdown.serialize({ projection })` | `plate.md` |
+| Word     | `exportDocx(model, { component: EditorStatic, projection, stylesheet: DOCX_EXPORT_STYLES })` from `platejs/docx/export` | `plate.docx` |
 
-The PDF and image exporters snapshot the current editable DOM. Use them for a
-quick client-side download, not for paginated print layout.
+Every format captures the same complete document and explicit authored
+projection from `useModelEditor()`. Export reads model content rather than the
+DOM, so selection, placeholders, and review decorations do not enter the file.
+The current editor supplies its compiled schema, format mappings, and static component
+bindings; export does not create a second conversion editor.
 
-The copied toolbar gets `model` from `useModelEditor()` for Word export. The
-mounted view from `useEditor()` remains the owner for DOM, Markdown, and
-root-scoped command behavior.
+The HTML file inlines the app's own stylesheets and copies the page's `body`
+classes. Cross-origin stylesheets stay as links.
 
-## DOCX static kit
+## Suggestions
 
-Word export passes `BaseEditorKit`, `DocxExportKit`, and
-`DOCX_EXPORT_STYLES` to the package operation.
+When the document has unresolved [suggestions](/docs/suggestion), the menu shows
+an **Unresolved suggestions** choice:
+
+| Choice                    | Projection | Result                                      |
+| ------------------------- | ---------- | ------------------------------------------- |
+| Include suggested changes | `proposed` | The document with pending suggestions applied |
+| Exclude suggested changes | `accepted` | The document without pending suggestions    |
+
+The initial choice follows the mounted view. HTML, Markdown, and Word use the
+same choice. **Export as Word with tracked changes** uses `review`, which writes
+pending suggestions as Word revisions. A conflict has no faithful Word
+revision, so review export returns an error until the conflict is resolved.
+
+Without unresolved suggestions, Word export uses `review`. A retained,
+unchanged imported DOCX can then be returned byte for byte. Each exporter
+returns diagnostics, which the menu presents as warning or error toasts.
+
+## DOCX presentation
+
+DOCX owns semantic mappings for Plate code blocks, columns, equations,
+callouts, headings, and tables of contents. The registry keeps only the copied
+visual stylesheet:
 
 <ComponentSource name="docx-export" />
-
-`DocxExportKit` overrides code blocks, columns, equations, callouts, and table
-of contents rendering. `DOCX_EXPORT_STYLES` defines the copied visual preset.
 
 ## Plus export
 
@@ -59,3 +75,4 @@ Plate Plus includes a server-side export flow for PDF output with page settings.
 - [DOCX](/docs/docx) covers DOCX paste, file import, and export APIs.
 - [Markdown](/docs/markdown) covers Markdown serialization.
 - [Static Rendering](/docs/static) covers static editor rendering and HTML serialization.
+- [Authored Changes](/docs/authored-changes) covers visible HTML/Markdown projections, authored JSON, and DOCX review.

@@ -17,6 +17,14 @@ describe('parseAttributes', () => {
         value: '{"theme":"dark"}',
       },
       { name: 'label', type: 'mdxJsxAttribute', value: 'plain-text' },
+      {
+        name: 'width',
+        type: 'mdxJsxAttribute',
+        value: {
+          type: 'mdxJsxAttributeValueExpression',
+          value: '640',
+        },
+      },
       { name: 'missingValue', type: 'mdxJsxAttribute' },
       { type: 'mdxJsxExpressionAttribute', value: 'ignored' },
     ] satisfies Array<MdxJsxAttribute | MdxJsxExpressionAttribute>;
@@ -26,6 +34,7 @@ describe('parseAttributes', () => {
       count: 3,
       enabled: true,
       label: 'plain-text',
+      width: 640,
     });
   });
 });

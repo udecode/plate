@@ -53,6 +53,7 @@ import {
 } from '../decoration-context';
 import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
 import { readContentRootRenderSegments } from '../editable/content-root-owners';
+import type { EditableHistoryReplayEvent } from '../editable/editable-dom-runtime';
 import { assertExternalTextElement } from '../editable/external-text-binding';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import {
@@ -686,6 +687,7 @@ export type EditableProps<
   ignoreBlankEditableRootClicks?: boolean;
   onBeforeInput?: React.FormEventHandler<HTMLDivElement>;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
+  onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onKeyDown?: EditableKeyDownHandler;
   onPaste?: React.ClipboardEventHandler<HTMLDivElement>;
   placeholder?: ReactNode;
@@ -1361,6 +1363,7 @@ const EditableInner = <TElement extends ElementNode>({
   onBlurCapture,
   onDOMBeforeInput,
   onFocusCapture,
+  onHistoryReplay,
   onKeyDown,
   onPaste,
   readOnly = false,
@@ -1689,6 +1692,7 @@ const EditableInner = <TElement extends ElementNode>({
           onBlurCapture={handleBlurCapture}
           onDOMBeforeInput={onDOMBeforeInput}
           onFocusCapture={handleFocusCapture}
+          onHistoryReplay={onHistoryReplay}
           onKeyDown={onKeyDown}
           onPaste={onPaste}
           readOnly={effectiveReadOnly}

@@ -1,22 +1,3 @@
-import { BaseHeadingPlugin, BaseCodeBlockPlugin } from 'platejs';
-import { BaseCalloutPlugin } from 'platejs/callout';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
-import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
-import { BaseTocPlugin } from 'platejs/toc';
-
-import { CalloutElementDocx } from '@/registry/components/editor/callout-static';
-import { CodeBlockElementDocx } from '@/registry/components/editor/code-block-static';
-import {
-  ColumnElementDocx,
-  ColumnGroupElementDocx,
-} from '@/registry/components/editor/column-static';
-import { HeadingElementDocx } from '@/registry/components/editor/heading-static';
-import {
-  EquationElementDocx,
-  InlineEquationElementDocx,
-} from '@/registry/components/editor/math-static';
-import { TocElementDocx } from '@/registry/components/editor/toc-static';
-
 export const DOCX_EXPORT_STYLES = `
 body {
   font-family: 'Calibri', 'Arial', sans-serif;
@@ -103,44 +84,3 @@ sup { vertical-align: super; font-size: 8pt; }
 sub { vertical-align: sub; font-size: 8pt; }
 mark { background-color: #ffff00; }
 `.trim();
-
-/**
- * Editor kit for DOCX export.
- *
- * Uses standard static components for most elements (with juice CSS inlining),
- * but uses docx-specific components for elements that need special handling:
- * - Code blocks (syntax highlighting and preserved whitespace)
- * - Columns (table layout instead of flexbox)
- * - Equations (inline font instead of KaTeX)
- * - Callouts (table layout for icon placement)
- * - Headings (bookmark anchors for TOC links)
- * - TOC (anchor links with paragraph breaks)
- *
- * Tables use base version with juice CSS inlining.
- */
-export const DocxExportKit = [
-  BaseCodeBlockPlugin.configure({
-    component: CodeBlockElementDocx,
-  }),
-  BaseColumnItemPlugin.configure({
-    component: ColumnElementDocx,
-  }),
-  BaseColumnPlugin.configure({
-    component: ColumnGroupElementDocx,
-  }),
-  BaseEquationPlugin.configure({
-    component: EquationElementDocx,
-  }),
-  BaseInlineEquationPlugin.configure({
-    component: InlineEquationElementDocx,
-  }),
-  BaseCalloutPlugin.configure({
-    component: CalloutElementDocx,
-  }),
-  BaseHeadingPlugin.configure({
-    component: HeadingElementDocx,
-  }),
-  BaseTocPlugin.configure({
-    component: TocElementDocx,
-  }),
-];

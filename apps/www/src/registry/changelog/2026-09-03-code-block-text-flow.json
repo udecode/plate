@@ -19,13 +19,17 @@
   "targets": [
     {
       "name": "code-block",
-      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     },
     {
       "name": "code-block-static",
       "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
         "apps/www/src/registry/components/editor/code-block-static.tsx"
       ],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],

@@ -12,7 +12,7 @@ describe('core static renderStaticHtml element rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor);
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('Some random paragraph here...');
   });
@@ -36,7 +36,7 @@ describe('core static renderStaticHtml element rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor);
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('Heading 1');
     expect(html).toContain('Heading 2');
@@ -51,7 +51,7 @@ describe('core static renderStaticHtml element rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor);
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('Blockquoted text here...');
   });
@@ -70,7 +70,7 @@ describe('core static renderStaticHtml element rendering', () => {
       { children: [{ text: ' part.' }], type: 'paragraph' },
     ]);
 
-    const html = await renderStaticHtml(editor);
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain(decode('href="https://example.com/"'));
   });
@@ -84,7 +84,7 @@ describe('core static renderStaticHtml element rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor);
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('src="https://example.com/image.jpg"');
   });
@@ -105,7 +105,7 @@ describe('core static renderStaticHtml element rendering', () => {
       },
     ]);
 
-    const html = await renderStaticHtml(editor);
+    const { data: html } = await renderStaticHtml(editor);
 
     expect(html).toContain('Cell 1');
     expect(html).toContain('Cell 2');

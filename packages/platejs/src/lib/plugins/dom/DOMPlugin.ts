@@ -2,6 +2,7 @@ import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
 
 import type {
+  DataTransferReport,
   DOMApi as RuntimeDomApi,
   DOMClipboardApi,
   ScrollIntoViewOptions,
@@ -15,7 +16,10 @@ import {
   readEditorSelection,
 } from '../../../facade';
 import { definePlugin } from '../../plugin';
-import { plateDOMPlugin } from './plateDOMPlugin.internal';
+import {
+  plateDOMPlugin,
+  setPlateDataTransferReportHandler,
+} from './plateDOMPlugin.internal';
 
 const AUTO_SCROLL = new WeakMap<object, boolean>();
 
@@ -40,6 +44,8 @@ export type AutoScrollApi = {
 };
 
 export type DomPluginState = {
+  /** Observe one settled clipboard negotiation after insertion or writing. */
+  onDataTransferReport: ((report: DataTransferReport) => void) | null;
   /** Choose the first or last matching change as the scroll target. */
   scrollMode: ScrollMode;
   /** Change map; true enables scrolling for that canonical change kind. */
@@ -68,6 +74,7 @@ export type DomApi = AutoScrollApi &
 export type ScrollMode = 'first' | 'last';
 
 const initialState: DomPluginState = {
+  onDataTransferReport: null,
   scrollMode: 'last',
   scrollChanges: {
     structure: true,
@@ -83,9 +90,15 @@ const initialState: DomPluginState = {
  * Plate-owned auto-scroll state and transaction ergonomics.
  */
 export const DOMPlugin = definePlugin('dom', {
-  api: ({ editor }): AutoScrollApi => ({
-    isAutoScrolling: () => AUTO_SCROLL.get(editor) ?? false,
-  }),
+  api: ({ editor }): AutoScrollApi => {
+    setPlateDataTransferReportHandler(editor, (report) => {
+      editor.plugin(DOMPlugin).store.get().onDataTransferReport?.(report);
+    });
+
+    return {
+      isAutoScrolling: () => AUTO_SCROLL.get(editor) ?? false,
+    };
+  },
   initialState,
   on: {
     transactionChange({ changed, editor, selectionAfterRoot, store }) {

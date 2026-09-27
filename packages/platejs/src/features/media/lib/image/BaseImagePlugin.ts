@@ -62,6 +62,24 @@ const readImageSize = (image: HTMLElement) => {
   };
 };
 
+const readMarkdownImageProperties = (properties: Record<string, unknown>) => {
+  const { height, ...rest } = properties;
+
+  return {
+    ...rest,
+    ...(isPositiveSafeInteger(height) ? { naturalHeight: height } : {}),
+  };
+};
+
+const writeMarkdownImageProperties = (properties: Record<string, unknown>) => {
+  const { naturalHeight, ...rest } = properties;
+
+  return {
+    ...(isPositiveSafeInteger(naturalHeight) ? { height: naturalHeight } : {}),
+    ...rest,
+  };
+};
+
 /** Enables support for images. */
 export const BaseImagePlugin = definePlugin(PLUGINS.image, {
   initialState,
@@ -83,9 +101,17 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
       },
     }),
   },
-  codecs: ({ defineCodecs, schema: { type } }) =>
-    defineCodecs({
-      'text/html': [
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      plainText: {
+        kind: 'node',
+        encode: ({ children, node }) => {
+          const label = children || node.alt || node.title || node.url;
+
+          return label === node.url ? node.url : `${label} (${node.url})`;
+        },
+      },
+      html: [
         {
           decode: ({ element }) => {
             const image = element.querySelector<HTMLElement>(':scope > img');
@@ -158,7 +184,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
           match: [{ tag: 'img' }],
         },
       ],
-      'text/markdown': [
+      markdown: [
         {
           from: 'image',
           kind: 'node',
@@ -187,7 +213,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
                 : [{ text: '' }];
 
             return {
-              ...rest,
+              ...readMarkdownImageProperties(rest),
               ...(typeof altAttribute === 'string'
                 ? { alt: altAttribute }
                 : {}),
@@ -215,7 +241,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
               typeof titleProperty === 'string' ? titleProperty : undefined;
             const attributes = propsToAttributes({
               ...(alt === undefined ? {} : { alt }),
-              ...properties,
+              ...writeMarkdownImageProperties(properties),
               src: url,
               ...(title === undefined ? {} : { title }),
             });
@@ -291,7 +317,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
             const { src, ...properties } = parseAttributes(image.attributes);
 
             return {
-              ...properties,
+              ...readMarkdownImageProperties(properties),
               children: caption(decode(figcaption.children)),
               type,
               url: typeof src === 'string' ? src : '',

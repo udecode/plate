@@ -38,7 +38,7 @@ export const completePersistedDocumentFields = (
     }
     if (!field.persist) {
       throw new Error(
-        `State field "${key}" cannot load persisted metadata without a codec.`
+        `State field "${key}" cannot load persisted metadata without persistence.`
       );
     }
     decoded[key] = field.deserialize(input);
@@ -59,7 +59,7 @@ export const completePersistedDocumentFields = (
       const field = installed.get(key);
       if (field && !field.persist) {
         throw new Error(
-          `State field "${key}" cannot persist metadata without a codec.`
+          `State field "${key}" cannot persist metadata without persistence.`
         );
       }
 

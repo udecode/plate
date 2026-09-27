@@ -70,8 +70,8 @@ Selectors always call the latest render's function, so they can close over
 component props without a dependency list.
 
 ```typescript
-const matchingText = useEditorState(
-  (state) => state.text.string([]).includes(query)
+const matchingText = useEditorState((state) =>
+  state.text.string([]).includes(query)
 );
 ```
 
@@ -148,16 +148,53 @@ Create undo/redo commands and keyboard handling for the active root.
 const history = usePliteHistory();
 
 return (
-  <button disabled={!history.canUndo} onClick={history.undo}>
+  <button
+    aria-busy={history.pending !== null}
+    disabled={!history.canUndo}
+    onClick={history.undo}
+  >
     Undo
   </button>
 );
 ```
 
-Pass `options.root` to bind history controls to one root in the current provider. Pass `options.editor` to use an existing command view, including outside a Plite provider; omit `root` with an explicit editor. Explicit controls read the view’s current read-only permission and restore focus to that exact view. They cancel queued focus restoration when their target changes. Pass
+Pass `options.root` to bind history controls to one root in the current
+provider. Pass `options.editor` to use an existing command view, including
+outside a Plite provider; omit `root` with an explicit editor. Explicit controls
+read the view's current read-only permission and restore focus to that exact
+view. Pass
 `focusPolicy: 'preserve'` when undo/redo is controlled from external UI and
 DOM focus should stay outside the editor. `history.root` is `undefined` for the
 primary document and the root key for an extra root.
+
+`history.undo()` and `history.redo()` dispatch mounted UI actions and return
+`void`. `history.pending` is `"undo"`, `"redo"`, or `null`; `canUndo` and
+`canRedo` are both `false` while a live-session replay is pending. A repeated
+shortcut during that wait is consumed and reports a `busy` result.
+
+Use the model service when application code owns awaited completion:
+
+```typescript
+const result = await editor.api.history.undo();
+```
+
+Mounted controls deliver every fulfilled result to the exact initiating editor
+surface. Handle expected outcomes such as `blocked`, `busy`, and `empty` on
+`Editable`:
+
+```tsx
+<Editable
+  onHistoryReplay={({ direction, result }) => {
+    if (result.status === "blocked") {
+      showHistoryConflict(direction, result);
+    }
+  }}
+/>
+```
+
+The mounted runtime reports rejected replay promises through the browser error
+channel. It restores selection and focus only when the initiating surface,
+focus target, and editor commit remain unchanged through settlement.
 
 ## Runtime and root hooks
 

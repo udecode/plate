@@ -1,4 +1,8 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 
 describe('gfm package surfaces', () => {
   it.each([
@@ -8,11 +12,13 @@ describe('gfm package surfaces', () => {
       output: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'https://platejs.org' }],
               type: 'link',
               url: 'https://platejs.org',
             },
+            { text: '' },
           ],
           type: 'paragraph',
         },
@@ -41,14 +47,14 @@ describe('gfm package surfaces', () => {
   ])('$title', ({ expected, input, output }) => {
     const editor = createTestEditor();
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject(output);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
   it('respects resourceLink when serializing bare autolink literals', () => {
@@ -69,10 +75,10 @@ describe('gfm package surfaces', () => {
     };
 
     expect(
-      editor.api.markdown.serialize({
+      serializeTestMarkdown(editor, {
         remarkStringifyOptions: { resourceLink: true },
-        value,
-      })
+        document: value,
+      }).data
     ).toBe('[https://platejs.org](https://platejs.org)\n');
   });
 
@@ -81,16 +87,18 @@ describe('gfm package surfaces', () => {
     const input = '[^1]\n\n[^1]: Footnote text';
     const expected = '[^1]\n\n[^1]: Footnote text\n';
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
         children: [
+          { text: '' },
           {
             children: [{ text: '' }],
             ref: '1',
             type: 'footnoteReference',
           },
+          { text: '' },
         ],
         type: 'paragraph',
       },
@@ -106,9 +114,9 @@ describe('gfm package surfaces', () => {
       },
     ]);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 });

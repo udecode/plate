@@ -1,4 +1,8 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from './__tests__/createTestEditor';
 
 describe('markdown date element', () => {
   it('round-trips inline date elements through the markdown package surfaces', () => {
@@ -6,7 +10,7 @@ describe('markdown date element', () => {
     const input = 'Date: <date>2024-01-01</date>';
     const expected = 'Date: <date value="2024-01-01" />\n';
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -17,23 +21,24 @@ describe('markdown date element', () => {
             value: '2024-01-01',
             type: 'date',
           },
+          { text: '' },
         ],
         type: 'paragraph',
       },
     ]);
 
-    const markdown = editor.api.markdown.serialize({ value });
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
   it('reads attribute-bearing date elements into the canonical node value', () => {
     const editor = createTestEditor();
     const input = 'Date: <date value="2024-01-01" />';
 
-    const value = editor.api.markdown.deserialize(input);
-    const markdown = editor.api.markdown.serialize({ value });
+    const value = parseTestMarkdown(editor, input);
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(value.children).toMatchObject([
       {
@@ -44,6 +49,7 @@ describe('markdown date element', () => {
             value: '2024-01-01',
             type: 'date',
           },
+          { text: '' },
         ],
         type: 'paragraph',
       },
@@ -55,8 +61,8 @@ describe('markdown date element', () => {
     const editor = createTestEditor();
     const input = 'Date: <date>sometime next week</date>';
 
-    const value = editor.api.markdown.deserialize(input);
-    const markdown = editor.api.markdown.serialize({ value });
+    const value = parseTestMarkdown(editor, input);
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(value.children).toMatchObject([
       {
@@ -67,6 +73,7 @@ describe('markdown date element', () => {
             value: 'sometime next week',
             type: 'date',
           },
+          { text: '' },
         ],
         type: 'paragraph',
       },
@@ -78,8 +85,8 @@ describe('markdown date element', () => {
     const editor = createTestEditor();
     const input = 'Date: <date>Mon Mar 23 2026</date>';
 
-    const value = editor.api.markdown.deserialize(input);
-    const markdown = editor.api.markdown.serialize({ value });
+    const value = parseTestMarkdown(editor, input);
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(value.children).toMatchObject([
       {
@@ -90,6 +97,7 @@ describe('markdown date element', () => {
             value: '2026-03-23',
             type: 'date',
           },
+          { text: '' },
         ],
         type: 'paragraph',
       },

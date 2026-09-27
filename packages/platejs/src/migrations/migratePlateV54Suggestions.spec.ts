@@ -8,7 +8,7 @@ import {
   target,
 } from 'platejs';
 
-import { authored, readAuthoredFormatSnapshot } from '../authored';
+import { authored, projectAuthoredReview } from '../authored';
 import type { EditorDocumentValue } from '../facade';
 import {
   defineDocumentMigrations,
@@ -62,7 +62,7 @@ const reviewSnapshot = (document: EditorDocumentValue) => {
     initialValue: document,
   });
 
-  return readAuthoredFormatSnapshot(editor);
+  return projectAuthoredReview(editor.read.value());
 };
 
 describe('migratePlateV54 legacy suggestions', () => {

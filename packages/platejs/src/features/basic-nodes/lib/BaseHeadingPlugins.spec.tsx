@@ -5,6 +5,7 @@ import { jsxt } from '#platejs-test-internal';
 
 import { createEditor, schema, SelectionApi, PLUGINS } from '../../../core';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { BaseHeadingPlugin, HeadingRules } from './BaseHeadingPlugins';
 
 jsxt;
@@ -38,9 +39,7 @@ describe('base heading plugin', () => {
 
     for (let level = 1; level <= 6; level++) {
       expect(
-        editor.api.html.deserialize({
-          element: `<h${level}>Heading ${level}</h${level}>`,
-        })
+        parseHtmlSliceContent(editor, `<h${level}>Heading ${level}</h${level}>`)
       ).toEqual([
         {
           children: [{ text: `Heading ${level}` }],

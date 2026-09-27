@@ -3,8 +3,8 @@
 import type { EditorStateSchemaApi, Value } from 'platejs';
 import {
   type AuthoredChange,
-  type AuthoredPlugin,
   authored,
+  isAuthoredEditor,
 } from 'platejs/authored';
 import { compare, type TwoWayComparison } from 'platejs/diff';
 import {
@@ -20,8 +20,6 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 import { Diff } from '@/registry/components/editor/diff';
-
-type VersionHistoryEditor = Editor<Value, readonly [AuthoredPlugin]>;
 
 const readPlateUserId = (editor: object) => {
   const runtime = Reflect.get(editor, 'runtime');
@@ -57,11 +55,19 @@ const sameChanges = (
       change.status === right[index]?.status
   );
 
+const requireAuthoredEditor = (editor: Editor) => {
+  if (!isAuthoredEditor(editor)) {
+    throw new Error('Version history requires authored changes.');
+  }
+
+  return editor;
+};
+
 function AuthorHistory({ onResult }: { onResult: (value: string) => void }) {
-  const editor = useEditor() as VersionHistoryEditor;
+  const editor = requireAuthoredEditor(useEditor());
   const changes = useEditorSelector(
     (current) =>
-      (current as VersionHistoryEditor).read.authored.changes({
+      requireAuthoredEditor(current).read.authored.changes({
         limit: 50,
         status: 'accepted',
       }).items,
@@ -174,7 +180,7 @@ export function VersionDiff({
 }
 
 function RevisionHistory() {
-  const editor = useEditor() as VersionHistoryEditor;
+  const editor = useEditor();
   const [revisions, setRevisions] = React.useState<readonly unknown[]>(() => [
     structuredClone(editor.read.value()),
   ]);

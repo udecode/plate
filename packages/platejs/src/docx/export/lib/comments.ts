@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 
 import { RangeApi, type Point } from '../../../core';
+import { throwIfDocxAborted } from '../../internal/abort';
 import type { DocxComment, DocxDiagnostic } from '../../internal/types';
 
 const WORD_NAMESPACE =
@@ -314,10 +315,17 @@ const nextRelationshipId = (source: string, base: string) => {
 /** Move prepared main-document markers into Word comment parts. */
 export const addDocxComments = async (
   blob: Blob,
-  prepared: PreparedDocxComments
+  prepared: PreparedDocxComments,
+  signal?: AbortSignal
 ) => {
+  throwIfDocxAborted(signal);
   if (prepared.comments.length === 0) return blob;
-  const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+  const source = await blob.arrayBuffer();
+
+  throwIfDocxAborted(signal);
+  const zip = await JSZip.loadAsync(source);
+
+  throwIfDocxAborted(signal);
   const documentFile = zip.file('word/document.xml');
   const relationshipsFile = zip.file('word/_rels/document.xml.rels');
   const contentTypesFile = zip.file('[Content_Types].xml');
@@ -328,6 +336,7 @@ export const addDocxComments = async (
     );
   }
   const document = parseXml(await documentFile.async('string'));
+  throwIfDocxAborted(signal);
   const comments = parseXml(
     `<w:comments xmlns:w="${WORD_NAMESPACE}" xmlns:w14="${WORD14_NAMESPACE}"/>`
   );
@@ -402,6 +411,7 @@ export const addDocxComments = async (
     contentTypesFile.async('string'),
   ]);
 
+  throwIfDocxAborted(signal);
   relationships = addMetadataDeclaration(
     relationships,
     '</Relationships>',
@@ -475,6 +485,8 @@ export const addDocxComments = async (
   zip.file('word/_rels/document.xml.rels', relationships);
   zip.file('[Content_Types].xml', contentTypes);
   const bytes = await zip.generateAsync({ type: 'arraybuffer' });
+
+  throwIfDocxAborted(signal);
 
   return new Blob([bytes], { type: blob.type });
 };

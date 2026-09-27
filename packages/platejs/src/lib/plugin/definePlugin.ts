@@ -16,7 +16,9 @@ import type {
   BasePlugin,
   Decorate,
   EditorShortcut,
-  PluginCodecMapDeclaration,
+  PluginDataTransferFormatDeclaration,
+  PluginFormatAuthoringContext,
+  PluginFormatMapDeclaration,
 } from './BasePlugin';
 import type { BasePluginDependencyReferences } from './basePluginCompiler.internal';
 import { createPlatePluginPortal } from './createPluginContext.internal';
@@ -114,7 +116,8 @@ type BasePluginShortcutRecord = Record<
 
 type BasePluginConstructorPresenceKey =
   | 'activate'
-  | 'codecs'
+  | 'dataTransferFormats'
+  | 'formats'
   | 'commands'
   | 'contributions'
   | 'corrections'
@@ -147,7 +150,8 @@ type BasePluginConstructorRestInput<
   Exclude<
     TKeys,
     | 'api'
-    | 'codecs'
+    | 'dataTransferFormats'
+    | 'formats'
     | 'conflicts'
     | 'dependencies'
     | 'decorate'
@@ -296,10 +300,24 @@ export function definePlugin<
           >
         >
       ) => TApi;
-      codecs?:
-        | PluginCodecMapDeclaration
+      dataTransferFormats?: ReadonlyArray<
+        PluginDataTransferFormatDeclaration<
+          NoInfer<
+            BasePluginConstructorCapabilityDefinition<
+              N,
+              TKeys,
+              BasePluginConstructorDependencies<TKeys, D>,
+              S,
+              'schema' extends TKeys ? TSchema : never,
+              TTargetPlugins
+            >
+          >
+        >
+      >;
+      formats?:
+        | PluginFormatMapDeclaration
         | ((
-            context: BasePluginContext<
+            context: PluginFormatAuthoringContext<
               NoInfer<
                 BasePluginConstructorCapabilityDefinition<
                   N,
@@ -311,7 +329,7 @@ export function definePlugin<
                 >
               >
             >
-          ) => PluginCodecMapDeclaration);
+          ) => PluginFormatMapDeclaration);
       conflicts?: TConflicts;
       dependencies?: D;
       enabled?: TEnabled;

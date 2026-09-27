@@ -135,7 +135,7 @@ export type AuthoredSelection = Readonly<{
 }>;
 
 export type AuthoredOptions = Readonly<{
-  /** Resolve the author ID once per transaction. Missing identity rejects writes. */
+  /** Resolve the author ID for capability reads and once per write transaction. */
   authorId: string | ((editor: AnyEditor) => string | null | undefined);
   /** Retain closed content for historical reads and selective compensation. */
   retainHistory?: boolean;

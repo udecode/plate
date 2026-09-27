@@ -61,13 +61,12 @@ const INLINE_TAG_NAMES = new Set([
 ]);
 
 export const isHtmlComment = (node: Node): node is Comment =>
-  node.nodeType === Node.COMMENT_NODE;
+  node.nodeType === 8;
 
 export const isHtmlElement = (node: Node): node is Element =>
-  node.nodeType === Node.ELEMENT_NODE;
+  node.nodeType === 1;
 
-export const isHtmlText = (node: Node): node is Text =>
-  node.nodeType === Node.TEXT_NODE;
+export const isHtmlText = (node: Node): node is Text => node.nodeType === 3;
 
 /**
  * Return whether a DOM node participates in an inline formatting context.
@@ -177,16 +176,14 @@ export const someHtmlElement = (
 
 export const getHtmlComments = (node: Node): string[] => {
   const comments: string[] = [];
-  const iterator = document.createNodeIterator(node, NodeFilter.SHOW_COMMENT, {
-    acceptNode: () => NodeFilter.FILTER_ACCEPT,
+
+  traverseHtmlNode(node, (currentNode) => {
+    if (isHtmlComment(currentNode) && currentNode.nodeValue) {
+      comments.push(currentNode.nodeValue);
+    }
+
+    return true;
   });
-  let currentNode = iterator.nextNode();
-
-  while (currentNode) {
-    if (currentNode.nodeValue) comments.push(currentNode.nodeValue);
-
-    currentNode = iterator.nextNode();
-  }
 
   return comments;
 };
@@ -224,13 +221,12 @@ export const removeHtmlNodesBetweenComments = (
 
 /** Replace a DOM element while preserving its attributes and contents. */
 export const replaceTagName = (element: Element, tagName: string): Element => {
-  const replacement = document.createElement(tagName);
-
-  replacement.innerHTML = element.innerHTML;
+  const replacement = element.ownerDocument.createElement(tagName);
 
   for (const { name, value } of element.attributes) {
     replacement.setAttribute(name, value);
   }
+  while (element.firstChild) replacement.append(element.firstChild);
 
   element.parentNode?.replaceChild(replacement, element);
 

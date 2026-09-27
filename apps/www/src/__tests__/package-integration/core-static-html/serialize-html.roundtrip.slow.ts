@@ -42,13 +42,14 @@ describe('core static HTML representable projection', () => {
   it('decodes visible block, property, mark, and link fields', async () => {
     const editor = createStaticEditor(representableValue);
 
-    const html = await renderStaticHtml(editor);
+    const { data: html } = await renderStaticHtml(editor);
 
-    const nodes = editor.api.html.deserialize({
-      collapseWhiteSpace: false,
-      element: html,
+    const result = editor.api.html.parseSlice(html, {
+      collapseWhitespace: false,
     });
 
-    expect(nodes).toEqual(representableValue);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.diagnostics[0].message);
+    expect(result.slice.content).toEqual(representableValue);
   });
 });

@@ -5,7 +5,7 @@ description: 一个支持 RSC/SSR 的最小化、记忆化、只读版本的 Pla
 
 `<EditorStatic>` 是一个**快速、只读**的 React 组件，用于渲染 Plate 内容，针对**服务端**或 **React Server Component**（RSC）环境进行了优化。它避免了客户端编辑逻辑，并对节点渲染进行记忆化处理，相比在只读模式下使用 [`<EditorRoot>`](/docs/api/core/plate-components) 具有更好的性能。
 
-它也供 `renderStaticHtml` 用 React DOM Server 渲染静态 Plate tree。这个函数不是语义 HTML codec。
+它也供 `renderStaticHtml` 用 React DOM Server 渲染静态 Plate tree。这个函数不是语义 HTML interchange serializer。
 
 ## 主要优势
 
@@ -285,6 +285,8 @@ export default async function Page() {
 
 要把静态 Plate React tree 渲染为 HTML 字符串，请使用 `renderStaticHtml`。它内部使用 `<EditorStatic>`；语义 HTML 解析由 `HtmlPlugin` 负责。
 
+`EditorStatic` 会渲染已配置的 node component 和 render attribute，但会忽略 `slots.wrapContent` 等编辑界面 slot。导出文档需要外层 shell 时，请在应用层包装 `result.data`。
+
 ```ts title="lib/html-serializer.ts"
 import { createEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
@@ -296,12 +298,12 @@ async function getDocumentAsHtml(value: any[]) {
     initialValue: value,
   });
 
-  const html = await renderStaticHtml(editor, {
-    // editorComponent: EditorStatic, // Optional: Defaults to EditorStatic
+  const result = await renderStaticHtml(editor, {
+    // component: EditorStatic, // Optional: Defaults to EditorStatic
     props: { className: 'prose max-w-none' }, // Example: Pass props to the root div
   });
 
-  return html;
+  return result.data;
 }
 
 // Example Usage:

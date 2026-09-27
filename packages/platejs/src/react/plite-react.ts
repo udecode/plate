@@ -14,6 +14,8 @@ export type {
   EditableInputEventContext,
   EditableKeyDownContext,
   EditableKeyDownHandler,
+  EditableHistoryReplayEvent,
+  EditableHistoryReplayResult,
   RenderPlaceholderProps,
   EditableDOMCoverageBoundaryMaterializePayload,
   EditableDOMCoverageBoundaryPlaceholderContext,

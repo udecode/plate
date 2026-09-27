@@ -16,6 +16,7 @@ import type {
 } from '../plugin/PluginDefinition';
 import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
 import type { CorePlugins } from '../plugins/getCorePlugins.internal';
+import type { SpecializePluginApi } from './conversionApiSpecialization.internal';
 import type {
   BasePluginInput,
   InternalEditorWithInstalledPluginDefinitions,
@@ -46,15 +47,24 @@ type PluginEditorRuntime = {
   };
 };
 
-type BasePortalFor<P, S> = [InternalPluginDefinitionOf<P>] extends [never]
+type BasePortalFor<P, S, V extends Value> = [
+  InternalPluginDefinitionOf<P>,
+] extends [never]
   ? DynamicBasePluginPortal
   : BasePluginPortal<
       Extract<InternalPluginDefinitionOf<P>, AnyBasePluginDefinition>,
-      S
+      S,
+      SpecializePluginApi<
+        BasePluginPortal<
+          Extract<InternalPluginDefinitionOf<P>, AnyBasePluginDefinition>,
+          S
+        >['api'],
+        V
+      >
     >;
 
 type GetBasePluginPortal<V extends Value, S> = {
-  <P extends PluginReference>(plugin: P): BasePortalFor<P, S>;
+  <P extends PluginReference>(plugin: P): BasePortalFor<P, S, V>;
   (
     plugin: AnyBasePlugin | AnyPluginBase | PluginReference
   ): DynamicBasePluginPortal;

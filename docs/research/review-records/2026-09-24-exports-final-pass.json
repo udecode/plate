@@ -1,0 +1,100 @@
+{
+  "id": "2026-09-24-exports-final-pass",
+  "scope": "exports",
+  "kind": "review",
+  "date": "2026-09-24",
+  "question": "What does each export format promise, and should DOM raster capture, static HTML and document codecs share anything beyond a menu?",
+  "model": "GPT-6 / Codex",
+  "method": "best-api-review/history-v3; final pass; redesign-from-first-principles; maximum-value hard cut",
+  "trigger": "User requested harsh honest feedback and a final pass on the initial exports audit.",
+  "requirements": [
+    "A multi-format menu must not export different canonical content merely because the user chose a different format.",
+    "Accepted and proposed are portable document snapshots; review preservation and mounted markup presentation are separate format capabilities.",
+    "Neutral HTML and Markdown codecs remain usable without authored changes, while authored adapters keep their exact installed-capability contract.",
+    "Each format owner reports the losses it can actually detect; authored projection diagnostics do not imply universal format-fidelity diagnostics.",
+    "A command labeled PDF must produce a PDF artifact rather than delegate to a printer workflow.",
+    "Copied registry presentation owns its stylesheet, filenames and download policy; package converters own format semantics.",
+    "No cross-format package noun, plugin or result type is added unless it removes a proven recurring owner job."
+  ],
+  "evidenceReuse": "Reused the initial export probe and unchanged source fingerprints, the accepted DOCX projection/diagnostic contract, and the large-document law that mounted DOM may be incomplete. Freshly inspected the authored snapshot owner, public authored HTML/Markdown contracts, DOCX capture path, registry dependency declaration, sole production menu consumer, and the server-only HTML document shell. The source still matches the first audit.",
+  "summary": "Pursue, but supersede most of the initial target. The real defect is copied-menu policy: HTML reads projected view children, Markdown serializes the accepted model, and DOCX chooses proposed or review. Fix the menu by capturing the model once and explicitly choosing accepted or proposed content for clean HTML, Markdown and DOCX exports. Review preservation stays a separate format capability; mounted markup is not one portable projection. Keep the existing neutral and authored package APIs exact—do not make renderAuthoredHtml or serializeAuthored accept editors without authored changes, and do not add a cross-format export API. Delete the current raster PDF and image items and their dependencies from this structured document menu. Browser print is a print action, not PDF export; a future print or image snapshot must earn a separate presentation job. Keep the HTML shell and stylesheet app-owned and remove the platejs.org CSS dependency.",
+  "verdict": "pursue",
+  "previous": "2026-09-24-exports-audit",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-24-exports-audit",
+      "question": "What does each export format promise, and should DOM raster capture, static HTML and document codecs share anything beyond a menu?",
+      "action": "supersedes",
+      "reason": "Retains the observed projection mismatch, rejection of a cross-format package API, raster-PDF cut and external stylesheet defect. Corrects the proposed authored-API broadening, universal loss-reporting claim, review/markup conflation, print-as-PDF replacement and unsupported deletion rationale for PNG."
+    },
+    {
+      "record": "2026-09-15-documents-retained-source-implementation",
+      "question": "Which document conversion laws should DOCX file import, export and Word paste share, and where must fidelity limits be explicit?",
+      "action": "retains",
+      "reason": "DOCX remains the format-specific owner for native review, retained-source fidelity and detailed diagnostics. The menu may select its accepted, proposed or review operation without moving that contract."
+    }
+  ],
+  "alternatives": [
+    "Keep the menu as-is: reject. The source probe proves format choice changes canonical content without telling the user.",
+    "Add ExportPlugin, editor.api.export(format), exportDocument or one cross-format result: reject. It centralizes unlike dependencies, options and fidelity without deleting codec work.",
+    "Make renderAuthoredHtml and serializeAuthored tolerate editors without authored changes: reject. Neutral serializers already own that job; weakening authored adapters hides a missing capability and merely moves a tiny caller branch.",
+    "Treat accepted, proposed and visible markup as one cross-format projection axis: reject. Markup is view presentation; review is preserved change semantics, and plain Markdown has no equivalent visual contract.",
+    "Capture one model snapshot and feed accepted or proposed content to existing HTML, Markdown and DOCX owners: pursue. It removes the observed mismatch without a new package abstraction.",
+    "Use one universal diagnostics contract: reject. Authored projection warnings, Markdown conversion loss, HTML resource omission and DOCX fidelity diagnostics are different knowledge owned by their codecs.",
+    "Replace Export as PDF with browser print: reject. Print opens a destination workflow and cannot truthfully promise a downloaded PDF artifact.",
+    "Keep PDF and image capture inside the structured document menu: reject as the durable target. Remove both current items; a later Print or Image snapshot recipe can own presentation semantics independently.",
+    "Share the client HTML wrapper with the server HTML example: reject. Their stylesheet acquisition and runtime environments differ; the app or copied recipe can own the small shell directly."
+  ],
+  "proofLimits": "Final source assessment and reuse of the existing three-case projection probe only. No product code changed, browser download ran, exported artifact opened, print workflow measured, image demand tested or general HTML/Markdown loss inventory performed. The verdict establishes ownership and the hard cuts; Task design must settle the projection choice UX and exact browser proof before implementation.",
+  "references": [
+    "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx",
+    "docs/plans/artifacts/2026-09-24-exports-review/projection-probe.log",
+    "apps/www/src/registry/components/editor/export-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/html-export.tsx",
+    "apps/www/src/registry/blocks/html-export/page.tsx",
+    "apps/www/src/registry/examples/docx-demo.tsx",
+    "apps/www/src/registry/registry-editor.ts",
+    "packages/plitejs/src/authored/format.ts",
+    "packages/platejs/src/static/authoredHtml.ts",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/docx/export/lib/exportToDocx.tsx",
+    "packages/platejs/type-tests/authored-format-contracts.ts",
+    "content/docs/examples/export.mdx",
+    "docs/research/decisions/documents-conversion-fidelity.md",
+    "docs/research/decisions/large-documents-dom-coverage.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "c6a957ea93ed73198eb1509b3c1f8356166871330d54e2760227874459091c12",
+      "apps/www/src/registry/examples/docx-demo.tsx": "fe917f5d5a5bf651fa19c358c22644441176f800d8563a771cf382963a8c9337",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "378bf330f000d9d942290ee2387649ceffd257450d94c35e576a2be97cabae25",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/authoredHtml.ts": "46eec042c2b8ba52610699bf99760a6a5f732e6c74c2ee013653d01639425c32",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "d598a7e01d0feb6f344e4ecfba0eba085c53d95828a809cb925bcbc6d7f4aa46",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "6c9f4fe2375319cf35f397e46adc3d471ecc20b0f0f458036d9a317ed7b98596",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "db8ad5e16b2df9f6b12abf8d092deaab5761dc870c7a06c89f4dbb4187f5b542",
+      "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "ebc1b64876c8184035e10afdbe3ce0a329d5f60a9a2dadd6877b62da40bd31f1",
+      "packages/platejs/type-tests/authored-format-contracts.ts": "10bd2cd997e957390c7263240f167867d31266333e8c551f8c45bf76c6608ab2",
+      "packages/plitejs/src/authored/format.ts": "9ea7bfc72c62687e63822daf3396979c3323b36bd5586d1cacf6842854293232",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/registry-editor.ts": "f90a50d6f13972e8f91816bb699cd7ea283bd981fc49fde249629132b803d729",
+      "content/docs/examples/export.mdx": "6a1d26e74a00f24ed96b3eea1ad2cd79c28e78530e6b0b2f61c369b67adc417f",
+      "content/docs/(guides)/authored-changes.mdx": "52a0adea48a8575c2fe125fd98cbde40437d856b62940f359d1094e3aaac1e61",
+      "docs/vision/plate.md": "8e21e0c1783d79d5f5c4389af7e79e6455de92b3f22b494dbd506695828ec4dc",
+      "docs/vision/plite.md": "aefd3df5a578003e90fffa6688c317bdbb49837b80cb4874863f8decdecf31f8",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77bf6f360dc7b3199b947dc167649fbc39007b81b4f9bd5364660757e7d4a703",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
+    },
+    "directories": {},
+    "features": {
+      "ui/export-toolbar-button": "8b624bd8adca5a087729de9fc73ead8b188995ed335e8233beb25735a9bb33cb"
+    },
+    "upstreams": []
+  }
+}

@@ -1,25 +1,24 @@
 import {
+  createBrowserHtmlDocument,
+  materializeHtmlAst,
+  parseHtmlAst,
+} from './htmlAst';
+import {
   collapseWhiteSpace,
   htmlBrToNewLine,
-  htmlStringToDOMNode,
   htmlTextNodeToString,
 } from './HtmlPlugin';
 
+const parseHtmlToDom = (input: string) => {
+  const parsed = parseHtmlAst(input, 'slice');
+
+  if (!parsed.ok) throw new TypeError(parsed.diagnostics[0].message);
+
+  return materializeHtmlAst(parsed.ast, createBrowserHtmlDocument());
+};
+
 const expectCollapsedWhiteSpace = (input: string, expected: string) => {
-  const element = htmlStringToDOMNode(input);
-
-  for (const preformatted of element.querySelectorAll(
-    'pre, textarea, listing'
-  )) {
-    if (
-      preformatted.firstChild?.nodeType === Node.TEXT_NODE &&
-      preformatted.firstChild.textContent?.startsWith('\n')
-    ) {
-      preformatted.firstChild.textContent =
-        preformatted.firstChild.textContent.slice(1);
-    }
-  }
-
+  const element = parseHtmlToDom(input);
   const collapsedElement = collapseWhiteSpace(element);
   const output = collapsedElement.innerHTML;
   expect(output).toEqual(expected);

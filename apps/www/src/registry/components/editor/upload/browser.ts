@@ -9,35 +9,77 @@ import type { UploadClient } from 'platejs/upload';
 import { UploadPlugin } from 'platejs/upload/react';
 
 export const createBrowserUploadKit = () => {
+  let delayMs = 0;
+  let disposal = new AbortController();
   const urls = new Map<string, string>();
   const objectUrls = new Set<string>();
   const isAllowedUrl = (url: string) => objectUrls.has(url) || isUrl(url);
   const client: UploadClient = {
     upload: async (file, options) => {
-      options?.signal?.throwIfAborted();
+      const signal = options?.signal
+        ? AbortSignal.any([options.signal, disposal.signal])
+        : disposal.signal;
+      signal.throwIfAborted();
 
       const key = crypto.randomUUID();
-      const url = URL.createObjectURL(file);
-      urls.set(key, url);
-      objectUrls.add(url);
       const type = file.type || 'application/octet-stream';
+      const reportProgress = (
+        fraction: number,
+        status: 'success' | 'uploading'
+      ) => {
+        const loaded = Math.round(file.size * fraction);
 
-      options?.onProgress?.(
-        { fraction: 1, loaded: file.size, total: file.size },
-        [
+        options?.onProgress?.({ fraction, loaded, total: file.size }, [
           {
             file,
             key,
-            loaded: file.size,
+            loaded,
             name: file.name,
-            progress: 1,
+            progress: fraction,
             size: file.size,
-            status: 'success',
+            status,
             total: file.size,
             type,
           },
-        ]
-      );
+        ]);
+      };
+      const uploadDelayMs = delayMs;
+
+      if (uploadDelayMs > 0) {
+        reportProgress(0, 'uploading');
+        await new Promise<void>((resolve, reject) => {
+          const startedAt = performance.now();
+          const interval = window.setInterval(() => {
+            reportProgress(
+              Math.min((performance.now() - startedAt) / uploadDelayMs, 0.99),
+              'uploading'
+            );
+          }, 100);
+          const timeout = window.setTimeout(() => {
+            cleanup();
+            resolve();
+          }, uploadDelayMs);
+          const abort = () => {
+            cleanup();
+            reject(signal.reason);
+          };
+          const cleanup = () => {
+            window.clearInterval(interval);
+            window.clearTimeout(timeout);
+            signal.removeEventListener('abort', abort);
+          };
+
+          signal.addEventListener('abort', abort, { once: true });
+          if (signal.aborted) abort();
+        });
+      }
+
+      signal.throwIfAborted();
+      const url = URL.createObjectURL(file);
+      urls.set(key, url);
+      objectUrls.add(url);
+
+      reportProgress(1, 'success');
 
       return { key, lastModified: file.lastModified, size: file.size, type };
     },
@@ -45,9 +87,15 @@ export const createBrowserUploadKit = () => {
 
   return {
     dispose: () => {
+      disposal.abort();
+      // React StrictMode disposes and then reuses the same kit.
+      disposal = new AbortController();
       for (const url of urls.values()) URL.revokeObjectURL(url);
       urls.clear();
       objectUrls.clear();
+    },
+    setSimulatedDelayMs: (value: number) => {
+      delayMs = value;
     },
     plugins: [
       ImagePlugin.configure({ initialState: { isUrl: isAllowedUrl } }),

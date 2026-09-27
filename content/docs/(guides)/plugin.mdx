@@ -175,9 +175,9 @@ You may want to inject a class name or CSS property into any node having a certa
 import { PLUGINS, property, schema, target } from "platejs";
 
 const TextAlignPlugin = definePlugin("textAlign", {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      "text/html": {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
         decode: ({ element }) => element.style.textAlign || undefined,
         encode: ({ value }) => ({ style: { textAlign: value } }),
         match: [
@@ -212,8 +212,8 @@ const TextAlignPlugin = definePlugin("textAlign", {
 });
 ```
 
-`inject.nodeProps` owns rendering, while the constructor's `codecs` callback
-binds the bidirectional HTML claim to this plugin's schema. `defineCodecs`
+`inject.nodeProps` owns rendering, while the constructor's `formats` callback
+binds the bidirectional HTML claim to this plugin's schema. `defineFormats`
 keeps `value` inferred from the property declaration. Both paths use the
 author callback's compiled `schema.properties.textAlign` handle. Consumers use
 typed node fields or the plugin's semantic capabilities instead of reading that
@@ -420,7 +420,7 @@ const plugins = [LinkPlugin, MentionPlugin, HighlightPlugin];
 ```
 
 Use `dependencies` for a real installation requirement. Competing shortcuts,
-input rules, and codecs own their local `priority`; plugin registration has no
+input rules, and format mappings own their local `priority`; plugin registration has no
 global priority.
 
 ### Decoration styling
@@ -455,30 +455,16 @@ callbacks run per node. Inline ranges use `decorate`; structural output uses
 components or slots. See the
 [Plate Plugin API](/docs/api/core/plate-plugin#properties-attrs-render).
 
-### HTML input hooks
+### HTML document preparation
 
-Use hooks on the plugin's `'text/html'` codec to decide whether it participates
-in an HTML input, transform the source string, or transform the decoded
-fragment.
+An HTML mapping may define `prepareDocument` when matching nodes requires one
+normalization pass over the inert, operation-owned DOM. The callback receives
+the detached document and the same frozen mapping context as other HTML
+callbacks. It cannot inspect a browser `DataTransfer` or live editor.
 
-```ts
-const HtmlCleanupPlugin = definePlugin("htmlCleanup", {
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      "text/html": {
-        query: ({ data, source }) =>
-          source.types.includes("text/html") &&
-          data.includes("<!--StartFragment-->"),
-        transformData: ({ data }) =>
-          data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ""),
-      },
-    }),
-});
-```
-
-`query`, `transformData`, and `transformFragment` are siblings on the
-`'text/html'` codec. Node-level HTML conversion remains separate from these
-whole-input hooks.
+Whole-payload admission, source-string cleanup, Word/RTF handling, and
+post-decode slice repair belong to a `DataTransferFormat`. That owner may
+prepare the payload, call `parseHtmlSlice`, and return the resulting slice.
 
 ## Typed plugins
 

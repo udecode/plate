@@ -18,6 +18,7 @@ import type {
   EditorTransactionSpecBuilder,
   EditorUpdateTransaction,
   EditorUpdateTransactionProvider,
+  RuntimeEditorUpdateValueFromPlugin,
   EditorUpdateContext,
   EditorUpdateMethods,
   EditorUpdatePolicy,
@@ -98,6 +99,7 @@ import type {
   InferPluginWritablePropertyEntries,
 } from '../plugin/pluginSchemaModel.internal';
 import type { CorePluginDefinition } from '../plugins/getCorePlugins.internal';
+import type { SpecializeInstalledPluginApi } from './conversionApiSpecialization.internal';
 import type {
   CoreEditorApi,
   CoreEditorRead,
@@ -2008,7 +2010,10 @@ type SpecializeCoreEditorApi<TApi, V extends Value> = Omit<TApi, 'html'> & {
 
 type PluginEditorApi<V extends Value, D> = Readonly<
   SpecializeCoreEditorApi<
-    MergeCapabilityGroups<CoreEditorApi, InstalledPluginApi<D>>,
+    MergeCapabilityGroups<
+      CoreEditorApi,
+      SpecializeInstalledPluginApi<InstalledPluginApi<D>, V>
+    >,
     V
   >
 >;
@@ -2059,10 +2064,13 @@ type AuthoredTransactionPluginGroup<TPlugin> =
 // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- Widened names intentionally cross an untyped runtime plugin boundary.
 type DynamicTransactionPluginGroup = Record<string, any>;
 
-type TransactionPluginPortal = {
+type TransactionPluginPortal<V extends Value = Value> = {
   <const TPlugin extends PluginReference>(
     plugin: TPlugin
   ): AuthoredTransactionPluginGroup<TPlugin>;
+  <const TPlugin extends RuntimePluginReference>(
+    plugin: TPlugin
+  ): RuntimeEditorUpdateValueFromPlugin<V, TPlugin>;
   // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- Widened names intentionally cross an untyped runtime plugin boundary.
   (name: string): DynamicTransactionPluginGroup;
 };
@@ -2078,10 +2086,12 @@ type KnownTransactionPluginPortal<TGroups> =
         name: TName
       ) => TGroups[TName];
 
-type TransactionPluginPortalSurface<D, S = D> = KnownTransactionPluginPortal<
-  InstalledPluginTransaction<D, S>
-> &
-  TransactionPluginPortal &
+type TransactionPluginPortalSurface<
+  V extends Value,
+  D,
+  S = D,
+> = KnownTransactionPluginPortal<InstalledPluginTransaction<D, S>> &
+  TransactionPluginPortal<V> &
   (InstalledPluginTransaction<D, S> extends infer TGroups
     ? 'plugin' extends ExactInstalledTransactionNames<D>
       ? 'plugin' extends keyof TGroups
@@ -2438,7 +2448,7 @@ type PluginTransactionForInstalledDefinitions<
     >,
     'plugin'
   > &
-    Readonly<{ plugin: TransactionPluginPortalSurface<D, S> }>,
+    Readonly<{ plugin: TransactionPluginPortalSurface<V, D, S> }>,
   D,
   S
 >;
@@ -2456,7 +2466,7 @@ type PluginEditorTransactionBuilder<
     >,
     'plugin'
   > &
-    Readonly<{ plugin: TransactionPluginPortalSurface<D, S> }>,
+    Readonly<{ plugin: TransactionPluginPortalSurface<V, D, S> }>,
   D,
   S
 >;

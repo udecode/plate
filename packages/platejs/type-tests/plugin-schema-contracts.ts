@@ -22,7 +22,7 @@ import {
 import {
   type ElementOf,
   type EditorSchemaProperty,
-  type PropertyJsonValue,
+  type EditorJsonValue,
   type Value,
   property,
   schema,
@@ -873,7 +873,7 @@ const elementIdProperty = elementIdEditor.read.schema.getProperty(
 );
 const unknownElementIdProperty: unknown = elementIdProperty;
 // @ts-expect-error Raw property names cannot select their own result type.
-const typedElementIdProperty: PropertyJsonValue | undefined = elementIdProperty;
+const typedElementIdProperty: EditorJsonValue | undefined = elementIdProperty;
 const semanticElementIdProperty: string | undefined = elementIdEditor
   .plugin(ElementIdPlugin)
   .read.id(elementIdEditor.key(targetElement));

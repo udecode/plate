@@ -1,12 +1,24 @@
 import {
   createTestEditor,
   getTestSerializeOptions,
+  withTestSerializeDocument,
 } from '../__tests__/createTestEditor';
 import type { MdList, MdListItem, MdParagraph, MdText } from '../mdast';
-import { listToMdastTree } from './listToMdastTree';
+import { listToMdastTree as listToMdastTreeWithContext } from './listToMdastTree';
 
 const editor = createTestEditor();
 const runtimeOptions = getTestSerializeOptions(editor);
+
+const listToMdastTree = (
+  nodes: Parameters<typeof listToMdastTreeWithContext>[0],
+  options: Parameters<typeof listToMdastTreeWithContext>[1],
+  isBlock?: boolean
+) =>
+  listToMdastTreeWithContext(
+    nodes,
+    withTestSerializeDocument(options, nodes),
+    isBlock
+  );
 
 const getList = (parent: MdListItem, index: number): MdList => {
   const node = parent.children[index];

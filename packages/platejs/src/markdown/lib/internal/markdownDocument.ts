@@ -6,7 +6,13 @@ import type {
 } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
 
-import type { Descendant, Element, Text, Value } from '../../../core';
+import type {
+  Descendant,
+  EditorDocumentValue,
+  Element,
+  Text,
+  Value,
+} from '../../../core';
 import { ElementApi, PLUGINS, TextApi } from '../../../core';
 import type { MarkdownConversionContext } from '../types';
 
@@ -14,10 +20,7 @@ export class MarkdownBlockIdError extends Error {
   override name = 'MarkdownBlockIdError';
 }
 
-export type MarkdownSerializeDocumentValue = {
-  children: readonly Descendant[];
-  roots?: Readonly<Record<string, Value>>;
-};
+export type MarkdownSerializeDocumentValue = EditorDocumentValue;
 
 const MDX_ATTR_NAME_TO_HTML_ATTR: Record<string, string> = {
   className: 'class',

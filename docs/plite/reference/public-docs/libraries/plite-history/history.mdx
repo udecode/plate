@@ -16,14 +16,19 @@ const editor = createEditor({
 });
 
 const canUndo = editor.read.history.hasUndo();
-const result = editor.api.history.undo();
+const pending = editor.read.history.pending();
+const result = await editor.api.history.undo();
 
 editor.update({ history: "skip" }).text.insert("draft");
 ```
 
-`undo()` and `redo()` each run one complete update. Use `hasUndo()` and
-`hasRedo()` for controls, and inspect `editor.read.history()` when you need the full
-immutable stacks.
+`undo()` and `redo()` claim their next batch in call order. Ordinary document
+batches settle in that call. A batch with a live-session effect publishes its
+pending direction while its external owner finishes. Document edits, selection
+updates, and collaborative imports continue while replay is pending.
+
+Use `hasUndo()`, `hasRedo()`, and `pending()` for controls. Inspect
+`editor.read.history()` when you need the full immutable stacks.
 
 ## History object
 
@@ -114,22 +119,33 @@ Return whether the undo branch has a surviving mapped batch.
 
 Return whether the redo branch has a surviving mapped batch.
 
-#### `editor.api.history.undo(): HistoryResult`
+#### `editor.read.history.pending(): "undo" | "redo" | null`
 
-Run one complete update that replays the current undo batch.
+Return the replay direction currently waiting for a live-session owner. Pending
+state belongs to this editor's runtime. It is absent from History JSON,
+snapshots, and collaboration.
 
-#### `editor.api.history.redo(): HistoryResult`
+#### `editor.api.history.undo(): Promise<HistoryResult>`
 
-Run one complete update that replays the current redo batch.
+Claim and replay the current undo batch.
+
+#### `editor.api.history.redo(): Promise<HistoryResult>`
+
+Claim and replay the current redo batch.
 
 Both methods return `{ status: "applied" }` after a replay and
 `{ status: "empty" }` when no surviving batch exists. An authored dependency
 conflict returns `{ status: "blocked", conflicts }`, where `conflicts` contains
-the immutable contribution IDs that block replay. Other failures throw.
+the immutable contribution IDs that block replay. A live-session owner can
+return `{ status: "blocked", reason }`; the same batch remains at the branch
+head. A replay requested while another live-session replay is pending returns
+`{ status: "busy" }` and does not claim another batch. Other failures reject.
 
 Call these services outside `editor.read(...)` and `editor.update(...)`. A
 history batch can cover several document roots; replay always applies the
-complete batch.
+complete batch. A live-session batch is effect-only, local to the current
+session, excluded from serialized History, and never merged with another
+batch.
 
 #### `tx.history.restore(history): void`
 
@@ -201,7 +217,7 @@ Render ephemeral previews from local state, decorations, or sidecar UI until the
 user commits them. Do not mutate document content for a preview and then try to
 make that preview history later.
 
-Use a local `defineStateField` without a persistence codec and with
+Use a local `defineStateField` without `persist` and with
 `history: 'skip'` for preview state. Cancel by clearing that field. Accept by
 clearing the preview and applying the real document edit in one normal update.
 

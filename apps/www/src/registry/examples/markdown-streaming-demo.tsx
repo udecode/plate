@@ -366,6 +366,14 @@ export default function MarkdownStreamingDemo() {
     editor.update.selection.set(editor.read.points.start([0]) ?? null);
   };
 
+  const updateStaticMarkdown = (source: string) => {
+    const result = editorStatic.api.markdown.parse(source, {
+      recovery: 'incomplete-stream',
+    });
+
+    if (result.ok) editorStatic.update.value.replace(result.document);
+  };
+
   const onStreaming = async () => {
     onReset();
     const stream = new AbortController();
@@ -384,9 +392,7 @@ export default function MarkdownStreamingDemo() {
       const chunk = transformedCurrentChunks[i];
       output += chunk.chunk;
       if (isPlateStatic) {
-        editorStatic.update.value.replace(
-          editorStatic.api.markdown.deserialize(output)
-        );
+        updateStaticMarkdown(output);
       } else {
         aiChat.api.setPreview(output);
       }
@@ -410,9 +416,7 @@ export default function MarkdownStreamingDemo() {
         .slice(0, targetIndex)
         .map((chunk) => chunk.chunk)
         .join('');
-      editorStatic.update.value.replace(
-        editorStatic.api.markdown.deserialize(output)
-      );
+      updateStaticMarkdown(output);
     } else {
       editor.update.value.replace({ children: [] });
       aiChat.api.reset();

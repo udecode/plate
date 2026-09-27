@@ -193,13 +193,16 @@ CopilotPlugin.configure({
 
       if (!contextEntry) return '';
 
-      const prompt = editor.api.markdown.serialize({
-        value: { children: [contextEntry[0]] },
+      const result = editor.api.markdown.serialize({
+        document: { children: [contextEntry[0]] },
+        projection: 'proposed',
       });
+
+      if (!result.ok) return '';
 
       return `Continue the text up to the next punctuation mark:
 """
-${prompt}
+${result.data}
 """`;
     },
     // ... other options

@@ -11,6 +11,18 @@ const value = [
 ] as const;
 
 describe('BaseSuggestionPlugin', () => {
+  it('rejects suggestion mode without a current author', () => {
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [BaseSuggestionPlugin],
+    });
+
+    expect(() =>
+      editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting')
+    ).toThrow('An author ID is required for proposal mode.');
+    expect(editor.plugin(BaseSuggestionPlugin).read.mode()).toBe('editing');
+  });
+
   it('owns the editing and suggesting modes over native authored views', () => {
     const editor = createEditor({
       initialValue: value,

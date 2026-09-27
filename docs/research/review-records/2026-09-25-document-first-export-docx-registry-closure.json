@@ -1,0 +1,113 @@
+{
+  "id": "2026-09-25-document-first-export-docx-registry-closure",
+  "kind": "execution",
+  "date": "2026-09-25",
+  "scopes": [
+    "exports"
+  ],
+  "reviewBasis": [
+    "2026-09-24-exports-final-reassessment"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-24-document-first-export-contracts.md",
+    "sha256": "996d9fe5fe13cc81f884d80ba88a41d6352bf2b656d53e6cba9ccfae604fe818"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Closed the DOCX ownership follow-up: required Word semantic renderers remain package-private, direct package tests cover their output, and the copyable registry stylesheet no longer installs Plate or obsolete static-component dependencies.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-24-document-first-export-contracts.md",
+        "sha256": "996d9fe5fe13cc81f884d80ba88a41d6352bf2b656d53e6cba9ccfae604fe818",
+        "claim": "Records the final package/registry ownership split, repaired dependency metadata, direct renderer coverage, and completed verification."
+      },
+      {
+        "path": "packages/platejs/src/docx/export/lib/exportToDocx.spec.ts",
+        "sha256": "308c07b2014e099a299aa3d930b9539b638316a39f1b114e71bd153f2e2505d0",
+        "claim": "Directly proves package-owned heading, TOC, equation, callout, column, and existing code-block Word semantics without registry components."
+      },
+      {
+        "path": "packages/platejs/src/docx/export/lib/docxStaticComponents.tsx",
+        "sha256": "2f0d29750644a9aa45238cd6cb082ee2d9c00bc4ff5bf17b7fc592dba4b3c6d0",
+        "claim": "Defines the private mandatory DOCX renderer map used by package and server consumers."
+      },
+      {
+        "path": "apps/www/public/r/docx-export.json",
+        "sha256": "82e23bb6b58e6b5bb0bfd32b1831e3171f3540d8733375875ea502ef1611eae1",
+        "claim": "Generated registry payload contains only the optional stylesheet and no package or static-component dependency graph."
+      },
+      {
+        "path": "apps/www/tests/browser/docx.spec.ts",
+        "sha256": "27884d7ac1dab3a87ec19e0d1f0a8d3bf1a8d0e265709d0b05b12f296911ad12",
+        "claim": "Existing Chromium coverage proves mounted import/export and one selected suggestion projection across formats; runtime sources were unchanged in this follow-up."
+      }
+    ],
+    "limits": "Microsoft Word remains unavailable; prior artifacts were reopened and resaved with LibreOffice. This follow-up changed registry metadata, tests, changelog and planning evidence, so the previously passing Chromium runtime proof remains applicable and was not rerun. No commit, push, pull request, release or deployment was performed."
+  },
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "6a1b0715a5ffaf30dc482a659fffb70551d605d78d7d2df3ca45561ed6ffd446",
+      "apps/www/src/registry/examples/docx-demo.tsx": "b149d67140f4199c71ce377b28e70860db6ceace532dab270eeafd9bbd894b82",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "3f372041ba2ce7c7fa5a4d185798223fa36e462dc129fd91e622da49ba0334ae",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "2b038cffadb470eecbd19204b8d6174916b5445d870072312687132fc8384e65",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "746b788c2b9233b7a7597de6f7438fca5dcb226d1366f9884a02a8b6843e96f3",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "ae5a7deb9f8b8cd6644815af7f1dbe293e298fe5c002a8cb3b736e1d05d1b1a7",
+      "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "017caea75d0925bcce66aef52f652ede70c26f41167307cc6a02692107e0a5fb",
+      "packages/platejs/type-tests/authored-format-contracts.ts": "8fdbb0fff21b2976a81b8ff2220d90323d501c010a89d5d0c5238b4e12fd0d91",
+      "packages/plitejs/src/authored/format.ts": "eaa1a2e0ce3cedeea9df0a9f6241214c08cfc97776038a833fac5567770b706c",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/registry-editor.ts": "95491326193b354802a076551bb117fc05f2f1431bd29f4635dac7e4a6b80cf4",
+      "content/docs/examples/export.mdx": "728b09e7a13c0386742e819df94f2ce6fd24f0ec1b0acd5bc1ba9831f1d73d51",
+      "content/docs/(guides)/authored-changes.mdx": "b6145c0970ce9e71296b1c874e993e8a4602a5660936da1f2cd05973d16da0fe",
+      "docs/vision/plate.md": "c720caf2c7129e03bb73b7a756e209441874866a1ff7635e814af38b6a781396",
+      "docs/vision/plite.md": "88b094f95aa0231a645eec7aee346a6a714e4cf1075eb2c611d0b0da56fb1812",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "apps/www/src/registry/components/editor/docx-export.tsx": "85830dfdc863f1fe81778e52e755852c9605a9e722c964f9a0bb3d9c7a76abbe",
+      "apps/www/src/app/(app)/docs/examples/server-side/page.tsx": "de494ed92e54cc51d65aae1e68f4c45926c59e15a0ecb0e84b829aaa8d3585f7",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "27f35dee22d352884b17238617093a51deac981dea65d76d0b648d2aa15f345e",
+      "packages/platejs/src/static/editor/withStatic.tsx": "a7049ff7b1f5a91235238bb502a9c39c05220eebcb6d74c85afaff9467e70d33",
+      "packages/platejs/src/static/components/PlateStatic.tsx": "d6f8e0684e0fbd3030382abbf5823b00f5e71cfee7690f0ea190bc8c33eded80",
+      "packages/platejs/src/lib/editor/withPlite.ts": "4306627a035e19300eaa5f241ebcca8c3f60b58a2e7e9878d313dbdcac46ec60",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "d5dec861656500c6e504d72c5e5703929f8d1df1cd3b129fdfc2d60b8d9c45ff",
+      "packages/platejs/src/internal/plugin/compilePlateModel.ts": "326cd9dae47df6c70342e74032a02807caa947cf1007b25c730af0fa12f61793",
+      "packages/platejs/src/internal/plugin/compilePlateCodecs.ts": "640c667ca9e99d3316ffc129c3998a0dce55bc7004bff85e37079a807013aa0c",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "3f34ed4c7f13d7103ece24f6b9dae000fa8a93f228beaa57e41a8c6bd5d9c5e0",
+      "packages/platejs/src/markdown/lib/types.ts": "614df8e9a0c15755f89c6f930edadc3271d38c0cfbafe08ca11d61b445d912e3",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "8cf475bc202a58416e8aafb2f6e1ddcb4747ff6b3da8f754637b0834ac4b6ffb",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "ef1e23f3436263470e57fbddfd820db22b38090e0760cc2ede3346484a334526",
+      "packages/plitejs/src/authored/checkpoint.ts": "adadcfedbd7a0c75d4cec96af91f7665091155ee3613148832c7bdf023925b2a",
+      "packages/plitejs/src/dom/plugin/host-codec.ts": "eee0e986bc5162ecec43652e58ec8597b98d96abf94e040fe91bbb9271cff841",
+      "packages/plitejs/src/core/persisted-document.ts": "efc8e669b9cb6cd77cb42e265dc8ce53ccb397ea2e21254b0a31e0117d831a6a",
+      "content/docs/(guides)/serializing.mdx": "a18d214a655516f6778911301c70fa5caf281cbdfbef06229c2441c9545cbaf3",
+      "content/docs/api/node.mdx": "6cf96d7dfb56d46a82ec64d540ec7ee3355a2756dca5b3b7444bc729592f5008",
+      "packages/plitejs/src/interfaces/node.ts": "e75fafa20ae004deb7db029c784bd30323408bea5fd244905a2018c626b96166",
+      "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts": "bbec6491102ab1c4e8db00171e5065613f02c394082cb5003e7f2e93b51e236f",
+      "packages/platejs/src/react/features/table/TablePlugin.tsx": "b1ab39fbb540828b32839c1123a5b6fec45d622f55032c73f00db6e36984a26a",
+      "packages/platejs/src/static/renderStaticHtml.node-props.spec.ts": "3f117091c0d4225cf97e3bf29413931cb94a21e0163e4a08f23eb3b498395e53",
+      "docs/plite/research/2026-09-24-export-architecture/shards/002-final-reassessment.md": "612865507a714a57495d19399a63fc79c4329c68381c0837b989209b9b79e0b4",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "271bdf6da40799f15a72c7237e96434f431f949b7d72ec2a6b541f952da7eb4b",
+      "packages/platejs/src/docx/export/lib/exportToDocx.spec.ts": "308c07b2014e099a299aa3d930b9539b638316a39f1b114e71bd153f2e2505d0",
+      "packages/platejs/src/docx/export/lib/docxStaticComponents.tsx": "2f0d29750644a9aa45238cd6cb082ee2d9c00bc4ff5bf17b7fc592dba4b3c6d0",
+      "apps/www/src/registry/registry-features.ts": "7a8e26bf8e5b6285f2d50e3483dedf043139e15cf38353b1f0ac479f728636ff",
+      "apps/www/public/r/docx-export.json": "82e23bb6b58e6b5bb0bfd32b1831e3171f3540d8733375875ea502ef1611eae1",
+      "apps/www/src/__registry__/index.tsx": "249c94d172aa85eb0c9d882c24d9abfeee9cba106428815ab8892a40ca5c6429",
+      "apps/www/src/registry/changelog/entries/2026-09-24-export-menu-projection.mdx": "48a651e24090e91baca4c2e6a4513e35c36323bdf38566d84afcfc19906d0fad"
+    },
+    "directories": {},
+    "features": {
+      "plitejs/core/plain-text": "a1ced6bc55a354d3c2a5fee11384907e01b7c913af4a2ef95939ee752bf9c92b",
+      "ui/export-toolbar-button": "c2855be9ca6ef554758ee4efdfc375f093138bb929a01b5c1662771579119aa7"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-24-document-first-export-contracts.md"
+  ]
+}

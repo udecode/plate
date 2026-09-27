@@ -28,7 +28,7 @@ const documentTitle = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => 'Untitled',
-  persist: valueCodecs.string,
+  persist: { ...valueCodecs.string, version: 1 },
 });
 
 const spellcheck = defineStateField({
@@ -36,7 +36,7 @@ const spellcheck = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => true,
-  persist: valueCodecs.boolean,
+  persist: { ...valueCodecs.boolean, version: 1 },
 });
 
 const HistoryPlugin = history();

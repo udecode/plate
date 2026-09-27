@@ -77,7 +77,6 @@ export { defineStateField } from './core/state-field';
 export { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
 export {
   decodeEditorEffect,
-  defineValueCodec,
   encodeEditorEffect,
   valueCodecs,
 } from './core/value-codec';
@@ -143,7 +142,7 @@ export type {
   EditorEffectCollabReplay,
   EditorEffectCollabTransport,
   EditorEffectType,
-  EditorValueCodec,
+  EditorValuePersistence,
   EditorElementBehavior,
   DefinitionOf,
   Plugin,
@@ -261,7 +260,7 @@ export type {
   EditorUpdateTransaction,
   EditorUpdateTransactionOf,
   EditorUpdateTransactionProvider,
-  EditorEffectHistoryPolicy,
+  EditorUpdateValueFromPlugin,
   EditorEffectHistoryReplayResult,
   EditorNodeTypeProvider,
   EditorNodeUnsetOptions,
@@ -319,6 +318,7 @@ export type {
 export type { EditorGenericMethod } from './interfaces/editor';
 export type * from './interfaces/decoration';
 export * from './interfaces/element';
+export type * from './interfaces/json';
 export * from './interfaces/location';
 export * from './interfaces/node';
 export * from './interfaces/selection';

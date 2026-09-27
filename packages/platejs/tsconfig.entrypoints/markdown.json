@@ -25,9 +25,6 @@
       "path": "./core.json"
     },
     {
-      "path": "./proxies.json"
-    },
-    {
       "path": "./standard-list.json"
     }
   ]

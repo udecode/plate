@@ -6,6 +6,9 @@ import {
   type BasePluginInput,
   BaseParagraphPlugin,
   createEditor,
+  type Element,
+  type EditorDocumentValue,
+  type Value,
 } from '../../../core';
 import {
   BaseBlockquotePlugin,
@@ -54,9 +57,14 @@ import {
   getMergedOptionsDeserialize,
   getMergedOptionsSerialize,
 } from '../internal/markdownConversion';
-import { MarkdownPlugin } from '../MarkdownPlugin';
+import { createMarkdownModelLocator } from '../internal/markdownDiagnostics';
+import { type MarkdownApi, MarkdownPlugin } from '../MarkdownPlugin';
 import { remarkMdx, remarkMention } from '../plugins';
-import type { DeserializeMdOptions, SerializeMdOptions } from '../types';
+import type {
+  MarkdownEditorSerializeOptions,
+  MarkdownParsePolicy,
+  MarkdownSerializePolicy,
+} from '../types';
 
 const testSchemaPlugins: readonly BasePluginInput[] = [
   BaseHeadingPlugin,
@@ -114,9 +122,60 @@ export const createTestEditor = () =>
     plugins: [BaseParagraphPlugin, ...testSchemaPlugins, markdownPlugin],
   });
 
+type TestMarkdownEditor<V extends Value = Value> = Readonly<{
+  api: Readonly<{ markdown: MarkdownApi<V> }>;
+}>;
+
+export const parseTestMarkdown = <V extends Value>(
+  editor: TestMarkdownEditor<V>,
+  source: string,
+  options?: MarkdownParsePolicy
+): EditorDocumentValue<V> => {
+  const result = editor.api.markdown.parse(source, options);
+
+  if (!result.ok) {
+    throw new Error(
+      result.diagnostics.map(({ message }) => message).join('\n')
+    );
+  }
+
+  return result.document;
+};
+
+export const parseTestMarkdownInline = <V extends Value>(
+  editor: TestMarkdownEditor<V>,
+  source: string,
+  options?: MarkdownParsePolicy
+) => {
+  const result = editor.api.markdown.parseInline(source, options);
+
+  if (!result.ok) {
+    throw new Error(
+      result.diagnostics.map(({ message }) => message).join('\n')
+    );
+  }
+
+  return result.slice.content;
+};
+
+export const serializeTestMarkdown = <V extends Value>(
+  editor: TestMarkdownEditor<V>,
+  options?: MarkdownEditorSerializeOptions
+) => {
+  const result = editor.api.markdown.serialize(options);
+
+  if (!result.ok) {
+    throw new Error(
+      result.diagnostics.map(({ message }) => message).join('\n')
+    );
+  }
+
+  return result;
+};
+
 export const getTestDeserializeOptions = (
   editor: ReturnType<typeof createTestEditor>,
-  options?: DeserializeMdOptions
+  options?: MarkdownParsePolicy
 ) =>
   withMarkdownRuntime(
     editor,
@@ -126,10 +185,24 @@ export const getTestDeserializeOptions = (
 
 export const getTestSerializeOptions = (
   editor: ReturnType<typeof createTestEditor>,
-  options?: SerializeMdOptions
+  options?: MarkdownSerializePolicy
 ) =>
   withMarkdownRuntime(
     editor,
     editor.plugin(MarkdownPlugin).store.get(),
     (runtime) => getMergedOptionsSerialize(runtime, options)
   );
+
+export const withTestSerializeDocument = (
+  options: ReturnType<typeof getTestSerializeOptions>,
+  children: readonly Element[]
+) => {
+  const document: EditorDocumentValue = { children: [...children] };
+
+  return {
+    ...options,
+    document,
+    modelLocation: createMarkdownModelLocator(document),
+    value: document.children,
+  };
+};

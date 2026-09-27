@@ -7,7 +7,6 @@ import {
   SelectionApi,
 } from '../..';
 import {
-  type EditableHistoryReplayResult,
   type EditorHistoryFocusPolicy as EditableEditorHistoryFocusPolicy,
   getMountedEditableDOMRuntime,
 } from '../editable/editable-dom-runtime';
@@ -27,7 +26,6 @@ import {
 
 /** Focus behavior after mounted undo or redo applies a history batch. */
 export type EditorHistoryFocusPolicy = EditableEditorHistoryFocusPolicy;
-export type EditorHistoryResult = Promise<EditableHistoryReplayResult>;
 
 /** Options for history commands and shortcut handling. */
 export type UseEditorHistoryOptions<TRoot extends RootKey = RootKey> = {
@@ -49,20 +47,25 @@ export type EditorHistoryController = {
   canRedo: boolean;
   canUndo: boolean;
   onKeyDown: (event: KeyboardEvent) => void;
-  redo: () => EditorHistoryResult;
+  pending: HistoryDirection | null;
+  redo: () => void;
   root: RootKey | undefined;
-  undo: () => EditorHistoryResult;
+  undo: () => void;
 };
 
 type HistoryAvailability = {
   canRedo: boolean;
   canUndo: boolean;
+  pending: HistoryDirection | null;
 };
 
 const historyAvailabilityEquality = (
   a: HistoryAvailability | null,
   b: HistoryAvailability
-) => a?.canRedo === b.canRedo && a.canUndo === b.canUndo;
+) =>
+  a?.canRedo === b.canRedo &&
+  a.canUndo === b.canUndo &&
+  a.pending === b.pending;
 
 const nullableRootKeyEquality = (a: RootKey | null, b: RootKey | null) =>
   a === b;
@@ -92,12 +95,14 @@ const selectHistoryAvailability = (state: unknown): HistoryAvailability => {
     history?: {
       hasRedo?: () => boolean;
       hasUndo?: () => boolean;
+      pending?: () => HistoryDirection | null;
     };
   };
 
   return {
     canRedo: history?.hasRedo?.() ?? false,
     canUndo: history?.hasUndo?.() ?? false,
+    pending: history?.pending?.() ?? null,
   };
 };
 
@@ -148,12 +153,10 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
   );
 
   const applyHistory = useCallback(
-    (direction: HistoryDirection): EditorHistoryResult => {
+    (direction: HistoryDirection): void => {
       const runtime = getMountedEditableDOMRuntime(editor);
 
-      return runtime
-        ? runtime.replayHistory(direction, focusPolicy)
-        : Promise.resolve({ reason: 'unmounted', status: 'unavailable' });
+      runtime?.dispatchHistory(direction, focusPolicy);
     },
     [editor, focusPolicy]
   );
@@ -165,14 +168,21 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
 
       if (!direction) return;
 
+      if (readOnly || composing) {
+        return;
+      }
+      if (availability.pending) {
+        applyHistory(direction);
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       if (
-        readOnly ||
-        composing ||
-        (direction === 'undo' ? !availability.canUndo : !availability.canRedo)
+        direction === 'undo' ? !availability.canUndo : !availability.canRedo
       ) {
         return;
       }
-      void applyHistory(direction);
+      applyHistory(direction);
       event.preventDefault();
       event.stopPropagation();
     },
@@ -180,6 +190,7 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
       applyHistory,
       availability.canRedo,
       availability.canUndo,
+      availability.pending,
       composing,
       readOnly,
     ]
@@ -187,9 +198,18 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
 
   return useMemo(
     () => ({
-      canRedo: !readOnly && !composing && availability.canRedo,
-      canUndo: !readOnly && !composing && availability.canUndo,
+      canRedo:
+        !readOnly &&
+        !composing &&
+        availability.pending === null &&
+        availability.canRedo,
+      canUndo:
+        !readOnly &&
+        !composing &&
+        availability.pending === null &&
+        availability.canUndo,
       onKeyDown,
+      pending: availability.pending,
       redo,
       root: publicRoot,
       undo,
@@ -197,6 +217,7 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
     [
       availability.canRedo,
       availability.canUndo,
+      availability.pending,
       composing,
       onKeyDown,
       publicRoot,

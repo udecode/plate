@@ -119,7 +119,7 @@ Install `yjs` from `plitejs/yjs` on every peer to transport authored operation b
 
 ## Format helpers
 
-`plitejs/authored` exports `readAuthoredFormatSnapshot`, `serializeAuthoredJson`, `deserializeAuthoredJson`, and `createAuthoredReviewDocument`. The Plate facade adds Markdown, HTML, and DOCX adapters. See [Authored Changes](/docs/authored-changes).
+`plitejs/authored` exports pure document transforms. Use `projectAuthoredDocument(document, { projection })` for accepted or proposed content, `projectAuthoredReview(document)` for complete review markup and property changes, and `projectAuthoredRange(document, range, { from, to })` to map a range between projections. `parseAuthoredDocument(data)` validates persisted JSON before returning a document. These helpers do not construct or activate an editor runtime. Plate HTML and Markdown serializers accept visible `accepted` or `proposed` projections; exact review state stays in authored JSON. DOCX review export represents visible changes as Word revisions and attaches Plate-native state only when the caller explicitly requests the trusted exact-round-trip job. See [Authored Changes](/docs/authored-changes).
 
 ## API reference
 

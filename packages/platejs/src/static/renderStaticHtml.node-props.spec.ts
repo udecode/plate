@@ -62,6 +62,28 @@ const plugins = [
 ];
 
 describe('static HTML plugin node props', () => {
+  it('omits interactive editor slots from static output', async () => {
+    const staticEditor = createStaticEditor({
+      initialValue: [
+        { children: [{ text: 'Static content' }], type: 'paragraph' },
+      ],
+      plugins: [
+        BaseParagraphPlugin,
+        definePlugin('interactiveShell', {
+          slots: {
+            wrapContent: () => {
+              throw new Error('Interactive shell rendered during export.');
+            },
+          },
+        }),
+      ],
+    });
+
+    const { data } = await renderStaticHtml(staticEditor);
+
+    expect(data).toContain('Static content');
+  });
+
   it('renders a component declared by a Base plugin', async () => {
     const staticEditor = createStaticEditor({
       plugins: [
@@ -89,7 +111,7 @@ describe('static HTML plugin node props', () => {
       ],
     });
 
-    const html = await renderStaticHtml(staticEditor);
+    const { data: html } = await renderStaticHtml(staticEditor);
 
     expect(html).toContain('data-static-component="callout"');
     expect(html).toContain('data-static-plugin-prop="preserved"');
@@ -121,13 +143,9 @@ describe('static HTML plugin node props', () => {
       ],
     });
 
-    expect(
-      await renderStaticHtml(staticEditor, {
-        preserveClassNames: [],
-        stripClassNames: true,
-        stripDataAttributes: true,
-      })
-    ).toContain(`target="_blank"`);
+    const { data } = await renderStaticHtml(staticEditor);
+
+    expect(data).toContain(`target="_blank"`);
   });
 
   it('renders image props returned by plugin callbacks', async () => {
@@ -152,10 +170,7 @@ describe('static HTML plugin node props', () => {
       ],
     });
 
-    const htmlString = await renderStaticHtml(staticEditor, {
-      preserveClassNames: [],
-      stripClassNames: true,
-    });
+    const { data: htmlString } = await renderStaticHtml(staticEditor);
 
     expect(htmlString).toContain(`alt="Placeholder"`);
     expect(htmlString).toContain(`width="300"`);

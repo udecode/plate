@@ -272,8 +272,9 @@ describe('convertNodesDeserialize', () => {
       ).toEqual([{ text: '<label for="email">Email</label>' }]);
     });
 
-    it('warns and falls back when the tag name is empty', () => {
-      const warn = spyOn(console, 'warn').mockImplementation(() => {});
+    it('diagnoses and falls back when the tag name is empty', () => {
+      const diagnostics: Array<Parameters<DeserializeMdContext['report']>[0]> =
+        [];
       const node = {
         attributes: [],
         children: [{ type: 'text' as const, value: 'New' }],
@@ -282,12 +283,24 @@ describe('convertNodesDeserialize', () => {
       };
 
       expect(
-        buildSlateNode(node, {}, getTestDeserializeOptions(editor))
+        buildSlateNode(
+          node,
+          {},
+          {
+            ...getTestDeserializeOptions(editor),
+            report: (diagnostic) => diagnostics.push(diagnostic),
+          }
+        )
       ).toEqual([{ text: '<>New</>' }]);
-      expect(warn).toHaveBeenCalledWith(
-        'This MDX node does not have a parser for deserialization',
-        node
-      );
+      expect(diagnostics).toEqual([
+        expect.objectContaining({
+          action: 'replaced',
+          code: 'markdown-unsupported-node',
+          nodeType: 'mdxJsxTextElement',
+          phase: 'parse',
+          severity: 'error',
+        }),
+      ]);
     });
 
     it('preserves unknown block MDX in a paragraph', () => {

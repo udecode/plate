@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 
-import { createEditor } from '../../../core';
+import { definePlugin, property, schema } from '../../../core';
 import * as docx from '../../html/cleanWordHtml.internal';
 
 const convertToHtmlMock = mock();
@@ -39,20 +39,25 @@ describe('importDocx', () => {
     mock.restore();
   });
 
-  it('converts one bounded package without mutating the editor', async () => {
+  it('converts one bounded package against a detached target', async () => {
+    let activations = 0;
+    const LifecycleProbe = definePlugin('docxImportLifecycleProbe', {}).extend({
+      activate: () => {
+        activations += 1;
+      },
+    });
     const cleanWordHtmlSpy = spyOn(docx, 'cleanWordHtml');
     restoreCleanWordHtmlSpy = () => cleanWordHtmlSpy.mockRestore();
     const { importDocx } = await loadModule();
-    const editor = createEditor();
-
     convertToHtmlMock.mockImplementation(async () => ({
       messages: [{ message: 'warn-1' }],
       value: '<p><span class="MsoFootnoteReference">[4]</span>Hello</p>',
     }));
-    const value = editor.read.value();
-    const result = await importDocx(editor, await createDocx());
+    const result = await importDocx(await createDocx(), {
+      plugins: [LifecycleProbe],
+    });
 
-    expect(editor.read.value()).toEqual(value);
+    expect(activations).toBe(0);
     expect(convertToHtmlMock).toHaveBeenCalledTimes(1);
     const mammothInput = convertToHtmlMock.mock.calls[0][0];
 
@@ -63,7 +68,8 @@ describe('importDocx', () => {
     });
     expect(cleanWordHtmlSpy).toHaveBeenCalledWith(
       '<p><span class="MsoFootnoteReference">[4]</span>Hello</p>',
-      ''
+      '',
+      expect.any(Function)
     );
     expect(result).toEqual({
       comments: [],
@@ -81,17 +87,123 @@ describe('importDocx', () => {
     });
   });
 
-  it('retains source only when requested and releases it idempotently', async () => {
+  it('rejects an already-aborted import asynchronously with its reason', async () => {
     const { importDocx } = await loadModule();
-    const editor = createEditor();
+    const controller = new AbortController();
+    const reason = { code: 'cancelled-before-import' };
+
+    controller.abort(reason);
+    const operation = importDocx(await createDocx(), {
+      plugins: [],
+      signal: controller.signal,
+    });
+
+    expect(operation).toBeInstanceOf(Promise);
+    await expect(operation).rejects.toBe(reason);
+  });
+
+  it('rejects when aborted while package admission is running', async () => {
+    const { importDocx } = await loadModule();
+    const controller = new AbortController();
+    const reason = { code: 'cancelled-during-import' };
+
+    const operation = importDocx(await createDocx(), {
+      plugins: [],
+      signal: controller.signal,
+    });
+
+    queueMicrotask(() => controller.abort(reason));
+
+    await expect(operation).rejects.toBe(reason);
+  });
+
+  it('imports ordinary DOCX without Web Crypto', async () => {
+    const { importDocx } = await loadModule();
+    const source = await createDocx();
+    const cryptoDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'crypto'
+    );
 
     convertToHtmlMock.mockImplementation(async () => ({
       messages: [],
       value: '<p>Hello</p>',
     }));
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: undefined,
+    });
+
+    try {
+      const result = await importDocx(source, { plugins: [] });
+
+      expect(result.ok).toBe(true);
+    } finally {
+      if (cryptoDescriptor) {
+        Object.defineProperty(globalThis, 'crypto', cryptoDescriptor);
+      } else {
+        Reflect.deleteProperty(globalThis, 'crypto');
+      }
+    }
+  });
+
+  it('reports the missing hash capability for native correspondence', async () => {
+    const { importDocx } = await loadModule();
+    const hash = '0'.repeat(64);
+    const source = await createDocx(undefined, {
+      'editor/authored.json': JSON.stringify({
+        document: {
+          children: [{ children: [{ text: 'Hello' }], type: 'paragraph' }],
+        },
+        parts: [],
+        projections: { accepted: hash, proposed: hash },
+        version: 1,
+      }),
+    });
+    const cryptoDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'crypto'
+    );
+
+    convertToHtmlMock.mockImplementation(async () => ({
+      messages: [],
+      value: '<p>Hello</p>',
+    }));
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: undefined,
+    });
+
+    try {
+      await expect(
+        importDocx(source, {
+          authoredTrust: { kind: 'same-application' },
+          plugins: [],
+        })
+      ).rejects.toThrow(
+        'Authored DOCX correspondence verification requires Web Crypto SHA-256 support.'
+      );
+    } finally {
+      if (cryptoDescriptor) {
+        Object.defineProperty(globalThis, 'crypto', cryptoDescriptor);
+      } else {
+        Reflect.deleteProperty(globalThis, 'crypto');
+      }
+    }
+  });
+
+  it('retains source only when requested and releases it idempotently', async () => {
+    const { importDocx } = await loadModule();
+    convertToHtmlMock.mockImplementation(async () => ({
+      messages: [],
+      value: '<p>Hello</p>',
+    }));
     const source = await createDocx();
-    const ordinary = await importDocx(editor, source);
-    const retained = await importDocx(editor, source, { retainSource: true });
+    const ordinary = await importDocx(source, { plugins: [] });
+    const retained = await importDocx(source, {
+      plugins: [],
+      retainSource: true,
+    });
 
     expect(ordinary.ok).toBe(true);
     expect('source' in ordinary).toBe(false);
@@ -108,7 +220,6 @@ describe('importDocx', () => {
 
   it('returns rich comment records and strips private range markers', async () => {
     const { importDocx } = await loadModule();
-    const editor = createEditor();
     const documentXml = [
       `<w:document xmlns:w="${WORD_NAMESPACE}"><w:body><w:p>`,
       '<w:r><w:t>Alpha</w:t></w:r>',
@@ -140,8 +251,8 @@ describe('importDocx', () => {
     });
 
     const result = await importDocx(
-      editor,
-      await createDocx(documentXml, { 'word/comments.xml': commentsXml })
+      await createDocx(documentXml, { 'word/comments.xml': commentsXml }),
+      { plugins: [] }
     );
 
     expect(result).toEqual({
@@ -173,27 +284,56 @@ describe('importDocx', () => {
 
   it('returns a decode failure when the installed schema rejects HTML', async () => {
     const { importDocx } = await loadModule();
-    const editor = createEditor();
+    let validations = 0;
+    const RejectingParagraphPlugin = definePlugin('rejectingParagraph', {
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
+            decode: () => ({ unstable: 'value' }),
+            decodeOnly: true,
+            match: [{ tag: 'p' }],
+            priority: 1,
+          },
+        }),
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: {
+            unstable: property.string({
+              validate: (value): value is string => {
+                validations += 1;
+
+                return typeof value === 'string' && validations === 1;
+              },
+              validationVersion: 1,
+            }),
+          },
+        },
+      },
+    });
 
     convertToHtmlMock.mockImplementation(async () => ({
       messages: [{ message: 'warn-1' }],
       value: '<p>Hello</p>',
     }));
-    spyOn(editor.api.html, 'deserialize').mockReturnValue(null);
 
-    expect(await importDocx(editor, await createDocx())).toEqual({
+    expect(
+      await importDocx(await createDocx(), {
+        plugins: [RejectingParagraphPlugin],
+      })
+    ).toEqual({
       diagnostics: [
-        {
-          code: 'converter-message',
-          message: 'warn-1',
-          severity: 'warning',
-        },
         {
           code: 'decode-failed',
           message:
             'DOCX content could not be decoded by the installed editor schema.',
           part: 'word/document.xml',
           severity: 'error',
+        },
+        {
+          code: 'converter-message',
+          message: 'warn-1',
+          severity: 'warning',
         },
       ],
       ok: false,
@@ -202,10 +342,10 @@ describe('importDocx', () => {
 
   it('returns structured package-limit failures', async () => {
     const { importDocx } = await loadModule();
-    const editor = createEditor();
     const source = await createDocx();
-    const result = await importDocx(editor, source, {
+    const result = await importDocx(source, {
       limits: { maxInputBytes: 1 },
+      plugins: [],
     });
 
     expect(result).toEqual({
@@ -226,7 +366,6 @@ describe('importDocx', () => {
 
   it('bounds revision and comment records before conversion', async () => {
     const { importDocx } = await loadModule();
-    const editor = createEditor();
     const revisions = [
       `<w:document xmlns:w="${WORD_NAMESPACE}"><w:body><w:p>`,
       '<w:ins w:id="1" w:author="A"><w:r><w:t>A</w:t></w:r></w:ins>',
@@ -239,17 +378,13 @@ describe('importDocx', () => {
       '<w:comment w:id="2"><w:p><w:r><w:t>B</w:t></w:r></w:p></w:comment>',
       '</w:comments>',
     ].join('');
-    const revisionResult = await importDocx(
-      editor,
-      await createDocx(revisions),
-      {
-        limits: { maxRevisions: 1 },
-      }
-    );
+    const revisionResult = await importDocx(await createDocx(revisions), {
+      limits: { maxRevisions: 1 },
+      plugins: [],
+    });
     const commentResult = await importDocx(
-      editor,
       await createDocx(undefined, { 'word/comments.xml': comments }),
-      { limits: { maxComments: 1 } }
+      { limits: { maxComments: 1 }, plugins: [] }
     );
 
     expect(revisionResult).toEqual({
@@ -276,10 +411,11 @@ describe('importDocx', () => {
   it('throws for invalid programmer options', async () => {
     const { importDocx } = await loadModule();
 
-    await expect(
-      importDocx(createEditor(), await createDocx(), {
+    expect(() =>
+      importDocx(new ArrayBuffer(0), {
         limits: { maxEntries: 0 },
+        plugins: [],
       })
-    ).rejects.toThrow('maxEntries must be a positive safe integer.');
+    ).toThrow('maxEntries must be a positive safe integer.');
   });
 });

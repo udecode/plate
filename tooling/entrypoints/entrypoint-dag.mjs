@@ -301,14 +301,25 @@ export const entrypointDags = {
         })
       ),
       'docx-internal': client(
-        privateDirectory('docx/internal', ['core'], [], {
+        privateDirectory('docx/internal', ['authored', 'core'], [], {
           peerDependencies: ['jszip'],
         })
       ),
       'docx/export': client(
         directory(
           'docx/export',
-          ['authored', 'core', 'docx-internal', 'static'],
+          [
+            'authored',
+            'standard/basic-nodes',
+            'callout',
+            'standard/code-block',
+            'core',
+            'docx-internal',
+            'layout',
+            'math',
+            'static',
+            'toc',
+          ],
           [],
           {
             peerDependencies: [
@@ -317,6 +328,7 @@ export const entrypointDags = {
               'jszip',
               'juice',
               'mime-types',
+              'react',
               'virtual-dom',
               'xmlbuilder2',
             ],
@@ -362,6 +374,17 @@ export const entrypointDags = {
         )
       ),
       history: headless(directory('history', [], ['plitejs/history'])),
+      html: client(
+        directory('html', ['core'], [], {
+          runtimeProof: 'plate-plugin-client',
+        })
+      ),
+      'html/server': ssr(
+        directory('html/server', ['core'], [], {
+          peerDependencies: ['linkedom'],
+          runtimeProof: 'plate-html-server',
+        })
+      ),
       hyperscript: headless(
         directory('hyperscript', [], ['plitejs/hyperscript'])
       ),
@@ -425,6 +448,7 @@ export const entrypointDags = {
         file(
           'root',
           [
+            'authored',
             'core',
             ...Object.keys(rootFeatureDependencies).map(
               (name) => `standard/${name}`
@@ -510,6 +534,8 @@ export const entrypointDags = {
         'emoji/react',
         'excalidraw',
         'excalidraw/react',
+        'html',
+        'html/server',
         'markdown',
         'math',
         'math/react',
@@ -640,7 +666,7 @@ export const assertEntrypointDags = (dags = entrypointDags) => {
   const runtimeProofs = {
     client: new Set(['plate-plugin-client']),
     headless: new Set(['plate-plugin']),
-    ssr: new Set(['plate-static-html']),
+    ssr: new Set(['plate-html-server', 'plate-static-html']),
   };
 
   for (const [packageName, definition] of Object.entries(dags)) {

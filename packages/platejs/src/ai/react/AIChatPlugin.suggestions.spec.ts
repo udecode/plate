@@ -4,6 +4,7 @@ import {
   definePlugin,
   createEditorView,
   type Element,
+  property,
   schema,
   type TextSelection,
   type Value,
@@ -12,6 +13,27 @@ import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
+
+const HeadingPlugin = definePlugin('heading', {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      markdown: {
+        from: 'heading',
+        kind: 'node',
+        decode: ({ decode, decoration, node }) => ({
+          children: decode(node.children, decoration),
+          level: node.depth,
+          type,
+        }),
+      },
+    }),
+  schema: {
+    element: {
+      content: schema.content.open(),
+      properties: { level: property.number() },
+    },
+  },
+});
 
 const createEditor = (
   value: Value,
@@ -23,6 +45,7 @@ const createEditor = (
       DefaultAuthoredPlugin,
       BaseParagraphPlugin,
       BaseAIPlugin,
+      HeadingPlugin,
       MarkdownPlugin,
       AIChatPlugin,
     ],
@@ -44,6 +67,23 @@ const createEditor = (
 };
 
 describe('AIChatPlugin suggestions', () => {
+  it('lets parsed Markdown change the source block type', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes);
+    const ai = editor.plugin(AIChatPlugin);
+    ai.store.set({ toolName: 'edit' });
+
+    ai.api.setPreview('# Heading');
+
+    const proposed = createEditorView(editor, {
+      authored: { intent: 'edit', projection: 'proposed' },
+    });
+    expect(proposed.read.children()[0]).toMatchObject({
+      level: 1,
+      type: 'heading',
+    });
+  });
+
   it('accepts every streamed chunk when editing a single block', () => {
     const original = 'This sentence are badly write';
     const chatNodes = [{ children: [{ text: original }], type: 'paragraph' }];
@@ -736,8 +776,8 @@ describe('AIChatPlugin suggestions', () => {
         nodeKey: header.key([index])!,
         root: 'header',
       })),
-      previewValue: [{ children: [{ text: 'new' }], type: 'paragraph' }],
     });
+    header.plugin(AIChatPlugin).api.setPreview('new');
     editor.plugin(AIChatPlugin).api.replaceSelection({ format: 'none' });
 
     expect(editor.read.children()).toEqual(mainChildren);
@@ -754,9 +794,7 @@ describe('AIChatPlugin suggestions', () => {
       kind: 'text',
     });
 
-    editor.plugin(AIChatPlugin).store.set({
-      previewValue: [{ children: [{ text: 'new' }], type: 'paragraph' }],
-    });
+    editor.plugin(AIChatPlugin).api.setPreview('new');
     editor.plugin(AIChatPlugin).api.replaceSelection({ format: 'none' });
 
     expect(editor.read.text.string([])).toBe('new');

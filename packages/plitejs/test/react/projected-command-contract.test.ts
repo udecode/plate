@@ -65,7 +65,9 @@ const replayMountedHistory = async (
   runtime.setRoot(document.createElement('div'));
   runtime.connect();
   try {
-    const result = await runtime.replayHistory(direction);
+    const result = await new Promise<{ status: string }>((resolve) => {
+      runtime.dispatchHistory(direction, 'restore-root', resolve);
+    });
     return result.status !== 'unavailable';
   } finally {
     runtime.destroy();

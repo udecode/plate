@@ -7,13 +7,13 @@ import type { Editor } from '../../lib/editor';
 import { assertNoPrepareDocument } from '../../lib/plugin/assertNoPrepareDocument.internal';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
-import { pluginCodecMapDeclaration } from '../../lib/plugin/pluginAuthoringContext';
+import { pluginFormatMapDeclaration } from '../../lib/plugin/pluginAuthoringContext';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import {
   getPluginDescriptorMetadata,
   isNominalPluginDescriptor,
   mergePlugins,
-  registerHtmlCodecSchemaFamilies,
+  registerHtmlMappingSchemaFamilies,
   setPluginDescriptorMetadata,
 } from '../utils/mergePlugins';
 import { snapshotApiValue } from '../utils/snapshotApiValue';
@@ -25,7 +25,8 @@ export type ResolvedPluginConfiguration = Readonly<
 
 type PluginContribution = Record<PropertyKey, unknown> & {
   api?: (context: object) => object;
-  codecs?: Readonly<Record<PropertyKey, unknown>>;
+  dataTransferFormats?: readonly unknown[];
+  formats?: Readonly<Record<PropertyKey, unknown>>;
   commands?: (context: object) => readonly unknown[];
   name?: string;
   on?: Readonly<Record<PropertyKey, unknown>>;
@@ -216,47 +217,47 @@ const assertNativeTopology = (
   }
 };
 
-const applyCodecs = (
+const applyFormats = (
   plugin: AnyBasePlugin,
-  codecs: Readonly<Record<PropertyKey, unknown>>
+  formats: Readonly<Record<PropertyKey, unknown>>
 ) => {
-  if (codecs[pluginCodecMapDeclaration] !== true) {
+  if (formats[pluginFormatMapDeclaration] !== true) {
     throw new Error(
-      `Plate plugin "${plugin.name}" codecs must be declared with the context-bound \`defineCodecs(...)\` helper.`
+      `Plate plugin "${plugin.name}" formats must be declared with the context-bound \`defineFormats(...)\` helper.`
     );
   }
 
-  const { 'text/html': htmlCodec, ...productCodecs } = codecs;
-  let currentCodecs = Reflect.get(plugin, 'codecs');
+  const { html: htmlMapping, ...productMappings } = formats;
+  let currentFormats = Reflect.get(plugin, 'formats');
 
-  if (Reflect.ownKeys(productCodecs).length > 0) {
-    if (isObjectRecord(currentCodecs)) {
-      const currentFormats = new Map(
-        Object.keys(currentCodecs).map((format) => [
+  if (Reflect.ownKeys(productMappings).length > 0) {
+    if (isObjectRecord(currentFormats)) {
+      const currentKeys = new Map(
+        Object.keys(currentFormats).map((format) => [
           format.trim().toLowerCase(),
           format,
         ])
       );
 
-      for (const format of Object.keys(productCodecs)) {
+      for (const format of Object.keys(productMappings)) {
         const normalizedFormat = format.trim().toLowerCase();
 
-        if (currentFormats.has(normalizedFormat)) {
+        if (currentKeys.has(normalizedFormat)) {
           throw new Error(
-            `Plate codec owner "${plugin.name}" must declare "${normalizedFormat}" once with decode and encode in the same object.`
+            `Plate format owner "${plugin.name}" must declare "${normalizedFormat}" once.`
           );
         }
       }
     }
 
-    currentCodecs = mergePlugins(currentCodecs ?? {}, productCodecs);
-    Reflect.set(plugin, 'codecs', currentCodecs);
+    currentFormats = mergePlugins(currentFormats ?? {}, productMappings);
+    Reflect.set(plugin, 'formats', currentFormats);
   }
-  if (htmlCodec === undefined) return;
+  if (htmlMapping === undefined) return;
 
-  const htmlCodecs = Array.isArray(htmlCodec) ? htmlCodec : [htmlCodec];
-  const currentHtmlHooks = isObjectRecord(currentCodecs)
-    ? Reflect.get(currentCodecs, 'text/html')
+  const htmlMappings = Array.isArray(htmlMapping) ? htmlMapping : [htmlMapping];
+  const currentHtmlHooks = isObjectRecord(currentFormats)
+    ? Reflect.get(currentFormats, 'html')
     : undefined;
   const htmlHooks: Record<PropertyKey, unknown> = isObjectRecord(
     currentHtmlHooks
@@ -264,16 +265,16 @@ const applyCodecs = (
     ? { ...currentHtmlHooks }
     : {};
 
-  if (htmlCodecs.length === 0) {
+  if (htmlMappings.length === 0) {
     throw new Error(
-      'Plate plugin `codecs["text/html"]` tuples must be non-empty.'
+      'Plate plugin `formats["text/html"]` tuples must be non-empty.'
     );
   }
 
-  for (const declaration of htmlCodecs) {
+  for (const declaration of htmlMappings) {
     if (!isObjectRecord(declaration)) {
       throw new Error(
-        'Plate plugin `codecs["text/html"]` must contain codec declarations.'
+        'Plate plugin `formats["text/html"]` must contain mapping declarations.'
       );
     }
 
@@ -288,12 +289,12 @@ const applyCodecs = (
       if (hook === undefined) continue;
       if (typeof hook !== 'function') {
         throw new Error(
-          `Plate plugin HTML codec hook "${name}" must be a function.`
+          `Plate plugin HTML mapping hook "${name}" must be a function.`
         );
       }
       if (Reflect.has(htmlHooks, name)) {
         throw new Error(
-          `Plate plugin "${plugin.name}" must declare HTML codec hook "${name}" once.`
+          `Plate plugin "${plugin.name}" must declare HTML mapping hook "${name}" once.`
         );
       }
       Reflect.set(htmlHooks, name, hook);
@@ -302,7 +303,7 @@ const applyCodecs = (
     if (Reflect.ownKeys(rule).length === 0) {
       if (target !== undefined) {
         throw new Error(
-          'Plate plugin HTML codec hooks cannot target another plugin.'
+          'Plate plugin HTML mapping hooks cannot target another plugin.'
         );
       }
       continue;
@@ -311,16 +312,16 @@ const applyCodecs = (
 
     if (!isNominalPluginDescriptor(targetPlugin)) {
       throw new Error(
-        'Plate plugin HTML codec `target` must be a plugin descriptor.'
+        'Plate plugin HTML mapping `target` must be a plugin descriptor.'
       );
     }
     if (target !== undefined && targetPlugin.name === plugin.name) {
       throw new Error(
-        'Plate plugin HTML codec `target` must be a different plugin descriptor.'
+        'Plate plugin HTML mapping `target` must be a different plugin descriptor.'
       );
     }
 
-    const contribution = registerHtmlCodecSchemaFamilies(
+    const contribution = registerHtmlMappingSchemaFamilies(
       () => rule,
       plugin,
       targetPlugin
@@ -330,8 +331,8 @@ const applyCodecs = (
 
     setPluginDescriptorMetadata(plugin, {
       ...metadata,
-      htmlCodecContributions: [
-        ...metadata.htmlCodecContributions,
+      htmlMappingContributions: [
+        ...metadata.htmlMappingContributions,
         Object.freeze({
           factory: contribution,
           targetPlugin: target === undefined ? null : targetPlugin.name,
@@ -343,9 +344,9 @@ const applyCodecs = (
   if (Reflect.ownKeys(htmlHooks).length > 0) {
     Reflect.set(
       plugin,
-      'codecs',
-      mergePlugins(currentCodecs ?? {}, {
-        'text/html': Object.freeze(htmlHooks),
+      'formats',
+      mergePlugins(currentFormats ?? {}, {
+        html: Object.freeze(htmlHooks),
       })
     );
   }
@@ -373,7 +374,8 @@ const applyStage = (
 
   const {
     api,
-    codecs,
+    dataTransferFormats,
+    formats,
     commands,
     conflicts,
     dependencies,
@@ -430,6 +432,25 @@ const applyStage = (
       next,
       'commands',
       mergeCommandFactories(plugin, Reflect.get(next, 'commands'), commands)
+    );
+  }
+  if (dataTransferFormats !== undefined) {
+    if (!Array.isArray(dataTransferFormats)) {
+      throw new Error(
+        `Plate plugin "${plugin.name}" dataTransferFormats must be an array.`
+      );
+    }
+    const previous = Reflect.get(next, 'dataTransferFormats');
+
+    if (previous !== undefined && !Array.isArray(previous)) {
+      throw new Error(
+        `Plate plugin "${plugin.name}" dataTransferFormats must be an array.`
+      );
+    }
+    Reflect.set(
+      next,
+      'dataTransferFormats',
+      Object.freeze([...(previous ?? []), ...dataTransferFormats])
     );
   }
   if (api !== undefined) {
@@ -507,13 +528,13 @@ const applyStage = (
       );
     }
   }
-  if (codecs !== undefined) {
-    if (!isObjectRecord(codecs)) {
+  if (formats !== undefined) {
+    if (!isObjectRecord(formats)) {
       throw new Error(
-        `Plate plugin "${next.name}" codecs must be a MIME-keyed object.`
+        `Plate plugin "${next.name}" formats must be a semantic mapping object.`
       );
     }
-    applyCodecs(next, codecs);
+    applyFormats(next, formats);
   }
 
   if (

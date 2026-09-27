@@ -11,7 +11,12 @@ import {
   type Path,
   valueCodecs,
 } from '../../src/index';
-import { paragraph } from './support/collaboration';
+import {
+  createSeededYjsHistoryPeers,
+  getPeerTopLevelTexts,
+  paragraph,
+  syncConnectedPeers,
+} from './support/collaboration';
 import {
   type CanonicalTestOperation,
   type CollaborativeHistoryRun,
@@ -29,6 +34,15 @@ const initialValue = (): Descendant[] => [
   paragraph('beta'),
   paragraph('gamma'),
 ];
+
+const deferred = <T>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+
+  return { promise, resolve };
+};
 
 const offlineTrace = (
   seed: number,
@@ -111,6 +125,55 @@ const assertMinimizedIdentityStable = (
 };
 
 describe('plitejs/yjs collaborative history contract', () => {
+  it('publishes a remote update while a session replay is pending', async () => {
+    type Transition = Readonly<{ previous: string; value: string }>;
+    const gate = deferred<void>();
+    const sessionEffect = defineEffect<Transition>({
+      history: {
+        replay: async (_editor, transition) => {
+          await gate.promise;
+          return { status: 'applied', value: transition };
+        },
+      },
+      invert: ({ previous, value }) => ({ previous: value, value: previous }),
+      key: 'c14.pending-session',
+    });
+    const effects = definePlugin('c14-pending-session-effects', {
+      effectTypes: [sessionEffect],
+    });
+    const peers = createSeededYjsHistoryPeers({
+      children: [paragraph('alpha')],
+      clientIds: ['a', 'b'],
+      createEditor: () =>
+        createEditor({ plugins: [effects, history()] as const }),
+      numericClientIds,
+    });
+    const [source, target] = peers;
+
+    assert.ok(source && target);
+    try {
+      target.editor.update((tx) => {
+        tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+      });
+      const pending = target.editor.api.history.undo();
+
+      source.editor.update((tx) => {
+        tx.text.insert('!', { at: { offset: 5, path: [0, 0] } });
+      });
+      syncConnectedPeers(peers);
+
+      assert.deepEqual(getPeerTopLevelTexts(target), ['alpha!']);
+      assert.equal(target.editor.read.history.pending(), 'undo');
+
+      gate.resolve();
+      assert.deepEqual(await pending, { status: 'applied' });
+      assert.deepEqual(getPeerTopLevelTexts(target), ['alpha!']);
+      assert.equal(target.editor.read.history.pending(), null);
+    } finally {
+      for (const peer of peers) peer.cleanup();
+    }
+  });
+
   it('replays offline text undo and redo through Plite history', () => {
     const trace: CollaborativeHistoryTrace = {
       seed: 14_001,
@@ -599,7 +662,7 @@ describe('plitejs/yjs collaborative history contract', () => {
 
   it('undoes and redoes shared reversible effects only through Plite history', () => {
     const increment = defineEffect<number>({
-      codec: valueCodecs.number,
+      persist: { ...valueCodecs.number, version: 1 },
       collab: 'shared',
       collabReplay: 'live',
       history: 'push',

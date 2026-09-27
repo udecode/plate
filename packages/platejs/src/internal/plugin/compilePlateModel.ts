@@ -12,6 +12,7 @@ import {
   type SchemaProperty,
   type SchemaPropertyHandle,
   type SchemaTarget,
+  type RuntimePluginReference,
   schema,
   getSchemaElementSourceReference,
   preserveCompiledSchemaPropertyIdentity,
@@ -78,6 +79,7 @@ export type PlateModelPublication = Readonly<{
   apiByPlugin: Readonly<
     Record<string, Readonly<Record<string, unknown>> | undefined>
   >;
+  applicationSchema: EditorApplicationSchema | undefined;
   genericElementToggles: readonly string[];
   identity: EditorSchemaIdentity | null;
   inputRules: PlateRuntime['inputRules'];
@@ -88,6 +90,7 @@ export type PlateModelPublication = Readonly<{
   shortcutTable: PlateRuntime['shortcutTable'];
   shortcuts: PlateRuntime['shortcuts'];
   updateMethods: PlateRuntime['updateMethods'];
+  pluginInputs: readonly RuntimePluginReference[];
 }>;
 
 const PLATE_BLOCK_CONTENT_SCHEMA_GROUP = 'plate:block-content';

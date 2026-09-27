@@ -79,7 +79,7 @@ const getCellHeaders = (
 };
 
 describe('CsvPlugin', () => {
-  it('exposes initial state, scoped/root api, and the plain-text codec', () => {
+  it('exposes initial state, scoped/root api, and the plain-text mapping', () => {
     const editor = createCsvEditor();
     const data = 'name,age\nAda,36';
     const dataTransfer = new DataTransfer();

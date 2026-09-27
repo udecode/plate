@@ -336,7 +336,8 @@ type InputEnabled<TInput> = TInput extends {
 
 type BasePluginPresenceField =
   | BaseNativePresenceKey
-  | 'codecs'
+  | 'dataTransferFormats'
+  | 'formats'
   | 'editOnly'
   | 'inject'
   | 'inputRules'
