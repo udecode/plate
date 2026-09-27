@@ -854,7 +854,9 @@ Current priorities:
   structured diagnostics. Authored projection is an option on the ordinary
   format operation. Editor methods reuse compiled editor configuration;
   detached operations compile supplied declarations without activating plugins
-  or constructing an editing runtime. Semantic HTML stays separate from styled
+  or constructing an editing runtime. Like `createEditor({ plugins })`, a
+  detached operation types its document as broad `Value`; exact document types
+  belong to opt-in generated editor types. Semantic HTML stays separate from styled
   static React output. Feature-owned structural plain-text mappings back both
   explicit serialization and clipboard egress without changing model-offset
   text reads.

@@ -1,3 +1,4 @@
+import { BaseImagePlugin } from '../../../features/media/lib/image/BaseImagePlugin';
 import { createEditor } from '../../editor';
 import { HtmlPlugin } from './HtmlPlugin';
 
@@ -20,6 +21,28 @@ describe('HtmlPlugin', () => {
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'Hello' }], type: 'paragraph' },
     ]);
+  });
+
+  it('lifts block images out of HTML text blocks without dropping them', () => {
+    const editor = createEditor({ plugins: [BaseImagePlugin] });
+    const html = '<p>Keep <img src="https://example.com/a.png">more</p>';
+    const expected = [
+      { children: [{ text: 'Keep ' }], type: 'paragraph' },
+      { type: 'image', url: 'https://example.com/a.png' },
+      { children: [{ text: 'more' }], type: 'paragraph' },
+    ];
+
+    expect(editor.api.html.parseSlice(html)).toMatchObject({
+      ok: true,
+      slice: { content: expected },
+    });
+
+    const transfer = new DataTransfer();
+
+    transfer.setData('text/html', html);
+
+    expect(editor.api.dom.clipboard.insertData(transfer)).toBe(true);
+    expect(editor.read.children()).toMatchObject(expected);
   });
 
   it('serializes one complete document and reports unrepresented data', () => {

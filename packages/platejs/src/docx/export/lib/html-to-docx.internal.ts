@@ -1,8 +1,6 @@
 /**
- * HTML to DOCX converter using @turbodocx/html-to-docx
- *
- * This module wraps the @turbodocx/html-to-docx library to provide
- * a simple API for converting HTML content to DOCX format.
+ * HTML to DOCX converter adapted from html-to-docx (MIT License). The adapted
+ * sources live in `./internal`; see `THIRD_PARTY_NOTICES.md` for the notice.
  *
  * @packageDocumentation
  */
@@ -15,7 +13,7 @@ import type { DocumentOptions } from './internal/types';
 /**
  * Convert HTML content to a DOCX blob.
  *
- * This function uses @turbodocx/html-to-docx to create a valid DOCX file
+ * This function uses the adapted html-to-docx converter to create a valid DOCX file
  * from HTML content with proper support for images, tables, and styling.
  *
  * @param html - The HTML content to convert

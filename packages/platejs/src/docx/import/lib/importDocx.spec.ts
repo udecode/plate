@@ -340,6 +340,68 @@ describe('importDocx', () => {
     });
   });
 
+  it('applies the loss policy to reported mapping loss', async () => {
+    const { importDocx } = await loadModule();
+    const NotePlugin = definePlugin('docxImportNote', {
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
+            decode: ({ report }) => {
+              report({
+                action: 'dropped',
+                kind: 'attribute',
+                message: 'Dropped the note tone.',
+              });
+
+              return {};
+            },
+            decodeOnly: true,
+            match: [{ tag: 'aside' }],
+            priority: 1,
+          },
+        }),
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+    });
+    const loss = {
+      action: 'dropped',
+      code: 'unsupported-content',
+      feature: 'content',
+      message: 'Dropped the note tone.',
+    };
+
+    convertToHtmlMock.mockImplementation(async () => ({
+      messages: [],
+      value: '<aside>Note</aside>',
+    }));
+
+    const rejected = await importDocx(await createDocx(), {
+      plugins: [NotePlugin],
+    });
+
+    expect(rejected).toEqual({
+      diagnostics: [{ ...loss, severity: 'error' }],
+      ok: false,
+    });
+
+    const allowed = await importDocx(await createDocx(), {
+      lossPolicy: 'allow',
+      plugins: [NotePlugin],
+    });
+
+    expect(allowed).toEqual({
+      comments: [],
+      diagnostics: [{ ...loss, severity: 'warning' }],
+      document: {
+        children: [{ children: [{ text: 'Note' }], type: 'docxImportNote' }],
+      },
+      ok: true,
+    });
+  });
+
   it('returns structured package-limit failures', async () => {
     const { importDocx } = await loadModule();
     const source = await createDocx();

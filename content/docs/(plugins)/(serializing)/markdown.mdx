@@ -129,21 +129,38 @@ views, model location while encoding, and a Markdown-specific `report`
 function. They do not receive a live editor or store.
 
 ```ts
-import { definePlugin } from 'platejs';
+import { definePlugin, property, schema } from 'platejs';
 
 const CalloutPlugin = definePlugin('callout', {
+  schema: {
+    element: schema.element.textBlock({
+      properties: { tone: property.string() },
+    }),
+  },
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       markdown: {
-        decode: ({ node }) => ({
-          children: [],
-          tone: String(node.attributes?.find((item) => item.name === 'tone')?.value ?? 'info'),
-          type,
-        }),
-        encode: ({ node }) => ({
-          attributes: [{ name: 'tone', type: 'mdxJsxAttribute', value: node.tone }],
-          children: [],
-          name: 'Callout',
+        from: 'callout',
+        decode: ({ decode, node, parseAttributes }) => {
+          const { tone } = parseAttributes(node.attributes);
+          const [paragraph] = node.children;
+
+          return {
+            children: decode(
+              paragraph?.type === 'paragraph' ? paragraph.children : []
+            ),
+            tone: typeof tone === 'string' ? tone : 'info',
+            type,
+          };
+        },
+        encode: ({ encodePhrasing, node }) => ({
+          attributes: [
+            { name: 'tone', type: 'mdxJsxAttribute', value: node.tone ?? 'info' },
+          ],
+          children: [
+            { children: encodePhrasing(node.children), type: 'paragraph' },
+          ],
+          name: 'callout',
           type: 'mdxJsxFlowElement',
         }),
       },
@@ -151,9 +168,11 @@ const CalloutPlugin = definePlugin('callout', {
 });
 ```
 
-Use `defineFormats(map)` for self mappings and
-`defineFormats(TargetPlugin, map)` for a foreign target. The semantic key is
-`markdown`; a MIME declaration does not belong in this map.
+`from` names the Markdown source node the mapping decodes; MDX elements such as
+`<callout>` require `remarkMdx` in `remarkPlugins`. Use `defineFormats(map)`
+for self mappings and `defineFormats(TargetPlugin, map)` for a foreign target.
+A plugin's `formats` accept only the `html`, `markdown`, and `plainText` keys;
+MIME payloads belong in `dataTransferFormats`.
 
 ## Remark plugins
 

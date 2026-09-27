@@ -4,13 +4,15 @@ import {
   ContentSlice,
   definePlugin,
   HtmlPlugin,
-  isHtmlBlockElement,
-  removeHtmlNodesBetweenComments,
-  traverseHtmlElements,
   type Descendant,
   ElementApi,
   PLUGINS,
 } from '../../../core';
+import {
+  isHtmlBlockElement,
+  removeHtmlNodesBetweenComments,
+  traverseHtmlElements,
+} from '../../../lib/plugins/html/htmlDom';
 import { decodeHtmlDataTransfer } from '../../../lib/plugins/html/HtmlPlugin';
 import { cleanWordHtml, isWordHtml } from '../../html/cleanWordHtml.internal';
 

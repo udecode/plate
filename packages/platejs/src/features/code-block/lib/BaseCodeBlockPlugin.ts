@@ -226,7 +226,6 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children }) => children,
       },
       html: {
@@ -268,7 +267,6 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
       },
       markdown: {
         from: 'code',
-        kind: 'node',
         decode: ({ node }) => ({
           ...(node.lang ? { language: node.lang } : {}),
           children: [{ text: node.value || '' }],

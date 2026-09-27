@@ -250,7 +250,6 @@ type MarkdownNodeMappingBase<
   encode?: (
     context: MarkdownEncodeContext<PluginFormatNode<D>, D>
   ) => RootContent | undefined;
-  kind: 'node';
   mark?: boolean;
   priority?: number;
 }>;

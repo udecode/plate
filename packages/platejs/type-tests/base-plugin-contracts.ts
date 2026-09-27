@@ -339,7 +339,6 @@ const MarkdownFormatContractPlugin = definePlugin('markdownFormatContract', {
           return { children: [], type: 'paragraph' };
         },
         from: 'paragraph',
-        kind: 'node',
       },
     }),
 });
@@ -428,7 +427,6 @@ const MarkdownSchemaFactoryFormatContractPlugin = definePlugin(
             return { children: [], type: 'paragraph' };
           },
           from: 'paragraph',
-          kind: 'node',
         },
       }),
   }
@@ -463,7 +461,6 @@ const MarkdownMarkFormatContractPlugin = definePlugin(
             type: 'mdxJsxTextElement',
           }),
           from: 'span',
-          kind: 'node',
           mark: true,
         },
       }),

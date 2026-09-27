@@ -418,7 +418,6 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children, node }) =>
           children && children !== node.url
             ? `${children} (${node.url})`
@@ -426,7 +425,6 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
       },
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ caption, decode, node, parseAttributes }) => {
           const { src, ...props } = parseAttributes(node.attributes);
 
@@ -480,7 +478,6 @@ export const BaseFilePlugin = definePlugin(PLUGINS.file, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children, node }) => {
           const label = children || node.name || node.url;
 
@@ -489,7 +486,6 @@ export const BaseFilePlugin = definePlugin(PLUGINS.file, {
       },
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ caption, decode, node, parseAttributes }) => {
           const { src, ...props } = parseAttributes(node.attributes);
 
@@ -544,7 +540,6 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children, node }) =>
           children && children !== node.url
             ? `${children} (${node.url})`
@@ -552,7 +547,6 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
       },
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ caption, decode, node, parseAttributes }) => {
           const { src, ...props } = parseAttributes(node.attributes);
 

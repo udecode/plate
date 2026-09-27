@@ -17,7 +17,6 @@ export type PlainTextNodeMapping<D extends AnyBasePluginDefinition> = Readonly<{
   encode: (
     context: PlainTextEncodeContext<PluginFormatNode<D>, D>
   ) => string | undefined;
-  kind: 'node';
   priority?: number;
 }>;
 

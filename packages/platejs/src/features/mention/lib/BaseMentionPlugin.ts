@@ -78,7 +78,6 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ node }) => `@${node.label ?? node.ref}`,
       },
       html: {
@@ -133,7 +132,6 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
           };
         },
         from: 'mention',
-        kind: 'node',
       },
     }),
   update: ({ store, tx, schema: { type } }) => ({

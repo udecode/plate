@@ -389,7 +389,6 @@ export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
 
           return { children, type: 'tableCell' };
         },
-        kind: 'node',
       },
     }),
   render: { attributes: ({ element }) => getTableCellHtmlProps(element) },
@@ -444,7 +443,6 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
 
           return { children, type: 'tableRow' };
         },
-        kind: 'node',
       },
     }),
 });
@@ -570,7 +568,6 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ node }) =>
           node.children
             .map((row) =>
@@ -963,7 +960,6 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
           return { children, type: 'table' };
         },
         from: 'table',
-        kind: 'node',
       },
     }),
 });

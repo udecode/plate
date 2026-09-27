@@ -19,7 +19,6 @@ export const BaseCodeDrawingPlugin = definePlugin(PLUGINS.codeDrawing, {
     defineFormats({
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ node, parseAttributes }) => ({
           ...parseAttributes(node.attributes),
           children: [{ text: '' }],

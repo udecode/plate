@@ -240,7 +240,6 @@ export const BaseLinkPlugin = definePlugin('link', {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children, node }) =>
           !node.url || children === node.url
             ? children || node.url
@@ -281,7 +280,6 @@ export const BaseLinkPlugin = definePlugin('link', {
       },
       markdown: {
         from: 'link',
-        kind: 'node',
         decode: ({ decode, decoration, node }) => ({
           children: decode(node.children, decoration),
           type,

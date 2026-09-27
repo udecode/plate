@@ -21,7 +21,6 @@ const createEditor = (paragraphType = 'paragraph') => {
       formats: ({ defineFormats }) =>
         defineFormats({
           markdown: {
-            kind: 'node',
             encode: ({ node }) => ({
               lang: node.lang,
               type: 'code',
@@ -42,7 +41,6 @@ const createEditor = (paragraphType = 'paragraph') => {
       formats: ({ defineFormats }) =>
         defineFormats({
           markdown: {
-            kind: 'node',
             encode: ({ node }) => ({
               type: 'math',
               value: node.latex ?? '',
@@ -61,7 +59,6 @@ const createEditor = (paragraphType = 'paragraph') => {
         defineFormats({
           markdown: {
             from: 'heading',
-            kind: 'node',
             decode: ({ decode, decoration, node }) => ({
               children: decode(node.children, decoration),
               level: node.depth,

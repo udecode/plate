@@ -21,7 +21,6 @@ import {
 
 type ErasedPlainTextNodeMapping = Readonly<{
   encode: (context: PlainTextEncodeContext<any, any>) => string | undefined;
-  kind: 'node';
   priority?: number;
 }>;
 
@@ -34,7 +33,7 @@ type CompiledPlainTextNodeMapping = Readonly<{
   targetType: string | null;
 }>;
 
-const FIELDS = new Set(['encode', 'kind', 'priority']);
+const FIELDS = new Set(['encode', 'priority']);
 type CompiledPlainTextMappings = Readonly<{
   formats: readonly CompiledPlainTextNodeMapping[];
   getContext: ReturnType<typeof createPluginFormatOperationContext>;
@@ -53,10 +52,8 @@ const validateMapping = (
       );
     }
   }
-  if (declaration.kind !== 'node' || typeof declaration.encode !== 'function') {
-    throw new Error(
-      `Plain-text node mapping "${owner}" must use kind "node" and define encode.`
-    );
+  if (typeof declaration.encode !== 'function') {
+    throw new Error(`Plain-text node mapping "${owner}" must define encode.`);
   }
   if (
     declaration.priority !== undefined &&

@@ -13,7 +13,6 @@
     "flowchart.js@^1.15.0",
     "katex@0.16.22",
     "lucide-react",
-    "marked@^15.0.12",
     "mermaid@^11.6.1",
     "plantuml-encoder@^1.4.0",
     "remark-mdx@^3.1.0",

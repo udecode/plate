@@ -228,6 +228,14 @@ const applyFormats = (
   }
 
   const { html: htmlMapping, ...productMappings } = formats;
+
+  for (const format of Object.keys(productMappings)) {
+    if (format !== 'markdown' && format !== 'plainText') {
+      throw new Error(
+        `Plate plugin "${plugin.name}" declares unknown format "${format}".`
+      );
+    }
+  }
   let currentFormats = Reflect.get(plugin, 'formats');
 
   if (Reflect.ownKeys(productMappings).length > 0) {
@@ -256,58 +264,19 @@ const applyFormats = (
   if (htmlMapping === undefined) return;
 
   const htmlMappings = Array.isArray(htmlMapping) ? htmlMapping : [htmlMapping];
-  const currentHtmlHooks = isObjectRecord(currentFormats)
-    ? Reflect.get(currentFormats, 'html')
-    : undefined;
-  const htmlHooks: Record<PropertyKey, unknown> = isObjectRecord(
-    currentHtmlHooks
-  )
-    ? { ...currentHtmlHooks }
-    : {};
 
   if (htmlMappings.length === 0) {
-    throw new Error(
-      'Plate plugin `formats["text/html"]` tuples must be non-empty.'
-    );
+    throw new Error('Plate plugin `formats.html` tuples must be non-empty.');
   }
 
   for (const declaration of htmlMappings) {
     if (!isObjectRecord(declaration)) {
       throw new Error(
-        'Plate plugin `formats["text/html"]` must contain mapping declarations.'
+        'Plate plugin `formats.html` must contain mapping declarations.'
       );
     }
 
-    const { query, target, transformData, transformFragment, ...rule } =
-      declaration;
-
-    for (const [name, hook] of Object.entries({
-      query,
-      transformData,
-      transformFragment,
-    })) {
-      if (hook === undefined) continue;
-      if (typeof hook !== 'function') {
-        throw new Error(
-          `Plate plugin HTML mapping hook "${name}" must be a function.`
-        );
-      }
-      if (Reflect.has(htmlHooks, name)) {
-        throw new Error(
-          `Plate plugin "${plugin.name}" must declare HTML mapping hook "${name}" once.`
-        );
-      }
-      Reflect.set(htmlHooks, name, hook);
-    }
-
-    if (Reflect.ownKeys(rule).length === 0) {
-      if (target !== undefined) {
-        throw new Error(
-          'Plate plugin HTML mapping hooks cannot target another plugin.'
-        );
-      }
-      continue;
-    }
+    const { target, ...rule } = declaration;
     const targetPlugin = target ?? plugin;
 
     if (!isNominalPluginDescriptor(targetPlugin)) {
@@ -339,16 +308,6 @@ const applyFormats = (
         }),
       ],
     });
-  }
-
-  if (Reflect.ownKeys(htmlHooks).length > 0) {
-    Reflect.set(
-      plugin,
-      'formats',
-      mergePlugins(currentFormats ?? {}, {
-        html: Object.freeze(htmlHooks),
-      })
-    );
   }
 };
 

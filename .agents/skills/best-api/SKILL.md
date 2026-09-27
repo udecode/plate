@@ -187,10 +187,15 @@ A format serializer consumes one complete document and returns format data with
 structured diagnostics. Authored projection is an option on that format's
 ordinary serializer, not a parallel authored method or caller-built conversion
 editor. An editor method reuses the editor's compiled format configuration; a
-standalone serializer compiles supplied declarations without activating
-plugins, publishing editor state, or constructing an editing runtime. Keep
-semantic output separate from component-rendered presentation, and let feature
-mappings own structural plain-text behavior shared with clipboard egress.
+standalone serializer compiles supplied declarations without activating plugins,
+publishing editor state, or constructing an editing runtime. A standalone format
+operation accepts a runtime plugin tuple and types its document as an editor
+created from that tuple would: broad `Value`. Exact document types come from an
+opt-in generated editor type or a correlated typed editor, never from
+materializing a schema-wide value over the tuple, which also exceeds compiler
+depth for real application kits. Keep semantic output separate from
+component-rendered presentation, and let feature mappings own structural
+plain-text behavior shared with clipboard egress.
 
 Name conversion operations after their actual law. Use `parse`/`serialize` for
 text syntax and model conversion, `import`/`export` for file or package

@@ -24,7 +24,6 @@ export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
     defineFormats({
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ decode, decoration, node }) => ({
           children: decode(node.children, decoration),
           type,

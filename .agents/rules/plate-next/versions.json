@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 243,
+  "latestVersion": 245,
   "versions": [
     {
       "version": 0,
@@ -2812,6 +2812,30 @@
         "Construct and validate the imported document, comments, users and required plugin state in a detached candidate before changing the mounted editor.",
         "When the application owns editor instances, swap the completed candidate through a keyed remount so preparation failure preserves document state, history, drafts, pending composers and mutation queues.",
         "Do not sequence document, comment and user replacement on a mounted editor under a rollback claim; preserving the instance requires one owner that can commit or discard every affected runtime resource atomically.",
+        "Regenerate doctrine mirrors and preserve package attestations until each package adopts and proves the corrected contract."
+      ]
+    },
+    {
+      "version": 244,
+      "date": "2026-09-27",
+      "doctrineFingerprint": "sha256:758bc87d93f5c4421c98f1ceb1e6ce14eb2a32d300fd3e555adbd6bd67635505",
+      "summary": "Dispatch feature node mappings by their format key, isolate clipboard mapping candidates on the shared HTML path, and report DOCX recovery under its loss policy.",
+      "migrationChecks": [
+        "Declare markdown and plainText node mappings without a kind discriminator; a plugin's formats accept only html, markdown and plainText, and whole-payload MIME handling stays in dataTransferFormats.",
+        "Keep clipboard HTML on the shared parse5 safety and admission path while a throwing or schema-invalid mapping candidate is lifecycle-reported and delegates to the next lower-priority candidate; direct parse functions throw that failure.",
+        "Report DOCX schema repairs as schema-repair and mapping loss as unsupported-content under the import lossPolicy instead of failing decode or fitting silently.",
+        "Regenerate doctrine mirrors and preserve package attestations until each package adopts and proves the corrected contract."
+      ]
+    },
+    {
+      "version": 245,
+      "date": "2026-09-28",
+      "doctrineFingerprint": "sha256:858023a0dd1024c96b2a7510c98399d77ad52a71406ad4e09bcdc5a30b613055",
+      "summary": "Type standalone format operations like runtime-tuple editors: broad Value documents, with exact document types reserved for generated editor types.",
+      "migrationChecks": [
+        "Standalone parse, serialize and import functions accept a runtime plugin tuple without a plugin-tuple generic and return Value-typed documents that an editor built from the same tuple accepts.",
+        "Do not derive a schema-wide exact value from a Plate runtime tuple in a standalone conversion signature; use an opt-in generated editor type or a correlated typed editor for exact documents.",
+        "Prove standalone conversion typechecks with a full application kit, not only a small plugin tuple.",
         "Regenerate doctrine mirrors and preserve package attestations until each package adopts and proves the corrected contract."
       ]
     }

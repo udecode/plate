@@ -118,19 +118,38 @@ plugin state、registry/schema view、encode 时的 model location，以及 Mark
 专用 `report`。它不会接收 live editor 或 store。
 
 ```ts
-import { definePlugin } from 'platejs';
+import { definePlugin, property, schema } from 'platejs';
 
 const CalloutPlugin = definePlugin('callout', {
+  schema: {
+    element: schema.element.textBlock({
+      properties: { tone: property.string() },
+    }),
+  },
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       markdown: {
-        decode: ({ node }) => ({ children: [], type }),
-        encode: ({ node }) => ({
+        from: 'callout',
+        decode: ({ decode, node, parseAttributes }) => {
+          const { tone } = parseAttributes(node.attributes);
+          const [paragraph] = node.children;
+
+          return {
+            children: decode(
+              paragraph?.type === 'paragraph' ? paragraph.children : []
+            ),
+            tone: typeof tone === 'string' ? tone : 'info',
+            type,
+          };
+        },
+        encode: ({ encodePhrasing, node }) => ({
           attributes: [
-            { name: 'tone', type: 'mdxJsxAttribute', value: node.tone },
+            { name: 'tone', type: 'mdxJsxAttribute', value: node.tone ?? 'info' },
           ],
-          children: [],
-          name: 'Callout',
+          children: [
+            { children: encodePhrasing(node.children), type: 'paragraph' },
+          ],
+          name: 'callout',
           type: 'mdxJsxFlowElement',
         }),
       },
@@ -138,9 +157,11 @@ const CalloutPlugin = definePlugin('callout', {
 });
 ```
 
-Self mapping 使用 `defineFormats(map)`；foreign target 使用
-`defineFormats(TargetPlugin, map)`。语义 key 是 `markdown`，MIME declaration
-不属于这张 map。
+`from` 指定 mapping 解码的 Markdown source node；`<callout>` 这类 MDX
+element 需要在 `remarkPlugins` 中启用 `remarkMdx`。Self mapping 使用
+`defineFormats(map)`；foreign target 使用 `defineFormats(TargetPlugin, map)`。
+Plugin 的 `formats` 只接受 `html`、`markdown` 和 `plainText` key；MIME payload
+属于 `dataTransferFormats`。
 
 ## Remark plugin
 

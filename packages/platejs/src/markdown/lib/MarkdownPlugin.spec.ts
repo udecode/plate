@@ -31,10 +31,7 @@ import {
   serializeMarkdown,
 } from './MarkdownPlugin';
 import { remarkMdx } from './plugins';
-import type {
-  MarkdownDocumentValueFromPlugins,
-  MarkdownSyncPluggable,
-} from './types';
+import type { MarkdownSyncPluggable } from './types';
 import { materializeRemarkPlugins } from './utils/getRemarkPluginsWithoutMdx';
 
 const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
@@ -224,18 +221,6 @@ describe('MarkdownPlugin', () => {
     expect(editor.plugin(MarkdownPlugin).api.parse('**bold**')).toEqual(
       editor.api.markdown.parse('**bold**')
     );
-    const portalResult = editor.plugin(MarkdownPlugin).api.parse('**bold**');
-    const editorResult = editor.api.markdown.parse('**bold**');
-
-    if (portalResult.ok && editorResult.ok) {
-      const portalDocument: MarkdownDocumentValueFromPlugins<typeof plugins> =
-        portalResult.document;
-      const editorDocument: MarkdownDocumentValueFromPlugins<typeof plugins> =
-        editorResult.document;
-
-      void portalDocument;
-      void editorDocument;
-    }
     expect('parser' in plugin).toBe(false);
     expect(parseTestMarkdown(editor, '**bold**')).toEqual({
       children: [
@@ -407,7 +392,6 @@ describe('MarkdownPlugin', () => {
               type,
             }),
             from: 'paragraph',
-            kind: 'node',
           },
         }),
       schema: { element: schema.element.textBlock() },

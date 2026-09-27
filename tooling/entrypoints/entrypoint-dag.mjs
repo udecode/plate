@@ -391,7 +391,6 @@ export const entrypointDags = {
       markdown: headless(
         directory('markdown', ['authored', 'core', 'standard/list'], [], {
           peerDependencies: [
-            'marked',
             'remark-mdx',
             'remark-parse',
             'remark-stringify',

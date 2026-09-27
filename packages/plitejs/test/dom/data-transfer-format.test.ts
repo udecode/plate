@@ -312,6 +312,52 @@ test('plain-text construction observes the active transaction without cloning pr
   expect(editor.read.children()[2]).toEqual(paragraph('second'));
 });
 
+test('plain-text fallback starts new lines with the default block when the anchor block needs properties', () => {
+  const requiredBlockSchema = defineEditorSchema(
+    'schema:data-transfer-required-block-test',
+    {
+      elements: {
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        title: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: { level: property.string({ required: true }) },
+        },
+      },
+      id: 'data-transfer-required-block-test',
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    }
+  );
+  const editor = createEditor({
+    plugins: [requiredBlockSchema, dom()] as const,
+    initialSelection: SelectionApi.text({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 4, path: [1, 0] },
+    }),
+    initialValue: [
+      { children: [{ text: 'head' }], level: 'h2', type: 'title' },
+      paragraph('tail'),
+    ],
+  });
+  const data = new DataTransferStub();
+
+  data.setData('text/plain', 'first\nsecond');
+
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
+  expect(editor.read.children()).toEqual([
+    { children: [{ text: 'first' }], level: 'h2', type: 'title' },
+    paragraph('second'),
+  ]);
+});
+
 test('plain-text inline wrappers preserve validated properties and schema construction', () => {
   let captured: ContentSlice | null = null;
   const editor = createInlineFormatEditor((slice) => {

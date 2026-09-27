@@ -38,7 +38,6 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
       },
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ decode, decoration, isInline, node }) => {
           const paragraph =
             node.children.length === 1 && node.children[0]?.type === 'paragraph'
@@ -101,7 +100,6 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
       },
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ decode, decoration, node, registry }) => {
           const summaryType = registry.type(PLUGINS.detailsSummary);
 

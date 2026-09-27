@@ -1674,13 +1674,14 @@ const wrapRootInlineRuns = (
   return result;
 };
 
-const coalesceAdjacentText = (
-  descendants: readonly Descendant[]
-): Descendant[] => {
-  const result: Descendant[] = [];
+/** Merge adjacent text leaves whose non-text properties are equal. @internal */
+export const coalesceAdjacentText = <T extends Descendant>(
+  descendants: readonly T[]
+): T[] => {
+  const result: T[] = [];
 
   for (const node of descendants) {
-    const normalized = ElementApi.isElement(node)
+    const normalized: T = ElementApi.isElement(node)
       ? { ...node, children: coalesceAdjacentText(node.children) }
       : node;
     const previous = result.at(-1);
@@ -2074,13 +2075,44 @@ const decodeCompiledHtml = (
         ? fitDecodedChildren(markedChildren, createdElement, state)
         : markedChildren;
 
-    return [
-      {
-        ...createdElement,
-        ...properties,
-        children: hasDecodedChildren ? children : createdElement.children,
-      },
-    ];
+    return liftDisallowedBlocks({
+      ...createdElement,
+      ...properties,
+      children: hasDecodedChildren ? children : createdElement.children,
+    });
+  };
+
+  // HTML permits block content such as images inside text blocks; the editor
+  // grammar does not, so each disallowed block child becomes a sibling.
+  const liftDisallowedBlocks = (element: EditorElement): Descendant[] => {
+    const isDisallowedBlock = (child: Descendant) =>
+      ElementApi.isElement(child) &&
+      !isInlineDescendant(child, state) &&
+      !state.schema.allowsElementType(element.type, child.type);
+
+    if (!element.children.some(isDisallowedBlock)) return [element];
+    const result: Descendant[] = [];
+    let run: Descendant[] = [];
+    const flush = () => {
+      if (
+        run.some((child) => !TextApi.isText(child) || child.text.trim() !== '')
+      ) {
+        result.push({ ...element, children: run });
+      }
+      run = [];
+    };
+
+    for (const child of element.children) {
+      if (isDisallowedBlock(child)) {
+        flush();
+        result.push(child);
+      } else {
+        run.push(child);
+      }
+    }
+    flush();
+
+    return result;
   };
 
   const decoded =
@@ -2438,7 +2470,7 @@ const hasContentValue = (
   );
 };
 
-type HtmlMappingLoss = Readonly<{
+export type HtmlMappingLoss = Readonly<{
   action: 'dropped' | 'replaced' | 'unwrapped';
   kind: 'attribute' | 'element' | 'style';
   message: string;
@@ -3101,6 +3133,8 @@ export const compileHtmlElementDecoder = (
   if (!artifact) throw new Error('Plate HTML format is not compiled.');
   const operationKey = Object.freeze({});
 
+  // DOCX import decodes after its compilation scope clears plugin stores, so
+  // every mapping context is captured now; decode must read only these.
   for (const plugin of new Set(artifact.rules.map((rule) => rule.plugin))) {
     artifact.getFormatContext(plugin, state, operationKey);
   }
@@ -3109,18 +3143,18 @@ export const compileHtmlElementDecoder = (
     element: HTMLElement,
     {
       collapseWhitespace: shouldCollapseWhiteSpace = true,
-    }: Readonly<{ collapseWhitespace?: boolean }> = {}
+      onLoss,
+    }: Readonly<{
+      collapseWhitespace?: boolean;
+      onLoss: (loss: HtmlMappingLoss) => void;
+    }>
   ): Descendant[] => {
-    const rejectLoss = (loss: HtmlMappingLoss): never => {
-      throw new Error(loss.message);
-    };
-
     prepareHtmlDocument(
       artifact,
       element.ownerDocument,
       state,
       operationKey,
-      rejectLoss
+      onLoss
     );
     const normalized = shouldCollapseWhiteSpace
       ? collapseWhiteSpace(element)
@@ -3128,24 +3162,11 @@ export const compileHtmlElementDecoder = (
 
     return decodeCompiledHtml(editor, normalized, artifact, state, {
       fitSchema: false,
-      onLoss: rejectLoss,
+      onLoss,
       operationKey,
       reportMappingErrors: false,
     });
   };
-};
-
-/** Decode one already parsed detached DOM root through the compiled HTML map. @internal */
-export const decodeHtmlElement = (
-  editor: Editor,
-  element: HTMLElement,
-  options: Readonly<{ collapseWhitespace?: boolean }> = {}
-): Descendant[] => {
-  const fragment = editor.read((state) =>
-    compileHtmlElementDecoder(editor, state)(element, options)
-  );
-
-  return fragment;
 };
 
 type HtmlSchemaRepair = ReturnType<

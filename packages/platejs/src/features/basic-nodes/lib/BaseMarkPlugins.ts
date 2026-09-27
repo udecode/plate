@@ -2,10 +2,10 @@ import {
   definePlugin,
   createMarkInputRule,
   type MarkInputRuleConfig,
-  someHtmlElement,
   property,
   PLUGINS,
 } from '../../../core';
+import { someHtmlElement } from '../../../lib/plugins/html/htmlDom';
 
 const findHtmlParentElement = (
   element: HTMLElement | null,
@@ -166,7 +166,6 @@ export const BaseBoldPlugin = definePlugin(PLUGINS.bold, {
 
       markdown: {
         from: 'strong',
-        kind: 'node',
         mark: true,
         decode: ({ decode, decoration, node }) =>
           decode(node.children, { ...decoration, [key]: true }),
@@ -197,7 +196,6 @@ export const BaseCodePlugin = definePlugin(PLUGINS.code, {
 
       markdown: {
         from: 'inlineCode',
-        kind: 'node',
         mark: true,
         decode: ({ decoration, node }) => ({
           ...decoration,
@@ -228,7 +226,6 @@ export const BaseHighlightPlugin = definePlugin(PLUGINS.highlight, {
 
       markdown: {
         from: 'mark',
-        kind: 'node',
         mark: true,
         decode: ({ decode, decoration, node }) =>
           decode(node.children, { ...decoration, [key]: true }),
@@ -262,7 +259,6 @@ export const BaseItalicPlugin = definePlugin(PLUGINS.italic, {
 
       markdown: {
         from: 'emphasis',
-        kind: 'node',
         mark: true,
         decode: ({ decode, decoration, node }) =>
           decode(node.children, { ...decoration, [key]: true }),
@@ -286,7 +282,6 @@ export const BaseKbdPlugin = definePlugin(PLUGINS.kbd, {
 
       markdown: {
         from: 'kbd',
-        kind: 'node',
         mark: true,
         decode: ({ decode, decoration, node }) =>
           decode(node.children, { ...decoration, [key]: true }),
@@ -331,7 +326,6 @@ export const BaseScriptPlugin = definePlugin(PLUGINS.script, {
       markdown: [
         {
           from: 'sub',
-          kind: 'node',
           mark: true,
           decode: ({ decode, decoration, node }) =>
             decode(node.children, { ...decoration, [key]: 'sub' }),
@@ -344,7 +338,6 @@ export const BaseScriptPlugin = definePlugin(PLUGINS.script, {
         },
         {
           from: 'sup',
-          kind: 'node',
           decode: ({ decode, decoration, node }) =>
             decode(node.children, { ...decoration, [key]: 'sup' }),
         },
@@ -378,14 +371,12 @@ export const BaseStrikethroughPlugin = definePlugin(PLUGINS.strikethrough, {
       markdown: [
         {
           from: 'delete',
-          kind: 'node',
           mark: true,
           decode: ({ decode, decoration, node }) =>
             decode(node.children, { ...decoration, [key]: true }),
         },
         {
           from: 'del',
-          kind: 'node',
           decode: ({ decode, decoration, node }) =>
             decode(node.children, { ...decoration, [key]: true }),
         },
@@ -416,7 +407,6 @@ export const BaseUnderlinePlugin = definePlugin(PLUGINS.underline, {
 
       markdown: {
         from: 'u',
-        kind: 'node',
         mark: true,
         decode: ({ decode, decoration, node }) =>
           decode(node.children, { ...decoration, [key]: true }),

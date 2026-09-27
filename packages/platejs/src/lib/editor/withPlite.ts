@@ -1253,22 +1253,6 @@ export const projectPlateFormatDocument = (
   return projected;
 };
 
-/** Parse one native authored envelope through the editor's installed capability. @internal */
-export const parsePlateAuthoredDocument = (
-  editor: Editor,
-  data: string
-): EditorDocumentValue => {
-  const authored = getEditorAuthoredDocumentCapability(editor);
-
-  if (!authored) {
-    throw new TypeError(
-      'Authored document parsing requires the authored plugin in the editor configuration.'
-    );
-  }
-
-  return authored.parse(data);
-};
-
 /** Run one format conversion against compiled plugin/schema facts without activation. @internal */
 export const withPlateFormatCompilation = <T>(
   options: Pick<

@@ -3,6 +3,5 @@
  */
 
 export * from './htmlToJsx';
-export * from './parseMarkdownBlocks';
 export * from './splitIncompleteMdx';
 export * from './stripMarkdown';

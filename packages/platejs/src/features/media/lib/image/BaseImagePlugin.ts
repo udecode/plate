@@ -104,7 +104,6 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children, node }) => {
           const label = children || node.alt || node.title || node.url;
 
@@ -187,7 +186,6 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
       markdown: [
         {
           from: 'image',
-          kind: 'node',
           decode: ({ node }) => ({
             ...(node.alt === null || node.alt === undefined
               ? {}
@@ -200,7 +198,6 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
         },
         {
           from: 'img',
-          kind: 'node',
           decode: ({ caption, decode, node, parseAttributes }) => {
             const {
               alt: altAttribute,
@@ -299,7 +296,6 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
         },
         {
           from: 'figure',
-          kind: 'node',
           decode: ({ caption, decode, node, parseAttributes }) => {
             const [image, figcaption] = node.children;
 

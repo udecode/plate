@@ -136,13 +136,7 @@ export type {
 } from './lib/plugins/dom/DOMPlugin';
 export * from './lib/plugins/element-id/index';
 export * from './lib/plugins/element-state/index';
-export {
-  collapseWhiteSpace,
-  htmlBrToNewLine,
-  HtmlPlugin,
-  htmlTextNodeToString,
-} from './lib/plugins/html/HtmlPlugin';
-export { someHtmlElement } from './lib/plugins/html/htmlDom';
+export { HtmlPlugin } from './lib/plugins/html/HtmlPlugin';
 export * from './lib/plugins/input-rules/index';
 export * from './lib/plugins/paragraph/index';
 export type * from './lib/types/index';
@@ -150,4 +144,3 @@ export * from './lib/utils/index';
 export * from './utils/index';
 
 export { isNominalPluginDescriptor } from './internal/utils/mergePlugins';
-export * from './lib/plugins/html/htmlDom';

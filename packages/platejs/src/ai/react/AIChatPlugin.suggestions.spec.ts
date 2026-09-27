@@ -19,7 +19,6 @@ const HeadingPlugin = definePlugin('heading', {
     defineFormats({
       markdown: {
         from: 'heading',
-        kind: 'node',
         decode: ({ decode, decoration, node }) => ({
           children: decode(node.children, decoration),
           level: node.depth,

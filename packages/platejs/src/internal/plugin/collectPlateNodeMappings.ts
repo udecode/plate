@@ -51,23 +51,13 @@ const collect = (editor: object) => {
     if (!isRecord(owner.formats)) return;
     const { formats } = owner;
 
-    Object.entries(formats).forEach(([format, value]) => {
+    (['markdown', 'plainText'] as const).forEach((format) => {
+      const value = formats[format];
+
+      if (value === undefined) return;
       const declarations = Array.isArray(value) ? value : [value];
-      const nodeDeclarations = declarations.filter(
-        (declaration) => isRecord(declaration) && declaration.kind === 'node'
-      );
 
-      if (Array.isArray(value) && nodeDeclarations.length === 0) {
-        return;
-      }
-      if (nodeDeclarations.length === 0) return;
-      if (nodeDeclarations.length !== declarations.length) {
-        throw new Error(
-          `Plate node mapping owner "${owner.name}" must not mix node mappings and payload declarations in one "${format}" tuple.`
-        );
-      }
-
-      nodeDeclarations.forEach((declaration) => {
+      declarations.forEach((declaration) => {
         if (!isRecord(declaration)) {
           throw new Error(
             `Plate node mapping "${owner.name}/${format}" must be an object.`

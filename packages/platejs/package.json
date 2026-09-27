@@ -24,7 +24,8 @@
   },
   "files": [
     "dist/**/*",
-    "math/**/*"
+    "math/**/*",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "type": "module",
   "sideEffects": [
@@ -698,7 +699,6 @@
     "linkedom": "0.18.13",
     "lowlight": "^3.3.0",
     "mammoth": "^1.9.0",
-    "marked": "^15.0.12",
     "mermaid": "^11.6.1",
     "mime-types": "^2.1.35",
     "papaparse": "^5.5.3",
@@ -745,7 +745,6 @@
     "katex": "0.16.22",
     "linkedom": "^0.18.13",
     "mammoth": "^1.9.0",
-    "marked": "^15.0.12",
     "mermaid": "^11.6.1",
     "mime-types": "^2.1.35",
     "papaparse": "^5.5.3",
@@ -827,9 +826,6 @@
       "optional": true
     },
     "mammoth": {
-      "optional": true
-    },
-    "marked": {
       "optional": true
     },
     "mermaid": {

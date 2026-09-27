@@ -8,7 +8,6 @@ import {
   type ValueOf,
 } from '../../core';
 import { writeDataTransferFragment } from '../../dom';
-import { getPlateNodeMappingContributions } from '../../internal';
 import { createEditor } from '../editor';
 import { definePlugin } from '../plugin';
 
@@ -78,30 +77,6 @@ const seededShuffle = <T>(values: readonly T[], seed: number) => {
 };
 
 describe('product formats', () => {
-  it('retains product formats when the same declaration defines HTML hooks', () => {
-    const MixedPlugin = definePlugin('mixedFormat', {
-      schema: { element: schema.element.textBlock() },
-      formats: ({ defineFormats }) =>
-        defineFormats({
-          html: {
-            query: () => true,
-          },
-          markdown: {
-            kind: 'node',
-          },
-        }),
-    });
-    const editor = createEditor({ plugins: [MixedPlugin] });
-
-    expect(getPlateNodeMappingContributions(editor, 'markdown')).toEqual([
-      expect.objectContaining({
-        owner: 'mixedFormat',
-        targetPlugin: 'mixedFormat',
-        targetType: 'mixedFormat',
-      }),
-    ]);
-  });
-
   it('derives ordinary ownership from the owning plugin schema', () => {
     const CardPlugin = definePlugin('cardFormat', {
       schema: {

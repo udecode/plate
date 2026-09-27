@@ -13,12 +13,10 @@ export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children }) => children,
       },
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ decode, decoration, isInline, node, parseAttributes }) => {
           const props = parseAttributes(node.attributes);
           const paragraph =

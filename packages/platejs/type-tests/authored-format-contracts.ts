@@ -2,7 +2,7 @@ import {
   createEditor,
   DocumentChange,
   type EditorDocumentValue,
-  type EditorValueFromPlugins,
+  type ValueOf,
 } from 'platejs';
 import {
   authored,
@@ -64,9 +64,11 @@ async function verifyDocxSourceTypes() {
   const ordinary = await importDocx(new Blob(), { plugins });
 
   if (ordinary.ok) {
+    // Detached conversion types its document like an editor built from the same tuple.
     void (ordinary.document satisfies EditorDocumentValue<
-      EditorValueFromPlugins<typeof plugins>
+      ValueOf<typeof editor>
     >);
+    editor.update((tx) => tx.value.replace(ordinary.document));
     // @ts-expect-error Default imports do not retain a DOCX source.
     ordinary.source.dispose();
   }
@@ -91,7 +93,7 @@ async function verifyDocxSourceTypes() {
     // @ts-expect-error Literal false imports do not retain a DOCX source.
     disabled.source.dispose();
   }
-  const dynamicOptions: DocxImportOptions<typeof plugins, boolean> = {
+  const dynamicOptions: DocxImportOptions<boolean> = {
     plugins,
     retainSource: Math.random() > 0.5,
   };

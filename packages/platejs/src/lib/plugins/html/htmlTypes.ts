@@ -2,7 +2,6 @@ import type {
   ContentSlice,
   EditorDocumentValue,
   EditorSchemaValidationDiagnostic,
-  EditorValueFromPlugins,
   InternalEditorSchemaApi,
   NativeAuthoredProjectionDiagnostic,
   RootKey,
@@ -171,27 +170,23 @@ export type HtmlSerializeResult =
       ok: false;
     }>;
 
-export type HtmlParseOptions<
-  TPlugins extends readonly RuntimePluginReference[],
-> = Readonly<{
+export type HtmlParseOptions = Readonly<{
   collapseWhitespace?: boolean;
   limits?: Partial<HtmlParseLimits>;
   lossPolicy?: 'allow' | 'reject';
-  plugins: TPlugins;
+  plugins: readonly RuntimePluginReference[];
   schema?: EditorApplicationSchema;
 }>;
 
-export type HtmlSerializeOptions<
-  TPlugins extends readonly RuntimePluginReference[],
-> = Readonly<{
+export type HtmlSerializeOptions = Readonly<{
   lossPolicy?: 'allow' | 'reject';
-  plugins: TPlugins;
+  plugins: readonly RuntimePluginReference[];
   projection?: 'accepted' | 'proposed';
   schema?: EditorApplicationSchema;
 }>;
 
 export type HtmlEditorParseOptions = Omit<
-  HtmlParseOptions<readonly RuntimePluginReference[]>,
+  HtmlParseOptions,
   'plugins' | 'schema'
 >;
 
@@ -212,11 +207,3 @@ export type HtmlApi<V extends Value = Value> = Readonly<{
   ) => HtmlSliceParseResult<V>;
   serialize: (options?: HtmlEditorSerializeOptions) => HtmlSerializeResult;
 }>;
-
-export type HtmlDocumentValueFromPlugins<
-  TPlugins extends readonly RuntimePluginReference[],
-> = EditorDocumentValue<EditorValueFromPlugins<TPlugins>>;
-
-export type HtmlSliceValueFromPlugins<
-  TPlugins extends readonly RuntimePluginReference[],
-> = ContentSlice<EditorValueFromPlugins<TPlugins>>;

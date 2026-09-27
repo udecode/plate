@@ -1,9 +1,5 @@
 import { createRequire } from 'node:module';
 
-import type {
-  EditorValueFromPlugins,
-  RuntimePluginReference,
-} from '../../facade';
 import {
   parseHtmlSliceWithDocument,
   parseHtmlWithDocument,
@@ -36,20 +32,16 @@ const createServerHtmlDocument = (): Document => {
     .document;
 };
 
-export const parseHtml = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
+export const parseHtml = (
   source: string,
-  options: HtmlParseOptions<TPlugins>
-): HtmlDocumentParseResult<EditorValueFromPlugins<TPlugins>> =>
+  options: HtmlParseOptions
+): HtmlDocumentParseResult =>
   parseHtmlWithDocument(source, options, createServerHtmlDocument());
 
-export const parseHtmlSlice = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
+export const parseHtmlSlice = (
   source: string,
-  options: HtmlParseOptions<TPlugins>
-): HtmlSliceParseResult<EditorValueFromPlugins<TPlugins>> =>
+  options: HtmlParseOptions
+): HtmlSliceParseResult =>
   parseHtmlSliceWithDocument(source, options, createServerHtmlDocument());
 
 export type {

@@ -6,6 +6,8 @@ updated: 2026-09-27
 review_scope: exports
 current_review: 2026-09-27-exports-adversarial-audit-feedback
 reconciled_executions:
+  - 2026-09-25-document-conversion-contracts-design
+  - 2026-09-25-document-conversion-schema-admission-design
   - 2026-09-24-exports-first-principles-research-closure
   - 2026-09-24-exports-projection-menu-implementation
   - 2026-09-24-exports-final-repair
@@ -19,6 +21,11 @@ reconciled_executions:
   - 2026-09-26-document-conversion-vocabulary-design
   - 2026-09-26-document-conversion-vocabulary-doctrine-design
   - 2026-09-27-document-conversion-contracts-implementation
+  - 2026-09-27-document-conversion-architecture-corrections
+  - 2026-09-27-document-conversion-closure-repairs
+  - 2026-09-27-document-conversion-closure-repairs-final
+  - 2026-09-28-document-conversion-standalone-value-types
+  - 2026-09-28-document-conversion-open-findings
 review_history:
   - ../review-records/2026-09-24-exports-audit.json
   - ../review-records/2026-09-24-exports-final-pass.json

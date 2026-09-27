@@ -115,7 +115,6 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children }) =>
           children
             .split('\n')
@@ -130,7 +129,6 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
 
       markdown: {
         from: 'blockquote',
-        kind: 'node',
         decode: ({
           decodeNodes,
           decoration,
@@ -257,7 +255,6 @@ export const BaseHorizontalRulePlugin = definePlugin(PLUGINS.horizontalRule, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: () => '---',
       },
       html: {
@@ -268,7 +265,6 @@ export const BaseHorizontalRulePlugin = definePlugin(PLUGINS.horizontalRule, {
 
       markdown: {
         from: 'thematicBreak',
-        kind: 'node',
         decode: () => ({
           children: [{ text: '' }],
           type,

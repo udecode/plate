@@ -79,7 +79,6 @@ describe('Markdown node mapping compiler', () => {
                 type: 'paragraph',
               };
             },
-            kind: 'node',
           },
         });
       },
@@ -109,7 +108,6 @@ describe('Markdown node mapping compiler', () => {
                 type: 'strong',
               };
             },
-            kind: 'node',
             mark: true,
           },
         });
@@ -155,7 +153,6 @@ describe('Markdown node mapping compiler', () => {
         defineFormats({
           markdown: {
             from: type,
-            kind: 'node',
             decode: ({ node, parseAttributes }) =>
               node.attributes.some(
                 (attribute) =>
@@ -266,7 +263,6 @@ describe('Markdown node mapping compiler', () => {
             type: innerSchema3.type,
           }),
           from: 'html',
-          kind: 'node',
           priority: 10,
         },
       }),
@@ -279,7 +275,6 @@ describe('Markdown node mapping compiler', () => {
             type: innerSchema4.type,
           }),
           from: 'html',
-          kind: 'node',
           priority: 20,
         },
       }),
@@ -305,7 +300,6 @@ describe('Markdown node mapping compiler', () => {
               type: innerSchema5.type,
             }),
             from: 'html',
-            kind: 'node',
           },
         }),
       }))
@@ -330,7 +324,6 @@ describe('Markdown node mapping compiler', () => {
                 type: innerSchema6.type,
               }),
               from: 'html',
-              kind: 'node',
             },
             {
               decode: ({ schema: innerSchema7 }) => ({
@@ -338,7 +331,6 @@ describe('Markdown node mapping compiler', () => {
                 type: innerSchema7.type,
               }),
               from: 'html',
-              kind: 'node',
             },
           ],
         }),
@@ -358,7 +350,6 @@ describe('Markdown node mapping compiler', () => {
             type,
           }),
           from: 'html' as const,
-          kind: 'node' as const,
         };
         const formats = defineFormats({
           markdown: declaration,

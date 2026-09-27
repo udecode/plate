@@ -60,7 +60,6 @@ const CustomHeadingPlugin = definePlugin('customH1', {
           type: 'heading',
         }),
         from: 'heading',
-        kind: 'node',
       },
     }),
   schema: {
@@ -83,7 +82,6 @@ const CustomParagraphPlugin = definePlugin('customParagraph', {
           type: 'paragraph',
         }),
         from: 'paragraph',
-        kind: 'node',
       },
     }),
   schema: {
@@ -104,7 +102,6 @@ const CustomBoldPlugin = definePlugin('customBold', {
           }),
         encode: () => ({ children: [], type: 'strong' }),
         from: 'strong',
-        kind: 'node',
         mark: true,
       },
     }),

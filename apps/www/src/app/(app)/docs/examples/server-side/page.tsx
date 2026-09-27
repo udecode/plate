@@ -1,10 +1,6 @@
 import type { Metadata } from 'next';
 
-import {
-  createEditor,
-  ExitBreakPlugin,
-  TrailingBlockPlugin,
-} from 'platejs';
+import { serializeMarkdown } from 'platejs/markdown';
 
 import {
   type DocContentDoc,
@@ -50,18 +46,10 @@ export default function RSCPage() {
     // ... other necessary properties
   };
 
-  const editor = createEditor({
-    plugins: [
-      ...BaseEditorKit,
-
-      // Functionality
-      ExitBreakPlugin,
-      TrailingBlockPlugin,
-    ],
-    initialValue: [...basicBlocksValue, ...basicMarksValue, ...detailsValue],
-  });
-
-  const markdown = editor.api.markdown.serialize();
+  const markdown = serializeMarkdown(
+    { children: [...basicBlocksValue, ...basicMarksValue, ...detailsValue] },
+    { plugins: BaseEditorKit }
+  );
 
   if (!markdown.ok) throw new Error(markdown.diagnostics[0].message);
   const md = markdown.data;
@@ -76,12 +64,12 @@ export default function RSCPage() {
         content on the server, or working with React Server Components.
       </P>
 
-      <H3>Creating a Server-Side Editor</H3>
+      <H3>Converting Documents on the Server</H3>
       <P>
-        To use Plate on the server, you can leverage the{' '}
-        <Code>createEditor</Code>
-        function. This allows you to create and manipulate Plate documents
-        without a DOM environment.
+        Format functions such as <Code>serializeMarkdown</Code> convert a
+        document with your plugin list and need no DOM or editor instance. Use{' '}
+        <Code>createEditor</Code> on the server only when you transform the
+        document itself.
       </P>
 
       <H3>Example: Generating Markdown in a React Server Component</H3>

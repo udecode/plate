@@ -34,12 +34,10 @@ export const BaseEquationPlugin = definePlugin(PLUGINS.equation, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ node }) => node.latex,
       },
       markdown: {
         from: 'math',
-        kind: 'node',
         decode: ({ node }) => ({
           children: [{ text: '' }],
           latex: node.value,
@@ -65,12 +63,10 @@ export const BaseInlineEquationPlugin = definePlugin(PLUGINS.inlineEquation, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ node }) => node.latex,
       },
       markdown: {
         from: 'inlineMath',
-        kind: 'node',
         decode: ({ node }) => ({
           children: [{ text: '' }],
           latex: node.value,

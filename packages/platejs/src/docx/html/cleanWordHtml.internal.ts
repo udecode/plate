@@ -1,6 +1,6 @@
 import validator from 'validator';
 
-import { postCleanHtml } from '../../core';
+import { postCleanHtml } from '../../lib/plugins/html/htmlDom';
 
 type RtfImage = {
   hex: string;

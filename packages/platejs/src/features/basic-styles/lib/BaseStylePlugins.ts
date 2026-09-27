@@ -82,7 +82,6 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
 
         markdown: {
           from: 'span',
-          kind: 'node',
           mark: true,
           decode: ({ decode, decoration, node }) => {
             const value = getMarkdownStyleValue(
@@ -132,7 +131,6 @@ export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
 
       markdown: {
         from: 'span',
-        kind: 'node',
         mark: true,
         decode: ({ decode, decoration, node }) => {
           const value = getMarkdownStyleValue(node.attributes, 'color');
@@ -179,7 +177,6 @@ export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
 
       markdown: {
         from: 'span',
-        kind: 'node',
         mark: true,
         decode: ({ decode, decoration, node }) => {
           const value = getMarkdownStyleValue(node.attributes, 'font-family');
@@ -225,7 +222,6 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
 
       markdown: {
         from: 'span',
-        kind: 'node',
         mark: true,
         decode: ({ decode, decoration, node }) => {
           const value = getMarkdownStyleValue(node.attributes, 'font-size');
@@ -274,7 +270,6 @@ export const BaseFontWeightPlugin = definePlugin(PLUGINS.fontWeight, {
 
       markdown: {
         from: 'span',
-        kind: 'node',
         mark: true,
         decode: ({ decode, decoration, node }) => {
           const value = getMarkdownStyleValue(node.attributes, 'font-weight');

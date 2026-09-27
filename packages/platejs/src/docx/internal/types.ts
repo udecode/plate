@@ -1,5 +1,11 @@
 import type { AuthoredProjectionDiagnostic } from '../../authored';
-import type { Path, Range, Value } from '../../core';
+import type {
+  EditorSchemaRepairCode,
+  Path,
+  Range,
+  RootKey,
+  Value,
+} from '../../core';
 
 export type DocxImportLimits = Readonly<{
   maxComments: number;
@@ -29,6 +35,13 @@ export type DocxComment = Readonly<{
   parentId: string | null;
   resolved: boolean | null;
   target: Readonly<{ range: Range }> | null;
+}>;
+
+/** Canonical model location affected by one DOCX schema repair. */
+export type DocxModelLocation = Readonly<{
+  path: readonly number[];
+  property?: string;
+  root: RootKey;
 }>;
 
 type DocxPolicyDiagnostic<T extends object> =
@@ -111,6 +124,15 @@ export type DocxDiagnostic =
       path?: Path;
       root?: string;
       sourceId?: string;
+    }>
+  | DocxPolicyDiagnostic<{
+      code: 'schema-repair';
+      impact: 'lossless' | 'lossy';
+      inputs: readonly DocxModelLocation[];
+      message: string;
+      outputs: readonly DocxModelLocation[];
+      owner: 'document' | 'grammar' | 'property' | 'representation';
+      repair: EditorSchemaRepairCode;
     }>
   | DocxPolicyDiagnostic<{
       action: 'dropped' | 'replaced' | 'unwrapped';

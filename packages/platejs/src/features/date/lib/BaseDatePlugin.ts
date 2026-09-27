@@ -12,7 +12,6 @@ export const BaseDatePlugin = definePlugin(PLUGINS.date, {
     defineFormats({
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ node, parseAttributes }) => {
           const props = parseAttributes(node.attributes);
           const firstChild = node.children[0];

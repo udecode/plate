@@ -5,7 +5,7 @@ describe('createDefinePluginFormats', () => {
   it('preserves a combined self-format map', () => {
     const defineFormats = createDefinePluginFormats();
     const html = { decode: () => ({}) };
-    const markdown = { kind: 'node' };
+    const markdown = { priority: 1 };
     const declaration = Reflect.apply(defineFormats, undefined, [
       {
         html,
@@ -20,14 +20,14 @@ describe('createDefinePluginFormats', () => {
   it('binds every node declaration in a foreign-target tuple', () => {
     const TargetPlugin = definePlugin('target', {});
     const defineFormats = createDefinePluginFormats();
-    const first = { kind: 'node' };
-    const second = { kind: 'node' };
+    const first = { priority: 1 };
+    const second = { priority: 2 };
     const declaration = Reflect.apply(defineFormats, undefined, [
       TargetPlugin,
-      { 'application/x-node': [first, second] },
+      { markdown: [first, second] },
     ]);
 
-    expect(declaration['application/x-node']).toEqual([
+    expect(declaration.markdown).toEqual([
       { ...first, target: TargetPlugin },
       { ...second, target: TargetPlugin },
     ]);

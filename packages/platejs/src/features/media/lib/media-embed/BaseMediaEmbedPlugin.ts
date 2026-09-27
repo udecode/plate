@@ -155,7 +155,6 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
       markdown: [
         {
           from: type,
-          kind: 'node',
           decode: ({ caption, decode, node, parseAttributes }) => {
             const { src, ...props } = parseAttributes(node.attributes);
 

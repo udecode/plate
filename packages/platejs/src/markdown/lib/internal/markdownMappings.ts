@@ -60,7 +60,6 @@ type ErasedMarkdownNodeMapping = Readonly<{
     MdRootContent | undefined
   >;
   from?: string;
-  kind: 'node';
   mark?: boolean;
   priority?: number;
 }>;
@@ -84,7 +83,6 @@ const MARKDOWN_MAPPING_FIELDS = new Set([
   'decode',
   'encode',
   'from',
-  'kind',
   'mark',
   'priority',
 ]);
@@ -131,9 +129,6 @@ const validateMapping = (
         `Markdown node mapping "${owner}" has unknown field "${field}".`
       );
     }
-  }
-  if (declaration.kind !== 'node') {
-    throw new Error(`Markdown node mapping "${owner}" must use kind "node".`);
   }
   if (!declaration.decode && !declaration.encode) {
     throw new Error(

@@ -60,12 +60,10 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children }) => children,
       },
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ decode, decoration, node, parseAttributes }) => ({
           ...parseAttributes(node.attributes),
           children: decode(node.children, decoration),
@@ -160,12 +158,10 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       plainText: {
-        kind: 'node',
         encode: ({ children }) => children,
       },
       markdown: {
         from: type,
-        kind: 'node',
         decode: ({ decode, decoration, node, parseAttributes }) => ({
           ...parseAttributes(node.attributes),
           children: decode(node.children, decoration),

@@ -11,6 +11,11 @@ reconciled_executions:
   - 2026-09-26-document-conversion-vocabulary-design
   - 2026-09-26-document-conversion-vocabulary-doctrine-design
   - 2026-09-27-document-conversion-contracts-implementation
+  - 2026-09-27-document-conversion-architecture-corrections
+  - 2026-09-27-document-conversion-closure-repairs
+  - 2026-09-27-document-conversion-closure-repairs-final
+  - 2026-09-28-document-conversion-standalone-value-types
+  - 2026-09-28-document-conversion-open-findings
 review_history:
   - ../review-records/2026-09-25-imports-document-slice-loss-contract.json
   - ../review-records/2026-09-25-imports-codec-ontology-final.json
@@ -38,13 +43,12 @@ related:
 # Document import and conversion fidelity
 
 The [adversarial audit feedback](../../plans/artifacts/2026-09-27-document-conversion-audit-feedback/feedback.md)
-reopens implementation closure for HTML transfer parity, fragment admission,
+reopened implementation closure for HTML transfer parity, fragment admission,
 observable recovery, finalized AI output, DOCX cancellation and comment adoption.
-Three source probes reproduce two HTML discrepancies and silent inline Markdown
-truncation. Existing proof remains valid for its exercised cases. Public naming
-and format ownership remain settled; diagnostic deletion and DOCX native-state
-deletion are not accepted consequences of this review. Typed persistence
-flattening is a design candidate, not an adopted contract.
+The [corrections](../../plans/2026-09-27-document-conversion-architecture-corrections.md)
+and [closure repairs](../../plans/2026-09-27-document-conversion-closure-repairs.md)
+adopt those repairs. Public naming and format ownership remain settled;
+diagnostic deletion and DOCX native-state deletion are not accepted.
 
 **Use direct format-owned parse and serialize operations.** Do not introduce a
 public `DocumentCodec`, `DocumentFormat`, format registry, dispatcher,
@@ -53,10 +57,11 @@ These formats share private compilation mechanics, but they do not share one
 round-trip law, failure contract, environment, extras shape, retained-source
 lifetime, or polymorphic caller.
 
-Reserve `codec` for a typed current persistence pair. `EditorValueCodec` maps
-live state to admitted canonical JSON and owns both direction laws.
-`EditorValuePersistence` separately owns the envelope version and decode-only
-legacy inputs. Browser MIME negotiation is a
+Reserve `encode`/`decode` for typed paired representations.
+`EditorValuePersistence<TValue, TEncoded>` directly owns the current `encode`
+and `decode` pair, its positive envelope `version`, and optional decode-only
+`legacyDecoders`; reusable `valueCodecs` pairs spread into it with an explicit
+version. Browser MIME negotiation is a
 `DataTransferFormat`; plugin syntax declarations are feature format mappings.
 The former `HostCodec` and plugin `codecs` nouns are hard-renamed with no
 compatibility aliases on `next`.
@@ -74,13 +79,17 @@ HTML exposes `parseHtml` and `parseHtmlSlice`; Markdown exposes
 parse consumes a complete document, so `Document` is redundant while slice and
 inline carriers stay explicit. Matching editor APIs use `parse`, `parseSlice`,
 and `parseInline`. Plate privately captures and compiles plugins and schema;
-callers do not construct an editor or public conversion context. HTML and
-Markdown stay synchronous. Async DOCX import captures every conversion input
+callers do not construct an editor or public conversion context. Standalone
+functions take any plugin list and type documents as `Value`, like
+`createEditor({ plugins })`; editor methods carry that editor's value type, and
+exact document types come from generated editor types. Deriving an exact value
+over a runtime tuple exceeded TypeScript's instantiation depth with a full
+application kit. HTML and Markdown stay synchronous. Async DOCX import captures every conversion input
 before its first await and rejects cancellation with the signal reason.
 
 Use `parse`/`serialize` for text syntax conversion, matching parse5, unified,
 and ProseMirror. Reserve `encode`/`decode` for typed paired representations with
-direction laws, including `EditorValueCodec`, plugin mappings, and
+direction laws, including `EditorValuePersistence`, plugin mappings, and
 DataTransfer formats. DOCX remains `importDocx`/`exportDocx`: ZIP parts,
 comments, retained source, cancellation, assets, and native review make it a
 file-package workflow rather than another text parser.
@@ -128,8 +137,11 @@ plugin schema decides whether model data is canonical; it does not decide what
 unknown HTML, Markdown, or OOXML means. Each fit repair records whether it
 preserves every input model fact or loses one. HTML, Markdown, and DOCX reject
 lossy recovery by default and accept it only under their explicit
-`lossPolicy: 'allow'`, with the exact warning. Callers that require no recovery
-can reject any warning without another parser mode.
+`lossPolicy: 'allow'`, with the exact warning. DOCX reports schema fitting as
+`schema-repair` and mapping loss as `unsupported-content` under that policy;
+Plate merges adjacent text left by its own revision projection before fitting,
+so repairs describe schema changes rather than projection artifacts. Callers
+that require no recovery can reject any warning without another parser mode.
 
 An unknown model element under a closed schema is never converted generically
 to a paragraph. An open schema's lawful `unknown: 'preserve'` element stays
@@ -154,6 +166,21 @@ one `DataTransferReport` only after an accepted commit, completed write, or
 final unhandled result. This prevents HTML/Word parse warnings from disappearing
 inside `ContentSlice | null` without inventing a universal conversion result or
 changing `insertData` into an analysis API.
+
+Clipboard HTML runs the same parse5 safety and admission operation as
+`parseHtmlSlice`, with `lossPolicy: 'allow'`. Transfer negotiation isolates
+each mapping candidate: a mapping that throws or returns schema-invalid output
+is reported to the lifecycle error sink and the next lower-priority candidate
+decodes. Direct `parseHtml` and `parseHtmlSlice` throw that programmer failure
+instead.
+
+HTML allows block content such as `<img>` inside a paragraph; the editor grammar
+does not. The HTML decoder lifts each disallowed block child out of its text
+block into a sibling, splitting the text around it, so parse and paste keep the
+image instead of producing a schema-invalid slice that insertion would drop.
+When a richer format fails, the built-in plain-text fallback starts new lines
+with the root default block whenever the anchor block cannot be constructed
+without required properties, such as a heading level.
 
 ## Fidelity and source ownership
 
@@ -195,13 +222,15 @@ editor schema remains the sole model authority.
 ## Server HTML
 
 Browser and server HTML share parse5 for WHATWG tree construction. The browser
-materializes parse5 nodes directly into the owner document of a detached
-template fragment without an HTML injection sink. `platejs/html/server` uses
-LinkeDOM as
-an inert DOM facade for feature mappings. The server path accepts explicit
-byte, node, and depth limits and does not mutate ambient DOM globals or evaluate
-scripts/resources. Parse5 appears only in graphs that retain HTML parsing;
-non-HTML graphs exclude it. LinkeDOM and Node built-ins remain server-only.
+materializes parse5 nodes node by node into a detached
+`document.implementation.createHTMLDocument('')` document, which has no
+browsing context, without an HTML injection sink. `platejs/html/server` uses
+LinkeDOM as an inert DOM facade for feature mappings. Both paths accept explicit
+byte, node, and depth limits and do not mutate ambient DOM globals or evaluate
+scripts/resources. The core editor installs the HTML capability that clipboard
+paste uses, so every Plate graph that creates or compiles an editor includes
+parse5; raw Plite graphs exclude it. LinkeDOM and Node built-ins remain
+server-only.
 
 The production public entrypoint passes the frozen 10 KB through 3.17 MB
 benchmark, malformed/security/mapping corpus, SSR and packed-consumer checks,

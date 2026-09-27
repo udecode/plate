@@ -10,7 +10,6 @@ import type {
   EditorApplicationSchema,
   EditorCoreStateView,
   EditorDocumentValue,
-  EditorValueFromPlugins,
   EditorSchemaValidationDiagnostic,
   Element,
   Nullable,
@@ -281,36 +280,20 @@ export type MarkdownSerializePolicy = Readonly<{
   withBlockId?: boolean;
 }>;
 
-export type MarkdownParseOptions<
-  TPlugins extends readonly RuntimePluginReference[],
-> = MarkdownParsePolicy &
+export type MarkdownParseOptions = MarkdownParsePolicy &
   Readonly<{
-    plugins: TPlugins;
+    plugins: readonly RuntimePluginReference[];
     schema?: EditorApplicationSchema;
   }>;
 
-export type MarkdownSerializeOptions<
-  TPlugins extends readonly RuntimePluginReference[],
-> = MarkdownSerializePolicy &
+export type MarkdownSerializeOptions = MarkdownSerializePolicy &
   Readonly<{
-    plugins: TPlugins;
+    plugins: readonly RuntimePluginReference[];
     schema?: EditorApplicationSchema;
   }>;
 
 export type MarkdownEditorSerializeOptions = MarkdownSerializePolicy &
   Readonly<{ document?: EditorDocumentValue }>;
-
-export type MarkdownDocumentParseResultFromPlugins<
-  TPlugins extends readonly RuntimePluginReference[],
-> = MarkdownDocumentParseResult<EditorValueFromPlugins<TPlugins>>;
-
-export type MarkdownSliceParseResultFromPlugins<
-  TPlugins extends readonly RuntimePluginReference[],
-> = MarkdownSliceParseResult<EditorValueFromPlugins<TPlugins>>;
-
-export type MarkdownDocumentValueFromPlugins<
-  TPlugins extends readonly RuntimePluginReference[],
-> = EditorDocumentValue<EditorValueFromPlugins<TPlugins>>;
 
 export type MarkdownConversionContext = Readonly<{
   isBlock: (node: Descendant) => boolean;

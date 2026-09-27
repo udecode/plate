@@ -55,7 +55,6 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
 
       markdown: {
         from: 'heading',
-        kind: 'node',
         decode: ({ decode, decoration, node }) =>
           isHeadingLevel(node.depth)
             ? {

@@ -95,3 +95,50 @@ for (const mode of ['native', 'event'] as const) {
     }
   });
 }
+
+for (const mode of ['native', 'event'] as const) {
+  test(`HTML clipboard keeps safe text around unsafe markup via ${mode}`, async ({
+    context,
+    page,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto('/blocks/html-demo');
+    const root = page.locator('[contenteditable="true"]');
+    const editor = createBrowserEditorHarness(page, 'html-clipboard', root);
+    await editor.ready({ editor: 'visible', text: 'HTML' });
+    await root.getByRole('heading', { name: 'HTML', exact: true }).click();
+    await root.press('ControlOrMeta+A');
+
+    const html =
+      '<p onclick="window.__plateUnsafe = true">Keep <a href="javascript:void(0)">safe text</a> and more</p><p><img src="x" onerror="window.__plateUnsafe = true">After image</p>';
+    const text = 'Keep safe text and more\nAfter image';
+
+    if (mode === 'native') {
+      await page.evaluate(
+        async ({ html: markup, text: plain }) => {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              'text/html': new Blob([markup], { type: 'text/html' }),
+              'text/plain': new Blob([plain], { type: 'text/plain' }),
+            }),
+          ]);
+        },
+        { html, text }
+      );
+      await root.press('ControlOrMeta+V');
+    } else {
+      await editor.clipboard.pasteEventPayload({ html, text });
+    }
+
+    await expect(root).toContainText('Keep safe text and more');
+    await expect(root).toContainText('After image');
+    expect(await editor.get.modelText()).toContain('Keep safe text and more');
+    await expect(root.locator('a[href^="javascript:"]')).toHaveCount(0);
+    await expect(root.locator('[onclick], [onerror]')).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => (window as Window & { __plateUnsafe?: boolean }).__plateUnsafe
+      )
+    ).toBeUndefined();
+  });
+}

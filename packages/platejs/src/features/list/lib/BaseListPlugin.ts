@@ -6,14 +6,12 @@ import {
   ElementApi,
   getInjectMatch,
   matchBlockStart,
-  isHtmlBlockElement,
   PathApi,
   PLUGINS,
   property,
   schema,
   target,
   TextApi,
-  traverseHtmlElements,
   type DefinitionOf,
   type Descendant,
   type EditorDocumentValue,
@@ -32,6 +30,10 @@ import {
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
+import {
+  isHtmlBlockElement,
+  traverseHtmlElements,
+} from '../../../lib/plugins/html/htmlDom';
 import { BaseIndentPlugin } from '../../indent';
 
 export const ListStyle = {
@@ -927,7 +929,6 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
   .extend(({ defineFormats }) => ({
     formats: defineFormats(BaseParagraphPlugin, {
       plainText: {
-        kind: 'node',
         priority: 40,
         encode: ({ children, node }) => {
           if (!node.listType) return undefined;
@@ -949,7 +950,6 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       },
       markdown: {
         from: 'list',
-        kind: 'node',
         priority: 40,
         decode: ({ build, node, registry }) => {
           const imageType = registry.type(PLUGINS.image);

@@ -17,17 +17,21 @@ import {
   type EditorDocumentValue,
   type EditorSchemaIdentity,
   type EditorStateSchemaApi,
-  type EditorValueFromPlugins,
   type Path,
   type Point,
   type Range,
   type Value,
 } from '../../../core';
-import type { RuntimePluginReference } from '../../../facade';
+import type {
+  InternalEditorSchemaApi,
+  RuntimePluginReference,
+} from '../../../facade';
 import { withPlateFormatCompilation } from '../../../lib/editor/withPlite';
 import {
+  coalesceAdjacentText,
   compileHtmlElementDecoder,
   HtmlPlugin,
+  type HtmlMappingLoss,
 } from '../../../lib/plugins/html/HtmlPlugin';
 import { cleanWordHtml } from '../../html/cleanWordHtml.internal';
 import { throwIfDocxAborted } from '../../internal/abort';
@@ -89,19 +93,24 @@ export type DocxAuthoredTrust =
       ) => boolean;
     }>;
 
-export type DocxImportOptions<
-  TPlugins extends readonly RuntimePluginReference[],
-  TRetainSource extends boolean = false,
-> = Readonly<{
-  authoredTrust?: DocxAuthoredTrust;
-  limits?: Partial<DocxImportLimits>;
-  lossPolicy?: 'allow' | 'reject';
-  plugins: TPlugins;
-  /** Retain the admitted package and import correspondence for later export. */
-  retainSource?: TRetainSource;
-  schema?: EditorApplicationSchema;
-  signal?: AbortSignal;
-}>;
+export type DocxImportOptions<TRetainSource extends boolean = false> =
+  Readonly<{
+    authoredTrust?: DocxAuthoredTrust;
+    limits?: Partial<DocxImportLimits>;
+    lossPolicy?: 'allow' | 'reject';
+    plugins: readonly RuntimePluginReference[];
+    schema?: EditorApplicationSchema;
+    signal?: AbortSignal;
+  }> &
+    ([TRetainSource] extends [true]
+      ? Readonly<{
+          /** Retain the admitted package and import correspondence for later export. */
+          retainSource: true;
+        }>
+      : Readonly<{
+          /** Retain the admitted package and import correspondence for later export. */
+          retainSource?: TRetainSource;
+        }>);
 
 type DocxImportFailure = Readonly<{
   diagnostics: readonly [DocxErrorDiagnostic, ...DocxDiagnostic[]];
@@ -119,9 +128,12 @@ type DocxImportSuccess<
 }> &
   (TRetainSource extends true ? Readonly<{ source: DocxSource }> : {});
 
-export type DocxImportResult<TRetainSource extends boolean, V extends Value> =
+type DocxImportOutcome<TRetainSource extends boolean, V extends Value> =
   | DocxImportFailure
   | DocxImportSuccess<TRetainSource, V>;
+
+export type DocxImportResult<TRetainSource extends boolean = false> =
+  DocxImportOutcome<TRetainSource, Value>;
 
 type DocxDomRealm = Readonly<{
   abortError: () => DOMException;
@@ -134,11 +146,23 @@ type DocxDomRealm = Readonly<{
   textNodeType: number;
 }>;
 
+type DocxSchemaRepairDiagnostic = Extract<
+  DocxDiagnostic,
+  { code: 'schema-repair' }
+>;
+
 type DocxImportTarget<V extends Value> = Readonly<{
   assertDocument: (document: EditorDocumentValue) => void;
-  decodeHtml: (element: HTMLElement) => readonly Descendant[] | null;
+  decodeHtml: (
+    element: HTMLElement,
+    onLoss: (loss: HtmlMappingLoss) => void
+  ) => readonly Descendant[] | null;
   dom: DocxDomRealm;
   fitDocument: (document: EditorDocumentValue) => EditorDocumentValue<V>;
+  fitReportedDocument: (document: EditorDocumentValue) => Readonly<{
+    document: EditorDocumentValue<V>;
+    repairs: readonly DocxSchemaRepairDiagnostic[];
+  }>;
   markerNonce: string;
   parseAuthored: (value: unknown) => EditorDocumentValue<V>;
   projectAuthored: (
@@ -277,10 +301,25 @@ const compileDocxImportTarget = <V extends Value>(
 
         return Object.freeze({
           assertDocument: (document) => editorSchema.assertDocument(document),
-          decodeHtml,
+          decodeHtml: (element, onLoss) => decodeHtml(element, { onLoss }),
           dom,
           fitDocument: (document) =>
             editorSchema.fitDocument(document) as EditorDocumentValue<V>,
+          fitReportedDocument: (document) => {
+            // Revision projection splits text runs; merging them first keeps
+            // the report about schema repairs rather than projection artifacts.
+            const report = (
+              editorSchema as InternalEditorSchemaApi
+            ).fitDocumentWithReport({
+              ...document,
+              children: coalesceAdjacentText(document.children),
+            });
+
+            return Object.freeze({
+              document: report.document as EditorDocumentValue<V>,
+              repairs: Object.freeze(report.repairs.map(repairDiagnostic)),
+            });
+          },
           markerNonce: createMarkerNonce(),
           parseAuthored,
           projectAuthored,
@@ -290,6 +329,45 @@ const compileDocxImportTarget = <V extends Value>(
       })
   );
 };
+
+const repairLocation = (
+  location: ReturnType<
+    InternalEditorSchemaApi['fitDocumentWithReport']
+  >['repairs'][number]['inputs'][number]
+) =>
+  Object.freeze({
+    path: location.path,
+    ...(location.property ? { property: location.property } : {}),
+    root: location.root,
+  });
+
+const repairDiagnostic = (
+  repair: ReturnType<
+    InternalEditorSchemaApi['fitDocumentWithReport']
+  >['repairs'][number]
+): DocxSchemaRepairDiagnostic =>
+  Object.freeze({
+    code: 'schema-repair' as const,
+    impact: repair.impact,
+    inputs: Object.freeze(repair.inputs.map(repairLocation)),
+    message: `DOCX schema fitting applied "${repair.code}".`,
+    outputs: Object.freeze(repair.outputs.map(repairLocation)),
+    owner: repair.owner,
+    repair: repair.code,
+    severity: 'warning' as const,
+  });
+
+const mappingLossDiagnostic = (
+  loss: HtmlMappingLoss,
+  feature: string
+): DocxDiagnostic =>
+  Object.freeze({
+    action: loss.action,
+    code: 'unsupported-content' as const,
+    feature,
+    message: loss.message,
+    severity: 'warning' as const,
+  });
 
 const wordAttribute = (element: Element, name: string) =>
   element.getAttributeNS(WORD_NAMESPACE, name) ??
@@ -1164,17 +1242,22 @@ const importProjection = async (
       const wrapper = clone.ownerDocument.createElement('div');
 
       wrapper.innerHTML = clone.innerHTML;
-      let nodes = target.decodeHtml(wrapper);
+      let losses: HtmlMappingLoss[] = [];
+      let nodes = target.decodeHtml(wrapper, (loss) => losses.push(loss));
 
       if (!nodes?.every((node) => ElementApi.isElement(node))) {
         const paragraph = clone.ownerDocument.createElement('p');
 
         paragraph.innerHTML = clone.innerHTML;
         wrapper.replaceChildren(paragraph);
-        nodes = target.decodeHtml(wrapper);
+        losses = [];
+        nodes = target.decodeHtml(wrapper, (loss) => losses.push(loss));
       }
       if (nodes?.every((node) => ElementApi.isElement(node))) {
         bodyById.set(id, [...nodes]);
+        diagnostics.push(
+          ...losses.map((loss) => mappingLossDiagnostic(loss, 'comment'))
+        );
       }
     }
     dl.remove();
@@ -1202,7 +1285,9 @@ const importProjection = async (
     target.dom.parseHtml
   );
   const element = target.dom.parseHtml(cleanedHtml).body;
-  const nodes = target.decodeHtml(element);
+  const nodes = target.decodeHtml(element, (loss) =>
+    diagnostics.push(mappingLossDiagnostic(loss, 'content'))
+  );
 
   if (!nodes) throw new Error('DOCX HTML could not be decoded.');
 
@@ -1398,6 +1483,7 @@ const failed = (
 
 const isVisibleLoss = (diagnostic: DocxDiagnostic) =>
   diagnostic.code === 'lossy-content' ||
+  (diagnostic.code === 'schema-repair' && diagnostic.impact === 'lossy') ||
   diagnostic.code === 'resource-omitted' ||
   (diagnostic.code === 'unsupported-content' &&
     diagnostic.action !== 'unwrapped');
@@ -1451,7 +1537,7 @@ const importBoundedDocx = async <V extends Value>(
   lossPolicy: 'allow' | 'reject',
   authoredTrust: DocxAuthoredTrust | undefined,
   signal?: AbortSignal
-): Promise<DocxImportResult<false, V>> => {
+): Promise<DocxImportOutcome<false, V>> => {
   const source = pkg.entries.get('word/document.xml');
 
   if (!source) {
@@ -1501,13 +1587,17 @@ const importBoundedDocx = async <V extends Value>(
   const stripped = stripCommentMarkers(proposedWithMarkers, codec);
   let proposed: EditorDocumentValue<V>;
   let accepted: EditorDocumentValue<V>;
+  let proposedRepairs: readonly DocxSchemaRepairDiagnostic[];
+  let acceptedRepairs: readonly DocxSchemaRepairDiagnostic[];
   let imported: readonly AuthoredImportedRevision[] | null;
 
   try {
-    proposed = target.fitDocument({ children: rootValue(stripped.nodes) });
-    accepted = target.fitDocument({
-      children: rootValue(projectNodes(projection.nodes, new Set(), codec)),
-    });
+    ({ document: proposed, repairs: proposedRepairs } =
+      target.fitReportedDocument({ children: rootValue(stripped.nodes) }));
+    ({ document: accepted, repairs: acceptedRepairs } =
+      target.fitReportedDocument({
+        children: rootValue(projectNodes(projection.nodes, new Set(), codec)),
+      }));
     imported = createSparseImportedRevisions(
       target as DocxImportTarget<Value>,
       projection.nodes,
@@ -1546,6 +1636,22 @@ const importBoundedDocx = async <V extends Value>(
         severity: 'warning',
       });
     }
+  }
+  const reportedRepairs = new Set<string>();
+
+  for (const repair of resultDocument === proposed
+    ? proposedRepairs
+    : [...acceptedRepairs, ...proposedRepairs]) {
+    const key = JSON.stringify([
+      repair.repair,
+      repair.owner,
+      repair.inputs,
+      repair.outputs,
+    ]);
+
+    if (reportedRepairs.has(key)) continue;
+    reportedRepairs.add(key);
+    diagnostics.push(repair);
   }
   const importedComments = [...comments.values()].map((metadata) => {
     const endpoint = stripped.endpoints.get(metadata.id);
@@ -1633,7 +1739,7 @@ const runDocxImport = async <V extends Value, TRetainSource extends boolean>(
     retainSource: TRetainSource;
     signal: AbortSignal | undefined;
   }>
-): Promise<DocxImportResult<TRetainSource, V>> => {
+): Promise<DocxImportOutcome<TRetainSource, V>> => {
   try {
     const pkg = await readBoundedDocxPackage(
       source,
@@ -1654,7 +1760,7 @@ const runDocxImport = async <V extends Value, TRetainSource extends boolean>(
 
     throwIfDocxAborted(options.signal, target.dom.abortError);
     if (!result.ok || options.retainSource !== true) {
-      return result as DocxImportResult<TRetainSource, V>;
+      return result as DocxImportOutcome<TRetainSource, V>;
     }
     throwIfDocxAborted(options.signal, target.dom.abortError);
 
@@ -1667,7 +1773,7 @@ const runDocxImport = async <V extends Value, TRetainSource extends boolean>(
         limits: options.limits,
         schema: target.schemaIdentity,
       }),
-    }) as DocxImportResult<TRetainSource, V>;
+    }) as DocxImportOutcome<TRetainSource, V>;
   } catch (error) {
     throwIfDocxAborted(options.signal, target.dom.abortError);
     if (error instanceof DocxPackageError) {
@@ -1679,13 +1785,10 @@ const runDocxImport = async <V extends Value, TRetainSource extends boolean>(
 };
 
 /** Import a bounded DOCX package against one synchronously captured target. */
-export function importDocx<
-  const TPlugins extends readonly RuntimePluginReference[],
-  const TRetainSource extends boolean = false,
->(
+export function importDocx<const TRetainSource extends boolean = false>(
   source: ArrayBuffer | Blob,
-  options: DocxImportOptions<TPlugins, TRetainSource>
-): Promise<DocxImportResult<TRetainSource, EditorValueFromPlugins<TPlugins>>> {
+  options: DocxImportOptions<TRetainSource>
+): Promise<DocxImportResult<TRetainSource>> {
   const signal = options?.signal;
 
   if (signal?.aborted) {
@@ -1713,11 +1816,7 @@ export function importDocx<
   const lossPolicy = options.lossPolicy ?? 'reject';
   const retainSource = (options.retainSource ?? false) as TRetainSource;
   const plugins = Object.freeze([...options.plugins]);
-  const target = compileDocxImportTarget<EditorValueFromPlugins<TPlugins>>(
-    plugins,
-    options.schema,
-    dom
-  );
+  const target = compileDocxImportTarget<Value>(plugins, options.schema, dom);
   const capturedSource =
     source instanceof ArrayBuffer
       ? source.slice(0)

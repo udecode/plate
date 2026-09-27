@@ -36,8 +36,6 @@ import { markdownMappingsRegistryKey } from './internal/markdownMappings';
 import type {
   AllowNodeConfig,
   MarkdownDocumentParseResult,
-  MarkdownDocumentParseResultFromPlugins,
-  MarkdownDocumentValueFromPlugins,
   MarkdownEditorSerializeOptions,
   MarkdownParseOptions,
   MarkdownParsePolicy,
@@ -45,7 +43,6 @@ import type {
   MarkdownSerializeOptions,
   MarkdownSerializeResult,
   MarkdownSliceParseResult,
-  MarkdownSliceParseResultFromPlugins,
   MarkdownSyncPluggable,
   MarkdownWarningDiagnostic,
 } from './types';
@@ -356,50 +353,42 @@ const withDetachedMarkdownRuntime = <T>(
       )
   );
 
-export const parseMarkdown = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
+export const parseMarkdown = (
   source: string,
-  options: MarkdownParseOptions<TPlugins>
-): MarkdownDocumentParseResultFromPlugins<TPlugins> => {
+  options: MarkdownParseOptions
+): MarkdownDocumentParseResult => {
   const { plugins, schema, ...policy } = options;
 
   return withDetachedMarkdownRuntime({ plugins, schema }, (runtime) =>
     parseMarkdownDocumentWithRuntime(runtime, source, policy)
-  ) as MarkdownDocumentParseResultFromPlugins<TPlugins>;
+  );
 };
 
-export const parseMarkdownSlice = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
+export const parseMarkdownSlice = (
   source: string,
-  options: MarkdownParseOptions<TPlugins>
-): MarkdownSliceParseResultFromPlugins<TPlugins> => {
+  options: MarkdownParseOptions
+): MarkdownSliceParseResult => {
   const { plugins, schema, ...policy } = options;
 
   return withDetachedMarkdownRuntime({ plugins, schema }, (runtime) =>
     parseMarkdownSliceWithRuntime(runtime, source, policy)
-  ) as MarkdownSliceParseResultFromPlugins<TPlugins>;
+  );
 };
 
-export const parseMarkdownInline = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
+export const parseMarkdownInline = (
   source: string,
-  options: MarkdownParseOptions<TPlugins>
-): MarkdownSliceParseResultFromPlugins<TPlugins> => {
+  options: MarkdownParseOptions
+): MarkdownSliceParseResult => {
   const { plugins, schema, ...policy } = options;
 
   return withDetachedMarkdownRuntime({ plugins, schema }, (runtime) =>
     parseMarkdownInlineWithRuntime(runtime, source, policy)
-  ) as MarkdownSliceParseResultFromPlugins<TPlugins>;
+  );
 };
 
-export const serializeMarkdown = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
-  document: MarkdownDocumentValueFromPlugins<TPlugins>,
-  options: MarkdownSerializeOptions<TPlugins>
+export const serializeMarkdown = (
+  document: EditorDocumentValue,
+  options: MarkdownSerializeOptions
 ): MarkdownSerializeResult => {
   const { plugins, schema, ...policy } = options;
 

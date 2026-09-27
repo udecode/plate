@@ -49,7 +49,6 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
       defineFormats({
         markdown: {
           from: 'footnoteDefinition',
-          kind: 'node',
           decode: ({ decodeNodes, decoration, node, registry }) => {
             if (!isNonBlankRef(node.identifier)) return undefined;
 
@@ -136,7 +135,6 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
     defineFormats({
       markdown: {
         from: 'footnoteReference',
-        kind: 'node',
         decode: ({ node }) =>
           isNonBlankRef(node.identifier)
             ? {

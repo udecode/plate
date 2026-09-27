@@ -581,7 +581,7 @@ import {
 const documentTitle = defineStateField<string>({
   key: "document.title",
   initial: () => "Untitled",
-  persist: valueCodecs.string,
+  persist: { ...valueCodecs.string, version: 1 },
 });
 
 const TitleInput = () => {

@@ -1,9 +1,4 @@
-import type {
-  EditorDocumentValue,
-  EditorValueFromPlugins,
-  RuntimePluginReference,
-} from '../../../facade';
-import type { Editor } from '../../editor';
+import type { EditorDocumentValue } from '../../../facade';
 import { withPlateFormatCompilation } from '../../editor/withPlite';
 import { createBrowserHtmlDocument } from './htmlAst';
 import {
@@ -21,35 +16,25 @@ import type {
   HtmlWarningDiagnostic,
 } from './htmlTypes';
 
-export const parseHtmlWithDocument = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
+export const parseHtmlWithDocument = (
   source: string,
-  options: HtmlParseOptions<TPlugins>,
+  options: HtmlParseOptions,
   ownerDocument: Document
-): HtmlDocumentParseResult<EditorValueFromPlugins<TPlugins>> =>
+): HtmlDocumentParseResult =>
   withPlateFormatCompilation(
     {
       plugins: [HtmlPlugin, ...options.plugins],
       ...(options.schema ? { schema: options.schema } : {}),
     },
     ({ editor, readState }) =>
-      parseHtmlWithEditor(
-        editor as unknown as Editor,
-        source,
-        options,
-        ownerDocument,
-        readState
-      ) as HtmlDocumentParseResult<EditorValueFromPlugins<TPlugins>>
+      parseHtmlWithEditor(editor, source, options, ownerDocument, readState)
   );
 
-export const parseHtmlSliceWithDocument = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
+export const parseHtmlSliceWithDocument = (
   source: string,
-  options: HtmlParseOptions<TPlugins>,
+  options: HtmlParseOptions,
   ownerDocument: Document
-): HtmlSliceParseResult<EditorValueFromPlugins<TPlugins>> =>
+): HtmlSliceParseResult =>
   withPlateFormatCompilation(
     {
       plugins: [HtmlPlugin, ...options.plugins],
@@ -57,35 +42,29 @@ export const parseHtmlSliceWithDocument = <
     },
     ({ editor, readState }) =>
       parseHtmlSliceWithEditor(
-        editor as unknown as Editor,
+        editor,
         source,
         options,
         ownerDocument,
         readState
-      ) as HtmlSliceParseResult<EditorValueFromPlugins<TPlugins>>
+      )
   );
 
-export const parseHtml = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
+export const parseHtml = (
   source: string,
-  options: HtmlParseOptions<TPlugins>
-): HtmlDocumentParseResult<EditorValueFromPlugins<TPlugins>> =>
+  options: HtmlParseOptions
+): HtmlDocumentParseResult =>
   parseHtmlWithDocument(source, options, createBrowserHtmlDocument());
 
-export const parseHtmlSlice = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
+export const parseHtmlSlice = (
   source: string,
-  options: HtmlParseOptions<TPlugins>
-): HtmlSliceParseResult<EditorValueFromPlugins<TPlugins>> =>
+  options: HtmlParseOptions
+): HtmlSliceParseResult =>
   parseHtmlSliceWithDocument(source, options, createBrowserHtmlDocument());
 
-export const serializeHtml = <
-  const TPlugins extends readonly RuntimePluginReference[],
->(
-  document: EditorDocumentValue<EditorValueFromPlugins<TPlugins>>,
-  options: HtmlSerializeOptions<TPlugins>
+export const serializeHtml = (
+  document: EditorDocumentValue,
+  options: HtmlSerializeOptions
 ): HtmlSerializeResult =>
   withPlateFormatCompilation(
     {

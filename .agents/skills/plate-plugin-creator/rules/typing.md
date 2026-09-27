@@ -214,7 +214,6 @@ formats: ({ defineFormats, schema: { type } }) =>
   defineFormats({
     markdown: {
       from: type,
-      kind: 'node',
       decode: ({ node }) => ({ children: node.children, type }),
       encode: ({ node }) => ({
         attributes: [],

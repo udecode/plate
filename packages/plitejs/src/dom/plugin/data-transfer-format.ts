@@ -43,6 +43,7 @@ import {
   type CompiledEditorSchema,
   type CompiledSchemaProperty,
 } from '../../core/schema-compiler';
+import { EditorSchemaValidationError } from '../../core/schema-validation';
 import { getSelection as getEditorSelection } from '../../interfaces/editor';
 
 const DATA_TRANSFER_FORMATS = definePluginPoint<
@@ -424,7 +425,20 @@ const createPlainTextFallbackBlocks = <V extends Value>(
         }) as DescendantIn<V>
     );
   }
-  const block = state.schema.create(blockType);
+  const block = (() => {
+    try {
+      return state.schema.create(blockType);
+    } catch (error) {
+      if (!(error instanceof EditorSchemaValidationError)) throw error;
+      // A block with required construction properties, such as a heading
+      // level, cannot be default-built; new lines use the root default block.
+      const fallback = state.schema.createDefaultRootChild();
+
+      return NodeApi.isElement(fallback) ? fallback : null;
+    }
+  })();
+
+  if (!block) return null;
   const wrapping = state.schema.findWrapping(block, createText(''));
 
   if (!wrapping) return null;
