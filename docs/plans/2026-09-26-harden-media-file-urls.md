@@ -75,10 +75,10 @@ Blocked condition:
 Task state:
 - task_type: registry UI hardening
 - task_complexity: normal
-- current_phase: PR / tracker sync
-- current_phase_status: in_progress
-- next_phase: closeout
-- goal_status: active
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: none
+- goal_status: complete
 
 Current verdict:
 - verdict: partially valid
@@ -192,16 +192,16 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | no | Review when applicable | N/A: no agent/tooling files changed |
 | Local install corruption suspected | no | Reinstall once when applicable | N/A: no corruption signal occurred |
 | Autoreview for non-trivial implementation changes | yes | Run local autoreview to clean | Local autoreview returned no findings and judged the patch correct |
-| PR create or update | yes | Run `check` and create task-style PR | `pnpm check` passed; first commit and PR creation are the next closeout action |
-| Per-PR task ownership | yes | Verify one plan line and exact head | This dedicated plan owns one PR; exact PR readback follows creation |
-| Task-style PR body verified | yes | Read back body after creation | Task-style body prepared; GitHub readback follows creation |
+| PR create or update | yes | Run `check` and create task-style PR | `pnpm check` passed; PR #5135 is open at https://github.com/udecode/plate/pull/5135 |
+| Per-PR task ownership | yes | Verify one plan line and exact head | PR #5135 has exactly one task-plan body line; this plan-bearing commit is pushed as its exact head |
+| Task-style PR body verified | yes | Read back body after creation | `gh pr view 5135 --json body` confirms the issue, plan, confidence, phase table, and four required sections |
 | PR proof image hosting | no | Host images when needed | N/A: PR body needs no screenshot; exact route and component-test evidence suffice |
 | Tracker sync-back | no | Sync when applicable | N/A: the private report is closed and already has the required closure comment |
-| Final handoff contract | yes | Fill after PR creation | Evidence fields are prepared and will receive the exact PR URL after creation |
+| Final handoff contract | yes | Fill after PR creation | Exact PR, tracker, confidence, flow, Browser, outcome, caveat, design, and verification fields are filled below |
 | Final lint | yes | Run `pnpm lint:fix` | Final rerun passed with no fixes |
 | Output budget discipline | yes | Keep output bounded | Exact-file reads, scoped searches, and capped outputs were used |
 | Timed checkpoint | no | Honor duration when requested | N/A: no duration requested |
-| Goal plan complete | yes | Run completion checker after PR sync | Checker will run against the exact PR-head plan |
+| Goal plan complete | yes | Run completion checker after PR sync | `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-26-harden-media-file-urls.md` reports complete |
 | Browser interaction proof | yes | Exercise target route | Approved Browser tool rendered `/blocks/media-demo` and its valid PDF row |
 | Browser console/network check | yes | Record state or limitation | Server showed a clean 200 with no route error; exposed Browser API lacked direct console/network inspection |
 | Browser final proof artifact | yes | Record proof or caveat | Visible route proof recorded; non-visual unsafe attribute is covered by focused tests |
@@ -227,8 +227,8 @@ Phase / pass table:
 | Intake and source read | complete | source, ownership, route, tests, and advisory metadata recorded | implementation |
 | Implementation | complete | live/static renderers sanitize URLs; component coverage and registry changelog added | verification |
 | Verification | complete | 6 focused tests, www typecheck, lint, changelog check, browser route, autoreview, and full `pnpm check` pass | PR sync |
-| PR / tracker sync | in_progress | task-style body prepared after the full PR gate | create PR and verify exact head |
-| Closeout | queued | completion checker follows exact-head PR readback | final response |
+| PR / tracker sync | complete | PR #5135 opened with the task-style body; private tracker needs no further comment | closeout |
+| Closeout | complete | plan identity and PR body read back; completion checker is the final local gate | final response |
 
 Findings:
 - `@platejs/media` returns an intentionally named `unsafeUrl`; the copied UI owns the anchor policy.
@@ -269,7 +269,7 @@ Verification evidence:
 - `pnpm check` (repo root) -> passed the full lint, package build/typecheck, fast, slow, and slowest test gates; only existing warnings were emitted.
 
 Final handoff contract:
-- PR line: create after the first verified commit, then record its exact URL in this plan.
+- PR line: https://github.com/udecode/plate/pull/5135
 - Issue / tracker line: N/A: private report is closed and its closure comment already records why.
 - Confidence line: `🟢 95-100% confidence`.
 - Flow table:
@@ -283,7 +283,7 @@ Final handoff contract:
   - Why not quick patch: sanitizing only the live component would leave static/export behavior inconsistent.
   - Why not broader change: the media package intentionally exposes raw URLs so custom renderers can choose their own policy.
 - Verified: focused tests, www typecheck, lint, changelog write/check, Browser route, autoreview, and full `pnpm check`.
-- PR body verified: exact GitHub readback follows PR creation.
+- PR body verified: `gh pr view 5135 --json body` confirms exactly one task-plan line and the required task-style format.
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -308,11 +308,11 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Task plan at exact PR head: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: https://github.com/udecode/plate/pull/5135
+- Task plan at exact PR head: `docs/plans/2026-09-26-harden-media-file-urls.md`; `gh pr view` head matches `git rev-parse HEAD` after the plan-bearing closeout push.
+- Issue / tracker: N/A: the private report is closed and already contains the required closure rationale.
+- Browser proof: `/blocks/media-demo` returned 200 and visibly rendered the valid `sample.pdf` row.
+- Caveats: direct Browser console/network APIs were unavailable; server route state was clean and exact unsafe-attribute behavior is covered by focused tests.
 
 Timeline:
 - 2026-09-26T23:41:54.557Z Task goal plan created.
@@ -322,12 +322,13 @@ Timeline:
 - 2026-09-27 Focused tests, www typecheck, lint, changelog check, and `/blocks/media-demo` browser proof passed.
 - 2026-09-27 Expanded supported-URL coverage to blob and static relative URLs; final focused suite passed 6/6.
 - 2026-09-27 Local autoreview returned no findings; full `pnpm check` passed against the final implementation diff.
+- 2026-09-27 Opened PR #5135 with the task-style body and read it back from GitHub.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Implementation and verification complete; PR creation next |
-| Where am I going? | Commit, push, PR exact-head sync, completion checker, and closeout |
+| Where am I? | PR #5135 is open with the complete plan and verified task-style body |
+| Where am I going? | Final response and goal closure |
 | What is the goal? | Suppress unsafe file hrefs without breaking supported downloads |
 | What have I learned? | The copied live/static renderers own link policy; no package release applies |
 | What have I done? | Implemented both renderers, added 6 passing behavior tests, generated the changelog, passed full checks/review, and verified the real demo route |
