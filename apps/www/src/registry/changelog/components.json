@@ -1,6 +1,11 @@
 {
   "schemaVersion": 1,
   "components": {
+    "media-file-node": [
+      "2026-09-27-harden-media-file-urls",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-10-17-fix-react-decouple"
+    ],
     "equation-node": [
       "2026-09-06-editor-content-and-service-defaults",
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
@@ -135,10 +140,6 @@
     "media-embed-node": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2025-11-20-biome-ultracite"
-    ],
-    "media-file-node": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-10-17-fix-react-decouple"
     ],
     "media-image-node": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions",

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-27-harden-media-file-urls",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-27-harden-media-file-urls.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Limit file downloads to supported URLs",
+  "targets": [
+    {
+      "name": "media-file-node",
+      "files": ["apps/www/src/registry/ui/media-file-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-27-media-file-validate-download-urls-65555ee5",
+      "kind": "fix",
+      "summary": "Limit file downloads to HTTP(S), blob, and relative URLs.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-file-node"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-27",
+          "entry": "2026-09-27-harden-media-file-urls",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

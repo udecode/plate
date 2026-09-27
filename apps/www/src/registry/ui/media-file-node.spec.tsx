@@ -27,6 +27,18 @@ mock.module('platejs/react', () => ({
   withHOC: (_Provider: any, Component: any) => Component,
 }));
 
+mock.module('platejs/static', () => ({
+  SlateElement: ({
+    children,
+    className,
+    ...props
+  }: React.ComponentProps<'div'>) => (
+    <div className={className} data-testid="slate-element" {...props}>
+      {children}
+    </div>
+  ),
+}));
+
 mock.module('@/lib/utils', () => ({
   cn: (...values: Array<string | false | null | undefined>) =>
     values.filter(Boolean).join(' '),
@@ -39,6 +51,10 @@ mock.module('./caption', () => ({
   CaptionTextarea: () => <div data-testid="caption-textarea" />,
 }));
 
+afterAll(() => {
+  mock.restore();
+});
+
 describe('FileElement', () => {
   beforeEach(() => {
     useMediaStateMock.mockReset();
@@ -46,10 +62,6 @@ describe('FileElement', () => {
       name: 'report.pdf',
       unsafeUrl: 'https://cdn.example.com/report.pdf',
     });
-  });
-
-  afterAll(() => {
-    mock.restore();
   });
 
   it('renders without requiring suggestion plugin data', async () => {
@@ -71,5 +83,132 @@ describe('FileElement', () => {
       'https://cdn.example.com/report.pdf'
     );
     expect(view.container.textContent).toContain('report.pdf');
+  });
+
+  it('omits unsafe file URLs', async () => {
+    useMediaStateMock.mockReturnValue({
+      name: 'report.pdf',
+      unsafeUrl: 'javascript:alert(document.domain)',
+    });
+
+    const { FileElement } = await import(
+      `./media-file-node?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    const view = render(
+      <FileElement
+        attributes={{}}
+        editor={{}}
+        element={{ children: [{ text: '' }], type: 'file' } as any}
+      >
+        {null}
+      </FileElement>
+    );
+
+    expect(view.container.querySelector('a')?.getAttribute('href')).toBeNull();
+  });
+
+  it('keeps relative file URLs', async () => {
+    useMediaStateMock.mockReturnValue({
+      name: 'report.pdf',
+      unsafeUrl: 'files/report.pdf',
+    });
+
+    const { FileElement } = await import(
+      `./media-file-node?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    const view = render(
+      <FileElement
+        attributes={{}}
+        editor={{}}
+        element={{ children: [{ text: '' }], type: 'file' } as any}
+      >
+        {null}
+      </FileElement>
+    );
+
+    expect(view.container.querySelector('a')?.getAttribute('href')).toBe(
+      'files/report.pdf'
+    );
+  });
+
+  it('keeps blob file URLs', async () => {
+    useMediaStateMock.mockReturnValue({
+      name: 'report.pdf',
+      unsafeUrl: 'blob:https://example.com/file-id',
+    });
+
+    const { FileElement } = await import(
+      `./media-file-node?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    const view = render(
+      <FileElement
+        attributes={{}}
+        editor={{}}
+        element={{ children: [{ text: '' }], type: 'file' } as any}
+      >
+        {null}
+      </FileElement>
+    );
+
+    expect(view.container.querySelector('a')?.getAttribute('href')).toBe(
+      'blob:https://example.com/file-id'
+    );
+  });
+});
+
+describe('FileElementStatic', () => {
+  it('omits unsafe file URLs', async () => {
+    const { FileElementStatic } = await import(
+      `./media-file-node-static?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    const view = render(
+      <FileElementStatic
+        attributes={{}}
+        editor={{}}
+        element={
+          {
+            children: [{ text: '' }],
+            name: 'report.pdf',
+            type: 'file',
+            url: 'javascript:alert(document.domain)',
+          } as any
+        }
+      >
+        {null}
+      </FileElementStatic>
+    );
+
+    expect(view.container.querySelector('a')?.getAttribute('href')).toBeNull();
+  });
+
+  it('keeps relative file URLs', async () => {
+    const { FileElementStatic } = await import(
+      `./media-file-node-static?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    const view = render(
+      <FileElementStatic
+        attributes={{}}
+        editor={{}}
+        element={
+          {
+            children: [{ text: '' }],
+            name: 'report.pdf',
+            type: 'file',
+            url: 'files/report.pdf',
+          } as any
+        }
+      >
+        {null}
+      </FileElementStatic>
+    );
+
+    expect(view.container.querySelector('a')?.getAttribute('href')).toBe(
+      'files/report.pdf'
+    );
   });
 });

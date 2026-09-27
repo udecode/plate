@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-27-harden-media-file-urls",
+      "href": "/registry/changelog/2026-09-27-harden-media-file-urls.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Limit file downloads to supported URLs",
+      "change": {
+        "type": "source",
+        "date": "2026-09-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["media-file-node"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-06-editor-content-and-service-defaults",
       "href": "/registry/changelog/2026-09-06-editor-content-and-service-defaults.json",
       "status": "draft",
