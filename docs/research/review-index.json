@@ -48,7 +48,7 @@
     ],
     "snapshot": {
       "kind": "working-tree",
-      "baseCommit": "e33ad94aea93a5b3eeb264b89519215dcd0957ad",
+      "baseCommit": "a54dd033ba7f533906c1794f1efcba4865b9216a",
       "fingerprint": "9eaa23a4dc7f8996f01dc252c001acd95bfcc14a5849b8f663409790a05bfbda"
     }
   },
@@ -13609,6 +13609,10 @@
     {
       "path": "docs/research/review-records/2026-09-28-markdown-commonmark-dialect-serialize-repair.json",
       "sha256": "bdb4adde41fee2b935a3ee6bd63e71d35764d0b94886993cea58372f8980d301"
+    },
+    {
+      "path": "docs/research/review-records/2026-09-28-format-mapping-authoring-design.json",
+      "sha256": "9c4ae448441990e8255f5de0ad1f0ee8e89d46616c590759f47aa6fe987b1bfe"
     }
   ],
   "reviewGroups": [

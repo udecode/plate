@@ -12,7 +12,9 @@ Question: Which schema-bound construction and property contracts should HTML, Ma
 
 Compiled decision: [format-mapping-authoring.md](../decisions/format-mapping-authoring.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **not-assessed**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
+Execution: **design-complete**. Proof: **partial**. Design only: parity is proven on minimal schemas that mirror the features, not on the migrated production plugins; production proof and the tracked benchmark rerun belong to execution slices S1-S3. The artifact folder is gitignored.
+
+Outcome: [2026-09-28-format-mapping-authoring-design](../review-records/2026-09-28-format-mapping-authoring-design.json). Governing reviews: [2026-09-28-format-mappings-value-review](../review-records/2026-09-28-format-mappings-value-review.json), [2026-09-28-markdown-dialect-prototype-correction](../review-records/2026-09-28-markdown-dialect-prototype-correction.json). Work kind: design. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
@@ -28,13 +30,13 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
-| No associated plan | unknown | unknown | unbound |
+| [2026-09-28-format-mapping-authoring.md](../../plans/2026-09-28-format-mapping-authoring.md) | completed | design | [2026-09-28-format-mappings-value-review](../review-records/2026-09-28-format-mappings-value-review.json), [2026-09-28-markdown-dialect-prototype-correction](../review-records/2026-09-28-markdown-dialect-prototype-correction.json) |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
+- [2026-09-28-format-mapping-authoring-design](../review-records/2026-09-28-format-mapping-authoring-design.json): completed; binding **current**; Designed schema-derived Markdown authoring: a callback-less `markdown: { tag: type }` lets the compiler build nodes, convert the owner's own properties and traverse children by the schema content model; `attributes` maps wire aliases such as url/src; mark roles come from the schema, removing `mark: true`, with `{ tag }`, `{ tag, value }`, `{ tag: 'span', style }` and `{ node }` mark declarations replacing callbacks and the runtime's key switch. Date, image and standard-kind node mappings keep callbacks; HTML and plain text stay unchanged. Execution slices S1-S4 await authorization. Proof: matching / partial. Design only: parity is proven on minimal schemas that mirror the features, not on the migrated production plugins; production proof and the tracked benchmark rerun belong to execution slices S1-S3. The artifact folder is gitignored.
 
 ## Inspected documents
 
@@ -68,6 +70,17 @@ Question: Which schema-bound construction and property contracts should HTML, Ma
 Proof limits: Read-only value assessment of three authoring contracts and representative consumers, not an exhaustive conversion/HTML/static audit. No fresh full tests, browser, native artifact, benchmark or claim to be best among editors. Markdown execution proof remains partial/stale with existing fixture, browser and durable benchmark follow-up. Active working-tree repairs can change captured mapping signatures; this record does not adopt or verify their unfinished implementation. Schema-derived tag DX/runtime wins are design candidates, not measured production improvements. Upstream evidence is source inspection only at recorded local commits; no competitor performance or compatibility experiments were run.
 
 References: [BasePlugin.ts](../../../packages/platejs/src/lib/plugin/BasePlugin.ts), [MarkdownNodeMapping.ts](../../../packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts), [PlainTextNodeMapping.ts](../../../packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts), [BaseColumnPlugin.ts](../../../packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts), [BaseCalloutPlugin.ts](../../../packages/platejs/src/features/callout/lib/BaseCalloutPlugin.ts), [BaseDetailsPlugin.ts](../../../packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts), [BaseDatePlugin.ts](../../../packages/platejs/src/features/date/lib/BaseDatePlugin.ts), [BaseImagePlugin.ts](../../../packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts), [BaseMediaEmbedPlugin.ts](../../../packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts), [ElementIdPlugin.ts](../../../packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts), [HtmlPlugin.ts](../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts), [reportOmittedProperties.ts](../../../packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts), [import-fidelity.md](../decisions/import-fidelity.md), [export-fidelity.md](../decisions/export-fidelity.md), [markdown-conversion.md](../decisions/markdown-conversion.md), [2026-07-24-c05-html-codec-vertical.md](../../plans/2026-07-24-c05-html-codec-vertical.md), [2026-07-26-plate-next-html-plugin-colocation.md](../../plans/2026-07-26-plate-next-html-plugin-colocation.md), [2026-09-28-markdown-commonmark-dialect-design.md](../../plans/2026-09-28-markdown-commonmark-dialect-design.md).
+
+### 2026-09-28: 2026-09-28-format-mapping-authoring-design
+
+[Immutable record](../review-records/2026-09-28-format-mapping-authoring-design.json) — execution; completed; observation matching.
+
+Designed schema-derived Markdown authoring: a callback-less `markdown: { tag: type }` lets the compiler build nodes, convert the owner's own properties and traverse children by the schema content model; `attributes` maps wire aliases such as url/src; mark roles come from the schema, removing `mark: true`, with `{ tag }`, `{ tag, value }`, `{ tag: 'span', style }` and `{ node }` mark declarations replacing callbacks and the runtime's key switch. Date, image and standard-kind node mappings keep callbacks; HTML and plain text stay unchanged. Execution slices S1-S4 await authorization.
+
+
+Proof limits: Design only: parity is proven on minimal schemas that mirror the features, not on the migrated production plugins; production proof and the tracked benchmark rerun belong to execution slices S1-S3. The artifact folder is gitignored.
+
+References: [2026-09-28-format-mapping-authoring.md](../../plans/2026-09-28-format-mapping-authoring.md).
 
 ## Retrieval boundaries
 

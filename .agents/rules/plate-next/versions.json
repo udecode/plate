@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 248,
+  "latestVersion": 249,
   "versions": [
     {
       "version": 0,
@@ -2879,6 +2879,15 @@
         "Keep mark mapping decode results schema-valued and let the runtime compose them under the target mark key.",
         "Keep wrap childless and let the Markdown runtime supply encoded children.",
         "Regenerate doctrine mirrors and preserve package attestations until each package adopts and proves the corrected contract."
+      ]
+    },
+    {
+      "version": 249,
+      "date": "2026-09-28",
+      "doctrineFingerprint": "sha256:e8f54871dfd5204d602ad3595c0a3195080050ee9683b31bda352d680fc6829b",
+      "summary": "On next the user owns commits: agents commit only at the user's own request and never propose a commit; approval of an agent-proposed plan is not commit authority.",
+      "migrationChecks": [
+        "Do not put a commit in plans, step lists or handoffs on next; leave commits and source staging to the user unless the user's own message asks for a commit."
       ]
     }
   ],

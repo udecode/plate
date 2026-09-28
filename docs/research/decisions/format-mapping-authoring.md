@@ -5,7 +5,8 @@ status: accepted
 updated: 2026-09-28
 review_scope: format-mappings
 current_review: 2026-09-28-format-mappings-value-review
-reconciled_executions: []
+reconciled_executions:
+  - 2026-09-28-format-mapping-authoring-design
 review_history:
   - ../review-records/2026-09-28-format-mappings-value-review.json
 related:
@@ -44,3 +45,18 @@ marks, media and date exceptions, and HTML property patches. Existing Markdown
 correctness and browser/benchmark closure remain separate authorized work.
 No full HTML/static audit, new runtime proof or performance claim is established
 by this review.
+
+The design plan
+[Format mapping authoring](../../plans/2026-09-28-format-mapping-authoring.md)
+is complete ([design record](../review-records/2026-09-28-format-mapping-authoring-design.json)).
+A callback-less `markdown: { tag: type }` lets the compiler build the node,
+convert the owner's own properties and traverse children by the schema content
+model; `attributes` covers wire aliases such as `url`/`src`. Mark roles come from
+the schema, so `mark: true` leaves the contract and simple marks declare only
+`tag`, `value`, `style` or `node`. Exposure is owner-scoped: a role-only default
+would write List's `indent`/`listType` onto `<img>`. A prototype matched
+hand-written mappings on 11 of 13 fixtures (the other two differ only in writing
+an empty text block self-closing) at 1.02× their cost. Date, image and
+standard-kind `node` mappings keep callbacks.
+
+Next: authorize execution of slices S1–S4.

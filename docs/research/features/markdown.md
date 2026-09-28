@@ -12,9 +12,9 @@ Question: Which canonical mappings preserve document meaning through Markdown pa
 
 Compiled decision: [markdown-conversion.md](../decisions/markdown-conversion.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **completed**. Proof: **verified**. Serialize profile evidence (context rebuild 4.3% to 0.5%) lives in ignored prototype artifacts. Timing is shared-host evidence at load 4-10; B3 mdast large stays inconclusive and absolute B4 remains failed. Markdown partition 162/162, Markdown feature specs 278/278, slow Markdown 41/41, package and www typechecks clean were run on this tree; no new browser run beyond the closure's Chromium proof. The working tree is uncommitted at record time.
+Execution: **design-complete**. Proof: **partial**. Design only: parity is proven on minimal schemas that mirror the features, not on the migrated production plugins; production proof and the tracked benchmark rerun belong to execution slices S1-S3. The artifact folder is gitignored.
 
-Outcome: [2026-09-28-markdown-commonmark-dialect-serialize-repair](../review-records/2026-09-28-markdown-commonmark-dialect-serialize-repair.json). Governing reviews: [2026-09-28-markdown-dialect-prototype-correction](../review-records/2026-09-28-markdown-dialect-prototype-correction.json). Work kind: implementation. Reconciled with current review: yes.
+Outcome: [2026-09-28-format-mapping-authoring-design](../review-records/2026-09-28-format-mapping-authoring-design.json). Governing reviews: [2026-09-28-format-mappings-value-review](../review-records/2026-09-28-format-mappings-value-review.json), [2026-09-28-markdown-dialect-prototype-correction](../review-records/2026-09-28-markdown-dialect-prototype-correction.json). Work kind: design. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
@@ -42,6 +42,8 @@ Changed files: [MarkdownNodeMapping.ts](../../../packages/platejs/src/lib/plugin
 
 - **stale-execution-proof**: [2026-09-28-markdown-commonmark-dialect-closure](../review-records/2026-09-28-markdown-commonmark-dialect-closure.json).
 
+- **unreconciled-execution**: [2026-09-28-format-mapping-authoring-design](../review-records/2026-09-28-format-mapping-authoring-design.json).
+
 ## Plans and execution
 
 The plan owns its lifecycle. Design completion is not implementation adoption. Unknown or unbound evidence stays explicit.
@@ -54,6 +56,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-07-30-hard-cut-markdown-codec-package.md](../../plans/2026-07-30-hard-cut-markdown-codec-package.md) | completed | implementation | unbound |
 | [2026-09-10-ai-streaming-and-markdown-demo-architecture.md](../../plans/2026-09-10-ai-streaming-and-markdown-demo-architecture.md) | planned | design | unbound |
 | [2026-09-10-repair-markdown-streaming-demo-correction-cycle.md](../../plans/2026-09-10-repair-markdown-streaming-demo-correction-cycle.md) | superseded | research | unbound |
+| [2026-09-28-format-mapping-authoring.md](../../plans/2026-09-28-format-mapping-authoring.md) | completed | design | [2026-09-28-format-mappings-value-review](../review-records/2026-09-28-format-mappings-value-review.json), [2026-09-28-markdown-dialect-prototype-correction](../review-records/2026-09-28-markdown-dialect-prototype-correction.json) |
 | [2026-09-28-markdown-commonmark-dialect-design.md](../../plans/2026-09-28-markdown-commonmark-dialect-design.md) | completed | implementation | [2026-09-28-markdown-dialect-prototype-correction](../review-records/2026-09-28-markdown-dialect-prototype-correction.json) |
 
 ### Outcomes recorded after the latest review
@@ -65,6 +68,7 @@ Record order is observation order. Historical imports do not establish when exec
 - [2026-09-28-markdown-commonmark-dialect-execution](../review-records/2026-09-28-markdown-commonmark-dialect-execution.json): completed; binding **current**; Implemented the CommonMark dialect in the working tree (uncommitted): a total micromark grammar with registered Plate tags, node/tag mapping selectors, a schema-kind attribute codec, refuse(), partial preview parsing, one compiled dispatch model (decodeByNode, decodeByTag, encodeByType, encodeByMark) with built-in paragraph/text/break/html decoders and composing mark mappings, property-loss accounting, reference resolution and distinct footnote labels. Cut remarkMdx, remarkMention, recovery, node filters, per-call remarkPlugins/rules, standalone slice/inline parsers and the block-ID writer. Consumers, docs, Plate Next v247 doctrine, Vision, changeset and registry changelog updated. D21 superseded: data transfer no longer reports diagnostics. Proof: stale / partial. Working tree only, nothing committed; the benchmark artifact directory is gitignored and must be force-added. 11 .slow Markdown and 16 apps/www Markdown failures remain, all pre-existing stale fixtures (inline spacers, fitter text merging, schema-invalid fixtures, callout icon default, image-in-list indent). No browser or app run of the streaming and import demos. Other sessions were editing overlapping files (MarkdownPlugin.ts, data transfer) during execution.
 - [2026-09-28-markdown-commonmark-dialect-closure](../review-records/2026-09-28-markdown-commonmark-dialect-closure.json): completed; binding **current**; Closed the CommonMark dialect implementation in the uncommitted working tree. Markdown uses one CommonMark + GFM + math grammar with registered Plate tags; mark mappings decode exact schema values and return childless wrappers; inherited persisted text properties are marks; the schema-driven attribute codec preserves JSON-looking strings; MDX-default machinery and stale Generate MDX consumers are cut. Valid image list items, list correction, AI table/tag streaming, fixtures, docs, registry output, doctrine and public type contracts are adopted. The tracked benchmark passes semantic and Plate-extension attribution gates while retaining the absolute inline-scaling failure. Proof: stale / verified. Browser proof is Chromium-only. Streaming still reparses the accumulated source. The frozen absolute B4 inline-tag doubling budget fails at the two largest sizes; paired plain CommonMark has equal or worse growth, so only the Plate-extension attribution gate passes. The repository-wide schema-adoption audit has 37 findings from unrelated concurrent work and none in Markdown. The working tree is uncommitted.
 - [2026-09-28-markdown-commonmark-dialect-serialize-repair](../review-records/2026-09-28-markdown-commonmark-dialect-serialize-repair.json): completed; binding **current**; After the closure record, a frozen-tree production rerun found serialize 10-12% slower than origin/next in both run orders. CPU profiles located two causes: encodeMarkdownParagraph spread the conversion options per paragraph, missing the per-operation format-context cache, and the parse-only tag transformer ran on the serialize pipeline. The conversion context now carries a stable operation key and serialize installs remarkMarkdownTagWriter only. Eleven stale apps/www Markdown fixtures were repaired against the adopted contract, and the tracked benchmark receipt was regenerated on the final tree. Proof: matching / verified. Serialize profile evidence (context rebuild 4.3% to 0.5%) lives in ignored prototype artifacts. Timing is shared-host evidence at load 4-10; B3 mdast large stays inconclusive and absolute B4 remains failed. Markdown partition 162/162, Markdown feature specs 278/278, slow Markdown 41/41, package and www typechecks clean were run on this tree; no new browser run beyond the closure's Chromium proof. The working tree is uncommitted at record time.
+- [2026-09-28-format-mapping-authoring-design](../review-records/2026-09-28-format-mapping-authoring-design.json): completed; binding **current**; Designed schema-derived Markdown authoring: a callback-less `markdown: { tag: type }` lets the compiler build nodes, convert the owner's own properties and traverse children by the schema content model; `attributes` maps wire aliases such as url/src; mark roles come from the schema, removing `mark: true`, with `{ tag }`, `{ tag, value }`, `{ tag: 'span', style }` and `{ node }` mark declarations replacing callbacks and the runtime's key switch. Date, image and standard-kind node mappings keep callbacks; HTML and plain text stay unchanged. Execution slices S1-S4 await authorization. Proof: matching / partial. Design only: parity is proven on minimal schemas that mirror the features, not on the migrated production plugins; production proof and the tracked benchmark rerun belong to execution slices S1-S3. The artifact folder is gitignored.
 
 ## Inspected documents
 
@@ -267,6 +271,17 @@ After the closure record, a frozen-tree production rerun found serialize 10-12% 
 Proof limits: Serialize profile evidence (context rebuild 4.3% to 0.5%) lives in ignored prototype artifacts. Timing is shared-host evidence at load 4-10; B3 mdast large stays inconclusive and absolute B4 remains failed. Markdown partition 162/162, Markdown feature specs 278/278, slow Markdown 41/41, package and www typechecks clean were run on this tree; no new browser run beyond the closure's Chromium proof. The working tree is uncommitted at record time.
 
 References: [2026-09-28-markdown-commonmark-dialect-design.md](../../plans/2026-09-28-markdown-commonmark-dialect-design.md).
+
+### 2026-09-28: 2026-09-28-format-mapping-authoring-design
+
+[Immutable record](../review-records/2026-09-28-format-mapping-authoring-design.json) — execution; completed; observation matching.
+
+Designed schema-derived Markdown authoring: a callback-less `markdown: { tag: type }` lets the compiler build nodes, convert the owner's own properties and traverse children by the schema content model; `attributes` maps wire aliases such as url/src; mark roles come from the schema, removing `mark: true`, with `{ tag }`, `{ tag, value }`, `{ tag: 'span', style }` and `{ node }` mark declarations replacing callbacks and the runtime's key switch. Date, image and standard-kind node mappings keep callbacks; HTML and plain text stay unchanged. Execution slices S1-S4 await authorization.
+
+
+Proof limits: Design only: parity is proven on minimal schemas that mirror the features, not on the migrated production plugins; production proof and the tracked benchmark rerun belong to execution slices S1-S3. The artifact folder is gitignored.
+
+References: [2026-09-28-format-mapping-authoring.md](../../plans/2026-09-28-format-mapping-authoring.md).
 
 ## Retrieval boundaries
 
