@@ -1,5 +1,5 @@
 {
-  "generation": "d6ac0457d131aeff895b7d1deb2eb7b27ae1946078b7360c2caf7ea25c3256ef",
+  "generation": "0abec498d16f2a2971c7e336e9ec76092cca09b8caa92b2a342450cd7b1b8fec",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -123,7 +123,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -175,7 +174,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -255,7 +253,6 @@
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -272,8 +269,8 @@
           "meta": {
             "docs": [
               {
-                "route": "/docs/import",
-                "title": "Import"
+                "route": "/docs/docx",
+                "title": "DOCX"
               }
             ],
             "examples": [
@@ -293,8 +290,6 @@
         {
           "dependencies": [
             "platejs",
-            "html2canvas-pro",
-            "pdf-lib",
             "lucide-react",
             "color-name",
             "html-to-vdom",
@@ -305,13 +300,13 @@
             "virtual-dom",
             "xmlbuilder2",
             "diff-match-patch-ts@^0.6.0",
-            "marked@^15.0.12",
+            "katex@0.16.22",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
           ],
-          "description": "A toolbar button for exporting editor content as HTML, PDF, an image, Markdown, or Word.",
+          "description": "A toolbar button for exporting editor content as HTML, Markdown, or Word.",
           "files": [
             {
               "path": "components/editor/export-toolbar-button.tsx",
@@ -322,12 +317,12 @@
           "meta": {
             "docs": [
               {
-                "route": "/docs/export",
+                "route": "/docs/examples/export",
                 "title": "Export"
               }
             ],
             "examples": [
-              "basic-nodes-demo"
+              "docx-demo"
             ],
             "label": "New"
           },
@@ -381,6 +376,7 @@
         },
         {
           "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
           "files": [
@@ -1288,6 +1284,7 @@
         {
           "dependencies": [
             "platejs",
+            "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
           "files": [
@@ -2056,7 +2053,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2233,7 +2231,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2248,7 +2247,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2281,7 +2281,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2452,7 +2453,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -2495,7 +2495,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2509,7 +2510,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2585,7 +2587,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -2880,7 +2881,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2950,7 +2952,6 @@
             "platejs",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -3129,10 +3130,6 @@
           "type": "registry:component"
         },
         {
-          "dependencies": [
-            "platejs",
-            "katex@0.16.22"
-          ],
           "files": [
             {
               "path": "components/editor/docx-export.tsx",
@@ -3141,20 +3138,13 @@
             }
           ],
           "name": "docx-export",
-          "registryDependencies": [
-            "@plate/callout-static",
-            "@plate/code-block-static",
-            "@plate/column-static",
-            "@plate/math-static",
-            "@plate/heading-static",
-            "@plate/toc-static"
-          ],
           "type": "registry:component"
         },
         {
           "dependencies": [
             "platejs",
             "@types/papaparse@^5.3.16",
+            "diff-match-patch-ts@^0.6.0",
             "juice@^11.0.1",
             "papaparse@^5.5.3",
             "validator@^13.15.15"
@@ -3242,6 +3232,7 @@
         },
         {
           "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
           "files": [
@@ -3309,7 +3300,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -3426,7 +3416,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -3507,7 +3498,6 @@
             "remark-gfm",
             "remark-math",
             "diff-match-patch-ts@^0.6.0",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -3708,7 +3698,6 @@
             "flowchart.js@^1.15.0",
             "katex@0.16.22",
             "lucide-react",
-            "marked@^15.0.12",
             "mermaid@^11.6.1",
             "plantuml-encoder@^1.4.0",
             "remark-mdx@^3.1.0",
@@ -3910,7 +3899,6 @@
             "zod",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "next",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
@@ -4071,7 +4059,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -4104,7 +4091,6 @@
             "sonner",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -5000,7 +4986,6 @@
             "remark-gfm",
             "remark-math",
             "diff-match-patch-ts@^0.6.0",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -5030,7 +5015,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -6859,7 +6843,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -6911,7 +6894,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -6991,7 +6973,6 @@
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -7008,8 +6989,8 @@
           "meta": {
             "docs": [
               {
-                "route": "/docs/import",
-                "title": "Import"
+                "route": "/docs/docx",
+                "title": "DOCX"
               }
             ],
             "examples": [
@@ -7029,8 +7010,6 @@
         {
           "dependencies": [
             "platejs",
-            "html2canvas-pro",
-            "pdf-lib",
             "lucide-react",
             "color-name",
             "html-to-vdom",
@@ -7041,13 +7020,13 @@
             "virtual-dom",
             "xmlbuilder2",
             "diff-match-patch-ts@^0.6.0",
-            "marked@^15.0.12",
+            "katex@0.16.22",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
           ],
-          "description": "A toolbar button for exporting editor content as HTML, PDF, an image, Markdown, or Word.",
+          "description": "A toolbar button for exporting editor content as HTML, Markdown, or Word.",
           "files": [
             {
               "path": "components/editor/export-toolbar-button.tsx",
@@ -7058,12 +7037,12 @@
           "meta": {
             "docs": [
               {
-                "route": "/docs/export",
+                "route": "/docs/examples/export",
                 "title": "Export"
               }
             ],
             "examples": [
-              "basic-nodes-demo"
+              "docx-demo"
             ],
             "label": "New"
           },
@@ -7117,6 +7096,7 @@
         },
         {
           "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
           "files": [
@@ -8018,6 +7998,7 @@
         {
           "dependencies": [
             "platejs",
+            "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
           "files": [
@@ -8786,7 +8767,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -8963,7 +8945,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -8978,7 +8961,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -9011,7 +8995,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -9182,7 +9167,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -9225,7 +9209,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -9239,7 +9224,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -9315,7 +9301,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -9610,7 +9595,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -9680,7 +9666,6 @@
             "platejs",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -9859,10 +9844,6 @@
           "type": "registry:component"
         },
         {
-          "dependencies": [
-            "platejs",
-            "katex@0.16.22"
-          ],
           "files": [
             {
               "path": "components/editor/docx-export.tsx",
@@ -9871,20 +9852,13 @@
             }
           ],
           "name": "docx-export",
-          "registryDependencies": [
-            "@plate/callout-static",
-            "@plate/code-block-static",
-            "@plate/column-static",
-            "@plate/math-static",
-            "@plate/heading-static",
-            "@plate/toc-static"
-          ],
           "type": "registry:component"
         },
         {
           "dependencies": [
             "platejs",
             "@types/papaparse@^5.3.16",
+            "diff-match-patch-ts@^0.6.0",
             "juice@^11.0.1",
             "papaparse@^5.5.3",
             "validator@^13.15.15"
@@ -9972,6 +9946,7 @@
         },
         {
           "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
           "files": [
@@ -10039,7 +10014,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -10156,7 +10130,8 @@
         },
         {
           "dependencies": [
-            "platejs"
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -10237,7 +10212,6 @@
             "remark-gfm",
             "remark-math",
             "diff-match-patch-ts@^0.6.0",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -10438,7 +10412,6 @@
             "flowchart.js@^1.15.0",
             "katex@0.16.22",
             "lucide-react",
-            "marked@^15.0.12",
             "mermaid@^11.6.1",
             "plantuml-encoder@^1.4.0",
             "remark-mdx@^3.1.0",
@@ -10640,7 +10613,6 @@
             "zod",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "next",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
@@ -10801,7 +10773,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -10834,7 +10805,6 @@
             "sonner",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -11730,7 +11700,6 @@
             "remark-gfm",
             "remark-math",
             "diff-match-patch-ts@^0.6.0",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -11760,7 +11729,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "marked@^15.0.12",
             "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",

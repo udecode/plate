@@ -1,7 +1,7 @@
 {
   "version": 1,
   "inventory": {
-    "checkedAt": "2026-09-27",
+    "checkedAt": "2026-09-28",
     "roots": [
       "packages",
       "apps/www/src/registry",
@@ -48,8 +48,8 @@
     ],
     "snapshot": {
       "kind": "working-tree",
-      "baseCommit": "0c7baaedddcb026023d14e1e399b1aa746de594d",
-      "fingerprint": "c45a011ab3fdfb162ea1be09558fc48dc2fd6531e0a11ad0b744838461107797"
+      "baseCommit": "2a1348130c48bf53c6a0cbc6b83a04b5abcb757c",
+      "fingerprint": "98d8320b4a9fed6f0f90549a6613cc8b11e38e4d1680f1f92149bddb0fab2a91"
     }
   },
   "features": [
@@ -98,7 +98,7 @@
       "scope": "ai",
       "disposition": "support",
       "count": 1,
-      "fingerprint": "145b63e822183ccecc291994872cf744f027fcaa7c58df3509223a11b1626ebc",
+      "fingerprint": "c7a84ade5614abc25e3f05ae9b715e652113896fbbc52fce1b7d2292ed2cdb8d",
       "source": "apps/www/tests/browser/ai-session.spec.ts"
     },
     {
@@ -356,7 +356,7 @@
       "scope": "geometry",
       "disposition": "support",
       "count": 1,
-      "fingerprint": "c274a358238954a01f13e30d9922e5adadbc680709227dbc1b3f50caf4e37951",
+      "fingerprint": "7f153bf1e0b992a1a70b97885404dfa47f8684adfc2bd26b8bce8a050f1b6100",
       "source": "apps/www/tests/browser/selection-drag-scroll.spec.ts"
     },
     {
@@ -372,7 +372,7 @@
       "scope": "suggestions",
       "disposition": "support",
       "count": 1,
-      "fingerprint": "536c0921d80547a72725acfb3e13e63f26747a34f6e6d8b7b103a34c23e61ef7",
+      "fingerprint": "6eaa9330b686ee8766bbe02b471836432c3e5fa9b44df61fb302ab26d790a513",
       "source": "apps/www/tests/browser/suggestion.spec.ts"
     },
     {
@@ -446,7 +446,7 @@
       "scope": "ai",
       "disposition": "grouped",
       "count": 2,
-      "fingerprint": "7a6f18ef24ba0182e9a1ac75357818ef0142fa38bb2096899bb6fcc60fa3d712",
+      "fingerprint": "6067e502d3d6d08047226311b4a15b6e71d261906109034b026e41b2448f166a",
       "source": "packages/platejs/src/ai/react/AIChatPlugin.ts",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -563,7 +563,7 @@
       "scope": "layout",
       "disposition": "grouped",
       "count": 4,
-      "fingerprint": "d61e73972cc242aaede4899f954b86053cb4260cbec87b3ca6787d4a8d8f2b14",
+      "fingerprint": "f62066bd064f1c5caa07fe3515952e05f0fb03c107a00e2aeeb7e07c47b29f39",
       "source": "packages/platejs/src/ai/react/AIChatPlugin.ts",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -3149,7 +3149,7 @@
       "scope": "ai",
       "disposition": "grouped",
       "count": 27,
-      "fingerprint": "0c1e3384aaf0b6669a27c6076e2e4a30c6a2b792adb7598ac2aae8e90862e32f",
+      "fingerprint": "416bf5350701a849b32236e422a627a9ffb47d2d05ec213fc525a9961cc200d1",
       "source": "packages/platejs/src/ai/index.ts"
     },
     {
@@ -3613,7 +3613,7 @@
       "scope": "authored",
       "disposition": "grouped",
       "count": 25,
-      "fingerprint": "8e84f87c53b07727ad6551c481230135bd8deee3ecfb014c4bf18cf4c704652d",
+      "fingerprint": "9654a4b4bb3f647c556a3e58af327cfa2c1300d41d6b4fe1c9b0dce1da6b135a",
       "source": "packages/plitejs/src/authored/index.ts"
     },
     {
@@ -4589,7 +4589,7 @@
       "scope": "model",
       "disposition": "grouped",
       "count": 17,
-      "fingerprint": "fad650cf59c02d591bbc79f66b00f9f8dff0c0bdab49eb33e46cfb165ae0abc8",
+      "fingerprint": "5f81fd872baecd9f48b2b57898ac8269aed9f90f724722f145dd669e5b4c0974",
       "source": "packages/plitejs/src/interfaces/index.ts"
     },
     {
@@ -4613,7 +4613,7 @@
       "scope": "proof",
       "disposition": "support",
       "count": 1330,
-      "fingerprint": "1767d4ca9e6c4dd2505243f8a23785cbc89282669312d0166734ecb22fd82eaf",
+      "fingerprint": "2a2648ed85eb606152c338e78a0e556d9f4838cc4d6cdcd18038fd62525cea2e",
       "source": "packages/plitejs/index.ts"
     },
     {
@@ -4957,7 +4957,7 @@
       "scope": "native",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "8d91d46c52f6f7c462cd61d20c926806aa51d74023db0d90d0167f46a5607eda",
+      "fingerprint": "545e61f0ec23c43a591ca1c4235eb8e3c113066c12aab47bff1f9b47fd143409",
       "source": "packages/plitejs/src/react/editable/mutation-controller.ts"
     },
     {
@@ -5037,7 +5037,7 @@
       "scope": "selection",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "644c1f6fdd123ee36da28a2482c930b8d5d8a3a845da47bc67e1700555c400e9",
+      "fingerprint": "54c71293d5d39cdc71bb917df299fbf6c40ce192a2658ecb576be78fb40581ee",
       "source": "packages/plitejs/src/react/editable/projected-selection-target.ts"
     },
     {
@@ -5045,7 +5045,7 @@
       "scope": "runtime",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "ba328eb4f4c198535d447c283e2a0d7da86c0194a1f54b645770617a520e4675",
+      "fingerprint": "537b6d658919796f91145dd5444df02ff4cd28918829541360a6821d01a6ac32",
       "source": "packages/plitejs/src/react/editable/root-interaction-controller.ts"
     },
     {
@@ -5277,7 +5277,7 @@
       "scope": "selection",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "11e81e0b287b09af6f15e97780361fa43bc65fbbff975bf7d9d3e39e10b8960f",
+      "fingerprint": "25afd614ecca6bc92469af36def15a06b8fcd6d01028c4f65a57c7a8f2e30539",
       "source": "packages/plitejs/src/react/editable/selection-controller.ts"
     },
     {
@@ -5293,7 +5293,7 @@
       "scope": "selection",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "bcab722b2e4418f1af4a9c15ee2b73530a131b86ad508a81beacc31811fe186a",
+      "fingerprint": "6c6dacbb5401c960dd2990f81f805307a02defffdefc1d85289fdff2f42472fc",
       "source": "packages/plitejs/src/react/editable/selection-projected-dom.ts"
     },
     {
@@ -5349,7 +5349,7 @@
       "scope": "react",
       "disposition": "grouped",
       "count": 33,
-      "fingerprint": "b7e4da2afb1f632f7ad5ab089211080dbb4830baf9fed7abb0d7827b89a92107",
+      "fingerprint": "24fab20732acfa6a589262a3919b5b43a030c4193268a775a9e1eba1d832efde",
       "source": "packages/plitejs/src/react/hooks/android-input-manager/android-input-manager.ts"
     },
     {
@@ -5389,7 +5389,7 @@
       "scope": "geometry",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "243bfb9279bb40bcd3b5e9c622815f180582d7faac5e9056601ab560e9a29767",
+      "fingerprint": "469a751f71c48e0ed12291c1132066bcdfef736ff32f239926268c0d3f2486e5",
       "source": "packages/plitejs/src/react/range-geometry.ts"
     },
     {
@@ -5461,7 +5461,7 @@
       "scope": "selection",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "c12a1de5d01476487b7637a888fed994241c8ed230161c096c527544d5694005",
+      "fingerprint": "cf009e655ece101cac8489ecbda644f33791646e35d0ab51bb460a87805533ec",
       "source": "packages/plitejs/src/react/view-selection-decoration.ts"
     },
     {
@@ -5853,7 +5853,7 @@
       "scope": "distribution",
       "disposition": "support",
       "count": 105,
-      "fingerprint": "f20e934bffa7961ce66ff6afaf6b9550f87902fa9e16f01f6e18b276a0765ca0",
+      "fingerprint": "fd20159ce98063605831f1fcb1046fb864ff27faf57277a994e911df01e83f90",
       "source": "apps/www/package.json"
     },
     {
@@ -6229,7 +6229,7 @@
       "scope": "ui",
       "disposition": "grouped",
       "count": 2,
-      "fingerprint": "d52606cbb686c931e662bc855b9e31207d7b57bdf6e7b78e4917267ea2fcb356",
+      "fingerprint": "6b7c1fde064b31d79c94eb5b6c1c507f11521d4fce3fdea31ffa0c2093603882",
       "source": "apps/www/src/registry/components/editor/floating-toolbar.tsx"
     },
     {

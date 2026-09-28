@@ -1,6 +1,27 @@
 {
   "schemaVersion": 1,
   "components": {
+    "import-toolbar-button": [
+      "2026-09-27-document-conversion-contracts",
+      "2026-09-24-export-menu-projection",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "export-toolbar-button": [
+      "2026-09-27-document-conversion-contracts",
+      "2026-09-24-export-menu-projection",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-15-compose-docx-export-kit",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
     "floating-toolbar": [
       "2026-09-26-floating-toolbar-retained-selections",
       "2026-09-08-editor-ui-lifetime",
@@ -17,6 +38,29 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
+    ],
+    "editor-dropdown-menu": [
+      "2026-09-24-export-menu-projection",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-25-base-first-registry"
+    ],
+    "docx-demo": [
+      "2026-09-24-export-menu-projection",
+      "2026-09-02-comments-ownership",
+      "2026-08-18-isolate-docx-file-io"
+    ],
+    "docx-export": [
+      "2026-09-24-export-menu-projection",
+      "2026-09-07-docx-bookmarks",
+      "2026-09-02-comments-ownership",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "history-toolbar-button": [
+      "2026-09-23-history-replay-lifecycle",
+      "2026-09-15-history-actions",
+      "2026-09-08-multi-editor-toolbar",
+      "2026-08-17-flat-editor-registry"
     ],
     "ai-menu": [
       "2026-09-21-ai-edit-suggestions",
@@ -170,10 +214,6 @@
       "2026-08-31-inline-component-props",
       "2026-08-25-base-first-registry"
     ],
-    "editor-dropdown-menu": [
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-25-base-first-registry"
-    ],
     "more-toolbar-button": [
       "2026-09-18-item-focus-block-upsert",
       "2026-08-17-flat-editor-registry",
@@ -290,11 +330,6 @@
       "2026-09-17-comment-persistence-actions",
       "2026-09-03-fix-comment-anchor-history",
       "2026-09-02-comments-ownership"
-    ],
-    "history-toolbar-button": [
-      "2026-09-15-history-actions",
-      "2026-09-08-multi-editor-toolbar",
-      "2026-08-17-flat-editor-registry"
     ],
     "diff": ["2026-09-15-structural-diff"],
     "version-history-demo": [
@@ -581,12 +616,6 @@
       "2026-08-17-flat-editor-registry"
     ],
     "docx": ["2026-09-07-docx-bookmarks", "2026-08-17-flat-editor-registry"],
-    "docx-export": [
-      "2026-09-07-docx-bookmarks",
-      "2026-09-02-comments-ownership",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-17-flat-editor-registry"
-    ],
     "heading-static": [
       "2026-09-07-docx-bookmarks",
       "2026-08-31-inline-component-props",
@@ -672,16 +701,6 @@
       "2026-09-06-registry-lifetime-repairs",
       "2025-11-20-biome-ultracite"
     ],
-    "export-toolbar-button": [
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-15-compose-docx-export-kit",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
-    ],
     "settings-dialog": [
       "2026-09-05-bound-editor-selection-styles",
       "2026-08-13-fix-registry-install-dependencies",
@@ -730,10 +749,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-23-explicit-editor-kit-composition",
       "2026-07-23-rich-media-caption-children"
-    ],
-    "docx-demo": [
-      "2026-09-02-comments-ownership",
-      "2026-08-18-isolate-docx-file-io"
     ],
     "preview-markdown-demo": [
       "2026-09-01-plugin-decoration-highlights",
@@ -967,13 +982,6 @@
     "media-uploadthing": ["2026-08-17-flat-editor-registry"],
     "toggle": ["2026-08-17-flat-editor-registry"],
     "ai-toolbar-button": ["2026-08-17-flat-editor-registry"],
-    "import-toolbar-button": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
-    ],
     "caption-static": ["2026-08-17-flat-editor-registry"],
     "indent-toolbar-button": [
       "2026-08-17-flat-editor-registry",
