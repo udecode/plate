@@ -3204,3 +3204,98 @@ describe('contextual schema slice fitting', () => {
     }
   );
 });
+
+describe('content-conserving slice insertion', () => {
+  it('refuses a closed element holding a child its grammar disallows', () => {
+    const conservingSchema = defineEditorSchema('schema:conserving-insert', {
+      elements: {
+        image: { void: 'block' },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'conserving-insert',
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      }),
+      initialValue: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+      plugins: [conservingSchema] as const,
+    });
+    const slice = ContentSlice.fromJSON({
+      content: [
+        {
+          children: [
+            { text: 'x' },
+            { children: [{ text: '' }], type: 'image' },
+            { text: 'y' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      openEnd: 0,
+      openStart: 0,
+    });
+    let inserted: boolean | undefined;
+
+    editor.update((tx) => {
+      inserted = tx.slice.replace(slice);
+    });
+
+    assert.equal(inserted, false);
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'ab' }], type: 'paragraph' },
+    ]);
+  });
+
+  for (const [label, slice] of [
+    ['bare text', ContentSlice.closed([{ text: 'X' }])],
+    ['a closed paragraph', ContentSlice.closed([paragraph('X')])],
+    [
+      'an open paragraph',
+      ContentSlice.fromJSON({
+        content: [paragraph('X')],
+        openEnd: 1,
+        openStart: 1,
+      }),
+    ],
+  ] as const) {
+    it(`joins both boundaries into the start block when ${label} replaces a cross-block range`, () => {
+      const editor = createEditor({
+        initialSelection: SelectionApi.text({
+          anchor: { offset: 2, path: [0, 0] },
+          focus: { offset: 2, path: [1, 0] },
+        }),
+        initialValue: [
+          { type: 'heading', level: 1, children: [{ text: 'head' }] },
+          paragraph('tail'),
+          paragraph('after'),
+        ],
+        plugins: [SliceFitSchema],
+      });
+      let inserted: boolean | undefined;
+
+      editor.update((tx) => {
+        inserted = tx.slice.replace(slice);
+      });
+
+      assert.equal(inserted, true);
+      assert.deepEqual(editor.read.children(), [
+        { type: 'heading', level: 1, children: [{ text: 'heXil' }] },
+        paragraph('after'),
+      ]);
+      assert.deepEqual(editor.read.selection(), {
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      });
+    });
+  }
+});

@@ -24,17 +24,6 @@ describe('editor.api.markdown.parse', () => {
   describe('inline content', () => {
     it.each([
       {
-        input: '<!DOCTYPE',
-        name: 'keeps literal doctype text',
-        output: (
-          <fragment>
-            <hp>
-              <htext>{'<!DOCTYPE'}</htext>
-            </hp>
-          </fragment>
-        ),
-      },
-      {
         input: 'This is ~~strikethrough~~.',
         name: 'parses strikethrough marks',
         output: (
@@ -109,6 +98,23 @@ describe('editor.api.markdown.parse', () => {
     ])('$name', ({ input, output }) => {
       expect(parseMarkdown(input)).toEqual(output);
     });
+
+    it('keeps literal doctype text as diagnosed raw HTML', () => {
+      const result = editor.api.markdown.parse('<!DOCTYPE', {
+        lossPolicy: 'allow',
+      });
+
+      expect(result).toMatchObject({
+        diagnostics: [
+          expect.objectContaining({
+            code: 'markdown-unsupported-node',
+            nodeType: 'html',
+          }),
+        ],
+        document: { children: [{ children: [{ text: '<!DOCTYPE' }] }] },
+        ok: true,
+      });
+    });
   });
 
   describe('blockquotes', () => {
@@ -160,9 +166,7 @@ describe('editor.api.markdown.parse', () => {
           <fragment>
             <hblockquote>
               <hp>
-                <htext>Blockquote line1</htext>
-                <htext>{'\n'}</htext>
-                <htext>Blockquote line2</htext>
+                <htext>{'Blockquote line1\nBlockquote line2'}</htext>
               </hp>
             </hblockquote>
           </fragment>
@@ -175,7 +179,9 @@ describe('editor.api.markdown.parse', () => {
           <fragment>
             <hblockquote>
               <hp>
+                <htext />
                 <ha url="https://example.com">Example link</ha>
+                <htext />
               </hp>
             </hblockquote>
           </fragment>
@@ -286,9 +292,7 @@ Paragraph 2 line 1`,
         output: (
           <fragment>
             <hp>
-              <htext>Line 1</htext>
-              <htext>{'\n'}</htext>
-              <htext>Line 2</htext>
+              <htext>{'Line 1\nLine 2'}</htext>
             </hp>
           </fragment>
         ),
@@ -352,8 +356,8 @@ Paragraph 2 line 1`,
   describe('mentions and options', () => {
     it.each([
       {
-        input: '1 @User',
-        name: 'parses mentions inside a paragraph',
+        input: '1 [User](mention:User) and',
+        name: 'parses link mentions inside a paragraph',
         output: (
           <fragment>
             <hp>
@@ -361,19 +365,18 @@ Paragraph 2 line 1`,
               <hmention ref="User">
                 <htext />
               </hmention>
+              <htext> and</htext>
             </hp>
           </fragment>
         ),
       },
       {
-        input: '@User',
-        name: 'parses standalone mentions',
+        input: '1 @User',
+        name: 'keeps bare @handles as text',
         output: (
           <fragment>
             <hp>
-              <hmention ref="User">
-                <htext />
-              </hmention>
+              <htext>1 @User</htext>
             </hp>
           </fragment>
         ),
@@ -384,14 +387,24 @@ Paragraph 2 line 1`,
   });
 
   describe('fixtures', () => {
-    it('returns an empty array for an empty markdown string', () => {
-      expect(parseMarkdown('')).toEqual([]);
+    it('returns the schema default block for an empty markdown string', () => {
+      expect(parseMarkdown('')).toEqual([
+        {
+          children: [{ text: '' }],
+          type: 'paragraph',
+        },
+      ]);
     });
 
     it('parses an image nested inside a list item', () => {
-      expect(
-        parseMarkdown('- ![alt text](https://example.com/image.png)')
-      ).toEqual([
+      const result = editor.api.markdown.parse(
+        '- ![alt text](https://example.com/image.png)'
+      );
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+      expect(result.document.children).toEqual([
         {
           alt: 'alt text',
           children: [{ text: '' }],
@@ -401,6 +414,18 @@ Paragraph 2 line 1`,
           url: 'https://example.com/image.png',
         },
       ]);
+
+      const serialized = editor.api.markdown.serialize({
+        document: result.document,
+      });
+
+      expect(serialized.ok).toBe(true);
+      if (!serialized.ok) throw new Error(serialized.diagnostics[0].message);
+
+      expect(editor.api.markdown.parse(serialized.data)).toMatchObject({
+        document: result.document,
+        ok: true,
+      });
     });
   });
 });

@@ -687,6 +687,7 @@
     "@types/viz.js": "^2.1.5",
     "ai": "^6.0.0",
     "color-name": "^2.0.0",
+    "commonmark-spec": "0.31.2",
     "diff-match-patch-ts": "^0.6.0",
     "fast-check": "^3.23.2",
     "fastest-levenshtein": "1.0.16",
@@ -711,7 +712,6 @@
     "remark-emoji": "5.0.1",
     "remark-gfm": "4.0.1",
     "remark-math": "6.0.0",
-    "remark-mdx": "^3.1.0",
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "tabbable": "^6.2.0",
@@ -754,7 +754,6 @@
     "react-dnd": ">=14.0.0",
     "react-dnd-html5-backend": ">=14.0.0",
     "react-dom": ">=19.2.0",
-    "remark-mdx": "^3.1.0",
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "tabbable": "^6.2.0",
@@ -853,9 +852,6 @@
       "optional": true
     },
     "react-dom": {
-      "optional": true
-    },
-    "remark-mdx": {
       "optional": true
     },
     "remark-parse": {

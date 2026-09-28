@@ -63,14 +63,14 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
         encode: ({ children }) => children,
       },
       markdown: {
-        from: type,
-        decode: ({ decode, decoration, node, parseAttributes }) => ({
-          ...parseAttributes(node.attributes),
-          children: decode(node.children, decoration),
+        tag: type,
+        decode: ({ decode, marks, node, readTagAttributes }) => ({
+          ...readTagAttributes().properties,
+          children: decode(node.children, marks),
           type,
         }),
-        encode: ({ encodeFlow, node, propsToAttributes }) => ({
-          attributes: propsToAttributes(getMarkdownAttributes(node)),
+        encode: ({ encodeAttributes, encodeFlow, node }) => ({
+          attributes: encodeAttributes(getMarkdownAttributes(node)),
           children: encodeFlow(node.children),
           name: type,
           type: 'mdxJsxFlowElement',
@@ -161,14 +161,14 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
         encode: ({ children }) => children,
       },
       markdown: {
-        from: type,
-        decode: ({ decode, decoration, node, parseAttributes }) => ({
-          ...parseAttributes(node.attributes),
-          children: decode(node.children, decoration),
+        tag: type,
+        decode: ({ decode, marks, node, readTagAttributes }) => ({
+          ...readTagAttributes().properties,
+          children: decode(node.children, marks),
           type,
         }),
-        encode: ({ encodeFlow, node, propsToAttributes }) => ({
-          attributes: propsToAttributes(getMarkdownAttributes(node)),
+        encode: ({ encodeAttributes, encodeFlow, node }) => ({
+          attributes: encodeAttributes(getMarkdownAttributes(node)),
           children: encodeFlow(node.children),
           name: type,
           type: 'mdxJsxFlowElement',

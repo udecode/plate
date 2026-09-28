@@ -3,6 +3,7 @@ import {
   definePlugin,
   type DefinitionOf,
   type ElementOf,
+  type MarkdownTagAttributeView,
   PLUGINS,
   property,
   schema,
@@ -62,12 +63,18 @@ const readImageSize = (image: HTMLElement) => {
   };
 };
 
-const readMarkdownImageProperties = (properties: Record<string, unknown>) => {
-  const { height, ...rest } = properties;
+const readMarkdownImageProperties = ({
+  attributes,
+  properties,
+}: MarkdownTagAttributeView) => {
+  const naturalHeight =
+    typeof attributes.height === 'string'
+      ? readPositiveSafeInteger(attributes.height)
+      : undefined;
 
   return {
-    ...rest,
-    ...(isPositiveSafeInteger(height) ? { naturalHeight: height } : {}),
+    ...properties,
+    ...(naturalHeight === undefined ? {} : { naturalHeight }),
   };
 };
 
@@ -185,7 +192,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
       ],
       markdown: [
         {
-          from: 'image',
+          node: 'image',
           decode: ({ node }) => ({
             ...(node.alt === null || node.alt === undefined
               ? {}
@@ -197,32 +204,34 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
           }),
         },
         {
-          from: 'img',
-          decode: ({ caption, decode, node, parseAttributes }) => {
-            const {
-              alt: altAttribute,
-              src,
-              ...rest
-            } = parseAttributes(node.attributes);
+          tag: 'img',
+          decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
+            const view = readTagAttributes();
             const captionChildren =
               node.children.length > 0
                 ? caption(decode(node.children))
                 : [{ text: '' }];
 
+            if (!captionChildren) {
+              return refuse(
+                'Media captions must contain one Markdown paragraph.'
+              );
+            }
+
             return {
-              ...readMarkdownImageProperties(rest),
-              ...(typeof altAttribute === 'string'
-                ? { alt: altAttribute }
-                : {}),
+              ...readMarkdownImageProperties(view),
               children: captionChildren,
               type,
-              url: typeof src === 'string' ? src : '',
+              url:
+                typeof view.attributes.src === 'string'
+                  ? view.attributes.src
+                  : '',
             };
           },
           encode: ({
+            encodeAttributes,
             encodePhrasing,
             node,
-            propsToAttributes,
             readPlainInline,
           }) => {
             const { children, type: _, url, ...rest } = node;
@@ -236,7 +245,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
               typeof altProperty === 'string' ? altProperty : undefined;
             const title =
               typeof titleProperty === 'string' ? titleProperty : undefined;
-            const attributes = propsToAttributes({
+            const attributes = encodeAttributes({
               ...(alt === undefined ? {} : { alt }),
               ...writeMarkdownImageProperties(properties),
               src: url,
@@ -295,28 +304,42 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
           },
         },
         {
-          from: 'figure',
-          decode: ({ caption, decode, node, parseAttributes }) => {
+          nestedTags: ['figcaption'],
+          tag: 'figure',
+          decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
             const [image, figcaption] = node.children;
 
             if (
-              node.children.length !== 2 ||
+              node.children.length > 2 ||
               image?.type !== 'mdxJsxFlowElement' ||
               image.name !== 'img' ||
               image.children.length > 0 ||
-              figcaption?.type !== 'mdxJsxFlowElement' ||
-              figcaption.name !== 'figcaption'
+              (figcaption !== undefined &&
+                (figcaption.type !== 'mdxJsxFlowElement' ||
+                  figcaption.name !== 'figcaption'))
             ) {
               return undefined;
             }
 
-            const { src, ...properties } = parseAttributes(image.attributes);
+            const view = readTagAttributes(image);
+            const captionChildren = figcaption
+              ? caption(decode(figcaption.children))
+              : [{ text: '' }];
+
+            if (!captionChildren) {
+              return refuse(
+                'Media captions must contain one Markdown paragraph.'
+              );
+            }
 
             return {
-              ...readMarkdownImageProperties(properties),
-              children: caption(decode(figcaption.children)),
+              ...readMarkdownImageProperties(view),
+              children: captionChildren,
               type,
-              url: typeof src === 'string' ? src : '',
+              url:
+                typeof view.attributes.src === 'string'
+                  ? view.attributes.src
+                  : '',
             };
           },
         },

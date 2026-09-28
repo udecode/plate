@@ -3317,6 +3317,8 @@
         "typecheck:partition:docx-export",
         "typecheck:partition:docx-import",
         "typecheck:partition:footnote-react",
+        "typecheck:partition:html",
+        "typecheck:partition:html-server",
         "typecheck:partition:markdown",
         "typecheck:partition:math",
         "typecheck:partition:mention",

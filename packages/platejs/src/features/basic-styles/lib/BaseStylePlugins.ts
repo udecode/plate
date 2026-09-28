@@ -69,7 +69,7 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
   PLUGINS.backgroundColor,
   {
     schema: { mark: property.string() },
-    formats: ({ defineFormats, schema: { key } }) =>
+    formats: ({ defineFormats }) =>
       defineFormats({
         html: {
           decode: ({ element }) => element.style.backgroundColor || undefined,
@@ -81,28 +81,24 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
         },
 
         markdown: {
-          from: 'span',
+          tag: 'span',
           mark: true,
-          decode: ({ decode, decoration, node }) => {
+          decode: ({ node }) => {
             const value = getMarkdownStyleValue(
               node.attributes,
               'background-color'
             );
 
-            return decode(node.children, {
-              ...decoration,
-              ...(value === undefined ? {} : { [key]: value }),
-            });
+            return value;
           },
-          encode: ({ node }) => ({
+          wrap: ({ value }) => ({
             attributes: [
               {
                 name: 'style',
                 type: 'mdxJsxAttribute',
-                value: `background-color: ${String(node[key])};`,
+                value: `background-color: ${value};`,
               },
             ],
-            children: [{ type: 'text', value: node.text }],
             name: 'span',
             type: 'mdxJsxTextElement',
           }),
@@ -118,7 +114,7 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
 
 export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
   schema: { mark: property.string() },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) => element.style.color || undefined,
@@ -130,25 +126,21 @@ export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
       },
 
       markdown: {
-        from: 'span',
+        tag: 'span',
         mark: true,
-        decode: ({ decode, decoration, node }) => {
+        decode: ({ node }) => {
           const value = getMarkdownStyleValue(node.attributes, 'color');
 
-          return decode(node.children, {
-            ...decoration,
-            ...(value === undefined ? {} : { [key]: value }),
-          });
+          return value;
         },
-        encode: ({ node }) => ({
+        wrap: ({ value }) => ({
           attributes: [
             {
               name: 'style',
               type: 'mdxJsxAttribute',
-              value: `color: ${String(node[key])};`,
+              value: `color: ${value};`,
             },
           ],
-          children: [{ type: 'text', value: node.text }],
           name: 'span',
           type: 'mdxJsxTextElement',
         }),
@@ -164,7 +156,7 @@ export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
 
 export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
   schema: { mark: property.string() },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) => element.style.fontFamily || undefined,
@@ -176,25 +168,21 @@ export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
       },
 
       markdown: {
-        from: 'span',
+        tag: 'span',
         mark: true,
-        decode: ({ decode, decoration, node }) => {
+        decode: ({ node }) => {
           const value = getMarkdownStyleValue(node.attributes, 'font-family');
 
-          return decode(node.children, {
-            ...decoration,
-            ...(value === undefined ? {} : { [key]: value }),
-          });
+          return value;
         },
-        encode: ({ node }) => ({
+        wrap: ({ value }) => ({
           attributes: [
             {
               name: 'style',
               type: 'mdxJsxAttribute',
-              value: `font-family: ${String(node[key])};`,
+              value: `font-family: ${value};`,
             },
           ],
-          children: [{ type: 'text', value: node.text }],
           name: 'span',
           type: 'mdxJsxTextElement',
         }),
@@ -209,7 +197,7 @@ export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
 
 export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
   schema: { mark: property.string() },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) => element.style.fontSize || undefined,
@@ -221,25 +209,21 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
       },
 
       markdown: {
-        from: 'span',
+        tag: 'span',
         mark: true,
-        decode: ({ decode, decoration, node }) => {
+        decode: ({ node }) => {
           const value = getMarkdownStyleValue(node.attributes, 'font-size');
 
-          return decode(node.children, {
-            ...decoration,
-            ...(value === undefined ? {} : { [key]: value }),
-          });
+          return value;
         },
-        encode: ({ node }) => ({
+        wrap: ({ value }) => ({
           attributes: [
             {
               name: 'style',
               type: 'mdxJsxAttribute',
-              value: `font-size: ${String(node[key])};`,
+              value: `font-size: ${value};`,
             },
           ],
-          children: [{ type: 'text', value: node.text }],
           name: 'span',
           type: 'mdxJsxTextElement',
         }),
@@ -254,7 +238,7 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
 
 export const BaseFontWeightPlugin = definePlugin(PLUGINS.fontWeight, {
   schema: { mark: property.string() },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) =>
@@ -269,25 +253,21 @@ export const BaseFontWeightPlugin = definePlugin(PLUGINS.fontWeight, {
       },
 
       markdown: {
-        from: 'span',
+        tag: 'span',
         mark: true,
-        decode: ({ decode, decoration, node }) => {
+        decode: ({ node }) => {
           const value = getMarkdownStyleValue(node.attributes, 'font-weight');
 
-          return decode(node.children, {
-            ...decoration,
-            ...(value === undefined ? {} : { [key]: value }),
-          });
+          return value;
         },
-        encode: ({ node }) => ({
+        wrap: ({ value }) => ({
           attributes: [
             {
               name: 'style',
               type: 'mdxJsxAttribute',
-              value: `font-weight: ${String(node[key])};`,
+              value: `font-weight: ${value};`,
             },
           ],
-          children: [{ type: 'text', value: node.text }],
           name: 'span',
           type: 'mdxJsxTextElement',
         }),

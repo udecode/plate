@@ -267,9 +267,9 @@ describe('AIChatPlugin response drafts', () => {
         ],
       ],
       [
-        'an MDX sample blockquote split across chunks',
+        'a Markdown sample blockquote split across chunks',
         [
-          '# MDX Sample\n\n',
+          '# Markdown Sample\n\n',
           'Intro paragraph.\n\n',
           '## Quote\n\n',
           '> Generated ',

@@ -1871,8 +1871,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
   assert.deepEqual(
     auditPlateSchemaSource(
       definition(`{
-        from: type,
-        kind: 'node',
+        tag: type,
         decode: () => ({ children: [{ text: '' }], type }),
         encode: () => ({
           attributes: [],
@@ -1890,8 +1889,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
       schema: { element: schema.element.void() },
       formats: ({ defineFormats }) => defineFormats({
         'markdown': {
-          from: 'image',
-          kind: 'node',
+          node: 'image',
           decode: () => ({ children: [{ text: '' }], type: 'image' }),
         },
       }),
@@ -1903,8 +1901,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
       schema: { element: schema.element.void() },
       formats: ({ defineFormats, schema: { type } }) => defineFormats({
         'markdown': {
-          from: 'image',
-          kind: 'node',
+          node: 'image',
           decode: () => ({ children: [{ text: '' }], type }),
         },
       }),
@@ -1914,12 +1911,11 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
   assert.match(
     auditPlateSchemaSource(
       definition(`{
-        from: type,
-        kind: 'node',
-        decode: ({ node, parseAttributes }) => ({
+        tag: type,
+        decode: ({ readTagAttributes }) => ({
           children: [{ text: '' }],
           type,
-          ...parseAttributes(node.attributes),
+          ...readTagAttributes().properties,
         }),
         encode: () => ({ attributes: [], children: [], name: type, type: 'mdxJsxFlowElement' }),
       }`)
@@ -1931,17 +1927,15 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
   for (const [rule, reason] of [
     [
       `{
-        from: 'legacy_custom',
-        kind: 'node',
+        tag: 'legacy_custom',
         decode: () => ({ children: [{ text: '' }], type }),
         encode: () => ({ attributes: [], children: [], name: type, type: 'mdxJsxFlowElement' }),
       }`,
-      /resolved schema type for from/,
+      /resolved schema type for tag/,
     ],
     [
       `{
-        from: type,
-        kind: 'node',
+        tag: type,
         decode: () => ({ children: [{ text: '' }], type: 'customElement' }),
         encode: () => ({ attributes: [], children: [], name: type, type: 'mdxJsxFlowElement' }),
       }`,
@@ -1949,12 +1943,11 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
     ],
     [
       `{
-        from: type,
-        kind: 'node',
+        tag: type,
         decode: () => ({ children: [{ text: '' }], type }),
         encode: () => ({ attributes: [], children: [], name: 'customElement', type: 'mdxJsxFlowElement' }),
       }`,
-      /encode the resolved schema type as the MDX name/,
+      /encode the resolved schema type as the tag name/,
     ],
   ]) {
     assert.match(
@@ -1969,15 +1962,14 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
     }).extend(({ defineFormats }) => ({
       formats: defineFormats({
         'markdown': {
-          from: 'customElement',
-          kind: 'node',
+          tag: 'customElement',
           decode: () => ({ children: [{ text: '' }], type: 'customElement' }),
           encode: () => ({ attributes: [], children: [], name: 'customElement', type: 'mdxJsxFlowElement' }),
         },
       }),
-    }))`).find((issue) => /resolved schema type for from/.test(issue.reason))
+    }))`).find((issue) => /resolved schema type for tag/.test(issue.reason))
       ?.reason ?? '',
-    /resolved schema type for from/
+    /resolved schema type for tag/
   );
   assert.match(
     auditPlateSchemaSource(`definePlugin('customCapability', {
@@ -1985,14 +1977,13 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
     }).extend(({ defineFormats }) => ({
       formats: defineFormats({
         'markdown': {
-          from: 'legacy_custom',
-          kind: 'node',
+          tag: 'legacy_custom',
           decode: () => ({ children: [{ text: '' }], type: 'customElement' }),
         },
       }),
-    }))`).find((issue) => /resolved schema type for from/.test(issue.reason))
+    }))`).find((issue) => /resolved schema type for tag/.test(issue.reason))
       ?.reason ?? '',
-    /resolved schema type for from/
+    /resolved schema type for tag/
   );
 
   assert.deepEqual(
@@ -2001,8 +1992,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
     }).extend(({ defineFormats, schema: { type } }) => ({
       formats: defineFormats({
         'markdown': {
-          from: type,
-          kind: 'node',
+          tag: type,
           decode: () => ({ children: [{ text: '' }], type }),
           encode: () => ({ attributes: [], children: [], name: type, type: 'mdxJsxFlowElement' }),
         },
@@ -2017,8 +2007,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
     auditPlateSchemaSource(`definePlugin('product', {
       formats: ({ defineFormats }) => defineFormats(TargetPlugin, {
         'markdown': {
-          from: 'customElement',
-          kind: 'node',
+          tag: 'customElement',
           decode: () => ({ children: [{ text: '' }], type: 'customElement' }),
           encode: () => ({ attributes: [], children: [], name: 'customElement', type: 'mdxJsxFlowElement' }),
         },
@@ -2030,8 +2019,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
     auditPlateSchemaSource(`definePlugin('product', {
       formats: ({ defineFormats }) => defineFormats(TargetPlugin, {
         'markdown': {
-          from: 'img',
-          kind: 'node',
+          tag: 'img',
           decode: ({ schema }) => ({ children: [{ text: '' }], type: schema.type }),
           encode: () => ({ attributes: [], children: [], name: 'img', type: 'mdxJsxFlowElement' }),
         },
@@ -2043,8 +2031,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
   assert.deepEqual(
     auditPlateSchemaSource(
       definition(`{
-        from: 'img',
-        kind: 'node',
+        tag: 'img',
         decode: () => ({ children: [{ text: '' }], type }),
         encode: () => ({ attributes: [], children: [], name: 'img', type: 'mdxJsxFlowElement' }),
       }`)
@@ -2054,8 +2041,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
   assert.match(
     auditPlateSchemaSource(
       definition(`{
-        from: 'img',
-        kind: 'node',
+        tag: 'img',
         decode: () => ({ children: [{ text: '' }] }),
       }`)
     )[0]?.reason ?? '',
@@ -2066,8 +2052,7 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
       schema: { mark: { property: property.boolean() } },
       formats: ({ defineFormats, schema: { key } }) => defineFormats({
         'markdown': {
-          from: 'comment',
-          kind: 'node',
+          tag: 'comment',
           mark: true,
           decode: ({ decode, node }) => decode(node.children, { [key]: true }),
           encode: ({ node }) => ({ attributes: [], children: [], name: 'comment', type: 'mdxJsxTextElement' }),
@@ -2128,8 +2113,18 @@ test('allows only exact marked raw-format negative contracts', () => {
   const markdownOwner =
     'packages/platejs/src/markdown/lib/internal/markdownMappings.spec.ts';
 
-  for (const file of [productFormatOwner, typeOwner, markdownOwner]) {
-    assert.deepEqual(auditPlateSchemaSource(markedRawFormat, file), []);
+  for (const [file, count] of [
+    [productFormatOwner, 1],
+    [typeOwner, 1],
+    [markdownOwner, 2],
+  ]) {
+    assert.deepEqual(
+      auditPlateSchemaSource(
+        Array.from({ length: count }, () => markedRawFormat).join(';\n'),
+        file
+      ),
+      []
+    );
     assert.match(
       auditPlateSchemaSource(
         `Plugin.extend(() => ({ formats: { 'html': rule } }))`,

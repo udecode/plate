@@ -1,0 +1,5 @@
+500: plain+gfm+math 3.1 ms, candidate 2.6 ms
+1000: plain+gfm+math 7.0 ms, candidate 5.9 ms
+2000: plain+gfm+math 16.0 ms, candidate 13.9 ms
+4000: plain+gfm+math 37.7 ms, candidate 35.3 ms
+growth per doubling (candidate): 2.25, 2.36, 2.53 | plain: 2.23, 2.30, 2.35

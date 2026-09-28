@@ -167,7 +167,19 @@ Closing a Details node moves a selection inside its body to the end of its Summa
 
 ## Serialization
 
-HTML uses fixed `<details>` and `<summary>` tags. Markdown uses equivalent MDX elements, including for nested Details. Decoding ignores `open` and `name`, and encoding never writes them.
+HTML uses fixed `<details>` and `<summary>` tags. Markdown uses the same registered tags, including for nested Details:
+
+```md
+<details>
+
+<summary>Title</summary>
+
+Body text.
+
+</details>
+```
+
+Decoding ignores `open` and `name`, and encoding never writes them.
 
 ## Toolbar
 

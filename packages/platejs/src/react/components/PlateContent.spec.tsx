@@ -148,16 +148,13 @@ const AtomicParserBPlugin = defineHeadlessPlugin('atomicParserB', {
     {
       mimeType: 'application/x-plate-atomic-parser',
       scope: 'document',
-      decode: () => ({
-        diagnostics: [],
-        ok: true,
-        slice: ContentSlice.closed([
+      decode: () =>
+        ContentSlice.closed([
           {
             children: [{ atomicParserB: true, text: 'parsed-b' }],
             type: 'paragraph',
           },
         ]),
-      }),
     },
   ],
   schema: {

@@ -1,0 +1,89 @@
+{
+  "id": "2026-09-28-paste-loss-reporting-repairs",
+  "kind": "execution",
+  "date": "2026-09-28",
+  "scopes": [
+    "imports"
+  ],
+  "reviewBasis": [
+    "2026-09-28-imports-paste-loss-reporting-review"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-28-paste-loss-reporting-repairs.md",
+    "sha256": "f47a20d3db4e3a65065611757c0e61aa4b93061caecf7e6db8313c835a54e33a"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Repaired the three loss-reporting defects from 2026-09-28-imports-paste-loss-reporting-review while keeping impact, the report, runtime-owner routing and registry toasts. Clipboard HTML that decodes to nothing after a lossy change is now a rejected attempt instead of a quiet null. Embedded media without a mapping reports loss even when fallback children survive, so a reject parse fails; picture left the list because its img reports itself. html-unsafe-content carries impact set by the sanitizer: non-rendering removals (metadata, scripts, style sheets, event handlers, script URLs) are lossless; SVG, MathML, embedded objects, blocked data: media sources, inline frame documents and resource-loading styles are lossy and fail a reject parse. The plitejs typecheck is green: two private selection helpers accept inferred editors as ReactRuntimeEditor<any>, like sibling helpers, which fixes the six test-type errors from 7cbec2435f without widening the fixture. This corrects the all-gates-pass claim in 2026-09-28-conversion-correctness-guarantees.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/artifacts/2026-09-28-paste-loss-reporting-repairs/gates.json",
+        "sha256": "3aaab4d773e3dd438454ba02bf96cc711af77abe7b6526d1f4a9bbd868c6b8ac",
+        "claim": "After the last lint:fix every gate passes: plitejs typecheck 13/13 and tests 21/21, platejs 90/90, contracts and 141/141, www typecheck with fresh registry, entrypoint, changelog, Plate Next v246, Chromium clipboard 4/4, diff check."
+      },
+      {
+        "path": "docs/plans/artifacts/2026-09-28-paste-loss-reporting-repairs/paste-loss-proof.txt",
+        "sha256": "323b747967e054b8a50dfcacced1c87b122b460236e54600c0b2afac8c7714be",
+        "claim": "Normal-mode real browser, native and synthetic paste: unmapped video alone, video fallback, SVG text and object fallback each show one warning toast; Google Docs-style HTML shows none."
+      },
+      {
+        "path": "packages/platejs/src/lib/plugins/dom/DOMPlugin.spec.ts",
+        "sha256": "8b6c1e82c2ed00f148d531fb63a52f1da94f08142585a1d6ea51773bb5a0ee7f",
+        "claim": "The review's five cases report lossy (unhandled for media alone) and the Docs control does not; five fail with the old behavior."
+      },
+      {
+        "path": "packages/platejs/src/html/html.spec.ts",
+        "sha256": "37d789fd1de3aeaf112ecbab4417598d4c6ff5a646f7cdf091e77b34dadc3b59",
+        "claim": "Media fallback is reported as replaced and fails a reject parse; picture reports only its img; safety removal is lossless for metadata, handlers and script URLs and lossy for SVG text and object fallback."
+      }
+    ],
+    "limits": "Browser proof is Chromium only; the toast proof ran against a normal-mode dev server because the Playwright lane mounts no Toaster. Pasting web content with SVG icons now warns because those icons are dropped. The video plugin still has no HTML mapping."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "f4ef29918d176ec0822b7193d2e59908c1cc6e89bfaf0cb6c7b811b20c3b2af1",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "20628cd7957c1d69b568623185dd095c524a51215440238121100bc7bcf5d28b",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "2751ce59b5d206bef6af5bc5a61a9fedf0086b783aad5a3473a675f90467e337",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "999850e12b5fbd28d2287c194b469deb7f631a5598fbbc16fafda397beab2318",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "a3faa5e9d4077cf39e655b0001bd660d742f9a5c00e8cb71e1e9e20f58cbac07",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "ce017969c0a1d0f5798538c9274348a6dbb65b0d91a3024bc85bb8037948a3b0",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts": "b381d6363dcccb2002cfafeb1b391567df78efebd214d06dd6f68d7cf776eb49",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "091294c8ca17a2ee26721bc57c1bdef55d0aa8945db7e1286801e80054e1c948",
+      "packages/platejs/src/docx/import/lib/importDocx.spec.ts": "f3b5bcc14f508661ae8d80c1b22e06a0db88d047571cf00941a9b15213864ec6",
+      "docs/analysis/editor-architecture-candidates.md": "14a88723e948ca14db76a0a585c0c5561c1d396abb5ade4ba8d31c620e79765d",
+      "docs/research/decisions/export-fidelity.md": "79ffe6d0ca425a1f0453ab883efeec3f2c5846a3eb1a4be16650d91a36ff6ed9",
+      "docs/research/decisions/documents-conversion-fidelity.md": "5fb0180c2b81cfae47ed40abd33e344f5685a6e684219dbd558d05235c4d065d",
+      "docs/research/decisions/persistence-ownership.md": "ba8d50f5450f067eb6f3ea0096ee7fd408be03da09fbbb8c18df5df0d4138866",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "6e9232116ec17850ea276145afc73a9f424b5a3d91b49d0bd4e24aa4f030a1da",
+      "packages/platejs/src/lib/plugins/html/htmlAst.ts": "653a70796eaeb67bfe2b68adea5600062812c8dd41259629d2d28db1588b8924",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "dffc576c3a974de9d6a4240a6769a5fb25ae62e340a481634a139ffc3da274ad",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "77787a74cbf9d9d79d8edf7f22f18570e8e6c6969fbda188006252a5a9800345",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "4d30d2506f7a5c0ad61659fe406e9ff204faaa91783ec169a7061167b1390395",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "856a1765f506f1d1df06d897bff42628b7238e0ed8b73cba5aaaf57b23f267e3",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "04fa79bafc401c06ed19fb2b233eed20504fa44d8d7381601f76d42011724096",
+      "packages/plitejs/src/core/persisted-document.ts": "e605b0ed6d719d0b68f393bf531bd64e257fbe402851c77463fbbfac40281575",
+      "packages/platejs/src/migrations/documentMigrations.ts": "6a823432296edd3372d0e79aa0186f2ef10ce461b57801264302e6485bae5a99",
+      "content/docs/(guides)/serializing.mdx": "df772d4f701ccc2bcca35fff60797c31694aa564ba14ac912ee0d5111efe43f1",
+      "content/docs/(plugins)/(serializing)/html.mdx": "848c032261951da9328e48255f872505f08d5733666a2e8ceaf36f9f15039d09",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "8ce874a4eb33a0c0b38ec1b913d2fc695bfcc9120d28e39e83c3db01f7810857",
+      "content/docs/(plugins)/(serializing)/docx.mdx": "e34d1299002a355297c9d91235e73625917c93c7702d1806540af99fff9dac40",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "b454aad2b2feff4f1d9e47e0205006fd264b4509f5deb86408a998fcd892c446"
+    },
+    "directories": {},
+    "features": {
+      "example/plite/parse-html": "8ebfcea1d39948b0fd313147864130c49ad8bfe56035bdeb84a2c37c0304fc66"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-28-paste-loss-reporting-repairs.md",
+    "docs/research/review-records/2026-09-28-imports-paste-loss-reporting-review.json",
+    "docs/research/review-records/2026-09-28-conversion-correctness-guarantees.json"
+  ]
+}

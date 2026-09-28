@@ -1,14 +1,9 @@
 import type { Element } from '../../../core';
 import { failInvariant } from '../../internal/failInvariant';
-import type { MdList, MdListItem, MdRootContent } from '../mdast';
+import type { MdList, MdListItem } from '../mdast';
 import type { SerializeMdContext } from '../types';
 import { convertNodesSerialize } from './convertNodesSerialize';
-import { wrapWithBlockId, isMdPhrasingContent } from './wrapWithBlockId';
-
-export type MdListFragment = {
-  children: MdRootContent[];
-  type: 'fragment';
-};
+import { isMdPhrasingContent } from './mdastContent';
 
 type SerializableListElement = Element & {
   checked?: boolean;
@@ -27,36 +22,12 @@ export const getSerializableListStyle = (
     ? undefined
     : node.listStyle;
 
-export function listToMdastTree(
+export const listToMdastTree = (
   nodes: readonly SerializableListElement[],
-  options: SerializeMdContext,
-  isBlock?: false
-): MdList;
-export function listToMdastTree(
-  nodes: readonly SerializableListElement[],
-  options: SerializeMdContext,
-  isBlock: true
-): MdList | MdListFragment;
-export function listToMdastTree(
-  nodes: readonly SerializableListElement[],
-  options: SerializeMdContext,
-  isBlock?: boolean
-): MdList | MdListFragment;
-export function listToMdastTree(
-  nodes: readonly SerializableListElement[],
-  options: SerializeMdContext,
-  isBlock = false
-): MdList | MdListFragment {
+  options: SerializeMdContext
+): MdList => {
   if (nodes.length === 0) {
     throw new Error('Cannot create a list from empty nodes');
-  }
-
-  if (
-    options.withBlockId &&
-    isBlock &&
-    nodes.some((node) => options.blockId?.(node))
-  ) {
-    return processListWithBlockIds(nodes, options);
   }
 
   // Normal list processing
@@ -191,113 +162,4 @@ export function listToMdastTree(
   }
 
   return root;
-}
-
-/**
- * Process list nodes with block IDs by wrapping each item separately This
- * preserves list numbering while allowing individual block wrapping
- */
-function processListWithBlockIds(
-  nodes: readonly SerializableListElement[],
-  options: SerializeMdContext
-): MdListFragment {
-  const fragments: MdRootContent[] = [];
-  const ordinals = getListOrdinals(nodes);
-
-  // Process each node individually
-  for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i];
-
-    // Create a single-item list for this node
-    const singleList: MdList = {
-      children: [],
-      ordered: node.listType === 'numbered',
-      spread: options.spread ?? false,
-      // For ordered lists, preserve the correct number
-      start: ordinals[i],
-      type: 'list',
-    };
-
-    // Create the list item
-    const listItem: MdListItem = {
-      checked: null,
-      children: [
-        {
-          children: convertNodesSerialize(node.children, options).filter(
-            isMdPhrasingContent
-          ),
-          type: 'paragraph',
-        },
-      ],
-      spread: options.spread ?? false,
-      type: 'listItem',
-    };
-
-    // Add checked property for todo lists
-    if (node.listType === 'task' && node.checked !== undefined) {
-      listItem.checked = node.checked;
-    }
-
-    singleList.children.push(listItem);
-
-    const blockId = options.blockId?.(node);
-
-    if (blockId) {
-      fragments.push(wrapWithBlockId(singleList, blockId));
-    } else {
-      fragments.push(singleList);
-    }
-  }
-
-  // Return a fragment containing all wrapped lists
-  return {
-    children: fragments,
-    type: 'fragment',
-  };
-}
-
-const getListOrdinals = (nodes: readonly SerializableListElement[]) => {
-  const counters = new Map<string, number>();
-  const activeSequenceByIndent = new Map<number, string>();
-  const ordinals: Array<number | undefined> = [];
-
-  for (const node of nodes) {
-    const indent = node.indent ?? 1;
-
-    for (const key of counters.keys()) {
-      if (Number(key.split(':', 1)[0]) > indent) counters.delete(key);
-    }
-    for (const activeIndent of activeSequenceByIndent.keys()) {
-      if (activeIndent > indent) activeSequenceByIndent.delete(activeIndent);
-    }
-
-    const listStyle = getSerializableListStyle(node);
-    const sequence = `${node.listType}:${listStyle ?? ''}`;
-    const continues = activeSequenceByIndent.get(indent) === sequence;
-
-    if (!continues) {
-      for (const key of counters.keys()) {
-        if (key.startsWith(`${indent}:`)) counters.delete(key);
-      }
-      activeSequenceByIndent.set(indent, sequence);
-    }
-
-    if (node.listType !== 'numbered') {
-      ordinals.push(undefined);
-      continue;
-    }
-
-    const key = `${indent}:${node.listType}:${listStyle ?? ''}`;
-    const ordinal =
-      typeof node.listRestart === 'number'
-        ? node.listRestart
-        : !continues && typeof node.listStart === 'number'
-          ? node.listStart
-          : (counters.get(key) ?? 0) + 1;
-
-    counters.set(key, ordinal);
-    ordinals.push(ordinal);
-  }
-
-  return ordinals;
 };

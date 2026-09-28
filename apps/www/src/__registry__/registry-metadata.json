@@ -1,5 +1,5 @@
 {
-  "generation": "0abec498d16f2a2971c7e336e9ec76092cca09b8caa92b2a342450cd7b1b8fec",
+  "generation": "a85e13b213572036bd2976616fabd828d57eee5aa7fd984938d4b807da99ff99",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -123,7 +123,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -174,7 +173,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -253,7 +251,6 @@
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -301,7 +298,6 @@
             "xmlbuilder2",
             "diff-match-patch-ts@^0.6.0",
             "katex@0.16.22",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -2453,7 +2449,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -2587,7 +2582,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -2952,7 +2946,6 @@
             "platejs",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -3300,7 +3293,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -3498,7 +3490,6 @@
             "remark-gfm",
             "remark-math",
             "diff-match-patch-ts@^0.6.0",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -3700,7 +3691,6 @@
             "lucide-react",
             "mermaid@^11.6.1",
             "plantuml-encoder@^1.4.0",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5",
@@ -3900,7 +3890,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "next",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -4059,7 +4048,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -4091,7 +4079,6 @@
             "sonner",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -4985,11 +4972,7 @@
             "platejs",
             "remark-gfm",
             "remark-math",
-            "diff-match-patch-ts@^0.6.0",
-            "remark-mdx@^3.1.0",
-            "remark-parse@^11.0.0",
-            "remark-stringify@^11.0.0",
-            "unified@^11.0.5"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -5015,7 +4998,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -6843,7 +6825,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -6894,7 +6875,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -6973,7 +6953,6 @@
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -7021,7 +7000,6 @@
             "xmlbuilder2",
             "diff-match-patch-ts@^0.6.0",
             "katex@0.16.22",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -9167,7 +9145,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -9301,7 +9278,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -9666,7 +9642,6 @@
             "platejs",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -10014,7 +9989,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -10212,7 +10186,6 @@
             "remark-gfm",
             "remark-math",
             "diff-match-patch-ts@^0.6.0",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -10414,7 +10387,6 @@
             "lucide-react",
             "mermaid@^11.6.1",
             "plantuml-encoder@^1.4.0",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5",
@@ -10614,7 +10586,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "next",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -10773,7 +10744,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -10805,7 +10775,6 @@
             "sonner",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"
@@ -11699,11 +11668,7 @@
             "platejs",
             "remark-gfm",
             "remark-math",
-            "diff-match-patch-ts@^0.6.0",
-            "remark-mdx@^3.1.0",
-            "remark-parse@^11.0.0",
-            "remark-stringify@^11.0.0",
-            "unified@^11.0.5"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -11729,7 +11694,6 @@
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
-            "remark-mdx@^3.1.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
             "unified@^11.0.5"

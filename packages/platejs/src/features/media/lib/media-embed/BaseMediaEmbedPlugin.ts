@@ -154,27 +154,34 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
       ],
       markdown: [
         {
-          from: type,
-          decode: ({ caption, decode, node, parseAttributes }) => {
-            const { src, ...props } = parseAttributes(node.attributes);
+          tag: type,
+          decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
+            const { attributes, properties } = readTagAttributes();
+            const content = caption(decode(node.children));
+
+            if (!content) {
+              return refuse(
+                'Media captions must contain one Markdown paragraph.'
+              );
+            }
 
             return {
-              ...props,
-              children: caption(decode(node.children)),
+              ...properties,
+              children: content,
               type,
-              url: typeof src === 'string' ? src : '',
+              url: typeof attributes.src === 'string' ? attributes.src : '',
             };
           },
           encode: ({
             encodePhrasing,
+            encodeAttributes,
             node,
-            propsToAttributes,
             readPlainInline,
           }) => {
             const { children, type: _, url, ...rest } = node;
 
             return {
-              attributes: propsToAttributes({ ...rest, src: url }),
+              attributes: encodeAttributes({ ...rest, src: url }),
               children:
                 readPlainInline(children) !== ''
                   ? [

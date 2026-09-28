@@ -44,26 +44,22 @@ if (blocks.ok) editor.update.slice.replace(blocks.slice);
 if (inline.ok) editor.update.slice.replace(inline.slice);
 ```
 
-Direct syntax parsing does not preserve arbitrary open edges or detached roots.
-Those are native transfer properties owned by `DataTransferFormat`.
+`parseInline` accepts one paragraph of content; block content fails with
+`markdown-inline-blocks`. Direct syntax parsing does not preserve arbitrary open
+edges or detached roots. Those are native transfer properties owned by
+`DataTransferFormat`.
 
 ### Detached conversion
 
 ```ts
-import {
-  parseMarkdown,
-  parseMarkdownInline,
-  parseMarkdownSlice,
-} from 'platejs/markdown';
+import { parseMarkdown } from 'platejs/markdown';
 
-const document = parseMarkdown(source, { plugins: EditorKit });
-const blocks = parseMarkdownSlice(source, { plugins: EditorKit });
-const inline = parseMarkdownInline(source, { plugins: EditorKit });
+const result = parseMarkdown(source, { plugins: EditorKit });
 ```
 
 Standalone functions compile the supplied plugin declarations for one
 operation. They do not activate an editor runtime, handlers, effects, or React
-hooks.
+hooks. Parse slices and inline content through an installed editor.
 
 ## Serialize Markdown
 
@@ -106,6 +102,112 @@ diagnosed result.
 `{ ok: false, diagnostics }` without `data`. `lossPolicy: 'allow'` can publish
 only a drop, replacement, or unwrap that the format reports as a warning.
 
+## Syntax
+
+Plate reads and writes CommonMark plus the tags that installed feature plugins
+register. GFM, math, and emoji come from the [remark plugins](#remark-plugins)
+configured on `MarkdownPlugin`. Registered tags look like HTML, but only
+registered names are tags and nothing is evaluated.
+
+### Registered tags
+
+| Tag | Feature |
+| --- | --- |
+| `<callout icon="💡">…</callout>` | [Callout](/docs/callout) |
+| `<columnGroup>`, `<column width="50%">` | [Column](/docs/column) |
+| `<details>`, `<summary>` | [Details](/docs/details) |
+| `<toc />` | [Table of Contents](/docs/toc) |
+| `<date value="2025-01-01" />` | [Date](/docs/date) |
+| `<img>`, `<figure>` with `<figcaption>` | [Image](/docs/media) |
+| `<video src="…" />`, `<audio>`, `<file>`, `<mediaEmbed>` | [Media](/docs/media) |
+| `<u>`, `<kbd>`, `<mark>`, `<sub>`, `<sup>`, `<del>` | [Basic marks](/docs/basic-marks) |
+| `<span style="color: red;">` | [Font](/docs/font) colors, family, size, and weight |
+
+A tag is registered only while its feature plugin is installed. Element tags
+use the schema type, so an application that renames a type also renames its
+tag.
+
+### Writer output
+
+```md
+<callout icon="💡">Remember to save.</callout>
+
+<details>
+
+<summary>Title</summary>
+
+Body text.
+
+</details>
+
+Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
+```
+
+- Block tags are separated from their content by blank lines, with no
+  indentation.
+- A block holding one single-line paragraph stays on one line.
+- Attribute values are double-quoted. `&` is written as `&amp;`, `"` as
+  `&quot;`, and a newline as `&#10;`.
+- Footnote labels that CommonMark would merge, such as `A` and `a`, are written
+  as distinct labels.
+
+### Reading rules
+
+- Every string parses. Raw HTML that no mapping accepts stays literal text and
+  reports `markdown-unsupported-node`: an error under the default
+  `lossPolicy: 'reject'`, a warning under `'allow'`.
+- HTML comments are dropped with a warning.
+- `<br>`, `<br/>`, and `<br />` become line breaks.
+- A line holding only a registered block tag is a block, even next to paragraph
+  text. A block tag elsewhere in a paragraph, heading, or table cell stays text.
+- Tags pair within one container, such as a paragraph, list item, or block
+  quote. An unclosed tag closes at the end of its container, and an unmatched
+  closing tag stays text. Each repair reports a `markdown-tag-repair` warning
+  with `reason: 'unclosed' | 'unmatched' | 'misplaced'`.
+- Inside a Plate block tag, only fenced code is code. Indented lines are read
+  as Markdown, so indented tag bodies parse like unindented ones. Attribute
+  values written as `name={…}` are read as their raw text.
+- Reference-style links and images, `[text][ref]` with a `[ref]: url`
+  definition, resolve to ordinary links and images.
+
+### Mentions
+
+Mentions are links with a `mention:` URL. Bare `@jane` text stays text.
+
+```md
+Hello [Jane Smith](mention:user_123).
+```
+
+See [Mention](/docs/mention#markdown).
+
+### Block IDs
+
+Markdown does not carry element IDs, and serialization writes none. Parsing
+reads a `<block id="…">` wrapper around one block: with `ElementIdPlugin`
+installed, the block keeps that `id`; otherwise the wrapper is removed with a
+`markdown-unsupported-node` warning. Mappings cannot claim the `block` tag.
+
+## Streaming previews
+
+Parse an unfinished stream prefix with `partial: true`, then parse the complete
+source without it:
+
+```ts
+const preview = editor.api.markdown.parse(accumulated, {
+  lossPolicy: 'allow',
+  partial: true,
+});
+
+// After the stream ends:
+const result = editor.api.markdown.parse(accumulated);
+```
+
+`partial: true` hides a trailing tag that has not finished arriving, such as
+`Before <callo`, and does not report tags left open at the end of the source.
+`lossPolicy: 'allow'` keeps unsupported content visible as text while the
+stream is incomplete. The final parse stays strict. AI chat previews use these
+options; see [AI streaming](/docs/ai#streaming).
+
 ## Authored content
 
 Markdown represents visible `accepted` or `proposed` content. It does not append
@@ -129,7 +231,7 @@ views, model location while encoding, and a Markdown-specific `report`
 function. They do not receive a live editor or store.
 
 ```ts
-import { definePlugin, property, schema } from 'platejs';
+import { definePlugin, ElementApi, property, schema } from 'platejs';
 
 const CalloutPlugin = definePlugin('callout', {
   schema: {
@@ -140,54 +242,117 @@ const CalloutPlugin = definePlugin('callout', {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       markdown: {
-        from: 'callout',
-        decode: ({ decode, node, parseAttributes }) => {
-          const { tone } = parseAttributes(node.attributes);
-          const [paragraph] = node.children;
+        tag: type,
+        decode: ({ decode, marks, isInline, node, readTagAttributes, refuse }) => {
+          const paragraph =
+            node.children.length === 1 && node.children[0]?.type === 'paragraph'
+              ? node.children[0]
+              : undefined;
+          const children = decode(
+            paragraph ? paragraph.children : node.children,
+            marks
+          );
+
+          if (children.some((child) => ElementApi.isElement(child) && !isInline(child))) {
+            return refuse('Callout content must be inline Markdown.');
+          }
+
+          return { ...readTagAttributes().properties, children, type };
+        },
+        encode: ({ encodeAttributes, encodePhrasing, node }) => {
+          const { children, type: _, ...properties } = node;
 
           return {
-            children: decode(
-              paragraph?.type === 'paragraph' ? paragraph.children : []
-            ),
-            tone: typeof tone === 'string' ? tone : 'info',
-            type,
+            attributes: encodeAttributes(properties),
+            children: [{ children: encodePhrasing(children), type: 'paragraph' }],
+            name: type,
+            type: 'mdxJsxFlowElement',
           };
         },
-        encode: ({ encodePhrasing, node }) => ({
-          attributes: [
-            { name: 'tone', type: 'mdxJsxAttribute', value: node.tone ?? 'info' },
-          ],
-          children: [
-            { children: encodePhrasing(node.children), type: 'paragraph' },
-          ],
-          name: 'callout',
-          type: 'mdxJsxFlowElement',
-        }),
       },
     }),
 });
 ```
 
-`from` names the Markdown source node the mapping decodes; MDX elements such as
-`<callout>` require `remarkMdx` in `remarkPlugins`. Use `defineFormats(map)`
-for self mappings and `defineFormats(TargetPlugin, map)` for a foreign target.
-A plugin's `formats` accept only the `html`, `markdown`, and `plainText` keys;
-MIME payloads belong in `dataTransferFormats`.
+This mapping reads and writes `<callout tone="info">Text</callout>`.
 
-## Remark plugins
+- `node` selects a standard Markdown node kind, such as `'blockquote'`,
+  `'link'`, or `'image'`. `tag` registers a Plate tag; for an element, use its
+  schema `type`. Select one of them. `nestedTags` names tags read only inside
+  this tag, such as Image's `figcaption`.
+- Returning `undefined` from `decode` declines the node; the next mapping for
+  the same source runs, in descending `priority` order. Mention decodes
+  `mention:` links this way before Link.
+- `marks` contains the inherited persisted text marks. Pass it to `decode` or
+  `decodeNodes` when nested content must keep those marks.
+- `readTagAttributes(tag?)` returns `{ attributes, properties }`: every
+  attribute as written, and the attributes that name schema properties, decoded
+  by the property kind. String properties stay strings, including JSON-looking
+  values. An invalid value is left out with a `markdown-property-omitted`
+  warning.
+- `refuse(message)` reports content the feature cannot represent as
+  `markdown-unsupported-node`. A refused tag keeps its source text.
+- `caption(children)` returns inline content when `children` is one paragraph,
+  and `null` otherwise.
+- `encodeAttributes(properties)` writes property values as tag attributes.
+  `encode` can also `refuse(message)`.
+- Element properties the encoder never reads are reported as
+  `markdown-property-omitted` warnings. Passing the remaining properties to
+  `encodeAttributes` claims all of them.
 
-`remarkPlugins` accepts synchronous unified plugins for one parse or serialize
-operation.
+A mark mapping sets `mark: true`. Its `decode` returns the mark value, such as
+`true` or a color, and `wrap` returns the inline wrapper to write, such as
+`{ type: 'strong' }` or a tag; Markdown supplies the wrapper's children. Every
+mark mapping on the same source contributes and the children decode once, so
+`<span style="color: red; background-color: yellow;">` sets both marks. When no
+mark mapping returns a value, the tag keeps its source text. Mark mappings take
+no `priority`, and exporting a mark without `wrap` reports it.
 
 ```ts
-const result = parseMarkdown(source, {
-  plugins: EditorKit,
-  remarkPlugins: [remarkGfm, [remarkMdx, { acorn: true }]],
+import { definePlugin, property } from 'platejs';
+
+const KbdPlugin = definePlugin('kbd', {
+  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      markdown: {
+        tag: 'kbd',
+        mark: true,
+        decode: () => true,
+        wrap: () => ({ name: 'kbd', type: 'mdxJsxTextElement' }),
+      },
+    }),
 });
 ```
 
-An attacher or transformer that returns a Promise is a configuration error and
-throws. The synchronous functions never return `Result | Promise<Result>`.
+Pass an array to declare several mappings for one plugin. Use
+`defineFormats(map)` for self mappings and `defineFormats(TargetPlugin, map)`
+for a foreign target. A plugin's `formats` accept only the `html`, `markdown`,
+and `plainText` keys; MIME payloads belong in `dataTransferFormats`.
+
+## Remark plugins
+
+Configure remark plugins once on `MarkdownPlugin`. Every parse and serialize
+operation of that editor uses them. `MarkdownKit` enables GFM, math, and emoji:
+
+<ComponentSource name="markdown" />
+
+```ts
+import { MarkdownPlugin } from 'platejs/markdown';
+import remarkGfm from 'remark-gfm';
+
+const plugins = [
+  ...BasicBlocksKit,
+  MarkdownPlugin.configure({
+    initialState: { remarkPlugins: [remarkGfm] },
+  }),
+];
+```
+
+Standalone functions read the configured `MarkdownPlugin` from `plugins`.
+Remark plugins must be synchronous. An attacher or transformer that returns a
+Promise is a configuration error and throws. The synchronous functions never
+return `Result | Promise<Result>`.
 
 ## Results and diagnostics
 
@@ -205,9 +370,19 @@ useDocument(result.document);
 reportWarnings(result.diagnostics);
 ```
 
-Diagnostics cover invalid source, resource limits, filters, unsupported nodes
-or roots, incomplete-stream fallback, schema recovery, and authored projection.
-Configuration failures and mapping contract violations throw.
+| Code | Severity | Reports |
+| --- | --- | --- |
+| `markdown-unsupported-node` | Error under `'reject'`, warning under `'allow'` | Content no mapping accepts, refused content, or nodes dropped on export. HTML comments and removed `<block>` wrappers warn. |
+| `markdown-tag-repair` | Warning | An `unclosed`, `unmatched`, or `misplaced` registered tag. |
+| `markdown-property-omitted` | Warning | An element property Markdown cannot carry on export, such as `textAlign`, or an invalid tag attribute value on import. |
+| `markdown-limit-exceeded` | Error | Source bytes, node count, or depth above `limits`. |
+| `markdown-inline-blocks` | Error | `parseInline` input that produced blocks. |
+| `markdown-schema-repair` | Warning; error when lossy under `'reject'` | A schema repair applied to the parsed document. |
+| `markdown-schema-invalid` | Error | Parsed content the schema rejects. |
+| `markdown-unsupported-root`, `markdown-unsupported-metadata` | Warning | A named root or document metadata omitted on export. |
+
+Authored projection diagnostics use the same result. Configuration failures and
+mapping contract violations throw.
 
 The defaults are 5 MiB of UTF-8 source, 100,000 mdast nodes, and depth 256.
 Markdown checks bytes before parsing and applies node/depth admission after the
@@ -218,17 +393,32 @@ parser returns because mdast does not expose a bounded construction hook.
 | API | Result |
 | --- | --- |
 | `parseMarkdown(source, options)` | Complete `EditorDocumentValue`. |
-| `parseMarkdownSlice(source, options)` | Closed, rootless block `ContentSlice`. |
-| `parseMarkdownInline(source, options)` | Closed, rootless inline `ContentSlice`. |
 | `serializeMarkdown(document, options)` | Markdown string in `data`. |
 | `editor.api.markdown.parse(source, options?)` | Complete document using the installed target. |
-| `editor.api.markdown.parseSlice(source, options?)` | Block slice using the installed target. |
-| `editor.api.markdown.parseInline(source, options?)` | Inline slice using the installed target. |
+| `editor.api.markdown.parseSlice(source, options?)` | Closed, rootless block `ContentSlice`. |
+| `editor.api.markdown.parseInline(source, options?)` | Closed, rootless inline `ContentSlice`. |
 | `editor.api.markdown.serialize(options?)` | Current or supplied document using the installed target. |
 
-Import standalone functions and types from `platejs/markdown`. Direct options
-require `plugins` and may include `schema`, `limits`, `lossPolicy`, synchronous
-`remarkPlugins`, filters, MDX/line-break policy, and preservation policy.
-Serialization additionally accepts `projection`, stringify options, block-ID
-policy, plain-mark policy, and list spread. Installed editor methods omit
-`plugins` and `schema` because the plugin captures them from the editor.
+Import `MarkdownPlugin`, the standalone functions, and their result,
+diagnostic, and option types from `platejs/markdown`.
+
+| Parse option | Use |
+| --- | --- |
+| `limits` | Override `maxBytes`, `maxNodes`, or `maxDepth`. |
+| `lossPolicy` | `'reject'` (default) or `'allow'`. |
+| `partial` | Parse an unfinished stream prefix for a preview. |
+
+| Serialize option | Use |
+| --- | --- |
+| `document` | Editor method only: the document to serialize, typed as the editor's value. Defaults to the current value. |
+| `lossPolicy` | `'reject'` (default) or `'allow'`. |
+| `plainMarks` | Mark keys written as plain text without Markdown formatting. |
+| `preserveEmptyParagraphs` | Keep empty paragraphs. Defaults to `true`. |
+| `projection` | `'accepted'` or `'proposed'`. Required for authored documents. |
+| `remarkStringifyOptions` | Options passed to `remark-stringify`. |
+| `spread` | Write loose lists. Defaults to `false`. |
+
+Standalone functions also require `plugins` and accept `schema`. Installed
+editor methods omit both because the plugin captures them from the editor.
+`MarkdownPlugin` state holds `remarkPlugins`, `remarkStringifyOptions`, and
+`plainMarks`.

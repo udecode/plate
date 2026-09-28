@@ -40,6 +40,17 @@ const URL_ATTRIBUTES = new Set([
   'src',
   'xlink:href',
 ]);
+// Removing these renders nothing less: metadata, scripts and style sheets.
+const NON_RENDERING_UNSAFE_ELEMENTS = new Set([
+  'base',
+  'link',
+  'meta',
+  'script',
+  'style',
+]);
+// Removing a blocked data: source here drops the media it carries; a script URL
+// was never content.
+const CONTENT_URL_ATTRIBUTES = new Set(['poster', 'src']);
 const UNSAFE_URL = /^(?:javascript|vbscript):/iu;
 const CSS_RESOURCE = /(?:\burl\s*\(|@import\b)/iu;
 const SAFE_IMAGE_DATA_URL =
@@ -296,15 +307,38 @@ const isSafeUrl = (tag: string, name: string, value: string) => {
   );
 };
 
+// An author who hides a subtree from assistive technology declares it
+// decorative, as icon sets do for inline SVG.
+const isAriaHidden = (node: HtmlAstElement) => {
+  for (
+    let current: HtmlAstNode | null = node;
+    current && defaultTreeAdapter.isElementNode(current);
+    current = current.parentNode
+  ) {
+    if (
+      current.attrs.some(
+        ({ name, value }) =>
+          name === 'aria-hidden' && value.trim().toLowerCase() === 'true'
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const unsafeDiagnostic = (
   source: string,
   node: HtmlAstNode,
   kind: 'attribute' | 'element' | 'style' | 'url',
-  message: string
+  message: string,
+  impact: 'lossless' | 'lossy'
 ): HtmlWarningDiagnostic =>
   Object.freeze({
     action: 'removed' as const,
     code: 'html-unsafe-content' as const,
+    impact,
     kind,
     message,
     severity: 'warning' as const,
@@ -334,7 +368,12 @@ const applySafetyPolicy = (
           source,
           node,
           'element',
-          `Removed unsafe HTML element <${tag}>.`
+          `Removed unsafe HTML element <${tag}>.`,
+          (node.namespaceURI === HTML_NAMESPACE &&
+            NON_RENDERING_UNSAFE_ELEMENTS.has(tag)) ||
+            isAriaHidden(node)
+            ? 'lossless'
+            : 'lossy'
         )
       );
       children.splice(index, 1);
@@ -363,7 +402,13 @@ const applySafetyPolicy = (
           source,
           node,
           name === 'style' ? 'style' : kind,
-          `Removed unsafe HTML attribute "${attribute.name}" from <${tag}>.`
+          `Removed unsafe HTML attribute "${attribute.name}" from <${tag}>.`,
+          name === 'style' ||
+            name === 'srcdoc' ||
+            (CONTENT_URL_ATTRIBUTES.has(name) &&
+              !UNSAFE_URL.test(attribute.value.trim()))
+            ? 'lossy'
+            : 'lossless'
         )
       );
       node.attrs.splice(attributeIndex, 1);

@@ -629,6 +629,44 @@ describe('Base media plugin contracts', () => {
     ]);
   });
 
+  it.each([
+    ['video', BaseVideoPlugin],
+    ['audio', BaseAudioPlugin],
+  ] as const)('round-trips %s and its caption through HTML', (tag, plugin) => {
+    const node = {
+      children: [{ text: 'Media caption' }],
+      type: tag,
+      url: `https://platejs.org/clip.${tag === 'video' ? 'mp4' : 'mp3'}`,
+      width: '50%',
+    };
+    const editor = createEditor({
+      plugins: [plugin],
+      selection: SelectionApi.nodes([[0]]),
+      initialValue: [node],
+    });
+    const data = new DataTransfer();
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    const figure = new DOMParser()
+      .parseFromString(data.getData('text/html'), 'text/html')
+      .body.querySelector(`figure.editor-${tag}`);
+    const media = figure?.querySelector<HTMLElement>(`:scope > ${tag}`);
+
+    expect(media?.getAttribute('src')).toBe(node.url);
+    expect(media?.hasAttribute('controls')).toBe(true);
+    expect(figure?.querySelector(':scope > figcaption')?.textContent).toBe(
+      'Media caption'
+    );
+    expect(parseHtmlSliceContent(editor, figure!.outerHTML)).toEqual([node]);
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        `<${tag}><source src="${node.url}">Fallback text</${tag}>`
+      )
+    ).toEqual([{ children: [{ text: '' }], type: tag, url: node.url }]);
+  });
+
   it('encodes a visible image and caption with standard media attributes', () => {
     const editor = createEditor({
       plugins: [BaseImagePlugin],

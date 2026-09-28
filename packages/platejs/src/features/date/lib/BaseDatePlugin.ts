@@ -11,9 +11,9 @@ export const BaseDatePlugin = definePlugin(PLUGINS.date, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       markdown: {
-        from: type,
-        decode: ({ node, parseAttributes }) => {
-          const props = parseAttributes(node.attributes);
+        tag: type,
+        decode: ({ node, readTagAttributes }) => {
+          const props = readTagAttributes().properties;
           const firstChild = node.children[0];
           const dateValue =
             typeof props.value === 'string'
@@ -31,10 +31,10 @@ export const BaseDatePlugin = definePlugin(PLUGINS.date, {
             value,
           };
         },
-        encode: ({ node, propsToAttributes }) => {
+        encode: ({ encodeAttributes, node }) => {
           if (parseCanonicalDateValue(node.value)) {
             return {
-              attributes: propsToAttributes({ value: node.value }),
+              attributes: encodeAttributes({ value: node.value }),
               children: [],
               name: type,
               type: 'mdxJsxTextElement',

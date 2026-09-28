@@ -48,28 +48,40 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
     formats: ({ defineFormats, schema: { type } }) =>
       defineFormats({
         markdown: {
-          from: 'footnoteDefinition',
-          decode: ({ decodeNodes, decoration, node, registry }) => {
-            if (!isNonBlankRef(node.identifier)) return undefined;
+          node: 'footnoteDefinition',
+          decode: ({ decodeNodes, marks, isInline, node, registry }) => {
+            // `label` keeps the source spelling; `identifier` is normalized.
+            const ref = node.label ?? node.identifier;
+
+            if (!isNonBlankRef(ref)) return undefined;
 
             const paragraphType =
               registry.type(PLUGINS.paragraph) ?? 'paragraph';
-            const children = decodeNodes(node.children, decoration);
-            const blocks = children.map((child) =>
-              !TextApi.isText(child) && child.type === paragraphType
-                ? child
-                : {
-                    children: [child],
-                    type: paragraphType,
-                  }
-            );
+            const blocks: Descendant[] = [];
+            let inline: Descendant[] = [];
+            const flush = () => {
+              if (inline.length === 0) return;
+              blocks.push({ children: inline, type: paragraphType });
+              inline = [];
+            };
+
+            // Definitions hold block content; only inline runs need a paragraph.
+            for (const child of decodeNodes(node.children, marks)) {
+              if (TextApi.isText(child) || isInline(child)) {
+                inline.push(child);
+              } else {
+                flush();
+                blocks.push(child);
+              }
+            }
+            flush();
 
             return {
               children:
                 blocks.length > 0
                   ? blocks
                   : [{ children: [{ text: '' }], type: paragraphType }],
-              ref: node.identifier,
+              ref,
               type,
             };
           },
@@ -134,15 +146,14 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       markdown: {
-        from: 'footnoteReference',
-        decode: ({ node }) =>
-          isNonBlankRef(node.identifier)
-            ? {
-                children: [{ text: '' }],
-                ref: node.identifier,
-                type,
-              }
-            : undefined,
+        node: 'footnoteReference',
+        decode: ({ node }) => {
+          const ref = node.label ?? node.identifier;
+
+          return isNonBlankRef(ref)
+            ? { children: [{ text: '' }], ref, type }
+            : undefined;
+        },
         encode: ({ node }) => ({
           identifier: node.ref,
           type: 'footnoteReference',

@@ -729,7 +729,8 @@ const compileRule = (
   pluginsByName: ReadonlyMap<string, AnyBasePlugin>,
   ownerPlugin: AnyBasePlugin,
   target: string | null,
-  factory: ErasedPluginCallable
+  factory: ErasedPluginCallable,
+  defaultBlockType: string | null
 ): CompiledHtmlRule => {
   function assertDeclaration(
     value: unknown
@@ -873,9 +874,18 @@ const compileRule = (
         `Plate HTML mapping "${ownerPlugin.name}" can use createsElement only for self-owned element properties.`
       );
     }
-    const primaryTarget = targetPlugin.targetPlugins[0];
+    const targetNames = targetPlugin.targetPlugins.map((primaryTarget) =>
+      typeof primaryTarget === 'string' ? primaryTarget : primaryTarget.name
+    );
+    // Target order is membership, not intent: bare HTML content belongs in the
+    // schema's default block, while other targets may require properties the
+    // mapping cannot supply.
     const primaryName =
-      typeof primaryTarget === 'string' ? primaryTarget : primaryTarget?.name;
+      targetNames.find(
+        (name) =>
+          defaultBlockType !== null &&
+          model.byName[name]?.elementType === defaultBlockType
+      ) ?? targetNames[0];
     const primaryPlugin = primaryName
       ? pluginsByName.get(primaryName)
       : undefined;
@@ -889,7 +899,7 @@ const compileRule = (
       !primaryBinding.elementType
     ) {
       throw new Error(
-        `Plate HTML mapping "${ownerPlugin.name}" createsElement requires installed element targetPlugins[0].`
+        `Plate HTML mapping "${ownerPlugin.name}" createsElement requires an installed element target.`
       );
     }
     targetType = primaryBinding.elementType;
@@ -1786,6 +1796,17 @@ const htmlTreeLocation = (
   });
 };
 
+// Unmapped embedded content is lost even when its fallback children survive.
+// A <picture> is only a container: its <img> reports for itself. Mappings that
+// decline one instance report their own loss.
+const EMBEDDED_HTML_CONTENT = new Set([
+  'audio',
+  'canvas',
+  'iframe',
+  'img',
+  'video',
+]);
+
 type HtmlDecodeOperation = Readonly<{
   fitSchema?: boolean;
   onLoss?: (loss: HtmlMappingLoss) => void;
@@ -2023,6 +2044,27 @@ const decodeCompiledHtml = (
       : initialProperties;
 
     if (!structural) {
+      const tag = element.tagName.toLowerCase();
+
+      if (elementRules.length === 0 && EMBEDDED_HTML_CONTENT.has(tag)) {
+        operation.onLoss?.(
+          Object.freeze({
+            action:
+              markedChildren.length === 0
+                ? ('dropped' as const)
+                : ('replaced' as const),
+            kind: 'element' as const,
+            message:
+              markedChildren.length === 0
+                ? `Plate HTML decode has no mapping for <${tag}>.`
+                : `Plate HTML decode has no mapping for <${tag}>; kept its fallback content.`,
+            owner: 'plate:html',
+            source,
+          })
+        );
+
+        if (markedChildren.length === 0) return [];
+      }
       if (markedChildren.length === 0 && isHtmlBlockElement(element)) {
         return [];
       }
@@ -2977,10 +3019,10 @@ const restoreAppleConvertedSpaces = (root: HTMLElement) => {
 const decodeHtmlTransferWithArtifact = (
   artifact: CompiledPlateHtmlArtifact,
   context: DataTransferDecodeContext
-) => {
+): ContentSlice | null => {
   const parsed = parseHtmlAst(context.data, 'slice');
 
-  if (!parsed.ok) return parsed;
+  if (!parsed.ok) return null;
   const plainText = context.snapshot.getData('text/plain');
 
   if (plainText && getHtmlAstPlainText(parsed.ast) === plainText) return null;
@@ -2999,7 +3041,7 @@ const decodeHtmlTransferWithArtifact = (
     true
   ) as HtmlSliceParseResult;
 
-  return result.ok && result.slice.content.length === 0 ? null : result;
+  return result.ok && result.slice.content.length > 0 ? result.slice : null;
 };
 
 /** Decode HTML through the format already compiled for an operation state. @internal */
@@ -3021,6 +3063,11 @@ export const compilePlateHtmlFormat = (
   const pluginsByName = new Map(
     plugins.map((plugin) => [plugin.name, plugin] as const)
   );
+  const schemaApi = editor.read((state) => state.schema);
+  const defaultBlock = schemaApi.createDefaultRootChild();
+  const defaultBlockType = ElementApi.isElement(defaultBlock)
+    ? defaultBlock.type
+    : null;
   const rules = Object.freeze(
     plugins
       .flatMap((plugin) =>
@@ -3032,7 +3079,8 @@ export const compilePlateHtmlFormat = (
               pluginsByName,
               plugin,
               targetPlugin,
-              factory
+              factory,
+              defaultBlockType
             )
         )
       )
@@ -3071,7 +3119,6 @@ export const compilePlateHtmlFormat = (
     rules,
     serializerIndex,
   });
-  const schemaApi = editor.read((state) => state.schema);
   COMPILED_PLATE_HTML.set(model.revision, artifact);
   COMPILED_PLATE_HTML_BY_SCHEMA.set(schemaApi, artifact);
 
@@ -3096,21 +3143,8 @@ export const compilePlateHtmlFormat = (
             operationKey: context.slice,
           }
         );
-        const diagnostics = htmlMappingDiagnostics(
-          losses,
-          'serialize',
-          'reject'
-        );
 
-        if (diagnostics.length > 0) {
-          return failedHtmlDiagnostics(diagnostics);
-        }
-
-        return Object.freeze({
-          data,
-          diagnostics: Object.freeze([]),
-          ok: true as const,
-        });
+        return losses.length > 0 ? null : data;
       } catch (error) {
         if (error instanceof ReportedHtmlEncodeError) return null;
 
@@ -3317,15 +3351,26 @@ const decodeMaterializedHtmlWithEditor = (
       schema: state.schema as InternalEditorSchemaApi,
     });
   });
+  const lossPolicy = options.lossPolicy ?? 'reject';
   const mappingDiagnostics = htmlMappingDiagnostics(
     losses,
     'parse',
-    options.lossPolicy ?? 'reject'
+    lossPolicy
+  );
+  const sourceDiagnostics = parserDiagnostics.map((diagnostic) =>
+    lossPolicy === 'reject' &&
+    diagnostic.code === 'html-unsafe-content' &&
+    diagnostic.impact === 'lossy'
+      ? Object.freeze({ ...diagnostic, severity: 'error' as const })
+      : diagnostic
   );
   const parseDiagnostics = Object.freeze([
-    ...parserDiagnostics,
+    ...sourceDiagnostics,
     ...mappingDiagnostics,
   ]);
+  const rejectsLoss = parseDiagnostics.some(
+    (diagnostic) => diagnostic.severity === 'error'
+  );
   if (kind === 'slice') {
     const slice = ContentSlice.closed(children);
     const assertContentSliceForSchema: InternalEditorSchemaApi['assertContentSliceForSchema'] =
@@ -3336,11 +3381,7 @@ const decodeMaterializedHtmlWithEditor = (
     } catch (error) {
       return schemaFailure(error, parseDiagnostics);
     }
-    if (
-      mappingDiagnostics.some((diagnostic) => diagnostic.severity === 'error')
-    ) {
-      return failedHtmlDiagnostics(parseDiagnostics);
-    }
+    if (rejectsLoss) return failedHtmlDiagnostics(parseDiagnostics);
 
     return Object.freeze({
       diagnostics: parseDiagnostics as readonly HtmlWarningDiagnostic[],
@@ -3370,9 +3411,7 @@ const decodeMaterializedHtmlWithEditor = (
   if (failureIndex !== -1) {
     return failedHtmlDiagnostics([...parseDiagnostics, ...repairDiagnostics]);
   }
-  if (
-    mappingDiagnostics.some((diagnostic) => diagnostic.severity === 'error')
-  ) {
+  if (rejectsLoss) {
     return failedHtmlDiagnostics([...parseDiagnostics, ...repairDiagnostics]);
   }
 

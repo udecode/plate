@@ -1,6 +1,32 @@
 {
   "schemaVersion": 1,
   "components": {
+    "markdown": [
+      "2026-09-28-markdown-registered-tags",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "markdown-streaming-demo": [
+      "2026-09-28-markdown-registered-tags",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-08-14-author-editor-runtime",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
+    "markdown-to-editor-demo": ["2026-09-28-markdown-registered-tags"],
+    "ai-api": [
+      "2026-09-28-markdown-registered-tags",
+      "2026-09-17-ai-comment-recovery",
+      "2026-08-13-ai-request-refs",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
+    "markdown-joiner-transform": [
+      "2026-09-28-markdown-registered-tags",
+      "2025-11-20-biome-ultracite"
+    ],
     "import-toolbar-button": [
       "2026-09-27-document-conversion-contracts",
       "2026-09-24-export-menu-projection",
@@ -288,14 +314,6 @@
     "plate-ui": [
       "2026-09-18-ui-commands-and-installation",
       "2026-08-25-base-first-registry"
-    ],
-    "ai-api": [
-      "2026-09-17-ai-comment-recovery",
-      "2026-08-13-ai-request-refs",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite",
-      "2025-10-21-add-rejectaisuggestions"
     ],
     "use-chat": [
       "2026-09-17-comment-persistence-actions",
@@ -677,13 +695,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-06-02-improve-large-document-editing"
     ],
-    "markdown-streaming-demo": [
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-08-14-author-editor-runtime",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
-    ],
     "code-block": [
       "2026-09-06-registry-lifetime-repairs",
       "2026-09-05-bound-editor-selection-styles",
@@ -978,7 +989,6 @@
       "2026-08-12-fix-font-size-selection-highlight"
     ],
     "indent": ["2026-08-17-flat-editor-registry"],
-    "markdown": ["2026-08-17-flat-editor-registry"],
     "media-uploadthing": ["2026-08-17-flat-editor-registry"],
     "toggle": ["2026-08-17-flat-editor-registry"],
     "ai-toolbar-button": ["2026-08-17-flat-editor-registry"],
@@ -1546,7 +1556,6 @@
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
-    "markdown-joiner-transform": ["2025-11-20-biome-ultracite"],
     "toggle-node-static": [
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"

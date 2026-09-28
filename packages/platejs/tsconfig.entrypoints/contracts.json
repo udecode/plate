@@ -29,6 +29,12 @@
       "path": "./footnote-react.json"
     },
     {
+      "path": "./html.json"
+    },
+    {
+      "path": "./html-server.json"
+    },
+    {
       "path": "./markdown.json"
     },
     {

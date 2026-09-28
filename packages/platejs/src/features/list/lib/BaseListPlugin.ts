@@ -112,6 +112,11 @@ const LIST_TYPES = [
   ListType.Task,
 ] as const;
 
+const DEFAULT_LIST_TARGET_PLUGINS = [
+  BaseParagraphPlugin,
+  PLUGINS.image,
+] as const;
+
 export type IndentListOptions = {
   at?: Location | NodeSelection;
   listStyle?: ListStyle | (string & {});
@@ -578,7 +583,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       }),
     },
   }),
-  targetPlugins: [BaseParagraphPlugin],
+  targetPlugins: DEFAULT_LIST_TARGET_PLUGINS,
   formats: ({ defineFormats }) => {
     const decodeListProperties = ({ element }: { element: HTMLElement }) => {
       const listParent = element.closest('ul, ol') as HTMLElement | null;
@@ -949,7 +954,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
         },
       },
       markdown: {
-        from: 'list',
+        node: 'list',
         priority: 40,
         decode: ({ build, node, registry }) => {
           const imageType = registry.type(PLUGINS.image);
@@ -1613,7 +1618,11 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           ) {
             tx.nodes.unset('checked', { at: path });
           }
-          if (node.listType !== ListType.Numbered) {
+          if (
+            node.listType !== ListType.Numbered &&
+            (Object.hasOwn(node, 'listRestart') ||
+              Object.hasOwn(node, 'listStart'))
+          ) {
             tx.nodes.unset(['listRestart', 'listStart'], { at: path });
           } else if (
             Object.hasOwn(node, 'listRestart') &&

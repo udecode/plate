@@ -107,29 +107,153 @@ Plate writes plain text, HTML, and an internal Plate fragment payload. The
 fragment payload uses `application/${clipboardFormatKey}`, so editors with
 different keys do not blindly import each other's internal JSON.
 
-Registered DataTransfer formats add schema-aware MIME representations without
-putting DOM types in Plate core. Register them through a plugin's
-`dataTransferFormats` array. A decoder returns one diagnosed `ContentSlice`;
-Plate preserves open edges and detached roots, then fits the complete slice at
-the actual insertion range. An expected source failure returns
-`{ ok: false, diagnostics }` and delegates to the next format. Return `null`
-from `decode` or `false` from `accept` for a mismatch that should not create an
-attempt.
+## Custom DataTransfer formats
 
-Well-formed slices that do not fit leave the transaction untouched and continue
-to the next format or plain-text fallback. Callback exceptions are isolated,
-reported to the lifecycle error sink as `data-transfer-format`, and cannot block
-a later format. Configure `DOMPlugin` to observe the settled negotiation:
+A `DataTransferFormat` reads or writes one browser MIME type as a whole
+payload. Register one when your app puts its own type on the clipboard, or when
+a source needs cleanup before Plate's HTML parser sees it. Mappings for single
+nodes and marks belong in the plugin's `formats` instead; see
+[Serializing](/docs/serializing).
 
 ```ts
-DOMPlugin.configure({
-  initialState: {
-    onDataTransferReport: (report) => {
-      // Observe rejected, unfit, selected, written, and unhandled attempts.
+import { ContentSlice, NodeApi, definePlugin } from "platejs";
+
+const MAX_NOTES_LENGTH = 1_000_000;
+
+const readNotes = (data: string): string[] | null => {
+  try {
+    const payload = JSON.parse(data);
+
+    if (payload?.version !== 1 || !Array.isArray(payload.notes)) return null;
+
+    return payload.notes.filter((note: unknown) => typeof note === "string");
+  } catch {
+    return null;
+  }
+};
+
+export const NotesTransferPlugin = definePlugin("notesTransfer", {
+  dataTransferFormats: [
+    {
+      mimeType: "application/x-acme-notes+json",
+      // Higher priority runs first; outrank generic text/plain readers.
+      priority: 50,
+      // This plugin owns no node type, so it claims the whole schema.
+      scope: "document",
+      accept: ({ data }) => data.length <= MAX_NOTES_LENGTH,
+      decode: ({ data }) => {
+        const notes = readNotes(data);
+
+        if (!notes) return null;
+
+        return ContentSlice.closed(
+          notes.map((text) => ({ type: "paragraph", children: [{ text }] }))
+        );
+      },
+      encode: ({ slice }) => {
+        const notes = slice.content
+          .map((node) => NodeApi.string(node))
+          .filter(Boolean);
+
+        if (notes.length === 0) return null;
+
+        return JSON.stringify({ version: 1, notes });
+      },
     },
+  ],
+});
+```
+
+Each declaration has one `mimeType` and at least one of `decode` and `encode`.
+
+| Field | Contract |
+| --- | --- |
+| `mimeType` | The MIME type read from and written to the `DataTransfer`. Declare it once per plugin, with `decode` and `encode` in the same object. |
+| `accept(context)` | Optional. Return `false` to skip this format before `decode` runs. |
+| `decode(context)` | Return a `ContentSlice`, or `null` to let the next format read the payload. |
+| `encode(context)` | Return the string to write, or `null` to leave this MIME type to the next encoder. |
+| `priority` | Optional, default `0`. Higher runs first. |
+| `scope` | `'document'` claims the whole schema. Without it, the format claims the plugin's own element type and properties, so the plugin must own one. |
+
+`accept` and `decode` receive `{ data, mimeType, snapshot, state }`: the
+payload for this MIME type, a read-only snapshot of every type and file on the
+transfer, and read-only editor state. `encode` receives
+`{ mimeType, slice, state }`. Both also get the plugin's `name`,
+`pluginState`, `registry`, and `schema`. Callbacks do not receive the editor,
+the live `DataTransfer`, or a transaction. Plate keys each format as
+`plate:<plugin>:<mimeType>`.
+
+### Null, false, and throw
+
+- `accept` returning `false` means the format does not apply here. Use it for
+  cheap checks before parsing.
+- `decode` returning `null` means the payload is foreign, malformed, or empty.
+  Clipboard data is untrusted, so return `null` for bad input instead of
+  throwing.
+- `encode` returning `null` means the slice has nothing to write for this MIME
+  type. The next encoder for the same type can still write it.
+- A throw is a bug. Plate catches it, sends it to the editor's
+  `lifecycleErrorSink`, and moves on to the next format, so a broken format
+  cannot block paste or copy. A `decode` result that is not a valid
+  `ContentSlice`, or an `encode` result that is neither a string nor `null`,
+  is reported the same way.
+
+```ts
+const editor = createEditor({
+  plugins: [NotesTransferPlugin],
+  lifecycleErrorSink: (error) => {
+    if ("source" in error && error.source === "data-transfer-format") {
+      reportBug(error.cause, { key: error.key, phase: error.phase });
+    }
   },
 });
 ```
+
+A format error carries `key`, `mimeType`, `pluginName`, and `phase`
+(`'accept'`, `'decode'`, or `'encode'`). Without a sink, Plate logs it with
+`console.error`.
+
+### Paste order
+
+Paste tries each step until one inserts content:
+
+1. `domCommands.insertData` interceptors.
+2. Plate's own fragment payload.
+3. Declared formats whose MIME type is on the transfer, highest `priority`
+   first, then by plugin name.
+4. Plate's HTML format.
+5. Plain text.
+
+Plate fits each decoded slice at the actual insertion range and keeps its open
+edges and detached roots. A slice that does not fit writes nothing, and the
+next format tries. Plain text is the final fallback.
+
+Formats with the same MIME type, direction, and priority must claim disjoint
+schema. Overlapping claims throw when the editor is created, so two
+document-scoped formats for one MIME type need different priorities.
+
+### Copy order
+
+Copy runs encoders in the same order and writes each MIME type once: the first
+encoder that returns a string wins. A declared `text/html` or `text/plain`
+encoder therefore replaces Plate's built-in one, and returning `null` falls
+back to it. `writeDataTransferFragment(editor, data, slice)` from
+`platejs/dom` runs the encoders into any `setData` target and returns the MIME
+types it wrote.
+
+### HTML paste
+
+Plate's HTML format parses like `parseHtmlSlice` with `lossPolicy: 'allow'`.
+Before any mapping runs, it removes comments, metadata, scripts, style sheets,
+embedded objects, SVG and MathML, event handlers, `srcdoc` and `srcset`,
+script and blocked `data:` URLs, and `style` attributes that load resources.
+Embedded media without an installed mapping keeps only its fallback content.
+If nothing insertable remains, the HTML format returns `null` and plain text
+handles the paste.
+
+Plate does not report which format handled a paste or what it left out. When a
+source loses content, add the missing mapping: an HTML rule in the owning
+plugin's `formats`, or a format for that MIME type.
 
 ## Fragment and slice replacement
 

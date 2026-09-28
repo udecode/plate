@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 245,
+  "latestVersion": 248,
   "versions": [
     {
       "version": 0,
@@ -2836,6 +2836,48 @@
         "Standalone parse, serialize and import functions accept a runtime plugin tuple without a plugin-tuple generic and return Value-typed documents that an editor built from the same tuple accepts.",
         "Do not derive a schema-wide exact value from a Plate runtime tuple in a standalone conversion signature; use an opt-in generated editor type or a correlated typed editor for exact documents.",
         "Prove standalone conversion typechecks with a full application kit, not only a small plugin tuple.",
+        "Regenerate doctrine mirrors and preserve package attestations until each package adopts and proves the corrected contract."
+      ]
+    },
+    {
+      "version": 246,
+      "date": "2026-09-28",
+      "doctrineFingerprint": "sha256:ec44d9c4af97b39357c77972d19f51b004e3f19080aeec8d4f1138ce85b44154",
+      "summary": "Parse and import diagnostics classify loss impact where content is removed; DataTransfer formats return a slice or string with no negotiation report; per-editor DOM state resolves through the runtime owner; createsElement mappings create the default block.",
+      "migrationChecks": [
+        "Every parse or import warning judged under lossPolicy declares impact: lossless for normalization, lossy for dropped source content.",
+        "Classify impact where content is removed: sanitizer removal of rendering content not inside an aria-hidden subtree and embedded media without a mapping (even when fallback content survives) are lossy; never exempt a diagnostic code wholesale.",
+        "DataTransferFormat decode returns a ContentSlice and encode returns a string, or null to delegate; delete diagnosed transfer results, negotiation reports and report sinks that have no production consumer.",
+        "Key per-editor DOM plugin state by getEditorRuntimeOwner so mounted views see the activation's clipboard key; delete caller-side owner workarounds.",
+        "Copied registry UI does not warn about paste loss; add a mapping for content that paste drops.",
+        "A createsElement HTML mapping must decode bare content into the schema default block regardless of configured target order."
+      ]
+    },
+    {
+      "version": 247,
+      "date": "2026-09-28",
+      "doctrineFingerprint": "sha256:1f02106560ad650b4070f42e273d369625f7ea2d9c693ba93f47e9c83ccc9120",
+      "summary": "Markdown is CommonMark plus registered Plate tags: mappings select node or tag, tag identity is the schema type, attributes cross the schema-kind wire codec, expected refusals return refuse(), mark mappings decode to composable mark values and encode through wrap, per-operation overrides and the block-ID writer are cut.",
+      "migrationChecks": [
+        "Treat ordinary Markdown as CommonMark + GFM + math and Plate extension elements as registered tags; do not install remarkMdx or promise MDX input. Legacy MDX-written output reads through the dialect law that only fenced code is code inside a registered block tag.",
+        "Select each Markdown mapping source with node (standard MDAST kind) or tag (registered tag, plus nestedTags); delete from. An element's tag, decoded type and encoded tag name all use the resolved schema type.",
+        "Decode tag attributes with readTagAttributes().properties and encode them with encodeAttributes(); delete parseAttributes, propsToAttributes and feature-local attribute coercion.",
+        "Return refuse(message) for input a mapping cannot represent; throw only for programmer or configuration faults.",
+        "Make each mark mapping (mark: true) decode return only the mark value, such as true or 'sub', and encode through wrap, which returns a childless inline wrapper; drop decode(children) calls, encode and priority from mark mappings. Every mark mapping on a selector composes and the runtime decodes the children once.",
+        "Delete per-operation Markdown overrides and remarkPlugins (MarkdownPlugin configuration owns the list), node filters (allowedNodes, disallowedNodes, allowNode), withoutMdx, recovery, splitLineBreaks, standalone parseMarkdownSlice/parseMarkdownInline, remarkMdx, remarkMention and MentionNode; use partial for streaming previews and [label](mention:ref) links for mentions.",
+        "Markdown writes no block-ID wrapper; compatible <block id> reads restore IDs only when ElementIdPlugin is installed.",
+        "Regenerate doctrine mirrors and preserve package attestations until each package adopts and proves the corrected contract."
+      ]
+    },
+    {
+      "version": 248,
+      "date": "2026-09-28",
+      "doctrineFingerprint": "sha256:a13c47dd3fdc805a2b17a369de83e98bf95562fc1a3bcfacb838869af8933aab",
+      "summary": "Markdown decode contexts call inherited persisted text properties marks; decoration remains reserved for transient render state.",
+      "migrationChecks": [
+        "Rename MarkdownDecodeContext.decoration and MarkdownDecoration to marks and MarkdownMarks across feature mappings, docs and type contracts.",
+        "Keep mark mapping decode results schema-valued and let the runtime compose them under the target mark key.",
+        "Keep wrap childless and let the Markdown runtime supply encoded children.",
         "Regenerate doctrine mirrors and preserve package attestations until each package adopts and proves the corrected contract."
       ]
     }

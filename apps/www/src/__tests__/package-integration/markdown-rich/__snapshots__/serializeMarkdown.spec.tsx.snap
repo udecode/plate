@@ -36,11 +36,11 @@ Add comments to your content to provide additional conte1xt, insightssuggestions
 normal **bold**_italic_~~strikethrough~~\`code\`_**combine**_[link](https://example.com)$E=mc^2$
 
 <figure>
-  <img src="https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" />
 
-  <figcaption>
-    test
-  </figcaption>
+<img src="https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" />
+
+<figcaption>test</figcaption>
+
 </figure>
 
 \`\`\`javascript
@@ -73,13 +73,11 @@ Text with custom line height
 <mediaEmbed src="https://www.youtube.com/watch?v=example" />
 
 <columnGroup>
-  <column width="50%">
-    Left column
-  </column>
 
-  <column width="50%">
-    Right column
-  </column>
+<column width="50%">Left column</column>
+
+<column width="50%">Right column</column>
+
 </columnGroup>
 
 Mention: [User](mention:User)
@@ -92,9 +90,7 @@ Text with <span style="color: rgb(252, 109, 38);">color</span> and <span style="
 
 Superscript: x<sup>2</sup>Subscript: x<sub>2</sub>
 
-<callout icon="💡">
-  callout
-</callout>
+<callout icon="💡">callout</callout>
 "
 `;
 

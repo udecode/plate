@@ -368,7 +368,8 @@ export default function MarkdownStreamingDemo() {
 
   const updateStaticMarkdown = (source: string) => {
     const result = editorStatic.api.markdown.parse(source, {
-      recovery: 'incomplete-stream',
+      lossPolicy: 'allow',
+      partial: true,
     });
 
     if (result.ok) editorStatic.update.value.replace(result.document);

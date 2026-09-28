@@ -13,7 +13,7 @@ docs:
 ## 功能特性
 
 - **上下文感知命令菜单**，可适应光标、文本选择和块选择工作流。
-- **流式 Markdown/MDX 预览**，支持表格、列和代码块，通过 `editor.plugin(AIChatPlugin).api.setPreview` 发布。
+- **流式 Markdown 预览**，支持表格、列和代码块，通过 `editor.plugin(AIChatPlugin).api.setPreview` 发布。
 - **插入和聊天审查模式**，共享临时草稿。
 - **块选择感知操作**，使用 `editor.plugin(AIChatPlugin).api.replaceSelection` 和 `insertBelow` 替换或追加整个部分。
 - **与 `@ai-sdk/react` 直接集成**，使 `editor.plugin(AIChatPlugin).api.submit` 可以从 Vercel AI SDK 助手流式传输响应。
@@ -97,7 +97,7 @@ AI_GATEWAY_API_KEY="your-api-key"
 ### 安装
 
 ```bash
-npm install platejs @ai-sdk/react @tanstack/react-virtual ai fastest-levenshtein marked remark-mdx remark-parse remark-stringify unified
+npm install platejs @ai-sdk/react @tanstack/react-virtual ai fastest-levenshtein remark-parse remark-stringify unified
 ```
 
 `platejs` 提供编辑器和 AI 插件。
@@ -231,7 +231,7 @@ aiChat.api.submit('Improve tone', {
 - `getGeneratePrompt`、`getEditPrompt` 和 `getCommentPrompt` 将当前编辑器状态转换为针对每种模式量身定制的指令。
 - 服务端提示助手通过 `editor.api.markdown.serialize`
   序列化显式编辑器快照，并使用 `buildStructuredPrompt`
-  组合选区、块 ID 和 MDX 标签。
+  组合 `<block ref="…">` 引用与 `<Selection>` 标记。
 
 增强从客户端发送的有效载荷以微调服务器提示：
 
@@ -260,10 +260,14 @@ editor.plugin(AIChatTransportPlugin).store.set({
 
 ## 流式传输
 
-使用 `aiChat.api.setPreview(content, { requestId })` 发布完整的累计 Markdown 响应。
+使用 `aiChat.api.setPreview(content, { final, requestId })` 发布累计的 Markdown 响应。
 插件通过编辑器已安装的 Markdown mappings 解析内容，并存入 `previewValue`。
+`final: false` 时解析使用 `{ lossPolicy: 'allow', partial: true }`：未完整到达的
+末尾 tag 保持隐藏，不支持的内容以文本预览。`final` 默认为 `true`；该解析保持严格，
+Markdown 无法表示的响应会清空草稿。
 `useAIChat` 为 AI SDK transport 管理此过程。结构化表格响应使用
 `aiChat.api.setTablePreview({ ref, content }, { requestId })`。
+参阅 [Markdown 流式预览](/docs/markdown#streaming-previews)。
 
 草稿不修改文档、历史或编辑模式。`accept()` 在一个历史批次中应用草稿。
 `reset()` 丢弃草稿并恢复映射后的原始选择，不回滚其他编辑。

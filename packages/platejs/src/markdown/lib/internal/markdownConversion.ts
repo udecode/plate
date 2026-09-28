@@ -11,7 +11,6 @@ import {
   type EditorDocumentValue,
   EditorSchemaValidationError,
   type Element,
-  ElementApi,
   ElementIdPlugin,
   type MarkdownPluginRegistry,
   PLUGINS,
@@ -20,18 +19,13 @@ import {
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
-import { htmlToJsx } from '../deserializer/utils/htmlToJsx';
-import { splitIncompleteMdx } from '../deserializer/utils/splitIncompleteMdx';
-import { stripMarkdownBlocks } from '../deserializer/utils/stripMarkdown';
 import type { MarkdownPluginState } from '../MarkdownPlugin';
-import { intrinsicRules } from '../rules/intrinsicRules';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import type {
   DeserializeMdContext,
   MarkdownDiagnostic,
   MarkdownDocumentParseResult,
   MarkdownConversionContext,
-  MarkdownNodeName,
   MarkdownParsePolicy,
   MarkdownSerializePolicy,
   MarkdownSerializeResult,
@@ -39,18 +33,15 @@ import type {
   SerializeMdContext,
 } from '../types';
 import {
-  getRemarkPluginsWithoutMdx,
-  getRemarkPluginsForSerialize,
   materializeMarkdownSettings,
   materializeRemarkPlugins,
-} from '../utils/getRemarkPluginsWithoutMdx';
+} from '../utils/remarkPlugins';
 import {
   checkMarkdownTreeLimits,
   createMarkdownModelLocator,
   createMarkdownSourceLocation,
   DEFAULT_MARKDOWN_PARSE_LIMITS,
   MarkdownDiagnostics,
-  MarkdownPluginConfigurationError,
   ReportedMarkdownFailureError,
 } from './markdownDiagnostics';
 import type { MarkdownSerializeDocumentValue } from './markdownDocument';
@@ -61,16 +52,22 @@ import {
   getRegisteredMarkdownMappings,
   registerMarkdownMappings,
 } from './markdownMappings';
+import {
+  allocateMarkdownFootnoteLabels,
+  remarkResolveMarkdownReferences,
+} from './markdownReferences';
+import {
+  remarkMarkdownTags,
+  remarkMarkdownTagWriter,
+  trimIncompleteMarkdownTag,
+} from './markdownTags';
 
 export type MarkdownRuntimeState = NormalizePluginState<MarkdownPluginState>;
 
 type MarkdownRuntimeEditorState = EditorCoreStateView;
 
 type MarkdownRuntimeOptions = Readonly<{
-  allowedNodes: readonly MarkdownNodeName[] | null;
-  allowNode?: MarkdownRuntimeState['allowNode'];
-  disallowedNodes: readonly MarkdownNodeName[] | null;
-  plainMarks: readonly MarkdownNodeName[] | null;
+  plainMarks: readonly string[] | null;
   remarkPlugins: NonNullable<MarkdownRuntimeState['remarkPlugins']>;
   remarkStringifyOptions: NonNullable<
     MarkdownRuntimeState['remarkStringifyOptions']
@@ -184,6 +181,7 @@ const createConversionContext = (
 ): MarkdownConversionContext => ({
   isBlock: (node) => runtime.state.schema.isBlock(node),
   isInline: (node) => runtime.state.schema.isInline(node),
+  operation: {},
   registry: runtime.registry,
 });
 
@@ -196,35 +194,21 @@ export const getMergedOptionsDeserialize = (
     source?: string;
   }> = {}
 ): DeserializeMdContext => {
-  const { allowedNodes, allowNode, disallowedNodes, remarkPlugins } =
-    runtime.options;
+  const { remarkPlugins } = runtime.options;
   const diagnostics = operation.diagnostics ?? new MarkdownDiagnostics();
   const source = operation.source ?? '';
 
   const context: DeserializeMdContext = {
-    allowedNodes:
-      options.allowedNodes ?? (allowedNodes ? [...allowedNodes] : allowedNodes),
-    allowNode: options.allowNode ?? allowNode,
-    disallowedNodes:
-      options.disallowedNodes ??
-      (disallowedNodes ? [...disallowedNodes] : disallowedNodes),
     ...createConversionContext(runtime),
     limits: Object.freeze({
       ...DEFAULT_MARKDOWN_PARSE_LIMITS,
       ...options.limits,
     }),
     lossPolicy: options.lossPolicy ?? 'reject',
-    preserveEmptyParagraphs: options.preserveEmptyParagraphs,
-    recovery: options.recovery,
-    remarkPlugins: options.withoutMdx
-      ? getRemarkPluginsWithoutMdx(options.remarkPlugins ?? remarkPlugins)
-      : materializeRemarkPlugins(options.remarkPlugins ?? remarkPlugins),
+    mappings: runtime.formats,
+    partial: options.partial,
+    remarkPlugins: materializeRemarkPlugins(remarkPlugins),
     report: diagnostics.report,
-    rules: {
-      ...intrinsicRules,
-      ...runtime.formats.rules,
-    },
-    compiledMappings: runtime.formats,
     ...(runtime.elementId ? { elementIds: true } : {}),
     sourceLocation: (node) =>
       createMarkdownSourceLocation(
@@ -233,8 +217,6 @@ export const getMergedOptionsDeserialize = (
         operation.positionsReferToSource ?? false
       ),
     state: runtime.state,
-    splitLineBreaks: options.splitLineBreaks,
-    withoutMdx: options.withoutMdx,
   };
 
   return context;
@@ -246,74 +228,31 @@ export const getMergedOptionsSerialize = (
   documentOverride?: MarkdownSerializeDocumentValue,
   diagnostics = new MarkdownDiagnostics()
 ): SerializeMdContext => {
-  const {
-    allowedNodes,
-    allowNode,
-    disallowedNodes,
-    plainMarks,
-    remarkPlugins,
-    remarkStringifyOptions,
-  } = runtime.options;
+  const { plainMarks, remarkPlugins, remarkStringifyOptions } = runtime.options;
 
   const document = documentOverride ?? runtime.state.value();
-  const withBlockId = options.withBlockId ?? false;
-
-  if (withBlockId && !runtime.elementId) {
-    throw new Error(
-      'Markdown withBlockId requires ElementIdPlugin in the editor.'
-    );
-  }
   const context: SerializeMdContext = {
-    allowedNodes:
-      options.allowedNodes ?? (allowedNodes ? [...allowedNodes] : allowedNodes),
-    allowNode: options.allowNode ?? allowNode,
-    disallowedNodes:
-      options.disallowedNodes ??
-      (disallowedNodes ? [...disallowedNodes] : disallowedNodes),
     ...createConversionContext(runtime),
     document,
     lossPolicy: options.lossPolicy ?? 'reject',
+    mappings: runtime.formats,
     modelLocation: createMarkdownModelLocator(document),
     plainMarks:
       options.plainMarks ?? (plainMarks ? [...plainMarks] : plainMarks),
     preserveEmptyParagraphs: options.preserveEmptyParagraphs,
-    remarkPlugins: getRemarkPluginsForSerialize(
-      options.remarkPlugins ?? remarkPlugins
-    ),
+    remarkPlugins: materializeRemarkPlugins(remarkPlugins),
     remarkStringifyOptions:
       options.remarkStringifyOptions ??
       (remarkStringifyOptions
         ? materializeMarkdownSettings(remarkStringifyOptions)
         : remarkStringifyOptions),
     report: diagnostics.report,
-    rules: {
-      ...intrinsicRules,
-      ...runtime.formats.rules,
-    },
     spread: options.spread,
     state: runtime.state,
     value: [...document.children],
-    withBlockId,
-    ...(runtime.elementId ? { blockId: runtime.elementId } : {}),
   };
 
   return context;
-};
-
-const LEADING_SPACES_REGEX = /^\s*/;
-const TRAILING_SPACES_REGEX = /\s*$/;
-
-export const markdownToAstProcessorWithRuntime = (
-  runtime: MarkdownRuntime,
-  data: string,
-  options: MarkdownParsePolicy = {}
-) => {
-  const mergedOptions = getMergedOptionsDeserialize(runtime, options);
-
-  return unified()
-    .use(remarkParse)
-    .use(mergedOptions.remarkPlugins ?? [])
-    .parse(data);
 };
 
 export const markdownToSlateNodesWithRuntime = (
@@ -322,18 +261,19 @@ export const markdownToSlateNodesWithRuntime = (
   options: MarkdownParsePolicy = {},
   diagnostics = new MarkdownDiagnostics()
 ): Descendant[] => {
-  const processedData = options.withoutMdx ? data : htmlToJsx(data);
   const mergedOptions = getMergedOptionsDeserialize(runtime, options, {
     diagnostics,
-    positionsReferToSource: processedData === data,
+    positionsReferToSource: true,
     source: data,
   });
   const toSlateProcessor = unified()
     .use(remarkParse)
+    .use(remarkMarkdownTags, { tags: runtime.formats.tags })
+    .use(remarkResolveMarkdownReferences)
     .use(mergedOptions.remarkPlugins ?? [])
     .use(remarkToSlate, mergedOptions);
 
-  return toSlateProcessor.processSync(processedData).result;
+  return toSlateProcessor.processSync(data).result;
 };
 
 export const deserializeMdWithRuntime = (
@@ -361,253 +301,6 @@ export const deserializeMdWithRuntime = (
         : item
     ),
   };
-};
-
-export const deserializeInlineMdWithRuntime = (
-  runtime: MarkdownRuntime,
-  text: string,
-  options: MarkdownParsePolicy = {},
-  diagnostics = new MarkdownDiagnostics(),
-  operation: Readonly<{ requireSingleBlock?: boolean }> = {}
-) => {
-  const trimmedText = text.trim();
-  const leadingSpaces = LEADING_SPACES_REGEX.exec(text)?.[0] || '';
-  const trailingSpaces = TRAILING_SPACES_REGEX.exec(text)?.[0] || '';
-  const strippedText = stripMarkdownBlocks(trimmedText);
-
-  if (!strippedText) return text ? [{ text }] : [];
-
-  const fragment: Descendant[] = [];
-
-  if (leadingSpaces) fragment.push({ text: leadingSpaces });
-
-  const results = markdownToSlateNodesWithRuntime(
-    runtime,
-    strippedText,
-    options,
-    diagnostics
-  );
-
-  if (operation.requireSingleBlock && results.length > 1) {
-    diagnostics.report({
-      actual: results.length,
-      code: 'markdown-inline-blocks',
-      message: `Inline Markdown produced ${results.length} blocks. Use parseSlice for block content.`,
-      severity: 'error',
-    });
-
-    return [];
-  }
-  const result = results[0];
-
-  if (result) {
-    fragment.push(
-      ...(ElementApi.isElement(result) ? result.children : [result])
-    );
-  }
-  if (trailingSpaces) fragment.push({ text: trailingSpaces });
-
-  return fragment;
-};
-
-const isPlainTextNode = (node: unknown): node is { text: string } =>
-  TextApi.isText(node) && Object.keys(node).every((key) => key === 'text');
-
-const isSplitInsideTableRow = (completeString: string) =>
-  completeString.slice(completeString.lastIndexOf('\n') + 1).includes('|');
-
-const markdownToSlateNodesWithoutMdx = (
-  runtime: MarkdownRuntime,
-  data: string,
-  options: MarkdownParsePolicy = {},
-  diagnostics = new MarkdownDiagnostics()
-) =>
-  markdownToSlateNodesWithRuntime(
-    runtime,
-    data,
-    {
-      ...options,
-      withoutMdx: true,
-    },
-    diagnostics
-  );
-
-const markdownToSlateNodesWithMdxFallback = (
-  runtime: MarkdownRuntime,
-  data: string,
-  options: MarkdownParsePolicy = {},
-  diagnostics = new MarkdownDiagnostics()
-) => {
-  try {
-    return markdownToSlateNodesWithRuntime(runtime, data, options, diagnostics);
-  } catch (error) {
-    if (
-      error instanceof MarkdownPluginConfigurationError ||
-      error instanceof ReportedMarkdownFailureError
-    ) {
-      throw error;
-    }
-
-    return markdownToSlateNodesWithoutMdx(runtime, data, options, diagnostics);
-  }
-};
-
-const appendInlineNodesToLastTextContainer = (
-  runtime: MarkdownRuntime,
-  node: unknown,
-  inlineNodes: readonly Descendant[]
-): Element | null => {
-  if (!ElementApi.isElement(node) || runtime.state.schema.isVoid(node)) {
-    return null;
-  }
-
-  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
-
-  if (
-    node.type === paragraphType ||
-    node.children.some((child) => TextApi.isText(child))
-  ) {
-    const lastChild = node.children.at(-1);
-
-    if (
-      isPlainTextNode(lastChild) &&
-      inlineNodes.every((inlineNode) => isPlainTextNode(inlineNode))
-    ) {
-      return {
-        ...node,
-        children: [
-          ...node.children.slice(0, -1),
-          {
-            ...lastChild,
-            text:
-              lastChild.text +
-              inlineNodes.map((inlineNode) => inlineNode.text).join(''),
-          },
-        ],
-      };
-    }
-
-    return {
-      ...node,
-      children: [...node.children, ...inlineNodes],
-    };
-  }
-
-  for (let i = node.children.length - 1; i >= 0; i--) {
-    const child = appendInlineNodesToLastTextContainer(
-      runtime,
-      node.children[i],
-      inlineNodes
-    );
-
-    if (child) {
-      return {
-        ...node,
-        children: [
-          ...node.children.slice(0, i),
-          child,
-          ...node.children.slice(i + 1),
-        ],
-      };
-    }
-  }
-
-  return null;
-};
-
-export const markdownToSlateNodesSafelyWithRuntime = (
-  runtime: MarkdownRuntime,
-  data: string,
-  options: MarkdownParsePolicy = {},
-  diagnostics = new MarkdownDiagnostics()
-) => {
-  const result = splitIncompleteMdx(data);
-
-  if (!Array.isArray(result)) {
-    return markdownToSlateNodesWithoutMdx(runtime, data, options, diagnostics);
-  }
-
-  const [completeString, incompleteString] = result;
-  const incompleteNodes = deserializeInlineMdWithRuntime(
-    runtime,
-    incompleteString,
-    { ...options, withoutMdx: true },
-    diagnostics
-  );
-  const completeNodes = markdownToSlateNodesWithMdxFallback(
-    runtime,
-    completeString,
-    options,
-    diagnostics
-  );
-  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
-  const newBlock = {
-    children: incompleteNodes,
-    type: paragraphType,
-  };
-
-  if (completeNodes.length === 0) return [newBlock];
-
-  const lastBlock = completeNodes.at(-1);
-
-  if (
-    ElementApi.isElement(lastBlock) &&
-    runtime.state.schema.isVoid(lastBlock)
-  ) {
-    return [...completeNodes, newBlock];
-  }
-
-  const tableType = runtime.registry.type(PLUGINS.table) ?? 'table';
-
-  if (ElementApi.isElement(lastBlock) && lastBlock.type === tableType) {
-    if (isSplitInsideTableRow(completeString)) {
-      const withoutMdxNodes = markdownToSlateNodesWithoutMdx(
-        runtime,
-        data,
-        options,
-        diagnostics
-      );
-      const tableOrdinal = completeNodes
-        .filter((node) => ElementApi.isElement(node) && node.type === tableType)
-        .indexOf(lastBlock);
-      let fallbackTableIndex = -1;
-      let seenTables = -1;
-
-      for (const [index, node] of withoutMdxNodes.entries()) {
-        if (ElementApi.isElement(node) && node.type === tableType) {
-          seenTables += 1;
-
-          if (seenTables === tableOrdinal) {
-            fallbackTableIndex = index;
-            break;
-          }
-        }
-      }
-
-      if (fallbackTableIndex !== -1) {
-        return [
-          ...completeNodes.slice(0, -1),
-          ...withoutMdxNodes.slice(fallbackTableIndex),
-        ];
-      }
-    }
-
-    return [...completeNodes, newBlock];
-  }
-
-  if (ElementApi.isElement(lastBlock)) {
-    const appendedBlock = appendInlineNodesToLastTextContainer(
-      runtime,
-      lastBlock,
-      incompleteNodes
-    );
-
-    if (appendedBlock) {
-      return [...completeNodes.slice(0, -1), appendedBlock];
-    }
-  }
-
-  return completeNodes;
 };
 
 declare module 'unified' {
@@ -641,6 +334,7 @@ export const serializeMdWithRuntime = (
   );
   const { remarkPlugins, value } = mergedOptions;
   const toRemarkProcessor = unified()
+    .use(remarkMarkdownTagWriter)
     .use(remarkPlugins ?? [])
     .use(remarkStringify, {
       emphasis: '_',
@@ -648,9 +342,21 @@ export const serializeMdWithRuntime = (
       ...mergedOptions.remarkStringifyOptions,
     });
   const tree: Root = {
-    children: convertNodesSerialize(value, mergedOptions, true),
+    children: convertNodesSerialize(value, mergedOptions),
     type: 'root',
   };
+
+  allocateMarkdownFootnoteLabels(tree, (label) =>
+    diagnostics.report({
+      action: 'replaced',
+      code: 'markdown-unsupported-node',
+      message: `Footnote reference "${label}" has no definition in the output and reads back as text.`,
+      nodeType: 'footnoteReference',
+      owner: 'markdown',
+      phase: 'serialize',
+      severity: 'warning',
+    })
+  );
 
   return toRemarkProcessor.stringify(toRemarkProcessor.runSync(tree) as Root);
 };
@@ -682,20 +388,16 @@ const reportByteLimit = (
   return true;
 };
 
-const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : String(error);
-
-const reportInvalidSource = (
-  error: unknown,
-  diagnostics: MarkdownDiagnostics
-) => {
-  diagnostics.report({
-    code: 'markdown-invalid-source',
-    message: `Markdown could not be parsed: ${errorMessage(error)}`,
-    reason: 'parser-failure',
-    severity: 'error',
-  });
-};
+// A partial source is an unfinished stream prefix: hide a trailing tag that
+// has not finished arriving.
+const previewSource = (
+  runtime: MarkdownRuntime,
+  source: string,
+  options: MarkdownParsePolicy
+) =>
+  options.partial
+    ? trimIncompleteMarkdownTag(source, runtime.formats.tags)
+    : source;
 
 const runParsedNodes = (
   runtime: MarkdownRuntime,
@@ -708,44 +410,13 @@ const runParsedNodes = (
   try {
     return markdownToSlateNodesWithRuntime(
       runtime,
-      source,
+      previewSource(runtime, source, options),
       options,
       diagnostics
     );
   } catch (error) {
-    if (error instanceof MarkdownPluginConfigurationError) throw error;
     if (error instanceof ReportedMarkdownFailureError) return null;
-    if (options.recovery !== 'incomplete-stream') {
-      reportInvalidSource(error, diagnostics);
-
-      return null;
-    }
-
-    try {
-      const output = markdownToSlateNodesSafelyWithRuntime(
-        runtime,
-        source,
-        options,
-        diagnostics
-      );
-
-      diagnostics.report({
-        code: 'markdown-fallback',
-        message: 'Incomplete Markdown was preserved with streaming recovery.',
-        reason: 'incomplete-stream',
-        severity: 'warning',
-      });
-
-      return output;
-    } catch (fallbackError) {
-      if (fallbackError instanceof MarkdownPluginConfigurationError) {
-        throw fallbackError;
-      }
-      if (fallbackError instanceof ReportedMarkdownFailureError) return null;
-      reportInvalidSource(fallbackError, diagnostics);
-
-      return null;
-    }
+    throw error;
   }
 };
 
@@ -878,11 +549,11 @@ export const parseMarkdownDocumentWithRuntime = (
   const input = Object.freeze({
     children: normalizeDocumentChildren(runtime, parsed),
   });
-  const document = fitMarkdownDocument(runtime, input, options, diagnostics);
-
-  if (diagnostics.failure()) return documentParseFailure(diagnostics);
+  let document: EditorDocumentValue;
 
   try {
+    document = fitMarkdownDocument(runtime, input, options, diagnostics);
+    if (diagnostics.failure()) return documentParseFailure(diagnostics);
     runtime.state.schema.assertDocument(document);
   } catch (error) {
     reportSchemaInvalid(error, diagnostics);
@@ -923,69 +594,61 @@ export const parseMarkdownSliceWithRuntime = (
   });
 };
 
+const LEADING_WHITESPACE = /^\s*/;
+const TRAILING_WHITESPACE = /\s*$/;
+
+// Inline Markdown is exactly one paragraph; its inline children are the
+// slice. Surrounding whitespace is kept for insertion into running text.
 export const parseMarkdownInlineWithRuntime = (
   runtime: MarkdownRuntime,
   source: string,
   options: MarkdownParsePolicy = {}
 ): MarkdownSliceParseResult => {
   const diagnostics = new MarkdownDiagnostics();
+  const trimmed = source.trim();
+  const whitespace = (value: string): Descendant[] =>
+    value ? [{ text: value }] : [];
 
-  if (reportByteLimit(source, options, diagnostics)) {
+  if (!trimmed) {
+    if (reportByteLimit(source, options, diagnostics)) {
+      return sliceParseFailure(diagnostics);
+    }
+
+    return Object.freeze({
+      diagnostics: diagnostics.warnings(),
+      ok: true,
+      slice: ContentSlice.closed(whitespace(source)),
+    });
+  }
+  const parsed = runParsedNodes(runtime, trimmed, options, diagnostics);
+
+  if (!parsed || diagnostics.failure()) return sliceParseFailure(diagnostics);
+  const blocks = normalizeDocumentChildren(runtime, parsed);
+  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const [block] = blocks;
+
+  if (blocks.length !== 1 || block?.type !== paragraphType) {
+    diagnostics.report({
+      actual: blocks.length,
+      code: 'markdown-inline-blocks',
+      message:
+        blocks.length > 1
+          ? `Inline Markdown produced ${blocks.length} blocks. Use parseSlice for block content.`
+          : `Inline Markdown produced a "${block?.type}" block. Use parseSlice for block content.`,
+      severity: 'error',
+    });
+
     return sliceParseFailure(diagnostics);
   }
-  let content: Descendant[];
-
-  try {
-    content = deserializeInlineMdWithRuntime(
-      runtime,
-      source,
-      options,
-      diagnostics,
-      { requireSingleBlock: true }
-    );
-  } catch (error) {
-    if (error instanceof MarkdownPluginConfigurationError) throw error;
-    if (error instanceof ReportedMarkdownFailureError) {
-      return sliceParseFailure(diagnostics);
-    }
-    if (options.recovery !== 'incomplete-stream') {
-      reportInvalidSource(error, diagnostics);
-
-      return sliceParseFailure(diagnostics);
-    }
-    try {
-      content = deserializeInlineMdWithRuntime(
-        runtime,
-        source,
-        { ...options, withoutMdx: true },
-        diagnostics,
-        { requireSingleBlock: true }
-      );
-      diagnostics.report({
-        code: 'markdown-fallback',
-        message:
-          'Incomplete inline Markdown was preserved with streaming recovery.',
-        reason: 'incomplete-stream',
-        severity: 'warning',
-      });
-    } catch (fallbackError) {
-      if (fallbackError instanceof MarkdownPluginConfigurationError) {
-        throw fallbackError;
-      }
-      if (!(fallbackError instanceof ReportedMarkdownFailureError)) {
-        reportInvalidSource(fallbackError, diagnostics);
-      }
-
-      return sliceParseFailure(diagnostics);
-    }
-  }
-  if (diagnostics.failure()) return sliceParseFailure(diagnostics);
-  const slice = ContentSlice.closed(content);
 
   return Object.freeze({
     diagnostics: diagnostics.warnings(),
     ok: true,
-    slice,
+    slice: ContentSlice.closed([
+      ...whitespace(LEADING_WHITESPACE.exec(source)?.[0] ?? ''),
+      ...block.children,
+      ...whitespace(TRAILING_WHITESPACE.exec(source)?.[0] ?? ''),
+    ]),
   });
 };
 

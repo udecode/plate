@@ -226,7 +226,7 @@ export function getCommentPrompt(
     instruction: getLastUserInstruction(messages),
     rules: dedent`
       - IMPORTANT: If a comment spans multiple blocks, use the ref of the **first** block.
-      - The **content** field must be an exact verbatim substring copied from the <context> (no paraphrasing). Do not include <block> tags, but retain other MDX tags.
+      - The **content** field must be an exact verbatim substring copied from the <context> (no paraphrasing). Do not include <block> tags, but retain other Markdown tags.
       - IMPORTANT: The **content** field must be flexible:
         - It can cover one full block, only part of a block, or multiple blocks.
         - If multiple blocks are included, separate them with two \\n\\n.
@@ -238,7 +238,7 @@ export function getCommentPrompt(
     `,
     task: dedent`
       You are a document review assistant.
-      You will receive an MDX document wrapped in <block ref="..."> content </block> tags.
+      You will receive a Markdown document wrapped in <block ref="..."> content </block> tags.
       <Selection> is the text highlighted by the user.
 
       Your task:

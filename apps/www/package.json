@@ -33,6 +33,8 @@
     "registry:capture": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/capture-registry.mts",
     "start": "next start",
     "test:www-browser:chromium": "playwright test --config playwright.config.ts --project=chromium",
+    "test:www-browser:firefox": "playwright test --config playwright.config.ts --project=firefox",
+    "test:www-browser:webkit": "playwright test --config playwright.config.ts --project=webkit",
     "test:create-install": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/registry-create-install-e2e.mts",
     "typecheck": "pnpm editor:check && pnpm api-reference:check && pnpm build:source && pnpm build:registry --check && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts && next typegen && node --max-old-space-size=8192 ../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.json && node --max-old-space-size=8192 ../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.package-integration.json",
     "typecheck:watch": "pnpm build:source && concurrently \"node --max-old-space-size=8192 ../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.json --watch\" \"node --max-old-space-size=8192 ../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.package-integration.json --watch\""

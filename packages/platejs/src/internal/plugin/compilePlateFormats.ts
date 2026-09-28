@@ -1,13 +1,11 @@
 import type {
   DataTransferFormat,
   DataTransferDecodeContext,
-  DataTransferDecodeResult,
   DataTransferSchemaClaim,
   DataTransferEncodeContext,
-  DataTransferEncodeResult,
 } from '../../dom/plite-dom.internal';
 import { dataTransferFormats } from '../../dom/plite-dom.internal';
-import { schema } from '../../facade';
+import { type ContentSlice, schema } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import type {
   AnyBasePlugin,
@@ -25,12 +23,8 @@ import { createPluginFormatOperationContext } from './pluginFormatOperation';
 
 type FormatDeclaration = Readonly<{
   accept?: (context: PluginDataTransferDecodeContext) => boolean;
-  decode?: (
-    context: PluginDataTransferDecodeContext
-  ) => DataTransferDecodeResult | null;
-  encode?: (
-    context: PluginDataTransferEncodeContext
-  ) => DataTransferEncodeResult | null;
+  decode?: (context: PluginDataTransferDecodeContext) => ContentSlice | null;
+  encode?: (context: PluginDataTransferEncodeContext) => string | null;
   mimeType: string;
   priority?: number;
   scope?: 'document';
@@ -313,15 +307,7 @@ export const compilePlateFormats = (
     mimeType: 'text/plain',
     key: 'plate:structural-plain-text',
     encode: (context: DataTransferEncodeContext) =>
-      Object.freeze({
-        data: serializePlatePlainTextSlice(
-          editor,
-          context.slice,
-          context.state
-        ),
-        diagnostics: Object.freeze([]),
-        ok: true as const,
-      }),
+      serializePlatePlainTextSlice(editor, context.slice, context.state),
   }) satisfies DataTransferFormat;
 
   return Object.freeze([

@@ -5,19 +5,14 @@ export {
   MarkdownPlugin,
   type MarkdownPluginState,
   parseMarkdown,
-  parseMarkdownInline,
-  parseMarkdownSlice,
   serializeMarkdown,
 } from './MarkdownPlugin';
-export { type MentionNode, remarkMdx, remarkMention } from './plugins/index';
 export type {
-  AllowNodeConfig,
   MarkdownDiagnostic,
   MarkdownDocumentParseResult,
   MarkdownEditorSerializeOptions,
   MarkdownErrorDiagnostic,
   MarkdownModelLocation,
-  MarkdownNodeName,
   MarkdownParseLimits,
   MarkdownParseOptions,
   MarkdownParsePolicy,

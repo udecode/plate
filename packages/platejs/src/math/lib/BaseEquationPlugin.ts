@@ -37,7 +37,7 @@ export const BaseEquationPlugin = definePlugin(PLUGINS.equation, {
         encode: ({ node }) => node.latex,
       },
       markdown: {
-        from: 'math',
+        node: 'math',
         decode: ({ node }) => ({
           children: [{ text: '' }],
           latex: node.value,
@@ -66,7 +66,7 @@ export const BaseInlineEquationPlugin = definePlugin(PLUGINS.inlineEquation, {
         encode: ({ node }) => node.latex,
       },
       markdown: {
-        from: 'inlineMath',
+        node: 'inlineMath',
         decode: ({ node }) => ({
           children: [{ text: '' }],
           latex: node.value,

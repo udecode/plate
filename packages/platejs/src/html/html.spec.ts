@@ -272,6 +272,109 @@ describe('platejs/html', () => {
     });
   });
 
+  it('reports embedded content that no installed mapping owns', () => {
+    const source = '<p>Before</p><img src="https://platejs.org/a.png">';
+    const loss = {
+      action: 'dropped',
+      code: 'html-unsupported-content',
+      kind: 'element',
+      message: 'Plate HTML decode has no mapping for <img>.',
+    };
+
+    expect(parseHtmlSlice(source, { plugins })).toMatchObject({
+      diagnostics: [{ ...loss, severity: 'error' }],
+      ok: false,
+    });
+    expect(
+      parseHtmlSlice(source, { lossPolicy: 'allow', plugins })
+    ).toMatchObject({
+      diagnostics: [{ ...loss, severity: 'warning' }],
+      ok: true,
+      slice: {
+        content: [{ children: [{ text: 'Before' }], type: 'paragraph' }],
+      },
+    });
+  });
+
+  it('reports unmapped media even when its fallback content survives', () => {
+    const source =
+      '<p>Before</p><video src="https://platejs.org/a.mp4">Video fallback</video>';
+    const loss = {
+      action: 'replaced',
+      code: 'html-unsupported-content',
+      kind: 'element',
+    };
+
+    expect(parseHtmlSlice(source, { plugins })).toMatchObject({
+      diagnostics: [{ ...loss, severity: 'error' }],
+      ok: false,
+    });
+    expect(
+      parseHtmlSlice(source, { lossPolicy: 'allow', plugins })
+    ).toMatchObject({
+      diagnostics: [{ ...loss, severity: 'warning' }],
+      ok: true,
+    });
+    expect(
+      parseHtmlSlice(
+        '<picture><img src="https://platejs.org/a.png"></picture>',
+        {
+          lossPolicy: 'allow',
+          plugins,
+        }
+      ).diagnostics
+    ).toMatchObject([
+      { message: 'Plate HTML decode has no mapping for <img>.' },
+    ]);
+  });
+
+  it('classifies mandatory unsafe removal by the content it drops', () => {
+    const quiet = parseHtmlSlice(
+      '<meta charset="utf-8"><p onclick="bad()">Kept <a href="javascript:void(0)">link</a></p>' +
+        '<p><svg aria-hidden="true" class="octicon"><path d="M0 0h1"></path></svg>Heading</p>' +
+        '<p><span aria-hidden="true"><svg><text>Icon</text></svg></span>Label</p>',
+      { plugins }
+    );
+
+    expect(quiet.ok).toBe(true);
+    expect(quiet.diagnostics.map(({ code }) => code)).toEqual([
+      'html-unsafe-content',
+      'html-unsafe-content',
+      'html-unsafe-content',
+      'html-unsafe-content',
+      'html-unsafe-content',
+    ]);
+    expect(
+      quiet.diagnostics.every(
+        (diagnostic) =>
+          diagnostic.code === 'html-unsafe-content' &&
+          diagnostic.impact === 'lossless'
+      )
+    ).toBe(true);
+
+    for (const source of [
+      '<p>Kept</p><svg><text>Chart label</text></svg>',
+      '<p>Kept</p><object data="https://platejs.org/a.pdf">Object fallback</object>',
+    ]) {
+      const lossy = {
+        code: 'html-unsafe-content',
+        impact: 'lossy',
+        kind: 'element',
+      };
+
+      expect(parseHtmlSlice(source, { plugins })).toMatchObject({
+        diagnostics: [{ ...lossy, severity: 'error' }],
+        ok: false,
+      });
+      expect(
+        parseHtmlSlice(source, { lossPolicy: 'allow', plugins })
+      ).toMatchObject({
+        diagnostics: [{ ...lossy, severity: 'warning' }],
+        ok: true,
+      });
+    }
+  });
+
   it('returns expected serialize loss and allows an explicit lossy projection', () => {
     const UnsupportedPlugin = definePlugin('unsupportedHtml', {
       schema: {

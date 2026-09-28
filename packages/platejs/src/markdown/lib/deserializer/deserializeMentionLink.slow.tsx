@@ -39,11 +39,12 @@ describe('editor.api.markdown.parse - mention link format', () => {
         <hmention label="Jane Smith" ref="jane smith">
           <htext />
         </hmention>
+        <htext />
       </hp>,
     ]);
   });
 
-  it('deserialize mixed mention formats', () => {
+  it('keeps bare @handles as text beside link mentions', () => {
     const editor = createTestEditor();
 
     const markdown =
@@ -52,17 +53,11 @@ describe('editor.api.markdown.parse - mention link format', () => {
 
     expect(value.children).toEqual([
       <hp>
-        <hmention ref="alice">
-          <htext />
-        </hmention>
-        <htext> mentioned </htext>
+        <htext>@alice mentioned </htext>
         <hmention label="Bob Johnson" ref="bob_johnson">
           <htext />
         </hmention>
-        <htext> and </htext>
-        <hmention ref="charlie">
-          <htext />
-        </hmention>
+        <htext> and @charlie</htext>
       </hp>,
     ]);
   });
@@ -76,6 +71,7 @@ describe('editor.api.markdown.parse - mention link format', () => {
 
     expect(value.children).toEqual([
       <hp>
+        <htext />
         <hmention label="Team Lead" ref="team_lead">
           <htext />
         </hmention>
@@ -83,6 +79,7 @@ describe('editor.api.markdown.parse - mention link format', () => {
         <hmention label="QA Team" ref="qa_team">
           <htext />
         </hmention>
+        <htext />
       </hp>,
     ]);
   });
@@ -96,6 +93,7 @@ describe('editor.api.markdown.parse - mention link format', () => {
 
     expect(value.children).toEqual([
       <hp>
+        <htext />
         <hmention label="User 123" ref="user-123">
           <htext />
         </hmention>
@@ -103,6 +101,7 @@ describe('editor.api.markdown.parse - mention link format', () => {
         <hmention label="Dev Team" ref="dev.team">
           <htext />
         </hmention>
+        <htext />
       </hp>,
     ]);
   });
@@ -115,9 +114,11 @@ describe('editor.api.markdown.parse - mention link format', () => {
 
     expect(value.children).toEqual([
       <hp>
+        <htext />
         <ha url="/docs/mention">
           <htext>@mention</htext>
         </ha>
+        <htext />
       </hp>,
     ]);
   });
@@ -139,10 +140,7 @@ describe('editor.api.markdown.parse - mention link format', () => {
         <hmention label="Alice" ref="alice">
           <htext />
         </hmention>
-        <htext> plus </htext>
-        <hmention ref="bob">
-          <htext />
-        </hmention>
+        <htext> plus @bob</htext>
       </hp>,
     ]);
   });

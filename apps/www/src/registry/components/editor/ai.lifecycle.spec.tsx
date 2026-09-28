@@ -25,7 +25,7 @@ import {
   draft,
 } from './ai.lifecycle-test-support';
 
-test('Generate MDX sample submits and renders streamed MDX chunks', async () => {
+test('Generate Markdown sample renders registered tags split across chunks', async () => {
   const http = controlledFetch();
   const editor = makeEditor(true);
   const view = render(
@@ -40,14 +40,14 @@ test('Generate MDX sample submits and renders streamed MDX chunks', async () => 
   );
 
   try {
-    fireEvent.click(view.getByText('Generate MDX sample'));
+    fireEvent.click(view.getByText('Generate Markdown sample'));
     await flush();
 
     expect(http.requests).toHaveLength(1);
     const requestBody = http.requests[0].body;
 
     expect(typeof requestBody === 'string' ? requestBody : '').toContain(
-      'Generate a mdx sample'
+      'Generate a markdown sample'
     );
 
     act(() => {
@@ -57,27 +57,33 @@ test('Generate MDX sample submits and renders streamed MDX chunks', async () => 
         data: 'generate',
         transient: true,
       });
-      http.requests[0].send({ type: 'text-start', id: 'mdx' });
+      http.requests[0].send({ type: 'text-start', id: 'markdown' });
     });
 
     for (const delta of [
       '## ',
       'Basic ',
       'Markdown\n\n',
-      '<callout>\n',
+      '<call',
+      'out>\n',
       'Streaming ',
       'works.\n',
-      '</callout>\n\n',
+      '</call',
+      'out>\n\n',
       'Final block.',
     ]) {
       act(() => {
-        http.requests[0].send({ type: 'text-delta', id: 'mdx', delta });
+        http.requests[0].send({
+          type: 'text-delta',
+          id: 'markdown',
+          delta,
+        });
       });
       await flush();
     }
 
     await act(async () => {
-      http.requests[0].send({ type: 'text-end', id: 'mdx' });
+      http.requests[0].send({ type: 'text-end', id: 'markdown' });
       http.requests[0].send({ type: 'finish' });
       http.requests[0].close();
     });

@@ -792,6 +792,24 @@ describe('BaseListPlugin canonical model', () => {
     ]);
   });
 
+  it('decodes bare HTML items into the default block whatever the target order', () => {
+    const editor = createProductEditor({
+      plugins: [
+        BaseHeadingPlugin,
+        BaseListPlugin.configure({
+          targetPlugins: [BaseHeadingPlugin, BaseParagraphPlugin],
+        }),
+      ],
+    });
+
+    const result = editor.api.html.parse('<ul><li>One</li><li>Two</li></ul>');
+
+    expect(result.ok && result.document.children).toMatchObject([
+      { children: [{ text: 'One' }], listType: 'bulleted', type: 'paragraph' },
+      { children: [{ text: 'Two' }], listType: 'bulleted', type: 'paragraph' },
+    ]);
+  });
+
   it.each([
     ['circle', 'bulleted'],
     ['lower-alpha', 'numbered'],

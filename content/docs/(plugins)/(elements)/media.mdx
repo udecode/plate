@@ -173,7 +173,7 @@ For local file uploads, add `UploadPlugin` separately as shown in
 [Upload files](/docs/upload).
 
 <Callout type="info">
-  **Note:** When serialized to Markdown or MDX, embeds persist the canonical `url` and `provider`, plus an optional `sourceUrl` so edits remain reversible. Allowlisted provider snippets (e.g. YouTube, Tweet) are reduced to canonical URLs on paste. Raw `<script>` or custom embed chrome is out of scope — add your own rules if you need to preserve it.
+  **Note:** In Markdown, an image with only `url`, `alt`, and `title` is written as `![alt](url "title")`. An image with other properties, such as `width`, uses `<img src="…" />`, and a captioned image uses `<figure>` with `<img />` and `<figcaption>`. Video, audio, file, and embed use their own tags, such as `<video src="…">Caption</video>`; embeds keep the canonical `src` and `provider`, plus an optional `sourceUrl` so edits remain reversible. A caption must be one Markdown paragraph. Allowlisted provider snippets (e.g. YouTube, Tweet) are reduced to canonical URLs on paste. Raw `<script>` or custom embed chrome is out of scope — add your own rules if you need to preserve it.
 </Callout>
 
 ### Captions
@@ -337,6 +337,12 @@ inline children store captions. Extends `MediaPluginState`.
 
 Plugin for non-void object audio elements whose direct
 inline children store captions. Extends `MediaPluginState`.
+
+Video and audio serialize to HTML as `<figure class="editor-video">` or
+`<figure class="editor-audio">`, holding a native `<video controls>` or
+`<audio controls>` and a `<figcaption>` for the caption. Pasted HTML also
+accepts a bare `<video>` or `<audio>`, reading `src` or its first `<source>`;
+browser fallback text is not kept as a caption.
 
 ### `FilePlugin`
 

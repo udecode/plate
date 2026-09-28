@@ -32,6 +32,12 @@ export const mediaElementProperties = {
   }),
 } satisfies SchemaElementProperties;
 
+// Media names its source in `src` or its first `<source>` child.
+const readMediaSource = (media: HTMLElement) =>
+  media.getAttribute('src') ||
+  media.querySelector(':scope > source[src]')?.getAttribute('src') ||
+  undefined;
+
 export type MediaPluginState = {
   isUrl: ((text: string) => boolean) | null;
 
@@ -417,6 +423,67 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
   },
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
+      html: [
+        {
+          decode: ({ element }) => {
+            const media = element.querySelector<HTMLElement>(':scope > audio');
+            const url = media ? readMediaSource(media) : undefined;
+
+            if (!media || !url) return undefined;
+
+            return {
+              ...(media.style.width ? { width: media.style.width } : {}),
+              url,
+            };
+          },
+          encode: ({ content, node }) => {
+            if (typeof node.url !== 'string' || node.url.length === 0) {
+              return null;
+            }
+
+            return {
+              attributes: { class: 'editor-audio' },
+              children: [
+                {
+                  attributes: { controls: true, src: node.url },
+                  children: [],
+                  style: {
+                    width:
+                      typeof node.width === 'number'
+                        ? `${node.width}px`
+                        : node.width,
+                  },
+                  tag: 'audio',
+                },
+                { children: content, tag: 'figcaption' },
+              ],
+              tag: 'figure',
+            };
+          },
+          match: [{ className: 'editor-audio', tag: 'figure' }],
+          priority: 16,
+        },
+        {
+          decode: ({ element }) => {
+            if (element.parentElement?.matches('figure.editor-audio')) {
+              return undefined;
+            }
+
+            const url = readMediaSource(element);
+
+            if (!url) return undefined;
+
+            // Fallback text is for browsers without media support, not a caption.
+            return {
+              children: [{ text: '' }],
+              ...(element.style.width ? { width: element.style.width } : {}),
+              url,
+            };
+          },
+          decodeOnly: true,
+          match: [{ tag: 'audio' }],
+        },
+      ],
       plainText: {
         encode: ({ children, node }) =>
           children && children !== node.url
@@ -424,27 +491,34 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
             : node.url,
       },
       markdown: {
-        from: type,
-        decode: ({ caption, decode, node, parseAttributes }) => {
-          const { src, ...props } = parseAttributes(node.attributes);
+        tag: type,
+        decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
+          const { attributes, properties } = readTagAttributes();
+          const content = caption(decode(node.children));
+
+          if (!content) {
+            return refuse(
+              'Media captions must contain one Markdown paragraph.'
+            );
+          }
 
           return {
-            ...props,
-            children: caption(decode(node.children)),
+            ...properties,
+            children: content,
             type,
-            url: typeof src === 'string' ? src : '',
+            url: typeof attributes.src === 'string' ? attributes.src : '',
           };
         },
         encode: ({
           encodePhrasing,
+          encodeAttributes,
           node,
-          propsToAttributes,
           readPlainInline,
         }) => {
           const { children, type: _, url, ...rest } = node;
 
           return {
-            attributes: propsToAttributes({ ...rest, src: url }),
+            attributes: encodeAttributes({ ...rest, src: url }),
             children:
               readPlainInline(children) !== ''
                 ? [
@@ -485,27 +559,34 @@ export const BaseFilePlugin = definePlugin(PLUGINS.file, {
         },
       },
       markdown: {
-        from: type,
-        decode: ({ caption, decode, node, parseAttributes }) => {
-          const { src, ...props } = parseAttributes(node.attributes);
+        tag: type,
+        decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
+          const { attributes, properties } = readTagAttributes();
+          const content = caption(decode(node.children));
+
+          if (!content) {
+            return refuse(
+              'Media captions must contain one Markdown paragraph.'
+            );
+          }
 
           return {
-            ...props,
-            children: caption(decode(node.children)),
+            ...properties,
+            children: content,
             type,
-            url: typeof src === 'string' ? src : '',
+            url: typeof attributes.src === 'string' ? attributes.src : '',
           };
         },
         encode: ({
           encodePhrasing,
+          encodeAttributes,
           node,
-          propsToAttributes,
           readPlainInline,
         }) => {
           const { children, type: _, url, ...rest } = node;
 
           return {
-            attributes: propsToAttributes({ ...rest, src: url }),
+            attributes: encodeAttributes({ ...rest, src: url }),
             children:
               readPlainInline(children) !== ''
                 ? [
@@ -539,6 +620,67 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
   },
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
+      html: [
+        {
+          decode: ({ element }) => {
+            const media = element.querySelector<HTMLElement>(':scope > video');
+            const url = media ? readMediaSource(media) : undefined;
+
+            if (!media || !url) return undefined;
+
+            return {
+              ...(media.style.width ? { width: media.style.width } : {}),
+              url,
+            };
+          },
+          encode: ({ content, node }) => {
+            if (typeof node.url !== 'string' || node.url.length === 0) {
+              return null;
+            }
+
+            return {
+              attributes: { class: 'editor-video' },
+              children: [
+                {
+                  attributes: { controls: true, src: node.url },
+                  children: [],
+                  style: {
+                    width:
+                      typeof node.width === 'number'
+                        ? `${node.width}px`
+                        : node.width,
+                  },
+                  tag: 'video',
+                },
+                { children: content, tag: 'figcaption' },
+              ],
+              tag: 'figure',
+            };
+          },
+          match: [{ className: 'editor-video', tag: 'figure' }],
+          priority: 18,
+        },
+        {
+          decode: ({ element }) => {
+            if (element.parentElement?.matches('figure.editor-video')) {
+              return undefined;
+            }
+
+            const url = readMediaSource(element);
+
+            if (!url) return undefined;
+
+            // Fallback text is for browsers without media support, not a caption.
+            return {
+              children: [{ text: '' }],
+              ...(element.style.width ? { width: element.style.width } : {}),
+              url,
+            };
+          },
+          decodeOnly: true,
+          match: [{ tag: 'video' }],
+        },
+      ],
       plainText: {
         encode: ({ children, node }) =>
           children && children !== node.url
@@ -546,27 +688,34 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
             : node.url,
       },
       markdown: {
-        from: type,
-        decode: ({ caption, decode, node, parseAttributes }) => {
-          const { src, ...props } = parseAttributes(node.attributes);
+        tag: type,
+        decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
+          const { attributes, properties } = readTagAttributes();
+          const content = caption(decode(node.children));
+
+          if (!content) {
+            return refuse(
+              'Media captions must contain one Markdown paragraph.'
+            );
+          }
 
           return {
-            ...props,
-            children: caption(decode(node.children)),
+            ...properties,
+            children: content,
             type,
-            url: typeof src === 'string' ? src : '',
+            url: typeof attributes.src === 'string' ? attributes.src : '',
           };
         },
         encode: ({
           encodePhrasing,
+          encodeAttributes,
           node,
-          propsToAttributes,
           readPlainInline,
         }) => {
           const { children, type: _, url, ...rest } = node;
 
           return {
-            attributes: propsToAttributes({ ...rest, src: url }),
+            attributes: encodeAttributes({ ...rest, src: url }),
             children:
               readPlainInline(children) !== ''
                 ? [

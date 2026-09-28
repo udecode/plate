@@ -43,25 +43,21 @@ if (blocks.ok) editor.update.slice.replace(blocks.slice);
 if (inline.ok) editor.update.slice.replace(inline.slice);
 ```
 
-直接语法解析不保留任意 open edge 或 detached root。这些 native transfer 属性由
-`DataTransferFormat` 拥有。
+`parseInline` 只接受一个 paragraph 的内容；block content 会以
+`markdown-inline-blocks` 失败。直接语法解析不保留任意 open edge 或 detached
+root。这些 native transfer 属性由 `DataTransferFormat` 拥有。
 
 ### Detached 转换
 
 ```ts
-import {
-  parseMarkdown,
-  parseMarkdownInline,
-  parseMarkdownSlice,
-} from 'platejs/markdown';
+import { parseMarkdown } from 'platejs/markdown';
 
-const document = parseMarkdown(source, { plugins: EditorKit });
-const blocks = parseMarkdownSlice(source, { plugins: EditorKit });
-const inline = parseMarkdownInline(source, { plugins: EditorKit });
+const result = parseMarkdown(source, { plugins: EditorKit });
 ```
 
 Standalone function 为一次 operation 编译传入的 plugin declaration。它不会激活
-editor runtime、handler、effect 或 React hook。
+editor runtime、handler、effect 或 React hook。Slice 与 inline content 通过已安装
+的 editor 解析。
 
 ## 序列化 Markdown
 
@@ -83,7 +79,7 @@ const result = editor.api.markdown.serialize({
 });
 ```
 
-Detached document 使用 standalone function：
+### Detached 转换
 
 ```ts
 import { serializeMarkdown } from 'platejs/markdown';
@@ -101,14 +97,119 @@ mapping bug 会抛出。预期内的格式表达损失通过带诊断的 result 
 `{ ok: false, diagnostics }`，且不包含 `data`。只有格式把 drop、replacement 或
 unwrap 报告为 warning 时，`lossPolicy: 'allow'` 才能发布输出。
 
+## 语法
+
+Plate 读写 CommonMark，以及已安装 feature plugin 注册的 tag。GFM、math 与 emoji
+来自 `MarkdownPlugin` 上配置的 [remark plugin](#remark-plugin)。注册 tag 的写法
+类似 HTML，但只有注册过的名称才是 tag，且不会执行任何内容。
+
+### 注册 tag
+
+| Tag | Feature |
+| --- | --- |
+| `<callout icon="💡">…</callout>` | [Callout](/docs/callout) |
+| `<columnGroup>`、`<column width="50%">` | [Column](/docs/column) |
+| `<details>`、`<summary>` | [Details](/docs/details) |
+| `<toc />` | [Table of Contents](/docs/toc) |
+| `<date value="2025-01-01" />` | [Date](/docs/date) |
+| `<img>`、带 `<figcaption>` 的 `<figure>` | [Image](/docs/media) |
+| `<video src="…" />`、`<audio>`、`<file>`、`<mediaEmbed>` | [Media](/docs/media) |
+| `<u>`、`<kbd>`、`<mark>`、`<sub>`、`<sup>`、`<del>` | [Basic marks](/docs/basic-marks) |
+| `<span style="color: red;">` | [Font](/docs/font) 颜色、字体、字号与字重 |
+
+只有对应 feature plugin 已安装时，tag 才会注册。Element tag 使用 schema type，
+因此应用重命名 type 时也会重命名对应 tag。
+
+### 写出格式
+
+```md
+<callout icon="💡">Remember to save.</callout>
+
+<details>
+
+<summary>Title</summary>
+
+Body text.
+
+</details>
+
+Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
+```
+
+- Block tag 与其内容之间用空行分隔，不缩进。
+- 只包含一个单行 paragraph 的 block 保持在一行内。
+- Attribute value 使用双引号。`&` 写为 `&amp;`，`"` 写为 `&quot;`，换行写为
+  `&#10;`。
+- CommonMark 会合并的 footnote label（例如 `A` 与 `a`）会写成不同的 label。
+
+### 读取规则
+
+- 任意字符串都能解析。没有 mapping 接受的 raw HTML 保留为字面文本，并报告
+  `markdown-unsupported-node`：默认 `lossPolicy: 'reject'` 下为 error，`'allow'`
+  下为 warning。
+- HTML comment 会被丢弃并报告 warning。
+- `<br>`、`<br/>` 与 `<br />` 读取为换行。
+- 只包含一个注册 block tag 的行是 block，即使紧邻 paragraph 文本。出现在
+  paragraph、heading 或 table cell 其他位置的 block tag 保留为文本。
+- Tag 在同一个 container（例如 paragraph、list item 或 block quote）内配对。
+  未闭合的 tag 在 container 末尾闭合，未匹配的闭合 tag 保留为文本。每次修复都会
+  报告 `markdown-tag-repair` warning，`reason` 为
+  `'unclosed' | 'unmatched' | 'misplaced'`。
+- 在 Plate block tag 内，只有 fenced code 是代码。缩进行按 Markdown 读取，因此
+  缩进的 tag 内容与未缩进时解析结果相同。写成 `name={…}` 的 attribute value
+  按原始文本读取。
+- Reference-style link 与 image（`[text][ref]` 加 `[ref]: url` definition）解析为
+  普通 link 与 image。
+
+### Mention
+
+Mention 是 URL 为 `mention:` 的 link。单独的 `@jane` 文本保留为文本。
+
+```md
+Hello [Jane Smith](mention:user_123).
+```
+
+参阅 [Mention](/docs/mention#markdown)。
+
+### Block ID
+
+Markdown 不携带 element ID，序列化也不会写出 ID。解析时会读取包裹单个 block 的
+`<block id="…">`：安装 `ElementIdPlugin` 时，该 block 保留这个 `id`；否则移除
+wrapper 并报告 `markdown-unsupported-node` warning。Mapping 不能占用 `block` tag。
+
+## 流式预览
+
+用 `partial: true` 解析未完成的 stream prefix，stream 结束后不带该选项解析完整
+source：
+
+```ts
+const preview = editor.api.markdown.parse(accumulated, {
+  lossPolicy: 'allow',
+  partial: true,
+});
+
+// Stream 结束后：
+const result = editor.api.markdown.parse(accumulated);
+```
+
+`partial: true` 会隐藏尚未完整到达的末尾 tag（例如 `Before <callo`），也不会报告
+source 末尾仍未闭合的 tag。`lossPolicy: 'allow'` 让 stream 未完成时不支持的内容
+以文本形式可见。最终解析保持严格。AI chat preview 使用这些选项；参阅
+[AI 流式传输](/docs/ai#streaming)。
+
 ## Authored content
 
 Markdown 表示可见的 `accepted` 或 `proposed` content。它不会附加隐藏 Plate
 document，也不能恢复完整 review state。
 
+```ts
+const proposed = editor.api.markdown.serialize({ projection: 'proposed' });
+const accepted = editor.api.markdown.serialize({ projection: 'accepted' });
+```
+
 完整 proposal、decision、root 与 metadata 使用 authored JSON。需要 Word
 revision 时使用 DOCX review export。参阅
-[Authored Changes](/docs/authored-changes)。
+[Authored Changes](/docs/authored-changes#export-explicit-projections)。
 
 ## 定义 Markdown mapping
 
@@ -118,7 +219,7 @@ plugin state、registry/schema view、encode 时的 model location，以及 Mark
 专用 `report`。它不会接收 live editor 或 store。
 
 ```ts
-import { definePlugin, property, schema } from 'platejs';
+import { definePlugin, ElementApi, property, schema } from 'platejs';
 
 const CalloutPlugin = definePlugin('callout', {
   schema: {
@@ -129,62 +230,141 @@ const CalloutPlugin = definePlugin('callout', {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       markdown: {
-        from: 'callout',
-        decode: ({ decode, node, parseAttributes }) => {
-          const { tone } = parseAttributes(node.attributes);
-          const [paragraph] = node.children;
+        tag: type,
+        decode: ({ decode, marks, isInline, node, readTagAttributes, refuse }) => {
+          const paragraph =
+            node.children.length === 1 && node.children[0]?.type === 'paragraph'
+              ? node.children[0]
+              : undefined;
+          const children = decode(
+            paragraph ? paragraph.children : node.children,
+            marks
+          );
+
+          if (children.some((child) => ElementApi.isElement(child) && !isInline(child))) {
+            return refuse('Callout content must be inline Markdown.');
+          }
+
+          return { ...readTagAttributes().properties, children, type };
+        },
+        encode: ({ encodeAttributes, encodePhrasing, node }) => {
+          const { children, type: _, ...properties } = node;
 
           return {
-            children: decode(
-              paragraph?.type === 'paragraph' ? paragraph.children : []
-            ),
-            tone: typeof tone === 'string' ? tone : 'info',
-            type,
+            attributes: encodeAttributes(properties),
+            children: [{ children: encodePhrasing(children), type: 'paragraph' }],
+            name: type,
+            type: 'mdxJsxFlowElement',
           };
         },
-        encode: ({ encodePhrasing, node }) => ({
-          attributes: [
-            { name: 'tone', type: 'mdxJsxAttribute', value: node.tone ?? 'info' },
-          ],
-          children: [
-            { children: encodePhrasing(node.children), type: 'paragraph' },
-          ],
-          name: 'callout',
-          type: 'mdxJsxFlowElement',
-        }),
       },
     }),
 });
 ```
 
-`from` 指定 mapping 解码的 Markdown source node；`<callout>` 这类 MDX
-element 需要在 `remarkPlugins` 中启用 `remarkMdx`。Self mapping 使用
+这个 mapping 读写 `<callout tone="info">Text</callout>`。
+
+- `node` 选择标准 Markdown node kind，例如 `'blockquote'`、`'link'` 或
+  `'image'`。`tag` 注册 Plate tag；element 使用其 schema `type`。两者只能选择
+  一个。`nestedTags` 声明只在该 tag 内读取的 tag，例如 Image 的 `figcaption`。
+- `decode` 返回 `undefined` 表示放弃该 node；同一 source 的下一个 mapping 按
+  `priority` 从高到低运行。Mention 以这种方式先于 Link 解码 `mention:` link。
+- `marks` 包含继承的持久化文本 mark。嵌套内容需要保留这些 mark 时，把它传给
+  `decode` 或 `decodeNodes`。
+- `readTagAttributes(tag?)` 返回 `{ attributes, properties }`：按原样写出的全部
+  attribute，以及对应 schema property 的 attribute（按 property kind 解码）。
+  字符串 property 始终保持字符串，包括看起来像 JSON 的值。无效值会被省略，
+  并报告 `markdown-property-omitted` warning。
+- `refuse(message)` 把 feature 无法表示的内容报告为 `markdown-unsupported-node`。
+  被拒绝的 tag 保留其 source text。
+- `caption(children)` 在 `children` 是一个 paragraph 时返回 inline content，否则
+  返回 `null`。
+- `encodeAttributes(properties)` 把 property value 写为 tag attribute。`encode`
+  也可以调用 `refuse(message)`。
+- Encoder 从未读取的 element property 会报告为 `markdown-property-omitted`
+  warning。把剩余 property 传给 `encodeAttributes` 即认领全部 property。
+
+Mark mapping 设置 `mark: true`。其 `decode` 返回 mark 值（例如 `true` 或颜色），
+`wrap` 返回要写出的 inline wrapper（例如 `{ type: 'strong' }` 或一个 tag）；
+wrapper 的 children 由 Markdown 提供。同一 source 上的每个 mark mapping 都会
+参与，children 只解码一次，因此
+`<span style="color: red; background-color: yellow;">` 会同时设置两个 mark。
+没有任何 mark mapping 返回值时，该 tag 保留其 source text。Mark mapping 不接受
+`priority`；导出没有 `wrap` 的 mark 时会报告。
+
+```ts
+import { definePlugin, property } from 'platejs';
+
+const KbdPlugin = definePlugin('kbd', {
+  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      markdown: {
+        tag: 'kbd',
+        mark: true,
+        decode: () => true,
+        wrap: () => ({ name: 'kbd', type: 'mdxJsxTextElement' }),
+      },
+    }),
+});
+```
+
+传入数组可以为一个 plugin 声明多个 mapping。Self mapping 使用
 `defineFormats(map)`；foreign target 使用 `defineFormats(TargetPlugin, map)`。
 Plugin 的 `formats` 只接受 `html`、`markdown` 和 `plainText` key；MIME payload
 属于 `dataTransferFormats`。
 
 ## Remark plugin
 
-`remarkPlugins` 为单次 parse 或 serialize operation 接受同步 unified plugin。
+在 `MarkdownPlugin` 上配置一次 remark plugin。该 editor 的每次 parse 与 serialize
+operation 都会使用它们。`MarkdownKit` 启用 GFM、math 与 emoji：
+
+<ComponentSource name="markdown" />
 
 ```ts
-const result = parseMarkdown(source, {
-  plugins: EditorKit,
-  remarkPlugins: [remarkGfm, [remarkMdx, { acorn: true }]],
-});
+import { MarkdownPlugin } from 'platejs/markdown';
+import remarkGfm from 'remark-gfm';
+
+const plugins = [
+  ...BasicBlocksKit,
+  MarkdownPlugin.configure({
+    initialState: { remarkPlugins: [remarkGfm] },
+  }),
+];
 ```
 
-Attacher 或 transformer 返回 Promise 属于配置错误，会直接抛出。同步 function
-不会返回 `Result | Promise<Result>`。
+Standalone function 从 `plugins` 中读取已配置的 `MarkdownPlugin`。Remark plugin
+必须是同步的。Attacher 或 transformer 返回 Promise 属于配置错误，会直接抛出。
+同步 function 不会返回 `Result | Promise<Result>`。
 
 ## Result 与 diagnostics
 
 Parse success 包含 warning 与唯一 carrier。Failure 包含非空、error-first 的
 diagnostic tuple，且不包含 carrier。Serialization 对 `data` 使用同一规则。
 
-Diagnostics 覆盖无效 source、resource limit、filter、不支持的 node/root、
-incomplete-stream fallback、schema recovery 与 authored projection。配置错误与
-mapping contract violation 会抛出。
+```ts
+if (!result.ok) {
+  reportImportFailure(result.diagnostics);
+  return;
+}
+
+useDocument(result.document);
+reportWarnings(result.diagnostics);
+```
+
+| Code | Severity | 报告内容 |
+| --- | --- | --- |
+| `markdown-unsupported-node` | `'reject'` 下为 error，`'allow'` 下为 warning | 没有 mapping 接受的内容、被拒绝的内容，或导出时丢弃的 node。HTML comment 与被移除的 `<block>` wrapper 报告 warning。 |
+| `markdown-tag-repair` | Warning | `unclosed`、`unmatched` 或 `misplaced` 的注册 tag。 |
+| `markdown-property-omitted` | Warning | 导出时 Markdown 无法携带的 element property（例如 `textAlign`），或导入时无效的 tag attribute value。 |
+| `markdown-limit-exceeded` | Error | Source byte、node 数量或深度超过 `limits`。 |
+| `markdown-inline-blocks` | Error | `parseInline` 输入产生了 block。 |
+| `markdown-schema-repair` | Warning；`'reject'` 下有损时为 error | 对解析结果应用的 schema repair。 |
+| `markdown-schema-invalid` | Error | Schema 拒绝的解析内容。 |
+| `markdown-unsupported-root`、`markdown-unsupported-metadata` | Warning | 导出时省略的 named root 或 document metadata。 |
+
+Authored projection diagnostics 使用同一种 result。配置错误与 mapping contract
+violation 会抛出。
 
 默认限制为 5 MiB UTF-8 source、100,000 个 mdast node 与 depth 256。Markdown
 在解析前检查 byte limit；由于 mdast parser 没有 bounded construction hook，
@@ -195,17 +375,31 @@ node/depth admission 在 parser 返回后执行。
 | API | Result |
 | --- | --- |
 | `parseMarkdown(source, options)` | 完整 `EditorDocumentValue`。 |
-| `parseMarkdownSlice(source, options)` | 闭合、无 root 的 block `ContentSlice`。 |
-| `parseMarkdownInline(source, options)` | 闭合、无 root 的 inline `ContentSlice`。 |
 | `serializeMarkdown(document, options)` | `data` 中的 Markdown string。 |
 | `editor.api.markdown.parse(source, options?)` | 使用已安装 target 解析完整 document。 |
-| `editor.api.markdown.parseSlice(source, options?)` | 使用已安装 target 解析 block slice。 |
-| `editor.api.markdown.parseInline(source, options?)` | 使用已安装 target 解析 inline slice。 |
+| `editor.api.markdown.parseSlice(source, options?)` | 闭合、无 root 的 block `ContentSlice`。 |
+| `editor.api.markdown.parseInline(source, options?)` | 闭合、无 root 的 inline `ContentSlice`。 |
 | `editor.api.markdown.serialize(options?)` | 使用已安装 target 序列化当前或指定 document。 |
 
-Standalone function 与 type 从 `platejs/markdown` import。直接调用的 options
-必须包含 `plugins`，并可包含 `schema`、`limits`、`lossPolicy`、同步
-`remarkPlugins`、filter、MDX/line-break policy 与 preservation policy。
-Serialization 还接受 `projection`、stringify options、block-ID policy、
-plain-mark policy 与 list spread。editor method 从 editor 捕获 plugins 与 schema，
-因此不接受这两个选项。
+`MarkdownPlugin`、standalone function 及其 result、diagnostic 与 option type 从
+`platejs/markdown` import。
+
+| Parse option | 用途 |
+| --- | --- |
+| `limits` | 覆盖 `maxBytes`、`maxNodes` 或 `maxDepth`。 |
+| `lossPolicy` | `'reject'`（默认）或 `'allow'`。 |
+| `partial` | 为 preview 解析未完成的 stream prefix。 |
+
+| Serialize option | 用途 |
+| --- | --- |
+| `document` | 仅 editor method：要序列化的 document，类型为该 editor 的 value。默认为当前 value。 |
+| `lossPolicy` | `'reject'`（默认）或 `'allow'`。 |
+| `plainMarks` | 以纯文本写出、不带 Markdown 格式的 mark key。 |
+| `preserveEmptyParagraphs` | 保留空 paragraph。默认为 `true`。 |
+| `projection` | `'accepted'` 或 `'proposed'`。Authored document 必须提供。 |
+| `remarkStringifyOptions` | 传给 `remark-stringify` 的 options。 |
+| `spread` | 写出 loose list。默认为 `false`。 |
+
+Standalone function 还必须包含 `plugins`，并可包含 `schema`。editor method 从
+editor 捕获 plugins 与 schema，因此不接受这两个选项。`MarkdownPlugin` state 包含
+`remarkPlugins`、`remarkStringifyOptions` 与 `plainMarks`。

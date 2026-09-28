@@ -2,7 +2,7 @@
 title: Export fidelity
 type: decision
 status: accepted
-updated: 2026-09-27
+updated: 2026-09-28
 review_scope: exports
 current_review: 2026-09-27-exports-adversarial-audit-feedback
 reconciled_executions:
@@ -26,6 +26,8 @@ reconciled_executions:
   - 2026-09-27-document-conversion-closure-repairs-final
   - 2026-09-28-document-conversion-standalone-value-types
   - 2026-09-28-document-conversion-open-findings
+  - 2026-09-28-conversion-correctness-guarantees
+  - 2026-09-28-paste-proof-and-media-html
 review_history:
   - ../review-records/2026-09-24-exports-audit.json
   - ../review-records/2026-09-24-exports-final-pass.json
@@ -107,6 +109,13 @@ performance proof.
   its HTML compiler. Detached conversion consumes frozen schema and conversion
   configuration rather than a live editor. Complete-document input is explicit;
   clipboard slice traversal and fallback policy remain clipboard concerns.
+  Video and audio export as HTML figures with native controls and a
+  `<figcaption>` caption instead of unwrapping to their caption text.
+  Clipboard writes run the same format order as paste and write each MIME
+  type once: the first encoder that returns a string wins, `null` leaves the
+  type to the next encoder, and a throw goes to the lifecycle error sink
+  before the next encoder runs. Copy reports no loss; missing output is fixed
+  by adding the mapping.
 - Markdown keeps its full format compiler, feature mappings, remark settings,
   filters and AI/selection consumers. Serialization exposes accepted/proposed
   semantic projections through one document contract and one result shape.

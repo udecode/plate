@@ -1,0 +1,24 @@
+# Paths staged automatically on the `next` branch by
+# tooling/scripts/autostage-next.mjs (Claude Code Stop hook).
+# One git glob pathspec per line; `**` crosses directories.
+
+docs/**
+.agents/**
+apps/www/public/r/**
+apps/www/public/rd/**
+apps/www/src/__registry__/**
+apps/www/src/generated/**
+apps/www/src/registry/changelog/**
+**/*.slow.*
+**/*.spec.*
+**/*.test.*
+**/__tests__/**
+packages/*/test/**
+packages/*/type-tests/**
+apps/*/tests/**
+tooling/e2e/**
+benchmarks/*/test/**
+**/*.cn.mdx
+**/index.ts
+tooling/**
+pnpm-lock.yaml

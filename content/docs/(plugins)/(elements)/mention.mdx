@@ -24,7 +24,7 @@ Mention turns trigger text such as `@` into an inline combobox input and inserts
 - Configurable trigger strings, regexes, and trigger queries.
 - Markable void rendering so bold, italic, and underline can style a mention.
 - Optional trailing space after selected mention items.
-- Markdown format through `[display text](mention:id)` plus bare `@name` deserialization.
+- Markdown format through `[display text](mention:ref)` links.
 
 </PackageInfo>
 
@@ -73,7 +73,7 @@ export const editor = createEditor({
 | `mention-static` | Registry | Adds `BaseMentionPlugin.configure({ component: MentionElementStatic })`. |
 | `mention` | Registry UI | Renders mention atoms, the inline combobox input, and demo items. |
 | `inline-combobox` | Registry UI | Renders the Ariakit-backed popover, input, groups, items, and empty state. |
-| `platejs/markdown` | Package | Serializes mentions as `mention:` links and parses mention links or bare mentions. |
+| `platejs/markdown` | Package | Serializes mentions as `mention:` links and parses them back. |
 
 ## Manual setup
 
@@ -192,13 +192,13 @@ If `editor.runtime.userId` exists, the combobox input stores that `userId` so on
 
 ## Markdown
 
-`platejs/markdown` serializes `ref` in the link-style `mention:` URL and uses `label ?? ref` as visible text.
+`platejs/markdown` writes a mention as a link. The URL is `mention:` followed by the URL-encoded `ref`, and the link text is `label ?? ref`.
 
 ```md
 Hello [Jane Smith](mention:user_123).
 ```
 
-Deserialization supports link-style mentions and bare `@alice` text. Normal links such as `[@docs](/docs/mention)` stay links.
+Parsing reads `mention:` links back into mention nodes. Other links such as `[@docs](/docs/mention)` stay links, and bare `@alice` text stays text.
 
 ## API Reference
 

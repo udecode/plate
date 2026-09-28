@@ -169,6 +169,10 @@ const editor = createEditor({
 
 本地文件上传需单独添加 `UploadPlugin`，配置方法见[上传文件](/cn/docs/upload)。
 
+<Callout type="info">
+  **注意：** 在 Markdown 中，只有 `url`、`alt` 和 `title` 的图片写为 `![alt](url "title")`。带有其他属性（例如 `width`）的图片使用 `<img src="…" />`，带标题的图片使用包含 `<img />` 与 `<figcaption>` 的 `<figure>`。视频、音频、文件和嵌入使用各自的标签，例如 `<video src="…">Caption</video>`；嵌入保留规范的 `src` 与 `provider`，以及可选的 `sourceUrl`，使编辑可逆。标题必须是一个 Markdown 段落。白名单内的提供商片段（例如 YouTube、Tweet）在粘贴时会被规范化为 URL。原始 `<script>` 或自定义嵌入外观不在支持范围内——如需保留，请添加自己的规则。
+</Callout>
+
 ### 标题
 
 每个图片、音频、视频、文件和嵌入都是非 void 的对象元素。`object: true`
@@ -314,6 +318,12 @@ editor.plugin(ImagePlugin).update.insert({
 
 用于非 void、隔离且可通过键盘选择的音频元素。其直接行内 children 存储标题。
 扩展 `MediaPluginState`。
+
+视频与音频序列化为 HTML 时使用 `<figure class="editor-video">` 或
+`<figure class="editor-audio">`，其中包含原生 `<video controls>` 或
+`<audio controls>`，以及保存标题的 `<figcaption>`。粘贴的 HTML 也接受裸
+`<video>` 或 `<audio>`，从 `src` 或第一个 `<source>` 读取地址；浏览器 fallback
+文本不会作为标题保留。
 
 ### `FilePlugin`
 

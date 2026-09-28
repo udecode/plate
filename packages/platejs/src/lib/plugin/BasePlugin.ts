@@ -1,10 +1,9 @@
 import type {
   DataTransferDecodeContext,
-  DataTransferDecodeResult,
   DataTransferEncodeContext,
-  DataTransferEncodeResult,
 } from '../../dom/plite-dom.internal';
 import type {
+  ContentSlice,
   DefinitionOf as RuntimeDefinitionOf,
   Descendant,
   Element,
@@ -774,12 +773,8 @@ export type PluginDataTransferFormatDeclaration<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = Readonly<{
   accept?: (context: PluginDataTransferDecodeContext<C>) => boolean;
-  decode?: (
-    context: PluginDataTransferDecodeContext<C>
-  ) => DataTransferDecodeResult | null;
-  encode?: (
-    context: PluginDataTransferEncodeContext<C>
-  ) => DataTransferEncodeResult | null;
+  decode?: (context: PluginDataTransferDecodeContext<C>) => ContentSlice | null;
+  encode?: (context: PluginDataTransferEncodeContext<C>) => string | null;
   key?: never;
   mimeType: string;
   owner?: never;

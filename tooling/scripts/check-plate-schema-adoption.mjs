@@ -195,7 +195,7 @@ const intentionalRawFormatNegativeContractCounts = new Map([
   ['packages/platejs/src/lib/plugins/ProductFormats.spec.ts', 1],
   ['packages/platejs/src/lib/plugins/html/HtmlPlugin.mapping.spec.ts', 1],
   ['packages/platejs/type-tests/base-plugin-contracts.ts', 1],
-  ['packages/platejs/src/markdown/lib/internal/markdownMappings.spec.ts', 1],
+  ['packages/platejs/src/markdown/lib/internal/markdownMappings.spec.ts', 2],
 ]);
 const intentionalPliteConfigNegativeContractCounts = new Map([
   ['packages/plitejs/test/generic-plugin-contract.ts', 1],
@@ -456,7 +456,12 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/plitejs/test/schema-inference-contract.ts', 2],
   ['packages/plitejs/test/schema-validation-diagnostics.test.ts', 4],
   ['packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.spec.ts', 1],
+  ['packages/platejs/src/markdown/lib/internal/markdownAttributes.ts', 1],
   ['packages/platejs/src/markdown/lib/internal/markdownConversion.ts', 1],
+  [
+    'packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts',
+    1,
+  ],
   ['packages/platejs/src/features/table/lib/BaseTablePlugin.schema.spec.ts', 5],
   ['packages/platejs/src/features/tag/lib/BaseTagPlugin.spec.tsx', 1],
 ]);
@@ -4496,49 +4501,17 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     'img',
     'span',
   ]);
-  const externalMarkdownNodeSources = new Set([
-    'blockquote',
+  const externalMarkdownTagSources = new Set([
     'br',
-    'break',
-    'code',
-    'definition',
     'del',
-    'delete',
-    'emphasis',
+    'figcaption',
     'figure',
-    'footnoteDefinition',
-    'footnoteReference',
-    'heading',
-    'html',
-    'image',
-    'imageReference',
     'img',
-    'inlineCode',
-    'inlineMath',
-    'link',
-    'linkReference',
-    'list',
-    'listItem',
     'mark',
-    'math',
-    'mdxFlowExpression',
-    'mdxJsxFlowElement',
-    'mdxJsxTextElement',
-    'mdxTextExpression',
-    'mdxjsEsm',
-    'mention',
-    'paragraph',
     'span',
-    'strong',
     'sub',
     'sup',
-    'table',
-    'tableCell',
-    'tableRow',
-    'text',
-    'thematicBreak',
     'u',
-    'yaml',
   ]);
   const getProperty = (properties, name) =>
     properties.find(
@@ -4693,17 +4666,12 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       markdownProperty.value,
       markdownProperty
     )) {
-      const kindProperty = getProperty(ruleProperties, 'kind');
       const markProperty = getProperty(ruleProperties, 'mark');
-      const fromProperty = getProperty(ruleProperties, 'from');
-      const from = unwrapTypedExpression(fromProperty?.value);
+      const tagProperty = getProperty(ruleProperties, 'tag');
+      const tag = unwrapTypedExpression(tagProperty?.value);
       const decodeProperty = getProperty(ruleProperties, 'decode');
 
-      if (
-        getStaticString(unwrapTypedExpression(kindProperty?.value)) !==
-          'node' ||
-        unwrapTypedExpression(markProperty?.value)?.value === true
-      ) {
+      if (unwrapTypedExpression(markProperty?.value)?.value === true) {
         continue;
       }
 
@@ -4721,11 +4689,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       const encodedNameProperties = encodedMdxObjects
         .map((properties) => getProperty(properties, 'name'))
         .filter(Boolean);
-      const fromName = getStaticString(from);
+      const tagName = getStaticString(tag);
       const hasCustomDecodeSource =
         !!decodeProperty &&
-        !!fromProperty &&
-        (!fromName || !externalMarkdownNodeSources.has(fromName));
+        !!tagProperty &&
+        (!tagName || !externalMarkdownTagSources.has(tagName));
       const hasCustomEncodedName = encodedNameProperties.some((property) => {
         const name = getStaticString(unwrapTypedExpression(property.value));
 
@@ -4738,7 +4706,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ) {
         report(
           formatsProperty,
-          'custom Markdown element mappings must be owned by their target plugin so from, decode, and encode share its resolved schema type; foreign defineFormats(TargetPlugin, ...) contributions cannot author configurable MDX identity'
+          'custom Markdown element mappings must be owned by their target plugin so tag, decode, and encode share its resolved schema type; foreign defineFormats(TargetPlugin, ...) contributions cannot author configurable Markdown tag identity'
         );
         continue;
       }
@@ -4746,14 +4714,14 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       if (
         hasCustomDecodeSource &&
         !isSchemaTypeBinding(
-          from,
+          tag,
           innerSchemaBindings2.types,
           innerSchemaBindings2.objects
         )
       ) {
         report(
-          fromProperty ?? decodeProperty,
-          'custom Markdown element mappings use the resolved schema type for from; bind schema: { type } in the format factory and use from: type'
+          tagProperty ?? decodeProperty,
+          'custom Markdown element mappings use the resolved schema type for tag; bind schema: { type } in the format factory and use tag: type'
         );
       }
 
@@ -4788,7 +4756,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           hasInvalidDecodedType)
       ) {
         report(
-          decodeProperty ?? fromProperty,
+          decodeProperty ?? tagProperty,
           'custom Markdown element mappings decode to the resolved schema type; return type from the format schema context'
         );
       }
@@ -4834,8 +4802,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         )
       ) {
         report(
-          encodeProperty ?? fromProperty,
-          'custom Markdown element mappings encode the resolved schema type as the MDX name; use name: type from the format schema context'
+          encodeProperty ?? tagProperty,
+          'custom Markdown element mappings encode the resolved schema type as the tag name; use name: type from the format schema context'
         );
       }
     }

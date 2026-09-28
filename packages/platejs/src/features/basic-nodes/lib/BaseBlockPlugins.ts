@@ -128,17 +128,17 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
       },
 
       markdown: {
-        from: 'blockquote',
+        node: 'blockquote',
         decode: ({
           decodeNodes,
-          decoration,
+          marks,
           registry,
           isBlock,
           isInline,
           node,
         }) => ({
           children: groupInlineChildrenIntoParagraphs(
-            decodeNodes(node.children, decoration),
+            decodeNodes(node.children, marks),
             { isBlock, isInline, registry }
           ),
           type,
@@ -264,7 +264,7 @@ export const BaseHorizontalRulePlugin = definePlugin(PLUGINS.horizontalRule, {
       },
 
       markdown: {
-        from: 'thematicBreak',
+        node: 'thematicBreak',
         decode: () => ({
           children: [{ text: '' }],
           type,

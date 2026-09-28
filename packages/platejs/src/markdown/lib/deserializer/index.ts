@@ -4,6 +4,4 @@
 
 export * from './convertChildrenDeserialize';
 export * from './convertNodesDeserialize';
-export * from './convertTextsDeserialize';
 export * from './mdastToSlate';
-export * from './utils/index';

@@ -23,6 +23,22 @@ describe('HtmlPlugin', () => {
     ]);
   });
 
+  it('delegates HTML with nothing insertable to the next format', () => {
+    const editor = createEditor();
+    const transfer = new DataTransfer();
+
+    transfer.setData('text/html', '<video src="https://x.test/a.mp4"></video>');
+
+    expect(editor.api.dom.clipboard.insertData(transfer)).toBe(false);
+
+    transfer.setData('text/plain', 'Caption');
+
+    expect(editor.api.dom.clipboard.insertData(transfer)).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'Caption' }], type: 'paragraph' },
+    ]);
+  });
+
   it('lifts block images out of HTML text blocks without dropping them', () => {
     const editor = createEditor({ plugins: [BaseImagePlugin] });
     const html = '<p>Keep <img src="https://example.com/a.png">more</p>';

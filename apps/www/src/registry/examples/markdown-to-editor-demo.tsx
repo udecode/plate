@@ -1,12 +1,8 @@
 'use client';
 
 import { NodeApi } from 'platejs';
-import { remarkMdx, remarkMention } from 'platejs/markdown';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
-import remarkEmoji from 'remark-emoji';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
 
 import {
   Editor,
@@ -54,7 +50,7 @@ GFM footnotes round-trip too.[^1]
 ## Advanced Features
 
 <callout>
-The following node and marks are not supported in Markdown but can be serialized and deserialized using MDX or specialized UnifiedJS plugins.
+The following nodes and marks have no standard Markdown syntax, so Plate writes them as tags like this one.
 </callout>
 
 Advanced marks: <kbd>⌘ + B</kbd>,<u>underlined</u>, <mark>highlighted</mark> text, <span style="color: #93C47D;">colored text</span> and <span style="background-color: #6C9EEB;">background highlights</span> for visual emphasis.
@@ -118,15 +114,7 @@ export default function MarkdownDemo() {
   const markdownApi = editor.api.markdown;
 
   React.useEffect(() => {
-    const result = markdownApi.parse(debouncedMarkdownValue, {
-      remarkPlugins: [
-        remarkMath,
-        remarkGfm,
-        remarkMdx,
-        remarkMention,
-        remarkEmoji,
-      ],
-    });
+    const result = markdownApi.parse(debouncedMarkdownValue);
 
     if (result.ok) editor.update.value.replace(result.document);
   }, [debouncedMarkdownValue, editor, markdownApi]);

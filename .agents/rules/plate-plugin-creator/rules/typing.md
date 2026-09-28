@@ -207,40 +207,52 @@ MIME negotiation belongs to root `dataTransferFormats`. Direct
 `formats: { ... }`, casts, and callback annotations bypass the owner inference
 and are invalid.
 
-A custom Plate-owned MDX element mapping binds its final schema identity once:
+A custom Plate-owned Markdown tag mapping binds its final schema identity once:
 
 ```ts
 formats: ({ defineFormats, schema: { type } }) =>
   defineFormats({
     markdown: {
-      from: type,
-      decode: ({ node }) => ({ children: node.children, type }),
-      encode: ({ node }) => ({
-        attributes: [],
-        children: node.children,
-        name: type,
-        type: 'mdxJsxFlowElement',
+      tag: type,
+      decode: ({ decode, node, readTagAttributes }) => ({
+        ...readTagAttributes().properties,
+        children: decode(node.children),
+        type,
       }),
+      encode: ({ encodeAttributes, encodeFlow, node }) => {
+        const { children, type: _, ...properties } = node;
+
+        return {
+          attributes: encodeAttributes(properties),
+          children: encodeFlow(children),
+          name: type,
+          type: 'mdxJsxFlowElement',
+        };
+      },
     },
   })
 ```
 
-Use the resolved `type` for `from`, the decoded element, and the encoded MDX
-tag. Fixed external format names remain literal. Do not use the capability
-name, an authored default type, or a compatibility alias for persisted tags.
+Use the resolved `type` for `tag`, the decoded element, and the encoded tag
+`name`. Standard MDAST sources use `node` (for example `node: 'blockquote'`),
+which types the decoded `node`; fixed external format names remain literal. Do
+not use the capability name, an authored default type, or a compatibility
+alias for persisted tags. The attribute codec follows the schema property
+kind, so do not parse or coerce attribute strings in the mapping; return
+`refuse(message)` for unrepresentable input instead of throwing.
 Structural Plate wrappers and unknown-node fallbacks also resolve their
 installed schema type; only external format nodes keep literal identities.
-Operation decode overrides use the plugin capability name after mapping-owner
-resolution; encode overrides use the persisted schema type or key.
-If a compiled owner claims the decode source and returns `undefined`, do not
-fall through to a persisted-type override alias. Foreign target mappings do not
-own configurable custom MDX identity.
-Decode-only mappings still prove `from` and decoded identity; encode-only mappings
+If a claiming mapping returns `undefined`, dispatch declines to the next mapping
+on that selector; no per-operation override exists. A mark mapping's `decode`
+returns the mark value (`true`, `'sub'`, a color), not decoded children; its
+`wrap` returns a childless wrapper, and it takes no `priority`. Foreign target mappings do
+not own configurable custom tag identity.
+Decode-only mappings still prove `tag` and decoded identity; encode-only mappings
 still prove the emitted tag. Phrasing-only wrappers decode source phrasing
 children directly because decoded wrapper elements are not identity witnesses.
-A fixed external source never licenses a literal decoded Plate type. Parsed
-attributes precede structural fields so they cannot replace `children` or the
-resolved schema type.
+A fixed external source never licenses a literal decoded Plate type. Decoded
+attribute properties precede structural fields so they cannot replace
+`children` or the resolved schema type.
 
 Plate constructors and justified `.extend()` stages contextually type flat
 Plite-native fields:

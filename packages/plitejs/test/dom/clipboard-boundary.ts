@@ -70,18 +70,6 @@ class FakeDataTransfer {
   }
 }
 
-const decodeSuccess = (slice: ContentSlice) => ({
-  diagnostics: [],
-  ok: true as const,
-  slice,
-});
-
-const encodeSuccess = (data: string) => ({
-  data,
-  diagnostics: [],
-  ok: true as const,
-});
-
 const createChildren = (): Descendant[] => [
   {
     type: 'paragraph',
@@ -893,17 +881,17 @@ describe('plite-dom clipboard boundary', () => {
         {
           mimeType: 'text/html',
           key: 'explicit-empty-html',
-          encode: () => encodeSuccess('<p>host html</p>'),
+          encode: () => '<p>host html</p>',
         },
         {
           mimeType: 'text/plain',
           key: 'explicit-empty-text',
-          encode: () => encodeSuccess('host text'),
+          encode: () => 'host text',
         },
         {
           mimeType: 'application/example',
           key: 'explicit-empty-extra',
-          encode: () => encodeSuccess('host extra'),
+          encode: () => 'host extra',
         },
       ]),
     ]);
@@ -1257,7 +1245,7 @@ describe('plite-dom clipboard boundary', () => {
       {
         mimeType: 'application/x-content-property',
         key: 'content-property-paste',
-        decode: () => decodeSuccess(fragment),
+        decode: () => fragment,
       },
     ]);
     const hostTarget = createTarget([DataTransferFormat]);
@@ -1376,9 +1364,7 @@ describe('plite-dom clipboard boundary', () => {
               mimeType: 'text/html',
               key: 'host-html-copy',
               encode: () =>
-                encodeSuccess(
-                  '<strong data-editor-fragment="stale">host-alpha</strong>'
-                ),
+                '<strong data-editor-fragment="stale">host-alpha</strong>',
             },
           ]),
         ]
@@ -1445,14 +1431,12 @@ describe('plite-dom clipboard boundary', () => {
                 key: 'host-html-paste',
                 decode: ({ data }) =>
                   data === '<p>host</p>'
-                    ? decodeSuccess(
-                        ContentSlice.closed([
-                          {
-                            type: 'paragraph',
-                            children: [{ text: 'host' }],
-                          },
-                        ])
-                      )
+                    ? ContentSlice.closed([
+                        {
+                          type: 'paragraph',
+                          children: [{ text: 'host' }],
+                        },
+                      ])
                     : null,
               },
             ]),

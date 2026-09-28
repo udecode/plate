@@ -208,7 +208,12 @@ export const testValue = [
   {
     children: [
       {
-        text: 'blockQuote',
+        children: [
+          {
+            text: 'blockQuote',
+          },
+        ],
+        type: 'paragraph',
       },
     ],
     type: 'blockquote',
@@ -318,16 +323,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'toggle',
-    children: [
-      {
-        text: 'Toggle item',
-      },
-    ],
-  },
-  {
     type: 'paragraph',
-    textAlign: 'center',
     children: [
       {
         text: 'Centered text',
@@ -336,7 +332,6 @@ export const testValue = [
   },
   {
     type: 'paragraph',
-    lineHeight: 2,
     children: [
       {
         text: 'Text with custom line height',

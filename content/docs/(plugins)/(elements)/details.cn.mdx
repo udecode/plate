@@ -167,7 +167,19 @@ if (key !== undefined) {
 
 ## 序列化
 
-HTML 使用固定的 `<details>` 和 `<summary>` 标签。Markdown 使用等价的 MDX 元素，并支持嵌套 Details。解码会忽略 `open` 和 `name`，编码也不会写入这两个属性。
+HTML 使用固定的 `<details>` 和 `<summary>` 标签。Markdown 使用相同的注册标签，并支持嵌套 Details：
+
+```md
+<details>
+
+<summary>Title</summary>
+
+Body text.
+
+</details>
+```
+
+解码会忽略 `open` 和 `name`，编码也不会写入这两个属性。
 
 ## 工具栏
 

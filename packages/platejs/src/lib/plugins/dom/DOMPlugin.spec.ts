@@ -1,7 +1,7 @@
 import { DocumentChange } from '../../../core';
 import { DOMEditor } from '../../../dom/plite-dom.internal';
 import { createEditor } from '../../editor';
-import { DOMPlugin, type DomPluginState } from './DOMPlugin';
+import { DOMPlugin } from './DOMPlugin';
 
 const value = [{ children: [{ text: '' }], type: 'paragraph' }] as const;
 
@@ -258,43 +258,6 @@ describe('DOMPlugin', () => {
     });
     expect(editor.api.dom.isAutoScrolling()).toBe(false);
     expect(editor.plugin(DOMPlugin).store.get()).toEqual(previousOptions);
-  });
-
-  it('delivers the settled transfer report through configured Plate state', () => {
-    const reports: Array<
-      Parameters<NonNullable<DomPluginState['onDataTransferReport']>>[0]
-    > = [];
-    const editor = createEditor({
-      initialValue: value,
-      plugins: [
-        DOMPlugin.configure({
-          initialState: {
-            onDataTransferReport: (report) => reports.push(report),
-          },
-        }),
-      ],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-    });
-    const transfer = new DataTransfer();
-    transfer.setData('text/html', '<p onclick="void(0)">safe</p>');
-
-    expect(editor.api.dom.clipboard.insertData(transfer)).toBe(true);
-    expect(reports).toHaveLength(1);
-    expect(reports[0].outcome).toBe('inserted');
-    expect(reports[0].attempts[0]).toMatchObject({
-      key: 'plate:html',
-      outcome: 'selected',
-    });
-    expect(reports[0].attempts[0].diagnostics).toEqual([
-      expect.objectContaining({
-        code: 'html-unsafe-content',
-        severity: 'warning',
-      }),
-    ]);
   });
 
   it('restores scrolling state even if the callback throws', () => {

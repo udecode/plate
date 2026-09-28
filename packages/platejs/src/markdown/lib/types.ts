@@ -5,55 +5,29 @@ import type { Node as UnistNode } from 'unist';
 
 import type {
   ContentSlice,
+  MarkdownMarks,
   MarkdownPluginRegistry,
   Descendant,
   EditorApplicationSchema,
   EditorCoreStateView,
   EditorDocumentValue,
   EditorSchemaValidationDiagnostic,
-  Element,
-  Nullable,
   RootKey,
-  Text,
   Value,
 } from '../../core';
 import type {
   NativeAuthoredProjectionDiagnostic,
   RuntimePluginReference,
 } from '../../facade';
-import type { ListElement } from '../../features/list';
+import type { CompiledMarkdownMappings } from './internal/markdownMappings';
 import type {
-  MdBlockquote,
-  MdBreak,
-  MdCode,
-  MdDefinition,
   MdDelete,
   MdEmphasis,
-  MdFootnoteDefinition,
-  MdFootnoteReference,
-  MdHeading,
-  MdHtml,
-  MdImage,
-  MdImageReference,
   MdInlineCode,
-  MdInlineMath,
-  MdLink,
-  MdLinkReference,
-  MdList,
-  MdMath,
-  MdMdxJsxFlowElement,
   MdMdxJsxTextElement,
-  MdParagraph,
-  MdRootContent,
   MdStrong,
-  MdTable,
-  MdTableCell,
-  MdTableRow,
   MdText,
-  MdThematicBreak,
-  MdYaml,
 } from './mdast';
-import type { MentionNode } from './plugins/remarkMention';
 import 'mdast-util-mdx';
 
 export type * as unistLib from 'unist';
@@ -114,33 +88,30 @@ export type MarkdownDiagnostic =
     }>
   | (MarkdownDiagnosticContext &
       Readonly<{
-        code: 'markdown-fallback';
-        message: string;
-        reason: 'incomplete-stream';
-        severity: 'warning';
-      }>)
-  | (MarkdownDiagnosticContext &
-      Readonly<{
-        code: 'markdown-filtered-node';
-        message: string;
-        nodeType: string;
-        severity: 'warning';
-      }>)
-  | (MarkdownDiagnosticContext &
-      Readonly<{
-        code: 'markdown-invalid-source';
-        message: string;
-        reason: 'parser-failure';
-        severity: 'error';
-      }>)
-  | (MarkdownDiagnosticContext &
-      Readonly<{
         actual: number;
         code: 'markdown-limit-exceeded';
         limit: keyof MarkdownParseLimits;
         maximum: number;
         message: string;
         severity: 'error';
+      }>)
+  | (MarkdownDiagnosticContext &
+      Readonly<{
+        code: 'markdown-property-omitted';
+        key: string;
+        message: string;
+        owner: string;
+        phase: 'parse' | 'serialize';
+        reason: 'invalid' | 'unsupported';
+        severity: 'warning';
+      }>)
+  | (MarkdownDiagnosticContext &
+      Readonly<{
+        code: 'markdown-tag-repair';
+        message: string;
+        reason: 'misplaced' | 'unclosed' | 'unmatched';
+        severity: 'warning';
+        tag: string;
       }>)
   | (MarkdownDiagnosticContext &
       Readonly<{
@@ -245,39 +216,25 @@ export type MarkdownSyncPluggable =
   | MarkdownSyncPlugin
   | readonly [MarkdownSyncPlugin, ...unknown[]];
 
-export type AllowNodeConfig = Readonly<{
-  /** Custom filter function for nodes during deserialization. */
-  deserialize?: (node: UnistNode & { type: MarkdownNodeName }) => boolean;
-  /** Custom filter function for nodes during serialization. */
-  serialize?: (node: Descendant) => boolean;
-}>;
-
 export type MarkdownParsePolicy = Readonly<{
-  allowedNodes?: readonly MarkdownNodeName[] | null;
-  allowNode?: AllowNodeConfig;
-  disallowedNodes?: readonly MarkdownNodeName[] | null;
   limits?: Partial<MarkdownParseLimits>;
   lossPolicy?: 'allow' | 'reject';
-  preserveEmptyParagraphs?: boolean;
-  recovery?: 'incomplete-stream';
-  remarkPlugins?: readonly MarkdownSyncPluggable[];
-  splitLineBreaks?: boolean;
-  withoutMdx?: boolean;
+  /**
+   * The source is an unfinished stream prefix, such as a streaming AI answer.
+   * A trailing tag that has not finished arriving is hidden; use a final parse
+   * once the stream completes.
+   */
+  partial?: boolean;
 }>;
 
 export type MarkdownSerializePolicy = Readonly<{
-  allowedNodes?: readonly MarkdownNodeName[] | null;
-  allowNode?: AllowNodeConfig;
-  disallowedNodes?: readonly MarkdownNodeName[] | null;
   lossPolicy?: 'allow' | 'reject';
-  /** Marks to treat as plain text without applying markdown formatting. */
-  plainMarks?: readonly MarkdownNodeName[] | null;
+  /** Mark keys written as plain text without Markdown formatting. */
+  plainMarks?: readonly string[] | null;
   preserveEmptyParagraphs?: boolean;
   projection?: 'accepted' | 'proposed';
-  remarkPlugins?: readonly MarkdownSyncPluggable[];
   remarkStringifyOptions?: Readonly<RemarkStringifyOptions> | null;
   spread?: boolean;
-  withBlockId?: boolean;
 }>;
 
 export type MarkdownParseOptions = MarkdownParsePolicy &
@@ -292,100 +249,48 @@ export type MarkdownSerializeOptions = MarkdownSerializePolicy &
     schema?: EditorApplicationSchema;
   }>;
 
-export type MarkdownEditorSerializeOptions = MarkdownSerializePolicy &
-  Readonly<{ document?: EditorDocumentValue }>;
+export type MarkdownEditorSerializeOptions<V extends Value = Value> =
+  MarkdownSerializePolicy & Readonly<{ document?: EditorDocumentValue<V> }>;
 
 export type MarkdownConversionContext = Readonly<{
   isBlock: (node: Descendant) => boolean;
   isInline: (node: Descendant) => boolean;
+  /** Identity of one conversion; derived contexts keep it, so per-operation caches hold. */
+  operation: object;
   registry: MarkdownPluginRegistry;
 }>;
 
 /** Prepared Markdown deserialization context supplied to conversion rules. */
 export type DeserializeMdContext = Readonly<
-  Omit<MarkdownParsePolicy, 'limits' | 'remarkPlugins'>
+  Omit<MarkdownParsePolicy, 'limits'>
 > &
   MarkdownConversionContext & {
     /** Whether the optional ElementIdPlugin owns persisted block identity. */
     elementIds?: boolean;
-    /**
-     * Compiled feature-owned Markdown node formats.
-     *
-     * @internal
-     */
-    compiledMappings?: import('./internal/markdownMappings').CompiledMarkdownMappings;
     limits: MarkdownParseLimits;
     lossPolicy: 'allow' | 'reject';
+    mappings: CompiledMarkdownMappings;
     report: (diagnostic: MarkdownDiagnostic) => void;
     remarkPlugins: Pluggable[];
-    rules: MdRules;
     sourceLocation: (node: UnistNode) => MarkdownSourceLocation | undefined;
     state: EditorCoreStateView;
   };
 
 /** Prepared Markdown serialization context supplied to conversion rules. */
 export type SerializeMdContext = Readonly<
-  Omit<MarkdownSerializePolicy, 'projection' | 'remarkPlugins'> & {
+  Omit<MarkdownSerializePolicy, 'projection'> & {
     value: readonly Descendant[];
   }
 > &
   MarkdownConversionContext & {
-    /** Read the configured persisted element ID through its schema owner. */
-    blockId?: (element: Element) => string | undefined;
     document: EditorDocumentValue;
     lossPolicy: 'allow' | 'reject';
+    mappings: CompiledMarkdownMappings;
     modelLocation: (node: Descendant) => MarkdownModelLocation | undefined;
     report: (diagnostic: MarkdownDiagnostic) => void;
     remarkPlugins: Pluggable[];
-    rules: MdRules;
     state: EditorCoreStateView;
   };
-
-export type MdRules = Partial<{
-  [K in keyof NodeMap & keyof MdNodeMap]: Nullable<MdNodeParser<K>>;
-}> &
-  Record<string, Nullable<AnyNodeParser>>;
-
-export type MdNodeParser<
-  K extends keyof NodeMap & keyof MdNodeMap = keyof NodeMap & keyof MdNodeMap,
-> = {
-  mark?: boolean;
-  deserialize?(
-    mdastNode: MdNodeMap[K],
-    deco: MdDecoration,
-    options: DeserializeMdContext
-  ): Descendant | Descendant[] | undefined;
-  serialize?(slateNode: NodeMap[K], options: SerializeMdContext): MdRootContent;
-};
-
-type BivariantCallback<TArgs extends readonly unknown[], TResult> = {
-  bivarianceHack(...args: TArgs): TResult;
-}['bivarianceHack'];
-
-type AnyNodeParser = {
-  mark?: boolean;
-  deserialize?: BivariantCallback<
-    [UnistNode, MdDecoration, DeserializeMdContext],
-    Descendant | Descendant[] | undefined
-  >;
-  serialize?: BivariantCallback<
-    [Descendant, SerializeMdContext],
-    MdRootContent
-  >;
-};
-
-type StrictMdType = MdGFM | MdRootContent['type'] | MdStyle;
-
-export type MdType = (string & {}) | StrictMdType;
-
-type MdGFM = 'del' | 'mark' | 'sub' | 'sup' | 'u';
-
-type MdStyle =
-  | 'backgroundColor'
-  | 'color'
-  | 'fontFamily'
-  | 'fontSize'
-  | 'fontWeight';
 
 export type MdMark =
   | MdDelete
@@ -395,196 +300,4 @@ export type MdMark =
   | MdStrong
   | MdText;
 
-export type MdDecoration = Readonly<
-  Partial<
-    Record<
-      | (string & {})
-      | (MdDelete | MdEmphasis | MdInlineCode | MdStrong)['type']
-      | MdStyle
-      | 'underline',
-      boolean | string
-    >
-  >
->;
-
-export type StrictMarkdownNodeName =
-  | 'audio'
-  | 'blockquote'
-  | 'bold'
-  | 'break'
-  | 'callout'
-  | 'code'
-  | 'codeBlock'
-  | 'codeDrawing'
-  | 'column'
-  | 'columnGroup'
-  | 'date'
-  | 'equation'
-  | 'file'
-  | 'heading'
-  | 'horizontalRule'
-  | 'image'
-  | 'inlineEquation'
-  | 'italic'
-  | 'link'
-  | 'list'
-  | 'listItem'
-  | 'mediaEmbed'
-  | 'mention'
-  | 'paragraph'
-  | 'script'
-  | 'strikethrough'
-  | 'table'
-  | 'tableCell'
-  | 'tableRow'
-  | 'text'
-  | 'toc'
-  | 'toggle'
-  | 'underline'
-  | 'video';
-
-export type MarkdownNodeName = (string & {}) | StrictMarkdownNodeName;
-
-type NodeMap = {
-  [K in StrictMarkdownNodeName]: K extends
-    | 'bold'
-    | 'break'
-    | 'code'
-    | 'italic'
-    | 'script'
-    | 'strikethrough'
-    | 'text'
-    | 'underline'
-    ? Text
-    : Element;
-} & {
-  /** Markdown only */
-  text: Text;
-  list: Element | ListElement;
-  heading: Element;
-  footnoteReference: Element;
-  definition: Descendant;
-  footnoteDefinition: Element;
-  break: Text;
-  yaml: Descendant;
-  imageReference: Descendant;
-  linkReference: Descendant;
-  html: Descendant;
-  br: Text;
-  del: Text;
-  highlight: Text;
-  kbd: Text;
-  listItem: Element;
-  span: Text;
-};
-
-type MdNodeMap = {
-  /** Common Elements */
-  link: MdLink;
-  blockquote: MdBlockquote;
-  codeBlock: MdCode;
-  equation: MdMath;
-  heading: MdHeading;
-  horizontalRule: MdThematicBreak;
-  image: MdImage &
-    Pick<Partial<MdMdxJsxFlowElement>, 'attributes' | 'children'>;
-  inlineEquation: MdInlineMath;
-  paragraph: MdParagraph;
-  table: MdTable;
-  tableCell: MdTableCell;
-  tableRow: MdTableRow;
-  list: MdList;
-
-  /** Common Marks */
-  bold: MdStrong;
-  italic: MdEmphasis;
-  code: MdInlineCode;
-  text: MdText;
-  strikethrough: MdDelete;
-
-  /** Markdown only */
-  footnoteReference: MdFootnoteReference;
-  definition: MdDefinition;
-  footnoteDefinition: MdFootnoteDefinition;
-  break: MdBreak;
-  yaml: MdYaml;
-  imageReference: MdImageReference;
-  linkReference: MdLinkReference;
-  html: MdHtml;
-  br: MdBreak;
-  del: MdMdxJsxTextElement;
-  highlight: MdMdxJsxTextElement;
-  kbd: MdMdxJsxTextElement;
-  listItem: import('./mdast').MdListItem;
-  span: MdMdxJsxTextElement;
-
-  /** Plate only */
-  codeDrawing: MdMdxJsxFlowElement;
-  columnGroup: MdMdxJsxFlowElement;
-  column: MdMdxJsxFlowElement;
-  toc: MdMdxJsxFlowElement;
-  callout: MdMdxJsxFlowElement;
-  toggle: MdMdxJsxFlowElement;
-  mention: MentionNode;
-  date: MdMdxJsxTextElement;
-  underline: MdMdxJsxTextElement;
-  comment: MdMdxJsxTextElement;
-  script: MdMdxJsxTextElement;
-  file: MdMdxJsxFlowElement;
-  mediaEmbed: MdMdxJsxFlowElement;
-  video: MdMdxJsxFlowElement;
-  audio: MdMdxJsxFlowElement;
-};
-
-const MDAST_TO_RULE = {
-  backgroundColor: 'backgroundColor',
-  blockquote: 'blockquote',
-  break: 'break',
-  code: 'codeBlock',
-  color: 'color',
-  definition: 'definition',
-  del: 'strikethrough',
-  delete: 'strikethrough',
-  emphasis: 'italic',
-  fontFamily: 'fontFamily',
-  fontSize: 'fontSize',
-  fontWeight: 'fontWeight',
-  footnoteDefinition: 'footnoteDefinition',
-  footnoteReference: 'footnoteReference',
-  heading: 'heading',
-  html: 'html',
-  image: 'image',
-  imageReference: 'imageReference',
-  inlineCode: 'code',
-  inlineMath: 'inlineEquation',
-  link: 'link',
-  linkReference: 'linkReference',
-  list: 'list',
-  listItem: 'listItem',
-  mark: 'highlight',
-  math: 'equation',
-  mention: 'mention',
-  mdxFlowExpression: 'mdxFlowExpression',
-  mdxjsEsm: 'mdxjsEsm',
-  mdxJsxFlowElement: 'mdxJsxFlowElement',
-  mdxJsxTextElement: 'mdxJsxTextElement',
-  mdxTextExpression: 'mdxTextExpression',
-  paragraph: 'paragraph',
-  strong: 'bold',
-  sub: 'script',
-  sup: 'script',
-  table: 'table',
-  tableCell: 'tableCell',
-  tableRow: 'tableRow',
-  text: 'text',
-  thematicBreak: 'horizontalRule',
-  u: 'underline',
-  yaml: 'yaml',
-} as const satisfies Record<StrictMdType, MarkdownNodeName>;
-const MDAST_TO_RULE_MAP = new Map<string, MarkdownNodeName>(
-  Object.entries(MDAST_TO_RULE)
-);
-
-/** Map an mdast node type to its canonical Markdown rule key. */
-export const mdastToRule = (mdastType: string) =>
-  MDAST_TO_RULE_MAP.get(mdastType) ?? mdastType;
+export type MdMarks = MarkdownMarks;

@@ -16,10 +16,6 @@ import type {
 import { ElementApi, PLUGINS, TextApi } from '../../../core';
 import type { MarkdownConversionContext } from '../types';
 
-export class MarkdownBlockIdError extends Error {
-  override name = 'MarkdownBlockIdError';
-}
-
 export type MarkdownSerializeDocumentValue = EditorDocumentValue;
 
 const MDX_ATTR_NAME_TO_HTML_ATTR: Record<string, string> = {
@@ -146,15 +142,13 @@ export const toMarkdownBlockContent = (
 export const toMarkdownCaptionContent = (
   context: MarkdownConversionContext,
   children: readonly Descendant[]
-): readonly Descendant[] => {
+): readonly Descendant[] | null => {
   const blocks = toMarkdownBlockContent(context, children);
   const paragraphType = context.registry.type(PLUGINS.paragraph) ?? 'paragraph';
 
-  if (blocks.length !== 1 || blocks[0].type !== paragraphType) {
-    throw new Error('Media captions must contain one Markdown paragraph.');
-  }
-
-  return blocks[0].children;
+  return blocks.length === 1 && blocks[0].type === paragraphType
+    ? blocks[0].children
+    : null;
 };
 
 export const readPlainMarkdownInlineContent = (

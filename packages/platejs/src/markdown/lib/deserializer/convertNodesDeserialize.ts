@@ -3,233 +3,134 @@ import type { Node as UnistNode } from 'unist';
 
 import type { Descendant } from '../../../core';
 import { PLUGINS } from '../../../core';
-import { failInvariant } from '../../internal/failInvariant';
+import { serializeUnknownMdxNode } from '../internal/markdownDocument';
 import {
-  MarkdownBlockIdError,
-  serializeUnknownMdxNode,
-} from '../internal/markdownDocument';
-import { runMarkdownDecodeMappings } from '../internal/markdownMappings';
+  getMarkdownDecoders,
+  runMarkdownDecoders,
+} from '../internal/markdownMappings';
+import { getMarkdownTagRepair } from '../internal/markdownTags';
 import type { MdRootContent } from '../mdast';
-import type { DeserializeMdContext, MdDecoration } from '../types';
-import { mdastToRule } from '../types';
+import type { DeserializeMdContext, MdMarks } from '../types';
 
 export const convertNodesDeserialize = (
   nodes: MdRootContent[],
-  deco: MdDecoration,
+  marks: MdMarks,
   options: DeserializeMdContext
 ): Descendant[] =>
-  nodes.reduce<Descendant[]>((acc, node) => {
-    if (shouldIncludeNode(node, options)) {
-      acc.push(...buildSlateNode(node, deco, options));
-    } else {
-      const nodeType = mdastToRule(node.type);
-
-      options.report({
-        code: 'markdown-filtered-node',
-        message: `Markdown node "${nodeType}" was omitted by the active filter.`,
-        nodeType,
-        severity: 'warning',
-        source: options.sourceLocation(node),
-      });
-    }
-    return acc;
-  }, []);
+  nodes.flatMap((node) => buildSlateNode(node, marks, options));
 
 export const buildSlateNode = (
   mdastNode: MdRootContent | UnistNode,
-  deco: MdDecoration,
+  marks: MdMarks,
   options: DeserializeMdContext
 ): Descendant[] => {
-  const runParser = (
-    parser:
-      | NonNullable<DeserializeMdContext['rules']>[string]
-      | null
-      | undefined
-  ) => {
-    const result = parser?.deserialize?.(mdastNode, deco, options);
-
-    if (result === undefined) return undefined;
-
-    return Array.isArray(result) ? result : [result];
-  };
-
-  /** Handle custom mdx nodes */
   if (isMdxJsxNode(mdastNode)) {
-    const source = mdastNode.name;
-    const type = source ? mdastToRule(source) : null;
+    const tag = mdastNode.name ?? '';
+    const repair = getMarkdownTagRepair(mdastNode);
 
-    if (
-      mdastNode.type === 'mdxJsxFlowElement' &&
-      source === 'block' &&
-      !options.elementIds
-    ) {
-      throw new MarkdownBlockIdError(
-        'Markdown block identity requires ElementIdPlugin in the editor.'
-      );
+    if (repair && !(options.partial && repair.atEnd)) {
+      options.report({
+        code: 'markdown-tag-repair',
+        message: `Markdown tag <${tag}> is ${repair.repair} and was closed at the end of its container.`,
+        reason: repair.repair,
+        severity: 'warning',
+        source: options.sourceLocation(mdastNode),
+        tag,
+      });
     }
-    if (
-      mdastNode.type === 'mdxJsxFlowElement' &&
-      source === 'block' &&
-      options.elementIds
-    ) {
-      const id = mdastNode.attributes.find(
-        (attribute) =>
-          attribute.type === 'mdxJsxAttribute' && attribute.name === 'id'
-      )?.value;
-
-      if (typeof id !== 'string' || id.length === 0) {
-        throw new MarkdownBlockIdError(
-          'Markdown block identity requires a non-empty id.'
-        );
-      }
-      const children = convertNodesDeserialize(
-        mdastNode.children,
-        deco,
-        options
-      );
-
-      if (children.length !== 1 || !('children' in children[0])) {
-        throw new MarkdownBlockIdError(
-          'Markdown block identity must wrap exactly one block element.'
-        );
-      }
-
-      return [
-        {
-          ...children[0],
-          id,
-        },
-      ];
+    // Persisted block identity: compatible reads only.
+    if (mdastNode.type === 'mdxJsxFlowElement' && tag === 'block') {
+      return readBlockIdentity(mdastNode, marks, options);
     }
+  }
 
-    if (type) {
-      const hasCompiledSource =
-        options.compiledMappings?.decodeBySource.has(
-          source ?? failInvariant('Expected value to be defined')
-        ) ?? false;
-      const compiled = options.compiledMappings
-        ? runMarkdownDecodeMappings(
-            options.compiledMappings,
-            source ?? failInvariant('Expected value to be defined'),
-            mdastNode,
-            deco,
-            options
-          )
-        : undefined;
+  const decoders = getMarkdownDecoders(options.mappings, mdastNode);
+  const decoded = decoders
+    ? runMarkdownDecoders(decoders, mdastNode, marks, options)
+    : undefined;
 
-      if (compiled !== undefined) {
-        return Array.isArray(compiled) ? compiled : [compiled];
-      }
-
-      if (!hasCompiledSource) {
-        const fallback = runParser(options.rules?.[type]);
-
-        if (fallback) return fallback;
-      }
-    }
-
-    const nodeType = source || mdastNode.type;
-
+  if (decoded !== undefined) return decoded;
+  if (!isMdxJsxNode(mdastNode)) {
     options.report({
-      action: 'replaced',
+      action: 'dropped',
       code: 'markdown-unsupported-node',
-      message: `Markdown node "${nodeType}" has no installed mapping and was preserved as source text.`,
-      nodeType,
+      message: `Markdown node "${mdastNode.type}" has no installed mapping.`,
+      nodeType: mdastNode.type,
       owner: 'markdown',
       phase: 'parse',
       severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
       source: options.sourceLocation(mdastNode),
     });
 
-    if (mdastNode.type === 'mdxJsxTextElement') {
-      return [{ text: serializeUnknownMdxNode(mdastNode) }];
-    }
-
-    const paragraphType =
-      options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
-
-    return [
-      {
-        children: [{ text: serializeUnknownMdxNode(mdastNode) }],
-        type: paragraphType,
-      },
-    ];
+    return [];
   }
 
-  const type = mdastToRule(mdastNode.type);
-  const hasCompiledSource =
-    options.compiledMappings?.decodeBySource.has(mdastNode.type) ?? false;
-  const compiled = options.compiledMappings
-    ? runMarkdownDecodeMappings(
-        options.compiledMappings,
-        mdastNode.type,
-        mdastNode,
-        deco,
-        options
-      )
-    : undefined;
+  const nodeType = mdastNode.name || mdastNode.type;
 
-  if (compiled !== undefined) {
-    return Array.isArray(compiled) ? compiled : [compiled];
-  }
-
-  if (!hasCompiledSource) {
-    const fallback = runParser(options.rules?.[type]);
-
-    if (fallback) return fallback;
-  }
   options.report({
-    action: 'dropped',
+    action: 'replaced',
     code: 'markdown-unsupported-node',
-    message: `Markdown node "${mdastNode.type}" has no installed mapping.`,
-    nodeType: mdastNode.type,
+    message: decoders
+      ? `Markdown tag <${nodeType}> was not accepted by an installed mapping and was preserved as source text.`
+      : `Markdown node "${nodeType}" has no installed mapping and was preserved as source text.`,
+    nodeType,
     owner: 'markdown',
     phase: 'parse',
     severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
     source: options.sourceLocation(mdastNode),
   });
 
-  return [];
+  const text = { text: serializeUnknownMdxNode(mdastNode) };
+
+  return mdastNode.type === 'mdxJsxTextElement'
+    ? [text]
+    : [
+        {
+          children: [text],
+          type: options.registry.type(PLUGINS.paragraph) ?? 'paragraph',
+        },
+      ];
+};
+
+const readBlockIdentity = (
+  node: MdxJsxFlowElement,
+  marks: MdMarks,
+  options: DeserializeMdContext
+): Descendant[] => {
+  const id = node.attributes.find(
+    (attribute) =>
+      attribute.type === 'mdxJsxAttribute' && attribute.name === 'id'
+  )?.value;
+  const children = convertNodesDeserialize(node.children, marks, options);
+  const [block] = children;
+
+  if (
+    options.elementIds &&
+    typeof id === 'string' &&
+    id.length > 0 &&
+    children.length === 1 &&
+    block &&
+    'children' in block
+  ) {
+    return [{ ...block, id }];
+  }
+  options.report({
+    action: 'unwrapped',
+    code: 'markdown-unsupported-node',
+    message: options.elementIds
+      ? 'Markdown block identity must wrap one block with a non-empty id; the id was omitted.'
+      : 'Markdown block identity requires ElementIdPlugin; the id was omitted.',
+    nodeType: 'block',
+    owner: 'markdown',
+    phase: 'parse',
+    severity: 'warning',
+    source: options.sourceLocation(node),
+  });
+
+  return children;
 };
 
 const isMdxJsxNode = (
   node: MdRootContent | UnistNode
 ): node is MdxJsxFlowElement | MdxJsxTextElement =>
   node.type === 'mdxJsxTextElement' || node.type === 'mdxJsxFlowElement';
-
-const shouldIncludeNode = (
-  node: MdRootContent,
-  options: DeserializeMdContext
-): boolean => {
-  const { allowedNodes, allowNode, disallowedNodes } = options;
-
-  if (!node.type) return true;
-
-  const type = mdastToRule(node.type);
-
-  if (
-    allowedNodes &&
-    disallowedNodes &&
-    allowedNodes.length > 0 &&
-    disallowedNodes.length > 0
-  ) {
-    throw new Error('Cannot combine allowedNodes with disallowedNodes');
-  }
-
-  if (allowedNodes) {
-    if (!allowedNodes.includes(type)) {
-      return false;
-    }
-  } else if (disallowedNodes?.includes(type)) {
-    return false;
-  }
-
-  if (allowNode?.deserialize) {
-    return allowNode.deserialize({
-      ...node,
-      type,
-    });
-  }
-
-  return true;
-};

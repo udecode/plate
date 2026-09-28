@@ -9,7 +9,7 @@ import {
   schema,
   PLUGINS,
 } from '../../core';
-import { MarkdownPlugin, remarkMdx } from '../../markdown';
+import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
 
@@ -58,7 +58,7 @@ const createEditor = (paragraphType = 'paragraph') => {
       formats: ({ defineFormats, schema: { type } }) =>
         defineFormats({
           markdown: {
-            from: 'heading',
+            node: 'heading',
             decode: ({ decode, decoration, node }) => ({
               children: decode(node.children, decoration),
               level: node.depth,
@@ -74,7 +74,7 @@ const createEditor = (paragraphType = 'paragraph') => {
       },
     }),
     MarkdownPlugin.configure({
-      initialState: { remarkPlugins: [remarkMath, remarkMdx] },
+      initialState: { remarkPlugins: [remarkMath] },
     }),
     AIChatPlugin,
   ] as const;
@@ -113,7 +113,7 @@ describe('AIChatPlugin streaming', () => {
     expect(editor.read.text.string([])).toBe('complete');
   });
 
-  it('invalidates a recovered stream when its final parse fails', () => {
+  it('invalidates a streamed preview when its final parse fails', () => {
     const editor = createEditor();
     const ai = editor.plugin(AIChatPlugin);
 

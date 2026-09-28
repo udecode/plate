@@ -109,19 +109,20 @@ different keys do not blindly import each other's internal JSON.
 
 Registered DataTransfer formats add schema-aware MIME representations without
 putting DOM types in Plite core. Register them with
-`dataTransferFormats(name, formats)`. A decoder returns one diagnosed
-`ContentSlice`; Plite preserves open edges and detached roots, then fits the
-complete slice at the actual insertion range. An expected source failure returns
-`{ ok: false, diagnostics }` and delegates to the next format. Return `null` from
-`decode` or `false` from `accept` for a mismatch that should not create an
-attempt.
+`dataTransferFormats(name, formats)`. A decoder returns one `ContentSlice`, or
+`null` to delegate the payload to the next format; `accept` returns `false` to
+skip the format before decoding. Plite preserves the slice's open edges and
+detached roots, then fits the complete slice at the actual insertion range.
 
-Well-formed slices that do not fit leave the transaction untouched and continue
-to the next format or plain-text fallback. Callback exceptions are isolated,
-reported to the lifecycle error sink as `data-transfer-format`, and cannot block
-a later format. Configure `dom({ onDataTransferReport })` to observe rejected,
-unfit, selected, written, and unhandled outcomes after their public boundary
-settles.
+A slice that does not fit leaves the transaction untouched, and the next format
+tries. Plain text is the final fallback. An encoder returns a string, or `null`
+to leave its MIME type to the next encoder; each MIME type is written once.
+Callback exceptions are reported to the editor's `lifecycleErrorSink` as
+`data-transfer-format` errors with the format `key`, `mimeType`, and `phase`,
+and cannot block a later format. Negotiation has no report: content a format
+cannot represent is fixed by adding a mapping or a format. See
+[Plite DOM](../libraries/plite-dom#datatransfer-formats) for the format
+contract.
 
 ## Fragment and slice replacement
 

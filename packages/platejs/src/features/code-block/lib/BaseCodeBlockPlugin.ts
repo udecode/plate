@@ -153,17 +153,13 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         const plainText = snapshot.getData('text/plain');
         const parsed = parseHtmlAst(data, 'slice');
 
-        if (!parsed.ok) return parsed;
+        if (!parsed.ok) return null;
         const htmlText =
           materializeHtmlAst(parsed.ast, createBrowserHtmlDocument())
             .textContent || '';
         const text = plainText && plainText !== data ? plainText : htmlText;
 
-        return Object.freeze({
-          diagnostics: Object.freeze([]),
-          ok: true as const,
-          slice: ContentSlice.closed([{ text }]),
-        });
+        return ContentSlice.closed([{ text }]);
       },
       mimeType: 'text/html',
       priority: 200,
@@ -266,7 +262,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         priority: 10,
       },
       markdown: {
-        from: 'code',
+        node: 'code',
         decode: ({ node }) => ({
           ...(node.lang ? { language: node.lang } : {}),
           children: [{ text: node.value || '' }],

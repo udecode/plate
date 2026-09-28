@@ -6,7 +6,6 @@ import {
   serializeTestMarkdown,
 } from './__tests__/createTestEditor';
 import { MarkdownPlugin } from './MarkdownPlugin';
-import { remarkMdx } from './plugins';
 
 describe('media package surfaces', () => {
   const createMediaEditor = () => createTestEditor();
@@ -30,9 +29,7 @@ Rich **caption**.
     });
     expect(document).not.toHaveProperty('roots');
     expect(serializeTestMarkdown(editor, { document }).data).toBe(
-      `<video src="https://example.com/video.mp4">
-  Rich **caption**.
-</video>
+      `<video src="https://example.com/video.mp4">Rich **caption**.</video>
 `
     );
   });
@@ -43,7 +40,7 @@ Rich **caption**.
         BaseParagraphPlugin,
         BaseMediaEmbedPlugin,
         MarkdownPlugin.configure({
-          initialState: { remarkPlugins: [remarkMdx] },
+          initialState: { remarkPlugins: [] },
         }),
       ],
       schema: {
@@ -90,6 +87,26 @@ Rich **caption**.
     expect(serializeTestMarkdown(editor, { document }).data).toBe(
       '<img alt="caption alt" height="180" width="320" src="/from-attr.png" />\n'
     );
+
+    const stringWidth = serializeTestMarkdown(editor, {
+      document: {
+        children: [
+          {
+            children: [{ text: '' }],
+            type: 'image',
+            url: '/string-width.png',
+            width: '320',
+          },
+        ],
+      },
+    });
+
+    expect(stringWidth.data).toBe(
+      '<img width="&quot;320&quot;" src="/string-width.png" />\n'
+    );
+    expect(
+      parseTestMarkdown(editor, stringWidth.data).children[0]
+    ).toMatchObject({ type: 'image', width: '320' });
   });
 
   it.each([

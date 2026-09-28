@@ -11,7 +11,6 @@ import { readAuthoredViewFragments } from '../../core/authored-runtime';
 import { rewriteContentRootReferences } from '../../core/content-slice-roots';
 import { exportContentSlice } from '../../core/editor-read-execution';
 import {
-  getDOMClipboardFormatKey,
   readDOMFragmentData,
   writeDOMDataTransferFragment,
 } from '../../dom/internal';
@@ -29,22 +28,10 @@ import {
 const escapeHtmlText = (text: string) =>
   text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
-const getCanonicalRuntimeEditor = (editor: RuntimeEditor) =>
-  getEditorRuntimeOwner(editor);
-
-const getProjectedClipboardFormatKey = (editor: RuntimeEditor) => {
-  const viewEditorKey = getDOMClipboardFormatKey(editor);
-
-  return viewEditorKey === 'x-editor-fragment'
-    ? getDOMClipboardFormatKey(getCanonicalRuntimeEditor(editor))
-    : viewEditorKey;
-};
-
 export const decodeProjectedClipboardFragment = (
   editor: RuntimeEditor,
   data: Pick<DataTransfer, 'getData'>
-): ContentSliceValue | null =>
-  readDOMFragmentData(editor, data, getProjectedClipboardFormatKey(editor));
+): ContentSliceValue | null => readDOMFragmentData(editor, data);
 
 const joinSliceContent = (
   left: readonly Descendant[],
@@ -282,13 +269,10 @@ export const writeProjectedViewSelectionClipboardData = (
     return false;
   }
 
-  const clipboardFormatKey = getProjectedClipboardFormatKey(editor);
-
-  const runtimeEditor = getCanonicalRuntimeEditor(editor);
+  const runtimeEditor = getEditorRuntimeOwner(editor);
   const exported = exportContentSlice(runtimeEditor, slice);
 
   writeDOMDataTransferFragment(runtimeEditor, data, {
-    clipboardFormatKey,
     html: ({ text }) => `<span>${escapeHtmlText(text)}</span>`,
     slice: exported,
   });

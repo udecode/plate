@@ -1,8 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`roundTrip serialize callout correctly 1`] = `
-"<callout icon=\"💡\">
-  Callout
-</callout>
+"<callout icon="💡">Callout</callout>
 "
 `;

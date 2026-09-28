@@ -390,12 +390,7 @@ export const entrypointDags = {
       ),
       markdown: headless(
         directory('markdown', ['authored', 'core', 'standard/list'], [], {
-          peerDependencies: [
-            'remark-mdx',
-            'remark-parse',
-            'remark-stringify',
-            'unified',
-          ],
+          peerDependencies: ['remark-parse', 'remark-stringify', 'unified'],
         })
       ),
       math: headless(

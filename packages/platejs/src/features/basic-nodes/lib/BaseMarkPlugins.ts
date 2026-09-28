@@ -150,7 +150,7 @@ export const BaseBoldPlugin = definePlugin(PLUGINS.bold, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) =>
@@ -165,10 +165,9 @@ export const BaseBoldPlugin = definePlugin(PLUGINS.bold, {
       },
 
       markdown: {
-        from: 'strong',
+        node: 'strong',
         mark: true,
-        decode: ({ decode, decoration, node }) =>
-          decode(node.children, { ...decoration, [key]: true }),
+        decode: () => true,
       },
     }),
   component: 'strong',
@@ -179,7 +178,7 @@ export const BaseCodePlugin = definePlugin(PLUGINS.code, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) => {
@@ -195,13 +194,9 @@ export const BaseCodePlugin = definePlugin(PLUGINS.code, {
       },
 
       markdown: {
-        from: 'inlineCode',
+        node: 'inlineCode',
         mark: true,
-        decode: ({ decoration, node }) => ({
-          ...decoration,
-          [key]: true,
-          text: node.value,
-        }),
+        decode: () => true,
       },
     }),
   component: 'code',
@@ -216,7 +211,7 @@ export const BaseHighlightPlugin = definePlugin(PLUGINS.highlight, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: () => true,
@@ -225,13 +220,11 @@ export const BaseHighlightPlugin = definePlugin(PLUGINS.highlight, {
       },
 
       markdown: {
-        from: 'mark',
+        tag: 'mark',
         mark: true,
-        decode: ({ decode, decoration, node }) =>
-          decode(node.children, { ...decoration, [key]: true }),
-        encode: ({ node }) => ({
+        decode: () => true,
+        wrap: () => ({
           attributes: [],
-          children: [{ type: 'text', value: node.text }],
           name: 'mark',
           type: 'mdxJsxTextElement',
         }),
@@ -246,7 +239,7 @@ export const BaseItalicPlugin = definePlugin(PLUGINS.italic, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) =>
@@ -258,10 +251,9 @@ export const BaseItalicPlugin = definePlugin(PLUGINS.italic, {
       },
 
       markdown: {
-        from: 'emphasis',
+        node: 'emphasis',
         mark: true,
-        decode: ({ decode, decoration, node }) =>
-          decode(node.children, { ...decoration, [key]: true }),
+        decode: () => true,
       },
     }),
   component: 'em',
@@ -272,7 +264,7 @@ export const BaseKbdPlugin = definePlugin(PLUGINS.kbd, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: () => true,
@@ -281,13 +273,11 @@ export const BaseKbdPlugin = definePlugin(PLUGINS.kbd, {
       },
 
       markdown: {
-        from: 'kbd',
+        tag: 'kbd',
         mark: true,
-        decode: ({ decode, decoration, node }) =>
-          decode(node.children, { ...decoration, [key]: true }),
-        encode: ({ node }) => ({
+        decode: () => true,
+        wrap: () => ({
           attributes: [],
-          children: [{ type: 'text', value: node.text }],
           name: 'kbd',
           type: 'mdxJsxTextElement',
         }),
@@ -302,7 +292,7 @@ export const BaseScriptPlugin = definePlugin(PLUGINS.script, {
   schema: {
     mark: property.enum(scriptValues),
   },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) =>
@@ -325,21 +315,19 @@ export const BaseScriptPlugin = definePlugin(PLUGINS.script, {
 
       markdown: [
         {
-          from: 'sub',
+          tag: 'sub',
           mark: true,
-          decode: ({ decode, decoration, node }) =>
-            decode(node.children, { ...decoration, [key]: 'sub' }),
-          encode: ({ node }) => ({
+          decode: () => 'sub',
+          wrap: ({ value }) => ({
             attributes: [],
-            children: [{ type: 'text', value: node.text }],
-            name: node[key] === 'sub' ? 'sub' : 'sup',
+            name: value === 'sub' ? 'sub' : 'sup',
             type: 'mdxJsxTextElement',
           }),
         },
         {
-          from: 'sup',
-          decode: ({ decode, decoration, node }) =>
-            decode(node.children, { ...decoration, [key]: 'sup' }),
+          tag: 'sup',
+          mark: true,
+          decode: () => 'sup',
         },
       ],
     }),
@@ -351,7 +339,7 @@ export const BaseStrikethroughPlugin = definePlugin(PLUGINS.strikethrough, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) =>
@@ -370,15 +358,14 @@ export const BaseStrikethroughPlugin = definePlugin(PLUGINS.strikethrough, {
 
       markdown: [
         {
-          from: 'delete',
+          node: 'delete',
           mark: true,
-          decode: ({ decode, decoration, node }) =>
-            decode(node.children, { ...decoration, [key]: true }),
+          decode: () => true,
         },
         {
-          from: 'del',
-          decode: ({ decode, decoration, node }) =>
-            decode(node.children, { ...decoration, [key]: true }),
+          tag: 'del',
+          mark: true,
+          decode: () => true,
         },
       ],
     }),
@@ -391,7 +378,7 @@ export const BaseUnderlinePlugin = definePlugin(PLUGINS.underline, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
         decode: ({ element }) =>
@@ -406,13 +393,11 @@ export const BaseUnderlinePlugin = definePlugin(PLUGINS.underline, {
       },
 
       markdown: {
-        from: 'u',
+        tag: 'u',
         mark: true,
-        decode: ({ decode, decoration, node }) =>
-          decode(node.children, { ...decoration, [key]: true }),
-        encode: ({ node }) => ({
+        decode: () => true,
+        wrap: () => ({
           attributes: [],
-          children: [{ type: 'text', value: node.text }],
           name: 'u',
           type: 'mdxJsxTextElement',
         }),

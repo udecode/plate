@@ -20,11 +20,7 @@ const ConfiguredPlateFormatContractPlugin = definePlugin(
     dataTransferFormats: [
       {
         mimeType: 'application/x-plate-codec-contract',
-        decode: () => ({
-          diagnostics: [],
-          ok: true,
-          slice: ContentSlice.closed([{ text: 'value' }]),
-        }),
+        decode: () => ContentSlice.closed([{ text: 'value' }]),
         scope: 'document',
       },
     ],

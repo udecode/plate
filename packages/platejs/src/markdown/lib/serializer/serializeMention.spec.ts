@@ -85,7 +85,7 @@ describe('editor.api.markdown.serialize - mention', () => {
     expect(markdown).toBe('Hey [John Doe](mention:john_doe) check this out\n');
   });
 
-  it('round-trip mentions correctly', () => {
+  it('round-trips link mentions and keeps bare handles as text', () => {
     const editor = createTestEditor();
 
     const originalMarkdown = 'Hello [Jane Smith](mention:jane_smith) and @bob!';
@@ -94,7 +94,7 @@ describe('editor.api.markdown.serialize - mention', () => {
     const serializedMarkdown = serializeTestMarkdown(editor).data;
 
     expect(serializedMarkdown).toBe(
-      'Hello [Jane Smith](mention:jane_smith) and [bob](mention:bob)!\n'
+      'Hello [Jane Smith](mention:jane_smith) and @bob!\n'
     );
   });
 

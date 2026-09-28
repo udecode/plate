@@ -37,15 +37,15 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
         match: [{ tag: 'summary' }],
       },
       markdown: {
-        from: type,
-        decode: ({ decode, decoration, isInline, node }) => {
+        tag: type,
+        decode: ({ decode, marks, isInline, node, refuse }) => {
           const paragraph =
             node.children.length === 1 && node.children[0]?.type === 'paragraph'
               ? node.children[0]
               : undefined;
           const children = decode(
             paragraph ? paragraph.children : node.children,
-            decoration
+            marks
           );
 
           if (
@@ -53,9 +53,7 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
               (child) => ElementApi.isElement(child) && !isInline(child)
             )
           ) {
-            throw new Error(
-              'Summary children must be inline Markdown content.'
-            );
+            return refuse('Summary children must be inline Markdown content.');
           }
 
           return { children, type };
@@ -99,8 +97,8 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         match: [{ tag: 'details' }],
       },
       markdown: {
-        from: type,
-        decode: ({ decode, decoration, node, registry }) => {
+        tag: type,
+        decode: ({ decode, marks, node, registry }) => {
           const summaryType = registry.type(PLUGINS.detailsSummary);
 
           if (!summaryType) {
@@ -108,7 +106,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           }
 
           return {
-            children: decode(node.children, decoration).map((child) => {
+            children: decode(node.children, marks).map((child) => {
               if (
                 ElementApi.isElement(child) &&
                 child.children.length === 1 &&

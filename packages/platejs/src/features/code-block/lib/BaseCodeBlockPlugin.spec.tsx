@@ -1193,11 +1193,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const MixedSelectionFormatPlugin = definePlugin('mixedSelectionParser', {
         dataTransferFormats: [
           {
-            decode: () => ({
-              diagnostics: [],
-              ok: true,
-              slice: ContentSlice.closed(deserialize()),
-            }),
+            decode: () => ContentSlice.closed(deserialize()),
             mimeType: 'text/plain',
             priority: 100,
             scope: 'document',

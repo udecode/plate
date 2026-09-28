@@ -295,7 +295,25 @@ translation.
 HTML mappings may prepare only their operation-owned inert document before
 matching. Whole-payload admission, source cleanup, RTF access, and post-decode
 repair belong to `DataTransferFormat`. Do not restore generic `query`,
-`transformData`, or `transformFragment` hooks on semantic mappings.
+`transformData`, or `transformFragment` hooks on semantic mappings. A
+`createsElement` mapping creates the schema's default block when that block is
+one of its targets; target order is membership, not construction intent.
+
+Parse and import diagnostics tell the truth about loss. Every warning judged
+under `lossPolicy` declares `impact`: `lossless` for normalization such as
+parser recovery, `lossy` when source content was dropped. The code that removes
+content classifies it: mandatory safety removal is lossless only for
+non-rendering markup such as metadata, scripts, event handlers and script URLs,
+or for graphics the author hid with `aria-hidden="true"`; never exempt a
+diagnostic code wholesale. The HTML parser reports embedded media that no
+installed mapping owns even when fallback content survives.
+
+A `DataTransferFormat` returns a slice or string, or `null` to delegate to the
+next format. Negotiation publishes no report or diagnostics channel without a
+production consumer. Copied registry UI does not warn about paste loss; a new
+mapping is the fix for lost content. Per-editor DOM plugin state resolves
+through the runtime owner, so mounted views read the activation's
+configuration instead of re-resolving it at each caller.
 
 Copied registry UI and genuinely reusable package components are host-agnostic,
 even when one current host supplies a complete kit. They must not import the
@@ -402,32 +420,55 @@ format mappings: do not
 teach direct `formats: { ... }`, manual `target` fields, a global mapping helper,
 casts, or callback annotations.
 
-Custom Plate-owned MDX element tags are persisted schema identity. Bind
-`schema: { type }` in the format factory and use the same resolved value for
-the mapping `from`, decoded element `type`, and encoded MDX `name`. Never use the
-plugin capability name, an authored default literal, or a dual decode alias.
-Fixed MDAST, HTML, and MDX names remain literal because they belong to the
-external format rather than the Plate schema. Legacy persisted tags migrate
-before normal mapping handling.
+Ordinary Markdown is CommonMark with GFM and math. Plate extension elements are
+registered tags recognized by the Markdown runtime's selective grammar; an
+unregistered `<` stays CommonMark. Full MDX is not a Plate dialect, and the
+`remarkPlugins` list on `MarkdownPlugin` configuration stays the generic
+extension boundary with no MDX promise. Legacy MDX-written Plate output reads
+through one dialect law: inside a registered block tag, only fenced code is
+code.
 
-One-operation Markdown decode overrides use the invariant plugin capability
-name because the incoming format identity may differ from the installed schema
-type. Encode overrides use the persisted schema identity because they dispatch
-from Plate nodes. Resolve the compiled decode owner before the override lookup;
-do not make consumers guess the configured persisted type. Once an installed
-mapping claims a source, `undefined` declines that mapping; it never enables a
-second override lookup by persisted tag.
+A Markdown mapping selects one source: `node` names a standard MDAST kind and
+types the decoded `node`; `tag` names a registered tag, with `nestedTags` for
+tags read only inside it. An element's registered tag is persisted schema
+identity. Bind `schema: { type }` in the format factory and use the same
+resolved value for `tag`, the decoded element `type`, and the encoded tag
+`name`. Never use the plugin capability name, an authored default literal, or a
+dual decode alias. Fixed MDAST kinds and HTML tag names remain literal because
+they belong to the external format rather than the Plate schema. Legacy
+persisted tags migrate before normal mapping handling.
 
-Custom configurable MDX identity belongs on the schema-owning plugin. Do not
+Tag attributes cross a runtime-owned wire codec selected by the schema property
+kind: decode reads `readTagAttributes().properties` and encode writes
+`encodeAttributes(properties)`, while the schema still validates values. Do
+not restore blanket JSON coercion or a feature-local attribute parser. Input a
+mapping cannot represent returns `refuse(message)`, reported as
+`markdown-unsupported-node` under `lossPolicy`; only programmer and
+configuration faults throw.
+
+Installed mappings are the only Markdown conversion owners: no per-operation
+mapping override, node filter, remark-plugin list, or recovery mode. `partial`
+is the streaming-preview parse option; a missing mapping is the fix for
+unsupported content. Claim mappings on one selector run by priority:
+`undefined` declines to the next, and `refuse` stops dispatch. Mention claims
+`[label](mention:ref)` links through `node: 'link'` and declines other links to
+Link. Mark mappings (`mark: true`) decode to the mark value, such as `true`,
+and encode through `wrap`, which returns a childless inline wrapper that the
+runtime fills; they take no priority, every mark mapping on a selector
+composes, and the runtime decodes the children once. Decode contexts expose
+inherited persisted text properties as `marks`, never `decoration`; decoration
+means transient render state elsewhere in Plate. A selector holds claim or
+mark mappings, never both.
+
+Custom configurable tag identity belongs on the schema-owning plugin. Do not
 author it through `defineFormats(TargetPlugin, ...)`, where the contributor does
-not own the target's final application schema. Public rule-name unions must
-retain every supported canonical rule key during identity renames.
+not own the target's final application schema.
 Apply identity checks independently to decode-only and encode-only mappings. A
 phrasing-only wrapper decodes the external paragraph's children directly; it
 does not infer wrapper identity from an arbitrary decoded Plate element.
 External syntax literals exempt only their format-owned source or emitted name;
-decoded Plate identity still resolves from the target schema. Parsed attributes
-are data, so spread them before schema-owned `children` and `type`.
+decoded Plate identity still resolves from the target schema. Decoded attribute
+properties are data, so spread them before schema-owned `children` and `type`.
 
 The same split applies to structural wrappers and fallbacks: every synthesized
 Plate element resolves its installed application schema type, while emitted or

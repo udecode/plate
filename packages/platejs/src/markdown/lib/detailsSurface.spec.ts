@@ -42,22 +42,22 @@ describe('markdown Details surface', () => {
     const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(`<details>
-  <summary>
-    Outer summary
-  </summary>
 
-  Outer body
+<summary>Outer summary</summary>
 
-  <details>
-    <summary>
-      Inner summary
-    </summary>
+Outer body
 
-    Inner body
-  </details>
+<details>
+
+<summary>Inner summary</summary>
+
+Inner body
+
+</details>
+
 </details>
 `);
-    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
+    expect(parseTestMarkdown(editor, markdown)).toEqual(value);
   });
 
   it('ignores persisted disclosure attributes', () => {
@@ -70,7 +70,7 @@ describe('markdown Details surface', () => {
     expect(value.children[0]).not.toHaveProperty('open');
     expect(value.children[0]).not.toHaveProperty('name');
     expect(serializeTestMarkdown(editor, { document: value }).data).toBe(
-      '<details>\n  <summary>\n    Summary\n  </summary>\n\n  Body\n</details>\n'
+      '<details>\n\n<summary>Summary</summary>\n\nBody\n\n</details>\n'
     );
   });
 });

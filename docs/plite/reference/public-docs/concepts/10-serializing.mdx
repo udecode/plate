@@ -113,10 +113,10 @@ const ProductTransferPlugin = dataTransferFormats("product", [
 ]);
 ```
 
-`accept: false` and `decode` or `encode` returning `null` mean mismatch. A
-diagnosed failure lets the next independent format try. The DOM adapter fits a
-decoded slice at the actual insertion destination and reports rejected, unfit,
-selected, written, or unhandled attempts after the boundary settles.
+`decode` returns a `ContentSlice` and `encode` returns a string. `accept`
+returning `false`, or `decode` or `encode` returning `null`, lets the next
+format try. The DOM adapter fits a decoded slice at the actual insertion
+destination; a slice that does not fit also falls through to the next format.
 
 See [Clipboard And Paste](17-clipboard-and-paste) for the complete negotiation
 and insertion pipeline.

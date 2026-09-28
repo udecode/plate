@@ -423,36 +423,47 @@ editor.read.selection.nodes()` is a regression: it
   may use the direct `tx.pluginName` group. Never index the transaction object
   with a runtime plugin name or use a nested editor portal one-shot. Raw Plite
   and Plate share the selector semantics.
-- For a Plate-owned custom MDX element mapping, bind `schema: { type }` in the
-  format factory and use that resolved type for `from`, the decoded element
-  `type`, and the encoded MDX `name`. Fixed MDAST, HTML, and MDX syntax remains
-  literal because it belongs to the external format. Migrate old persisted
-  tags before normal mapping handling; never keep dual mapping aliases. Enforce
-  this law for constructor-owned and staged mapping contributions.
-- One-operation Markdown decode overrides are keyed by invariant plugin
-  capability name; encode overrides are keyed by persisted schema identity.
-  Mapping dispatch resolves the decode owner before consulting the override. A
-  claimed source that returns `undefined` never falls through to a persisted-tag
-  override alias.
-- Keep custom MDX mappings on their schema-owning plugin. A foreign
-  `defineFormats(TargetPlugin, ...)` contribution cannot author configurable MDX
-  identity; move it to the target. Staged enforcement reads schema bindings
+- Ordinary Markdown is CommonMark with GFM and math; Plate extension elements
+  are registered tags recognized by the runtime's selective grammar. Full MDX
+  is not a Plate dialect. Legacy MDX-written output reads through the dialect
+  law that only fenced code is code inside a registered block tag.
+- A Markdown mapping selects `node` (standard MDAST kind) or `tag` (registered
+  tag, with `nestedTags`), never a mixed `from`. For a Plate-owned custom
+  element tag, bind `schema: { type }` in the format factory and use that
+  resolved type for `tag`, the decoded element `type`, and the encoded tag
+  `name`. Fixed MDAST kinds and HTML tag names remain literal because they
+  belong to the external format. Migrate old persisted tags before normal
+  mapping handling; never keep dual mapping aliases. Enforce this law for
+  constructor-owned and staged mapping contributions.
+- Tag attributes use the runtime codec keyed by schema property kind
+  (`readTagAttributes()`, `encodeAttributes()`); flag feature-local attribute
+  parsing or blanket JSON coercion. Expected refusals return `refuse(message)`;
+  a mapping throws only for programmer or configuration faults.
+- Markdown has no per-operation mapping override, node filter, remark-plugin
+  list, or recovery mode; `partial` is the streaming-preview parse option. A
+  claiming mapping that returns `undefined` declines to the next mapping on its
+  selector. Mark mappings decode to the mark value and encode through a
+  childless `wrap`, and take no priority; flag a mark `decode` that calls
+  `decode` or a mark wrapper that builds its own children.
+- Keep custom tag mappings on their schema-owning plugin. A foreign
+  `defineFormats(TargetPlugin, ...)` contribution cannot author configurable
+  tag identity; move it to the target. Staged enforcement reads schema bindings
   from the owning callback, not only the returned `formats` property.
-- Enforce every identity leg a mapping actually declares. Decode-only custom MDX
-  mappings still bind `from` and decoded `type`; encode-only mappings still bind
-  the emitted MDX `name`.
-- A fixed external `from` or encoded `name` exempts only that external-format
+- Enforce every identity leg a mapping actually declares. Decode-only custom
+  tag mappings still bind `tag` and decoded `type`; encode-only mappings still
+  bind the emitted tag `name`.
+- A fixed external `tag` or encoded `name` exempts only that external-format
   leg. Every decoder that constructs a Plate element still uses the resolved
   target schema type.
-- Spread parsed or conditional properties before `children` and resolved
+- Spread decoded or conditional properties before `children` and resolved
   `type`. Format attributes never override Plate structural fields.
 - A mapping that accepts only phrasing content decodes the external paragraph's
   phrasing children directly. Never decode a Plate wrapper and unwrap an
   arbitrary resulting element: another mapping may legitimately promote that
   source paragraph to a block.
-- Public Markdown rule-name unions include every supported canonical rule key,
-  including `audio`, `file`, and `video`; hard cuts rename keys without dropping
-  their typed parser surface.
+- Markdown `node` selectors are typed by the standard MDAST kind map and `tag`
+  selectors by registered tag names. Do not restore a public rule-name union
+  such as `MarkdownNodeName` to type feature sources.
 - Any Plate element synthesized during format conversion, including structural
   wrappers and unknown-node fallbacks, uses the installed application schema
   type. Literal node types belong only to the external MDAST/HTML tree or to a

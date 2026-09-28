@@ -6,16 +6,26 @@ import {
   PLUGINS,
 } from '../../../core';
 import type { ListElement } from '../../../features/list';
+import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
 import type { MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
 import { convertTextsSerialize } from './convertTextsSerialize';
 import { getSerializableListStyle, listToMdastTree } from './listToMdastTree';
-import { wrapWithBlockId } from './wrapWithBlockId';
+import { reportOmittedProperties } from './reportOmittedProperties';
+
+// The flat-list properties the list serializer writes.
+const LIST_PROPERTIES: ReadonlySet<string> = new Set([
+  'checked',
+  'indent',
+  'listRestart',
+  'listStart',
+  'listStyle',
+  'listType',
+]);
 
 export const convertNodesSerialize = (
   nodes: readonly Descendant[],
-  options: SerializeMdContext,
-  isBlock = false
+  options: SerializeMdContext
 ): MdRootContent[] => {
   const mdastNodes: MdRootContent[] = [];
   let textQueue: Text[] = [];
@@ -26,17 +36,7 @@ export const convertNodesSerialize = (
     const node = nodes[i];
 
     if (node && TextApi.isText(node)) {
-      if (shouldIncludeText(node, options)) {
-        textQueue.push(node);
-      } else {
-        options.report({
-          code: 'markdown-filtered-node',
-          message: 'Markdown text was omitted by the active filter.',
-          model: options.modelLocation(node),
-          nodeType: 'text',
-          severity: 'warning',
-        });
-      }
+      textQueue.push(node);
     } else {
       if (textQueue.length > 0) {
         mdastNodes.push(...convertTextsSerialize(textQueue, options));
@@ -44,21 +44,11 @@ export const convertNodesSerialize = (
       textQueue = [];
       if (!node) continue;
 
-      if (!shouldIncludeNode(node, options)) {
-        options.report({
-          code: 'markdown-filtered-node',
-          message: `Markdown node "${node.type}" was omitted by the active filter.`,
-          model: options.modelLocation(node),
-          nodeType: node.type,
-          severity: 'warning',
-        });
-        continue;
-      }
-
       const paragraphType =
         options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
 
       if (isListElement(node, paragraphType)) {
+        reportOmittedProperties(node, LIST_PROPERTIES, options, 'list');
         listBlock.push(node);
 
         const next = nodes[i + 1];
@@ -79,18 +69,12 @@ export const convertNodesSerialize = (
           (next.indent ?? 1) === (firstList.indent ?? 1);
 
         if (!isNextIndent || hasDifferentListStyle || hasExplicitRestart) {
-          const result = listToMdastTree(listBlock, options, isBlock);
-
-          if (result.type === 'fragment') {
-            mdastNodes.push(...result.children);
-          } else {
-            mdastNodes.push(result);
-          }
+          mdastNodes.push(listToMdastTree(listBlock, options));
 
           listBlock.length = 0;
         }
       } else {
-        const mdastNode = buildMdastNode(node, options, isBlock);
+        const mdastNode = buildMdastNode(node, options);
 
         if (mdastNode) {
           mdastNodes.push(mdastNode);
@@ -104,35 +88,15 @@ export const convertNodesSerialize = (
 
 export const buildMdastNode = (
   node: Element,
-  options: SerializeMdContext,
-  isBlock = false
-) => {
-  const { type } = node;
-  let fallbackType = type;
+  options: SerializeMdContext
+): MdRootContent | undefined => {
+  const encode =
+    options.mappings.encodeByType.get(node.type) ??
+    (node.type === (options.registry.type(PLUGINS.paragraph) ?? 'paragraph')
+      ? encodeMarkdownParagraph
+      : undefined);
 
-  if (options.registry.type(PLUGINS.heading) === type) {
-    fallbackType = 'heading';
-  }
-
-  const nodeParser =
-    options.rules?.[type]?.serialize ??
-    options.rules?.[fallbackType]?.serialize;
-
-  if (nodeParser) {
-    const mdastNode = nodeParser(node, options);
-
-    if (options.withBlockId && isBlock) {
-      const blockId = options.blockId?.(node);
-
-      if (typeof blockId !== 'string' || blockId.length === 0) {
-        throw new Error('Element ID must be a non-empty string.');
-      }
-
-      return wrapWithBlockId(mdastNode, blockId);
-    }
-
-    return mdastNode;
-  }
+  if (encode) return encode(node, options);
 
   options.report({
     action: 'dropped',
@@ -156,71 +120,3 @@ const isListElement = (
   !TextApi.isText(node) &&
   node.type === paragraphType &&
   typeof node.listType === 'string';
-
-const shouldIncludeText = (
-  text: Text,
-  options: SerializeMdContext
-): boolean => {
-  const { allowedNodes, allowNode, disallowedNodes } = options;
-  const allowedNodeSet = allowedNodes ? new Set(allowedNodes) : null;
-  const disallowedNodeSet = disallowedNodes ? new Set(disallowedNodes) : null;
-
-  if (
-    allowedNodes &&
-    disallowedNodes &&
-    allowedNodes.length > 0 &&
-    disallowedNodes.length > 0
-  ) {
-    throw new Error('Cannot combine allowedNodes with disallowedNodes');
-  }
-
-  for (const [key, value] of Object.entries(text)) {
-    if (key === 'text') continue;
-
-    if (allowedNodeSet) {
-      if (!allowedNodeSet.has(key) && value) {
-        return false;
-      }
-    } else if (disallowedNodeSet?.has(key) && value) {
-      return false;
-    }
-  }
-
-  if (allowNode?.serialize) {
-    return allowNode.serialize(text);
-  }
-
-  return true;
-};
-
-const shouldIncludeNode = (
-  node: Element,
-  options: SerializeMdContext
-): boolean => {
-  const { allowedNodes, allowNode, disallowedNodes } = options;
-
-  if (!node.type) return true;
-
-  if (
-    allowedNodes &&
-    disallowedNodes &&
-    allowedNodes.length > 0 &&
-    disallowedNodes.length > 0
-  ) {
-    throw new Error('Cannot combine allowedNodes with disallowedNodes');
-  }
-
-  if (allowedNodes) {
-    if (!allowedNodes.includes(node.type)) {
-      return false;
-    }
-  } else if (disallowedNodes?.includes(node.type)) {
-    return false;
-  }
-
-  if (allowNode?.serialize) {
-    return allowNode.serialize(node);
-  }
-
-  return true;
-};

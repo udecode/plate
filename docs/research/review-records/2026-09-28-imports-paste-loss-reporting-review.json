@@ -1,0 +1,145 @@
+{
+  "id": "2026-09-28-imports-paste-loss-reporting-review",
+  "scope": "imports",
+  "kind": "review",
+  "date": "2026-09-28",
+  "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+  "model": "GPT-6 (Codex)",
+  "method": "best-api-review/history-v3",
+  "trigger": "User requests harsh honest feedback on the completed conversion-correctness-guarantees report, including corrected prior diagnoses, loss impact API, registry consumer and gate claims.",
+  "requirements": [
+    "Keep format-owned parsing, loss-aware clipboard negotiation, fitter-owned contextual placement and registry-owned notifications.",
+    "Report discarded user content even when no HTML node survives, fallback text survives, or security policy requires removal; quiet harmless metadata/event-attribute cleanup.",
+    "Retain proven fixes and explicitly correct the prior review's unsupported slice-loss and trailing-paragraph diagnoses.",
+    "Assess current implementation without product repairs, new architecture, publication, or reopening deferred Yjs/Markdown-streaming work."
+  ],
+  "evidenceReuse": "Read the current plan and execution plus the prior import review. Inspected generated-editor contracts, report owner routing, HTML mapping and sanitizer, and registry callback. Re-ran four slice refusal/join tests and two DataTransfer/owner tests (all pass), ledger and Plate Next v246 checks (pass), and Plite typecheck:tests (six TS2322 failures). Ran six new package-DOM probes: five fail their loss-reporting assertions; the Docs metadata control passes. Earlier browser receipts retain their scope and were not rerun.",
+  "summary": "Pursue three bounded HTML loss-reporting repairs; keep the accepted API and owner split. Unsupported-only HTML discards diagnosed loss by returning null for an empty successful slice, yielding lossy:false for plain fallback or total refusal. Embedded media with fallback children skips unsupported-content reporting and succeeds under default reject. Blanket html-unsafe-content => lossless hides removed SVG and object fallback content. Keep security removal, but classify actual impact at its source. Retain atomic fitter refusal, cross-block joining, runtime-owner routing and generated-editor narrowing. All-gates-pass is false: Plite test types still fail six times. No substrate redesign or video mapping is required to repair these reporting defects.",
+  "verdict": "pursue",
+  "previous": "2026-09-27-imports-adversarial-audit-feedback",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-27-imports-adversarial-audit-feedback",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retain the accepted format-owned conversion design and independently repaired contracts; this review reopens only the latest paste-loss closure and does not rerun or overstate unrelated historical proof."
+    },
+    {
+      "record": "2026-09-27-document-conversion-architecture-corrections",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retain the accepted format-owned conversion design and independently repaired contracts; this review reopens only the latest paste-loss closure and does not rerun or overstate unrelated historical proof."
+    },
+    {
+      "record": "2026-09-27-document-conversion-closure-repairs",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retain the accepted format-owned conversion design and independently repaired contracts; this review reopens only the latest paste-loss closure and does not rerun or overstate unrelated historical proof."
+    },
+    {
+      "record": "2026-09-27-document-conversion-closure-repairs-final",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retain the accepted format-owned conversion design and independently repaired contracts; this review reopens only the latest paste-loss closure and does not rerun or overstate unrelated historical proof."
+    },
+    {
+      "record": "2026-09-28-document-conversion-standalone-value-types",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retain the accepted format-owned conversion design and independently repaired contracts; this review reopens only the latest paste-loss closure and does not rerun or overstate unrelated historical proof."
+    },
+    {
+      "record": "2026-09-28-document-conversion-open-findings",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "supersedes",
+      "reason": "The claim that insertion dropped content, and that cross-block joining created the kit's trailing paragraph, were misdiagnoses. The latest implementation explains silent negotiation fallback and TrailingBlockPlugin; four current slice tests pass. Do not restore strict grammar admission or suppress configured trailing-block policy."
+    },
+    {
+      "record": "2026-09-28-conversion-correctness-guarantees",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "reopens",
+      "reason": "Retain corrected diagnoses, list target fix, runtime-owner routing and the narrower generated-editor type contract. Reopen only completeness of paste loss reporting: five executable assertions expose three uncovered paths. A fresh Plite typecheck:tests run also confirms the six recorded errors, so the tree is not wholly green."
+    }
+  ],
+  "alternatives": [
+    "Keep explicit warning impact, the settled DataTransfer report and the registry callback; repair empty-result diagnostic preservation, unmapped media detection with surviving children, and sanitizer impact classification at their HTML owners. Pursue: removes three proven information-loss paths without adding a public noun, state owner, observer or runtime layer.",
+    "Delete the report/impact API or derive warnings from diagnostic codes in registry UI. Stop: a current user needs to know when paste loses content, and copied UI cannot reconstruct discarded diagnostics or safely infer format semantics.",
+    "Require full closed-element grammar at slice admission or redesign the fitter to repair these failures. Stop: existing refusal and joining guards pass; the defect is diagnostic loss during format decoding/negotiation, and contextual lossless fitting remains legitimate.",
+    "Treat all sanitizer removals as harmless to keep Google Docs quiet. Stop: the passing metadata/event-attribute control does not justify classifying deleted SVG graphics or object fallback text as lossless.",
+    "Add HTML video support, broaden to Firefox/WebKit, or redesign Yjs/streaming Markdown now. Defer outside this review: these are independent capabilities and do not prevent truthful loss reporting."
+  ],
+  "proofLimits": "Source/HappyDOM proof only for new findings: six probes, one pass and five expected-correctness assertions failing. Four slice refusal/join tests and two DataTransfer/report-owner tests pass. Plite typecheck:tests fails with six TS2322 diagnostics in authored-fragment-provider.test.tsx; upstream attribution was supplied by the user and not independently bisected. Ledger and Plate Next v246 passed before review recording. No fresh browser, full package suite, benchmark, exported-artifact, Firefox or WebKit proof. The initial probe run contained an invalid editor.destroy cleanup; the corrected retained final run has only the five behavioral failures. Product source is unchanged. Existing browser toast evidence is a one-time receipt, not a newly run or durable toast regression.",
+  "references": [
+    "docs/plans/2026-09-28-conversion-correctness-guarantees.md",
+    "docs/research/review-records/2026-09-28-conversion-correctness-guarantees.json",
+    "docs/plans/artifacts/2026-09-28-conversion-correctness-guarantees/review-loss-probe.test.ts",
+    "docs/plans/artifacts/2026-09-28-conversion-correctness-guarantees/review-loss-probe-final.log",
+    "docs/plans/artifacts/2026-09-28-conversion-correctness-guarantees/review-plite-types.log",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "packages/platejs/src/lib/plugins/html/htmlAst.ts",
+    "packages/plitejs/test/slice-fit-contract.test.ts",
+    "packages/plitejs/test/dom/data-transfer-format.test.ts",
+    "apps/www/src/__tests__/package-integration/conversion/detached-conversion-types.ts",
+    "apps/www/src/registry/components/editor/plugins.ts"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "340025cb3454cec53db42fc052d99c95d4fb17307fc79e693d67d04982922ca9",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "20628cd7957c1d69b568623185dd095c524a51215440238121100bc7bcf5d28b",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "2751ce59b5d206bef6af5bc5a61a9fedf0086b783aad5a3473a675f90467e337",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "999850e12b5fbd28d2287c194b469deb7f631a5598fbbc16fafda397beab2318",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "a3faa5e9d4077cf39e655b0001bd660d742f9a5c00e8cb71e1e9e20f58cbac07",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "ce017969c0a1d0f5798538c9274348a6dbb65b0d91a3024bc85bb8037948a3b0",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts": "b381d6363dcccb2002cfafeb1b391567df78efebd214d06dd6f68d7cf776eb49",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "091294c8ca17a2ee26721bc57c1bdef55d0aa8945db7e1286801e80054e1c948",
+      "packages/platejs/src/docx/import/lib/importDocx.spec.ts": "f3b5bcc14f508661ae8d80c1b22e06a0db88d047571cf00941a9b15213864ec6",
+      "docs/analysis/editor-architecture-candidates.md": "14a88723e948ca14db76a0a585c0c5561c1d396abb5ade4ba8d31c620e79765d",
+      "docs/research/decisions/export-fidelity.md": "79ffe6d0ca425a1f0453ab883efeec3f2c5846a3eb1a4be16650d91a36ff6ed9",
+      "docs/research/decisions/documents-conversion-fidelity.md": "5fb0180c2b81cfae47ed40abd33e344f5685a6e684219dbd558d05235c4d065d",
+      "docs/research/decisions/persistence-ownership.md": "ba8d50f5450f067eb6f3ea0096ee7fd408be03da09fbbb8c18df5df0d4138866",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "6e9232116ec17850ea276145afc73a9f424b5a3d91b49d0bd4e24aa4f030a1da",
+      "packages/platejs/src/lib/plugins/html/htmlAst.ts": "80ccaa3c6cbc3d3ad71bdf3b000d04eb16ace7de0633bb1dface5f0fafa52115",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "dffc576c3a974de9d6a4240a6769a5fb25ae62e340a481634a139ffc3da274ad",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "77787a74cbf9d9d79d8edf7f22f18570e8e6c6969fbda188006252a5a9800345",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "4d30d2506f7a5c0ad61659fe406e9ff204faaa91783ec169a7061167b1390395",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "856a1765f506f1d1df06d897bff42628b7238e0ed8b73cba5aaaf57b23f267e3",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "04fa79bafc401c06ed19fb2b233eed20504fa44d8d7381601f76d42011724096",
+      "packages/plitejs/src/core/persisted-document.ts": "e605b0ed6d719d0b68f393bf531bd64e257fbe402851c77463fbbfac40281575",
+      "packages/platejs/src/migrations/documentMigrations.ts": "6a823432296edd3372d0e79aa0186f2ef10ce461b57801264302e6485bae5a99",
+      "content/docs/(guides)/serializing.mdx": "df772d4f701ccc2bcca35fff60797c31694aa564ba14ac912ee0d5111efe43f1",
+      "content/docs/(plugins)/(serializing)/html.mdx": "848c032261951da9328e48255f872505f08d5733666a2e8ceaf36f9f15039d09",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "8ce874a4eb33a0c0b38ec1b913d2fc695bfcc9120d28e39e83c3db01f7810857",
+      "content/docs/(plugins)/(serializing)/docx.mdx": "e34d1299002a355297c9d91235e73625917c93c7702d1806540af99fff9dac40",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "b454aad2b2feff4f1d9e47e0205006fd264b4509f5deb86408a998fcd892c446",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "packages/platejs/src/internal/plugin/dataTransferImpact.ts": "3872a91980d9eabb72760ee5a259f0ec4b6e0cc4b85e85d6ffb920ba259c7fb7",
+      "packages/platejs/src/lib/plugins/dom/DOMPlugin.ts": "921c806155e57e686a5db14b5a4e0af6c640986926cff2ee3a088e9d8b7257e6",
+      "packages/platejs/src/lib/plugins/dom/DOMPlugin.spec.ts": "93144bc9fbc8dc8d05bade4ac97643677f74cb546e8e8840ded6a6d53dcd3e8b",
+      "packages/platejs/src/html/html.spec.ts": "0f1ecabdd249f9240739f28471e42e3a783a193806ebbfe95ae41ee9bc7ef6b3",
+      "packages/plitejs/test/dom/data-transfer-format.test.ts": "1ca0bebe0a934dbe26e7d27ae46c784564f1dc2b5cd41408c19f5fe488e6af22",
+      "packages/plitejs/test/slice-fit-contract.test.ts": "d1532453e00ce13a325a37ddf8b7505ff0d13cc346595239e1287c5e220b42fd",
+      "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts": "5167f3b8d2770b765ac51f404159b9ad42aeab68b63489846aeadae2653b8c3f",
+      "packages/plitejs/test/react/authored-fragment-provider.test.tsx": "4a9a2b767bb7cb781dca012f8bf4a281014f41a1ec9f4c8c94403c50dded9b57",
+      "apps/www/src/registry/components/editor/plugins.ts": "9b009e5369b938e9c07c69d3af1e7e8fb907befb567c6666be7e2646b80d33e0",
+      "apps/www/src/__tests__/package-integration/conversion/detached-conversion-types.ts": "f66c44dd8ca239b11904ffea06abef42f70278a747b9247f830aec9ec7f37192",
+      "apps/www/tests/browser/clipboard.spec.ts": "3d751d6b2ddb51cf6ad76a8990543ece290ade1d994110ed68f9365497b755ef",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "tooling/config/bunTestSetup.ts": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e",
+      "docs/plans/artifacts/2026-09-28-conversion-correctness-guarantees/review-loss-probe.test.ts": "aef425ca004973ed6c79c63a6f20445b402dd5dbf93a53bc845d3abd36f488a2",
+      "docs/plans/artifacts/2026-09-28-conversion-correctness-guarantees/review-loss-probe-final.log": "dcf264d0edbaf6020112571428b051a21cc53135f354c4aa1f613536139a4b5d",
+      "docs/plans/artifacts/2026-09-28-conversion-correctness-guarantees/review-plite-types.log": "9e60559e78bb7d213bacca2bb46e5f039fc7b26f980f59df33b6650c397f5c44",
+      "docs/plans/2026-09-28-conversion-correctness-guarantees.md": "0a571d4070fbed21831ec85f6f618f94b08900dddafecff6f8f3996b76990b4e"
+    },
+    "directories": {},
+    "features": {
+      "example/plite/parse-html": "8ebfcea1d39948b0fd313147864130c49ad8bfe56035bdeb84a2c37c0304fc66"
+    },
+    "upstreams": []
+  }
+}

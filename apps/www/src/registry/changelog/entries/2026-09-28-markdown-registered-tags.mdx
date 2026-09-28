@@ -1,0 +1,22 @@
+---
+id: 2026-09-28-markdown-registered-tags
+date: 2026-09-28
+status: draft
+kind: wiring
+summary: 'Parse Markdown as CommonMark with Plate tags'
+change: { 'type': 'source', 'date': '2026-09-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-28-markdown-parse-commonmark-plate-tags-bb822db8","kind":"wiring","migrationNotes":["Remove remarkMdx and remarkMention from MarkdownPlugin remarkPlugins; Plate tags are built in and mentions are [label](mention:ref) links."]} -->
+
+- **`markdown`**: Configure `MarkdownPlugin` with `remark-math`, `remark-gfm` and `remark-emoji` only; Plate tags such as `<callout>` read without `remark-mdx`, and mentions read as `[label](mention:ref)` links.
+<!-- entry: {"id":"2026-09-28-markdown-streaming-partial-parse-6d1e4a2c","kind":"behavior","migrationNotes":[]} -->
+- **`markdown-streaming-demo`**: Preview the stream with `parse(source, { lossPolicy: 'allow', partial: true })`, so an unfinished trailing tag stays hidden.
+<!-- entry: {"id":"2026-09-28-markdown-to-editor-kit-plugins-2f7c9b10","kind":"wiring","migrationNotes":[]} -->
+- **`markdown-to-editor-demo`**: Parse through the kit's `MarkdownPlugin` configuration instead of passing per-call remark plugins.
+<!-- entry: {"id":"2026-09-28-ai-api-markdown-tag-wording-8a3d5e61","kind":"behavior","migrationNotes":[]} -->
+- **`ai-api`**: Refer to Plate's Markdown tags instead of MDX in the generate, comment and common prompts.
+<!-- entry: {"id":"2026-09-28-markdown-joiner-tag-check-4c9e2b77","kind":"rename","migrationNotes":[]} -->
+- **`markdown-joiner-transform`**: Rename the buffered-tag check to `isCompleteTag`.

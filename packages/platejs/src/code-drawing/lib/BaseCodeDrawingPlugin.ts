@@ -18,17 +18,17 @@ export const BaseCodeDrawingPlugin = definePlugin(PLUGINS.codeDrawing, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       markdown: {
-        from: type,
-        decode: ({ node, parseAttributes }) => ({
-          ...parseAttributes(node.attributes),
+        tag: type,
+        decode: ({ readTagAttributes }) => ({
+          ...readTagAttributes().properties,
           children: [{ text: '' }],
           type,
         }),
-        encode: ({ node, propsToAttributes }) => {
+        encode: ({ encodeAttributes, node }) => {
           const { children: _, type: __, ...props } = node;
 
           return {
-            attributes: propsToAttributes(props),
+            attributes: encodeAttributes(props),
             children: [],
             name: type,
             type: 'mdxJsxFlowElement',

@@ -1,0 +1,22 @@
+source: HEAD e33ad94aea (dirty working tree), plateTags.ts sha256 1670686b57a9, bun 1.3.12, darwin/arm64
+normal     5 KB  current 28.2 ms [26.7–33.8]  candidate 29.1 ms [26.5–32.1]  ratio 1.03  guard identical
+large     92 KB  current 503.3 ms [496.9–522.5]  candidate 539.3 ms [508.9–596.4]  ratio 1.07  guard identical
+stress   366 KB  current 2754.4 ms [2576.6–2883.8]  candidate 2759.3 ms [2730.3–2891.9]  ratio 1.00  guard identical
+prose     41 KB  plain 155.0 ms [144.5–167.1]  candidate 158.0 ms [145.1–162.6]  ratio 1.02  guard identical to plain; current kit ok=false
+stream  157 accumulated prefixes of 10 KB  plain 2891.0 ms [2879.0–2897.6]  candidate+trim 3028.9 ms [2979.4–3200.6]  ratio 1.05
+mdast large plain 105.3 ms [78.2–126.6]  candidate 131.7 ms [117.0–142.7]  ratio 1.25
+mdast prose plain 29.5 ms [26.9–32.5]  candidate 26.0 ms [23.6–31.6]  ratio 0.88
+nested details: 500 → 4.9 ms [4.3–5.8] (500 elements), 1000 → 11.2 ms [9.5–13.2] (1000 elements)
+inline u: 500 → 7.0 ms [6.6–7.5] (500 elements), 1000 → 22.3 ms [20.6–23.7] (1000 elements)
+
+B1 normal: INCONCLUSIVE ratio 1.03
+B1 large: INCONCLUSIVE ratio 1.07
+B1 stress: INCONCLUSIVE ratio 1.00
+B3 per-KB growth normal→stress: PASS 1.18x
+B2 prose: PASS ratio 1.02
+B2 streaming: PASS ratio 1.05
+B3 mdast large: PASS ratio 1.25
+B3 mdast prose: PASS ratio 0.88
+B4 nested details: INCONCLUSIVE x2 input → 2.28x time
+B4 inline u: FAIL x2 input → 3.19x time
+exit=0

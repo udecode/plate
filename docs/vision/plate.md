@@ -367,9 +367,10 @@ Current priorities:
   Convert a live key at that boundary with
   `editor.plugin(ElementIdPlugin).read.id(key)`; do not retrieve the node first.
   Live navigation and TOC state use keys, while one-shot formats such as DOCX
-  derive export-local references. Serialized Markdown block identity uses the
-  optional plugin. Registries install it explicitly as product policy, never
-  transitively through an unrelated feature.
+  derive export-local references. Markdown writes no block-identity wrapper;
+  compatible `<block id>` reads restore IDs only through the optional plugin.
+  Registries install it explicitly as product policy, never transitively
+  through an unrelated feature.
 - Transient input completion uses the live input's node key. The feature checks
   current liveness and edit eligibility, then removes and replaces the input in
   one transaction. Copied controls own query text, composition, navigation, and
@@ -512,11 +513,17 @@ Current priorities:
   from the installed plugin graph; do not centralize feature rules in the format
   package or mutable plugin state. Whole-payload MIME declarations belong to
   root `dataTransferFormats`, not semantic `formats` maps.
-- A Plate-owned custom MDX element tag is persisted schema identity. Its mapping
-  uses the resolved schema type symmetrically for source matching, decoded
-  element identity, and encoded tag name. External MDAST, HTML, and MDX syntax
-  remains literal. Legacy tags migrate before mapping dispatch; mappings never
-  accept both identities.
+- Ordinary Markdown is CommonMark with GFM and math, and extensions never
+  change its meaning. Plate extension elements are registered tags recognized
+  by the runtime's own selective grammar; full MDX is not a Plate dialect.
+  Existing MDX-written Plate output reads through one dialect law: inside a
+  registered block tag, only fenced code is code.
+- A Plate-owned custom Markdown element tag is persisted schema identity. Its
+  mapping uses the resolved schema type symmetrically for the `tag` selector,
+  decoded element identity, and encoded tag name. Standard MDAST kinds and
+  HTML tag names remain literal. Tag attributes cross a Markdown-owned wire
+  codec selected by schema property kind; the schema validates values. Legacy
+  tags migrate before mapping dispatch; mappings never accept both identities.
 - Plate documents stay editor-native: `Text` leaves use `text`, elements use
   `type` and `children`, and feature properties stay flat and schema-owned.
   Parameter values never become fake plugin identities. First-party fields use
@@ -531,12 +538,12 @@ Current priorities:
   and unknown-node fallbacks, resolve the installed application schema type.
   Literal types remain only on the external format tree or when the Plate
   plugin is genuinely absent.
-- Operation decode overrides dispatch by invariant plugin capability name after
-  mapping-owner resolution. Encode overrides dispatch by persisted schema
-  identity because their input is already a Plate node.
-- A compiled mapping claim never falls through to a persisted-tag decode override
-  alias. Configurable custom MDX identity stays on its schema-owning plugin,
-  not a foreign mapping contributor.
+- Installed mappings are the only conversion owners; a conversion call takes no
+  per-operation mapping override or node filter, and a missing mapping is the
+  fix for unsupported content. Input a mapping cannot represent is a diagnosed
+  refusal under the loss policy; programmer and configuration faults throw.
+  Configurable custom tag identity stays on its schema-owning plugin, not a
+  foreign mapping contributor.
 - State that selects a plugin capability stores its descriptor or normalized
   name. It never stores a configurable persisted type or key. Resolve schema
   identity at the AST read/write boundary, including transient-node factories.

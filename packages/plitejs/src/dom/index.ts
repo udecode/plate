@@ -57,18 +57,11 @@ export {
 export { getEditorDOMRoot } from './plugin/dom-root-runtime';
 export type {
   DataTransferSnapshot,
-  DataTransferAttempt,
-  DataTransferDecodeResult,
-  DataTransferDiagnostic,
-  DataTransferEncodeResult,
-  DataTransferErrorDiagnostic,
   DataTransferFormat,
   DataTransferDecodeContext,
   DataTransferFormatPhase,
-  DataTransferReport,
   DataTransferSchemaClaim,
   DataTransferEncodeContext,
-  DataTransferWarningDiagnostic,
 } from './plugin/data-transfer-format';
 
 // Utils

@@ -175,7 +175,8 @@ const CalloutPlugin = definePlugin('callout', {
 
 需要拥有完整 `text/html` browser payload 时，通过 `dataTransferFormats` 注册
 `DataTransferFormat`。该 owner 可以检查完整 payload、调用 `parseHtmlSlice`，再
-返回带诊断的 slice。参阅 [Clipboard](/docs/clipboard)。
+返回 slice，或返回 `null` 让下一个 format 尝试。参阅
+[Clipboard](/docs/clipboard#自定义-datatransfer-format)。
 
 ## Result 与 diagnostics
 
@@ -183,6 +184,14 @@ Parse success 只包含 warning diagnostics，并且只包含一个 carrier。Se
 success 包含 `data`；failure 不包含。配置错误、mapping bug 与无效 model input
 会抛出。source 错误、resource limit、schema recovery、安全处理与预期格式损失
 通过 diagnostics 返回。
+
+安全移除会报告带 `impact` 的 `html-unsafe-content`。移除 metadata、script、
+style sheet、event handler、script URL，或 `aria-hidden="true"` subtree 中的图形
+（例如 icon SVG）为 `lossless`；移除其他 SVG、MathML、embedded object、被阻止的
+`data:` media source、inline frame document 或加载资源的 style 为 `lossy`。没有
+已安装 mapping 的 embedded media（`img`、`video`、`audio`、`iframe`、`canvas`）
+即使保留 fallback content，也会报告 `html-unsupported-content`。在默认的
+`lossPolicy: 'reject'` 下，lossy removal 与 unsupported content 都是 error。
 
 默认解析限制：
 

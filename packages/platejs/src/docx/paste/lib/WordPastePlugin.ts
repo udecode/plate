@@ -386,18 +386,15 @@ export const WordPastePlugin = definePlugin(PLUGINS.wordPaste, {
         const html = prepareWordHtml(data, snapshot.getData('text/rtf'));
 
         if (!html) return null;
-        const result = decodeHtmlDataTransfer({ ...context, data: html });
+        const slice = decodeHtmlDataTransfer({ ...context, data: html });
 
-        if (!result || !result.ok) return result;
+        if (!slice) return null;
 
-        return Object.freeze({
-          ...result,
-          slice: cleanWordSlice(
-            result.slice,
-            registry.type(PLUGINS.table),
-            registry.type(PLUGINS.tableCell)
-          ),
-        });
+        return cleanWordSlice(
+          slice,
+          registry.type(PLUGINS.table),
+          registry.type(PLUGINS.tableCell)
+        );
       },
       mimeType: 'text/html',
       priority: 100,

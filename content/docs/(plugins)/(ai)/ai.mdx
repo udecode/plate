@@ -13,7 +13,7 @@ docs:
 ## Features
 
 - **Context-aware command menu** that adapts to cursor, text selection, and block selection workflows.
-- **Streaming Markdown/MDX previews** with table, column, and code block support through `editor.plugin(AIChatPlugin).api.setPreview`.
+- **Streaming Markdown previews** with table, column, and code block support through `editor.plugin(AIChatPlugin).api.setPreview`.
 - **Insert and chat review modes** backed by a temporary draft.
 - **Block selection aware actions** to replace or append entire sections using `editor.plugin(AIChatPlugin).api.replaceSelection` and `insertBelow`.
 - **Direct integration with `@ai-sdk/react`** so `editor.plugin(AIChatPlugin).api.submit` can stream responses from Vercel AI SDK helpers.
@@ -96,7 +96,7 @@ AI_GATEWAY_API_KEY="your-api-key"
 ### Installation
 
 ```bash
-npm install platejs @ai-sdk/react @tanstack/react-virtual ai fastest-levenshtein marked remark-mdx remark-parse remark-stringify unified
+npm install platejs @ai-sdk/react @tanstack/react-virtual ai fastest-levenshtein remark-parse remark-stringify unified
 ```
 
 `platejs` supplies the editor and AI plugins.
@@ -235,8 +235,8 @@ The demo backend in `apps/www/src/app/api/ai/command` reconstructs the editor fr
 - `getChooseToolPrompt` decides whether the request is `generate`, `edit`, or `comment`.
 - `getGeneratePrompt`, `getEditPrompt`, and `getCommentPrompt` transform the current editor state into instructions tailored to each mode.
 - Server prompt helpers serialize explicit editor snapshots through
-  `editor.api.markdown.serialize` and assemble selections, block IDs, and MDX
-  tags with `buildStructuredPrompt`.
+  `editor.api.markdown.serialize` and assemble `<block ref="…">` references and
+  `<Selection>` markers with `buildStructuredPrompt`.
 
 Augment the payload you send from the client to fine-tune server prompts:
 
@@ -265,11 +265,16 @@ Everything under `chatOptions.body` arrives in the route handler, letting you sw
 
 ## Streaming
 
-Publish the complete accumulated Markdown response with
-`aiChat.api.setPreview(content, { requestId })`. The plugin parses it with the
-editor's installed Markdown mappings and stores the result in `previewValue`.
+Publish the accumulated Markdown response with
+`aiChat.api.setPreview(content, { final, requestId })`. The plugin parses it with
+the editor's installed Markdown mappings and stores the result in
+`previewValue`. With `final: false`, the parse uses
+`{ lossPolicy: 'allow', partial: true }`: an unfinished trailing tag stays hidden
+and unsupported content previews as text. `final` defaults to `true`; that parse
+is strict, and a response Markdown cannot represent clears the draft.
 `useAIChat` handles this publication for AI SDK transports. Structured table
 responses use `aiChat.api.setTablePreview({ ref, content }, { requestId })`.
+See [Markdown streaming previews](/docs/markdown#streaming-previews).
 
 The draft does not modify the document, history, or editing mode. `accept()`
 applies it in one history batch. `reset()` drops it and restores the mapped

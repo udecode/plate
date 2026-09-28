@@ -166,13 +166,7 @@ export const CsvPlugin = definePlugin(PLUGINS.csv, {
         decode: ({ data }) => {
           const content = api.deserialize({ data });
 
-          return content
-            ? Object.freeze({
-                diagnostics: Object.freeze([]),
-                ok: true as const,
-                slice: ContentSlice.closed(content),
-              })
-            : null;
+          return content ? ContentSlice.closed(content) : null;
         },
       },
     ],

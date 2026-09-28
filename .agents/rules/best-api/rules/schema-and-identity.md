@@ -218,8 +218,9 @@ elements read `element.id` directly. Missing or deleted keys return `undefined`.
 Live TOC, outline,
 selection, drag/drop, and navigation state use `NodeKey` and must not install
 `ElementIdPlugin`. One-shot exports such as DOCX derive export-local references
-from runtime keys. Serialized identity such as Markdown block-ID round trips
-uses `ElementIdPlugin`. A copied registry may install it explicitly as product
+from runtime keys. Serialized identity uses `ElementIdPlugin`. Markdown writes
+no block-ID wrapper; compatible `<block id>` reads restore the ID only when the
+plugin is installed and otherwise unwrap with a warning. A copied registry may install it explicitly as product
 policy, but no unrelated feature dependency may install it transitively.
 
 Request-local protocols use small explicit refs such as `b1` or `c1` mapped to

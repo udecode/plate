@@ -1,8 +1,6 @@
 import type { Root } from 'mdast';
 
 import type { Descendant } from '../../../core';
-import { PLUGINS } from '../../../core';
-import { failInvariant } from '../../internal/failInvariant';
 import type { DeserializeMdContext } from '../types';
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
@@ -10,63 +8,15 @@ export const mdastToSlate = (
   root: Root,
   options: DeserializeMdContext
 ): Descendant[] => {
-  const paragraphType = options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
-
-  if (!options.splitLineBreaks) {
-    root.children = root.children.map((child) => {
-      if (child.type === 'html' && child.value === '<br />') {
-        return {
-          children: [{ type: 'text', value: '\n' }],
-          type: 'paragraph',
-        };
-      }
-      return child;
-    });
-    return convertNodesDeserialize(root.children, {}, options);
-  }
-
-  // Split line breaks into separate paragraphs
-  const results: Descendant[] = [];
-  let startLine = root.position?.start.line ?? 1;
-
-  const addEmptyParagraphs = (count: number) => {
-    if (count > 0) {
-      results.push(
-        ...Array.from({ length: count }).map(() => ({
-          children: [{ text: '' }],
-          type: paragraphType,
-        }))
-      );
+  root.children = root.children.map((child) => {
+    if (child.type === 'html' && /^<br\s*\/?>$/i.test(child.value)) {
+      return {
+        children: [{ type: 'text', value: '\n' }],
+        type: 'paragraph',
+      };
     }
-  };
-
-  root.children?.forEach((child, index) => {
-    const isFirstChild = index === 0;
-    const isLastChild = index === root.children.length - 1;
-
-    if (child.position) {
-      const emptyLinesBefore =
-        child.position.start.line - (isFirstChild ? startLine : startLine + 1);
-      addEmptyParagraphs(emptyLinesBefore);
-
-      const transformValue = convertNodesDeserialize([child], {}, options);
-      results.push(...transformValue);
-
-      if (isLastChild) {
-        const emptyLinesAfter =
-          (root.position ?? failInvariant('Expected value to be defined')).end
-            .line -
-          child.position.end.line -
-          1;
-        addEmptyParagraphs(emptyLinesAfter);
-      }
-
-      startLine = child.position.end.line;
-    } else {
-      const transformValue = convertNodesDeserialize([child], {}, options);
-      results.push(...transformValue);
-    }
+    return child;
   });
 
-  return results;
+  return convertNodesDeserialize(root.children, {}, options);
 };

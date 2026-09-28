@@ -2,9 +2,9 @@
 title: Document import and conversion fidelity
 type: decision
 status: accepted
-updated: 2026-09-27
+updated: 2026-09-28
 review_scope: imports
-current_review: 2026-09-27-imports-adversarial-audit-feedback
+current_review: 2026-09-28-imports-paste-loss-reporting-review
 reconciled_executions:
   - 2026-09-25-document-conversion-contracts-design
   - 2026-09-25-document-conversion-schema-admission-design
@@ -16,6 +16,9 @@ reconciled_executions:
   - 2026-09-27-document-conversion-closure-repairs-final
   - 2026-09-28-document-conversion-standalone-value-types
   - 2026-09-28-document-conversion-open-findings
+  - 2026-09-28-conversion-correctness-guarantees
+  - 2026-09-28-paste-loss-reporting-repairs
+  - 2026-09-28-paste-proof-and-media-html
 review_history:
   - ../review-records/2026-09-25-imports-document-slice-loss-contract.json
   - ../review-records/2026-09-25-imports-codec-ontology-final.json
@@ -24,6 +27,7 @@ review_history:
   - ../review-records/2026-09-26-imports-conversion-vocabulary-hard-cut.json
   - ../review-records/2026-09-26-imports-conversion-vocabulary-doctrine-closure.json
   - ../review-records/2026-09-27-imports-adversarial-audit-feedback.json
+  - ../review-records/2026-09-28-imports-paste-loss-reporting-review.json
 source_refs:
   - ../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts
   - ../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts
@@ -49,6 +53,12 @@ The [corrections](../../plans/2026-09-27-document-conversion-architecture-correc
 and [closure repairs](../../plans/2026-09-27-document-conversion-closure-repairs.md)
 adopt those repairs. Public naming and format ownership remain settled;
 diagnostic deletion and DOCX native-state deletion are not accepted.
+
+The [paste-loss follow-up](../review-records/2026-09-28-imports-paste-loss-reporting-review.json)
+retains the conversion design. Its HTML findings live in parse results:
+embedded media with fallback children reports unsupported content, and security
+removal of SVG or object content is lossy. Clipboard negotiation reports no
+loss; see the browser transfer decision below.
 
 **Use direct format-owned parse and serialize operations.** Do not introduce a
 public `DocumentCodec`, `DocumentFormat`, format registry, dispatcher,
@@ -158,14 +168,18 @@ representability. Export never calls `fitDocument`. Persistence and native
 authored payloads likewise require strict admission after their explicit
 migrations; format recovery policy cannot weaken those boundaries.
 
-Browser transfer preserves the settled boolean insertion API while making
-negotiation observable. Each `DataTransferFormat` returns a warning-only slice
-success, a nonempty diagnosed failure, or `null` for mismatch. The DOM owner
-retains rejected and unfit richer attempts when a later format wins and emits
-one `DataTransferReport` only after an accepted commit, completed write, or
-final unhandled result. This prevents HTML/Word parse warnings from disappearing
-inside `ContentSlice | null` without inventing a universal conversion result or
-changing `insertData` into an analysis API.
+Browser transfer keeps the boolean insertion API, and negotiation is not
+publicly observable. A `DataTransferFormat` decodes to a `ContentSlice` or
+encodes to a string, and returns `null` to delegate to the next format; `accept`
+returning `false` skips it. Each decoded slice is fitted at the actual range,
+and one that does not fit falls through to the next format and finally to plain
+text. Encoders write each MIME type once. A callback that throws is a bug: it
+goes to the editor's `lifecycleErrorSink` with the format key, MIME type, owner
+and phase, and the next format runs, so a broken format never blocks paste or
+copy. Nothing consumes per-attempt diagnostics, and announcing loss offers the
+user no recovery, so negotiation carries no diagnostics, report or loss flag.
+Loss is fixed where it occurs by adding the mapping that represents the
+content, as the video and audio HTML mappings do.
 
 Clipboard HTML runs the same parse5 safety and admission operation as
 `parseHtmlSlice`, with `lossPolicy: 'allow'`. Transfer negotiation isolates
@@ -177,10 +191,33 @@ instead.
 HTML allows block content such as `<img>` inside a paragraph; the editor grammar
 does not. The HTML decoder lifts each disallowed block child out of its text
 block into a sibling, splitting the text around it, so parse and paste keep the
-image instead of producing a schema-invalid slice that insertion would drop.
+image. Slice insertion never drops admitted content: a slice the fitter cannot
+place refuses atomically, and negotiation falls back to the next format. Slice
+admission checks vocabulary and content-root references, not closed-element
+grammar, because the fitter repairs grammar losslessly where it can, for example
+text pasted into a table cell. Replacing a range across blocks joins both
+boundaries into the start block.
+
 When a richer format fails, the built-in plain-text fallback starts new lines
 with the root default block whenever the anchor block cannot be constructed
-without required properties, such as a heading level.
+without required properties, such as a heading level. A `createsElement`
+mapping such as `<li>` creates the schema default block when that block is one
+of its targets, whatever the configured target order.
+
+Parse results carry actual loss. HTML safety removal is mandatory and
+classifies what it removed at the sanitizer: metadata, scripts, style sheets,
+event handlers, script URLs and graphics inside an `aria-hidden="true"` subtree
+are lossless, because the author declared them decorative; other SVG, MathML,
+embedded objects, blocked `data:` media sources, inline frame documents and
+resource-loading styles are lossy and fail a `reject` parse. Schema repairs
+classify their own impact the same way. Audio and video map to HTML figures and
+paste from bare media elements. The HTML decoder reports embedded media (`img`,
+`video`, `audio`, `iframe`, `canvas`) that no installed mapping owns, including
+when its fallback children survive; `<picture>` is a container whose `<img>`
+reports for itself. Clipboard HTML keeps what maps and returns `null` when
+nothing insertable remains, so plain text handles the paste. Clipboard keys
+resolve through the runtime owner, so mounted views use the configuration their
+DOM plugin activated.
 
 ## Fidelity and source ownership
 

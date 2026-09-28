@@ -16,16 +16,23 @@ export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
         encode: ({ children }) => children,
       },
       markdown: {
-        from: type,
-        decode: ({ decode, decoration, isInline, node, parseAttributes }) => {
-          const props = parseAttributes(node.attributes);
+        tag: type,
+        decode: ({
+          decode,
+          marks,
+          isInline,
+          node,
+          readTagAttributes,
+          refuse,
+        }) => {
+          const props = readTagAttributes().properties;
           const paragraph =
             node.children.length === 1 && node.children[0]?.type === 'paragraph'
               ? node.children[0]
               : undefined;
           const content = decode(
             paragraph ? paragraph.children : node.children,
-            decoration
+            marks
           );
 
           if (
@@ -33,9 +40,7 @@ export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
               (child) => ElementApi.isElement(child) && !isInline(child)
             )
           ) {
-            throw new Error(
-              'Callout children must be inline Markdown content.'
-            );
+            return refuse('Callout children must be inline Markdown content.');
           }
 
           return {
@@ -48,11 +53,11 @@ export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
             type,
           };
         },
-        encode: ({ encodePhrasing, node, propsToAttributes }) => {
+        encode: ({ encodeAttributes, encodePhrasing, node }) => {
           const { children, type: _, ...rest } = node;
 
           return {
-            attributes: propsToAttributes(rest),
+            attributes: encodeAttributes(rest),
             children: [
               {
                 children: encodePhrasing(children),

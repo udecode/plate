@@ -44,16 +44,12 @@ const CodecProofFallbackPlugin = definePlugin('codecProofFallback', {
 
         if (kind !== 'delegate' && kind !== 'throw') return null;
 
-        return {
-          diagnostics: [],
-          ok: true,
-          slice: ContentSlice.closed([
-            {
-              children: [{ text: `fallback:${kind}` }],
-              type: 'paragraph',
-            },
-          ]),
-        };
+        return ContentSlice.closed([
+          {
+            children: [{ text: `fallback:${kind}` }],
+            type: 'paragraph',
+          },
+        ]);
       },
     },
   ],
@@ -79,61 +75,46 @@ const CodecProofPlugin = definePlugin('codecProof', {
           throw new Error('Expected Plate codec browser proof failure.');
         }
         if (kind === 'inline') {
-          return {
-            diagnostics: [],
-            ok: true,
-            slice: ContentSlice.fromJSON({
-              content: [
-                {
-                  children: [{ bold: true, text: `${label}:inline` }],
-                  type: 'paragraph',
-                },
-              ],
-              openEnd: 1,
-              openStart: 1,
-            }),
-          };
+          return ContentSlice.fromJSON({
+            content: [
+              {
+                children: [{ bold: true, text: `${label}:inline` }],
+                type: 'paragraph',
+              },
+            ],
+            openEnd: 1,
+            openStart: 1,
+          });
         }
         if (kind === 'code') {
-          return {
-            diagnostics: [],
-            ok: true,
-            slice: ContentSlice.fromJSON({
-              content: [
-                {
-                  children: [{ text: `${label}:code` }],
-                  type: registry.type(CodeBlockPlugin) ?? 'code_block',
-                },
-              ],
-              openEnd: 1,
-              openStart: 1,
-            }),
-          };
+          return ContentSlice.fromJSON({
+            content: [
+              {
+                children: [{ text: `${label}:code` }],
+                type: registry.type(CodeBlockPlugin) ?? 'code_block',
+              },
+            ],
+            openEnd: 1,
+            openStart: 1,
+          });
         }
 
-        return {
-          diagnostics: [],
-          ok: true,
-          slice: ContentSlice.closed([
-            {
-              children: [{ text: `${label}:block-a` }],
-              type: 'paragraph',
-            },
-            {
-              children: [{ text: `${label}:block-b` }],
-              type: 'paragraph',
-            },
-          ]),
-        };
+        return ContentSlice.closed([
+          {
+            children: [{ text: `${label}:block-a` }],
+            type: 'paragraph',
+          },
+          {
+            children: [{ text: `${label}:block-b` }],
+            type: 'paragraph',
+          },
+        ]);
       },
-      encode: ({ pluginState, slice }) => ({
-        data: JSON.stringify({
+      encode: ({ pluginState, slice }) =>
+        JSON.stringify({
           label: pluginState.label,
           slice,
         }),
-        diagnostics: [],
-        ok: true,
-      }),
     },
   ],
 });

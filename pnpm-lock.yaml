@@ -888,6 +888,9 @@ importers:
       color-name:
         specifier: ^2.0.0
         version: 2.1.0
+      commonmark-spec:
+        specifier: 0.31.2
+        version: 0.31.2
       diff-match-patch-ts:
         specifier: ^0.6.0
         version: 0.6.0
@@ -960,9 +963,6 @@ importers:
       remark-math:
         specifier: 6.0.0
         version: 6.0.0
-      remark-mdx:
-        specifier: ^3.1.0
-        version: 3.1.1
       remark-parse:
         specifier: ^11.0.0
         version: 11.0.0
@@ -6517,7 +6517,6 @@ packages:
 
   bun@1.3.12:
     resolution: {integrity: sha512-KLwDUqs5WIny/94F4xZ4QfaAE6YWyjR+s79pt/ItQhk2CG+PJQ5xL6VuOWhiyN2eP3fryZK95vog9CTLCaYV2Q==}
-    cpu: [arm64, x64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -6773,6 +6772,9 @@ packages:
   commander@8.3.0:
     resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
     engines: {node: '>= 12'}
+
+  commonmark-spec@0.31.2:
+    resolution: {integrity: sha512-vXKxmclzJPymhOJYD26G0oBjVmIcKC8p5m2DvHIq1A1btr1m0r0dT/PzRA5/nwxUbCAPedMNPEoiQE+zvuOcOw==}
 
   compute-scroll-into-view@3.1.1:
     resolution: {integrity: sha512-VRhuHOLoKYOy4UbilLbUzbYg93XLjv2PncJC50EuTWPA3gaja1UjBsUP/D/9/juV3vQFr6XBEzn9KCAHdUvOHw==}
@@ -17724,6 +17726,8 @@ snapshots:
   commander@7.2.0: {}
 
   commander@8.3.0: {}
+
+  commonmark-spec@0.31.2: {}
 
   compute-scroll-into-view@3.1.1: {}
 

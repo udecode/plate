@@ -5,8 +5,8 @@ import {
   property,
   schema,
 } from '../../../core';
+import { createTestEditor } from '../__tests__/createTestEditor';
 import { MarkdownPlugin } from '../MarkdownPlugin';
-import { remarkMdx } from '../plugins';
 import { compileMarkdownMappings } from './markdownMappings';
 
 const parseDocument = (
@@ -32,6 +32,30 @@ const elementPlugin = (name: string) =>
         content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
+  });
+
+const tagPlugin = (
+  name: string,
+  {
+    inline = false,
+    nestedTags,
+  }: { inline?: boolean; nestedTags?: readonly string[] } = {}
+) =>
+  definePlugin(name, {
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        ...(inline ? { inline: true } : {}),
+      },
+    },
+    formats: ({ defineFormats, schema: { type } }) =>
+      defineFormats({
+        markdown: {
+          tag: type,
+          ...(nestedTags ? { nestedTags } : {}),
+          decode: () => ({ children: [{ text: '' }], type }),
+        },
+      }),
   });
 
 describe('Markdown node mapping compiler', () => {
@@ -96,15 +120,16 @@ describe('Markdown node mapping compiler', () => {
 
         return defineFormats({
           markdown: {
-            encode: ({ name, pluginState, registry }) => {
+            wrap: ({ name, pluginState, registry, value }) => {
               markContext = {
                 installed: registry.has(name),
                 name,
                 stateLabel: pluginState.label,
               };
 
+              expect(value).toBe(true);
+
               return {
-                children: [{ type: 'text', value: 'mark' }],
                 type: 'strong',
               };
             },
@@ -130,8 +155,10 @@ describe('Markdown node mapping compiler', () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(compiled.rules.elementCapability).toBeUndefined();
-    expect(compiled.rules.markCapability).toBeUndefined();
+    expect([...compiled.encodeByType.keys()]).toContain('persistedElement');
+    expect(compiled.encodeByType.has('elementCapability')).toBe(false);
+    expect([...compiled.encodeByMark.keys()]).toContain('persistedMark');
+    expect(compiled.encodeByMark.has('markCapability')).toBe(false);
     expect(elementIdentity).toBe('persistedElement');
     expect(markIdentity).toBe('persistedMark');
     expect(elementContext).toEqual({
@@ -147,13 +174,13 @@ describe('Markdown node mapping compiler', () => {
     });
   });
 
-  it('round-trips custom MDX tags through the final application schema type', () => {
+  it('round-trips custom tags through the final application schema type', () => {
     const CustomPlugin = definePlugin('customCapability', {
       formats: ({ defineFormats, schema: { type } }) =>
         defineFormats({
           markdown: {
-            from: type,
-            decode: ({ node, parseAttributes }) =>
+            tag: type,
+            decode: ({ node, readTagAttributes }) =>
               node.attributes.some(
                 (attribute) =>
                   attribute.type === 'mdxJsxAttribute' &&
@@ -161,15 +188,15 @@ describe('Markdown node mapping compiler', () => {
               )
                 ? undefined
                 : {
-                    ...parseAttributes(node.attributes),
+                    ...readTagAttributes().properties,
                     children: [{ text: '' }],
                     type,
                   },
-            encode: ({ node, propsToAttributes }) => {
+            encode: ({ encodeAttributes, node }) => {
               const { children: _, type: __, ...props } = node;
 
               return {
-                attributes: propsToAttributes(props),
+                attributes: encodeAttributes(props),
                 children: [],
                 name: type,
                 type: 'mdxJsxFlowElement',
@@ -190,7 +217,7 @@ describe('Markdown node mapping compiler', () => {
         BaseParagraphPlugin,
         CustomPlugin,
         MarkdownPlugin.configure({
-          initialState: { remarkPlugins: [remarkMdx] },
+          initialState: { remarkPlugins: [] },
         }),
       ],
       schema: {
@@ -235,9 +262,7 @@ describe('Markdown node mapping compiler', () => {
       ok: false,
     });
     expect(
-      parseDocument(editor, 'First\n\n\nSecond', {
-        splitLineBreaks: true,
-      }).children.every(
+      parseDocument(editor, 'First\n\n\nSecond').children.every(
         (node) => 'type' in node && node.type === 'customParagraph'
       )
     ).toBe(true);
@@ -262,7 +287,7 @@ describe('Markdown node mapping compiler', () => {
             children: [{ text: '' }],
             type: innerSchema3.type,
           }),
-          from: 'html',
+          node: 'html',
           priority: 10,
         },
       }),
@@ -274,7 +299,7 @@ describe('Markdown node mapping compiler', () => {
             children: [{ text: '' }],
             type: innerSchema4.type,
           }),
-          from: 'html',
+          node: 'html',
           priority: 20,
         },
       }),
@@ -284,9 +309,12 @@ describe('Markdown node mapping compiler', () => {
     });
     const first = compileMarkdownMappings(editor);
 
-    expect(first.decodeBySource.get('html')?.map(({ owner }) => owner)).toEqual(
-      ['high', 'low']
-    );
+    // The built-in html decoder runs last, after every feature declines.
+    expect(first.decodeByNode.get('html')?.map(({ owner }) => owner)).toEqual([
+      'high',
+      'low',
+      'markdown',
+    ]);
     expect(compileMarkdownMappings(editor)).toBe(first);
   });
 
@@ -299,7 +327,7 @@ describe('Markdown node mapping compiler', () => {
               children: [{ text: '' }],
               type: innerSchema5.type,
             }),
-            from: 'html',
+            node: 'html',
           },
         }),
       }))
@@ -309,8 +337,10 @@ describe('Markdown node mapping compiler', () => {
     });
     const compiled = compileMarkdownMappings(editor);
 
-    expect(compiled.decodeBySource.has('html')).toBe(false);
-    expect(compiled.rules.disabled).toBeUndefined();
+    expect(
+      compiled.decodeByNode.get('html')?.map(({ owner }) => owner)
+    ).toEqual(['markdown']);
+    expect(compiled.encodeByType.has('disabled')).toBe(false);
   });
 
   it('rejects ambiguous equal-priority decode claims from one target', () => {
@@ -323,14 +353,14 @@ describe('Markdown node mapping compiler', () => {
                 children: [{ text: '' }],
                 type: innerSchema6.type,
               }),
-              from: 'html',
+              node: 'html',
             },
             {
               decode: ({ schema: innerSchema7 }) => ({
                 children: [{ text: '' }],
                 type: innerSchema7.type,
               }),
-              from: 'html',
+              node: 'html',
             },
           ],
         }),
@@ -349,7 +379,7 @@ describe('Markdown node mapping compiler', () => {
             children: [{ text: '' }],
             type,
           }),
-          from: 'html' as const,
+          node: 'html' as const,
         };
         const formats = defineFormats({
           markdown: declaration,
@@ -370,5 +400,243 @@ describe('Markdown node mapping compiler', () => {
     expect(() =>
       createEditor({ plugins: [InvalidPlugin, MarkdownPlugin] })
     ).toThrow('unknown field "typo"');
+  });
+  it('falls back to the built-in decoder when every feature declines', () => {
+    const DecliningPlugin = elementPlugin('declining').extend(
+      ({ defineFormats, schema: { type } }) => ({
+        formats: defineFormats({
+          markdown: {
+            node: 'paragraph',
+            decode: ({ node }) =>
+              node.children.some(
+                (child) => child.type === 'text' && child.value === 'claim'
+              )
+                ? { children: [{ text: 'claimed' }], type }
+                : undefined,
+          },
+        }),
+      })
+    );
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, DecliningPlugin, MarkdownPlugin],
+    });
+
+    expect(parseDocument(editor, 'claim\n\nplain').children).toEqual([
+      { children: [{ text: 'claimed' }], type: 'declining' },
+      { children: [{ text: 'plain' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('stops dispatch at a refusal', () => {
+    let lowerRan = false;
+    const RefusingPlugin = elementPlugin('refusing').extend(
+      ({ defineFormats }) => ({
+        formats: defineFormats({
+          markdown: {
+            node: 'thematicBreak',
+            priority: 10,
+            decode: ({ refuse }) => refuse('Refused on purpose.'),
+          },
+        }),
+      })
+    );
+    const LowerPlugin = elementPlugin('lower').extend(
+      ({ defineFormats, schema: { type } }) => ({
+        formats: defineFormats({
+          markdown: {
+            node: 'thematicBreak',
+            decode: () => {
+              lowerRan = true;
+
+              return { children: [{ text: '' }], type };
+            },
+          },
+        }),
+      })
+    );
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        RefusingPlugin,
+        LowerPlugin,
+        MarkdownPlugin,
+      ],
+    });
+
+    expect(
+      editor.api.markdown.parse('a\n\n***', { lossPolicy: 'allow' })
+    ).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          action: 'dropped',
+          code: 'markdown-unsupported-node',
+          message: 'Refused on purpose.',
+          owner: 'refusing',
+        }),
+      ],
+      ok: true,
+    });
+    expect(lowerRan).toBe(false);
+  });
+
+  it('composes every mark mapping on one selector and decodes children once', () => {
+    const editor = createTestEditor();
+
+    expect(
+      parseDocument(
+        editor,
+        'a <span style="color: red; background-color: yellow;">**b**</span>'
+      ).children
+    ).toEqual([
+      {
+        children: [
+          { text: 'a ' },
+          { backgroundColor: 'yellow', bold: true, color: 'red', text: 'b' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('keeps a mark tag as source text when no mark mapping contributes', () => {
+    const editor = createTestEditor();
+    const result = editor.api.markdown.parse(
+      '<span style="text-shadow: 1px;">x</span>',
+      { lossPolicy: 'allow' }
+    );
+
+    expect(result).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          action: 'replaced',
+          code: 'markdown-unsupported-node',
+          nodeType: 'span',
+        }),
+      ],
+      ok: true,
+    });
+    if (!result.ok) throw new Error('Expected a document.');
+    expect(result.document.children).toEqual([
+      {
+        children: [{ text: '<span style="text-shadow: 1px;">x</span>' }],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('rejects mixing mark and element decoding on one selector', () => {
+    const ElementTag = tagPlugin('strong');
+    const MarkTag = definePlugin('markTag', {
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          markdown: {
+            tag: 'strong',
+            mark: true,
+            decode: () => true,
+          },
+        }),
+    });
+
+    expect(() =>
+      createEditor({ plugins: [ElementTag, MarkTag, MarkdownPlugin] })
+    ).toThrow('mix mark and element decoding for "strong"');
+  });
+
+  it('rejects invalid and reserved tag names and inconsistent tag kinds', () => {
+    expect(() =>
+      createEditor({
+        plugins: [tagPlugin('outer', { nestedTags: ['x.y'] }), MarkdownPlugin],
+      })
+    ).toThrow('must match');
+    expect(() =>
+      createEditor({ plugins: [tagPlugin('block'), MarkdownPlugin] })
+    ).toThrow('reserved "block" tag');
+    // A nested tag is block-level; an inline element cannot share its name.
+    expect(() =>
+      createEditor({
+        plugins: [
+          tagPlugin('outer', { nestedTags: ['shared'] }),
+          tagPlugin('shared', { inline: true }),
+          MarkdownPlugin,
+        ],
+      })
+    ).toThrow('declares tag "shared" as');
+  });
+
+  it('rejects a priority on a mark mapping and a second encoder for one mark', () => {
+    const markPlugin = (name: string, markdown: unknown) =>
+      definePlugin(name, {
+        schema: {
+          mark: property.boolean({ default: false, omitDefault: true }),
+        },
+      }).extend(({ defineFormats }) => ({
+        // @plate-schema-adoption-negative-format
+        formats: {
+          ...defineFormats({
+            markdown: { mark: true, wrap: () => undefined },
+          }),
+          markdown,
+        } as never,
+      }));
+
+    expect(() =>
+      createEditor({
+        plugins: [
+          markPlugin('prioritized', {
+            decode: () => true,
+            mark: true,
+            priority: 1,
+            tag: 'x',
+          }),
+          MarkdownPlugin,
+        ],
+      })
+    ).toThrow('mark mappings compose and take no priority');
+    expect(() =>
+      createEditor({
+        plugins: [
+          markPlugin('twice', [
+            { mark: true, wrap: () => ({ type: 'strong' }) },
+            { mark: true, wrap: () => ({ type: 'strong' }) },
+          ]),
+          MarkdownPlugin,
+        ],
+      })
+    ).toThrow('one encoder for target "twice"');
+  });
+
+  it('reads a mark without an encoder and reports it on export', () => {
+    const ReadOnlyMark = definePlugin('readOnlyMark', {
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          markdown: { tag: 'ro', mark: true, decode: () => true },
+        }),
+    });
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, ReadOnlyMark, MarkdownPlugin],
+    });
+    const document = parseDocument(editor, '<ro>x</ro>');
+
+    expect(document.children).toEqual([
+      { children: [{ readOnlyMark: true, text: 'x' }], type: 'paragraph' },
+    ]);
+    expect(
+      editor.api.markdown.serialize({ document, lossPolicy: 'allow' })
+    ).toMatchObject({
+      data: 'x\n',
+      diagnostics: [
+        expect.objectContaining({
+          code: 'markdown-unsupported-node',
+          nodeType: 'readOnlyMark',
+        }),
+      ],
+      ok: true,
+    });
   });
 });

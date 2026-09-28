@@ -14,8 +14,6 @@ import {
 import {
   MarkdownPlugin,
   parseMarkdown,
-  parseMarkdownInline,
-  parseMarkdownSlice,
   serializeMarkdown,
 } from 'platejs/markdown';
 
@@ -53,8 +51,6 @@ const htmlSlice = parseHtmlSlice('<p>Title</p>', { plugins });
 const serverHtml = parseServerHtml('<p>Title</p>', { plugins });
 const serverHtmlSlice = parseServerHtmlSlice('<p>Title</p>', { plugins });
 const markdown = parseMarkdown('# Title', { plugins });
-const markdownSlice = parseMarkdownSlice('Title', { plugins });
-const markdownInline = parseMarkdownInline('Title', { plugins });
 
 if (html.ok) exact<Equal<typeof html.document, EditorDocumentValue<Value>>>();
 if (serverHtml.ok) {
@@ -66,12 +62,6 @@ if (markdown.ok) {
 if (htmlSlice.ok) exact<Equal<typeof htmlSlice.slice, ContentSlice<Value>>>();
 if (serverHtmlSlice.ok) {
   exact<Equal<typeof serverHtmlSlice.slice, ContentSlice<Value>>>();
-}
-if (markdownSlice.ok) {
-  exact<Equal<typeof markdownSlice.slice, ContentSlice<Value>>>();
-}
-if (markdownInline.ok) {
-  exact<Equal<typeof markdownInline.slice, ContentSlice<Value>>>();
 }
 void serializeHtml(editor.read.value(), { plugins });
 void serializeMarkdown(editor.read.value(), { plugins });

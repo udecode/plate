@@ -1029,7 +1029,7 @@ export const applyEditableDOMSelectionChange = ({
   rerunOnDirtyNodeMap,
 }: {
   androidInputManager: AndroidInputManager | null | undefined;
-  editor: ReactRuntimeEditor;
+  editor: ReactRuntimeEditor<any>;
   inputController: EditableInputController;
   processing: RefObject<boolean>;
   readOnly: boolean;
@@ -1415,7 +1415,7 @@ export const syncEditableDOMSelectionToEditor = ({
   viewportBackedSelection,
   state,
 }: {
-  editor: ReactRuntimeEditor;
+  editor: ReactRuntimeEditor<any>;
   editorElement?: HTMLElement;
   options?: EditableDOMSelectionSyncOptions;
   scrollSelectionIntoView: (

@@ -1,18 +1,27 @@
-import { createEditor, serializePlainText } from 'platejs';
+import {
+  createEditor,
+  serializePlainText,
+  type EditorDocumentValue,
+  type Value,
+  type ValueOf,
+} from 'platejs';
 import { importDocx } from 'platejs/docx/import';
 import { parseHtml, parseHtmlSlice, serializeHtml } from 'platejs/html';
 import {
   parseHtml as parseServerHtml,
   parseHtmlSlice as parseServerHtmlSlice,
 } from 'platejs/html/server';
-import {
-  parseMarkdown,
-  parseMarkdownInline,
-  parseMarkdownSlice,
-  serializeMarkdown,
-} from 'platejs/markdown';
+import { parseMarkdown, serializeMarkdown } from 'platejs/markdown';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+import type { Editor } from '@/registry/components/editor/plugins.generated';
+
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
+
+const exact = <TCheck extends true>(): TCheck | undefined => undefined;
 
 // Standalone conversion must stay type-usable with a full application kit.
 export async function verifyDetachedConversionWithKit() {
@@ -33,9 +42,27 @@ export async function verifyDetachedConversionWithKit() {
   void parseHtmlSlice('<p>Kit</p>', { plugins });
   void parseServerHtml('<p>Kit</p>', { plugins });
   void parseServerHtmlSlice('<p>Kit</p>', { plugins });
-  void parseMarkdownSlice('Kit', { plugins });
-  void parseMarkdownInline('Kit', { plugins });
   void serializeHtml(document, { plugins });
   void serializeMarkdown(document, { plugins });
   void serializePlainText(document, { plugins });
+}
+
+// A generated editor keeps its exact document; standalone results stay broad.
+export function verifyExactEditorConversion(editor: Editor) {
+  type ExactDocument = EditorDocumentValue<ValueOf<Editor>>;
+
+  exact<Equal<ValueOf<Editor>, Value> extends true ? false : true>();
+
+  const html = editor.api.html.parse('<p>Exact</p>');
+  const markdown = editor.api.markdown.parse('# Exact');
+  const standalone = parseMarkdown('# Exact', { plugins: BaseEditorKit });
+
+  if (html.ok) exact<Equal<typeof html.document, ExactDocument>>();
+  if (markdown.ok) exact<Equal<typeof markdown.document, ExactDocument>>();
+  if (standalone.ok) {
+    // @ts-expect-error A standalone document is not an exact editor document.
+    const document: ExactDocument = standalone.document;
+
+    void document;
+  }
 }

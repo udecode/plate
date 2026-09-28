@@ -61,7 +61,7 @@ const editor = createEditor({
 ### Installation
 
 ```bash
-npm install platejs @tanstack/react-virtual marked remark-gfm remark-mdx remark-parse remark-stringify unified
+npm install platejs @tanstack/react-virtual marked remark-gfm remark-parse remark-stringify unified
 ```
 
 ### Add plugins
@@ -164,6 +164,13 @@ editor.update((tx) =>
 ```
 
 The transform returns the newly assigned ref string on success, or `false` when the path isn't a duplicate definition or the requested ref is already taken. Pass `ref` to target a specific free ref instead of the next available one.
+
+### Round-trip Markdown
+
+With `remark-gfm` configured, references serialize as `[^1]` and definitions as
+`[^1]: text`. Refs that Markdown would read as one label, such as `A` and `a`,
+are written as distinct labels. A reference whose definition is missing from the
+output reads back as text and reports a `markdown-unsupported-node` warning.
 
 ### Customize rendering
 

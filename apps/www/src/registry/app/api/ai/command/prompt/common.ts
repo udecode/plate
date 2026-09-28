@@ -16,6 +16,6 @@ ${basicRules}
 /** Common rules shared across all generate prompts */
 export const commonGenerateRules = dedent`
   - Output only the final result. Do not add prefaces like "Here is..." unless explicitly asked.
-  - CRITICAL: When writing Markdown or MDX, do NOT wrap output in code fences.
+  - CRITICAL: When writing Markdown, do NOT wrap output in code fences.
 ${basicRules}
 `;

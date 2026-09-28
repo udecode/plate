@@ -3,6 +3,7 @@ import { expect, mock, test } from 'bun:test';
 import {
   ContentSlice,
   createEditor,
+  createEditorView,
   definePlugin,
   defineEditorSchema,
   definePluginSlot,
@@ -21,13 +22,10 @@ import {
   dom,
   dataTransferFormats,
   type DataTransferFormat,
-  type DataTransferDecodeResult,
-  type DataTransferEncodeResult,
-  type DataTransferReport,
   type DataTransferSchemaClaim,
   writeDataTransferFragment,
 } from '../../src/dom';
-import { createDataTransferTransactionSpec } from '../../src/dom/plugin/data-transfer-format';
+import { getDOMClipboardFormatKey } from '../../src/dom/plugin/dom-clipboard-runtime';
 
 class DataTransferStub {
   data = new Map<string, string>();
@@ -49,28 +47,6 @@ class DataTransferStub {
 const paragraph = (text: string): Descendant => ({
   children: [{ text }],
   type: 'paragraph',
-});
-
-const decodeSuccess = (slice: ContentSlice): DataTransferDecodeResult => ({
-  diagnostics: [],
-  ok: true,
-  slice,
-});
-
-const encodeSuccess = (data: string): DataTransferEncodeResult => ({
-  data,
-  diagnostics: [],
-  ok: true,
-});
-
-const decodeFailure = (code: string): DataTransferDecodeResult => ({
-  diagnostics: [{ code, message: code, severity: 'error' }],
-  ok: false,
-});
-
-const encodeFailure = (code: string): DataTransferEncodeResult => ({
-  diagnostics: [{ code, message: code, severity: 'error' }],
-  ok: false,
 });
 
 const ParagraphBold = schema.textProperty('bold', property.boolean(), {
@@ -173,13 +149,12 @@ const createInlineFormatEditor = (
 
 const createFormatEditor = (
   formats: readonly DataTransferFormat[],
-  lifecycleErrorSink?: EditorLifecycleErrorSink,
-  onDataTransferReport?: (report: DataTransferReport) => void
+  lifecycleErrorSink?: EditorLifecycleErrorSink
 ) =>
   createEditor({
     plugins: [
       hostSchema,
-      dom({ onDataTransferReport }),
+      dom(),
       dataTransferFormats('test-data-transfer-formats', formats),
     ] as const,
     initialSelection: SelectionApi.text({
@@ -213,7 +188,7 @@ test('DataTransfer formats expose only immutable model and host read capabilitie
       expect('transaction' in context.state).toBe(false);
       expect(context.state.children()).toEqual([paragraph('')]);
 
-      return decodeSuccess(ContentSlice.closed([paragraph('parsed')]));
+      return ContentSlice.closed([paragraph('parsed')]);
     }
   );
   const editor = createFormatEditor([
@@ -240,7 +215,7 @@ test('DataTransfer formats receive an ingress snapshot instead of the DataTransf
         expect(html).toBe('<p>before</p>');
         expect(snapshot.getData('text/html')).toBe('<p>before</p>');
 
-        return decodeSuccess(ContentSlice.closed([paragraph('snapshot')]));
+        return ContentSlice.closed([paragraph('snapshot')]);
       },
       accept: () => {
         data.setData('text/html', '<p>after</p>');
@@ -269,7 +244,7 @@ test('DataTransfer format results cross one immutable slice boundary', () => {
     {
       mimeType: 'text/html',
       key: 'mutable-result',
-      decode: () => decodeSuccess(slice),
+      decode: () => slice,
     },
   ]);
   const data = new DataTransferStub();
@@ -434,7 +409,7 @@ test('DataTransfer format serialization observes the active transaction document
     {
       mimeType: 'text/html',
       key: 'draft-html',
-      encode: ({ state }) => encodeSuccess(`<p>${state.text.string([])}</p>`),
+      encode: ({ state }) => `<p>${state.text.string([])}</p>`,
     },
   ]);
   const data = new DataTransferStub();
@@ -456,19 +431,19 @@ test('DataTransfer format configuration order is deterministic per mimeType', ()
     {
       mimeType: 'text/html',
       key: 'low-html',
-      decode: () => decodeSuccess(ContentSlice.closed([paragraph('low')])),
-      encode: () => encodeSuccess('<p>low</p>'),
+      decode: () => ContentSlice.closed([paragraph('low')]),
+      encode: () => '<p>low</p>',
     },
     {
       mimeType: 'text/html',
       key: 'high-html',
-      decode: () => decodeSuccess(ContentSlice.closed([paragraph('high')])),
-      encode: () => encodeSuccess('<p>high</p>'),
+      decode: () => ContentSlice.closed([paragraph('high')]),
+      encode: () => '<p>high</p>',
     },
     {
       mimeType: 'text/markdown',
       key: 'markdown',
-      encode: () => encodeSuccess('high'),
+      encode: () => 'high',
     },
   ]);
   const input = new DataTransferStub();
@@ -492,12 +467,12 @@ test('later DataTransfer format registration runs first', () => {
     {
       mimeType: 'text/html',
       key: 'first',
-      decode: () => decodeSuccess(ContentSlice.closed([paragraph('first')])),
+      decode: () => ContentSlice.closed([paragraph('first')]),
     },
     {
       mimeType: 'text/html',
       key: 'second',
-      decode: () => decodeSuccess(ContentSlice.closed([paragraph('second')])),
+      decode: () => ContentSlice.closed([paragraph('second')]),
     },
   ]);
   const data = new DataTransferStub();
@@ -538,7 +513,7 @@ test('plain text is the last compiled format fallback', () => {
     {
       mimeType: 'text/plain',
       key: 'overriding-plain-text',
-      decode: () => decodeSuccess(ContentSlice.closed([paragraph('override')])),
+      decode: () => ContentSlice.closed([paragraph('override')]),
     },
   ]);
   const overrideData = new DataTransferStub();
@@ -557,7 +532,7 @@ test('DataTransfer format compilation follows configuration revisions and rolls 
   const original: DataTransferFormat = {
     mimeType: 'text/html',
     key: 'original',
-    encode: () => encodeSuccess('<p>original</p>'),
+    encode: () => '<p>original</p>',
   };
   const editor = createFormatEditor([original]);
   const slice = ContentSlice.closed([paragraph('value')]);
@@ -576,7 +551,7 @@ test('DataTransfer format compilation follows configuration revisions and rolls 
       {
         mimeType: 'text/html',
         key: 'temporary',
-        encode: () => encodeSuccess('<p>temporary</p>'),
+        encode: () => '<p>temporary</p>',
       },
     ])
   );
@@ -611,7 +586,7 @@ test('DataTransfer format ownership resolves declaration semantics against the c
     mimeType: 'text/html',
     key: 'italic',
     claims: [Italic],
-    encode: () => encodeSuccess('<em>value</em>'),
+    encode: () => '<em>value</em>',
   };
 
   expect(() =>
@@ -659,8 +634,7 @@ test('schema reconfiguration recompiles format claims and rolls back atomically'
           mimeType: 'text/html',
           key: 'paragraph-html',
           claims: [{ kind: 'element', type: 'paragraph' }],
-          decode: () =>
-            decodeSuccess(ContentSlice.closed([paragraph('parsed')])),
+          decode: () => ContentSlice.closed([paragraph('parsed')]),
         },
       ]),
     ] as const,
@@ -696,24 +670,21 @@ test('accept and decode faults report lifecycle errors then fall through', () =>
       {
         mimeType: 'text/html',
         key: 'fallback',
-        decode: () =>
-          decodeSuccess(ContentSlice.closed([paragraph('fallback')])),
+        decode: () => ContentSlice.closed([paragraph('fallback')]),
       },
       {
         mimeType: 'text/html',
         key: 'malformed',
-        decode: () =>
-          decodeSuccess({
-            content: [paragraph('invalid')],
-            openEnd: 2,
-            openStart: 2,
-          }),
+        decode: () => ({
+          content: [paragraph('invalid')],
+          openEnd: 2,
+          openStart: 2,
+        }),
       },
       {
         mimeType: 'text/html',
         key: 'throwing-accept',
-        decode: () =>
-          decodeSuccess(ContentSlice.closed([paragraph('unreachable')])),
+        decode: () => ContentSlice.closed([paragraph('unreachable')]),
         accept: () => {
           throw new Error('accept failed');
         },
@@ -799,7 +770,7 @@ test('serialization faults report lifecycle errors then fall through', () => {
       {
         mimeType: 'text/html',
         key: 'fallback',
-        encode: () => encodeSuccess('<p>fallback</p>'),
+        encode: () => '<p>fallback</p>',
       },
       {
         mimeType: 'text/html',
@@ -808,319 +779,152 @@ test('serialization faults report lifecycle errors then fall through', () => {
           throw new Error('encode failed');
         },
       },
+      {
+        mimeType: 'text/html',
+        key: 'non-string',
+        encode: () => 42 as unknown as string,
+      },
     ],
     (diagnostic) => diagnostics.push(diagnostic)
   );
   const data = new DataTransferStub();
 
-  writeDataTransferFragment(
-    editor,
-    data,
-    ContentSlice.closed([paragraph('value')])
-  );
-
+  expect(
+    writeDataTransferFragment(
+      editor,
+      data,
+      ContentSlice.closed([paragraph('value')])
+    )
+  ).toEqual(['text/html']);
   expect(data.getData('text/html')).toBe('<p>fallback</p>');
   expect(
     diagnostics.map((error) =>
-      'key' in error ? { key: error.key, phase: error.phase } : error
+      'key' in error
+        ? {
+            cause: error.cause instanceof TypeError,
+            key: error.key,
+            phase: error.phase,
+          }
+        : error
     )
-  ).toEqual([{ key: 'throwing', phase: 'encode' }]);
-});
-
-test('reports rejected rich formats before the selected fallback after commit', () => {
-  const reports: DataTransferReport[] = [];
-  const editor = createFormatEditor(
-    [
-      {
-        mimeType: 'text/html',
-        key: 'fallback',
-        decode: () =>
-          decodeSuccess(ContentSlice.closed([paragraph('fallback')])),
-      },
-      {
-        mimeType: 'text/html',
-        key: 'rejected-rich',
-        decode: () =>
-          ({
-            diagnostics: [
-              {
-                code: 'context-warning',
-                message: 'context-warning',
-                severity: 'warning',
-              },
-              {
-                code: 'rich-rejected',
-                message: 'rich-rejected',
-                severity: 'error',
-              },
-            ],
-            ok: false,
-          }) as unknown as DataTransferDecodeResult,
-      },
-    ],
-    undefined,
-    (report) => reports.push(report)
-  );
-  const data = new DataTransferStub();
-
-  data.setData('text/html', '<p>source</p>');
-  expect(editor.api.dom.clipboard.insertData(data as DataTransfer)).toBe(true);
-  expect(reports).toEqual([
-    {
-      attempts: [
-        {
-          diagnostics: [
-            {
-              code: 'rich-rejected',
-              message: 'rich-rejected',
-              severity: 'error',
-            },
-            {
-              code: 'context-warning',
-              message: 'context-warning',
-              severity: 'warning',
-            },
-          ],
-          key: 'rejected-rich',
-          mimeType: 'text/html',
-          outcome: 'rejected',
-          phase: 'decode',
-        },
-        {
-          diagnostics: [],
-          key: 'fallback',
-          mimeType: 'text/html',
-          outcome: 'selected',
-          phase: 'decode',
-        },
-      ],
-      outcome: 'inserted',
-    },
+  ).toEqual([
+    { cause: true, key: 'non-string', phase: 'encode' },
+    { cause: false, key: 'throwing', phase: 'encode' },
   ]);
 });
 
-test('reports an unfit decoded slice before fallback insertion', () => {
-  const reports: DataTransferReport[] = [];
+test('an unfit decoded slice falls through to the next format', () => {
+  const lifecycleErrors: EditorLifecycleError[] = [];
   const editor = createFormatEditor(
     [
       {
         mimeType: 'text/html',
         key: 'fallback',
-        decode: () =>
-          decodeSuccess(ContentSlice.closed([paragraph('fallback')])),
+        decode: () => ContentSlice.closed([paragraph('fallback')]),
       },
       {
         mimeType: 'text/html',
         key: 'unfit',
         decode: () =>
-          decodeSuccess(
-            ContentSlice.closed([
-              { children: [{ text: 'invalid' }], type: 'unknown' },
-            ])
-          ),
+          ContentSlice.closed([
+            { children: [{ text: 'invalid' }], type: 'unknown' },
+          ]),
       },
     ],
-    undefined,
-    (report) => reports.push(report)
+    (error) => lifecycleErrors.push(error)
   );
   const data = new DataTransferStub();
 
   data.setData('text/html', '<unknown>invalid</unknown>');
-  expect(editor.api.dom.clipboard.insertData(data as DataTransfer)).toBe(true);
   expect(
-    reports[0]?.attempts.map(({ key, outcome }) => [key, outcome])
-  ).toEqual([
-    ['unfit', 'unfit'],
-    ['fallback', 'selected'],
-  ]);
-  expect(reports[0]?.attempts[0]?.diagnostics).toEqual([
-    {
-      code: 'data-transfer-unfit',
-      message:
-        'Decoded text/html content does not fit at the target selection.',
-      severity: 'error',
-    },
-  ]);
-});
-
-test('reports selected warnings without converting them to lifecycle errors', () => {
-  const lifecycleErrors: EditorLifecycleError[] = [];
-  const reports: DataTransferReport[] = [];
-  const editor = createFormatEditor(
-    [
-      {
-        mimeType: 'text/html',
-        key: 'warning',
-        decode: () => ({
-          diagnostics: [
-            {
-              code: 'normalized',
-              message: 'Normalized source.',
-              severity: 'warning',
-            },
-          ],
-          ok: true,
-          slice: ContentSlice.closed([paragraph('normalized')]),
-        }),
-      },
-    ],
-    (error) => lifecycleErrors.push(error),
-    (report) => reports.push(report)
-  );
-  const data = new DataTransferStub();
-
-  data.setData('text/html', '<p>source</p>');
-  expect(editor.api.dom.clipboard.insertData(data as DataTransfer)).toBe(true);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
+  expect(editor.read.children()).toEqual([paragraph('fallback')]);
   expect(lifecycleErrors).toEqual([]);
-  expect(reports[0]).toMatchObject({
-    attempts: [
-      {
-        diagnostics: [{ code: 'normalized', severity: 'warning' }],
-        outcome: 'selected',
-      },
-    ],
-    outcome: 'inserted',
-  });
 });
 
-test('reports all diagnosed failures only after the command chain is unhandled', () => {
-  const reports: DataTransferReport[] = [];
-  const editor = createFormatEditor(
-    [
-      {
-        mimeType: 'text/html',
-        key: 'rejected',
-        decode: () => decodeFailure('invalid-source'),
-      },
-    ],
-    undefined,
-    (report) => reports.push(report)
-  );
+test('accept false and null decode delegate to the next format', () => {
+  const skipped = mock(() => ContentSlice.closed([paragraph('unreachable')]));
+  const delegating = mock(() => null);
+  const formats: DataTransferFormat[] = [
+    {
+      mimeType: 'text/html',
+      key: 'null',
+      decode: delegating,
+    },
+    {
+      mimeType: 'text/html',
+      key: 'not-accepted',
+      accept: () => false,
+      decode: skipped,
+    },
+  ];
+  const editor = createFormatEditor([
+    {
+      mimeType: 'text/plain',
+      key: 'plain',
+      decode: () => ContentSlice.closed([paragraph('plain')]),
+    },
+    ...formats,
+  ]);
   const data = new DataTransferStub();
 
   data.setData('text/html', '<p>source</p>');
-  expect(editor.api.dom.clipboard.insertData(data as DataTransfer)).toBe(false);
-  expect(reports).toMatchObject([
+  data.setData('text/plain', 'source');
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
+  expect(editor.read.children()).toEqual([paragraph('plain')]);
+  expect(delegating).toHaveBeenCalledTimes(1);
+  expect(skipped).not.toHaveBeenCalled();
+
+  const unhandledEditor = createFormatEditor(formats);
+  const htmlOnly = new DataTransferStub();
+
+  htmlOnly.setData('text/html', '<p>source</p>');
+  expect(
+    unhandledEditor.api.dom.clipboard.insertData(
+      htmlOnly as unknown as DataTransfer
+    )
+  ).toBe(false);
+  expect(unhandledEditor.read.lastCommit()).toBeNull();
+});
+
+test('null encode delegates its mimeType to the next encoder', () => {
+  const editor = createFormatEditor([
     {
-      attempts: [{ key: 'rejected', outcome: 'rejected' }],
-      outcome: 'unhandled',
+      mimeType: 'text/html',
+      key: 'fallback',
+      encode: () => '<p>fallback</p>',
+    },
+    {
+      mimeType: 'text/html',
+      key: 'delegating',
+      encode: () => null,
+    },
+    {
+      mimeType: 'text/markdown',
+      key: 'markdown',
+      encode: () => 'fallback',
     },
   ]);
-});
-
-test('reports rejected encoders before the written fallback', () => {
-  const reports: DataTransferReport[] = [];
-  const editor = createFormatEditor(
-    [
-      {
-        mimeType: 'text/html',
-        key: 'fallback',
-        encode: () => encodeSuccess('<p>fallback</p>'),
-      },
-      {
-        mimeType: 'text/html',
-        key: 'rejected',
-        encode: () => encodeFailure('cannot-encode'),
-      },
-    ],
-    undefined,
-    (report) => reports.push(report)
-  );
+  const slice = ContentSlice.closed([paragraph('value')]);
   const data = new DataTransferStub();
 
-  writeDataTransferFragment(
-    editor,
-    data,
-    ContentSlice.closed([paragraph('value')])
-  );
+  expect(writeDataTransferFragment(editor, data, slice)).toEqual([
+    'text/markdown',
+    'text/html',
+  ]);
   expect(data.getData('text/html')).toBe('<p>fallback</p>');
-  expect(reports[0]).toMatchObject({
-    attempts: [
-      { key: 'rejected', outcome: 'rejected', phase: 'encode' },
-      { key: 'fallback', outcome: 'written', phase: 'encode' },
-    ],
-    outcome: 'written',
-  });
-});
 
-test('does not report a speculative transaction spec that is never applied', () => {
-  const reports: DataTransferReport[] = [];
-  const editor = createFormatEditor(
-    [
-      {
-        mimeType: 'text/html',
-        key: 'speculative',
-        decode: () =>
-          decodeSuccess(ContentSlice.closed([paragraph('speculative')])),
-      },
-    ],
-    undefined,
-    (report) => reports.push(report)
-  );
-  const data = new DataTransferStub();
+  const excluded = new DataTransferStub();
 
-  data.setData('text/html', '<p>source</p>');
   expect(
-    createDataTransferTransactionSpec(editor, data as DataTransfer)
-  ).not.toBe(false);
-  expect(reports).toEqual([]);
-  expect(editor.read.children()).toEqual([paragraph('')]);
-});
-
-test('isolates a throwing report sink after an accepted commit', () => {
-  const lifecycleErrors: EditorLifecycleError[] = [];
-  const editor = createFormatEditor(
-    [
-      {
-        mimeType: 'text/html',
-        key: 'accepted',
-        decode: () =>
-          decodeSuccess(ContentSlice.closed([paragraph('accepted')])),
-      },
-    ],
-    (error) => lifecycleErrors.push(error),
-    () => {
-      throw new Error('report sink failed');
-    }
-  );
-  const data = new DataTransferStub();
-
-  data.setData('text/html', '<p>source</p>');
-  expect(editor.api.dom.clipboard.insertData(data as DataTransfer)).toBe(true);
-  expect(editor.read.children()).toEqual([paragraph('accepted')]);
-  expect(lifecycleErrors).toHaveLength(1);
-  expect(lifecycleErrors[0]).toMatchObject({
-    key: 'dom:onDataTransferReport',
-    phase: 'notify',
-    source: 'data-transfer-format',
-  });
-});
-
-test('accept false and null delegation add no report attempts', () => {
-  const reports: DataTransferReport[] = [];
-  const editor = createFormatEditor(
-    [
-      {
-        mimeType: 'text/html',
-        key: 'null',
-        decode: () => null,
-      },
-      {
-        mimeType: 'text/html',
-        key: 'not-accepted',
-        accept: () => false,
-        decode: () =>
-          decodeSuccess(ContentSlice.closed([paragraph('unreachable')])),
-      },
-    ],
-    undefined,
-    (report) => reports.push(report)
-  );
-  const data = new DataTransferStub();
-
-  data.setData('text/html', '<p>source</p>');
-  expect(editor.api.dom.clipboard.insertData(data as DataTransfer)).toBe(false);
-  expect(reports).toEqual([{ attempts: [], outcome: 'unhandled' }]);
+    writeDataTransferFragment(editor, excluded, slice, {
+      excludeMimeTypes: ['text/html'],
+    })
+  ).toEqual(['text/markdown']);
+  expect(excluded.types).toEqual(['text/markdown']);
 });
 
 test('DataTransfer formats preserve open slices and fit at the paste range', () => {
@@ -1129,13 +933,11 @@ test('DataTransfer formats preserve open slices and fit at the paste range', () 
       mimeType: 'text/html',
       key: 'open-html',
       decode: () =>
-        decodeSuccess(
-          ContentSlice.fromJSON({
-            content: [paragraph('X')],
-            openEnd: 1,
-            openStart: 1,
-          })
-        ),
+        ContentSlice.fromJSON({
+          content: [paragraph('X')],
+          openEnd: 1,
+          openStart: 1,
+        }),
     },
   ]);
   const data = new DataTransferStub();
@@ -1160,8 +962,7 @@ test('DataTransfer formats fit detached text properties into the target parent',
     {
       mimeType: 'text/html',
       key: 'bold-leaf-html',
-      decode: () =>
-        decodeSuccess(ContentSlice.closed([{ bold: true, text: 'X' }])),
+      decode: () => ContentSlice.closed([{ bold: true, text: 'X' }]),
     },
   ]);
   const data = new DataTransferStub();
@@ -1184,7 +985,7 @@ test('format keys and compiled schema ownership conflict atomically', () => {
     mimeType: 'text/html',
     key,
     ...(ownedTargets ? { claims: ownedTargets } : {}),
-    decode: () => decodeSuccess(ContentSlice.closed([paragraph(key)])),
+    decode: () => ContentSlice.closed([paragraph(key)]),
   });
   const duplicate = format('duplicate');
 
@@ -1264,13 +1065,13 @@ test('parser and serializer ownership claims are independent', () => {
         mimeType: 'text/html',
         key: 'decode-paragraph',
         claims: [{ kind: 'element', type: 'paragraph' }],
-        decode: () => decodeSuccess(ContentSlice.closed([paragraph('decode')])),
+        decode: () => ContentSlice.closed([paragraph('decode')]),
       },
       {
         mimeType: 'text/html',
         key: 'encode-paragraph',
         claims: [{ kind: 'element', type: 'paragraph' }],
-        encode: () => encodeSuccess('<p>encode</p>'),
+        encode: () => '<p>encode</p>',
       },
     ])
   ).not.toThrow();
@@ -1288,7 +1089,7 @@ test('DataTransfer formats round-trip registered mimeTypes', () => {
       expect('editor' in context).toBe(false);
       expect('fit' in context).toBe(false);
 
-      return encodeSuccess(JSON.stringify(context.slice.content));
+      return JSON.stringify(context.slice.content);
     }
   );
   const json: DataTransferFormat = {
@@ -1298,9 +1099,7 @@ test('DataTransfer formats round-trip registered mimeTypes', () => {
       try {
         const content = JSON.parse(data) as unknown;
 
-        return Array.isArray(content)
-          ? decodeSuccess(ContentSlice.closed(content))
-          : null;
+        return Array.isArray(content) ? ContentSlice.closed(content) : null;
       } catch {
         return null;
       }
@@ -1323,4 +1122,28 @@ test('DataTransfer formats round-trip registered mimeTypes', () => {
   expect(innerTarget.read.children()).toEqual(value);
   expect(NodeApi.string(innerTarget.read.children()[0])).toBe('round trip');
   expect(encode).toHaveBeenCalledTimes(1);
+});
+
+test('views insert transfers and read the clipboard key of their runtime owner', () => {
+  const editor = createEditor({
+    plugins: [
+      hostSchema,
+      dom({ clipboardFormatKey: 'x-owner-fragment' }),
+    ] as const,
+    initialSelection: SelectionApi.text({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    }),
+    initialValue: [paragraph('')],
+  });
+  const view = createEditorView(editor);
+  const data = new DataTransferStub();
+
+  data.setData('text/plain', 'pasted');
+
+  expect(getDOMClipboardFormatKey(view)).toBe('x-owner-fragment');
+  expect(
+    view.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
+  expect(editor.read.text.string([])).toBe('pasted');
 });

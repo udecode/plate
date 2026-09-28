@@ -7,6 +7,7 @@
     "src/**/*.test.tsx",
     "src/**/*-contract.ts",
     "src/**/*-contract.tsx",
+    "src/**/*.d.ts",
     "../../tooling/config/global.d.ts"
   ],
   "exclude": ["dist", "node_modules"],

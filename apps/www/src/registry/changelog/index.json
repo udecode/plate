@@ -2,6 +2,30 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-28-markdown-registered-tags",
+      "href": "/registry/changelog/2026-09-28-markdown-registered-tags.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Parse Markdown as CommonMark with Plate tags",
+      "change": {
+        "type": "source",
+        "date": "2026-09-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "markdown",
+        "markdown-streaming-demo",
+        "markdown-to-editor-demo",
+        "ai-api",
+        "markdown-joiner-transform"
+      ],
+      "entries": 5,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-27-document-conversion-contracts",
       "href": "/registry/changelog/2026-09-27-document-conversion-contracts.json",
       "status": "draft",

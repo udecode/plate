@@ -1,5 +1,16 @@
 # Research Log
 
+## [2026-09-28] review | Markdown conversion
+
+- [Audit](../analysis/2026-09-28-markdown-api-review.md): 10/10 units reviewed,
+  with source-backed dispositions and focused corruption probes. Keep settled
+  names, carriers, standalone typing, optional runtime and feature mappings.
+- Pursue removing raw-source rewriting, destructive inline stripping and
+  unused block-ID transport. Repair typed dispatch, reference handling,
+  serializer content loss and open-slice diagnostics.
+- [Decision](decisions/markdown-conversion.md) records direction only. No
+  product implementation, full typecheck, browser or performance certification.
+
 ## [2026-09-22] review | Code commands and highlighter ownership
 
 - Reconciled the CodeLine cut, adopted optional CodeMirror/parser boundary,

@@ -51,6 +51,7 @@ This is the entrypoint for the compiled agent research layer.
   insertion types, preserve selection through formatting and indentation,
   and isolate copied backend initialization. Includes all 13 source groups.
 - Related decisions:
+  [Markdown conversion](decisions/markdown-conversion.md),
   [authored changes](decisions/authored-change-ownership.md),
   [structural comparison](decisions/structural-comparison.md), and
   [performance candidate reuse](decisions/performance-candidate-reuse.md).

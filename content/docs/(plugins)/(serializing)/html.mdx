@@ -187,8 +187,9 @@ Use `defineFormats(map)` for mappings owned by the current plugin and
 
 If a browser transfer format owns a complete `text/html` payload, register a
 `DataTransferFormat` through `dataTransferFormats`. That owner can inspect the
-whole payload, call `parseHtmlSlice`, and return a diagnosed slice. See
-[Clipboard](/docs/clipboard).
+whole payload, call `parseHtmlSlice`, and return the slice, or `null` to let
+the next format try. See
+[Clipboard](/docs/clipboard#custom-datatransfer-formats).
 
 ## Results and diagnostics
 
@@ -208,6 +209,16 @@ Serialization success contains `data`; failure does not. Configuration errors,
 mapping bugs, and invalid model input throw. Source errors, resource limits,
 schema recovery, safety actions, and expected format loss are returned as
 diagnostics.
+
+Safety removal reports `html-unsafe-content` with an `impact`. Removing
+metadata, scripts, style sheets, event handlers, script URLs, or graphics inside
+an `aria-hidden="true"` subtree, such as icon SVG, is `lossless`. Removing other
+SVG, MathML, embedded objects, blocked `data:` media sources, inline frame
+documents, or resource-loading styles is `lossy`. Embedded media (`img`,
+`video`, `audio`, `iframe`, `canvas`) that no installed mapping owns reports
+`html-unsupported-content`, even when its fallback content is kept. Under the
+default `lossPolicy: 'reject'`, a lossy removal and unsupported content are
+errors.
 
 Parsing defaults to these limits:
 

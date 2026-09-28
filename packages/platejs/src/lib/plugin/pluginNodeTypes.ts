@@ -202,6 +202,16 @@ type FormatPropertyEntries<
   Readonly<{ placement: TPlacement }>
 >;
 
+/** Value owned by the format mapping's schema-bound text property. */
+export type PluginFormatTextValue<D extends AnyBasePluginDefinition> =
+  FormatPropertyEntries<D, 'text'> extends infer TEntry
+    ? TEntry extends Readonly<{
+        descriptor: infer TDescriptor extends PropertyValueDescriptor;
+      }>
+      ? PropertyValueOf<TDescriptor>
+      : never
+    : never;
+
 /** Node narrowed from the format mapping target's schema contribution. */
 export type PluginFormatNode<D extends AnyBasePluginDefinition> = [
   FormatElementNode<D>,

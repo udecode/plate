@@ -870,7 +870,7 @@ describe('compilePlateHtmlFormat', () => {
 
     expect(() =>
       createEditor({ plugins: [ListPlugin, ParagraphPlugin] })
-    ).toThrow('createsElement requires installed element targetPlugins[0]');
+    ).toThrow('createsElement requires an installed element target');
   });
 
   it('orders composable wrappers independently of plugin array order', () => {

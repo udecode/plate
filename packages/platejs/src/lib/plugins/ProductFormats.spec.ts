@@ -1,12 +1,6 @@
 import { describe, expect, it, spyOn } from 'bun:test';
 
-import {
-  ContentSlice,
-  property,
-  schema,
-  type Value,
-  type ValueOf,
-} from '../../core';
+import { ContentSlice, property, schema, type ValueOf } from '../../core';
 import { writeDataTransferFragment } from '../../dom';
 import { createEditor } from '../editor';
 import { definePlugin } from '../plugin';
@@ -14,18 +8,6 @@ import { definePlugin } from '../plugin';
 const createParagraph = (text: string) => ({
   children: [{ text }],
   type: 'paragraph' as const,
-});
-
-const decodeSuccess = <V extends Value>(slice: ContentSlice<V>) => ({
-  diagnostics: [],
-  ok: true as const,
-  slice,
-});
-
-const encodeSuccess = (data: string) => ({
-  data,
-  diagnostics: [],
-  ok: true as const,
 });
 
 const defineTransferFormats = (
@@ -88,11 +70,9 @@ describe('product formats', () => {
       dataTransferFormats: defineTransferFormats({
         'application/x-card': {
           decode: ({ data }) =>
-            decodeSuccess(
-              ContentSlice.closed([
-                { children: [{ text: data }], type: 'cardFormat' },
-              ])
-            ),
+            ContentSlice.closed([
+              { children: [{ text: data }], type: 'cardFormat' },
+            ]),
         },
       }),
     });
@@ -118,9 +98,7 @@ describe('product formats', () => {
           decode: ({ data }) => {
             calls.push('lower');
 
-            return decodeSuccess(
-              ContentSlice.closed([createParagraph(`lower:${data}`)])
-            );
+            return ContentSlice.closed([createParagraph(`lower:${data}`)]);
           },
         },
       }),
@@ -172,9 +150,7 @@ describe('product formats', () => {
               'paragraph'
             );
 
-            return decodeSuccess(
-              ContentSlice.closed([createParagraph(pluginState.label)])
-            );
+            return ContentSlice.closed([createParagraph(pluginState.label)]);
           },
         },
       ],
@@ -188,16 +164,7 @@ describe('product formats', () => {
           decode: () => {
             editor.plugin(FallbackPlugin).store.set({ label: 'after' });
 
-            return {
-              diagnostics: [
-                {
-                  code: 'delegate-after-mutation',
-                  message: 'Delegate after mutating external state.',
-                  severity: 'error',
-                },
-              ],
-              ok: false,
-            };
+            return null;
           },
         },
       ],
@@ -221,8 +188,7 @@ describe('product formats', () => {
       },
       dataTransferFormats: defineTransferFormats({
         'application/x-disjoint': {
-          decode: () =>
-            decodeSuccess(ContentSlice.closed([createParagraph('alpha')])),
+          decode: () => ContentSlice.closed([createParagraph('alpha')]),
         },
       }),
     });
@@ -232,8 +198,7 @@ describe('product formats', () => {
       },
       dataTransferFormats: defineTransferFormats({
         'application/x-disjoint': {
-          decode: () =>
-            decodeSuccess(ContentSlice.closed([createParagraph('zulu')])),
+          decode: () => ContentSlice.closed([createParagraph('zulu')]),
         },
       }),
     });
@@ -261,21 +226,21 @@ describe('product formats', () => {
             ? {
                 'application/x-order-z': {
                   scope: 'document',
-                  encode: () => encodeSuccess('z'),
+                  encode: () => 'z',
                 },
                 'application/x-order-a': {
                   scope: 'document',
-                  encode: () => encodeSuccess('a'),
+                  encode: () => 'a',
                 },
               }
             : {
                 'application/x-order-a': {
                   scope: 'document',
-                  encode: () => encodeSuccess('a'),
+                  encode: () => 'a',
                 },
                 'application/x-order-z': {
                   scope: 'document',
-                  encode: () => encodeSuccess('z'),
+                  encode: () => 'z',
                 },
               }
         ),
@@ -318,9 +283,7 @@ describe('product formats', () => {
               calls.push(name);
 
               return index === definitions.length - 1
-                ? decodeSuccess(
-                    ContentSlice.closed([createParagraph(`winner:${data}`)])
-                  )
+                ? ContentSlice.closed([createParagraph(`winner:${data}`)])
                 : null;
             },
           },
@@ -364,11 +327,7 @@ describe('product formats', () => {
             [format]: {
               decode: () =>
                 index === 0
-                  ? decodeSuccess(
-                      ContentSlice.closed([
-                        createParagraph(`disjoint:${width}`),
-                      ])
-                    )
+                  ? ContentSlice.closed([createParagraph(`disjoint:${width}`)])
                   : null,
             },
           }),
@@ -417,8 +376,7 @@ describe('product formats', () => {
       dataTransferFormats: defineTransferFormats({
         'application/x-conflict': {
           scope: 'document',
-          decode: () =>
-            decodeSuccess(ContentSlice.closed([createParagraph('first')])),
+          decode: () => ContentSlice.closed([createParagraph('first')]),
         },
       }),
     });
@@ -426,8 +384,7 @@ describe('product formats', () => {
       dataTransferFormats: defineTransferFormats({
         'application/x-conflict': {
           scope: 'document',
-          decode: () =>
-            decodeSuccess(ContentSlice.closed([createParagraph('second')])),
+          decode: () => ContentSlice.closed([createParagraph('second')]),
         },
       }),
     });
@@ -444,15 +401,14 @@ describe('product formats', () => {
       dataTransferFormats: defineTransferFormats({
         'application/x-split': {
           scope: 'document',
-          decode: () =>
-            decodeSuccess(ContentSlice.closed([createParagraph('decode')])),
+          decode: () => ContentSlice.closed([createParagraph('decode')]),
         },
       }),
     }).extend(() => ({
       dataTransferFormats: defineTransferFormats({
         'application/x-split': {
           scope: 'document',
-          encode: () => encodeSuccess('encode'),
+          encode: () => 'encode',
         },
       }),
     }));
@@ -588,9 +544,7 @@ describe('product formats', () => {
         'application/x-array': {
           scope: 'document',
           decode: ({ data }) =>
-            decodeSuccess(
-              ContentSlice.closed([createParagraph(`fallback:${data}`)])
-            ),
+            ContentSlice.closed([createParagraph(`fallback:${data}`)]),
         },
       }),
     });
@@ -640,9 +594,7 @@ describe('product formats', () => {
               decode: () => {
                 count('queryThrow.decode');
 
-                return decodeSuccess(
-                  ContentSlice.closed([createParagraph('unreachable')])
-                );
+                return ContentSlice.closed([createParagraph('unreachable')]);
               },
             },
           }),
@@ -666,9 +618,7 @@ describe('product formats', () => {
               decode: () => {
                 count('queryFalse.decode');
 
-                return decodeSuccess(
-                  ContentSlice.closed([createParagraph('unreachable')])
-                );
+                return ContentSlice.closed([createParagraph('unreachable')]);
               },
             },
           }),
@@ -725,9 +675,7 @@ describe('product formats', () => {
             decode: ({ data }) => {
               count('decodeFallback');
 
-              return decodeSuccess(
-                ContentSlice.closed([createParagraph(`fallback:${data}`)])
-              );
+              return ContentSlice.closed([createParagraph(`fallback:${data}`)]);
             },
           },
         }),
@@ -783,7 +731,7 @@ describe('product formats', () => {
             encode: () => {
               count('encodeFallback');
 
-              return encodeSuccess('encoded:fallback');
+              return 'encoded:fallback';
             },
           },
         }),
@@ -854,15 +802,13 @@ describe('product formats', () => {
             calls.decode += 1;
             decodedSlice = ContentSlice.fromJSON(JSON.parse(data));
 
-            return decodeSuccess(
-              decodedSlice as ReturnType<typeof ContentSlice.fromJSON>
-            );
+            return decodedSlice as ReturnType<typeof ContentSlice.fromJSON>;
           },
           encode: ({ slice }) => {
             calls.encode += 1;
             encodedSlice = slice;
 
-            return encodeSuccess(JSON.stringify(slice));
+            return JSON.stringify(slice);
           },
         },
       }),
@@ -906,9 +852,9 @@ describe('product formats', () => {
 
               decodedSlice = decoded;
 
-              return decodeSuccess(decoded);
+              return decoded;
             },
-            encode: ({ slice }) => encodeSuccess(JSON.stringify(slice)),
+            encode: ({ slice }) => JSON.stringify(slice),
           },
         }),
       });

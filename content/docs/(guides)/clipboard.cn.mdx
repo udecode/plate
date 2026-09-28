@@ -75,50 +75,145 @@ Plate 写入 plain text、HTML 与 internal Plate fragment payload。Fragment MI
 使用 `application/${clipboardFormatKey}`，避免配置不同的 editor 盲目导入彼此
 的 internal JSON。
 
-## DataTransferFormat
+## 自定义 DataTransfer format
 
-通过 plugin 的 `dataTransferFormats` array 注册 `DataTransferFormat` declaration。
-每条 declaration 有一个 `mimeType`，并可提供 `accept`、`decode`、`encode`、
-`priority` 与 document `scope`。Plate 根据 owner plugin 与 schema 生成稳定 key
-和 claim。
+`DataTransferFormat` 把一个 browser MIME type 作为完整 payload 读取或写入。App
+在 clipboard 中放入自己的 type，或某个 source 需要在 Plate HTML parser 之前清理
+时，注册一个 format。单个 node 与 mark 的 mapping 属于 plugin 的 `formats`；
+参阅 [Serializing](/docs/serializing)。
 
 ```ts
-const ProductTransferPlugin = definePlugin('productTransfer', {
+import { ContentSlice, NodeApi, definePlugin } from 'platejs';
+
+const MAX_NOTES_LENGTH = 1_000_000;
+
+const readNotes = (data: string): string[] | null => {
+  try {
+    const payload = JSON.parse(data);
+
+    if (payload?.version !== 1 || !Array.isArray(payload.notes)) return null;
+
+    return payload.notes.filter((note: unknown) => typeof note === 'string');
+  } catch {
+    return null;
+  }
+};
+
+export const NotesTransferPlugin = definePlugin('notesTransfer', {
   dataTransferFormats: [
     {
-      mimeType: 'application/x-product+json',
+      mimeType: 'application/x-acme-notes+json',
+      // priority 越高越先运行；排在通用 text/plain reader 之前。
+      priority: 50,
+      // 该 plugin 不拥有 node type，因此 claim 整个 schema。
       scope: 'document',
-      accept: ({ snapshot }) =>
-        snapshot.types.includes('application/x-product+json'),
-      decode: ({ data }) => decodeProductSlice(data),
-      encode: ({ slice }) => encodeProductSlice(slice),
+      accept: ({ data }) => data.length <= MAX_NOTES_LENGTH,
+      decode: ({ data }) => {
+        const notes = readNotes(data);
+
+        if (!notes) return null;
+
+        return ContentSlice.closed(
+          notes.map((text) => ({ type: 'paragraph', children: [{ text }] }))
+        );
+      },
+      encode: ({ slice }) => {
+        const notes = slice.content
+          .map((node) => NodeApi.string(node))
+          .filter(Boolean);
+
+        if (notes.length === 0) return null;
+
+        return JSON.stringify({ version: 1, notes });
+      },
     },
   ],
 });
 ```
 
-`accept: false`，或 `decode`/`encode` 返回 `null`，表示 mismatch，不创建
-attempt。Expected source failure 返回 `{ ok: false, diagnostics }`，然后 Plate
-尝试下一个独立 format。Decoded slice 无法 fit 时不修改 transaction，并继续
-fallback。
+每条 declaration 有一个 `mimeType`，并至少提供 `decode` 或 `encode` 之一。
 
-Callback exception 会被隔离并报告为 `data-transfer-format` lifecycle error，
-不会阻止后续 format。配置 `DOMPlugin` 可以在 public boundary settle 后观察
-rejected、unfit、selected、written 与 unhandled outcome：
+| 字段 | Contract |
+| --- | --- |
+| `mimeType` | 从 `DataTransfer` 读取与写入的 MIME type。每个 plugin 只声明一次，`decode` 与 `encode` 放在同一个 object 中。 |
+| `accept(context)` | 可选。返回 `false` 时，在 `decode` 运行前跳过该 format。 |
+| `decode(context)` | 返回 `ContentSlice`，或返回 `null` 让下一个 format 读取 payload。 |
+| `encode(context)` | 返回要写入的 string，或返回 `null` 把该 MIME type 留给下一个 encoder。 |
+| `priority` | 可选，默认 `0`。数值越高越先运行。 |
+| `scope` | `'document'` claim 整个 schema。省略时，format claim plugin 自己的 element type 与 property，因此 plugin 必须拥有其一。 |
+
+`accept` 与 `decode` 接收 `{ data, mimeType, snapshot, state }`：该 MIME type
+的 payload、transfer 上所有 type 与 file 的只读 snapshot，以及只读 editor
+state。`encode` 接收 `{ mimeType, slice, state }`。两者还会获得 plugin 的
+`name`、`pluginState`、`registry` 与 `schema`。Callback 不接收 editor、live
+`DataTransfer` 或 transaction。Plate 以 `plate:<plugin>:<mimeType>` 作为每个
+format 的 key。
+
+### `null`、`false` 与 throw
+
+- `accept` 返回 `false`：该 format 不适用于当前情况。用于 parse 前的低成本检查。
+- `decode` 返回 `null`：payload 来自其他来源、格式错误或为空。Clipboard data
+  不可信，遇到错误输入时返回 `null`，不要 throw。
+- `encode` 返回 `null`：该 slice 对这个 MIME type 没有可写内容。同一 type 的
+  下一个 encoder 仍可写入。
+- Throw 表示 bug。Plate 捕获异常并发送到 editor 的 `lifecycleErrorSink`，然后
+  继续下一个 format，因此出错的 format 不会阻止 paste 或 copy。`decode` 返回
+  无效的 `ContentSlice`，或 `encode` 返回既非 string 也非 `null` 的值时，按同样
+  方式报告。
 
 ```ts
-DOMPlugin.configure({
-  initialState: {
-    onDataTransferReport: (report) => {
-      // 处理一次已 settle 的 transfer report。
-    },
+const editor = createEditor({
+  plugins: [NotesTransferPlugin],
+  lifecycleErrorSink: (error) => {
+    if ('source' in error && error.source === 'data-transfer-format') {
+      reportBug(error.cause, { key: error.key, phase: error.phase });
+    }
   },
 });
 ```
 
-Feature 的 HTML、Markdown 与 structural plain-text node mapping 属于
-`formats`/`defineFormats`。完整 `text/html`、`text/markdown` 或其他 MIME payload
-policy 属于 `DataTransferFormat`。
+Format error 带有 `key`、`mimeType`、`pluginName` 与 `phase`（`'accept'`、
+`'decode'` 或 `'encode'`）。未配置 sink 时，Plate 通过 `console.error` 记录。
+
+### Paste 顺序
+
+Paste 依次尝试以下步骤，直到某一步插入内容：
+
+1. `domCommands.insertData` interceptor。
+2. Plate 自身的 fragment payload。
+3. MIME type 出现在 transfer 上的已声明 format，先按 `priority` 从高到低，再按
+   plugin name 排序。
+4. Plate 的 HTML format。
+5. Plain text。
+
+Plate 在实际 insertion range 处 fit 每个 decoded slice，并保留其 open edge 与
+detached root。无法 fit 的 slice 不写入任何内容，由下一个 format 继续尝试。
+Plain text 是最终 fallback。
+
+MIME type、方向与 priority 都相同的 format 必须 claim 互不重叠的 schema。Claim
+重叠会在创建 editor 时抛出，因此同一 MIME type 的两个 document-scope format
+需要不同的 priority。
+
+### Copy 顺序
+
+Copy 按相同顺序运行 encoder，每个 MIME type 只写入一次：第一个返回 string 的
+encoder 生效。因此已声明的 `text/html` 或 `text/plain` encoder 会替代 Plate
+内置 encoder，返回 `null` 则回退到内置 encoder。`platejs/dom` 的
+`writeDataTransferFragment(editor, data, slice)` 把 encoder 运行到任意
+`setData` target，并返回已写入的 MIME type。
+
+### HTML paste
+
+Plate 的 HTML format 按 `parseHtmlSlice` 加 `lossPolicy: 'allow'` 的方式解析。
+任何 mapping 运行前，它会移除 comment、metadata、script、style sheet、embedded
+object、SVG 与 MathML、event handler、`srcdoc` 与 `srcset`、script 与被阻止的
+`data:` URL，以及会加载资源的 `style` attribute。没有已安装 mapping 的 embedded
+media 只保留 fallback content。没有可插入内容时，HTML format 返回 `null`，由
+plain text 处理 paste。
+
+Plate 不报告由哪个 format 处理 paste，也不报告遗漏了哪些内容。某个 source 丢失
+内容时，添加缺失的 mapping：在所属 plugin 的 `formats` 中添加 HTML rule，或为该
+MIME type 添加 format。
 
 ## Fragment 与 slice replacement
 

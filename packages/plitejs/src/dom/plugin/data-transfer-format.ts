@@ -33,7 +33,6 @@ import {
 } from '../../core/plugin-registry';
 import {
   applyTransactionSpec,
-  attachTransactionSpecAfterCommit,
   getActiveEditorTransaction,
   getEditorStateView,
   toEditorCoreStateView,
@@ -51,92 +50,7 @@ const DATA_TRANSFER_FORMATS = definePluginPoint<
 >('editor-dom:data-transfer-format');
 const NEWLINE_SPLIT_RE = /\r\n|\r|\n/;
 
-export type DataTransferFormatPhase = 'accept' | 'decode' | 'encode' | 'notify';
-
-export type DataTransferDiagnostic =
-  | Readonly<{
-      code: string;
-      message: string;
-      severity: 'error';
-    }>
-  | Readonly<{
-      code: string;
-      message: string;
-      severity: 'warning';
-    }>;
-
-export type DataTransferWarningDiagnostic = Extract<
-  DataTransferDiagnostic,
-  { severity: 'warning' }
->;
-
-export type DataTransferErrorDiagnostic = Extract<
-  DataTransferDiagnostic,
-  { severity: 'error' }
->;
-
-export type DataTransferDecodeResult<V extends Value = Value> =
-  | Readonly<{
-      diagnostics: readonly DataTransferWarningDiagnostic[];
-      ok: true;
-      slice: ContentSlice<V>;
-    }>
-  | Readonly<{
-      diagnostics: readonly [
-        DataTransferErrorDiagnostic,
-        ...DataTransferDiagnostic[],
-      ];
-      ok: false;
-    }>;
-
-export type DataTransferEncodeResult =
-  | Readonly<{
-      data: string;
-      diagnostics: readonly DataTransferWarningDiagnostic[];
-      ok: true;
-    }>
-  | Readonly<{
-      diagnostics: readonly [
-        DataTransferErrorDiagnostic,
-        ...DataTransferDiagnostic[],
-      ];
-      ok: false;
-    }>;
-
-export type DataTransferAttempt = Readonly<{
-  diagnostics: readonly DataTransferDiagnostic[];
-  key: string;
-  mimeType: string;
-  outcome: 'rejected' | 'selected' | 'unfit' | 'written';
-  phase: 'decode' | 'encode';
-}>;
-
-export type DataTransferReport = Readonly<{
-  attempts: readonly DataTransferAttempt[];
-  outcome: 'inserted' | 'unhandled' | 'written';
-}>;
-
-type DataTransferReportSink = (report: DataTransferReport) => void;
-
-const DATA_TRANSFER_REPORT_SINKS = new WeakMap<
-  object,
-  DataTransferReportSink
->();
-const ACTIVE_DATA_TRANSFER_ATTEMPTS = new WeakMap<
-  object,
-  DataTransferAttempt[][]
->();
-
-export const getDataTransferReportSink = (editor: object) =>
-  DATA_TRANSFER_REPORT_SINKS.get(editor);
-
-export const setDataTransferReportSink = (
-  editor: object,
-  sink: DataTransferReportSink | undefined
-) => {
-  if (sink) DATA_TRANSFER_REPORT_SINKS.set(editor, sink);
-  else DATA_TRANSFER_REPORT_SINKS.delete(editor);
-};
+export type DataTransferFormatPhase = 'accept' | 'decode' | 'encode';
 
 const reportDataTransferFormatError = <V extends Value>(
   editor: Editor<V, any>,
@@ -156,141 +70,6 @@ const reportDataTransferFormatError = <V extends Value>(
     })
   );
 };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const freezeDataTransferDiagnostics = (
-  value: unknown,
-  expected: 'failure' | 'success'
-): readonly DataTransferDiagnostic[] => {
-  if (!Array.isArray(value)) {
-    throw new TypeError('DataTransfer result diagnostics must be an array.');
-  }
-
-  const diagnostics = value.map((diagnostic) => {
-    if (
-      !isRecord(diagnostic) ||
-      typeof diagnostic.code !== 'string' ||
-      diagnostic.code.length === 0 ||
-      typeof diagnostic.message !== 'string' ||
-      (diagnostic.severity !== 'error' && diagnostic.severity !== 'warning')
-    ) {
-      throw new TypeError('DataTransfer diagnostics must be valid objects.');
-    }
-    if (expected === 'success' && diagnostic.severity !== 'warning') {
-      throw new TypeError(
-        'Successful DataTransfer results may contain warnings only.'
-      );
-    }
-
-    return Object.freeze({
-      code: diagnostic.code,
-      message: diagnostic.message,
-      severity: diagnostic.severity,
-    }) as DataTransferDiagnostic;
-  });
-
-  if (expected === 'success') return Object.freeze(diagnostics);
-
-  const errors = diagnostics.filter(
-    (diagnostic) => diagnostic.severity === 'error'
-  );
-
-  if (errors.length === 0) {
-    throw new TypeError(
-      'Failed DataTransfer results must contain at least one error.'
-    );
-  }
-
-  return Object.freeze([
-    ...errors,
-    ...diagnostics.filter((diagnostic) => diagnostic.severity === 'warning'),
-  ]);
-};
-
-const createDataTransferAttempt = <V extends Value>(
-  registration: DataTransferFormatRegistration<V>,
-  phase: DataTransferAttempt['phase'],
-  outcome: DataTransferAttempt['outcome'],
-  diagnostics: readonly DataTransferDiagnostic[]
-): DataTransferAttempt =>
-  Object.freeze({
-    diagnostics,
-    key: registration.format.key,
-    mimeType: registration.format.mimeType,
-    outcome,
-    phase,
-  });
-
-const getActiveDataTransferAttempts = (editor: object) =>
-  ACTIVE_DATA_TRANSFER_ATTEMPTS.get(editor)?.at(-1);
-
-const notifyDataTransferReport = <V extends Value>(
-  editor: Editor<V, any>,
-  outcome: DataTransferReport['outcome'],
-  attempts: readonly DataTransferAttempt[]
-) => {
-  const sink = getDataTransferReportSink(editor);
-
-  if (!sink) return;
-
-  const report = Object.freeze({
-    attempts: Object.freeze([...attempts]),
-    outcome,
-  }) satisfies DataTransferReport;
-
-  try {
-    sink(report);
-  } catch (error) {
-    reportEditorLifecycleError(
-      Object.freeze({
-        cause: error,
-        editor,
-        pluginName: 'dom',
-        mimeType: '*',
-        key: 'dom:onDataTransferReport',
-        phase: 'notify' as const,
-        source: 'data-transfer-format' as const,
-      })
-    );
-  }
-};
-
-export const withDataTransferReportBoundary = <V extends Value, T>(
-  editor: Editor<V, any>,
-  run: () => T
-): T => {
-  const stack = ACTIVE_DATA_TRANSFER_ATTEMPTS.get(editor) ?? [];
-
-  if (stack.length > 0) return run();
-
-  const attempts: DataTransferAttempt[] = [];
-
-  stack.push(attempts);
-  ACTIVE_DATA_TRANSFER_ATTEMPTS.set(editor, stack);
-  try {
-    const result = run();
-
-    if (result === false) {
-      notifyDataTransferReport(editor, 'unhandled', attempts);
-    }
-
-    return result;
-  } finally {
-    stack.pop();
-    if (stack.length === 0) ACTIVE_DATA_TRANSFER_ATTEMPTS.delete(editor);
-  }
-};
-
-export const attachDataTransferInsertedReport = <V extends Value>(
-  editor: Editor<V, any>,
-  spec: import('../..').TransactionSpec,
-  attempts = getActiveDataTransferAttempts(editor) ?? []
-) =>
-  attachTransactionSpecAfterCommit(spec, () => {
-    notifyDataTransferReport(editor, 'inserted', attempts);
-  });
 
 /** Read-only host data exposed to pure format callbacks. */
 export type DataTransferSnapshot = Readonly<{
@@ -333,22 +112,21 @@ export type DataTransferSchemaClaim =
   | Readonly<{ kind: 'schema' }>;
 
 export type DataTransferFormat<V extends Value = Value> = Readonly<{
-  /** Stable registration identity used for diagnostics and conflict checks. */
+  /** Stable registration identity used for lifecycle errors and conflicts. */
   key: string;
   /** MIME type read from and written to the host data container. */
   mimeType: string;
-  /** Parse an intact slice. Contextual schema fitting occurs at insertion. */
-  decode?: (
-    context: DataTransferDecodeContext<V>
-  ) => DataTransferDecodeResult<V> | null;
-  /** Return false to skip parsing this payload without reporting an error. */
+  /**
+   * Parse an intact slice, or return null to delegate to the next format.
+   * Contextual schema fitting occurs at insertion.
+   */
+  decode?: (context: DataTransferDecodeContext<V>) => ContentSlice<V> | null;
+  /** Return false to skip this payload before decoding. */
   accept?: (context: DataTransferDecodeContext<V>) => boolean;
   /** Schema resources owned by this format and checked atomically. */
   claims?: readonly DataTransferSchemaClaim[];
   /** Encode the supplied slice, or return null to delegate this mimeType. */
-  encode?: (
-    context: DataTransferEncodeContext<V>
-  ) => DataTransferEncodeResult | null;
+  encode?: (context: DataTransferEncodeContext<V>) => string | null;
 }>;
 
 const prepareDataTransferFormat = <V extends Value = Value>(
@@ -546,12 +324,8 @@ const createDefaultPlainTextDataTransferFormat = <V extends Value>(
 
         Object.freeze(content);
 
-        return Object.freeze({
-          diagnostics: Object.freeze([]),
-          ok: true as const,
-          slice: createDetachedContentSlice<V>(content, 0, 0, {
-            canonicalFor: state.schema,
-          }),
+        return createDetachedContentSlice<V>(content, 0, 0, {
+          canonicalFor: state.schema,
         });
       }
 
@@ -605,13 +379,7 @@ const createDefaultPlainTextDataTransferFormat = <V extends Value>(
             )
           : null;
 
-      if (inlineSlice) {
-        return Object.freeze({
-          diagnostics: Object.freeze([]),
-          ok: true as const,
-          slice: inlineSlice,
-        });
-      }
+      if (inlineSlice) return inlineSlice;
 
       const content = createPlainTextFallbackBlocks(
         state,
@@ -624,12 +392,8 @@ const createDefaultPlainTextDataTransferFormat = <V extends Value>(
 
       Object.freeze(content);
 
-      return Object.freeze({
-        diagnostics: Object.freeze([]),
-        ok: true as const,
-        slice: createDetachedContentSlice<V>(content, 1, 1, {
-          canonicalFor: state.schema,
-        }),
+      return createDetachedContentSlice<V>(content, 1, 1, {
+        canonicalFor: state.schema,
       });
     },
   });
@@ -972,7 +736,6 @@ export const createDataTransferTransactionSpec = <V extends Value>(
   }>
 ) => {
   const formats = getDataTransferFormats(editor);
-  const attempts = getActiveDataTransferAttempts(editor) ?? [];
   const snapshot = createDataTransferSnapshot(
     dataTransfer,
     formats.map(({ format }) => format.mimeType)
@@ -1009,52 +772,20 @@ export const createDataTransferTransactionSpec = <V extends Value>(
       }
     }
 
-    let decoded: Readonly<{
-      diagnostics: readonly DataTransferDiagnostic[];
-      slice: ContentSlice<V>;
-    }> | null;
+    let slice: ContentSlice<V> | null;
 
     try {
-      const result = format.decode(context);
+      const decoded = format.decode(context);
 
-      if (result === null) {
-        decoded = null;
-      } else if (!isRecord(result) || typeof result.ok !== 'boolean') {
-        throw new TypeError(
-          `DataTransfer format "${format.key}" returned an invalid decode result.`
-        );
-      } else if (!result.ok) {
-        const diagnostics = freezeDataTransferDiagnostics(
-          result.diagnostics,
-          'failure'
-        );
-
-        attempts.push(
-          createDataTransferAttempt(
-            registration,
-            'decode',
-            'rejected',
-            diagnostics
-          )
-        );
-        decoded = null;
-      } else {
-        decoded = Object.freeze({
-          diagnostics: freezeDataTransferDiagnostics(
-            result.diagnostics,
-            'success'
-          ),
-          slice: ContentSliceApi.fromJSON<V>(result.slice),
-        });
-      }
+      slice = decoded ? ContentSliceApi.fromJSON<V>(decoded) : null;
     } catch (error) {
       reportDataTransferFormatError(editor, registration, 'decode', error);
       continue;
     }
 
-    if (!decoded) continue;
+    if (!slice) continue;
 
-    const input = { slice: decoded.slice };
+    const input = { slice };
     const result = options?.state
       ? evaluateCommandWithState(
           editor,
@@ -1064,34 +795,9 @@ export const createDataTransferTransactionSpec = <V extends Value>(
         ).result
       : evaluateCommand(editor, editorCommands.replaceSlice, input).result;
 
-    if (result === false) {
-      attempts.push(
-        createDataTransferAttempt(
-          registration,
-          'decode',
-          'unfit',
-          Object.freeze([
-            Object.freeze({
-              code: 'data-transfer-unfit',
-              message: `Decoded ${format.mimeType} content does not fit at the target selection.`,
-              severity: 'error' as const,
-            }),
-          ])
-        )
-      );
-      continue;
-    }
+    if (result === false) continue;
 
-    attempts.push(
-      createDataTransferAttempt(
-        registration,
-        'decode',
-        'selected',
-        decoded.diagnostics
-      )
-    );
-
-    return attachDataTransferInsertedReport(editor, result, attempts);
+    return result;
   }
 
   return false;
@@ -1101,27 +807,22 @@ export const insertDataTransfer = <V extends Value>(
   editor: Editor<V, any>,
   dataTransfer: DataTransfer,
   options?: Readonly<{ mimeType?: string }>
-) =>
-  withDataTransferReportBoundary(editor, () => {
-    const spec = createDataTransferTransactionSpec(
-      editor,
-      dataTransfer,
-      options
-    );
+) => {
+  const spec = createDataTransferTransactionSpec(editor, dataTransfer, options);
 
-    if (spec === false) return false;
-    const transaction = getActiveEditorTransaction(editor);
+  if (spec === false) return false;
+  const transaction = getActiveEditorTransaction(editor);
 
-    if (transaction) {
+  if (transaction) {
+    applyTransactionSpec(editor, spec);
+  } else {
+    editor.update({ tags: 'paste' }, () => {
       applyTransactionSpec(editor, spec);
-    } else {
-      editor.update({ tags: 'paste' }, () => {
-        applyTransactionSpec(editor, spec);
-      });
-    }
+    });
+  }
 
-    return true;
-  });
+  return true;
+};
 
 /** Serialize a model fragment through configuration-ordered formats. */
 export const writeDataTransferFragment = <V extends Value>(
@@ -1130,7 +831,6 @@ export const writeDataTransferFragment = <V extends Value>(
   slice: ContentSlice<V>,
   options: Readonly<{ excludeMimeTypes?: readonly string[] }> = {}
 ) => {
-  const attempts: DataTransferAttempt[] = [];
   const written = new Set<string>();
   const excluded = options.excludeMimeTypes;
   const sourceSlice = ContentSliceApi.fromJSON<V>(slice);
@@ -1147,13 +847,10 @@ export const writeDataTransferFragment = <V extends Value>(
       continue;
     }
 
-    let encoded: Readonly<{
-      data: string;
-      diagnostics: readonly DataTransferDiagnostic[];
-    }> | null;
+    let encoded: string | null;
 
     try {
-      const result = format.encode(
+      encoded = format.encode(
         Object.freeze({
           mimeType: format.mimeType,
           slice: sourceSlice,
@@ -1161,60 +858,21 @@ export const writeDataTransferFragment = <V extends Value>(
         })
       );
 
-      if (result === null) {
-        encoded = null;
-      } else if (!isRecord(result) || typeof result.ok !== 'boolean') {
-        throw new TypeError(
-          `DataTransfer format "${format.key}" returned an invalid encode result.`
-        );
-      } else if (!result.ok) {
-        const diagnostics = freezeDataTransferDiagnostics(
-          result.diagnostics,
-          'failure'
-        );
-
-        attempts.push(
-          createDataTransferAttempt(
-            registration,
-            'encode',
-            'rejected',
-            diagnostics
-          )
-        );
-        encoded = null;
-      } else if (typeof result.data !== 'string') {
+      if (encoded !== null && typeof encoded !== 'string') {
         throw new TypeError(
           `DataTransfer format "${format.key}" returned non-string encoded data.`
         );
-      } else {
-        encoded = Object.freeze({
-          data: result.data,
-          diagnostics: freezeDataTransferDiagnostics(
-            result.diagnostics,
-            'success'
-          ),
-        });
       }
     } catch (error) {
       reportDataTransferFormatError(editor, registration, 'encode', error);
       continue;
     }
 
-    if (!encoded) continue;
+    if (encoded === null) continue;
 
-    data.setData(format.mimeType, encoded.data);
+    data.setData(format.mimeType, encoded);
     written.add(format.mimeType);
-    attempts.push(
-      createDataTransferAttempt(
-        registration,
-        'encode',
-        'written',
-        encoded.diagnostics
-      )
-    );
   }
-
-  notifyDataTransferReport(editor, 'written', attempts);
 
   return Object.freeze([...written]);
 };

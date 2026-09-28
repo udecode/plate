@@ -98,12 +98,13 @@ export type HtmlDiagnostic =
         repair: HtmlSchemaRepairCode;
       }>)
   | (HtmlDiagnosticContext &
-      Readonly<{
+      HtmlPolicyDiagnostic<{
         action: 'removed';
         code: 'html-unsafe-content';
+        /** Whether the mandatory removal also dropped visible content. */
+        impact: 'lossless' | 'lossy';
         kind: 'attribute' | 'element' | 'style' | 'url';
         message: string;
-        severity: 'warning';
       }>)
   | (HtmlDiagnosticContext &
       HtmlPolicyDiagnostic<{

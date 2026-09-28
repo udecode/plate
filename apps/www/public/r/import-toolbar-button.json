@@ -12,7 +12,6 @@
     "diff-match-patch-ts@^0.6.0",
     "jszip@^3.10.1",
     "lucide-react",
-    "remark-mdx@^3.1.0",
     "remark-parse@^11.0.0",
     "remark-stringify@^11.0.0",
     "unified@^11.0.5"

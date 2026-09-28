@@ -21,6 +21,7 @@ import {
   evaluateCommandWithState,
   getActiveCommandEditor,
 } from '../../core/command-registry';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getInstalledPlugin } from '../../core/plugin';
 import {
   getSelection as getEditorSelection,
@@ -34,10 +35,8 @@ import {
   isDOMText,
 } from '../utils/dom';
 import {
-  attachDataTransferInsertedReport,
   createDataTransferTransactionSpec,
   insertDataTransfer,
-  withDataTransferReportBoundary,
   writeDataTransferFragment,
 } from './data-transfer-format';
 import type { DOMCoverageBoundary, DOMCoverageSession } from './dom-coverage';
@@ -88,20 +87,26 @@ const stripRenderOnlyLeafWrappers = (root: ParentNode) => {
   });
 };
 
+// Mounted views share the clipboard key of the runtime owner that activated
+// the DOM plugin.
 export const setDOMClipboardFormatKey = (
-  editor: object,
+  editor: Editor<any, any>,
   clipboardFormatKey: string
 ) => {
-  EDITOR_TO_CLIPBOARD_FORMAT_KEY.set(editor, clipboardFormatKey);
+  EDITOR_TO_CLIPBOARD_FORMAT_KEY.set(
+    getEditorRuntimeOwner(editor),
+    clipboardFormatKey
+  );
 };
 
-export const clearDOMClipboardFormatKey = (editor: object) => {
-  EDITOR_TO_CLIPBOARD_FORMAT_KEY.delete(editor);
+export const clearDOMClipboardFormatKey = (editor: Editor<any, any>) => {
+  EDITOR_TO_CLIPBOARD_FORMAT_KEY.delete(getEditorRuntimeOwner(editor));
 };
 
 /** Read the configured MIME suffix used for exact Plite clipboard payloads. */
-export const getDOMClipboardFormatKey = (editor: object) =>
-  EDITOR_TO_CLIPBOARD_FORMAT_KEY.get(editor) ?? DEFAULT_CLIPBOARD_FORMAT_KEY;
+export const getDOMClipboardFormatKey = (editor: Editor<any, any>) =>
+  EDITOR_TO_CLIPBOARD_FORMAT_KEY.get(getEditorRuntimeOwner(editor)) ??
+  DEFAULT_CLIPBOARD_FORMAT_KEY;
 
 const escapeHtmlText = (text: string) =>
   text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -680,10 +685,7 @@ export const writeDOMRangeData = <V extends Value>(
 export const insertDOMData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
-): boolean =>
-  withDataTransferReportBoundary(editor, () =>
-    dispatchCommand(editor, domCommands.insertData, data)
-  );
+): boolean => dispatchCommand(editor, domCommands.insertData, data);
 
 /** Interpret DOM data into one unpublished transaction spec. */
 export const createDOMDataTransactionSpec = <V extends Value>(
@@ -701,9 +703,7 @@ export const createDOMDataTransactionSpec = <V extends Value>(
       { slice }
     );
 
-    if (result !== false) {
-      return attachDataTransferInsertedReport(editor, result);
-    }
+    if (result !== false) return result;
   }
 
   return createDataTransferTransactionSpec(editor, data, { state });

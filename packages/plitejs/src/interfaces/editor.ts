@@ -2583,7 +2583,7 @@ export type EditorLifecycleError<TEditor = Editor> =
       pluginName: string;
       mimeType: string;
       key: string;
-      phase: 'accept' | 'decode' | 'encode' | 'notify';
+      phase: 'accept' | 'decode' | 'encode';
       source: 'data-transfer-format';
     }>;
 

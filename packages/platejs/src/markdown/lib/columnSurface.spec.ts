@@ -52,7 +52,14 @@ describe('column package surfaces', () => {
 
     const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
-    expect(markdown).toBe(input);
-    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
+    expect(markdown).toBe(`<columnGroup>
+
+<column width="50%">Left column</column>
+
+<column width="50%">Right column</column>
+
+</columnGroup>
+`);
+    expect(parseTestMarkdown(editor, markdown)).toEqual(value);
   });
 });

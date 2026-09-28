@@ -57,243 +57,24 @@ describe('convertNodesSerialize', () => {
     type: 'thematicBreak',
   } satisfies MdRootContent;
 
-  const mockBoldNodeMd = {
-    children: [
-      { children: [{ type: 'text', value: 'Hello' }], type: 'strong' },
-      { type: 'text', value: 'World' },
-    ],
-    type: 'paragraph',
-  } satisfies MdRootContent;
-
-  const mockNodesMd: MdRootContent[] = [
-    mockParagraphNodeMd,
-    mockHeadingNodeMd,
-    mockThematicBreakNodeMd,
-    mockBoldNodeMd,
-  ];
-
   const baseOptions: SerializeMdContext = getTestSerializeOptions(editor);
 
   const convertNodesSerialize = (
     nodes: Parameters<typeof convertNodesSerializeWithContext>[0],
-    options: SerializeMdContext,
-    isBlock?: boolean
+    options: SerializeMdContext
   ) =>
     convertNodesSerializeWithContext(
       nodes,
-      withTestSerializeDocument(options, nodes),
-      isBlock
+      withTestSerializeDocument(options, nodes)
     );
   const buildMdastNode = (
     node: Parameters<typeof buildMdastNodeWithContext>[0],
-    options: SerializeMdContext,
-    isBlock?: boolean
+    options: SerializeMdContext
   ) =>
-    buildMdastNodeWithContext(
-      node,
-      withTestSerializeDocument(options, [node]),
-      isBlock
-    );
+    buildMdastNodeWithContext(node, withTestSerializeDocument(options, [node]));
 
   const expectMdNodes = (actual: MdRootContent[], expected: MdRootContent[]) =>
     expect(actual).toEqual(expected);
-
-  describe('allowedNodes option', () => {
-    it('throws when allowedNodes and disallowedNodes are both configured', () => {
-      expect(() =>
-        convertNodesSerialize(mockNodesSlate, {
-          ...baseOptions,
-          allowedNodes: ['heading'],
-          disallowedNodes: ['p'],
-        })
-      ).toThrow('Cannot combine allowedNodes with disallowedNodes');
-    });
-
-    it('only include nodes specified in allowedNodes', () => {
-      const options: SerializeMdContext = {
-        ...baseOptions,
-        allowedNodes: ['heading', 'text'],
-      };
-
-      const result = convertNodesSerialize(mockNodesSlate, options);
-
-      expect(result).toHaveLength(1);
-      expectMdNodes(result, [mockHeadingNodeMd]);
-    });
-
-    it('include all nodes when allowedNodes is null or undefined', () => {
-      const options: SerializeMdContext = {
-        ...baseOptions,
-        allowedNodes: null,
-      };
-
-      const result = convertNodesSerialize(mockNodesSlate, options);
-      expect(result).toHaveLength(mockNodesMd.length);
-      expectMdNodes(result, mockNodesMd);
-    });
-
-    it('include no nodes when allowedNodes is empty', () => {
-      const options: SerializeMdContext = {
-        ...baseOptions,
-        allowedNodes: [],
-      };
-
-      const result = convertNodesSerialize(mockNodesSlate, options);
-      expect(result).toHaveLength(0);
-    });
-
-    it('drop truthy text marks that are not in allowedNodes even when the parent block is allowed', () => {
-      const options: SerializeMdContext = {
-        ...baseOptions,
-        allowedNodes: ['paragraph'],
-      };
-
-      const result = convertNodesSerialize([mockBoldNodeSlate], options);
-
-      expectMdNodes(result, [
-        {
-          children: [{ type: 'text', value: 'World' }],
-          type: 'paragraph',
-        },
-      ]);
-    });
-  });
-
-  describe('withBlockId option', () => {
-    it('wraps top-level block nodes with their id metadata', () => {
-      const result = convertNodesSerialize(
-        [
-          {
-            children: [{ text: 'Hello' }],
-            id: 'block-1',
-            type: 'paragraph',
-          },
-        ],
-        {
-          ...baseOptions,
-          blockId: (node) =>
-            typeof node.id === 'string' ? node.id : undefined,
-          withBlockId: true,
-        },
-        true
-      );
-
-      expectMdNodes(result, [
-        {
-          attributes: [
-            {
-              name: 'id',
-              type: 'mdxJsxAttribute',
-              value: 'block-1',
-            },
-          ],
-          children: [
-            {
-              children: [{ type: 'text', value: 'Hello' }],
-              type: 'paragraph',
-            },
-          ],
-          data: {
-            _mdxExplicitJsx: true,
-          },
-          name: 'block',
-          type: 'mdxJsxFlowElement',
-        },
-      ]);
-    });
-
-    it('rejects a top-level block without an id', () => {
-      expect(() =>
-        convertNodesSerialize(
-          [{ children: [{ text: 'Hello' }], type: 'paragraph' }],
-          {
-            ...baseOptions,
-            blockId: () => undefined,
-            withBlockId: true,
-          },
-          true
-        )
-      ).toThrow('Element ID must be a non-empty string.');
-    });
-
-    it('does not wrap nested block ids when serializing child nodes', () => {
-      const result = convertNodesSerialize(
-        [
-          {
-            children: [
-              {
-                children: [{ text: 'Nested' }],
-                id: 'nested-1',
-                type: 'paragraph',
-              },
-            ],
-            id: 'quote-1',
-            type: 'blockquote',
-          },
-        ],
-        {
-          ...baseOptions,
-          blockId: (node) =>
-            typeof node.id === 'string' ? node.id : undefined,
-          withBlockId: true,
-        },
-        true
-      );
-
-      expectMdNodes(result, [
-        {
-          attributes: [
-            {
-              name: 'id',
-              type: 'mdxJsxAttribute',
-              value: 'quote-1',
-            },
-          ],
-          children: [
-            {
-              children: [
-                {
-                  children: [{ type: 'text', value: 'Nested' }],
-                  type: 'paragraph',
-                },
-              ],
-              type: 'blockquote',
-            },
-          ],
-          data: {
-            _mdxExplicitJsx: true,
-          },
-          name: 'block',
-          type: 'mdxJsxFlowElement',
-        },
-      ]);
-    });
-
-    it('wraps legacy inline blockquote children into a paragraph when serializing', () => {
-      const result = convertNodesSerialize(
-        [
-          {
-            children: [{ text: 'Legacy quote' }],
-            type: 'blockquote',
-          },
-        ],
-        baseOptions,
-        true
-      );
-
-      expectMdNodes(result, [
-        {
-          children: [
-            {
-              children: [{ type: 'text', value: 'Legacy quote' }],
-              type: 'paragraph',
-            },
-          ],
-          type: 'blockquote',
-        },
-      ]);
-    });
-  });
 
   describe('buildMdastNode', () => {
     it('normalizes heading plugin names before selecting the serializer', () => {
@@ -311,42 +92,6 @@ describe('convertNodesSerialize', () => {
         depth: 2,
         type: 'heading',
       });
-    });
-  });
-
-  describe('disallowedNodes option', () => {
-    it('exclude nodes specified in disallowedNodes', () => {
-      const options: SerializeMdContext = {
-        ...baseOptions,
-        disallowedNodes: ['heading'],
-      };
-
-      const result = convertNodesSerialize(mockNodesSlate, options);
-
-      expectMdNodes(result, [
-        mockParagraphNodeMd,
-        mockThematicBreakNodeMd,
-        mockBoldNodeMd,
-      ]);
-    });
-
-    it('exclude text marks specified in disallowedNodes', () => {
-      const options: SerializeMdContext = {
-        ...baseOptions,
-        disallowedNodes: ['bold'],
-      };
-
-      const result = convertNodesSerialize(mockNodesSlate, options);
-
-      expectMdNodes(result, [
-        mockParagraphNodeMd,
-        mockHeadingNodeMd,
-        mockThematicBreakNodeMd,
-        {
-          children: [{ type: 'text', value: 'World' }],
-          type: 'paragraph',
-        },
-      ]);
     });
   });
 
@@ -419,52 +164,6 @@ describe('convertNodesSerialize', () => {
             },
             { type: 'text', value: ' normal' },
           ],
-          type: 'paragraph',
-        },
-      ]);
-    });
-  });
-
-  describe('allowNode option', () => {
-    it('exclude nodes specified in allowNode', () => {
-      const options: SerializeMdContext = {
-        ...baseOptions,
-        allowNode: {
-          serialize(node) {
-            if (node.type === 'horizontalRule') return false;
-            return true;
-          },
-        },
-      };
-
-      const result = convertNodesSerialize(mockNodesSlate, options);
-
-      expectMdNodes(result, [
-        mockParagraphNodeMd,
-        mockHeadingNodeMd,
-        mockBoldNodeMd,
-      ]);
-    });
-
-    it('exclude text marks specified in allowNode', () => {
-      const options: SerializeMdContext = {
-        ...baseOptions,
-        allowNode: {
-          serialize(node) {
-            if ('bold' in node && node.bold) return false;
-            return true;
-          },
-        },
-      };
-
-      const result = convertNodesSerialize(mockNodesSlate, options);
-
-      expectMdNodes(result, [
-        mockParagraphNodeMd,
-        mockHeadingNodeMd,
-        mockThematicBreakNodeMd,
-        {
-          children: [{ type: 'text', value: 'World' }],
           type: 'paragraph',
         },
       ]);
@@ -549,46 +248,6 @@ describe('convertNodesSerialize', () => {
         { ordered: true, type: 'list' },
         { ordered: true, start: 7, type: 'list' },
       ]);
-    });
-
-    it('flattens block-id list fragments returned by the list serializer', () => {
-      const result = convertNodesSerialize(
-        [
-          {
-            children: [{ text: 'one' }],
-            id: 'block-a',
-            indent: 1,
-            listType: 'numbered',
-            type: 'paragraph',
-          },
-          {
-            children: [{ text: 'two' }],
-            id: 'block-b',
-            indent: 1,
-            listType: 'numbered',
-            type: 'paragraph',
-          },
-        ],
-        {
-          ...baseOptions,
-          blockId: (node) =>
-            typeof node.id === 'string' ? node.id : undefined,
-          withBlockId: true,
-        },
-        true
-      );
-
-      expect(result).toHaveLength(2);
-      expect(result[0]).toMatchObject({
-        attributes: [{ name: 'id', value: 'block-a' }],
-        children: [{ start: 1, type: 'list' }],
-        type: 'mdxJsxFlowElement',
-      });
-      expect(result[1]).toMatchObject({
-        attributes: [{ name: 'id', value: 'block-b' }],
-        children: [{ start: 2, type: 'list' }],
-        type: 'mdxJsxFlowElement',
-      });
     });
 
     it('split list blocks when listType changes', () => {

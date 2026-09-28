@@ -19,6 +19,12 @@ description: 在 Node.js 中安装并配置 Plate conversion 与 document workfl
 npm install platejs
 ```
 
+只有进程需要转换 Markdown 时才安装可选 Markdown peer：
+
+```bash
+npm install remark-parse remark-stringify unified
+```
+
 只有进程需要解析 HTML 时才安装可选 server DOM peer：
 
 ```bash

@@ -195,4 +195,19 @@ describe('paragraph breaks preservation', () => {
       'text with \u200B zero-width space'
     );
   });
+
+  it('writes a newline inside marked text as a hard break', () => {
+    expect(
+      serializeTestMarkdown(editor, {
+        document: {
+          children: [
+            {
+              children: [{ kbd: true, text: 'Ctrl\nC' }],
+              type: 'paragraph',
+            },
+          ],
+        } as never,
+      }).data
+    ).toBe('<kbd>Ctrl</kbd>\\\n<kbd>C</kbd>\n');
+  });
 });

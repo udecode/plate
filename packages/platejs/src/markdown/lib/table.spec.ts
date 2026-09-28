@@ -79,14 +79,12 @@ describe('markdown tables', () => {
     expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
-  it('keeps unescaped less-than text inside table cells when MDX fallback is used', () => {
+  it('keeps unescaped less-than text inside table cells', () => {
     const editor = createTableEditor();
     const input =
       '| Dimension | Basis |\n| --- | --- |\n| Volume trend | a<b |\n';
 
-    const value = parseTestMarkdown(editor, input, {
-      recovery: 'incomplete-stream',
-    });
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -131,7 +129,7 @@ describe('markdown tables', () => {
     ]);
   });
 
-  it('keeps blocks after a table cell that falls back from incomplete MDX', () => {
+  it('keeps blocks after a table cell with less-than text', () => {
     const editor = createTableEditor();
     const input = [
       '| Dimension | Basis |',
@@ -141,9 +139,7 @@ describe('markdown tables', () => {
       'After',
     ].join('\n');
 
-    const value = parseTestMarkdown(editor, input, {
-      recovery: 'incomplete-stream',
-    });
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -204,9 +200,7 @@ describe('markdown tables', () => {
       '| Later | Table |',
     ].join('\n');
 
-    const value = parseTestMarkdown(editor, input, {
-      recovery: 'incomplete-stream',
-    });
+    const value = parseTestMarkdown(editor, input);
 
     expect(value.children).toMatchObject([
       {
@@ -290,15 +284,17 @@ describe('markdown tables', () => {
     ]);
   });
 
-  it('keeps a parsed table when incomplete MDX starts after the table', () => {
+  it('keeps a parsed table when an unfinished tag streams in after it', () => {
     const editor = createTableEditor();
-    const input = ['| Content |', '| --- |', '| <u>ok</u> |', '', '<x>'].join(
-      '\n'
-    );
+    const input = [
+      '| Content |',
+      '| --- |',
+      '| <u>ok</u> |',
+      '',
+      '<callo',
+    ].join('\n');
 
-    const value = parseTestMarkdown(editor, input, {
-      recovery: 'incomplete-stream',
-    });
+    const value = parseTestMarkdown(editor, input, { partial: true });
 
     expect(value.children).toMatchObject([
       {
@@ -332,11 +328,8 @@ describe('markdown tables', () => {
         ],
         type: 'table',
       },
-      {
-        children: [{ text: '<x>' }],
-        type: 'paragraph',
-      },
     ]);
+    expect(value.children).toHaveLength(1);
   });
 
   it('serializes multi-paragraph table cells as html breaks inside one paragraph', () => {

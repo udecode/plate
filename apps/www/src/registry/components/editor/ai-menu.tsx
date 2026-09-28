@@ -487,17 +487,6 @@ Continue writing AFTER <Block> with ONLY ONE SENTENCE. DO NOT REPEAT THE TEXT.`,
       });
     },
   },
-  generateMdxSample: {
-    icon: <BookOpenCheck />,
-    label: 'Generate MDX sample',
-    value: 'generateMdxSample',
-    onSelect: ({ editor, input }) => {
-      editor.plugin(AIChatPlugin).api.submit(input, {
-        prompt: 'Generate a mdx sample',
-        toolName: 'generate',
-      });
-    },
-  },
   improveWriting: {
     icon: <Wand />,
     label: 'Improve writing',
@@ -613,7 +602,6 @@ const menuStateItems: Record<
     {
       items: [
         aiChatItems.comment,
-        aiChatItems.generateMdxSample,
         aiChatItems.generateMarkdownSample,
         aiChatItems.continueWrite,
         aiChatItems.summarize,

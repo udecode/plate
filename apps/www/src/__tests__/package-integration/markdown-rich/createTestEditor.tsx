@@ -47,21 +47,11 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { MarkdownPlugin } from '../../../../../../packages/platejs/src/markdown/lib/MarkdownPlugin';
-import {
-  remarkMdx,
-  remarkMention,
-} from '../../../../../../packages/platejs/src/markdown/lib/plugins';
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
     plainMarks: ['comment'],
-    remarkPlugins: [
-      remarkMath,
-      remarkGfm,
-      remarkEmoji,
-      remarkMdx,
-      remarkMention,
-    ],
+    remarkPlugins: [remarkMath, remarkGfm, remarkEmoji],
   },
 });
 

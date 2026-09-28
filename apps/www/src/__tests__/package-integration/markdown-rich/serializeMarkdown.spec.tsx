@@ -143,9 +143,14 @@ describe('editor.api.markdown.serialize', () => {
       const slateNodes = [
         {
           children: [
-            { text: 'Block quote' },
-            { text: ' with a new line ' },
-            { bold: true, code: true, italic: true, text: ' Inline code' },
+            {
+              children: [
+                { text: 'Block quote' },
+                { text: ' with a new line ' },
+                { bold: true, code: true, italic: true, text: ' Inline code' },
+              ],
+              type: 'paragraph',
+            },
           ],
           type: 'blockquote',
         },
@@ -177,9 +182,14 @@ describe('editor.api.markdown.serialize', () => {
       const slateNodes = [
         {
           children: [
-            { text: 'Block quote' },
-            { text: '\n' },
-            { text: 'with a new line' },
+            {
+              children: [
+                { text: 'Block quote' },
+                { text: '\n' },
+                { text: 'with a new line' },
+              ],
+              type: 'paragraph',
+            },
           ],
           type: 'blockquote',
         },
@@ -196,10 +206,15 @@ describe('editor.api.markdown.serialize', () => {
         const slateNodes = [
           {
             children: [
-              { text: 'Block quote' },
-              { text: '\n' },
-              { text: '\n' },
-              { text: 'with a new line' },
+              {
+                children: [
+                  { text: 'Block quote' },
+                  { text: '\n' },
+                  { text: '\n' },
+                  { text: 'with a new line' },
+                ],
+                type: 'paragraph',
+              },
             ],
             type: 'blockquote',
           },
@@ -216,7 +231,16 @@ describe('editor.api.markdown.serialize', () => {
       () => {
         const slateNodes = [
           {
-            children: [{ text: 'Block quote' }, { text: '\n' }, { text: '\n' }],
+            children: [
+              {
+                children: [
+                  { text: 'Block quote' },
+                  { text: '\n' },
+                  { text: '\n' },
+                ],
+                type: 'paragraph',
+              },
+            ],
             type: 'blockquote',
           },
         ];

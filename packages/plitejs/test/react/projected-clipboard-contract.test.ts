@@ -84,11 +84,7 @@ const projectedDataTransferFormats = dataTransferFormats(
     {
       mimeType: 'text/html',
       key: 'projected-html',
-      encode: () => ({
-        data: '<article data-projected-host="true">host</article>',
-        diagnostics: [],
-        ok: true,
-      }),
+      encode: () => '<article data-projected-host="true">host</article>',
     },
   ]
 );

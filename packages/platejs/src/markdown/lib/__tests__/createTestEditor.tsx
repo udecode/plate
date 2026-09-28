@@ -59,7 +59,6 @@ import {
 } from '../internal/markdownConversion';
 import { createMarkdownModelLocator } from '../internal/markdownDiagnostics';
 import { type MarkdownApi, MarkdownPlugin } from '../MarkdownPlugin';
-import { remarkMdx, remarkMention } from '../plugins';
 import type {
   MarkdownEditorSerializeOptions,
   MarkdownParsePolicy,
@@ -107,13 +106,7 @@ const testSchemaPlugins: readonly BasePluginInput[] = [
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
-    remarkPlugins: [
-      remarkMath,
-      remarkGfm,
-      remarkEmoji,
-      remarkMdx,
-      remarkMention,
-    ],
+    remarkPlugins: [remarkMath, remarkGfm, remarkEmoji],
   },
 });
 
@@ -160,7 +153,7 @@ export const parseTestMarkdownInline = <V extends Value>(
 
 export const serializeTestMarkdown = <V extends Value>(
   editor: TestMarkdownEditor<V>,
-  options?: MarkdownEditorSerializeOptions
+  options?: MarkdownEditorSerializeOptions<V>
 ) => {
   const result = editor.api.markdown.serialize(options);
 

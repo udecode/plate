@@ -118,18 +118,11 @@ const editor = useEditor({
         mimeType: "text/html",
         key: "app-html",
         claims: [{ kind: "element", type: "paragraph" }, Bold, DataAttribute],
-        decode: ({ data }) => ({
-          diagnostics: [],
-          ok: true,
-          slice: ContentSlice.closed([
+        decode: ({ data }) =>
+          ContentSlice.closed([
             { type: "paragraph", children: [{ text: data }] },
           ]),
-        }),
-        encode: ({ slice }) => ({
-          data: JSON.stringify(slice),
-          diagnostics: [],
-          ok: true,
-        }),
+        encode: ({ slice }) => JSON.stringify(slice),
       },
     ]),
   ],
@@ -137,11 +130,10 @@ const editor = useEditor({
 });
 ```
 
-Successful decode results contain a `ContentSlice` and warning diagnostics.
-Successful encode results contain a string and warning diagnostics. A failed
-result contains at least one error and delegates to the next independent
-format. Return `null` for a mismatch that should not create an attempt. Return
-`false` from `accept` to skip decoding without an attempt.
+`decode` returns a `ContentSlice`, or `null` to delegate the payload to the
+next format. `encode` returns a string, or `null` to leave its MIME type to the
+next encoder. `accept` returns `false` to skip the format before decoding.
+Every declaration needs `decode`, `encode`, or both.
 
 Decoded slices keep their open edge depths and detached roots. Use
 `ContentSlice.closed(content)` for a closed fragment or
@@ -153,7 +145,7 @@ Decode callbacks receive `{ data, mimeType, snapshot, state }`. Encode
 callbacks receive `{ mimeType, slice, state }`. They do not receive the editor,
 a live `DataTransfer`, a fitter, or a transaction. Formats run in reverse
 configuration order, so the last configured format gets the first opportunity
-for its MIME type.
+for its MIME type. The built-in plain-text decoder always runs last.
 
 Ownership claims compile against the candidate editor schema before a plugin
 revision publishes. `{ kind: "schema" }` owns the complete schema. Element
@@ -167,18 +159,21 @@ Duplicate keys, unknown declarations, and overlapping claims in the same MIME
 type and direction reject the complete configuration revision. Decode and
 encode ownership are independent.
 
-Expected source failures stay in diagnosed results. Exceptions from `accept`,
-`decode`, or `encode` go to the editor's `lifecycleErrorSink` with
-`source: "data-transfer-format"`; negotiation then continues. Configure
-`dom({ onDataTransferReport })` to receive the final immutable report after an
-insert commits, after a write finishes, or after the outer command chain leaves
-the payload unhandled. A rejected or unfit rich attempt remains visible even
-when a later fallback succeeds. Exceptions from the report sink are isolated
-and lifecycle-reported in the `notify` phase.
+Return `null` for foreign or malformed input; clipboard data is untrusted and
+bad input is not a bug. Exceptions from `accept`, `decode`, or `encode` go to
+the editor's `lifecycleErrorSink` with `source: "data-transfer-format"`, the
+format `key`, `mimeType`, `pluginName`, and `phase` (`"accept"`, `"decode"`, or
+`"encode"`); negotiation then continues with the next format, so a failing
+format cannot block paste or copy. A decoded value that is not a valid
+`ContentSlice`, or an encoded value that is neither a string nor `null`, is
+reported the same way. Negotiation has no report or observation hook. Content a
+format cannot represent is fixed by adding a mapping or a format.
 
 Framework clipboard writers call
 `writeDataTransferFragment(editor, data, slice)` to run registered encoders into
-a `setData`-compatible sink. Applications normally use
+a `setData`-compatible sink. Each MIME type is written once: the first encoder
+that returns a string wins. The function returns the written MIME types.
+Applications normally use
 `editor.api.dom.clipboard.writeSelection(dataTransfer)`, which writes the native
 Plite payload and registered MIME representations together.
 
@@ -198,8 +193,7 @@ DOM primitive type names include `DOMNode`, `DOMElement`, `DOMText`, `DOMPoint`,
 
 DataTransfer types include `DataTransferFormat`, `DataTransferDecodeContext`,
 `DataTransferEncodeContext`, `DataTransferSnapshot`,
-`DataTransferSchemaClaim`, `DataTransferDiagnostic`, and
-`DataTransferReport`.
+`DataTransferSchemaClaim`, and `DataTransferFormatPhase`.
 
 Hotkey and diff helper types include `HotkeySpec`, `HotkeyPlatform`,
 `HotkeyMatchOptions`, `KeyboardEventLike`, `StringDiff`, and `TextDiff`.

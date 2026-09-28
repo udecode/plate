@@ -76,7 +76,7 @@ export const insertInlineMap = {
 | `date` | Registry | Adds `DatePlugin.configure({ component: DateElement })`. |
 | `date-static` | Registry | Adds `BaseDatePlugin.configure({ component: DateElementStatic })`. |
 | `date` | Registry UI | Renders the editable popover/calendar element and static element. |
-| `platejs/markdown` | Package | Converts date MDX tags to the package-owned `value`. |
+| `platejs/markdown` | Package | Converts `<date>` Markdown tags to the package-owned `value`. |
 
 `BaseDatePlugin` is inline and void. The text child exists only to satisfy Plate's element shape.
 
@@ -181,13 +181,13 @@ The registry element uses `contentEditable={false}` on the inline wrapper, so us
 
 Canonical values serialize as a self-closing date tag with a `value` attribute.
 
-```mdx
+```md
 Date: <date value="2026-03-23" />
 ```
 
 Other authored values serialize as child text.
 
-```mdx
+```md
 Date: <date>sometime next week</date>
 ```
 

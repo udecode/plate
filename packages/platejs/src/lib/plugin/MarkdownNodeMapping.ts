@@ -28,13 +28,12 @@ import type {
 import type { InlineMath, Math as MdMathNode } from 'mdast-util-math';
 import type {
   MdxJsxAttribute,
-  MdxJsxExpressionAttribute,
   MdxJsxFlowElement,
   MdxJsxTextElement,
 } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
 
-import type { Descendant } from '../../facade';
+import type { Descendant, EditorJsonValue } from '../../facade';
 import type { AnyBasePluginDefinition } from './PluginDefinition';
 import type {
   MarkdownMappingDiagnosticInput,
@@ -42,140 +41,76 @@ import type {
   PluginFormatModelView,
   PluginFormatRegistry,
 } from './PluginFormatContext';
-import type { PluginFormatNode } from './pluginNodeTypes';
-import type { InferPluginDocumentType } from './pluginSchemaModel.internal';
+import type {
+  PluginFormatNode,
+  PluginFormatTextValue,
+} from './pluginNodeTypes';
 
-type DefaultMdastNode<TType extends string> = TType extends 'link'
-  ? Link
-  : TType extends `h${1 | 2 | 3 | 4 | 5 | 6}`
-    ? Heading
-    : TType extends 'blockquote'
-      ? Blockquote
-      : TType extends 'bold'
-        ? Strong
-        : TType extends 'code'
-          ? InlineCode
-          : TType extends 'codeBlock'
-            ? Code
-            : TType extends 'equation'
-              ? MdMathNode
-              : TType extends 'footnoteDefinition'
-                ? FootnoteDefinition
-                : TType extends 'footnoteReference'
-                  ? FootnoteReference
-                  : TType extends 'horizontalRule'
-                    ? ThematicBreak
-                    : TType extends 'image'
-                      ? Image
-                      : TType extends 'inlineEquation'
-                        ? InlineMath
-                        : TType extends 'italic'
-                          ? Emphasis
-                          : TType extends 'list'
-                            ? List
-                            : TType extends 'listItem'
-                              ? ListItem
-                              : TType extends 'paragraph'
-                                ? Paragraph
-                                : TType extends 'strikethrough'
-                                  ? Delete
-                                  : TType extends 'table'
-                                    ? Table
-                                    : TType extends 'tableCell'
-                                      ? TableCell
-                                      : TType extends 'tableRow'
-                                        ? TableRow
-                                        : TType extends
-                                              | 'audio'
-                                              | 'callout'
-                                              | 'codeDrawing'
-                                              | 'column'
-                                              | 'columnGroup'
-                                              | 'details'
-                                              | 'file'
-                                              | 'mediaEmbed'
-                                              | 'summary'
-                                              | 'toc'
-                                              | 'video'
-                                          ? MdxJsxFlowElement
-                                          : TType extends
-                                                | 'backgroundColor'
-                                                | 'color'
-                                                | 'date'
-                                                | 'fontFamily'
-                                                | 'fontSize'
-                                                | 'fontWeight'
-                                                | 'highlight'
-                                                | 'kbd'
-                                                | 'mention'
-                                                | 'script'
-                                                | 'underline'
-                                            ? MdxJsxTextElement
-                                            : RootContent | UnistNode;
-
-type SourceNodeMap = {
-  audio: MdxJsxFlowElement;
+/** Standard MDAST node kinds a mapping can select with `node`. */
+export type MarkdownNodeKinds = {
   blockquote: Blockquote;
   break: Break;
-  callout: MdxJsxFlowElement;
   code: Code;
-  codeDrawing: MdxJsxFlowElement;
-  column: MdxJsxFlowElement;
-  columnGroup: MdxJsxFlowElement;
-  comment: MdxJsxTextElement;
-  date: MdxJsxTextElement;
-  details: MdxJsxFlowElement;
-  del: MdxJsxTextElement;
   delete: Delete;
   emphasis: Emphasis;
-  figure: MdxJsxFlowElement;
-  file: MdxJsxFlowElement;
   footnoteDefinition: FootnoteDefinition;
   footnoteReference: FootnoteReference;
   heading: Heading;
   html: Html;
   image: Image;
-  img: MdxJsxFlowElement;
   inlineCode: InlineCode;
   inlineMath: InlineMath;
-  kbd: MdxJsxTextElement;
   link: Link;
   list: List;
   listItem: ListItem;
-  mark: MdxJsxTextElement;
   math: MdMathNode;
-  mediaEmbed: MdxJsxFlowElement;
-  media_embed: MdxJsxFlowElement;
-  mention: UnistNode & {
-    displayText?: string;
-    type: 'mention';
-    username: string;
-  };
-  mdxJsxFlowElement: MdxJsxFlowElement;
-  mdxJsxTextElement: MdxJsxTextElement;
   paragraph: Paragraph;
-  script: MdxJsxTextElement;
-  span: MdxJsxTextElement;
   strong: Strong;
-  sub: MdxJsxTextElement;
-  summary: MdxJsxFlowElement;
-  sup: MdxJsxTextElement;
   table: Table;
   tableCell: TableCell;
   tableRow: TableRow;
   text: MdText;
   thematicBreak: ThematicBreak;
-  toc: MdxJsxFlowElement;
-  u: MdxJsxTextElement;
-  underline: MdxJsxTextElement;
-  video: MdxJsxFlowElement;
 };
 
-export type MarkdownDecoration = Readonly<
-  Record<string, boolean | string | undefined>
+export type MarkdownNodeKind = keyof MarkdownNodeKinds;
+
+/**
+ * A registered Plate tag (`<callout icon="💡">…</callout>`), in the established
+ * MDAST shape for JSX-like elements.
+ */
+export type MarkdownTagNode = MdxJsxFlowElement | MdxJsxTextElement;
+
+declare const markdownRefusal: unique symbol;
+
+/**
+ * Returned by `refuse()`: the node cannot be represented, so conversion reports
+ * `markdown-unsupported-node` under `lossPolicy` instead of throwing.
+ */
+export type MarkdownRefusal = Readonly<{ [markdownRefusal]: string }>;
+
+/** Tag attributes as written, and the ones that decode to schema properties. */
+export type MarkdownTagAttributeView = Readonly<{
+  attributes: Readonly<Record<string, string | true>>;
+  properties: Readonly<Record<string, unknown>>;
+}>;
+
+export type MarkdownMarks = Readonly<
+  Record<string, EditorJsonValue | undefined>
 >;
 
 export type MarkdownPluginRegistry = PluginFormatRegistry;
+
+/** A childless inline wrapper. Markdown supplies the encoded text children. */
+export type MarkdownMarkWrapper =
+  | Readonly<{ type: 'delete' }>
+  | Readonly<{ type: 'emphasis' }>
+  | Readonly<{
+      attributes?: readonly MdxJsxAttribute[];
+      name: string;
+      type: 'mdxJsxTextElement';
+    }>
+  | Readonly<{ type: 'strong' }>;
 
 type MarkdownContext<D extends AnyBasePluginDefinition> =
   PluginFormatContext<D> &
@@ -192,28 +127,24 @@ export type MarkdownDecodeContext<
   Readonly<{
     build: (
       node: RootContent | UnistNode,
-      decoration?: MarkdownDecoration
+      marks?: MarkdownMarks
     ) => Descendant[];
-    caption: (children: readonly Descendant[]) => readonly Descendant[];
+    /** One paragraph's inline content, or `null` when it is not one paragraph. */
+    caption: (children: readonly Descendant[]) => readonly Descendant[] | null;
     decode: (
       nodes: readonly RootContent[],
-      decoration?: MarkdownDecoration
+      marks?: MarkdownMarks
     ) => Descendant[];
     decodeNodes: (
       nodes: readonly RootContent[],
-      decoration?: MarkdownDecoration
+      marks?: MarkdownMarks
     ) => Descendant[];
-    decodeTexts: (
-      node: Delete | Emphasis | Strong,
-      decoration?: MarkdownDecoration
-    ) => Descendant[];
-    decoration: MarkdownDecoration;
+    marks: MarkdownMarks;
     node: TNode;
-    parseAttributes: (
-      attributes: ReadonlyArray<MdxJsxAttribute | MdxJsxExpressionAttribute>
-    ) => Record<string, unknown>;
+    /** Attributes of `tag` (default: this node) decoded for the target type. */
+    readTagAttributes: (tag?: MarkdownTagNode) => MarkdownTagAttributeView;
+    refuse: (message: string) => MarkdownRefusal;
     serializeUnknown: (node: MdxJsxFlowElement) => string;
-    splitLineBreaks?: boolean;
   }>;
 
 export type MarkdownEncodeContext<
@@ -222,10 +153,7 @@ export type MarkdownEncodeContext<
 > = MarkdownContext<D> &
   Omit<PluginFormatModelView, 'node'> &
   Readonly<{
-    encode: (
-      nodes: readonly Descendant[],
-      options?: Readonly<{ isBlock?: boolean }>
-    ) => RootContent[];
+    encode: (nodes: readonly Descendant[]) => RootContent[];
     encodeBlocks: (nodes: readonly Descendant[]) => BlockContent[];
     encodeFlow: (
       nodes: readonly Descendant[]
@@ -233,45 +161,104 @@ export type MarkdownEncodeContext<
     encodePhrasing: (nodes: readonly Descendant[]) => PhrasingContent[];
     isFlow: (node: RootContent) => node is BlockContent | DefinitionContent;
     isPhrasing: (node: RootContent) => node is PhrasingContent;
+    /** Encode property values as tag attributes for this node's type. */
+    encodeAttributes: (
+      properties: Readonly<Record<string, unknown>>
+    ) => MdxJsxAttribute[];
     node: TNode;
     preserveEmptyParagraphs?: boolean;
-    propsToAttributes: (props: Record<string, unknown>) => MdxJsxAttribute[];
     readPlainInline: (children: readonly Descendant[]) => string | null;
+    refuse: (message: string) => MarkdownRefusal;
     resourceLink: boolean;
   }>;
 
-type MarkdownNodeMappingBase<
+export type MarkdownMarkWrapContext<
+  D extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+> = MarkdownEncodeContext<PluginFormatNode<D>, D> &
+  Readonly<{ value: PluginFormatTextValue<D> }>;
+
+type MarkdownElementMappingBase<
   D extends AnyBasePluginDefinition,
   TSource extends UnistNode,
 > = Readonly<{
+  /**
+   * Claim the node by returning Plate content, decline with `undefined`
+   * so the next mapping on the selector runs, or `refuse(message)`.
+   */
   decode?: (
     context: MarkdownDecodeContext<TSource, D>
-  ) => Descendant | Descendant[] | undefined;
+  ) => Descendant | Descendant[] | MarkdownRefusal | undefined;
   encode?: (
     context: MarkdownEncodeContext<PluginFormatNode<D>, D>
-  ) => RootContent | undefined;
-  mark?: boolean;
+  ) => RootContent | MarkdownRefusal | undefined;
+  mark?: false;
+  /** Higher runs first among claim mappings on one selector. */
   priority?: number;
+  wrap?: never;
 }>;
 
-type DefaultMarkdownNodeMapping<D extends AnyBasePluginDefinition> = Omit<
-  MarkdownNodeMappingBase<D, DefaultMdastNode<InferPluginDocumentType<D>>>,
-  'decode'
-> &
-  Readonly<{ decode?: never; from?: never }>;
+type MarkdownMarkMappingBase<
+  D extends AnyBasePluginDefinition,
+  TSource extends UnistNode,
+> = Readonly<{
+  /** Return the schema property value contributed by this mark. */
+  decode?: (
+    context: MarkdownDecodeContext<TSource, D>
+  ) => PluginFormatTextValue<D> | undefined;
+  encode?: never;
+  mark: true;
+  priority?: never;
+  /** Return the inline wrapper; Markdown supplies its encoded children. */
+  wrap?: (
+    context: MarkdownMarkWrapContext<D>
+  ) => MarkdownMarkWrapper | MarkdownRefusal | undefined;
+}>;
 
-type ExplicitMarkdownNodeMapping<D extends AnyBasePluginDefinition> = {
-  [TSource in keyof SourceNodeMap]: MarkdownNodeMappingBase<
-    D,
-    SourceNodeMap[TSource]
-  > &
-    Readonly<{ from: TSource }>;
-}[keyof SourceNodeMap];
+type EncodeOnlyMarkdownNodeMapping<D extends AnyBasePluginDefinition> =
+  | (MarkdownElementMappingBase<D, never> &
+      Readonly<{
+        decode?: never;
+        nestedTags?: never;
+        node?: never;
+        tag?: never;
+      }>)
+  | (MarkdownMarkMappingBase<D, never> &
+      Readonly<{
+        decode?: never;
+        nestedTags?: never;
+        node?: never;
+        tag?: never;
+      }>);
+
+type NodeMarkdownNodeMapping<D extends AnyBasePluginDefinition> = {
+  [TKind in MarkdownNodeKind]:
+    | (MarkdownElementMappingBase<D, MarkdownNodeKinds[TKind]> &
+        Readonly<{ nestedTags?: never; node: TKind; tag?: never }>)
+    | (MarkdownMarkMappingBase<D, MarkdownNodeKinds[TKind]> &
+        Readonly<{ nestedTags?: never; node: TKind; tag?: never }>);
+}[MarkdownNodeKind];
+
+type TagMarkdownNodeMapping<D extends AnyBasePluginDefinition> =
+  | (MarkdownElementMappingBase<D, MarkdownTagNode> &
+      Readonly<{
+        /** Tags read only inside this one, such as Image's `figcaption`. */
+        nestedTags?: readonly string[];
+        node?: never;
+        /** Registered tag name; for elements, the schema type. */
+        tag: string;
+      }>)
+  | (MarkdownMarkMappingBase<D, MarkdownTagNode> &
+      Readonly<{
+        nestedTags?: readonly string[];
+        node?: never;
+        tag: string;
+      }>);
 
 /** Schema-bound Markdown conversion owned by one feature plugin. */
 export type MarkdownNodeMapping<D extends AnyBasePluginDefinition> =
-  | DefaultMarkdownNodeMapping<D>
-  | ExplicitMarkdownNodeMapping<D>;
+  | EncodeOnlyMarkdownNodeMapping<D>
+  | NodeMarkdownNodeMapping<D>
+  | TagMarkdownNodeMapping<D>;
 
 export type MarkdownNodeMappingInput<D extends AnyBasePluginDefinition> =
   | MarkdownNodeMapping<D>

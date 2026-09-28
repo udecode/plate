@@ -1,5 +1,3 @@
-import { writeFile } from 'node:fs/promises';
-
 import {
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
@@ -1126,75 +1124,163 @@ test('Generate Markdown sample keeps its review visible and accepts a usable tab
   }
 });
 
-test('full Generate MDX sample remains responsive through streaming', async ({
+test('AI table edit parses streamed cell Markdown before acceptance', async ({
   page,
-}, testInfo) => {
+}) => {
   const errors = recordBrowserRuntimeErrors(page);
 
   try {
+    await page.route('**/api/ai/command', (route) => {
+      const body = route.request().postDataJSON() as {
+        ctx: { refs: { tableCells: Array<{ ref: string }> } };
+      };
+      const ref = body.ctx.refs.tableCells[0]?.ref;
+
+      expect(ref).toBeTruthy();
+      const parts = [
+        { type: 'start', messageId: 'table-markdown' },
+        { type: 'data-toolName', data: 'edit', transient: true },
+        {
+          id: 'table-cell-markdown',
+          type: 'data-table',
+          data: {
+            status: 'streaming',
+            cellUpdate: {
+              ref,
+              content: '**Updated**\n\nSecond paragraph',
+            },
+          },
+        },
+        {
+          id: 'table-cell-finished',
+          type: 'data-table',
+          data: { status: 'finished', cellUpdate: null },
+        },
+        { type: 'finish' },
+      ];
+
+      return route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        headers: { 'x-vercel-ai-ui-message-stream': 'v1' },
+        body: `${parts
+          .map((part) => `data: ${JSON.stringify(part)}\n\n`)
+          .join('')}data: [DONE]\n\n`,
+      });
+    });
+    await page.goto('/blocks/playground-demo', { waitUntil: 'commit' });
+    const root = page.locator('.editor-editor[contenteditable="true"]').first();
+    const editor = createBrowserEditorHarness(page, 'ai:table-markdown', root);
+
+    await editor.ready({ editor: 'visible', text: 'Paid Extension' });
+    const before = await editor.get.modelValue();
+    await editor.selection.select({
+      anchor: { path: [15, 1, 2, 0, 0], offset: 0 },
+      focus: { path: [15, 1, 2, 0, 0], offset: 14 },
+    });
+    await root.press('ControlOrMeta+j');
+    await page
+      .getByRole('option', { name: 'Improve writing', exact: true })
+      .click();
+
+    const draft = page.locator('[data-editor-ai-draft]');
+
+    await expect(draft).toContainText('Updated');
+    await expect(
+      draft.getByText('Second paragraph', { exact: true })
+    ).toHaveCount(1);
+    await expect(
+      draft.locator('strong').filter({ hasText: 'Updated' })
+    ).toHaveCount(1);
+    expect(await editor.get.modelValue()).toEqual(before);
+    await expect(page.getByRole('option', { name: 'Accept' })).toBeVisible();
+
+    await page.getByRole('option', { name: 'Accept', exact: true }).click();
+    const accepted = (await editor.get.modelValue()) as {
+      children: Array<{
+        children: Array<{
+          children: Array<{
+            children: Array<{
+              children: Array<{ bold?: boolean; text: string }>;
+            }>;
+          }>;
+        }>;
+      }>;
+    };
+    const cell = accepted.children[15]?.children[1]?.children[2];
+
+    expect(cell?.children).toEqual([
+      { children: [{ bold: true, text: 'Updated' }], type: 'paragraph' },
+      { children: [{ text: 'Second paragraph' }], type: 'paragraph' },
+    ]);
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('AI streaming preview parses registered Markdown tags split across chunks', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  const response = `${[
+    { type: 'start', messageId: 'registered-tags' },
+    { type: 'data-toolName', data: 'generate' },
+    { type: 'text-start', id: 'markdown' },
+    { type: 'text-delta', id: 'markdown', delta: '## Preview\n\n<call' },
+    {
+      type: 'text-delta',
+      id: 'markdown',
+      delta: 'out icon="💡">\nA registered tag.',
+    },
+    { type: 'text-delta', id: 'markdown', delta: '\n</call' },
+    {
+      type: 'text-delta',
+      id: 'markdown',
+      delta: 'out>\n\nAfter the callout.',
+    },
+    { type: 'text-end', id: 'markdown' },
+    { type: 'finish' },
+  ]
+    .map((part) => `data: ${JSON.stringify(part)}\n\n`)
+    .join('')}data: [DONE]\n\n`;
+
+  try {
+    await page.route('**/api/ai/command', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        headers: { 'x-vercel-ai-ui-message-stream': 'v1' },
+        body: response,
+      })
+    );
     await page.goto('/blocks/ai-demo', { waitUntil: 'commit' });
     const root = page.locator('.editor-editor[contenteditable="true"]').first();
-    const editor = createBrowserEditorHarness(page, 'ai:mdx-preset', root);
+    const editor = createBrowserEditorHarness(page, 'ai:registered-tags', root);
     await editor.ready({
       editor: 'visible',
       text: 'Press space in an empty block. Try it out:',
     });
-    await page.evaluate(() => {
-      const probe = { lastFrame: performance.now(), maxFrameGap: 0 };
-      (
-        window as typeof window & {
-          __aiStreamProbe?: typeof probe;
-        }
-      ).__aiStreamProbe = probe;
-
-      const tick = (now: number) => {
-        probe.maxFrameGap = Math.max(probe.maxFrameGap, now - probe.lastFrame);
-        probe.lastFrame = now;
-        requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    });
+    const before = await editor.get.modelValue();
     await editor.selection.collapse({ path: [7, 0], offset: 0 });
     await root.press('Space');
-    const startedAt = Date.now();
     await page
-      .getByRole('option', { name: 'Generate MDX sample', exact: true })
+      .getByRole('option', { name: 'Generate Markdown sample', exact: true })
       .click();
 
-    await expect(root).toContainText('Basic Markdown');
+    await expect(root).toContainText('A registered tag.');
+    await expect(root).toContainText('After the callout.');
+    expect(await editor.get.modelValue()).toEqual(before);
     await expect(root.locator('[data-editor-authored-change]')).toHaveCount(0);
-    await expect
-      .poll(() =>
-        root
-          .locator('[data-editor-ai-end]')
-          .last()
-          .evaluate((el) => ({
-            content: getComputedStyle(el, '::after').content,
-            width: getComputedStyle(el, '::after').width,
-          }))
-      )
-      .toEqual({ content: '""', width: '12px' });
-    await expect(root).toContainText('Advanced Features');
-    await expect(root).toContainText('Video playback features support');
     await expect(page.getByRole('option', { name: 'Accept' })).toBeVisible();
-    const maxFrameGap = await page.evaluate(
-      () =>
-        (
-          window as typeof window & {
-            __aiStreamProbe?: { maxFrameGap: number };
-          }
-        ).__aiStreamProbe?.maxFrameGap ?? Number.POSITIVE_INFINITY
-    );
-    const metrics = JSON.stringify({
-      elapsedMs: Date.now() - startedAt,
-      maxFrameGap,
-    });
-    await writeFile(testInfo.outputPath('stream-performance.json'), metrics);
-    await testInfo.attach('stream-performance', {
-      body: metrics,
-      contentType: 'application/json',
-    });
-    expect(maxFrameGap).toBeLessThan(1500);
+    expect(await root.innerText()).not.toContain('<callout');
+
+    await page.getByRole('option', { name: 'Accept', exact: true }).click();
+    const accepted = JSON.stringify(await editor.get.modelValue());
+
+    expect(accepted).toContain('"type":"callout"');
+    expect(accepted).toContain('After the callout.');
+    expect(accepted).not.toContain('<callout');
     errors.assertNone();
   } finally {
     errors.stop();

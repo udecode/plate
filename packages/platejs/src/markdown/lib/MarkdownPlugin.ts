@@ -34,28 +34,19 @@ import {
 } from './internal/markdownConversion';
 import { markdownMappingsRegistryKey } from './internal/markdownMappings';
 import type {
-  AllowNodeConfig,
   MarkdownDocumentParseResult,
   MarkdownEditorSerializeOptions,
   MarkdownParseOptions,
   MarkdownParsePolicy,
-  MarkdownNodeName,
   MarkdownSerializeOptions,
   MarkdownSerializeResult,
   MarkdownSliceParseResult,
   MarkdownSyncPluggable,
-  MarkdownWarningDiagnostic,
 } from './types';
 
 export type MarkdownPluginState = {
-  /** Allowed node types. Cannot be combined with `disallowedNodes`. */
-  allowedNodes: readonly MarkdownNodeName[] | null;
-  /** Custom node filters for deserialization and serialization. */
-  allowNode: AllowNodeConfig;
-  /** Disallowed node types. Cannot be combined with `allowedNodes`. */
-  disallowedNodes: readonly MarkdownNodeName[] | null;
-  /** Marks serialized as plain text. */
-  plainMarks: readonly MarkdownNodeName[] | null;
+  /** Mark keys serialized as plain text. */
+  plainMarks: readonly string[] | null;
   /** Remark plugins used for parsing and serialization. */
   remarkPlugins: readonly MarkdownSyncPluggable[];
   /** Options passed to `remark-stringify`. */
@@ -76,7 +67,7 @@ export type MarkdownApi<V extends Value = Value> = {
     options?: MarkdownParsePolicy
   ) => MarkdownSliceParseResult<V>;
   serialize: (
-    options?: MarkdownEditorSerializeOptions
+    options?: MarkdownEditorSerializeOptions<V>
   ) => MarkdownSerializeResult;
 };
 
@@ -127,15 +118,16 @@ const serializeMarkdownDataTransferSlice = (
   runtime: MarkdownRuntime,
   slice: ContentSlice,
   state: EditorCoreStateView
-): MarkdownSerializeResult => {
+): string | null => {
   if (slice.openStart === 0 && slice.openEnd === 0) {
-    return serializeMarkdownWithRuntime(
+    const result = serializeMarkdownWithRuntime(
       runtime,
       createMarkdownDocument(runtime, slice.content, slice.roots)
     );
+
+    return result.ok ? result.data : null;
   }
-  const diagnostics: MarkdownWarningDiagnostic[] = [];
-  let failure: Extract<MarkdownSerializeResult, { ok: false }> | null = null;
+  let failed = false;
   const serialize = (children: readonly Descendant[]) => {
     const result = serializeMarkdownWithRuntime(
       runtime,
@@ -143,11 +135,10 @@ const serializeMarkdownDataTransferSlice = (
     );
 
     if (!result.ok) {
-      failure = result;
+      failed = true;
 
       return '';
     }
-    diagnostics.push(...result.diagnostics);
 
     return result.data;
   };
@@ -216,13 +207,16 @@ const serializeMarkdownDataTransferSlice = (
           slice.openEnd
         )}\n`;
 
-  if (failure) return failure;
+  return failed ? null : data;
+};
 
-  return Object.freeze({
-    data,
-    diagnostics: Object.freeze(diagnostics),
-    ok: true,
-  });
+const parseMarkdownDataTransferSlice = (
+  runtime: MarkdownRuntime,
+  data: string
+): ContentSlice | null => {
+  const result = parseMarkdownSliceWithRuntime(runtime, data);
+
+  return result.ok ? result.slice : null;
 };
 
 export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
@@ -231,7 +225,7 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
       mimeType: 'text/markdown',
       scope: 'document',
       decode: ({ data, pluginState, registry, schema, state }) =>
-        parseMarkdownSliceWithRuntime(
+        parseMarkdownDataTransferSlice(
           createMarkdownOperationRuntime({
             pluginState,
             registry,
@@ -257,7 +251,7 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
       mimeType: 'text/plain',
       scope: 'document',
       decode: ({ data, pluginState, registry, schema, state }) =>
-        parseMarkdownSliceWithRuntime(
+        parseMarkdownDataTransferSlice(
           createMarkdownOperationRuntime({
             pluginState,
             registry,
@@ -272,9 +266,6 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
   initialState: (): MarkdownPluginState =>
     ({
       [markdownMappingsRegistryKey]: {},
-      allowNode: {},
-      allowedNodes: null,
-      disallowedNodes: null,
       plainMarks: null,
       remarkPlugins: [],
       remarkStringifyOptions: null,
@@ -361,28 +352,6 @@ export const parseMarkdown = (
 
   return withDetachedMarkdownRuntime({ plugins, schema }, (runtime) =>
     parseMarkdownDocumentWithRuntime(runtime, source, policy)
-  );
-};
-
-export const parseMarkdownSlice = (
-  source: string,
-  options: MarkdownParseOptions
-): MarkdownSliceParseResult => {
-  const { plugins, schema, ...policy } = options;
-
-  return withDetachedMarkdownRuntime({ plugins, schema }, (runtime) =>
-    parseMarkdownSliceWithRuntime(runtime, source, policy)
-  );
-};
-
-export const parseMarkdownInline = (
-  source: string,
-  options: MarkdownParseOptions
-): MarkdownSliceParseResult => {
-  const { plugins, schema, ...policy } = options;
-
-  return withDetachedMarkdownRuntime({ plugins, schema }, (runtime) =>
-    parseMarkdownInlineWithRuntime(runtime, source, policy)
   );
 };
 

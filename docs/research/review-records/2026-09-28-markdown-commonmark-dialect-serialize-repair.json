@@ -1,0 +1,116 @@
+{
+  "id": "2026-09-28-markdown-commonmark-dialect-serialize-repair",
+  "kind": "execution",
+  "date": "2026-09-28",
+  "scopes": [
+    "markdown"
+  ],
+  "reviewBasis": [
+    "2026-09-28-markdown-dialect-prototype-correction"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-28-markdown-commonmark-dialect-design.md",
+    "sha256": "addfed33632538be401688f271cb82dca36c17401d8774edffeac41c0b0c1f7a"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "After the closure record, a frozen-tree production rerun found serialize 10-12% slower than origin/next in both run orders. CPU profiles located two causes: encodeMarkdownParagraph spread the conversion options per paragraph, missing the per-operation format-context cache, and the parse-only tag transformer ran on the serialize pipeline. The conversion context now carries a stable operation key and serialize installs remarkMarkdownTagWriter only. Eleven stale apps/www Markdown fixtures were repaired against the adopted contract, and the tracked benchmark receipt was regenerated on the final tree.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "benchmarks/editor/benchmarks/results/plate-markdown-dialect-latest.json",
+        "sha256": "c96714bdb002b60f3a844d261c6533784a700d46dd8153e346be3bac89408c54",
+        "claim": "Final-tree receipt against e33ad94aea: correctness identical; B1 0.93-0.97x, B2 1.00x/0.96x, supplemental serialize 0.97x; adoption gate passes; absolute B4 inline doubling fails at all three sizes with plain CommonMark slower at every size."
+      },
+      {
+        "path": "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",
+        "sha256": "f55c6dadbc06fea89b9cfa05295db7ce65fa4e9deade83705cfdd6b0d81bf5bf",
+        "claim": "Stable per-conversion operation key and writer-only serialize pipeline."
+      },
+      {
+        "path": "apps/www/src/__tests__/package-integration/markdown-rich/serializeMarkdown.spec.tsx",
+        "sha256": "2eb47e38e87cbc953608b012ffaa21ca0b6fac4c0bc7d8abc635da32bc55de1d",
+        "claim": "apps/www Markdown package-integration suites pass 54/54 after fixture repair; canonical writer snapshot."
+      }
+    ],
+    "limits": "Serialize profile evidence (context rebuild 4.3% to 0.5%) lives in ignored prototype artifacts. Timing is shared-host evidence at load 4-10; B3 mdast large stays inconclusive and absolute B4 remains failed. Markdown partition 162/162, Markdown feature specs 278/278, slow Markdown 41/41, package and www typechecks clean were run on this tree; no new browser run beyond the closure's Chromium proof. The working tree is uncommitted at record time."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts": "36266170426fedfae2387f53087f05da8749e7f977a1b5b2eb0d119a922541b6",
+      "apps/www/src/registry/components/editor/markdown.tsx": "7eb99e455171b13886effa7c10b45c875db12ecc35953fb36a934f7cbff2f503",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "999850e12b5fbd28d2287c194b469deb7f631a5598fbbc16fafda397beab2318",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "6e9232116ec17850ea276145afc73a9f424b5a3d91b49d0bd4e24aa4f030a1da",
+      "apps/www/src/registry/examples/markdown-to-editor-demo.tsx": "dcdb595ab6fbee4297c5b126b59ee810610f8a3d2d18c7aac5a92c5610dcb806",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "e6e7b01723e91d361ac3d75952510ef51ac30f98fda7902def18dd6cf8bd7d70",
+      "apps/www/src/app/(app)/docs/examples/server-side/page.tsx": "4c98d9abf30942dea6ef6f850ae8b5fc3e174effbae19009098cb38f554a3877",
+      "apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx": "bf27aa8a05ae0329f5b64a9697dfb9927fb8f09ccc9232cd5b502d02aa7de537",
+      "packages/platejs/src/ai/react/CopilotPlugin.tsx": "55f9ab266ab976068f22f8e11a2f68e79d9dfa6d67fe7006930c5e7f53f93f42",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "95bc8dff2905184c23fc9f0c459990d66b51877b44b1e0e36d4aad72f7dd6cc4",
+      "apps/www/src/registry/app/api/ai/command/prompt/getCommentPrompt.ts": "9d8cff584dc10628e20ec405fceb81cde0566d3ce501b9ddf87e477a34b0b02f",
+      "apps/www/src/registry/app/api/ai/command/utils.ts": "0dd841afd205dccc5822cae38337ea6074ec5fa97401161c1e3aad9994f93074",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "ab30cca97060cc5f4ffc4b6fb433883a036b5b15c041cd98db1848816e1821d9",
+      "packages/platejs/src/markdown/lib/internal/markdownMappings.spec.ts": "f3c3b0c6346a51a0906bda0324c3b61f4e760317035e78712f5cdf7947ce5ec5",
+      "packages/platejs/src/markdown/lib/utils/remarkPlugins.spec.ts": "ea6baac986477f2783fb233ecf33f43b91ceff1e59bbde48ca4cc375f7b4ee1a",
+      "packages/platejs/src/markdown/lib/gfmSurface.spec.ts": "eef454dbb74fd6db599b2852211596a3b7c4dde1b17375f1cd928e9b3bc7f67b",
+      "packages/platejs/src/markdown/lib/commonmarkSurface.slow.ts": "8fc44154a4fe40d8648fa470ce62bc14bc5b84b7de8a906ac767f720961dd475",
+      "packages/platejs/type-tests/standalone-conversion-contracts.ts": "93790930cf6011a57d74bffe42a8148847240b033d22ce6ef5d4f68899557ae6",
+      "apps/www/src/__tests__/package-integration/conversion/detached-conversion-types.ts": "b5e42e6a21659b12adf1d518cf938cf308ea6ad3ff4b53a1bc7b41fc8ca2a7aa",
+      "packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts": "4b311a08a2c2bf330d095ee2dae401c1824fb26e2307f6067378dda3558d457d",
+      "packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts": "29ec4b25f42e07eac215300abdd6e32be1061f53156302aeb890af7b030f1afa",
+      "packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts": "9b84a9efce48c0e923ba159c5eb78bf81eb57bfcd4ed7c0a49363412abe3ed47",
+      "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts": "880ffc7f4c2612f79f2114a5b717af33113d6aaf9c205623f06ce3e667177872",
+      "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": "2cb555faeee22ccb857b2903d0464a847564e5c9074623fa6b262ead99123ce9",
+      "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.ts": "ac0f3f7b1b5eb1071b422770278b5209dac1b7f840110456c4273cc38804f5f7",
+      "packages/platejs/src/features/date/lib/BaseDatePlugin.ts": "eb5d96ce3990f94bbf98d984780cbdb91363b9fc99273409c56562a6e53864ce",
+      "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts": "e085e29f80fe8eb62ab1f5cd128688a643c1384b4cce9ed0272f68b54ef870da",
+      "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": "421ed5a4b693f5c6b6041df4b9ba7c9494252ecd17df38f0ca367f80b2ffcc8a",
+      "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts": "8818d8b5d3bbe851497b07f502338d9e4137fb83759411725c05f30717597745",
+      "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts": "3cf0d7b49e4c58c50d8e6d05396241a7c2435fe2417c2a7f20baf6d5d1d8fca2",
+      "packages/platejs/src/features/list/lib/BaseListPlugin.ts": "0084332b59f0824b5c73b1956d0a79c0cf1f63f3a84790de52c18e2aad56c9c2",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "93e94a042000bcf912c65742beba43c57af7366ac358858d22ae5f3467e296bd",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "3fecad572a60eb5ff3f1fc8bfc001477ec46e11409881abebccdfda15dc63109",
+      "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts": "2bb473f86eeffbd1a9b9d32a7d4ac76754ec70bf067b35fcd25f9f3cee93cc9e",
+      "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts": "b76094cc1cda9dc311da1c8b1e9e3e3beb7c67140c8246be2f3a830ee926547a",
+      "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "c46b3d0c8a1828a0b568fb94943070e4aca64e1d49e62131920f96fe077a9d08",
+      "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts": "4d8c3bba8f23ca78216d20bc0db7d3e5d80263c98ef0bae090d3cbd057d33c4e",
+      "packages/platejs/src/math/lib/BaseEquationPlugin.ts": "086a1b715ff80e0befed1fb3fe0d894f6109e33969bac727ec618dac45e367bb",
+      "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts": "9b426179ad8fd1a7fa7af0ed9d5dd2041167c69db574db85b98cb45283eb2ae4",
+      "packages/platejs/src/internal/plugin/collectPlateNodeMappings.ts": "97e0aac607bf5d2c81dbf2e3fe9c8a15b861e24bd307ae7a96278b8defd18e3d",
+      "packages/platejs/src/internal/plugin/pluginFormatOperation.ts": "2facb5a6d414b8d0a2658bd6992859048940900d52a4d2422da78842e88d706c",
+      "packages/platejs/src/lib/editor/withPlite.ts": "051872d0215d8489865c57878c710c5906f011b59e7f84ce335f34f8542bc9a5",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "f925eefdc200c6bbb164bfae79186d29959e67ba22375f5faa9221fad0334511",
+      "packages/plitejs/src/react/external-text.ts": "12524a3302422cde61a1c646801deb8e1483bac0c136afeef779a390222970cf",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "62292076716ca772675ca9e748f2e2adf0aec3e3e0f4cb528d8a4602cb82de66",
+      "docs/vision/plate.md": "1417623ecc774d6ee023da11713fca37a2282cb8d4a35bb07448ae9f21e2dc8c",
+      ".agents/rules/best-api/rules/behavior-and-ownership.md": "06413292400187819ebe1c367e37006483189092d720ea283042d45cd7324f3b",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707"
+    },
+    "directories": {
+      "packages/platejs/src/markdown": "fcc0e8e1ce12e95f925b4eaea3a08d1ab93a886ef31abafcb5da9aecece354a2",
+      "packages/platejs/src/markdown/lib/serializer": "2f6b47e623b6c0f85dc05ebfe5e9260ee6dc66a9f406f73cffc430c25949d597"
+    },
+    "features": {
+      "capability/markdown": "cbe849f6cb645c3e4988b0d05f95f12e5d031d095467fb8c71b9b44b88bde17c",
+      "example/plite/markdown-preview": "b8821a4b9b500a1da24dfca08f89e0dde6648254a9fb733d332b5e647b3eb179",
+      "example/plite/markdown-shortcuts": "fb014701a93afe9ae5dbf1080e9d20ee36a4920fc3e0709d61a3d4cfb8f1c27c",
+      "example/registry/markdown-to-editor-demo": "d1b3d923a9f1b996f01fe29bdef7fa08bd5998f24968c26f824735d7c914b9b6",
+      "example/registry/preview-markdown-demo": "3767edd084c245c069ff51a46b0441e3e661be0b3d5eb5e1e4a91e6ffedf46a3",
+      "example/value/deserialize-md-value": "84334d6fc09927c814913d57c78ab627f62820b957fbd33f7bf472fee5fed8e2",
+      "example/value/preview-md-value": "dfae831fdd8d0ea925a925f04759b085eed04cf3a7580eb0841217e73645a430",
+      "export/platejs/./markdown": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/markdown": "fcc0e8e1ce12e95f925b4eaea3a08d1ab93a886ef31abafcb5da9aecece354a2",
+      "ui/markdown": "30fd8d328f500225a1899ade1e0a4c1c95e38a5bea3ff685149993f5ddea5124"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-28-markdown-commonmark-dialect-design.md"
+  ]
+}

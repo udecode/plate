@@ -66,7 +66,7 @@ const LINK_PATTERN = /^\[.*?\]\(.*?\)$/;
 const UNORDERED_LIST_PATTERN = /^[*-]\s+.+/;
 const TODO_LIST_PATTERN = /^[*-]\s+\[[ xX]\]\s+.+/;
 const ORDERED_LIST_PATTERN = /^\d+\.\s+.+/;
-const MDX_TAG_PATTERN = /<([A-Za-z][A-Za-z0-9\-_]*)>/;
+const TAG_PATTERN = /<([A-Za-z][A-Za-z0-9\-_]*)>/;
 const DIGIT_PATTERN = /^[0-9]$/;
 
 export class MarkdownJoiner {
@@ -111,8 +111,8 @@ export class MarkdownJoiner {
     );
   }
 
-  private isCompleteMdxTag(): boolean {
-    return MDX_TAG_PATTERN.test(this.buffer);
+  private isCompleteTag(): boolean {
+    return TAG_PATTERN.test(this.buffer);
   }
 
   private isCompleteTableStart(): boolean {
@@ -200,7 +200,7 @@ export class MarkdownJoiner {
 
         if (
           this.isCompleteBold() ||
-          this.isCompleteMdxTag() ||
+          this.isCompleteTag() ||
           this.isCompleteList() ||
           this.isCompleteLink()
         ) {

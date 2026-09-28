@@ -2,5 +2,18 @@
   "permissions": {
     "allow": ["Bash", "Edit", "Skill", "WebFetch", "WebSearch"]
   },
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/tooling/scripts/autostage-next.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
 }

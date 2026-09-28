@@ -1,0 +1,33 @@
+## literal <callout> text: ROUND-TRIP OK
+  md: "see \\<callout>x\\</callout> and \\</callout> end\n"
+  back: [{"type":"paragraph","children":[{"text":"see <callout>x</callout> and </callout> end"}]}]
+## literal <del> and <u> text: ROUND-TRIP OK
+  md: "html \\<del>gone\\</del> \\<u>u\\</u> \\<img src=x>\n"
+  back: [{"type":"paragraph","children":[{"text":"html <del>gone</del> <u>u</u> <img src=x>"}]}]
+## literal tag at line start: ROUND-TRIP OK
+  md: "\\<callout>\n"
+  back: [{"type":"paragraph","children":[{"text":"<callout>"}]}]
+## inline code with tag: ROUND-TRIP OK
+  md: "`<callout icon=\"x\">`\n"
+  back: [{"type":"paragraph","children":[{"code":true,"text":"<callout icon=\"x\">"}]}]
+## code block with tags: ROUND-TRIP OK
+  md: "```html\n<callout>\n</callout>\n```\n"
+  back: [{"language":"html","type":"codeBlock","children":[{"text":"<callout>\n</callout>"}]}]
+## attr with quote/amp/lt: ROUND-TRIP OK
+  md: "<callout icon=\"a&quot;b&amp;c<d>'e\">\n\nhi\n\n</callout>\n"
+  back: [{"icon":"a\"b&c<d>'e","type":"callout","children":[{"text":"hi"}]}]
+## attr with newline: DIFFERS
+  md: "<callout icon=\"line1\nline2\">\n\nhi\n\n</callout>\n"
+  back: [{"type":"paragraph","children":[{"text":"<callout icon=\"line1\nline2\">"}]},{"type":"paragraph","children":[{"text":"hi"}]},{"type":"paragraph","children":[{"text":"</callout>"}]}]
+## attr numeric-looking string: DIFFERS
+  md: "<callout icon=\"123\">\n\nhi\n\n</callout>\n"
+  back: [{"icon":"💡","type":"callout","children":[{"text":"hi"}]}]
+## attr json-looking string: DIFFERS
+  md: "<callout icon=\"{&quot;a&quot;:1}\">\n\nhi\n\n</callout>\n"
+  back: [{"icon":"💡","type":"callout","children":[{"text":"hi"}]}]
+## nested identical details: ROUND-TRIP OK
+  md: "<details>\n\n<summary>\n\nouter\n\n</summary>\n\n<details>\n\n<summary>\n\ninner\n\n</summary>\n\ndeep\n\n</details>\n\n</details>\n"
+  back: [{"type":"details","children":[{"type":"summary","children":[{"text":"outer"}]},{"type":"details","children":[{"type":"summary","children":[{"text":"inner"}]},{"type":"paragraph","children":[{"text":"deep"}]}]}]}]
+## text with braces and entities: ROUND-TRIP OK
+  md: "{x} \\&amp; \\&lt;b\\&gt; \\\\\\<callout>\n"
+  back: [{"type":"paragraph","children":[{"text":"{x} &amp; &lt;b&gt; \\<callout>"}]}]

@@ -261,22 +261,18 @@ Break between lists.
   });
 
   it('deserializes an empty list', () => {
-    const input = `
-    - list
-      - list
-    - list
-    - list
-    - 
-      `;
+    const input = ['', '- list', '  - list', '- list', '- list', '- ', ''].join(
+      '\n'
+    );
 
     expect(parseTestMarkdown(editor, input).children).toMatchSnapshot();
   });
 
   it('deserializes a todo list', () => {
     const input = `
-    - [ ] todo list
-    - [x] todo list
-    `;
+- [ ] todo list
+- [x] todo list
+`;
     expect(parseTestMarkdown(editor, input).children).toMatchSnapshot();
   });
 });

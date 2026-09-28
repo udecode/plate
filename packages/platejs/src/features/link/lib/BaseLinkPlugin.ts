@@ -279,9 +279,9 @@ export const BaseLinkPlugin = definePlugin('link', {
         match: [{ tag: 'a' }],
       },
       markdown: {
-        from: 'link',
-        decode: ({ decode, decoration, node }) => ({
-          children: decode(node.children, decoration),
+        node: 'link',
+        decode: ({ decode, marks, node }) => ({
+          children: decode(node.children, marks),
           type,
           url: node.url,
         }),

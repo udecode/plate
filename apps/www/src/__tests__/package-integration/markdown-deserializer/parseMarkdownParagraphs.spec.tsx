@@ -55,8 +55,7 @@ Paragaph with two new Lines\\
     const output = (
       <fragment>
         <hp>
-          <htext>Paragaph with two new Lines</htext>
-          <htext>{'\n'}</htext>
+          <htext>{'Paragaph with two new Lines\n'}</htext>
         </hp>
       </fragment>
     );
@@ -75,9 +74,7 @@ Paragaph with two new Lines\\
     const output = (
       <fragment>
         <hp>
-          <htext>Paragaph with two new Lines</htext>
-          <htext>{'\n'}</htext>
-          <htext>{'\n'}</htext>
+          <htext>{'Paragaph with two new Lines\n\n'}</htext>
         </hp>
       </fragment>
     );
@@ -96,10 +93,7 @@ followed by text`;
     const output = (
       <fragment>
         <hp>
-          <htext>Paragaph with two new Lines</htext>
-          <htext>{'\n'}</htext>
-          <htext>{'\n'}</htext>
-          <htext>followed by text</htext>
+          <htext>{'Paragaph with two new Lines\n\nfollowed by text'}</htext>
         </hp>
       </fragment>
     );

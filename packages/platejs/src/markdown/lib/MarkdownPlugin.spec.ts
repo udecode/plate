@@ -15,7 +15,10 @@ import {
 } from '../../core';
 import { writeDataTransferFragment } from '../../dom';
 import { BaseBoldPlugin } from '../../features/basic-nodes';
-import { BaseFontColorPlugin } from '../../features/basic-styles';
+import {
+  BaseFontColorPlugin,
+  BaseTextAlignPlugin,
+} from '../../features/basic-styles';
 import { BaseListPlugin } from '../../features/list';
 import {
   createTestEditor,
@@ -26,13 +29,10 @@ import { createMarkdownRuntime } from './internal/markdownConversion';
 import {
   MarkdownPlugin,
   parseMarkdown,
-  parseMarkdownInline,
-  parseMarkdownSlice,
   serializeMarkdown,
 } from './MarkdownPlugin';
-import { remarkMdx } from './plugins';
 import type { MarkdownSyncPluggable } from './types';
-import { materializeRemarkPlugins } from './utils/getRemarkPluginsWithoutMdx';
+import { materializeRemarkPlugins } from './utils/remarkPlugins';
 
 const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
   options: Omit<CreateEditorOptions, 'plugins'> & {
@@ -202,16 +202,10 @@ describe('MarkdownPlugin', () => {
     const plugin = editor.plugin(MarkdownPlugin);
 
     expect(editor.plugin(MarkdownPlugin).store.get()).toMatchObject({
-      allowedNodes: null,
-      disallowedNodes: null,
       plainMarks: null,
       remarkPlugins: [],
       remarkStringifyOptions: null,
     });
-    expect(typeof editor.api.markdown.parse).toBe('function');
-    expect(typeof editor.api.markdown.parseInline).toBe('function');
-    expect(typeof editor.api.markdown.parseSlice).toBe('function');
-    expect(typeof editor.api.markdown.serialize).toBe('function');
     expect(Reflect.ownKeys(editor.plugin(MarkdownPlugin).api)).toEqual([
       'parse',
       'parseInline',
@@ -229,6 +223,90 @@ describe('MarkdownPlugin', () => {
           type: 'paragraph',
         },
       ],
+    });
+  });
+
+  it('returns closed rootless slices from slice and inline parsing', () => {
+    const editor = createFixtureEditor({
+      plugins: [BaseParagraphPlugin, BaseBoldPlugin, MarkdownPlugin],
+    });
+    const slice = editor.api.markdown.parseSlice('**bold**');
+    const inline = editor.api.markdown.parseInline(' **bold** ');
+
+    expect(slice.ok).toBe(true);
+    expect(inline.ok).toBe(true);
+    if (!slice.ok || !inline.ok) throw new Error('Expected Markdown slices.');
+    expect(slice.slice).toMatchObject({ openEnd: 0, openStart: 0 });
+    expect(inline.slice).toMatchObject({ openEnd: 0, openStart: 0 });
+    expect(slice.slice.roots).toBeUndefined();
+    expect(inline.slice.roots).toBeUndefined();
+  });
+
+  it('rejects multiple blocks in inline parsing instead of truncating', () => {
+    const editor = createFixtureEditor({
+      plugins: [BaseParagraphPlugin, MarkdownPlugin],
+    });
+
+    expect(editor.api.markdown.parseInline('one\n\ntwo')).toMatchObject({
+      diagnostics: [
+        {
+          actual: 2,
+          code: 'markdown-inline-blocks',
+          severity: 'error',
+        },
+      ],
+      ok: false,
+    });
+  });
+
+  it('returns schema-fit repairs as typed diagnostics', () => {
+    const FittedPlugin = definePlugin('fittedMarkdownNode', {
+      formats: ({ defineFormats, schema: { type } }) =>
+        defineFormats({
+          markdown: {
+            decode: () => ({
+              children: [{ text: 'fit' }, { text: 'ted' }],
+              type,
+            }),
+            node: 'paragraph',
+          },
+        }),
+      schema: { element: schema.element.textBlock() },
+    });
+    const plugins = [
+      BaseParagraphPlugin,
+      FittedPlugin,
+      MarkdownPlugin,
+    ] as const;
+    const result = parseMarkdown('fitted', { plugins });
+
+    expect(result).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'markdown-schema-repair',
+          impact: 'lossless',
+          repair: 'merge-text',
+          severity: 'warning',
+        }),
+      ],
+      document: {
+        children: [expect.objectContaining({ children: [{ text: 'fitted' }] })],
+      },
+      ok: true,
+    });
+
+    expect(
+      createFixtureEditor({ plugins }).api.markdown.parseSlice('fitted')
+    ).toMatchObject({
+      diagnostics: [],
+      ok: true,
+      slice: {
+        content: [
+          expect.objectContaining({
+            children: [{ text: 'fit' }, { text: 'ted' }],
+          }),
+        ],
+      },
     });
   });
 
@@ -252,46 +330,11 @@ describe('MarkdownPlugin', () => {
     expect(directSerialized).toEqual(editorSerialized);
   });
 
-  it('returns closed rootless slices from direct slice and inline parsing', () => {
-    const plugins = [
-      BaseParagraphPlugin,
-      BaseBoldPlugin,
-      MarkdownPlugin,
-    ] as const;
-    const slice = parseMarkdownSlice('**bold**', { plugins });
-    const inline = parseMarkdownInline(' **bold** ', { plugins });
-
-    expect(slice.ok).toBe(true);
-    expect(inline.ok).toBe(true);
-    if (!slice.ok || !inline.ok) throw new Error('Expected Markdown slices.');
-    expect(slice.slice).toMatchObject({ openEnd: 0, openStart: 0 });
-    expect(inline.slice).toMatchObject({ openEnd: 0, openStart: 0 });
-    expect(slice.slice.roots).toBeUndefined();
-    expect(inline.slice.roots).toBeUndefined();
-  });
-
-  it('rejects multiple blocks in inline parsing instead of truncating', () => {
-    const result = parseMarkdownInline('one\n\ntwo', {
-      plugins: [BaseParagraphPlugin, MarkdownPlugin],
-    });
-
-    expect(result).toMatchObject({
-      diagnostics: [
-        {
-          actual: 2,
-          code: 'markdown-inline-blocks',
-          severity: 'error',
-        },
-      ],
-      ok: false,
-    });
-  });
-
-  it('reports limits and reserves fallback for explicit streaming recovery', () => {
+  it('reports limits and hides only an unfinished trailing tag in partial parses', () => {
     const plugins = [
       BaseParagraphPlugin,
       MarkdownPlugin.configure({
-        initialState: { remarkPlugins: [remarkMdx] },
+        initialState: { remarkPlugins: [] },
       }),
     ] as const;
     const limited = parseMarkdown('three bytes', {
@@ -299,10 +342,8 @@ describe('MarkdownPlugin', () => {
       plugins,
     });
     const strict = parseMarkdown('<u>', { plugins });
-    const recovered = parseMarkdown('<u>', {
-      plugins,
-      recovery: 'incomplete-stream',
-    });
+    const partial = parseMarkdown('Before <blo', { partial: true, plugins });
+    const final = parseMarkdown('Before <blo', { plugins });
 
     expect(limited).toMatchObject({
       diagnostics: [
@@ -310,9 +351,21 @@ describe('MarkdownPlugin', () => {
       ],
       ok: false,
     });
-    expect(strict.ok).toBe(false);
-    expect(recovered).toMatchObject({
-      diagnostics: [expect.objectContaining({ code: 'markdown-fallback' })],
+    expect(strict).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'markdown-unsupported-node',
+          nodeType: 'html',
+        }),
+      ],
+      ok: false,
+    });
+    expect(partial).toMatchObject({
+      document: { children: [{ children: [{ text: 'Before' }] }] },
+      ok: true,
+    });
+    expect(final).toMatchObject({
+      document: { children: [{ children: [{ text: 'Before <blo' }] }] },
       ok: true,
     });
   });
@@ -360,99 +413,19 @@ describe('MarkdownPlugin', () => {
     });
   });
 
-  it('diagnoses caller-requested node filtering', () => {
-    const plugins = [
-      BaseParagraphPlugin,
-      BaseBoldPlugin,
-      MarkdownPlugin,
-    ] as const;
-    const result = parseMarkdown('**bold**', {
-      disallowedNodes: ['bold'],
-      plugins,
-    });
-
-    expect(result).toMatchObject({
-      diagnostics: [
-        expect.objectContaining({
-          code: 'markdown-filtered-node',
-          severity: 'warning',
-        }),
-      ],
-      ok: true,
-    });
-  });
-
-  it('returns schema-fit repairs as typed diagnostics', () => {
-    const FittedPlugin = definePlugin('fittedMarkdownNode', {
-      formats: ({ defineFormats, schema: { type } }) =>
-        defineFormats({
-          markdown: {
-            decode: () => ({
-              children: [{ text: 'fit' }, { text: 'ted' }],
-              type,
-            }),
-            from: 'paragraph',
-          },
-        }),
-      schema: { element: schema.element.textBlock() },
-    });
-    const result = parseMarkdown('fitted', {
-      plugins: [BaseParagraphPlugin, FittedPlugin, MarkdownPlugin],
-    });
-
-    expect(result).toMatchObject({
-      diagnostics: [
-        expect.objectContaining({
-          code: 'markdown-schema-repair',
-          impact: 'lossless',
-          repair: 'merge-text',
-          severity: 'warning',
-        }),
-      ],
-      document: {
-        children: [expect.objectContaining({ children: [{ text: 'fitted' }] })],
-      },
-      ok: true,
-    });
-
-    expect(
-      parseMarkdownSlice('fitted', {
-        plugins: [BaseParagraphPlugin, FittedPlugin, MarkdownPlugin],
-      })
-    ).toMatchObject({
-      diagnostics: [],
-      ok: true,
-      slice: {
-        content: [
-          expect.objectContaining({
-            children: [{ text: 'fit' }, { text: 'ted' }],
-          }),
-        ],
-      },
-    });
-  });
-
-  it('round-trips canonical persisted element ids', () => {
+  it('reads persisted element ids from block wrappers', () => {
     const editor = createFixtureEditor({
       plugins: [
         ElementIdPlugin,
         MarkdownPlugin.configure({
-          initialState: { remarkPlugins: [remarkMdx] },
+          initialState: { remarkPlugins: [] },
         }),
-      ],
-      initialValue: [
-        {
-          children: [{ text: 'Hello' }],
-          id: 'block-1',
-          type: 'paragraph',
-        },
       ],
     });
 
-    const markdown = serializeTestMarkdown(editor, { withBlockId: true }).data;
-
-    expect(markdown).toContain('<block id="block-1">');
-    expect(parseTestMarkdown(editor, markdown)).toEqual({
+    expect(
+      parseTestMarkdown(editor, '<block id="block-1">\n\nHello\n\n</block>')
+    ).toEqual({
       children: [
         {
           children: [{ text: 'Hello' }],
@@ -463,56 +436,52 @@ describe('MarkdownPlugin', () => {
     });
   });
 
-  it('round-trips persisted ids for flat list blocks', () => {
+  it('reads persisted ids for legacy flat list blocks', () => {
     const editor = createFixtureEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseListPlugin,
         ElementIdPlugin,
         MarkdownPlugin.configure({
-          initialState: { remarkPlugins: [remarkMdx] },
+          initialState: { remarkPlugins: [] },
         }),
-      ],
-      initialValue: [
-        {
-          children: [{ text: 'First' }],
-          id: 'list-1',
-          indent: 1,
-          listType: 'bulleted',
-          type: 'paragraph',
-        },
-        {
-          children: [{ text: 'Second' }],
-          id: 'list-2',
-          indent: 1,
-          listType: 'bulleted',
-          type: 'paragraph',
-        },
       ],
     });
 
-    const markdown = serializeTestMarkdown(editor, { withBlockId: true }).data;
-
-    expect(markdown).toContain('<block id="list-1">');
-    expect(markdown).toContain('<block id="list-2">');
-    expect(parseTestMarkdown(editor, markdown).children).toEqual([
+    expect(
+      parseTestMarkdown(
+        editor,
+        '<block id="list-1">\n  * First\n</block>\n\n<block id="list-2">\n  * Second\n</block>'
+      ).children
+    ).toEqual([
       expect.objectContaining({ id: 'list-1' }),
       expect.objectContaining({ id: 'list-2' }),
     ]);
   });
 
-  it('rejects persisted block wrappers without ElementIdPlugin', () => {
+  it('unwraps persisted block wrappers without ElementIdPlugin', () => {
     const editor = createFixtureEditor({
       plugins: [
         MarkdownPlugin.configure({
-          initialState: { remarkPlugins: [remarkMdx] },
+          initialState: { remarkPlugins: [] },
         }),
       ],
     });
 
-    expect(() =>
-      parseTestMarkdown(editor, '<block id="block-1">\n\nHello\n\n</block>')
-    ).toThrow('requires ElementIdPlugin');
+    expect(
+      editor.api.markdown.parse('<block id="block-1">\n\nHello\n\n</block>')
+    ).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          action: 'unwrapped',
+          code: 'markdown-unsupported-node',
+          nodeType: 'block',
+          severity: 'warning',
+        }),
+      ],
+      document: { children: [{ children: [{ text: 'Hello' }] }] },
+      ok: true,
+    });
   });
 
   it('checks optional plugins through their installed portal state', () => {
@@ -793,14 +762,68 @@ describe('MarkdownPlugin', () => {
     expect(value).not.toHaveProperty('roots');
   });
 
-  it('deserializes partially styled MDX spans into JSON-compatible content', () => {
+  it('warns about a property Markdown cannot carry instead of failing', () => {
+    const editor = createFixtureEditor({
+      plugins: [BaseParagraphPlugin, BaseTextAlignPlugin, MarkdownPlugin],
+    });
+
+    expect(
+      editor.api.markdown.serialize({
+        document: {
+          children: [
+            {
+              children: [{ text: 'Title' }],
+              textAlign: 'center',
+              type: 'paragraph',
+            },
+          ],
+        },
+      })
+    ).toMatchObject({
+      data: 'Title\n',
+      diagnostics: [
+        expect.objectContaining({
+          code: 'markdown-property-omitted',
+          key: 'textAlign',
+          phase: 'serialize',
+          severity: 'warning',
+        }),
+      ],
+      ok: true,
+    });
+  });
+
+  it('keeps adjacent spans with different attributes apart', () => {
+    const editor = createFixtureEditor({
+      plugins: [BaseParagraphPlugin, BaseFontColorPlugin, MarkdownPlugin],
+    });
+
+    expect(
+      serializeTestMarkdown(editor, {
+        document: {
+          children: [
+            {
+              children: [
+                { color: 'red', text: 'RED' },
+                { color: 'blue', text: 'BLUE' },
+              ],
+              type: 'paragraph',
+            },
+          ],
+        },
+      }).data
+    ).toBe(
+      '<span style="color: red;">RED</span><span style="color: blue;">BLUE</span>\n'
+    );
+  });
+
+  it('deserializes partially styled spans into JSON-compatible content', () => {
     const editor = createFixtureEditor({
       plugins: [BaseFontColorPlugin, MarkdownPlugin],
     });
     const value = parseTestMarkdown(
       editor,
-      '<span style="color: #93C47D;">colored</span>',
-      { remarkPlugins: [remarkMdx] }
+      '<span style="color: #93C47D;">colored</span>'
     );
 
     expect(value).toEqual({

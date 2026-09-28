@@ -14,7 +14,6 @@ import type {
 import { BaseImagePlugin } from 'platejs/media';
 
 import { MarkdownPlugin } from '../../../../../../packages/platejs/src/markdown/lib/MarkdownPlugin';
-import { remarkMdx } from '../../../../../../packages/platejs/src/markdown/lib/plugins';
 import { createTestEditor } from './createTestEditor';
 
 const inlineContent = schema.content.any(
@@ -47,10 +46,10 @@ const CustomHeadingPlugin = definePlugin('customH1', {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       markdown: {
-        decode: ({ decode, decoration, node }) =>
+        decode: ({ decode, marks, node }) =>
           node.depth === 1
             ? {
-                children: decode(node.children, decoration),
+                children: decode(node.children, marks),
                 type,
               }
             : undefined,
@@ -59,7 +58,7 @@ const CustomHeadingPlugin = definePlugin('customH1', {
           depth: 1,
           type: 'heading',
         }),
-        from: 'heading',
+        node: 'heading',
       },
     }),
   schema: {
@@ -73,15 +72,15 @@ const CustomParagraphPlugin = definePlugin('customParagraph', {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       markdown: {
-        decode: ({ decode, decoration, node }) => ({
-          children: decode(node.children, decoration),
+        decode: ({ decode, marks, node }) => ({
+          children: decode(node.children, marks),
           type,
         }),
         encode: ({ encodePhrasing, node }) => ({
           children: encodePhrasing(node.children),
           type: 'paragraph',
         }),
-        from: 'paragraph',
+        node: 'paragraph',
       },
     }),
   schema: {
@@ -92,17 +91,13 @@ const CustomParagraphPlugin = definePlugin('customParagraph', {
 });
 
 const CustomBoldPlugin = definePlugin('customBold', {
-  formats: ({ defineFormats, schema: { key } }) =>
+  formats: ({ defineFormats }) =>
     defineFormats({
       markdown: {
-        decode: ({ decode, decoration, node }) =>
-          decode(node.children, {
-            ...decoration,
-            [key]: true,
-          }),
-        encode: () => ({ children: [], type: 'strong' }),
-        from: 'strong',
+        decode: () => true,
+        node: 'strong',
         mark: true,
+        wrap: () => ({ type: 'strong' }),
       },
     }),
   schema: {
@@ -116,7 +111,7 @@ describe('feature-owned Markdown formats', () => {
       plugins: [
         BaseCalloutPlugin,
         MarkdownPlugin.configure({
-          initialState: { remarkPlugins: [remarkMdx] },
+          initialState: { remarkPlugins: [] },
         }),
       ],
     });
@@ -126,6 +121,7 @@ describe('feature-owned Markdown formats', () => {
     ).toEqual([
       {
         children: [{ text: 'Text' }],
+        icon: '💡',
         type: 'callout',
       },
     ]);
@@ -159,7 +155,7 @@ describe('feature-owned Markdown formats', () => {
         BaseImagePlugin,
         BaseCalloutPlugin,
         MarkdownPlugin.configure({
-          initialState: { remarkPlugins: [remarkMdx, remarkCalloutImage] },
+          initialState: { remarkPlugins: [remarkCalloutImage] },
         }),
       ],
     });
@@ -297,11 +293,12 @@ describe('feature-owned Markdown formats', () => {
     if (!ElementApi.isElement(paragraph)) {
       throw new Error('Expected the formula paragraph to be an element.');
     }
-    expect(paragraph.children).toHaveLength(1);
-
-    const inlineEquation = paragraph.children[0];
-    expect(inlineEquation.type).toBe('inlineEquation');
-    expect(inlineEquation.latex).toBe('a=b');
+    // Inline voids sit between canonical empty text spacers.
+    expect(paragraph.children).toMatchObject([
+      { text: '' },
+      { latex: 'a=b', type: 'inlineEquation' },
+      { text: '' },
+    ]);
   });
 
   it('converts footnote definitions into dedicated nodes', () => {
@@ -350,7 +347,9 @@ describe('feature-owned Markdown formats', () => {
       document: {
         children: [
           {
-            children: [{ text: 'Line one' }, { text: '\n' }],
+            children: [
+              { children: [{ text: 'Line one\n' }], type: 'paragraph' },
+            ],
             type: 'blockquote',
           },
         ],

@@ -255,11 +255,7 @@ const FormatContractPlugin = definePlugin('formatContract', {
         void (schemaView.getVocabulary()
           .elementTypes satisfies readonly string[]);
 
-        return {
-          diagnostics: [],
-          ok: true,
-          slice: ContentSlice.closed([{ text: data }]),
-        };
+        return ContentSlice.closed([{ text: data }]);
       },
       encode: ({ mimeType, pluginState, slice, state }) => {
         const exactFormat: string = mimeType;
@@ -272,7 +268,7 @@ const FormatContractPlugin = definePlugin('formatContract', {
         void exactOpenStart;
         void exactSchema;
 
-        return { data: 'encoded', diagnostics: [], ok: true };
+        return 'encoded';
       },
     },
   ],
@@ -338,7 +334,7 @@ const MarkdownFormatContractPlugin = definePlugin('markdownFormatContract', {
 
           return { children: [], type: 'paragraph' };
         },
-        from: 'paragraph',
+        node: 'paragraph',
       },
     }),
 });
@@ -426,7 +422,7 @@ const MarkdownSchemaFactoryFormatContractPlugin = definePlugin(
 
             return { children: [], type: 'paragraph' };
           },
-          from: 'paragraph',
+          node: 'paragraph',
         },
       }),
   }
@@ -438,7 +434,7 @@ const MarkdownMarkFormatContractPlugin = definePlugin(
   'markdownMarkFormatContract',
   {
     schema: { mark: property.string() },
-    formats: ({ defineFormats, schema: innerSchema3 }) =>
+    formats: ({ defineFormats }) =>
       defineFormats({
         html: {
           decode: ({ element }) => element.style.color || undefined,
@@ -449,18 +445,25 @@ const MarkdownMarkFormatContractPlugin = definePlugin(
           match: [{ style: { color: '*' } }],
         },
         markdown: {
-          decode: ({ decode, decoration, node }) =>
-            decode(node.children, {
-              ...decoration,
-              [innerSchema3.key]: 'red',
-            }),
-          encode: ({ node }) => ({
-            attributes: [],
-            children: [{ type: 'text', value: node.text }],
-            name: 'span',
-            type: 'mdxJsxTextElement',
-          }),
-          from: 'span',
+          decode: ({ marks }) => {
+            void marks;
+
+            return 'red';
+          },
+          wrap: ({ node, value }) => {
+            const exactText: string = node.text;
+            const exactValue: string = value;
+
+            void exactText;
+            void exactValue;
+
+            return {
+              attributes: [],
+              name: 'span',
+              type: 'mdxJsxTextElement',
+            };
+          },
+          tag: 'span',
           mark: true,
         },
       }),
@@ -468,6 +471,33 @@ const MarkdownMarkFormatContractPlugin = definePlugin(
 );
 
 void MarkdownMarkFormatContractPlugin;
+
+const MarkdownMarkValueContractPlugin = definePlugin(
+  'markdownMarkValueContract',
+  {
+    schema: { mark: property.boolean() },
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        markdown: [
+          // @ts-expect-error Mark mappings return their schema value, not Plate nodes.
+          {
+            decode: ({ decode, node }) => decode(node.children),
+            mark: true,
+            tag: 'span',
+          },
+          // @ts-expect-error Mark mappings compose, so they take no priority.
+          {
+            decode: () => true,
+            mark: true,
+            priority: 1,
+            tag: 'b',
+          },
+        ],
+      }),
+  }
+);
+
+void MarkdownMarkValueContractPlugin;
 
 const HtmlParagraphContractPlugin = definePlugin('htmlParagraphContract', {
   schema: {
@@ -901,11 +931,7 @@ definePlugin('documentMarkdownFormatContract', {
   dataTransferFormats: [
     {
       mimeType: 'text/markdown',
-      decode: ({ data }) => ({
-        diagnostics: [],
-        ok: true,
-        slice: ContentSlice.closed([{ text: data }]),
-      }),
+      decode: ({ data }) => ContentSlice.closed([{ text: data }]),
       scope: 'document',
     },
   ],

@@ -13,6 +13,8 @@ import {
 } from '../../combobox';
 
 const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
+const MENTION_URL_PREFIX = 'mention:';
+
 const isNonBlankRef = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
@@ -108,15 +110,29 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
       },
 
       markdown: {
+        // `[label](mention:ref)` links; any other link falls through to Link.
+        node: 'link',
+        priority: 10,
         decode: ({ node }) => {
-          if (!isNonBlankRef(node.username)) return undefined;
+          if (!node.url.startsWith(MENTION_URL_PREFIX)) return undefined;
+          let ref: string;
+
+          try {
+            ref = decodeURIComponent(node.url.slice(MENTION_URL_PREFIX.length));
+          } catch {
+            return undefined;
+          }
+          if (!isNonBlankRef(ref)) return undefined;
+          const [first] = node.children;
+          const label =
+            node.children.length === 1 && first?.type === 'text'
+              ? first.value
+              : undefined;
 
           return {
-            ...(node.displayText && node.displayText !== node.username
-              ? { label: node.displayText }
-              : {}),
+            ...(label && label !== ref ? { label } : {}),
             children: [{ text: '' }],
-            ref: node.username,
+            ref,
             type,
           };
         },
@@ -128,10 +144,9 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
           return {
             children: [{ type: 'text', value: node.label ?? node.ref }],
             type: 'link',
-            url: `mention:${encodedId}`,
+            url: `${MENTION_URL_PREFIX}${encodedId}`,
           };
         },
-        from: 'mention',
       },
     }),
   update: ({ store, tx, schema: { type } }) => ({

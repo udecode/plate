@@ -1607,7 +1607,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         }
         const parsed = content
           ? commandEditor.api.markdown.parseSlice(content, {
-              ...(final ? {} : { recovery: 'incomplete-stream' }),
+              // Previews show unsupported content as text; the final parse
+              // stays strict and invalidates a response it cannot represent.
+              ...(final ? {} : { lossPolicy: 'allow', partial: true }),
             })
           : null;
 

@@ -37,24 +37,14 @@ const jsonFormat: DataTransferFormat<CustomValue> = {
   decode: ({ data, state }) => {
     const children: readonly ParagraphElement[] = state.children();
 
-    return data
-      ? {
-          diagnostics: [],
-          ok: true,
-          slice: ContentSlice.closed<CustomValue>(children),
-        }
-      : null;
+    return data ? ContentSlice.closed<CustomValue>(children) : null;
   },
   claims: [{ kind: 'schema' }],
   encode: ({ slice, state }) => {
     const content: ReadonlyArray<CustomText | ParagraphElement> = slice.content;
     const children: readonly ParagraphElement[] = state.children();
 
-    return {
-      data: JSON.stringify({ children, content }),
-      diagnostics: [],
-      ok: true,
-    };
+    return JSON.stringify({ children, content });
   },
 };
 

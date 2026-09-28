@@ -231,6 +231,11 @@ The HTML example has separate native and synthetic event cases in
 PLAYWRIGHT_BASE_URL=http://localhost:3297 pnpm --filter www test:www-browser:chromium tests/browser/clipboard.spec.ts
 ```
 
+The same spec runs under `test:www-browser:firefox` and
+`test:www-browser:webkit`. Only Chromium exposes clipboard permissions to
+automation, and Playwright's WebKit build is not Safari; claim Safari behavior
+only with Safari proof.
+
 For plain text, the current recipe is
 `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts`: open
 `/examples/plite/plaintext`, focus the editor, move to the end, type text and

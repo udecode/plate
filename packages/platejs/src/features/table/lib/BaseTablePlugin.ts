@@ -360,14 +360,24 @@ export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
         match: [{ tag: 'td' }, { tag: 'th' }],
       },
       markdown: {
-        encode: ({ encode, isPhrasing, node }) => {
+        encode: ({ encode, isPhrasing, node, refuse }) => {
           if (getColSpan(node) > 1 || getRowSpan(node) > 1) {
-            throw new Error(
+            return refuse(
               'Markdown tables cannot represent rowSpan or colSpan.'
             );
           }
 
           const blocks = encode(node.children);
+
+          if (
+            blocks.some(
+              (block) => block.type !== 'paragraph' && !isPhrasing(block)
+            )
+          ) {
+            return refuse(
+              'Markdown table cells can only contain inline content.'
+            );
+          }
           const children = blocks.flatMap((block, index) => {
             const content =
               block.type === 'paragraph'
@@ -375,12 +385,6 @@ export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
                 : isPhrasing(block)
                   ? [block]
                   : [];
-
-            if (block.type !== 'paragraph' && !isPhrasing(block)) {
-              throw new Error(
-                'Markdown table cells can only contain inline content.'
-              );
-            }
 
             return index === blocks.length - 1
               ? content
@@ -432,12 +436,18 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
         match: [{ tag: 'tr' }],
       },
       markdown: {
-        encode: ({ encode, node }) => {
+        encode: ({ encode, node, refuse }) => {
           const children = encode(node.children);
 
           if (!children.every((child) => child.type === 'tableCell')) {
             throw new Error(
               'Markdown table rows can only contain table cells.'
+            );
+          }
+          // A refused cell would shift the columns after it.
+          if (children.length !== node.children.length) {
+            return refuse(
+              'Markdown table row contains a cell it cannot represent.'
             );
           }
 
@@ -895,7 +905,7 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
         match: [{ tag: 'table' }],
       },
       markdown: {
-        decode: ({ decode, decoration, isBlock, isInline, node, registry }) => {
+        decode: ({ decode, marks, isBlock, isInline, node, registry }) => {
           const cellType = registry.type(BaseTableCellPlugin);
           const paragraphType = registry.type(BaseParagraphPlugin);
           const rowType = registry.type(BaseTableRowPlugin);
@@ -907,7 +917,7 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
           }
           const rows = node.children.map((row, rowIndex) => ({
             children: row.children.map((cell) => {
-              const children = decode(cell.children, decoration);
+              const children = decode(cell.children, marks);
               const grouped: Descendant[] = [];
               let inline: Descendant[] = [];
               const flush = () => {
@@ -950,16 +960,19 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
 
           return { children: rows, type };
         },
-        encode: ({ encode, node }) => {
+        encode: ({ encode, node, refuse }) => {
           const children = encode(node.children);
 
           if (!children.every((child) => child.type === 'tableRow')) {
             throw new Error('Markdown tables can only contain table rows.');
           }
+          if (children.length !== node.children.length) {
+            return refuse('Markdown table contains a row it cannot represent.');
+          }
 
           return { children, type: 'table' };
         },
-        from: 'table',
+        node: 'table',
       },
     }),
 });

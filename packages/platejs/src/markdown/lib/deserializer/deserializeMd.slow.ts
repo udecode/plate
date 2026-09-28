@@ -2,11 +2,6 @@ import {
   createTestEditor,
   parseTestMarkdown,
 } from '../__tests__/createTestEditor';
-import {
-  markdownToAstProcessorWithRuntime,
-  withMarkdownRuntime,
-} from '../internal/markdownConversion';
-import { MarkdownPlugin } from '../MarkdownPlugin';
 
 describe('editor.api.markdown.parse', () => {
   it('deserializes blockquotes as container blocks with nested list content', () => {
@@ -130,7 +125,7 @@ describe('editor.api.markdown.parse', () => {
     });
   });
 
-  it('preserves raw html blocks as editable source text paragraphs', () => {
+  it('reads a figure holding only an image as an uncaptioned image', () => {
     const editor = createTestEditor();
 
     expect(
@@ -138,31 +133,35 @@ describe('editor.api.markdown.parse', () => {
         editor,
         '<figure class="hero"><img src="/image.png"></figure>'
       )
-    ).toEqual({
-      children: [
-        {
-          children: [
-            {
-              text: '<figure class="hero">\n<img src="/image.png" />\n</figure>',
-            },
-          ],
-          type: 'paragraph',
-        },
-      ],
+    ).toMatchObject({
+      children: [{ type: 'image', url: '/image.png' }],
     });
   });
-});
 
-describe('markdownToAstProcessor', () => {
-  it('returns the parsed mdast root', () => {
+  it('keeps unregistered raw html as diagnosed source text', () => {
     const editor = createTestEditor();
-    const ast = withMarkdownRuntime(
-      editor,
-      editor.plugin(MarkdownPlugin).store.get(),
-      (runtime) => markdownToAstProcessorWithRuntime(runtime, '# Title')
-    );
 
-    expect(ast.type).toBe('root');
-    expect(ast.children[0]?.type).toBe('heading');
+    expect(
+      editor.api.markdown.parse('<div class="hero">\nhello\n</div>', {
+        lossPolicy: 'allow',
+      })
+    ).toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          action: 'replaced',
+          code: 'markdown-unsupported-node',
+          nodeType: 'html',
+        }),
+      ],
+      document: {
+        children: [
+          {
+            children: [{ text: '<div class="hero">\nhello\n</div>' }],
+            type: 'paragraph',
+          },
+        ],
+      },
+      ok: true,
+    });
   });
 });

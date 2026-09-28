@@ -11,11 +11,7 @@ export const convertTextsSerialize = (
   slateTexts: readonly Text[],
   options: SerializeMdContext
 ): MdMark[] => {
-  const customLeaf = options.rules
-    ? Object.entries(options.rules)
-        .filter(([, parser]) => parser?.mark)
-        .map(([key]) => key)
-    : [];
+  const customLeaf = [...options.mappings.encodeByMark.keys()];
   const plainMarkSet = new Set(options.plainMarks);
 
   const mdastTexts: MdMark[] = [];
@@ -122,12 +118,12 @@ export const convertTextsSerialize = (
         .slice()
         .reverse()
         .forEach((key) => {
-          const nodeParser = options.rules?.[key]?.serialize;
+          const encode = options.mappings.encodeByMark.get(key);
 
-          if (nodeParser) {
-            const node = nodeParser(cur, options);
+          if (encode) {
+            const node = encode(cur, options);
 
-            if (isMdMarkContainer(node)) {
+            if (node && isMdMarkContainer(node)) {
               res = {
                 ...node,
                 children: [res],
@@ -247,11 +243,20 @@ const hasContent = (node: MdMark): boolean => {
   return false;
 };
 
+// Adjacent formatting merges only when the containers are equivalent: a red
+// span next to a blue span stays two spans.
+const sameContainer = (left: MdMark, right: MdMark) =>
+  left.type === right.type &&
+  (left.type !== 'mdxJsxTextElement' ||
+    (left.name === (right as typeof left).name &&
+      JSON.stringify(left.attributes) ===
+        JSON.stringify((right as typeof left).attributes)));
+
 const mergeTexts = (nodes: MdMark[]): MdMark[] => {
   const res: MdMark[] = [];
   for (const cur of nodes) {
     const last = res.at(-1);
-    if (last && last.type === cur.type) {
+    if (last && sameContainer(last, cur)) {
       if (last.type === 'text') {
         last.value += (cur as typeof last).value;
       } else if (last.type === 'inlineCode') {

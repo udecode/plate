@@ -170,6 +170,7 @@ describe('commonmark package surfaces', () => {
               type: 'link',
               url: 'https://platejs.org',
             },
+            { text: '' },
           ],
           type: 'paragraph',
         },
@@ -182,11 +183,13 @@ describe('commonmark package surfaces', () => {
       output: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'Plate' }],
               type: 'link',
               url: 'https://platejs.org',
             },
+            { text: '' },
           ],
           type: 'paragraph',
         },
@@ -342,7 +345,7 @@ describe('commonmark package surfaces', () => {
 
     expect(value.children).toMatchObject([
       {
-        children: [{ text: 'alpha' }, { text: '\n' }, { text: 'beta' }],
+        children: [{ text: 'alpha\nbeta' }],
         type: 'paragraph',
       },
     ]);
@@ -376,11 +379,9 @@ describe('commonmark package surfaces', () => {
     expect(parseTestMarkdown(editor, markdown).children).toMatchObject([
       {
         children: [
-          { text: 'Text followed by two empty lines' },
-          { text: '\n' },
-          { text: '\n' },
-          { text: '\n' },
-          { text: 'Followed by more text.' },
+          {
+            text: 'Text followed by two empty lines\n\n\nFollowed by more text.',
+          },
         ],
         type: 'paragraph',
       },
@@ -409,7 +410,12 @@ describe('commonmark package surfaces', () => {
     const value = {
       children: [
         {
-          children: [{ text: 'Block quote' }, { text: '\n' }, { text: '\n' }],
+          children: [
+            {
+              children: [{ text: 'Block quote\n\n' }],
+              type: 'paragraph',
+            },
+          ],
           type: 'blockquote',
         },
       ],
@@ -433,7 +439,7 @@ describe('commonmark package surfaces', () => {
           {
             children: [
               {
-                children: [{ text: 'inner' }, { text: '\n' }, { text: 'tail' }],
+                children: [{ text: 'inner\ntail' }],
                 type: 'paragraph',
               },
             ],

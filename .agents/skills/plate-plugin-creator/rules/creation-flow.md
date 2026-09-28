@@ -129,23 +129,35 @@ foreign targets; a format map does not earn another file, builder stage, or
 global helper. Keep it in `.extend()` only when it consumes a real capability
 introduced by an earlier stage.
 
-For a custom Plate-owned MDX element tag, destructure `schema: { type }` from
-the mapping context and use it for `from`, the decoded element `type`, and the
-encoded MDX `name`. Keep external MDAST, HTML, and MDX syntax literal. Migrate
-old persisted tags before mapping dispatch instead of accepting two identities.
+Select each Markdown mapping's source with one of `node` (a standard MDAST
+kind, which types the decoded `node`) or `tag` (a registered tag, plus
+`nestedTags` for tags read only inside it). For a custom Plate-owned element
+tag, destructure `schema: { type }` from the mapping context and use it for
+`tag`, the decoded element `type`, and the encoded tag `name`. Keep external
+MDAST kinds and HTML tag names literal. Migrate old persisted tags before
+mapping dispatch instead of accepting two identities.
 Resolve every other synthesized Plate wrapper or fallback through the installed
 application schema; use literals only for external format nodes or when the
 corresponding Plate plugin is genuinely absent.
-Key one-operation decode overrides by the invariant plugin capability name and
-encode overrides by persisted schema identity. Apply the same mapping identity
-checks to constructor and justified staged contributions.
-Keep configurable custom MDX mappings on their schema-owning plugin; a foreign
+Read tag attributes with `readTagAttributes().properties` and write them with
+`encodeAttributes(properties)`; the runtime codec follows the schema property
+kind, so features never parse or coerce attribute strings. Return
+`refuse(message)` for input the mapping cannot represent; throw only for
+programmer or configuration faults. A mark mapping sets `mark: true`; its
+`decode` returns the mark value (or `undefined`) and its `wrap` returns a
+childless inline wrapper. The runtime composes every mark on the selector,
+decodes the children once and fills the wrapper. Decode contexts call inherited
+persisted text properties `marks`; reserve `decoration` for transient render
+state. Apply the same mapping identity checks to
+constructor and justified staged contributions.
+Keep configurable custom tag mappings on their schema-owning plugin; a foreign
 target mapping cannot bind the target's final application identity.
 Enforce the available identity legs on decode-only and encode-only mappings. For
 phrasing-only wrappers, decode external paragraph children directly instead of
 unwrapping a decoded Plate element.
 Keep fixed external source/name literals without weakening decoded Plate
-identity. Spread parsed attributes before structural `children` and `type`.
+identity. Spread decoded attribute properties before structural `children` and
+`type`.
 
 ### Capability contribution
 
