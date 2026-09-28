@@ -23,7 +23,7 @@ Start Gates:
 |------|---------|----------|
 | PR and feedback source | yes | Read PR #5134 and all comments; maintainer requested main target. |
 | Branch and scope | yes | New main branch from live `babb3c2`; old next branch preserved. |
-| Reproduction challenge | yes | On main before the fix, a wrapped draft selection at y170–214 mounted the composer offscreen at y−130 to −65 in the full editor demo. The report is valid as a placement failure; main's manifestation differs from the next-based diagnosis. |
+| Reproduction challenge | yes | Same fixture, text, forward two-block selection, and 900×330 viewport: original main covered the first selected line's full 21px height near the viewport top; the candidate left a 2.5px gap below the last mark. Near the bottom, the original composer was detached by 156.5px; the candidate left a 3.5px gap above the first mark. |
 | Browser route | yes | Temporary `/blocks/comment-proof` route used main registry plugins/components; removed before commit. |
 | Registry release artifact | yes | Main registry UI behavior changed; MDX changelog source and generated JSON required. |
 | Package changeset | no | No package source, exports, or published package behavior changed. |
@@ -63,6 +63,7 @@ Phase / pass table:
 | Review and local handoff | complete | Structured review triaged; scoped candidate prepared for local commit. | Parent publication |
 
 Verification evidence:
+- Matched A/B: original `babb3c2` and candidate source used the same temporary route, text, viewport (900×330), selection action, and selected DOM range. Near the top, marked text occupied y46.5–123.5; original popup y4–70 covered the first line y46.5–67.5, while candidate popup y126–192 cleared all marks. Near the bottom, marks occupied y226.5–303.5; original popup y4–70 was detached by 156.5px, while candidate popup y157–223 left a 3.5px gap. The wrapped single-block case showed the same bottom-placement improvement. Source was restored exactly and the temporary route/server removed after comparison.
 - Before: on the full `editor-ai` demo at 900×450, selecting wrapped text and pressing ⌘⇧M placed the draft popup at y−130 to −65 while marked text occupied y170–214.
 - After: on the isolated current-main components at 900×330, the two-line selected text occupied y226.5–271.5 and the flipped popup ended at y223. A short selected phrase occupied y226.5–247.5 and the popup ended at y223. At 900×450, the same short phrase placed the popup below at y250–316.
 - Forward two-block draft: selected marks extended to y303.5; popup ended at y223. Backward two-block draft: focus was in the first block, anchor in the second, both marks persisted and popup began at y146 after selected text ended at y143.5.
