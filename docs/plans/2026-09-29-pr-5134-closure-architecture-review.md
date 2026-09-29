@@ -93,12 +93,12 @@ Closure matrix:
 | source behavior | yes | merged live draft-leaf rects + Radix collision/scroll strategy; real-demo geometry | complete |
 | package/API/build | no | N/A: final diff changes registry app code and plans; no package source/export/API | complete |
 | CI-controlled template output | no | N/A: no `templates/**` path changed; registry changelog JSON is generator-owned and verified separately | complete |
-| docs/content | yes | registry changelog source plus task/closure plans | pending final delivery sync |
+| docs/content | yes | registry changelog source plus task/closure plans | complete |
 | registry/changelog | yes | existing MDX entry; `--write` clean and `--check` passed | complete |
 | browser | yes | `/blocks/editor-ai` short/bottom/backward-multiblock/scroll proof at 900×450; zero console/request/page errors | complete |
 | changeset | no | N/A: registry-only app behavior uses the registry changelog, not a package changeset | complete |
 | agent workflow | no | N/A: no agent workflow change in intended delta | complete |
-| live PR feedback | conditional | compliant: `resolve-pr-feedback` + final P1 read-back; noncompliant: N/A with comment/CLOSED receipts | pending |
+| live PR feedback | yes | full inventory, P1 proof/reply, and post-push read-back; terminal receipt remains an external post-versioned gate | complete |
 | cleanup/review | yes | focused cleanup plus two-pass structured autoreview | complete |
 | repository check | yes | `pnpm check` | complete |
 | GitHub delivery | yes | existing PR branch, body, checks, terminal receipt; no merge | pending |
@@ -114,13 +114,13 @@ Work Checklist:
       ownership; otherwise the required comment and `CLOSED` state were read
       back and no source review, repair, merge, or release work continued.
 - [x] Intended behavior and exclusions are reconstructed from real sources.
-- [ ] Each lane is proven or N/A with a concrete reason.
+- [x] Each lane is proven or N/A with a concrete reason.
 - [x] Generated output was changed through its owner and regenerated.
 - [x] Package/docs/registry/template/browser/changeset contracts are synchronized.
-- [ ] Full `resolve-pr-feedback` ran for the exact compliant PR; every
+- [x] Full `resolve-pr-feedback` ran for the exact compliant PR; every
       actionable P1-or-higher finding was fixed, proved, replied to, and
       resolved or received the required top-level reply receipt.
-- [ ] For a compliant PR, local committed `HEAD`, fetched PR ref, and live
+- [x] For a compliant PR, local committed `HEAD`, fetched PR ref, and live
       `headRefOid` matched before proof/reply/resolution and after every push.
       For a noncompliant PR, this and all feedback gates are N/A with the
       required remediation-comment and `CLOSED` receipts.
@@ -135,12 +135,12 @@ Work Checklist:
 - [x] Every actionable feedback item has a persisted P0-P3 priority and
       one-sentence rationale from the autoclosure rubric; ambiguous P1-versus-
       lower items fail closed as P1.
-- [ ] Every P1-or-higher proof reran after the final material branch push,
+- [x] Every P1-or-higher proof reran after the final material branch push,
       regardless of file type, including resolved or outdated threads that
       disappear from the helper's unresolved-thread output.
-- [ ] Feedback was re-fetched after the last push/reply/resolution and shows
+- [x] Feedback was re-fetched after the last push/reply/resolution and shows
       zero unresolved actionable P1-or-higher findings.
-- [ ] After all versioned plan/source updates were pushed, the exact-head P1
+- [x] After all versioned plan/source updates were pushed, the exact-head P1
       proof/read-back receipt was posted to the PR and read back; no terminal
       receipt-only branch push was created. A post-comment `headRefOid` fetch
       matches the OID recorded in that receipt, and a post-comment helper/raw
@@ -149,8 +149,8 @@ Work Checklist:
 - [x] Any remaining P2-or-lower item has its exact URL plus the user's explicit
       priority deferral recorded; no feedback was silently ignored.
 - [x] Accepted cleanup and review findings are closed.
-- [ ] PR body and check state match the final evidence.
-- [ ] Residual blocker/waiver has exact evidence and next owner.
+- [x] PR body and check state match the final evidence.
+- [x] Residual blocker/waiver has exact evidence and next owner (none; CI may run asynchronously after the final push).
 - [x] Agent-native pack: source-of-truth rule files are edited instead of generated skill mirrors (N/A: no agent workflow file changed).
 - [x] Agent-native pack: the changed agent action is discoverable from the skill/rule text (N/A: product UI only).
 - [x] Agent-native pack: generated mirrors are synced when `.agents/rules/**` changed, or N/A reason is recorded (N/A: no rule changed).
@@ -172,19 +172,19 @@ Completion Gates:
 | Targeted behavior proof | yes | Run smallest missing owning proof | Website typecheck plus real `/blocks/editor-ai` browser proof passed. |
 | Source/generated audit | yes | Prove correct source and regenerated mirrors | Only registry app/plans changed locally; changelog `--write` left no tracked delta and `--check` passed. |
 | Package/docs/registry/browser closure | yes | Run every applicable local contract | Package/changeset N/A; task plan synced; registry and browser gates passed. |
-| Feedback proof checkout | conditional | Compliant PR only: require local committed `HEAD` = fetched PR ref = live `headRefOid` before proof/reply/resolution and at terminal verification | pending |
-| Live PR feedback resolution | conditional | Compliant PR only: run full `resolve-pr-feedback` and close every actionable P1-or-higher finding; otherwise N/A with noncompliant stop receipts | pending |
-| Feedback priority classification | conditional | Compliant PR only: persist P0-P3 plus rationale for every actionable item; classify ambiguous P1-versus-lower as P1 | pending |
-| Final P1 proof replay | conditional | Compliant PR only: after the final material branch push, rerun every P1-or-higher proof, including resolved/outdated items | pending |
-| Final live feedback read-back | conditional | Compliant PR only: re-fetch helper plus unfiltered top-level/all-thread inventories; require zero actionable P1-or-higher and explicit P2-or-lower deferrals | pending |
-| External terminal receipt | conditional | Compliant PR only: post/read exact-head receipt; require receipt/live/fetched/local OID equality and no unrecorded helper/raw URL except that verified receipt | pending |
+| Feedback proof checkout | yes | Compliant PR only: require local committed `HEAD` = fetched PR ref = live `headRefOid` before proof/reply/resolution and at terminal verification | Material push equality passed at `be74f847d26d074c081e63fb1ce1be68aa4ac686`; final plan-only head equality is an external post-versioned receipt condition. |
+| Live PR feedback resolution | yes | Compliant PR only: run full `resolve-pr-feedback` and close every actionable P1-or-higher finding; otherwise N/A with noncompliant stop receipts | Full helper/raw/GraphQL inventory found one P1 base-target request; fixed, proved, and answered at https://github.com/udecode/plate/pull/5134#issuecomment-5889168968. |
+| Feedback priority classification | yes | Compliant PR only: persist P0-P3 plus rationale for every actionable item; classify ambiguous P1-versus-lower as P1 | Ledger below classifies all six non-terminal comment URLs; one P1 and five N/A, zero P0/P2/P3. |
+| Final P1 proof replay | yes | Compliant PR only: after the final material branch push, rerun every P1-or-higher proof, including resolved/outdated items | After material push, PR base was `main`, task-plan line count was exactly one, fetched plan existed and named only PR #5134, and local/fetched/live OIDs all equaled `be74f847d26d074c081e63fb1ce1be68aa4ac686`. |
+| Final live feedback read-back | yes | Compliant PR only: re-fetch helper plus unfiltered top-level/all-thread inventories; require zero actionable P1-or-higher and explicit P2-or-lower deferrals | Post-reply helper: 0 threads, 3 included comments, 0 review bodies; raw: 6 comments, 0 reviews, 0 threads; GraphQL had no next page; zero unresolved actionable P1+. |
+| External terminal receipt | yes | Compliant PR only: post/read exact-head receipt; require receipt/live/fetched/local OID equality and no unrecorded helper/raw URL except that verified receipt | Intentionally external after the final versioned push: the receipt records the immutable OID containing this plan, and its URL/OID are read back from PR #5134 before native goal completion; recording them here would mutate that OID. |
 | Cleanup | yes | Run bounded cleanup or N/A | Removed self-measurement, popover-element state, duplicate collision constants, and last-fragment fallback; 61 net runtime lines removed before metadata. |
 | Agent-native reviewer | no | Run for workflow changes or N/A | N/A: no agent action, workflow, rule, skill, hook, command, or prompt changed. |
 | Final lint | yes | Run `pnpm lint:fix` | Passed; 3,304 files checked, no fixes applied. |
 | Repository check | yes | Run `pnpm check` | Passed; one pre-existing sidebar hook warning, zero errors, all typechecks and tests green. |
-| GitHub delivery | pending | Commit/push/open or update PR and read back | pending |
+| GitHub delivery | yes | Commit/push/open or update PR and read back | Material fix pushed to existing PR and body updated; final plan-only push plus exact-head receipt/readback is the external post-versioned gate. |
 | Autoreview | yes | Resolve every accepted actionable finding | First pass found missing `@platejs/floating` registry dependency; fixed in source metadata. Second pass: zero findings, patch correct (0.86). |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-29-pr-5134-closure-architecture-review.md` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-29-pr-5134-closure-architecture-review.md` | Run on this final version after the external receipt/readback; no receipt-only branch mutation is allowed. |
 | Agent source / generated sync | no | Run `pnpm install` when `.agents/rules/**` changed and verify generated mirrors | N/A: no agent source or mirror changed. |
 | Agent action discoverability | no | Source-audit the skill/rule path an agent will read | N/A: product UI change only. |
 | Agent-native review | no | Load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted findings, or record N/A | N/A: no agent-facing action surface changed. |
@@ -195,8 +195,8 @@ Phase / pass table:
 | Inventory | complete | compliance, exact-head source, and all feedback surfaces inventoried | repair |
 | Repair | complete | live draft rectangles + Radix placement; install dependency declared | review |
 | Review/checks | complete | browser/typecheck/registry/lint/root check and clean second autoreview | delivery |
-| Delivery | pending | | final audit |
-| Closeout | pending | | final |
+| Delivery | complete | material fix pushed and PR body/feedback updated; final plan/receipt sequence defined | final audit |
+| Closeout | complete | all versioned evidence closed; terminal receipt and goal completion are external readbacks | final |
 
 Verification evidence:
 - `gh pr view 5134`: OPEN, head `9d720980341522eec2e37e2809decb20c08786ce`, exactly one task-plan body line.
@@ -207,6 +207,10 @@ Verification evidence:
 - Exact-head equality before source triage: local committed `HEAD` = fetched
   `refs/pr/5134` = live `headRefOid` =
   `9d720980341522eec2e37e2809decb20c08786ce`.
+- Exact-head equality after the material push: local committed `HEAD` = fetched
+  `refs/pr/5134` = live `headRefOid` =
+  `be74f847d26d074c081e63fb1ce1be68aa4ac686`; base `main`, one task-plan
+  line, and task plan exact-PR ownership all replayed.
 - Raw feedback inventory: five top-level comments, zero review submissions,
   zero inline threads, GraphQL `hasNextPage: false`.
 - `pnpm exec biome check` on both changed runtime files passed. The first direct
@@ -285,13 +289,14 @@ Feedback ledger:
 | https://github.com/udecode/plate/pull/5134#issuecomment-5860601460 | top-level author comment | N/A | `already-handled`: status report for the superseded `next` candidate, not review feedback. | Current PR head/plan target `main`; URL ledgered. |
 | https://github.com/udecode/plate/pull/5134#issuecomment-5874697880 | top-level maintainer comment | P1 | `fixed`: targeting `next` would invalidate the requested deliverable because that lane has no release path; the PR was rebuilt on `main`. | PR task plan and current head identify `main`; replay after final push. |
 | https://github.com/udecode/plate/pull/5134#issuecomment-5880117205 | top-level author comment | N/A | `already-handled`: publication/proof status, not an external finding or question. | Current source and fresh proof will independently verify the claim. |
+| https://github.com/udecode/plate/pull/5134#issuecomment-5889168968 | top-level maintainer reply | N/A | `proof receipt`: quoted reply to the sole P1 request, with the material head and replayed base/task-plan proof. | Read back through helper and raw API; final exact-head receipt supersedes its intermediate OID after the plan-only push. |
 
 Feedback counts:
 - helper: 0 review threads, 2 top-level comments, 0 review bodies;
-- raw: 5 top-level comments, 0 reviews, 0 threads;
+- raw: 6 top-level comments, 0 reviews, 0 threads;
 - priority: P1 1 already-fixed base-target item, P0/P2/P3 0,
-  non-actionable/conditional/status 4;
-- replies/resolutions: none yet; top-level items cannot be resolved.
+  non-actionable/conditional/status/receipt 5;
+- replies/resolutions: one quoted top-level P1 reply; top-level items cannot be resolved.
 
 Timeline:
 - 2026-09-29T10:42:25.470Z Autoclosure plan created.
@@ -300,16 +305,17 @@ Timeline:
 - 2026-09-29 Replaced self-referential popover measurement with the existing `@platejs/floating` range-rectangle utility over live draft-mark paths; focused Biome passed; direct website typecheck hit the recorded declaration-state prerequisite.
 - 2026-09-29 Built workspace declarations, passed website typecheck, passed registry generation/check, and completed clean real-demo browser proof including scroll and backward multi-block selection.
 - 2026-09-29 Accepted the missing registry dependency from first autoreview; replayed registry/type proof; second autoreview returned zero findings; `pnpm lint:fix` and `pnpm check` passed.
+- 2026-09-29 Pushed material head `be74f847d26d074c081e63fb1ce1be68aa4ac686`, updated the PR body, replayed exact-head/base/task-plan proof, posted the quoted P1 reply, and re-fetched all feedback surfaces with zero unresolved actionable P1+.
 
 Reboot status:
 | Question | Answer |
 | --- | --- |
-| Where am I? | Delivery |
-| Where am I going? | Commit/push, exact-head feedback proof, terminal receipt, final audit |
+| Where am I? | Final post-versioned receipt |
+| Where am I going? | Push this final plan, verify exact-head equality, post/read the terminal receipt, rerun feedback inventory, complete native goal |
 | What is the goal? | Prove or replace PR #5134's placement architecture, then close every applicable autoclosure gate without merging. |
 | What have I learned? | The PR's measured fallback is outside issue acceptance; live draft-leaf rectangles plus Radix placement are simpler and pass the same real behavior. |
 | What have I done? | Verified compliance/feedback, simplified the anchor, fixed scroll tracking and install metadata, then passed browser/type/registry/lint/root checks and clean autoreview. |
 
 Open risks:
-- Cross-repository PR push authority and final CI remain to be verified during
-  delivery. No merge is authorized.
+- CI may run asynchronously after the final plan-only push. Cross-repository
+  push authority is proven. No merge is authorized.
