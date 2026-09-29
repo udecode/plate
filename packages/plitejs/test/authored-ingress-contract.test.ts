@@ -1,13 +1,38 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, createEditorView } from 'plitejs';
+import {
+  createEditor,
+  createEditorView,
+  definePlugin,
+  ElementApi,
+} from 'plitejs';
 import { authored } from 'plitejs/authored';
 import { history, History } from 'plitejs/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
   children: [{ text }],
+});
+const quote = (text: string) => ({
+  type: 'quote',
+  children: [paragraph(text)],
+});
+const trailingParagraph = definePlugin('trailing-paragraph', {
+  corrections: [
+    {
+      event: 'children',
+      query: 'root',
+      correct({ tx }) {
+        const children = tx.nodes.children();
+        const last = children.at(-1);
+
+        if (!ElementApi.isElement(last) || last.type !== 'paragraph') {
+          tx.nodes.insert(paragraph(''), { at: [children.length] });
+        }
+      },
+    },
+  ],
 });
 const point = (offset: number) => ({ path: [0, 0], offset });
 const proposal = { intent: 'propose', projection: 'proposed' } as const;
@@ -201,6 +226,98 @@ describe('authored document ingress', () => {
       assert.deepEqual(editor.read.value(), before);
     });
   }
+
+  for (const input of ['accepted', 'proposed'] as const) {
+    it(`folds schema corrections into a loaded document with ${input} input`, () => {
+      let authorId: string | null = 'bob';
+      const editor = createEditor({
+        plugins: [
+          history(),
+          authored({ authorId: () => authorId }),
+          trailingParagraph,
+        ],
+        initialValue: [paragraph('Old')],
+      });
+      const view = createEditorView(editor, { authored: proposal });
+      view.update.text.insert(' draft', { at: point(3) });
+      if (input === 'proposed') editor.api.authored.setView(proposal);
+      let commits = 0;
+      editor.subscribeCommit(() => {
+        commits += 1;
+      });
+      authorId = null;
+      editor.update.value.replace({
+        children: [paragraph('Intro'), quote('Quote')],
+      });
+      const loaded = [paragraph('Intro'), quote('Quote'), paragraph('')];
+      assert.equal(commits, 1);
+      assert.deepEqual(editor.read.value().children, loaded);
+      assert.deepEqual(view.read.children(), loaded);
+      assert.equal(editor.read.authored.changes().items.length, 0);
+      assert.equal(editor.read.history().undos.length, 0);
+      assert.equal(editor.read.history().redos.length, 0);
+      authorId = 'bob';
+      view.update.text.insert('!', { at: point(5) });
+      const edited = [paragraph('Intro!'), quote('Quote'), paragraph('')];
+      view.api.history.undo();
+      assert.deepEqual(view.read.children(), loaded);
+      view.api.history.redo();
+      assert.deepEqual(view.read.children(), edited);
+      const [change] = editor.read.authored.changes().items;
+      assert.equal(
+        editor.update.authored.decide({
+          action: 'accept',
+          selection: editor.read.authored.select({ ids: [change.id] }),
+        }).status,
+        'applied'
+      );
+      assert.deepEqual(editor.read.value().children, edited);
+    });
+  }
+
+  it('rejects an ordinary write after a corrected document replacement', () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' }), trailingParagraph],
+      initialValue: [paragraph('Keep')],
+    });
+    const before = editor.read.value();
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.value.replace({ children: [quote('New')] });
+          tx.text.insert('X', { at: { path: [0, 0, 0], offset: 1 } });
+        }),
+      /Document replacement cannot mix with ordinary writes\./
+    );
+    assert.deepEqual(editor.read.value(), before);
+  });
+
+  it('loads authored changes only when corrections keep their saved content', () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'bob' }), trailingParagraph],
+      initialValue: [paragraph('Keep')],
+    });
+    const view = createEditorView(editor, { authored: proposal });
+    const before = editor.read.value();
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [quote('Base')],
+    });
+    createEditorView(source, { authored: proposal }).update.text.insert(
+      ' draft',
+      { at: { path: [0, 0, 0], offset: 4 } }
+    );
+    const unfitted = JSON.parse(JSON.stringify(source.read.value()));
+    assert.throws(
+      () => editor.update.value.replace(unfitted),
+      /Corrections cannot change a loaded document with authored changes\./
+    );
+    assert.deepEqual(editor.read.value(), before);
+    const saved = savedProposal();
+    editor.update.value.replace(saved.value);
+    assert.deepEqual(view.read.children(), [paragraph('Base draft')]);
+    assert.equal(editor.read.authored.change(saved.id)?.authorId, 'alice');
+  });
 
   it('loads a runtime in proposal mode with an accepted-coordinate input selection', () => {
     const saved = savedProposal();

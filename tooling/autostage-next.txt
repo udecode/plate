@@ -4,11 +4,14 @@
 
 docs/**
 .agents/**
+.changeset/**
+apps/www/api-reference.config.json
 apps/www/public/r/**
 apps/www/public/rd/**
 apps/www/src/__registry__/**
 apps/www/src/generated/**
 apps/www/src/registry/changelog/**
+apps/www/src/registry/components/editor/plugins.schema.json
 **/*.slow.*
 **/*.spec.*
 **/*.test.*

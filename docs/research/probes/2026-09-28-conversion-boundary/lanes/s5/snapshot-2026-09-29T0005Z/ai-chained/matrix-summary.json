@@ -1,0 +1,322 @@
+[
+  {
+    "cell": "ai-cjk-10000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalMs": {
+      "baseline": 222.7,
+      "candidate": 244.2
+    },
+    "finalTextsMatch": true,
+    "heap": null,
+    "latencyP95Ms": {
+      "baseline": 226.7,
+      "candidate": 162.5
+    },
+    "pairs": [
+      {
+        "baseline": 4265.23,
+        "candidate": 2949.98,
+        "gainMs": 1315.2,
+        "gainPercent": 30.8
+      },
+      {
+        "baseline": 4326.81,
+        "candidate": 2956.23,
+        "gainMs": 1370.6,
+        "gainPercent": 31.7
+      },
+      {
+        "baseline": 4327.4,
+        "candidate": 2939.18,
+        "gainMs": 1388.2,
+        "gainPercent": 32.1
+      }
+    ],
+    "previews": {
+      "baseline": [
+        40,
+        39,
+        39
+      ],
+      "candidate": [
+        39,
+        39,
+        39
+      ]
+    },
+    "spreadMs": 62.2,
+    "status": "complete",
+    "survival": {
+      "baseline": [
+        1,
+        1,
+        1
+      ],
+      "candidate": [
+        1,
+        1,
+        1
+      ]
+    },
+    "totalMs": [
+      {
+        "baseline": 4481.5,
+        "candidate": 3160.39
+      },
+      {
+        "baseline": 4542.66,
+        "candidate": 3161.39
+      },
+      {
+        "baseline": 4544.35,
+        "candidate": 3136.19
+      }
+    ],
+    "verdict": "pass"
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalMs": {
+      "baseline": 1049.5,
+      "candidate": 1075.7
+    },
+    "finalTextsMatch": true,
+    "heap": null,
+    "latencyP95Ms": {
+      "baseline": 901.6,
+      "candidate": 522.8
+    },
+    "pairs": [
+      {
+        "baseline": 93320.22,
+        "candidate": 55766.17,
+        "gainMs": 37554.1,
+        "gainPercent": 40.2
+      },
+      {
+        "baseline": 92022.78,
+        "candidate": 55737.44,
+        "gainMs": 36285.3,
+        "gainPercent": 39.4
+      },
+      {
+        "baseline": 92129.76,
+        "candidate": 56093.02,
+        "gainMs": 36036.7,
+        "gainPercent": 39.1
+      }
+    ],
+    "previews": {
+      "baseline": [
+        196,
+        196,
+        196
+      ],
+      "candidate": [
+        195,
+        195,
+        195
+      ]
+    },
+    "spreadMs": 1297.4,
+    "status": "complete",
+    "survival": {
+      "baseline": [
+        1,
+        1,
+        1
+      ],
+      "candidate": [
+        1,
+        1,
+        1
+      ]
+    },
+    "totalMs": [
+      {
+        "baseline": 95781.36,
+        "candidate": 57588.76
+      },
+      {
+        "baseline": 94556.04,
+        "candidate": 57510.7
+      },
+      {
+        "baseline": 94807.99,
+        "candidate": 57916.37
+      }
+    ],
+    "verdict": "pass"
+  },
+  {
+    "cell": "ai-rich-10000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalMs": {
+      "baseline": 126.5,
+      "candidate": 128.8
+    },
+    "finalTextsMatch": true,
+    "heap": null,
+    "latencyP95Ms": {
+      "baseline": 121,
+      "candidate": 87.7
+    },
+    "pairs": [
+      {
+        "baseline": 2356.23,
+        "candidate": 1581.59,
+        "gainMs": 774.6,
+        "gainPercent": 32.9
+      },
+      {
+        "baseline": 2355.98,
+        "candidate": 1598.59,
+        "gainMs": 757.4,
+        "gainPercent": 32.1
+      },
+      {
+        "baseline": 2380.17,
+        "candidate": 1608.85,
+        "gainMs": 771.3,
+        "gainPercent": 32.4
+      }
+    ],
+    "previews": {
+      "baseline": [
+        40,
+        40,
+        40
+      ],
+      "candidate": [
+        40,
+        40,
+        40
+      ]
+    },
+    "spreadMs": 27.3,
+    "status": "complete",
+    "survival": {
+      "baseline": [
+        1,
+        1,
+        1
+      ],
+      "candidate": [
+        1,
+        1,
+        1
+      ]
+    },
+    "totalMs": [
+      {
+        "baseline": 2516.51,
+        "candidate": 1740.43
+      },
+      {
+        "baseline": 2517.23,
+        "candidate": 1755.42
+      },
+      {
+        "baseline": 2555.69,
+        "candidate": 1765.77
+      }
+    ],
+    "verdict": "pass"
+  },
+  {
+    "cell": "ai-rich-50000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalMs": {
+      "baseline": 564.5,
+      "candidate": 596.2
+    },
+    "finalTextsMatch": true,
+    "heap": null,
+    "latencyP95Ms": {
+      "baseline": 467.9,
+      "candidate": 284.7
+    },
+    "pairs": [
+      {
+        "baseline": 48285.43,
+        "candidate": 28397.05,
+        "gainMs": 19888.4,
+        "gainPercent": 41.2
+      },
+      {
+        "baseline": 47830.36,
+        "candidate": 28335.08,
+        "gainMs": 19495.3,
+        "gainPercent": 40.8
+      },
+      {
+        "baseline": 48009.55,
+        "candidate": 28281.44,
+        "gainMs": 19728.1,
+        "gainPercent": 41.1
+      }
+    ],
+    "previews": {
+      "baseline": [
+        198,
+        198,
+        198
+      ],
+      "candidate": [
+        196,
+        196,
+        196
+      ]
+    },
+    "spreadMs": 455.1,
+    "status": "complete",
+    "survival": {
+      "baseline": [
+        1,
+        1,
+        1
+      ],
+      "candidate": [
+        1,
+        1,
+        1
+      ]
+    },
+    "totalMs": [
+      {
+        "baseline": 49854.33,
+        "candidate": 29440.07
+      },
+      {
+        "baseline": 49389.73,
+        "candidate": 29382.96
+      },
+      {
+        "baseline": 49591.21,
+        "candidate": 29335.61
+      }
+    ],
+    "verdict": "pass"
+  }
+]

@@ -177,6 +177,7 @@ type ErasedPluginRender = {
     placement?: 'leaf' | 'text' | null;
     textAttributes?: unknown;
   }> | null;
+  readsDocument?: boolean | null;
   useViewElementAttributes?: unknown;
 };
 type ErasedPluginSlots = {
@@ -452,11 +453,28 @@ type HtmlModelContext<
   Omit<PluginFormatModelView, 'node'> &
   Readonly<{ node: Readonly<TNode> }>;
 
+type HtmlPreserve<C extends AnyBasePluginDefinition> = Readonly<{
+  /**
+   * Claim that the returned output represents these properties of `node`.
+   * Claims count only when the encoder returns output; unclaimed content
+   * properties are reported as omitted.
+   */
+  preserve: (
+    ...keys: ReadonlyArray<Extract<keyof HtmlOwnedPropertyMap<C>, string>>
+  ) => void;
+}>;
+
 type HtmlElementEncodeContext<
   C extends AnyBasePluginDefinition,
   TNode extends Element,
-> = HtmlModelContext<C, TNode> & Readonly<{ content: HtmlContentToken }>;
+> = HtmlModelContext<C, TNode> &
+  HtmlPreserve<C> &
+  Readonly<{ content: HtmlContentToken }>;
 
+/**
+ * A returned wrapper, or a patch that writes an attribute or style, represents
+ * `value`; return `null` to leave it unrepresented.
+ */
 type HtmlPropertyEncodeContext<
   C extends AnyBasePluginDefinition,
   TNode,
@@ -467,7 +485,9 @@ type HtmlPropertiesEncodeContext<
   C extends AnyBasePluginDefinition,
   TNode,
   TValues extends object,
-> = HtmlModelContext<C, TNode> & Readonly<{ values: Readonly<TValues> }>;
+> = HtmlModelContext<C, TNode> &
+  HtmlPreserve<C> &
+  Readonly<{ values: Readonly<TValues> }>;
 
 type HtmlRuleDirections<
   TDecodeContext,
@@ -527,12 +547,17 @@ type HtmlElementSchema<C extends AnyBasePluginDefinition> =
     ? HtmlContributionElements<C>[InferPluginDocumentType<C>]
     : never;
 
-type HtmlElementOwnedProperties<C extends AnyBasePluginDefinition> =
-  HtmlElementSchema<C> extends Readonly<{
-    properties?: infer TProperties extends Readonly<
-      Record<string, PropertyValueDescriptor>
-    >;
-  }>
+// A plugin without an element schema owns no element properties; checking
+// `never` directly would infer a string index from the constraint.
+type HtmlElementOwnedProperties<C extends AnyBasePluginDefinition> = [
+  HtmlElementSchema<C>,
+] extends [never]
+  ? Readonly<Record<never, never>>
+  : HtmlElementSchema<C> extends Readonly<{
+        properties?: infer TProperties extends Readonly<
+          Record<string, PropertyValueDescriptor>
+        >;
+      }>
     ? Readonly<{
         [TKey in keyof TProperties]?: PropertyValueOf<TProperties[TKey]>;
       }>
@@ -1229,6 +1254,13 @@ type BasePluginAuthorFields<
             /** Adds attributes to the text host while the mark is active. */
             textAttributes?: TextStaticProps<WithAnyName<C>>;
           }>;
+      /**
+       * Whether rendering this plugin's element reads content after the
+       * element, such as a table of contents listing every heading. Static
+       * rendering reuses a block while it and every block before it are
+       * unchanged; these elements render again whenever the document changes.
+       */
+      readsDocument?: boolean;
     }>;
     slots: Omit<PluginBase<C>['slots'], 'wrapContent' | 'wrapRoot'> &
       Nullable<{

@@ -1,0 +1,1730 @@
+[
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 1496.8,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 1408.1,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "ai-cjk-10000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": false,
+      "workPass": false
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 229.8,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 238.4,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 228.3,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 228.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 232.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 230.8,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 238.4,
+      "candidate": 232.5
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 399.2,
+      "candidate": 246.4
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 1356.6,
+        "candidate": 1279.2,
+        "gainMs": 77.3,
+        "gainPercent": 5.7
+      },
+      {
+        "baseline": 1452.2,
+        "candidate": 1337.8,
+        "gainMs": 114.5,
+        "gainPercent": 7.9
+      },
+      {
+        "baseline": 1406.9,
+        "candidate": 1305.5,
+        "gainMs": 101.5,
+        "gainPercent": 7.2
+      }
+    ],
+    "previews": {
+      "baseline": [
+        12,
+        12,
+        12
+      ],
+      "candidate": [
+        15,
+        15,
+        15
+      ]
+    },
+    "spreadMs": 95.7,
+    "status": "complete",
+    "verdict": "fail"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 8449.4,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 8102.8,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "ai-cjk-50000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": false,
+      "workPass": false
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 1048.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 1124.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 1145.2,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 1181.3,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 1160.9,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 1148.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 1145.2,
+      "candidate": 1181.3
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 1661.1,
+      "candidate": 1046.8
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 8514.8,
+        "candidate": 7753.4,
+        "gainMs": 761.4,
+        "gainPercent": 8.9
+      },
+      {
+        "baseline": 8072.5,
+        "candidate": 7774.7,
+        "gainMs": 297.9,
+        "gainPercent": 3.7
+      },
+      {
+        "baseline": 7900.3,
+        "candidate": 7718.4,
+        "gainMs": 181.9,
+        "gainPercent": 2.3
+      }
+    ],
+    "previews": {
+      "baseline": [
+        24,
+        24,
+        24
+      ],
+      "candidate": [
+        32,
+        33,
+        32
+      ]
+    },
+    "spreadMs": 614.5,
+    "status": "complete",
+    "verdict": "fail"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 1182.5,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 1032.9,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "ai-rich-10000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": false
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 121.3,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 123.4,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 122.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 132.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 128.2,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 127.1,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 123.4,
+      "candidate": 132.7
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 195.8,
+      "candidate": 144.6
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 1083.9,
+        "candidate": 948.3,
+        "gainMs": 135.6,
+        "gainPercent": 12.5
+      },
+      {
+        "baseline": 1072.9,
+        "candidate": 915,
+        "gainMs": 157.9,
+        "gainPercent": 14.7
+      },
+      {
+        "baseline": 1096.3,
+        "candidate": 919.5,
+        "gainMs": 176.9,
+        "gainPercent": 16.1
+      }
+    ],
+    "previews": {
+      "baseline": [
+        18,
+        18,
+        18
+      ],
+      "candidate": [
+        20,
+        21,
+        21
+      ]
+    },
+    "spreadMs": 33.3,
+    "status": "complete",
+    "verdict": "fail"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 7624.6,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 6872.7,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "ai-rich-50000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": false
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 596.2,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 569.8,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 727.4,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 596.3,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 594.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 613.2,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 727.4,
+      "candidate": 613.2
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 826.5,
+      "candidate": 510.4
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 7384.4,
+        "candidate": 6346.6,
+        "gainMs": 1037.9,
+        "gainPercent": 14.1
+      },
+      {
+        "baseline": 7317.1,
+        "candidate": 6650.4,
+        "gainMs": 666.8,
+        "gainPercent": 9.1
+      },
+      {
+        "baseline": 7169.2,
+        "candidate": 6621.3,
+        "gainMs": 547.9,
+        "gainPercent": 7.6
+      }
+    ],
+    "previews": {
+      "baseline": [
+        40,
+        40,
+        38
+      ],
+      "candidate": [
+        53,
+        54,
+        52
+      ]
+    },
+    "spreadMs": 303.8,
+    "status": "complete",
+    "verdict": "fail"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 2991.8,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 2757,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "editable-cjk-10000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": false
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 95.2,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 94.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 94.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 100.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 101,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 100.6,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 95.2,
+      "candidate": 101
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 122.1,
+      "candidate": 112.6
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 2501.7,
+        "candidate": 2266.8,
+        "gainMs": 234.9,
+        "gainPercent": 9.4
+      },
+      {
+        "baseline": 2501.1,
+        "candidate": 2268.1,
+        "gainMs": 233,
+        "gainPercent": 9.3
+      },
+      {
+        "baseline": 2502.8,
+        "candidate": 2273.5,
+        "gainMs": 229.3,
+        "gainPercent": 9.2
+      }
+    ],
+    "previews": {
+      "baseline": [
+        39,
+        39,
+        39
+      ],
+      "candidate": [
+        39,
+        39,
+        39
+      ]
+    },
+    "spreadMs": 6.6,
+    "status": "complete",
+    "verdict": "fail"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 56089,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 48330.5,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "editable-cjk-50000",
+    "checks": {
+      "finalOk": false,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": false
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 421.3,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 426.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 430.4,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 445.1,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 574.6,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 441.4,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 430.4,
+      "candidate": 574.6
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 445.7,
+      "candidate": 385.5
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 49037,
+        "candidate": 41408.5,
+        "gainMs": 7628.6,
+        "gainPercent": 15.6
+      },
+      {
+        "baseline": 48341.5,
+        "candidate": 40585.7,
+        "gainMs": 7755.8,
+        "gainPercent": 16
+      },
+      {
+        "baseline": 50850.1,
+        "candidate": 42058.8,
+        "gainMs": 8791.3,
+        "gainPercent": 17.3
+      }
+    ],
+    "previews": {
+      "baseline": [
+        201,
+        201,
+        201
+      ],
+      "candidate": [
+        201,
+        200,
+        200
+      ]
+    },
+    "spreadMs": 2508.6,
+    "status": "complete",
+    "verdict": "fail"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 1687.2,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 1547.5,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "editable-rich-10000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": false
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 51.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 52.9,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 52.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 52.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 51.8,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 53.4,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 52.9,
+      "candidate": 53.4
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 78.7,
+      "candidate": 74.3
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 1373.8,
+        "candidate": 1243.3,
+        "gainMs": 130.5,
+        "gainPercent": 9.5
+      },
+      {
+        "baseline": 1372.3,
+        "candidate": 1239.9,
+        "gainMs": 132.4,
+        "gainPercent": 9.6
+      },
+      {
+        "baseline": 1379.6,
+        "candidate": 1242.5,
+        "gainMs": 137,
+        "gainPercent": 9.9
+      }
+    ],
+    "previews": {
+      "baseline": [
+        39,
+        39,
+        39
+      ],
+      "candidate": [
+        39,
+        39,
+        39
+      ]
+    },
+    "spreadMs": 7.2,
+    "status": "complete",
+    "verdict": "fail"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 27623.9,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 23739.2,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "editable-rich-50000",
+    "checks": {
+      "finalOk": false,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": false
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 213.9,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 216.3,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 215.8,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 229.9,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 702.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 230.6,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 216.3,
+      "candidate": 702.7
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 243.7,
+      "candidate": 206.2
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 24008.8,
+        "candidate": 20060.2,
+        "gainMs": 3948.7,
+        "gainPercent": 16.4
+      },
+      {
+        "baseline": 24090.6,
+        "candidate": 20098.7,
+        "gainMs": 3991.9,
+        "gainPercent": 16.6
+      },
+      {
+        "baseline": 23873.4,
+        "candidate": 20279.1,
+        "gainMs": 3594.2,
+        "gainPercent": 15.1
+      }
+    ],
+    "previews": {
+      "baseline": [
+        196,
+        196,
+        196
+      ],
+      "candidate": [
+        196,
+        196,
+        196
+      ]
+    },
+    "spreadMs": 219,
+    "status": "complete",
+    "verdict": "fail"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 4259.8,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 2885.5,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "static-cjk-10000",
+    "checks": {
+      "finalOk": false,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 179.6,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 175.1,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 178.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 194.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 197.7,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 192.4,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 179.6,
+      "candidate": 197.7
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 192.3,
+      "candidate": 133
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 4003.3,
+        "candidate": 2552.3,
+        "gainMs": 1451,
+        "gainPercent": 36.2
+      },
+      {
+        "baseline": 3868.7,
+        "candidate": 2602.2,
+        "gainMs": 1266.5,
+        "gainPercent": 32.7
+      },
+      {
+        "baseline": 3880.6,
+        "candidate": 2531.3,
+        "gainMs": 1349.4,
+        "gainPercent": 34.8
+      }
+    ],
+    "previews": {
+      "baseline": [
+        39,
+        39,
+        39
+      ],
+      "candidate": [
+        39,
+        39,
+        39
+      ]
+    },
+    "spreadMs": 134.6,
+    "status": "complete",
+    "verdict": "fail"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 89155.9,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 54299.9,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "static-cjk-50000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 836.9,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 820.4,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 821.1,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 852.4,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 858.9,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 851.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 836.9,
+      "candidate": 858.9
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 825.6,
+      "candidate": 492.4
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 85694.1,
+        "candidate": 50778.5,
+        "gainMs": 34915.6,
+        "gainPercent": 40.7
+      },
+      {
+        "baseline": 84184.4,
+        "candidate": 50914.8,
+        "gainMs": 33269.5,
+        "gainPercent": 39.5
+      },
+      {
+        "baseline": 85076.5,
+        "candidate": 50639.8,
+        "gainMs": 34436.7,
+        "gainPercent": 40.5
+      }
+    ],
+    "previews": {
+      "baseline": [
+        196,
+        196,
+        196
+      ],
+      "candidate": [
+        195,
+        195,
+        195
+      ]
+    },
+    "spreadMs": 1509.7,
+    "status": "complete",
+    "verdict": "pass"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 2244.9,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 1553.7,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "static-rich-10000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 92.9,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 97.3,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 94.1,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 95.6,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 95.6,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 95,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 97.3,
+      "candidate": 95.6
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 110.5,
+      "candidate": 84.3
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 2002.7,
+        "candidate": 1319.2,
+        "gainMs": 683.5,
+        "gainPercent": 34.1
+      },
+      {
+        "baseline": 2044.8,
+        "candidate": 1355.5,
+        "gainMs": 689.4,
+        "gainPercent": 33.7
+      },
+      {
+        "baseline": 2010.9,
+        "candidate": 1310.8,
+        "gainMs": 700.1,
+        "gainPercent": 34.8
+      }
+    ],
+    "previews": {
+      "baseline": [
+        39,
+        39,
+        39
+      ],
+      "candidate": [
+        39,
+        39,
+        39
+      ]
+    },
+    "spreadMs": 44.7,
+    "status": "complete",
+    "verdict": "pass"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 46631.3,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      },
+      "candidate": {
+        "busyMs": 28386.2,
+        "gcMs": null,
+        "parseMs": null,
+        "reactMs": null,
+        "reactInPublishTasksMs": null,
+        "transactionMs": null
+      }
+    },
+    "cell": "static-rich-50000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "finalMs": 417,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 427.9,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 422.5,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ],
+      "candidate": [
+        {
+          "finalMs": 444.6,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 445.6,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        },
+        {
+          "finalMs": 444.6,
+          "gcMajorMs": null,
+          "gcMinorMs": null,
+          "heapAfterLastMajorGcMB": null,
+          "heapBeforeFinalMB": null,
+          "parseMs": null,
+          "reactMs": null,
+          "taskMs": null,
+          "transactionMs": null
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 427.9,
+      "candidate": 445.6
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 433.8,
+      "candidate": 257.5
+    },
+    "packet": null,
+    "pairs": [
+      {
+        "baseline": 43413.6,
+        "candidate": 25854.9,
+        "gainMs": 17558.7,
+        "gainPercent": 40.4
+      },
+      {
+        "baseline": 43947,
+        "candidate": 25866.6,
+        "gainMs": 18080.4,
+        "gainPercent": 41.1
+      },
+      {
+        "baseline": 43805.2,
+        "candidate": 25992.3,
+        "gainMs": 17812.9,
+        "gainPercent": 40.7
+      }
+    ],
+    "previews": {
+      "baseline": [
+        197,
+        198,
+        197
+      ],
+      "candidate": [
+        196,
+        196,
+        196
+      ]
+    },
+    "spreadMs": 533.4,
+    "status": "complete",
+    "verdict": "pass"
+  }
+]

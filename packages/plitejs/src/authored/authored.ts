@@ -242,10 +242,10 @@ type AuthoredTransaction = {
   replacement:
     | { phase: 'loading' }
     | {
-        phase: 'loaded';
-        change: DocumentChange;
-        projection: AuthoredProjection;
+        phase: 'loaded' | 'settling';
+        projection?: AuthoredProjection;
         state: AuthoredState;
+        value: EditorDocumentValue;
       }
     | null;
   changeId: string | null;
@@ -501,10 +501,19 @@ const readAuthoredViewProjection = (
     if (active.preparedProjection) {
       projection = active.preparedProjection;
     } else if (active.replacement) {
-      if (active.replacement.phase !== 'loaded') {
+      const { replacement } = active;
+      if (replacement.phase !== 'loaded') {
         throw new Error('Authored reads require a completed document load.');
       }
-      ({ projection } = active.replacement);
+      const loaded =
+        replacement.projection ??
+        loadAuthoredProjection(
+          live.source,
+          replacement.state,
+          replacement.value
+        );
+      replacement.projection = loaded;
+      projection = loaded;
     } else if (active.receiving) {
       ({ projection } = receiveAuthoredProjection(live, tx));
     } else if (active.decision) ({ projection } = active.decision);
@@ -914,6 +923,20 @@ const restoreProjection = (
     });
     return restored;
   });
+
+const loadAuthoredProjection = (
+  editor: Editor,
+  state: AuthoredState,
+  value: EditorDocumentValue
+): AuthoredProjection => {
+  const schema: InternalEditorSchemaApi = getEditorSchema(editor);
+  const projection = {
+    accepted: content(value),
+    ...restoreProjection(state, value, schema, editor),
+  };
+  schema.assertDocument(projection.projected);
+  return projection;
+};
 
 const emitAuthoredOperation = (
   live: AuthoredRuntime,
@@ -1878,21 +1901,13 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           }
           active.replacement = { phase: 'loading' };
           const result = apply();
-          const state = getDefined(getActiveEditorTransaction(source)).getField(
-            authoredState
-          );
-          const value = getActiveDocumentChangeBuilder(source)
-            .value as EditorDocumentValue;
-          const projection = {
-            accepted: content(value),
-            ...restoreProjection(state, value, schema, source),
-          };
-          schema.assertDocument(projection.projected);
           active.replacement = {
             phase: 'loaded',
-            change: getActiveTransactionDocumentChange(source),
-            projection,
-            state,
+            state: getDefined(getActiveEditorTransaction(source)).getField(
+              authoredState
+            ),
+            value: getActiveDocumentChangeBuilder(source)
+              .value as EditorDocumentValue,
           };
           return result;
         },
@@ -2355,17 +2370,30 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
               let projectedPositionsBase = live.projectedPositions;
               const finishContent = () => {
                 if (active.replacement) {
+                  const { replacement } = active;
                   if (
-                    active.replacement.phase !== 'loaded' ||
-                    change !== active.replacement.change ||
-                    tx.getField(authoredState) !== active.replacement.state
+                    replacement.phase !== 'settling' ||
+                    tx.getField(authoredState) !== replacement.state
                   ) {
                     throw new Error(
                       'Document replacement cannot mix with ordinary writes.'
                     );
                   }
-                  nextState = active.replacement.state;
-                  const next = active.replacement.projection;
+                  nextState = replacement.state;
+                  const corrected =
+                    after.children !== replacement.value.children ||
+                    after.roots !== replacement.value.roots;
+                  // Saved authored positions describe the uncorrected content,
+                  // and no operation exists to map them through corrections.
+                  if (corrected && nextState.operations) {
+                    throw new Error(
+                      'Corrections cannot change a loaded document with authored changes.'
+                    );
+                  }
+                  const next =
+                    !corrected && replacement.projection
+                      ? replacement.projection
+                      : loadAuthoredProjection(source, nextState, after);
                   nextAccepted = next.accepted;
                   nextProjected = next.projected;
                   nextAcceptedPositions = next.acceptedPositions;
@@ -2884,6 +2912,11 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                       )
                   );
                 }
+              }
+            },
+            settle() {
+              if (active.replacement?.phase === 'loaded') {
+                active.replacement.phase = 'settling';
               }
             },
             prepare(commit) {

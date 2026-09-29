@@ -12,7 +12,11 @@ export type NodeMappingContribution = Readonly<{
   format: string;
   owner: string;
   ownerPlugin: AnyBasePlugin;
+  /** Element property keys the target plugin's own schema contributes. */
+  ownedPropertyKeys: readonly string[];
   schema: CompiledModelBinding['schema'];
+  /** Whether the target contributes an element, a mark, or neither. */
+  targetKind: CompiledModelBinding['kind'];
   targetKey: string | null;
   targetPlugin: string;
   targetType: string | null;
@@ -81,7 +85,9 @@ const collect = (editor: object) => {
             format,
             owner: owner.name,
             ownerPlugin: owner,
+            ownedPropertyKeys: binding.elementPropertyKeys,
             schema: binding.schema,
+            targetKind: binding.kind,
             targetKey: binding.propertyKey,
             targetPlugin: target.name,
             targetType: binding.elementType,

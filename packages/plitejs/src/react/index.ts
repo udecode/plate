@@ -25,6 +25,7 @@ export type {
 export type {
   EditableHistoryReplayEvent,
   EditableHistoryReplayResult,
+  EditablePasteResult,
 } from './editable/editable-dom-runtime';
 export type {
   RenderLeafProps,

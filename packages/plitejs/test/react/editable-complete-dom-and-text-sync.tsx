@@ -757,7 +757,7 @@ test('Editable falls back to React when text sync reaches empty text', async () 
   ).toBeTruthy();
 });
 
-test('Editable falls back to React updates while composing', async () => {
+test('Editable defers model text projection until composition ends', async () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -781,20 +781,102 @@ test('Editable falls back to React updates while composing', async () => {
     '#editable-composition-dom-sync'
   );
 
-  expect(root).toBeTruthy();
+  if (!(root instanceof HTMLElement)) {
+    throw new Error('Expected an editable root');
+  }
+  Object.defineProperty(root, 'isContentEditable', { value: true });
+  root.focus();
+  const textNode = document
+    .createTreeWalker(root, NodeFilter.SHOW_TEXT)
+    .nextNode();
+  const selection = document.getSelection();
+
+  if (!(textNode instanceof Text) || !selection) {
+    throw new Error('Expected a native text selection');
+  }
+  selection.setBaseAndExtent(textNode, 5, textNode, 5);
 
   await act(async () => {
-    fireEvent.compositionStart(root!);
+    fireEvent.compositionStart(root);
     editor.update((tx) => {
       tx.text.insert('!');
     });
   });
 
   expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
-  expect(rendered.container.textContent).toContain('alpha!');
+  expect(rendered.container.textContent).toContain('alpha');
+  expect(rendered.container.textContent).not.toContain('alpha!');
 
   await act(async () => {
-    fireEvent.compositionEnd(root!);
+    fireEvent.compositionEnd(root);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
+  });
+  expect(rendered.container.textContent).toContain('alpha!');
+});
+
+test('Editable keeps mismatched native composition model-owned', async () => {
+  const editor = createEditor();
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'alpha' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 5 },
+      focus: { path: [0, 0], offset: 5 },
+    },
+  });
+
+  const rendered = render(
+    <TestEditorSurface editor={editor} id="editable-mismatched-composition" />
+  );
+  const root = rendered.container.querySelector(
+    '#editable-mismatched-composition'
+  );
+
+  if (!(root instanceof HTMLElement)) {
+    throw new Error('Expected an editable root');
+  }
+  Object.defineProperty(root, 'isContentEditable', { value: true });
+  root.focus();
+  const textNode = document
+    .createTreeWalker(root, NodeFilter.SHOW_TEXT)
+    .nextNode();
+  const selection = document.getSelection();
+
+  if (!(textNode instanceof Text) || !selection) {
+    throw new Error('Expected a native text selection');
+  }
+  selection.setBaseAndExtent(textNode, 0, textNode, 0);
+  const runtime = findMountedEditableDOMRuntime(root);
+
+  await act(async () => {
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+      });
+    });
+    expect(selection.focusOffset).toBe(0);
+    fireEvent.compositionStart(root);
+  });
+
+  expect(
+    runtime?.inputController.domInputRuntime.compositionEpoch
+  ).toMatchObject({
+    anchor: null,
+    owner: 'model',
+    phase: 'model-composing',
+  });
+
+  await act(async () => {
+    fireEvent.compositionEnd(root);
   });
 });
 

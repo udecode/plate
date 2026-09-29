@@ -1,0 +1,136 @@
+{
+  "capturedAt": "2026-09-28T17:11:58.844Z",
+  "cwd": "/Users/zbeyens/git/plate-2",
+  "branchCheckedBeforeWrites": "next",
+  "scope": "Decisive source and runner inputs; not a complete transitive graph fingerprint",
+  "files": [
+    {
+      "path": "bunfig.toml",
+      "sha256": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf"
+    },
+    {
+      "path": "config/plite-source-aliases.ts",
+      "sha256": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718"
+    },
+    {
+      "path": "config/workspace-source-entries.mjs",
+      "sha256": "07fd635afc33e4a04880e27505ae20174546a8b649160c8a88e2156248ae5f64"
+    },
+    {
+      "path": "tooling/config/bunTestSetup.ts",
+      "sha256": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e"
+    },
+    {
+      "path": "tooling/config/tsconfig.test.json",
+      "sha256": "e83d4caa9ff5ec9b21aafd8f0a88ab826a662c8b8c922acc1c20aefc7bc8740f"
+    },
+    {
+      "path": "packages/platejs/src/lib/plugins/html/htmlAst.ts",
+      "sha256": "44b708687ef30c2cf29bce7e3e73c4957ee3f14d5a7145ea404be811a494074c"
+    },
+    {
+      "path": "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+      "sha256": "32db94ebe13e1e605289371cc61f8c2eaa466c56d33fa8dc95c4e4d88351fc39"
+    },
+    {
+      "path": "packages/platejs/src/lib/utils/sanitizeUrl.ts",
+      "sha256": "cadbf76708c588553aac2409ef76047f6905fb2b2b6cc7eca5ee539d8f772643"
+    },
+    {
+      "path": "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
+      "sha256": "3cf0d7b49e4c58c50d8e6d05396241a7c2435fe2417c2a7f20baf6d5d1d8fca2"
+    },
+    {
+      "path": "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts",
+      "sha256": "3fecad572a60eb5ff3f1fc8bfc001477ec46e11409881abebccdfda15dc63109"
+    },
+    {
+      "path": "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts",
+      "sha256": "93e94a042000bcf912c65742beba43c57af7366ac358858d22ae5f3467e296bd"
+    },
+    {
+      "path": "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts",
+      "sha256": "2bb473f86eeffbd1a9b9d32a7d4ac76754ec70bf067b35fcd25f9f3cee93cc9e"
+    },
+    {
+      "path": "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+      "sha256": "e65103ed6525d84a4c489d80a4a6b888512bbb579bf0b5a0b43b8d5ce4b993a4"
+    },
+    {
+      "path": "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",
+      "sha256": "f55c6dadbc06fea89b9cfa05295db7ce65fa4e9deade83705cfdd6b0d81bf5bf"
+    },
+    {
+      "path": "packages/platejs/src/docx/import/lib/importDocx.ts",
+      "sha256": "2751ce59b5d206bef6af5bc5a61a9fedf0086b783aad5a3473a675f90467e337"
+    },
+    {
+      "path": "packages/platejs/src/docx/paste/lib/WordPastePlugin.ts",
+      "sha256": "984bb90b0a062dd019867d262623ed25b1ab6209a8e21597e98117f4372b2cd0"
+    },
+    {
+      "path": "packages/platejs/src/docx/export/lib/exportDocx.tsx",
+      "sha256": "4d30d2506f7a5c0ad61659fe406e9ff204faaa91783ec169a7061167b1390395"
+    },
+    {
+      "path": "packages/platejs/src/docx/export/lib/exportHtmlToDocx.internal.ts",
+      "sha256": "986352900179c0d399d49d7807f69a7891f67bd3b61323d3a17ed474cb7fdd9c"
+    },
+    {
+      "path": "packages/platejs/src/docx/export/lib/internal/xml-builder.ts",
+      "sha256": "c3be7f2be32ba0e3525f1b07339f1b8035b803df11ac4ba22296228f8ff70a95"
+    },
+    {
+      "path": "packages/platejs/src/docx/export/lib/sourcePreservation.ts",
+      "sha256": "93f84622817d119e0877f5c56a4e3b99b4d5a20cead7ef86a8b7a6775295e0e9"
+    },
+    {
+      "path": "packages/platejs/src/static/internal/renderStaticHtmlWithOverrides.tsx",
+      "sha256": "b5c9c8af6f3aba927858fd37817a74f5ddbddee9ad21feecfbac51db6145f920"
+    },
+    {
+      "path": "packages/platejs/src/static/internal/writeStaticSelectionClipboardData.ts",
+      "sha256": "4ffc7835d047b12c1f4965168ec00f0535de2ac88e4444ce0750a70f3332b918"
+    },
+    {
+      "path": "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
+      "sha256": "f925eefdc200c6bbb164bfae79186d29959e67ba22375f5faa9221fad0334511"
+    },
+    {
+      "path": "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts",
+      "sha256": "2b038e5a688ee167e1138b7fbf429789a3cc016aa9f08cbd0835ea44a2f01861"
+    },
+    {
+      "path": "apps/www/src/registry/components/editor/link.tsx",
+      "sha256": "b2966cd43fd54d832e2fe5b909c7a34ed8d73dd093351fc04f00666c72fbfb6a"
+    },
+    {
+      "path": "apps/www/src/registry/components/editor/link-static.tsx",
+      "sha256": "29c89950026e97b1fd02d81fca3b76d5b49568c124bfde5f40036b174830eb40"
+    },
+    {
+      "path": "apps/www/src/registry/components/editor/media-image.tsx",
+      "sha256": "dfae2b4c5191724ad9c9f8f7f6cd0aba02e0df5d89aac356857591ec726da721"
+    },
+    {
+      "path": "apps/www/src/registry/components/editor/media-image-static.tsx",
+      "sha256": "03fd533ec416e04d4ed6fe1687d7a8eefe816f07a40369916f9324a3bae5ab3f"
+    },
+    {
+      "path": "apps/www/src/registry/components/editor/media-video-static.tsx",
+      "sha256": "16b77c5cee5f833cf1f0e783921cc667a2dfde7ca923e8e386d15916c2007a84"
+    },
+    {
+      "path": "docs/plans/artifacts/2026-09-28-conversion-boundary/safety/probe.test.ts",
+      "sha256": "0c74c3bafc3187507ed69ae3ff02f6f9bd49915538ff9b1add7caa2caaaf69c1"
+    },
+    {
+      "path": "docs/plans/artifacts/2026-09-28-conversion-boundary/safety/results.json",
+      "sha256": "6f45d5813db9d4b48d3feb60775cf00987e043af674a8cda32bdf5ee2d984531"
+    },
+    {
+      "path": "docs/plans/artifacts/2026-09-28-conversion-boundary/safety/probe.log",
+      "sha256": "640af3db260e21007ad404248f3270d1701dcc16b5e6086a91347bf211f89a61"
+    }
+  ]
+}

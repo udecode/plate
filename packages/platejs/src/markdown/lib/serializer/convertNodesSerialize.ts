@@ -7,21 +7,14 @@ import {
 } from '../../../core';
 import type { ListElement } from '../../../features/list';
 import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
+import type { MarkdownEncoded } from '../internal/markdownMappings';
 import type { MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
 import { convertTextsSerialize } from './convertTextsSerialize';
 import { getSerializableListStyle, listToMdastTree } from './listToMdastTree';
 import { reportOmittedProperties } from './reportOmittedProperties';
 
-// The flat-list properties the list serializer writes.
-const LIST_PROPERTIES: ReadonlySet<string> = new Set([
-  'checked',
-  'indent',
-  'listRestart',
-  'listStart',
-  'listStyle',
-  'listType',
-]);
+const NO_CLAIMS: ReadonlySet<string> = new Set();
 
 export const convertNodesSerialize = (
   nodes: readonly Descendant[],
@@ -44,15 +37,11 @@ export const convertNodesSerialize = (
       textQueue = [];
       if (!node) continue;
 
-      const paragraphType =
-        options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
-
-      if (isListElement(node, paragraphType)) {
-        reportOmittedProperties(node, LIST_PROPERTIES, options, 'list');
+      if (isListElement(node, options)) {
         listBlock.push(node);
 
         const next = nodes[i + 1];
-        const isNextIndent = isListElement(next, paragraphType);
+        const isNextIndent = isListElement(next, options);
         const firstList = listBlock.at(0);
         const hasDifferentListStyle =
           isNextIndent &&
@@ -86,21 +75,26 @@ export const convertNodesSerialize = (
   return mdastNodes;
 };
 
-export const buildMdastNode = (
+/** Encode one element without reporting its unclaimed properties. */
+export const encodeMdastNode = (
   node: Element,
   options: SerializeMdContext
-): MdRootContent | undefined => {
-  const encode =
-    options.mappings.encodeByType.get(node.type) ??
-    (node.type === (options.registry.type(PLUGINS.paragraph) ?? 'paragraph')
-      ? encodeMarkdownParagraph
-      : undefined);
+): MarkdownEncoded | undefined => {
+  const encode = options.mappings.encodeByType.get(node.type);
 
   if (encode) return encode(node, options);
+  if (node.type === (options.registry.type(PLUGINS.paragraph) ?? 'paragraph')) {
+    return {
+      claimed: NO_CLAIMS,
+      node: encodeMarkdownParagraph(node, options),
+      owner: 'markdown',
+    };
+  }
 
   options.report({
     action: 'dropped',
     code: 'markdown-unsupported-node',
+    impact: 'lossy',
     message: `Plate node "${node.type}" has no installed Markdown mapping.`,
     model: options.modelLocation(node),
     nodeType: node.type,
@@ -112,11 +106,25 @@ export const buildMdastNode = (
   return undefined;
 };
 
+export const buildMdastNode = (
+  node: Element,
+  options: SerializeMdContext
+): MdRootContent | undefined => {
+  const encoded = encodeMdastNode(node, options);
+
+  if (!encoded) return undefined;
+  reportOmittedProperties(node, encoded.claimed, options, encoded.owner);
+
+  return encoded.node;
+};
+
+// List items are the block types Markdown list decoding rebuilds.
 const isListElement = (
   node: Descendant | undefined,
-  paragraphType: string
+  options: SerializeMdContext
 ): node is ListElement =>
   !!node &&
   !TextApi.isText(node) &&
-  node.type === paragraphType &&
-  typeof node.listType === 'string';
+  typeof node.listType === 'string' &&
+  (node.type === (options.registry.type(PLUGINS.paragraph) ?? 'paragraph') ||
+    node.type === options.registry.type(PLUGINS.image));

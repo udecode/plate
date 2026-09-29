@@ -1,0 +1,77 @@
+{
+ "base": "http://localhost:3607",
+ "during": [
+  {
+   "draft": true,
+   "draftTextTail": "e styles for a visually striking effect.",
+   "ends": 1,
+   "endText": [
+    "."
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "lly striking effect.Add strikethrough to",
+   "ends": 1,
+   "endText": [
+    "o"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "to indicate deleted or outdated content.",
+   "ends": 1,
+   "endText": [
+    "."
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "utdated content.Write code snippets with",
+   "ends": 1,
+   "endText": [
+    "h"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    "y"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    "y"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ormatting for easy readability.Add links",
+   "ends": 1,
+   "endText": [
+    "s"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "atting for easy readability.Add links to",
+   "ends": 1,
+   "endText": [
+    "o"
+   ]
+  }
+ ],
+ "after": {
+  "draft": true,
+  "draftTextTail": " rule﻿Header 1Header 2Row 1DataRow 2Data",
+  "ends": 1,
+  "endText": [
+   "a"
+  ]
+ }
+}

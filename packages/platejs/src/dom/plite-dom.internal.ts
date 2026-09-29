@@ -22,6 +22,7 @@ export type {
   DOMText,
   DataTransferFormat,
   DataTransferDecodeContext,
+  DataTransferDiagnostic,
   DataTransferSchemaClaim,
   DataTransferEncodeContext,
   DataTransferSnapshot,

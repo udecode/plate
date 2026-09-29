@@ -9,6 +9,10 @@ import {
 import { createCommandDispatch } from './core/command-registry';
 import { getEditorCommitSnapshot } from './core/commit';
 import {
+  registerDocumentView,
+  withDocumentViewRead,
+} from './core/document-view-read';
+import {
   createEditorReadApi,
   createEditorUpdateApi,
 } from './core/editor-lifecycle-api';
@@ -46,6 +50,7 @@ import {
   isSelectionWithinBlock,
   replaceTransformedSnapshot,
   transformEditorSnapshotInput,
+  withEditorDocumentProjection,
   withEditorRootChildren,
   withEditorTargetRuntime,
   withEditorUpdateRoot,
@@ -55,6 +60,7 @@ import type {
   AnyEditor as Editor,
   EditorAnchorApi,
   EditorCommitContext,
+  EditorDocumentValue,
   PluginReference,
   EditorKeyApi,
   EditorParentOptions,
@@ -90,6 +96,7 @@ import { withImplicitRangeRoot } from './internal/root-location';
 type ViewState = {
   editor: Editor | null;
   composing: boolean;
+  document: EditorDocumentValue | undefined;
   focused: boolean;
   readOnly: boolean;
   root: RootKey;
@@ -154,10 +161,18 @@ const withRootRead = <T>(
   editor: Editor,
   viewState: ViewState,
   fn: () => T
-): T =>
-  withAuthoredViewRead(editor, viewState.editor ?? editor, () =>
-    withEditorRootChildren(editor, viewState.root, fn)
-  );
+): T => {
+  const read = () => withEditorRootChildren(editor, viewState.root, fn);
+
+  // A document is already a projection: the source's authored projection and
+  // selection do not apply to it.
+  return viewState.document
+    ? withEditorDocumentProjection(editor, viewState.document, read, {
+        root: viewState.root,
+        selection: null,
+      })
+    : withAuthoredViewRead(editor, viewState.editor ?? editor, read);
+};
 
 const withRootGenerator = <T>(
   editor: Editor,
@@ -469,6 +484,13 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
 
   const scopedState: T & { view: EditorStateViewApi } = Object.freeze({
     ...state,
+    ...(viewState.document
+      ? {
+          lastCommit: () => null,
+          meta: () => viewState.document?.meta,
+          value: () => viewState.document,
+        }
+      : {}),
     children: rootMethod(editor, viewState, () =>
       viewState.root === MAIN_ROOT_KEY
         ? state.children()
@@ -994,6 +1016,8 @@ const createViewRuntime = <V extends Value>(
     getFragment: () =>
       withRootRead(editor, viewState, () => baseRuntime.getFragment()),
     getLastCommit: () => {
+      if (viewState.document) return null;
+
       const commit = baseRuntime.getLastCommit();
       return commit
         ? getAuthoredViewCommit(getViewEditor() ?? editor, commit)
@@ -1060,8 +1084,13 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.projectRange(...args)),
     range: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.range(...args)),
-    read: (fn) => baseRuntime.read((state) => fn(projectState(state))),
+    read: (fn) =>
+      withDocumentViewRead(getViewEditor() ?? editor, () =>
+        baseRuntime.read((state) => fn(projectState(state)))
+      ),
     setViewState: (key, value) => {
+      if (key === 'readOnly' && viewState.document) return false;
+
       const changed = viewState[key] !== value;
       viewState[key] = value;
       return changed;
@@ -1080,6 +1109,8 @@ const createViewRuntime = <V extends Value>(
       return viewEditor;
     }),
     subscribe: (listener) => {
+      if (viewState.document) return () => {};
+
       const notify: (sourceChange?: EditorCommit<V>) => void = (
         sourceChange
       ) => {
@@ -1109,6 +1140,8 @@ const createViewRuntime = <V extends Value>(
       );
     },
     subscribeCommit: (listener) => {
+      if (viewState.document) return () => {};
+
       const notify: (sourceChange: EditorCommit<V>) => void = (
         sourceChange
       ) => {
@@ -1131,6 +1164,8 @@ const createViewRuntime = <V extends Value>(
       );
     },
     subscribeSource: (source, listener) => {
+      if (viewState.document) return () => {};
+
       const notify: (sourceChange?: EditorCommit<V>) => void = (
         sourceChange
       ) => {
@@ -1211,11 +1246,20 @@ export const createEditorViewRuntime = <
   sourceEditor: Editor<V, TPlugins>,
   options: EditorViewOptions<TRoot> = {}
 ): EditorView<V, TPlugins> => {
+  if (options.document) {
+    if (options.authored) {
+      throw new Error('A document view cannot take an authored projection.');
+    }
+
+    sourceEditor.read.schema.assertDocument(options.document);
+  }
+
   const viewState: ViewState = {
     editor: null,
     composing: sourceEditor.read.view.isComposing(),
+    document: options.document,
     focused: sourceEditor.read.view.isFocused(),
-    readOnly: options.readOnly ?? false,
+    readOnly: options.document ? true : (options.readOnly ?? false),
     root: toInternalRoot(options.root),
   };
   const baseRuntime = getEditorRuntime(sourceEditor);
@@ -1324,7 +1368,8 @@ export const createEditorViewRuntime = <
     viewState.root
   );
   inheritPluginRegistry(viewEditor, sourceEditor);
-  configureAuthoredView(viewEditor, options.authored);
+  if (options.document) registerDocumentView(viewEditor);
+  else configureAuthoredView(viewEditor, options.authored);
   pluginApis = createEditorViewPluginApis(viewEditor, sourceEditor);
   view.plugin = pluginApis.plugin;
   return Object.freeze(view);

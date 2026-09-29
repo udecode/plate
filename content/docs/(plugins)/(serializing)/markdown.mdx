@@ -154,9 +154,8 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
 ### Reading rules
 
 - Every string parses. Raw HTML that no mapping accepts stays literal text and
-  reports `markdown-unsupported-node`: an error under the default
-  `lossPolicy: 'reject'`, a warning under `'allow'`.
-- HTML comments are dropped with a warning.
+  reports a lossless `markdown-unsupported-node` warning under every policy.
+- HTML comments are dropped with a lossless warning.
 - `<br>`, `<br/>`, and `<br />` become line breaks.
 - A line holding only a registered block tag is a block, even next to paragraph
   text. A block tag elsewhere in a paragraph, heading, or table cell stays text.
@@ -169,6 +168,15 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
   values written as `name={…}` are read as their raw text.
 - Reference-style links and images, `[text][ref]` with a `[ref]: url`
   definition, resolve to ordinary links and images.
+- Destinations no reader or page may act on are removed before any mapping
+  reads them. A link keeps its label and reports a `markdown-unsafe-content`
+  warning under every policy: lossless when the destination could run script,
+  such as `javascript:` or `data:`, and lossy otherwise, such as a
+  protocol-relative or malformed URL. An image whose source cannot load keeps
+  its alt text and reports a lossy one; a script source never rendered, so its
+  removal is lossless. Link's `allowedSchemes` narrows or widens link schemes
+  above that floor; a link it rejects keeps its label and reports a lossy
+  `markdown-unsupported-node` warning.
 
 ### Mentions
 
@@ -189,24 +197,79 @@ installed, the block keeps that `id`; otherwise the wrapper is removed with a
 
 ## Streaming previews
 
-Parse an unfinished stream prefix with `partial: true`, then parse the complete
-source without it:
+Parse each unfinished stream prefix with `partial: true` and the previous
+result, then parse the complete source strictly with the same hint:
 
 ```ts
-const preview = editor.api.markdown.parse(accumulated, {
+const preview = editor.api.markdown.parseSlice(accumulated, {
   lossPolicy: 'allow',
   partial: true,
+  previous,
 });
+previous = preview.ok ? preview : undefined;
 
-// After the stream ends:
-const result = editor.api.markdown.parse(accumulated);
+// When the stream finishes or the user stops it:
+const result = editor.api.markdown.parseSlice(accumulated, { previous });
+previous = undefined;
 ```
 
 `partial: true` hides a trailing tag that has not finished arriving, such as
 `Before <callo`, and does not report tags left open at the end of the source.
 `lossPolicy: 'allow'` keeps unsupported content visible as text while the
-stream is incomplete. The final parse stays strict. AI chat previews use these
-options; see [AI streaming](/docs/ai#streaming).
+stream is incomplete. `previous` must come from the same method of the same
+editor. When the source extends the previous result's source and the plugins
+and limits are unchanged, blocks it already completed keep their node objects,
+and only the text after them is converted again; any other hint parses the
+whole source. A parse under another `lossPolicy`, such as the strict final
+parse, keeps only the completed blocks that reported nothing. A source with a
+link reference or footnote definition (`[id]: url`, `[^1]: note`) always parses
+whole, because a definition can change blocks before it.
+
+Render a read-only preview as a document of the parsed blocks; the editor
+supplies the plugins and is not edited:
+
+```tsx
+<EditorStatic editor={editor} document={{ children: nodes }} />
+```
+
+To show the stream in an editable editor instead, publish each result outside
+the undo history. Replace only the blocks after the first one that changed, or
+the whole value when no leading block is unchanged:
+
+```ts
+let start = 0;
+
+while (start < nodes.length && published[start] === nodes[start]) start += 1;
+
+if (start === 0) {
+  editor.update({ history: 'skip' }).value.replace({ children: nodes });
+} else {
+  editor.update({ history: 'skip' }, (tx) => {
+    tx.nodes.replaceChildren(nodes.slice(start), { at: [], index: start });
+  });
+}
+published = nodes;
+```
+
+An editor with authored changes records every node write as an authored
+change, so an editable preview with authored changes always replaces the value.
+
+The consumer owns the source, the abort signal, the hint and the preview
+cadence:
+
+- Publish the first chunk at once, then the latest accumulated source at most
+  every 32 ms.
+- Keep only the latest partial result as `previous`. Drop it when the stream
+  finishes, is cancelled or replaced, or unmounts.
+- When the stream finishes or the user stops it, parse the current source once
+  without `partial`, continuing the latest preview. A failed final parse clears
+  the preview.
+- Cancel, replacement and unmount abort the stream and drop the pending
+  preview without a final parse.
+
+AI chat previews follow the same rules; see [AI streaming](/docs/ai#streaming).
+
+<ComponentPreview name="markdown-streaming-demo" />
 
 ## Authored content
 
@@ -224,14 +287,12 @@ review export for Word revisions. See
 
 ## Define Markdown mappings
 
-Declare mappings on the plugin that owns the node or mark. The `formats`
-authoring callback receives only `defineFormats` and static schema bindings.
-Runtime mapping callbacks receive frozen plugin state, registry and schema
-views, model location while encoding, and a Markdown-specific `report`
-function. They do not receive a live editor or store.
+Declare mappings on the plugin that owns the node or mark. Most mappings are
+declarations: Plate builds the node, converts its properties, and reads and
+writes its children from the plugin's schema.
 
 ```ts
-import { definePlugin, ElementApi, property, schema } from 'platejs';
+import { definePlugin, property, schema } from 'platejs';
 
 const CalloutPlugin = definePlugin('callout', {
   schema: {
@@ -240,90 +301,119 @@ const CalloutPlugin = definePlugin('callout', {
     }),
   },
   formats: ({ defineFormats, schema: { type } }) =>
-    defineFormats({
-      markdown: {
-        tag: type,
-        decode: ({ decode, marks, isInline, node, readTagAttributes, refuse }) => {
-          const paragraph =
-            node.children.length === 1 && node.children[0]?.type === 'paragraph'
-              ? node.children[0]
-              : undefined;
-          const children = decode(
-            paragraph ? paragraph.children : node.children,
-            marks
-          );
-
-          if (children.some((child) => ElementApi.isElement(child) && !isInline(child))) {
-            return refuse('Callout content must be inline Markdown.');
-          }
-
-          return { ...readTagAttributes().properties, children, type };
-        },
-        encode: ({ encodeAttributes, encodePhrasing, node }) => {
-          const { children, type: _, ...properties } = node;
-
-          return {
-            attributes: encodeAttributes(properties),
-            children: [{ children: encodePhrasing(children), type: 'paragraph' }],
-            name: type,
-            type: 'mdxJsxFlowElement',
-          };
-        },
-      },
-    }),
+    defineFormats({ markdown: { tag: type } }),
 });
 ```
 
 This mapping reads and writes `<callout tone="info">Text</callout>`.
 
+- `tag` registers a Plate tag. For an element, use its schema `type`, so an
+  application that renames the type also renames the tag.
+- The element's content model decides the children. A void element has none;
+  a text block holds one paragraph of inline content, written only when it is
+  not empty; any other block holds blocks.
+- Attributes carry the element's non-metadata properties: the plugin's own
+  properties first, in schema order, then other plugins' properties, such as
+  `textAlign`, by key. List properties never become attributes, because the
+  Markdown list around the element carries them. A property with a default
+  that is not omitted is filled in when its attribute is absent.
+- `attributes` renames the plugin's own properties on the wire:
+
+```ts
+markdown: { tag: type, attributes: { url: 'src' } }
+```
+
+- An attribute value is decoded by the property's kind and checked by its
+  schema validator. An invalid value is left out with a
+  `markdown-property-omitted` warning. When a required value is invalid, such
+  as an unsafe `src`, the element is removed and its content kept. A script
+  URL reports a lossless `markdown-unsafe-content` warning instead.
+
+### Marks
+
+A plugin whose schema declares a `mark` maps a mark. Its declarations name
+where the mark comes from and how it is written:
+
+```ts
+// A standard Markdown container.
+markdown: { node: 'strong' }
+
+// A tag: `<kbd>` reads as `true` and a `true` mark writes `<kbd>`.
+markdown: { tag: 'kbd' }
+
+// One tag per value of an enum mark.
+markdown: [
+  { tag: 'sub', value: 'sub' },
+  { tag: 'sup', value: 'sup' },
+]
+
+// A CSS-valued mark: `<span style="color: red;">` reads as `'red'`.
+markdown: { tag: 'span', style: 'color' }
+```
+
+- `node` accepts `'strong'`, `'emphasis'`, `'delete'`, and `'inlineCode'`.
+- A mark is written by the first declaration whose `value` matches, so a
+  later declaration for the same value only reads, as `<del>` does next to
+  `{ node: 'delete' }`.
+- Every mark mapping on one tag contributes, so
+  `<span style="color: red; background-color: yellow;">` sets both marks. A
+  tag no mark mapping reads keeps its source text.
+- A text property no mapping writes keeps its text and reports a
+  `markdown-property-omitted` warning.
+
+### Custom callbacks
+
+Use `decode` and `encode` for a real format difference. Image chooses between
+`![alt](src)`, `<img>`, and `<figure>`; Date writes a value it cannot normalize
+as text.
+
+```ts
+markdown: {
+  node: 'heading',
+  decode: ({ decode, marks, node }) => ({
+    children: decode(node.children, marks),
+    level: node.depth,
+    type,
+  }),
+  encode: ({ encodePhrasing, node, preserve }) => {
+    preserve('level');
+
+    return {
+      children: encodePhrasing(node.children),
+      depth: node.level,
+      type: 'heading',
+    };
+  },
+}
+```
+
 - `node` selects a standard Markdown node kind, such as `'blockquote'`,
-  `'link'`, or `'image'`. `tag` registers a Plate tag; for an element, use its
-  schema `type`. Select one of them. `nestedTags` names tags read only inside
-  this tag, such as Image's `figcaption`.
+  `'link'`, or `'image'`. Select one of `node` or `tag`. `nestedTags` names
+  tags read only inside this tag, such as Image's `figcaption`.
 - Returning `undefined` from `decode` declines the node; the next mapping for
   the same source runs, in descending `priority` order. Mention decodes
   `mention:` links this way before Link.
 - `marks` contains the inherited persisted text marks. Pass it to `decode` or
   `decodeNodes` when nested content must keep those marks.
+- `previousSibling` is the Markdown node before this one. Lists use it to read
+  a list right after another as restarted numbering.
 - `readTagAttributes(tag?)` returns `{ attributes, properties }`: every
-  attribute as written, and the attributes that name schema properties, decoded
-  by the property kind. String properties stay strings, including JSON-looking
-  values. An invalid value is left out with a `markdown-property-omitted`
-  warning.
+  attribute as written, and the node's properties decoded as a declared tag
+  decodes them.
 - `refuse(message)` reports content the feature cannot represent as
   `markdown-unsupported-node`. A refused tag keeps its source text.
+- `report({ action, kind, message, nodeType })` reports a loss the mapping
+  handled itself. `kind: 'property'` marks a loss that keeps the content, such
+  as a link destination the editor does not allow; it warns under every
+  policy. The default `kind: 'element'` follows the loss policy.
 - `caption(children)` returns inline content when `children` is one paragraph,
   and `null` otherwise.
-- `encodeAttributes(properties)` writes property values as tag attributes.
-  `encode` can also `refuse(message)`.
-- Element properties the encoder never reads are reported as
-  `markdown-property-omitted` warnings. Passing the remaining properties to
-  `encodeAttributes` claims all of them.
-
-A mark mapping sets `mark: true`. Its `decode` returns the mark value, such as
-`true` or a color, and `wrap` returns the inline wrapper to write, such as
-`{ type: 'strong' }` or a tag; Markdown supplies the wrapper's children. Every
-mark mapping on the same source contributes and the children decode once, so
-`<span style="color: red; background-color: yellow;">` sets both marks. When no
-mark mapping returns a value, the tag keeps its source text. Mark mappings take
-no `priority`, and exporting a mark without `wrap` reports it.
-
-```ts
-import { definePlugin, property } from 'platejs';
-
-const KbdPlugin = definePlugin('kbd', {
-  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-  formats: ({ defineFormats }) =>
-    defineFormats({
-      markdown: {
-        tag: 'kbd',
-        mark: true,
-        decode: () => true,
-        wrap: () => ({ name: 'kbd', type: 'mdxJsxTextElement' }),
-      },
-    }),
-});
-```
+- `preserve(...keys)` claims that the returned output carries these properties
+  of the plugin. Every other content property on the node is reported as
+  `markdown-property-omitted`. Claims count only when `encode` returns output.
+- `encodeNodeAttributes()` writes the node's attributes as a declared tag does
+  and claims them. `encodeAttributes(properties)` writes the given property
+  values and claims each property whose attribute the returned output keeps.
 
 Pass an array to declare several mappings for one plugin. Use
 `defineFormats(map)` for self mappings and `defineFormats(TargetPlugin, map)`
@@ -372,9 +462,10 @@ reportWarnings(result.diagnostics);
 
 | Code | Severity | Reports |
 | --- | --- | --- |
-| `markdown-unsupported-node` | Error under `'reject'`, warning under `'allow'` | Content no mapping accepts, refused content, or nodes dropped on export. HTML comments and removed `<block>` wrappers warn. |
+| `markdown-unsupported-node` | Warning when `lossless`; `lossy` follows `lossPolicy` | Content no mapping accepts, refused content, or nodes dropped on export (`lossy`). Raw HTML kept as text, HTML comments and removed `<block>` wrappers are `lossless`. |
+| `markdown-unsafe-content` | Warning when `lossless`; lossy follows `lossPolicy` | A removed link or image destination. |
 | `markdown-tag-repair` | Warning | An `unclosed`, `unmatched`, or `misplaced` registered tag. |
-| `markdown-property-omitted` | Warning | An element property Markdown cannot carry on export, such as `textAlign`, or an invalid tag attribute value on import. |
+| `markdown-property-omitted` | Warning | A property or mark Markdown cannot carry on export, such as a paragraph's `textAlign`, or an invalid tag attribute value on import. |
 | `markdown-limit-exceeded` | Error | Source bytes, node count, or depth above `limits`. |
 | `markdown-inline-blocks` | Error | `parseInline` input that produced blocks. |
 | `markdown-schema-repair` | Warning; error when lossy under `'reject'` | A schema repair applied to the parsed document. |
@@ -407,6 +498,7 @@ diagnostic, and option types from `platejs/markdown`.
 | `limits` | Override `maxBytes`, `maxNodes`, or `maxDepth`. |
 | `lossPolicy` | `'reject'` (default) or `'allow'`. |
 | `partial` | Parse an unfinished stream prefix for a preview. |
+| `previous` | `editor.api.markdown.parseSlice` only: the previous result of a growing source to continue. |
 
 | Serialize option | Use |
 | --- | --- |

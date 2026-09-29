@@ -206,8 +206,10 @@ export function ExportToolbarButton() {
     const result = await exportDocx(model, {
       comments: docxComments,
       component: EditorStatic,
+      // The download still completes; the toasts below report what was lost.
+      lossPolicy: 'allow',
       projection: wordProjection,
-      source: docxSource?.source ?? undefined,
+      source: docxSource?.source,
       stylesheet: DOCX_EXPORT_STYLES,
     });
 

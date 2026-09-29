@@ -1,0 +1,51 @@
+{
+  "input": {
+    "children": [
+      {
+        "type": "image",
+        "url": "https://example.test/photo.png",
+        "alt": "alt",
+        "title": "IMPORTANT TITLE",
+        "children": [
+          {
+            "text": "caption"
+          }
+        ]
+      }
+    ]
+  },
+  "result": {
+    "data": "<figure class=\"editor-image\"><img alt=\"alt\" src=\"https://example.test/photo.png\"><figcaption>caption</figcaption></figure>",
+    "diagnostics": [],
+    "ok": true
+  },
+  "reparsed": {
+    "diagnostics": [],
+    "document": {
+      "children": [
+        {
+          "url": "https://example.test/photo.png",
+          "alt": "alt",
+          "type": "image",
+          "children": [
+            {
+              "text": "caption"
+            }
+          ]
+        }
+      ]
+    },
+    "ok": true
+  },
+  "checks": {
+    "titlePreserved": false,
+    "lossReported": false,
+    "preservedOrDiagnosed": false
+  },
+  "sources": {
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "b5a764c45f6bad7acfd797da9865845510748e3eb778f591d0dc64811ec33554",
+    "packages/platejs/src/lib/plugins/html/htmlConversion.ts": "e09fdda86ae8229779db17bcf6c391758a15b9fd18e3ffce66ac35e4e8b807b3",
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "5a1fee7d934a8181de0dd7e6305da4a186e1509f04f686bd3f65761203b47d36",
+    "packages/platejs/src/html/server/index.ts": "c0123e09c4c8f200bc4a39152a650b95d633648547b5857888ba17e3c8b1132f"
+  }
+}

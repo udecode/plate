@@ -75,6 +75,7 @@ export const useRuntimeClipboardEvents = ({
   onPaste,
   readOnly,
   repair,
+  runPaste,
   setExplicitViewportBackedSelection,
   viewportBackedSelection,
   rootRef,
@@ -88,6 +89,7 @@ export const useRuntimeClipboardEvents = ({
   onPaste?: ClipboardHandler;
   readOnly: boolean;
   repair: EditableEventRuntime['repair'];
+  runPaste: <T>(paste: () => T) => T;
   setExplicitViewportBackedSelection: (nextValue: boolean) => void;
   viewportBackedSelection: boolean;
   rootRef: { current: HTMLDivElement | null };
@@ -95,39 +97,41 @@ export const useRuntimeClipboardEvents = ({
 }) => {
   const handlePaste = useCallback(
     (event: ReactClipboardEvent<HTMLDivElement>) => {
-      flushPendingNativeTextInput?.();
-      const decision = prepareEditableClipboardKernel({
-        editor,
-        event,
-        inputController,
-      });
-      recordEditableInputIntent(inputController, decision.intent);
-      trace.beginKernelEventFrame({
-        family: 'paste',
-        intent: decision.intent,
-        target: event.target,
-      });
-      const pasteResult = applyEditablePaste({
-        editor,
-        event,
-        onPaste,
-        readOnly,
-        viewportBackedSelection,
-      });
-      if (pasteResult.repair) {
-        repair.requestEditableRepair(pasteResult.repair);
-      }
-      if (pasteResult.explicitViewportBackedSelection !== undefined) {
-        setExplicitViewportBackedSelection(
-          pasteResult.explicitViewportBackedSelection
-        );
-      }
-      trace.recordKernelEventTrace({
-        command: pasteResult.command,
-        family: 'paste',
-        intent: decision.intent,
-        ownership: decision.ownership,
-        target: event.target,
+      runPaste(() => {
+        flushPendingNativeTextInput?.();
+        const decision = prepareEditableClipboardKernel({
+          editor,
+          event,
+          inputController,
+        });
+        recordEditableInputIntent(inputController, decision.intent);
+        trace.beginKernelEventFrame({
+          family: 'paste',
+          intent: decision.intent,
+          target: event.target,
+        });
+        const pasteResult = applyEditablePaste({
+          editor,
+          event,
+          onPaste,
+          readOnly,
+          viewportBackedSelection,
+        });
+        if (pasteResult.repair) {
+          repair.requestEditableRepair(pasteResult.repair);
+        }
+        if (pasteResult.explicitViewportBackedSelection !== undefined) {
+          setExplicitViewportBackedSelection(
+            pasteResult.explicitViewportBackedSelection
+          );
+        }
+        trace.recordKernelEventTrace({
+          command: pasteResult.command,
+          family: 'paste',
+          intent: decision.intent,
+          ownership: decision.ownership,
+          target: event.target,
+        });
       });
     },
     [
@@ -137,6 +141,7 @@ export const useRuntimeClipboardEvents = ({
       onPaste,
       readOnly,
       repair,
+      runPaste,
       setExplicitViewportBackedSelection,
       viewportBackedSelection,
       trace,

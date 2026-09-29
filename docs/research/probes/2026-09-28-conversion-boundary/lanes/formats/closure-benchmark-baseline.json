@@ -1,0 +1,180 @@
+{
+  "benchmark": "plate-markdown-dialect",
+  "contract": {
+    "budgets": {
+      "b1LegacyRatio": 1.1,
+      "b2PlainRatio": 1.25,
+      "b3MdastRatio": 1.5,
+      "b3PerKbGrowthRatio": 1.5,
+      "b4DoublingRatio": 2.5,
+      "supplementalSerializeRatio": 1.1
+    },
+    "cohorts": {
+      "inlineTags": [
+        500,
+        1000,
+        2000,
+        4000
+      ],
+      "legacyCopies": {
+        "large": 100,
+        "normal": 5,
+        "stress": 400
+      },
+      "nestedTags": [
+        500,
+        1000
+      ],
+      "proseUnits": 200,
+      "streamBytes": 10000,
+      "streamChunkBytes": 64
+    },
+    "noiseBand": 0.1,
+    "sampling": {
+      "defaultRuns": 7,
+      "defaultWarmups": 1,
+      "scalingRuns": 9,
+      "scalingWarmups": 3,
+      "streamingRuns": 3,
+      "stressRuns": 3
+    },
+    "version": 1
+  },
+  "contractSha256": "2c235f94b2b26a3031525b201c838e87d81e9fef7ce3a2949aed41809883d7e0",
+  "createdAt": "2026-09-29T13:00:31.431Z",
+  "environment": {
+    "arch": "arm64",
+    "bun": "1.3.12",
+    "cpu": "Apple M5 Max",
+    "platform": "darwin",
+    "release": "25.3.0"
+  },
+  "fixture": {
+    "legacyUnit": "<callout icon=\"💡\">Tip with **bold** and <u>underline</u>.</callout>\n\n\n<details>\n\n<summary>Title _x_</summary>\n\nBody paragraph.\n\n* item\n\n</details>\n\n\n<columnGroup>\n\n<column width=\"50%\">Left **bold**</column>\n\n<column width=\"50%\">\n\n<callout icon=\"🔥\">Deep</callout>\n\n</column>\n\n</columnGroup>\n\n\nText with <kbd>Ctrl</kbd>, <sup>2</sup>, <sub>i</sub>, <mark>hi</mark>, ~~x~~.\n\n\nColors <span style=\"color: red;\">red</span>, <span style=\"background-color: yellow;\">bg</span>, <span style=\"font-size: 20px;\">big</span>.\n\n\n<toc />\n\n\n* one\n  * nested <u>u</u>\n* two <kbd>k</kbd>\n\n\n> quote with <kbd>k</kbd> and <u>u</u>\n\n\n| a        | b            |\n| -------- | ------------ |\n| <u>x</u> | <kbd>y</kbd> |\n\n\nFootnote[^1].\n\n[^1]: Note with <u>u</u>.\n\n\n```js\nconst a = <div/>;\n```\n\n\n$$\nx^2\n$$\n\nInline $a<b$ math.\n\n\n# Heading\n\nPlain paragraph with [a link](https://example.com) and `code`.\n\n1. one\n2. two\n",
+    "legacyUnitSha256": "81c7d08ccecb78ff33ad889d417cfefe411817487063b6dbdd14e4c7a06856ac",
+    "proseSha256": "945d0bf1649f638bc6983781324f47648c42e2a407b5e047855e16956c6bd009"
+  },
+  "guards": {
+    "legacy": {
+      "large": "1f967f1eb0d242c63512c38ef78f2f9787c8591feee8d5c92ac1e83ebffb6d8f",
+      "normal": "c1b8467fa0ab07e705996d358110181d74b5c137abfb8396e39616d883d0e490",
+      "stress": "a64ec322707a54b9178a1c430587f6174dca72d917eca4c7b202e80147ed120d"
+    },
+    "prose": "45dc4b2a4f058c1cdf47a831efaf089ed2e6d00031d45ac1c1a701ff36a66375",
+    "roundTrip": {
+      "large": true,
+      "normal": true,
+      "stress": true
+    },
+    "streaming": "27161420ba6889ecce9b527e003ba957b0092441883d0a18e76e987e83c4b7b5"
+  },
+  "metrics": {
+    "legacyParse": {
+      "large": {
+        "max": 510.82050000000004,
+        "min": 462.07708300000013,
+        "p50": 493.08799999999974,
+        "p75": 508.6675829999999,
+        "p95": 510.82050000000004,
+        "samples": [
+          510.82050000000004,
+          466.4688749999998,
+          494.9411670000002,
+          493.08799999999974,
+          508.6675829999999,
+          462.07708300000013,
+          486.6250420000001
+        ]
+      },
+      "normal": {
+        "max": 24.910041000000092,
+        "min": 21.09441700000025,
+        "p50": 21.472125000000233,
+        "p75": 24.88116700000046,
+        "p95": 24.910041000000092,
+        "samples": [
+          24.910041000000092,
+          21.09441700000025,
+          21.472125000000233,
+          24.88116700000046,
+          21.366417000000183,
+          21.441666999999143,
+          24.63916699999936
+        ]
+      },
+      "stress": {
+        "max": 2419.0026659999994,
+        "min": 2334.1118750000005,
+        "p50": 2388.513583,
+        "p75": 2419.0026659999994,
+        "p95": 2419.0026659999994,
+        "samples": [
+          2419.0026659999994,
+          2388.513583,
+          2334.1118750000005
+        ]
+      }
+    },
+    "prose": {
+      "max": 150.16533399999935,
+      "min": 142.89566700000069,
+      "p50": 146.92633299999943,
+      "p75": 149.3832080000011,
+      "p95": 150.16533399999935,
+      "samples": [
+        143.5482919999995,
+        142.89566700000069,
+        143.70779100000073,
+        146.92633299999943,
+        148.86437500000102,
+        149.3832080000011,
+        150.16533399999935
+      ]
+    },
+    "serialize": {
+      "max": 218.96166700000322,
+      "min": 204.4429170000003,
+      "p50": 209.59995799999888,
+      "p75": 213.26241700000173,
+      "p95": 218.96166700000322,
+      "samples": [
+        218.96166700000322,
+        213.26241700000173,
+        205.05933399999776,
+        209.59995799999888,
+        209.86737500000163,
+        204.4429170000003,
+        208.88166699999783
+      ]
+    },
+    "streaming": {
+      "max": 2727.323792000003,
+      "min": 2680.722750000001,
+      "p50": 2713.318166000001,
+      "p75": 2727.323792000003,
+      "p95": 2727.323792000003,
+      "samples": [
+        2680.722750000001,
+        2727.323792000003,
+        2713.318166000001
+      ]
+    }
+  },
+  "role": "baseline",
+  "sourceAfter": {
+    "fileCount": 864,
+    "gitHead": "a7750ad388b2d4626c0a4eef2d3e0e23454010f4",
+    "relevantSourceSha256": "34d89537e9128544040f09968a1c22f7d6b0c0fd3cd6b20633639d08c2fbc009",
+    "runnerSha256": "ba2976c9f6ba6c17cd21a5869a3483740a7d3285bb58863573a54445ecc955eb",
+    "sourceRef": "a7750ad388"
+  },
+  "sourceBefore": {
+    "fileCount": 864,
+    "gitHead": "a7750ad388b2d4626c0a4eef2d3e0e23454010f4",
+    "relevantSourceSha256": "34d89537e9128544040f09968a1c22f7d6b0c0fd3cd6b20633639d08c2fbc009",
+    "runnerSha256": "ba2976c9f6ba6c17cd21a5869a3483740a7d3285bb58863573a54445ecc955eb",
+    "sourceRef": "a7750ad388"
+  },
+  "sourceUnchanged": true,
+  "version": 1
+}

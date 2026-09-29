@@ -8,6 +8,10 @@ import JSZip from 'jszip';
 import { SaxesParser } from 'saxes';
 
 import { throwIfDocxAborted } from './abort';
+import {
+  createDocxMarkupInspector,
+  type DocxSourceViolation,
+} from './sourceEligibility';
 import type {
   DocxDiagnostic,
   DocxImportLimits,
@@ -157,7 +161,8 @@ const inspectXml = (
   limits: DocxImportLimits,
   counters: { relationships: number; xmlNodes: number },
   inventory: DocxXmlInventoryEntry[],
-  roots: Map<string, DocxSourceLocation>
+  roots: Map<string, DocxSourceLocation>,
+  vocabulary: Map<string, DocxSourceViolation | null>
 ) => {
   let text: string;
 
@@ -170,6 +175,7 @@ const inspectXml = (
   let depth = 0;
   let parseError: Error | undefined;
   const parser = new SaxesParser({ xmlns: true });
+  const markup = createDocxMarkupInspector(name);
   const frames: Array<
     Readonly<{
       disposition?: DocxXmlDisposition;
@@ -187,7 +193,11 @@ const inspectXml = (
   parser.on('error', () => {
     parseError ??= invalidPackage(`DOCX contains malformed XML in ${name}.`);
   });
+  parser.on('processinginstruction', () => markup.processingInstruction());
+  parser.on('text', (value) => markup.text(value));
+  parser.on('cdata', (value) => markup.text(value));
   parser.on('opentag', (tag) => {
+    markup.open(tag);
     depth += 1;
     counters.xmlNodes += 1;
     const qName = tag.name;
@@ -231,7 +241,8 @@ const inspectXml = (
       }
     }
   });
-  parser.on('closetag', () => {
+  parser.on('closetag', (tag) => {
+    markup.close(tag);
     const frame = frames.pop();
 
     if (frame) {
@@ -256,6 +267,7 @@ const inspectXml = (
     parseError ??= invalidPackage(`DOCX contains malformed XML in ${name}.`);
   }
   if (parseError) throw parseError;
+  vocabulary.set(name, markup.finish());
 };
 
 export type BoundedDocxPackage = Readonly<{
@@ -263,6 +275,8 @@ export type BoundedDocxPackage = Readonly<{
   source: Blob;
   xmlInventory: readonly DocxXmlInventoryEntry[];
   xmlRoots: ReadonlyMap<string, DocxSourceLocation>;
+  /** First markup outside the passive source vocabulary per XML part, or null. */
+  xmlVocabulary: ReadonlyMap<string, DocxSourceViolation | null>;
   toArrayBuffer: (
     replacements?: ReadonlyMap<string, string | Uint8Array>
   ) => Promise<ArrayBuffer>;
@@ -353,6 +367,7 @@ export const readBoundedDocxPackage = async (
     const counters = { relationships: 0, xmlNodes: 0 };
     const inventory: DocxXmlInventoryEntry[] = [];
     const roots = new Map<string, DocxSourceLocation>();
+    const vocabulary = new Map<string, DocxSourceViolation | null>();
     let actualExpandedBytes = 0;
 
     for (const entry of sourceEntries) {
@@ -395,7 +410,15 @@ export const readBoundedDocxPackage = async (
         );
       }
       if (isXmlPart(entry.filename)) {
-        inspectXml(value, entry.filename, limits, counters, inventory, roots);
+        inspectXml(
+          value,
+          entry.filename,
+          limits,
+          counters,
+          inventory,
+          roots,
+          vocabulary
+        );
       }
       entries.set(entry.filename, value);
     }
@@ -409,6 +432,7 @@ export const readBoundedDocxPackage = async (
       ),
       xmlInventory: Object.freeze(inventory),
       xmlRoots: roots,
+      xmlVocabulary: vocabulary,
       async toArrayBuffer(replacements = new Map()) {
         throwIfDocxAborted(signal, abortError);
         const zip = new JSZip();

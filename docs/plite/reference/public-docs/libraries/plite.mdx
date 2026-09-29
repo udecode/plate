@@ -26,6 +26,21 @@ Use `createEditorView(editor, options)` when framework packages need a
 root-scoped view over a committed editor. App UI should normally use framework
 helpers such as `useEditor` in `plitejs/react`.
 
+Pass `document` to read an immutable document through the editor's schema and
+plugins without editing the editor, for example to render a preview:
+
+```ts
+const preview = createEditorView(editor, { document: { children: blocks } });
+
+preview.read.children(); // blocks
+```
+
+The document must be valid for the editor's schema. Reads, plugin reads and
+API factories resolve against it. The view is read-only, has no selection or
+last commit, and never notifies subscribers. Reading the source editor's document
+through its own API while the view reads throws; schema queries stay allowed.
+Plugin code reads the document through the editor or state passed to it.
+
 Read committed state with direct read methods, or with `editor.read(...)` when
 several reads should share one state view.
 
@@ -125,8 +140,8 @@ resolved. `validate(context)` receives that final candidate while the live
 editor keeps its previous installed plugin set. `activate(editor, context)`
 runs only after the validated candidate is published.
 
-`createEditorView(runtime, { root })` resolves functional API factories against
-that view. `context.root` identifies the named root, and API reads, writes, and
+`createEditorView(runtime, { root })` and `createEditorView(runtime, { document })`
+resolve functional API factories against that view. `context.root` identifies the named root, and API reads, writes, and
 exported selection slices stay scoped to it. The primary document view receives
 `undefined`.
 

@@ -2,6 +2,7 @@ import { spyOn } from 'bun:test';
 
 import { act } from '@testing-library/react';
 import { AIChatPlugin } from 'platejs/ai/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import {
   type Editor as PlateEditor,
@@ -16,11 +17,15 @@ import { AIKit } from '@/registry/components/editor/ai';
 import { Editor } from '@/registry/components/editor/editor';
 import { AIChatTransportPlugin } from '@/registry/components/editor/use-chat';
 
-export const makeEditor = (withHeadings = false) =>
+// Registry components rely on the automatic JSX runtime; Bun compiles these
+// specs with the classic one.
+Object.assign(globalThis, { React });
+
+export const makeEditor = (withBlocks = false) =>
   createEditor({
     plugins: [
       ParagraphPlugin,
-      ...(withHeadings ? [HeadingPlugin] : []),
+      ...(withBlocks ? [HeadingPlugin, CalloutPlugin] : []),
       MarkdownPlugin,
       ...AIKit,
       AIChatTransportPlugin.configure({

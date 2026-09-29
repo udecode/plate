@@ -56,6 +56,12 @@ export type HtmlMappingDiagnosticInput = Readonly<{
 
 export type MarkdownMappingDiagnosticInput = Readonly<{
   action: 'dropped' | 'replaced' | 'unwrapped';
+  /**
+   * `property` when the content stays and only a property is lost, such as a
+   * link destination the editor does not allow: that loss warns under every
+   * policy. Defaults to `element`, which follows the loss policy.
+   */
+  kind?: 'element' | 'property';
   message: string;
   nodeType: string;
 }>;

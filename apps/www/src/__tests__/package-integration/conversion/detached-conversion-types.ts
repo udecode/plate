@@ -6,11 +6,8 @@ import {
   type ValueOf,
 } from 'platejs';
 import { importDocx } from 'platejs/docx/import';
-import { parseHtml, parseHtmlSlice, serializeHtml } from 'platejs/html';
-import {
-  parseHtml as parseServerHtml,
-  parseHtmlSlice as parseServerHtmlSlice,
-} from 'platejs/html/server';
+import { parseHtml, serializeHtml } from 'platejs/html';
+import { parseHtml as parseServerHtml } from 'platejs/html/server';
 import { parseMarkdown, serializeMarkdown } from 'platejs/markdown';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
@@ -36,12 +33,11 @@ export async function verifyDetachedConversionWithKit() {
   if (markdown.ok) editor.update((tx) => tx.value.replace(markdown.document));
   if (docx.ok) {
     editor.update((tx) => tx.value.replace(docx.document));
-    docx.source.dispose();
+    docx.source?.dispose();
   }
 
-  void parseHtmlSlice('<p>Kit</p>', { plugins });
+  void editor.api.html.parseSlice('<p>Kit</p>');
   void parseServerHtml('<p>Kit</p>', { plugins });
-  void parseServerHtmlSlice('<p>Kit</p>', { plugins });
   void serializeHtml(document, { plugins });
   void serializeMarkdown(document, { plugins });
   void serializePlainText(document, { plugins });

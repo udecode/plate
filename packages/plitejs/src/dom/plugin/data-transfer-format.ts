@@ -7,6 +7,7 @@ import {
   type Element,
   type Editor,
   type SchemaProperty,
+  type TransactionSpec,
   type Value,
   ContentSlice as ContentSliceApi,
   definePlugin,
@@ -22,6 +23,7 @@ import {
   evaluateCommandWithState,
 } from '../../core/command-registry';
 import { createDetachedContentSlice } from '../../core/content-slice';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
 import {
   getPluginContributions,
@@ -33,6 +35,7 @@ import {
 } from '../../core/plugin-registry';
 import {
   applyTransactionSpec,
+  attachTransactionSpecAfterCommit,
   getActiveEditorTransaction,
   getEditorStateView,
   toEditorCoreStateView,
@@ -85,11 +88,25 @@ export type DataTransferSnapshot = Readonly<{
   types: readonly string[];
 }>;
 
+/** One conversion diagnostic a format reports while decoding a payload. */
+export type DataTransferDiagnostic = Readonly<{
+  /** `lossy` when pasted content is left out or loses meaning. */
+  impact: 'lossless' | 'lossy';
+  /** Human-readable explanation of what changed. */
+  message: string;
+}>;
+
 export type DataTransferDecodeContext<V extends Value = Value> = Readonly<{
   /** Payload for this format's registered mimeType. */
   data: string;
   /** MIME type currently being decoded. */
   mimeType: string;
+  /**
+   * Report a conversion diagnostic while `accept` or `decode` runs. A mounted
+   * paste delivers the inserted payload's reports, plus loss from earlier
+   * payloads that it cannot account for, through `Editable.onPasteResult`.
+   */
+  report: (diagnostic: DataTransferDiagnostic) => void;
   /** Immutable snapshot of every incoming host MIME type and file. */
   snapshot: DataTransferSnapshot;
   /** Read-only editor snapshot captured for this callback. */
@@ -118,7 +135,8 @@ export type DataTransferFormat<V extends Value = Value> = Readonly<{
   mimeType: string;
   /**
    * Parse an intact slice, or return null to delegate to the next format.
-   * Contextual schema fitting occurs at insertion.
+   * Contextual schema fitting occurs at insertion. Report what the slice
+   * leaves out through `context.report`.
    */
   decode?: (context: DataTransferDecodeContext<V>) => ContentSlice<V> | null;
   /** Return false to skip this payload before decoding. */
@@ -727,6 +745,154 @@ const readDataTransferFormatState = <V extends Value, TResult>(
   return transaction ? read(getEditorStateView(editor)) : editor.read(read);
 };
 
+type DataTransferAttempt = Readonly<{
+  diagnostics: DataTransferDiagnostic[];
+  mimeType: string;
+}>;
+
+const readDataTransferDiagnostic = (
+  diagnostic: unknown
+): DataTransferDiagnostic => {
+  const { impact, message } = (
+    typeof diagnostic === 'object' && diagnostic !== null ? diagnostic : {}
+  ) as Partial<DataTransferDiagnostic>;
+
+  if (
+    (impact !== 'lossless' && impact !== 'lossy') ||
+    typeof message !== 'string'
+  ) {
+    throw new TypeError(
+      'DataTransfer diagnostics need an impact of "lossless" or "lossy" and a string message.'
+    );
+  }
+
+  return Object.freeze({ impact, message });
+};
+
+// Loss reported by an abandoned attempt stays unless the inserted attempt
+// decoded that same payload. Matching text from another MIME type does not
+// prove the rich content was recovered.
+const selectDataTransferDiagnostics = (
+  attempts: readonly DataTransferAttempt[],
+  inserted: DataTransferAttempt | null
+): readonly DataTransferDiagnostic[] =>
+  Object.freeze(
+    attempts.flatMap((attempt) => {
+      if (attempt === inserted) return attempt.diagnostics;
+      if (attempt.mimeType === inserted?.mimeType) return [];
+
+      return attempt.diagnostics.filter(({ impact }) => impact === 'lossy');
+    })
+  );
+
+/** Receives the one outcome of an observed built-in transfer insertion. */
+export type DataTransferInsertionListener = (
+  inserted: boolean,
+  diagnostics: readonly DataTransferDiagnostic[]
+) => void;
+
+type DataTransferInsertionObservation = {
+  diagnostics: readonly DataTransferDiagnostic[];
+  listener: DataTransferInsertionListener;
+  state: 'idle' | 'pending' | 'refused' | 'settled';
+};
+
+const EMPTY_DATA_TRANSFER_DIAGNOSTICS: readonly DataTransferDiagnostic[] =
+  Object.freeze([]);
+
+const DATA_TRANSFER_INSERTION_OBSERVATIONS = new WeakMap<
+  object,
+  DataTransferInsertionObservation[]
+>();
+
+const settleDataTransferInsertion = (
+  observation: DataTransferInsertionObservation,
+  inserted: boolean
+) => {
+  if (observation.state === 'settled') return;
+
+  observation.state = 'settled';
+  observation.listener(inserted, observation.diagnostics);
+};
+
+/**
+ * Bind one built-in insertion outcome to the innermost observation. Later
+ * insertions under the same observation belong to their own callers.
+ *
+ * @internal
+ */
+export const recordDataTransferOutcome = <V extends Value>(
+  editor: Editor<V, any>,
+  result: TransactionSpec | false,
+  diagnostics: readonly DataTransferDiagnostic[] = EMPTY_DATA_TRANSFER_DIAGNOSTICS
+) => {
+  const observation = DATA_TRANSFER_INSERTION_OBSERVATIONS.get(
+    getEditorRuntimeOwner(editor)
+  )?.at(-1);
+
+  if (observation?.state !== 'idle') return result;
+
+  observation.diagnostics = diagnostics;
+
+  if (result === false) {
+    observation.state = 'refused';
+
+    return result;
+  }
+
+  observation.state = 'pending';
+
+  return attachTransactionSpecAfterCommit(result, () => {
+    settleDataTransferInsertion(observation, true);
+  });
+};
+
+/**
+ * Observe the built-in transfer insertion that `insert` performs. The listener
+ * runs once: after the insertion commits, or as a refusal when nothing
+ * commits. A throwing `insert` or a rolled-back update settles nothing.
+ *
+ * @internal
+ */
+export const observeDataTransferInsertion = <T>(
+  editor: Editor<any, any>,
+  listener: DataTransferInsertionListener,
+  insert: () => T
+): T => {
+  const owner = getEditorRuntimeOwner(editor);
+  const observations = DATA_TRANSFER_INSERTION_OBSERVATIONS.get(owner) ?? [];
+  const observation: DataTransferInsertionObservation = {
+    diagnostics: EMPTY_DATA_TRANSFER_DIAGNOSTICS,
+    listener,
+    state: 'idle',
+  };
+
+  observations.push(observation);
+  DATA_TRANSFER_INSERTION_OBSERVATIONS.set(owner, observations);
+
+  let result: T;
+
+  try {
+    result = insert();
+  } finally {
+    observations.splice(observations.lastIndexOf(observation), 1);
+
+    if (observations.length === 0) {
+      DATA_TRANSFER_INSERTION_OBSERVATIONS.delete(owner);
+    }
+  }
+
+  // Inside an open update the pending insertion still settles on that commit.
+  if (
+    observation.state === 'refused' ||
+    (observation.state === 'pending' && !getActiveEditorTransaction(editor))
+  ) {
+    settleDataTransferInsertion(observation, false);
+  }
+
+  return result;
+};
+
 export const createDataTransferTransactionSpec = <V extends Value>(
   editor: Editor<V, any>,
   dataTransfer: DataTransfer,
@@ -743,6 +909,7 @@ export const createDataTransferTransactionSpec = <V extends Value>(
   const state = options?.state
     ? toEditorCoreStateView(options.state)
     : readDataTransferFormatState(editor, toEditorCoreStateView);
+  const attempts: DataTransferAttempt[] = [];
 
   for (const registration of formats) {
     const { format } = registration;
@@ -754,34 +921,45 @@ export const createDataTransferTransactionSpec = <V extends Value>(
 
     if (!available) continue;
 
+    const attempt: DataTransferAttempt = {
+      diagnostics: [],
+      mimeType: format.mimeType,
+    };
+    let reporting = true;
     const context = Object.freeze({
       data,
       mimeType: format.mimeType,
+      report: (diagnostic: DataTransferDiagnostic) => {
+        if (!reporting) {
+          throw new Error(
+            'DataTransfer diagnostics can only be reported while accept or decode runs.'
+          );
+        }
+        attempt.diagnostics.push(readDataTransferDiagnostic(diagnostic));
+      },
       snapshot,
       state,
     });
-
-    if (format.accept) {
-      try {
-        if (format.accept(context) === false) {
-          continue;
-        }
-      } catch (error) {
-        reportDataTransferFormatError(editor, registration, 'accept', error);
-        continue;
-      }
-    }
-
-    let slice: ContentSlice<V> | null;
+    let phase: DataTransferFormatPhase = 'accept';
+    let slice: ContentSlice<V> | null = null;
 
     try {
-      const decoded = format.decode(context);
+      if (format.accept?.(context) !== false) {
+        phase = 'decode';
+        const decoded = format.decode(context);
 
-      slice = decoded ? ContentSliceApi.fromJSON<V>(decoded) : null;
+        slice = decoded ? ContentSliceApi.fromJSON<V>(decoded) : null;
+      }
     } catch (error) {
-      reportDataTransferFormatError(editor, registration, 'decode', error);
+      // The lifecycle error channel owns a throwing attempt, including its
+      // partial reports.
+      reportDataTransferFormatError(editor, registration, phase, error);
       continue;
+    } finally {
+      reporting = false;
     }
+
+    attempts.push(attempt);
 
     if (!slice) continue;
 
@@ -797,10 +975,18 @@ export const createDataTransferTransactionSpec = <V extends Value>(
 
     if (result === false) continue;
 
-    return result;
+    return recordDataTransferOutcome(
+      editor,
+      result,
+      selectDataTransferDiagnostics(attempts, attempt)
+    );
   }
 
-  return false;
+  return recordDataTransferOutcome(
+    editor,
+    false,
+    selectDataTransferDiagnostics(attempts, null)
+  );
 };
 
 export const insertDataTransfer = <V extends Value>(

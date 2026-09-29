@@ -1052,6 +1052,10 @@ export const useEditableSelectionReconciler = ({
 
     if (runtime.externalText.focusSelection()) return undefined;
 
+    if (runtime.shouldDeferCompositionSelectionExport()) {
+      return undefined;
+    }
+
     if (isEditableOutsideFocusBoundarySettling(state)) {
       return undefined;
     }

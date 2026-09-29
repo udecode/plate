@@ -216,7 +216,7 @@ describe('AIChatPlugin response drafts', () => {
           <hp>
             <htext>xxx</htext>
           </hp>
-          <hp indent={1} listRestart={2} listType="numbered">
+          <hp indent={1} listStart={2} listType="numbered">
             <htext>2</htext>
           </hp>
         </fragment>

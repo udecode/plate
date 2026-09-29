@@ -1,0 +1,203 @@
+--- a/packages/platejs/src/ai/react/AIChatPlugin.ts
++++ b/packages/platejs/src/ai/react/AIChatPlugin.ts
+@@ -1642,7 +1642,6 @@
+           invalidatePreview();
+           return;
+         }
+-        const previous = previewParse;
+         const parsed = content
+           ? commandEditor.api.markdown.parseSlice(
+               content,
+@@ -1650,11 +1649,10 @@
+               // strict and invalidates a response it cannot represent. Both
+               // continue the latest partial result.
+               final
+-                ? { previous: previous?.result }
++                ? {}
+                 : {
+                     lossPolicy: 'allow',
+                     partial: true,
+-                    previous: previous?.result,
+                   }
+             )
+           : null;
+@@ -1674,16 +1672,10 @@
+           invalidatePreview();
+           return;
+         }
+-        const reused = previous?.result.ok ? previous.result.slice.content : [];
+-
+         previewOwner = { final, requestId: ownerRequestId };
+-        // The store keeps its own copy of each value. Handing back its copy of
+-        // every block the parser reused keeps that block's identity for readers.
+         context.store.set({
+           _blockKey: targetKey,
+-          previewValue: previewValue.map((node, index) =>
+-            node === reused[index] ? (previous?.stored[index] ?? node) : node
+-          ),
++          previewValue,
+         });
+         if (parsed && !final) {
+           previewParse = {
+--- a/apps/www/src/registry/components/editor/ai-menu.tsx
++++ b/apps/www/src/registry/components/editor/ai-menu.tsx
+@@ -19,6 +19,7 @@
+   X,
+ } from 'lucide-react';
+ import {
++  createEditorView,
+   type Decoration,
+   ElementApi,
+   isHotkey,
+@@ -30,6 +31,7 @@
+ import { CommentsPlugin } from 'platejs/comments/react';
+ import {
+   useCreateEditor,
++  useEditorRuntimeState,
+   useEditorSelector,
+   useFocusedLast,
+   usePluginStore,
+@@ -121,16 +123,26 @@
+   });
+   const previewValue = usePluginStore(AIChatPlugin, 'previewValue');
+   const streaming = usePluginStore(AIChatPlugin, 'streaming');
+-  const previewDocument = React.useMemo(
+-    () => (previewValue.length > 0 ? { children: previewValue } : undefined),
+-    [previewValue]
++  // Baseline: publish every draft into the preview editor.
++  const preview = useEditorRuntimeState(
++    aiEditor,
++    React.useCallback(
++      () => createEditorView(aiEditor, { readOnly: true }),
++      [aiEditor]
++    )
+   );
+ 
++  React.useLayoutEffect(() => {
++    aiEditor
++      .update({ history: 'skip' })
++      .value.replace({ children: previewValue });
++  }, [aiEditor, previewValue]);
++
+   React.useEffect(() => {
+     if (!inline) return;
+ 
+     scrollAIPreviewEnd(editor, draftRef.current);
+-  }, [editor, inline, previewDocument]);
++  }, [editor, inline, preview]);
+ 
+   React.useEffect(() => {
+     const draft = draftRef.current;
+@@ -152,8 +164,7 @@
+     <div ref={draftRef} data-editor-ai-draft="">
+       <EditorStatic
+         variant={inline ? 'none' : 'aiChat'}
+-        document={previewDocument}
+-        editor={aiEditor}
++        editor={preview}
+         className={cn(
+           streaming &&
+             '[&_[data-editor-ai-end]]:after:ml-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""]'
+--- a/apps/www/src/registry/examples/markdown-streaming-demo.tsx
++++ b/apps/www/src/registry/examples/markdown-streaming-demo.tsx
+@@ -10,14 +10,18 @@
+ import {
+   type Descendant,
+   type Editor as PlateEditor,
+-  type EditorDocumentValue,
+-  type Element as PlateElement,
+-  ElementApi,
++  createEditorView,
+ } from 'platejs';
+ import type { MarkdownSliceParseResult } from 'platejs/markdown';
+-import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
++import {
++  EditorRoot,
++  useCreateEditor,
++  useEditorRuntimeState,
++  useStaticEditor,
++} from 'platejs/react';
+ import {
+   type HTMLAttributes,
++  useCallback,
+   useEffect,
+   useMemo,
+   useRef,
+@@ -403,8 +407,14 @@
+     },
+     []
+   );
+-  // The static preview renders each parse as a document; nothing is edited.
+-  const [staticDocument, setStaticDocument] = useState<EditorDocumentValue>();
++  // Baseline: the static preview publishes into its own editor.
++  const staticPreview = useEditorRuntimeState(
++    editorStatic,
++    useCallback(
++      () => createEditorView(editorStatic, { readOnly: true }),
++      [editorStatic]
++    )
++  );
+ 
+   const chunks = useMemo(() => {
+     if (chunkSize > 0) {
+@@ -434,17 +444,14 @@
+     const target = preview === 'static' ? editorStatic : editor;
+     const result = target.api.markdown.parseSlice(
+       draft,
+-      final ? { previous } : { lossPolicy: 'allow', partial: true, previous }
++      final ? {} : { lossPolicy: 'allow', partial: true }
+     );
+     const nodes: readonly Descendant[] = result.ok ? result.slice.content : [];
+ 
+     if (preview === 'static') {
+-      // Parsed slices hold top-level blocks.
+-      const blocks = nodes.filter((node): node is PlateElement =>
+-        ElementApi.isElement(node)
+-      );
+-
+-      setStaticDocument(blocks.length > 0 ? { children: blocks } : undefined);
++      editorStatic
++        .update({ history: 'skip' })
++        .value.replace({ children: nodes });
+     } else {
+       splice(editor, published.current, nodes);
+       published.current = nodes;
+@@ -472,7 +479,7 @@
+   const reset = () => {
+     cancel();
+     editor.update({ history: 'skip' }).value.replace({ children: [] });
+-    setStaticDocument(undefined);
++    editorStatic.update({ history: 'skip' }).value.replace({ children: [] });
+     published.current = [];
+     setPosition(0);
+     setStatus('idle');
+@@ -724,8 +731,7 @@
+           {preview === 'static' ? (
+             <EditorView
+               className="h-[500px] overflow-y-auto rounded border"
+-              document={staticDocument}
+-              editor={editorStatic}
++              editor={staticPreview}
+             />
+           ) : (
+             <EditorRoot editor={editor}>
+@@ -768,18 +774,7 @@
+   published: readonly Descendant[],
+   nodes: readonly Descendant[]
+ ) {
+-  let start = 0;
+-
+-  while (start < nodes.length && published[start] === nodes[start]) {
+-    start += 1;
+-  }
+-  if (start === 0) {
+-    editor.update({ history: 'skip' }).value.replace({ children: nodes });
+-  } else {
+-    editor.update({ history: 'skip' }, (tx) => {
+-      tx.nodes.replaceChildren(nodes.slice(start), { at: [], index: start });
+-    });
+-  }
++  editor.update({ history: 'skip' }).value.replace({ children: nodes });
+ }
+ 
+ // Cancel, replacement and unmount abort arrivals and drop the pending

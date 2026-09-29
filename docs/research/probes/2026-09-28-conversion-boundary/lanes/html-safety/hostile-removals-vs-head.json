@@ -1,0 +1,26 @@
+[
+  {
+    "afterMs": 22,
+    "beforeMs": 26,
+    "bytes": 195000,
+    "pairs": 5000
+  },
+  {
+    "afterMs": 47,
+    "beforeMs": 55,
+    "bytes": 390000,
+    "pairs": 10000
+  },
+  {
+    "afterMs": 146,
+    "beforeMs": 184,
+    "bytes": 780000,
+    "pairs": 20000
+  },
+  {
+    "afterMs": 353,
+    "beforeMs": 438,
+    "bytes": 1287000,
+    "pairs": 33000
+  }
+]

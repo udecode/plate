@@ -21,9 +21,15 @@ import {
   type SchemaElementProperties,
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { decideUrl, isStoredUrl } from '../../../internal/utils/urlPolicy';
+import {
+  readHtmlMediaProvider,
+  readHtmlMediaWidth,
+  writeHtmlMediaProvider,
+  writeHtmlMediaWidth,
+} from './mediaHtml.internal';
 
 export const mediaElementProperties = {
-  url: property.string({ required: true }),
   width: property.json({
     validate: (value): value is number | string =>
       (typeof value === 'number' && Number.isFinite(value)) ||
@@ -31,6 +37,12 @@ export const mediaElementProperties = {
     validationVersion: 1,
   }),
 } satisfies SchemaElementProperties;
+
+const readMediaWidth = (media: HTMLElement) => {
+  const width = readHtmlMediaWidth(media.style.width);
+
+  return width === undefined ? {} : { width };
+};
 
 // Media names its source in `src` or its first `<source>` child.
 const readMediaSource = (media: HTMLElement) =>
@@ -144,8 +156,15 @@ type MediaPluginStage = {
   };
 };
 
+/**
+ * What a media URL loads: an image, audio or video, a file download, or an
+ * embedded page. Insertion refuses a URL its kind cannot load.
+ */
+export type MediaUrlKind = 'embed' | 'file' | 'image' | 'media';
+
 /** Installs direct-caption editing, URL normalization, and media construction. */
 export function defineMediaPlugin<const C extends MediaElementPluginDefinition>(
+  kind: MediaUrlKind,
   normalizeUrlInput?: (
     state: Readonly<MediaPluginState>,
     url: string
@@ -161,6 +180,7 @@ export function defineMediaPlugin<const C extends MediaElementPluginDefinition>(
   ) => MediaPluginUpdate<C>;
 };
 export function defineMediaPlugin(
+  kind: MediaUrlKind,
   normalizeUrlInput?: (
     state: Readonly<MediaPluginState>,
     url: string
@@ -176,7 +196,10 @@ export function defineMediaPlugin(
         url: state.transformUrl?.(url) ?? url,
       };
 
-      return (state.isUrl ?? defaultIsUrl)(normalized.url)
+      return (state.isUrl ?? defaultIsUrl)(normalized.url) &&
+        decideUrl(kind, normalized.url).ok &&
+        (normalized.sourceUrl === undefined ||
+          decideUrl('navigation', normalized.sourceUrl).ok)
         ? normalized
         : undefined;
     };
@@ -418,7 +441,14 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
   schema: {
     element: schema.element.textBlock({
       object: true,
-      properties: mediaElementProperties,
+      properties: {
+        url: property.string({
+          required: true,
+          validate: isStoredUrl('media'),
+          validationVersion: 1,
+        }),
+        ...mediaElementProperties,
+      },
     }),
   },
   formats: ({ defineFormats, schema: { type } }) =>
@@ -431,15 +461,14 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
 
             if (!media || !url) return undefined;
 
-            return {
-              ...(media.style.width ? { width: media.style.width } : {}),
-              url,
-            };
+            return { ...readMediaWidth(media), url };
           },
-          encode: ({ content, node }) => {
+          encode: ({ content, node, preserve }) => {
             if (typeof node.url !== 'string' || node.url.length === 0) {
               return null;
             }
+
+            preserve('url', 'width');
 
             return {
               attributes: { class: 'editor-audio' },
@@ -447,12 +476,7 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
                 {
                   attributes: { controls: true, src: node.url },
                   children: [],
-                  style: {
-                    width:
-                      typeof node.width === 'number'
-                        ? `${node.width}px`
-                        : node.width,
-                  },
+                  style: { width: writeHtmlMediaWidth(node.width) },
                   tag: 'audio',
                 },
                 { children: content, tag: 'figcaption' },
@@ -476,7 +500,7 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
             // Fallback text is for browsers without media support, not a caption.
             return {
               children: [{ text: '' }],
-              ...(element.style.width ? { width: element.style.width } : {}),
+              ...readMediaWidth(element),
               url,
             };
           },
@@ -490,51 +514,9 @@ export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
             ? `${children} (${node.url})`
             : node.url,
       },
-      markdown: {
-        tag: type,
-        decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
-          const { attributes, properties } = readTagAttributes();
-          const content = caption(decode(node.children));
-
-          if (!content) {
-            return refuse(
-              'Media captions must contain one Markdown paragraph.'
-            );
-          }
-
-          return {
-            ...properties,
-            children: content,
-            type,
-            url: typeof attributes.src === 'string' ? attributes.src : '',
-          };
-        },
-        encode: ({
-          encodePhrasing,
-          encodeAttributes,
-          node,
-          readPlainInline,
-        }) => {
-          const { children, type: _, url, ...rest } = node;
-
-          return {
-            attributes: encodeAttributes({ ...rest, src: url }),
-            children:
-              readPlainInline(children) !== ''
-                ? [
-                    {
-                      children: encodePhrasing(children),
-                      type: 'paragraph',
-                    },
-                  ]
-                : [],
-            name: type,
-            type: 'mdxJsxFlowElement',
-          };
-        },
-      },
+      markdown: { tag: type, attributes: { url: 'src' } },
     }),
-}).extend(defineMediaPlugin());
+}).extend(defineMediaPlugin('media'));
 
 export type AudioElement = ElementOf<typeof BaseAudioPlugin>;
 
@@ -544,6 +526,11 @@ export const BaseFilePlugin = definePlugin(PLUGINS.file, {
     element: schema.element.textBlock({
       object: true,
       properties: {
+        url: property.string({
+          required: true,
+          validate: isStoredUrl('file'),
+          validationVersion: 1,
+        }),
         ...mediaElementProperties,
         name: property.string(),
       },
@@ -558,51 +545,9 @@ export const BaseFilePlugin = definePlugin(PLUGINS.file, {
           return label === node.url ? node.url : `${label} (${node.url})`;
         },
       },
-      markdown: {
-        tag: type,
-        decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
-          const { attributes, properties } = readTagAttributes();
-          const content = caption(decode(node.children));
-
-          if (!content) {
-            return refuse(
-              'Media captions must contain one Markdown paragraph.'
-            );
-          }
-
-          return {
-            ...properties,
-            children: content,
-            type,
-            url: typeof attributes.src === 'string' ? attributes.src : '',
-          };
-        },
-        encode: ({
-          encodePhrasing,
-          encodeAttributes,
-          node,
-          readPlainInline,
-        }) => {
-          const { children, type: _, url, ...rest } = node;
-
-          return {
-            attributes: encodeAttributes({ ...rest, src: url }),
-            children:
-              readPlainInline(children) !== ''
-                ? [
-                    {
-                      children: encodePhrasing(children),
-                      type: 'paragraph',
-                    },
-                  ]
-                : [],
-            name: type,
-            type: 'mdxJsxFlowElement',
-          };
-        },
-      },
+      markdown: { tag: type, attributes: { url: 'src' } },
     }),
-}).extend(defineMediaPlugin());
+}).extend(defineMediaPlugin('file'));
 
 export type FileElement = ElementOf<typeof BaseFilePlugin>;
 
@@ -612,9 +557,17 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
     element: schema.element.textBlock({
       object: true,
       properties: {
+        url: property.string({
+          required: true,
+          validate: isStoredUrl('media'),
+          validationVersion: 1,
+        }),
         ...mediaElementProperties,
         provider: property.string(),
-        sourceUrl: property.string(),
+        sourceUrl: property.string({
+          validate: isStoredUrl('navigation'),
+          validationVersion: 1,
+        }),
       },
     }),
   },
@@ -622,34 +575,35 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
     defineFormats({
       html: [
         {
-          decode: ({ element }) => {
+          decode: ({ element, report }) => {
             const media = element.querySelector<HTMLElement>(':scope > video');
             const url = media ? readMediaSource(media) : undefined;
 
             if (!media || !url) return undefined;
 
             return {
-              ...(media.style.width ? { width: media.style.width } : {}),
+              ...readHtmlMediaProvider(element, report),
+              ...readMediaWidth(media),
               url,
             };
           },
-          encode: ({ content, node }) => {
+          encode: ({ content, node, preserve }) => {
             if (typeof node.url !== 'string' || node.url.length === 0) {
               return null;
             }
 
+            preserve('provider', 'sourceUrl', 'url', 'width');
+
             return {
-              attributes: { class: 'editor-video' },
+              attributes: {
+                class: 'editor-video',
+                ...writeHtmlMediaProvider(node),
+              },
               children: [
                 {
                   attributes: { controls: true, src: node.url },
                   children: [],
-                  style: {
-                    width:
-                      typeof node.width === 'number'
-                        ? `${node.width}px`
-                        : node.width,
-                  },
+                  style: { width: writeHtmlMediaWidth(node.width) },
                   tag: 'video',
                 },
                 { children: content, tag: 'figcaption' },
@@ -673,7 +627,7 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
             // Fallback text is for browsers without media support, not a caption.
             return {
               children: [{ text: '' }],
-              ...(element.style.width ? { width: element.style.width } : {}),
+              ...readMediaWidth(element),
               url,
             };
           },
@@ -687,51 +641,9 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
             ? `${children} (${node.url})`
             : node.url,
       },
-      markdown: {
-        tag: type,
-        decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
-          const { attributes, properties } = readTagAttributes();
-          const content = caption(decode(node.children));
-
-          if (!content) {
-            return refuse(
-              'Media captions must contain one Markdown paragraph.'
-            );
-          }
-
-          return {
-            ...properties,
-            children: content,
-            type,
-            url: typeof attributes.src === 'string' ? attributes.src : '',
-          };
-        },
-        encode: ({
-          encodePhrasing,
-          encodeAttributes,
-          node,
-          readPlainInline,
-        }) => {
-          const { children, type: _, url, ...rest } = node;
-
-          return {
-            attributes: encodeAttributes({ ...rest, src: url }),
-            children:
-              readPlainInline(children) !== ''
-                ? [
-                    {
-                      children: encodePhrasing(children),
-                      type: 'paragraph',
-                    },
-                  ]
-                : [],
-            name: type,
-            type: 'mdxJsxFlowElement',
-          };
-        },
-      },
+      markdown: { tag: type, attributes: { url: 'src' } },
     }),
-}).extend(defineMediaPlugin());
+}).extend(defineMediaPlugin('media'));
 
 export type VideoElement = ElementOf<typeof BaseVideoPlugin>;
 

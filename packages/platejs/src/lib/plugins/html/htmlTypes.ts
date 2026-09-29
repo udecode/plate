@@ -99,7 +99,11 @@ export type HtmlDiagnostic =
       }>)
   | (HtmlDiagnosticContext &
       HtmlPolicyDiagnostic<{
-        action: 'removed';
+        /**
+         * `unwrapped` when a link lost its destination and kept its label,
+         * which warns under every policy; `removed` otherwise.
+         */
+        action: 'removed' | 'unwrapped';
         code: 'html-unsafe-content';
         /** Whether the mandatory removal also dropped visible content. */
         impact: 'lossless' | 'lossy';

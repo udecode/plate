@@ -352,19 +352,35 @@ export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
           ...parseTableCellHtml(element),
           ...(element.tagName === 'TH' ? { header: true } : {}),
         }),
-        encode: ({ content, node }) => ({
-          ...getTableCellHtmlMappingProps(node),
-          children: content,
-          tag: node.header ? 'th' : 'td',
-        }),
+        encode: ({ content, node, preserve }) => {
+          // An absent span attribute means a span of 1 in HTML.
+          preserve(
+            'backgroundColor',
+            'borders',
+            'colSpan',
+            'header',
+            'rowSpan'
+          );
+
+          return {
+            ...getTableCellHtmlMappingProps(node),
+            children: content,
+            tag: node.header ? 'th' : 'td',
+          };
+        },
         match: [{ tag: 'td' }, { tag: 'th' }],
       },
       markdown: {
-        encode: ({ encode, isPhrasing, node, refuse }) => {
+        encode: ({ encode, isPhrasing, node, path, preserve, refuse }) => {
           if (getColSpan(node) > 1 || getRowSpan(node) > 1) {
             return refuse(
               'Markdown tables cannot represent rowSpan or colSpan.'
             );
+          }
+          preserve('colSpan', 'rowSpan');
+          // Markdown makes exactly the first row the header row.
+          if ((path.at(-2) === 0) === (node.header === true)) {
+            preserve('header');
           }
 
           const blocks = encode(node.children);
@@ -426,13 +442,18 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
 
           return height === undefined ? {} : { height };
         },
-        encode: ({ content, node }) => ({
-          children: content,
-          style: {
-            height: node.height === undefined ? undefined : `${node.height}px`,
-          },
-          tag: 'tr',
-        }),
+        encode: ({ content, node, preserve }) => {
+          preserve('height');
+
+          return {
+            children: content,
+            style: {
+              height:
+                node.height === undefined ? undefined : `${node.height}px`,
+            },
+            tag: 'tr',
+          };
+        },
         match: [{ tag: 'tr' }],
       },
       markdown: {
@@ -877,31 +898,36 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
             ...(marginLeft === undefined ? {} : { marginLeft }),
           };
         },
-        encode: ({ content, node }) => ({
-          children: [
-            ...(node.columnWidths && node.columnWidths.length > 0
-              ? [
-                  {
-                    children: node.columnWidths.map((width) => ({
-                      style: {
-                        width: width === null ? undefined : `${width}px`,
-                      },
-                      tag: 'col',
-                    })),
-                    tag: 'colgroup',
-                  },
-                ]
-              : []),
-            { children: content, tag: 'tbody' },
-          ],
-          style: {
-            marginLeft:
-              node.marginLeft === undefined
-                ? undefined
-                : `${node.marginLeft}px`,
-          },
-          tag: 'table',
-        }),
+        encode: ({ content, node, preserve }) => {
+          // Without a `colgroup`, a table has no column widths.
+          preserve('columnWidths', 'marginLeft');
+
+          return {
+            children: [
+              ...(node.columnWidths && node.columnWidths.length > 0
+                ? [
+                    {
+                      children: node.columnWidths.map((width) => ({
+                        style: {
+                          width: width === null ? undefined : `${width}px`,
+                        },
+                        tag: 'col',
+                      })),
+                      tag: 'colgroup',
+                    },
+                  ]
+                : []),
+              { children: content, tag: 'tbody' },
+            ],
+            style: {
+              marginLeft:
+                node.marginLeft === undefined
+                  ? undefined
+                  : `${node.marginLeft}px`,
+            },
+            tag: 'table',
+          };
+        },
         match: [{ tag: 'table' }],
       },
       markdown: {
@@ -915,46 +941,55 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
               'Table Markdown decoding requires table cells, table rows, and paragraphs.'
             );
           }
+          // GFM gives a short row empty cells; padding every row to the widest
+          // one here is the repair a committed table gets anyway.
+          const width = Math.max(
+            ...node.children.map((row) => row.children.length)
+          );
+          const emptyCell = (rowIndex: number) => ({
+            children: [{ children: [{ text: '' }], type: paragraphType }],
+            ...(rowIndex === 0 ? { header: true } : {}),
+            type: cellType,
+          });
           const rows = node.children.map((row, rowIndex) => ({
-            children: row.children.map((cell) => {
-              const children = decode(cell.children, marks);
-              const grouped: Descendant[] = [];
-              let inline: Descendant[] = [];
-              const flush = () => {
-                if (inline.length === 0) return;
+            children: [
+              ...row.children.map((cell) => {
+                const children = decode(cell.children, marks);
+                const grouped: Descendant[] = [];
+                let inline: Descendant[] = [];
+                const flush = () => {
+                  if (inline.length === 0) return;
 
-                grouped.push({ children: inline, type: paragraphType });
-                inline = [];
-              };
+                  grouped.push({ children: inline, type: paragraphType });
+                  inline = [];
+                };
 
-              children.forEach((child) => {
-                if (
-                  ElementApi.isElement(child) &&
-                  !isInline(child) &&
-                  isBlock(child)
-                ) {
-                  flush();
-                  grouped.push(child);
-                } else {
-                  inline.push(child);
-                }
-              });
-              flush();
+                children.forEach((child) => {
+                  if (
+                    ElementApi.isElement(child) &&
+                    !isInline(child) &&
+                    isBlock(child)
+                  ) {
+                    flush();
+                    grouped.push(child);
+                  } else {
+                    inline.push(child);
+                  }
+                });
+                flush();
 
-              return {
-                children:
-                  grouped.length > 0
-                    ? grouped
-                    : [
-                        {
-                          children: [{ text: '' }],
-                          type: paragraphType,
-                        },
-                      ],
-                ...(rowIndex === 0 ? { header: true } : {}),
-                type: cellType,
-              };
-            }),
+                return grouped.length > 0
+                  ? {
+                      children: grouped,
+                      ...(rowIndex === 0 ? { header: true } : {}),
+                      type: cellType,
+                    }
+                  : emptyCell(rowIndex);
+              }),
+              ...Array.from({ length: width - row.children.length }, () =>
+                emptyCell(rowIndex)
+              ),
+            ],
             type: rowType,
           }));
 

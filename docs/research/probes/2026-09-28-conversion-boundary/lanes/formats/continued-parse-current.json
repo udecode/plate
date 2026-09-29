@@ -1,0 +1,85 @@
+{
+  "createdAt": "2026-09-29T13:58:55.365Z",
+  "rows": [
+    {
+      "bytes": 10000,
+      "chunks": 157,
+      "fixture": "rich-10000",
+      "finalEqualsFresh": true,
+      "finalMs": {
+        "baseline": 10.222999999999956,
+        "candidate": 0.22933300000022427
+      },
+      "previewMs": {
+        "baseline": 886.9100410000001,
+        "candidate": 62.650874999999814
+      },
+      "reusedLeadingBlocks": "18392/18929",
+      "runs": 3
+    },
+    {
+      "bytes": 13910,
+      "chunks": 157,
+      "fixture": "cjk-10000",
+      "finalEqualsFresh": true,
+      "finalMs": {
+        "baseline": 24.03966700000001,
+        "candidate": 0.24916699999994307
+      },
+      "previewMs": {
+        "baseline": 1821.0425420000001,
+        "candidate": 79.91241699999955
+      },
+      "reusedLeadingBlocks": "27074/27574",
+      "runs": 3
+    },
+    {
+      "bytes": 50000,
+      "chunks": 782,
+      "fixture": "rich-50000",
+      "finalEqualsFresh": true,
+      "finalMs": {
+        "baseline": 65.80524999999761,
+        "candidate": 0.5401670000064769
+      },
+      "previewMs": {
+        "baseline": 33415.705666999995,
+        "candidate": 391.52074999999604
+      },
+      "reusedLeadingBlocks": "460796/463477",
+      "runs": 1
+    },
+    {
+      "bytes": 10041,
+      "chunks": 157,
+      "fixture": "definitions-10000",
+      "finalEqualsFresh": true,
+      "finalMs": {
+        "baseline": 10.046458999997412,
+        "candidate": 11.40966599999956
+      },
+      "previewMs": {
+        "baseline": 938.0440830000007,
+        "candidate": 916.6853750000009
+      },
+      "reusedLeadingBlocks": "0/19091",
+      "runs": 3
+    },
+    {
+      "bytes": 50041,
+      "chunks": 782,
+      "fixture": "definitions-50000",
+      "finalEqualsFresh": true,
+      "finalMs": {
+        "baseline": 108.04962499999965,
+        "candidate": 59.92754099999729
+      },
+      "previewMs": {
+        "baseline": 32802.789958,
+        "candidate": 27198.591249999998
+      },
+      "reusedLeadingBlocks": "0/464286",
+      "runs": 1
+    }
+  ]
+}

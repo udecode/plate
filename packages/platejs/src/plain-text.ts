@@ -1,9 +1,9 @@
-import type {
-  EditorDocumentValue,
-  NativeAuthoredProjectionDiagnostic,
-  StructuralPlainTextDiagnostic,
+import {
+  createEditorView,
+  type EditorDocumentValue,
+  type NativeAuthoredProjectionDiagnostic,
+  type StructuralPlainTextDiagnostic,
 } from './facade';
-import { createProjectedEditorView } from './internal/createProjectedEditorView';
 import { serializePlatePlainText } from './internal/plugin/compilePlainTextMappings';
 import type { Editor } from './lib/editor';
 import type { EditorApplicationSchema } from './lib/editor/editorApplicationSchema';
@@ -43,7 +43,9 @@ const serializeEditorPlainText = (
     document,
     options.projection ?? 'proposed'
   );
-  const view = createProjectedEditorView(editor, projected.document);
+  const view = createEditorView(editor, {
+    document: projected.document,
+  }) as unknown as Editor;
   const result = view.read((state) =>
     serializePlatePlainText(
       view,

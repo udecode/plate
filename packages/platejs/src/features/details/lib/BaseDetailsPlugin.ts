@@ -36,40 +36,7 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
         encode: ({ content }) => ({ children: content, tag: 'summary' }),
         match: [{ tag: 'summary' }],
       },
-      markdown: {
-        tag: type,
-        decode: ({ decode, marks, isInline, node, refuse }) => {
-          const paragraph =
-            node.children.length === 1 && node.children[0]?.type === 'paragraph'
-              ? node.children[0]
-              : undefined;
-          const children = decode(
-            paragraph ? paragraph.children : node.children,
-            marks
-          );
-
-          if (
-            children.some(
-              (child) => ElementApi.isElement(child) && !isInline(child)
-            )
-          ) {
-            return refuse('Summary children must be inline Markdown content.');
-          }
-
-          return { children, type };
-        },
-        encode: ({ encodePhrasing, node }) => ({
-          attributes: [],
-          children: [
-            {
-              children: encodePhrasing(node.children),
-              type: 'paragraph',
-            },
-          ],
-          name: type,
-          type: 'mdxJsxFlowElement',
-        }),
-      },
+      markdown: { tag: type },
     }),
 });
 
@@ -96,37 +63,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         encode: ({ content }) => ({ children: content, tag: 'details' }),
         match: [{ tag: 'details' }],
       },
-      markdown: {
-        tag: type,
-        decode: ({ decode, marks, node, registry }) => {
-          const summaryType = registry.type(PLUGINS.detailsSummary);
-
-          if (!summaryType) {
-            throw new Error('DetailsSummary must be installed.');
-          }
-
-          return {
-            children: decode(node.children, marks).map((child) => {
-              if (
-                ElementApi.isElement(child) &&
-                child.children.length === 1 &&
-                ElementApi.isElementType(child.children[0], summaryType)
-              ) {
-                return child.children[0];
-              }
-
-              return child;
-            }),
-            type,
-          };
-        },
-        encode: ({ encodeFlow, node }) => ({
-          attributes: [],
-          children: encodeFlow(node.children),
-          name: type,
-          type: 'mdxJsxFlowElement',
-        }),
-      },
+      markdown: { tag: type },
     }),
 })
   .extend(({ editor, plugin, schema: { type }, store }) => ({

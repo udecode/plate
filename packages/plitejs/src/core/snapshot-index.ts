@@ -315,6 +315,8 @@ export const EMPTY_CANONICAL_DOCUMENT_PATH_MAPPING = Object.freeze(
 
 type MappedSnapshotIndexDescriptor = Readonly<{
   base: SnapshotIndex;
+  /** Chain identities whose nodes left the document. */
+  deletedNodeKeys: ReadonlySet<NodeKey>;
   discardedNodeKeys: ReadonlySet<NodeKey>;
   preparedRuntimePlacements: readonly PreparedRuntimePlacement[];
   runtimeAssignments: ReadonlyArray<readonly [NodeKey, Path]>;
@@ -344,6 +346,31 @@ const MAPPED_ELEMENT_INDEXES = new WeakMap<
   SnapshotIndex,
   MappedElementIndexDescriptor
 >();
+
+// Each mapping copies its source's overlay forward entry by entry. Past this
+// size, resolving every identity once is cheaper than copying the overlay
+// through every later update: a whole-document replacement would otherwise
+// make each following edit O(document). Deletion memory is only a cache under
+// the same bound; an evicted deletion still resolves through materialization.
+const MAX_CARRIED_OVERLAY = 256;
+
+const rebaseLargeSnapshotIndexOverlay = (index: SnapshotIndex) => {
+  const descriptor = MAPPED_SNAPSHOT_INDEXES.get(index);
+  const elementDescriptor = MAPPED_ELEMENT_INDEXES.get(index);
+  const overlay =
+    (descriptor
+      ? descriptor.runtimeAssignments.length +
+        descriptor.discardedNodeKeys.size +
+        descriptor.preparedRuntimePlacements.length
+      : 0) + (elementDescriptor?.additions.length ?? 0);
+
+  if (overlay <= MAX_CARRIED_OVERLAY) return;
+
+  index.entries();
+  // A rollback may restore provenance on an index that already materialized.
+  MAPPED_SNAPSHOT_INDEXES.delete(index);
+  MAPPED_ELEMENT_INDEXES.delete(index);
+};
 
 /**
  * Capture lazy provenance so an aborted editor draft can restore it.
@@ -1262,6 +1289,8 @@ export const mapSnapshotIndexThroughChange = (
   publishNodeKeys = true
 ): SnapshotIndex => {
   assertMappingLengths(before, after, change);
+  // Materializing binds node keys, which only publication may do.
+  if (publishNodeKeys) rebaseLargeSnapshotIndexOverlay(index);
 
   const previous = MAPPED_SNAPSHOT_INDEXES.get(index);
   const previousAfter = previous?.segments.at(-1)?.after;
@@ -1294,16 +1323,27 @@ export const mapSnapshotIndexThroughChange = (
         runtimeCandidates
       )
   );
+  const deleted = [...(previous?.deletedNodeKeys ?? [])];
   const retainedRuntimeAssignments = (
     previous?.runtimeAssignments ?? []
   ).flatMap(([nodeKey, path]) => {
     if (discardedNodeKeys.has(nodeKey)) return [];
     const targetPath = mapPathForward(segment, path);
 
-    return targetPath ? [Object.freeze([nodeKey, targetPath] as const)] : [];
+    if (!targetPath) {
+      deleted.push(nodeKey);
+      return [];
+    }
+
+    return [Object.freeze([nodeKey, targetPath] as const)];
   });
   const assignedNodeKeys = new Set(
     runtimeAssignments.map(([nodeKey]) => nodeKey)
+  );
+  const deletedNodeKeys = new Set(
+    deleted
+      .filter((nodeKey) => !assignedNodeKeys.has(nodeKey))
+      .slice(-MAX_CARRIED_OVERLAY)
   );
   const assignedPaths = new Set(
     runtimeAssignments.map(([, path]) => pathKey(path))
@@ -1324,6 +1364,7 @@ export const mapSnapshotIndexThroughChange = (
       );
       const innerDescriptor: MappedSnapshotIndexDescriptor = Object.freeze({
         base: previous?.base ?? index,
+        deletedNodeKeys,
         discardedNodeKeys: new Set([
           ...(previous?.discardedNodeKeys ?? []),
           ...discardedNodeKeys,
@@ -1631,6 +1672,12 @@ export const mapSnapshotIndexThroughChange = (
       return null;
     }
     if (!activeDescriptor) return null;
+    // A known deleted identity resolves without materializing the index; a
+    // node that re-entered the document was claimed again by its mapping.
+    if (activeDescriptor.deletedNodeKeys.has(nodeKey)) {
+      idToPathCache.set(nodeKey, null);
+      return null;
+    }
 
     const preparedPath = preparedPathForNodeKey(nodeKey);
 

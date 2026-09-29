@@ -25,10 +25,11 @@ const preserveMarkedWhitespace = (html: string) =>
       )}${close}`
   );
 
+// Output preparation already resolved every image to embedded bytes, so the
+// writer never fetches on its own.
 export const exportHtmlToDocx = async (
   bodyHtml: string,
   {
-    allowRemoteImages,
     fontFamily,
     margins,
     orientation = 'portrait',
@@ -46,7 +47,6 @@ export const exportHtmlToDocx = async (
   });
 
   return htmlToDocxBlob(preserveMarkedWhitespace(inlinedHtml), {
-    allowRemoteImages,
     font: fontFamily,
     margins: { ...DEFAULT_DOCX_MARGINS, ...margins },
     orientation,

@@ -1,0 +1,34 @@
+{
+  "server": {
+    "pid": 3639,
+    "cwd": "/Users/zbeyens/git/plate-2/apps/www",
+    "url": "http://localhost:3297/blocks/markdown-streaming-demo",
+    "command": "PLATE_WWW_DEV_SOURCE=1 PLATE_WWW_PLITE=1 pnpm --filter www exec next dev --port 3297",
+    "next": "16.3.2",
+    "mode": "development source aliases",
+    "preparation": [
+      "pnpm --filter www build:registry",
+      "pnpm --filter @platejs/test build"
+    ],
+    "owned": true
+  },
+  "browser": "Chromium 149.0.7827.55",
+  "sourceInputs": {
+    "apps/www/next.config.ts": "ee723c21a610e0d9136d8d7931b1ff6d195356d994178a1b1ffd14c3ce48b038",
+    "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+    "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "e6e7b01723e91d361ac3d75952510ef51ac30f98fda7902def18dd6cf8bd7d70",
+    "apps/www/src/registry/components/editor/ai.tsx": "63bbd9e63be33a46a14ecfcf3c179ea19413665c3ecccd18304e8a07f9cc1946",
+    "apps/www/src/registry/components/editor/ai-menu.tsx": "caeff5de49e93286ae273a6d8c50087d3a8630652790f2bf94b412a723eb7e93",
+    "apps/www/src/registry/components/editor/plugins.ts": "43bcdaf082e122e5d353f2621f1bd0bc84893bfe245a997f5d47b4fbe603a137",
+    "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+    "apps/www/src/registry/components/editor/editor-static.tsx": "1caec9ec1db6757664368bc3a94881102ac4e4c6e4923a87c290dfbba70fde0c",
+    "packages/plitejs/src/react/editable/browser-handle.ts": "700311cdb8c1b9d009736fd2dc98a446e334013333a0d78bc64423d56444c11e",
+    "packages/plitejs/src/react/render-profiler.ts": "91078a23226b1906d000a258e602d3b6426bc26603dd691667e297f72d45051a",
+    "packages/test/src/playwright/render-profiler.ts": "807caa647d455ce8fc0d9e7a69c9d6b430920878dac9105360b402f28b67d4ae",
+    "packages/test/dist/playwright/index.js": "c56bb7643507c7f9c0a1ffb0b9fba52089d7f5c695867349d1e13fb292387982",
+    "apps/www/src/__registry__/index.tsx": "3ae27bc2b5b65d5985085dc8de41803ef05b367342d48580dcfc56dc2ed7983a"
+  },
+  "headlessRuntimeSourceChanged": [],
+  "matched10and50KB": "unmeasured: no exposed parseSlice/setPreview/value.replace entry point or arbitrary source fixture input",
+  "reactCommit": "unmeasured: existing bridge emits runtime/core/render events but no commit callback; static renderer has no measured React render inventory"
+}

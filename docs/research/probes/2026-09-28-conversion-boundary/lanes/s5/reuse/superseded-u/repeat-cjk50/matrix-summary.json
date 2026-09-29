@@ -1,0 +1,326 @@
+[
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 51191.9,
+        "gcMs": 3451.1,
+        "parseMs": 7803.7,
+        "reactMs": 7592.1,
+        "reactInPublishTasksMs": 7569.7,
+        "transactionMs": 29433.5
+      },
+      "candidate": {
+        "busyMs": 10157.6,
+        "gcMs": 238,
+        "parseMs": 281.1,
+        "reactMs": 7767.7,
+        "reactInPublishTasksMs": 7748.8,
+        "transactionMs": 184.4
+      }
+    },
+    "cell": "ai-cjk-50000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "domMs": 576.6,
+          "finalMs": 578.05,
+          "gcMajorMs": 0,
+          "gcMinorMs": 22.97,
+          "heapAfterLastMajorGcMB": 275.6,
+          "heapBeforeFinalMB": 965.55,
+          "parseMs": 76.1,
+          "reactMs": 237.73,
+          "lastArrivalTaskMs": 578.05,
+          "spanMs": 578.05,
+          "taskMs": 578.05,
+          "transactionMs": 224.98
+        },
+        {
+          "domMs": 637.7,
+          "finalMs": 639.44,
+          "gcMajorMs": 0,
+          "gcMinorMs": 30.21,
+          "heapAfterLastMajorGcMB": 310.34,
+          "heapBeforeFinalMB": 949.65,
+          "parseMs": 78.85,
+          "reactMs": 243.27,
+          "lastArrivalTaskMs": 639.44,
+          "spanMs": 639.44,
+          "taskMs": 639.44,
+          "transactionMs": 271.41
+        },
+        {
+          "domMs": 628.9,
+          "finalMs": 630.47,
+          "gcMajorMs": 0,
+          "gcMinorMs": 23.4,
+          "heapAfterLastMajorGcMB": 292.48,
+          "heapBeforeFinalMB": 1017.02,
+          "parseMs": 76.63,
+          "reactMs": 236.66,
+          "lastArrivalTaskMs": 630.47,
+          "spanMs": 630.47,
+          "taskMs": 630.47,
+          "transactionMs": 279.59
+        }
+      ],
+      "candidate": [
+        {
+          "domMs": 225.9,
+          "finalMs": 227.36,
+          "gcMajorMs": 0,
+          "gcMinorMs": 1.16,
+          "heapAfterLastMajorGcMB": 167.78,
+          "heapBeforeFinalMB": 494.26,
+          "parseMs": 1.71,
+          "reactMs": 218.22,
+          "lastArrivalTaskMs": 227.36,
+          "spanMs": 227.36,
+          "taskMs": 227.36,
+          "transactionMs": 1.26
+        },
+        {
+          "domMs": 220.5,
+          "finalMs": 221.98,
+          "gcMajorMs": 0,
+          "gcMinorMs": 1.09,
+          "heapAfterLastMajorGcMB": 158.63,
+          "heapBeforeFinalMB": 477.01,
+          "parseMs": 1.41,
+          "reactMs": 213.99,
+          "lastArrivalTaskMs": 221.98,
+          "spanMs": 221.98,
+          "taskMs": 221.98,
+          "transactionMs": 2.51
+        },
+        {
+          "domMs": 220.4,
+          "finalMs": 221.58,
+          "gcMajorMs": 0,
+          "gcMinorMs": 1.18,
+          "heapAfterLastMajorGcMB": 155.91,
+          "heapBeforeFinalMB": 482.25,
+          "parseMs": 1.36,
+          "reactMs": 214.73,
+          "lastArrivalTaskMs": 221.58,
+          "spanMs": 221.58,
+          "taskMs": 221.58,
+          "transactionMs": 1.25
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 639.44,
+      "candidate": 227.36
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 502.7,
+      "candidate": 163.8
+    },
+    "packet": "acceptance",
+    "pairs": [
+      {
+        "baseline": 37320,
+        "candidate": 477,
+        "gainMs": 36843,
+        "gainPercent": 98.7
+      },
+      {
+        "baseline": 37259.7,
+        "candidate": 473,
+        "gainMs": 36786.7,
+        "gainPercent": 98.7
+      },
+      {
+        "baseline": 37131.9,
+        "candidate": 446.5,
+        "gainMs": 36685.4,
+        "gainPercent": 98.8
+      }
+    ],
+    "previews": {
+      "baseline": [
+        196,
+        196,
+        196
+      ],
+      "candidate": [
+        194,
+        195,
+        195
+      ]
+    },
+    "spreadMs": 188.1,
+    "status": "complete",
+    "verdict": "pass"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 76395.1,
+        "gcMs": 5606.6,
+        "parseMs": 11200.1,
+        "reactMs": 10442.9,
+        "reactInPublishTasksMs": 4499.5,
+        "transactionMs": 41731.9
+      },
+      "candidate": {
+        "busyMs": 17958.1,
+        "gcMs": 490.6,
+        "parseMs": 359.1,
+        "reactMs": 11177.2,
+        "reactInPublishTasksMs": 5240.7,
+        "transactionMs": 100.5
+      }
+    },
+    "cell": "static-cjk-50000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "domMs": 476.6,
+          "finalMs": 476.63,
+          "gcMajorMs": 0,
+          "gcMinorMs": 33.47,
+          "heapAfterLastMajorGcMB": 379.86,
+          "heapBeforeFinalMB": 720.35,
+          "parseMs": 88.98,
+          "reactMs": 27.37,
+          "lastArrivalTaskMs": 476.63,
+          "spanMs": 476.63,
+          "taskMs": 476.63,
+          "transactionMs": 321.22
+        },
+        {
+          "domMs": 379.5,
+          "finalMs": 379.48,
+          "gcMajorMs": 0,
+          "gcMinorMs": 25.56,
+          "heapAfterLastMajorGcMB": 326.97,
+          "heapBeforeFinalMB": 1152.69,
+          "parseMs": 72.91,
+          "reactMs": 23.63,
+          "lastArrivalTaskMs": 379.48,
+          "spanMs": 379.48,
+          "taskMs": 379.48,
+          "transactionMs": 259.12
+        },
+        {
+          "domMs": 377.2,
+          "finalMs": 377.16,
+          "gcMajorMs": 0,
+          "gcMinorMs": 23.52,
+          "heapAfterLastMajorGcMB": 321.87,
+          "heapBeforeFinalMB": 571.29,
+          "parseMs": 70.15,
+          "reactMs": 22.92,
+          "lastArrivalTaskMs": 377.16,
+          "spanMs": 377.16,
+          "taskMs": 377.16,
+          "transactionMs": 247.3
+        }
+      ],
+      "candidate": [
+        {
+          "domMs": 41.9,
+          "finalMs": 41.97,
+          "gcMajorMs": 0,
+          "gcMinorMs": 2.02,
+          "heapAfterLastMajorGcMB": 278.72,
+          "heapBeforeFinalMB": 434.75,
+          "parseMs": 1.54,
+          "reactMs": 31.67,
+          "lastArrivalTaskMs": 1.73,
+          "spanMs": 41.97,
+          "taskMs": 41.97,
+          "transactionMs": 1.21
+        },
+        {
+          "domMs": 35.4,
+          "finalMs": 35.41,
+          "gcMajorMs": 0,
+          "gcMinorMs": 1.43,
+          "heapAfterLastMajorGcMB": 206.57,
+          "heapBeforeFinalMB": 573.27,
+          "parseMs": 1.25,
+          "reactMs": 28.64,
+          "lastArrivalTaskMs": 1.41,
+          "spanMs": 35.41,
+          "taskMs": 35.41,
+          "transactionMs": 0
+        },
+        {
+          "domMs": 37.8,
+          "finalMs": 37.83,
+          "gcMajorMs": 0,
+          "gcMinorMs": 1.28,
+          "heapAfterLastMajorGcMB": 202.99,
+          "heapBeforeFinalMB": 540.14,
+          "parseMs": 1.77,
+          "reactMs": 27.44,
+          "lastArrivalTaskMs": 1.98,
+          "spanMs": 37.83,
+          "taskMs": 37.83,
+          "transactionMs": 1.25
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 476.63,
+      "candidate": 41.97
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 422.3,
+      "candidate": 83.5
+    },
+    "packet": "acceptance",
+    "pairs": [
+      {
+        "baseline": 72816.1,
+        "candidate": 463.5,
+        "gainMs": 72352.6,
+        "gainPercent": 99.4
+      },
+      {
+        "baseline": 42787,
+        "candidate": 536.9,
+        "gainMs": 42250.1,
+        "gainPercent": 98.7
+      },
+      {
+        "baseline": 43193.1,
+        "candidate": 378.4,
+        "gainMs": 42814.7,
+        "gainPercent": 99.1
+      }
+    ],
+    "previews": {
+      "baseline": [
+        276,
+        230,
+        231
+      ],
+      "candidate": [
+        259,
+        263,
+        234
+      ]
+    },
+    "spreadMs": 30029.2,
+    "status": "complete",
+    "verdict": "pass"
+  }
+]

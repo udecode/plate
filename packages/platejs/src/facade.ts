@@ -212,5 +212,6 @@ export {
   fitSlicePlacements,
   mapDetachedSelectionThroughChange,
   snapshotEditorJsonValue,
+  withDocumentViewRead,
   type CompiledEditorSchema,
 } from 'plitejs/internal';

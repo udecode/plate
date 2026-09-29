@@ -175,13 +175,37 @@ Each declaration has one `mimeType` and at least one of `decode` and `encode`.
 | `priority` | Optional, default `0`. Higher runs first. |
 | `scope` | `'document'` claims the whole schema. Without it, the format claims the plugin's own element type and properties, so the plugin must own one. |
 
-`accept` and `decode` receive `{ data, mimeType, snapshot, state }`: the
-payload for this MIME type, a read-only snapshot of every type and file on the
-transfer, and read-only editor state. `encode` receives
+`accept` and `decode` receive `{ data, mimeType, report, snapshot, state }`:
+the payload for this MIME type, a function that reports what the paste leaves
+out, a read-only snapshot of every type and file on the transfer, and
+read-only editor state. `encode` receives
 `{ mimeType, slice, state }`. Both also get the plugin's `name`,
 `pluginState`, `registry`, and `schema`. Callbacks do not receive the editor,
 the live `DataTransfer`, or a transaction. Plate keys each format as
 `plate:<plugin>:<mimeType>`.
+
+### Reporting what a paste leaves out
+
+Call `report(diagnostic)` from `accept` or `decode` to describe what the
+payload loses. A diagnostic is `{ impact, message }`: `'lossy'` when pasted
+content is left out or loses meaning, `'lossless'` for harmless cleanup such
+as dropped metadata. `report` works only while the callback runs.
+
+```ts
+decode: ({ data, report }) => {
+  const { droppedEmbeds, slice } = parseNotes(data);
+
+  if (droppedEmbeds > 0) {
+    report({ impact: 'lossy', message: 'Embedded notes were left out.' });
+  }
+
+  return slice;
+},
+```
+
+Returning `null` or `false` without reporting stays silent. If `accept` or
+`decode` throws, Plate discards that format's reports and sends the error to
+`lifecycleErrorSink`.
 
 ### Null, false, and throw
 
@@ -243,16 +267,54 @@ types it wrote.
 
 ### HTML paste
 
-Plate's HTML format parses like `parseHtmlSlice` with `lossPolicy: 'allow'`.
+Plate's HTML format parses like `editor.api.html.parseSlice` with
+`lossPolicy: 'allow'`.
 Before any mapping runs, it removes comments, metadata, scripts, style sheets,
-embedded objects, SVG and MathML, event handlers, `srcdoc` and `srcset`,
-script and blocked `data:` URLs, and `style` attributes that load resources.
+embedded objects, SVG and MathML, event handlers, `srcdoc` and `srcset`, URLs
+that fail their role (see [HTML safety](/docs/html#results-and-diagnostics)),
+and `style` attributes that load resources.
 Embedded media without an installed mapping keeps only its fallback content.
-If nothing insertable remains, the HTML format returns `null` and plain text
-handles the paste.
+If nothing insertable remains, the HTML format still reports what it removed,
+then returns `null` and plain text handles the paste.
 
-Plate does not report which format handled a paste or what it left out. When a
-source loses content, add the missing mapping: an HTML rule in the owning
+### Paste results
+
+`EditorContent` calls `onPasteResult` once for each paste that Plate's
+built-in formats handle: after the pasted content commits (`inserted: true`),
+or when no format can insert it (`inserted: false`).
+
+```tsx
+<EditorContent
+  onPasteResult={({ diagnostics, inserted }) => {
+    if (diagnostics.some(({ impact }) => impact === 'lossy')) {
+      toast.warning(
+        inserted
+          ? 'Some pasted content was left out.'
+          : 'The pasted content could not be inserted.'
+      );
+    }
+  }}
+/>
+```
+
+`diagnostics` holds the reports of the format whose content was inserted.
+Loss reported by an earlier format that could not be used stays in the list
+unless the inserted format decoded the same MIME type: plain text that
+matches the HTML text does not recover what the HTML lost.
+
+Only the editor surface that received the paste is called, and only while it
+is mounted. `onPasteResult` is not called when `onPaste` or a
+`domCommands.insertData` handler handles the paste without the built-in
+formats, for drops, or for a separate `editor.api.dom.clipboard.insertData`
+call, which returns a boolean. An `onPaste` handler that calls `insertData`
+during the paste gets that insertion's result.
+
+Plate and the registry `Editor` show no paste-result UI by default. Add
+`onPasteResult` when your application can explain the loss or offer a useful
+recovery action.
+
+Paste results do not name the format that handled a paste. When a source
+keeps losing content, add the missing mapping: an HTML rule in the owning
 plugin's `formats`, or a format for that MIME type.
 
 ## Fragment and slice replacement

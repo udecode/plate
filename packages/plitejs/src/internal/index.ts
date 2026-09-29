@@ -312,6 +312,7 @@ export {
   encodeEditorEffect,
   encodeVersionedValue,
 } from '../core/value-codec';
+export { withDocumentViewRead } from '../core/document-view-read';
 export { formatDebugValue } from '../utils/format-debug-value';
 export { isObject } from '../utils/is-object';
 export { getRangeRoot, MAIN_ROOT_KEY } from './root-location';

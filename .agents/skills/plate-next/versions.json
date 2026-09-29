@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 249,
+  "latestVersion": 251,
   "versions": [
     {
       "version": 0,
@@ -2888,6 +2888,34 @@
       "summary": "On next the user owns commits: agents commit only at the user's own request and never propose a commit; approval of an agent-proposed plan is not commit authority.",
       "migrationChecks": [
         "Do not put a commit in plans, step lists or handoffs on next; leave commits and source staging to the user unless the user's own message asks for a commit."
+      ]
+    },
+    {
+      "version": 250,
+      "date": "2026-09-29",
+      "doctrineFingerprint": "sha256:7f6a43268fe46253d599ae32a8b17f30ce1dcccc386bd1e06b1b9b461177364e",
+      "summary": "Conversion boundary: Markdown mappings are schema-derived declarations that claim what they write, one private URL role policy backs feature validators and every format boundary, data-transfer formats report loss to the initiating editable, streamed Markdown continues its previous parse, previews and the strict final alike, HTML encoders claim what they write, a captured document is read through one read-only Plite view, and static rendering reuses unchanged leading blocks.",
+      "migrationChecks": [
+        "Declare Markdown element tags as markdown: { tag: type }, renaming owned attributes with attributes, and marks as { node }, { tag }, { tag, value } or { tag: 'span', style }; delete mark: true and callbacks the declaration derives.",
+        "In custom Markdown encoders, write tag attributes with encodeNodeAttributes() or chosen values with encodeAttributes(), which claim what the returned output keeps, and claim other represented properties with preserve(...ownedKeys); reading a property never claims it.",
+        "Validate stored URL properties with isStoredUrl(role) for navigation, image, media, file or embed, and decide output URLs with decideUrl; delete per-format URL checks, sanitizeUrl-style helpers and bypass options.",
+        "Classify loss by what is dropped: a lost property, including a link destination whose label stays (a mapping reports it with kind: 'property'), warns under every policy; dropped nodes, text, media or captions follow lossPolicy; removing a script-capable destination or script resource URL while keeping its label, alt text or caption, or keeping raw HTML as text, is lossless; every diagnostic judged under lossPolicy declares impact.",
+        "Report paste loss from DataTransferFormat accept/decode with report({ impact, message }) and deliver it only through Editable.onPasteResult and EditorContent onPasteResult; copied UI warns for lossy loss.",
+        "Stream Markdown previews with parseSlice({ partial: true, previous }) and the strict final with parseSlice(source, { previous }); render read-only previews as <EditorStatic editor={editor} document={document} /> instead of copying each result into an editor, and publish into an editable editor from the first changed block by node identity, replacing the whole value when no leading block is unchanged; delete consumer parse caches and transport joiners.",
+        "Read a captured document through createEditorView(editor, { document }) instead of a projected facade or an editor copy; plugins that read or render it use their context editor or state, never an editor captured in .extend.",
+        "Claim what an HTML element encoder writes with preserve(...ownedKeys), and let single-value HTML mark or property mappings claim by the output they write; an encoder existing for a node claims nothing, and each unclaimed content property warns as html-unsupported-content.",
+        "Declare render: { readsDocument: true } on a plugin whose static element reads content after itself, such as a table of contents; static renderers that read only their own or earlier blocks declare nothing and rely on block reuse."
+      ]
+    },
+    {
+      "version": 251,
+      "date": "2026-09-30",
+      "doctrineFingerprint": "sha256:ea3016fb5798aa964ff31b114fe75d89c138e29fdbc7ed9d9e70367e185a2b6c",
+      "summary": "A shared skill installation may revive a retired generated name without recreating its deleted project-local owner; Task keeps the lifecycle and complete closure method.",
+      "migrationChecks": [
+        "Install autoclosure from its canonical Dotai source and keep Task as the lifecycle; do not recreate the retired project-local controller, plan template or review loop.",
+        "Remove autoclosure from retiredGeneratedPaths so resource sync preserves the locked installed owner while continuing to delete genuinely retired generated skills.",
+        "Verify the Dotai source matches the installed Codex skill, Claude Code points to that install, skills-lock records the source, and sync-resources check remains exact."
       ]
     }
   ],

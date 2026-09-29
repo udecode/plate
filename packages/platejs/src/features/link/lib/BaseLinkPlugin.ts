@@ -21,9 +21,9 @@ import {
   isDefined,
   isUrl as defaultIsUrl,
   property,
-  sanitizeUrl,
   schema,
 } from '../../../core';
+import { decideUrl, isStoredUrl } from '../../../internal/utils/urlPolicy';
 
 const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\//i;
 
@@ -53,10 +53,12 @@ export type LinkAttributes = Record<string, unknown> & {
 };
 
 export type BaseLinkPluginState = {
-  /** List of allowed URL schemes. */
+  /**
+   * URL schemes a link may use when it is inserted, imported or rendered.
+   * Relative URLs are always allowed; script-capable schemes such as
+   * `javascript:` and `data:` never are.
+   */
   allowedSchemes: readonly string[];
-  /** Skips sanitation of links. */
-  dangerouslySkipSanitization: boolean;
   defaultLinkAttributes: LinkAttributes;
   /** Keeps selected text on pasting links by default. */
   keepSelectedTextOnPaste: boolean;
@@ -99,7 +101,10 @@ export type UpsertLinkOptions = {
   insertNodesOptions?: TextInsertFragmentOptions;
   /** Insert text when the selection is already in a link. */
   insertTextInLink?: boolean;
-  /** Skips validation while preserving URL input preparation. */
+  /**
+   * Skips `isUrl` and `allowedSchemes` while preserving URL input preparation.
+   * A URL below the navigation floor, such as `javascript:`, is still refused.
+   */
   skipValidation?: boolean;
   unwrapNodesOptions?: UnwrapLinkOptions;
   wrapNodesOptions?: Omit<WrapLinkOptions, 'url'>;
@@ -107,7 +112,6 @@ export type UpsertLinkOptions = {
 
 export type ValidateUrlOptions = Readonly<{
   allowedSchemes?: readonly string[];
-  dangerouslySkipSanitization?: boolean;
   isUrl?: (text: string) => boolean;
 }>;
 
@@ -125,34 +129,36 @@ const LINK_AUTOMD_REGEX = /\[([^\]\n]+)]\((\S+)$/;
 const MARKDOWN_HEADING_PATTERN = /^#{1,6}\s+/;
 const MARKDOWN_LINK_SOURCE_PATTERN = /!?\[[^\]\n]*]\([^)\n]*$/;
 
+/** The href a link may render, or `undefined` when its URL is not allowed. */
+const getLinkHref = (
+  allowedSchemes: readonly string[],
+  url: unknown
+): string | undefined => {
+  if (typeof url !== 'string') return undefined;
+  const decision = decideUrl('navigation', url, { allowedSchemes });
+
+  return decision.ok ? decision.url : undefined;
+};
+
 const validateUrlWithOptions = (
-  { allowedSchemes, dangerouslySkipSanitization, isUrl }: ValidateUrlOptions,
+  { allowedSchemes, isUrl }: ValidateUrlOptions,
   url: string
 ) => {
   const customIsUrl = isUrl && isUrl !== defaultIsUrl ? isUrl : undefined;
 
-  if (url.startsWith('/') && !url.startsWith('//')) {
-    return customIsUrl ? customIsUrl(url) : true;
-  }
-
-  if (url.startsWith('#')) {
+  if (!decideUrl('navigation', url, { allowedSchemes }).ok) return false;
+  if (url.startsWith('/') || url.startsWith('#')) {
     if (MARKDOWN_HEADING_PATTERN.test(url)) return false;
 
     return customIsUrl ? customIsUrl(url) : true;
   }
 
-  if (isUrl && !isUrl(url)) return false;
-
-  return Boolean(
-    dangerouslySkipSanitization ||
-    sanitizeUrl(url, { allowedSchemes, permitInvalid: true })
-  );
+  return !isUrl || isUrl(url);
 };
 
 const initialState: BaseLinkPluginState = {
   allowedSchemes: ['http', 'https', 'mailto', 'tel'],
   defaultLinkAttributes: {},
-  dangerouslySkipSanitization: false,
   isUrl: defaultIsUrl,
   keepSelectedTextOnPaste: true,
   getUrlHref: null,
@@ -169,15 +175,8 @@ const initialState: BaseLinkPluginState = {
 export const BaseLinkPlugin = definePlugin('link', {
   api: ({ store }): BaseLinkApi => ({
     getAttributes: (link) => {
-      const {
-        allowedSchemes,
-        dangerouslySkipSanitization,
-        defaultLinkAttributes,
-      } = store.get();
-      const url = typeof link.url === 'string' ? link.url : '';
-      const href = dangerouslySkipSanitization
-        ? url
-        : sanitizeUrl(url, { allowedSchemes }) || undefined;
+      const { allowedSchemes, defaultLinkAttributes } = store.get();
+      const href = getLinkHref(allowedSchemes, link.url);
 
       return {
         ...defaultLinkAttributes,
@@ -233,7 +232,11 @@ export const BaseLinkPlugin = definePlugin('link', {
       inline: true,
       properties: {
         target: property.string(),
-        url: property.string({ required: true }),
+        url: property.string({
+          required: true,
+          validate: isStoredUrl('navigation'),
+          validationVersion: 1,
+        }),
       },
     },
   },
@@ -246,30 +249,38 @@ export const BaseLinkPlugin = definePlugin('link', {
             : `${children} (${node.url})`,
       },
       html: {
-        decode: ({ element, pluginState }) => {
+        decode: ({ element, pluginState, report }) => {
           const url = element.getAttribute('href');
 
-          if (!url || !validateUrlWithOptions(pluginState, url)) {
+          if (!url) return undefined;
+          // Unsafe destinations are already removed; this is the app's
+          // narrower URL choice, so the destination is a real loss.
+          if (!validateUrlWithOptions(pluginState, url)) {
+            // The label stays, so only the destination is lost.
+            report({
+              action: 'unwrapped',
+              kind: 'attribute',
+              message: `HTML link destination "${url}" is not a link this editor allows; its label was kept.`,
+            });
+
             return undefined;
           }
 
-          return {
-            target: element.getAttribute('target') || '_blank',
-            url,
-          };
-        },
-        encode: ({ content, node, pluginState }) => {
-          const { allowedSchemes, dangerouslySkipSanitization } = pluginState;
-          const url = typeof node.url === 'string' ? node.url : '';
-          const href = dangerouslySkipSanitization
-            ? url
-            : sanitizeUrl(url, { allowedSchemes }) || undefined;
+          const target = element.getAttribute('target');
 
-          if (!href) return null;
+          return { ...(target ? { target } : {}), url };
+        },
+        encode: ({ content, node, preserve }) => {
+          // Export writes the stored destination: `allowedSchemes` narrows
+          // insertion, import and rendering, not what a document holds. The
+          // schema already keeps a stored URL above the navigation floor.
+          if (!node.url) return { children: content, tag: 'span' };
+
+          preserve('target', 'url');
 
           return {
             attributes: {
-              href,
+              href: node.url,
               target: node.target,
             },
             children: content,
@@ -280,13 +291,31 @@ export const BaseLinkPlugin = definePlugin('link', {
       },
       markdown: {
         node: 'link',
-        decode: ({ decode, marks, node }) => ({
-          children: decode(node.children, marks),
-          type,
-          url: node.url,
-        }),
-        encode: ({ encodePhrasing, node, resourceLink }) => {
+        decode: ({ decode, marks, node, pluginState, report }) => {
+          const children = decode(node.children, marks);
+
+          // Unsafe destinations are already removed; this is the app's
+          // narrower scheme choice, so the destination is a real loss.
+          if (
+            node.url !== '' &&
+            !getLinkHref(pluginState.allowedSchemes, node.url)
+          ) {
+            report({
+              action: 'unwrapped',
+              kind: 'property',
+              message: `Markdown link destination "${node.url}" uses a scheme this editor does not allow; its label was kept.`,
+              nodeType: 'link',
+            });
+
+            return children;
+          }
+
+          return { children, type, url: node.url };
+        },
+        encode: ({ encodePhrasing, node, preserve, resourceLink }) => {
           const children = encodePhrasing(node.children);
+
+          preserve('url');
           const url = typeof node.url === 'string' ? node.url : '';
           const isBareAutolinkLiteral =
             children.length === 1 &&
@@ -317,15 +346,8 @@ export const BaseLinkPlugin = definePlugin('link', {
   },
   render: {
     attributes: ({ element, store }) => {
-      const {
-        allowedSchemes,
-        dangerouslySkipSanitization,
-        defaultLinkAttributes,
-      } = store.get();
-      const url = typeof element.url === 'string' ? element.url : '';
-      const href = dangerouslySkipSanitization
-        ? url
-        : sanitizeUrl(url, { allowedSchemes }) || undefined;
+      const { allowedSchemes, defaultLinkAttributes } = store.get();
+      const href = getLinkHref(allowedSchemes, element.url);
 
       return {
         ...defaultLinkAttributes,
@@ -473,7 +495,15 @@ export const BaseLinkPlugin = definePlugin('link', {
           ? (transformInput(encodedInput) ?? '')
           : encodedInput;
 
-        if (!skipValidation && !api.validateUrl(url)) return undefined;
+        // A stored link URL must meet the navigation floor whatever the caller
+        // skips; the schema would refuse it anyway.
+        if (
+          skipValidation
+            ? !isStoredUrl('navigation')(url)
+            : !api.validateUrl(url)
+        ) {
+          return undefined;
+        }
 
         const nextText = isDefined(text) && text.length === 0 ? url : text;
         const updateText = () => {

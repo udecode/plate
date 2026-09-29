@@ -1,0 +1,7 @@
+{
+  "ownedServerPID": 3639,
+  "stopSignal": "SIGTERM",
+  "listenerCheck": "lsof -nP -iTCP:3297 -sTCP:LISTEN",
+  "noListener": true,
+  "managedSessionEnded": true
+}

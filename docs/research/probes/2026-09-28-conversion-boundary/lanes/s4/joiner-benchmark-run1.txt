@@ -1,0 +1,20 @@
+bun test v1.3.12 (700fc117)
+
+docs/research/probes/2026-09-28-conversion-boundary/lanes/s4/joiner-benchmark.test.ts:
+rich 10000 pair 0: work 292 -> 205 ms, previews 99 -> 39, duration 9865 -> 1620 ms, latency p95 7964 -> 36 ms, literal previews 0 -> 7
+rich 10000 pair 1: work 272 -> 176 ms, previews 99 -> 39, duration 9861 -> 1606 ms, latency p95 7964 -> 36 ms, literal previews 0 -> 7
+rich 10000 pair 2: work 273 -> 188 ms, previews 99 -> 39, duration 9861 -> 1614 ms, latency p95 7964 -> 37 ms, literal previews 0 -> 7
+rich 50000 pair 0: work 1430 -> 977 ms, previews 568 -> 195, duration 56955 -> 8065 ms, latency p95 46714 -> 36 ms, literal previews 0 -> 29
+rich 50000 pair 1: work 1556 -> 947 ms, previews 568 -> 195, duration 56987 -> 8060 ms, latency p95 46715 -> 36 ms, literal previews 0 -> 20
+cjk 10000 pair 0: work 380 -> 278 ms, previews 118 -> 39, duration 11724 -> 1651 ms, latency p95 9573 -> 38 ms, literal previews 7 -> 9
+cjk 10000 pair 1: work 363 -> 273 ms, previews 118 -> 39, duration 11718 -> 1651 ms, latency p95 9573 -> 39 ms, literal previews 7 -> 7
+cjk 10000 pair 2: work 373 -> 278 ms, previews 118 -> 39, duration 11733 -> 1653 ms, latency p95 9573 -> 38 ms, literal previews 7 -> 9
+cjk 50000 pair 0: work 2821 -> 1817 ms, previews 680 -> 195, duration 68645 -> 8523 ms, latency p95 56845 -> 41 ms, literal previews 43 -> 36
+cjk 50000 pair 1: work 2861 -> 1816 ms, previews 680 -> 195, duration 68658 -> 8542 ms, latency p95 56846 -> 41 ms, literal previews 43 -> 42
+
+ 1 pass
+ 0 fail
+ 10 expect() calls
+Ran 1 test across 1 file. [28.98s]
+bun --cwd=/Users/zbeyens/git/plate-2 test --timeout 1800000   35.22s user 0.96s system 124% cpu 29.024 total
+exit 0

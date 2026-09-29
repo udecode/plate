@@ -21,6 +21,7 @@ export const useAndroidInputManagerForEditor = (
     inputController,
     onDOMSelectionChange,
     receivedUserInput,
+    runPaste,
     scheduleOnDOMSelectionChange,
     scheduleTask,
   }: UseAndroidInputManagerOptions,
@@ -33,6 +34,7 @@ export const useAndroidInputManagerForEditor = (
         inputController,
         onDOMSelectionChange,
         receivedUserInput,
+        runPaste,
         scheduleOnDOMSelectionChange,
         scheduleTask,
       }),
@@ -41,6 +43,7 @@ export const useAndroidInputManagerForEditor = (
       inputController,
       onDOMSelectionChange,
       receivedUserInput,
+      runPaste,
       scheduleOnDOMSelectionChange,
       scheduleTask,
     ]
@@ -77,5 +80,9 @@ export const useAndroidInputManager = (
     () => false
   );
 
-  return useAndroidInputManagerForEditor(editor, options, enabled);
+  return useAndroidInputManagerForEditor(
+    editor,
+    { ...options, runPaste: runtime.runPaste },
+    enabled
+  );
 };

@@ -435,16 +435,24 @@ editor.read.selection.nodes()` is a regression: it
   belong to the external format. Migrate old persisted tags before normal
   mapping handling; never keep dual mapping aliases. Enforce this law for
   constructor-owned and staged mapping contributions.
-- Tag attributes use the runtime codec keyed by schema property kind
-  (`readTagAttributes()`, `encodeAttributes()`); flag feature-local attribute
-  parsing or blanket JSON coercion. Expected refusals return `refuse(message)`;
-  a mapping throws only for programmer or configuration faults.
+- Tag attributes use the runtime codec keyed by schema property kind. Prefer a
+  callback-free `{ tag: type }` declaration (with `attributes` renames); custom
+  callbacks read with `readTagAttributes()` and write with
+  `encodeNodeAttributes()` or `encodeAttributes()`, which claim what the
+  returned output keeps, plus `preserve(...)` for other represented
+  properties. HTML element encoders claim with `preserve(...)` and
+  single-`value` mappings by the output they write; an encoder existing for a
+  node claims nothing. Flag feature-local attribute parsing, blanket JSON
+  coercion, blanket per-owner HTML coverage and read-tracking claims. Expected refusals return `refuse(message)`; a mapping
+  throws only for programmer or configuration faults.
 - Markdown has no per-operation mapping override, node filter, remark-plugin
   list, or recovery mode; `partial` is the streaming-preview parse option. A
   claiming mapping that returns `undefined` declines to the next mapping on its
-  selector. Mark mappings decode to the mark value and encode through a
-  childless `wrap`, and take no priority; flag a mark `decode` that calls
-  `decode` or a mark wrapper that builds its own children.
+  selector. A mapping whose target contributes a `mark` is a mark mapping with
+  no flag, declared by `node`, `tag`, `value` or `style`; a custom `decode`
+  returns the mark value and a custom `wrap` a childless wrapper, and mark
+  mappings take no priority. Flag a `mark` flag, a mark `decode` that calls
+  `decode`, or a mark wrapper that builds its own children.
 - Keep custom tag mappings on their schema-owning plugin. A foreign
   `defineFormats(TargetPlugin, ...)` contribution cannot author configurable
   tag identity; move it to the target. Staged enforcement reads schema bindings

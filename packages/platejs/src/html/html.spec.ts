@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseHtml, parseHtmlSlice, serializeHtml } from '.';
+import { parseHtml, serializeHtml } from '.';
 import {
   BaseParagraphPlugin,
   createEditor,
@@ -8,8 +8,22 @@ import {
   property,
   schema,
 } from '../core';
+import type { HtmlEditorParseOptions } from './index';
 
 const plugins = [BaseParagraphPlugin] as const;
+
+// Slices parse through the installed editor API.
+const parseHtmlSlice = (
+  source: string,
+  {
+    schema: editorSchema,
+    ...options
+  }: HtmlEditorParseOptions & Readonly<{ schema?: object }> = {}
+) =>
+  createEditor({
+    plugins,
+    ...(editorSchema ? { schema: editorSchema as never } : {}),
+  }).api.html.parseSlice(source, options);
 
 describe('platejs/html', () => {
   it('selects the body or one explicit editor root', () => {
@@ -57,8 +71,7 @@ describe('platejs/html', () => {
 
   it('treats a slice as rootless content', () => {
     const result = parseHtmlSlice(
-      '<span data-editor="true">Inline</span><p>Block</p>',
-      { plugins }
+      '<span data-editor="true">Inline</span><p>Block</p>'
     );
 
     expect(result).toMatchObject({
@@ -130,11 +143,17 @@ describe('platejs/html', () => {
             decode: ({ element }) => ({
               align: element.dataset.align || undefined,
             }),
-            encode: ({ content, node }) => ({
-              attributes: node.align ? { 'data-align': node.align } : undefined,
-              children: content,
-              tag: 'p',
-            }),
+            encode: ({ content, node, preserve }) => {
+              preserve('align');
+
+              return {
+                attributes: node.align
+                  ? { 'data-align': node.align }
+                  : undefined,
+                children: content,
+                tag: 'p',
+              };
+            },
             match: [{ tag: 'p' }],
             priority: 1,
           },
@@ -255,7 +274,6 @@ describe('platejs/html', () => {
 
   it('admits detached slices without fitting them to document root grammar', () => {
     const result = parseHtmlSlice('<p>First</p><p>Second</p>', {
-      plugins,
       schema: {
         root: schema.content.element(BaseParagraphPlugin, { max: 1, min: 1 }),
       },
@@ -281,13 +299,11 @@ describe('platejs/html', () => {
       message: 'Plate HTML decode has no mapping for <img>.',
     };
 
-    expect(parseHtmlSlice(source, { plugins })).toMatchObject({
+    expect(parseHtmlSlice(source)).toMatchObject({
       diagnostics: [{ ...loss, severity: 'error' }],
       ok: false,
     });
-    expect(
-      parseHtmlSlice(source, { lossPolicy: 'allow', plugins })
-    ).toMatchObject({
+    expect(parseHtmlSlice(source, { lossPolicy: 'allow' })).toMatchObject({
       diagnostics: [{ ...loss, severity: 'warning' }],
       ok: true,
       slice: {
@@ -305,23 +321,18 @@ describe('platejs/html', () => {
       kind: 'element',
     };
 
-    expect(parseHtmlSlice(source, { plugins })).toMatchObject({
+    expect(parseHtmlSlice(source)).toMatchObject({
       diagnostics: [{ ...loss, severity: 'error' }],
       ok: false,
     });
-    expect(
-      parseHtmlSlice(source, { lossPolicy: 'allow', plugins })
-    ).toMatchObject({
+    expect(parseHtmlSlice(source, { lossPolicy: 'allow' })).toMatchObject({
       diagnostics: [{ ...loss, severity: 'warning' }],
       ok: true,
     });
     expect(
       parseHtmlSlice(
         '<picture><img src="https://platejs.org/a.png"></picture>',
-        {
-          lossPolicy: 'allow',
-          plugins,
-        }
+        { lossPolicy: 'allow' }
       ).diagnostics
     ).toMatchObject([
       { message: 'Plate HTML decode has no mapping for <img>.' },
@@ -332,8 +343,7 @@ describe('platejs/html', () => {
     const quiet = parseHtmlSlice(
       '<meta charset="utf-8"><p onclick="bad()">Kept <a href="javascript:void(0)">link</a></p>' +
         '<p><svg aria-hidden="true" class="octicon"><path d="M0 0h1"></path></svg>Heading</p>' +
-        '<p><span aria-hidden="true"><svg><text>Icon</text></svg></span>Label</p>',
-      { plugins }
+        '<p><span aria-hidden="true"><svg><text>Icon</text></svg></span>Label</p>'
     );
 
     expect(quiet.ok).toBe(true);
@@ -362,13 +372,11 @@ describe('platejs/html', () => {
         kind: 'element',
       };
 
-      expect(parseHtmlSlice(source, { plugins })).toMatchObject({
+      expect(parseHtmlSlice(source)).toMatchObject({
         diagnostics: [{ ...lossy, severity: 'error' }],
         ok: false,
       });
-      expect(
-        parseHtmlSlice(source, { lossPolicy: 'allow', plugins })
-      ).toMatchObject({
+      expect(parseHtmlSlice(source, { lossPolicy: 'allow' })).toMatchObject({
         diagnostics: [{ ...lossy, severity: 'warning' }],
         ok: true,
       });

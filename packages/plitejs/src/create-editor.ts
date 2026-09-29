@@ -7,6 +7,7 @@ import {
 } from './core/authored-document-capability';
 import { initializeAuthoredDocument } from './core/authored-runtime';
 import { createCommandDispatch } from './core/command-registry';
+import { assertNoDocumentViewRead } from './core/document-view-read';
 import {
   createEditorReadApi,
   createEditorUpdateApi,
@@ -88,6 +89,7 @@ import type {
   PluginInput,
   EditorSnapshot,
   EditorStateField,
+  EditorStateView,
   EditorTransactionSpecBuilder,
   EditorUpdateContext,
   EditorUpdateTransaction,
@@ -647,13 +649,24 @@ const createEditorImplementation = <
   } satisfies InternalEditorTransactionRuntime<V>;
 
   const anchorApi = createEditorAnchorApi(() => editor);
-  const read = createEditorReadApi<V, TPlugins>((fn) =>
-    withEditorRootChildren(editor, 'main', () => readEditor(editor, fn))
-  );
-  const key = ((target: Descendant | Location) =>
-    withEditorRootChildren(editor, MAIN_ROOT_KEY, () =>
+  const readMain = <T>(fn: (state: EditorStateView<V, TPlugins>) => T): T =>
+    withEditorRootChildren(editor, 'main', () => readEditor(editor, fn));
+  const read = createEditorReadApi<V, TPlugins>((fn) => {
+    assertNoDocumentViewRead(editor);
+
+    return readMain(fn);
+  });
+
+  // Schema queries read the shared model, not the document, so views reuse
+  // them without the document-view guard.
+  read.schema = createEditorReadApi<V, TPlugins>(readMain).schema;
+  const key = ((target: Descendant | Location) => {
+    assertNoDocumentViewRead(editor);
+
+    return withEditorRootChildren(editor, MAIN_ROOT_KEY, () =>
       readEditor(editor, (state) => state.key(target as never))
-    )) as EditorKeyApi;
+    );
+  }) as EditorKeyApi;
   const update = createEditorUpdateApi<V, TPlugins>(
     (fn, policy) => updateEditor(editor, fn, { tags: policy.tags }),
     {

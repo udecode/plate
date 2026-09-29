@@ -98,6 +98,20 @@ describe('MarkdownPlugin', () => {
     expect(proposed.data).not.toContain('plate-authored');
   });
 
+  it('serializes the document a view reads by default', () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, MarkdownPlugin],
+      initialValue: [{ children: [{ text: 'Own' }], type: 'paragraph' }],
+    });
+    const view = createEditorView(editor, {
+      document: {
+        children: [{ children: [{ text: 'Preview' }], type: 'paragraph' }],
+      },
+    });
+
+    expect(view.plugin(MarkdownPlugin).api.serialize().data).toBe('Preview\n');
+  });
+
   it('reads live Markdown options without changing document schema identity', () => {
     const remarkPlugin = () => undefined;
     const editor = createFixtureEditor({
@@ -351,14 +365,18 @@ describe('MarkdownPlugin', () => {
       ],
       ok: false,
     });
+    // Raw HTML reads as its own text, so even a strict parse keeps it.
     expect(strict).toMatchObject({
       diagnostics: [
         expect.objectContaining({
           code: 'markdown-unsupported-node',
+          impact: 'lossless',
           nodeType: 'html',
+          severity: 'warning',
         }),
       ],
-      ok: false,
+      document: { children: [{ children: [{ text: '<u>' }] }] },
+      ok: true,
     });
     expect(partial).toMatchObject({
       document: { children: [{ children: [{ text: 'Before' }] }] },

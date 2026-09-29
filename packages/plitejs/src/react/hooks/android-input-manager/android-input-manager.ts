@@ -115,6 +115,8 @@ export type CreateAndroidInputManagerOptions = {
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   receivedUserInput: RefObject<boolean>;
+  /** Run a deferred paste inside its initiating view's paste observation. */
+  runPaste?: <T>(paste: () => T) => T;
   scheduleTask: DOMPhaseScheduler['schedule'];
 
   scheduleOnDOMSelectionChange: DebouncedFunc<() => void>;
@@ -147,6 +149,7 @@ export function createAndroidInputManager({
   editor,
   inputController,
   receivedUserInput,
+  runPaste = (paste) => paste(),
   scheduleTask,
   scheduleOnDOMSelectionChange,
   onDOMSelectionChange,
@@ -657,13 +660,19 @@ export function createAndroidInputManager({
 
   const scheduleCommand = (
     command: EditableCommand,
-    { at, inputType }: { at?: Point | Range; inputType?: string } = {}
+    {
+      at,
+      inputType,
+      paste = false,
+    }: { at?: Point | Range; inputType?: string; paste?: boolean } = {}
   ) => {
     scheduleAction(
       () =>
         command.kind === 'insert-text' && inputType
           ? applyAndroidTextInput(command.text, inputType)
-          : applyEditableCommand({ command, editor }),
+          : paste
+            ? runPaste(() => applyEditableCommand({ command, editor }))
+            : applyEditableCommand({ command, editor }),
       { at }
     );
   };
@@ -984,7 +993,7 @@ export function createAndroidInputManager({
         if (isDataTransfer(data)) {
           scheduleCommand(
             { data, kind: 'insert-data' },
-            { at: innerTargetRange2 }
+            { at: innerTargetRange2, paste: type === 'insertFromPaste' }
           );
           return;
         }

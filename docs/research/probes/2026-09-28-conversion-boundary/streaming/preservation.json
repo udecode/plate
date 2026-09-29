@@ -1,0 +1,33 @@
+{
+  "source": "docs/plans/artifacts/2026-09-28-conversion-boundary/streaming",
+  "method": "Byte-identical copies of selected original evidence, not new measured runs. Omitted raw profiles and repeated full source snapshots remain in the ignored source directory.",
+  "files": {
+    "REPORT.md": "1b6fa674fed6727a1f1f70a677968181fe93c7e72a18b1f83714189c0fe1314f",
+    "BROWSER-REPORT.md": "551353d0225ee7f1eb1189bd16fb92eb3e888fb172eb980ff3d99d66530d2fc5",
+    "HEADLESS-REPORT.md": "16c8f2cf08c35ec7df5b090608e8e9260523c04c8cfc87105c2fc412af0fbfed",
+    "PLAN.md": "50e3c642a0885f946fd54917a17230212d2527aa5261d91f3c869f5974d5270d",
+    "probe.ts": "bd1e1db5c277b27742d36a19a2d32e4eae38189b4e7b5818e1096da966db5914",
+    "probe-initial.ts": "1ae6644787d773a196aa6c28eb95e8d05b6f85ac40f7d20db29cac87aee16ffc",
+    "probe-measured-rich.ts": "2c54fd6b234998cc470320f6ae8952bf630a1aa100556262e3bd2dc903677506",
+    "dependency-probe.ts": "d75e785dc20ba36bfd519d6054f0410078bbf3af8deebf7ce313e24922405a60",
+    "identity-probe.ts": "1995609d42800cf5c6badb2eaeddf28eb5f5237021e4e9f6962f34f4ad2286ed",
+    "browser.spec.ts": "e497504cfbd04a4443b5e61843f02fa05bd57a97014fbf15e0db86fa26d73db0",
+    "browser.config.ts": "30d05d5dd71857f213f8b528d95ab6bcec3453b0b79a67c68e38193885f707d7",
+    "correctness.json": "9c0ae37859bd39c7e4d06de7aa45abf21f61b0ccef3a0e883665ad0ef2b72315",
+    "benchmark.json": "9ec3ef7d35d3fd50ef742aff42f3245803500342c1210759ed6c78af05425855",
+    "benchmark-rich.json": "f0730fb6a2f4db7b3bba73dae3beead7f0c76b7098a9566e276cdd3e25e97cad",
+    "identity-oracle.json": "a10dadd940a0318f463915673a958503369364f72f347c53346e3fd2c0e64820",
+    "dependencies.json": "c35d2942bba4371805341af87da3eed5a7ad7817b89560628808e5bc1c4f2409",
+    "joiner.json": "0f1099d377864b1b9131ded5ad0f8c9bc46dc85782ad002c2bc01c1a0a5d4f3e",
+    "initial-run-status.json": "e925732ddc7a25096249721ebcfc59a91bfcff2094dfcf5ed07c33a55b951e61",
+    "browser-summary.json": "1f0a95950e4c6385c30be7b4aa437ea52c992fda70211f1b870e409d01d20c6c",
+    "browser-identity.json": "441c6d4524ecd1e0f01062908f5f529749802fffddd7588a52f9dccdf65b0dd7",
+    "browser-cleanup.json": "637bfbc284e642fba09b8eb85c00da91d1d43330d074d4238e05d110259cdc64",
+    "browser-attempt-1.log": "3e7c938ccd76027e257766874fce8889c951193f7a1073f397099b103068fa12",
+    "browser-attempt-2.log": "8aeee2289eaa985886c90f4a3aada46a0fbe23581644852c96d972c9fa5a771c",
+    "dependencies.failed-initial.log": "7f21ed69308698081153f37fbebe2ed22bd8b06a659c4eb2b1a745e91d4317cf",
+    "source-before.json": "76d2c543b7d3c069ca9bb5af85f4c7595abc4e36338809b9656c127fa1bb7e41",
+    "source-check-early-correctness.json": "3344f75c309c35cb5bdade8ea2d45b86b8dade1dda6052839a6d8b60761ae76b",
+    "source-rich-check.json": "3344f75c309c35cb5bdade8ea2d45b86b8dade1dda6052839a6d8b60761ae76b"
+  }
+}

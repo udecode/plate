@@ -3,6 +3,8 @@ const contentTypesXML: string = `
 
     <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
         <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />
+        <Default Extension="bmp" ContentType="image/bmp"/>
+        <Default Extension="gif" ContentType="image/gif"/>
         <Default Extension="jpeg" ContentType="image/jpeg"/>
         <Default Extension="png" ContentType="image/png"/>
         <Default Extension="xml" ContentType="application/xml"/>

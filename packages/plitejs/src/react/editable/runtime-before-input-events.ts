@@ -1146,8 +1146,18 @@ export const useRuntimeBeforeInputEvents = ({
       trace,
     ]
   );
+  const handleViewDOMBeforeInput = useCallback(
+    (event: InputEvent) => {
+      if (event.inputType === 'insertFromPaste') {
+        runtime.runPaste(() => handleDOMBeforeInput(event));
+      } else {
+        handleDOMBeforeInput(event);
+      }
+    },
+    [handleDOMBeforeInput, runtime]
+  );
   const onRuntimeDOMBeforeInput = useEditableDOMBeforeInputHandler({
-    handleDOMBeforeInput,
+    handleDOMBeforeInput: handleViewDOMBeforeInput,
   });
 
   const handleReactBeforeInputFallback = useCallback(

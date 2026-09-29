@@ -60,9 +60,10 @@ for (const mode of ['native', 'event'] as const) {
         root.getByRole('heading', { name: 'Clipboard Heading', exact: true })
       ).toBeVisible();
       await expect(root.locator('strong')).toHaveText('Clipboard bold');
+      // Plate keeps a URL as written; a browser clipboard may normalize it.
       await expect(
         root.getByRole('link', { name: 'reference', exact: true })
-      ).toHaveAttribute('href', 'https://example.com/');
+      ).toHaveAttribute('href', /^https:\/\/example\.com\/?$/);
       expect(
         await page.evaluate(
           () =>

@@ -16,6 +16,11 @@
       "sourceType": "local",
       "computedHash": "4c55d3dad42144961fb1fec8308473437c94c06435f2625b432936fb703285fc"
     },
+    "autoclosure": {
+      "source": "../dotai",
+      "sourceType": "local",
+      "computedHash": "72370efaedbba7e62584e71bf3cd163a5a3823c52987d08fd9d8df8cd1c73622"
+    },
     "autogoal": {
       "source": "../dotai",
       "sourceType": "local",
@@ -81,6 +86,11 @@
       "source": "../dotai",
       "sourceType": "local",
       "computedHash": "b7eb8b8437a42eb51d97e22c99886d12bd81ad8ec0061dd7dd12c736a74c2cbc"
+    },
+    "optimise-github-actions": {
+      "source": "enesgules/dotfiles",
+      "sourceType": "github",
+      "computedHash": "30b1cdadc54922883984c5dfbd8ca343d800928cffddde67e251870424cdbb24"
     },
     "orchestrator": {
       "source": "../dotai",

@@ -1,4 +1,9 @@
 import type { EditorDocumentValue, EditorSchemaIdentity } from '../../core';
+import type { BoundedDocxPackage } from './docxPackage';
+import {
+  findDocxSourceViolations,
+  type DocxSourceViolation,
+} from './sourceEligibility';
 import type { DocxComment, DocxImportLimits } from './types';
 
 type DocxSourceInput = Readonly<{
@@ -65,9 +70,27 @@ export class DocxSource {
   }
 }
 
-/** @internal */
-export const createDocxSource = (input: DocxSourceInput): DocxSource =>
-  constructDocxSource(input);
+/**
+ * Retain an admitted package only when every part is passive, so exact reuse
+ * can never return unchecked bytes.
+ *
+ * @internal
+ */
+export const retainDocxSource = (
+  pkg: BoundedDocxPackage,
+  correspondence: Omit<DocxSourceInput, 'blob'>
+):
+  | Readonly<{ source: DocxSource; violation: null }>
+  | Readonly<{ source: null; violation: DocxSourceViolation }> => {
+  const [violation] = findDocxSourceViolations(pkg);
+
+  if (violation) return Object.freeze({ source: null, violation });
+
+  return Object.freeze({
+    source: constructDocxSource({ ...correspondence, blob: pkg.source }),
+    violation: null,
+  });
+};
 
 /** @internal */
 export const acquireDocxSource = (

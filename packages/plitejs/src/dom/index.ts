@@ -59,6 +59,7 @@ export type {
   DataTransferSnapshot,
   DataTransferFormat,
   DataTransferDecodeContext,
+  DataTransferDiagnostic,
   DataTransferFormatPhase,
   DataTransferSchemaClaim,
   DataTransferEncodeContext,

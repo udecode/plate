@@ -19,7 +19,7 @@ import {
 import { ChangeDraft } from '../src/core/change/builder';
 import { DocumentIndex } from '../src/core/change/document-index';
 import { RootChange } from '../src/core/change/root-change';
-import type { JsonEditorValue } from '../src/core/change/tokens';
+import { deepFreeze, type JsonEditorValue } from '../src/core/change/tokens';
 import { getEditorSchema } from '../src/core/editor-runtime';
 import {
   getCompiledEditorSchemaFromApi,
@@ -33,6 +33,7 @@ import {
   rebaseElementOwnedRootIndex,
   resolveElementOwnedRootPath,
 } from '../src/core/element-owned-root-index';
+import { isEditorJsonValue } from '../src/core/value-codec';
 
 const paragraph = (text: string): Element => ({
   children: [{ text }],
@@ -1503,6 +1504,57 @@ describe('incremental schema validation', () => {
     assert.deepEqual(
       validateWithBuilder(before, change, nextSchema, 'canonical').children,
       [paragraph('changed')]
+    );
+  });
+});
+
+describe('document validation reuse', () => {
+  const header = [{ children: [{ text: 'title' }], type: 'heading' }];
+
+  it('never reuses JSON validity of a frozen value with a mutable member', () => {
+    const text: Record<string, unknown> = { text: 'a' };
+    const node = Object.freeze({ children: [text], type: 'paragraph' });
+
+    assert.equal(isEditorJsonValue(node), true);
+    text.text = () => 'not json';
+    assert.equal(isEditorJsonValue(node), false);
+  });
+
+  it('reuses a validated frozen top-level node only under the same schema', () => {
+    const shared = deepFreeze(paragraph('shared'));
+    const editor = createValidationEditor();
+
+    editor.read.schema.assertDocument({
+      children: [shared],
+      roots: { header },
+    });
+    // Nodes new to a document are still validated.
+    assert.throws(() =>
+      editor.read.schema.assertDocument({
+        children: [shared, deepFreeze({ children: [], type: 'paragraph' })],
+        roots: { header },
+      })
+    );
+
+    const strict = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reuse-strict', {
+          elements: {
+            heading: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            } as const,
+          },
+          id: 'reuse-strict',
+          root: schema.content.type('heading', { min: 1 }),
+          unknown: 'reject',
+          version: 1,
+        }),
+      ],
+    });
+
+    // Another schema validates the node again and rejects it.
+    assert.throws(() =>
+      strict.read.schema.assertDocument({ children: [shared] })
     );
   });
 });

@@ -295,6 +295,12 @@ schema law, and application typing remain outside this skill.
   dynamic actions, and optional plugins whose descriptor is intentionally not
   a dependency.
 - If a node renderer forwards to `EditorElement` or `EditorElement`, keep the full incoming `props` object intact. Read from `props`, but do not destructure away `editor`, `element`, or other required fields and then spread only a partial object into the renderer.
+- A static renderer reads the rendered document through the `editor` prop it
+  receives, never an editor captured when its plugin was created. Static
+  rendering reuses a block while it and every earlier block are unchanged, so
+  reading its own block or earlier ones needs nothing; a renderer that reads
+  later content, such as a table of contents, needs its plugin to declare
+  `render: { readsDocument: true }`.
 - Type every plugin-bound renderer from its stable owner descriptor:
   `EditorElementProps<typeof FooPlugin>` / `EditorLeafProps<typeof FooPlugin>`
   for live renderers and the matching `Plite*Props<typeof BaseFooPlugin>` for

@@ -1641,17 +1641,20 @@ const buildRunOrHyperLink = async (
     const modifiedAttributes = { ...attributes };
     modifiedAttributes.hyperlink = true;
 
-    const runFragments = await buildRunOrRuns(
-      (vn.children || [])[0],
-      modifiedAttributes,
-      docxDocumentInstance
-    );
-    if (Array.isArray(runFragments)) {
-      for (const runFragment of runFragments) {
-        hyperlinkFragment.import(runFragment);
+    // Every child is part of the label, such as a partly bold link.
+    for (const child of vn.children || []) {
+      const runFragments = await buildRunOrRuns(
+        child,
+        { ...modifiedAttributes },
+        docxDocumentInstance
+      );
+      if (Array.isArray(runFragments)) {
+        for (const runFragment of runFragments) {
+          hyperlinkFragment.import(runFragment);
+        }
+      } else {
+        hyperlinkFragment.import(runFragments);
       }
-    } else {
-      hyperlinkFragment.import(runFragments);
     }
     hyperlinkFragment.up();
 

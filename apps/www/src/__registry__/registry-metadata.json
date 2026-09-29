@@ -1,5 +1,5 @@
 {
-  "generation": "a85e13b213572036bd2976616fabd828d57eee5aa7fd984938d4b807da99ff99",
+  "generation": "45d3b751ec9995e6852b8adad6f503a2b00deb19cefe8e4558cae2130a580aac",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3940,7 +3940,6 @@
           "registryDependencies": [
             "@plate/copilot-api",
             "@plate/editor-static",
-            "@plate/markdown-joiner-transform",
             "@plate/use-chat",
             "@plate/editor-plugins-static"
           ],
@@ -4320,19 +4319,6 @@
           ],
           "name": "suggestion-style",
           "type": "registry:lib"
-        },
-        {
-          "dependencies": [
-            "ai@6"
-          ],
-          "files": [
-            {
-              "path": "lib/markdown-joiner-transform.ts",
-              "type": "registry:lib"
-            }
-          ],
-          "name": "markdown-joiner-transform",
-          "type": "registry:hook"
         },
         {
           "dependencies": [
@@ -4993,10 +4979,7 @@
         {
           "dependencies": [
             "platejs",
-            "@ai-sdk/react@^3.0.0",
-            "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
-            "fastest-levenshtein@1.0.16",
             "lucide-react",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -5013,11 +4996,27 @@
             "button",
             "@plate/editor",
             "@plate/editor-static",
-            "@plate/markdown-joiner-transform",
-            "@plate/editor-plugins",
             "@plate/editor-plugins-static",
-            "@plate/ai",
-            "@plate/dnd"
+            "@plate/dnd",
+            "@plate/align",
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
+            "@plate/callout",
+            "@plate/code-block",
+            "@plate/column",
+            "@plate/date",
+            "@plate/details",
+            "@plate/font",
+            "@plate/footnote",
+            "@plate/line-height",
+            "@plate/link",
+            "@plate/list",
+            "@plate/markdown",
+            "@plate/math",
+            "@plate/media",
+            "@plate/mention",
+            "@plate/table",
+            "@plate/toc"
           ],
           "type": "registry:example"
         },
@@ -10636,7 +10635,6 @@
           "registryDependencies": [
             "@plate/copilot-api",
             "@plate/editor-static",
-            "@plate/markdown-joiner-transform",
             "@plate/use-chat",
             "@plate/editor-plugins-static"
           ],
@@ -11016,19 +11014,6 @@
           ],
           "name": "suggestion-style",
           "type": "registry:lib"
-        },
-        {
-          "dependencies": [
-            "ai@6"
-          ],
-          "files": [
-            {
-              "path": "lib/markdown-joiner-transform.ts",
-              "type": "registry:lib"
-            }
-          ],
-          "name": "markdown-joiner-transform",
-          "type": "registry:hook"
         },
         {
           "dependencies": [
@@ -11689,10 +11674,7 @@
         {
           "dependencies": [
             "platejs",
-            "@ai-sdk/react@^3.0.0",
-            "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
-            "fastest-levenshtein@1.0.16",
             "lucide-react",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -11709,11 +11691,27 @@
             "button",
             "@plate/editor",
             "@plate/editor-static",
-            "@plate/markdown-joiner-transform",
-            "@plate/editor-plugins",
             "@plate/editor-plugins-static",
-            "@plate/ai",
-            "@plate/dnd"
+            "@plate/dnd",
+            "@plate/align",
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
+            "@plate/callout",
+            "@plate/code-block",
+            "@plate/column",
+            "@plate/date",
+            "@plate/details",
+            "@plate/font",
+            "@plate/footnote",
+            "@plate/line-height",
+            "@plate/link",
+            "@plate/list",
+            "@plate/markdown",
+            "@plate/math",
+            "@plate/media",
+            "@plate/mention",
+            "@plate/table",
+            "@plate/toc"
           ],
           "type": "registry:example"
         },

@@ -1,0 +1,18 @@
+---
+id: 2026-09-28-markdown-streaming-demo-lifecycle
+date: 2026-09-28
+status: draft
+kind: behavior
+summary: 'Stream Markdown previews without AI chat and update only changed preview blocks'
+change: { 'type': 'source', 'date': '2026-09-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-28-markdown-streaming-stream-through-without-ai-4f3a3fc5","kind":"behavior","migrationNotes":[]} -->
+
+- **`markdown-streaming-demo`**: Stream Markdown with `editor.api.markdown.parseSlice` instead of the AI chat preview: previews hide an unfinished trailing tag, Finish and Stop parse the draft strictly once, every parse continues the latest preview, and reset cancels without a final parse. The static preview renders each parse as the `document` of `EditorView` without editing its editor; the editable preview installs content plugins only and replaces only the changed blocks. The Markdown source, chunk size and delay are editable.
+
+<!-- entry: {"id":"2026-09-29-ai-menu-preview-changed-blocks-0e455cba","kind":"behavior","migrationNotes":[]} -->
+
+- **`ai-menu`**: Render the AI draft as the `document` of the static preview editor instead of copying it into that editor on every chunk. The streaming end marker covers only the draft's last character, so it appears once when code highlighting splits the last line.

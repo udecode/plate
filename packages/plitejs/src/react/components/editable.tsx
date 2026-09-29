@@ -3,7 +3,10 @@ import React, { useCallback, useSyncExternalStore } from 'react';
 import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
 import { type DOMRange, isDOMNode } from '../../dom';
 import { createDOMGeometryKernel } from '../../dom/internal';
-import type { EditableHistoryReplayEvent } from '../editable/editable-dom-runtime';
+import type {
+  EditableHistoryReplayEvent,
+  EditablePasteResult,
+} from '../editable/editable-dom-runtime';
 import type {
   EditableRepairRequest,
   InputIntent,
@@ -267,6 +270,7 @@ export const EditableDOMRoot = (
     onDOMBeforeInput?: EditableDOMBeforeInputHandler;
     onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
     onKeyDown?: EditableKeyDownHandler;
+    onPasteResult?: (result: EditablePasteResult) => void;
     readOnly?: boolean;
     scrollSelectionIntoView?: (
       editor: ReactRuntimeEditor,
@@ -288,6 +292,7 @@ export const EditableDOMRoot = (
     onKeyDown: propsOnKeyDown,
     onDOMBeforeInput: propsOnDOMBeforeInput,
     onHistoryReplay,
+    onPasteResult,
     readOnly: readOnlyProp = false,
     scrollSelectionIntoView = defaultScrollSelectionIntoView,
     style: userStyle = {},
@@ -318,6 +323,7 @@ export const EditableDOMRoot = (
     onDOMBeforeInput: propsOnDOMBeforeInput,
     onHistoryReplay,
     onKeyDown: propsOnKeyDown,
+    onPasteResult,
     readOnly: readOnlyProp,
     scrollSelectionIntoView,
   });

@@ -58,17 +58,14 @@ if (result.ok) {
 schema 与 HTML mapping 的 plugin。
 
 ```ts
-import { parseHtml, parseHtmlSlice } from 'platejs/html';
+import { parseHtml } from 'platejs/html';
 
 const documentResult = parseHtml(source, { plugins: EditorKit });
-const sliceResult = parseHtmlSlice(fragment, {
-  plugins: EditorKit,
-  lossPolicy: 'allow',
-});
 ```
 
 Standalone function 只为本次调用编译 declaration，完成后丢弃临时 target。它
-不会激活 handler、effect 或 React hook。
+不会激活 handler、effect 或 React hook。Slice 属于 insertion target，因此使用已
+安装的 `editor.api.html.parseSlice` 解析。
 
 ### Node.js
 
@@ -150,32 +147,60 @@ callback 只接收 `defineFormats` 与静态 schema binding。运行时 mapping 
 live editor 或 store。
 
 ```ts
-import { definePlugin } from 'platejs';
+import { definePlugin, property, schema } from 'platejs';
 
-const CalloutPlugin = definePlugin('callout', {
-  formats: ({ defineFormats, schema: { type } }) =>
+const NotePlugin = definePlugin('note', {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: { variant: property.string() },
+    },
+  },
+  formats: ({ defineFormats }) =>
     defineFormats({
       html: {
+        match: [{ tag: 'aside' }],
         decode: ({ element }) => ({
-          type: element.dataset.type ?? 'info',
+          variant: element.dataset.variant ?? 'info',
         }),
-        encode: ({ node }) => ({
-          attributes: { 'data-type': node.type },
-          tag: 'aside',
-        }),
-        match: { tag: 'aside' },
+        encode: ({ content, node, preserve }) => {
+          preserve('variant');
+
+          return {
+            attributes: { 'data-variant': node.variant },
+            children: content,
+            tag: 'aside',
+          };
+        },
       },
     }),
 });
 ```
+
+- `match` 选择 source 元素。`decode` 返回该元素的 property，也可以返回
+  `children`；返回 `undefined` 表示放弃该元素，由下一个 mapping 处理。
+- `encode` 返回 node spec：`tag`、`attributes`、`style` 与 `children`，其中
+  `content` 表示 node 的 children 所在位置。返回 `null` 会省略该元素。
+- `preserve(...keys)` 声明返回的输出承载了 mapping target 的这些 property。只有
+  `encode` 返回输出时声明才生效。读取 property 不算声明。
+- 只负责一个 mark 或 element property 的 mapping 接收 `value`，返回 wrapper（例如
+  `{ tag: 'strong' }`）或 patch（例如 `{ style: { textAlign: value } }`）。写出该值
+  的输出即表示了它；返回 `null` 表示不表示该值。负责多个 property 的 mapping 接收
+  `values`，并通过 `preserve` 声明。
+
+序列化会把没有任何 mapping 表示的 content property 报告为
+`html-unsupported-content`，带 `kind: 'attribute'` 与 `model.property`。该损失在
+任何策略下都是 warning。只有在没有损失时，复制才会写入 `text/html`；因此漏掉声明的
+mapping 会让复制内容只保留纯文本。
 
 当前 plugin 自己的 mapping 使用 `defineFormats(map)`；foreign target 使用
 `defineFormats(TargetPlugin, map)`。语义 key 是 `html`，MIME negotiation 不属于
 这张 map。
 
 需要拥有完整 `text/html` browser payload 时，通过 `dataTransferFormats` 注册
-`DataTransferFormat`。该 owner 可以检查完整 payload、调用 `parseHtmlSlice`，再
-返回 slice，或返回 `null` 让下一个 format 尝试。参阅
+`DataTransferFormat`。该 owner 可以检查并准备完整 payload，然后返回
+`decodeHtmlDataTransfer({ ...context, data: prepared })`（按内置 HTML format 的
+方式解码并报告），或返回 `null` 让下一个 format 尝试。参阅
 [Clipboard](/docs/clipboard#自定义-datatransfer-format)。
 
 ## Result 与 diagnostics
@@ -185,13 +210,21 @@ success 包含 `data`；failure 不包含。配置错误、mapping bug 与无效
 会抛出。source 错误、resource limit、schema recovery、安全处理与预期格式损失
 通过 diagnostics 返回。
 
-安全移除会报告带 `impact` 的 `html-unsafe-content`。移除 metadata、script、
-style sheet、event handler、script URL，或 `aria-hidden="true"` subtree 中的图形
-（例如 icon SVG）为 `lossless`；移除其他 SVG、MathML、embedded object、被阻止的
-`data:` media source、inline frame document 或加载资源的 style 为 `lossy`。没有
-已安装 mapping 的 embedded media（`img`、`video`、`audio`、`iframe`、`canvas`）
-即使保留 fallback content，也会报告 `html-unsupported-content`。在默认的
-`lossPolicy: 'reject'` 下，lossy removal 与 unsupported content 都是 error。
+每个 URL 都按其用途检查：`href` 必须可以安全打开，`img` 的 `src` 与 `poster`
+必须是图片，`iframe` 的 `src` 必须是绝对网页地址，其他 `src` 必须是 media。安全
+移除会报告带 `impact` 的 `html-unsafe-content`。被移除的链接目标会保留其文本
+（`action: 'unwrapped'`），并在任何策略下报告 warning；仅当目标可能执行 script
+（例如 `javascript:` 或 `data:`）时为 `lossless`。没有可用 `src` 的 `img` 会替换为
+其 alt 文本。移除 metadata、script、style sheet、event handler、script 资源 URL，
+或 `aria-hidden="true"` subtree 中的图形（例如 icon SVG）为 `lossless`；移除其他 SVG、MathML、embedded object、无法加载的
+media source、inline frame document 或加载资源的 style 为 `lossy`。序列化会从输出
+中移除不安全的 attribute 或 CSS 值，并以相同方式报告。
+
+没有已安装 mapping 的 embedded media（`img`、`video`、`audio`、`iframe`、
+`canvas`）即使保留 fallback content，也会报告 `html-unsupported-content`。丢失的
+property（`kind: 'attribute'` 或 `'style'`）在任何策略下都是 warning，序列化会在
+`model.property` 中给出其名称。在默认的
+`lossPolicy: 'reject'` 下，lossy removal 与丢失的元素都是 error。
 
 默认解析限制：
 
@@ -209,13 +242,12 @@ style sheet、event handler、script URL，或 `aria-hidden="true"` subtree 中�
 | API | Import | 用途 |
 | --- | --- | --- |
 | `parseHtml(source, options)` | `platejs/html` | 在浏览器解析完整 document。 |
-| `parseHtmlSlice(source, options)` | `platejs/html` | 在浏览器解析闭合 insertion slice。 |
 | `serializeHtml(document, options)` | `platejs/html` | 序列化 detached document。 |
 | `parseHtml(source, options)` | `platejs/html/server` | 在 Node.js 解析完整 document。 |
-| `parseHtmlSlice(source, options)` | `platejs/html/server` | 在 Node.js 解析闭合 insertion slice。 |
 | `editor.api.html.parse(source, options?)` | `HtmlPlugin` | 使用已安装 target 解析 document。 |
 | `editor.api.html.parseSlice(source, options?)` | `HtmlPlugin` | 使用已安装 target 解析 slice。 |
 | `editor.api.html.serialize(options?)` | `HtmlPlugin` | 序列化当前或指定 document。 |
+| `decodeHtmlDataTransfer(context)` | `platejs/html` | 在 `DataTransferFormat` 中按已安装 HTML format 的方式解码 transfer payload。 |
 
 直接 parse 的 options 必须包含 `plugins`，并可包含 `schema`、`limits`、
 `lossPolicy` 与 `collapseWhitespace`。直接 serialize 的 options 必须包含

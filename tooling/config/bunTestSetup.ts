@@ -140,6 +140,12 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
 
 const matchers = await import('@testing-library/jest-dom/matchers');
 const { cleanup } = await import('@testing-library/react');
+const reactInternals = (
+  (await import('react')) as unknown as Record<
+    string,
+    { actQueue?: unknown } | undefined
+  >
+).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
 
 // Extend Bun's expect with Testing Library matchers
 expect.extend(matchers);
@@ -147,6 +153,14 @@ expect.extend(matchers);
 // Cleanup after each test - removes rendered React components
 afterEach(() => {
   cleanup();
+  // An act() whose callback returns a promise stays open until it is awaited.
+  // Left open, it keeps every later render in this process from flushing, so
+  // the leaking test fails here instead of the files after it.
+  if (reactInternals?.actQueue) {
+    throw new Error(
+      'This test left a React act() scope open: await act() when its callback returns a promise.'
+    );
+  }
 });
 
 // TextEncoder global (for Node compatibility)

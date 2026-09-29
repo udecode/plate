@@ -24,12 +24,6 @@
       "diagnostics": []
     },
     {
-      "name": "markdown-streaming-demo",
-      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "markdown-to-editor-demo",
       "files": ["apps/www/src/registry/examples/markdown-to-editor-demo.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
@@ -48,12 +42,6 @@
         "apps/www/src/registry/app/api/ai/command/utils.ts"
       ],
       "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "markdown-joiner-transform",
-      "files": ["apps/www/src/registry/lib/markdown-joiner-transform.ts"],
-      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
       "diagnostics": []
     }
   ],
@@ -78,23 +66,6 @@
       }
     },
     {
-      "id": "2026-09-28-markdown-streaming-partial-parse-6d1e4a2c",
-      "kind": "behavior",
-      "summary": "Preview the stream with `parse(source, { lossPolicy: 'allow', partial: true })`, so an unfinished trailing tag stays hidden.",
-      "details": [],
-      "migrationNotes": [],
-      "targets": ["markdown-streaming-demo"],
-      "source": {
-        "line": 16,
-        "row": 2,
-        "legacyRelease": {
-          "date": "2026-09-28",
-          "entry": "2026-09-28-markdown-registered-tags",
-          "section": null
-        }
-      }
-    },
-    {
       "id": "2026-09-28-markdown-to-editor-kit-plugins-2f7c9b10",
       "kind": "wiring",
       "summary": "Parse through the kit's `MarkdownPlugin` configuration instead of passing per-call remark plugins.",
@@ -102,8 +73,8 @@
       "migrationNotes": [],
       "targets": ["markdown-to-editor-demo"],
       "source": {
-        "line": 18,
-        "row": 3,
+        "line": 16,
+        "row": 2,
         "legacyRelease": {
           "date": "2026-09-28",
           "entry": "2026-09-28-markdown-registered-tags",
@@ -119,25 +90,8 @@
       "migrationNotes": [],
       "targets": ["ai-api"],
       "source": {
-        "line": 20,
-        "row": 4,
-        "legacyRelease": {
-          "date": "2026-09-28",
-          "entry": "2026-09-28-markdown-registered-tags",
-          "section": null
-        }
-      }
-    },
-    {
-      "id": "2026-09-28-markdown-joiner-tag-check-4c9e2b77",
-      "kind": "rename",
-      "summary": "Rename the buffered-tag check to `isCompleteTag`.",
-      "details": [],
-      "migrationNotes": [],
-      "targets": ["markdown-joiner-transform"],
-      "source": {
-        "line": 22,
-        "row": 5,
+        "line": 18,
+        "row": 3,
         "legacyRelease": {
           "date": "2026-09-28",
           "entry": "2026-09-28-markdown-registered-tags",

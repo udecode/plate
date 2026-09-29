@@ -97,10 +97,24 @@ export const addAuthoredDocxEnvelope = async (
   ]);
 
   throwIfDocxAborted(signal);
+  // A retained source can already carry an envelope; replace its declarations
+  // so the package keeps one override and one relationship for the part.
+  const otherRelationships = removeXmlDeclaration(
+    relationships,
+    'Relationship',
+    'Type',
+    AUTHORED_DOCX_RELATIONSHIP
+  );
+
   zip.file(
     '[Content_Types].xml',
     addXmlDeclaration(
-      contentTypes,
+      removeXmlDeclaration(
+        contentTypes,
+        'Override',
+        'PartName',
+        `/${AUTHORED_DOCX_PART}`
+      ),
       '</Types>',
       `<Override PartName="/${AUTHORED_DOCX_PART}" ContentType="${AUTHORED_DOCX_CONTENT_TYPE}"/>`
     )
@@ -108,9 +122,9 @@ export const addAuthoredDocxEnvelope = async (
   zip.file(
     '_rels/.rels',
     addXmlDeclaration(
-      relationships,
+      otherRelationships,
       '</Relationships>',
-      `<Relationship Id="${nextRelationshipId(relationships, 'rIdPlateAuthored')}" Type="${AUTHORED_DOCX_RELATIONSHIP}" Target="/${AUTHORED_DOCX_PART}"/>`
+      `<Relationship Id="${nextRelationshipId(otherRelationships, 'rIdPlateAuthored')}" Type="${AUTHORED_DOCX_RELATIONSHIP}" Target="/${AUTHORED_DOCX_PART}"/>`
     )
   );
   const entries = await packageEntries(zip, signal);

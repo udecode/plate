@@ -1,0 +1,56 @@
+{
+  "kind": "design-verification",
+  "date": "2026-09-28",
+  "scope": [
+    "conversion-boundary",
+    "format-mappings"
+  ],
+  "productChanges": false,
+  "checks": [
+    {
+      "argv": [
+        "node",
+        ".agents/skills/autogoal/scripts/check-complete.mjs",
+        "docs/plans/2026-09-28-conversion-boundary-adoption.md"
+      ],
+      "exitCode": 0,
+      "stdout": "[autogoal] complete: docs/plans/2026-09-28-conversion-boundary-adoption.md\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "docs/plans/2026-09-28-conversion-boundary-adoption.md",
+        "docs/research/decisions/conversion-boundary.md",
+        "docs/research/decisions/format-mapping-authoring.md"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "localLinks": {
+    "checked": 8,
+    "missing": []
+  },
+  "whitespace": "No trailing whitespace in the three owned Markdown documents.",
+  "lint": {
+    "argv": [
+      "pnpm",
+      "lint:fix",
+      "docs/plans/2026-09-28-conversion-boundary-adoption.md",
+      "docs/research/decisions/conversion-boundary.md",
+      "docs/research/decisions/format-mapping-authoring.md"
+    ],
+    "exitCode": 2,
+    "result": "No eligible targets: docs Markdown is excluded by repository Oxfmt/Oxlint configuration; not a passing lint run."
+  },
+  "plan": {
+    "path": "docs/plans/2026-09-28-conversion-boundary-adoption.md",
+    "sha256": "c8bc23875779934d67a71f0d69a705146479e6c268fdd6177e95fecc70e7d0ed"
+  },
+  "limits": "Design artifact verification only. No new runtime, browser, type or benchmark test. S0/S5 acceptance remains unmet. The ledger render/check runs after recording this receipt."
+}

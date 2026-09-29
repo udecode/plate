@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { all, createLowlight } from 'lowlight';
+import React from 'react';
 
 import { createEditor, definePlugin } from '../../../core';
 import {
@@ -17,6 +18,7 @@ import {
 } from '../../../features/layout';
 import { BaseTocPlugin } from '../../../features/toc';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '../../../math';
+import { EditorStatic, type EditorStaticProps } from '../../../static';
 import { importDocx } from '../../import/lib/importDocx';
 import { exportDocx } from './exportDocx';
 
@@ -305,6 +307,263 @@ describe('exportDocx', () => {
         },
       })
     );
+  });
+});
+
+describe('exportDocx loss policy', () => {
+  const unanchoredComment = {
+    author: null,
+    body: [{ children: [{ text: 'Detached note' }], type: 'paragraph' }],
+    createdAt: null,
+    durableId: null,
+    id: 'detached',
+    parentId: null,
+    resolved: null,
+    target: null,
+  } as const;
+
+  it('rejects dropped content by default and warns under allow', async () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'Body' }], type: 'paragraph' }],
+    });
+    const rejected = await exportDocx(editor, {
+      comments: [unanchoredComment],
+      projection: 'proposed',
+    });
+    const allowed = await exportDocx(editor, {
+      comments: [unanchoredComment],
+      lossPolicy: 'allow',
+      projection: 'proposed',
+    });
+
+    expect(rejected).toEqual({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'lossy-content',
+          feature: 'comment-range',
+          severity: 'error',
+        }),
+      ],
+      ok: false,
+    });
+    expect(allowed.ok).toBe(true);
+    expect(allowed.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'lossy-content',
+        feature: 'comment-range',
+        severity: 'warning',
+      }),
+    ]);
+  });
+
+  it('keeps omitted document metadata a warning under reject', async () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [{ children: [{ text: 'Body' }], type: 'paragraph' }],
+        meta: { reviewer: 'Ada' },
+      },
+    });
+    const result = await exportDocx(editor, { projection: 'proposed' });
+
+    expect(result.ok).toBe(true);
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'lossy-content',
+        feature: 'document-metadata',
+        severity: 'warning',
+      }),
+    ]);
+  });
+
+  it('treats a null source as no source', async () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'Body' }], type: 'paragraph' }],
+    });
+    const result = await exportDocx(editor, {
+      projection: 'review',
+      source: null,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.diagnostics).toEqual([]);
+  });
+
+  it('throws for an invalid loss policy', async () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'Body' }], type: 'paragraph' }],
+    });
+
+    await expect(
+      exportDocx(editor, {
+        // @ts-expect-error Loss policy accepts only allow or reject.
+        lossPolicy: 'warn',
+        projection: 'proposed',
+      })
+    ).rejects.toThrow('lossPolicy must be "allow" or "reject".');
+  });
+});
+
+describe('exportDocx output safety', () => {
+  const PNG =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+  const GIF = 'R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+  const WEBP = 'UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAwA0JaQAA3AA/vuUAAA=';
+
+  afterEach(() => {
+    mock.restore();
+  });
+
+  // Custom static renderers are where markup the schema never stored appears.
+  const exportWithMarkup = (
+    markup: string,
+    options: Omit<Parameters<typeof exportDocx>[1], 'component'> = {
+      projection: 'proposed',
+    }
+  ) =>
+    exportDocx(
+      createEditor({
+        initialValue: [{ children: [{ text: 'Body' }], type: 'paragraph' }],
+      }),
+      {
+        ...options,
+        component: (props: EditorStaticProps) =>
+          React.createElement(
+            'div',
+            null,
+            React.createElement(EditorStatic, props),
+            React.createElement('div', {
+              dangerouslySetInnerHTML: { __html: markup },
+            })
+          ),
+      }
+    );
+
+  const readPackage = async (blob: Blob) => {
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const [documentXml, relationships, contentTypes] = await Promise.all(
+      [
+        'word/document.xml',
+        'word/_rels/document.xml.rels',
+        '[Content_Types].xml',
+      ].map((name) => zip.file(name)!.async('string'))
+    );
+
+    return { contentTypes, documentXml, relationships, zip };
+  };
+
+  it('writes only safe absolute link destinations and keeps every label', async () => {
+    const result = await exportWithMarkup(
+      [
+        '<p><a href="javascript:alert(1)">SCRIPT</a> ',
+        '<a href="data:text/html;base64,SGVsbG8=">DATA</a> ',
+        '<a href="guide/next">RELATIVE</a> ',
+        '<a href=" https://example.com/ok ">SAFE <strong>BOLD</strong></a> ',
+        '<a href="mailto:team@example.com">MAIL</a></p>',
+      ].join('')
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const { documentXml, relationships } = await readPackage(result.blob);
+
+    for (const label of [
+      'SCRIPT',
+      'DATA',
+      'RELATIVE',
+      'SAFE ',
+      'BOLD',
+      'MAIL',
+    ]) {
+      expect(documentXml).toContain(label);
+    }
+    expect(relationships).toContain('Target="https://example.com/ok"');
+    expect(relationships).toContain('Target="mailto:team@example.com"');
+    expect(relationships).not.toContain('javascript:');
+    expect(relationships).not.toContain('data:');
+    expect(relationships).not.toContain('guide/next');
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({ action: 'unwrapped', feature: 'link' }),
+      expect.objectContaining({ action: 'unwrapped', feature: 'link' }),
+      expect.objectContaining({ action: 'unwrapped', feature: 'link' }),
+    ]);
+  });
+
+  it('omits images DOCX cannot embed and rejects that loss by default', async () => {
+    const markup = [
+      `<p><img src="data:image/png;base64,${PNG}" alt="Kept PNG"></p>`,
+      `<p><img src="data:image/gif;base64,${GIF}" alt="Kept GIF"></p>`,
+      `<p><img src="data:image/webp;base64,${WEBP}" alt="Webp diagram"></p>`,
+      '<p><img src="https://example.com/remote.png" alt="Remote chart"></p>',
+      '<p><img src="blob:https://example.com/0000" alt="Transient"></p>',
+      '<p><img src="media/local.png"></p>',
+      '<p><img src="javascript:alert(1)"></p>',
+    ].join('');
+    const rejected = await exportWithMarkup(markup);
+    const allowed = await exportWithMarkup(markup, {
+      lossPolicy: 'allow',
+      projection: 'proposed',
+    });
+
+    expect(rejected.ok).toBe(false);
+    expect(
+      rejected.diagnostics.filter(
+        (diagnostic) =>
+          diagnostic.code === 'resource-omitted' &&
+          diagnostic.severity === 'error'
+      )
+    ).toHaveLength(5);
+    expect(allowed.ok).toBe(true);
+    if (!allowed.ok) return;
+    const { contentTypes, documentXml, zip } = await readPackage(allowed.blob);
+    const media = Object.values(zip.files)
+      .filter((file) => !file.dir && file.name.startsWith('word/media/'))
+      .map(({ name }) => name);
+
+    expect(
+      media
+        .map((name) => name.split('.').at(-1) ?? '')
+        .sort((left, right) => left.localeCompare(right))
+    ).toEqual(['gif', 'png']);
+    expect(contentTypes).toContain('Extension="gif"');
+    expect(documentXml).toContain('Webp diagram');
+    expect(documentXml).toContain('Remote chart');
+    expect(documentXml).toContain('Transient');
+    expect(allowed.diagnostics).toHaveLength(5);
+  });
+
+  it('embeds fetched remote images only with allowRemoteImages', async () => {
+    const png = Uint8Array.from(atob(PNG), (character) =>
+      character.charCodeAt(0)
+    );
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(((
+      url: string
+    ) =>
+      Promise.resolve(
+        url.endsWith('missing.png')
+          ? new Response(null, { status: 404 })
+          : new Response(png)
+      )) as typeof fetch);
+    const result = await exportWithMarkup(
+      '<p><img src="https://example.com/a.png" alt="A"><img src="https://example.com/missing.png" alt="Missing"></p>',
+      { allowRemoteImages: true, lossPolicy: 'allow', projection: 'proposed' }
+    );
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const { zip } = await readPackage(result.blob);
+
+    expect(
+      Object.values(zip.files).filter(
+        (file) => !file.dir && file.name.startsWith('word/media/')
+      )
+    ).toHaveLength(1);
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'resource-omitted',
+        message: expect.stringContaining('could not be fetched'),
+      }),
+    ]);
   });
 });
 

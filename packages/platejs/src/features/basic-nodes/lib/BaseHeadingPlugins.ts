@@ -46,10 +46,11 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
         decode: ({ element }) => ({
           level: Number(element.tagName.slice(1)) as HeadingLevel,
         }),
-        encode: ({ content, node }) => ({
-          children: content,
-          tag: `h${node.level}`,
-        }),
+        encode: ({ content, node, preserve }) => {
+          preserve('level');
+
+          return { children: content, tag: `h${node.level}` };
+        },
         match: [{ tag: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] }],
       },
 
@@ -63,11 +64,15 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
                 type,
               }
             : undefined,
-        encode: ({ encodePhrasing, node }) => ({
-          children: encodePhrasing(node.children),
-          depth: node.level,
-          type: 'heading',
-        }),
+        encode: ({ encodePhrasing, node, preserve }) => {
+          preserve('level');
+
+          return {
+            children: encodePhrasing(node.children),
+            depth: node.level,
+            type: 'heading',
+          };
+        },
       },
     }),
   rules,

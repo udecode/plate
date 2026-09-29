@@ -1,0 +1,666 @@
+{
+  "environment": {
+    "arch": "arm64",
+    "bun": "1.3.12",
+    "cpu": "Apple M5 Max",
+    "platform": "darwin"
+  },
+  "packets": [
+    {
+      "kind": "rich",
+      "pair": 0,
+      "rawChunks": 157,
+      "size": 10000,
+      "sourceHash": "fab656e0bc4e40b92b1780587b26080729957634729053493d06b98f4f81f4d6",
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 9867.858667,
+        "emittedChunks": 127,
+        "final": {
+          "ok": true,
+          "parseMs": 15.801707999999962,
+          "publishMs": 42.056959000000006
+        },
+        "finalHash": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "latencyMs": {
+          "p50": 3273.332208,
+          "p95": 7963.920167,
+          "sum": 561400.7037529998
+        },
+        "literalPreviews": 0,
+        "parseMs": {
+          "p50": 0.5575839999999062,
+          "p95": 1.0092919999999594,
+          "sum": 63.14924700000029
+        },
+        "previews": 99,
+        "publishMs": {
+          "p50": 1.2257499999998345,
+          "p95": 2.200042000000167,
+          "sum": 136.9231719999991
+        },
+        "workMs": 257.93108599999937
+      },
+      "raw": {
+        "arm": "raw",
+        "durationMs": 1621.2442910000002,
+        "emittedChunks": 157,
+        "final": {
+          "ok": true,
+          "parseMs": 12.998416000000134,
+          "publishMs": 48.24587500000007
+        },
+        "finalHash": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "latencyMs": {
+          "p50": 24.37483400000019,
+          "p95": 35.97370899999987,
+          "sum": 3401.911502
+        },
+        "literalPreviews": 7,
+        "parseMs": {
+          "p50": 1.0691659999999956,
+          "p95": 5.842624999999998,
+          "sum": 51.13553999999908
+        },
+        "previews": 39,
+        "publishMs": {
+          "p50": 1.8685840000000553,
+          "p95": 4.546582999999828,
+          "sum": 81.82883500000048
+        },
+        "workMs": 194.20866599999977
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 1,
+      "rawChunks": 157,
+      "size": 10000,
+      "sourceHash": "fab656e0bc4e40b92b1780587b26080729957634729053493d06b98f4f81f4d6",
+      "raw": {
+        "arm": "raw",
+        "durationMs": 1611.738917,
+        "emittedChunks": 157,
+        "final": {
+          "ok": true,
+          "parseMs": 14.467959000000064,
+          "publishMs": 37.27095799999984
+        },
+        "finalHash": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "latencyMs": {
+          "p50": 24.17233299999998,
+          "p95": 36.514625000000024,
+          "sum": 3356.1441739999964
+        },
+        "literalPreviews": 7,
+        "parseMs": {
+          "p50": 0.9533339999998134,
+          "p95": 1.8854160000000775,
+          "sum": 40.018167999999605
+        },
+        "previews": 39,
+        "publishMs": {
+          "p50": 1.7143330000001242,
+          "p95": 4.1862089999999625,
+          "sum": 80.49891699999989
+        },
+        "workMs": 172.2560019999994
+      },
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 9864.151791,
+        "emittedChunks": 127,
+        "final": {
+          "ok": true,
+          "parseMs": 11.37541599999986,
+          "publishMs": 42.77637500000037
+        },
+        "finalHash": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "latencyMs": {
+          "p50": 3273.264042,
+          "p95": 7963.879542000001,
+          "sum": 561343.547796
+        },
+        "literalPreviews": 0,
+        "parseMs": {
+          "p50": 0.5048750000000837,
+          "p95": 0.9898749999999836,
+          "sum": 59.063330999999835
+        },
+        "previews": 99,
+        "publishMs": {
+          "p50": 1.1049999999997908,
+          "p95": 1.840208999999959,
+          "sum": 115.80358799999863
+        },
+        "workMs": 229.0187099999987
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 2,
+      "rawChunks": 157,
+      "size": 10000,
+      "sourceHash": "fab656e0bc4e40b92b1780587b26080729957634729053493d06b98f4f81f4d6",
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 9860.975957999999,
+        "emittedChunks": 127,
+        "final": {
+          "ok": true,
+          "parseMs": 11.755999999999858,
+          "publishMs": 39.21995800000013
+        },
+        "finalHash": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "latencyMs": {
+          "p50": 3273.231375,
+          "p95": 7963.7225,
+          "sum": 561368.7702919998
+        },
+        "literalPreviews": 0,
+        "parseMs": {
+          "p50": 0.4867500000000291,
+          "p95": 0.9580409999998665,
+          "sum": 64.67062200000282
+        },
+        "previews": 99,
+        "publishMs": {
+          "p50": 1.1152499999998327,
+          "p95": 2.0482919999999467,
+          "sum": 124.60337899999877
+        },
+        "workMs": 240.24995900000158
+      },
+      "raw": {
+        "arm": "raw",
+        "durationMs": 1614.9510420000001,
+        "emittedChunks": 157,
+        "final": {
+          "ok": true,
+          "parseMs": 11.146834000000126,
+          "publishMs": 43.80420800000002
+        },
+        "finalHash": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "latencyMs": {
+          "p50": 24.156416999999692,
+          "p95": 35.52470800000037,
+          "sum": 3312.6069239999993
+        },
+        "literalPreviews": 7,
+        "parseMs": {
+          "p50": 0.9564999999997781,
+          "p95": 1.2094160000001466,
+          "sum": 42.14537500000006
+        },
+        "previews": 39,
+        "publishMs": {
+          "p50": 1.7182079999997768,
+          "p95": 2.6097920000001977,
+          "sum": 72.01400199999944
+        },
+        "workMs": 169.11041899999964
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 0,
+      "rawChunks": 782,
+      "size": 50000,
+      "sourceHash": "a7680b9c25a219953123ad360b04ab2f2ec8e3edf6248b4bd78a7279be22bb8d",
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 57002.166166,
+        "emittedChunks": 596,
+        "final": {
+          "ok": true,
+          "parseMs": 63.90637500000048,
+          "publishMs": 228.2597909999995
+        },
+        "finalHash": "d2ea5a5ad80b5abc8f917f1074c665ba5e64d2009992f09b87c29253e66482ae",
+        "latencyMs": {
+          "p50": 23554.2095,
+          "p95": 46714.175083,
+          "sum": 18601429.489548013
+        },
+        "literalPreviews": 0,
+        "parseMs": {
+          "p50": 0.6220830000002024,
+          "p95": 0.9394159999992553,
+          "sum": 392.3760029999903
+        },
+        "previews": 568,
+        "publishMs": {
+          "p50": 1.170666999999412,
+          "p95": 1.941333000000668,
+          "sum": 746.7362509999966
+        },
+        "workMs": 1431.278419999987
+      },
+      "raw": {
+        "arm": "raw",
+        "durationMs": 8073.9565,
+        "emittedChunks": 782,
+        "final": {
+          "ok": true,
+          "parseMs": 55.28200000000015,
+          "publishMs": 208.67450000000008
+        },
+        "finalHash": "d2ea5a5ad80b5abc8f917f1074c665ba5e64d2009992f09b87c29253e66482ae",
+        "latencyMs": {
+          "p50": 24.335124999999607,
+          "p95": 35.50166700000045,
+          "sum": 16841.708671999964
+        },
+        "literalPreviews": 32,
+        "parseMs": {
+          "p50": 1.094042000000627,
+          "p95": 1.3908330000003843,
+          "sum": 216.13074099999812
+        },
+        "previews": 195,
+        "publishMs": {
+          "p50": 1.8616250000004584,
+          "p95": 3.7252079999998386,
+          "sum": 409.2870509999948
+        },
+        "workMs": 889.3742919999931
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 1,
+      "rawChunks": 782,
+      "size": 50000,
+      "sourceHash": "a7680b9c25a219953123ad360b04ab2f2ec8e3edf6248b4bd78a7279be22bb8d",
+      "raw": {
+        "arm": "raw",
+        "durationMs": 8098.269833,
+        "emittedChunks": 782,
+        "final": {
+          "ok": true,
+          "parseMs": 58.653166000000056,
+          "publishMs": 229.61666700000023
+        },
+        "finalHash": "d2ea5a5ad80b5abc8f917f1074c665ba5e64d2009992f09b87c29253e66482ae",
+        "latencyMs": {
+          "p50": 24.168125000000146,
+          "p95": 35.59691700000076,
+          "sum": 17012.953124999993
+        },
+        "literalPreviews": 32,
+        "parseMs": {
+          "p50": 1.1250829999989946,
+          "p95": 1.4891250000000582,
+          "sum": 243.03858599999057
+        },
+        "previews": 195,
+        "publishMs": {
+          "p50": 1.840541999999914,
+          "p95": 3.880417000000307,
+          "sum": 397.5942990000058
+        },
+        "workMs": 928.9027179999966
+      },
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 56984.518375,
+        "emittedChunks": 596,
+        "final": {
+          "ok": true,
+          "parseMs": 61.10004200000003,
+          "publishMs": 213.41833299999962
+        },
+        "finalHash": "d2ea5a5ad80b5abc8f917f1074c665ba5e64d2009992f09b87c29253e66482ae",
+        "latencyMs": {
+          "p50": 23554.403541,
+          "p95": 46714.958542,
+          "sum": 18601429.41751701
+        },
+        "literalPreviews": 0,
+        "parseMs": {
+          "p50": 0.6727080000000569,
+          "p95": 1.022832999999082,
+          "sum": 396.8038439999691
+        },
+        "previews": 568,
+        "publishMs": {
+          "p50": 1.2142500000009022,
+          "p95": 2.1309590000000753,
+          "sum": 790.3705430000191
+        },
+        "workMs": 1461.6927619999879
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 0,
+      "rawChunks": 157,
+      "size": 10000,
+      "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 11732.359874999998,
+        "emittedChunks": 147,
+        "final": {
+          "ok": true,
+          "parseMs": 18.122457999999824,
+          "publishMs": 84.23741699999846
+        },
+        "finalHash": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "latencyMs": {
+          "p50": 3783.926292,
+          "p95": 9573.271542,
+          "sum": 647947.1200489998
+        },
+        "literalPreviews": 7,
+        "parseMs": {
+          "p50": 0.6299579999995331,
+          "p95": 1.2507499999992433,
+          "sum": 76.23933400000169
+        },
+        "previews": 118,
+        "publishMs": {
+          "p50": 1.479417000000467,
+          "p95": 2.8028339999982563,
+          "sum": 210.42646199999035
+        },
+        "workMs": 389.0256709999903
+      },
+      "raw": {
+        "arm": "raw",
+        "durationMs": 1682.9646670000002,
+        "emittedChunks": 157,
+        "final": {
+          "ok": true,
+          "parseMs": 15.721042000001034,
+          "publishMs": 107.24362499999916
+        },
+        "finalHash": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "latencyMs": {
+          "p50": 25.33379199999945,
+          "p95": 37.052459000000454,
+          "sum": 3788.7566729999944
+        },
+        "literalPreviews": 8,
+        "parseMs": {
+          "p50": 1.3389580000002752,
+          "p95": 1.6204579999994166,
+          "sum": 50.886124999993626
+        },
+        "previews": 39,
+        "publishMs": {
+          "p50": 2.8694999999988795,
+          "p95": 4.157250000000204,
+          "sum": 114.20200100000511
+        },
+        "workMs": 288.0527929999989
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 1,
+      "rawChunks": 157,
+      "size": 10000,
+      "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+      "raw": {
+        "arm": "raw",
+        "durationMs": 1653.4989580000001,
+        "emittedChunks": 157,
+        "final": {
+          "ok": true,
+          "parseMs": 16.483250000001135,
+          "publishMs": 77.015707999999
+        },
+        "finalHash": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "latencyMs": {
+          "p50": 25.435625000000073,
+          "p95": 37.00766599999952,
+          "sum": 3676.3909650000314
+        },
+        "literalPreviews": 8,
+        "parseMs": {
+          "p50": 1.3532089999989694,
+          "p95": 1.5811670000002778,
+          "sum": 50.92446000000564
+        },
+        "previews": 39,
+        "publishMs": {
+          "p50": 2.9176669999997102,
+          "p95": 4.206833000000188,
+          "sum": 115.43654200000128
+        },
+        "workMs": 259.85996000000705
+      },
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 11724.467917,
+        "emittedChunks": 147,
+        "final": {
+          "ok": true,
+          "parseMs": 16.53441699999894,
+          "publishMs": 77.933500000001
+        },
+        "finalHash": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "latencyMs": {
+          "p50": 3784.3352079999986,
+          "p95": 9573.216,
+          "sum": 648021.084213
+        },
+        "literalPreviews": 7,
+        "parseMs": {
+          "p50": 0.606208000001061,
+          "p95": 1.227666999999201,
+          "sum": 109.46776000000682
+        },
+        "previews": 118,
+        "publishMs": {
+          "p50": 1.6089159999992262,
+          "p95": 2.821541999999681,
+          "sum": 186.5903649999982
+        },
+        "workMs": 390.52604200000496
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 2,
+      "rawChunks": 157,
+      "size": 10000,
+      "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 11723.700916,
+        "emittedChunks": 147,
+        "final": {
+          "ok": true,
+          "parseMs": 16.993375000000015,
+          "publishMs": 76.70754099999976
+        },
+        "finalHash": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "latencyMs": {
+          "p50": 3784.015542000001,
+          "p95": 9573.274417,
+          "sum": 647904.264338
+        },
+        "literalPreviews": 7,
+        "parseMs": {
+          "p50": 0.6287080000001879,
+          "p95": 1.2814589999998134,
+          "sum": 102.26487999999154
+        },
+        "previews": 118,
+        "publishMs": {
+          "p50": 1.6009159999994154,
+          "p95": 2.6456250000010186,
+          "sum": 185.68712400000913
+        },
+        "workMs": 381.65292000000045
+      },
+      "raw": {
+        "arm": "raw",
+        "durationMs": 1692.1989999999987,
+        "emittedChunks": 157,
+        "final": {
+          "ok": true,
+          "parseMs": 16.200582999999824,
+          "publishMs": 115.99841699999888
+        },
+        "finalHash": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "latencyMs": {
+          "p50": 25.29016700000102,
+          "p95": 37.05504099999962,
+          "sum": 3817.5100809999985
+        },
+        "literalPreviews": 8,
+        "parseMs": {
+          "p50": 1.303875000001426,
+          "p95": 1.5520829999986745,
+          "sum": 49.863875999999436
+        },
+        "previews": 39,
+        "publishMs": {
+          "p50": 2.864958000000115,
+          "p95": 4.002958000000945,
+          "sum": 113.17570700000215
+        },
+        "workMs": 295.2385830000003
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 0,
+      "rawChunks": 782,
+      "size": 50000,
+      "sourceHash": "e61e9f79a72ed47f8ec107a83fb2db5515e1a0750851a4c7fd1691bd56527eb4",
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 68377.925833,
+        "emittedChunks": 709,
+        "final": {
+          "ok": true,
+          "parseMs": 124.8159999999989,
+          "publishMs": 423.1098329999986
+        },
+        "finalHash": "78464473b7e71c490f78ef18a6fdd88fd29132affef7f9b3e7aafe87e48edad2",
+        "latencyMs": {
+          "p50": 28653.954458,
+          "p95": 56844.976083,
+          "sum": 22552622.41746301
+        },
+        "literalPreviews": 43,
+        "parseMs": {
+          "p50": 0.7466249999997672,
+          "p95": 1.3310420000016165,
+          "sum": 546.3237929999923
+        },
+        "previews": 680,
+        "publishMs": {
+          "p50": 1.56604100000186,
+          "p95": 3.459541000000172,
+          "sum": 1239.9899240000268
+        },
+        "workMs": 2334.2395500000166
+      },
+      "raw": {
+        "arm": "raw",
+        "durationMs": 8320.246083000002,
+        "emittedChunks": 782,
+        "final": {
+          "ok": true,
+          "parseMs": 94.4699580000015,
+          "publishMs": 415.7761250000003
+        },
+        "finalHash": "78464473b7e71c490f78ef18a6fdd88fd29132affef7f9b3e7aafe87e48edad2",
+        "latencyMs": {
+          "p50": 25.60949999999866,
+          "p95": 40.907499999997526,
+          "sum": 18819.052866999766
+        },
+        "literalPreviews": 38,
+        "parseMs": {
+          "p50": 1.5512500000004366,
+          "p95": 2.0370419999999285,
+          "sum": 312.759536000005
+        },
+        "previews": 195,
+        "publishMs": {
+          "p50": 3.0927090000004682,
+          "p95": 10.920874999999796,
+          "sum": 805.8800079999528
+        },
+        "workMs": 1628.8856269999596
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 1,
+      "rawChunks": 782,
+      "size": 50000,
+      "sourceHash": "e61e9f79a72ed47f8ec107a83fb2db5515e1a0750851a4c7fd1691bd56527eb4",
+      "raw": {
+        "arm": "raw",
+        "durationMs": 8337.514082999998,
+        "emittedChunks": 782,
+        "final": {
+          "ok": true,
+          "parseMs": 89.46020800000042,
+          "publishMs": 438.0538749999978
+        },
+        "finalHash": "78464473b7e71c490f78ef18a6fdd88fd29132affef7f9b3e7aafe87e48edad2",
+        "latencyMs": {
+          "p50": 25.553665999999794,
+          "p95": 40.52970799999821,
+          "sum": 19160.12346699996
+        },
+        "literalPreviews": 44,
+        "parseMs": {
+          "p50": 1.552625000000262,
+          "p95": 2.003082999999606,
+          "sum": 305.3700379999864
+        },
+        "previews": 195,
+        "publishMs": {
+          "p50": 3.052708999999595,
+          "p95": 10.15887500000099,
+          "sum": 782.346631000004
+        },
+        "workMs": 1615.2307519999886
+      },
+      "joiner": {
+        "arm": "joiner",
+        "durationMs": 68341.911417,
+        "emittedChunks": 709,
+        "final": {
+          "ok": true,
+          "parseMs": 98.86766700000226,
+          "publishMs": 413.0437499999971
+        },
+        "finalHash": "78464473b7e71c490f78ef18a6fdd88fd29132affef7f9b3e7aafe87e48edad2",
+        "latencyMs": {
+          "p50": 28654.142542,
+          "p95": 56844.725,
+          "sum": 22552631.424240977
+        },
+        "literalPreviews": 43,
+        "parseMs": {
+          "p50": 0.7513330000001588,
+          "p95": 1.2103340000030585,
+          "sum": 525.3879569999553
+        },
+        "previews": 680,
+        "publishMs": {
+          "p50": 1.569666999999754,
+          "p95": 4.255165999999008,
+          "sum": 1338.9604030000155
+        },
+        "workMs": 2376.25977699997
+      }
+    }
+  ],
+  "sampling": {
+    "arrivalMs": 10,
+    "cadenceMs": 32,
+    "chunkCharacters": 64,
+    "note": "Headless, shared host. Each size runs one unrecorded warmup per arm, then alternating pairs: three at 10 KB, two at 50 KB. Virtual time; parse and publish CPU is measured with performance.now()."
+  }
+}

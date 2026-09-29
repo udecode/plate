@@ -117,14 +117,56 @@ describe('AIChatPlugin streaming', () => {
     const editor = createEditor();
     const ai = editor.plugin(AIChatPlugin);
 
+    // No installed mapping reads a quote, so a strict parse rejects it.
+    const response = 'Text\n\n> Quote';
+
     ai.api.setPreview('previous');
-    ai.api.setPreview('<u>', { final: false });
+    ai.api.setPreview(response, { final: false });
     expect(ai.store.get('previewValue')).not.toEqual([]);
 
-    ai.api.setPreview('<u>');
+    ai.api.setPreview(response);
     expect(ai.store.get('previewValue')).toEqual([]);
     ai.api.accept();
     expect(editor.read.text.string([])).toBe('');
+  });
+
+  it('keeps each stored preview block that a continued parse reuses', () => {
+    const editor = createEditor();
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.api.setPreview('First paragraph.\n\nSec', { final: false });
+    ai.api.setPreview('First paragraph.\n\nSecond', { final: false });
+    const [first] = ai.store.get('previewValue');
+
+    ai.api.setPreview('First paragraph.\n\nSecond paragraph.', {
+      final: false,
+    });
+    expect(ai.store.get('previewValue')[0]).toBe(first);
+
+    // The strict final continues the latest preview too.
+    ai.api.setPreview('First paragraph.\n\nSecond paragraph.');
+    expect(ai.store.get('previewValue')[0]).toBe(first);
+    expect(
+      ai.store.get('previewValue').map((node) => NodeApi.string(node))
+    ).toEqual(['First paragraph.', 'Second paragraph.']);
+  });
+
+  it('refuses to accept a final draft whose target was deleted', () => {
+    const editor = createEditor();
+    const ai = editor.plugin(AIChatPlugin);
+    editor.update.nodes.insert(
+      { children: [{ text: 'kept' }], type: 'paragraph' },
+      { at: [1] }
+    );
+
+    ai.api.setPreview('complete');
+    editor.update.nodes.remove({ at: [0] });
+    const before = editor.read.value();
+
+    ai.api.accept();
+
+    expect(editor.read.value()).toEqual(before);
+    expect(editor.read.text.string([])).toBe('kept');
   });
 
   it('keeps streamed output in a draft until one accepted edit', () => {

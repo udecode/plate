@@ -1,0 +1,4 @@
+static cell0: 32 files; 8 in cell 0 | blocks 237 237 differ 47 {"code block":47}
+ai cell0: 32 files; 8 in cell 0 | blocks 237 237 differ 47 {"code block":47}
+static cell1: 32 files; 8 in cell 1 | blocks 300 300 differ 100 {"div.editor-table":50,"code block":50}
+ai cell1: 32 files; 8 in cell 1 | blocks 300 300 differ 101 {"div.editor-table":49,"code block":50,"ai-end marker":2}

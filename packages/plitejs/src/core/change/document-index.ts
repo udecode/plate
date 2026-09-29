@@ -28,6 +28,7 @@ import {
   PREPARED_SOURCE_TOKEN,
   PREPARED_TOKEN_NEXT,
   type PreparedNodeSlice,
+  rememberFrozenArray,
   tokensEqual,
 } from './tokens';
 import { transformPathAfterRemove } from './transform';
@@ -535,10 +536,11 @@ export class DocumentIndex {
     );
   }
 
+  // Every construction path freezes its value array, and asking the engine
+  // again can cost O(children) for a wide frozen array.
   private static remember(document: DocumentIndex) {
-    if (Object.isFrozen(document.value)) {
-      DocumentIndex.immutableCache.set(document.value, document);
-    }
+    DocumentIndex.immutableCache.set(document.value, document);
+    rememberFrozenArray(document.value);
 
     return document;
   }
@@ -891,8 +893,23 @@ export class DocumentIndex {
         );
       }
     }
+    if (this.tokenCache) return this.tokenCache.slice(from, to);
 
-    return this.tokens.slice(from, to);
+    // Encoding is compositional, so the sibling run around the range yields
+    // the same tokens as the whole document without O(document) work.
+    const run = this.cursor().siblingRunCovering(from, to);
+    const parent =
+      run.parentPath.length === 0 ? null : this.node(run.parentPath);
+
+    if (parent && !isElementNode(parent)) {
+      throw new Error(`Node at [${run.parentPath}] is not an element.`);
+    }
+
+    const siblings = parent ? parent.children : this.value;
+
+    return PreparedTokenSlice.fromIndexedNodes(
+      siblings.slice(run.first, run.last + 1)
+    ).slice(from - run.from, to - run.from);
   }
 
   private cursor() {

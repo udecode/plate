@@ -1,0 +1,345 @@
+{
+  "fixtures": {
+    "paragraphs": "First independent paragraph.\n\nSecond paragraph, still plain.\n\nThird paragraph.\n",
+    "headings": "# First\n\nPlain paragraph.\n\n## Second\n\nAnother plain paragraph.\n",
+    "reference": "[read][later]\n\nPlain.\n\n[later]: https://example.com \"title\"\n",
+    "shortcut": "[label]\n\nOther.\n\n[label]: /url\n\n[label]: /ignored\n",
+    "footnote": "Note[^a].\n\nOther paragraph.\n\n[^a]: Footnote body.\n\n    Continued body.\n",
+    "fence": "```js\nconst a = 1;\n\nconst b = 2;\n```\n\nAfter.\n",
+    "tildeFence": "~~~~\nalpha\n\nbeta\n~~~~\n\nAfter.\n",
+    "list": "- one\n\n  continuation\n\n- two\n  - nested\n\nAfter.\n",
+    "ordered": "1. one\n\n2. two\n\n   continued\n\nAfter.\n",
+    "tags": "<callout icon=\"x\">\n\nFirst.\n\nSecond.\n\n</callout>\n\nAfter.\n",
+    "inlineTags": "Before <u>underlined</u> and <kbd>Ctrl</kbd>.\n\nAfter.\n",
+    "nestedTags": "<columnGroup>\n<column width=\"50%\">\n\nLeft.\n\n</column>\n<column width=\"50%\">\nRight.\n</column>\n</columnGroup>\n",
+    "table": "| a | b |\n| - | - |\n| x | y |\n\nAfter.\n",
+    "setext": "Title\n---\n\nParagraph\n===\n",
+    "quote": "> first\n>\n> second\n\nAfter.\n",
+    "inline": "A **bold** word, _italic_, `code`, [link](/url), ![alt](/image.png).\n\nAfter.\n",
+    "math": "$$\nx^2\n\n+y\n$$\n\nInline $a+b$.\n",
+    "unicode": "Café and 🚀.\r\n\r\nSecond paragraph.\n",
+    "unknownTag": "Before.\n\n<unknown>body</unknown>\n",
+    "incompleteTag": "Before.\n\n<callout icon=\"x"
+  },
+  "rows": [
+    {
+      "name": "paragraphs",
+      "checked": 154,
+      "fallbackPreviews": 0,
+      "reused": 117,
+      "identityAssertions": 117,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "headings",
+      "checked": 124,
+      "fallbackPreviews": 0,
+      "reused": 192,
+      "identityAssertions": 192,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "reference",
+      "checked": 121,
+      "fallbackPreviews": 121,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "shortcut",
+      "checked": 100,
+      "fallbackPreviews": 100,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "footnote",
+      "checked": 136,
+      "fallbackPreviews": 131,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "fence",
+      "checked": 89,
+      "fallbackPreviews": 89,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "tildeFence",
+      "checked": 68,
+      "fallbackPreviews": 68,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "list",
+      "checked": 95,
+      "fallbackPreviews": 95,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "ordered",
+      "checked": 78,
+      "fallbackPreviews": 77,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "tags",
+      "checked": 114,
+      "fallbackPreviews": 114,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": false,
+      "strictDiagnostics": [
+        {
+          "action": "replaced",
+          "code": "markdown-unsupported-node",
+          "message": "Callout children must be inline Markdown content.",
+          "nodeType": "callout",
+          "owner": "callout",
+          "phase": "parse",
+          "severity": "error",
+          "source": {
+            "end": {
+              "column": 11,
+              "line": 7,
+              "offset": 47
+            },
+            "excerpt": "<callout icon=\"x\">\n\nFirst.\n\nSecond.\n\n</callout>",
+            "nodeType": "mdxJsxFlowElement",
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "inlineTags",
+      "checked": 108,
+      "fallbackPreviews": 97,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "nestedTags",
+      "checked": 191,
+      "fallbackPreviews": 191,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "table",
+      "checked": 80,
+      "fallbackPreviews": 80,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "setext",
+      "checked": 57,
+      "fallbackPreviews": 48,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "quote",
+      "checked": 62,
+      "fallbackPreviews": 62,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "inline",
+      "checked": 151,
+      "fallbackPreviews": 149,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "math",
+      "checked": 66,
+      "fallbackPreviews": 66,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "unicode",
+      "checked": 73,
+      "fallbackPreviews": 70,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    },
+    {
+      "name": "unknownTag",
+      "checked": 72,
+      "fallbackPreviews": 59,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": false,
+      "strictDiagnostics": [
+        {
+          "action": "replaced",
+          "code": "markdown-unsupported-node",
+          "message": "Markdown raw HTML has no installed mapping and was kept as text.",
+          "nodeType": "html",
+          "owner": "markdown",
+          "phase": "parse",
+          "severity": "error",
+          "source": {
+            "end": {
+              "column": 10,
+              "line": 3,
+              "offset": 18
+            },
+            "excerpt": "<unknown>",
+            "nodeType": "html",
+            "start": {
+              "column": 1,
+              "line": 3,
+              "offset": 9
+            }
+          }
+        },
+        {
+          "action": "replaced",
+          "code": "markdown-unsupported-node",
+          "message": "Markdown raw HTML has no installed mapping and was kept as text.",
+          "nodeType": "html",
+          "owner": "markdown",
+          "phase": "parse",
+          "severity": "error",
+          "source": {
+            "end": {
+              "column": 24,
+              "line": 3,
+              "offset": 32
+            },
+            "excerpt": "</unknown>",
+            "nodeType": "html",
+            "start": {
+              "column": 14,
+              "line": 3,
+              "offset": 22
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "incompleteTag",
+      "checked": 57,
+      "fallbackPreviews": 44,
+      "reused": 0,
+      "identityAssertions": 0,
+      "strictFinalOk": true,
+      "strictDiagnostics": []
+    }
+  ],
+  "previews": 1996,
+  "unsafeFailures": [
+    {
+      "name": "reference",
+      "offset": 33,
+      "prefix": "[read][later]\n\nPlain.\n\n[later]: h",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [],\n    ok: true,\n    slice: {\n      content: [\n...\n            {\n+             text: '[read][later]'\n-             children: [\n-               {\n-                 text: 'read'\n-               }\n-             ],\n-             type: 'link',\n-             url: 'h'\n            }\n          ],\n          type: 'paragraph'\n        },\n        {\n"
+    },
+    {
+      "name": "shortcut",
+      "offset": 27,
+      "prefix": "[label]\n\nOther.\n\n[label]: /",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [],\n    ok: true,\n    slice: {\n      content: [\n...\n            {\n+             text: '[label]'\n-             children: [\n-               {\n-                 text: 'label'\n-               }\n-             ],\n-             type: 'link',\n-             url: '/'\n            }\n          ],\n          type: 'paragraph'\n        },\n        {\n"
+    },
+    {
+      "name": "footnote",
+      "offset": 34,
+      "prefix": "Note[^a].\n\nOther paragraph.\n\n[^a]:",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [],\n    ok: true,\n    slice: {\n      content: [\n...\n            {\n+             text: 'Note[^a].'\n-             text: 'Note'\n            },\n-           {\n-             children: [\n-               {\n-                 text: ''\n-               }\n-             ],\n-             ref: 'a',\n-             type: 'footnoteReference'\n-           },\n-           {\n-           "
+    },
+    {
+      "name": "fence",
+      "offset": 21,
+      "prefix": "```js\nconst a = 1;\n\nc",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [],\n    ok: true,\n    slice: {\n      content: [\n...\n            {\n+             text: 'const a = 1;\\n'\n-             text: 'const a = 1;\\n\\nc'\n            }\n          ],\n          language: 'js',\n          type: 'codeBlock'\n        },\n+       {\n+         children: [\n+           {\n+             text: 'c'\n+           }\n+         ],\n+         type: 'paragraph'\n+    "
+    },
+    {
+      "name": "tildeFence",
+      "offset": 13,
+      "prefix": "~~~~\nalpha\n\nb",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [],\n    ok: true,\n    slice: {\n      content: [\n...\n            {\n+             text: 'alpha\\n'\n-             text: 'alpha\\n\\nb'\n            }\n          ],\n          type: 'codeBlock'\n        },\n+       {\n+         children: [\n+           {\n+             text: 'b'\n+           }\n+         ],\n+         type: 'paragraph'\n+       }\n      ],\n      openEnd: 0,\n      op"
+    },
+    {
+      "name": "list",
+      "offset": 10,
+      "prefix": "- one\n\n  c",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [],\n    ok: true,\n    slice: {\n      content: [\n...\n          ],\n-         indent: 2,\n          type: 'paragraph'\n        }\n      ],\n      openEnd: 0,\n      openStart: 0\n"
+    },
+    {
+      "name": "ordered",
+      "offset": 10,
+      "prefix": "1. one\n\n2.",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [],\n    ok: true,\n    slice: {\n      content: [\n...\n          indent: 1,\n+         listRestart: 2,\n          listType: 'numbered',\n          type: 'paragraph'\n        }\n      ],\n      openEnd: 0,\n"
+    },
+    {
+      "name": "tags",
+      "offset": 21,
+      "prefix": "<callout icon=\"x\">\n\nF",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [],\n    ok: true,\n    slice: {\n      content: [\n...\n            {\n+             text: ''\n-             text: 'F'\n            }\n          ],\n          icon: 'x',\n          type: 'callout'\n        },\n+       {\n+         children: [\n+           {\n+             text: 'F'\n+           }\n+         ],\n+         type: 'paragraph'\n+       }\n      ],\n      openEnd: 0,\n     "
+    },
+    {
+      "name": "math",
+      "offset": 9,
+      "prefix": "$$\nx^2\n\n+",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [],\n    ok: true,\n    slice: {\n      content: [\n...\n          ],\n+         latex: 'x^2\\n',\n-         latex: 'x^2\\n\\n+',\n          type: 'equation'\n        },\n+       {\n+         children: [\n+           {\n+             text: ''\n+           }\n+         ],\n+         indent: 1,\n+         listType: 'bulleted',\n+         type: 'paragraph'\n+       }\n      ],\n      openE"
+    },
+    {
+      "name": "unknownTag",
+      "offset": 18,
+      "prefix": "Before.\n\n<unknown>",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostics: [\n      {\n        action: 'replaced',\n        code: 'markdown-unsupported-node',\n...\n            column: 10,\n+           line: 1,\n+           offset: 9\n-           line: 3,\n-           offset: 18\n          },\n          excerpt: '<unknown>',\n          nodeType: 'html',\n          start: {\n            column: 1,\n+           line: 1,\n+           offset: 0\n-          "
+    }
+  ],
+  "invalidation": [
+    "nonappend source resets",
+    "foreign parser result resets"
+  ],
+  "limits": "Fingerprint object is fixed per prototype instance; schema/config changes are not implemented. Arbitrary remark transforms are not admitted. Strict final is an unconditional authoritative reparse."
+}

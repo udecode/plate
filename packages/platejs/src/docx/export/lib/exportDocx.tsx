@@ -30,6 +30,7 @@ import { addDocxComments, prepareDocxComments } from './comments';
 import { DOCX_STATIC_COMPONENTS } from './docxStaticComponents';
 import { exportHtmlToDocx } from './exportHtmlToDocx.internal';
 import type { Margins, PageSize } from './internal/types';
+import { checkDocxOutput, prepareDocxOutput } from './outputSafety';
 import {
   addAuthoredDocxEnvelope,
   removeAuthoredDocxEnvelope,
@@ -54,6 +55,16 @@ export type DocxExportOptions = Readonly<{
   component?: React.ComponentType<EditorStaticProps>;
   /** Font family for the document body. */
   fontFamily?: string;
+  /**
+   * `reject` fails the export when content would be dropped, such as an image
+   * DOCX cannot embed or a comment without a representable range; `allow`
+   * returns the file with warnings. A removed link destination keeps its
+   * text, and named roots, metadata and other properties DOCX cannot
+   * represent are warnings under both policies.
+   *
+   * @default 'reject'
+   */
+  lossPolicy?: 'allow' | 'reject';
   /** Page margins in twentieths of a point. */
   margins?: Margins;
   /** Page orientation. @default 'portrait' */
@@ -66,8 +77,12 @@ export type DocxExportOptions = Readonly<{
   projection: 'accepted' | 'proposed' | 'review';
   /** Cooperative cancellation signal. */
   signal?: AbortSignal;
-  /** Retained import source used for exact or source-aware export. */
-  source?: DocxSource;
+  /**
+   * Retained import source used for exact or source-aware export. `null`, as
+   * returned for a package exact reuse does not admit, generates the document
+   * from editor content.
+   */
+  source?: DocxSource | null;
   /** Exact CSS stylesheet applied before DOCX conversion. */
   stylesheet?: string;
   /** Document metadata title. */
@@ -111,6 +126,7 @@ const captureExportSnapshot = (
 
 type ExportCapture = Readonly<{
   comments: readonly DocxComment[];
+  diagnostics: readonly DocxDiagnostic[];
   document: EditorDocumentValue;
   review: ReturnType<typeof createReviewProjection> | undefined;
   snapshot: CapturedExportSnapshot;
@@ -150,19 +166,43 @@ const captureExport = (
       comments: mapCommentRanges(comments, (range) =>
         projectReviewRange(review, range)
       ),
+      diagnostics: Object.freeze([]),
       document: review.document,
       review,
       snapshot,
     });
   }
+  if (options.projection !== 'accepted') {
+    return Object.freeze({
+      comments,
+      diagnostics: Object.freeze([]),
+      document: snapshot.document,
+      review: undefined,
+      snapshot,
+    });
+  }
+  const projected: DocxComment[] = [];
+  const diagnostics: DocxDiagnostic[] = [];
+
+  mapCommentRanges(comments, (range) =>
+    projectAuthoredRange(snapshot, range)
+  ).forEach((comment, index) => {
+    // Like rejecting a suggestion in Word, the accepted projection drops a
+    // comment when none of the content it annotates survives.
+    if (comment.target === null && comments[index]?.target) {
+      diagnostics.push({
+        code: 'authored-lossy-projection',
+        message: `The accepted projection omits comment ${comment.id} because it excludes all of the annotated content.`,
+        severity: 'warning',
+      });
+    } else {
+      projected.push(comment);
+    }
+  });
 
   return Object.freeze({
-    comments:
-      options.projection === 'accepted'
-        ? mapCommentRanges(comments, (range) =>
-            projectAuthoredRange(snapshot, range)
-          )
-        : comments,
+    comments: Object.freeze(projected),
+    diagnostics: Object.freeze(diagnostics),
     document: snapshot.document,
     review: undefined,
     snapshot,
@@ -248,7 +288,7 @@ type SourceExportResolution = Readonly<{
 }>;
 
 const sourceUnavailableDiagnostic = (
-  reason: Extract<DocxDiagnostic, { code: 'source-unavailable' }>['reason']
+  reason: 'disposed' | 'invalid' | 'schema-mismatch'
 ): DocxDiagnostic => ({
   code: 'source-unavailable',
   message: `The retained DOCX source is ${
@@ -315,6 +355,16 @@ const resolveSourceExport = (
     lease,
   });
 };
+
+// Like HTML and Markdown, omitted named roots and metadata warn under every
+// policy. Other established content loss fails under reject.
+const isContentLoss = (diagnostic: DocxDiagnostic) =>
+  diagnostic.code === 'resource-omitted' ||
+  (diagnostic.code === 'unsupported-content' &&
+    diagnostic.action === 'dropped') ||
+  (diagnostic.code === 'lossy-content' &&
+    diagnostic.feature !== 'document-metadata' &&
+    diagnostic.feature !== 'named-root');
 
 const generateDocx = async (html: string, options: DocxExportOptions) => {
   try {
@@ -384,6 +434,13 @@ export async function exportDocx(
     throw new TypeError(
       'Plate native state can be attached only to review DOCX output.'
     );
+  }
+  if (
+    options.lossPolicy !== undefined &&
+    options.lossPolicy !== 'allow' &&
+    options.lossPolicy !== 'reject'
+  ) {
+    throw new TypeError('lossPolicy must be "allow" or "reject".');
   }
   throwIfDocxAborted(options.signal);
   const comments = Object.freeze(
@@ -480,6 +537,7 @@ export async function exportDocx(
     ...sourceResolution.diagnostics,
     ...nativeOnlyDiagnostics(snapshot.review, options.nativeState),
     ...snapshot.diagnostics,
+    ...capture.diagnostics,
   ];
 
   if (
@@ -514,7 +572,10 @@ export async function exportDocx(
     diagnostics.push(...preparedComments.diagnostics);
     throwIfDocxAborted(options.signal);
     const { signal } = options;
-    let blob = await generateDocx(preparedComments.html, options);
+    const output = await prepareDocxOutput(preparedComments.html, options);
+
+    diagnostics.push(...output.diagnostics);
+    let blob = await generateDocx(output.html, options);
 
     throwIfDocxAborted(signal);
     blob = await addDocxComments(blob, preparedComments, signal);
@@ -531,8 +592,33 @@ export async function exportDocx(
       blob = await addAuthoredDocxEnvelope(blob, snapshot.review, signal);
       throwIfDocxAborted(signal);
     }
+    const outputFailure = await checkDocxOutput(blob, signal);
 
     throwIfDocxAborted(signal);
+    if (outputFailure) {
+      return Object.freeze({
+        diagnostics: Object.freeze([...diagnostics, outputFailure]),
+        ok: false,
+      });
+    }
+
+    if ((options.lossPolicy ?? 'reject') === 'reject') {
+      const policyDiagnostics = diagnostics.map((diagnostic) =>
+        diagnostic.severity === 'warning' && isContentLoss(diagnostic)
+          ? (Object.freeze({
+              ...diagnostic,
+              severity: 'error' as const,
+            }) as DocxDiagnostic)
+          : diagnostic
+      );
+
+      if (policyDiagnostics.some(({ severity }) => severity === 'error')) {
+        return Object.freeze({
+          diagnostics: Object.freeze(policyDiagnostics),
+          ok: false,
+        });
+      }
+    }
 
     return Object.freeze({
       blob,

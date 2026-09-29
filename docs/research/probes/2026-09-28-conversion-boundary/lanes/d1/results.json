@@ -1,0 +1,337 @@
+{
+  "rows": [
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "align.docx",
+      "importOk": true,
+      "sha256": "045f1489b4e323f10b24515fec00458365609d8e4cb4ef0df9248549ff1d6b5d",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "owner-contributed",
+      "violations": []
+    },
+    {
+      "application": null,
+      "eligible": false,
+      "exactReuse": null,
+      "file": "alternate_document_path.docx",
+      "importOk": false,
+      "sha256": "2e219951e06a202bcddfa3ed9503b77d51c40ed8d2a489dc5bee9f1d4d1be13f",
+      "sourceRetained": false,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": [
+        {
+          "detail": "word/document2.xml",
+          "feature": "main-document",
+          "part": "_rels/.rels"
+        }
+      ]
+    },
+    {
+      "application": "Microsoft Macintosh Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "block_quotes.docx",
+      "importOk": true,
+      "sha256": "e26a259d66dca9db0a2daadcf30c012d5856997807e84704c101d3ba0bad28cd",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-named",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Macintosh Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "char_styles.docx",
+      "importOk": true,
+      "sha256": "4befadc2fcc30221f2eea54824d464c5ea89cd0ffb0c28b772e39e3dccc38e1f",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Word 12.0.0",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "codeblock.docx",
+      "importOk": true,
+      "sha256": "560bec785eb4d9d79dba11bc036ac97692b6826796e17479db644b4c4fa5165a",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "custom-style-reference.docx",
+      "importOk": true,
+      "sha256": "7a9156063c444e7ac5471c2c9eba9ac54be9ee269dbc74e1e2d3d4d59fc9f0f9",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-named",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "dummy_item_after_list_item.docx",
+      "importOk": true,
+      "sha256": "6ad4900a3f09a98da6807fd423f646855c19fc3d5d44e3cbfffa5e8e0898a635",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "dummy_item_after_paragraph.docx",
+      "importOk": true,
+      "sha256": "3139f9e057d816821d101fdbe19762eeba78bd94046d1271d8dc21bff84f0ae5",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "font.docx",
+      "importOk": true,
+      "sha256": "8a2f428c0c1bc71f790e66e772b66d63740da0de77c1d93ae78468d9385e88b5",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "owner-contributed",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "headers.docx",
+      "importOk": true,
+      "sha256": "2c261024c4cc2e2cec0b5d7fd78eb57a73b6e10a21b4ef6beeebbdcb0416463d",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-named",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Word 12.0.0",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "inline_code.docx",
+      "importOk": true,
+      "sha256": "76a5dc71142604fe7d8b266f70263794055fabc262e7bc6b0da1c27c92a1be3a",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Macintosh Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "inline_formatting.docx",
+      "importOk": true,
+      "sha256": "0d868a2dbedabc866088711ab72cdd9904ccc00a54d5aec26e823e66b4779f22",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": false,
+      "exactReuse": null,
+      "file": "legal.docx",
+      "importOk": false,
+      "sha256": "987b6baecce722f26695b59f296df04a8fdf08f4ab52635428dd1327b4268a51",
+      "sourceRetained": false,
+      "sourceUnavailable": null,
+      "tier": "owner-contributed",
+      "violations": [
+        {
+          "detail": "FILENAME",
+          "feature": "field-instruction",
+          "part": "word/footer2.xml"
+        }
+      ]
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "line-height.docx",
+      "importOk": true,
+      "sha256": "d50f841a41035aec64db1541257a26237881d26f4da41bd2619177b1588f5a66",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "owner-contributed",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Macintosh Word",
+      "eligible": false,
+      "exactReuse": null,
+      "file": "links.docx",
+      "importOk": true,
+      "sha256": "529af3511760ff21d5d74587d01a8d376b5cc20c624038c91004cd6ec46c0223",
+      "sourceRetained": false,
+      "sourceUnavailable": "The DOCX source cannot be retained because word/_rels/document.xml.rels declares an unrecognized relationship (customXml); export will generate the document from editor content.",
+      "tier": "pandoc-identical",
+      "violations": [
+        {
+          "detail": "customXml",
+          "feature": "relationship",
+          "part": "word/_rels/document.xml.rels"
+        },
+        {
+          "detail": "application/vnd.openxmlformats-package.relationships+xml",
+          "feature": "part",
+          "part": "customXml/_rels/item1.xml.rels"
+        },
+        {
+          "detail": "application/xml",
+          "feature": "part",
+          "part": "customXml/item1.xml"
+        },
+        {
+          "detail": "application/vnd.openxmlformats-officedocument.customXmlProperties+xml",
+          "feature": "part",
+          "part": "customXml/itemProps1.xml"
+        }
+      ]
+    },
+    {
+      "application": "LibreOffice/6.2.4.2.0$Linux_X86_64 LibreOffice_project/20$Build-2",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "lists.docx",
+      "importOk": true,
+      "sha256": "e5b1a7204be70bb0398ee9b585e53901f057b851a9f13f41fc4b9554548f741e",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "lists_continuing.docx",
+      "importOk": true,
+      "sha256": "71cc0a8468c253cbad04bb0d4597f7b9f8aade0c4592ae5fa0c1963748e103d2",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "lists_restarting.docx",
+      "importOk": true,
+      "sha256": "d4d1827009ffaff49c8b84ebccdf661fbe7f32ea1d6e73a324b9563923e50199",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "lists_sublist_reset.docx",
+      "importOk": true,
+      "sha256": "592885bfe715d41ec57e4e1d9dfdbc0cbea0c221e1ed6bb27e37615907186108",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Macintosh Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "numbered_header.docx",
+      "importOk": true,
+      "sha256": "a82993f4bd661a9d88ebb4393729fd067b0cac61706882a31e1f54cd71ec9156",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "numbered_sublist.docx",
+      "importOk": true,
+      "sha256": "22774312d43367a50da52724cbd4b2a75d7e71609e27fee37d5d16fb4ec15e95",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "owner-contributed",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Macintosh Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "tables.docx",
+      "importOk": true,
+      "sha256": "b6156434c0d1e6cf697e2774c9ce6e6616a2e0965160e2f74269dfc7008894de",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    },
+    {
+      "application": "Microsoft Office Word",
+      "eligible": true,
+      "exactReuse": true,
+      "file": "tabs.docx",
+      "importOk": true,
+      "sha256": "5c77c40314136e773b6a0827c40f06f8da79453bcd40123249fb4fbd3ed023ee",
+      "sourceRetained": true,
+      "sourceUnavailable": null,
+      "tier": "pandoc-identical",
+      "violations": []
+    }
+  ],
+  "summary": {
+    "all": {
+      "eligible": 20,
+      "total": 23
+    },
+    "byTier": {
+      "pandoc-identical": {
+        "eligible": 13,
+        "total": 15
+      },
+      "pandoc-named": {
+        "eligible": 3,
+        "total": 3
+      },
+      "owner-contributed": {
+        "eligible": 4,
+        "total": 5
+      }
+    },
+    "exactReuse": {
+      "bytesIdentical": 20,
+      "retained": 20
+    }
+  }
+}

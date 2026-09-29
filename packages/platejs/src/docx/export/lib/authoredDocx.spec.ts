@@ -412,6 +412,53 @@ describe('authored DOCX', () => {
     });
   });
 
+  it('drops a comment on excluded pending content without rejecting the export', async () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
+      initialValue: [{ children: [{ text: 'ABCDE' }], type: 'paragraph' }],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'proposed' },
+    });
+
+    view.update.text.insert('XYZ', { at: { offset: 1, path: [0, 0] } });
+    const result = await exportDocx(editor, {
+      comments: [
+        {
+          author: { name: 'Alice' },
+          body: [
+            { children: [{ text: 'On the suggestion' }], type: 'paragraph' },
+          ],
+          createdAt: null,
+          durableId: null,
+          id: 'suggestion-note',
+          parentId: null,
+          resolved: null,
+          target: {
+            range: {
+              anchor: { offset: 1, path: [0, 0] },
+              focus: { offset: 4, path: [0, 0] },
+            },
+          },
+        },
+      ],
+      projection: 'accepted',
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'authored-lossy-projection',
+        message: expect.stringContaining('suggestion-note'),
+        severity: 'warning',
+      })
+    );
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+
+    expect(zip.file('word/comments.xml')).toBeNull();
+  });
+
   it('uses configured serializers for custom review content', async () => {
     const CustomPlugin = definePlugin('custom', {
       schema: {

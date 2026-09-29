@@ -139,14 +139,31 @@ mapping dispatch instead of accepting two identities.
 Resolve every other synthesized Plate wrapper or fallback through the installed
 application schema; use literals only for external format nodes or when the
 corresponding Plate plugin is genuinely absent.
-Read tag attributes with `readTagAttributes().properties` and write them with
-`encodeAttributes(properties)`; the runtime codec follows the schema property
+Start with a declaration: `markdown: { tag: type }` lets the runtime build the
+element, convert its non-metadata properties as attributes (own properties
+first, list properties never) and traverse children by the content model;
+`attributes: { url: 'src' }` renames owned properties on the wire. Write
+`decode`/`encode` only for a real format difference, such as Image's
+representation choice or Date's normalization. A custom encoder writes node
+attributes with `encodeNodeAttributes()`, or chosen values with
+`encodeAttributes()`, which claims each property whose attribute the returned
+output keeps; it claims anything else its output carries with
+`preserve(...ownedKeys)`. Unclaimed content properties report
+`markdown-property-omitted`. HTML follows the same claim law: an element
+encoder, including `createsElement`, or an encoder that receives `values`
+claims what it writes with `preserve(...ownedKeys)`; a mark or property
+mapping that receives one `value` claims it by returning output that writes
+it. Unclaimed content properties report `html-unsupported-content` with
+`kind: 'attribute'`. Read custom tag attributes with
+`readTagAttributes().properties`; the runtime codec follows the schema property
 kind, so features never parse or coerce attribute strings. Return
 `refuse(message)` for input the mapping cannot represent; throw only for
-programmer or configuration faults. A mark mapping sets `mark: true`; its
-`decode` returns the mark value (or `undefined`) and its `wrap` returns a
-childless inline wrapper. The runtime composes every mark on the selector,
-decodes the children once and fills the wrapper. Decode contexts call inherited
+programmer or configuration faults. A plugin whose schema declares a `mark`
+maps a mark, with no flag: `{ node: 'strong' }`, `{ tag: 'kbd' }`,
+`{ tag: 'sub', value: 'sub' }` or `{ tag: 'span', style: 'color' }`. The first
+declaration whose `value` matches writes the mark; `wrap` and a value-returning
+`decode` remain for real exceptions. The runtime composes every mark on the
+selector and decodes the children once. Decode contexts call inherited
 persisted text properties `marks`; reserve `decoration` for transient render
 state. Apply the same mapping identity checks to
 constructor and justified staged contributions.

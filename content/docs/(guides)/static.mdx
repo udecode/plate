@@ -166,9 +166,37 @@ export default async function MyStaticPage() {
 
 `<EditorStatic>` enhances performance through memoization:
 -   Static element and leaf rendering uses `React.memo`.
--   **Reference Equality:** Unchanged node references prevent re-renders.
+-   **Reference Equality:** A block renders again only when it, a block
+    before it, or a decoration inside it changed, so a renderer may read its
+    own block and earlier ones, such as list numbering.
+-   **Later content:** An element whose rendering reads content after it, such
+    as a table of contents, declares `render: { readsDocument: true }` on its
+    plugin and renders again whenever the document changes.
 
 </Steps>
+
+## Render a document
+
+Pass `document` to render a document through the editor's plugins without
+editing the editor: no transaction, history or selection change. One configured
+editor can render a streamed preview or a stored revision this way:
+
+```tsx
+<EditorStatic editor={editor} document={{ children: blocks }} />
+```
+
+The document must be valid for the editor's schema. Each document object is
+validated once, so pass the same object again to render it again.
+`EditorPreview` takes the same `document`, and copying from it copies the
+rendered document.
+
+Everything read through the rendered editor sees the document: `editor.read`,
+plugin reads such as `editor.plugin(TocPlugin).read.headings()`, and plugin
+APIs. Plugins get that editor from their render, decorate, read or API
+context. An editor captured when a plugin was created, as in
+`.extend(({ editor }) => …)`, is the editor you passed and still holds its own
+value; reading it while a document is being read, decorated or rendered throws
+an error that names the fix.
 
 ## Client-side alternative: `EditorPreview`
 
@@ -323,10 +351,16 @@ For more details, see the [HTML Serialization guide](/docs/html).
 
 ```ts
 import type React from 'react';
-import type { Editor } from 'platejs';
+import type { Editor, EditorDocumentValue } from 'platejs';
 
 interface EditorStaticProps<E = Editor>
   extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * A document to render instead of the editor's own. The editor supplies
+   * the plugins and is not edited.
+   */
+  document?: EditorDocumentValue;
+
   /**
    * The Plate editor instance, created via `createEditor`.
    * Must include component-bound plugins relevant to the rendered content.
@@ -340,6 +374,7 @@ interface EditorStaticProps<E = Editor>
 }
 ```
 
+- **`document`**: A document rendered through the editor's plugins instead of the editor's own value; see [Render a document](#render-a-document).
 - **`editor`**: An editor created with `createEditor` or `createStaticEditor`, including component-bound plugins required by the value.
 
 ## Next steps

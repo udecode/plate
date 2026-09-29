@@ -957,8 +957,10 @@ for (const dismissal of ['Escape', 'editor click'] as const) {
         'AI can help'
       );
 
+      // The floating AI menu can cover blocks below the preview, so the click
+      // lands in the heading above the invoking block.
       if (dismissal === 'Escape') await page.keyboard.press('Escape');
-      else await editor.dom.clickTextOffset({ path: [2, 0], offset: 8 });
+      else await editor.dom.clickTextOffset({ path: [0, 0], offset: 2 });
 
       await expect(root.locator('[data-editor-ai-preview]')).toHaveCount(0);
       await expect(
@@ -970,17 +972,17 @@ for (const dismissal of ['Escape', 'editor click'] as const) {
         .poll(() => editor.get.selection())
         .toMatchObject({
           anchor: {
-            path: [dismissal === 'Escape' ? 1 : 2, 0],
-            offset: dismissal === 'Escape' ? 0 : 8,
+            path: [dismissal === 'Escape' ? 1 : 0, 0],
+            offset: dismissal === 'Escape' ? 0 : 2,
           },
           focus: {
-            path: [dismissal === 'Escape' ? 1 : 2, 0],
-            offset: dismissal === 'Escape' ? 0 : 8,
+            path: [dismissal === 'Escape' ? 1 : 0, 0],
+            offset: dismissal === 'Escape' ? 0 : 2,
           },
         });
       await page.keyboard.type('!');
       await expect(root).toContainText(
-        dismissal === 'Escape' ? '!' : 'Generate! and refine'
+        dismissal === 'Escape' ? '!' : 'AI! Menu'
       );
       await page.keyboard.press('ControlOrMeta+z');
       await expect.poll(() => editor.get.modelBlockTexts()).toEqual(before);

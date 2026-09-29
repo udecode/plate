@@ -1,0 +1,1 @@
+SUPERSEDED: 11:52:34Z snapshot prepared for verdict-2 but not run; its editable preview crashed on columns (PreviewKit without DndKit, fixed in main at 11:58Z). See ../verdict-2/.

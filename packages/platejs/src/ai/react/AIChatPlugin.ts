@@ -47,7 +47,11 @@ import {
   BaseTableRowPlugin,
 } from '../../features/table';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
-import { type MarkdownSerializeResult, MarkdownPlugin } from '../../markdown';
+import {
+  type MarkdownSerializeResult,
+  type MarkdownSliceParseResult,
+  MarkdownPlugin,
+} from '../../markdown';
 import { type Editor, definePlugin } from '../../react/core';
 import type {
   AIChatRequestContext,
@@ -197,6 +201,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     final: boolean;
     requestId: string | null;
   }> | null = null;
+  // The latest partial parse, which the next preview of the same stream
+  // continues, with the store's copies of its blocks.
+  let previewParse:
+    | Readonly<{ result: MarkdownSliceParseResult; stored: Value }>
+    | undefined;
   let suggestionBase: EditorDocumentValue | null = null;
   let suggestionChange: DocumentChange | null = null;
   let suggestionPaths: Path[] | null = null;
@@ -371,6 +380,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       streaming: false,
     });
   };
+  // Retire the request before stopping its transport, so a closed or replaced
+  // request cannot publish a final draft.
+  const cancel = () => {
+    context.store.set({ _requestId: null, streaming: false });
+    void context.store.get().chat?.stop?.();
+  };
   const reviewSucceeded = (result: AuthoredResult | null) =>
     result?.status === 'applied' || result?.status === 'unchanged';
   const decideCurrentChange = (action: 'accept' | 'reject') => {
@@ -389,10 +404,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     return result;
   };
   const resetOptions = () => {
-    stop();
+    cancel();
     previewAnchor?.release();
     previewAnchor = null;
     previewOwner = null;
+    previewParse = undefined;
     suggestionBase = null;
     suggestionChange = null;
     suggestionPaths = null;
@@ -734,11 +750,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     const parsed = editor.api.markdown.parseSlice(content);
 
-    if (!parsed.ok) {
-      throw new Error(
-        parsed.diagnostics.map(({ message }) => message).join('\n')
-      );
-    }
+    if (!parsed.ok) return null;
 
     return parsed.slice.content.map((node, index) => {
       const sourceNode = source[index];
@@ -1167,6 +1179,19 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const currentChangeId = state._changeId;
     const capturedSelection = state.chatSelection;
     const nextNodes = parseSuggestion(content);
+
+    // A response Markdown cannot represent clears the draft, so an earlier
+    // response cannot be accepted in its place.
+    if (!nextNodes) {
+      const result = decideCurrentChange('reject');
+      if (!result || reviewSucceeded(result)) {
+        suggestionBase = null;
+        suggestionChange = null;
+      }
+
+      return false;
+    }
+
     const targetKeys = state.chatNodes.map(({ nodeKey }) => nodeKey);
     if (
       targetKeys.length === 0 ||
@@ -1489,6 +1514,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       },
     },
     api: ({ editor: commandEditor }) => ({
+      /**
+       * Commit the final draft in one history batch. Refuses a partial or
+       * invalid draft and a target that no longer exists.
+       */
       accept: () => acceptAIResponse(commandEditor),
       /** Close the session, cancel its request, and discard any unapplied draft. */
       hide: ({ focus = true }: { focus?: boolean } = {}) => {
@@ -1508,9 +1537,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       } = {}) => {
         completeDetachedOutput(commandEditor, 'insertBelow', format);
       },
+      /** Cancel the request, discard its draft, and request a new response. */
       reload: () => {
         const { chat, toolName } = context.store.get();
-        stop();
+        cancel();
         const result = decideCurrentChange('reject');
         if (result && !reviewSucceeded(result)) return result;
         suggestionBase = null;
@@ -1518,6 +1548,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         suggestionPaths = null;
         suggestionTarget = null;
         previewOwner = null;
+        previewParse = undefined;
         context.store.set({
           _blockKey: null,
           _requestId: null,
@@ -1551,8 +1582,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       } = {}) => {
         completeDetachedOutput(commandEditor, 'replaceSelection', format);
       },
+      /** Cancel the request and discard its draft without publishing it. */
       reset: () => resetEditor(commandEditor),
-      /** Publish accumulated output to its request-owned review presentation. */
+      /**
+       * Publish accumulated output to its request-owned review presentation.
+       * A `final` parse (the default) is strict; a response Markdown cannot
+       * represent clears the draft.
+       */
       setPreview: (
         content: string,
         {
@@ -1569,6 +1605,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         const ownerRequestId = requestId ?? state._requestId;
         const invalidatePreview = () => {
           previewOwner = { final: false, requestId: ownerRequestId };
+          previewParse = undefined;
           context.store.set({ previewValue: [] });
         };
         let targetKey = state._blockKey;
@@ -1605,14 +1642,24 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           invalidatePreview();
           return;
         }
+        const previous = previewParse;
         const parsed = content
-          ? commandEditor.api.markdown.parseSlice(content, {
-              // Previews show unsupported content as text; the final parse
-              // stays strict and invalidates a response it cannot represent.
-              ...(final ? {} : { lossPolicy: 'allow', partial: true }),
-            })
+          ? commandEditor.api.markdown.parseSlice(
+              content,
+              // Previews show unsupported content as text; the final parse is
+              // strict and invalidates a response it cannot represent. Both
+              // continue the latest partial result.
+              final
+                ? { previous: previous?.result }
+                : {
+                    lossPolicy: 'allow',
+                    partial: true,
+                    previous: previous?.result,
+                  }
+            )
           : null;
 
+        previewParse = undefined;
         if (parsed && !parsed.ok) {
           invalidatePreview();
           return;
@@ -1627,11 +1674,23 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           invalidatePreview();
           return;
         }
+        const reused = previous?.result.ok ? previous.result.slice.content : [];
+
         previewOwner = { final, requestId: ownerRequestId };
+        // The store keeps its own copy of each value. Handing back its copy of
+        // every block the parser reused keeps that block's identity for readers.
         context.store.set({
           _blockKey: targetKey,
-          previewValue,
+          previewValue: previewValue.map((node, index) =>
+            node === reused[index] ? (previous?.stored[index] ?? node) : node
+          ),
         });
+        if (parsed && !final) {
+          previewParse = {
+            result: parsed,
+            stored: context.store.get('previewValue'),
+          };
+        }
       },
       /** Publish a complete cell response in the current table draft. */
       setTablePreview: (
@@ -1692,6 +1751,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         });
       },
       show: () => show(commandEditor),
+      /** Stop the request and publish its current response as the final draft. */
       stop,
       submit: (
         input: string,
@@ -1718,6 +1778,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         suggestionPaths = null;
         suggestionTarget = null;
         previewOwner = null;
+        previewParse = undefined;
         if (isOpen && !restoreTarget(commandEditor)) return discarded;
 
         aiChatCommandEditors.set(editor, commandEditor);
@@ -1928,6 +1989,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       onCleanup(() => {
         previewAnchor?.release();
         previewAnchor = null;
+        previewParse = undefined;
         tableDraft.clear();
       });
     },

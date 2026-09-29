@@ -1,5 +1,4 @@
 import {
-  sanitizeUrl,
   definePlugin,
   type DefinitionOf,
   type ElementOf,
@@ -7,6 +6,7 @@ import {
   property,
   schema,
 } from '../../../../core';
+import { decideUrl, isStoredUrl } from '../../../../internal/utils/urlPolicy';
 import {
   defineMediaPlugin,
   mediaElementProperties,
@@ -18,15 +18,21 @@ import {
   parseTwitterUrl,
   parseVideoUrl,
 } from '../media/parseMediaUrl';
+import {
+  readHtmlMediaProvider,
+  readHtmlMediaWidth,
+  writeHtmlMediaProvider,
+  writeHtmlMediaWidth,
+} from '../mediaHtml.internal';
 
 const MEDIA_EMBED_URL_ATTRIBUTE = 'data-editor-media-url';
 const MEDIA_EMBED_WIDTH_ATTRIBUTE = 'data-editor-media-width';
 
-const sanitizeMediaEmbedUrl = (url: string | null | undefined) =>
-  sanitizeUrl(url ?? undefined, {
-    allowedSchemes: ['http', 'https'],
-    permitInvalid: true,
-  }) ?? undefined;
+const sanitizeMediaEmbedUrl = (url: string | null | undefined) => {
+  const decision = url ? decideUrl('embed', url) : undefined;
+
+  return decision?.ok ? decision.url : undefined;
+};
 
 const normalizeMediaEmbedWidth = (
   element: HTMLElement,
@@ -58,9 +64,17 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
     element: schema.element.textBlock({
       object: true,
       properties: {
+        url: property.string({
+          required: true,
+          validate: isStoredUrl('embed'),
+          validationVersion: 1,
+        }),
         ...mediaElementProperties,
         provider: property.string(),
-        sourceUrl: property.string(),
+        sourceUrl: property.string({
+          validate: isStoredUrl('navigation'),
+          validationVersion: 1,
+        }),
       },
     }),
   },
@@ -70,46 +84,61 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
     defineFormats({
       html: [
         {
-          decode: ({ element }) => {
+          decode: ({ element, report }) => {
             const iframe =
               element.querySelector<HTMLElement>(':scope > iframe');
+            const dataUrl = element.getAttribute(MEDIA_EMBED_URL_ATTRIBUTE);
             const url =
               sanitizeMediaEmbedUrl(iframe?.getAttribute('src')) ??
-              sanitizeMediaEmbedUrl(
-                element.getAttribute(MEDIA_EMBED_URL_ATTRIBUTE)
-              );
+              sanitizeMediaEmbedUrl(dataUrl);
 
-            if (!url) return undefined;
+            if (!url) {
+              // HTML safety reports an unsafe iframe `src`; this attribute is
+              // the embed's own.
+              if (dataUrl) {
+                report({
+                  action: 'dropped',
+                  kind: 'element',
+                  message: `HTML media embed URL "${dataUrl}" cannot be embedded; the embed was removed.`,
+                });
+              }
 
-            const width =
+              return undefined;
+            }
+
+            const width = readHtmlMediaWidth(
               iframe?.style.width ||
-              normalizeMediaEmbedWidth(
-                element,
-                element.getAttribute(MEDIA_EMBED_WIDTH_ATTRIBUTE)
-              );
+                normalizeMediaEmbedWidth(
+                  element,
+                  element.getAttribute(MEDIA_EMBED_WIDTH_ATTRIBUTE)
+                )
+            );
 
             return {
+              ...readHtmlMediaProvider(element, report),
               ...(width === undefined ? {} : { width }),
               url,
             };
           },
-          encode: ({ content, node }) => {
+          encode: ({ content, node, preserve }) => {
             const url =
               typeof node.url === 'string'
                 ? sanitizeMediaEmbedUrl(node.url)
                 : undefined;
-            const width =
-              typeof node.width === 'number' ? `${node.width}px` : node.width;
+            const width = writeHtmlMediaWidth(node.width);
 
             if (!url) {
               return null;
             }
+
+            preserve('provider', 'sourceUrl', 'url', 'width');
 
             return {
               attributes: {
                 class: 'editor-media-embed',
                 [MEDIA_EMBED_URL_ATTRIBUTE]: url,
                 [MEDIA_EMBED_WIDTH_ATTRIBUTE]: width,
+                ...writeHtmlMediaProvider(node),
               },
               children: [
                 {
@@ -140,7 +169,7 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
 
             if (!url) return undefined;
 
-            const width = element.style.width || undefined;
+            const width = readHtmlMediaWidth(element.style.width);
 
             return {
               children: [{ text: '' }],
@@ -152,54 +181,10 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
           match: [{ tag: 'iframe' }],
         },
       ],
-      markdown: [
-        {
-          tag: type,
-          decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
-            const { attributes, properties } = readTagAttributes();
-            const content = caption(decode(node.children));
-
-            if (!content) {
-              return refuse(
-                'Media captions must contain one Markdown paragraph.'
-              );
-            }
-
-            return {
-              ...properties,
-              children: content,
-              type,
-              url: typeof attributes.src === 'string' ? attributes.src : '',
-            };
-          },
-          encode: ({
-            encodePhrasing,
-            encodeAttributes,
-            node,
-            readPlainInline,
-          }) => {
-            const { children, type: _, url, ...rest } = node;
-
-            return {
-              attributes: encodeAttributes({ ...rest, src: url }),
-              children:
-                readPlainInline(children) !== ''
-                  ? [
-                      {
-                        children: encodePhrasing(children),
-                        type: 'paragraph',
-                      },
-                    ]
-                  : [],
-              name: type,
-              type: 'mdxJsxFlowElement',
-            };
-          },
-        },
-      ],
+      markdown: { tag: type, attributes: { url: 'src' } },
     }),
 }).extend(
-  defineMediaPlugin((options, url) => {
+  defineMediaPlugin('embed', (options, url) => {
     const transformedUrl = options.transformUrl?.(url) ?? url;
     const normalized = parseMediaUrl(transformedUrl, {
       urlParsers: [parseTwitterUrl, parseVideoUrl],

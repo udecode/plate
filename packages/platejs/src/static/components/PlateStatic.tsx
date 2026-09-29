@@ -3,6 +3,7 @@ import React from 'react';
 
 import {
   type Descendant,
+  type EditorDocumentValue,
   type Element,
   type NodeEntry,
   type Path,
@@ -12,9 +13,14 @@ import {
   RangeApi,
   TextApi,
   MAIN_ROOT_KEY,
+  getEditorRuntimeOwner,
+  withDocumentViewRead,
 } from '../../facade';
 import { mergePlateRenderedAttributes } from '../../internal/mergePlateRenderedAttributes';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlatePluginByType,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import type { Editor, RenderElementSlots } from '../../lib';
 import type {
@@ -22,11 +28,13 @@ import type {
   DecorationAttributes,
   DecorationSource,
 } from '../internal/plite-react';
+import { getStaticDocumentView } from '../internal/staticDocumentView';
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic.internal';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic.internal';
 import { pipeRenderTextStatic } from '../pluginRenderTextStatic.internal';
 import type { RenderElementProps } from '../types';
 
+const EMPTY_DECORATIONS: readonly Decoration[] = [];
 const EMPTY_PATH: Path = [];
 const EMPTY_ROOT_STACK: readonly string[] = [];
 
@@ -53,6 +61,58 @@ const areStaticDecorationsEqual = (
           JSON.stringify(other.attributes)
       );
     }));
+
+const decorationEqualities = new WeakMap<
+  readonly Decoration[],
+  WeakMap<readonly Decoration[], boolean>
+>();
+
+const areBlockDecorationsEqual = (
+  left: readonly Decoration[],
+  right: readonly Decoration[]
+) => {
+  let equalities = decorationEqualities.get(left);
+
+  if (!equalities) {
+    equalities = new WeakMap();
+    decorationEqualities.set(left, equalities);
+  }
+
+  let equal = equalities.get(right);
+
+  if (equal === undefined) {
+    equal = areStaticDecorationsEqual(left, right);
+    equalities.set(right, equal);
+  }
+
+  return equal;
+};
+
+/** Read every source's decorations for a block and all its descendants. */
+const readBlockDecorations = (
+  sources: readonly DecorationSource[],
+  editor: Editor,
+  block: Descendant,
+  path: Path
+): readonly Decoration[] => {
+  if (sources.length === 0) return EMPTY_DECORATIONS;
+
+  const decorations: Decoration[] = [];
+  const visit = (node: Descendant, nodePath: Path) => {
+    for (const source of sources) {
+      decorations.push(...source.read({ editor, entry: [node, nodePath] }));
+    }
+    if (ElementApi.isElement(node)) {
+      node.children.forEach((child, index) =>
+        visit(child, [...nodePath, index])
+      );
+    }
+  };
+
+  visit(block, path);
+
+  return decorations;
+};
 
 const getStaticDecorationSlices = (
   text: Text,
@@ -108,6 +168,7 @@ const splitStaticText = (text: Text, decorations: readonly Decoration[]) => {
 };
 
 function BaseElementStatic({
+  blockDecorations,
   contentRootValues: _contentRootValues,
   sources,
   decorations,
@@ -117,6 +178,7 @@ function BaseElementStatic({
   rootNodes,
   rootStack,
 }: {
+  blockDecorations: readonly Decoration[];
   contentRootValues: ReadonlyArray<readonly Descendant[]>;
   sources: readonly DecorationSource[];
   decorations: readonly Decoration[];
@@ -137,6 +199,7 @@ function BaseElementStatic({
 
   const renderChildren = (range: { from?: number; to?: number } = {}) => (
     <Children
+      blockDecorations={blockDecorations}
       sources={sources}
       decorations={decorations}
       editor={editor}
@@ -205,16 +268,73 @@ function BaseElementStatic({
     attributes['data-editor-inline'] = true;
   }
 
-  return <>{renderElement?.({ attributes, children, element, path, slots })}</>;
+  return (
+    <>
+      {withDocumentViewRead(editor, () =>
+        renderElement?.({ attributes, children, element, path, slots })
+      )}
+    </>
+  );
 }
+
+const unchangedBlockCounts = new WeakMap<
+  readonly Descendant[],
+  WeakMap<readonly Descendant[], number>
+>();
+
+/** Count the leading blocks two renders share by identity. */
+const countUnchangedBlocks = (
+  previous: readonly Descendant[],
+  next: readonly Descendant[]
+) => {
+  let counts = unchangedBlockCounts.get(previous);
+
+  if (!counts) {
+    counts = new WeakMap();
+    unchangedBlockCounts.set(previous, counts);
+  }
+
+  let count = counts.get(next);
+
+  if (count === undefined) {
+    count = 0;
+    while (
+      count < previous.length &&
+      count < next.length &&
+      previous[count] === next[count]
+    ) {
+      count += 1;
+    }
+    counts.set(next, count);
+  }
+
+  return count;
+};
+
+// Another document of the same editor reuses a block while it and every block
+// before it are unchanged: renderers may read earlier blocks (list numbers) or
+// their own block (table borders). Elements that read later content declare
+// `render.readsDocument` and render again on any change.
+const isSameRenderedDocument = (
+  prev: Parameters<typeof BaseElementStatic>[0],
+  next: Parameters<typeof BaseElementStatic>[0]
+) =>
+  prev.rootNodes === next.rootNodes
+    ? prev.editor === next.editor
+    : getEditorRuntimeOwner(prev.editor) ===
+        getEditorRuntimeOwner(next.editor) &&
+      getCompiledPlatePluginByType(next.editor, next.element.type)?.render
+        .readsDocument !== true &&
+      countUnchangedBlocks(prev.rootNodes, next.rootNodes) > next.path[0];
 
 const ElementStatic = React.memo(
   BaseElementStatic,
   (prev, next) =>
-    prev.editor === next.editor &&
     prev.path.join(',') === next.path.join(',') &&
     prev.rootStack.at(-1) === next.rootStack.at(-1) &&
     prev.element === next.element &&
+    isSameRenderedDocument(prev, next) &&
+    areBlockDecorationsEqual(prev.blockDecorations, next.blockDecorations) &&
     prev.contentRootValues.length === next.contentRootValues.length &&
     prev.contentRootValues.every(
       (children, index) => children === next.contentRootValues[index]
@@ -306,6 +426,7 @@ const LeafStatic = React.memo(
 );
 
 function Children({
+  blockDecorations = EMPTY_DECORATIONS,
   sources,
   decorations,
   editor,
@@ -316,6 +437,7 @@ function Children({
   rootStack = EMPTY_ROOT_STACK,
   to,
 }: {
+  blockDecorations?: readonly Decoration[];
   sources: readonly DecorationSource[];
   decorations: readonly Decoration[];
   editor: Editor;
@@ -367,6 +489,13 @@ function Children({
         return ElementApi.isElement(child) ? (
           <ElementStatic
             key={p.join('.')}
+            // A reused block keeps the decorations of everything inside it,
+            // so they are part of its memo input, like its own.
+            blockDecorations={
+              parentPath.length === 0
+                ? readBlockDecorations(sources, editor, child, p)
+                : blockDecorations
+            }
             contentRootValues={Object.values(
               editor.read.schema.getElementContentRoots(child)
             ).map((innerRoot) => editor.read.root(innerRoot))}
@@ -394,14 +523,22 @@ function Children({
 }
 
 export type EditorStaticProps<E = Editor> = {
+  /**
+   * A document to render instead of the editor's own, such as a streamed
+   * preview. The editor supplies the plugins and is not edited. Pass the same
+   * object again to reuse its validated view. Reads, plugin reads and plugin
+   * APIs on the rendered editor see the document; an editor captured when a
+   * plugin was created still holds its own value.
+   */
+  document?: EditorDocumentValue;
   /** Editor instance. */
   editor: E;
   style?: React.CSSProperties;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function EditorStatic<E = Editor>(props: EditorStaticProps<E>) {
-  const { editor: editorInput, ...rest } = props;
-  const editor = editorInput as Editor;
+  const { document, editor: editorInput, ...rest } = props;
+  const editor = getStaticDocumentView(editorInput as Editor, document);
   const attributes = mergePlateRenderedAttributes(
     getPlateRuntime(editor).pluginCache.contentAttributes.readOnly,
     rest

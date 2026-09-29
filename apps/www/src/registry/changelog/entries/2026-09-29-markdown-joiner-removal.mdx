@@ -1,0 +1,14 @@
+---
+id: 2026-09-29-markdown-joiner-removal
+date: 2026-09-29
+status: draft
+kind: remove
+summary: 'Remove the Markdown joiner transform'
+change: { 'type': 'source', 'date': '2026-09-29', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-29-markdown-joiner-transform-remove-partial-parsing-hides-1f940f2e","kind":"remove","migrationNotes":["Remove `experimental_transform: markdownJoinerTransform()` from the AI command route and delete lib/markdown-joiner-transform.ts."]} -->
+
+- **`markdown-joiner-transform`**, **`ai-api`**: Remove the Markdown joiner transform. The AI command route streams model text without buffering or added delays.

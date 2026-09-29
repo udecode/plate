@@ -514,8 +514,8 @@ describe('Base media plugin contracts', () => {
       plugins: [
         BaseAudioPlugin.configure({
           initialState: {
-            isUrl: (url) => url.startsWith('safe:'),
-            transformUrl: (url) => `safe:${url}`,
+            isUrl: (url) => url.startsWith('https://cdn.platejs.org/'),
+            transformUrl: (url) => `https://cdn.platejs.org/${url}`,
           },
         }),
         BaseFilePlugin.configure({
@@ -533,9 +533,20 @@ describe('Base media plugin contracts', () => {
     editor
       .plugin(BaseFilePlugin)
       .update.insert({ url: 'unsafe.pdf' }, { at: [1] });
+    // A source the kind cannot load is refused, whatever `isUrl` says.
+    expect(
+      createEditor({
+        plugins: [
+          BaseVideoPlugin.configure({ initialState: { isUrl: () => true } }),
+        ],
+        initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+      })
+        .plugin(BaseVideoPlugin)
+        .update.insert({ url: 'javascript:alert(1)' }, { at: [0] })
+    ).toBe(false);
 
     expect(editor.read.children()).toMatchObject([
-      { type: 'audio', url: 'safe:track.mp3' },
+      { type: 'audio', url: 'https://cdn.platejs.org/track.mp3' },
       { type: 'paragraph' },
     ]);
   });

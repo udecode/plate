@@ -18,5 +18,12 @@ export const mdastToSlate = (
     return child;
   });
 
-  return convertNodesDeserialize(root.children, {}, options);
+  options.onRootChildren?.(root.children);
+
+  return convertNodesDeserialize(
+    root.children,
+    {},
+    options,
+    options.previousRootSibling ?? null
+  );
 };

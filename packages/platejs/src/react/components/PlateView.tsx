@@ -4,13 +4,20 @@ import {
   type EditorStaticProps,
   EditorStatic,
 } from '../../static/components/PlateStatic';
+import { getStaticDocumentView } from '../../static/internal/staticDocumentView';
 import { writeStaticSelectionClipboardData } from '../../static/internal/writeStaticSelectionClipboardData';
 
 export type EditorPreviewProps<E = EditorStaticProps['editor']> =
   EditorStaticProps<E>;
 
 export const EditorPreview = <E,>(props: EditorPreviewProps<E>) => {
-  const { editor, onCopy: onCopyProp } = props;
+  const { document, editor, onCopy: onCopyProp } = props;
+  // Copy reads the rendered document, which may be `document` rather than the
+  // editor's own.
+  const view = getStaticDocumentView(
+    editor as EditorStaticProps['editor'],
+    document
+  );
   const handleCopy = useCallback(
     (event: React.ClipboardEvent<HTMLDivElement>) => {
       onCopyProp?.(event);
@@ -18,7 +25,7 @@ export const EditorPreview = <E,>(props: EditorPreviewProps<E>) => {
       if (
         !event.defaultPrevented &&
         writeStaticSelectionClipboardData(
-          editor as EditorStaticProps['editor'],
+          view,
           event.clipboardData,
           event.currentTarget
         )
@@ -26,7 +33,7 @@ export const EditorPreview = <E,>(props: EditorPreviewProps<E>) => {
         event.preventDefault();
       }
     },
-    [editor, onCopyProp]
+    [view, onCopyProp]
   );
 
   return <EditorStatic {...props} onCopy={handleCopy} />;

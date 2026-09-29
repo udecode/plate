@@ -308,10 +308,23 @@ or for graphics the author hid with `aria-hidden="true"`; never exempt a
 diagnostic code wholesale. The HTML parser reports embedded media that no
 installed mapping owns even when fallback content survives.
 
+A stored URL is validated by what it does, through one private role policy
+(`decideUrl`) that feature schemas declare as `isStoredUrl(role)` validators:
+`navigation` for destinations a reader opens, with a script-capable floor that
+`allowedSchemes` narrows or widens above, and `image`, `media`, `file` or
+`embed` for sources that load. Every admission (initial value, updates, paste
+and imports) meets the schema; conversions unwrap an unusable destination to
+its label, alt text or caption and report the removal, and outputs recheck the
+same decision. The empty URL is an inert placeholder. Do not add per-format URL
+checks, sanitizer helpers or bypass options.
+
 A `DataTransferFormat` returns a slice or string, or `null` to delegate to the
-next format. Negotiation publishes no report or diagnostics channel without a
-production consumer. Copied registry UI does not warn about paste loss; a new
-mapping is the fix for lost content. Per-editor DOM plugin state resolves
+next format, and calls `report({ impact, message })` for what its payload leaves
+out. The initiating editable's `onPasteResult` is the one consumer: it runs once
+for each paste its built-in formats handle, after commit or when nothing
+inserts, and never for pastes an app or plugin handler owns. Copied registry UI
+warns once for lossy paste and stays silent for lossless cleanup; a missing
+mapping remains the fix for lost content. Per-editor DOM plugin state resolves
 through the runtime owner, so mounted views read the activation's
 configuration instead of re-resolving it at each caller.
 
@@ -439,22 +452,44 @@ they belong to the external format rather than the Plate schema. Legacy
 persisted tags migrate before normal mapping handling.
 
 Tag attributes cross a runtime-owned wire codec selected by the schema property
-kind: decode reads `readTagAttributes().properties` and encode writes
-`encodeAttributes(properties)`, while the schema still validates values. Do
-not restore blanket JSON coercion or a feature-local attribute parser. Input a
-mapping cannot represent returns `refuse(message)`, reported as
-`markdown-unsupported-node` under `lossPolicy`; only programmer and
-configuration faults throw.
+kind, while the schema still validates values. A callback-free `tag`
+declaration is the default: the runtime builds the node from the schema,
+writes the element's non-metadata properties (never list topology, which the
+enclosing list carries) and traverses children by the content model;
+`attributes` renames owned properties. Custom encoders claim represented
+properties with `encodeNodeAttributes()`, the `encodeAttributes()` output they
+return, or `preserve(...)`; reading a property never claims it. HTML uses
+the same law: element encoders claim with `preserve(...)`, single-`value`
+mappings claim by writing output, and an encoder existing for a node claims
+nothing, so each unclaimed property warns as `html-unsupported-content`. Do not restore blanket JSON coercion, a feature-local
+attribute parser or read-tracking claims. Input a mapping cannot represent
+returns `refuse(message)`, reported as `markdown-unsupported-node` under
+`lossPolicy`; property and mark loss warns as `markdown-property-omitted`; only
+programmer and configuration faults throw.
 
 Installed mappings are the only Markdown conversion owners: no per-operation
 mapping override, node filter, remark-plugin list, or recovery mode. `partial`
-is the streaming-preview parse option; a missing mapping is the fix for
-unsupported content. Claim mappings on one selector run by priority:
+is the streaming-preview parse option, and `previous` continues the prior
+result of a growing source, previews and the strict final alike. A read-only
+preview renders the result as `EditorStatic`'s `document` without editing an
+editor; only an editable target publishes, replacing from the first changed
+block. A captured document is read through one Plite view,
+`createEditorView(editor, { document })`, whose direct reads, plugin reads and
+plugin APIs all resolve against it; plugins reach it through their context
+editor or `state`, never an editor captured in `.extend`; Plite refuses a
+source-editor read made while a document view reads, decorates or renders. Static rendering
+reuses a block while it and every earlier block keep their identity and the
+decorations inside it stay value-equal, so decoration sources may read any
+content; an element that reads later content declares `render.readsDocument`
+instead of disabling reuse or keeping a mutable stable view. The runtime owns reuse and invalidation,
+so consumers keep no parse cache, transport joiner or chunk heuristics. A
+missing mapping is the fix for unsupported content. Claim mappings on one selector run by priority:
 `undefined` declines to the next, and `refuse` stops dispatch. Mention claims
 `[label](mention:ref)` links through `node: 'link'` and declines other links to
-Link. Mark mappings (`mark: true`) decode to the mark value, such as `true`,
-and encode through `wrap`, which returns a childless inline wrapper that the
-runtime fills; they take no priority, every mark mapping on a selector
+Link. A mapping whose target contributes a `mark` is a mark mapping, with no
+flag: `node`, `tag`, `value` and `style` declare how it reads and writes, the
+first declaration whose `value` matches writes, and `wrap` remains the escape
+path. Mark mappings take no priority, every mark mapping on a selector
 composes, and the runtime decodes the children once. Decode contexts expose
 inherited persisted text properties as `marks`, never `decoration`; decoration
 means transient render state elsewhere in Plate. A selector holds claim or

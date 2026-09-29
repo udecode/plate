@@ -413,6 +413,12 @@ Editable surface for an `EditorRoot` editor.
     <APIItem name="placeholder" type="React.ReactNode" optional>
       Placeholder content for the editable surface.
     </APIItem>
+    <APIItem name="onPasteResult" type="(result: EditablePasteResult) => void" optional>
+      Called once for each paste that the built-in formats handle: after the paste
+      commits (`inserted: true`), or when no format can insert it
+      (`inserted: false`). `diagnostics` lists `{ impact, message }` reports;
+      `impact: 'lossy'` means pasted content was left out.
+    </APIItem>
     <APIItem
       name="scrollSelectionIntoView"
       type="(editor, domRange) => void"

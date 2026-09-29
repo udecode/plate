@@ -1,0 +1,25 @@
+{
+  "checks": {
+    "directReadUsesDocument": true,
+    "pluginReadUsesDocument": false,
+    "componentTocUsesDocument": false,
+    "exportTocUsesDocument": false,
+    "sourceUnchanged": true
+  },
+  "observed": {
+    "projectedHeadings": [
+      "SOURCE"
+    ],
+    "html": "<div class=\"editor-editor\" data-editor=\"true\" data-editor-node=\"value\"><aside>SOURCE</aside><div data-editor-node=\"element\" data-editor-path=\"1\" data-editor-root=\"main\" class=\"editor-heading\" style=\"position:relative\"><span data-editor-node=\"text\" data-editor-path=\"1,0\" data-editor-root=\"main\"><span data-editor-leaf=\"true\"><span data-editor-end=\"9\" data-editor-start=\"0\" data-editor-string=\"true\">PROJECTED</span></span></span></div></div>",
+    "exported": "<div class=\"editor-editor\" data-editor=\"true\" data-editor-node=\"value\"><aside>SOURCE</aside><div data-editor-node=\"element\" data-editor-path=\"1\" data-editor-root=\"main\" class=\"editor-heading\" style=\"position:relative\"><span data-editor-node=\"text\" data-editor-path=\"1,0\" data-editor-root=\"main\"><span data-editor-leaf=\"true\"><span data-editor-end=\"9\" data-editor-start=\"0\" data-editor-string=\"true\">PROJECTED</span></span></span></div></div>"
+  },
+  "sources": {
+    "packages/platejs/src/internal/createProjectedEditorView.ts": "5e091681726d3e2b5ab2351ec950ec04e1778daaf7a8ec62651c6950d0a237c4",
+    "packages/platejs/src/static/internal/staticDocumentView.ts": "d253aecafb128d5981b4ebe844fd530ee8cdd39b87c535137bcd344956ea903f",
+    "packages/platejs/src/static/components/PlateStatic.tsx": "4d20390a9be2b7a97dc94ae3a6c188c5478e3d8ba39c261bfac7e0e35e1cccf1",
+    "packages/platejs/src/static/internal/renderStaticHtmlWithOverrides.tsx": "2aa0c092793e7e7c034205a312c18b0c6e6d51649ea8ea29effbf12ecfcd8faf",
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts": "f6ae0c58ca62aaad75618a7b78c2f64744ca9e39d1901cefdb5601e41812141a",
+    "packages/plitejs/src/editor-runtime-view.ts": "bd61ffdf417c87b2e7035f919adecf13a31ffb51c91efe6cad08cf847e768400",
+    "packages/plitejs/src/core/public-state.ts": "9b998cfd1daa97a1d7ef775ea2da86811a8e26fa7ad7f3ed5b21d5117e477410"
+  }
+}

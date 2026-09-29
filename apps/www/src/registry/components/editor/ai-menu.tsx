@@ -19,7 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import {
-  createEditorView,
+  type Decoration,
   ElementApi,
   isHotkey,
   NodeApi,
@@ -29,7 +29,6 @@ import { BaseAIPlugin } from 'platejs/ai';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
-  useEditorRuntimeState,
   useCreateEditor,
   useEditorSelector,
   useFocusedLast,
@@ -56,31 +55,45 @@ import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 import { EditorStatic } from './editor-static';
 
-const PreviewAIPlugin = BaseAIPlugin.extend(({ editor }) => ({
+// The preview renders a document through this plugin's editor, so decorations
+// read that document from the rendering view in their context.
+const PreviewAIPlugin = BaseAIPlugin.extend(() => ({
   decorate: {
-    read: ({ entry: [node, path] }) => {
+    read: ({ editor, entry: [node, path] }) => {
       if (!TextApi.isText(node) || node.text.length === 0) return [];
 
-      return [
+      const end = node.text.length;
+      const decorations: Decoration[] = [
         {
           key: 'ai-preview',
-          range: {
-            anchor: { path, offset: 0 },
-            focus: { path, offset: node.text.length },
-          },
+          range: { anchor: { path, offset: 0 }, focus: { path, offset: end } },
           attributes: {
             className:
               'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',
-            'data-editor-ai-end':
-              NodeApi.last(
-                { children: editor.read.children(), type: '' },
-                []
-              )[0] === node
-                ? ''
-                : undefined,
           },
         },
       ];
+
+      if (
+        NodeApi.last({ children: editor.read.children(), type: '' }, [])[0] ===
+        node
+      ) {
+        // Only the last character carries the end marker, so it stays one
+        // element when other decorations, such as code highlighting, split
+        // the text.
+        const start = end - ([...node.text].at(-1)?.length ?? 1);
+
+        decorations.push({
+          key: 'ai-preview-end',
+          range: {
+            anchor: { path, offset: start },
+            focus: { path, offset: end },
+          },
+          attributes: { 'data-editor-ai-end': '' },
+        });
+      }
+
+      return decorations;
     },
   },
 }));
@@ -102,29 +115,22 @@ const scrollAIPreviewEnd = (editor: Editor, draft: HTMLElement | null) => {
 export function AIChatEditor({ inline = false }: { inline?: boolean }) {
   const editor = useEditor();
   const draftRef = React.useRef<HTMLDivElement>(null);
+  // Supplies the preview plugins; the draft renders as its document.
   const aiEditor = useCreateEditor({
     plugins: [...BaseEditorKit, PreviewAIPlugin],
   });
-  const document = usePluginStore(AIChatPlugin, 'previewValue');
+  const previewValue = usePluginStore(AIChatPlugin, 'previewValue');
   const streaming = usePluginStore(AIChatPlugin, 'streaming');
-
-  const preview = useEditorRuntimeState(
-    aiEditor,
-    React.useCallback(
-      () => createEditorView(aiEditor, { readOnly: true }),
-      [aiEditor]
-    )
+  const previewDocument = React.useMemo(
+    () => (previewValue.length > 0 ? { children: previewValue } : undefined),
+    [previewValue]
   );
-
-  React.useLayoutEffect(() => {
-    aiEditor.update({ history: 'skip' }).value.replace({ children: document });
-  }, [aiEditor, document]);
 
   React.useEffect(() => {
     if (!inline) return;
 
     scrollAIPreviewEnd(editor, draftRef.current);
-  }, [editor, inline, preview]);
+  }, [editor, inline, previewDocument]);
 
   React.useEffect(() => {
     const draft = draftRef.current;
@@ -138,15 +144,16 @@ export function AIChatEditor({ inline = false }: { inline?: boolean }) {
   }, [editor, inline]);
 
   const last =
-    document.length > 0
-      ? NodeApi.last({ children: document, type: '' }, [])[0]
+    previewValue.length > 0
+      ? NodeApi.last({ children: previewValue, type: '' }, [])[0]
       : null;
 
   return (
     <div ref={draftRef} data-editor-ai-draft="">
       <EditorStatic
         variant={inline ? 'none' : 'aiChat'}
-        editor={preview}
+        document={previewDocument}
+        editor={aiEditor}
         className={cn(
           streaming &&
             '[&_[data-editor-ai-end]]:after:ml-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""]'

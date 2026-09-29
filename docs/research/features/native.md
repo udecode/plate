@@ -24,6 +24,8 @@ Changed files: [input-state.ts](../../../packages/plitejs/src/react/editable/inp
 
 - **unbound-plan**: [2026-08-22-plite-long-ime-history-atomicity-regression.md](../../plans/2026-08-22-plite-long-ime-history-atomicity-regression.md).
 
+- **completed-plan-without-current-outcome**: [2026-09-29-ime-caret-diagnosis.md](../../plans/2026-09-29-ime-caret-diagnosis.md).
+
 - **completed-plan-without-current-outcome**: [46-taskhub-46-input-ownership.md](../../plans/46-taskhub-46-input-ownership.md).
 
 - **unbound-plan**: [5066-hard-cut-native-input-cliff.md](../../plans/5066-hard-cut-native-input-cliff.md).
@@ -37,6 +39,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | Plan | Lifecycle | Work kind | Governing review |
 | --- | --- | --- | --- |
 | [2026-08-22-plite-long-ime-history-atomicity-regression.md](../../plans/2026-08-22-plite-long-ime-history-atomicity-regression.md) | unknown | implementation | unbound |
+| [2026-09-29-ime-caret-diagnosis.md](../../plans/2026-09-29-ime-caret-diagnosis.md) | completed | implementation | [2026-09-12-native-input-authority](../review-records/2026-09-12-native-input-authority.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-15-external-text-ordered-feedback](../review-records/2026-09-15-external-text-ordered-feedback.json) |
 | [46-taskhub-46-input-ownership.md](../../plans/46-taskhub-46-input-ownership.md) | completed | implementation | [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-12-native-input-authority](../review-records/2026-09-12-native-input-authority.json), [2026-09-12-geometry-widget-carrier-cut](../review-records/2026-09-12-geometry-widget-carrier-cut.json) |
 | [5066-hard-cut-native-input-cliff.md](../../plans/5066-hard-cut-native-input-cliff.md) | completed | implementation | unbound |
 

@@ -2,11 +2,17 @@
 title: Schema-bound format mapping authoring
 type: decision
 status: accepted
-updated: 2026-09-28
+updated: 2026-09-29
 review_scope: format-mappings
 current_review: 2026-09-28-format-mappings-value-review
 reconciled_executions:
   - 2026-09-28-format-mapping-authoring-design
+  - 2026-09-28-conversion-boundary-adoption-design
+  - 2026-09-29-conversion-boundary-adoption-execution
+  - 2026-09-29-conversion-boundary-closure-repairs
+  - 2026-09-29-conversion-boundary-closure-repairs-final
+  - 2026-09-29-static-preview-document-execution
+  - 2026-09-29-static-preview-document-execution-final
 review_history:
   - ../review-records/2026-09-28-format-mappings-value-review.json
 related:
@@ -59,4 +65,27 @@ hand-written mappings on 11 of 13 fixtures (the other two differ only in writing
 an empty text block self-closing) at 1.02× their cost. Date, image and
 standard-kind `node` mappings keep callbacks.
 
-Next: authorize execution of slices S1–S4.
+The subsequent [conversion-boundary design](../../plans/2026-09-28-conversion-boundary-adoption.md)
+retains D1 and D3–D6 and supersedes D2's preservation inference: ownership
+permits exposure; actual generated representation or an invocation-local
+custom `preserve` claim establishes fidelity. Equal defaults with
+`omitDefault:false` still need representation. HTML keeps its syntax contract
+but shares the corrected accounting and safety, narrowing D7.
+
+The boundary plan now owns adoption order and proof for this inventory.
+Independent syntax-reuse experiments do not block declarative simplification.
+Both records complete design only; product implementation and the new
+runtime comparisons remain unestablished.
+
+## Execution outcome
+
+Executed inside the conversion-boundary program on 2026-09-29 (record
+`2026-09-29-conversion-boundary-adoption-execution`).
+
+- The 11 element and 13 mark declarations are callback-free, and mark roles
+  come from the schema; the `mark` flag and the read Proxy are gone.
+- Custom encoders claim with `preserve(...)`, `encodeNodeAttributes()` and
+  `encodeAttributes()`, which claims what its output keeps. A round-trip
+  conformance harness guards the claims, and list accounting is exact.
+- The tracked Markdown benchmark against HEAD passes adoption. Serialize is
+  12% faster; the B4 inline-tag budget still fails, as it did before.

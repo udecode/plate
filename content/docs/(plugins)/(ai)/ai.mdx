@@ -145,7 +145,6 @@ import { convertToModelMessages, streamText } from 'ai';
 import { createEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
-import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 export async function POST(req: Request) {
   const { apiKey, ctx, messages, model } = await req.json();
@@ -161,7 +160,6 @@ export async function POST(req: Request) {
   });
 
   const result = streamText({
-    experimental_transform: markdownJoinerTransform(),
     messages: await convertToModelMessages(messages),
     model: gateway(model ?? 'openai/gpt-4o-mini'),
     system: ctx.toolName === 'edit' ? 'You are an editor that rewrites user text.' : undefined,
@@ -272,6 +270,11 @@ the editor's installed Markdown mappings and stores the result in
 `{ lossPolicy: 'allow', partial: true }`: an unfinished trailing tag stays hidden
 and unsupported content previews as text. `final` defaults to `true`; that parse
 is strict, and a response Markdown cannot represent clears the draft.
+Each parse, the final one included, continues the latest partial parse of the
+same response. After a final parse, `hide()`, `reset()`, `reload()` or
+`submit()`, the next parse starts over. `stop()` ends
+the request and publishes the current response as the final draft. `hide()`,
+`reset()` and `reload()` cancel it without publishing.
 `useAIChat` handles this publication for AI SDK transports. Structured table
 responses use `aiChat.api.setTablePreview({ ref, content }, { requestId })`.
 See [Markdown streaming previews](/docs/markdown#streaming-previews).
@@ -281,6 +284,8 @@ applies it in one history batch. `reset()` drops it and restores the mapped
 invoking selection without reverting other edits. A deleted target cannot be
 replaced through its former path.
 
+<ComponentPreview name="markdown-streaming-demo" />
+
 ## Tracked AI edits
 
 AI keeps the current view's input policy. Accepting in Editing writes ordinary
@@ -288,10 +293,6 @@ content. Accepting in Suggesting creates a native tracked edit for subsequent
 review. Streaming itself does not create suggestions or change the mode.
 
 Copilot ghost text also stays temporary until accepted.
-
-## Streaming example
-
-<ComponentPreview name="markdown-streaming-demo" />
 
 ## Plate Plus
 
@@ -429,8 +430,9 @@ Removes text nodes that are marked as AI-generated.
 
 ### Registry chat preview
 
-`AIChatEditor` renders `previewValue` with purple draft text and a trailing
-stream indicator. Insert mode places it after the invoking block; chat mode
+`AIChatEditor` renders `previewValue` as the `document` of a static preview
+editor, with purple draft text and a trailing stream indicator; the preview
+editor itself is never edited. Insert mode places it after the invoking block; chat mode
 places it in the review menu. Both use the same draft and acceptance actions.
 The package parses Markdown using the editor's installed plugins, so applying
 a draft also works without a mounted preview component.

@@ -1,0 +1,52 @@
+{
+  "input": {
+    "children": [
+      {
+        "type": "image",
+        "url": "https://example.test/photo.png",
+        "alt": "alt",
+        "title": "IMPORTANT TITLE",
+        "children": [
+          {
+            "text": "caption"
+          }
+        ]
+      }
+    ]
+  },
+  "result": {
+    "data": "<figure class=\"editor-image\"><img alt=\"alt\" src=\"https://example.test/photo.png\" title=\"IMPORTANT TITLE\"><figcaption>caption</figcaption></figure>",
+    "diagnostics": [],
+    "ok": true
+  },
+  "reparsed": {
+    "diagnostics": [],
+    "document": {
+      "children": [
+        {
+          "url": "https://example.test/photo.png",
+          "alt": "alt",
+          "title": "IMPORTANT TITLE",
+          "type": "image",
+          "children": [
+            {
+              "text": "caption"
+            }
+          ]
+        }
+      ]
+    },
+    "ok": true
+  },
+  "checks": {
+    "titlePreserved": true,
+    "lossReported": false,
+    "preservedOrDiagnosed": true
+  },
+  "sources": {
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "82a6300e7a6e762c99051a3b63e1f3ad2049f38f4ef9308d23f8a516a8535a5c",
+    "packages/platejs/src/lib/plugins/html/htmlConversion.ts": "e09fdda86ae8229779db17bcf6c391758a15b9fd18e3ffce66ac35e4e8b807b3",
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "6e9e6e410a08b0bb7d1343100ce98554e0cfa56cd1919200fe77746a26e16051",
+    "packages/platejs/src/html/server/index.ts": "c0123e09c4c8f200bc4a39152a650b95d633648547b5857888ba17e3c8b1132f"
+  }
+}

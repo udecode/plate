@@ -57,7 +57,6 @@ const registryApi: Registry['items'] = [
     registryDependencies: [
       '@plate/copilot-api',
       '@plate/editor-static',
-      '@plate/markdown-joiner-transform',
       '@plate/use-chat',
       '@plate/editor-plugins-static',
     ],

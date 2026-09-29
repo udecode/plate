@@ -1,0 +1,8 @@
+52c52
+< const PreviewAIPlugin = BaseAIPlugin.extend(({ editor }) => ({
+---
+> const PreviewAIPlugin = BaseAIPlugin.extend(() => ({
+54c54
+<     read: ({ entry: [node, path] }) => {
+---
+>     read: ({ editor, entry: [node, path] }) => {

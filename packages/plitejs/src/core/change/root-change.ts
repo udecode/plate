@@ -1257,7 +1257,24 @@ export const createStructurallyAlignedChanges = (
     : null;
 };
 
+const changedRangesAreSeparated = (a: RootChange, b: RootChange) => {
+  const bRanges: Array<readonly [number, number]> = [];
+  let separated = true;
+  let bIndex = 0;
+
+  b.iterChangedRanges((from, to) => {
+    bRanges.push([from, to]);
+  });
+  a.iterChangedRanges((from, to) => {
+    while (bIndex < bRanges.length && bRanges[bIndex][1] < from) bIndex += 1;
+    if (bIndex < bRanges.length && bRanges[bIndex][0] <= to) separated = false;
+  });
+
+  return separated;
+};
+
 const sameNodeStructure = (left: JsonNode, right: JsonNode): boolean => {
+  if (left === right) return true;
   if (isTextNode(left) || isTextNode(right)) {
     return isTextNode(left) && isTextNode(right);
   }
@@ -1739,6 +1756,11 @@ export class RootChange {
     b: RootChange,
     document: DocumentIndex
   ) {
+    // Edits separated by unchanged content commute positionally. The
+    // value-based repairs below exist for edits that touch, overlap or relocate
+    // each other, and each costs O(document).
+    if (changedRangesAreSeparated(a, b)) return RootChange.transform(a, b);
+
     const aReplacements = a.replacements();
     const bReplacements = b.replacements();
     const aPropertyChanges = a.propertyChanges();

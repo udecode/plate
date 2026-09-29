@@ -146,7 +146,6 @@ import { convertToModelMessages, streamText } from 'ai';
 import { createEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
-import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 export async function POST(req: Request) {
   const { apiKey, ctx, messages, model } = await req.json();
@@ -162,7 +161,6 @@ export async function POST(req: Request) {
   });
 
   const result = streamText({
-    experimental_transform: markdownJoinerTransform(),
     messages: await convertToModelMessages(messages),
     model: gateway(model ?? 'openai/gpt-4o-mini'),
     system: ctx.toolName === 'edit' ? 'You are an editor that rewrites user text.' : undefined,
@@ -265,14 +263,15 @@ editor.plugin(AIChatTransportPlugin).store.set({
 `final: false` 时解析使用 `{ lossPolicy: 'allow', partial: true }`：未完整到达的
 末尾 tag 保持隐藏，不支持的内容以文本预览。`final` 默认为 `true`；该解析保持严格，
 Markdown 无法表示的响应会清空草稿。
+每次解析（包括最终解析）都会延续同一响应最新的 partial 解析。最终解析、`hide()`、
+`reset()`、`reload()` 或 `submit()` 之后，下一次解析会重新开始。`stop()` 结束请求，并将当前响应作为最终草稿发布；
+`hide()`、`reset()` 与 `reload()` 取消请求且不发布。
 `useAIChat` 为 AI SDK transport 管理此过程。结构化表格响应使用
 `aiChat.api.setTablePreview({ ref, content }, { requestId })`。
 参阅 [Markdown 流式预览](/docs/markdown#streaming-previews)。
 
 草稿不修改文档、历史或编辑模式。`accept()` 在一个历史批次中应用草稿。
 `reset()` 丢弃草稿并恢复映射后的原始选择，不回滚其他编辑。
-
-## 流式传输示例
 
 <ComponentPreview name="markdown-streaming-demo" />
 
@@ -284,7 +283,7 @@ Markdown 无法表示的响应会清空草稿。
 
 ### Registry 聊天预览
 
-`AIChatEditor` 渲染会话中的 `previewValue`。会话使用编辑器已安装的插件解析
+`AIChatEditor` 把会话中的 `previewValue` 作为静态预览 editor 的 `document` 渲染，预览 editor 本身不会被编辑。会话使用编辑器已安装的插件解析
 Markdown，因此插入和替换命令不依赖预览组件是否挂载。
 
 <ComponentSource name="ai-menu" />

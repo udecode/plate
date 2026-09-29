@@ -85,11 +85,15 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
               type,
             };
           },
-          encode: ({ encodeFlow, node }) => ({
-            children: encodeFlow(node.children),
-            identifier: node.ref,
-            type: 'footnoteDefinition',
-          }),
+          encode: ({ encodeFlow, node, preserve }) => {
+            preserve('ref');
+
+            return {
+              children: encodeFlow(node.children),
+              identifier: node.ref,
+              type: 'footnoteDefinition',
+            };
+          },
         },
       }),
   }
@@ -154,10 +158,11 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
             ? { children: [{ text: '' }], ref, type }
             : undefined;
         },
-        encode: ({ node }) => ({
-          identifier: node.ref,
-          type: 'footnoteReference',
-        }),
+        encode: ({ node, preserve }) => {
+          preserve('ref');
+
+          return { identifier: node.ref, type: 'footnoteReference' };
+        },
       },
     }),
   read: ({ editor, plugin, schema, state }) => {

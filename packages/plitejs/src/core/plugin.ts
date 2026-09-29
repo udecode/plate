@@ -1766,8 +1766,9 @@ export const createEditorViewPluginApis = <TEditor extends Editor>(
   const refresh = () => {
     const registry = getPluginRegistry(source);
     const configuredRegistry = getConfiguredPluginRegistry(source);
-    const configurationRevision =
-      getCompiledEditorConfiguration(source).revision;
+    // Read the revision directly: building the compiled configuration sorts
+    // every plugin, and plugin portals refresh on every lookup.
+    const { configurationRevision } = configuredRegistry;
 
     if (
       registry === cachedRegistry &&

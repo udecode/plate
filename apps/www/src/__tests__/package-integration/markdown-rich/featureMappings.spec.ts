@@ -93,12 +93,7 @@ const CustomParagraphPlugin = definePlugin('customParagraph', {
 const CustomBoldPlugin = definePlugin('customBold', {
   formats: ({ defineFormats }) =>
     defineFormats({
-      markdown: {
-        decode: () => true,
-        node: 'strong',
-        mark: true,
-        wrap: () => ({ type: 'strong' }),
-      },
+      markdown: { node: 'strong' },
     }),
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
@@ -161,7 +156,7 @@ describe('feature-owned Markdown formats', () => {
     });
 
     expect(() => parseMarkdown(editor, 'seed')).toThrow(
-      'Callout children must be inline Markdown content.'
+      '<callout> content must be one Markdown paragraph.'
     );
   });
 

@@ -466,4 +466,24 @@ describe('markdown tables', () => {
       ).toThrow('Markdown tables cannot represent rowSpan or colSpan.');
     }
   );
+
+  it('gives a short row the empty cells a committed table would get', () => {
+    const editor = createTableEditor();
+    const result = editor.api.markdown.parseSlice(
+      '| a | b |\n| - | - |\n| c |',
+      { lossPolicy: 'allow', partial: true }
+    );
+
+    if (!result.ok) throw new Error(result.diagnostics[0].message);
+    const parsed = result.slice.content;
+
+    editor.update({ history: 'skip' }).value.replace({ children: [...parsed] });
+
+    // A preview renders the parse without the table correction, so it must
+    // already be what the editor commits.
+    expect(editor.read.children()).toEqual(parsed);
+    expect(parsed).toMatchObject([
+      { children: [{}, { children: [{}, {}] }], type: 'table' },
+    ]);
+  });
 });

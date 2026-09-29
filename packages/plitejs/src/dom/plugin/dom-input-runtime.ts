@@ -876,17 +876,23 @@ export class DOMInputRuntime {
     selectionSource,
     targetOwner,
   }: DOMInputNativeInputDecisionInput<TIntent, TSelection>) {
+    const nativeComposition =
+      intent === 'composition' &&
+      this.compositionEpoch?.owner === 'native' &&
+      this.compositionEpoch.phase === 'native-composing';
     const ownership: DOMInputOwnership =
       intent === 'internal-control'
         ? 'app-owned'
-        : intent
-          ? 'model-owned'
-          : 'deferred';
+        : nativeComposition
+          ? 'native-allowed'
+          : intent
+            ? 'model-owned'
+            : 'deferred';
 
     return {
       intent,
       internalTarget,
-      nativeAllowed: false,
+      nativeAllowed: ownership === 'native-allowed',
       ownership,
       selectionBefore,
       stateBefore: resolveDOMInputKernelState(selectionSource),

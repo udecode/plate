@@ -48,6 +48,12 @@ const editorReset = editorResetBase as unknown as (
   input: LegacySnapshotInput
 ) => void;
 
+const getDefined = <T>(value: T | undefined): T => {
+  if (value === undefined) throw new Error('Expected a value.');
+
+  return value;
+};
+
 const paragraph = (text: string) =>
   ({
     type: 'paragraph',
@@ -2301,5 +2307,136 @@ describe('editor runtime/view contract', () => {
       runtime.read((state) => state.root('header')[0]?.type),
       'heading-one'
     );
+  });
+
+  describe('document views', () => {
+    const WordsPlugin = definePlugin('words', {
+      api: ({ editor }) => ({
+        count: () => editor.read.children().length,
+      }),
+      read: ({ state }) => ({
+        text: () => state.children().map((node) => NodeApi.string(node)),
+      }),
+    });
+    const createSource = () => {
+      const editor = createEditor({
+        initialValue: {
+          children: [paragraph('source')],
+          roots: { header: [paragraph('source header')] },
+        },
+        plugins: [WordsPlugin] as const,
+      });
+
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { path: [0, 0], offset: 6 },
+          focus: { path: [0, 0], offset: 6 },
+        });
+      });
+
+      return editor;
+    };
+
+    it('resolves reads, plugin reads and plugin APIs against the document', () => {
+      const editor = createSource();
+      const value = editor.read.value();
+      const lastCommit = editor.read.lastCommit();
+      const document = {
+        children: [paragraph('one'), paragraph('two')],
+      };
+      const view = createEditorView(editor, { document });
+
+      assert.deepEqual(view.read.children(), document.children);
+      assert.deepEqual(view.read.value(), document);
+      assert.deepEqual(view.read.words.text(), ['one', 'two']);
+      assert.deepEqual(
+        view.read((state) => state.words.text()),
+        ['one', 'two']
+      );
+      assert.equal(view.plugin(WordsPlugin).api.count(), 2);
+      assert.equal(view.read.selection(), null);
+      assert.equal(view.read.lastCommit(), null);
+      assert.equal(view.read.view.isReadOnly(), true);
+      assert.deepEqual(editor.read.value(), value);
+      assert.equal(editor.read.lastCommit(), lastCommit);
+      assert.deepEqual(editor.read.words.text(), ['source']);
+    });
+
+    it('resolves document nodes as targets', () => {
+      const document = { children: [paragraph('one'), paragraph('two')] };
+      const view = createEditorView(createSource(), { document });
+      const [, two] = view.read.children();
+
+      assert.deepEqual(view.read.nodes.path(two), [1]);
+      assert.deepEqual(view.read.nodes.path(two.children[0]), [1, 0]);
+    });
+
+    it('refuses a source read made while the view reads', () => {
+      let source:
+        | {
+            read: {
+              children: () => readonly unknown[];
+              schema: { isBlock: (value: unknown) => boolean };
+            };
+          }
+        | undefined;
+      const CapturedPlugin = definePlugin('captured', {
+        read: ({ state }) => ({
+          count: () => getDefined(source).read.children().length,
+          firstIsBlock: () =>
+            getDefined(source).read.schema.isBlock(state.children()[0]),
+        }),
+      });
+      const editor = createEditor({
+        initialValue: [paragraph('source')],
+        plugins: [CapturedPlugin] as const,
+      });
+
+      source = editor;
+      const view = createEditorView(editor, {
+        document: { children: [paragraph('one'), paragraph('two')] },
+      });
+
+      assert.throws(
+        () => view.read.captured.count(),
+        /while a document view was reading/
+      );
+      assert.equal(view.read.captured.firstIsBlock(), true);
+      assert.equal(editor.read.captured.count(), 1);
+      assert.equal(view.read.children().length, 2);
+    });
+
+    it('reads a named root of the document', () => {
+      const view = createEditorView(createSource(), {
+        document: {
+          children: [paragraph('body')],
+          roots: { header: [paragraph('header')] },
+        },
+        root: 'header',
+      });
+
+      assert.deepEqual(view.read.words.text(), ['header']);
+    });
+
+    it('refuses updates and documents outside the schema', () => {
+      const editor = createSource();
+      const view = createEditorView(editor, {
+        document: { children: [paragraph('one')] },
+      });
+
+      assert.throws(() => {
+        view.update((tx) => {
+          tx.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+        });
+      }, /read-only editor view/);
+      assert.throws(
+        () =>
+          createEditorView(editor, {
+            document: { children: [{ text: 'bare' }] as never },
+          }),
+        /primary root cannot contain "text"/
+      );
+      assert.deepEqual(editor.read.words.text(), ['source']);
+    });
   });
 });

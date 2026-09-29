@@ -1,13 +1,9 @@
 import { createRequire } from 'node:module';
 
-import {
-  parseHtmlSliceWithDocument,
-  parseHtmlWithDocument,
-} from '../../lib/plugins/html/htmlConversion';
+import { parseHtmlWithDocument } from '../../lib/plugins/html/htmlConversion';
 import type {
   HtmlDocumentParseResult,
   HtmlParseOptions,
-  HtmlSliceParseResult,
 } from '../../lib/plugins/html/htmlTypes';
 
 type LinkeDomModule = Readonly<{
@@ -38,12 +34,6 @@ export const parseHtml = (
 ): HtmlDocumentParseResult =>
   parseHtmlWithDocument(source, options, createServerHtmlDocument());
 
-export const parseHtmlSlice = (
-  source: string,
-  options: HtmlParseOptions
-): HtmlSliceParseResult =>
-  parseHtmlSliceWithDocument(source, options, createServerHtmlDocument());
-
 export type {
   HtmlDiagnostic,
   HtmlDocumentParseResult,
@@ -51,7 +41,6 @@ export type {
   HtmlModelLocation,
   HtmlParseLimits,
   HtmlParseOptions,
-  HtmlSliceParseResult,
   HtmlSourceLocation,
   HtmlWarningDiagnostic,
 } from '../../lib/plugins/html/htmlTypes';

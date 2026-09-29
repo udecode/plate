@@ -22,21 +22,10 @@ export type TocPluginState = {
 export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
-      markdown: {
-        tag: type,
-        decode: ({ decode, marks, node }) => ({
-          children: decode(node.children, marks),
-          type,
-        }),
-        encode: ({ encodeFlow, node }) => ({
-          attributes: [],
-          children: encodeFlow(node.children),
-          name: type,
-          type: 'mdxJsxFlowElement',
-        }),
-      },
+      markdown: { tag: type },
     }),
   initialState: (): TocPluginState => ({ queryHeading: null }),
+  render: { readsDocument: true },
   schema: {
     element: {
       void: 'block',

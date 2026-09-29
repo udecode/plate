@@ -1,4 +1,9 @@
-import type { NodeEntry, Decoration, DecorationRefresh } from '../../facade';
+import {
+  type NodeEntry,
+  type Decoration,
+  type DecorationRefresh,
+  withDocumentViewRead,
+} from '../../facade';
 import type { Editor } from '../../lib/editor';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { failInvariant } from '../failInvariant';
@@ -45,10 +50,9 @@ export const getPlateDecorationSources = (
         const context = Object.assign(Object.create(pluginContext), {
           entry,
         });
-        const decorations: readonly Decoration[] = Reflect.apply(
-          decorate.read,
-          undefined,
-          [context]
+        const decorations: readonly Decoration[] = withDocumentViewRead(
+          (view ?? editor) as Editor,
+          () => Reflect.apply(decorate.read, undefined, [context])
         );
 
         if (!attributes || decorations.length === 0) return decorations;

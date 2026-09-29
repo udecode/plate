@@ -192,13 +192,18 @@ describe('importDocx', () => {
     }
   });
 
-  it('retains source only when requested and releases it idempotently', async () => {
+  it('retains an eligible source only when requested and releases it idempotently', async () => {
     const { importDocx } = await loadModule();
     convertToHtmlMock.mockImplementation(async () => ({
       messages: [],
       value: '<p>Hello</p>',
     }));
-    const source = await createDocx();
+    const source = await createDocx(undefined, {
+      '[Content_Types].xml':
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>',
+      '_rels/.rels':
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>',
+    });
     const ordinary = await importDocx(source, { plugins: [] });
     const retained = await importDocx(source, {
       plugins: [],
@@ -209,13 +214,38 @@ describe('importDocx', () => {
     expect('source' in ordinary).toBe(false);
     expect(retained.ok).toBe(true);
     if (!retained.ok) return;
+    expect(retained.diagnostics).toEqual([]);
     expect(retained.source).toEqual(
       expect.objectContaining({ dispose: expect.any(Function) })
     );
     expect(() => {
-      retained.source.dispose();
-      retained.source.dispose();
+      retained.source?.dispose();
+      retained.source?.dispose();
     }).not.toThrow();
+  });
+
+  it('returns a null source with a warning for an unverified package', async () => {
+    const { importDocx } = await loadModule();
+    convertToHtmlMock.mockImplementation(async () => ({
+      messages: [],
+      value: '<p>Hello</p>',
+    }));
+    const result = await importDocx(await createDocx(), {
+      plugins: [],
+      retainSource: true,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.source).toBeNull();
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'source-unavailable',
+        part: '[Content_Types].xml',
+        reason: 'ineligible',
+        severity: 'warning',
+      }),
+    ]);
   });
 
   it('returns rich comment records and strips private range markers', async () => {

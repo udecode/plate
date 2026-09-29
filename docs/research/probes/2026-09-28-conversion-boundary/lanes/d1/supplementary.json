@@ -1,0 +1,229 @@
+{
+  "corpora": [
+    {
+      "eligible": 93,
+      "name": "pandoc",
+      "total": 133,
+      "unreadable": 0,
+      "word": 126,
+      "wordEligible": 88,
+      "firstBlockers": [
+        [
+          "relationship:customXml",
+          20
+        ],
+        [
+          "field-instruction:SEQ",
+          3
+        ],
+        [
+          "markup:http://schemas.microsoft.com/office/drawing/2010/main",
+          2
+        ],
+        [
+          "field-instruction:HYPERLINK",
+          2
+        ],
+        [
+          "part:",
+          1
+        ],
+        [
+          "markup:http://schemas.microsoft.com/office/word/2015/wordml/symex",
+          1
+        ]
+      ]
+    },
+    {
+      "eligible": 8,
+      "name": "mammoth.js",
+      "total": 17,
+      "unreadable": 0,
+      "word": 13,
+      "wordEligible": 5,
+      "firstBlockers": [
+        [
+          "relationship:customXml",
+          3
+        ],
+        [
+          "markup:http://schemas.microsoft.com/office/drawing/2010/main",
+          2
+        ],
+        [
+          "relationship:extendedProperties",
+          1
+        ],
+        [
+          "markup:http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing",
+          1
+        ],
+        [
+          "relationship:style-map",
+          1
+        ],
+        [
+          "external-relationship:image",
+          1
+        ]
+      ]
+    },
+    {
+      "eligible": 6,
+      "name": "docx",
+      "total": 6,
+      "unreadable": 0,
+      "word": 3,
+      "wordEligible": 3,
+      "firstBlockers": []
+    },
+    {
+      "eligible": 8,
+      "name": "docxjs",
+      "total": 13,
+      "unreadable": 0,
+      "word": 4,
+      "wordEligible": 3,
+      "firstBlockers": [
+        [
+          "relationship:core-properties",
+          4
+        ],
+        [
+          "relationship:chart",
+          1
+        ]
+      ]
+    },
+    {
+      "eligible": 25,
+      "name": "python-docx",
+      "total": 46,
+      "unreadable": 0,
+      "word": 46,
+      "wordEligible": 25,
+      "firstBlockers": [
+        [
+          "part:",
+          15
+        ],
+        [
+          "markup:http://schemas.microsoft.com/office/drawing/2010/main",
+          2
+        ],
+        [
+          "relationship:diagramQuickStyle",
+          1
+        ],
+        [
+          "relationship:printerSettings",
+          1
+        ],
+        [
+          "external-relationship:hyperlink",
+          1
+        ],
+        [
+          "relationship:customXml",
+          1
+        ]
+      ]
+    },
+    {
+      "eligible": 35,
+      "name": "docx-editor",
+      "total": 39,
+      "unreadable": 0,
+      "word": 9,
+      "wordEligible": 5,
+      "firstBlockers": [
+        [
+          "part:",
+          2
+        ],
+        [
+          "relationship:customXml",
+          2
+        ]
+      ]
+    },
+    {
+      "eligible": 57,
+      "name": "eigenpal-docx-editor",
+      "total": 113,
+      "unreadable": 1,
+      "word": 22,
+      "wordEligible": 4,
+      "firstBlockers": [
+        [
+          "relationship:customXml",
+          13
+        ],
+        [
+          "field-instruction:TOC",
+          9
+        ],
+        [
+          "part:application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml",
+          6
+        ],
+        [
+          "part:image/x-emf",
+          3
+        ],
+        [
+          "relationship:webextensiontaskpanes",
+          3
+        ],
+        [
+          "field-instruction:PAGE",
+          2
+        ]
+      ]
+    },
+    {
+      "eligible": 54,
+      "name": "docx-redline-js",
+      "total": 56,
+      "unreadable": 1,
+      "word": 49,
+      "wordEligible": 48,
+      "firstBlockers": [
+        [
+          "relationship:webextensiontaskpanes",
+          1
+        ]
+      ]
+    },
+    {
+      "eligible": 28,
+      "name": "docx-cli",
+      "total": 41,
+      "unreadable": 0,
+      "word": 13,
+      "wordEligible": 3,
+      "firstBlockers": [
+        [
+          "relationship:customXml",
+          8
+        ],
+        [
+          "field-instruction:DATE",
+          2
+        ],
+        [
+          "relationship:oleObject",
+          1
+        ],
+        [
+          "relationship:extendedProperties",
+          1
+        ],
+        [
+          "markup:http://schemas.microsoft.com/office/drawing/2010/main",
+          1
+        ]
+      ]
+    }
+  ]
+}

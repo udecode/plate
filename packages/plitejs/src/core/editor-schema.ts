@@ -36,7 +36,7 @@ import {
 import { DocumentIndex } from './change/document-index';
 import type { DocumentPropertyContext, RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
-import { cloneFrozen } from './clone';
+import { cloneFrozen, isOwnedJsonValue } from './clone';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import {
   assertEditorDocumentShape,
@@ -562,6 +562,11 @@ const COMPILED_SCHEMA_BY_API = new WeakMap<
   () => CompiledEditorSchema | null
 >();
 const VALIDATED_DOCUMENT_ROOTS = new WeakMap<object, string>();
+// Deep-frozen top-level nodes a document assertion validated, per compiled
+// schema and root: their content cannot change and that schema's validators are
+// deterministic, so a later document sharing them validates only new nodes. A
+// rebound validator compiles a new schema even when its identity is equal.
+const VALIDATED_ROOT_NODES = new WeakMap<object, WeakMap<object, RootKey>>();
 const SCHEMA_HAS_COPY_TRANSFORMS = new WeakMap<CompiledEditorSchema, boolean>();
 const EMPTY_INDEXED_DOCUMENT = DocumentIndex.fromValue(Object.freeze([]));
 
@@ -3003,9 +3008,11 @@ export const createEditorSchema = <V extends Value = Value>(
     root: RootKey,
     ancestors: readonly Element[],
     parentPath: readonly number[],
-    openAncestorBoundary = false
+    openAncestorBoundary = false,
+    validated?: (node: Descendant) => boolean
   ): void => {
     children.forEach((node, index) => {
+      if (validated?.(node)) return;
       const path = [...parentPath, index];
 
       const element = validateDeclarativeNodeProperties(
@@ -3519,6 +3526,8 @@ export const createEditorSchema = <V extends Value = Value>(
       main: value.children,
       ...value.roots,
     };
+    // Element-owned roots validate across owners, so their nodes are not reused.
+    const reuseRootNodes = !hasContentRoots();
     const ownershipIndexes = hasContentRoots()
       ? getDocumentOwnershipIndexes(schema, value)
       : [];
@@ -3597,7 +3606,19 @@ export const createEditorSchema = <V extends Value = Value>(
           toSchemaValidationLocation(root, [])
         );
       }
-      validateDeclarativeChildren(children, schema, root, [], []);
+      const validated = reuseRootNodes
+        ? VALIDATED_ROOT_NODES.get(schema)
+        : undefined;
+
+      validateDeclarativeChildren(
+        children,
+        schema,
+        root,
+        [],
+        [],
+        false,
+        validated ? (node) => validated.get(node) === root : undefined
+      );
       if (content) {
         validateDeclarativeRootContent(root, children, content, schema);
       }
@@ -3665,6 +3686,20 @@ export const createEditorSchema = <V extends Value = Value>(
 
       if (declarative) {
         validateDeclarativeDocument(value, declarative);
+        if (!hasContentRoots()) {
+          let validated = VALIDATED_ROOT_NODES.get(declarative);
+
+          if (!validated) {
+            validated = new WeakMap();
+            VALIDATED_ROOT_NODES.set(declarative, validated);
+          }
+          for (const [root, children] of Object.entries(documentRoots(value))) {
+            for (const node of children) {
+              // Owned JSON values are deeply frozen.
+              if (isOwnedJsonValue(node)) validated.set(node, root);
+            }
+          }
+        }
       }
 
       rememberValidatedDocumentRoots(value, declarative);

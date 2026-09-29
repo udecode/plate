@@ -18,6 +18,8 @@ import {
   isUrl,
 } from '../../core';
 import type { RuntimePluginReference } from '../../facade';
+import { getPlateNodeMappingContributions } from '../../internal/plugin/collectPlateNodeMappings';
+import { getPluginStore } from '../../internal/plugin/pluginStore';
 import {
   projectPlateFormatDocument,
   withPlateFormatCompilation,
@@ -25,6 +27,7 @@ import {
 import {
   createMarkdownOperationRuntime,
   createMarkdownRuntime,
+  type MarkdownReuse,
   parseMarkdownDocumentWithRuntime,
   parseMarkdownInlineWithRuntime,
   parseMarkdownSliceWithRuntime,
@@ -34,6 +37,7 @@ import {
 } from './internal/markdownConversion';
 import { markdownMappingsRegistryKey } from './internal/markdownMappings';
 import type {
+  MarkdownDiagnostic,
   MarkdownDocumentParseResult,
   MarkdownEditorSerializeOptions,
   MarkdownParseOptions,
@@ -64,7 +68,21 @@ export type MarkdownApi<V extends Value = Value> = {
   ) => MarkdownSliceParseResult<V>;
   parseSlice: (
     source: string,
-    options?: MarkdownParsePolicy
+    options?: MarkdownParsePolicy &
+      Readonly<{
+        /**
+         * The previous result of a growing source. When it came from this
+         * editor's `parseSlice`, for a prefix of `source`, under unchanged
+         * plugins and limits, only the text after its last complete block is
+         * converted again, and complete blocks keep their node objects, so a
+         * preview or the final parse can publish just the changed tail. Under
+         * another `lossPolicy`, only complete blocks that reported nothing
+         * are kept. Any other hint parses the whole source, and so does a
+         * source with a link reference or footnote definition, which can
+         * change blocks before it.
+         */
+        previous?: MarkdownSliceParseResult<V>;
+      }>
   ) => MarkdownSliceParseResult<V>;
   serialize: (
     options?: MarkdownEditorSerializeOptions<V>
@@ -82,6 +100,37 @@ const shouldParseMarkdown = (
 };
 
 type MarkdownRuntime = ReturnType<typeof createMarkdownOperationRuntime>;
+
+const markdownStateOwners = new WeakMap<object, readonly string[]>();
+
+// A mapping callback sees only its owner's state, and parsing reads Markdown's
+// own remark plugins; no other plugin's state can change a conversion.
+const getMarkdownReuse = (
+  editor: Editor,
+  previous: object | undefined
+): MarkdownReuse => {
+  let owners = markdownStateOwners.get(editor);
+
+  if (!owners) {
+    owners = [
+      ...new Set([
+        PLUGINS.markdown,
+        ...getPlateNodeMappingContributions(editor, 'markdown').map(
+          ({ owner }) => owner
+        ),
+      ]),
+    ];
+    markdownStateOwners.set(editor, owners);
+  }
+
+  return {
+    editor,
+    pluginStates: owners.map(
+      (name) => getPluginStore(editor, name)?.public.get() ?? null
+    ),
+    previous,
+  };
+};
 
 const createMarkdownDocument = (
   runtime: MarkdownRuntime,
@@ -210,11 +259,35 @@ const serializeMarkdownDataTransferSlice = (
   return failed ? null : data;
 };
 
+// Repairs and removed script destinations keep the pasted meaning; anything
+// dropped, replaced or rejected does not.
+const isLosslessMarkdownDiagnostic = (diagnostic: MarkdownDiagnostic) =>
+  'impact' in diagnostic
+    ? diagnostic.impact === 'lossless'
+    : diagnostic.code === 'markdown-tag-repair' ||
+      diagnostic.code === 'markdown-unsupported-metadata';
+
+/**
+ * Paste inserts what Markdown can represent and reports the rest, as HTML
+ * paste does.
+ */
 const parseMarkdownDataTransferSlice = (
   runtime: MarkdownRuntime,
-  data: string
+  data: string,
+  report: (
+    diagnostic: Readonly<{ impact: 'lossless' | 'lossy'; message: string }>
+  ) => void
 ): ContentSlice | null => {
-  const result = parseMarkdownSliceWithRuntime(runtime, data);
+  const result = parseMarkdownSliceWithRuntime(runtime, data, {
+    lossPolicy: 'allow',
+  });
+
+  for (const diagnostic of result.diagnostics) {
+    report({
+      impact: isLosslessMarkdownDiagnostic(diagnostic) ? 'lossless' : 'lossy',
+      message: diagnostic.message,
+    });
+  }
 
   return result.ok ? result.slice : null;
 };
@@ -224,7 +297,7 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
     {
       mimeType: 'text/markdown',
       scope: 'document',
-      decode: ({ data, pluginState, registry, schema, state }) =>
+      decode: ({ data, pluginState, registry, report, schema, state }) =>
         parseMarkdownDataTransferSlice(
           createMarkdownOperationRuntime({
             pluginState,
@@ -232,7 +305,8 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
             schema,
             state,
           }),
-          data
+          data,
+          report
         ),
       encode: ({ pluginState, registry, schema, slice, state }) =>
         serializeMarkdownDataTransferSlice(
@@ -250,7 +324,7 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
     {
       mimeType: 'text/plain',
       scope: 'document',
-      decode: ({ data, pluginState, registry, schema, state }) =>
+      decode: ({ data, pluginState, registry, report, schema, state }) =>
         parseMarkdownDataTransferSlice(
           createMarkdownOperationRuntime({
             pluginState,
@@ -258,7 +332,8 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
             schema,
             state,
           }),
-          data
+          data,
+          report
         ),
       accept: ({ data, snapshot }) => shouldParseMarkdown(data, snapshot),
     },
@@ -274,7 +349,7 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
     prepareMarkdownRuntime(editor, editor.plugin(MarkdownPlugin).store.get());
   },
 }).extend(({ editor, store }) => ({
-  api: (): MarkdownApi => ({
+  api: ({ editor: context }): MarkdownApi => ({
     parse: (source, options) =>
       withMarkdownRuntime(editor, store.get(), (runtime) =>
         parseMarkdownDocumentWithRuntime(runtime, source, options)
@@ -283,12 +358,19 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
       withMarkdownRuntime(editor, store.get(), (runtime) =>
         parseMarkdownInlineWithRuntime(runtime, source, options)
       ),
-    parseSlice: (source, options) =>
+    parseSlice: (source, { previous, ...options } = {}) =>
       withMarkdownRuntime(editor, store.get(), (runtime) =>
-        parseMarkdownSliceWithRuntime(runtime, source, options)
+        parseMarkdownSliceWithRuntime(
+          runtime,
+          source,
+          options,
+          options.partial || previous
+            ? getMarkdownReuse(editor, previous)
+            : undefined
+        )
       ),
     serialize: (options = {}) => {
-      const document = options.document ?? editor.read.value();
+      const document = options.document ?? context.read.value();
 
       assertMarkdownProjection(document, options.projection);
       const projected = projectPlateFormatDocument(

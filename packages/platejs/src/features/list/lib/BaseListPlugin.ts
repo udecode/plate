@@ -858,9 +858,17 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             node,
             path,
             pluginState,
+            preserve,
             registry,
             root,
           }) => {
+            preserve(
+              'checked',
+              'listRestart',
+              'listStart',
+              'listStyle',
+              'listType'
+            );
             const { checked } = node;
             const { listStart } = node;
             const { listRestart } = node;
@@ -956,20 +964,34 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       markdown: {
         node: 'list',
         priority: 40,
-        decode: ({ build, node, registry }) => {
+        decode: ({ build, node, previousSibling, registry }) => {
           const imageType = registry.type(PLUGINS.image);
           const type = registry.type(BaseParagraphPlugin);
 
           if (!type) {
             throw new Error('List Markdown decoding requires paragraphs.');
           }
+          // An ordered list right after another one restarts its numbering;
+          // otherwise its start number is where the sequence starts.
+          const isOrderedMdList = (
+            sibling:
+              | Readonly<{ ordered?: boolean | null; type: string }>
+              | null
+              | undefined
+          ) => sibling?.type === 'list' && sibling.ordered === true;
           const parseList = (
             list: typeof node,
-            indent = 1,
-            startIndex = 1
+            indent: number,
+            restarts: boolean
           ): Element[] => {
             const items: Element[] = [];
             const ordered = Boolean(list.ordered);
+            const start = list.start ?? 1;
+            const startProperties = restarts
+              ? { listRestart: start }
+              : start === 1
+                ? {}
+                : { listStart: start };
 
             list.children.forEach((listItem, index) => {
               const { checked } = listItem;
@@ -1002,11 +1024,8 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                   ...(task ? { checked } : {}),
                   indent,
                   listType,
-                  ...(ordered &&
-                  index === 0 &&
-                  childIndex === 0 &&
-                  startIndex !== 1
-                    ? { listRestart: startIndex }
+                  ...(ordered && index === 0 && childIndex === 0
+                    ? startProperties
                     : {}),
                   type:
                     imageType && element.type === imageType
@@ -1015,9 +1034,15 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                 });
               });
 
-              nested.forEach((child) => {
+              nested.forEach((child, nestedIndex) => {
                 if (child.type === 'list') {
-                  items.push(...parseList(child, indent + 1, child.start ?? 1));
+                  items.push(
+                    ...parseList(
+                      child,
+                      indent + 1,
+                      isOrderedMdList(nested[nestedIndex - 1])
+                    )
+                  );
                   return;
                 }
 
@@ -1032,7 +1057,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             return items;
           };
 
-          return parseList(node, 1, node.start ?? 1);
+          return parseList(node, 1, isOrderedMdList(previousSibling));
         },
       },
     }),

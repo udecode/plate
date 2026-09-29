@@ -1,0 +1,91 @@
+{
+  "id": "2026-09-29-imports-opt-in-paste-result",
+  "scope": "imports",
+  "kind": "review",
+  "date": "2026-09-29",
+  "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+  "model": "GPT-6",
+  "method": "best-api-review/history-v3",
+  "trigger": "User corrected the paste-loss target: document app-owned feedback as possible, but do not install notification UI in the registry Editor.",
+  "requirements": [
+    "The registry Editor has no default paste-loss notification or product policy.",
+    "Applications can opt into paste-result feedback at the mounted editor surface where presentation and recovery belong.",
+    "DataTransfer formats can report loss through a typed package contract without requiring UI.",
+    "Explicit HTML, Markdown and DOCX conversions retain their format-owned diagnostics and loss policy.",
+    "Implement the correction without compatibility aliases or a second notification owner."
+  ],
+  "evidenceReuse": "Reused the immediately preceding caller census, registry source and tests, Plite mounted-runtime delivery proof, public clipboard documentation and package changesets. The user supplied the missing current job that the hard-cut review incorrectly treated as hypothetical: applications may deliberately present actionable feedback, while the copied registry component must remain neutral.",
+  "summary": "Pursue the narrower cut. Remove the registry Editor's default Sonner warning, its registry unit/browser proof and the draft registry changelog entry. Retain Editable.onPasteResult, EditablePasteResult and DataTransfer report diagnostics as an opt-in mounted-surface API, with package tests and public documentation showing how an application may present feedback. Plate itself and the registry render no notification. Retain explicit conversion diagnostics and all sanitizer, mapping, fitting, fallback and lifecycle-error behavior.",
+  "verdict": "pursue",
+  "previous": "2026-09-29-imports-paste-result-hard-cut",
+  "relation": "reverses",
+  "reconciliation": [
+    {
+      "record": "2026-09-29-imports-paste-result-hard-cut",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "supersedes",
+      "reason": "Retain its rejection of default registry notification, but reverse deletion of the typed paste-result protocol. The user confirmed a current app-owned presentation job; optional surface feedback and built-in UI are separate decisions."
+    }
+  ],
+  "alternatives": [
+    "Keep the registry toast. Stop: a copied editor should not impose generic, unactionable notification policy on every application.",
+    "Delete the paste-result protocol with the toast. Stop: applications have a current opt-in job for explaining loss, telemetry or offering their own recovery at the mounted surface.",
+    "Move feedback into plugin initialState. Stop: notification is presentation tied to one mounted surface, while one editor can have multiple views.",
+    "Keep one optional EditorContent.onPasteResult callback and no default UI. Select: the app owns presentation, while format and runtime owners supply typed facts."
+  ],
+  "proofLimits": "This corrects the API/product target before implementation. Existing package tests establish mounted-surface delivery, but the registry toast removal, generated registry output and public wording still require execution and verification. The candidate-editor scan from the prior review remains bounded and is not a universal product census.",
+  "references": [
+    "apps/www/src/registry/components/editor/editor.tsx",
+    "apps/www/src/registry/components/editor/editor.spec.tsx",
+    "apps/www/tests/browser/paste-result-toast.spec.ts",
+    "packages/plitejs/src/react/editable/editable-dom-runtime.ts",
+    "packages/plitejs/test/react/editable-paste-result.test.tsx",
+    "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
+    "content/docs/(guides)/clipboard.mdx",
+    "content/docs/api/core/plate-components.mdx",
+    ".changeset/platejs-paste-result.md",
+    ".changeset/plitejs-paste-result.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "b5a764c45f6bad7acfd797da9865845510748e3eb778f591d0dc64811ec33554",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "a71e9729e2fab00a6ba242db3d5536e926765285959f4fc0080277681e908b2b",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "3b09a84e4fafe1796830b8290f0676adaf3df3f841ee80f53df3d95f20aa3a93",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "604419f6caf98b015758d30037a3c7a30570724145aead1b188437709fd101a3",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "5bd1f158a2565593b4649574df4c53cee2149f80c9601d0ebf40129d037303e4",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "a95fa2c4ba72d1b3b13e22400ed5c6a55827600ef0ca1862c09ac7b422b96518",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts": "4289812c3e8cd9a844a6ce7faead93e407cc037e45385550903dd7e2d15a5c57",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "02aaeb29202addd257fff9554ae29cf71253d35cf45f7179739d0864e41a3532",
+      "packages/platejs/src/docx/import/lib/importDocx.spec.ts": "fb5b8aa682b6a1548986b4eb18e51430d77e31e1b6a60e03a7a7081ff00c2260",
+      "docs/analysis/editor-architecture-candidates.md": "14a88723e948ca14db76a0a585c0c5561c1d396abb5ade4ba8d31c620e79765d",
+      "docs/research/decisions/export-fidelity.md": "f613b4530f6862096006d49b7fc26b33a0dd3d2f2573902670fa805255fe59e4",
+      "docs/research/decisions/documents-conversion-fidelity.md": "5fb0180c2b81cfae47ed40abd33e344f5685a6e684219dbd558d05235c4d065d",
+      "docs/research/decisions/persistence-ownership.md": "ba8d50f5450f067eb6f3ea0096ee7fd408be03da09fbbb8c18df5df0d4138866",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "df62b3f645782fb26d89bf12050d130601f2852c218131d5e997a8fce500cece",
+      "packages/platejs/src/lib/plugins/html/htmlAst.ts": "2807a035631521ac05d99b472f3e40767ca85576f8d79f9d7e15367f4f91a2df",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "9e0593d23046f64b03a10544611cea520930c6df8642ba2e7114175b32cb1834",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "e4560ee7a76f6ac6309bdb1891c95adb9202ec691958e24742ad71169908b321",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "6afafeae2daeb73599175091783f043cf87a0ee63527c22c7f5dc55e8fa25d8c",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "2ca3526ac45b843cec3b4568278e755f8c1f55a6c31f970e05dceb342ebf2051",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "b20d0d9de88fe46cb58920be43fafcb840ebfb4eef8af6c90a4f7b7abec0d803",
+      "packages/plitejs/src/core/persisted-document.ts": "e605b0ed6d719d0b68f393bf531bd64e257fbe402851c77463fbbfac40281575",
+      "packages/platejs/src/migrations/documentMigrations.ts": "6a823432296edd3372d0e79aa0186f2ef10ce461b57801264302e6485bae5a99",
+      "content/docs/(guides)/serializing.mdx": "e2ff9bb116de52e9bf5d7b1bdbf771e20b582c602c68fc6db7642cb7711f8985",
+      "content/docs/(plugins)/(serializing)/html.mdx": "cbf807b154e5ffb7053501f18ca0b9c18ff5047399fa0f92fe6a63fed35cc7f8",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "520e6e5b20ee5251e6e996616a2e53cfd3f9e64a3fba70e589d5d3a38c30cf4b",
+      "content/docs/(plugins)/(serializing)/docx.mdx": "e6beb90a476747f28b1f2f1661c6a1726caf75fcb8c4b00f8dc6fdf0010c5a11",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
+    },
+    "directories": {},
+    "features": {
+      "browser/paste-result-toast": "8b0e56eb60fc32fcd9717ab12cae7f30adf0f32c5b555c0754327fb2726216a1",
+      "example/plite/parse-html": "8ebfcea1d39948b0fd313147864130c49ad8bfe56035bdeb84a2c37c0304fc66"
+    },
+    "upstreams": []
+  }
+}

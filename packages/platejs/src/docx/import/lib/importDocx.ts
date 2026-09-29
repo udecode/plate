@@ -45,7 +45,11 @@ import {
   parseAuthoredDocxEnvelope,
   type DocxCorrespondenceAdapter,
 } from '../../internal/correspondence';
-import { createDocxSource, type DocxSource } from '../../internal/source';
+import { retainDocxSource, type DocxSource } from '../../internal/source';
+import {
+  describeDocxSourceViolation,
+  type DocxSourceViolation,
+} from '../../internal/sourceEligibility';
 import type {
   DocxComment,
   DocxDiagnostic,
@@ -104,11 +108,21 @@ export type DocxImportOptions<TRetainSource extends boolean = false> =
   }> &
     ([TRetainSource] extends [true]
       ? Readonly<{
-          /** Retain the admitted package and import correspondence for later export. */
+          /**
+           * Retain the admitted package and import correspondence for later
+           * export. `source` is null when a part falls outside the passive
+           * vocabulary exact reuse admits; a `source-unavailable` warning
+           * names it.
+           */
           retainSource: true;
         }>
       : Readonly<{
-          /** Retain the admitted package and import correspondence for later export. */
+          /**
+           * Retain the admitted package and import correspondence for later
+           * export. `source` is null when a part falls outside the passive
+           * vocabulary exact reuse admits; a `source-unavailable` warning
+           * names it.
+           */
           retainSource?: TRetainSource;
         }>);
 
@@ -126,7 +140,7 @@ type DocxImportSuccess<
   document: EditorDocumentValue<V>;
   ok: true;
 }> &
-  (TRetainSource extends true ? Readonly<{ source: DocxSource }> : {});
+  (TRetainSource extends true ? Readonly<{ source: DocxSource | null }> : {});
 
 type DocxImportOutcome<TRetainSource extends boolean, V extends Value> =
   | DocxImportFailure
@@ -1715,6 +1729,19 @@ const importBoundedDocx = async <V extends Value>(
   });
 };
 
+const sourceIneligibleDiagnostic = (
+  violation: DocxSourceViolation
+): DocxWarningDiagnostic =>
+  Object.freeze({
+    code: 'source-unavailable' as const,
+    message: `The DOCX source cannot be retained because ${describeDocxSourceViolation(
+      violation
+    )}; export will generate the document from editor content.`,
+    part: violation.part,
+    reason: 'ineligible' as const,
+    severity: 'warning' as const,
+  });
+
 const captureAuthoredTrust = (
   trust: DocxAuthoredTrust | undefined
 ): DocxAuthoredTrust | undefined => {
@@ -1762,17 +1789,24 @@ const runDocxImport = async <V extends Value, TRetainSource extends boolean>(
     if (!result.ok || options.retainSource !== true) {
       return result as DocxImportOutcome<TRetainSource, V>;
     }
+    const retained = retainDocxSource(pkg, {
+      comments: result.comments,
+      document: result.document,
+      limits: options.limits,
+      schema: target.schemaIdentity,
+    });
+
     throwIfDocxAborted(options.signal, target.dom.abortError);
 
     return Object.freeze({
       ...result,
-      source: createDocxSource({
-        blob: pkg.source,
-        comments: result.comments,
-        document: result.document,
-        limits: options.limits,
-        schema: target.schemaIdentity,
-      }),
+      diagnostics: retained.violation
+        ? Object.freeze([
+            ...result.diagnostics,
+            sourceIneligibleDiagnostic(retained.violation),
+          ])
+        : result.diagnostics,
+      source: retained.source,
     }) as DocxImportOutcome<TRetainSource, V>;
   } catch (error) {
     throwIfDocxAborted(options.signal, target.dom.abortError);

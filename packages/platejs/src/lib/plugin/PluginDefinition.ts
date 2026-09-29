@@ -245,6 +245,13 @@ export type PluginBase<
       /** Render the primary component around each leaf or once around the text node. */
       placement?: 'leaf' | 'text';
     }>;
+    /**
+     * Whether rendering this plugin's element reads content after the element,
+     * such as a table of contents listing every heading. Static rendering
+     * reuses a block while it and every block before it are unchanged; these
+     * elements render again whenever the document changes.
+     */
+    readsDocument?: boolean;
   }>;
   slots: Nullable<{
     /** Wraps the Editable content and its lifecycle effects. */

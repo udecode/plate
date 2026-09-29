@@ -172,6 +172,7 @@ test('DataTransfer formats expose only immutable model and host read capabilitie
       expect(Object.keys(context).sort()).toEqual([
         'data',
         'mimeType',
+        'report',
         'snapshot',
         'state',
       ]);

@@ -1,18 +1,22 @@
 import type { Text } from '../../../core';
+import { getMarkdownMarkWriter } from '../internal/markdownMappings';
 import type { MdRootContent } from '../mdast';
 import type { MdMark, SerializeMdContext } from '../types';
-
-// inlineCode should be last because of the spec in mdast
-// https://github.com/inokawa/remark-slate-transformer/issues/145
-export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
-const basicMarkdownMarkSet = new Set(basicMarkdownMarks);
 
 export const convertTextsSerialize = (
   slateTexts: readonly Text[],
   options: SerializeMdContext
 ): MdMark[] => {
-  const customLeaf = [...options.mappings.encodeByMark.keys()];
+  const { mappings } = options;
   const plainMarkSet = new Set(options.plainMarks);
+  // A mark is written when a writer represents its value on that leaf.
+  const isWritten = (leaf: Text | undefined, key: string) =>
+    !!leaf?.[key] &&
+    !plainMarkSet.has(key) &&
+    getMarkdownMarkWriter(mappings, key, leaf[key]) !== undefined;
+
+  const writerKind = (leaf: Text | undefined, key: string) =>
+    leaf && getMarkdownMarkWriter(mappings, key, leaf[key])?.kind;
 
   const mdastTexts: MdMark[] = [];
 
@@ -27,26 +31,24 @@ export const convertTextsSerialize = (
       if (
         key === 'text' ||
         !value ||
-        basicMarkdownMarkSet.has(key) ||
-        customLeaf.includes(key) ||
-        plainMarkSet.has(key)
+        plainMarkSet.has(key) ||
+        isWritten(cur, key) ||
+        options.state.schema.property({ key, placement: 'text' })?.role ===
+          'metadata'
       ) {
         return;
       }
-      const location = options.modelLocation(cur);
 
+      // Markdown keeps the text; only the formatting is lost.
       options.report({
-        action: 'dropped',
-        code: 'markdown-unsupported-node',
-        message: `Text property "${key}" has no installed Markdown mapping.`,
-        model: {
-          ...location,
-          property: key,
-        },
-        nodeType: key,
+        code: 'markdown-property-omitted',
+        key,
+        message: `Markdown cannot represent text property "${key}"; it was omitted.`,
+        model: { ...options.modelLocation(cur), property: key },
         owner: key,
         phase: 'serialize',
-        severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
+        reason: 'unsupported',
+        severity: 'warning',
       });
     });
     textTemp += cur.text;
@@ -57,23 +59,12 @@ export const convertTextsSerialize = (
     const prev = slateTexts[j - 1];
     const next = slateTexts[j + 1];
     ends = [];
-    (
-      [
-        ...basicMarkdownMarks,
-        // exclude repeated marks
-        ...customLeaf.filter((key) => !basicMarkdownMarkSet.has(key)),
-      ] as const
-    ).forEach((key) => {
-      if (cur[key]) {
-        // Skip marks that should be treated as plain text
-        if (plainMarkSet.has(key)) {
-          return;
-        }
-
-        if (!prev?.[key]) {
+    mappings.markOrder.forEach((key) => {
+      if (isWritten(cur, key)) {
+        if (!isWritten(prev, key)) {
           starts.push(key);
         }
-        if (!next?.[key]) {
+        if (!isWritten(next, key)) {
           ends.push(key);
         }
       }
@@ -97,7 +88,8 @@ export const convertTextsSerialize = (
         endsToRemove.length === 1 &&
         (prevStarts.toString() !== starts.toString() ||
           // https://github.com/inokawa/remark-slate-transformer/issues/90
-          (prevEnds.some((mark) => mark === 'italic') && endSet.has('bold'))) &&
+          (prevEnds.some((key) => writerKind(prev, key) === 'emphasis') &&
+            ends.some((key) => writerKind(cur, key) === 'strong'))) &&
         starts.length - endsToRemove.length === 0
       ) {
         while (textTemp.startsWith(' ')) {
@@ -118,28 +110,16 @@ export const convertTextsSerialize = (
         .slice()
         .reverse()
         .forEach((key) => {
-          const encode = options.mappings.encodeByMark.get(key);
+          const writer = getMarkdownMarkWriter(mappings, key, cur[key]);
 
-          if (encode) {
-            const node = encode(cur, options);
-
-            if (node && isMdMarkContainer(node)) {
-              res = {
-                ...node,
-                children: [res],
-              };
-            }
-          }
-
-          switch (key) {
-            case 'bold': {
-              res = {
-                children: [res],
-                type: 'strong',
-              };
+          switch (writer?.kind) {
+            case 'delete':
+            case 'emphasis':
+            case 'strong': {
+              res = { children: [res], type: writer.kind };
               break;
             }
-            case 'code': {
+            case 'inlineCode': {
               let currentRes = res;
               while (
                 currentRes.type !== 'text' &&
@@ -151,18 +131,16 @@ export const convertTextsSerialize = (
 
               break;
             }
-            case 'italic': {
-              res = {
-                children: [res],
-                type: 'emphasis',
-              };
+            case 'wrap': {
+              const node = writer.wrap?.(cur, options);
+
+              if (node && isMdMarkContainer(node)) {
+                res = { ...node, children: [res] };
+              }
               break;
             }
-            case 'strikethrough': {
-              res = {
-                children: [res],
-                type: 'delete',
-              };
+            // A mark without a writer was reported where it was read.
+            case undefined: {
               break;
             }
           }

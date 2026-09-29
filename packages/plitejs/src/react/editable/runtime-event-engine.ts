@@ -238,6 +238,7 @@ export const useEditableEventRuntime = ({
     readOnly,
     repair: eventCore.repair,
     rootRef,
+    runPaste: runtime.runPaste,
     setExplicitViewportBackedSelection:
       runtime.setExplicitViewportBackedSelection,
     viewportBackedSelection,

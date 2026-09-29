@@ -354,6 +354,11 @@ plugin 事件处理器配置。
 在交互和静态渲染中，为主 element、leaf 或 text renderer 添加可信 DOM attribute。
 函数值是纯 per-node render callback，不能调用 React hook。
 </APISubListItem>
+<APISubListItem parent="render" name="readsDocument" type="boolean" optional>
+渲染该 plugin 的 element 时是否读取 element 之后的内容，例如列出所有标题的目录。
+静态渲染会在一个块及其之前的所有块都未变化时复用该块；读取后续内容的 element
+会在文档每次变化时重新渲染。
+</APISubListItem>
 <APISubListItem parent="render" name="useViewElementAttributes" type="UseViewElementAttributes<D>" optional>
 为每个 mounted Plate content view 中启用的当前 plugin 创建一个 React hook host。
 callback 通过 `view` 获取当前 Plate root，并返回作用于整个 element host 的稀疏

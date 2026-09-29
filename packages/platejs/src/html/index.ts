@@ -7,12 +7,11 @@ export type {
   HtmlNodeSpec,
   HtmlWrapperSpec,
 } from '../core';
-export { HtmlPlugin } from '../lib/plugins/html/HtmlPlugin';
 export {
-  parseHtml,
-  parseHtmlSlice,
-  serializeHtml,
-} from '../lib/plugins/html/htmlConversion';
+  decodeHtmlDataTransfer,
+  HtmlPlugin,
+} from '../lib/plugins/html/HtmlPlugin';
+export { parseHtml, serializeHtml } from '../lib/plugins/html/htmlConversion';
 export type {
   HtmlApi,
   HtmlDiagnostic,

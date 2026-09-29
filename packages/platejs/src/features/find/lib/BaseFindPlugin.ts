@@ -2,6 +2,7 @@ import {
   definePlugin,
   NodeApi,
   TextApi,
+  type Descendant,
   type NodeKey,
   type Range,
 } from '../../../core';
@@ -27,6 +28,9 @@ export const BaseFindPlugin = definePlugin('find', {
   initialState,
 }).extend(({ editor, store }) => {
   let matchesByAnchorPath = new Map<string, readonly FindMatch[]>();
+  // Matches are paths into the searched document; another document a view
+  // renders must not show them.
+  let searchedChildren: readonly Descendant[] | null = null;
   const search = (query: string, force = false) => {
     const previous = store.get();
     if (!force && query === previous.query) return;
@@ -53,6 +57,7 @@ export const BaseFindPlugin = definePlugin('find', {
       indexed.set(key, group);
     }
     matchesByAnchorPath = indexed;
+    searchedChildren = editor.read.children();
     store.set({
       query,
       matches,
@@ -116,8 +121,14 @@ export const BaseFindPlugin = definePlugin('find', {
           }
           if (nodeKeys.size > 0) refresh({ nodeKeys: [...nodeKeys] });
         }),
-      read: ({ entry: [node, path] }) => {
-        if (!TextApi.isText(node)) return [];
+      read: ({ editor: view, entry: [node, path] }) => {
+        if (
+          !TextApi.isText(node) ||
+          matchesByAnchorPath.size === 0 ||
+          view.read.children() !== searchedChildren
+        ) {
+          return [];
+        }
         const { matches, activeIndex } = store.get();
         const activeId = matches[activeIndex]?.id;
         return (matchesByAnchorPath.get(path.join('.')) ?? []).map((match) => ({

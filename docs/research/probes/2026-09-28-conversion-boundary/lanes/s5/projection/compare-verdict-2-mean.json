@@ -1,0 +1,896 @@
+[
+  {
+    "cell": "ai-cjk-10000",
+    "verdict": "pass",
+    "status": "complete",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "baseline": {
+      "a": 551.5,
+      "b": 2047.6,
+      "c": 3779.8,
+      "gc": 261.9,
+      "busy": 7283.9
+    },
+    "candidate": {
+      "a": 91.4,
+      "b": 156,
+      "c": 2829.7,
+      "gc": 73.8,
+      "busy": 3815
+    },
+    "pairs": [
+      {
+        "baseline": 1888.9,
+        "candidate": 266.4,
+        "gainPercent": 85.9
+      },
+      {
+        "baseline": 2893.5,
+        "candidate": 177,
+        "gainPercent": 93.9
+      },
+      {
+        "baseline": 3015,
+        "candidate": 298.8,
+        "gainPercent": 90.1
+      }
+    ],
+    "spreadMs": 1126.1,
+    "finalP95": {
+      "baseline": 379.6,
+      "candidate": 192.7,
+      "baselineSplit": {
+        "taskMs": 379.6,
+        "arrivalTask": 379.6,
+        "span": 379.6,
+        "dom": 378,
+        "parse": 25.3,
+        "transaction": 94.3,
+        "react": 238.2,
+        "gcMinor": 8.3,
+        "gcMajor": 0
+      },
+      "candidateSplit": {
+        "taskMs": 192.7,
+        "arrivalTask": 192.7,
+        "span": 192.7,
+        "dom": 191.2,
+        "parse": 1,
+        "transaction": 6.3,
+        "react": 171.3,
+        "gcMinor": 3.1,
+        "gcMajor": 0
+      }
+    },
+    "arrivalP95": {
+      "baseline": 405.6,
+      "candidate": 160.7
+    },
+    "vsVerdict2Candidate": {
+      "a": {
+        "splice": 58.3,
+        "projection": 91.4,
+        "deltaMs": 33.1,
+        "deltaPercent": 56.8
+      },
+      "b": {
+        "splice": 199.8,
+        "projection": 156,
+        "deltaMs": -43.8,
+        "deltaPercent": -21.9
+      },
+      "c": {
+        "splice": 2353.7,
+        "projection": 2829.7,
+        "deltaMs": 476,
+        "deltaPercent": 20.2
+      },
+      "gc": {
+        "splice": 82.3,
+        "projection": 73.8,
+        "deltaMs": -8.5,
+        "deltaPercent": -10.3
+      },
+      "busy": {
+        "splice": 3094.9,
+        "projection": 3815,
+        "deltaMs": 720.1,
+        "deltaPercent": 23.3
+      },
+      "finalP95": {
+        "splice": 155.6,
+        "projection": 192.7
+      },
+      "finalSplit": {
+        "splice": {
+          "taskMs": 155.6,
+          "arrivalTask": null,
+          "span": null,
+          "dom": null,
+          "parse": 0.4,
+          "transaction": 4.4,
+          "react": 135.3,
+          "gcMinor": 2.3,
+          "gcMajor": 0
+        },
+        "projection": {
+          "taskMs": 192.7,
+          "arrivalTask": 192.7,
+          "span": 192.7,
+          "dom": 191.2,
+          "parse": 1,
+          "transaction": 6.3,
+          "react": 171.3,
+          "gcMinor": 3.1,
+          "gcMajor": 0
+        }
+      },
+      "arrivalP95": {
+        "splice": 162,
+        "projection": 160.7
+      },
+      "pairsAB": {
+        "splice": [
+          260.4,
+          259,
+          255
+        ],
+        "projection": [
+          266.4,
+          177,
+          298.8
+        ]
+      }
+    }
+  },
+  {
+    "cell": "ai-rich-10000",
+    "verdict": "pass",
+    "status": "complete",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "baseline": {
+      "a": 225.2,
+      "b": 772.6,
+      "c": 1276.5,
+      "gc": 83.4,
+      "busy": 2665
+    },
+    "candidate": {
+      "a": 41.4,
+      "b": 64.1,
+      "c": 1051.8,
+      "gc": 36.3,
+      "busy": 1474.4
+    },
+    "pairs": [
+      {
+        "baseline": 985.9,
+        "candidate": 107,
+        "gainPercent": 89.1
+      },
+      {
+        "baseline": 981.2,
+        "candidate": 102.9,
+        "gainPercent": 89.5
+      },
+      {
+        "baseline": 1026.1,
+        "candidate": 106.5,
+        "gainPercent": 89.6
+      }
+    ],
+    "spreadMs": 44.9,
+    "finalP95": {
+      "baseline": 153.9,
+      "candidate": 71.7,
+      "baselineSplit": {
+        "taskMs": 153.9,
+        "arrivalTask": 153.9,
+        "span": 153.9,
+        "dom": 152.8,
+        "parse": 10.6,
+        "transaction": 39.6,
+        "react": 92,
+        "gcMinor": 3.2,
+        "gcMajor": 0
+      },
+      "candidateSplit": {
+        "taskMs": 71.7,
+        "arrivalTask": 71.7,
+        "span": 71.7,
+        "dom": 70.7,
+        "parse": 0.4,
+        "transaction": 2.5,
+        "react": 65.4,
+        "gcMinor": 1.2,
+        "gcMajor": 0
+      }
+    },
+    "arrivalP95": {
+      "baseline": 123.3,
+      "candidate": 76.4
+    },
+    "vsVerdict2Candidate": {
+      "a": {
+        "splice": 47.4,
+        "projection": 41.4,
+        "deltaMs": -6,
+        "deltaPercent": -12.7
+      },
+      "b": {
+        "splice": 131.5,
+        "projection": 64.1,
+        "deltaMs": -67.4,
+        "deltaPercent": -51.3
+      },
+      "c": {
+        "splice": 1277.4,
+        "projection": 1051.8,
+        "deltaMs": -225.6,
+        "deltaPercent": -17.7
+      },
+      "gc": {
+        "splice": 41.6,
+        "projection": 36.3,
+        "deltaMs": -5.3,
+        "deltaPercent": -12.7
+      },
+      "busy": {
+        "splice": 1754.9,
+        "projection": 1474.4,
+        "deltaMs": -280.5,
+        "deltaPercent": -16
+      },
+      "finalP95": {
+        "splice": 85,
+        "projection": 71.7
+      },
+      "finalSplit": {
+        "splice": {
+          "taskMs": 85,
+          "arrivalTask": null,
+          "span": null,
+          "dom": null,
+          "parse": 0,
+          "transaction": 0,
+          "react": 73.8,
+          "gcMinor": 1.3,
+          "gcMajor": 0
+        },
+        "projection": {
+          "taskMs": 71.7,
+          "arrivalTask": 71.7,
+          "span": 71.7,
+          "dom": 70.7,
+          "parse": 0.4,
+          "transaction": 2.5,
+          "react": 65.4,
+          "gcMinor": 1.2,
+          "gcMajor": 0
+        }
+      },
+      "arrivalP95": {
+        "splice": 89.1,
+        "projection": 76.4
+      },
+      "pairsAB": {
+        "splice": [
+          171.6,
+          184.7,
+          180.6
+        ],
+        "projection": [
+          107,
+          102.9,
+          106.5
+        ]
+      }
+    }
+  },
+  {
+    "cell": "ai-rich-50000",
+    "verdict": "pass",
+    "status": "complete",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "baseline": {
+      "a": 7295.5,
+      "b": 22585.3,
+      "c": 39847.2,
+      "gc": 3110.2,
+      "busy": 77534.2
+    },
+    "candidate": {
+      "a": 417.9,
+      "b": 1650.9,
+      "c": 33920.6,
+      "gc": 856.7,
+      "busy": 40992.5
+    },
+    "pairs": [
+      {
+        "baseline": 29886.4,
+        "candidate": 1877.9,
+        "gainPercent": 93.7
+      },
+      {
+        "baseline": 28853.3,
+        "candidate": 1902.4,
+        "gainPercent": 93.4
+      },
+      {
+        "baseline": 30902.7,
+        "candidate": 2426.1,
+        "gainPercent": 92.1
+      }
+    ],
+    "spreadMs": 2049.4,
+    "finalP95": {
+      "baseline": 965.9,
+      "candidate": 491.9,
+      "baselineSplit": {
+        "taskMs": 965.9,
+        "arrivalTask": 965.9,
+        "span": 965.9,
+        "dom": 963.6,
+        "parse": 73.1,
+        "transaction": 234.5,
+        "react": 601.1,
+        "gcMinor": 24.5,
+        "gcMajor": 0
+      },
+      "candidateSplit": {
+        "taskMs": 491.9,
+        "arrivalTask": 491.9,
+        "span": 491.9,
+        "dom": 490.2,
+        "parse": 1.8,
+        "transaction": 17.4,
+        "react": 450.9,
+        "gcMinor": 7.2,
+        "gcMajor": 0
+      }
+    },
+    "arrivalP95": {
+      "baseline": 868.2,
+      "candidate": 372.2
+    },
+    "vsVerdict2Candidate": {
+      "a": {
+        "splice": 286.1,
+        "projection": 417.9,
+        "deltaMs": 131.8,
+        "deltaPercent": 46.1
+      },
+      "b": {
+        "splice": 586.3,
+        "projection": 1650.9,
+        "deltaMs": 1064.6,
+        "deltaPercent": 181.6
+      },
+      "c": {
+        "splice": 25665.4,
+        "projection": 33920.6,
+        "deltaMs": 8255.2,
+        "deltaPercent": 32.2
+      },
+      "gc": {
+        "splice": 687.2,
+        "projection": 856.7,
+        "deltaMs": 169.5,
+        "deltaPercent": 24.7
+      },
+      "busy": {
+        "splice": 29748.4,
+        "projection": 40992.5,
+        "deltaMs": 11244.1,
+        "deltaPercent": 37.8
+      },
+      "finalP95": {
+        "splice": 386.8,
+        "projection": 491.9
+      },
+      "finalSplit": {
+        "splice": {
+          "taskMs": 386.8,
+          "arrivalTask": null,
+          "span": null,
+          "dom": null,
+          "parse": 1.2,
+          "transaction": 1.5,
+          "react": 359.6,
+          "gcMinor": 5.8,
+          "gcMajor": 0
+        },
+        "projection": {
+          "taskMs": 491.9,
+          "arrivalTask": 491.9,
+          "span": 491.9,
+          "dom": 490.2,
+          "parse": 1.8,
+          "transaction": 17.4,
+          "react": 450.9,
+          "gcMinor": 7.2,
+          "gcMajor": 0
+        }
+      },
+      "arrivalP95": {
+        "splice": 289.8,
+        "projection": 372.2
+      },
+      "pairsAB": {
+        "splice": [
+          868.5,
+          885.9,
+          862.9
+        ],
+        "projection": [
+          1877.9,
+          1902.4,
+          2426.1
+        ]
+      }
+    }
+  },
+  {
+    "cell": "static-cjk-10000",
+    "verdict": "pass",
+    "status": "complete",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "baseline": {
+      "a": 345.9,
+      "b": 1289.1,
+      "c": 2244,
+      "gc": 171.1,
+      "busy": 4604.7
+    },
+    "candidate": {
+      "a": 56.1,
+      "b": 106.8,
+      "c": 1931,
+      "gc": 56.9,
+      "busy": 2649.1
+    },
+    "pairs": [
+      {
+        "baseline": 1639.1,
+        "candidate": 163.1,
+        "gainPercent": 90
+      },
+      {
+        "baseline": 1641.1,
+        "candidate": 174,
+        "gainPercent": 89.4
+      },
+      {
+        "baseline": 1624.6,
+        "candidate": 151.8,
+        "gainPercent": 90.7
+      }
+    ],
+    "spreadMs": 22.2,
+    "finalP95": {
+      "baseline": 201.3,
+      "candidate": 103.4,
+      "baselineSplit": {
+        "taskMs": 201.3,
+        "arrivalTask": 201.3,
+        "span": 201.3,
+        "dom": 201.2,
+        "parse": 16.3,
+        "transaction": 61.7,
+        "react": 113.4,
+        "gcMinor": 6.7,
+        "gcMajor": 0
+      },
+      "candidateSplit": {
+        "taskMs": 103.4,
+        "arrivalTask": 1.2,
+        "span": 103.4,
+        "dom": 103.3,
+        "parse": 0,
+        "transaction": 5,
+        "react": 89.7,
+        "gcMinor": 2.1,
+        "gcMajor": 0
+      }
+    },
+    "arrivalP95": {
+      "baseline": 201.6,
+      "candidate": 115.8
+    },
+    "vsVerdict2Candidate": {
+      "a": {
+        "splice": 68.5,
+        "projection": 56.1,
+        "deltaMs": -12.4,
+        "deltaPercent": -18.1
+      },
+      "b": {
+        "splice": 139.9,
+        "projection": 106.8,
+        "deltaMs": -33.1,
+        "deltaPercent": -23.7
+      },
+      "c": {
+        "splice": 2118.5,
+        "projection": 1931,
+        "deltaMs": -187.5,
+        "deltaPercent": -8.9
+      },
+      "gc": {
+        "splice": 59.8,
+        "projection": 56.9,
+        "deltaMs": -2.9,
+        "deltaPercent": -4.8
+      },
+      "busy": {
+        "splice": 2800.2,
+        "projection": 2649.1,
+        "deltaMs": -151.1,
+        "deltaPercent": -5.4
+      },
+      "finalP95": {
+        "splice": 110.8,
+        "projection": 103.4
+      },
+      "finalSplit": {
+        "splice": {
+          "taskMs": 110.8,
+          "arrivalTask": null,
+          "span": null,
+          "dom": null,
+          "parse": 0,
+          "transaction": 2.2,
+          "react": 107.8,
+          "gcMinor": 1.8,
+          "gcMajor": 0
+        },
+        "projection": {
+          "taskMs": 103.4,
+          "arrivalTask": 1.2,
+          "span": 103.4,
+          "dom": 103.3,
+          "parse": 0,
+          "transaction": 5,
+          "react": 89.7,
+          "gcMinor": 2.1,
+          "gcMajor": 0
+        }
+      },
+      "arrivalP95": {
+        "splice": 127.4,
+        "projection": 115.8
+      },
+      "pairsAB": {
+        "splice": [
+          206,
+          212.3,
+          207
+        ],
+        "projection": [
+          163.1,
+          174,
+          151.8
+        ]
+      }
+    }
+  },
+  {
+    "cell": "static-rich-10000",
+    "verdict": "pass",
+    "status": "complete",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "baseline": {
+      "a": 215.6,
+      "b": 660.4,
+      "c": 1146.6,
+      "gc": 75.8,
+      "busy": 2487.8
+    },
+    "candidate": {
+      "a": 48.7,
+      "b": 73.7,
+      "c": 1190.4,
+      "gc": 37.9,
+      "busy": 1774.3
+    },
+    "pairs": [
+      {
+        "baseline": 846.3,
+        "candidate": 93.6,
+        "gainPercent": 88.9
+      },
+      {
+        "baseline": 866,
+        "candidate": 173.1,
+        "gainPercent": 80
+      },
+      {
+        "baseline": 915.8,
+        "candidate": 100.7,
+        "gainPercent": 89
+      }
+    ],
+    "spreadMs": 79.5,
+    "finalP95": {
+      "baseline": 108.9,
+      "candidate": 60.8,
+      "baselineSplit": {
+        "taskMs": 108.9,
+        "arrivalTask": 108.9,
+        "span": 108.9,
+        "dom": 108.9,
+        "parse": 10,
+        "transaction": 36.5,
+        "react": 55.4,
+        "gcMinor": 3.4,
+        "gcMajor": 0
+      },
+      "candidateSplit": {
+        "taskMs": 60.8,
+        "arrivalTask": 1.3,
+        "span": 60.8,
+        "dom": 60.7,
+        "parse": 0,
+        "transaction": 2.5,
+        "react": 58.1,
+        "gcMinor": 0.8,
+        "gcMajor": 0
+      }
+    },
+    "arrivalP95": {
+      "baseline": 115.1,
+      "candidate": 79.4
+    },
+    "vsVerdict2Candidate": {
+      "a": {
+        "splice": 41.1,
+        "projection": 48.7,
+        "deltaMs": 7.6,
+        "deltaPercent": 18.5
+      },
+      "b": {
+        "splice": 93.5,
+        "projection": 73.7,
+        "deltaMs": -19.8,
+        "deltaPercent": -21.2
+      },
+      "c": {
+        "splice": 1114.3,
+        "projection": 1190.4,
+        "deltaMs": 76.1,
+        "deltaPercent": 6.8
+      },
+      "gc": {
+        "splice": 34.8,
+        "projection": 37.9,
+        "deltaMs": 3.1,
+        "deltaPercent": 8.9
+      },
+      "busy": {
+        "splice": 1575.3,
+        "projection": 1774.3,
+        "deltaMs": 199,
+        "deltaPercent": 12.6
+      },
+      "finalP95": {
+        "splice": 54.6,
+        "projection": 60.8
+      },
+      "finalSplit": {
+        "splice": {
+          "taskMs": 54.6,
+          "arrivalTask": null,
+          "span": null,
+          "dom": null,
+          "parse": 0,
+          "transaction": 1.5,
+          "react": 48.5,
+          "gcMinor": 1.1,
+          "gcMajor": 0
+        },
+        "projection": {
+          "taskMs": 60.8,
+          "arrivalTask": 1.3,
+          "span": 60.8,
+          "dom": 60.7,
+          "parse": 0,
+          "transaction": 2.5,
+          "react": 58.1,
+          "gcMinor": 0.8,
+          "gcMajor": 0
+        }
+      },
+      "arrivalP95": {
+        "splice": 79.9,
+        "projection": 79.4
+      },
+      "pairsAB": {
+        "splice": [
+          136,
+          136.3,
+          131.6
+        ],
+        "projection": [
+          93.6,
+          173.1,
+          100.7
+        ]
+      }
+    }
+  },
+  {
+    "cell": "static-rich-50000",
+    "verdict": "inconclusive",
+    "status": "complete",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": false,
+      "workPass": true
+    },
+    "baseline": {
+      "a": 7650.1,
+      "b": 22481.3,
+      "c": 44783.3,
+      "gc": 3496.5,
+      "busy": 85243.5
+    },
+    "candidate": {
+      "a": 318.7,
+      "b": 1803,
+      "c": 39525.4,
+      "gc": 1088.8,
+      "busy": 48167.3
+    },
+    "pairs": [
+      {
+        "baseline": 23558.7,
+        "candidate": 2626.2,
+        "gainPercent": 88.9
+      },
+      {
+        "baseline": 21566.9,
+        "candidate": 1803.8,
+        "gainPercent": 91.6
+      },
+      {
+        "baseline": 45268.8,
+        "candidate": 1935,
+        "gainPercent": 95.7
+      }
+    ],
+    "spreadMs": 23701.8,
+    "finalP95": {
+      "baseline": 650.8,
+      "candidate": 626.3,
+      "baselineSplit": {
+        "taskMs": 650.8,
+        "arrivalTask": 650.8,
+        "span": 650.8,
+        "dom": 650.8,
+        "parse": 63.9,
+        "transaction": 184.6,
+        "react": 362.2,
+        "gcMinor": 24,
+        "gcMajor": 0
+      },
+      "candidateSplit": {
+        "taskMs": 626.3,
+        "arrivalTask": 3.1,
+        "span": 626.3,
+        "dom": 626.2,
+        "parse": 2.5,
+        "transaction": 27.3,
+        "react": 560.7,
+        "gcMinor": 14.6,
+        "gcMajor": 0
+      }
+    },
+    "arrivalP95": {
+      "baseline": 632.5,
+      "candidate": 446.1
+    },
+    "vsVerdict2Candidate": {
+      "a": {
+        "splice": 277.6,
+        "projection": 318.7,
+        "deltaMs": 41.1,
+        "deltaPercent": 14.8
+      },
+      "b": {
+        "splice": 441.8,
+        "projection": 1803,
+        "deltaMs": 1361.2,
+        "deltaPercent": 308.1
+      },
+      "c": {
+        "splice": 24231.8,
+        "projection": 39525.4,
+        "deltaMs": 15293.6,
+        "deltaPercent": 63.1
+      },
+      "gc": {
+        "splice": 648.8,
+        "projection": 1088.8,
+        "deltaMs": 440,
+        "deltaPercent": 67.8
+      },
+      "busy": {
+        "splice": 28780.5,
+        "projection": 48167.3,
+        "deltaMs": 19386.8,
+        "deltaPercent": 67.4
+      },
+      "finalP95": {
+        "splice": 248.4,
+        "projection": 626.3
+      },
+      "finalSplit": {
+        "splice": {
+          "taskMs": 248.4,
+          "arrivalTask": null,
+          "span": null,
+          "dom": null,
+          "parse": 3.1,
+          "transaction": 1,
+          "react": 240.4,
+          "gcMinor": 4.8,
+          "gcMajor": 0
+        },
+        "projection": {
+          "taskMs": 626.3,
+          "arrivalTask": 3.1,
+          "span": 626.3,
+          "dom": 626.2,
+          "parse": 2.5,
+          "transaction": 27.3,
+          "react": 560.7,
+          "gcMinor": 14.6,
+          "gcMajor": 0
+        }
+      },
+      "arrivalP95": {
+        "splice": 257.2,
+        "projection": 446.1
+      },
+      "pairsAB": {
+        "splice": [
+          722.7,
+          721.9,
+          713.7
+        ],
+        "projection": [
+          2626.2,
+          1803.8,
+          1935
+        ]
+      }
+    }
+  }
+]

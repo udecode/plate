@@ -133,7 +133,6 @@ describe('Markdown node mapping compiler', () => {
                 type: 'strong',
               };
             },
-            mark: true,
           },
         });
       },
@@ -157,8 +156,8 @@ describe('Markdown node mapping compiler', () => {
     expect(result.ok).toBe(true);
     expect([...compiled.encodeByType.keys()]).toContain('persistedElement');
     expect(compiled.encodeByType.has('elementCapability')).toBe(false);
-    expect([...compiled.encodeByMark.keys()]).toContain('persistedMark');
-    expect(compiled.encodeByMark.has('markCapability')).toBe(false);
+    expect([...compiled.markWriters.keys()]).toContain('persistedMark');
+    expect(compiled.markWriters.has('markCapability')).toBe(false);
     expect(elementIdentity).toBe('persistedElement');
     expect(markIdentity).toBe('persistedMark');
     expect(elementContext).toEqual({
@@ -252,14 +251,21 @@ describe('Markdown node mapping compiler', () => {
         type: 'customParagraph',
       },
     ]);
+    // An unregistered tag is raw HTML: kept as text in the custom paragraph.
     expect(editor.api.markdown.parse('<unknown />')).toMatchObject({
       diagnostics: [
         expect.objectContaining({
           code: 'markdown-unsupported-node',
-          severity: 'error',
+          impact: 'lossless',
+          severity: 'warning',
         }),
       ],
-      ok: false,
+      document: {
+        children: [
+          { children: [{ text: '<unknown />' }], type: 'customParagraph' },
+        ],
+      },
+      ok: true,
     });
     expect(
       parseDocument(editor, 'First\n\n\nSecond').children.every(
@@ -277,6 +283,44 @@ describe('Markdown node mapping compiler', () => {
       ],
       ok: false,
     });
+  });
+
+  it('claims properties whose encodeAttributes output the encoder keeps', () => {
+    const notePlugin = (keep: boolean) =>
+      definePlugin('note', {
+        schema: {
+          element: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            properties: { tone: property.string() },
+          },
+        },
+        formats: ({ defineFormats, schema: { type } }) =>
+          defineFormats({
+            markdown: {
+              tag: type,
+              encode: ({ encodeAttributes, encodePhrasing, node }) => {
+                const attributes = encodeAttributes({ tone: node.tone });
+
+                return {
+                  attributes: keep ? attributes : [],
+                  children: encodePhrasing(node.children),
+                  name: type,
+                  type: 'mdxJsxTextElement',
+                };
+              },
+            },
+          }),
+      });
+    const document = {
+      children: [{ children: [{ text: 'Body' }], tone: 'info', type: 'note' }],
+    };
+    const omitted = (keep: boolean) =>
+      createEditor({ plugins: [notePlugin(keep), MarkdownPlugin] })
+        .api.markdown.serialize({ document })
+        .diagnostics.filter(({ code }) => code === 'markdown-property-omitted');
+
+    expect(omitted(true)).toEqual([]);
+    expect(omitted(false)).toMatchObject([{ key: 'tone' }]);
   });
 
   it('orders decode claims by priority and caches the compiled editor view', () => {
@@ -532,11 +576,7 @@ describe('Markdown node mapping compiler', () => {
       },
       formats: ({ defineFormats }) =>
         defineFormats({
-          markdown: {
-            tag: 'strong',
-            mark: true,
-            decode: () => true,
-          },
+          markdown: { tag: 'strong' },
         }),
     });
 
@@ -566,7 +606,7 @@ describe('Markdown node mapping compiler', () => {
     ).toThrow('declares tag "shared" as');
   });
 
-  it('rejects a priority on a mark mapping and a second encoder for one mark', () => {
+  it('rejects fields that do not fit the target role', () => {
     const markPlugin = (name: string, markdown: unknown) =>
       definePlugin(name, {
         schema: {
@@ -575,9 +615,7 @@ describe('Markdown node mapping compiler', () => {
       }).extend(({ defineFormats }) => ({
         // @plate-schema-adoption-negative-format
         formats: {
-          ...defineFormats({
-            markdown: { mark: true, wrap: () => undefined },
-          }),
+          ...defineFormats({ markdown: { tag: 'y' } }),
           markdown,
         } as never,
       }));
@@ -585,55 +623,97 @@ describe('Markdown node mapping compiler', () => {
     expect(() =>
       createEditor({
         plugins: [
-          markPlugin('prioritized', {
-            decode: () => true,
-            mark: true,
-            priority: 1,
-            tag: 'x',
-          }),
+          markPlugin('prioritized', { priority: 1, tag: 'x' }),
           MarkdownPlugin,
         ],
       })
-    ).toThrow('mark mappings compose and take no priority');
+    ).toThrow('targets a mark; "priority" applies only to element mappings.');
+    expect(() =>
+      createEditor({
+        plugins: [markPlugin('linked', { node: 'link' }), MarkdownPlugin],
+      })
+    ).toThrow('define decode for "link"');
     expect(() =>
       createEditor({
         plugins: [
-          markPlugin('twice', [
-            { mark: true, wrap: () => ({ type: 'strong' }) },
-            { mark: true, wrap: () => ({ type: 'strong' }) },
-          ]),
+          markPlugin('styled', { style: 'color', value: true, tag: 'x' }),
           MarkdownPlugin,
         ],
       })
-    ).toThrow('one encoder for target "twice"');
+    ).toThrow('cannot combine style with value');
   });
 
-  it('reads a mark without an encoder and reports it on export', () => {
-    const ReadOnlyMark = definePlugin('readOnlyMark', {
+  it('derives mark decoding and writing from the declaration', () => {
+    const Level = definePlugin('level', {
+      schema: { mark: property.enum(['low', 'high']) },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          markdown: [
+            { tag: 'low', value: 'low' },
+            { tag: 'high', value: 'high' },
+            // Read-only alias: the first writer for a value wins.
+            { tag: 'hi', value: 'high' },
+          ],
+        }),
+    });
+    const Tone = definePlugin('tone', {
+      schema: { mark: property.string() },
+      formats: ({ defineFormats }) =>
+        defineFormats({ markdown: { tag: 'span', style: 'color' } }),
+    });
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, Level, Tone, MarkdownPlugin],
+    });
+    const document = parseDocument(
+      editor,
+      '<low>a</low><hi>b</hi><span style="color: red;">c</span>'
+    );
+
+    expect(document.children).toEqual([
+      {
+        children: [
+          { level: 'low', text: 'a' },
+          { level: 'high', text: 'b' },
+          { text: 'c', tone: 'red' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+    expect(editor.api.markdown.serialize({ document })).toEqual({
+      data: '<low>a</low><high>b</high><span style="color: red;">c</span>\n',
+      diagnostics: [],
+      ok: true,
+    });
+  });
+
+  it('keeps the text of an unmapped mark and warns about the formatting', () => {
+    const Unmapped = definePlugin('unmapped', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
-      formats: ({ defineFormats }) =>
-        defineFormats({
-          markdown: { tag: 'ro', mark: true, decode: () => true },
-        }),
     });
     const editor = createEditor({
-      plugins: [BaseParagraphPlugin, ReadOnlyMark, MarkdownPlugin],
+      plugins: [BaseParagraphPlugin, Unmapped, MarkdownPlugin],
     });
-    const document = parseDocument(editor, '<ro>x</ro>');
 
-    expect(document.children).toEqual([
-      { children: [{ readOnlyMark: true, text: 'x' }], type: 'paragraph' },
-    ]);
     expect(
-      editor.api.markdown.serialize({ document, lossPolicy: 'allow' })
+      editor.api.markdown.serialize({
+        document: {
+          children: [
+            {
+              children: [{ text: 'x', unmapped: true }],
+              type: 'paragraph',
+            },
+          ],
+        },
+      })
     ).toMatchObject({
       data: 'x\n',
       diagnostics: [
         expect.objectContaining({
-          code: 'markdown-unsupported-node',
-          nodeType: 'readOnlyMark',
+          code: 'markdown-property-omitted',
+          key: 'unmapped',
+          severity: 'warning',
         }),
       ],
       ok: true,

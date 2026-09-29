@@ -152,7 +152,6 @@ URL 解析和无头交互行为共享同一个状态契约：
 LinkPlugin.configure({
   initialState: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
-    dangerouslySkipSanitization: false,
   },
 });
 ```
@@ -161,10 +160,11 @@ LinkPlugin.configure({
 
 选项：
 
-- `allowedSchemes?: string[]` — 解析和链接清理接受的 URL 协议。默认值：
-  `['http', 'https', 'mailto', 'tel']`。
-- `dangerouslySkipSanitization?: boolean` — 设置为 `true` 时跳过 URL 清理。
-  默认值：`false`。
+- `allowedSchemes?: string[]` — link 在插入、导入或渲染时可以使用的 URL 协议。
+  相对 URL 始终允许。可以为应用 deep link 添加 `vscode` 等协议。`javascript:`、
+  `vbscript:`、`data:` 等可执行脚本的 destination 永远不允许，存储的 link URL
+  也必须满足这一下限。HTML 与 Markdown 导入会保留 destination 不被允许的 link
+  的文本，并报告被移除的 destination。默认值：`['http', 'https', 'mailto', 'tel']`。
 
 <APIOptions type="object">
 <APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
@@ -217,7 +217,7 @@ editor.update.link.unwrap({ split: true });
 | `editor.update.link.upsertText(options)` | 替换选区上方链接的文本。 |
 | `editor.update.link.wrap(options)` | 将选中文本包裹为链接。 |
 
-`upsert` 会编码未转义的 URI 字符，调用 `transformInput`，并在修改文档前验证结果。已有的有效百分号转义保持不变。`skipValidation` 只跳过验证，仍会处理输入。当 `insertTextInLink` 在已有链接内插入文本时，输入会保留为原始文本。
+`upsert` 会编码未转义的 URI 字符，调用 `transformInput`，并在修改文档前验证结果。已有的有效百分号转义保持不变。`skipValidation` 只跳过 `isUrl` 与 `allowedSchemes` 验证，仍会处理输入；低于导航下限的 URL（例如 `javascript:`）仍会被拒绝。当 `insertTextInLink` 在已有链接内插入文本时，输入会保留为原始文本。
 
 ## 插件 API
 

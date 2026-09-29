@@ -108,7 +108,7 @@ describe('BaseMediaEmbedPlugin', () => {
         children: [{ text: 'Embed caption' }],
         type: 'mediaEmbed',
         url: 'https://example.com/embed',
-        width: '640px',
+        width: 640,
       },
     ]);
     iframe?.remove();
@@ -117,7 +117,7 @@ describe('BaseMediaEmbedPlugin', () => {
         children: [{ text: 'Embed caption' }],
         type: 'mediaEmbed',
         url: 'https://example.com/embed',
-        width: '640px',
+        width: 640,
       },
     ]);
     expect(
@@ -135,41 +135,49 @@ describe('BaseMediaEmbedPlugin', () => {
         url: 'https://example.com/embed',
       },
     ]);
+    const unsafeFigure =
+      '<figure class="editor-media-embed" ' +
+      'data-editor-media-url="javascript:alert(1)">' +
+      '<figcaption>Embed caption</figcaption></figure>';
+    const removed = {
+      action: 'dropped',
+      code: 'html-unsupported-content',
+      kind: 'element',
+    };
+
+    expect(safe.api.html.parseSlice(unsafeFigure)).toMatchObject({
+      diagnostics: [{ ...removed, severity: 'error' }],
+      ok: false,
+    });
+
+    const allowed = safe.api.html.parseSlice(unsafeFigure, {
+      lossPolicy: 'allow',
+    });
+
+    expect(allowed).toMatchObject({
+      diagnostics: [{ ...removed, severity: 'warning' }],
+      ok: true,
+    });
     expect(
-      parseHtmlSliceContent(
-        safe,
-        '<figure class="editor-media-embed" ' +
-          'data-editor-media-url="javascript:alert(1)">' +
-          '<figcaption>Embed caption</figcaption></figure>'
-      )?.some(
-        (node) => NodeApi.isElement(node) && node.type === 'mediaEmbed'
-      ) ?? false
+      allowed.ok &&
+        allowed.slice.content.some(
+          (node) => NodeApi.isElement(node) && node.type === 'mediaEmbed'
+        )
     ).toBe(false);
 
-    const unsafe = createEditor({
-      plugins: [BaseMediaEmbedPlugin],
-      selection: SelectionApi.nodes([[0]]),
-      initialValue: [
-        {
-          children: [{ text: '' }],
-          type: 'mediaEmbed',
-          url: 'javascript:alert(1)',
-        },
-      ],
-    });
-    const unsafeData = new DataTransfer();
-
-    unsafe.api.dom.clipboard.writeSelection(unsafeData);
-
-    const unsafeDocument = new DOMParser().parseFromString(
-      unsafeData.getData('text/html'),
-      'text/html'
-    );
-
-    expect(unsafeDocument.body.querySelector('iframe')).toBeNull();
-    expect(
-      unsafeDocument.body.querySelector('[data-editor-fragment]')
-    ).not.toBeNull();
+    // A stored embed cannot hold a script URL, so no output path can emit one.
+    expect(() =>
+      createEditor({
+        plugins: [BaseMediaEmbedPlugin],
+        initialValue: [
+          {
+            children: [{ text: '' }],
+            type: 'mediaEmbed',
+            url: 'javascript:alert(1)',
+          },
+        ],
+      })
+    ).toThrow('fails custom property validation');
   });
 
   it('stores normalized embed metadata for supported providers', () => {

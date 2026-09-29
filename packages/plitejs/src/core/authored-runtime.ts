@@ -35,6 +35,7 @@ export type NativeAuthoredTransaction = {
   ) => void;
   prepare?: (commit: EditorCommit) => void;
   publish?: (commit: EditorCommit) => void;
+  settle?: () => void;
   close: (commit: EditorCommit | null, failed: boolean) => void;
 };
 

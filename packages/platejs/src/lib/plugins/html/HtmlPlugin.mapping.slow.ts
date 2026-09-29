@@ -104,8 +104,9 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
 
             return { url: element.getAttribute('href') || undefined };
           },
-          encode: ({ content, node }) => {
+          encode: ({ content, node, preserve }) => {
             counters.elementEncode += 1;
+            preserve('url');
 
             return {
               attributes: { href: node.url },
@@ -206,8 +207,9 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
 
             return Number.isFinite(width) ? { width } : {};
           },
-          encode: ({ content, node }) => {
+          encode: ({ content, node, preserve }) => {
             counters.elementEncode += 1;
+            preserve('width');
 
             return {
               children: content,
@@ -314,8 +316,9 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
               ...(Number.isFinite(width) ? { width } : {}),
             };
           },
-          encode: ({ content, node }) => {
+          encode: ({ content, node, preserve }) => {
             counters.elementEncode += 1;
+            preserve('url', 'width');
 
             return {
               attributes: { class: 'benchmark-media' },

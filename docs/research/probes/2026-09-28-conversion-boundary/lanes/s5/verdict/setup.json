@@ -1,0 +1,60 @@
+{
+  "run": "S5 verdict run on final code",
+  "date": "2026-09-29",
+  "snapshot": {
+    "takenAt": "2026-09-29T09:04:57Z",
+    "head": "a7750ad388b2d4626c0a4eef2d3e0e23454010f4",
+    "changedOrUntracked": 383,
+    "deleted": 4,
+    "listFingerprint": "4274dd56cf56b0b5",
+    "files": "snapshot-files.sha256",
+    "deletedFiles": "snapshot-deleted.txt",
+    "note": "one file list copied into both worktrees (scratchpad s5/wt-v-cand, s5/wt-v-base); the git-ignored apps/www/src/app/api/ai/{command,copilot}/route.ts copied from the main checkout into both"
+  },
+  "baseline": "baseline.patch (byte-identical to the 02:05 patch; the three consumer files are unchanged since 02:05)",
+  "build": {
+    "command": "PLATE_WWW_PLITE=1 PLATE_WWW_WEBPACK=1 PLATE_WWW_ASYNC_DOCS=1 PLATE_WWW_DIST_DIR=.next-v NODE_OPTIONS=--max-old-space-size=8192 next build --webpack --no-mangling --debug-build-paths \"src/app/(blocks)/blocks/[name]/page.tsx,src/app/(blocks)/blocks/clipboard-static-proof/page.tsx,src/app/(blocks)/blocks/clipboard-upload-proof/page.tsx,src/app/(app)/page.tsx,src/app/(app)/docs/[[...slug]]/page.tsx,src/app/(view)/view/[name]/page.tsx,src/app/api/ai/command/route.ts,src/app/api/ai/copilot/route.ts,src/app/api/files/route.ts,src/app/api/plite/ready/route.ts\"",
+    "seconds": {
+      "candidate": 134,
+      "baseline": 135,
+      "parallel": true
+    },
+    "nonPliteCandidate": {
+      "distDir": ".next-vd",
+      "paths": "src/app/(blocks)/blocks/[name]/page.tsx",
+      "seconds": 56
+    },
+    "whyNoMangling": "the gate attributes CPU-profile samples by function name; mangled bundles reduce names to single letters"
+  },
+  "servers": {
+    "3541": "candidate Plite",
+    "3542": "baseline Plite",
+    "3543": "candidate non-Plite (toast)"
+  },
+  "commands": {
+    "matrix": "S5_BENCH=1 S5_OUT=<lanes/s5/verdict> S5_BASELINE_URL=http://localhost:3542 PLAYWRIGHT_BASE_URL=http://localhost:3541 pnpm --filter www test:www-browser:chromium tests/browser/markdown-streaming-contract.spec.ts -g \"S5 acceptance\"",
+    "repeat": "same with S5_CELLS=ai-rich-10000 S5_OUT=<lanes/s5/verdict/repeat> (baseline pair-2 profile lost its JS stacks; glitched receipt in superseded/)",
+    "summary": "node --experimental-strip-types docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts <verdict/matrix>",
+    "finals": "node --experimental-strip-types docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/final-diagnosis.ts <verdict/matrix>"
+  },
+  "spentMs": {
+    "acceptance": 3535036,
+    "liveQueueRecord": 242401,
+    "repeat": 45650
+  },
+  "method": {
+    "gate": "CPU profile (Profiler domain, 1 ms sampling): (a) parseSlice/setPreview incl. store write + (b) updateEditor at the publish site (AI: inside the preview layout effect)",
+    "react": "(c) other React render/commit/effects incl. reads under render",
+    "busy": "trace RunTask sum on the renderer main thread from the start mark to the last output change",
+    "final": "duration of the task that delivers the last chunk (demo) or closes the stream (AI)",
+    "finalDiagnostics": "MinorGC/MajorGC trace events inside the final task, performance.memory.usedJSHeapSize just before it (--enable-precise-memory-info, cached up to 50 ms), usedHeapSizeAfter of the last MajorGC before it, CPU-profile split inside it",
+    "knownLimit": "in these receipts the stream window ended at the last output change, so 7 of 88 streams whose final changed no DOM (all AI CJK) exclude the final task from the gate and busy time; the harness now extends the window to the final task"
+  },
+  "environment": {
+    "machine": "Apple M5 Max, 18 cores",
+    "browser": "chromium-headless-shell 149.0.7827.55 launched with --enable-precise-memory-info",
+    "playwright": "1.61.0",
+    "node": "v22.22.1",
+    "processPriority": "nice 5"
+  }
+}

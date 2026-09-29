@@ -275,7 +275,7 @@ describe('commonmark package surfaces', () => {
       const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
       expect(markdown).toContain('<figure>');
-      expect(markdown).toContain(`<img alt="${alt}" src="/image.png" />`);
+      expect(markdown).toContain(`<img src="/image.png" alt="${alt}" />`);
       expect(markdown).toContain('<figcaption>');
       expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
     }

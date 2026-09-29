@@ -165,9 +165,29 @@ export default async function MyStaticPage() {
 
 `<EditorStatic>` 通过记忆化提升性能：
 -   静态元素和叶子的渲染使用 `React.memo`。
--   **引用相等性：** 未更改的节点引用可防止重新渲染。
+-   **引用相等性：** 只有当一个块、它之前的块或其中的装饰发生变化时，该块才会重新渲染，因此渲染器
+    可以读取自身所在的块以及之前的块，例如列表编号。
+-   **后续内容：** 渲染时读取其后内容的元素（例如目录）在其插件上声明
+    `render: { readsDocument: true }`，并在文档每次变化时重新渲染。
 
 </Steps>
+
+## 渲染文档
+
+传入 `document`，即可通过 editor 的插件渲染一个文档而不编辑 editor：不产生事务、历史记录或选区变化。
+一个已配置的 editor 可以用这种方式渲染流式预览或已保存的版本：
+
+```tsx
+<EditorStatic editor={editor} document={{ children: blocks }} />
+```
+
+文档必须符合 editor 的 schema。每个文档对象只校验一次，再次渲染时请传入同一个对象。
+`EditorPreview` 接受相同的 `document`，从中复制时复制的是所渲染的文档。
+
+通过所渲染的 editor 进行的所有读取都看到该文档：`editor.read`、插件读取（例如
+`editor.plugin(TocPlugin).read.headings()`）以及插件 API。插件从其 render、decorate、read 或 API
+上下文中获得该 editor。插件创建时捕获的 editor（例如 `.extend(({ editor }) => …)` 中的 editor）
+是你传入的 editor，仍保存其自身的值；在读取、装饰或渲染文档期间读取它会抛出错误，并说明修复方式。
 
 ## 客户端替代方案：`EditorPreview`
 
@@ -318,9 +338,15 @@ async function getDocumentAsHtml(value: any[]) {
 
 ```ts
 import type React from 'react';
-import type { Editor } from 'platejs';
+import type { Editor, EditorDocumentValue } from 'platejs';
 
 interface EditorStaticProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * A document to render instead of the editor's own. The editor supplies
+   * the plugins and is not edited.
+   */
+  document?: EditorDocumentValue;
+
   /**
    * The Plate editor instance, created via `createEditor`.
    * Must include component-bound plugins relevant to the content being rendered.
@@ -334,6 +360,7 @@ interface EditorStaticProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 ```
 
+-   **`document`**：通过 editor 的插件渲染、以代替 editor 自身值的文档；参阅上文的“渲染文档”。
 -   **`editor`**：使用 `createEditor` 创建的 `Editor` 实例，包含内容所需的已绑定组件插件。
 
 ## 后续步骤

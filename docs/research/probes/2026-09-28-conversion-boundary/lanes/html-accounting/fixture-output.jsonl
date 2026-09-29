@@ -1,0 +1,30 @@
+{"name":"aligned paragraph","data":"<p style=\"text-align: center\">x</p>","reported":[]}
+{"name":"aligned heading","data":"<h2 style=\"text-align: right\">h</h2>","reported":[]}
+{"name":"aligned image","data":"<figure class=\"editor-image\" style=\"text-align: center\"><img src=\"/a.png\"><figcaption></figcaption></figure>","reported":[]}
+{"name":"audio","data":"<figure class=\"editor-audio\" style=\"text-align: center\"><audio controls src=\"/a.mp3\" style=\"width: 80%\"></audio><figcaption></figcaption></figure>","reported":[]}
+{"name":"blockquote","data":"<blockquote><p>q</p></blockquote>","reported":[]}
+{"name":"bold italic code","data":"<p><strong><code><em>x</em></code></strong></p>","reported":[]}
+{"name":"code block","data":"<pre data-language=\"ts\"><code>const a = 1;</code></pre>","reported":[]}
+{"name":"details","data":"<details><summary>Title</summary><p>Body</p></details>","reported":[]}
+{"name":"headings","data":"<h1>h1</h1><h2>h2</h2><h3>h3</h3><h4>h4</h4><h5>h5</h5><h6>h6</h6>","reported":[]}
+{"name":"horizontal rule","data":"<p>a</p><hr><p>b</p>","reported":[]}
+{"name":"image with caption","data":"<figure class=\"editor-image\"><img alt=\"A\" src=\"/a.png\"><figcaption>Caption</figcaption></figure>","reported":[]}
+{"name":"image native","data":"<figure class=\"editor-image\"><img alt=\"A\" src=\"/a.png\" title=\"T\"><figcaption></figcaption></figure>","reported":[]}
+{"name":"image sized","data":"<figure class=\"editor-image\"><img alt=\"A\" data-editor-natural-height=\"180\" data-editor-natural-width=\"320\" height=\"180\" src=\"/a.png\" width=\"320\" style=\"width: 320px\"><figcaption></figcaption></figure>","reported":[]}
+{"name":"image relative width","data":"<figure class=\"editor-image\"><img src=\"/a.png\" style=\"width: 50%\"><figcaption></figcaption></figure>","reported":[]}
+{"name":"image in a list","data":"<figure class=\"editor-image\" data-indent=\"1\" style=\"margin-left: 24px\"><img alt=\"A\" src=\"/a.png\"><figcaption></figcaption></figure>","reported":["html-unsupported-content:0:listType:warning"]}
+{"name":"indent","data":"<p data-indent=\"2\" style=\"margin-left: 48px\">x</p>","reported":[]}
+{"name":"line height","data":"<p style=\"line-height: 2\">x</p>","reported":[]}
+{"name":"link","data":"<p><a href=\"https://example.com\" target=\"_blank\">site</a></p>","reported":[]}
+{"name":"link without target","data":"<p><a href=\"https://example.com\">site</a></p>","reported":[]}
+{"name":"list nesting","data":"<ul><li data-indent=\"1\" data-list-type=\"bulleted\" style=\"margin-left: 24px\">a</li></ul><ul><li data-indent=\"2\" data-list-type=\"bulleted\" style=\"margin-left: 48px\">b</li></ul><ul><li data-indent=\"1\" data-list-type=\"bulleted\" style=\"margin-left: 24px\">c</li></ul>","reported":[]}
+{"name":"list start and restart","data":"<ol start=\"3\"><li data-indent=\"1\" data-list-start=\"3\" data-list-type=\"numbered\" style=\"margin-left: 24px\">a</li></ol><ol start=\"4\"><li data-indent=\"1\" data-list-type=\"numbered\" style=\"margin-left: 24px\">b</li></ol><ol start=\"1\"><li data-indent=\"1\" data-list-restart=\"1\" data-list-type=\"numbered\" style=\"margin-left: 24px\">c</li></ol>","reported":[]}
+{"name":"list style","data":"<ol start=\"1\" style=\"list-style-type: upper-roman\"><li data-indent=\"1\" data-list-style=\"upper-roman\" data-list-type=\"numbered\" style=\"margin-left: 24px\">a</li></ol>","reported":[]}
+{"name":"list tasks","data":"<ul><li data-checked=\"true\" data-indent=\"1\" data-list-type=\"task\" style=\"margin-left: 24px\">done</li></ul><ul><li data-checked=\"false\" data-indent=\"1\" data-list-type=\"task\" style=\"margin-left: 24px\">todo</li></ul>","reported":[]}
+{"name":"marks","data":"<p><s>s</s></p><p><u>u</u></p><p><mark>h</mark></p><p><kbd>k</kbd></p><p><sub>b</sub></p><p><sup>p</sup></p><p><span style=\"color: red\">c</span></p><p><span style=\"background-color: yellow\">g</span></p><p><span style=\"font-family: serif\">f</span></p><p><span style=\"font-size: 20px\">z</span></p>","reported":[]}
+{"name":"media embed","data":"<figure class=\"editor-media-embed\" data-editor-media-provider=\"youtube\" data-editor-media-source-url=\"https://www.youtube.com/watch?v=x\" data-editor-media-url=\"https://www.youtube.com/embed/x\" data-editor-media-width=\"640px\"><iframe allowfullscreen src=\"https://www.youtube.com/embed/x\" title=\"Embedded media\" style=\"width: 640px\"></iframe><figcaption></figcaption></figure>","reported":[]}
+{"name":"mentions","data":"<p><span data-editor-mention data-editor-mention-label=\"Ada\" data-editor-mention-ref=\"ada\">@Ada</span> <span data-editor-mention data-editor-mention-ref=\"bob\">@bob</span></p>","reported":[]}
+{"name":"table","data":"<table style=\"margin-left: 16px\"><colgroup><col style=\"width: 120px\"><col style=\"width: 80px\"></colgroup><tbody><tr><th><p>h1</p></th><th><p>h2</p></th></tr><tr style=\"height: 40px\"><td style=\"background: red; border-bottom: 2px dashed blue; border-left: 1px solid red\"><p>a</p></td><td><p>b</p></td></tr></tbody></table>","reported":[]}
+{"name":"table spans","data":"<table><tbody><tr><td colspan=\"2\"><p>a</p></td><td rowspan=\"2\"><p>b</p></td></tr><tr><td><p>c</p></td><td><p>d</p></td></tr></tbody></table>","reported":[]}
+{"name":"text indent","data":"<p data-text-indent=\"1\" style=\"text-indent: 24px\">x</p>","reported":[]}
+{"name":"video","data":"<figure class=\"editor-video\" data-editor-media-provider=\"youtube\" data-editor-media-source-url=\"https://www.youtube.com/watch?v=x\"><video controls src=\"/a.mp4\" style=\"width: 640px\"></video><figcaption>Caption</figcaption></figure>","reported":[]}

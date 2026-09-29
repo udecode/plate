@@ -3,12 +3,13 @@ import { type CompositionEvent, type RefObject, useEffect } from 'react';
 import {
   type EditorMarks,
   NodeApi,
+  PointApi,
   type Range,
   RangeApi,
   type Text,
   TextApi,
 } from '../..';
-import { isDOMNode } from '../../dom';
+import { getSelection, isDOMElement, isDOMNode } from '../../dom';
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
@@ -87,6 +88,40 @@ const createCompositionFailureScope = () => {
 
 const getCompositionEventText = (event: CompositionEvent<HTMLDivElement>) =>
   event.data || event.nativeEvent.data;
+
+const getNativeCompositionAnchor = (
+  editor: ReactRuntimeEditor,
+  event: CompositionEvent<HTMLDivElement>,
+  selection: Range | null
+) => {
+  if (!selection || RangeApi.isExpanded(selection)) return null;
+
+  const root = event.currentTarget;
+  const domSelection = getSelection(
+    root.getRootNode() as Document | ShadowRoot
+  );
+  const anchor = domSelection?.focusNode;
+  const anchorElement = isDOMElement(anchor) ? anchor : anchor?.parentElement;
+  const textFlow = anchorElement?.closest('[data-editor-text-flow="true"]');
+
+  if (
+    !domSelection?.isCollapsed ||
+    !isDOMNode(anchor) ||
+    !root.contains(anchor) ||
+    !textFlow ||
+    !root.contains(textFlow)
+  ) {
+    return null;
+  }
+
+  const point = ReactEditor.resolvePoint(
+    editor,
+    [anchor, domSelection.focusOffset],
+    { exactMatch: false }
+  );
+
+  return point && PointApi.equals(point, selection.focus) ? anchor : null;
+};
 
 const isCompositionEventTargetInput = ({
   event,
@@ -978,10 +1013,12 @@ export const applyEditableCompositionStart = ({
 
     const marks = editor.read((state) => state.marks());
     const selection = readRuntimeSelectionRange(editor);
+    const nativeAnchor = getNativeCompositionAnchor(editor, event, selection);
 
     if (inputController) {
       beginEditableCompositionSession(inputController, {
         historyMergePending: editor.read.selection.isExpanded(),
+        nativeAnchor,
       });
       inputController.state.activeIntent = 'composition';
     }

@@ -160,7 +160,6 @@ URL parsing and headless interaction behavior share one state contract:
 LinkPlugin.configure({
   initialState: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
-    dangerouslySkipSanitization: false,
   },
 });
 ```
@@ -169,10 +168,13 @@ LinkPlugin.configure({
 
 Options:
 
-- `allowedSchemes?: string[]` — URL schemes accepted by parsing and
-  sanitization. Default: `['http', 'https', 'mailto', 'tel']`.
-- `dangerouslySkipSanitization?: boolean` — skips URL sanitization when `true`.
-  Default: `false`.
+- `allowedSchemes?: string[]` — URL schemes a link may use when it is
+  inserted, imported, or rendered. Relative URLs are always allowed. Add a
+  scheme such as `vscode` for app deep links. Script-capable destinations,
+  such as `javascript:`, `vbscript:`, and `data:`, are never allowed, and a
+  stored link URL must pass that floor. HTML and Markdown import keep the label
+  of a link whose destination is not allowed and report the removed
+  destination. Default: `['http', 'https', 'mailto', 'tel']`.
 
 <APIOptions type="object">
 <APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
@@ -225,7 +227,7 @@ editor.update.link.unwrap({ split: true });
 | `editor.update.link.upsertText(options)` | Replaces the text of the link above the selection. |
 | `editor.update.link.wrap(options)` | Wraps the selected text in a link. |
 
-`upsert` encodes unescaped URI characters, applies `transformInput`, and validates the result before changing the document. Valid percent escapes remain intact. `skipValidation` skips validation while retaining input preparation. When `insertTextInLink` inserts text inside an existing link, it preserves the input as literal text.
+`upsert` encodes unescaped URI characters, applies `transformInput`, and validates the result before changing the document. Valid percent escapes remain intact. `skipValidation` skips `isUrl` and `allowedSchemes` while retaining input preparation; a URL below the navigation floor, such as `javascript:`, is still refused. When `insertTextInLink` inserts text inside an existing link, it preserves the input as literal text.
 
 ## Plugin API
 

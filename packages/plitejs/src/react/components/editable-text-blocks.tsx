@@ -10,7 +10,6 @@ import {
   type NamedRootKey,
   NodeApi,
   type Path,
-  PathApi,
   RangeApi,
   type RootKey,
   type NodeKey,
@@ -53,7 +52,10 @@ import {
 } from '../decoration-context';
 import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
 import { readContentRootRenderSegments } from '../editable/content-root-owners';
-import type { EditableHistoryReplayEvent } from '../editable/editable-dom-runtime';
+import type {
+  EditableHistoryReplayEvent,
+  EditablePasteResult,
+} from '../editable/editable-dom-runtime';
 import { assertExternalTextElement } from '../editable/external-text-binding';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import {
@@ -75,7 +77,6 @@ import {
   useEditableDOMRuntime,
   useClaimEditableDOMCommit,
 } from '../hooks/use-claim-editable-dom-commit';
-import { useEditorComposing } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorFocused } from '../hooks/use-editor-focused';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
@@ -690,6 +691,19 @@ export type EditableProps<
   onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onKeyDown?: EditableKeyDownHandler;
   onPaste?: React.ClipboardEventHandler<HTMLDivElement>;
+  /**
+   * Called once for each paste this editable inserts through its built-in
+   * formats: after the paste commits (`inserted: true`), or when no format
+   * can insert it (`inserted: false`). A diagnostic with `impact: 'lossy'`
+   * means pasted content was left out.
+   *
+   * Not called when `onPaste` or a plugin command handles the paste without
+   * the built-in formats, or when this editable unmounts before the paste
+   * settles. An `onPaste` handler that inserts through
+   * `editor.api.dom.clipboard.insertData` during the paste gets that
+   * insertion's result.
+   */
+  onPasteResult?: (result: EditablePasteResult) => void;
   placeholder?: ReactNode;
   readOnly?: boolean;
   ref?: React.Ref<HTMLDivElement>;
@@ -801,20 +815,11 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     getClientDOMSnapshot,
     getServerDOMSnapshot
   );
-  const isComposing = useEditorComposing();
-  const compositionPath = editableRuntime?.compositionPath ?? null;
-  const ownsComposition =
-    isComposing &&
-    (!compositionPath ||
-      (path !== null &&
-        (PathApi.equals(path, compositionPath) ||
-          PathApi.isAncestor(path, compositionPath))));
   const canRenderImperativeTextFlow =
     React.useContext(ImperativeTextFlowContext) &&
     hasClientDOM &&
     !renderChildrenOverride &&
-    !hasTextChildFragments &&
-    !ownsComposition;
+    !hasTextChildFragments;
   const bindNodeRef = usePliteNodeRef(nodeKey, { path, pliteNode: node });
 
   if (!node || !path) {
@@ -1366,6 +1371,7 @@ const EditableInner = <TElement extends ElementNode>({
   onHistoryReplay,
   onKeyDown,
   onPaste,
+  onPasteResult,
   readOnly = false,
   placeholder,
   renderElement,
@@ -1695,6 +1701,7 @@ const EditableInner = <TElement extends ElementNode>({
           onHistoryReplay={onHistoryReplay}
           onKeyDown={onKeyDown}
           onPaste={onPaste}
+          onPasteResult={onPasteResult}
           readOnly={effectiveReadOnly}
           ref={editableRootRef}
           scrollSelectionIntoView={scrollSelectionIntoView}

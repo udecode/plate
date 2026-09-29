@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-29-markdown-joiner-removal",
+      "href": "/registry/changelog/2026-09-29-markdown-joiner-removal.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Remove the Markdown joiner transform",
+      "change": {
+        "type": "source",
+        "date": "2026-09-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["markdown-joiner-transform", "ai-api"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-29-word-export-loss-and-source-reuse",
+      "href": "/registry/changelog/2026-09-29-word-export-loss-and-source-reuse.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep Word exports downloading with a warning when content such as a comment cannot be placed, and warn when an imported Word file will be regenerated on export instead of returned unchanged",
+      "change": {
+        "type": "source",
+        "date": "2026-09-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["export-toolbar-button", "import-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-28-markdown-registered-tags",
       "href": "/registry/changelog/2026-09-28-markdown-registered-tags.json",
       "status": "draft",
@@ -15,14 +51,26 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": [
-        "markdown",
-        "markdown-streaming-demo",
-        "markdown-to-editor-demo",
-        "ai-api",
-        "markdown-joiner-transform"
-      ],
-      "entries": 5,
+      "targets": ["markdown", "markdown-to-editor-demo", "ai-api"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-28-markdown-streaming-demo-lifecycle",
+      "href": "/registry/changelog/2026-09-28-markdown-streaming-demo-lifecycle.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Stream Markdown previews without AI chat and update only changed preview blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-09-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["markdown-streaming-demo", "ai-menu"],
+      "entries": 2,
       "diagnostics": []
     },
     {

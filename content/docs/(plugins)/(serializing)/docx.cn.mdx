@@ -107,7 +107,7 @@ export async function importFile(file: File) {
 
 ### 保留源文件用于后续导出
 
-同一个编辑器需要导入、编辑并导出 Word 文件时，请设置 `retainSource: true`。导入成功后会返回 `DocxSource`。应用负责保存该对象，将它传给 `exportDocx`，并在文档关闭或被其他文件替换时调用 `dispose()`。
+同一个编辑器需要导入、编辑并导出 Word 文件时，请设置 `retainSource: true`。导入成功后会返回 `source`：精确导出可以原样返回该包时为 `DocxSource`，否则为 `null`，同时返回 `source-unavailable` 警告，指出第一个无法接纳的部件。应用负责保存 source，将它传给 `exportDocx`，并在文档关闭或被其他文件替换时调用 `dispose()`。
 
 ```tsx title="components/editor/docx-roundtrip.tsx" showLineNumbers
 import { exportDocx } from "platejs/docx/export";
@@ -128,8 +128,18 @@ const exported = await exportDocx(editor, {
   stylesheet,
 });
 
-imported.source.dispose();
+imported.source?.dispose();
 ```
+
+精确导出只接纳一组封闭的被动包内容：
+
+- 位于 `word/document.xml` 的主文档，以及样式、设置、编号、字体和主题；
+- 页眉、页脚、脚注、尾注和批注；
+- 核心、扩展和自定义文档属性，以及缩略图；
+- 通过内部关系引用的 AVIF、BMP、GIF、JPEG、PNG 和 WebP 图片；
+- 目标为绝对地址且满足导航下限的超链接。
+
+`PAGE` 是唯一可识别的字段指令。其他任何部件、关系、标记命名空间、字段指令或 XML 处理指令都会使 `source` 为 `null`，包括不安全或相对的超链接、其他外部关系、宏、ActiveX 控件、OLE 对象、导入的 HTML 块、外部模板、自定义 XML 数据，以及 SVG 或 EMF 图片。`source` 为 `null` 并不表示导入丢失了内容；没有 source 时，导出会从编辑器内容生成文档。
 
 `DocxSource` 保留已通过检查的压缩包，以及不可变的文档、批注、schema 和限制对应关系。它不会保留展开后的 ZIP 条目或编辑器引用。`dispose()` 可重复调用。已经取得 source 的导出可以在释放后完成；后续导出会返回 `source-unavailable` diagnostic，并从编辑器内容生成新的 DOCX。
 
@@ -195,16 +205,43 @@ const result = await exportDocx(editor, {
 
 导入器始终先转换 Word 可见包，再检查附加的 envelope。只有 envelope 版本、已安装 schema、所有包部件摘要和 accepted/proposed Word 投影全部匹配时，才恢复原生元数据和命名根。文件被编辑或损坏时，导入器使用 Word 派生文档，并返回 `native-data-ignored` diagnostic。
 
+### 内容损失
+
+`exportDocx` 默认拒绝内容损失。图片无法嵌入，或传入的批注没有可表示的范围时，结果为 `ok: false`，并以错误 diagnostic 报告该损失。设置 `lossPolicy: "allow"` 可以下载文件，并以警告形式接收相同的损失：
+
+```tsx
+const result = await exportDocx(editor, {
+  comments,
+  lossPolicy: "allow",
+  projection: "review",
+});
+```
+
+命名根、文档元数据、被移除的链接目标，以及 DOCX 无法表示的其他属性，在两种策略下都只返回警告。`accepted` 导出会省略所标注内容全部被该投影排除的批注，并返回警告；这与 Word 拒绝被批注的修订建议时的行为一致。
+
+### 链接和图片
+
+只有目标为绝对地址且满足导航下限（例如 `https:` 或 `mailto:`）时，导出才会写入链接目标；`#introduction` 这类书签链接会写成 Word 锚点。不安全的目标，以及在 Word 文件中没有文档基址的相对链接，会保留文本，但不写入目标。
+
+图片以 PNG、JPEG、GIF 或 BMP 格式嵌入。设置 `allowRemoteImages: true` 可以在导出时获取 HTTP(S) 图片。以下图片会被省略，并保留其 alt 文本：
+
+- 来源不安全、为相对地址或为 blob 的图片；
+- `allowRemoteImages` 关闭时的远程图片；
+- 无法获取的图片；
+- 其他格式的图片。
+
+返回文件前，导出会使用与保留 source 相同的被动词汇检查写出的包；超出该范围的输出会被拒绝，并返回 `invalid-package` 错误。
+
 ### 使用源文件导出
 
 传入有效 `source` 时，未改动的 `review` 导出会逐字节返回导入的文件。精确复用要求使用同一个编译 schema、review 文档未改动、批注未传入或完全相同，并且没有传入 `title`、`margins`、`orientation` 或 `pageSize`。该路径不会重新生成内容，因此也不会调用静态渲染器。
 
-精确检查不通过时，`exportDocx` 会重新生成完整正文。内部关系闭合、可达、无名称冲突、且不含活动内容或外部关系时，可以保留下列 source 单元：
+精确检查不通过时，`exportDocx` 会重新生成完整正文。内部关系闭合、可达且无名称冲突时，会保留下列 source 单元：
 
-- 单节文档的页眉和页脚，以及它们引用的内部图片和资源；
+- 单节文档的页眉和页脚，以及它们引用的图片和超链接；
 - 从包根关系文件可达的包级子图。
 
-重新生成的包会省略 source 正文 XML、只由正文引用的关系、孤立部件、多节页眉和页脚、外部关系、数字签名、宏、ActiveX、OLE 对象和控件。Diagnostic 会说明 source 被重写的原因，并标识每个被省略的 source 部件。逐字节复用可以返回包含这些单元的未改动文件，因为该路径不会生成新的包。
+重新生成的包会省略 source 正文 XML、只由正文引用的部件（例如脚注和正文图片），以及多节文档的页眉和页脚。Diagnostic 会说明 source 被重写的原因，并标识每个被省略的 source 部件。
 
 需要重新生成时，省略 `comments` 表示不生成批注。编辑后若要保留批注，请显式传入应用持有的当前批注。导入的批注范围不会自动重定位。
 
@@ -219,7 +256,7 @@ const result = await exportDocx(editor, {
 });
 ```
 
-主文档和富文本批注正文使用同一套静态渲染器。范围不完整的批注会被省略，并返回 diagnostic。
+主文档和富文本批注正文使用同一套静态渲染器。在默认 `lossPolicy` 下，范围不完整的批注会使导出失败；设置 `lossPolicy: "allow"` 时，导出会省略该批注并返回警告。
 
 ### Static rendering 与样式
 
@@ -238,6 +275,7 @@ static mapping。应用提供展示 CSS；需要不同 wrapper 时可以传入�
 | Tracked revision                              | 保留支持的 insert、delete、move、run-property 和 paragraph-property change |
 | 主文档批注                                    | 存在时保留富文本正文、范围、作者/日期、durable ID、回复和 resolved 状态    |
 | 导入中的嵌入图片                              | 省略资源并返回 `resource-omitted` diagnostic                               |
+| 导出中的链接和图片                            | 写入绝对且满足导航下限的链接，以及 PNG、JPEG、GIF 或 BMP 图片；报告被移除的目标和被省略的图片 |
 | 单节文档的页眉和页脚                          | 使用 source 导出时保留安全且闭合的子图，但不映射到编辑器文档                |
 | 多节页眉和页脚、脚注和尾注                    | 检查并限制对应包部件；编辑 source 后省略并返回 diagnostic                    |
 | 字段、文本框、形状、图表、SmartArt 和嵌入对象 | 转换可访问时保留纯文本，否则报告不支持或省略的内容                         |
@@ -267,7 +305,7 @@ importDocx(
 协作式 `signal`、`lossPolicy`、部分 `limits` 覆盖和 `retainSource`。Import 会在
 第一次 await 前捕获 detached target，之后不会读取 live editor 或 mutable plugin
 store。每个限制都必须是正的安全整数。字面量 `retainSource: true` 会在成功结果中
-加入 `source`；省略或传入字面量 `false` 时没有该字段。
+加入 `source: DocxSource | null`；省略或传入字面量 `false` 时没有该字段。
 
 | 默认限制           |      值 |
 | ------------------ | ------: |
@@ -281,7 +319,7 @@ store。每个限制都必须是正的安全整数。字面量 `retainSource: tr
 | `maxXmlDepth`      |     128 |
 | `maxXmlNodes`      | 500,000 |
 
-成功结果包含 `document`、`comments` 和结构化 `diagnostics`。保留 source 的成功结果还包含 `source`。失败结果只包含 `diagnostics`。
+成功结果包含 `document`、`comments` 和结构化 `diagnostics`。保留 source 的成功结果还包含 `source`；精确导出无法接纳该包时为 `null`。失败结果只包含 `diagnostics`。
 
 ### `DocxSource`
 
@@ -307,15 +345,16 @@ exportDocx(
 | ----------------------- | ---------------------------------------- | -------------------------------- |
 | `projection`            | `'accepted' \| 'proposed' \| 'review'`   | 必填的可见文档投影               |
 | `comments`              | `readonly DocxComment[]`                 | 使用 proposed 投影坐标的批注记录 |
-| `allowRemoteImages`     | `boolean`                                | 获取远程 HTTP 图片；默认 `false` |
+| `allowRemoteImages`     | `boolean`                                | 获取远程 HTTP(S) 图片并嵌入；默认 `false` |
 | `component`             | `React.ComponentType<EditorStaticProps>` | 可选 static editor wrapper       |
 | `fontFamily`            | `string`                                 | 文档正文字体                     |
+| `lossPolicy`            | `'allow' \| 'reject'`                    | 内容被省略时失败，或以警告返回；默认 `'reject'` |
 | `margins`               | `Margins`                                | 以二十分之一磅为单位的页边距     |
 | `orientation`           | `'landscape' \| 'portrait'`              | 页面方向                         |
 | `pageSize`              | `PageSize`                               | 以二十分之一磅为单位的页面尺寸   |
 | `nativeState`           | `'attach'`                               | 仅在 review 导出中附加 Plate 原生状态 |
 | `signal`                | `AbortSignal`                            | 协作式取消信号                   |
-| `source`                | `DocxSource`                             | 用于精确或安全导出的 source 对应关系 |
+| `source`                | `DocxSource \| null`                     | 用于精确或安全导出的 source 对应关系 |
 | `stylesheet`            | `string`                                 | DOCX 转换前应用的 CSS            |
 | `title`                 | `string`                                 | 文档元数据标题                   |
 

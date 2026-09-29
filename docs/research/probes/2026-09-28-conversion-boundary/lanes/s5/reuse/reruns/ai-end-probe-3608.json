@@ -1,0 +1,75 @@
+{
+ "base": "http://localhost:3608",
+ "during": [
+  {
+   "draft": true,
+   "draftTextTail": "pply a combination of these styles for a",
+   "ends": 1,
+   "endText": [
+    "a"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "sually striking effect.Add strikethrough",
+   "ends": 1,
+   "endText": [
+    "h"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "Add strikethrough to indicate deleted or",
+   "ends": 1,
+   "endText": [
+    "r"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "dicate deleted or outdated content.Write",
+   "ends": 1,
+   "endText": [
+    "e"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": " content.Write code snippets with inline",
+   "ends": 1,
+   "endText": [
+    "e"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    "y"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    "y"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "rmatting for easy readability.Add links﻿",
+   "ends": 0,
+   "endText": []
+  }
+ ],
+ "after": {
+  "draft": true,
+  "draftTextTail": " rule﻿Header 1Header 2Row 1DataRow 2Data",
+  "ends": 1,
+  "endText": [
+   "a"
+  ]
+ }
+}

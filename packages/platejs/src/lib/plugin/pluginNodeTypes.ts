@@ -212,6 +212,27 @@ export type PluginFormatTextValue<D extends AnyBasePluginDefinition> =
       : never
     : never;
 
+/**
+ * Whether the format mapping target contributes a mark (a text property)
+ * rather than an element; `boolean` when the definition does not say.
+ */
+export type PluginFormatIsMark<D extends AnyBasePluginDefinition> = [
+  FormatElementNode<D>,
+] extends [never]
+  ? [FormatPropertyEntries<D, 'text'>] extends [never]
+    ? boolean
+    : true
+  : false;
+
+/** Element property keys the format mapping target's own schema contributes. */
+export type PluginFormatOwnedPropertyKey<D extends AnyBasePluginDefinition> =
+  | Exclude<Extract<keyof FormatElementNode<D>, string>, 'children' | 'type'>
+  | (FormatPropertyEntries<D, 'element'> extends infer TEntry
+      ? TEntry extends Readonly<{ key: infer TKey extends string }>
+        ? TKey
+        : never
+      : never);
+
 /** Node narrowed from the format mapping target's schema contribution. */
 export type PluginFormatNode<D extends AnyBasePluginDefinition> = [
   FormatElementNode<D>,

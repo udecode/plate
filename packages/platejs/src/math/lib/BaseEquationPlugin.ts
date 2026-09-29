@@ -43,10 +43,11 @@ export const BaseEquationPlugin = definePlugin(PLUGINS.equation, {
           latex: node.value,
           type,
         }),
-        encode: ({ node }) => ({
-          type: 'math',
-          value: node.latex,
-        }),
+        encode: ({ node, preserve }) => {
+          preserve('latex');
+
+          return { type: 'math', value: node.latex };
+        },
       },
     }),
   schema: {
@@ -72,10 +73,11 @@ export const BaseInlineEquationPlugin = definePlugin(PLUGINS.inlineEquation, {
           latex: node.value,
           type,
         }),
-        encode: ({ node }) => ({
-          type: 'inlineMath',
-          value: node.latex,
-        }),
+        encode: ({ node, preserve }) => {
+          preserve('latex');
+
+          return { type: 'inlineMath', value: node.latex };
+        },
       },
     }),
   schema: {

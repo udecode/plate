@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-29-markdown-joiner-removal",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-29-markdown-joiner-removal.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "remove",
+  "summary": "Remove the Markdown joiner transform",
+  "targets": [
+    {
+      "name": "markdown-joiner-transform",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for markdown-joiner-transform."
+        }
+      ]
+    },
+    {
+      "name": "ai-api",
+      "files": [
+        "apps/www/src/registry/app/api/ai/command/prompt/common.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getChooseToolPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getCommentPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/route.ts",
+        "apps/www/src/registry/app/api/ai/command/utils.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-29-markdown-joiner-transform-remove-partial-parsing-hides-1f940f2e",
+      "kind": "remove",
+      "summary": "Remove the Markdown joiner transform. The AI command route streams model text without buffering or added delays.",
+      "details": [],
+      "migrationNotes": [
+        "Remove `experimental_transform: markdownJoinerTransform()` from the AI command route and delete lib/markdown-joiner-transform.ts."
+      ],
+      "targets": ["markdown-joiner-transform", "ai-api"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-29",
+          "entry": "2026-09-29-markdown-joiner-removal",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

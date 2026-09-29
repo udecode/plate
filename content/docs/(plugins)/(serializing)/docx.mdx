@@ -109,7 +109,7 @@ An expected file, package, limit, or decode failure returns `{ ok: false, diagno
 
 ### Retain the source for later export
 
-Set `retainSource: true` when the same editor imports, edits, and exports a Word file. A successful import includes a `DocxSource`. Keep that object in application state, pass it to `exportDocx`, and dispose it when the document closes or another file replaces it.
+Set `retainSource: true` when the same editor imports, edits, and exports a Word file. A successful import then includes `source`. It is a `DocxSource` when exact export can return the package unchanged. Otherwise it is `null`, with a `source-unavailable` warning that names the first part exact export cannot admit. Keep the source in application state, pass it to `exportDocx`, and dispose it when the document closes or another file replaces it.
 
 ```tsx title="components/editor/docx-roundtrip.tsx" showLineNumbers
 import { exportDocx } from "platejs/docx/export";
@@ -130,8 +130,18 @@ const exported = await exportDocx(editor, {
   stylesheet,
 });
 
-imported.source.dispose();
+imported.source?.dispose();
 ```
+
+Exact export admits a closed set of passive package content:
+
+- the main document at `word/document.xml`, styles, settings, numbering, fonts, and theme;
+- headers, footers, footnotes, endnotes, and comments;
+- core, extended, and custom document properties and a thumbnail;
+- AVIF, BMP, GIF, JPEG, PNG, and WebP images reached through internal relationships;
+- hyperlinks whose destination is absolute and meets the navigation floor.
+
+`PAGE` is the only recognized field instruction. Any other part, relationship, markup namespace, field instruction, or XML processing instruction leaves `source` null. That includes unsafe or relative hyperlinks, other external relationships, macros, ActiveX controls, OLE objects, imported HTML chunks, external templates, custom XML data, and SVG or EMF images. A null source does not mean the import lost content; exporting without a source generates the document from editor content.
 
 `DocxSource` retains the admitted compressed package plus immutable document, comment, schema, and limit correspondence. It does not retain expanded ZIP entries or an editor reference. `dispose()` is idempotent. An export that already acquired the source can finish after disposal; later exports report `source-unavailable` and generate a fresh DOCX.
 
@@ -199,16 +209,43 @@ const result = await exportDocx(editor, {
 
 The importer always converts the Word-visible package before considering an attached envelope. It restores native metadata and named roots only when the envelope version, installed schema, package-part digests, and accepted/proposed Word projections all match. An edited or corrupt package falls back to the Word-derived document with a `native-data-ignored` diagnostic.
 
+### Content loss
+
+`exportDocx` rejects content loss by default. When an image cannot be embedded, or a supplied comment has no representable range, the result is `ok: false` with the loss as an error diagnostic. Set `lossPolicy: "allow"` to download the file and receive the same loss as warnings:
+
+```tsx
+const result = await exportDocx(editor, {
+  comments,
+  lossPolicy: "allow",
+  projection: "review",
+});
+```
+
+Named roots, document metadata, removed link destinations, and other properties DOCX cannot represent are warnings under both policies. An `accepted` export omits a comment whose annotated content that projection excludes, and reports a warning, as Word does when the annotated suggestion is rejected.
+
+### Links and images
+
+Export writes a link destination only when it is absolute and meets the navigation floor, such as `https:` or `mailto:`. It writes bookmark links such as `#introduction` as Word anchors. An unsafe destination, or a relative link that has no document base in a Word file, keeps its text without the destination.
+
+Images are embedded as PNG, JPEG, GIF, or BMP. Set `allowRemoteImages: true` to fetch HTTP(S) images during export. These images are omitted and leave their alt text:
+
+- an image with an unsafe, relative, or blob source;
+- a remote image when `allowRemoteImages` is off;
+- an image that cannot be fetched;
+- an image in any other format.
+
+Before returning a file, export checks the written package against the same passive vocabulary that retained sources use. Output outside it is withheld with an `invalid-package` error.
+
 ### Source-aware export
 
 With a valid `source`, an unchanged `review` export returns the admitted file byte for byte. Exact reuse requires the same compiled schema, an unchanged review document, unchanged or omitted comments, and no `title`, `margins`, `orientation`, or `pageSize` override. Static renderer options are bypassed on this path because no content is regenerated.
 
-If an exact check fails, `exportDocx` regenerates the complete document body. It can copy these source units when their internal relationships are closed, reachable, nonconflicting, and free of active or external content:
+If an exact check fails, `exportDocx` regenerates the complete document body. It keeps these source units when their internal relationships are closed, reachable, and nonconflicting:
 
-- headers and footers from a document with one section, including their internal images and resources;
+- headers and footers from a document with one section, including their images and hyperlinks;
 - package-level subgraphs reached from the root relationships file.
 
-The regenerated package omits source body XML, body-only relationships, orphan parts, multiple-section headers and footers, external relationships, digital signatures, macros, ActiveX, OLE objects, and controls. Diagnostics report why the source was rewritten and identify each omitted source part. Exact byte reuse can return an unchanged admitted file that contains those units because it does not create a new package claim.
+The regenerated package omits source body XML, body-only parts such as footnotes and body images, and headers and footers from a document with multiple sections. Diagnostics report why the source was rewritten and identify each omitted source part.
 
 When regeneration is required, omitted `comments` means that no comments are generated. Pass the current app-owned comment set explicitly to retain comments after an edit. Imported comment ranges are not relocated automatically.
 
@@ -223,7 +260,7 @@ const result = await exportDocx(editor, {
 });
 ```
 
-The same configured static renderer handles the main document and rich comment bodies. Comments without a complete range remain omitted with a diagnostic.
+The same configured static renderer handles the main document and rich comment bodies. Under the default `lossPolicy`, a comment without a complete range fails the export; with `lossPolicy: "allow"` the export omits it with a warning.
 
 ### Static rendering and styles
 
@@ -243,6 +280,7 @@ and may pass a custom root `component` when it needs a different wrapper.
 | Tracked revisions                                                  | Preserve supported insert, delete, move, run-property, and paragraph-property changes                       |
 | Main-body comments                                                 | Preserve rich bodies, ranges, author/date metadata, durable IDs, replies, and resolved state when present   |
 | Embedded images during import                                      | Omit the resource and return a `resource-omitted` diagnostic                                                |
+| Links and images during export                                     | Write absolute navigation-safe links and PNG, JPEG, GIF, or BMP images; report removed destinations and omitted images |
 | Single-section headers and footers                                | Keep safe closed source subgraphs during source-aware export; do not map them into the editor document      |
 | Multiple-section headers and footers, footnotes, and endnotes     | Inspect and bound their package parts; omit them from edited source-aware output with diagnostics           |
 | Fields, text boxes, shapes, charts, SmartArt, and embedded objects | Keep reachable plain text when conversion exposes it; report unsupported or omitted content                 |
@@ -272,8 +310,9 @@ importDocx(
 cooperative `signal`, `lossPolicy`, partial `limits` overrides, and
 `retainSource`. Import captures that detached target before its first await and
 never reads a live editor or mutable plugin store. Every limit must be a
-positive safe integer. Literal `retainSource: true` conditionally adds `source`
-to a successful result; omitted or literal `false` does not.
+positive safe integer. Literal `retainSource: true` conditionally adds
+`source: DocxSource | null` to a successful result; omitted or literal `false`
+does not.
 
 | Default limit      |   Value |
 | ------------------ | ------: |
@@ -287,7 +326,7 @@ to a successful result; omitted or literal `false` does not.
 | `maxXmlDepth`      |     128 |
 | `maxXmlNodes`      | 500,000 |
 
-A successful result contains `document`, `comments`, and structured `diagnostics`. A retained success also contains `source`. A failed result contains only `diagnostics`.
+A successful result contains `document`, `comments`, and structured `diagnostics`. A retained success also contains `source`, which is `null` when exact export cannot admit the package. A failed result contains only `diagnostics`.
 
 ### `DocxSource`
 
@@ -313,15 +352,16 @@ exportDocx(
 | ----------------------- | ---------------------------------------- | -------------------------------------------------- |
 | `projection`            | `'accepted' \| 'proposed' \| 'review'`   | Required visible document projection               |
 | `comments`              | `readonly DocxComment[]`                 | Comment records in proposed-projection coordinates |
-| `allowRemoteImages`     | `boolean`                                | Fetch remote HTTP images; defaults to `false`      |
+| `allowRemoteImages`     | `boolean`                                | Fetch remote HTTP(S) images to embed; defaults to `false` |
 | `component`             | `React.ComponentType<EditorStaticProps>` | Optional static editor wrapper                     |
 | `fontFamily`            | `string`                                 | Document body font                                 |
+| `lossPolicy`            | `'allow' \| 'reject'`                    | Fail on dropped content, or return it as warnings; defaults to `'reject'` |
 | `margins`               | `Margins`                                | Page margins in twentieths of a point              |
 | `orientation`           | `'landscape' \| 'portrait'`              | Page orientation                                   |
 | `pageSize`              | `PageSize`                               | Page dimensions in twentieths of a point           |
 | `nativeState`           | `'attach'`                               | Attach Plate native state to a review export       |
 | `signal`                | `AbortSignal`                            | Cooperative cancellation signal                    |
-| `source`                | `DocxSource`                             | Retained source correspondence for exact or safe export |
+| `source`                | `DocxSource \| null`                     | Retained source correspondence for exact or safe export |
 | `stylesheet`            | `string`                                 | CSS applied before DOCX conversion                 |
 | `title`                 | `string`                                 | Document metadata title                            |
 

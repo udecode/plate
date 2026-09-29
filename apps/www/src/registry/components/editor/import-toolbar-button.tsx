@@ -278,7 +278,7 @@ export function ImportToolbarButton({
           });
         }
       } catch {
-        if ('source' in result) result.source.dispose();
+        if ('source' in result) result.source?.dispose();
         toast.error(
           'The Word document and its comments could not be imported.'
         );

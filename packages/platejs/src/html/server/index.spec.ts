@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import { parseHtml, parseHtmlSlice } from '.';
+import { parseHtml } from '.';
 import { BaseParagraphPlugin } from '../../core';
 
 const plugins = [BaseParagraphPlugin] as const;
@@ -42,21 +42,6 @@ describe('platejs/html/server', () => {
         children: [{ children: [{ text: 'Server' }], type: 'paragraph' }],
       },
       ok: true,
-    });
-  });
-
-  it('uses the same root and safety policy for slices', () => {
-    const result = parseHtmlSlice(
-      '<script>bad()</script><p data-editor="true">Server slice</p>',
-      { plugins }
-    );
-
-    expect(result).toMatchObject({
-      diagnostics: [{ code: 'html-unsafe-content' }],
-      ok: true,
-      slice: {
-        content: [{ children: [{ text: 'Server slice' }], type: 'paragraph' }],
-      },
     });
   });
 });

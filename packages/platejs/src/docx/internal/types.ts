@@ -89,6 +89,14 @@ export type DocxDiagnostic =
       severity: 'warning';
     }>
   | Readonly<{
+      code: 'source-unavailable';
+      message: string;
+      /** Package part outside the passive vocabulary exact reuse admits. */
+      part: string;
+      reason: 'ineligible';
+      severity: 'warning';
+    }>
+  | Readonly<{
       code: 'source-rewritten';
       message: string;
       reason:

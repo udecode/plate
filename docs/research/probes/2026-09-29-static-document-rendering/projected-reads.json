@@ -1,0 +1,24 @@
+{
+  "checks": {
+    "directReadUsesDocument": true,
+    "pluginReadUsesDocument": true,
+    "componentTocUsesDocument": true,
+    "exportTocUsesDocument": true,
+    "sourceUnchanged": true
+  },
+  "observed": {
+    "projectedHeadings": [
+      "PROJECTED"
+    ],
+    "html": "<div class=\"editor-editor\" data-editor=\"true\" data-editor-node=\"value\"><aside>PROJECTED</aside><div data-editor-node=\"element\" data-editor-path=\"1\" data-editor-root=\"main\" class=\"editor-heading\" style=\"position:relative\"><span data-editor-node=\"text\" data-editor-path=\"1,0\" data-editor-root=\"main\"><span data-editor-leaf=\"true\"><span data-editor-end=\"9\" data-editor-start=\"0\" data-editor-string=\"true\">PROJECTED</span></span></span></div></div>",
+    "exported": "<div class=\"editor-editor\" data-editor=\"true\" data-editor-node=\"value\"><aside>PROJECTED</aside><div data-editor-node=\"element\" data-editor-path=\"1\" data-editor-root=\"main\" class=\"editor-heading\" style=\"position:relative\"><span data-editor-node=\"text\" data-editor-path=\"1,0\" data-editor-root=\"main\"><span data-editor-leaf=\"true\"><span data-editor-end=\"9\" data-editor-start=\"0\" data-editor-string=\"true\">PROJECTED</span></span></span></div></div>"
+  },
+  "sources": {
+    "packages/platejs/src/static/internal/staticDocumentView.ts": "cee8a70f2a7849adf5bcb81a657b8d1aa431555a52b197f8b46f6ac0cdff5427",
+    "packages/platejs/src/static/components/PlateStatic.tsx": "4d20390a9be2b7a97dc94ae3a6c188c5478e3d8ba39c261bfac7e0e35e1cccf1",
+    "packages/platejs/src/static/internal/renderStaticHtmlWithOverrides.tsx": "c918bc51656a146ea3bf9495d843b47f07a9f20e20a336799a7583f8eaac8c25",
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts": "f6ae0c58ca62aaad75618a7b78c2f64744ca9e39d1901cefdb5601e41812141a",
+    "packages/plitejs/src/editor-runtime-view.ts": "52f707944b30796cfcae6184d38cae22b66fc9bbc138f7d53c696ca1a6a28d77",
+    "packages/plitejs/src/core/public-state.ts": "9b998cfd1daa97a1d7ef775ea2da86811a8e26fa7ad7f3ed5b21d5117e477410"
+  }
+}

@@ -1,7 +1,6 @@
 import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server.edge';
 
-import { createProjectedEditorView } from '../../internal/createProjectedEditorView';
+import { createEditorView } from '../../facade';
 import type { Editor } from '../../lib';
 import { projectPlateFormatDocument } from '../../lib/editor/withPlite';
 import { EditorStatic } from '../components/PlateStatic';
@@ -13,6 +12,16 @@ import {
   setStaticComponentOverrides,
   type StaticComponentOverrides,
 } from './staticComponentOverrides';
+
+// Each runtime loads the React server build that works there. The browser
+// build keeps a Node process alive through its MessagePort, Next's webpack
+// client bundles stub the edge build's legacy renderers, and Next rejects the
+// bare `react-dom/server` specifier in server components.
+const loadStaticRenderer = () =>
+  (globalThis as { process?: { versions?: { node?: string } } }).process
+    ?.versions?.node
+    ? import('react-dom/server.edge')
+    : import('react-dom/server.browser');
 
 export const renderStaticHtmlWithOverrides = async (
   editor: Editor,
@@ -34,10 +43,12 @@ export const renderStaticHtmlWithOverrides = async (
     document,
     projection ?? 'proposed'
   );
-  const renderDocument = projected.document;
-  const renderEditor = createProjectedEditorView(editor, renderDocument);
+  const renderEditor = createEditorView(editor, {
+    document: projected.document,
+  }) as unknown as Editor;
 
   if (overrides) setStaticComponentOverrides(renderEditor, overrides);
+  const { renderToStaticMarkup } = await loadStaticRenderer();
   const html = renderToStaticMarkup(
     React.createElement(Component, { editor: renderEditor, ...props })
   );

@@ -1,0 +1,72 @@
+ai-cjk-10000 (complete)
+  baseline  warmup  load  4.8 a 375.5 b 1426 c 511.9 busy 2826.2 final 118.8 | assert 99.95 view 0 json 255.3 update 1427.67 projRead 401.46
+  candidate warmup  load  4.5 a 60.1 b 17.5 c 409.3 busy 838 final 40.8 | assert 16.21 view 17.46 json 2.04 update 1.93 projRead 114.75
+  baseline  pair-0  load  4.6 a 390.6 b 1394.7 c 431.1 busy 2743.5 final 123.3 | assert 88.5 view 0 json 244.24 update 1396.36 projRead 419.11
+  candidate pair-0  load  4.4 a 60.2 b 28.7 c 405.8 busy 833.4 final 40.3 | assert 27.42 view 28.66 json 4.04 update 1.91 projRead 119.61
+  candidate pair-1  load  4.5 a 62.5 b 24.9 c 391.7 busy 825.3 final 37.2 | assert 18.69 view 24.92 json 2.5 update 1.87 projRead 105.74
+  baseline  pair-1  load  4.4 a 387.7 b 1377.6 c 502.2 busy 2774.8 final 119.5 | assert 100.68 view 0 json 225.07 update 1379.16 projRead 410.98
+  baseline  pair-2  load  4.1 a 377.6 b 1398.6 c 497.2 busy 2782.4 final 119.5 | assert 94.96 view 0 json 254.05 update 1400.48 projRead 403.01
+  candidate pair-2  load    5 a 65.4 b 27.5 c 400.8 busy 821.6 final 38.4 | assert 27.45 view 27.54 json 6.73 update 1.19 projRead 121.75
+ai-cjk-50000 (complete)
+  baseline  warmup  load  7.3 a 7898.1 b 29346.2 c 5057.3 busy 48901 final 552.8 | assert 2076.09 view 0 json 5681.27 update 29348.09 projRead 7434.52
+  candidate warmup  load  6.7 a 283.1 b 212.1 c 4098.9 busy 6214.5 final 142 | assert 197.24 view 212.08 json 41.9 update 1.26 projRead 617.61
+  baseline  pair-0  load  7.9 a 7805.7 b 29054.6 c 4542.8 busy 47650.1 final 594.8 | assert 2055.94 view 0 json 5555.72 update 29056.47 projRead 7334.31
+  candidate pair-0  load  7.2 a 316.5 b 205.4 c 4432.1 busy 6601.7 final 145.9 | assert 191.6 view 205.39 json 29.4 update 1.8 projRead 661.9
+  candidate pair-1  load  6.3 a 286.1 b 187.3 c 3989.6 busy 5968.1 final 145 | assert 177.21 view 187.25 json 30.1 update 1.9 projRead 639.57
+  baseline  pair-1  load  5.7 a 7834.7 b 29026.2 c 4313 busy 47211.1 final 594.3 | assert 2093.9 view 0 json 5670.22 update 29028.28 projRead 7415.47
+  baseline  pair-2  load  5.9 a 7874.2 b 29208 c 4332.3 busy 47632.8 final 576.1 | assert 2107.42 view 0 json 5685.93 update 29209.93 projRead 7425.28
+  candidate pair-2  load  5.4 a 275.8 b 198.4 c 4366.7 busy 6402 final 140.5 | assert 185.9 view 198.43 json 35.69 update 1.93 projRead 608.55
+ai-rich-10000 (complete)
+  baseline  warmup  load  5.7 a 235.6 b 790.3 c 256.4 busy 1590 final 81.5 | assert 56.77 view 0 json 122.48 update 791.99 projRead 247.54
+  candidate warmup  load  5.9 a 50.6 b 2.4 c 237.6 busy 564.4 final 24.7 | assert 2.4 view 2.4 json 1.78 update 1.59 projRead 90.57
+  baseline  pair-0  load  5.8 a 232.3 b 774.7 c 274.8 busy 1606 final 79.8 | assert 53.78 view 0 json 120.94 update 776.64 projRead 258.2
+  candidate pair-0  load  5.4 a 43.1 b 6.3 c 254.8 busy 554.9 final 26.1 | assert 6.21 view 6.29 json 1.25 update 1.86 projRead 88.13
+  candidate pair-1  load  5.4 a 47.1 b 3.8 c 239 busy 534.7 final 27.1 | assert 3.81 view 3.81 json 2.44 update 1.19 projRead 84.52
+  baseline  pair-1  load  5.2 a 231.4 b 774.8 c 267.1 busy 1590.4 final 78.9 | assert 46.32 view 0 json 136.24 update 776.41 projRead 261.18
+  baseline  pair-2  load  5.3 a 229.9 b 773.3 c 272.1 busy 1596.2 final 79.6 | assert 46.92 view 0 json 110.27 update 775.12 projRead 268.41
+  candidate pair-2  load    5 a 42 b 9.9 c 241.7 busy 555.2 final 27.4 | assert 9.93 view 9.93 json 1.22 update 1.83 projRead 82.68
+ai-rich-50000 (complete)
+  baseline  warmup  load  5.1 a 4809.9 b 15450 c 2563.1 busy 26034.6 final 352.7 | assert 1061.56 view 0 json 2686.55 update 15451.67 projRead 4651.74
+  candidate warmup  load  4.6 a 246.1 b 113.7 c 2204.2 busy 3720.6 final 86.6 | assert 101.31 view 113.71 json 16.47 update 2.13 projRead 526.86
+  baseline  pair-0  load  4.8 a 4774.3 b 15458.6 c 2540.3 busy 25960 final 356.4 | assert 1069.13 view 0 json 2694.89 update 15460.63 projRead 4621.16
+  candidate pair-0  load  4.5 a 249 b 110.9 c 2088.3 busy 3640.6 final 91.7 | assert 104.68 view 110.92 json 14.82 update 1.82 projRead 494.96
+  candidate pair-1  load  4.9 a 245.9 b 95.9 c 2113.2 busy 3654.9 final 94.5 | assert 90.88 view 95.88 json 12.41 update 1.81 projRead 499.27
+  baseline  pair-1  load  7.5 a 4762 b 15452.9 c 2923 busy 26234.8 final 342.8 | assert 1072.85 view 0 json 2660 update 15454.55 projRead 4611.05
+  baseline  pair-2  load  5.9 a 4791.8 b 14939.3 c 2217.4 busy 25336.7 final 346.7 | assert 1072.62 view 0 json 2557.68 update 14941.06 projRead 4640.27
+  candidate pair-2  load  5.4 a 230.4 b 91.1 c 2025.2 busy 3470.3 final 88.7 | assert 77.23 view 91.08 json 19.27 update 1.25 projRead 464.31
+static-cjk-10000 (complete)
+  baseline  warmup  load  6.2 a 348.8 b 1256.3 c 293.8 busy 2515.7 final 79.1 | assert 91.46 view 0 json 219.32 update 1256.3 projRead 382.53
+  candidate warmup  load  6.2 a 59.2 b 2.4 c 251.2 busy 821.6 final 5.4 | assert 2.39 view 2.39 json 1.93 update 0 projRead 86.76
+  baseline  pair-0  load  6.1 a 351.8 b 1238 c 284.8 busy 2544.5 final 82.6 | assert 95.13 view 0 json 236.27 update 1237.97 projRead 385.62
+  candidate pair-0  load  6.1 a 58.2 b 9.8 c 242.4 busy 755.9 final 5.5 | assert 7.51 view 9.8 json 1.51 update 0 projRead 88.58
+  candidate pair-1  load  6.1 a 61.4 b 5 c 262.1 busy 809.7 final 5.4 | assert 5.02 view 5.02 json 2.88 update 0 projRead 90.25
+  baseline  pair-1  load  5.9 a 345.8 b 1245.6 c 302.3 busy 2545.3 final 80.1 | assert 96.62 view 0.95 json 222.94 update 1244.69 projRead 382.64
+  baseline  pair-2  load  5.5 a 339.4 b 1238.4 c 275.1 busy 2502.1 final 79.9 | assert 91.78 view 0 json 211.31 update 1238.41 projRead 375.94
+  candidate pair-2  load  5.8 a 52.2 b 9.9 c 268.4 busy 772.8 final 5.5 | assert 6.16 view 9.89 json 0.19 update 0 projRead 83.32
+static-cjk-50000 (complete)
+  baseline  warmup  load  5.2 a 7237.4 b 27315.9 c 3560.2 busy 47082.5 final 378.8 | assert 2069.07 view 0 json 5250.55 update 27315.94 projRead 7563.36
+  candidate warmup  load    5 a 239.8 b 66.5 c 3199.7 busy 7264.1 final 11.4 | assert 52.67 view 66.47 json 11.04 update 0 projRead 542.11
+  baseline  pair-0  load  4.5 a 7050.4 b 26263.9 c 3368.6 busy 45062.5 final 390.4 | assert 2018.2 view 0 json 5134.3 update 26263.88 projRead 7383.08
+  candidate pair-0  load  4.2 a 248.4 b 78.6 c 3047.6 busy 6771.2 final 9.6 | assert 68.55 view 78.59 json 27.98 update 0 projRead 583.06
+  candidate pair-1  load  4.1 a 244.7 b 79.2 c 2975.8 busy 6752.8 final 12.4 | assert 72.24 view 79.18 json 16.86 update 0 projRead 562.12
+  baseline  pair-1  load  4.1 a 6921.1 b 25979.9 c 3239.2 busy 44214.8 final 349.1 | assert 2003.74 view 0 json 4928.58 update 25979.92 projRead 7220.39
+  baseline  pair-2  load  5.8 a 7215.5 b 26900.9 c 3400.5 busy 46357.5 final 354.6 | assert 2070.57 view 0 json 5320.49 update 26900.89 projRead 7508.32
+  candidate pair-2  load    5 a 246.7 b 73.5 c 3089.1 busy 6801.9 final 12.1 | assert 63.39 view 73.45 json 23.66 update 0 projRead 537.42
+static-rich-10000 (complete)
+  baseline  warmup  load  6.1 a 218.1 b 651.9 c 167.7 busy 1508.3 final 47.3 | assert 47.35 view 0 json 93.25 update 651.88 projRead 234.76
+  candidate warmup  load  5.7 a 46.6 b 8.7 c 175.5 busy 590.2 final 4.9 | assert 7.47 view 8.71 json 2.65 update 0 projRead 71.68
+  baseline  pair-0  load  6.2 a 219.8 b 649.8 c 171.5 busy 1484.3 final 44.2 | assert 45.52 view 0 json 84.68 update 649.75 projRead 226.51
+  candidate pair-0  load  6.2 a 40.6 b 4.7 c 175.2 busy 582.1 final 5.4 | assert 3.37 view 4.67 json 3.59 update 0 projRead 59.51
+  candidate pair-1  load    6 a 46.9 b 10 c 182.4 busy 602.9 final 5.6 | assert 8.75 view 9.97 json 2.52 update 0 projRead 72.83
+  baseline  pair-1  load  6.3 a 223 b 666 c 191.2 busy 1541.3 final 49.2 | assert 52.47 view 0 json 107.51 update 666.03 projRead 239.17
+  baseline  pair-2  load  6.1 a 217.3 b 641.4 c 169.9 busy 1479.9 final 46 | assert 48.95 view 0 json 94.79 update 641.39 projRead 239.47
+  candidate pair-2  load    6 a 46.6 b 13.2 c 171.6 busy 612.3 final 4.8 | assert 10.7 view 13.21 json 1.26 update 0 projRead 68.1
+static-rich-50000 (complete)
+  baseline  warmup  load  4.6 a 4350.6 b 13413.5 c 2576.6 busy 25570.5 final 200.4 | assert 1055.39 view 0 json 2331.85 update 13413.54 projRead 4583.57
+  candidate warmup  load  4.1 a 172 b 46.4 c 2502.1 busy 5629.6 final 8.2 | assert 40.16 view 46.44 json 12.9 update 0 projRead 422.11
+  baseline  pair-0  load  4.1 a 4382 b 13606.3 c 2617.3 busy 25837.8 final 191.3 | assert 1013.64 view 0 json 2471.87 update 13606.25 projRead 4586.38
+  candidate pair-0  load  4.6 a 168 b 47.4 c 2395 busy 5454.6 final 8.3 | assert 41.24 view 47.42 json 22.48 update 0 projRead 409.7
+  candidate pair-1  load  4.2 a 177.2 b 41.1 c 2377.2 busy 5480.1 final 8.5 | assert 32.31 view 41.09 json 14.43 update 0 projRead 424.78
+  baseline  pair-1  load  5.1 a 4436.3 b 13742.9 c 2756.9 busy 26414.6 final 195.7 | assert 1041.11 view 0 json 2369.98 update 13742.9 projRead 4654.98
+  baseline  pair-2  load  5.9 a 4479.9 b 13660.4 c 2715.5 busy 26436.3 final 204.2 | assert 1034.84 view 0 json 2399.81 update 13660.35 projRead 4669.2
+  candidate pair-2  load    6 a 181.6 b 38.6 c 2465.2 busy 5644 final 12.9 | assert 31.1 view 38.6 json 11.84 update 0 projRead 442.34

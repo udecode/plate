@@ -10,11 +10,14 @@ import {
   type RootKey,
 } from 'plitejs';
 import { authored } from 'plitejs/authored';
-import { dom, domCommands } from 'plitejs/dom';
+import { dataTransferFormats, dom, domCommands } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import { describe, expect, it } from 'vitest';
 
-import { setDOMClipboardFormatKey } from '../../src/dom/internal';
+import {
+  observeDataTransferInsertion,
+  setDOMClipboardFormatKey,
+} from '../../src/dom/internal';
 import {
   getLastCommit as editorGetLastCommit,
   getEditorRuntimeOwner,
@@ -423,6 +426,63 @@ describe('projected editable commands', () => {
       anchor: { path: [0, 0], offset: 'BefZ'.length },
       focus: { path: [0, 0], offset: 'BefZ'.length },
     });
+    expect(readPliteViewSelection(editor)).toBe(null);
+  });
+
+  it('an observed projected paste settles once after its commit', () => {
+    const { editor, graph } = createFixture([
+      dataTransferFormats('projected-paste-reports', [
+        {
+          decode: ({ report }) => {
+            report({ impact: 'lossy', message: 'Left out a chart.' });
+
+            return null;
+          },
+          key: 'reporting-html',
+          mimeType: 'text/html',
+        },
+      ]),
+    ]);
+    const data = new FakeDataTransfer();
+    const outcomes: unknown[] = [];
+
+    editor.update((tx) => {
+      tx.selection.set({
+        kind: 'text',
+        anchor: point(undefined, [2, 0], 0),
+        focus: point(undefined, [2, 0], 0),
+      });
+    });
+    writeForwardProjectedSelection(editor, graph);
+    data.setData('text/html', '<p>Z</p>');
+    data.setData('text/plain', 'Z');
+
+    observeDataTransferInsertion(
+      editor,
+      (inserted, diagnostics) => {
+        outcomes.push({
+          diagnostics,
+          inserted,
+          text: editorString(getCanonicalRuntimeEditor(editor), [0]),
+        });
+      },
+      () =>
+        applyEditableCommand({
+          command: {
+            data: data as unknown as DataTransfer,
+            kind: 'insert-data',
+          },
+          editor,
+        })
+    );
+
+    expect(outcomes).toEqual([
+      {
+        diagnostics: [{ impact: 'lossy', message: 'Left out a chart.' }],
+        inserted: true,
+        text: 'BefZ',
+      },
+    ]);
     expect(readPliteViewSelection(editor)).toBe(null);
   });
 

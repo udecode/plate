@@ -7,6 +7,7 @@ import type {
 } from '../../../dom/plite-dom.internal';
 import {
   ContentSlice,
+  createEditorView,
   EditorSchemaValidationError,
   ElementApi,
   getCompiledEditorSchemaFromApi,
@@ -25,7 +26,6 @@ import {
   type SchemaTarget,
   type Text,
 } from '../../../facade';
-import { createProjectedEditorView } from '../../../internal/createProjectedEditorView';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
   getCompiledPlateModel,
@@ -41,6 +41,7 @@ import {
   getPluginDescriptorMetadata,
   getPluginSchemaFamily,
 } from '../../../internal/utils/mergePlugins';
+import { decideUrl } from '../../../internal/utils/urlPolicy';
 import type { Editor } from '../../editor';
 import { projectPlateFormatDocument } from '../../editor/withPlite';
 import type {
@@ -60,6 +61,12 @@ import {
   parseHtmlAst,
 } from './htmlAst';
 import { isHtmlBlockElement, isHtmlElement, isHtmlText } from './htmlDom';
+import {
+  decideHtmlAttribute,
+  HTML_UNSAFE_TAGS,
+  sanitizeHtmlDom,
+  type HtmlUnsafeRemoval,
+} from './htmlSafety';
 import type {
   HtmlApi,
   HtmlDiagnostic,
@@ -99,6 +106,7 @@ type CompiledHtmlRule = Readonly<{
   owner: string;
   plugin: AnyBasePlugin;
   properties: readonly CompiledHtmlProperty[];
+  propertyIdsByKey: ReadonlyMap<string, string>;
   rulePriority: number;
   targetType: string | null;
 }>;
@@ -123,7 +131,6 @@ type CompiledHtmlMatcherIndex = Readonly<{
 type CompiledHtmlSerializerIndex = Readonly<{
   elementPropertiesByType: ReadonlyMap<string, readonly CompiledHtmlRule[]>;
   elementsByType: ReadonlyMap<string, readonly CompiledHtmlRule[]>;
-  encodablePropertyIds: ReadonlySet<string>;
   marksByParentType: ReadonlyMap<string, readonly CompiledHtmlRule[]>;
 }>;
 
@@ -173,32 +180,16 @@ const HTML_VOID_TAGS = new Set([
   'track',
   'wbr',
 ]);
-const HTML_UNSAFE_TAGS = new Set([
-  'base',
-  'embed',
-  'link',
-  'meta',
-  'object',
-  'script',
-  'style',
-]);
 const HTML_TAG_RE = /^[a-z][a-z0-9-]*$/;
 const HTML_ATTRIBUTE_RE = /^[a-z_:][a-z0-9_.:-]*$/;
-const HTML_URL_ATTRIBUTES = new Set([
-  'action',
-  'formaction',
-  'href',
-  'poster',
-  'src',
-  'xlink:href',
-]);
-const HTML_UNSAFE_URL_RE = /^(?:javascript|vbscript):/i;
 const HTML_CLASS_WHITESPACE_RE = /\s/;
 const HTML_STYLE_NAME_RE = /^(?:--[A-Za-z_][A-Za-z0-9_-]*|-?[a-z][a-z0-9-]*)$/;
+// A declaration value cannot open another declaration, block or comment, hide
+// a function name behind an escape, or load through a function besides url().
+const HTML_UNSAFE_STYLE_VALUE_RE =
+  /[;{}\\]|\/\*|\*\/|\bimage-set\s*\(|\bsrc\s*\(/i;
 const HTML_STYLE_URL_RE = /\burl *\(/gi;
 const HTML_UNQUOTED_STYLE_URL_RE = /["'()\s]/;
-const HTML_SAFE_IMAGE_DATA_URL_RE =
-  /^data:image\/(?:avif|bmp|gif|jpeg|png|webp);base64,[a-z0-9+/]*={0,2}$/i;
 const LEADING_WHITE_SPACE_RE = /^\s+/;
 const TRAILING_NEWLINE_RE = /\n$/;
 
@@ -412,70 +403,25 @@ const COMPILED_PLATE_HTML_BY_SCHEMA = new WeakMap<
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const hasHtmlControl = (value: string) => {
-  for (const character of value) {
-    const codePoint =
-      character.codePointAt(0) ?? failInvariant('Expected value to be defined');
-
-    if (codePoint <= 0x1f || (codePoint >= 0x7f && codePoint <= 0x9f)) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-const isSafeHtmlUrl = (tag: string, name: string, value: string) => {
-  if (hasHtmlControl(value)) return false;
-  const normalized = value.trim();
-
-  if (HTML_UNSAFE_URL_RE.test(normalized)) return false;
-  if (!normalized.toLowerCase().startsWith('data:')) return true;
-
-  return (
-    tag === 'img' &&
-    name === 'src' &&
-    HTML_SAFE_IMAGE_DATA_URL_RE.test(normalized)
-  );
-};
-
-const isSafeDecodedElement = (element: HTMLElement) => {
-  const tag = element.tagName.toLowerCase();
-
-  if (HTML_UNSAFE_TAGS.has(tag)) return false;
-
-  return element.getAttributeNames().every((rawName) => {
-    const name = rawName.toLowerCase();
-
-    if (name.startsWith('on') || name === 'srcdoc') return false;
-    if (!HTML_URL_ATTRIBUTES.has(name)) return true;
-    const value = element.getAttribute(rawName);
-
-    return value === null || isSafeHtmlUrl(tag, name, value);
-  });
-};
-
 const normalizeStyleName = (name: string) =>
   name.startsWith('--')
     ? name
     : name.replaceAll(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 
-const assertSafeStyleValue = (
-  value: string,
-  tag: string,
-  name: string,
-  label: string
-) => {
-  if (
-    hasHtmlControl(value) ||
-    value.includes(';') ||
-    value.includes('{') ||
-    value.includes('}') ||
-    value.includes('\\') ||
-    value.includes('/*') ||
-    value.includes('*/')
-  ) {
-    throw new Error(`${label} has an unsafe CSS value.`);
+const hasControlCharacter = (value: string) => {
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+
+    if (code <= 0x1f || (code >= 0x7f && code <= 0x9f)) return true;
+  }
+
+  return false;
+};
+
+// A CSS resource loads automatically, so each `url()` meets the image role.
+const isSafeStyleValue = (value: string) => {
+  if (hasControlCharacter(value) || HTML_UNSAFE_STYLE_VALUE_RE.test(value)) {
+    return false;
   }
   HTML_STYLE_URL_RE.lastIndex = 0;
   let match = HTML_STYLE_URL_RE.exec(value);
@@ -491,35 +437,27 @@ const assertSafeStyleValue = (
     if (quote) {
       const end = value.indexOf(quote, offset + 1);
 
-      if (end === -1) {
-        throw new Error(`${label} has a malformed CSS URL.`);
-      }
+      if (end === -1) return false;
       url = value.slice(offset + 1, end);
       offset = end + 1;
       while (value[offset] === ' ') offset += 1;
-      if (value[offset] !== ')') {
-        throw new Error(`${label} has a malformed CSS URL.`);
-      }
+      if (value[offset] !== ')') return false;
     } else {
       const end = value.indexOf(')', offset);
 
-      if (end === -1) {
-        throw new Error(`${label} has a malformed CSS URL.`);
-      }
-      const rawUrl = value.slice(offset, end).trim();
-
-      if (HTML_UNQUOTED_STYLE_URL_RE.test(rawUrl)) {
-        throw new Error(`${label} has a malformed CSS URL.`);
-      }
-      url = rawUrl;
+      if (end === -1) return false;
+      url = value.slice(offset, end).trim();
+      if (HTML_UNQUOTED_STYLE_URL_RE.test(url)) return false;
       offset = end;
     }
-    if (!isSafeHtmlUrl(tag, name, url)) {
-      throw new Error(`${label} has an unsafe CSS URL.`);
-    }
+    const decision = decideUrl('image', url);
+
+    if (!decision.ok && decision.reason !== 'empty') return false;
     HTML_STYLE_URL_RE.lastIndex = offset + 1;
     match = HTML_STYLE_URL_RE.exec(value);
   }
+
+  return true;
 };
 
 // Mapping-local priority owns HTML precedence; plugin application order does not.
@@ -934,6 +872,7 @@ const compileRule = (
     owner: ownerPlugin.name,
     plugin: ownerPlugin,
     properties,
+    propertyIdsByKey: new Map(properties.map(({ id, key }) => [key, id])),
     rulePriority: declaration.priority ?? 0,
     targetType,
   });
@@ -1242,9 +1181,6 @@ const compileSerializerIndex = (
   return Object.freeze({
     elementPropertiesByType,
     elementsByType,
-    encodablePropertyIds: new Set(
-      encodableRules.flatMap((rule) => rule.properties.map(({ id }) => id))
-    ),
     marksByParentType,
   });
 };
@@ -1280,7 +1216,7 @@ const invokeDecode = <T>(
   state: EditorCoreStateView,
   getFormatContext: ReturnType<typeof createPluginFormatOperationContext>,
   operationKey: object,
-  source: HtmlSourceLocation,
+  source: () => HtmlSourceLocation,
   onLoss: ((loss: HtmlMappingLoss) => void) | undefined,
   normalize: (value: unknown) => T,
   reportErrors: boolean
@@ -1297,7 +1233,7 @@ const invokeDecode = <T>(
         Object.freeze({
           ...diagnostic,
           owner: rule.owner,
-          source,
+          source: source(),
         })
       );
     };
@@ -1775,8 +1711,8 @@ const shouldBrBecomeEmptyParagraph = (node: HTMLElement) => {
 };
 
 const htmlTreeLocation = (
-  root: HTMLElement,
-  element: HTMLElement
+  root: Element,
+  element: Element
 ): HtmlSourceLocation => {
   const path: number[] = [];
   let current: Node | null = element;
@@ -1827,7 +1763,7 @@ const decodeCompiledHtml = (
     element: HTMLElement,
     matched: readonly CompiledHtmlRule[],
     targetType: string,
-    source: HtmlSourceLocation,
+    source: () => HtmlSourceLocation,
     initial: Readonly<Record<string, unknown>> = {}
   ) => {
     const properties: Record<string, unknown> = { ...initial };
@@ -1906,10 +1842,11 @@ const decodeCompiledHtml = (
     const breakLine = htmlBrToNewLine(node);
 
     if (breakLine) return [{ text: breakLine }];
-    if (!isSafeDecodedElement(element)) return [];
 
     const matched = getMatchedRules(artifact.matcherIndex, element);
-    const source = htmlTreeLocation(root, element);
+    let location: HtmlSourceLocation | undefined;
+    // A tree path costs a sibling scan, so only a reported element pays it.
+    const source = () => (location ??= htmlTreeLocation(root, element));
     const elementRules = matched.filter(
       (rule) => rule.kind === 'element' || rule.createsElement
     );
@@ -2059,7 +1996,7 @@ const decodeCompiledHtml = (
                 ? `Plate HTML decode has no mapping for <${tag}>.`
                 : `Plate HTML decode has no mapping for <${tag}>; kept its fallback content.`,
             owner: 'plate:html',
-            source,
+            source: source(),
           })
         );
 
@@ -2200,10 +2137,15 @@ const setWrite = <T>(
   writes.set(key, value);
 };
 
+type HtmlUnsafeReport = (removal: HtmlUnsafeRemoval) => void;
+
+// Emitted values come from documents and trusted callbacks, so a value that
+// fails its sink is removed and reported; an unsafe name is a mapping bug.
 const compileWrites = (
   value: Record<string, unknown>,
   label: string,
-  tag: string
+  tag: string,
+  onUnsafe: HtmlUnsafeReport
 ): Pick<MutableHtmlNode, 'attributeWrites' | 'styleWrites'> => {
   const attributeWrites = new Map<string, boolean | number | string | null>();
   const styleWrites = new Map<string, number | string | null>();
@@ -2226,13 +2168,15 @@ const compileWrites = (
         rawValue,
         `${label} attribute "${name}"`
       );
+      const decision =
+        typeof normalized === 'string'
+          ? decideHtmlAttribute(tag, name, normalized)
+          : undefined;
 
-      if (
-        HTML_URL_ATTRIBUTES.has(name) &&
-        typeof normalized === 'string' &&
-        !isSafeHtmlUrl(tag, name, normalized)
-      ) {
-        throw new Error(`${label} has unsafe URL attribute "${rawName}".`);
+      if (decision && 'removal' in decision) {
+        onUnsafe(decision.removal);
+
+        return;
       }
       setWrite(attributeWrites, name, normalized, 'attribute');
     });
@@ -2258,8 +2202,17 @@ const compileWrites = (
       if (normalized === true) {
         throw new Error(`${label} style "${name}" cannot be boolean.`);
       }
-      if (typeof normalized === 'string') {
-        assertSafeStyleValue(normalized, tag, name, `${label} style "${name}"`);
+      if (typeof normalized === 'string' && !isSafeStyleValue(normalized)) {
+        onUnsafe(
+          Object.freeze({
+            action: 'removed' as const,
+            impact: 'lossy' as const,
+            kind: 'style' as const,
+            message: `Removed unsafe CSS value for "${name}" from <${tag}>.`,
+          })
+        );
+
+        return;
       }
       setWrite(styleWrites, name, normalized, 'style');
     });
@@ -2270,7 +2223,8 @@ const compileWrites = (
 
 const compileNodeSpec = (
   value: unknown,
-  seen: WeakSet<object>
+  seen: WeakSet<object>,
+  onUnsafe: HtmlUnsafeReport
 ): MutableHtmlNode => {
   if (!isRecord(value)) {
     throw new Error('Plate HTML node encoder must return an object.');
@@ -2295,7 +2249,7 @@ const compileNodeSpec = (
   if (value.patchTarget !== undefined && value.patchTarget !== true) {
     throw new Error('Plate HTML node spec patchTarget must be true.');
   }
-  const writes = compileWrites(value, 'Plate HTML node spec', tag);
+  const writes = compileWrites(value, 'Plate HTML node spec', tag, onUnsafe);
   const inputChildren =
     value.children === undefined
       ? HTML_VOID_TAGS.has(tag)
@@ -2320,7 +2274,7 @@ const compileNodeSpec = (
       return Object.freeze({ text: child.text });
     }
 
-    return compileNodeSpec(child, seen);
+    return compileNodeSpec(child, seen, onUnsafe);
   });
 
   return {
@@ -2348,7 +2302,11 @@ const findPatchTarget = (root: MutableHtmlNode) => {
   return targets[0] ?? root;
 };
 
-const applyPatch = (target: MutableHtmlNode, value: unknown) => {
+const applyPatch = (
+  target: MutableHtmlNode,
+  value: unknown,
+  onUnsafe: HtmlUnsafeReport
+) => {
   if (!isRecord(value)) {
     throw new Error('Plate HTML property encoder must return a patch object.');
   }
@@ -2360,7 +2318,7 @@ const applyPatch = (target: MutableHtmlNode, value: unknown) => {
   if (value.tag !== undefined || value.children !== undefined) {
     throw new Error('Plate HTML patches cannot replace tag or children.');
   }
-  const writes = compileWrites(value, 'Plate HTML patch', target.tag);
+  const writes = compileWrites(value, 'Plate HTML patch', target.tag, onUnsafe);
 
   if (
     (target.attributeWrites.has('style') && writes.styleWrites.size > 0) ||
@@ -2521,32 +2479,39 @@ export type HtmlMappingLoss = Readonly<{
   source?: HtmlSourceLocation;
 }>;
 
+type HtmlUnsafeOutput = HtmlUnsafeRemoval &
+  Readonly<{ model: HtmlModelLocation }>;
+
 type HtmlEncodeOperation = Readonly<{
   document?: EditorDocumentValue;
   getFormatContext: ReturnType<typeof createPluginFormatOperationContext>;
   onLoss?: (loss: HtmlMappingLoss) => void;
+  onUnsafe: (removal: HtmlUnsafeOutput) => void;
   operationKey: object;
   reportMappingErrors?: boolean;
 }>;
 
 type HtmlStateReader = <T>(read: (state: EditorCoreStateView) => T) => T;
 
-const reportUnsupportedProperties = (
+/**
+ * Report each content property that no encoder of `node` claimed. Claims come
+ * from retained output only, so an owner's encoder existing claims nothing.
+ */
+const reportUnclaimedProperties = (
   node: EditorElement | Text,
   parentType: string | null,
-  supportedPropertyIds: ReadonlySet<string>,
+  claimed: ReadonlySet<string>,
   state: EditorCoreStateView,
+  path: Path,
   onLoss?: (loss: HtmlMappingLoss) => void
 ) => {
   const placement = ElementApi.isElement(node) ? 'element' : 'text';
   const type = ElementApi.isElement(node) ? node.type : parentType;
   const reported = new Set<string>();
-  const unsupported = (key: string, id?: string) => {
-    const identity = id ?? key;
-
-    if (reported.has(identity)) return;
-    reported.add(identity);
-    const message = `Plate HTML encode has no encoder for content property "${key}".`;
+  const unsupported = (key: string, id: string) => {
+    if (reported.has(id)) return;
+    reported.add(id);
+    const message = `No HTML mapping represents content property "${key}" on ${ElementApi.isElement(node) ? `"${node.type}"` : 'text'}; it was omitted.`;
 
     if (!onLoss) throw new Error(message);
     onLoss(
@@ -2554,6 +2519,7 @@ const reportUnsupportedProperties = (
         action: 'dropped' as const,
         kind: 'attribute' as const,
         message,
+        model: Object.freeze({ path, property: key, root: 'main' as const }),
         owner: 'plate:html',
       })
     );
@@ -2569,7 +2535,7 @@ const reportUnsupportedProperties = (
 
     if (
       property &&
-      !supportedPropertyIds.has(property.id) &&
+      !claimed.has(property.id) &&
       hasContentValue(node, key, property)
     ) {
       unsupported(key, property.id);
@@ -2608,10 +2574,7 @@ const reportUnsupportedProperties = (
 
       if (resolved?.id !== id) continue;
     }
-    if (
-      !supportedPropertyIds.has(id) &&
-      hasContentValue(node, property.key, property)
-    ) {
+    if (!claimed.has(id) && hasContentValue(node, property.key, property)) {
       unsupported(property.key, id);
     }
   }
@@ -2657,28 +2620,66 @@ const encodeContext = (
     ...model,
     report,
   });
+  const preserved = new Set<string>();
+  const preserve = (...keys: readonly string[]) => {
+    for (const key of keys) {
+      const id = rule.propertyIdsByKey.get(key);
+
+      if (id === undefined) {
+        throw new Error(
+          `Plate HTML mapping "${rule.owner}" cannot preserve "${key}": it is not a property of its target.`
+        );
+      }
+      preserved.add(id);
+    }
+  };
+  const structural = rule.kind === 'element' || rule.createsElement;
 
   return {
-    context:
-      rule.properties.length === 1 && rule.kind !== 'element'
+    context: structural
+      ? Object.freeze({
+          ...operationContext,
+          content: HTML_CONTENT_TOKEN,
+          preserve,
+        })
+      : rule.properties.length === 1
         ? Object.freeze({
             ...operationContext,
             value: values.get(rule.properties[0].key),
           })
-        : rule.kind === 'element' || rule.createsElement
-          ? Object.freeze({
-              ...operationContext,
-              content: HTML_CONTENT_TOKEN,
-            })
-          : Object.freeze({
-              ...operationContext,
-              values: Object.freeze(record),
-            }),
+        : Object.freeze({
+            ...operationContext,
+            preserve,
+            values: Object.freeze(record),
+          }),
     hasValues: values.size > 0,
+    // A single-value mapping represents its value whenever it writes output;
+    // every other encoder claims what it represents with `preserve`.
+    retain: (claimed: Set<string>) => {
+      const ids =
+        !structural && rule.properties.length === 1
+          ? [rule.properties[0].id]
+          : preserved;
+
+      for (const id of ids) claimed.add(id);
+    },
   };
 };
 
-const compileWrapperSpec = (value: unknown): MutableHtmlNode => {
+const writesHtml = (patch: unknown) =>
+  isRecord(patch) &&
+  [patch.attributes, patch.style].some(
+    (writes) =>
+      isRecord(writes) &&
+      Object.values(writes).some(
+        (value) => value !== undefined && value !== null && value !== false
+      )
+  );
+
+const compileWrapperSpec = (
+  value: unknown,
+  onUnsafe: HtmlUnsafeReport
+): MutableHtmlNode => {
   if (!isRecord(value)) {
     throw new Error('Plate HTML mark encoder must return a wrapper object.');
   }
@@ -2690,7 +2691,8 @@ const compileWrapperSpec = (value: unknown): MutableHtmlNode => {
 
   return compileNodeSpec(
     { ...value, children: HTML_CONTENT_TOKEN },
-    new WeakSet()
+    new WeakSet(),
+    onUnsafe
   );
 };
 
@@ -2722,15 +2724,15 @@ const encodeCompiledHtml = (
   ): string => {
     const path = state.nodes.path(node) ?? relativePath;
     const onLoss = reportLoss(path);
+    const onUnsafe = (removal: HtmlUnsafeRemoval) =>
+      operation.onUnsafe(
+        Object.freeze({
+          ...removal,
+          model: Object.freeze({ path, root: 'main' as const }),
+        })
+      );
 
     if (TextApi.isText(node)) {
-      reportUnsupportedProperties(
-        node,
-        parentType,
-        serializerIndex.encodablePropertyIds,
-        state,
-        onLoss
-      );
       const wrappers: Array<
         Readonly<{
           root: MutableHtmlNode;
@@ -2738,6 +2740,7 @@ const encodeCompiledHtml = (
         }>
       > = [];
       const handled = new Set<string>();
+      const claimed = new Set<string>();
 
       for (const rule of parentType
         ? (serializerIndex.marksByParentType.get(parentType) ?? [])
@@ -2749,7 +2752,7 @@ const encodeCompiledHtml = (
         );
 
         if (pending.length === 0) continue;
-        const { context } = encodeContext(
+        const invocation = encodeContext(
           rule,
           node,
           state,
@@ -2769,25 +2772,21 @@ const encodeCompiledHtml = (
             const value = (
               rule.declaration.encode ??
               failInvariant('Expected value to be defined')
-            )(context);
+            )(invocation.context);
 
-            return value === null ? null : compileWrapperSpec(value);
+            return value === null ? null : compileWrapperSpec(value, onUnsafe);
           },
           reportMappingErrors
         );
 
-        if (root === null) {
-          pending.forEach(({ id }) => {
-            handled.add(id);
-          });
-          continue;
-        }
-
-        wrappers.push(Object.freeze({ root, rule }));
         pending.forEach(({ id }) => {
           handled.add(id);
         });
+        if (root === null) continue;
+        wrappers.push(Object.freeze({ root, rule }));
+        invocation.retain(claimed);
       }
+      reportUnclaimedProperties(node, parentType, claimed, state, path, onLoss);
       let html = escapeHtmlText(node.text);
 
       for (let index = wrappers.length - 1; index >= 0; index--) {
@@ -2806,23 +2805,16 @@ const encodeCompiledHtml = (
       return html;
     }
     if (!ElementApi.isElement(node)) return '';
-    reportUnsupportedProperties(
-      node,
-      parentType,
-      serializerIndex.encodablePropertyIds,
-      state,
-      onLoss
-    );
-
-    const content = node.children
-      .map((child, index) => encodeNode(child, node.type, [...path, index]))
-      .join('');
+    const encodeChildren = () =>
+      node.children
+        .map((child, index) => encodeNode(child, node.type, [...path, index]))
+        .join('');
     const structuralRules = serializerIndex.elementsByType.get(node.type) ?? [];
     let structuralRule: CompiledHtmlRule | undefined;
-    let structuralContext: Record<string, unknown> | undefined;
+    let structural: ReturnType<typeof encodeContext> | undefined;
 
     for (const rule of structuralRules) {
-      const encoded = encodeContext(
+      const invocation = encodeContext(
         rule,
         node,
         state,
@@ -2834,12 +2826,14 @@ const encodeCompiledHtml = (
         onLoss
       );
 
-      if (rule.createsElement && !encoded.hasValues) continue;
+      if (rule.createsElement && !invocation.hasValues) continue;
       structuralRule = rule;
-      structuralContext = encoded.context;
+      structural = invocation;
       break;
     }
-    if (!structuralRule || !structuralRule.declaration.encode) {
+    // A lost element reports once; its properties are lost with it.
+    if (!structuralRule || !structural || !structuralRule.declaration.encode) {
+      const content = encodeChildren();
       const message = `Plate HTML encode has no encoder for element "${node.type}".`;
 
       if (!onLoss) throw new Error(message);
@@ -2854,6 +2848,7 @@ const encodeCompiledHtml = (
 
       return content;
     }
+    const structuralContext = structural.context;
     const encoded = encodeWithRule(
       editor,
       structuralRule,
@@ -2863,10 +2858,10 @@ const encodeCompiledHtml = (
         const spec = (
           structuralRule.declaration.encode ??
           failInvariant('Expected value to be defined')
-        )(structuralContext ?? failInvariant('Expected value to be defined'));
+        )(structuralContext);
 
         if (spec === null) return null;
-        const innerRoot = compileNodeSpec(spec, new WeakSet());
+        const innerRoot = compileNodeSpec(spec, new WeakSet(), onUnsafe);
 
         return Object.freeze({
           patchTarget: findPatchTarget(innerRoot),
@@ -2875,14 +2870,16 @@ const encodeCompiledHtml = (
       },
       reportMappingErrors
     );
-    if (encoded === null) {
-      return '';
-    }
+
+    // An encoder that returns null omits the element and its subtree.
+    if (encoded === null) return '';
     const { patchTarget, root } = encoded;
+    const claimed = new Set<string>();
     const handledProperties = new Set<string>(
       structuralRule.properties.map(({ id }) => id)
     );
 
+    structural.retain(claimed);
     for (const rule of serializerIndex.elementPropertiesByType.get(node.type) ??
       []) {
       const pending = rule.properties.filter(
@@ -2892,7 +2889,7 @@ const encodeCompiledHtml = (
       );
 
       if (pending.length === 0) continue;
-      const { context } = encodeContext(
+      const invocation = encodeContext(
         rule,
         node,
         state,
@@ -2913,17 +2910,20 @@ const encodeCompiledHtml = (
           (
             rule.declaration.encode ??
             failInvariant('Expected value to be defined')
-          )(context),
+          )(invocation.context),
         reportMappingErrors
       );
 
       if (patch !== null) {
-        applyPatch(patchTarget, patch);
+        applyPatch(patchTarget, patch, onUnsafe);
+        if (writesHtml(patch)) invocation.retain(claimed);
       }
       pending.forEach(({ id }) => {
         handledProperties.add(id);
       });
     }
+    reportUnclaimedProperties(node, parentType, claimed, state, path, onLoss);
+    const content = encodeChildren();
 
     return encodeWithRule(
       editor,
@@ -3000,13 +3000,62 @@ const htmlMappingDiagnostics = (
         ...loss,
         code: 'html-unsupported-content' as const,
         phase,
-        severity: lossPolicy === 'reject' ? 'error' : 'warning',
+        // A lost property warns under every policy; lost elements follow it.
+        severity:
+          lossPolicy === 'reject' && loss.kind === 'element'
+            ? 'error'
+            : 'warning',
       })
     );
   });
 
   return Object.freeze(diagnostics);
 };
+
+// A link keeps its label when it loses a destination (`unwrapped`), so that
+// loss warns under every policy; other lossy removals follow `lossPolicy`.
+const isRejectedRemoval = (
+  { action, impact }: Readonly<{ action: string; impact: string }>,
+  lossPolicy: 'allow' | 'reject'
+) => lossPolicy === 'reject' && impact === 'lossy' && action === 'removed';
+
+const unsafeContentDiagnostic = (
+  removal: HtmlUnsafeRemoval,
+  location:
+    | Readonly<{ model: HtmlModelLocation }>
+    | Readonly<{ source: HtmlSourceLocation }>,
+  lossPolicy: 'allow' | 'reject'
+): HtmlDiagnostic =>
+  Object.freeze({
+    ...location,
+    action: removal.action,
+    code: 'html-unsafe-content' as const,
+    impact: removal.impact,
+    kind: removal.kind,
+    message: removal.message,
+    severity: isRejectedRemoval(removal, lossPolicy)
+      ? ('error' as const)
+      : ('warning' as const),
+  });
+
+// DOCX applies its loss policy to mapping losses by action: unwrapped content
+// survives, so a lossless removal or a lost destination stays a warning and a
+// lossy removal follows it.
+const unsafeMappingLoss = (
+  root: Element,
+  element: Element,
+  { action, impact, kind, message }: HtmlUnsafeRemoval
+): HtmlMappingLoss =>
+  Object.freeze({
+    action:
+      impact === 'lossless' || action === 'unwrapped'
+        ? ('unwrapped' as const)
+        : ('dropped' as const),
+    kind: kind === 'url' ? ('attribute' as const) : kind,
+    message,
+    owner: 'plate:html',
+    source: htmlTreeLocation(root, element),
+  });
 
 const restoreAppleConvertedSpaces = (root: HTMLElement) => {
   root.querySelectorAll('span.Apple-converted-space').forEach((span) => {
@@ -3041,10 +3090,32 @@ const decodeHtmlTransferWithArtifact = (
     true
   ) as HtmlSliceParseResult;
 
-  return result.ok && result.slice.content.length > 0 ? result.slice : null;
+  if (!result.ok) return null;
+  // A payload that loses all of its content still reports what it lost.
+  result.diagnostics.forEach((diagnostic) => {
+    context.report({
+      // Parser recovery keeps what a browser shows; unmapped content does not.
+      impact:
+        'impact' in diagnostic
+          ? diagnostic.impact
+          : diagnostic.code === 'html-parser-recovery'
+            ? 'lossless'
+            : 'lossy',
+      message: diagnostic.message,
+    });
+  });
+
+  return result.slice.content.length === 0 ? null : result.slice;
 };
 
-/** Decode HTML through the format already compiled for an operation state. @internal */
+/**
+ * Decode an HTML clipboard payload with the HTML format compiled for
+ * `context.state`, for a format that prepares HTML first, such as Word paste.
+ * Reports what the payload leaves out through `context.report` and returns the
+ * slice to insert, or null when nothing is insertable so the next format can
+ * decode the payload. HTML that fails to parse, or only repeats the plain
+ * text, returns null without reports.
+ */
 export const decodeHtmlDataTransfer = (context: DataTransferDecodeContext) => {
   const artifact = COMPILED_PLATE_HTML_BY_SCHEMA.get(context.state.schema);
 
@@ -3130,6 +3201,7 @@ export const compilePlateHtmlFormat = (
       decodeHtmlTransferWithArtifact(artifact, context),
     encode: (context: DataTransferEncodeContext) => {
       const losses: HtmlMappingLoss[] = [];
+      const removals: HtmlUnsafeOutput[] = [];
 
       try {
         const data = encodeCompiledHtml(
@@ -3140,11 +3212,13 @@ export const compilePlateHtmlFormat = (
           {
             getFormatContext: artifact.getFormatContext,
             onLoss: (loss) => losses.push(loss),
+            onUnsafe: (removal) => removals.push(removal),
             operationKey: context.slice,
           }
         );
 
-        return losses.length > 0 ? null : data;
+        // Clipboard HTML is written only when it carries the slice faithfully.
+        return losses.length > 0 || removals.length > 0 ? null : data;
       } catch (error) {
         if (error instanceof ReportedHtmlEncodeError) return null;
 
@@ -3183,6 +3257,13 @@ export const compileHtmlElementDecoder = (
       onLoss: (loss: HtmlMappingLoss) => void;
     }>
   ): Descendant[] => {
+    const sanitize = () =>
+      sanitizeHtmlDom(element, (node, removal) =>
+        onLoss(unsafeMappingLoss(element, node, removal))
+      );
+
+    // No source pass has read this DOM, and preparation may write to it.
+    sanitize();
     prepareHtmlDocument(
       artifact,
       element.ownerDocument,
@@ -3190,6 +3271,7 @@ export const compileHtmlElementDecoder = (
       operationKey,
       onLoss
     );
+    if (artifact.prepareDocument.length > 0) sanitize();
     const normalized = shouldCollapseWhiteSpace
       ? collapseWhiteSpace(element)
       : element;
@@ -3333,11 +3415,25 @@ const decodeMaterializedHtmlWithEditor = (
   const artifact = COMPILED_PLATE_HTML.get(model.revision);
 
   if (!artifact) throw new Error('Plate HTML format is not compiled.');
+  const lossPolicy = options.lossPolicy ?? 'reject';
   const losses: HtmlMappingLoss[] = [];
+  const preparedRemovals: HtmlDiagnostic[] = [];
   const { children, schema } = readState((state) => {
     prepareHtmlDocument(artifact, ownerDocument, state, operationKey, (loss) =>
       losses.push(loss)
     );
+    // Preparation runs after the source pass, so its writes are checked here.
+    if (artifact.prepareDocument.length > 0) {
+      sanitizeHtmlDom(root, (element, removal) =>
+        preparedRemovals.push(
+          unsafeContentDiagnostic(
+            removal,
+            { source: htmlTreeLocation(root, element) },
+            lossPolicy
+          )
+        )
+      );
+    }
     const normalized =
       (options.collapseWhitespace ?? true) ? collapseWhiteSpace(root) : root;
 
@@ -3351,21 +3447,20 @@ const decodeMaterializedHtmlWithEditor = (
       schema: state.schema as InternalEditorSchemaApi,
     });
   });
-  const lossPolicy = options.lossPolicy ?? 'reject';
   const mappingDiagnostics = htmlMappingDiagnostics(
     losses,
     'parse',
     lossPolicy
   );
   const sourceDiagnostics = parserDiagnostics.map((diagnostic) =>
-    lossPolicy === 'reject' &&
     diagnostic.code === 'html-unsafe-content' &&
-    diagnostic.impact === 'lossy'
+    isRejectedRemoval(diagnostic, lossPolicy)
       ? Object.freeze({ ...diagnostic, severity: 'error' as const })
       : diagnostic
   );
   const parseDiagnostics = Object.freeze([
     ...sourceDiagnostics,
+    ...preparedRemovals,
     ...mappingDiagnostics,
   ]);
   const rejectsLoss = parseDiagnostics.some(
@@ -3521,6 +3616,7 @@ export const serializeHtmlDocumentWithState = (
 
   if (!artifact) throw new Error('Plate HTML format is not compiled.');
   const losses: HtmlMappingLoss[] = [];
+  const removals: HtmlDiagnostic[] = [];
   const operationKey = Object.freeze({});
   const data = encodeCompiledHtml(
     editor,
@@ -3531,32 +3627,32 @@ export const serializeHtmlDocumentWithState = (
       document: outputDocument,
       getFormatContext: artifact.getFormatContext,
       onLoss: (loss) => losses.push(loss),
+      onUnsafe: (removal) =>
+        removals.push(
+          unsafeContentDiagnostic(removal, { model: removal.model }, lossPolicy)
+        ),
       operationKey,
       reportMappingErrors: false,
     }
   );
-  const lossDiagnostics = htmlMappingDiagnostics(
-    losses,
-    'serialize',
-    lossPolicy
-  );
+  const encodeDiagnostics = [
+    ...removals,
+    ...htmlMappingDiagnostics(losses, 'serialize', lossPolicy),
+  ];
   const warnings = Object.freeze([
     ...projectionDiagnostics,
     ...htmlDocumentDiagnostics(outputDocument),
   ]);
-  const failureIndex = lossDiagnostics.findIndex(
-    (diagnostic) => diagnostic.severity === 'error'
-  );
 
-  if (failureIndex !== -1) {
-    return failedHtmlDiagnostics([...warnings, ...lossDiagnostics]);
+  if (encodeDiagnostics.some((diagnostic) => diagnostic.severity === 'error')) {
+    return failedHtmlDiagnostics([...warnings, ...encodeDiagnostics]);
   }
 
   return Object.freeze({
     data,
     diagnostics: Object.freeze([
       ...warnings,
-      ...(lossDiagnostics as readonly HtmlWarningDiagnostic[]),
+      ...(encodeDiagnostics as readonly HtmlWarningDiagnostic[]),
     ]),
     ok: true as const,
   });
@@ -3582,7 +3678,9 @@ export const serializeHtmlWithEditor = (
     options.projection ?? 'proposed'
   );
   const outputDocument = projected.document;
-  const view = createProjectedEditorView(editor, outputDocument);
+  const view = createEditorView(editor, {
+    document: outputDocument,
+  }) as unknown as Editor;
   return view.read((state) =>
     serializeHtmlDocumentWithState(
       view,

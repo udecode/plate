@@ -101,7 +101,7 @@ export const checkSkillMirrors = (workspaceRoot) => {
 };
 export const retiredGeneratedPaths = [
   ...agentRoots.flatMap((agentRoot) => [
-    'major-task', 'autoclosure', 'vision', 'review-sweep', 'clawpatch',
+    'major-task', 'vision', 'review-sweep', 'clawpatch',
     'resolve-slate-issue', 'promote-beta', 'sync-main-to-next',
     'potion-yjs-browser-test', 'agent-browser-issue', 'docs-creator',
     'auto', 'performance', 'testing-review', 'regression',

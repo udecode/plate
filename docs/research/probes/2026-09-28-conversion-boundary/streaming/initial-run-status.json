@@ -1,0 +1,20 @@
+{
+  "status": "sampling-incomplete",
+  "exitCode": 130,
+  "reason": "Bounded review: first 50KB measured pair took ~88 seconds in independent timed operations. SIGINT during next pair; only completed pairs saved.",
+  "frozenTarget": {
+    "warmupsPerPath": 1,
+    "pairsPerCohort": 5
+  },
+  "completedPairs": {
+    "plain10000": 5,
+    "plain50000": 1,
+    "rich10000": 0,
+    "rich50000": 0
+  },
+  "warmupDuration": "Not separately logged; one complete warmup per path ran before saved packet.",
+  "sourceSameThroughStop": true,
+  "changed": [],
+  "measuredHarnessSHA256": "1ae6644787d773a196aa6c28eb95e8d05b6f85ac40f7d20db29cac87aee16ffc",
+  "measuredHarnessCopy": "probe-initial.ts"
+}

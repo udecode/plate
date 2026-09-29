@@ -464,7 +464,8 @@ callbacks. It cannot inspect a browser `DataTransfer` or live editor.
 
 Whole-payload admission, source-string cleanup, Word/RTF handling, and
 post-decode slice repair belong to a `DataTransferFormat`. That owner may
-prepare the payload, call `parseHtmlSlice`, and return the resulting slice.
+prepare the payload and return
+`decodeHtmlDataTransfer({ ...context, data: prepared })` from `platejs/html`.
 
 ## Typed plugins
 

@@ -26,6 +26,8 @@ Changed files: [selection-protocol.ts](../../../packages/plitejs/src/core/select
 
 - **completed-plan-without-current-outcome**: [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md).
 
+- **completed-plan-without-current-outcome**: [2026-09-29-ime-caret-diagnosis.md](../../plans/2026-09-29-ime-caret-diagnosis.md).
+
 - **completed-plan-without-current-outcome**: [45-taskhub-45-retained-suggestion-selection-drag-repair.md](../../plans/45-taskhub-45-retained-suggestion-selection-drag-repair.md).
 
 - **completed-plan-without-current-outcome**: [46-taskhub-46-input-ownership.md](../../plans/46-taskhub-46-input-ownership.md).
@@ -42,6 +44,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | --- | --- | --- | --- |
 | [2026-08-23-unify-plite-selection-anchors.md](../../plans/2026-08-23-unify-plite-selection-anchors.md) | completed | implementation | unbound |
 | [2026-09-22-mixed-suggestion-selection-deletion.md](../../plans/2026-09-22-mixed-suggestion-selection-deletion.md) | completed | implementation | [2026-09-23-suggestions-direct-delete-retained-selection](../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json) |
+| [2026-09-29-ime-caret-diagnosis.md](../../plans/2026-09-29-ime-caret-diagnosis.md) | completed | implementation | [2026-09-12-native-input-authority](../review-records/2026-09-12-native-input-authority.json), [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-15-external-text-ordered-feedback](../review-records/2026-09-15-external-text-ordered-feedback.json) |
 | [45-taskhub-45-retained-suggestion-selection-drag-repair.md](../../plans/45-taskhub-45-retained-suggestion-selection-drag-repair.md) | completed | implementation | [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json) |
 | [46-taskhub-46-input-ownership.md](../../plans/46-taskhub-46-input-ownership.md) | completed | implementation | [2026-09-12-selection-distinct-lifetimes](../review-records/2026-09-12-selection-distinct-lifetimes.json), [2026-09-12-native-input-authority](../review-records/2026-09-12-native-input-authority.json), [2026-09-12-geometry-widget-carrier-cut](../review-records/2026-09-12-geometry-widget-carrier-cut.json) |
 

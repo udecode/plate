@@ -1,19 +1,22 @@
 import {
   isUrl,
+  type Descendant,
   definePlugin,
   type DefinitionOf,
   type ElementOf,
-  type MarkdownTagAttributeView,
   PLUGINS,
   property,
   schema,
+  TextApi,
 } from '../../../../core';
 import { domCommands } from '../../../../dom/plite-dom.internal';
+import { isScriptUrl, isStoredUrl } from '../../../../internal/utils/urlPolicy';
 import {
   defineMediaPlugin,
   mediaElementProperties,
   type MediaPluginState,
 } from '../BaseMediaPlugin';
+import { readHtmlMediaWidth, writeHtmlMediaWidth } from '../mediaHtml.internal';
 
 export type ImagePluginState = {
   /** Disable url embed on insert data. */
@@ -51,7 +54,7 @@ const readImageSize = (image: HTMLElement) => {
     image.dataset.editorNaturalWidth ?? null
   );
   const width =
-    image.style.width ||
+    readHtmlMediaWidth(image.style.width) ??
     (naturalWidth === undefined
       ? readPositiveNumber(image.getAttribute('width'))
       : undefined);
@@ -63,28 +66,61 @@ const readImageSize = (image: HTMLElement) => {
   };
 };
 
-const readMarkdownImageProperties = ({
-  attributes,
-  properties,
-}: MarkdownTagAttributeView) => {
-  const naturalHeight =
-    typeof attributes.height === 'string'
-      ? readPositiveSafeInteger(attributes.height)
-      : undefined;
+const readImageText = (image: HTMLElement) => {
+  const alt = image.getAttribute('alt');
+  const title = image.getAttribute('title');
 
   return {
-    ...properties,
-    ...(naturalHeight === undefined ? {} : { naturalHeight }),
+    ...(alt === null ? {} : { alt }),
+    ...(title === null ? {} : { title }),
   };
 };
 
-const writeMarkdownImageProperties = (properties: Record<string, unknown>) => {
-  const { naturalHeight, ...rest } = properties;
+// `<img>` names the intrinsic height `height` and the source `src`.
+const markdownImageAttributes = {
+  naturalHeight: 'height',
+  url: 'src',
+} as const;
 
-  return {
-    ...(isPositiveSafeInteger(naturalHeight) ? { height: naturalHeight } : {}),
-    ...rest,
-  };
+/**
+ * An `<img>` whose `src` is unusable, such as an unsafe one, is removed; its
+ * caption, or else its alt text, stays as a paragraph.
+ */
+/**
+ * An image whose `src` cannot load keeps its caption, or else its alt text, as
+ * a paragraph. Markdown already reported a script `src` as a lossless removal;
+ * any other source loses a visible image.
+ */
+const markdownImageFallback = (
+  { alt, src }: Readonly<{ alt: unknown; src: string }>,
+  captionChildren: readonly Descendant[],
+  paragraphType: string,
+  report: (
+    diagnostic: Readonly<{
+      action: 'unwrapped';
+      message: string;
+      nodeType: string;
+    }>
+  ) => void,
+  nodeType: 'figure' | 'img'
+): Descendant[] => {
+  if (!isScriptUrl(src)) {
+    report({
+      action: 'unwrapped',
+      message:
+        '<img> has an invalid "src" value; the image was removed and its caption or alt text kept.',
+      nodeType,
+    });
+  }
+  const children = captionChildren.some(
+    (child) => !TextApi.isText(child) || child.text !== ''
+  )
+    ? [...captionChildren]
+    : typeof alt === 'string' && alt !== ''
+      ? [{ text: alt }]
+      : undefined;
+
+  return children ? [{ children, type: paragraphType }] : [];
 };
 
 /** Enables support for images. */
@@ -94,6 +130,11 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
     element: schema.element.textBlock({
       object: true,
       properties: {
+        url: property.string({
+          required: true,
+          validate: isStoredUrl('image'),
+          validationVersion: 1,
+        }),
         ...mediaElementProperties,
         alt: property.string(),
         naturalHeight: property.number({
@@ -128,17 +169,21 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
 
             if (!url) return undefined;
 
-            const alt = image.getAttribute('alt');
-            return {
-              ...(alt === null ? {} : { alt }),
-              ...readImageSize(image),
-              url,
-            };
+            return { ...readImageText(image), ...readImageSize(image), url };
           },
-          encode: ({ content, node }) => {
+          encode: ({ content, node, preserve }) => {
             if (typeof node.url !== 'string' || node.url.length === 0) {
               return null;
             }
+
+            preserve(
+              'alt',
+              'naturalHeight',
+              'naturalWidth',
+              'title',
+              'url',
+              'width'
+            );
 
             return {
               attributes: { class: 'editor-image' },
@@ -150,14 +195,10 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
                     'data-editor-natural-width': node.naturalWidth,
                     height: node.naturalHeight,
                     src: node.url,
+                    title: node.title,
                     width: node.naturalWidth,
                   },
-                  style: {
-                    width:
-                      typeof node.width === 'number'
-                        ? `${node.width}px`
-                        : node.width,
-                  },
+                  style: { width: writeHtmlMediaWidth(node.width) },
                   tag: 'img',
                 },
                 { children: content, tag: 'figcaption' },
@@ -178,9 +219,8 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
 
             if (!url) return undefined;
 
-            const alt = element.getAttribute('alt');
             return {
-              ...(alt === null ? {} : { alt }),
+              ...readImageText(element),
               children: [{ text: '' }],
               ...readImageSize(element),
               url,
@@ -205,8 +245,17 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
         },
         {
           tag: 'img',
-          decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
-            const view = readTagAttributes();
+          attributes: markdownImageAttributes,
+          decode: ({
+            caption,
+            decode,
+            node,
+            readTagAttributes,
+            refuse,
+            registry,
+            report,
+          }) => {
+            const { attributes, properties } = readTagAttributes();
             const captionChildren =
               node.children.length > 0
                 ? caption(decode(node.children))
@@ -217,40 +266,39 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
                 'Media captions must contain one Markdown paragraph.'
               );
             }
+            if (
+              typeof attributes.src === 'string' &&
+              typeof properties.url !== 'string'
+            ) {
+              return markdownImageFallback(
+                { alt: properties.alt, src: attributes.src },
+                captionChildren,
+                registry.type(PLUGINS.paragraph) ?? 'paragraph',
+                report,
+                'img'
+              );
+            }
 
             return {
-              ...readMarkdownImageProperties(view),
+              ...properties,
               children: captionChildren,
               type,
-              url:
-                typeof view.attributes.src === 'string'
-                  ? view.attributes.src
-                  : '',
+              url: typeof properties.url === 'string' ? properties.url : '',
             };
           },
           encode: ({
-            encodeAttributes,
+            encodeNodeAttributes,
             encodePhrasing,
             node,
             readPlainInline,
           }) => {
-            const { children, type: _, url, ...rest } = node;
+            const { alt, children, title, url } = node;
             const plainCaption = readPlainInline(children);
-            const {
-              alt: altProperty,
-              title: titleProperty,
-              ...properties
-            } = rest;
-            const alt =
-              typeof altProperty === 'string' ? altProperty : undefined;
-            const title =
-              typeof titleProperty === 'string' ? titleProperty : undefined;
-            const attributes = encodeAttributes({
-              ...(alt === undefined ? {} : { alt }),
-              ...writeMarkdownImageProperties(properties),
-              src: url,
-              ...(title === undefined ? {} : { title }),
-            });
+            const attributes = encodeNodeAttributes();
+            // `![alt](src "title")` carries nothing else.
+            const needsTag = attributes.some(
+              ({ name }) => name !== 'alt' && name !== 'src' && name !== 'title'
+            );
 
             if (plainCaption !== '') {
               const serializedChildren =
@@ -281,7 +329,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
               };
             }
 
-            if (Object.keys(properties).length > 0) {
+            if (needsTag) {
               return {
                 attributes,
                 children: [],
@@ -306,7 +354,16 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
         {
           nestedTags: ['figcaption'],
           tag: 'figure',
-          decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
+          attributes: markdownImageAttributes,
+          decode: ({
+            caption,
+            decode,
+            node,
+            readTagAttributes,
+            refuse,
+            registry,
+            report,
+          }) => {
             const [image, figcaption] = node.children;
 
             if (
@@ -321,7 +378,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
               return undefined;
             }
 
-            const view = readTagAttributes(image);
+            const { attributes, properties } = readTagAttributes(image);
             const captionChildren = figcaption
               ? caption(decode(figcaption.children))
               : [{ text: '' }];
@@ -331,15 +388,24 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
                 'Media captions must contain one Markdown paragraph.'
               );
             }
+            if (
+              typeof attributes.src === 'string' &&
+              typeof properties.url !== 'string'
+            ) {
+              return markdownImageFallback(
+                { alt: properties.alt, src: attributes.src },
+                captionChildren,
+                registry.type(PLUGINS.paragraph) ?? 'paragraph',
+                report,
+                'figure'
+              );
+            }
 
             return {
-              ...readMarkdownImageProperties(view),
+              ...properties,
               children: captionChildren,
               type,
-              url:
-                typeof view.attributes.src === 'string'
-                  ? view.attributes.src
-                  : '',
+              url: typeof properties.url === 'string' ? properties.url : '',
             };
           },
         },
@@ -347,7 +413,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
     }),
 })
   .extend(
-    defineMediaPlugin((options, url) => ({
+    defineMediaPlugin('image', (options, url) => ({
       url: options.transformUrl?.(url) ?? url,
     }))
   )

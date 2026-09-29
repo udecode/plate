@@ -12,4 +12,3 @@ export * from './isDefined';
 export * from './isUrl';
 export * from './mergeDeepToNodes';
 export * from './pluginNodeClass';
-export * from './sanitizeUrl';

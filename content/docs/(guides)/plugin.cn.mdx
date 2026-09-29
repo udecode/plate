@@ -436,8 +436,8 @@ program，并返回 `{ key, attributes }[]`。`render.attributes` 与
 `DataTransfer` 或 live editor。
 
 Whole-payload admission、source-string cleanup、Word/RTF 处理与 post-decode
-slice repair 属于 `DataTransferFormat`。该 owner 可以准备 payload、调用
-`parseHtmlSlice`，然后返回 slice。
+slice repair 属于 `DataTransferFormat`。该 owner 可以准备 payload，然后返回
+`platejs/html` 的 `decodeHtmlDataTransfer({ ...context, data: prepared })`。
 
 ## 类型化插件
 

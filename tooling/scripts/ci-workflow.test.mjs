@@ -32,6 +32,10 @@ test('browser CI keeps coverage aggregation aligned with its affected build', as
     job('proof-plan'),
     /browser: \$\{\{ steps.plan.outputs.browser \}\}/
   );
+  assert.match(
+    job('proof-plan'),
+    /github\.event_name != 'pull_request'[\s\S]*github\.event\.pull_request\.head\.repo\.full_name != github\.repository[\s\S]*!startsWith\(github\.event\.pull_request\.head\.ref, 'changeset-release\/'\)/
+  );
   assert.match(job('proof-plan'), /--dry-run --github-output/);
   assert.match(job('browser-build'), /needs: proof-plan/);
   assert.match(

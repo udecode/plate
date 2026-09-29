@@ -1,0 +1,665 @@
+{
+  "plain": {
+    "events": [
+      {
+        "received": 64,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 128,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 192,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 256,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 320,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 384,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 448,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 512,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 576,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 640,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 704,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 768,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 832,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 896,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 960,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1024,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1088,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1152,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1216,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1280,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1344,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1408,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1472,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1536,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1600,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1664,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1728,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1792,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1856,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1920,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1984,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2048,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2112,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2176,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2240,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2304,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2368,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2432,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2496,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2560,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2624,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2688,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2752,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2816,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2880,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2944,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3008,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3072,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3136,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3200,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3264,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3328,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3392,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3456,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3520,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3584,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3648,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3712,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3776,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3840,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3904,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 3968,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4032,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4096,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4160,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4224,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4288,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4352,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4416,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4480,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4544,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4608,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4672,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4736,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4800,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4864,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4928,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 4992,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 5000,
+        "emitted": 8,
+        "delay": 10
+      }
+    ],
+    "flushBytes": 0,
+    "emissions": 79,
+    "requestedDelayMs": 790
+  },
+  "marked": {
+    "events": [
+      {
+        "received": 64,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 128,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 192,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 256,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 320,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 384,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 448,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 512,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 576,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 640,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 704,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 768,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 832,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 896,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 960,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1024,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1088,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1152,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1216,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1280,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1344,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1408,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1472,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1536,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1600,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1664,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1728,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1792,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1856,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1920,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 1984,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2048,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2112,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2176,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2240,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2304,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2368,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2432,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2496,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2560,
+        "emitted": 64,
+        "delay": 10
+      },
+      {
+        "received": 2624,
+        "emitted": 61,
+        "delay": 100
+      },
+      {
+        "received": 2688,
+        "emitted": 66,
+        "delay": 100
+      },
+      {
+        "received": 2752,
+        "emitted": 60,
+        "delay": 100
+      },
+      {
+        "received": 2816,
+        "emitted": 66,
+        "delay": 100
+      },
+      {
+        "received": 2880,
+        "emitted": 66,
+        "delay": 100
+      },
+      {
+        "received": 2909,
+        "emitted": 30,
+        "delay": 100
+      }
+    ],
+    "flushBytes": 0,
+    "emissions": 46,
+    "requestedDelayMs": 1000
+  },
+  "code": {
+    "events": [
+      {
+        "received": 16,
+        "emitted": 16,
+        "delay": 10
+      }
+    ],
+    "flushBytes": 0,
+    "emissions": 1,
+    "requestedDelayMs": 10
+  },
+  "table": {
+    "events": [
+      {
+        "received": 30,
+        "emitted": 30,
+        "delay": 100
+      }
+    ],
+    "flushBytes": 0,
+    "emissions": 1,
+    "requestedDelayMs": 100
+  }
+}

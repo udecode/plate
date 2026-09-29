@@ -13,31 +13,6 @@ import {
 import { failInvariant } from '../internal/failInvariant';
 
 const digitRegex = /\d+/;
-const getMarkdownStyleValue = (
-  attributes: ReadonlyArray<{
-    type: string;
-    name?: string;
-    value?: unknown;
-  }>,
-  styleName: string
-) => {
-  const styleAttribute = attributes.find(
-    (attribute) =>
-      attribute.type === 'mdxJsxAttribute' &&
-      attribute.name === 'style' &&
-      typeof attribute.value === 'string'
-  );
-
-  if (typeof styleAttribute?.value !== 'string') return undefined;
-
-  for (const style of styleAttribute.value.split(';')) {
-    const [name, value] = style.split(':').map((part) => part.trim());
-
-    if (name === styleName) return value;
-  }
-
-  return undefined;
-};
 
 export type Alignment =
   | 'center'
@@ -80,29 +55,7 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
           match: [{ style: { backgroundColor: '*' } }],
         },
 
-        markdown: {
-          tag: 'span',
-          mark: true,
-          decode: ({ node }) => {
-            const value = getMarkdownStyleValue(
-              node.attributes,
-              'background-color'
-            );
-
-            return value;
-          },
-          wrap: ({ value }) => ({
-            attributes: [
-              {
-                name: 'style',
-                type: 'mdxJsxAttribute',
-                value: `background-color: ${value};`,
-              },
-            ],
-            name: 'span',
-            type: 'mdxJsxTextElement',
-          }),
-        },
+        markdown: { tag: 'span', style: 'background-color' },
       }),
     inject: {
       nodeProps: {
@@ -125,26 +78,7 @@ export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
         match: [{ style: { color: '*' } }],
       },
 
-      markdown: {
-        tag: 'span',
-        mark: true,
-        decode: ({ node }) => {
-          const value = getMarkdownStyleValue(node.attributes, 'color');
-
-          return value;
-        },
-        wrap: ({ value }) => ({
-          attributes: [
-            {
-              name: 'style',
-              type: 'mdxJsxAttribute',
-              value: `color: ${value};`,
-            },
-          ],
-          name: 'span',
-          type: 'mdxJsxTextElement',
-        }),
-      },
+      markdown: { tag: 'span', style: 'color' },
     }),
   inject: {
     nodeProps: {
@@ -167,26 +101,7 @@ export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
         match: [{ style: { fontFamily: '*' } }],
       },
 
-      markdown: {
-        tag: 'span',
-        mark: true,
-        decode: ({ node }) => {
-          const value = getMarkdownStyleValue(node.attributes, 'font-family');
-
-          return value;
-        },
-        wrap: ({ value }) => ({
-          attributes: [
-            {
-              name: 'style',
-              type: 'mdxJsxAttribute',
-              value: `font-family: ${value};`,
-            },
-          ],
-          name: 'span',
-          type: 'mdxJsxTextElement',
-        }),
-      },
+      markdown: { tag: 'span', style: 'font-family' },
     }),
   inject: {
     nodeProps: {
@@ -208,26 +123,7 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
         match: [{ style: { fontSize: '*' } }],
       },
 
-      markdown: {
-        tag: 'span',
-        mark: true,
-        decode: ({ node }) => {
-          const value = getMarkdownStyleValue(node.attributes, 'font-size');
-
-          return value;
-        },
-        wrap: ({ value }) => ({
-          attributes: [
-            {
-              name: 'style',
-              type: 'mdxJsxAttribute',
-              value: `font-size: ${value};`,
-            },
-          ],
-          name: 'span',
-          type: 'mdxJsxTextElement',
-        }),
-      },
+      markdown: { tag: 'span', style: 'font-size' },
     }),
   inject: {
     nodeProps: {
@@ -252,26 +148,7 @@ export const BaseFontWeightPlugin = definePlugin(PLUGINS.fontWeight, {
         match: [{ style: { fontWeight: '*' } }],
       },
 
-      markdown: {
-        tag: 'span',
-        mark: true,
-        decode: ({ node }) => {
-          const value = getMarkdownStyleValue(node.attributes, 'font-weight');
-
-          return value;
-        },
-        wrap: ({ value }) => ({
-          attributes: [
-            {
-              name: 'style',
-              type: 'mdxJsxAttribute',
-              value: `font-weight: ${value};`,
-            },
-          ],
-          name: 'span',
-          type: 'mdxJsxTextElement',
-        }),
-      },
+      markdown: { tag: 'span', style: 'font-weight' },
     }),
   inject: {
     nodeProps: {

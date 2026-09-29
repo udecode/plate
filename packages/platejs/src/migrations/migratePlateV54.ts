@@ -9,6 +9,7 @@ import {
 import { getDocumentMigrationAuthoredCapability } from './documentMigrationAuthored.internal';
 import type {
   DocumentMigrationContext,
+  DocumentMigrationSelectionContext,
   DocumentMigrationStepResult,
 } from './documentMigrations';
 import { migratePlateV54Ast } from './migratePlateV54Ast.internal';
@@ -18,6 +19,7 @@ import {
   migratePlateV54Profile,
 } from './migratePlateV54Profile.internal';
 import { migratePlateV54Suggestions } from './migratePlateV54Suggestions.internal';
+import { migratePlateV54Urls } from './migratePlateV54Urls.internal';
 
 export type MigratePlateV54Options = Readonly<{
   /** Frozen v53 list sibling policy used to interpret historical numbering. */
@@ -29,6 +31,7 @@ type PlateV54Shape = Readonly<{
   codeBlocks: ReturnType<typeof migratePlateV54CodeBlocks>;
   document: EditorDocumentValue;
   profile: EditorDocumentValue;
+  urls: ReturnType<typeof migratePlateV54Urls>;
 }>;
 
 const mapBetween = (
@@ -60,9 +63,10 @@ const shapeDocument = (
     { list: options.list }
   );
   const ast = migratePlateV54Ast({ ...context, document: profile });
+  const urls = migratePlateV54Urls({ ...context, document: ast });
   const codeBlocks = migratePlateV54CodeBlocks({
     ...context,
-    document: ast,
+    document: urls.document,
   });
 
   return Object.freeze({
@@ -70,6 +74,7 @@ const shapeDocument = (
     codeBlocks,
     document: codeBlocks.document,
     profile,
+    urls,
   });
 };
 
@@ -78,38 +83,69 @@ export type PlateV54Migration = (
   options?: MigratePlateV54Options
 ) => DocumentMigrationStepResult;
 
-/** Upgrade the frozen first-party Plate v53 document profile to v54. */
+/**
+ * Upgrade the frozen first-party Plate v53 document profile to v54. Links and
+ * media whose stored URL the current schema rejects keep their label, caption,
+ * alt text or file name as ordinary content.
+ */
 export const migrateV54: PlateV54Migration = (context, options = {}) => {
   const schema = context.target.schema as InternalEditorSchemaApi;
   const legacy = migratePlateV54Suggestions(context.document);
   const shapedSource = shapeDocument(context, context.document, options);
+  // The code-block stage falls back to `mapped` outside code, so URL-stage
+  // points must win there too.
+  const mapThroughUrls = ({
+    mappedSelection,
+    selection,
+  }: DocumentMigrationSelectionContext) => {
+    const profileSelection = mapBetween(
+      schema,
+      selection,
+      context.document,
+      shapedSource.profile
+    );
+    const astSelection = mapBetween(
+      schema,
+      profileSelection,
+      shapedSource.profile,
+      shapedSource.ast
+    );
+    const { mapSelection: mapUrls } = shapedSource.urls;
+
+    if (!mapUrls) {
+      return { mapped: mappedSelection, urlSelection: astSelection };
+    }
+
+    return {
+      mapped: mapUrls(astSelection, mappedSelection),
+      urlSelection: mapUrls(
+        astSelection,
+        mapBetween(
+          schema,
+          astSelection,
+          shapedSource.ast,
+          shapedSource.urls.document
+        )
+      ),
+    };
+  };
 
   if (!legacy) {
     const mapSelection: NonNullable<
       DocumentMigrationStepResult['mapSelection']
-    > = ({ mappedSelection, selection }) => {
-      const profileSelection = mapBetween(
-        schema,
-        selection,
-        context.document,
-        shapedSource.profile
-      );
-      const astSelection = mapBetween(
-        schema,
-        profileSelection,
-        shapedSource.profile,
-        shapedSource.ast
-      );
+    > = (selectionContext) => {
+      const { mapped, urlSelection } = mapThroughUrls(selectionContext);
 
       return (
-        shapedSource.codeBlocks.mapSelection?.(astSelection, mappedSelection) ??
-        mappedSelection
+        shapedSource.codeBlocks.mapSelection?.(urlSelection, mapped) ?? mapped
       );
     };
 
     return Object.freeze({
       document: shapedSource.document,
-      ...(shapedSource.codeBlocks.mapSelection ? { mapSelection } : {}),
+      ...(shapedSource.codeBlocks.mapSelection || shapedSource.urls.mapSelection
+        ? { mapSelection }
+        : {}),
     });
   }
 
@@ -142,25 +178,14 @@ export const migrateV54: PlateV54Migration = (context, options = {}) => {
 
   return Object.freeze({
     document,
-    mapSelection: ({ mappedSelection, selection }) => {
-      const profileSelection = mapBetween(
-        schema,
-        selection,
-        context.document,
-        shapedSource.profile
-      );
-      const astSelection = mapBetween(
-        schema,
-        profileSelection,
-        shapedSource.profile,
-        shapedSource.ast
-      );
+    mapSelection: (selectionContext) => {
+      const { mapped, urlSelection } = mapThroughUrls(selectionContext);
       const shapedSelection = shapedSource.codeBlocks.mapSelection
-        ? shapedSource.codeBlocks.mapSelection(astSelection, mappedSelection)
+        ? shapedSource.codeBlocks.mapSelection(urlSelection, mapped)
         : mapBetween(
             schema,
-            astSelection,
-            shapedSource.ast,
+            urlSelection,
+            shapedSource.urls.document,
             shapedSource.document
           );
 

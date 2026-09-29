@@ -59,11 +59,11 @@ No immutable history recorded.
 
 ## Owners and evidence entrypoints
 
-Owners: [markdown-joiner-transform.ts](../../../apps/www/src/registry/lib/markdown-joiner-transform.ts), [markdown-streaming-demo.tsx](../../../apps/www/src/registry/examples/markdown-streaming-demo.tsx).
+Owners: [MarkdownPlugin.ts](../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts), [markdownConversion.ts](../../../packages/platejs/src/markdown/lib/internal/markdownConversion.ts), [markdown-streaming-demo.tsx](../../../apps/www/src/registry/examples/markdown-streaming-demo.tsx).
 
 Consumers: [markdown-streaming-demo.tsx](../../../apps/www/src/registry/examples/markdown-streaming-demo.tsx).
 
-Proof entrypoints: [markdown-streaming-lifetime.spec.ts](../../../apps/www/tests/browser/markdown-streaming-lifetime.spec.ts), [AIChatPlugin.streaming.spec.ts](../../../packages/platejs/src/ai/react/AIChatPlugin.streaming.spec.ts). These links alone are not proof of a passing run.
+Proof entrypoints: [markdown-streaming-contract.spec.ts](../../../apps/www/tests/browser/markdown-streaming-contract.spec.ts), [markdown-streaming-lifetime.spec.ts](../../../apps/www/tests/browser/markdown-streaming-lifetime.spec.ts), [markdownContinuation.spec.ts](../../../packages/platejs/src/markdown/lib/markdownContinuation.spec.ts), [AIChatPlugin.streaming.spec.ts](../../../packages/platejs/src/ai/react/AIChatPlugin.streaming.spec.ts). These links alone are not proof of a passing run.
 
 Inspection: Selected implementation and materially different consumers inspected while reconciling this queue; full feature and assertion review not executed.
 

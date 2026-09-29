@@ -62,7 +62,7 @@ import { createRoot } from 'react-dom/client'
 import {
   createEditor,
   Editable,
-  Plite,
+  EditorRoot,
   setDOMTextSyncRendererCapability,
 } from ${JSON.stringify(modulePaths.pliteReact)}
 
@@ -331,7 +331,7 @@ const install = async (surface, lineCount, chars, fixture) => {
           state.reactEvents.push({ actualDuration, baseDuration, id, phase }),
       },
       React.createElement(
-        Plite,
+        EditorRoot,
         { decorations: rangesFor(lineCount, chars, fixture).length ? [source] : [], editor },
         React.createElement(Editable, {
           renderElement,

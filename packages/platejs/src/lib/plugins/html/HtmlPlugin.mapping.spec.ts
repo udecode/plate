@@ -73,11 +73,17 @@ describe('compilePlateHtmlFormat', () => {
             decode: ({ element }) => ({
               align: element.dataset.align || undefined,
             }),
-            encode: ({ content, node }) => ({
-              attributes: node.align ? { 'data-align': node.align } : undefined,
-              children: content,
-              tag: 'p',
-            }),
+            encode: ({ content, node, preserve }) => {
+              preserve('align');
+
+              return {
+                attributes: node.align
+                  ? { 'data-align': node.align }
+                  : undefined,
+                children: content,
+                tag: 'p',
+              };
+            },
             match: [{ tag: 'p' }],
           },
         }),
@@ -591,11 +597,15 @@ describe('compilePlateHtmlFormat', () => {
               brandColor:
                 element.style.getPropertyValue('--brandColor') || undefined,
             }),
-            encode: ({ content, node }) => ({
-              children: content,
-              style: { '--brandColor': node.brandColor },
-              tag: 'p',
-            }),
+            encode: ({ content, node, preserve }) => {
+              preserve('brandColor');
+
+              return {
+                children: content,
+                style: { '--brandColor': node.brandColor },
+                tag: 'p',
+              };
+            },
             match: [{ style: { '--brandColor': '*' } }],
           },
         }),
@@ -639,11 +649,15 @@ describe('compilePlateHtmlFormat', () => {
           html: {
             priority: 1,
             decode: () => ({}),
-            encode: ({ content, node }) => ({
-              children: content,
-              style: { [String(node.cssName)]: node.cssValue },
-              tag: 'p',
-            }),
+            encode: ({ content, node, preserve }) => {
+              preserve('cssName', 'cssValue');
+
+              return {
+                children: content,
+                style: { [String(node.cssName)]: node.cssValue },
+                tag: 'p',
+              };
+            },
             match: [{ tag: 'p' }],
           },
         }),
@@ -688,18 +702,59 @@ describe('compilePlateHtmlFormat', () => {
     [
       ['color;position', 'fixed'],
       ['color:background', 'red'],
-      ['color', 'red; position: fixed'],
-      ['color', 'red{position: fixed}'],
-      ['color', 'red/* hidden */'],
-      ['color', 'red\nposition: fixed'],
-      ['backgroundImage', 'url("javascript:alert(1)")'],
     ].forEach(([cssName, cssValue]) => {
       const result = serialize(cssName, cssValue);
 
       expect(result.formats).not.toContain('text/html');
       expect(result.html).toBe('');
     });
-    expect(reports).toHaveBeenCalledTimes(7);
+    expect(reports).toHaveBeenCalledTimes(2);
+
+    [
+      'red; position: fixed',
+      'red{position: fixed}',
+      'red/* hidden */',
+      'red\nposition: fixed',
+      String.raw`u\72 l(https://example.com/pixel.png)`,
+      'image-set("https://example.com/pixel.png" 1x)',
+      'url("javascript:alert(1)")',
+    ].forEach((cssValue) => {
+      const result = serialize('backgroundImage', cssValue);
+
+      expect(result.formats).not.toContain('text/html');
+      expect(result.html).toBe('');
+      expect(
+        editor.api.html.serialize({
+          document: {
+            children: [
+              {
+                children: [{ text: 'CSS' }],
+                cssName: 'backgroundImage',
+                cssValue,
+                type: 'cssParagraph',
+              },
+            ],
+          },
+          lossPolicy: 'allow',
+        })
+      ).toEqual({
+        data: '<p>CSS</p>',
+        diagnostics: [
+          {
+            action: 'removed',
+            code: 'html-unsafe-content',
+            impact: 'lossy',
+            kind: 'style',
+            message:
+              'Removed unsafe CSS value for "background-image" from <p>.',
+            model: { path: [0], root: 'main' },
+            severity: 'warning',
+          },
+        ],
+        ok: true,
+      });
+    });
+    expect(reports).toHaveBeenCalledTimes(2);
     reports.mockRestore();
   });
 
@@ -748,20 +803,24 @@ describe('compilePlateHtmlFormat', () => {
               listStyle:
                 element.parentElement?.tagName === 'OL' ? 'decimal' : 'disc',
             }),
-            encode: ({ content, node }) => ({
-              attributes:
-                node.listStart && node.listStart !== 1
-                  ? { start: node.listStart }
-                  : undefined,
-              children: [
-                {
-                  children: content,
-                  patchTarget: true,
-                  tag: 'li',
-                },
-              ],
-              tag: node.listStyle === 'decimal' ? 'ol' : 'ul',
-            }),
+            encode: ({ content, node, preserve }) => {
+              preserve('listStart', 'listStyle');
+
+              return {
+                attributes:
+                  node.listStart && node.listStart !== 1
+                    ? { start: node.listStart }
+                    : undefined,
+                children: [
+                  {
+                    children: content,
+                    patchTarget: true,
+                    tag: 'li',
+                  },
+                ],
+                tag: node.listStyle === 'decimal' ? 'ol' : 'ul',
+              };
+            },
             match: [{ tag: 'li' }],
             priority: 20,
           },
@@ -1046,11 +1105,15 @@ describe('compilePlateHtmlFormat', () => {
             decode: ({ element }) => ({
               label: element.getAttribute('data-label') || undefined,
             }),
-            encode: ({ content, node }) => ({
-              attributes: { 'data-label': node.label },
-              children: content,
-              tag: 'p',
-            }),
+            encode: ({ content, node, preserve }) => {
+              preserve('label');
+
+              return {
+                attributes: { 'data-label': node.label },
+                children: content,
+                tag: 'p',
+              };
+            },
             match: [{ tag: 'p' }],
           },
         }),
@@ -1644,19 +1707,26 @@ describe('compilePlateHtmlFormat', () => {
       formats: ({ defineFormats }) =>
         defineFormats({
           html: {
-            decode: ({ element }) => ({
-              onload: element.getAttribute('onload') || undefined,
-              src: element.getAttribute('src') || undefined,
-              srcdoc: element.getAttribute('srcdoc') || undefined,
-            }),
-            encode: ({ node }) => ({
-              attributes: {
-                ...(node.onload ? { onload: node.onload } : {}),
-                ...(node.src ? { src: node.src } : {}),
-                ...(node.srcdoc ? { srcdoc: node.srcdoc } : {}),
-              },
-              tag: 'iframe',
-            }),
+            decode: ({ element }) =>
+              Object.fromEntries(
+                ['onload', 'src', 'srcdoc'].flatMap((name) => {
+                  const value = element.getAttribute(name);
+
+                  return value ? [[name, value]] : [];
+                })
+              ),
+            encode: ({ node, preserve }) => {
+              preserve('onload', 'src', 'srcdoc');
+
+              return {
+                attributes: {
+                  ...(node.onload ? { onload: node.onload } : {}),
+                  ...(node.src ? { src: node.src } : {}),
+                  ...(node.srcdoc ? { srcdoc: node.srcdoc } : {}),
+                },
+                tag: 'iframe',
+              };
+            },
             match: [{ tag: 'iframe' }],
           },
         }),
@@ -1674,10 +1744,11 @@ describe('compilePlateHtmlFormat', () => {
             decode: ({ element }) => ({
               src: element.getAttribute('src') || undefined,
             }),
-            encode: ({ node }) => ({
-              attributes: { src: node.src },
-              tag: 'img',
-            }),
+            encode: ({ node, preserve }) => {
+              preserve('src');
+
+              return { attributes: { src: node.src }, tag: 'img' };
+            },
             match: [{ tag: 'img' }],
           },
         }),
@@ -1695,10 +1766,11 @@ describe('compilePlateHtmlFormat', () => {
             decode: ({ element }) => ({
               href: element.getAttribute('href') || undefined,
             }),
-            encode: ({ node }) => ({
-              attributes: { href: node.href },
-              tag: 'base',
-            }),
+            encode: ({ node, preserve }) => {
+              preserve('href');
+
+              return { attributes: { href: node.href }, tag: 'base' };
+            },
             match: [{ tag: 'base' }],
           },
         }),
@@ -1779,11 +1851,22 @@ describe('compilePlateHtmlFormat', () => {
       expect(result.html).toBe('');
     });
     expect(
-      parseHtmlSliceContent(
-        editor,
+      editor.api.html.parseSlice(
         '<iframe src="java&#10;script:alert(1)"></iframe>'
       )
-    ).toEqual([]);
+    ).toMatchObject({
+      diagnostics: [
+        {
+          code: 'html-unsafe-content',
+          impact: 'lossless',
+          kind: 'url',
+          message: 'Removed unsafe HTML attribute "src" from <iframe>.',
+          severity: 'warning',
+        },
+      ],
+      ok: true,
+      slice: { content: [{ children: [{ text: '' }], type: 'safeFrame' }] },
+    });
     expect(
       parseHtmlSliceContent(
         editor,
@@ -1799,7 +1882,8 @@ describe('compilePlateHtmlFormat', () => {
     expect(
       parseHtmlSliceContent(editor, '<base href="https://attacker.example/">')
     ).toEqual([]);
-    expect(reports).toHaveLength(6);
+    // Unsafe names are mapping bugs; unsafe values are removed without one.
+    expect(reports).toHaveLength(3);
   });
 
   it('aborts the whole encode on conflicting normalized patch writes', () => {
@@ -2087,6 +2171,176 @@ describe('compilePlateHtmlFormat', () => {
     expect(unsupportedOutput.getData('text/html')).toBe('');
   });
 
+  it('claims only the properties an encoder represents in retained output', () => {
+    const NotePlugin = definePlugin('htmlClaimNote', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: {
+            label: property.string(),
+            tone: property.string(),
+          },
+        },
+      },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
+            decode: () => ({}),
+            encode: ({ content, node, preserve }) => {
+              // Reading `tone` does not claim it.
+              void node.tone;
+              preserve('label');
+
+              return {
+                attributes: { 'data-label': node.label },
+                children: content,
+                tag: 'aside',
+              };
+            },
+            match: [{ tag: 'aside' }],
+          },
+        }),
+    });
+    const ColorPlugin = definePlugin('htmlClaimColor', {
+      schema: {
+        properties: {
+          color: schema.elementProperty(property.string(), {
+            target: target.type('htmlClaimNote'),
+          }),
+        },
+      },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
+            decode: () => undefined,
+            // A patch that writes nothing represents nothing.
+            encode: ({ value }) => ({
+              style: { color: value === 'none' ? undefined : value },
+            }),
+            match: [{ style: { color: '*' } }],
+          },
+        }),
+    });
+    const SpacingPlugin = definePlugin('htmlClaimSpacing', {
+      schema: {
+        properties: {
+          gap: schema.elementProperty(property.number(), {
+            target: target.type('htmlClaimNote'),
+          }),
+          pad: schema.elementProperty(property.number(), {
+            target: target.type('htmlClaimNote'),
+          }),
+        },
+      },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
+            decode: () => ({}),
+            encode: ({ preserve, values }) => {
+              preserve('gap', 'pad');
+
+              return values.gap === 0
+                ? null
+                : { attributes: { 'data-gap': values.gap } };
+            },
+            match: [{ attributes: { 'data-gap': true } }],
+          },
+        }),
+    });
+    const editor = createEditor({
+      plugins: [ColorPlugin, NotePlugin, SpacingPlugin],
+    });
+    const serialize = (note: Record<string, unknown>) =>
+      editor.api.html.serialize({
+        document: {
+          children: [
+            { children: [{ text: 'x' }], type: 'htmlClaimNote', ...note },
+          ],
+        },
+        lossPolicy: 'allow',
+      });
+    const omitted = (result: ReturnType<typeof serialize>) =>
+      result.diagnostics.map((diagnostic) =>
+        diagnostic.code === 'html-unsupported-content'
+          ? `${diagnostic.severity}:${diagnostic.model?.property}`
+          : diagnostic.code
+      );
+
+    expect(serialize({ label: 'a', tone: 'loud' })).toMatchObject({
+      data: '<aside data-label="a">x</aside>',
+      diagnostics: [
+        {
+          action: 'dropped',
+          code: 'html-unsupported-content',
+          kind: 'attribute',
+          message:
+            'No HTML mapping represents content property "tone" on "htmlClaimNote"; it was omitted.',
+          model: { path: [0], property: 'tone', root: 'main' },
+          phase: 'serialize',
+          severity: 'warning',
+        },
+      ],
+      ok: true,
+    });
+    // Each lost property reports on its own, under every loss policy.
+    expect(
+      omitted(
+        editor.api.html.serialize({
+          document: {
+            children: [
+              {
+                children: [{ text: 'x' }],
+                color: 'none',
+                gap: 0,
+                pad: 1,
+                tone: 'loud',
+                type: 'htmlClaimNote',
+              },
+            ],
+          },
+        })
+      )
+    ).toEqual(['warning:color', 'warning:gap', 'warning:pad', 'warning:tone']);
+    expect(omitted(serialize({ color: 'red', gap: 2, pad: 1 }))).toEqual([]);
+  });
+
+  it('rejects a claim on a property its mapping does not own', () => {
+    const reports = spyOn(console, 'error').mockImplementation(() => {});
+    const NotePlugin = definePlugin('htmlClaimForeign', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: { label: property.string() },
+        },
+      },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
+            decode: () => ({}),
+            encode: ({ content, preserve }) => {
+              // @ts-expect-error A mapping claims only its target's properties.
+              preserve('indent');
+
+              return { children: content, tag: 'aside' };
+            },
+            match: [{ tag: 'aside' }],
+          },
+        }),
+    });
+    const editor = createEditor({ plugins: [NotePlugin] });
+
+    expect(() =>
+      editor.api.html.serialize({
+        document: {
+          children: [{ children: [{ text: 'x' }], type: 'htmlClaimForeign' }],
+        },
+      })
+    ).toThrow(
+      'Plate HTML mapping "htmlClaimForeign" cannot preserve "indent": it is not a property of its target.'
+    );
+    reports.mockRestore();
+  });
+
   it('aborts encode when a decode-only property claim is present', () => {
     const ParagraphPlugin = definePlugin('htmlParagraphCase18', {
       schema: {
@@ -2297,10 +2551,11 @@ describe('compilePlateHtmlFormat', () => {
         defineFormats(TargetPlugin, {
           html: {
             decode: ({ element }) => ({ variant: element.dataset.variant }),
-            encode: ({ content, node }) => {
+            encode: ({ content, node, preserve }) => {
               const declaredType: string = node.type;
 
               void declaredType;
+              preserve('variant');
 
               return {
                 attributes: { 'data-variant': node.variant },

@@ -1,6 +1,7 @@
 import { expect, spyOn, test } from 'bun:test';
 
-import { NodeApi, createEditor } from '../../../core';
+import { NodeApi, createEditor, createEditorView } from '../../../core';
+import { getPlateDecorationSources } from '../../../internal/plugin/getPlateDecorationSources';
 import { BaseLinkPlugin } from '../../link';
 import { BaseFindPlugin } from './BaseFindPlugin';
 
@@ -111,4 +112,23 @@ test('publishes a failure and recovers on a subsequent query', () => {
   } finally {
     find.mockRestore();
   }
+});
+
+test('paints matches only on the document it searched', () => {
+  const editor = createFindEditor();
+
+  editor.plugin(BaseFindPlugin).api.search('hello');
+  const [source] = getPlateDecorationSources(editor);
+  const view = createEditorView(editor, {
+    document: {
+      children: [{ type: 'paragraph', children: [{ text: 'other words' }] }],
+    },
+  });
+
+  expect(
+    source.read({ editor, entry: editor.read.nodes.get([0, 0])! })
+  ).toHaveLength(1);
+  expect(
+    source.read({ editor: view, entry: view.read.nodes.get([0, 0])! })
+  ).toEqual([]);
 });

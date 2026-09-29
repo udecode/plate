@@ -164,11 +164,7 @@ export const BaseBoldPlugin = definePlugin(PLUGINS.bold, {
         ],
       },
 
-      markdown: {
-        node: 'strong',
-        mark: true,
-        decode: () => true,
-      },
+      markdown: { node: 'strong' },
     }),
   component: 'strong',
 });
@@ -193,11 +189,7 @@ export const BaseCodePlugin = definePlugin(PLUGINS.code, {
         match: [{ tag: 'code' }, { style: { fontFamily: 'Consolas' } }],
       },
 
-      markdown: {
-        node: 'inlineCode',
-        mark: true,
-        decode: () => true,
-      },
+      markdown: { node: 'inlineCode' },
     }),
   component: 'code',
   rules: { selection: { affinity: 'hard' } },
@@ -219,16 +211,7 @@ export const BaseHighlightPlugin = definePlugin(PLUGINS.highlight, {
         match: [{ tag: 'mark' }],
       },
 
-      markdown: {
-        tag: 'mark',
-        mark: true,
-        decode: () => true,
-        wrap: () => ({
-          attributes: [],
-          name: 'mark',
-          type: 'mdxJsxTextElement',
-        }),
-      },
+      markdown: { tag: 'mark' },
     }),
   component: 'mark',
   rules: { selection: { affinity: 'directional' } },
@@ -250,11 +233,7 @@ export const BaseItalicPlugin = definePlugin(PLUGINS.italic, {
         match: [{ tag: ['em', 'i'] }, { style: { fontStyle: 'italic' } }],
       },
 
-      markdown: {
-        node: 'emphasis',
-        mark: true,
-        decode: () => true,
-      },
+      markdown: { node: 'emphasis' },
     }),
   component: 'em',
 });
@@ -272,16 +251,7 @@ export const BaseKbdPlugin = definePlugin(PLUGINS.kbd, {
         match: [{ tag: 'kbd' }],
       },
 
-      markdown: {
-        tag: 'kbd',
-        mark: true,
-        decode: () => true,
-        wrap: () => ({
-          attributes: [],
-          name: 'kbd',
-          type: 'mdxJsxTextElement',
-        }),
-      },
+      markdown: { tag: 'kbd' },
     }),
   component: 'kbd',
   rules: { selection: { affinity: 'hard' } },
@@ -314,21 +284,8 @@ export const BaseScriptPlugin = definePlugin(PLUGINS.script, {
       },
 
       markdown: [
-        {
-          tag: 'sub',
-          mark: true,
-          decode: () => 'sub',
-          wrap: ({ value }) => ({
-            attributes: [],
-            name: value === 'sub' ? 'sub' : 'sup',
-            type: 'mdxJsxTextElement',
-          }),
-        },
-        {
-          tag: 'sup',
-          mark: true,
-          decode: () => 'sup',
-        },
+        { tag: 'sub', value: 'sub' },
+        { tag: 'sup', value: 'sup' },
       ],
     }),
   rules: { selection: { affinity: 'directional' } },
@@ -356,18 +313,7 @@ export const BaseStrikethroughPlugin = definePlugin(PLUGINS.strikethrough, {
         ],
       },
 
-      markdown: [
-        {
-          node: 'delete',
-          mark: true,
-          decode: () => true,
-        },
-        {
-          tag: 'del',
-          mark: true,
-          decode: () => true,
-        },
-      ],
+      markdown: [{ node: 'delete' }, { tag: 'del' }],
     }),
   component: 's',
   rules: { selection: { affinity: 'directional' } },
@@ -392,16 +338,7 @@ export const BaseUnderlinePlugin = definePlugin(PLUGINS.underline, {
         match: [{ tag: 'u' }, { style: { textDecoration: 'underline' } }],
       },
 
-      markdown: {
-        tag: 'u',
-        mark: true,
-        decode: () => true,
-        wrap: () => ({
-          attributes: [],
-          name: 'u',
-          type: 'mdxJsxTextElement',
-        }),
-      },
+      markdown: { tag: 'u' },
     }),
   component: 'u',
 });

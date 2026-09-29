@@ -1883,6 +1883,38 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
     ),
     []
   );
+  // A callback-less tag is derived from the schema and still names its type.
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      definition(`{ tag: type, attributes: { url: 'src' } }`)
+    ),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(definition(`{ tag: 'customElement' }`))[0]?.reason ??
+      '',
+    /resolved schema type for tag/
+  );
+  // Mark tags name formatting, so the element identity law does not apply.
+  assert.deepEqual(
+    auditPlateSchemaSource(`definePlugin('kbdCapability', {
+      schema: { mark: property.boolean() },
+      formats: ({ defineFormats }) => defineFormats({
+        'markdown': { tag: 'kbd' },
+      }),
+    })`),
+    []
+  );
+  assert.deepEqual(
+    auditPlateSchemaSource(`definePlugin('scriptCapability', {
+      schema: { mark: property.enum(['sub', 'sup']) },
+    }).extend(({ defineFormats }) => ({
+      formats: defineFormats({
+        'markdown': [{ tag: 'sub', value: 'sub' }, { tag: 'sup', value: 'sup' }],
+      }),
+    }))`).filter((issue) => /Markdown/.test(issue.reason)),
+    []
+  );
 
   assert.match(
     auditPlateSchemaSource(`definePlugin('imageCapability', {
@@ -2053,9 +2085,8 @@ test('binds custom Markdown element identity to the resolved schema type', () =>
       formats: ({ defineFormats, schema: { key } }) => defineFormats({
         'markdown': {
           tag: 'comment',
-          mark: true,
-          decode: ({ decode, node }) => decode(node.children, { [key]: true }),
-          encode: ({ node }) => ({ attributes: [], children: [], name: 'comment', type: 'mdxJsxTextElement' }),
+          decode: () => true,
+          wrap: () => ({ attributes: [], name: 'comment', type: 'mdxJsxTextElement' }),
         },
       }),
     })`),

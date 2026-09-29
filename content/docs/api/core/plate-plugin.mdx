@@ -378,6 +378,12 @@ Adds trusted DOM attributes to the primary element, leaf, or text renderer in
 interactive and static rendering. A function value is a pure per-node render
 callback and cannot call React hooks.
 </APISubListItem>
+<APISubListItem parent="render" name="readsDocument" type="boolean" optional>
+Whether rendering the plugin's element reads content after the element, such as
+a table of contents listing every heading. Static rendering reuses a block
+while it and every block before it are unchanged; an element that reads later
+content renders again whenever the document changes.
+</APISubListItem>
 <APISubListItem parent="render" name="useViewElementAttributes" type="UseViewElementAttributes<D>" optional>
 Plate mounts one React hook host for this enabled plugin in each content view.
 The callback receives the exact Plate root as `view` and returns sparse

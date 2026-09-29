@@ -2097,6 +2097,92 @@ test.describe('On richtext example', () => {
     });
   });
 
+  test('keeps the retained text node through native IME preedit and follow-up input', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'Chromium CDP IME proof');
+
+    const editor = await openExample(page, 'plite/richtext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+    const initialText = 'Rich Content Editing';
+    const insertionOffset = 16;
+    const committedText = '点点滴滴';
+
+    await editor.selectAll();
+    await editor.deleteFragment();
+    await editor.insertText(initialText);
+    await editor.selection.collapse({
+      path: [0, 0],
+      offset: insertionOffset,
+    });
+    await editor.focus();
+    await editor.ime.enableKeyEvents();
+
+    const compositionNode = await editor.root.evaluateHandle((element) => {
+      const selection = element.ownerDocument.getSelection();
+
+      if (!(selection?.focusNode instanceof Text)) {
+        throw new Error('Expected a native text caret');
+      }
+
+      return selection.focusNode;
+    });
+    const readNativeState = () =>
+      editor.root.evaluate(
+        (element, originalNode) => {
+          const selection = element.ownerDocument.getSelection();
+
+          return {
+            connected: originalNode.isConnected,
+            focusText: selection?.focusNode?.textContent ?? null,
+            sameNode: selection?.focusNode === originalNode,
+          };
+        },
+        compositionNode
+      );
+    const client = await page.context().newCDPSession(page);
+
+    try {
+      for (const preedit of ['n', 'ni', 'nihao']) {
+        await client.send('Input.imeSetComposition', {
+          selectionEnd: preedit.length,
+          selectionStart: preedit.length,
+          text: preedit,
+        });
+        await expect.poll(readNativeState).toEqual({
+          connected: true,
+          focusText: `${initialText.slice(0, insertionOffset)}${preedit}${initialText.slice(insertionOffset)}`,
+          sameNode: true,
+        });
+      }
+
+      await client.send('Input.insertText', { text: committedText });
+      await editor.assert.text(
+        `${initialText.slice(0, insertionOffset)}${committedText}${initialText.slice(insertionOffset)}`
+      );
+      await editor.assert.selection({
+        anchor: {
+          path: [0, 0],
+          offset: insertionOffset + committedText.length,
+        },
+        focus: {
+          path: [0, 0],
+          offset: insertionOffset + committedText.length,
+        },
+      });
+      await page.keyboard.type('!');
+      await editor.assert.text(
+        `${initialText.slice(0, insertionOffset)}${committedText}!${initialText.slice(insertionOffset)}`
+      );
+    } finally {
+      await client.detach();
+      await compositionNode.dispose();
+    }
+  });
+
   test('runs the Wordgard composition topology matrix through Plite', async ({
     page,
   }, testInfo) => {

@@ -860,7 +860,6 @@ function createPlateRuntimeIdentityConsumerSource() {
     "  'dataTransferFormats',",
     "  'domCommands',",
     "  'isHotkey',",
-    "  'parseDOMClipboardHtml',",
     "  'writeDataTransferFragment',",
     ']);',
     'for (const name of Object.keys(releasePlateDOM)) {',

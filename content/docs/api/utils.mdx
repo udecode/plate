@@ -28,22 +28,17 @@ Import headless utilities from `platejs` and React utilities from
 | --- | --- |
 | `isDefined(value)` | Narrows `null` and `undefined` out of a value. |
 | `isUrl(value)` | Loosely validates URL strings with a recognized protocol and domain. |
-| `sanitizeUrl(url, options)` | Rejects disallowed schemes and returns a normalized URL, internal path, fragment, or `null`. |
 | `IS_APPLE` | Reports whether the current browser user agent is macOS. |
 | `AnyObject` | String-keyed object whose values are intentionally unchecked. |
 | `UnknownObject` | String-keyed object whose values require narrowing. |
 | `Nullable<T>` | Adds `null` to every property of `T`. |
 
 ```ts title="validate-link.ts"
-import { isUrl, sanitizeUrl } from 'platejs';
+import { BaseLinkPlugin, type Editor } from 'platejs';
 
-export function getSafeLink(value: string) {
-  if (!isUrl(value)) return null;
-
-  return sanitizeUrl(value, {
-    allowedSchemes: ['http', 'https'],
-  });
-}
+// Link owns its URL policy, including `allowedSchemes`.
+export const isSafeLink = (editor: Editor, value: string) =>
+  editor.plugin(BaseLinkPlugin).api.validateUrl(value);
 ```
 
 ## Plugin identities

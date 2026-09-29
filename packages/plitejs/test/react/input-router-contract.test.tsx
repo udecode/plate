@@ -2822,6 +2822,7 @@ test('editable paste flushes pending native text before app paste callbacks', ()
         requestEditableRepair: vi.fn(),
       } as any,
       rootRef: { current: root },
+      runPaste: (paste) => paste(),
       setExplicitViewportBackedSelection: vi.fn(),
       trace: {
         beginKernelEventFrame: vi.fn(),

@@ -1773,6 +1773,41 @@ describe('JSON document change algebra', () => {
     assert.deepEqual(index.pathOf(retainedNodeKey!), [0]);
   });
 
+  it('restarts lazy identity mapping instead of carrying a wide overlay', () => {
+    const owner = {} as Editor;
+    const empty = DocumentIndex.fromValue([]);
+    const insertion = replaceChildrenChange(
+      empty,
+      [],
+      0,
+      0,
+      asJsonNodes(
+        Array.from({ length: 300 }, (_, index) => paragraph(String(index)))
+      )
+    );
+    const document = insertion.apply(empty);
+    const wide = mapSnapshotIndexThroughChange(
+      empty,
+      document,
+      insertion,
+      buildSnapshotIndex(owner, []),
+      owner
+    );
+    const firstKey = wide.keyAt([0]);
+    const removal = replaceChildrenChange(document, [], 299, 1, []);
+    const index = mapSnapshotIndexThroughChange(
+      document,
+      removal.apply(document),
+      removal,
+      wide,
+      owner
+    );
+
+    assert.equal(getSnapshotIndexMappingStats(index).mappedChanges, 1);
+    assert.equal(index.keyAt([0]), firstKey);
+    assert.deepEqual(index.pathOf(firstKey!), [0]);
+  });
+
   it(
     'bounds retained wide-document mapping storage by binary segment count',
     {

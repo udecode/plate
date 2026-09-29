@@ -170,11 +170,12 @@ export const createMarkdownModelLocator = (
 
 type TreeNode = UnistNode & { children?: readonly UnistNode[] };
 
+/** Check syntax-tree limits; returns the node count, or `null` when exceeded. */
 export const checkMarkdownTreeLimits = (
   root: UnistNode,
   limits: MarkdownParseLimits,
   report: (diagnostic: MarkdownDiagnostic) => void
-): boolean => {
+): number | null => {
   const stack: Array<Readonly<{ depth: number; node: TreeNode }>> = [
     { depth: 0, node: root as TreeNode },
   ];
@@ -195,7 +196,7 @@ export const checkMarkdownTreeLimits = (
         severity: 'error',
       });
 
-      return false;
+      return null;
     }
     if (current.depth > limits.maxDepth) {
       report({
@@ -207,14 +208,14 @@ export const checkMarkdownTreeLimits = (
         severity: 'error',
       });
 
-      return false;
+      return null;
     }
     current.node.children?.forEach((child) => {
       stack.push({ depth: current.depth + 1, node: child as TreeNode });
     });
   }
 
-  return true;
+  return nodes;
 };
 
 export class ReportedMarkdownFailureError extends Error {

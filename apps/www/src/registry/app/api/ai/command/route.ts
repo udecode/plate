@@ -25,7 +25,6 @@ import type {
   ChatMessage,
   ToolName,
 } from '@/registry/components/editor/use-chat';
-import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 import { getChooseToolPrompt } from './prompt/getChooseToolPrompt';
 import { getCommentPrompt } from './prompt/getCommentPrompt';
@@ -99,7 +98,6 @@ export async function POST(req: NextRequest) {
         }
 
         const innerStream = streamText({
-          experimental_transform: markdownJoinerTransform(),
           model: gatewayProvider(model || 'openai/gpt-4o-mini'),
           // Not used
           prompt: '',

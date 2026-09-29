@@ -40,7 +40,7 @@ Break between lists.
       {
         children: [{ text: 'Second list item' }],
         indent: 1,
-        listRestart: 2,
+        listStart: 2,
         listType: 'numbered',
         type: 'paragraph',
       },
@@ -68,7 +68,7 @@ Break between lists.
       {
         children: [{ text: 'Second list item' }],
         indent: 1,
-        listRestart: 2,
+        listStart: 2,
         listType: 'numbered',
         type: 'paragraph',
       },
@@ -88,7 +88,7 @@ Break between lists.
       {
         children: [{ text: 'Zero' }],
         indent: 1,
-        listRestart: 0,
+        listStart: 0,
         listType: 'numbered',
       },
       {

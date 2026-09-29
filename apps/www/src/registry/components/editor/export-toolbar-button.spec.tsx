@@ -40,8 +40,10 @@ mock.module('@/registry/components/editor/toolbar', () => ({
   ),
 }));
 
-let exportOptions: { comments?: Array<{ target: { range: unknown } }> } | null =
-  null;
+let exportOptions: {
+  comments?: Array<{ target: { range: unknown } }>;
+  lossPolicy?: string;
+} | null = null;
 const exportDocx = mock(
   async (_editor: unknown, options: typeof exportOptions) => {
     exportOptions = options;
@@ -111,6 +113,7 @@ describe('ExportToolbarButton', () => {
     await waitFor(() => expect(exportDocx).toHaveBeenCalledTimes(1));
 
     expect(exportOptions?.comments?.[0]?.target.range).toEqual(proposedRange);
+    expect(exportOptions?.lossPolicy).toBe('allow');
     expect(click).toHaveBeenCalledTimes(1);
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:test');
   });

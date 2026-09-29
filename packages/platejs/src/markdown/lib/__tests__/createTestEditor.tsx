@@ -110,9 +110,14 @@ const markdownPlugin = MarkdownPlugin.configure({
   },
 });
 
-export const createTestEditor = () =>
+export const createTestEditor = (plugins: readonly BasePluginInput[] = []) =>
   createEditor({
-    plugins: [BaseParagraphPlugin, ...testSchemaPlugins, markdownPlugin],
+    plugins: [
+      BaseParagraphPlugin,
+      ...testSchemaPlugins,
+      ...plugins,
+      markdownPlugin,
+    ],
   });
 
 type TestMarkdownEditor<V extends Value = Value> = Readonly<{

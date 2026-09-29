@@ -10,7 +10,11 @@ work_kind: design
 
 # Format mapping authoring
 
-Status: Complete — design settled and proven by prototype; implementation awaits authorization
+Status: Complete — implemented inside the conversion-boundary execution program (its S1 and S6); the adoption plan's Execution log records the outcome and proof
+
+Execution runs inside the conversion-boundary
+[execution program](2026-09-28-conversion-boundary-adoption.md#execution-program-to-completion):
+this plan's S1–S3 as its S1 and S4 as its S6.
 
 This is a project-owned file template under Task. Apply the project's standing
 Autogoal request for long-running work unless the user opts out. Apply
@@ -98,13 +102,14 @@ Output budget strategy:
 
 Blocked condition:
 
-- None. Execution authorization is the only remaining step.
+- None. The user authorized execution on 2026-09-28; it ran inside the
+  conversion-boundary execution program.
 
 Plate Plan state:
 
-- phase: handoff
-- next: execution authorization
-- handoff: prepared
+- phase: executed
+- next: none; follow-ups live in the adoption plan
+- handoff: consumed by the adoption plan's S1 and S6
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -357,8 +362,8 @@ Timeline:
 Reboot status:
 | Question | Answer |
 | --- | --- |
-| Where am I? | Handoff |
-| Where am I going? | Execution after authorization |
+| Where am I? | Executed through the adoption plan |
+| Where am I going? | Closed; see the adoption plan's Execution log |
 | What is the goal? | Declarative Markdown tag and mark mappings derived from the schema |
 | What have I learned? | See Findings |
 | What have I done? | See Timeline |

@@ -105,6 +105,20 @@ export const getEditorJsonRecordEntries = (
   return entries;
 };
 
+// A frozen value whose object members are owned is deeply immutable, so its
+// validity cannot change; later checks of a shared frozen tree skip it.
+const rememberFrozenJsonValue = (value: object, items: readonly unknown[]) => {
+  if (
+    Object.isFrozen(value) &&
+    items.every(
+      (item) =>
+        item === null || typeof item !== 'object' || isOwnedJsonValue(item)
+    )
+  ) {
+    freezeOwnedJsonValue(value);
+  }
+};
+
 export const isEditorJsonValue = (
   value: unknown,
   seen = new WeakSet<object>()
@@ -129,19 +143,28 @@ export const isEditorJsonValue = (
       try {
         if (Array.isArray(value)) {
           const items = getEditorJsonArrayItems(value);
-
-          return (
+          const valid =
             items !== null &&
-            items.every((item) => isEditorJsonValue(item, seen))
-          );
+            items.every((item) => isEditorJsonValue(item, seen));
+
+          if (valid) rememberFrozenJsonValue(value, items);
+
+          return valid;
         }
 
         const entries = getEditorJsonRecordEntries(value);
-
-        return (
+        const valid =
           entries !== null &&
-          entries.every(([, item]) => isEditorJsonValue(item, seen))
-        );
+          entries.every(([, item]) => isEditorJsonValue(item, seen));
+
+        if (valid) {
+          rememberFrozenJsonValue(
+            value,
+            entries.map(([, item]) => item)
+          );
+        }
+
+        return valid;
       } finally {
         seen.delete(value);
       }

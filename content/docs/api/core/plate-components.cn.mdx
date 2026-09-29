@@ -348,6 +348,11 @@ export function FigureElement({
     <APIItem name="placeholder" type="React.ReactNode" optional>
       可编辑区域的占位内容。
     </APIItem>
+    <APIItem name="onPasteResult" type="(result: EditablePasteResult) => void" optional>
+      对内置 format 处理的每次 paste 调用一次：paste commit 之后（`inserted: true`），
+      或没有 format 能插入时（`inserted: false`）。`diagnostics` 列出
+      `{ impact, message }` 报告；`impact: 'lossy'` 表示粘贴内容被遗漏。
+    </APIItem>
     <APIItem
       name="scrollSelectionIntoView"
       type="(editor, domRange) => void"

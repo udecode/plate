@@ -17,24 +17,7 @@ export type CodeDrawingView = (typeof CODE_DRAWING_VIEWS)[number];
 export const BaseCodeDrawingPlugin = definePlugin(PLUGINS.codeDrawing, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
-      markdown: {
-        tag: type,
-        decode: ({ readTagAttributes }) => ({
-          ...readTagAttributes().properties,
-          children: [{ text: '' }],
-          type,
-        }),
-        encode: ({ encodeAttributes, node }) => {
-          const { children: _, type: __, ...props } = node;
-
-          return {
-            attributes: encodeAttributes(props),
-            children: [],
-            name: type,
-            type: 'mdxJsxFlowElement',
-          };
-        },
-      },
+      markdown: { tag: type },
     }),
   schema: {
     element: {

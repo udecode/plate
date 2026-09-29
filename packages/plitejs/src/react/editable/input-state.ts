@@ -316,7 +316,13 @@ export const createEditableInputControllerState = (
 
 export const beginEditableCompositionSession = (
   inputController: EditableInputController,
-  { historyMergePending = false }: { historyMergePending?: boolean } = {}
+  {
+    historyMergePending = false,
+    nativeAnchor = null,
+  }: {
+    historyMergePending?: boolean;
+    nativeAnchor?: unknown;
+  } = {}
 ) => {
   inputController.nativeHistoryComposition = createNativeGroupingId();
   if (historyMergePending) {
@@ -325,7 +331,13 @@ export const beginEditableCompositionSession = (
     EDITABLE_COMPOSITION_HISTORY_MERGE.delete(inputController.domInputRuntime);
   }
 
-  inputController.domInputRuntime.beginComposition();
+  const nativeOwned = nativeAnchor !== null;
+
+  inputController.domInputRuntime.beginComposition({
+    anchor: nativeAnchor,
+    owner: nativeOwned ? 'native' : 'model',
+    phase: nativeOwned ? 'native-composing' : 'model-composing',
+  });
 };
 
 export const shouldMergeEditableCompositionHistory = (

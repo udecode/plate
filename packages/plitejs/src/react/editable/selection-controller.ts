@@ -1433,6 +1433,7 @@ export const syncEditableDOMSelectionToEditor = ({
 
   if (!runtime) return;
   if (runtime.externalText.focusSelection()) return;
+  if (runtime.shouldDeferCompositionSelectionExport()) return;
   if (
     runtime.inputController.state.isNativeSelectionDragActive &&
     !runtime.inputController.state.isProjectingSelection

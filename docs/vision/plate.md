@@ -544,6 +544,12 @@ Current priorities:
   refusal under the loss policy; programmer and configuration faults throw.
   Configurable custom tag identity stays on its schema-owning plugin, not a
   foreign mapping contributor.
+- A stored URL meets one role policy at every admission, through its feature's
+  schema validator. Navigation destinations keep a script-capable floor that
+  configuration narrows or widens only above it; image, media, file and embed
+  sources admit only what that role can load. A conversion keeps a refused
+  URL's label, alt text or caption and reports the removal, and output rechecks
+  the same decision. No option bypasses the floor.
 - State that selects a plugin capability stores its descriptor or normalized
   name. It never stores a configurable persisted type or key. Resolve schema
   identity at the AST read/write boundary, including transient-node factories.
@@ -766,6 +772,9 @@ Current priorities:
   matching. Whole-payload admission, source cleanup, RTF access, and
   post-decode repair belong to the browser `DataTransferFormat` lifecycle.
   Generic mapping hooks do not receive host payloads or live editor state.
+- A whole-payload format reports what a paste leaves out. The initiating
+  editable delivers one result per paste its built-in formats handle; copied UI
+  decides the presentation, and harmless cleanup stays silent.
 - Multiple callers of one plugin operation reuse its plugin-owned API; they do
   not justify a parallel raw helper. Keep the algorithm in the plugin.
   Standalone functions need a real cross-plugin, cross-layer, or

@@ -8,17 +8,21 @@ Question: Which schema and renderer contracts should HTML ingress and static out
 
 ## Current decision
 
-Unassessed. No review conclusion is recorded.
+[2026-09-29-static-preview-document-review](../review-records/2026-09-29-static-preview-document-review.json) — **pursue**. Pursue a document input on the existing static components. <EditorStatic editor={editor} document={document} /> and EditorPreview render the document through the editor's plugins via a cached projected view, without editing the editor; the AI menu and the demo's static preview delete their shadow publication. Plite owns the cost: assertDocument reuses validation of deep-frozen top-level nodes per compiled schema and root, and JSON validity of frozen values is remembered, so projection is proportional. The Markdown table decoder pads short rows as GFM specifies, so a parse equals the committed document. An editable preview still publishes from the first changed block, because showing a stream in a live editable editor is an edit. React re-rendering of unchanged blocks stays open: a stable view needs a document-dependency mechanism that works in React Server Components.
 
-Compiled decision: not associated. Source observation: unknown. Source matching is not behavior proof.
+Compiled decision: not associated. Source observation: stale. Source matching is not behavior proof.
 
-Execution: **unbound**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
+Execution: **completed**. Proof: **verified**. Working tree only, nothing committed. Decorations are still read over every node on each render (21-58% of React time at 50 KB on snapshot w); caching them per block needs a declaration for document-reading sources and its own decision. The guard does not cover deferred component bodies or plugin API calls. Comment highlights and Yjs cursors place source state by path in a view of another document. pnpm test fails 27, 26 of them at HEAD plus the load-sensitive schema benchmark, which passed 2 of 3 runs at load 8-9 and also fails with this plan reverted; pnpm test:slow matches HEAD.
+
+Outcome: [2026-09-29-static-document-rendering-execution](../review-records/2026-09-29-static-document-rendering-execution.json). Governing reviews: [2026-09-29-conversion-next-static-read-review](../review-records/2026-09-29-conversion-next-static-read-review.json), [2026-09-29-static-preview-document-review](../review-records/2026-09-29-static-preview-document-review.json). Work kind: implementation. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [PlateStatic.spec.tsx](../../../packages/platejs/src/static/components/PlateStatic.spec.tsx). Changed directories: [static](../../../packages/platejs/src/static). Changed source groups: platejs/html, platejs/static.
+
+- **missing-current-decision**: 2026-09-29-static-preview-document-review.
 
 - **unbound-plan**: [2026-07-12-plate-next-footnote-indent-juice-package-reviews.md](../../plans/2026-07-12-plate-next-footnote-indent-juice-package-reviews.md).
 
@@ -27,6 +31,16 @@ Changed files: none identified. Changed directories: none identified. Changed so
 - **unbound-plan**: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
 - **unreconciled-execution**: [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json).
+
+- **unreconciled-execution**: [2026-09-29-static-preview-document-execution](../review-records/2026-09-29-static-preview-document-execution.json).
+
+- **stale-execution-proof**: [2026-09-29-static-preview-document-execution](../review-records/2026-09-29-static-preview-document-execution.json).
+
+- **unreconciled-execution**: [2026-09-29-static-preview-document-execution-final](../review-records/2026-09-29-static-preview-document-execution-final.json).
+
+- **stale-execution-proof**: [2026-09-29-static-preview-document-execution-final](../review-records/2026-09-29-static-preview-document-execution-final.json).
+
+- **unreconciled-execution**: [2026-09-29-static-document-rendering-execution](../review-records/2026-09-29-static-document-rendering-execution.json).
 
 ## Plans and execution
 
@@ -37,12 +51,16 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-07-12-plate-next-footnote-indent-juice-package-reviews.md](../../plans/2026-07-12-plate-next-footnote-indent-juice-package-reviews.md) | unknown | implementation | unbound |
 | [2026-07-26-plate-next-html-plugin-colocation.md](../../plans/2026-07-26-plate-next-html-plugin-colocation.md) | unknown | implementation | unbound |
 | [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md) | completed | implementation | unbound |
+| [2026-09-29-static-document-rendering.md](../../plans/2026-09-29-static-document-rendering.md) | completed | implementation | [2026-09-29-conversion-next-static-read-review](../review-records/2026-09-29-conversion-next-static-read-review.json), [2026-09-29-static-preview-document-review](../review-records/2026-09-29-static-preview-document-review.json) |
+| [2026-09-29-static-preview-document.md](../../plans/2026-09-29-static-preview-document.md) | completed | implementation | [2026-09-29-static-preview-document-review](../review-records/2026-09-29-static-preview-document-review.json), [2026-09-28-conversion-boundary-value-review](../review-records/2026-09-28-conversion-boundary-value-review.json), [2026-09-28-format-mappings-value-review](../review-records/2026-09-28-format-mappings-value-review.json) |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-- [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json): completed; binding **historical-unbound**; Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review. Proof: unknown / unknown. Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
+- [2026-09-29-static-preview-document-execution](../review-records/2026-09-29-static-preview-document-execution.json): completed; binding **current**; Read-only previews render a document instead of copying it into an editor. EditorStatic and EditorPreview take document, rendered through the editor's plugins via a cached projected view without editing the editor; the AI menu and the Markdown streaming demo's static preview delete their identity splice. Plite reuses validation of deep-frozen top-level nodes per compiled schema and root, and remembers JSON validity of frozen values, so projection is proportional. The Markdown table decoder pads short rows as GFM specifies, so a parse equals the committed document. On S5 projection-2 all 8 static and AI cells pass against the baseline, and projection beats the previous splice on every metric in every cell. Proof: stale / verified. Working tree only, nothing committed. React still re-renders every block per publication (a stable view needs a document-dependency mechanism that works in RSC). Only the table correction was checked for parse/commit divergence. Projection-2's snapshot predates the table padding, so its CJK 50 KB text parity comes from the headless receipt. pnpm test fails the same 27 tests as before this change: 26 also fail at HEAD, and one schema-construction timing budget passes alone.
+- [2026-09-29-static-preview-document-execution-final](../review-records/2026-09-29-static-preview-document-execution-final.json): completed; binding **current**; Final binding for the static preview document execution; claims and proof are those of 2026-09-29-static-preview-document-execution. This record rebinds the import-fidelity decision page, which reconciled the imports reverification after that record. Proof: stale / verified. Working tree only, nothing committed. React still re-renders every block per publication (a stable view needs a document-dependency mechanism that works in RSC). Only the table correction was checked for parse/commit divergence. Projection-2's snapshot predates the table padding, so its CJK 50 KB text parity comes from the headless receipt. pnpm test fails the same 27 tests as before this change: 26 also fail at HEAD, and one schema-construction timing budget passes alone.
+- [2026-09-29-static-document-rendering-execution](../review-records/2026-09-29-static-document-rendering-execution.json): completed; binding **current**; Every read of a rendered document now sees one immutable document: Plite createEditorView(editor, { document }) binds reads, plugin reads and APIs to it, replacing the partial Plate facade, and a guard refuses source-editor reads made on a document view's behalf. HTML claims only what its output keeps and reports every other property. Static rendering reuses a block while it and every earlier block are unchanged and its decorations are value-equal; elements that read later content declare render.readsDocument (the TOC). Five wrong-document reads were fixed at their owners (code highlight, find, Markdown serialize, the AI end marker and Plite node targets), plus a Plite portal refresh that rebuilt the plugin configuration per lookup. Proof: matching / verified. Working tree only, nothing committed. Decorations are still read over every node on each render (21-58% of React time at 50 KB on snapshot w); caching them per block needs a declaration for document-reading sources and its own decision. The guard does not cover deferred component bodies or plugin API calls. Comment highlights and Yjs cursors place source state by path in a view of another document. pnpm test fails 27, 26 of them at HEAD plus the load-sensitive schema benchmark, which passed 2 of 3 runs at load 8-9 and also fails with this plan reverted; pnpm test:slow matches HEAD.
 
 ## Inspected documents
 
@@ -65,6 +83,58 @@ Recovered historical implementation completion from the plan. complete The recor
 Proof limits: Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
 
 References: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
+
+### 2026-09-29: 2026-09-29-static-preview-document-review
+
+[Immutable record](../review-records/2026-09-29-static-preview-document-review.json) — review; pursue; observation stale.
+
+Pursue a document input on the existing static components. <EditorStatic editor={editor} document={document} /> and EditorPreview render the document through the editor's plugins via a cached projected view, without editing the editor; the AI menu and the demo's static preview delete their shadow publication. Plite owns the cost: assertDocument reuses validation of deep-frozen top-level nodes per compiled schema and root, and JSON validity of frozen values is remembered, so projection is proportional. The Markdown table decoder pads short rows as GFM specifies, so a parse equals the committed document. An editable preview still publishes from the first changed block, because showing a stream in a live editable editor is an edit. React re-rendering of unchanged blocks stays open: a stable view needs a document-dependency mechanism that works in React Server Components.
+
+Question: Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?
+
+- Keep the consumer splice. Stop: copied UI must know the parser's identity contract, and every new preview rediscovers it.
+- Identity-aware value.replace in Plite. Stop: fitDocument copies every node, even canonical parser output, and fitting may repair using neighbors, so identity cannot prove prefix equivalence.
+- A useEditorDocumentView hook. Stop: adds a view noun and hook lifetime; EditorStatic already receives the editor and only lacked a document input.
+- A public reconcile-by-identity primitive. Stop: exposes the implementation trick instead of the job.
+- Projection with a whole-document assertDocument per publication. Stop at 50 KB: publication was 2-2.6x the splice (93% assertDocument); select node-level validation reuse in Plite.
+- EditorStatic document with per-node validation reuse and table padding at the parser. Select: beats the splice on every metric in every S5 cell.
+
+Proof limits: Static and AI compositions only; the editable demo keeps its splice. React still re-renders every block per publication because each document gets a new view. Only the table normalizer was checked for parse/commit divergence; other plugins that repair content only on commit could diverge the same way in a projected preview. Projection run 2's snapshot predates the table padding, so its CJK 50 KB text parity comes from the headless receipt (diag-cjk-ragged-row/output-after-padding.log).
+
+References: [2026-09-29-static-preview-document.md](../../plans/2026-09-29-static-preview-document.md), [README.txt](../probes/2026-09-28-conversion-boundary/lanes/s5/projection-2/README.txt), [README.txt](../probes/2026-09-28-conversion-boundary/lanes/s5/projection/README.txt).
+
+### 2026-09-29: 2026-09-29-static-preview-document-execution
+
+[Immutable record](../review-records/2026-09-29-static-preview-document-execution.json) — execution; completed; observation stale.
+
+Read-only previews render a document instead of copying it into an editor. EditorStatic and EditorPreview take document, rendered through the editor's plugins via a cached projected view without editing the editor; the AI menu and the Markdown streaming demo's static preview delete their identity splice. Plite reuses validation of deep-frozen top-level nodes per compiled schema and root, and remembers JSON validity of frozen values, so projection is proportional. The Markdown table decoder pads short rows as GFM specifies, so a parse equals the committed document. On S5 projection-2 all 8 static and AI cells pass against the baseline, and projection beats the previous splice on every metric in every cell.
+
+
+Proof limits: Working tree only, nothing committed. React still re-renders every block per publication (a stable view needs a document-dependency mechanism that works in RSC). Only the table correction was checked for parse/commit divergence. Projection-2's snapshot predates the table padding, so its CJK 50 KB text parity comes from the headless receipt. pnpm test fails the same 27 tests as before this change: 26 also fail at HEAD, and one schema-construction timing budget passes alone.
+
+References: [2026-09-29-static-preview-document.md](../../plans/2026-09-29-static-preview-document.md).
+
+### 2026-09-29: 2026-09-29-static-preview-document-execution-final
+
+[Immutable record](../review-records/2026-09-29-static-preview-document-execution-final.json) — execution; completed; observation stale.
+
+Final binding for the static preview document execution; claims and proof are those of 2026-09-29-static-preview-document-execution. This record rebinds the import-fidelity decision page, which reconciled the imports reverification after that record.
+
+
+Proof limits: Working tree only, nothing committed. React still re-renders every block per publication (a stable view needs a document-dependency mechanism that works in RSC). Only the table correction was checked for parse/commit divergence. Projection-2's snapshot predates the table padding, so its CJK 50 KB text parity comes from the headless receipt. pnpm test fails the same 27 tests as before this change: 26 also fail at HEAD, and one schema-construction timing budget passes alone.
+
+References: [2026-09-29-static-preview-document.md](../../plans/2026-09-29-static-preview-document.md).
+
+### 2026-09-29: 2026-09-29-static-document-rendering-execution
+
+[Immutable record](../review-records/2026-09-29-static-document-rendering-execution.json) — execution; completed; observation matching.
+
+Every read of a rendered document now sees one immutable document: Plite createEditorView(editor, { document }) binds reads, plugin reads and APIs to it, replacing the partial Plate facade, and a guard refuses source-editor reads made on a document view's behalf. HTML claims only what its output keeps and reports every other property. Static rendering reuses a block while it and every earlier block are unchanged and its decorations are value-equal; elements that read later content declare render.readsDocument (the TOC). Five wrong-document reads were fixed at their owners (code highlight, find, Markdown serialize, the AI end marker and Plite node targets), plus a Plite portal refresh that rebuilt the plugin configuration per lookup.
+
+
+Proof limits: Working tree only, nothing committed. Decorations are still read over every node on each render (21-58% of React time at 50 KB on snapshot w); caching them per block needs a declaration for document-reading sources and its own decision. The guard does not cover deferred component bodies or plugin API calls. Comment highlights and Yjs cursors place source state by path in a view of another document. pnpm test fails 27, 26 of them at HEAD plus the load-sensitive schema benchmark, which passed 2 of 3 runs at load 8-9 and also fails with this plan reverted; pnpm test:slow matches HEAD.
+
+References: [2026-09-29-static-document-rendering.md](../../plans/2026-09-29-static-document-rendering.md).
 
 ## Retrieval boundaries
 

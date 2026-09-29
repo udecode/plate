@@ -29,7 +29,7 @@ describe('BaseLinkPlugin', () => {
       plugins: [BaseLinkPlugin],
     });
 
-  it('parses valid anchors with a default target', () => {
+  it('parses valid anchors and keeps an absent target absent', () => {
     const editor = createEditor();
     const fragment = parseHtmlSliceContent(
       editor,
@@ -40,9 +40,8 @@ describe('BaseLinkPlugin', () => {
       ([node]) => node
     ).find((node) => node.type === editor.plugin(BaseLinkPlugin).schema.type);
 
-    expect(link).toMatchObject({
+    expect(link).toEqual({
       children: [{ text: 'Link' }],
-      target: '_blank',
       type: editor.plugin(BaseLinkPlugin).schema.type,
       url: 'https://example.com',
     });
@@ -92,7 +91,7 @@ describe('BaseLinkPlugin', () => {
       .parseFromString(data.getData('text/html'), 'text/html')
       .body.querySelector('a');
 
-    expect(anchor?.getAttribute('href')).toBe('https://example.com/');
+    expect(anchor?.getAttribute('href')).toBe('https://example.com');
     expect(anchor?.getAttribute('target')).toBe('_self');
     expect(anchor?.textContent).toBe('Link');
   });
@@ -169,27 +168,37 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
     });
   });
 
-  describe('when url is invalid and skipSanitization is true', () => {
-    const editorWithSkipSanitization = createApiEditor({
-      dangerouslySkipSanitization: true,
-    });
-
+  describe('when url is relative', () => {
     const link: LinkElement = {
       ...baseLink,
       target: '_self',
       url: 'pageKey',
     };
 
-    it('keeps href when sanitization is skipped', () => {
+    it('keeps it as the href', () => {
       expect(
-        editorWithSkipSanitization
-          .plugin(BaseLinkPlugin)
-          .api.getAttributes(link)
+        createApiEditor().plugin(BaseLinkPlugin).api.getAttributes(link)
       ).toEqual({
         href: 'pageKey',
         rel: 'noopener noreferrer',
         target: '_self',
       });
+    });
+  });
+
+  describe('when allowed schemes widen navigation', () => {
+    it('renders an app deep link but never a script URL', () => {
+      const deepLinkEditor = createApiEditor({
+        allowedSchemes: ['https', 'vscode', 'javascript'],
+      });
+      const { getAttributes } = deepLinkEditor.plugin(BaseLinkPlugin).api;
+
+      expect(
+        getAttributes({ ...baseLink, url: 'vscode://file/a.ts' }).href
+      ).toBe('vscode://file/a.ts');
+      expect(
+        getAttributes({ ...baseLink, url: 'javascript:alert(1)' }).href
+      ).toBeUndefined();
     });
   });
 
@@ -325,15 +334,15 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
       ).toBe(true);
     });
 
-    it('can explicitly skip sanitization', () => {
+    it('rejects script URLs whatever the configuration allows', () => {
       const editor = createTestEditor({
-        dangerouslySkipSanitization: true,
+        allowedSchemes: ['javascript'],
         isUrl: (url) => url.startsWith('javascript:'),
       });
 
       expect(
         editor.plugin(BaseLinkPlugin).api.validateUrl('javascript:alert("XSS")')
-      ).toBe(true);
+      ).toBe(false);
     });
   });
 
@@ -354,19 +363,33 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
     );
   });
 
-  it('uses configured URL options during HTML parsing', () => {
+  it('reports a destination the configured URL options refuse during HTML parsing', () => {
     const editor = createTestEditor({
       allowedSchemes: ['mailto'],
       isUrl: () => true,
     });
-    const fragment = parseHtmlSliceContent(
-      editor,
-      '<a href="https://example.com">Link</a>'
-    );
+    const source = '<a href="https://example.com">Link</a>';
+    // The label stays, so the lost destination warns under every policy.
+    const parsed = editor.api.html.parseSlice(source);
 
+    expect(parsed).toMatchObject({
+      diagnostics: [
+        {
+          action: 'unwrapped',
+          code: 'html-unsupported-content',
+          kind: 'attribute',
+          severity: 'warning',
+        },
+      ],
+      ok: true,
+    });
+    if (!parsed.ok) throw new Error('Expected a slice.');
+    expect(
+      NodeApi.string({ children: parsed.slice.content, type: 'root' })
+    ).toBe('Link');
     expect(
       Array.from(
-        NodeApi.elements({ children: fragment ?? [], type: 'root' }),
+        NodeApi.elements({ children: parsed.slice.content, type: 'root' }),
         ([node]) => node
       ).some((node) => node.type === editor.plugin(BaseLinkPlugin).schema.type)
     ).toBe(false);
@@ -591,6 +614,14 @@ describe('editor.update.link.upsert', () => {
     expect(
       editor.update.link.upsert({ skipValidation: true, url: 'not a url' })
     ).toBe(true);
+    expect(findLink(editor)?.url).toBe('not%20a%20url');
+    // Skipping validation never passes the navigation floor.
+    expect(
+      editor.update.link.upsert({
+        skipValidation: true,
+        url: 'javascript:alert(1)',
+      })
+    ).toBeUndefined();
     expect(findLink(editor)?.url).toBe('not%20a%20url');
   });
 

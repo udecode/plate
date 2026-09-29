@@ -1,0 +1,140 @@
+{
+  "id": "2026-09-29-imports-paste-result-hard-cut",
+  "scope": "imports",
+  "kind": "review",
+  "date": "2026-09-29",
+  "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+  "model": "GPT-5 (Codex)",
+  "method": "best-api-review/history-v3",
+  "trigger": "User requests harsh honest feedback on the registry Editor showing a toast whenever ordinary paste loses unsupported content.",
+  "requirements": [
+    "Ordinary paste is safe, best-effort, immediate, atomic and undoable without default notification UI for routine representational loss.",
+    "Explicit parse, import and export operations keep typed diagnostics and loss policy because their callers deliberately start a conversion workflow and can present actionable review.",
+    "A public paste-result protocol, runtime observer or transfer diagnostic channel needs a current independent product consumer; flexibility alone does not earn it on next.",
+    "Preserve sanitizer, mapping, fitting, fallback and lifecycle-error correctness while separating those laws from user notification.",
+    "Assess and record the direction without product implementation, publication or compatibility aliases."
+  ],
+  "evidenceReuse": "Reconciled the current import decision, the 2026-09-28 paste-loss review and its two implementation outcomes. Inspected the registry default, its unit/browser tests, Plite transfer diagnostic selection and mounted runtime delivery, Plate HTML/Markdown adapters, public clipboard teaching and changesets. A production-caller census finds only the registry toast; the remaining hits are transport code, tests and docs. Inspected pinned local ProseMirror, Tiptap and Lexical paste owners: they expose transforms, handlers, commands or import extensions and no default paste-loss notification path in the bounded files.",
+  "summary": "Pursue a hard cut of the registry paste-loss toast and the public paste-result protocol behind it. The toast is generic, interrupts an ordinary best-effort paste, exposes no lost item or recovery action, and is the protocol's only production consumer. Therefore also cut Editable.onPasteResult/EditablePasteResult, transfer report diagnostics and observation state, Plate forwarding, toast-specific tests/docs and the two unreleased paste-result changesets. Retain format-owned diagnostics and lossPolicy on explicit HTML, Markdown and DOCX conversion calls, plus sanitizer/mapping/fitter correctness and lifecycle error reporting. Native paste should safely insert the best representable slice or do nothing, with normal undo; a future product-specific recovery flow must earn a new actionable contract from a real consumer.",
+  "verdict": "pursue",
+  "previous": "2026-09-28-imports-paste-loss-reporting-review",
+  "relation": "reverses",
+  "reconciliation": [
+    {
+      "record": "2026-09-28-imports-paste-loss-reporting-review",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "supersedes",
+      "reason": "Retain source-level loss classification and explicit parse diagnostics, but reverse the unsupported assumption that ordinary paste needs registry-owned notification. The only consumer is the toast itself and it offers no recovery."
+    },
+    {
+      "record": "2026-09-28-paste-loss-reporting-repairs",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retain HTML sanitizer, unsupported-content and fallback classification repairs as format correctness. Their toast receipt proves delivery mechanics, not that default notification is good product behavior."
+    },
+    {
+      "record": "2026-09-28-paste-proof-and-media-html",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retain video/audio HTML mappings, cross-browser paste correctness and harmless-cleanup classification. Supersede only the registry callback/toast as an accepted product requirement."
+    }
+  ],
+  "alternatives": [
+    "Keep the default registry toast. Stop: it is noisy, generic and unactionable; repeated ordinary paste becomes a stream of warnings for unsupported SVG, styling or embeds even when useful text inserts.",
+    "Remove only the toast but retain opt-in onPasteResult and DataTransfer report machinery. Stop as the beta target: no production consumer remains, while Plite DOM, Plite React, Plate adapters, public types, docs and tests retain coordination solely for hypothetical flexibility.",
+    "Keep transfer diagnostics privately for testing or telemetry. Stop: they do not affect negotiation, safety, fitting or fallback selection. Format-owned parse diagnostics already prove conversion loss directly.",
+    "Warn only when no content inserts. Stop for now: there is still no current product consumer or recovery action; ordinary paste can remain a no-op and applications with a concrete workflow can intercept paste.",
+    "Keep typed diagnostics and reject/allow policy on explicit parse/import/export operations. Select: those callers deliberately perform conversion and can show details, preview, retry or abort."
+  ],
+  "proofLimits": "This is a source/API/product review, not an implementation receipt or usability study. The candidate scan covers the pinned ProseMirror, Tiptap and Lexical paste owners, not every editor product. Existing browser tests prove the current toast fires once; they do not prove desirability. No product code, tests, docs, changesets or generated registry output were changed. A future concrete app may justify an actionable paste recovery flow, but it cannot retroactively justify this generic callback and toast.",
+  "references": [
+    "apps/www/src/registry/components/editor/editor.tsx",
+    "apps/www/src/registry/components/editor/editor.spec.tsx",
+    "apps/www/tests/browser/paste-result-toast.spec.ts",
+    "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
+    "packages/plitejs/src/react/editable/editable-dom-runtime.ts",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "content/docs/(guides)/clipboard.mdx",
+    "docs/analysis/editor-architecture-candidates.md",
+    "docs/research/decisions/import-fidelity.md",
+    ".changeset/platejs-paste-result.md",
+    ".changeset/plitejs-paste-result.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/editor.tsx": "9188e2218809a2ed8aed83e589d22e89b8fa7487dffca785d73b552589f304a3",
+      "apps/www/src/registry/components/editor/editor.spec.tsx": "1b0b420b3edb491ae7ba0159967d053bf8b2e5c8de029b15f3e292844ec517f2",
+      "apps/www/tests/browser/paste-result-toast.spec.ts": "1dae83fa8c16ee03798d5c8de974be6b4e39e6e376b9af0ad1f421d7039db712",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "b20d0d9de88fe46cb58920be43fafcb840ebfb4eef8af6c90a4f7b7abec0d803",
+      "packages/plitejs/src/react/editable/editable-dom-runtime.ts": "5de8c4bb9e86425b06ef080715911f13d9e97636516c1fd1f7f4d70a8420f7a8",
+      "packages/plitejs/src/react/components/editable.tsx": "f97d190af4aee5ad4b6405ca5f8993c93a1a98c8ce50f20322d3407027229ed6",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "b5a764c45f6bad7acfd797da9865845510748e3eb778f591d0dc64811ec33554",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "ef3d1e8f9a2c4de054cffd24c36f4febe9089cbe2a79a7d8d21c20b2ebc220ec",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "3b09a84e4fafe1796830b8290f0676adaf3df3f841ee80f53df3d95f20aa3a93",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "604419f6caf98b015758d30037a3c7a30570724145aead1b188437709fd101a3",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "7501fbaa96352761696098d68c2f625252873d043cbb05bf7a387d56cb0ee1c5",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "ced42ab8d42b9e166cbab7eda632e80d59bcc924fb4d5b65e46bd7b821d6f93e",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts": "4289812c3e8cd9a844a6ce7faead93e407cc037e45385550903dd7e2d15a5c57",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "02aaeb29202addd257fff9554ae29cf71253d35cf45f7179739d0864e41a3532",
+      "packages/platejs/src/docx/import/lib/importDocx.spec.ts": "fb5b8aa682b6a1548986b4eb18e51430d77e31e1b6a60e03a7a7081ff00c2260",
+      "docs/analysis/editor-architecture-candidates.md": "14a88723e948ca14db76a0a585c0c5561c1d396abb5ade4ba8d31c620e79765d",
+      "docs/research/decisions/export-fidelity.md": "f613b4530f6862096006d49b7fc26b33a0dd3d2f2573902670fa805255fe59e4",
+      "docs/research/decisions/documents-conversion-fidelity.md": "5fb0180c2b81cfae47ed40abd33e344f5685a6e684219dbd558d05235c4d065d",
+      "docs/research/decisions/persistence-ownership.md": "ba8d50f5450f067eb6f3ea0096ee7fd408be03da09fbbb8c18df5df0d4138866",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "df62b3f645782fb26d89bf12050d130601f2852c218131d5e997a8fce500cece",
+      "packages/platejs/src/lib/plugins/html/htmlAst.ts": "2807a035631521ac05d99b472f3e40767ca85576f8d79f9d7e15367f4f91a2df",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "1b9b1e0ddde2591a02960f6d38367239cbaa3a9b91bfcb26be6a090592deeaa9",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "e4560ee7a76f6ac6309bdb1891c95adb9202ec691958e24742ad71169908b321",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "6afafeae2daeb73599175091783f043cf87a0ee63527c22c7f5dc55e8fa25d8c",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "2ca3526ac45b843cec3b4568278e755f8c1f55a6c31f970e05dceb342ebf2051",
+      "packages/plitejs/src/core/persisted-document.ts": "e605b0ed6d719d0b68f393bf531bd64e257fbe402851c77463fbbfac40281575",
+      "packages/platejs/src/migrations/documentMigrations.ts": "6a823432296edd3372d0e79aa0186f2ef10ce461b57801264302e6485bae5a99",
+      "content/docs/(guides)/serializing.mdx": "e2ff9bb116de52e9bf5d7b1bdbf771e20b582c602c68fc6db7642cb7711f8985",
+      "content/docs/(plugins)/(serializing)/html.mdx": "cbf807b154e5ffb7053501f18ca0b9c18ff5047399fa0f92fe6a63fed35cc7f8",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "f5e859cfe2065a9ef8490e4b56583ee02581e894cec8377034040792ae2db75a",
+      "content/docs/(plugins)/(serializing)/docx.mdx": "e6beb90a476747f28b1f2f1661c6a1726caf75fcb8c4b00f8dc6fdf0010c5a11",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "content/docs/(guides)/clipboard.mdx": "6b24fa1a1cf1bd4f6ed24f2bb1e74299eec0c5f01b56320725844dfbb3ef0bfb",
+      "content/docs/api/core/plate-components.mdx": "624d8baa84286cba4cd8c89ae6aafb4f72f6afce33200c99fe28d16846422101",
+      ".changeset/platejs-paste-result.md": "ed8c1df712502aa03e99744a3ee5a006e46240f865e3b5eb0592a4423e1b26dc",
+      ".changeset/plitejs-paste-result.md": "dd9f9e5a274ee831a0db4db8dd7a6efa077a473f3cb3feba1bac63acd9e01872"
+    },
+    "directories": {},
+    "features": {
+      "browser/paste-result-toast": "8b0e56eb60fc32fcd9717ab12cae7f30adf0f32c5b555c0754327fb2726216a1",
+      "example/plite/parse-html": "8ebfcea1d39948b0fd313147864130c49ad8bfe56035bdeb84a2c37c0304fc66"
+    },
+    "upstreams": [
+      {
+        "checkout": "/Users/zbeyens/git/prosemirror-view",
+        "commit": "ca4c78e9b56f1b164c0b3758b59d8748f11b7534",
+        "files": {
+          "src/index.ts": "164e62f3dff574c7960ab052296b03a7cd96cf26755bd57ad7cff122e4960b75",
+          "src/clipboard.ts": "bf0060e43f5d50b60d1276700dd88121f630a0d48a1d339f4b551802cf4cf733",
+          "src/input.ts": "33751f88e1361059693a7aabba9f0e062c732f2881fa8f512d9face48995d25c"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/tiptap",
+        "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+        "files": {
+          "packages/core/src/extensions/paste.ts": "fb48439f4aff324d5b5b7c0513f11349d0b067fa89030f7390f34bee2d017052"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/lexical",
+        "commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+        "files": {
+          "packages/lexical/src/LexicalCommands.ts": "dae6a50a2d1fe32cb4ff9d2a35b610676e6c26badd80796dab979f5f8e310dbe",
+          "packages/lexical-clipboard/src/ClipboardImportExtension.ts": "77d75743eb2214527203f4ae01e264c24cb0df9c20cedc69c63e42d770f8ecdf"
+        }
+      }
+    ]
+  }
+}

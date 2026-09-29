@@ -2,9 +2,9 @@
 title: Document import and conversion fidelity
 type: decision
 status: accepted
-updated: 2026-09-28
+updated: 2026-09-29
 review_scope: imports
-current_review: 2026-09-28-imports-paste-loss-reporting-review
+current_review: 2026-09-29-imports-opt-in-paste-result
 reconciled_executions:
   - 2026-09-25-document-conversion-contracts-design
   - 2026-09-25-document-conversion-schema-admission-design
@@ -19,6 +19,9 @@ reconciled_executions:
   - 2026-09-28-conversion-correctness-guarantees
   - 2026-09-28-paste-loss-reporting-repairs
   - 2026-09-28-paste-proof-and-media-html
+  - 2026-09-29-registry-paste-feedback
+  - 2026-09-29-registry-paste-feedback-reverification
+  - 2026-09-29-registry-paste-feedback-reverification-2
 review_history:
   - ../review-records/2026-09-25-imports-document-slice-loss-contract.json
   - ../review-records/2026-09-25-imports-codec-ontology-final.json
@@ -28,6 +31,8 @@ review_history:
   - ../review-records/2026-09-26-imports-conversion-vocabulary-doctrine-closure.json
   - ../review-records/2026-09-27-imports-adversarial-audit-feedback.json
   - ../review-records/2026-09-28-imports-paste-loss-reporting-review.json
+  - ../review-records/2026-09-29-imports-paste-result-hard-cut.json
+  - ../review-records/2026-09-29-imports-opt-in-paste-result.json
 source_refs:
   - ../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts
   - ../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts
@@ -54,11 +59,12 @@ and [closure repairs](../../plans/2026-09-27-document-conversion-closure-repairs
 adopt those repairs. Public naming and format ownership remain settled;
 diagnostic deletion and DOCX native-state deletion are not accepted.
 
-The [paste-loss follow-up](../review-records/2026-09-28-imports-paste-loss-reporting-review.json)
-retains the conversion design. Its HTML findings live in parse results:
-embedded media with fallback children reports unsupported content, and security
-removal of SVG or object content is lossy. Clipboard negotiation reports no
-loss; see the browser transfer decision below.
+The [opt-in paste-result review](../review-records/2026-09-29-imports-opt-in-paste-result.json)
+retains format-owned loss classification, explicit conversion diagnostics and
+the mounted `onPasteResult` callback. Plate and the registry render no default
+notification; applications decide whether the diagnostics justify feedback or
+recovery UI. HTML parse results still report unsupported embedded media and
+lossy security removal of SVG or object content.
 
 **Use direct format-owned parse and serialize operations.** Do not introduce a
 public `DocumentCodec`, `DocumentFormat`, format registry, dispatcher,
@@ -168,16 +174,17 @@ representability. Export never calls `fitDocument`. Persistence and native
 authored payloads likewise require strict admission after their explicit
 migrations; format recovery policy cannot weaken those boundaries.
 
-Browser transfer keeps the boolean insertion API, and negotiation is not
-publicly observable. A `DataTransferFormat` decodes to a `ContentSlice` or
+Browser transfer keeps its boolean imperative insertion API. A
+`DataTransferFormat` decodes to a `ContentSlice` or
 encodes to a string, and returns `null` to delegate to the next format; `accept`
 returning `false` skips it. Each decoded slice is fitted at the actual range,
 and one that does not fit falls through to the next format and finally to plain
 text. Encoders write each MIME type once. A callback that throws is a bug: it
 goes to the editor's `lifecycleErrorSink` with the format key, MIME type, owner
 and phase, and the next format runs, so a broken format never blocks paste or
-copy. Nothing consumes per-attempt diagnostics, and announcing loss offers the
-user no recovery, so negotiation carries no diagnostics, report or loss flag.
+copy. A format may report loss while it decodes. The mounted `EditorContent`
+delivers the selected attempt's diagnostics through optional `onPasteResult`;
+it renders no UI.
 Loss is fixed where it occurs by adding the mapping that represents the
 content, as the video and audio HTML mappings do.
 

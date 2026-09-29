@@ -1850,6 +1850,14 @@ export type EditorViewOptions<TRoot extends RootKey = RootKey> = {
     | { intent: 'edit'; projection: 'accepted' | 'markup' | 'proposed' }
     | { intent: 'propose'; projection: 'markup' | 'proposed' }
   >;
+  /**
+   * Immutable document the view reads instead of the source editor's value.
+   * Reads, plugin reads and plugin APIs resolve against it through the source
+   * editor's schema and plugins. The view is read-only, has no selection or
+   * last commit, and never notifies subscribers. The document must satisfy the
+   * source editor's schema.
+   */
+  document?: EditorDocumentValue;
   readOnly?: boolean;
   /** Named secondary root. Omit for the primary document. */
   root?: NamedRootKey<TRoot>;

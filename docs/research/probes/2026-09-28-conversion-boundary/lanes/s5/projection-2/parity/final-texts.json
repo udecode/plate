@@ -1,0 +1,42 @@
+{
+  "ai-baseline-1790705629413.txt": {
+    "chars": 35445,
+    "sha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+    "tail": "ttps://example.com/246。保持顺序避免_抖动_ 🚀键值a﻿"
+  },
+  "ai-baseline-1790705805119.txt": {
+    "chars": 35445,
+    "sha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+    "tail": "ttps://example.com/246。保持顺序避免_抖动_ 🚀键值a﻿"
+  },
+  "ai-candidate-1790705690638.txt": {
+    "chars": 35445,
+    "sha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+    "tail": "ttps://example.com/246。保持顺序避免_抖动_ 🚀键值a﻿"
+  },
+  "ai-candidate-1790705865825.txt": {
+    "chars": 35445,
+    "sha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+    "tail": "ttps://example.com/246。保持顺序避免_抖动_ 🚀键值a﻿"
+  },
+  "static-baseline-1790705238737.txt": {
+    "chars": 35445,
+    "sha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+    "tail": "ttps://example.com/246。保持顺序避免_抖动_ 🚀键值a﻿"
+  },
+  "static-baseline-1790705442007.txt": {
+    "chars": 35445,
+    "sha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+    "tail": "ttps://example.com/246。保持顺序避免_抖动_ 🚀键值a﻿"
+  },
+  "static-candidate-1790705319777.txt": {
+    "chars": 35445,
+    "sha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+    "tail": "ttps://example.com/246。保持顺序避免_抖动_ 🚀键值a﻿"
+  },
+  "static-candidate-1790705512574.txt": {
+    "chars": 35445,
+    "sha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+    "tail": "ttps://example.com/246。保持顺序避免_抖动_ 🚀键值a﻿"
+  }
+}

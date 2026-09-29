@@ -96,15 +96,19 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
             ref,
           };
         },
-        encode: ({ content, node }) => ({
-          attributes: {
-            'data-editor-mention': true,
-            'data-editor-mention-label': node.label,
-            'data-editor-mention-ref': node.ref,
-          },
-          children: [content, { text: `@${node.label ?? node.ref}` }],
-          tag: 'span',
-        }),
+        encode: ({ content, node, preserve }) => {
+          preserve('label', 'ref');
+
+          return {
+            attributes: {
+              'data-editor-mention': true,
+              'data-editor-mention-label': node.label,
+              'data-editor-mention-ref': node.ref,
+            },
+            children: [content, { text: `@${node.label ?? node.ref}` }],
+            tag: 'span',
+          };
+        },
         match: [{ attributes: { 'data-editor-mention': true }, tag: 'span' }],
         priority: 10,
       },
@@ -136,7 +140,9 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
             type,
           };
         },
-        encode: ({ node }) => {
+        encode: ({ node, preserve }) => {
+          // Without a distinct label, the reference is the label.
+          preserve('label', 'ref');
           const encodedId = encodeURIComponent(node.ref)
             .replace(/\(/g, '%28')
             .replace(/\)/g, '%29');

@@ -1,0 +1,434 @@
+[
+  {
+    "cell": "static-rich-10000",
+    "source": "matrix",
+    "verdict": "pass",
+    "load": {
+      "candidate": 9.4,
+      "baseline": 9.1
+    },
+    "abPairs": [
+      [
+        1360,
+        60
+      ],
+      [
+        875,
+        54
+      ],
+      [
+        884,
+        45
+      ]
+    ],
+    "final": {
+      "baseline": 79.87,
+      "candidate": 8.76
+    },
+    "arrival": {
+      "baseline": 76.4,
+      "candidate": 42.8
+    },
+    "c": {
+      "p2": 998.8,
+      "t": 175.2,
+      "u": 416.2,
+      "v": 417.3
+    },
+    "busy": {
+      "p2": 1489.6,
+      "t": 602.9,
+      "u": 910.6,
+      "v": 871.9
+    },
+    "blockDecorations": {
+      "u": 174.9,
+      "v": 177.8
+    },
+    "withDocumentViewRead": 207.7,
+    "withEditorDocumentProjection": {
+      "t": 68.1,
+      "v": 148.5
+    },
+    "b": 10.1,
+    "assertDocument": 6.1
+  },
+  {
+    "cell": "static-cjk-10000",
+    "source": "matrix",
+    "verdict": "pass",
+    "load": {
+      "candidate": 6.6,
+      "baseline": 6.3
+    },
+    "abPairs": [
+      [
+        1544,
+        61
+      ],
+      [
+        1598,
+        73
+      ],
+      [
+        1600,
+        62
+      ]
+    ],
+    "final": {
+      "baseline": 84.96,
+      "candidate": 12.37
+    },
+    "arrival": {
+      "baseline": 112.8,
+      "candidate": 47.9
+    },
+    "c": {
+      "p2": 1868.7,
+      "t": 262.1,
+      "u": 664.6,
+      "v": 656.1
+    },
+    "busy": {
+      "p2": 2530,
+      "t": 772.8,
+      "u": 1269.6,
+      "v": 1190.1
+    },
+    "blockDecorations": {
+      "u": 287.4,
+      "v": 303
+    },
+    "withDocumentViewRead": 347.9,
+    "withEditorDocumentProjection": {
+      "t": 88.6,
+      "v": 209.8
+    },
+    "b": 6.3,
+    "assertDocument": 5
+  },
+  {
+    "cell": "ai-rich-10000",
+    "source": "matrix",
+    "verdict": "pass",
+    "load": {
+      "candidate": 5.7,
+      "baseline": 5.7
+    },
+    "abPairs": [
+      [
+        1032,
+        47
+      ],
+      [
+        1030,
+        53
+      ],
+      [
+        1044,
+        44
+      ]
+    ],
+    "final": {
+      "baseline": 92.53,
+      "candidate": 38.29
+    },
+    "arrival": {
+      "baseline": 84.6,
+      "candidate": 44.3
+    },
+    "c": {
+      "p2": 1102.5,
+      "t": 241.7,
+      "u": 361.8,
+      "v": 371.7
+    },
+    "busy": {
+      "p2": 1509,
+      "t": 554.9,
+      "u": 663.4,
+      "v": 684.9
+    },
+    "blockDecorations": {
+      "u": 101.6,
+      "v": 110
+    },
+    "withDocumentViewRead": 147.4,
+    "withEditorDocumentProjection": {
+      "t": 84.5,
+      "v": 116.2
+    },
+    "b": 2.6,
+    "assertDocument": 2.5
+  },
+  {
+    "cell": "ai-cjk-10000",
+    "source": "matrix",
+    "verdict": "pass",
+    "load": {
+      "candidate": 5,
+      "baseline": 5.1
+    },
+    "abPairs": [
+      [
+        1805,
+        76
+      ],
+      [
+        1835,
+        89
+      ],
+      [
+        1846,
+        85
+      ]
+    ],
+    "final": {
+      "baseline": 130.43,
+      "candidate": 57.26
+    },
+    "arrival": {
+      "baseline": 143.6,
+      "candidate": 69.7
+    },
+    "c": {
+      "p2": 2033.1,
+      "t": 400.8,
+      "u": 620.5,
+      "v": 630.2
+    },
+    "busy": {
+      "p2": 2609.3,
+      "t": 825.3,
+      "u": 1094,
+      "v": 1097.2
+    },
+    "blockDecorations": {
+      "u": 137.3,
+      "v": 140.9
+    },
+    "withDocumentViewRead": 244.1,
+    "withEditorDocumentProjection": {
+      "t": 119.6,
+      "v": 180.9
+    },
+    "b": 25.5,
+    "assertDocument": 22.1
+  },
+  {
+    "cell": "static-rich-50000",
+    "source": "matrix",
+    "verdict": "pass",
+    "load": {
+      "candidate": 6,
+      "baseline": 5.5
+    },
+    "abPairs": [
+      [
+        20189,
+        272
+      ],
+      [
+        19467,
+        275
+      ],
+      [
+        20030,
+        281
+      ]
+    ],
+    "final": {
+      "baseline": 207.35,
+      "candidate": 24.51
+    },
+    "arrival": {
+      "baseline": 231,
+      "candidate": 60.5
+    },
+    "c": {
+      "p2": 22627.7,
+      "t": 2395,
+      "u": 7092.2,
+      "v": 7061.2
+    },
+    "busy": {
+      "p2": 27431.5,
+      "t": 5480.1,
+      "u": 11035.6,
+      "v": 10873.9
+    },
+    "blockDecorations": {
+      "u": 4183.6,
+      "v": 4139.4
+    },
+    "withDocumentViewRead": 3797.8,
+    "withEditorDocumentProjection": {
+      "t": 424.8,
+      "v": 1974
+    },
+    "b": 55.6,
+    "assertDocument": 43
+  },
+  {
+    "cell": "static-cjk-50000",
+    "source": "repeat-50k",
+    "verdict": "pass",
+    "load": {
+      "candidate": 6.6,
+      "baseline": 6.7
+    },
+    "abPairs": [
+      [
+        46074,
+        392
+      ],
+      [
+        43256,
+        408
+      ],
+      [
+        47973,
+        398
+      ]
+    ],
+    "final": {
+      "baseline": 407.75,
+      "candidate": 39.8
+    },
+    "arrival": {
+      "baseline": 426.9,
+      "candidate": 86.6
+    },
+    "c": {
+      "p2": 43099.3,
+      "t": 3047.6,
+      "u": 11195.2,
+      "v": 10478.4
+    },
+    "busy": {
+      "p2": 49912,
+      "t": 6771.2,
+      "u": 18262.3,
+      "v": 16302.7
+    },
+    "blockDecorations": {
+      "u": 6884,
+      "v": 6618.4
+    },
+    "withDocumentViewRead": 5793,
+    "withEditorDocumentProjection": {
+      "t": 562.1,
+      "v": 3035.1
+    },
+    "b": 83.8,
+    "assertDocument": 73.8
+  },
+  {
+    "cell": "ai-rich-50000",
+    "source": "repeat-50k",
+    "verdict": "pass",
+    "load": {
+      "candidate": 7.4,
+      "baseline": 6
+    },
+    "abPairs": [
+      [
+        20772,
+        323
+      ],
+      [
+        20834,
+        394
+      ],
+      [
+        20554,
+        347
+      ]
+    ],
+    "final": {
+      "baseline": 394.12,
+      "candidate": 168.52
+    },
+    "arrival": {
+      "baseline": 279.9,
+      "candidate": 94
+    },
+    "c": {
+      "p2": 22457.8,
+      "t": 2088.3,
+      "u": 4418.6,
+      "v": 4486
+    },
+    "busy": {
+      "p2": 25976.4,
+      "t": 3640.6,
+      "u": 6185,
+      "v": 6301.4
+    },
+    "blockDecorations": {
+      "u": 1602,
+      "v": 1687.1
+    },
+    "withDocumentViewRead": 1719,
+    "withEditorDocumentProjection": {
+      "t": 495,
+      "v": 1139.8
+    },
+    "b": 107.9,
+    "assertDocument": 98.5
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "source": "repeat-50k",
+    "verdict": "pass",
+    "load": {
+      "candidate": 4.3,
+      "baseline": 3.8
+    },
+    "abPairs": [
+      [
+        36437,
+        481
+      ],
+      [
+        36796,
+        467
+      ],
+      [
+        36881,
+        506
+      ]
+    ],
+    "final": {
+      "baseline": 628.2,
+      "candidate": 227.57
+    },
+    "arrival": {
+      "baseline": 495.6,
+      "candidate": 183.8
+    },
+    "c": {
+      "p2": 43941.5,
+      "t": 4366.7,
+      "u": 7822.4,
+      "v": 8468.5
+    },
+    "busy": {
+      "p2": 49353.1,
+      "t": 6402,
+      "u": 10215.9,
+      "v": 10876.3
+    },
+    "blockDecorations": {
+      "u": 2575.3,
+      "v": 2680.7
+    },
+    "withDocumentViewRead": 2614.6,
+    "withEditorDocumentProjection": {
+      "t": 639.6,
+      "v": 1699.5
+    },
+    "b": 186.9,
+    "assertDocument": 180
+  }
+]

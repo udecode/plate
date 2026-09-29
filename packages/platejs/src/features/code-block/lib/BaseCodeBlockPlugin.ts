@@ -241,8 +241,10 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             ...(language ? { language } : {}),
           };
         },
-        encode: ({ content, node }) => {
+        encode: ({ content, node, preserve }) => {
           const trailingNewlines = countTrailingNewlines(NodeApi.string(node));
+
+          preserve('language');
 
           return {
             attributes: {
@@ -268,11 +270,15 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           children: [{ text: node.value || '' }],
           type,
         }),
-        encode: ({ node }) => ({
-          lang: node.language,
-          type: 'code',
-          value: NodeApi.string(node),
-        }),
+        encode: ({ node, preserve }) => {
+          preserve('language');
+
+          return {
+            lang: node.language,
+            type: 'code',
+            value: NodeApi.string(node),
+          };
+        },
       },
     }),
   shortcuts: {
@@ -785,6 +791,10 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
   }),
 }).extend(({ editor, store }) => {
   const blockDecorations = new Map<string, CodeHighlightCache>();
+  // Decorations read the code block type once per text node, and resolving a
+  // portal costs more than the rest of that read; the portal stays live.
+  const resolveCodeBlock = () => editor.plugin(BaseCodeBlockPlugin);
+  let codeBlock: ReturnType<typeof resolveCodeBlock> | undefined;
   let nextSyntaxKey = 0;
   let observers = 0;
   const parseNodes = (
@@ -827,16 +837,20 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
           if (observers === 0) blockDecorations.clear();
         };
       },
-      read: ({ entry: [node, path] }): readonly CodeBlockDecoration[] => {
+      read: ({
+        editor: view,
+        entry: [node, path],
+      }): readonly CodeBlockDecoration[] => {
         const { defaultLanguage, lowlight } = store.get();
 
         if (!lowlight || !NodeApi.isText(node)) return [];
-        const codeBlockType = editor.plugin(BaseCodeBlockPlugin).schema.type;
-        const entry = editor.read.nodes.parent(path, { type: codeBlockType });
+        codeBlock ??= resolveCodeBlock();
+        const codeBlockType = codeBlock.schema.type;
+        const entry = view.read.nodes.parent(path, { type: codeBlockType });
 
         if (!entry) return [];
         const [block, blockPath] = entry;
-        const blockKey = editor.key(block);
+        const blockKey = view.key(block);
         const text = NodeApi.string(block);
         const language =
           (typeof block.language === 'string' ? block.language : undefined) ||

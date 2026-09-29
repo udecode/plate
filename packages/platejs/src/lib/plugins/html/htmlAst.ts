@@ -8,6 +8,11 @@ import {
   type TreeAdapter,
 } from 'parse5';
 
+import {
+  decideHtmlAttribute,
+  decideHtmlElement,
+  type HtmlUnsafeRemoval,
+} from './htmlSafety';
 import type {
   HtmlDiagnostic,
   HtmlErrorDiagnostic,
@@ -21,40 +26,6 @@ const DEFAULT_HTML_PARSE_LIMITS: HtmlParseLimits = Object.freeze({
   maxDepth: 256,
   maxNodes: 100_000,
 });
-
-const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
-const UNSAFE_ELEMENTS = new Set([
-  'base',
-  'embed',
-  'link',
-  'meta',
-  'object',
-  'script',
-  'style',
-]);
-const URL_ATTRIBUTES = new Set([
-  'action',
-  'formaction',
-  'href',
-  'poster',
-  'src',
-  'xlink:href',
-]);
-// Removing these renders nothing less: metadata, scripts and style sheets.
-const NON_RENDERING_UNSAFE_ELEMENTS = new Set([
-  'base',
-  'link',
-  'meta',
-  'script',
-  'style',
-]);
-// Removing a blocked data: source here drops the media it carries; a script URL
-// was never content.
-const CONTENT_URL_ATTRIBUTES = new Set(['poster', 'src']);
-const UNSAFE_URL = /^(?:javascript|vbscript):/iu;
-const CSS_RESOURCE = /(?:\burl\s*\(|@import\b)/iu;
-const SAFE_IMAGE_DATA_URL =
-  /^data:image\/(?:avif|bmp|gif|jpeg|png|webp);base64,[a-z0-9+/]*={0,2}$/iu;
 
 type HtmlAstNode = DefaultTreeAdapterTypes.Node;
 type HtmlAstChildNode = DefaultTreeAdapterTypes.ChildNode;
@@ -296,17 +267,6 @@ const createCountingTreeAdapter = (
   };
 };
 
-const isSafeUrl = (tag: string, name: string, value: string) => {
-  const normalized = value.trim();
-
-  if (UNSAFE_URL.test(normalized)) return false;
-  if (!normalized.toLowerCase().startsWith('data:')) return true;
-
-  return (
-    tag === 'img' && name === 'src' && SAFE_IMAGE_DATA_URL.test(normalized)
-  );
-};
-
 // An author who hides a subtree from assistive technology declares it
 // decorative, as icon sets do for inline SVG.
 const isAriaHidden = (node: HtmlAstElement) => {
@@ -331,12 +291,10 @@ const isAriaHidden = (node: HtmlAstElement) => {
 const unsafeDiagnostic = (
   source: string,
   node: HtmlAstNode,
-  kind: 'attribute' | 'element' | 'style' | 'url',
-  message: string,
-  impact: 'lossless' | 'lossy'
+  { action, impact, kind, message }: HtmlUnsafeRemoval
 ): HtmlWarningDiagnostic =>
   Object.freeze({
-    action: 'removed' as const,
+    action,
     code: 'html-unsafe-content' as const,
     impact,
     kind,
@@ -345,86 +303,76 @@ const unsafeDiagnostic = (
     source: sourceLocation(source, node),
   });
 
+// Rebuilds each child list once, so hostile input with many removals stays
+// linear.
 const applySafetyPolicy = (
   source: string,
   parent: HtmlAstParentNode,
-  diagnostics: HtmlWarningDiagnostic[]
+  removals: HtmlWarningDiagnostic[]
 ) => {
   const children = getChildNodes(parent);
+  const kept: HtmlAstChildNode[] = [];
 
-  for (let index = children.length - 1; index >= 0; index--) {
-    const node = children[index];
-
-    if (defaultTreeAdapter.isCommentNode(node)) {
-      children.splice(index, 1);
+  for (const node of children) {
+    if (defaultTreeAdapter.isCommentNode(node)) continue;
+    if (!defaultTreeAdapter.isElementNode(node)) {
+      kept.push(node);
       continue;
     }
-    if (!defaultTreeAdapter.isElementNode(node)) continue;
     const tag = node.tagName.toLowerCase();
+    const removal = decideHtmlElement(node.namespaceURI, tag, () =>
+      isAriaHidden(node)
+    );
 
-    if (node.namespaceURI !== HTML_NAMESPACE || UNSAFE_ELEMENTS.has(tag)) {
-      diagnostics.unshift(
-        unsafeDiagnostic(
-          source,
-          node,
-          'element',
-          `Removed unsafe HTML element <${tag}>.`,
-          (node.namespaceURI === HTML_NAMESPACE &&
-            NON_RENDERING_UNSAFE_ELEMENTS.has(tag)) ||
-            isAriaHidden(node)
-            ? 'lossless'
-            : 'lossy'
-        )
-      );
-      children.splice(index, 1);
+    if (removal) {
+      removals.push(unsafeDiagnostic(source, node, removal));
       continue;
     }
+    const attributes = node.attrs;
+    let removedSource = false;
 
-    for (
-      let attributeIndex = node.attrs.length - 1;
-      attributeIndex >= 0;
-      attributeIndex--
-    ) {
-      const attribute = node.attrs[attributeIndex];
-      const name = attribute.name.toLowerCase();
-      const kind =
-        URL_ATTRIBUTES.has(name) || name === 'srcset' ? 'url' : 'attribute';
-      const unsafe =
-        name.startsWith('on') ||
-        name === 'srcdoc' ||
-        name === 'srcset' ||
-        (URL_ATTRIBUTES.has(name) && !isSafeUrl(tag, name, attribute.value)) ||
-        (name === 'style' && CSS_RESOURCE.test(attribute.value));
-
-      if (!unsafe) continue;
-      diagnostics.unshift(
-        unsafeDiagnostic(
-          source,
-          node,
-          name === 'style' ? 'style' : kind,
-          `Removed unsafe HTML attribute "${attribute.name}" from <${tag}>.`,
-          name === 'style' ||
-            name === 'srcdoc' ||
-            (CONTENT_URL_ATTRIBUTES.has(name) &&
-              !UNSAFE_URL.test(attribute.value.trim()))
-            ? 'lossy'
-            : 'lossless'
-        )
+    node.attrs = [];
+    for (const attribute of attributes) {
+      const decision = decideHtmlAttribute(
+        tag,
+        attribute.name,
+        attribute.value
       );
-      node.attrs.splice(attributeIndex, 1);
-    }
 
-    applySafetyPolicy(source, node, diagnostics);
+      if (decision && 'removal' in decision) {
+        removals.push(unsafeDiagnostic(source, node, decision.removal));
+        removedSource ||= attribute.name.toLowerCase() === 'src';
+        continue;
+      }
+      if (decision) attribute.value = decision.value;
+      node.attrs.push(attribute);
+    }
+    // An image that cannot load shows its alt text instead.
+    if (removedSource && tag === 'img') {
+      const alt = node.attrs.find(({ name }) => name === 'alt')?.value;
+
+      if (alt) {
+        const text = defaultTreeAdapter.createTextNode(alt);
+
+        text.parentNode = parent;
+        kept.push(text);
+      }
+      continue;
+    }
+    kept.push(node);
+    applySafetyPolicy(source, node, removals);
     if (tag === 'template') {
       applySafetyPolicy(
         source,
         defaultTreeAdapter.getTemplateContent(
           node as DefaultTreeAdapterTypes.Template
         ),
-        diagnostics
+        removals
       );
     }
   }
+  children.length = 0;
+  for (const node of kept) children.push(node);
 };
 
 const findBody = (node: HtmlAstParentNode): HtmlAstElement | undefined => {
@@ -502,7 +450,10 @@ export const parseHtmlAst = (
     const roots: HtmlAstElement[] = [];
     let nodes: readonly HtmlAstChildNode[];
 
-    applySafetyPolicy(source, tree, diagnostics);
+    const removals: HtmlWarningDiagnostic[] = [];
+
+    applySafetyPolicy(source, tree, removals);
+    const sourceDiagnostics = [...removals, ...diagnostics];
 
     if (kind === 'document') {
       findEditorRoots(tree, roots);
@@ -516,7 +467,7 @@ export const parseHtmlAst = (
               message: `HTML contains ${roots.length} elements marked data-editor="true".`,
               severity: 'error' as const,
             }),
-            ...diagnostics,
+            ...sourceDiagnostics,
           ]) as readonly [HtmlErrorDiagnostic, ...HtmlDiagnostic[]],
           ok: false as const,
         });
@@ -530,7 +481,7 @@ export const parseHtmlAst = (
 
     return Object.freeze({
       ast: Object.freeze({
-        diagnostics: Object.freeze(diagnostics),
+        diagnostics: Object.freeze(sourceDiagnostics),
         nodes: Object.freeze(getChildNodes(container)),
       }),
       ok: true as const,

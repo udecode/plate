@@ -15,14 +15,23 @@ import type { DeserializeMdContext, MdMarks } from '../types';
 export const convertNodesDeserialize = (
   nodes: MdRootContent[],
   marks: MdMarks,
-  options: DeserializeMdContext
+  options: DeserializeMdContext,
+  previousSibling: MdRootContent | null = null
 ): Descendant[] =>
-  nodes.flatMap((node) => buildSlateNode(node, marks, options));
+  nodes.flatMap((node, index) =>
+    buildSlateNode(
+      node,
+      marks,
+      options,
+      index === 0 ? previousSibling : nodes[index - 1]
+    )
+  );
 
 export const buildSlateNode = (
   mdastNode: MdRootContent | UnistNode,
   marks: MdMarks,
-  options: DeserializeMdContext
+  options: DeserializeMdContext,
+  previousSibling: MdRootContent | null = null
 ): Descendant[] => {
   if (isMdxJsxNode(mdastNode)) {
     const tag = mdastNode.name ?? '';
@@ -46,7 +55,7 @@ export const buildSlateNode = (
 
   const decoders = getMarkdownDecoders(options.mappings, mdastNode);
   const decoded = decoders
-    ? runMarkdownDecoders(decoders, mdastNode, marks, options)
+    ? runMarkdownDecoders(decoders, mdastNode, marks, options, previousSibling)
     : undefined;
 
   if (decoded !== undefined) return decoded;
@@ -54,6 +63,7 @@ export const buildSlateNode = (
     options.report({
       action: 'dropped',
       code: 'markdown-unsupported-node',
+      impact: 'lossy',
       message: `Markdown node "${mdastNode.type}" has no installed mapping.`,
       nodeType: mdastNode.type,
       owner: 'markdown',
@@ -70,6 +80,7 @@ export const buildSlateNode = (
   options.report({
     action: 'replaced',
     code: 'markdown-unsupported-node',
+    impact: 'lossy',
     message: decoders
       ? `Markdown tag <${nodeType}> was not accepted by an installed mapping and was preserved as source text.`
       : `Markdown node "${nodeType}" has no installed mapping and was preserved as source text.`,
@@ -117,6 +128,8 @@ const readBlockIdentity = (
   options.report({
     action: 'unwrapped',
     code: 'markdown-unsupported-node',
+    // Only the block's persisted identity is dropped, not its content.
+    impact: 'lossless',
     message: options.elementIds
       ? 'Markdown block identity must wrap one block with a non-empty id; the id was omitted.'
       : 'Markdown block identity requires ElementIdPlugin; the id was omitted.',

@@ -78,11 +78,13 @@ async function verifyDocxSourceTypes() {
   });
 
   if (retained.ok) {
+    // A nullable retained source passes straight to export.
     void exportDocx(editor, {
+      lossPolicy: 'allow',
       projection: 'review',
       source: retained.source,
     });
-    retained.source.dispose();
+    retained.source?.dispose();
   }
   const disabled = await importDocx(new Blob(), {
     plugins,
@@ -99,7 +101,7 @@ async function verifyDocxSourceTypes() {
   };
   const dynamic = await importDocx(new Blob(), dynamicOptions);
 
-  if (dynamic.ok && 'source' in dynamic) dynamic.source.dispose();
+  if (dynamic.ok && 'source' in dynamic) dynamic.source?.dispose();
   // @ts-expect-error DOCX sources are created only by retained imports.
   const constructedSource = new DocxSource();
 
@@ -112,6 +114,8 @@ void verifyDocxSourceTypes;
 editor.api.markdown.serialize({ projection: 'markup' });
 // @ts-expect-error DOCX review export requires an explicit valid projection.
 void exportDocx(editor, { projection: 'markup' });
+// @ts-expect-error DOCX loss policy accepts only allow or reject.
+void exportDocx(editor, { lossPolicy: 'warn', projection: 'proposed' });
 createAuthoredReviewDocument({
   accepted: snapshot.accepted,
   revisions: [

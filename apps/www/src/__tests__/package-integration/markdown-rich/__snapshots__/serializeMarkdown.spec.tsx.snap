@@ -64,7 +64,7 @@ Centered text
 
 Text with custom line height
 
-<file name="sample.pdf" src="https://example.com/sample.pdf" />
+<file src="https://example.com/sample.pdf" name="sample.pdf" />
 
 <audio src="https://example.com/audio.mp3" />
 

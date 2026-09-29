@@ -8,19 +8,19 @@ Question: Which document, slice, schema, format, diagnostic and application cont
 
 ## Current decision
 
-[2026-09-28-imports-paste-loss-reporting-review](../review-records/2026-09-28-imports-paste-loss-reporting-review.json) — **pursue**. Pursue three bounded HTML loss-reporting repairs; keep the accepted API and owner split. Unsupported-only HTML discards diagnosed loss by returning null for an empty successful slice, yielding lossy:false for plain fallback or total refusal. Embedded media with fallback children skips unsupported-content reporting and succeeds under default reject. Blanket html-unsafe-content => lossless hides removed SVG and object fallback content. Keep security removal, but classify actual impact at its source. Retain atomic fitter refusal, cross-block joining, runtime-owner routing and generated-editor narrowing. All-gates-pass is false: Plite test types still fail six times. No substrate redesign or video mapping is required to repair these reporting defects.
+[2026-09-29-imports-opt-in-paste-result](../review-records/2026-09-29-imports-opt-in-paste-result.json) — **pursue**. Pursue the narrower cut. Remove the registry Editor's default Sonner warning, its registry unit/browser proof and the draft registry changelog entry. Retain Editable.onPasteResult, EditablePasteResult and DataTransfer report diagnostics as an opt-in mounted-surface API, with package tests and public documentation showing how an application may present feedback. Plate itself and the registry render no notification. Retain explicit conversion diagnostics and all sanitizer, mapping, fitting, fallback and lifecycle-error behavior.
 
 Compiled decision: [import-fidelity.md](../decisions/import-fidelity.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **completed**. Proof: **stale**. Playwright's WebKit build is not Safari. The rendered toast is proven by earlier normal-mode receipts; the committed proof mocks sonner at the kit callback. Unmarked icon SVG still warns because it is dropped.
+Execution: **completed**. Proof: **stale**. No browser run: the default browser UI and its browser-only assertion no longer exist. Package-level mounted callback behavior remains covered by the Plite React suite.
 
-Outcome: [2026-09-28-paste-proof-and-media-html](../review-records/2026-09-28-paste-proof-and-media-html.json). Governing reviews: [2026-09-28-imports-paste-loss-reporting-review](../review-records/2026-09-28-imports-paste-loss-reporting-review.json), [2026-09-27-exports-adversarial-audit-feedback](../review-records/2026-09-27-exports-adversarial-audit-feedback.json). Work kind: implementation. Reconciled with current review: yes.
+Outcome: [2026-09-29-registry-paste-feedback-reverification-2](../review-records/2026-09-29-registry-paste-feedback-reverification-2.json). Governing reviews: [2026-09-29-imports-opt-in-paste-result](../review-records/2026-09-29-imports-opt-in-paste-result.json). Work kind: implementation. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: [HtmlPlugin.ts](../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts), [MarkdownPlugin.ts](../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts), [AIChatPlugin.ts](../../../packages/platejs/src/ai/react/AIChatPlugin.ts), [markdown-streaming-demo.tsx](../../../apps/www/src/registry/examples/markdown-streaming-demo.tsx), [HtmlPlugin.spec.ts](../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts), [MarkdownPlugin.spec.ts](../../../packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts), [export-fidelity.md](../decisions/export-fidelity.md), [htmlAst.ts](../../../packages/platejs/src/lib/plugins/html/htmlAst.ts), [markdownConversion.ts](../../../packages/platejs/src/markdown/lib/internal/markdownConversion.ts), [convertNodesSerialize.ts](../../../packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts), [CsvPlugin.ts](../../../packages/platejs/src/csv/lib/CsvPlugin.ts), [data-transfer-format.ts](../../../packages/plitejs/src/dom/plugin/data-transfer-format.ts), [html.mdx](../../../content/docs/(plugins)/(serializing)/html.mdx), [markdown.mdx](../../../content/docs/(plugins)/(serializing)/markdown.mdx), [pnpm-lock.yaml](../../../pnpm-lock.yaml), `packages/platejs/src/internal/plugin/dataTransferImpact.ts` (historical input unavailable), [DOMPlugin.ts](../../../packages/platejs/src/lib/plugins/dom/DOMPlugin.ts), [DOMPlugin.spec.ts](../../../packages/platejs/src/lib/plugins/dom/DOMPlugin.spec.ts), [html.spec.ts](../../../packages/platejs/src/html/html.spec.ts), [data-transfer-format.test.ts](../../../packages/plitejs/test/dom/data-transfer-format.test.ts), [dom-clipboard-runtime.ts](../../../packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts), [plugins.ts](../../../apps/www/src/registry/components/editor/plugins.ts), [detached-conversion-types.ts](../../../apps/www/src/__tests__/package-integration/conversion/detached-conversion-types.ts), [clipboard.spec.ts](../../../apps/www/tests/browser/clipboard.spec.ts). Changed directories: none identified. Changed source groups: none identified.
+Changed files: [HtmlPlugin.ts](../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts), [MarkdownPlugin.ts](../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts), [markdown-streaming-demo.tsx](../../../apps/www/src/registry/examples/markdown-streaming-demo.tsx), [MarkdownPlugin.spec.ts](../../../packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts), [markdownConversion.ts](../../../packages/platejs/src/markdown/lib/internal/markdownConversion.ts), [html.mdx](../../../content/docs/(plugins)/(serializing)/html.mdx), [markdown.mdx](../../../content/docs/(plugins)/(serializing)/markdown.mdx). Changed directories: none identified. Changed source groups: browser/paste-result-toast.
 
 - **stale-execution-proof**: [2026-09-25-document-conversion-contracts-design](../review-records/2026-09-25-document-conversion-contracts-design.json).
 
@@ -48,6 +48,12 @@ Changed files: [HtmlPlugin.ts](../../../packages/platejs/src/lib/plugins/html/Ht
 
 - **stale-execution-proof**: [2026-09-28-paste-proof-and-media-html](../review-records/2026-09-28-paste-proof-and-media-html.json).
 
+- **stale-execution-proof**: [2026-09-29-registry-paste-feedback](../review-records/2026-09-29-registry-paste-feedback.json).
+
+- **stale-execution-proof**: [2026-09-29-registry-paste-feedback-reverification](../review-records/2026-09-29-registry-paste-feedback-reverification.json).
+
+- **stale-execution-proof**: [2026-09-29-registry-paste-feedback-reverification-2](../review-records/2026-09-29-registry-paste-feedback-reverification-2.json).
+
 ## Plans and execution
 
 The plan owns its lifecycle. Design completion is not implementation adoption. Unknown or unbound evidence stays explicit.
@@ -61,13 +67,15 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-09-28-document-conversion-open-findings.md](../../plans/2026-09-28-document-conversion-open-findings.md) | completed | implementation | [2026-09-27-imports-adversarial-audit-feedback](../review-records/2026-09-27-imports-adversarial-audit-feedback.json), [2026-09-27-exports-adversarial-audit-feedback](../review-records/2026-09-27-exports-adversarial-audit-feedback.json) |
 | [2026-09-28-paste-loss-reporting-repairs.md](../../plans/2026-09-28-paste-loss-reporting-repairs.md) | completed | implementation | [2026-09-28-imports-paste-loss-reporting-review](../review-records/2026-09-28-imports-paste-loss-reporting-review.json) |
 | [2026-09-28-paste-proof-and-media-html.md](../../plans/2026-09-28-paste-proof-and-media-html.md) | completed | implementation | [2026-09-28-imports-paste-loss-reporting-review](../review-records/2026-09-28-imports-paste-loss-reporting-review.json), [2026-09-27-exports-adversarial-audit-feedback](../review-records/2026-09-27-exports-adversarial-audit-feedback.json) |
+| [2026-09-29-registry-paste-feedback.md](../../plans/2026-09-29-registry-paste-feedback.md) | completed | implementation | [2026-09-29-imports-opt-in-paste-result](../review-records/2026-09-29-imports-opt-in-paste-result.json) |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-- [2026-09-28-paste-loss-reporting-repairs](../review-records/2026-09-28-paste-loss-reporting-repairs.json): completed; binding **current**; Repaired the three loss-reporting defects from 2026-09-28-imports-paste-loss-reporting-review while keeping impact, the report, runtime-owner routing and registry toasts. Clipboard HTML that decodes to nothing after a lossy change is now a rejected attempt instead of a quiet null. Embedded media without a mapping reports loss even when fallback children survive, so a reject parse fails; picture left the list because its img reports itself. html-unsafe-content carries impact set by the sanitizer: non-rendering removals (metadata, scripts, style sheets, event handlers, script URLs) are lossless; SVG, MathML, embedded objects, blocked data: media sources, inline frame documents and resource-loading styles are lossy and fail a reject parse. The plitejs typecheck is green: two private selection helpers accept inferred editors as ReactRuntimeEditor<any>, like sibling helpers, which fixes the six test-type errors from 7cbec2435f without widening the fixture. This corrects the all-gates-pass claim in 2026-09-28-conversion-correctness-guarantees. Proof: stale / verified. Browser proof is Chromium only; the toast proof ran against a normal-mode dev server because the Playwright lane mounts no Toaster. Pasting web content with SVG icons now warns because those icons are dropped. The video plugin still has no HTML mapping.
-- [2026-09-28-paste-proof-and-media-html](../review-records/2026-09-28-paste-proof-and-media-html.json): completed; binding **current**; Closed the remaining paste proof and media gaps. A committed kit spec pastes through the real EditorKit with sonner mocked and proves one warning per lossy paste and none for mapped video, Docs metadata or decorative icons. The www Playwright config gains Firefox and WebKit projects; clipboard permissions are granted only in Chromium, and the clipboard spec passes in all three engines, native and synthetic. Video and audio gain HTML mappings: figure.editor-video and figure.editor-audio with native controls and a figcaption, plus bare media decode from src or the first source without fallback text, at figure priorities distinct from image and media embed. Removing graphics inside an aria-hidden subtree is lossless, so icon SVG pastes quietly while unmarked SVG, MathML and objects stay lossy. Proof: stale / verified. Playwright's WebKit build is not Safari. The rendered toast is proven by earlier normal-mode receipts; the committed proof mocks sonner at the kit callback. Unmarked icon SVG still warns because it is dropped.
+- [2026-09-29-registry-paste-feedback](../review-records/2026-09-29-registry-paste-feedback.json): completed; binding **current**; Removed the default Sonner paste-loss warning from the registry Editor and deleted its registry unit/browser proof and draft changelog entry. Retained the typed DataTransfer report and EditorContent.onPasteResult package APIs, their Plite React coverage and package changesets. Public clipboard documentation keeps the opt-in toast example while stating that Plate and the registry render no paste-result UI by default. Proof: stale / verified. No browser run was needed because the default browser UI and its browser-only assertion were deleted. Package-level mounted callback behavior remains covered by the Plite React suite.
+- [2026-09-29-registry-paste-feedback-reverification](../review-records/2026-09-29-registry-paste-feedback-reverification.json): completed; binding **current**; Reverified the registry paste-feedback execution on the current tree. Later conversion-boundary edits changed four files bound by 2026-09-29-registry-paste-feedback (Markdown runtime, streaming demo and Markdown docs), none of which touches paste-result delivery or the registry Editor. The registry Editor still renders no paste-result UI, EditorContent.onPasteResult and DataTransfer reports stay opt-in, and the clipboard docs are unchanged. Proof: stale / verified. No browser run: the default browser UI and its browser-only assertion no longer exist. Package-level mounted callback behavior remains covered by the Plite React suite.
+- [2026-09-29-registry-paste-feedback-reverification-2](../review-records/2026-09-29-registry-paste-feedback-reverification-2.json): completed; binding **current**; Reverified the registry paste-feedback execution after the static preview document change edited two files bound by the imports scope (the Markdown streaming demo and the Markdown docs), neither of which touches paste-result delivery or the registry Editor. The registry Editor renders no paste-result UI; EditorContent.onPasteResult and DataTransfer reports stay opt-in. Proof: stale / verified. No browser run: the default browser UI and its browser-only assertion no longer exist. Package-level mounted callback behavior remains covered by the Plite React suite.
 
 ## Inspected documents
 
@@ -421,6 +429,78 @@ Closed the remaining paste proof and media gaps. A committed kit spec pastes thr
 Proof limits: Playwright's WebKit build is not Safari. The rendered toast is proven by earlier normal-mode receipts; the committed proof mocks sonner at the kit callback. Unmarked icon SVG still warns because it is dropped.
 
 References: [2026-09-28-paste-proof-and-media-html.md](../../plans/2026-09-28-paste-proof-and-media-html.md), [2026-09-28-paste-loss-reporting-repairs.json](../review-records/2026-09-28-paste-loss-reporting-repairs.json).
+
+### 2026-09-29: 2026-09-29-imports-paste-result-hard-cut
+
+[Immutable record](../review-records/2026-09-29-imports-paste-result-hard-cut.json) — review; pursue; observation stale.
+
+Pursue a hard cut of the registry paste-loss toast and the public paste-result protocol behind it. The toast is generic, interrupts an ordinary best-effort paste, exposes no lost item or recovery action, and is the protocol's only production consumer. Therefore also cut Editable.onPasteResult/EditablePasteResult, transfer report diagnostics and observation state, Plate forwarding, toast-specific tests/docs and the two unreleased paste-result changesets. Retain format-owned diagnostics and lossPolicy on explicit HTML, Markdown and DOCX conversion calls, plus sanitizer/mapping/fitter correctness and lifecycle error reporting. Native paste should safely insert the best representable slice or do nothing, with normal undo; a future product-specific recovery flow must earn a new actionable contract from a real consumer.
+
+Question: Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?
+
+- Keep the default registry toast. Stop: it is noisy, generic and unactionable; repeated ordinary paste becomes a stream of warnings for unsupported SVG, styling or embeds even when useful text inserts.
+- Remove only the toast but retain opt-in onPasteResult and DataTransfer report machinery. Stop as the beta target: no production consumer remains, while Plite DOM, Plite React, Plate adapters, public types, docs and tests retain coordination solely for hypothetical flexibility.
+- Keep transfer diagnostics privately for testing or telemetry. Stop: they do not affect negotiation, safety, fitting or fallback selection. Format-owned parse diagnostics already prove conversion loss directly.
+- Warn only when no content inserts. Stop for now: there is still no current product consumer or recovery action; ordinary paste can remain a no-op and applications with a concrete workflow can intercept paste.
+- Keep typed diagnostics and reject/allow policy on explicit parse/import/export operations. Select: those callers deliberately perform conversion and can show details, preview, retry or abort.
+- supersedes [2026-09-28-imports-paste-loss-reporting-review](../review-records/2026-09-28-imports-paste-loss-reporting-review.json) (Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?): Retain source-level loss classification and explicit parse diagnostics, but reverse the unsupported assumption that ordinary paste needs registry-owned notification. The only consumer is the toast itself and it offers no recovery.
+- retains [2026-09-28-paste-loss-reporting-repairs](../review-records/2026-09-28-paste-loss-reporting-repairs.json) (Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?): Retain HTML sanitizer, unsupported-content and fallback classification repairs as format correctness. Their toast receipt proves delivery mechanics, not that default notification is good product behavior.
+- retains [2026-09-28-paste-proof-and-media-html](../review-records/2026-09-28-paste-proof-and-media-html.json) (Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?): Retain video/audio HTML mappings, cross-browser paste correctness and harmless-cleanup classification. Supersede only the registry callback/toast as an accepted product requirement.
+
+Proof limits: This is a source/API/product review, not an implementation receipt or usability study. The candidate scan covers the pinned ProseMirror, Tiptap and Lexical paste owners, not every editor product. Existing browser tests prove the current toast fires once; they do not prove desirability. No product code, tests, docs, changesets or generated registry output were changed. A future concrete app may justify an actionable paste recovery flow, but it cannot retroactively justify this generic callback and toast.
+
+References: [editor.tsx](../../../apps/www/src/registry/components/editor/editor.tsx), [editor.spec.tsx](../../../apps/www/src/registry/components/editor/editor.spec.tsx), `apps/www/tests/browser/paste-result-toast.spec.ts` (historical input unavailable), [data-transfer-format.ts](../../../packages/plitejs/src/dom/plugin/data-transfer-format.ts), [editable-dom-runtime.ts](../../../packages/plitejs/src/react/editable/editable-dom-runtime.ts), [HtmlPlugin.ts](../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts), [MarkdownPlugin.ts](../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts), [clipboard.mdx](../../../content/docs/(guides)/clipboard.mdx), [editor-architecture-candidates.md](../../analysis/editor-architecture-candidates.md), [import-fidelity.md](../decisions/import-fidelity.md), [platejs-paste-result.md](../../../.changeset/platejs-paste-result.md), [plitejs-paste-result.md](../../../.changeset/plitejs-paste-result.md).
+
+### 2026-09-29: 2026-09-29-imports-opt-in-paste-result
+
+[Immutable record](../review-records/2026-09-29-imports-opt-in-paste-result.json) — review; pursue; observation stale.
+
+Pursue the narrower cut. Remove the registry Editor's default Sonner warning, its registry unit/browser proof and the draft registry changelog entry. Retain Editable.onPasteResult, EditablePasteResult and DataTransfer report diagnostics as an opt-in mounted-surface API, with package tests and public documentation showing how an application may present feedback. Plate itself and the registry render no notification. Retain explicit conversion diagnostics and all sanitizer, mapping, fitting, fallback and lifecycle-error behavior.
+
+Question: Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?
+
+- Keep the registry toast. Stop: a copied editor should not impose generic, unactionable notification policy on every application.
+- Delete the paste-result protocol with the toast. Stop: applications have a current opt-in job for explaining loss, telemetry or offering their own recovery at the mounted surface.
+- Move feedback into plugin initialState. Stop: notification is presentation tied to one mounted surface, while one editor can have multiple views.
+- Keep one optional EditorContent.onPasteResult callback and no default UI. Select: the app owns presentation, while format and runtime owners supply typed facts.
+- supersedes [2026-09-29-imports-paste-result-hard-cut](../review-records/2026-09-29-imports-paste-result-hard-cut.json) (Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?): Retain its rejection of default registry notification, but reverse deletion of the typed paste-result protocol. The user confirmed a current app-owned presentation job; optional surface feedback and built-in UI are separate decisions.
+
+Proof limits: This corrects the API/product target before implementation. Existing package tests establish mounted-surface delivery, but the registry toast removal, generated registry output and public wording still require execution and verification. The candidate-editor scan from the prior review remains bounded and is not a universal product census.
+
+References: [editor.tsx](../../../apps/www/src/registry/components/editor/editor.tsx), [editor.spec.tsx](../../../apps/www/src/registry/components/editor/editor.spec.tsx), `apps/www/tests/browser/paste-result-toast.spec.ts` (historical input unavailable), [editable-dom-runtime.ts](../../../packages/plitejs/src/react/editable/editable-dom-runtime.ts), [editable-paste-result.test.tsx](../../../packages/plitejs/test/react/editable-paste-result.test.tsx), [data-transfer-format.ts](../../../packages/plitejs/src/dom/plugin/data-transfer-format.ts), [clipboard.mdx](../../../content/docs/(guides)/clipboard.mdx), [plate-components.mdx](../../../content/docs/api/core/plate-components.mdx), [platejs-paste-result.md](../../../.changeset/platejs-paste-result.md), [plitejs-paste-result.md](../../../.changeset/plitejs-paste-result.md).
+
+### 2026-09-29: 2026-09-29-registry-paste-feedback
+
+[Immutable record](../review-records/2026-09-29-registry-paste-feedback.json) — execution; completed; observation stale.
+
+Removed the default Sonner paste-loss warning from the registry Editor and deleted its registry unit/browser proof and draft changelog entry. Retained the typed DataTransfer report and EditorContent.onPasteResult package APIs, their Plite React coverage and package changesets. Public clipboard documentation keeps the opt-in toast example while stating that Plate and the registry render no paste-result UI by default.
+
+
+Proof limits: No browser run was needed because the default browser UI and its browser-only assertion were deleted. Package-level mounted callback behavior remains covered by the Plite React suite.
+
+References: [2026-09-29-registry-paste-feedback.md](../../plans/2026-09-29-registry-paste-feedback.md), [2026-09-29-imports-opt-in-paste-result.json](../review-records/2026-09-29-imports-opt-in-paste-result.json).
+
+### 2026-09-29: 2026-09-29-registry-paste-feedback-reverification
+
+[Immutable record](../review-records/2026-09-29-registry-paste-feedback-reverification.json) — execution; completed; observation stale.
+
+Reverified the registry paste-feedback execution on the current tree. Later conversion-boundary edits changed four files bound by 2026-09-29-registry-paste-feedback (Markdown runtime, streaming demo and Markdown docs), none of which touches paste-result delivery or the registry Editor. The registry Editor still renders no paste-result UI, EditorContent.onPasteResult and DataTransfer reports stay opt-in, and the clipboard docs are unchanged.
+
+
+Proof limits: No browser run: the default browser UI and its browser-only assertion no longer exist. Package-level mounted callback behavior remains covered by the Plite React suite.
+
+References: [2026-09-29-registry-paste-feedback.md](../../plans/2026-09-29-registry-paste-feedback.md).
+
+### 2026-09-29: 2026-09-29-registry-paste-feedback-reverification-2
+
+[Immutable record](../review-records/2026-09-29-registry-paste-feedback-reverification-2.json) — execution; completed; observation stale.
+
+Reverified the registry paste-feedback execution after the static preview document change edited two files bound by the imports scope (the Markdown streaming demo and the Markdown docs), neither of which touches paste-result delivery or the registry Editor. The registry Editor renders no paste-result UI; EditorContent.onPasteResult and DataTransfer reports stay opt-in.
+
+
+Proof limits: No browser run: the default browser UI and its browser-only assertion no longer exist. Package-level mounted callback behavior remains covered by the Plite React suite.
+
+References: [2026-09-29-registry-paste-feedback.md](../../plans/2026-09-29-registry-paste-feedback.md).
 
 ## Retrieval boundaries
 

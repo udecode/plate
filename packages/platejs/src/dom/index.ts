@@ -22,6 +22,7 @@ export type {
   DOMVisualPointOptions,
   DataTransferFormat,
   DataTransferDecodeContext,
+  DataTransferDiagnostic,
   DataTransferFormatPhase,
   DataTransferSchemaClaim,
   DataTransferEncodeContext,

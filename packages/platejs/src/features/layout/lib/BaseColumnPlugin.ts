@@ -36,13 +36,6 @@ export type ToggleColumnGroupOptions = {
   widths?: string[];
 };
 
-const getMarkdownAttributes = (element: Element) =>
-  Object.fromEntries(
-    Object.entries(NodeApi.extractProps(element)).filter(
-      ([key]) => key !== 'id' && key !== 'type'
-    )
-  );
-
 export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
   dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
@@ -62,20 +55,7 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
       plainText: {
         encode: ({ children }) => children,
       },
-      markdown: {
-        tag: type,
-        decode: ({ decode, marks, node, readTagAttributes }) => ({
-          ...readTagAttributes().properties,
-          children: decode(node.children, marks),
-          type,
-        }),
-        encode: ({ encodeAttributes, encodeFlow, node }) => ({
-          attributes: encodeAttributes(getMarkdownAttributes(node)),
-          children: encodeFlow(node.children),
-          name: type,
-          type: 'mdxJsxFlowElement',
-        }),
-      },
+      markdown: { tag: type },
     }),
 })
   .extend(({ plugin }) => ({
@@ -160,20 +140,7 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
       plainText: {
         encode: ({ children }) => children,
       },
-      markdown: {
-        tag: type,
-        decode: ({ decode, marks, node, readTagAttributes }) => ({
-          ...readTagAttributes().properties,
-          children: decode(node.children, marks),
-          type,
-        }),
-        encode: ({ encodeAttributes, encodeFlow, node }) => ({
-          attributes: encodeAttributes(getMarkdownAttributes(node)),
-          children: encodeFlow(node.children),
-          name: type,
-          type: 'mdxJsxFlowElement',
-        }),
-      },
+      markdown: { tag: type },
     }),
 }).extend(({ editor, plugin, schema: { type } }) => ({
   corrections: [

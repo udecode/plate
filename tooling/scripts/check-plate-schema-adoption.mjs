@@ -449,6 +449,7 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts', 1],
   ['packages/platejs/src/migrations/migratePlateV54Ast.internal.ts', 1],
   ['packages/platejs/src/migrations/migratePlateV54Profile.internal.ts', 1],
+  ['packages/platejs/src/migrations/migratePlateV54Urls.internal.ts', 1],
   ['packages/platejs/type-tests/plugin-schema-contracts.ts', 8],
   ['packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx', 2],
   ['packages/plitejs/test/editor-foundation-contract.ts', 2],
@@ -456,8 +457,10 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/plitejs/test/schema-inference-contract.ts', 2],
   ['packages/plitejs/test/schema-validation-diagnostics.test.ts', 4],
   ['packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.spec.ts', 1],
-  ['packages/platejs/src/markdown/lib/internal/markdownAttributes.ts', 1],
+  ['packages/platejs/src/markdown/lib/internal/markdownAttributes.ts', 2],
   ['packages/platejs/src/markdown/lib/internal/markdownConversion.ts', 1],
+  ['packages/platejs/src/markdown/lib/internal/markdownMappings.ts', 1],
+  ['packages/platejs/src/markdown/lib/serializer/convertTextsSerialize.ts', 1],
   [
     'packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts',
     1,
@@ -4632,9 +4635,32 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
     return properties.length > 0 ? [properties] : [];
   };
+  // Whether the plugin's schema declares a mark or an element; null if unknown.
+  const getSchemaRole = (authorProperties) => {
+    const schemaProperty = getProperty(authorProperties, 'schema');
+    const value = unwrapTypedExpression(schemaProperty?.value);
+    const schemaObject = isFunction(value)
+      ? getStaticFunctionResults(value)
+          .map(unwrapTypedExpression)
+          .find((result) => result?.type === 'ObjectExpression')
+      : value;
+
+    if (schemaObject?.type !== 'ObjectExpression') return null;
+    const names = new Set(
+      schemaObject.properties.map((property) =>
+        getResolvedObjectPropertyName(property, staticStringBindings)
+      )
+    );
+
+    if (names.has('mark')) return 'mark';
+
+    return names.has('element') ? 'element' : null;
+  };
+  const MARK_ONLY_MAPPING_FIELDS = ['style', 'value', 'wrap'];
   const reportCustomMarkdownMappingIdentity = (
     authorProperties,
-    ownerCallback
+    ownerCallback,
+    role = getSchemaRole(authorProperties)
   ) => {
     const formatsProperty = getProperty(authorProperties, 'formats');
     const defineFormatsCall = getDefineFormatsCall(formatsProperty);
@@ -4666,12 +4692,17 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       markdownProperty.value,
       markdownProperty
     )) {
-      const markProperty = getProperty(ruleProperties, 'mark');
       const tagProperty = getProperty(ruleProperties, 'tag');
       const tag = unwrapTypedExpression(tagProperty?.value);
       const decodeProperty = getProperty(ruleProperties, 'decode');
 
-      if (unwrapTypedExpression(markProperty?.value)?.value === true) {
+      // Mark tags name inline formatting, not a schema type.
+      if (
+        role === 'mark' ||
+        MARK_ONLY_MAPPING_FIELDS.some((name) =>
+          getProperty(ruleProperties, name)
+        )
+      ) {
         continue;
       }
 
@@ -4690,9 +4721,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         .map((properties) => getProperty(properties, 'name'))
         .filter(Boolean);
       const tagName = getStaticString(tag);
+      // A tag without decode/encode is derived from the schema; it still
+      // names the element type.
       const hasCustomDecodeSource =
-        !!decodeProperty &&
         !!tagProperty &&
+        (!!decodeProperty || !encodeProperty) &&
         (!tagName || !externalMarkdownTagSources.has(tagName));
       const hasCustomEncodedName = encodedNameProperties.some((property) => {
         const name = getStaticString(unwrapTypedExpression(property.value));
@@ -5955,10 +5988,22 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       if (memberCallName === 'extend' && isCallExpressionNode(node)) {
         const authorProperties = getAuthorProperties(node.arguments[0], node);
+        let root = unwrapTypedExpression(node.callee?.object);
+
+        while (
+          isCallExpressionNode(root) &&
+          getStaticMemberName(unwrapTypedExpression(root.callee)) === 'extend'
+        ) {
+          root = unwrapTypedExpression(root.callee.object);
+        }
 
         reportCustomMarkdownMappingIdentity(
           authorProperties,
-          node.arguments[0]
+          node.arguments[0],
+          getSchemaRole(authorProperties) ??
+            (isCallExpressionNode(root) && root.arguments.length === 2
+              ? getSchemaRole(getAuthorProperties(root.arguments[1], root))
+              : null)
         );
 
         for (const property of authorProperties) {

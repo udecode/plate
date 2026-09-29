@@ -1,0 +1,264 @@
+{
+  "id": "2026-09-28-conversion-boundary-value-review",
+  "scope": "conversion-boundary",
+  "kind": "review",
+  "date": "2026-09-28",
+  "question": "Which conversion laws share an owner across formats, and what Markdown reuse contract preserves every partial-prefix result without repeated whole-response work?",
+  "model": "GPT-6 (Codex)",
+  "method": "best-api-review/history-v3",
+  "trigger": "User selected one conversion-boundary review, challenging earlier sequencing and proposing common conversion laws plus incremental Markdown; product audit only.",
+  "requirements": [
+    "Keep the adopted CommonMark/GFM/math/registered-tag dialect and declarative format-mapping direction unless new decisive evidence justifies a separate change.",
+    "Schema-valid document admission and context-correct insertion-slice admission with explicit loss; reuse existing Plite schema/fitter authority rather than validating every slice as a full document.",
+    "One role-aware semantic safety law across active input/output paths, including custom callbacks, paste and retained DOCX source reuse; permissive loss never authorizes unsafe active output. Literal text and legitimate media resources remain distinguishable.",
+    "Common property exposure and honest preservation/loss policy, compared under equal capabilities/defaults/roles rather than requiring identical losses across unequal formats.",
+    "Every reused preview equals a fresh full partial parse of the same prefix, including diagnostics/coordinates; grammar and callback dependencies may invalidate earlier output. Completion strictly parses original source.",
+    "Parser state belongs to Markdown; consumer cancel/accept/undo remain outside it. Prove non-AI use, configuration validity, aggregate limits and bounded retention before selecting a public reuse contract.",
+    "Separate parse, fitting, publication and browser rendering claims; preserve sampling, workload, source identity and missing proof. No unmeasured engine/render win or 3.2-second universal CPU claim.",
+    "No product implementation, staging/commit, AI product/prompt redesign, universal AST or full HTML mapping redesign in this assessment."
+  ],
+  "evidenceReuse": "Reconciled prior mapping design, adopted dialect, serialize repair, contextual slice-fitting decision and retained-source execution. Current source probes reproduce property and URL/output differences; preserved safety probe was rerun (56 observations, 10 assertions) and property probe rerun at durable paths. Delegated primary-source comparison pins six local repositories. Streaming evidence compares 1,996 prefixes, preserved identity failures and bounded 10/50 KB timings; source-first Chromium covers only existing editable/static Columns. Historical paste/report claims are not assumed true for the later slice-or-null adapters. Copied original harnesses and selected receipts outside ignored artifacts, without relabeling them new measured runs.",
+  "summary": "Pursue shared private role-aware safety, property exposure and truthful loss accounting at existing Plate conversion owners; delete property-read inference and unchecked retained-source output bypasses. Reuse Plite fitting/admission and retain format-specific meaning, resources and artifact lifetimes. Pursue dependency-aware Markdown reuse, with previous-result provenance the leading candidate, not an adopted API. Reject unconditional tail-only work and a universal conversion pipeline. Preserve declarative mappings and micromark/MDAST; settle shared D2 contracts before adoption without blocking other declaration simplification on an engine redesign. Restricted 10 KB parsing improves while fitting/publication do not; existing model identity already survives. General identity and 50 KB sampling/Chromium candidate acceptance remain unproven. Recommend cutting unused detached public HTML slice exports under the same current-job rule as Markdown fragments.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-28-format-mappings-value-review",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "retains",
+      "reason": "Pure schema-bound declarations and feature-specific exceptions remain valuable; parser engine replacement does not itself invalidate those contracts."
+    },
+    {
+      "record": "2026-09-28-format-mapping-authoring-design",
+      "question": "Which conversion laws share an owner across formats, and what Markdown reuse contract preserves every partial-prefix result without repeated whole-response work?",
+      "action": "reopens",
+      "reason": "D2 property exposure needs common ownership and truthful loss accounting before S1 adoption. Preserve declarative construction and mark direction; do not wait for a general incremental engine to simplify unrelated declarations."
+    },
+    {
+      "record": "2026-09-28-markdown-commonmark-dialect-closure",
+      "question": "Which conversion laws share an owner across formats, and what Markdown reuse contract preserves every partial-prefix result without repeated whole-response work?",
+      "action": "retains",
+      "reason": "Retain adopted grammar and tested correctness; completed dialect work does not establish streaming locality, safe URL policy or full incremental identity."
+    },
+    {
+      "record": "2026-09-28-markdown-commonmark-dialect-serialize-repair",
+      "question": "Which conversion laws share an owner across formats, and what Markdown reuse contract preserves every partial-prefix result without repeated whole-response work?",
+      "action": "retains",
+      "reason": "Retain measured serialization fixes. This review measures different accumulated-prefix work and does not revoke that operation-specific result."
+    },
+    {
+      "record": "2026-09-28-conversion-correctness-guarantees",
+      "question": "Which conversion laws share an owner across formats, and what Markdown reuse contract preserves every partial-prefix result without repeated whole-response work?",
+      "action": "retains",
+      "reason": "Preserve atomic fit/refusal and distinction between insertion-slice admission and complete document grammar; do not revive the disproven dropped-content diagnosis."
+    },
+    {
+      "record": "2026-09-28-paste-proof-and-media-html",
+      "question": "Which conversion laws share an owner across formats, and what Markdown reuse contract preserves every partial-prefix result without repeated whole-response work?",
+      "action": "reopens",
+      "reason": "Historical browser/media proof remains historical evidence. Current source exposes obfuscated child-URL safety gaps and slice-or-null adapters that discard diagnostics; earlier report/toast behavior is not assumed current."
+    },
+    {
+      "record": "2026-09-15-documents-retained-source-implementation",
+      "question": "Which document conversion laws should DOCX file import, export and Word paste share, and where must fidelity limits be explicit?",
+      "action": "reopens",
+      "reason": "Opaque retained source and fidelity remain real jobs, but exact-source export is not eligible unconditionally under the selected active-output safety law. The probe returns an unsafe original relationship through unchanged-source reuse; no claim of Word execution."
+    }
+  ],
+  "alternatives": [
+    "Keep/configure current paths: rejected by demonstrated unsafe bypasses, false preservation claims and inconsistent reject severity; UI sanitization alone leaves canonical data and exports unsafe.",
+    "Shared private admission/emission core: pursue policy/accounting primitives at existing Plate owners and reuse Plite admission; reject a mandatory universal pipeline/AST because formats own distinct semantics, coordinates, resources and source lifetimes.",
+    "Strongest cuts: remove property-read proxies as proof, duplicated loss decisions and unchecked retained-source export eligibility; D2 ownership cannot become blanket preservation.",
+    "Block incremental plus joiner deletion: pursue dependency-aware stable reuse with conservative fallback and prefix oracle. Reject unconditional tail-only work; defer deletion of transport grammar/delays until cadence and strict finalization proof.",
+    "Previous-result hint versus stream handle: previous is the leading fit for accumulated-source callers, with opaque compiler-owned provenance. Both require validity, immutability/retention and stateful-transform policy; no public API selected by this review.",
+    "Retain micromark/MDAST versus engine replacement: keep current matched baseline. Source-supported complexity risks and B4 alone do not justify rewriting the grammar; replacement requires equivalent semantics and complete-operation budgets.",
+    "Detached slice symmetry: recommend cutting unused public browser/server parseHtmlSlice, keeping editor slice and standalone document operations. Do not re-add detached Markdown slices solely for symmetry.",
+    "Blanket Plite URL validation or recursive sanitization: rejected because neutral model strings, literal text and resource roles differ. Plate format input/output boundaries own role-aware policy."
+  ],
+  "proofLimits": "Audit/prototypes only, no product adoption. Incremental fast path admits only restricted independent plain ASCII paragraphs/ATX headings; rich syntax falls back to full parsing. Broader unchanged parser-object identity fails (181/926), aggregate quota/configuration/closure-state reuse is not established. Ten-KB timings have five alternating pairs; 50 KB has one of five pairs, rich fallback one un-warmed pair. Fitting and publication independently fit and cannot be summed. Existing model/key reuse is headless top-level positional evidence, not React proof. Chromium passed two current Columns modes but did not compare 10/50 KB candidate parse/publish/render or isolate React commits/paint. No native Word, live exploit, complete resource/protocol fuzzing, OS paste or external-consumer census. Arbitrary callback fidelity cannot be inferred from reads. Cloned prior art was source-inspected, not benchmarked.",
+  "references": [
+    "docs/analysis/2026-09-28-conversion-boundary-review.md",
+    "docs/research/decisions/conversion-boundary.md",
+    "docs/research/probes/2026-09-28-conversion-boundary/property-probe.ts",
+    "docs/research/probes/2026-09-28-conversion-boundary/property-probe.log",
+    "docs/research/probes/2026-09-28-conversion-boundary/safety/review.md",
+    "docs/research/probes/2026-09-28-conversion-boundary/safety/probe.test.ts",
+    "docs/research/probes/2026-09-28-conversion-boundary/safety/results.json",
+    "docs/research/probes/2026-09-28-conversion-boundary/streaming/REPORT.md",
+    "docs/research/probes/2026-09-28-conversion-boundary/streaming/README.md",
+    "docs/research/probes/2026-09-28-conversion-boundary/streaming/BROWSER-REPORT.md",
+    "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser-summary.json",
+    "docs/research/probes/2026-09-28-conversion-boundary/prior-art/findings.md",
+    "docs/plans/2026-09-28-format-mapping-authoring.md",
+    "docs/plans/2026-09-28-markdown-commonmark-dialect-design.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/editor/withPlite.ts": "051872d0215d8489865c57878c710c5906f011b59e7f84ce335f34f8542bc9a5",
+      "packages/platejs/src/internal/plugin/pluginFormatOperation.ts": "2facb5a6d414b8d0a2658bd6992859048940900d52a4d2422da78842e88d706c",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "32db94ebe13e1e605289371cc61f8c2eaa466c56d33fa8dc95c4e4d88351fc39",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "f55c6dadbc06fea89b9cfa05295db7ce65fa4e9deade83705cfdd6b0d81bf5bf",
+      "packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts": "5bf17c61fc6e4857c5bc0f5a48f69523a01b9df647cf46888ac08565e52da302",
+      "packages/plitejs/src/core/editor-schema.ts": "6ed137ddba410139d556a24f7c1b430dec3b30384c9f8b0b8700ea212f8bc123",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "95bc8dff2905184c23fc9f0c459990d66b51877b44b1e0e36d4aad72f7dd6cc4",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "e6e7b01723e91d361ac3d75952510ef51ac30f98fda7902def18dd6cf8bd7d70",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "2751ce59b5d206bef6af5bc5a61a9fedf0086b783aad5a3473a675f90467e337",
+      "packages/platejs/src/plain-text.ts": "386d18638f139fe09fbedd3bb56f14a151d8cf9d7537fcdd59686f962eeceac3",
+      "docs/analysis/2026-09-28-conversion-boundary-review.md": "f017a3c9cf4e1efa37451d1a958430d1023bf959ad05c9ae312b3aec6e5c5c8d",
+      "docs/research/probes/2026-09-28-conversion-boundary/property-probe.ts": "1451c5385748e6ba6fe512b8058f076deaf5fcca4202241fe32c432cd83489ec",
+      "docs/research/probes/2026-09-28-conversion-boundary/property-probe.log": "df8dedcc9c48560e7bd35d8de0c66289c225ea609c02f87bc447024b6b5e0d31",
+      "docs/research/probes/2026-09-28-conversion-boundary/safety/probe.test.ts": "0c74c3bafc3187507ed69ae3ff02f6f9bd49915538ff9b1add7caa2caaaf69c1",
+      "docs/research/probes/2026-09-28-conversion-boundary/safety/results.json": "6f45d5813db9d4b48d3feb60775cf00987e043af674a8cda32bdf5ee2d984531",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/REPORT.md": "1b6fa674fed6727a1f1f70a677968181fe93c7e72a18b1f83714189c0fe1314f",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/correctness.json": "9c0ae37859bd39c7e4d06de7aa45abf21f61b0ccef3a0e883665ad0ef2b72315",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/identity-oracle.json": "a10dadd940a0318f463915673a958503369364f72f347c53346e3fd2c0e64820",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/benchmark.json": "9ec3ef7d35d3fd50ef742aff42f3245803500342c1210759ed6c78af05425855",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/benchmark-rich.json": "f0730fb6a2f4db7b3bba73dae3beead7f0c76b7098a9566e276cdd3e25e97cad",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/initial-run-status.json": "e925732ddc7a25096249721ebcfc59a91bfcff2094dfcf5ed07c33a55b951e61",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser-summary.json": "1f0a95950e4c6385c30be7b4aa437ea52c992fda70211f1b870e409d01d20c6c",
+      "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts": "36266170426fedfae2387f53087f05da8749e7f977a1b5b2eb0d119a922541b6",
+      "packages/platejs/src/markdown/lib/internal/markdownMappings.ts": "0725526aae658952f440e68158e8234fe905c443c504c5b8a2cde66d3d172c25",
+      "packages/platejs/src/lib/plugins/html/htmlConversion.ts": "d1773b10dc3f7c407a44d4927b339cf922394b00e13fc53e5e04d29e32c2e91e",
+      "packages/platejs/src/html/server/index.ts": "7c8bfe2922891bc5497bb5ac734fa13830b23a1d11f70f1b5634f84fe45361e4",
+      "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts": "3cf0d7b49e4c58c50d8e6d05396241a7c2435fe2417c2a7f20baf6d5d1d8fca2",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "93e94a042000bcf912c65742beba43c57af7366ac358858d22ae5f3467e296bd",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "3fecad572a60eb5ff3f1fc8bfc001477ec46e11409881abebccdfda15dc63109",
+      "packages/platejs/src/lib/plugins/html/htmlAst.ts": "44b708687ef30c2cf29bce7e3e73c4957ee3f14d5a7145ea404be811a494074c",
+      "packages/platejs/src/lib/utils/sanitizeUrl.ts": "cadbf76708c588553aac2409ef76047f6905fb2b2b6cc7eca5ee539d8f772643",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "4d30d2506f7a5c0ad61659fe406e9ff204faaa91783ec169a7061167b1390395",
+      "packages/platejs/src/docx/export/lib/internal/xml-builder.ts": "c3be7f2be32ba0e3525f1b07339f1b8035b803df11ac4ba22296228f8ff70a95",
+      "packages/platejs/src/docx/paste/lib/WordPastePlugin.ts": "984bb90b0a062dd019867d262623ed25b1ab6209a8e21597e98117f4372b2cd0",
+      "packages/plitejs/src/core/plain-text.ts": "dd3634b4a39ec8f7768898bfd8255ff527d6361cb7833597eaf6fb35e34fb3fd",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "f925eefdc200c6bbb164bfae79186d29959e67ba22375f5faa9221fad0334511",
+      "packages/platejs/src/ai/react/useAIChat.ts": "887203d9eca7f9acb81970838972d9c91c9350283912f4ca3ff33640cb918f8b",
+      "apps/www/src/registry/lib/markdown-joiner-transform.ts": "e97882ade152378f5323eaafdfab101d96f66b0d329a7311c69ce6abe30f4055",
+      "apps/www/src/registry/components/editor/ai-menu.tsx": "caeff5de49e93286ae273a6d8c50087d3a8630652790f2bf94b412a723eb7e93",
+      "docs/research/probes/2026-09-28-conversion-boundary/prior-art/findings.md": "5a07bdd8c6cbd24c09dbb22bfbe29d2ccdb84aa28c2aff71ac5301e1ecdea460",
+      "docs/research/probes/2026-09-28-conversion-boundary/safety/review.md": "e1b463941dad1e39266ad77ab3b1e046879638e645869a1df1e9b4de47a4ef85",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "docs/plans/2026-09-28-format-mapping-authoring.md": "8ff4d1157addd41ad39ca030999e8ed06f45979bf0a5e8eafc68eee3327e5107",
+      "docs/plans/2026-09-28-markdown-commonmark-dialect-design.md": "addfed33632538be401688f271cb82dca36c17401d8774edffeac41c0b0c1f7a",
+      "docs/vision/plate.md": "1417623ecc774d6ee023da11713fca37a2282cb8d4a35bb07448ae9f21e2dc8c",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/README.md": "0cf14214913df17876230c3a3af6ab86c66977d9b877b8986f142dce8e5b79f8",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/probe.ts": "bd1e1db5c277b27742d36a19a2d32e4eae38189b4e7b5818e1096da966db5914",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/probe-initial.ts": "1ae6644787d773a196aa6c28eb95e8d05b6f85ac40f7d20db29cac87aee16ffc",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/probe-measured-rich.ts": "2c54fd6b234998cc470320f6ae8952bf630a1aa100556262e3bd2dc903677506",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/dependency-probe.ts": "d75e785dc20ba36bfd519d6054f0410078bbf3af8deebf7ce313e24922405a60",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/identity-probe.ts": "1995609d42800cf5c6badb2eaeddf28eb5f5237021e4e9f6962f34f4ad2286ed",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser.spec.ts": "e497504cfbd04a4443b5e61843f02fa05bd57a97014fbf15e0db86fa26d73db0",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser.config.ts": "30d05d5dd71857f213f8b528d95ab6bcec3453b0b79a67c68e38193885f707d7",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser-identity.json": "441c6d4524ecd1e0f01062908f5f529749802fffddd7588a52f9dccdf65b0dd7",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/preservation.json": "6164de92f08402957e328fa9d123ba56277c1798304011beb938bfe0dfc32954",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/dependencies.json": "c35d2942bba4371805341af87da3eed5a7ad7817b89560628808e5bc1c4f2409",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/joiner.json": "0f1099d377864b1b9131ded5ad0f8c9bc46dc85782ad002c2bc01c1a0a5d4f3e",
+      "packages/plitejs/src/core/public-state.ts": "49e517e5a037ed3970f9cb2855afe6c7f7cabfb50405e3de6a6a82f671a977dc",
+      "packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts": "016711230673ab35f9c38f1dcdbfec666f3aad26746bde1d3114ef31f4cedb99",
+      "packages/platejs/src/markdown/lib/__tests__/createTestEditor.tsx": "aad4018b182f2e434dc0e4a2a663e51b1e4d9af6b66ba8bd20824dc335b0ac06",
+      "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/BROWSER-REPORT.md": "551353d0225ee7f1eb1189bd16fb92eb3e888fb172eb980ff3d99d66530d2fc5",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/source-check-early-correctness.json": "3344f75c309c35cb5bdade8ea2d45b86b8dade1dda6052839a6d8b60761ae76b",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/source-before.json": "76d2c543b7d3c069ca9bb5af85f4c7595abc4e36338809b9656c127fa1bb7e41",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser-cleanup.json": "637bfbc284e642fba09b8eb85c00da91d1d43330d074d4238e05d110259cdc64",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser-attempt-1.log": "3e7c938ccd76027e257766874fce8889c951193f7a1073f397099b103068fa12",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser-attempt-2.log": "8aeee2289eaa985886c90f4a3aada46a0fbe23581644852c96d972c9fa5a771c",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/source-rich-check.json": "3344f75c309c35cb5bdade8ea2d45b86b8dade1dda6052839a6d8b60761ae76b",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/dependencies.failed-initial.log": "7f21ed69308698081153f37fbebe2ed22bd8b06a659c4eb2b1a745e91d4317cf",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/PLAN.md": "50e3c642a0885f946fd54917a17230212d2527aa5261d91f3c869f5974d5270d",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/HEADLESS-REPORT.md": "16c8f2cf08c35ec7df5b090608e8e9260523c04c8cfc87105c2fc412af0fbfed",
+      "docs/research/probes/2026-09-28-conversion-boundary/safety/source-identity.json": "31313d6f955d1819567321a2cf4e0ea156ff7e1be31242d0d51207b7572e6e6a",
+      "docs/research/probes/2026-09-28-conversion-boundary/safety/probe.log": "151d167ac04da5a48acc3964b12f88bf258c527b37b19b62749d4391893a1212",
+      "docs/research/probes/2026-09-28-conversion-boundary/safety/README.md": "017bf6c6f0a09a3ef0bf6694bce904db0441cd232e8781ffb9cc7063c933f2ce",
+      "docs/research/decisions/conversion-boundary.md": "3e0c950a37d46160d53b96765648a39e6d6d0f9699c081c5ff1a73bee1cf1786",
+      "docs/research/decisions/format-mapping-authoring.md": "e730180e7ca65d0922c15acf3c2c388e677a12fdfcdf7ef7d9fead8dcfa37c4b"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": [
+      {
+        "checkout": "/Users/zbeyens/git/tree-sitter",
+        "commit": "dcdc8cc55e5dfedfc858080835f153999a29ec40",
+        "files": {
+          "LICENSE": "c5cfb43042b6b72045f4ba997834d0a7786d2793d91680868b5815b39f14fc78",
+          "lib/include/tree_sitter/api.h": "efe63c187bb941be6e36dfb0597846bfe1976a0917c04a16e3edf6ee7cf6f9b7",
+          "lib/src/parser.c": "97a49276242294bc1b1a22908671a202f92d2a213a872edbe467a9e121822615",
+          "lib/src/subtree.c": "ec4d623ca1c290f6c1fb8a9dcfc08dcc5fc2a452fa1b27587b9a73c1a74438b0"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/common",
+        "commit": "d87b56cbe3d6f54edb5b8343ee794f8f96f9c86c",
+        "files": {
+          "LICENSE": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba",
+          "src/parse.ts": "48b56ce56b55316dba18eda62fb6ecf410ce159527474109fa4134e3231d5775"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/markdown",
+        "commit": "30fe1b12a53f58ebab66e156a7847484addf610b",
+        "files": {
+          "LICENSE": "54bd812a6d334e0c438b78a43cea74b67e882739fd3450115ddc7c52be5706c1",
+          "src/README.md": "f24d3311b29f25e39442c09bae0b6a0f9aacf94a0a5c6816f64e5b1b71725014",
+          "src/markdown.ts": "cd21988b2bb5594d59e4e1678a0d6319dfa569262e7e831ed17e5011987bf0b5",
+          "test/test-incremental.ts": "8482f774174cb9b185c450290712d6208aa08ace0f6b24a193115b05d0d4e48e"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/streamdown",
+        "commit": "0b6b20d3a85986a39b4bcd454cdcb6aabfc9b3e6",
+        "files": {
+          "LICENSE": "b4f9adb7c568904834d0dd6cc98d16c390d21ca32fc17ae7a267715269bd5529",
+          "packages/remend/src/index.ts": "5dad45c12a6eed75ed1385b666460f023af2a06c47c68a4550c132ddad64e627",
+          "packages/remend/src/link-image-handler.ts": "63db848b1971cda2b48f715adb8d315a19b1ca5336a28c6e62138245bac8858e",
+          "packages/remend/src/setext-heading-handler.ts": "979cfe50e1ac4ceca68c3157fc8a0128376d23d86170fd15597fed72d70cd22f",
+          "packages/streamdown/index.tsx": "fd374e4b96a2c441b045ac75fef462e2ab41f2b5cb47039c893ad6968db49bce",
+          "packages/streamdown/lib/markdown.ts": "db1bf2bb8375187b41a86f28d5e79ab1beaa8c118f2b9cd7343fdf5d4527f6ee",
+          "packages/streamdown/lib/parse-blocks.tsx": "b8d53ecf3c1dde05f6802459c1964f0d5e0facf85235b63571af45fe4b6a2a6f"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/markdown-it",
+        "commit": "3c51991c32aaa2b002a52c009334ebe5752c84b3",
+        "files": {
+          "LICENSE": "792c48c5a849a15fdf9e37e8bcf9e6d1dd13b32b46c642a748a0a46a9919d473",
+          "benchmark/implementations/current-commonmark/index.mjs": "b2c16373808839679c1652353b3f0ed67776a8e983fe47b87de9db4acfc522a7",
+          "docs/benchmark.md": "7aff0e8eaa53532c9651cd379ffd603ca09534e14ddfb89bad639653681f6f42",
+          "src/markdownit.ts": "16cd9541a7af7f680c92e7bf07e967ee87f07ebc676c5d6c30cfa2d05cb4e960",
+          "src/parser_block.ts": "8e3896aea6a734a5d3e965c9b84778286e61804371306405b5669f967049c1e0",
+          "src/parser_core.ts": "67cd77c5c7a93612166c6b600dba51c5d0151a81466660a969a0309e63e62ddd",
+          "src/parser_inline.ts": "82b68bf9612bb44bddecaa4e00b291e2be0dfbfd9929888e54da578a5f40b138",
+          "src/presets/commonmark.ts": "c93548ad55b35aabee8e87db0832f636ea313477ca35dbdd3613fcdeb4fb8022",
+          "src/presets/default.ts": "276e5e8a6338b10010e16a69531267327f4b27ffecfeb8ed9c6442c5bdfb78d6",
+          "src/rules_block/fence.ts": "2517f6a88ac90e6e31661a54410d38b31d51496ebf9b16fa5e3a97d20b1a612c",
+          "src/rules_block/reference.ts": "8fd5b9fd98fd6c62e7ad5bc8ca2f8471fa3c1fb63f463913c8d71a30a525c5fc",
+          "src/rules_inline/balance_pairs.ts": "718c282151e66dd02d57897c117be00494e7ab26db191418a22f2b86f5732c42",
+          "src/rules_inline/link.ts": "4ca6a6a5662480c291ff7d36564ba04d77d3ede9cf84e0cce8bd3ccc1f296543",
+          "src/rules_inline/state_inline.ts": "7f828d6690d404ab0bae6d813177ef2bb39a35c924ef4b72928c4edbde7e4d21"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/micromark",
+        "commit": "6577c200155e9c6b85a42b26d298f8affc348f2f",
+        "files": {
+          "license": "dd1081884a92952802f4803110a6bb543acea9a814c786d58605b4c1219b5ebb",
+          "packages/micromark-core-commonmark/dev/lib/attention.js": "a80deb1561614d952f3b283999cc3f949f23525de164b390e8e78b151049cfea",
+          "packages/micromark-core-commonmark/dev/lib/definition.js": "fe5180346198b9fd0585d98f3a091e07c6b69b3e3cc4fd57fbae642709b3fe96",
+          "packages/micromark-core-commonmark/dev/lib/label-end.js": "a98205fee00589963f9fc4426871a9eaef43621216d5966df7de3525f7a1cee6",
+          "packages/micromark-util-chunked/dev/index.js": "88bd8bb831925f9693f3b39bb2794a6f7493bd994cc2d1ed25d0b1753d5dee29",
+          "packages/micromark/dev/index.js": "c7863864ee2ff0c143e74a0375f99658d9ea6d777ee08b8153d9c09d57e594dd",
+          "packages/micromark/dev/lib/create-tokenizer.js": "3046dca3821cd57682f7bea3a91879519d7821a5976f2bd8aef5ce644885f7ce",
+          "packages/micromark/dev/lib/parse.js": "ae9cf9fc82bcf90bec3b26e35b82aae65a2f532e11b0a2432ff0d905d1b7904b",
+          "packages/micromark/dev/stream.js": "bfb9f473d4d5aa3a9548480732740063c3c8fc99a746129596aaac27c5d6c384",
+          "readme.md": "c34f7b38f2a6eb951ce157841af2e37e6cb41533b44c4fdf107d591f3ca47a45"
+        }
+      }
+    ]
+  }
+}

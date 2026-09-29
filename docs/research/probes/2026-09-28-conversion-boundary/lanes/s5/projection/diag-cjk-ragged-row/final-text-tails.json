@@ -1,0 +1,22 @@
+{
+  "editable-baseline-1790702017499.txt": {
+    "chars": 38897,
+    "sha256": "6cd1043eb4f71825",
+    "tail": " 来做 {key: value} 查找，当 x<y 时依然成立。参见  https://example.com/246 。⠿保持顺序⠿避免_抖动_ 🚀⠿键值a"
+  },
+  "editable-candidate-1790702043245.txt": {
+    "chars": 38897,
+    "sha256": "6cd1043eb4f71825",
+    "tail": " 来做 {key: value} 查找，当 x<y 时依然成立。参见  https://example.com/246 。⠿保持顺序⠿避免_抖动_ 🚀⠿键值a"
+  },
+  "static-baseline-1790701882272.txt": {
+    "chars": 35445,
+    "sha256": "aedd05ac73564d32",
+    "tail": "ber> 来做 {key: value} 查找，当 x<y 时依然成立。参见 https://example.com/246。保持顺序避免_抖动_ 🚀键值a﻿"
+  },
+  "static-candidate-1790701946638.txt": {
+    "chars": 35444,
+    "sha256": "be00f3328f800119",
+    "tail": "mber> 来做 {key: value} 查找，当 x<y 时依然成立。参见 https://example.com/246。保持顺序避免_抖动_ 🚀键值a"
+  }
+}

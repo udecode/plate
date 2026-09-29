@@ -25,6 +25,7 @@ import type {
   MdEmphasis,
   MdInlineCode,
   MdMdxJsxTextElement,
+  MdRootContent,
   MdStrong,
   MdText,
 } from './mdast';
@@ -140,6 +141,11 @@ export type MarkdownDiagnostic =
       PolicyDiagnostic<{
         action: 'dropped' | 'replaced' | 'unwrapped';
         code: 'markdown-unsupported-node';
+        /**
+         * `lossless` when nothing a reader sees was lost, such as raw HTML
+         * kept as text or an omitted comment; `lossy` otherwise.
+         */
+        impact: 'lossless' | 'lossy';
         message: string;
         nodeType: string;
         owner: string;
@@ -150,7 +156,19 @@ export type MarkdownDiagnostic =
       message: string;
       root: RootKey;
       severity: 'warning';
-    }>;
+    }>
+  | (MarkdownDiagnosticContext &
+      PolicyDiagnostic<{
+        code: 'markdown-unsafe-content';
+        /**
+         * `lossless` when only a script-capable destination was removed and
+         * its label kept; `lossy` when visible content went with it.
+         */
+        impact: 'lossless' | 'lossy';
+        message: string;
+        nodeType: string;
+        phase: 'parse' | 'serialize';
+      }>);
 
 export type MarkdownWarningDiagnostic = Extract<
   MarkdownDiagnostic,
@@ -267,6 +285,12 @@ export type DeserializeMdContext = Readonly<
   MarkdownConversionContext & {
     /** Whether the optional ElementIdPlugin owns persisted block identity. */
     elementIds?: boolean;
+    /** Receives the syntax node count once tree limits pass. */
+    onSyntaxNodes?: (count: number) => void;
+    /** Receives the root's children before they are converted. */
+    onRootChildren?: (children: readonly MdRootContent[]) => void;
+    /** The root node before this source when it continues an earlier one. */
+    previousRootSibling?: MdRootContent | null;
     limits: MarkdownParseLimits;
     lossPolicy: 'allow' | 'reject';
     mappings: CompiledMarkdownMappings;

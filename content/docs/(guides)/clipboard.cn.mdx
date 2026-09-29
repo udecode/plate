@@ -142,12 +142,33 @@ export const NotesTransferPlugin = definePlugin('notesTransfer', {
 | `priority` | 可选，默认 `0`。数值越高越先运行。 |
 | `scope` | `'document'` claim 整个 schema。省略时，format claim plugin 自己的 element type 与 property，因此 plugin 必须拥有其一。 |
 
-`accept` 与 `decode` 接收 `{ data, mimeType, snapshot, state }`：该 MIME type
-的 payload、transfer 上所有 type 与 file 的只读 snapshot，以及只读 editor
-state。`encode` 接收 `{ mimeType, slice, state }`。两者还会获得 plugin 的
+`accept` 与 `decode` 接收 `{ data, mimeType, report, snapshot, state }`：该
+MIME type 的 payload、报告 paste 遗漏内容的 function、transfer 上所有 type 与
+file 的只读 snapshot，以及只读 editor state。`encode` 接收 `{ mimeType, slice, state }`。两者还会获得 plugin 的
 `name`、`pluginState`、`registry` 与 `schema`。Callback 不接收 editor、live
 `DataTransfer` 或 transaction。Plate 以 `plate:<plugin>:<mimeType>` 作为每个
 format 的 key。
+
+### 报告 paste 遗漏的内容
+
+在 `accept` 或 `decode` 中调用 `report(diagnostic)` 说明 payload 丢失了什么。
+Diagnostic 为 `{ impact, message }`：粘贴内容被遗漏或失去含义时为 `'lossy'`；
+丢弃 metadata 等无害清理为 `'lossless'`。`report` 只在 callback 运行期间有效。
+
+```ts
+decode: ({ data, report }) => {
+  const { droppedEmbeds, slice } = parseNotes(data);
+
+  if (droppedEmbeds > 0) {
+    report({ impact: 'lossy', message: 'Embedded notes were left out.' });
+  }
+
+  return slice;
+},
+```
+
+返回 `null` 或 `false` 且不报告时保持静默。`accept` 或 `decode` 抛出时，Plate
+丢弃该 format 的报告，并把 error 发送到 `lifecycleErrorSink`。
 
 ### `null`、`false` 与 throw
 
@@ -204,16 +225,51 @@ encoder 生效。因此已声明的 `text/html` 或 `text/plain` encoder 会替�
 
 ### HTML paste
 
-Plate 的 HTML format 按 `parseHtmlSlice` 加 `lossPolicy: 'allow'` 的方式解析。
+Plate 的 HTML format 按 `editor.api.html.parseSlice` 加 `lossPolicy: 'allow'`
+的方式解析。
 任何 mapping 运行前，它会移除 comment、metadata、script、style sheet、embedded
-object、SVG 与 MathML、event handler、`srcdoc` 与 `srcset`、script 与被阻止的
-`data:` URL，以及会加载资源的 `style` attribute。没有已安装 mapping 的 embedded
-media 只保留 fallback content。没有可插入内容时，HTML format 返回 `null`，由
-plain text 处理 paste。
+object、SVG 与 MathML、event handler、`srcdoc` 与 `srcset`、不符合其用途的 URL
+（参阅 [HTML](/docs/html)），以及会加载资源的 `style`
+attribute。没有已安装 mapping 的 embedded
+media 只保留 fallback content。没有可插入内容时，HTML format 仍会报告它移除的内容，
+然后返回 `null`，由 plain text 处理 paste。
 
-Plate 不报告由哪个 format 处理 paste，也不报告遗漏了哪些内容。某个 source 丢失
-内容时，添加缺失的 mapping：在所属 plugin 的 `formats` 中添加 HTML rule，或为该
-MIME type 添加 format。
+### Paste 结果
+
+对 Plate 内置 format 处理的每次 paste，`EditorContent` 调用一次
+`onPasteResult`：粘贴内容 commit 之后（`inserted: true`），或没有 format 能插入
+时（`inserted: false`）。
+
+```tsx
+<EditorContent
+  onPasteResult={({ diagnostics, inserted }) => {
+    if (diagnostics.some(({ impact }) => impact === 'lossy')) {
+      toast.warning(
+        inserted
+          ? 'Some pasted content was left out.'
+          : 'The pasted content could not be inserted.'
+      );
+    }
+  }}
+/>
+```
+
+`diagnostics` 包含被插入内容的 format 的报告。之前无法使用的 format 报告的损失
+会保留在列表中，除非被插入的 format 解码的是同一 MIME type：与 HTML 文本相同的
+plain text 并不能恢复 HTML 丢失的内容。
+
+只会调用接收 paste 的 editor surface，且仅在其仍挂载时调用。`onPaste` 或
+`domCommands.insertData` handler 不经内置 format 处理 paste 时、drop 时，以及单独
+调用 `editor.api.dom.clipboard.insertData`（返回 boolean）时都不会调用
+`onPasteResult`。在 paste 期间通过 `insertData` 插入的 `onPaste` handler 会收到该次
+插入的结果。
+
+Plate 和 Registry `Editor` 默认不显示 paste 结果 UI。仅当应用能够解释损失或提供有用
+的恢复操作时，才添加 `onPasteResult`。
+
+Paste 结果不会指明处理 paste 的 format。某个 source 持续丢失内容时，添加缺失的
+mapping：在所属 plugin 的 `formats` 中添加 HTML rule，或为该 MIME type 添加
+format。
 
 ## Fragment 与 slice replacement
 

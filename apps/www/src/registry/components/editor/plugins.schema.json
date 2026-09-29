@@ -4304,10 +4304,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:855d4d3b8ccc7706",
+  "fingerprint": "fnv1a64:25a6c19579c99ec6",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:855d4d3b8ccc7706",
+    "fingerprint": "fnv1a64:25a6c19579c99ec6",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -5193,7 +5193,8 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": false
+          "required": false,
+          "validationVersion": 1
         },
         "exclusiveGroupIds": [],
         "id": "element:sourceUrl@2bfb15bcfacea42d",
@@ -5217,7 +5218,8 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": false
+          "required": false,
+          "validationVersion": 1
         },
         "exclusiveGroupIds": [],
         "id": "element:sourceUrl@edd27c91da0ff1df",
@@ -5424,7 +5426,8 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": true
+          "required": true,
+          "validationVersion": 1
         },
         "exclusiveGroupIds": [],
         "id": "element:url@184e5cc6a37c6e0e",
@@ -5448,7 +5451,8 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": true
+          "required": true,
+          "validationVersion": 1
         },
         "exclusiveGroupIds": [],
         "id": "element:url@88fa4e556f36a1b7",
@@ -5472,7 +5476,8 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": true
+          "required": true,
+          "validationVersion": 1
         },
         "exclusiveGroupIds": [],
         "id": "element:url@b09f563d04864a0d",
@@ -5496,7 +5501,8 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": true
+          "required": true,
+          "validationVersion": 1
         },
         "exclusiveGroupIds": [],
         "id": "element:url@c30b8cbe3fb07184",
@@ -5520,7 +5526,8 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": true
+          "required": true,
+          "validationVersion": 1
         },
         "exclusiveGroupIds": [],
         "id": "element:url@c71768acf4ac21cd",
@@ -5544,7 +5551,8 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": true
+          "required": true,
+          "validationVersion": 1
         },
         "exclusiveGroupIds": [],
         "id": "element:url@d3baa48b6dc124c6",

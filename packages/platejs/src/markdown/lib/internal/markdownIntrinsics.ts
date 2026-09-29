@@ -4,7 +4,6 @@ import { type Descendant, type Element, TextApi, PLUGINS } from '../../../core';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import type { MdRootContent } from '../mdast';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
-import { reportOmittedProperties } from '../serializer/reportOmittedProperties';
 import type {
   DeserializeMdContext,
   MdMarks,
@@ -17,7 +16,6 @@ const BR_TAG = /<br\s*\/?>/gi;
 const ONLY_BR_TAGS = /^(?:\s*<br\s*\/?>)+\s*$/i;
 const HTML_COMMENT = /^\s*<!--[\s\S]*-->\s*$/;
 const TAG_NAME = /^<\/?([A-Za-z][\w-]*)/;
-const NO_PROPERTIES: ReadonlySet<string> = new Set();
 
 /**
  * Language-level decoders every editor needs, even without feature plugins.
@@ -51,6 +49,7 @@ export const markdownIntrinsicDecoders = {
       options.report({
         action: 'dropped',
         code: 'markdown-unsupported-node',
+        impact: 'lossless',
         message: 'Markdown HTML comment was omitted.',
         nodeType: 'html',
         owner: 'markdown',
@@ -61,15 +60,17 @@ export const markdownIntrinsicDecoders = {
 
       return [];
     }
+    // The dialect reads raw HTML as text, so every character is kept.
     options.report({
       action: 'replaced',
       code: 'markdown-unsupported-node',
+      impact: 'lossless',
       message:
         'Markdown raw HTML has no installed mapping and was kept as text.',
       nodeType: 'html',
       owner: 'markdown',
       phase: 'parse',
-      severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
+      severity: 'warning',
       source: options.sourceLocation(node),
     });
 
@@ -135,8 +136,6 @@ export const encodeMarkdownParagraph = (
   node: Element,
   options: SerializeMdContext
 ): Paragraph => {
-  reportOmittedProperties(node, NO_PROPERTIES, options, 'markdown');
-
   const lines: Descendant[][] = [[]];
   // Split leaves report diagnostics at the leaf they came from.
   const origins = new WeakMap<Descendant, Descendant>();

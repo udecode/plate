@@ -1,0 +1,15 @@
+{
+ "base": "http://localhost:3605",
+ "chunk": 16,
+ "equal": true,
+ "streamedToc": "Code probe",
+ "freshToc": "Code probe",
+ "streamedOls": [],
+ "freshOls": [],
+ "streamedHljs": 13,
+ "freshHljs": 13,
+ "tokensEqual": true,
+ "tokenSpans": 12,
+ "streamedCellBorders": 0,
+ "freshCellBorders": 0
+}

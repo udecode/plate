@@ -140,6 +140,41 @@ export class ResolvedTokenCursor {
     }
   }
 
+  /**
+   * Return the deepest sibling run whose nodes together contain a non-empty
+   * token range.
+   */
+  siblingRunCovering(from: number, to: number) {
+    if (from < 0 || to <= from || to > this.tree.length) {
+      throw new RangeError(`Invalid document range ${from}..${to}.`);
+    }
+
+    let children = this.tree;
+    let contentFrom = 0;
+    const parentPath: number[] = [];
+
+    while (true) {
+      const first = findChildIndexAtPosition(children, contentFrom, from);
+      const last = findChildIndexAtPosition(children, contentFrom, to - 1);
+      const child = children.children[first];
+      const childFrom = contentFrom + children.offsets[first];
+
+      if (
+        first === last &&
+        child.children &&
+        childFrom < from &&
+        to < childFrom + child.length
+      ) {
+        parentPath.push(first);
+        ({ children } = child);
+        contentFrom = childFrom + 1;
+        continue;
+      }
+
+      return { first, from: childFrom, last, parentPath };
+    }
+  }
+
   /** Return the outer-to-inner node stack containing one token position. */
   openContextAt(position: number): readonly ResolvedTokenEntry[] {
     if (position < 0 || position > this.tree.length) {

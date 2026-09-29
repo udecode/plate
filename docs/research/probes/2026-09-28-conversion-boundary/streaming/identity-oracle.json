@@ -1,0 +1,471 @@
+{
+  "rows": [
+    {
+      "name": "paragraphs",
+      "equal": 77,
+      "reused": 66,
+      "admittedEqual": 77,
+      "admittedReused": 66,
+      "firstLoss": {
+        "end": 6,
+        "index": 0,
+        "fallback": false,
+        "source": "First ",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "First"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "headings",
+      "equal": 127,
+      "reused": 115,
+      "admittedEqual": 127,
+      "admittedReused": 115,
+      "firstLoss": {
+        "end": 2,
+        "index": 0,
+        "fallback": false,
+        "source": "# ",
+        "node": {
+          "level": 1,
+          "type": "heading",
+          "children": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "reference",
+      "equal": 66,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 14,
+        "index": 0,
+        "fallback": true,
+        "source": "[read][later]\n",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "[read][later]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "shortcut",
+      "equal": 76,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 8,
+        "index": 0,
+        "fallback": true,
+        "source": "[label]\n",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "[label]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "footnote",
+      "equal": 116,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 10,
+        "index": 0,
+        "fallback": true,
+        "source": "Note[^a].\n",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Note[^a]."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fence",
+      "equal": 13,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 6,
+        "index": 0,
+        "fallback": true,
+        "source": "```js\n",
+        "node": {
+          "language": "js",
+          "type": "codeBlock",
+          "children": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "tildeFence",
+      "equal": 14,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 4,
+        "index": 0,
+        "fallback": true,
+        "source": "~~~~",
+        "node": {
+          "type": "codeBlock",
+          "children": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "list",
+      "equal": 93,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 2,
+        "index": 0,
+        "fallback": true,
+        "source": "- ",
+        "node": {
+          "type": "paragraph",
+          "indent": 1,
+          "listType": "bulleted",
+          "children": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ordered",
+      "equal": 66,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 3,
+        "index": 0,
+        "fallback": true,
+        "source": "1. ",
+        "node": {
+          "type": "paragraph",
+          "indent": 1,
+          "listType": "numbered",
+          "children": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "tags",
+      "equal": 26,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 19,
+        "index": 0,
+        "fallback": true,
+        "source": "<callout icon=\"x\">\n",
+        "node": {
+          "icon": "x",
+          "type": "callout",
+          "children": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "inlineTags",
+      "equal": 29,
+      "reused": 0,
+      "admittedEqual": 1,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 7,
+        "index": 0,
+        "fallback": false,
+        "source": "Before ",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Before"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "nestedTags",
+      "equal": 26,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 81,
+        "index": 0,
+        "fallback": true,
+        "source": "<columnGroup>\n<column width=\"50%\">\n\nLeft.\n\n</column>\n<column width=\"50%\">\nRight.\n",
+        "node": {
+          "type": "columnGroup",
+          "children": [
+            {
+              "width": "50%",
+              "type": "column",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "text": "Left."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "width": "50%",
+              "type": "column",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "text": "Right."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "table",
+      "equal": 27,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 2,
+        "index": 0,
+        "fallback": true,
+        "source": "| ",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "|"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "setext",
+      "equal": 23,
+      "reused": 0,
+      "admittedEqual": 1,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 6,
+        "index": 0,
+        "fallback": false,
+        "source": "Title\n",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Title"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "quote",
+      "equal": 16,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 2,
+        "index": 0,
+        "fallback": true,
+        "source": "> ",
+        "node": {
+          "type": "blockquote",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": ""
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "inline",
+      "equal": 36,
+      "reused": 0,
+      "admittedEqual": 1,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 2,
+        "index": 0,
+        "fallback": false,
+        "source": "A ",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "A"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "math",
+      "equal": 21,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 3,
+        "index": 0,
+        "fallback": true,
+        "source": "$$\n",
+        "node": {
+          "latex": "",
+          "type": "equation",
+          "children": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "unicode",
+      "equal": 26,
+      "reused": 0,
+      "admittedEqual": 0,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 5,
+        "index": 0,
+        "fallback": true,
+        "source": "Café ",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Café"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "unknownTag",
+      "equal": 30,
+      "reused": 0,
+      "admittedEqual": 2,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 8,
+        "index": 0,
+        "fallback": false,
+        "source": "Before.\n",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Before."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "incompleteTag",
+      "equal": 18,
+      "reused": 0,
+      "admittedEqual": 2,
+      "admittedReused": 0,
+      "firstLoss": {
+        "end": 8,
+        "index": 0,
+        "fallback": false,
+        "source": "Before.\n",
+        "node": {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Before."
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "totals": {
+    "equal": 926,
+    "reused": 181,
+    "admittedEqual": 211,
+    "admittedReused": 181
+  },
+  "allUnchangedIdentityPreserved": false,
+  "scope": "One-character prefixes, content-equal top-level nodes at the same position. This audits the general identity promise, not only committed checkpoints.",
+  "prototypeSHA256": "bd1e1db5c277b27742d36a19a2d32e4eae38189b4e7b5818e1096da966db5914"
+}

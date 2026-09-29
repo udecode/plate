@@ -85,7 +85,7 @@ Rich **caption**.
       },
     ]);
     expect(serializeTestMarkdown(editor, { document }).data).toBe(
-      '<img alt="caption alt" height="180" width="320" src="/from-attr.png" />\n'
+      '<img src="/from-attr.png" width="320" alt="caption alt" height="180" />\n'
     );
 
     const stringWidth = serializeTestMarkdown(editor, {
@@ -102,7 +102,7 @@ Rich **caption**.
     });
 
     expect(stringWidth.data).toBe(
-      '<img width="&quot;320&quot;" src="/string-width.png" />\n'
+      '<img src="/string-width.png" width="&quot;320&quot;" />\n'
     );
     expect(
       parseTestMarkdown(editor, stringWidth.data).children[0]
@@ -112,7 +112,7 @@ Rich **caption**.
   it.each([
     {
       expected:
-        '<file name="sample.pdf" src="https://example.com/sample.pdf" />\n',
+        '<file src="https://example.com/sample.pdf" name="sample.pdf" />\n',
       input: '<file name="sample.pdf" src="https://example.com/sample.pdf" />',
       output: [
         {
@@ -138,7 +138,7 @@ Rich **caption**.
     },
     {
       expected:
-        '<mediaEmbed provider="youtube" sourceUrl="https://www.youtube.com/watch?v=M7lc1UVf-VE" src="https://www.youtube.com/embed/M7lc1UVf-VE" />\n',
+        '<mediaEmbed src="https://www.youtube.com/embed/M7lc1UVf-VE" provider="youtube" sourceUrl="https://www.youtube.com/watch?v=M7lc1UVf-VE" />\n',
       input:
         '<mediaEmbed provider="youtube" sourceUrl="https://www.youtube.com/watch?v=M7lc1UVf-VE" src="https://www.youtube.com/embed/M7lc1UVf-VE" />',
       output: [
@@ -153,7 +153,7 @@ Rich **caption**.
       title: 'round-trips media embed nodes with normalized metadata',
     },
     {
-      expected: '<video width="640" src="https://example.com/video.mp4" />\n',
+      expected: '<video src="https://example.com/video.mp4" width="640" />\n',
       input: '<video width={640} src="https://example.com/video.mp4" />',
       output: [
         {

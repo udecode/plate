@@ -1,0 +1,173 @@
+{
+  "id": "2026-09-29-static-document-rendering-execution",
+  "kind": "execution",
+  "date": "2026-09-29",
+  "scopes": [
+    "conversion-boundary",
+    "html"
+  ],
+  "reviewBasis": [
+    "2026-09-29-conversion-next-static-read-review",
+    "2026-09-29-static-preview-document-review"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-29-static-document-rendering.md",
+    "sha256": "02064195d179e9af75e404ac91fd7c0003ca103fdae51d7bd029707a156819b1"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Every read of a rendered document now sees one immutable document: Plite createEditorView(editor, { document }) binds reads, plugin reads and APIs to it, replacing the partial Plate facade, and a guard refuses source-editor reads made on a document view's behalf. HTML claims only what its output keeps and reports every other property. Static rendering reuses a block while it and every earlier block are unchanged and its decorations are value-equal; elements that read later content declare render.readsDocument (the TOC). Five wrong-document reads were fixed at their owners (code highlight, find, Markdown serialize, the AI end marker and Plite node targets), plus a Plite portal refresh that rebuilt the plugin configuration per lookup.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/research/probes/2026-09-29-static-document-rendering/projected-reads.json",
+        "sha256": "8c2d5a7e338444d76aeb0c35ad1024619c883a8eac284e351f0529256b481d95",
+        "claim": "The reviewer's five coherence checks pass through the public createEditorView(editor, { document }): direct reads, plugin reads, EditorStatic and renderStaticHtml TOCs all show the document, and the source editor is unchanged."
+      },
+      {
+        "path": "packages/plitejs/test/editor-runtime-view-contract.ts",
+        "sha256": "6c9d33ad788a5a94639ed5792b670a0901baca78b086f71c6f703290847b6e20",
+        "claim": "Document views: reads, plugin reads, plugin APIs, value, no selection or last commit, read-only; named roots; refused updates and schema-invalid documents; document nodes resolve as targets; a captured source read during a view read throws while schema queries pass. Each law fails with its mechanism removed."
+      },
+      {
+        "path": "packages/platejs/src/static/components/PlateStatic.spec.tsx",
+        "sha256": "dab10ccc34d27def8475ff15e1be65942718c61fce7baa3a52f4ba7d74d2ed2f",
+        "claim": "A TOC renders the document through EditorStatic and renderStaticHtml; a tail append renders only the new block; an in-place change renders from the first changed block; a TOC shows a later heading; a reused block drops a stale last-text decoration. Each fails under its mutation."
+      },
+      {
+        "path": "packages/platejs/src/html/htmlConformance.spec.ts",
+        "sha256": "a6693556dc04c7f41588f52a42d563b9deee7cfeb22d36a13408e8791bc1d9ee",
+        "claim": "HTML round-trip conformance: 30 fixtures plus a false-claim self-test; a property lost without a report fails, and a reported property that survives fails."
+      },
+      {
+        "path": "docs/research/probes/2026-09-28-conversion-boundary/lanes/html-accounting/probe-after.json",
+        "sha256": "49392ec49e1d5125b92d6f8d3593081556b263629dc4c21b68c40367419a7720",
+        "claim": "The reviewer's image-title probe exits 0: title is written and read back."
+      },
+      {
+        "path": "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx",
+        "sha256": "f22b56a5546f86ea015f36b54eb905acadaf651803894a1885a1327d4970b3ce",
+        "claim": "Code highlighting decorates the code block of the document a view renders; failed with the captured editor."
+      },
+      {
+        "path": "packages/platejs/src/features/find/lib/BaseFindPlugin.spec.ts",
+        "sha256": "172acb68e008abda97a4d90b891ebdf7619d72adbec1f425f9b93cda0dd394ea",
+        "claim": "Find paints matches only on the document it searched."
+      },
+      {
+        "path": "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts",
+        "sha256": "85dd1b215d0e62b76f241798185919e33f5c280b6cff788927983a64bb3baaea",
+        "claim": "Markdown serialize() on a document view serializes its document by default."
+      },
+      {
+        "path": "apps/www/src/registry/components/editor/ai-menu.spec.tsx",
+        "sha256": "17996a4c63e30232cc71d7c036d2882143d896bb70fa45e9c11e74d2254f4fb1",
+        "claim": "The AI draft renders as a document, keeps unchanged block hosts, and one end marker covers only the last character."
+      },
+      {
+        "path": "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/reuse/summary-w.json",
+        "sha256": "c38e281ef1263ab45b2565524cf6aeae6969413c466c94665e6cce317a0cc91f",
+        "claim": "S5 snapshot w (final tree): 8/8 cells pass; final text and HTML identical between arms; 0 page or console errors; streamed output equals a fresh render; React 62-82% below projection-2; static finals 8-39 ms."
+      },
+      {
+        "path": "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/reuse/parity.json",
+        "sha256": "0029b4e7f162792312ce91c7810e60ee321a67bce61a7aeaccbe2a2ab4d09dd1",
+        "claim": "Final text and HTML parity between arms in all 8 cells on snapshot w."
+      }
+    ],
+    "limits": "Working tree only, nothing committed. Decorations are still read over every node on each render (21-58% of React time at 50 KB on snapshot w); caching them per block needs a declaration for document-reading sources and its own decision. The guard does not cover deferred component bodies or plugin API calls. Comment highlights and Yjs cursors place source state by path in a view of another document. pnpm test fails 27, 26 of them at HEAD plus the load-sensitive schema benchmark, which passed 2 of 3 runs at load 8-9 and also fails with this plan reverted; pnpm test:slow matches HEAD."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/editor/withPlite.ts": "051872d0215d8489865c57878c710c5906f011b59e7f84ce335f34f8542bc9a5",
+      "packages/platejs/src/internal/plugin/pluginFormatOperation.ts": "2facb5a6d414b8d0a2658bd6992859048940900d52a4d2422da78842e88d706c",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "479f1a5acc82b5fe8cda5faf16481b0eef5a27052c8b6e63638151450291c99d",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "ceea6f0aecf1128634f6245f4a8c10939578276de897e30b9959c7adf5625eb3",
+      "packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts": "472c1c32fd9bd908fa08d0db08c681bfad666323d219d45d5a69c06dc27dcc6d",
+      "packages/plitejs/src/core/editor-schema.ts": "21a07d6d8c5adebd9eb8f0780851167a7fe080d4ce8a3c8eeca9acf3479ae5d1",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "5bd1f158a2565593b4649574df4c53cee2149f80c9601d0ebf40129d037303e4",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "1680cb0ef4f814aaf9e99000347ae96727412fd3b386b5b7ef3e6030aec48eb0",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "3b09a84e4fafe1796830b8290f0676adaf3df3f841ee80f53df3d95f20aa3a93",
+      "packages/platejs/src/plain-text.ts": "326d72c1993c7d6a27a550a20b7f74c1e8bf056706a9839eb15d7b4dd7589864",
+      "docs/analysis/2026-09-28-conversion-boundary-review.md": "f017a3c9cf4e1efa37451d1a958430d1023bf959ad05c9ae312b3aec6e5c5c8d",
+      "docs/research/probes/2026-09-28-conversion-boundary/property-probe.ts": "1451c5385748e6ba6fe512b8058f076deaf5fcca4202241fe32c432cd83489ec",
+      "docs/research/probes/2026-09-28-conversion-boundary/property-probe.log": "df8dedcc9c48560e7bd35d8de0c66289c225ea609c02f87bc447024b6b5e0d31",
+      "docs/research/probes/2026-09-28-conversion-boundary/safety/probe.test.ts": "2b265b67056d8a38ce7d30661c7e6572dbe99ddaf19bb3bc701f6fb1a2378eb0",
+      "docs/research/probes/2026-09-28-conversion-boundary/safety/results.json": "6f45d5813db9d4b48d3feb60775cf00987e043af674a8cda32bdf5ee2d984531",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/REPORT.md": "1b6fa674fed6727a1f1f70a677968181fe93c7e72a18b1f83714189c0fe1314f",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/correctness.json": "9c0ae37859bd39c7e4d06de7aa45abf21f61b0ccef3a0e883665ad0ef2b72315",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/identity-oracle.json": "a10dadd940a0318f463915673a958503369364f72f347c53346e3fd2c0e64820",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/benchmark.json": "9ec3ef7d35d3fd50ef742aff42f3245803500342c1210759ed6c78af05425855",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/benchmark-rich.json": "f0730fb6a2f4db7b3bba73dae3beead7f0c76b7098a9566e276cdd3e25e97cad",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/initial-run-status.json": "e925732ddc7a25096249721ebcfc59a91bfcff2094dfcf5ed07c33a55b951e61",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser-summary.json": "1f0a95950e4c6385c30be7b4aa437ea52c992fda70211f1b870e409d01d20c6c",
+      "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts": "5df7c7f4ba6d5481ac1e6e5f8284c1e36cd113c3d3ab4a1d86d3620347a0d99f",
+      "packages/platejs/src/markdown/lib/internal/markdownMappings.ts": "d7736c506c1b9ec121b77fad29197d0e550c5c23d227baba4de39318b897534d",
+      "packages/platejs/src/lib/plugins/html/htmlConversion.ts": "e09fdda86ae8229779db17bcf6c391758a15b9fd18e3ffce66ac35e4e8b807b3",
+      "packages/platejs/src/html/server/index.ts": "c0123e09c4c8f200bc4a39152a650b95d633648547b5857888ba17e3c8b1132f",
+      "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts": "7d3ae606258f5921fccfb9a85aea1b730195e64113ecd050da4e709a82509541",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "1802271ec1761c89e6f09274d37bbb8a2526bf7bb642b14b9b55a0c5992f4ce8",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "6e9e6e410a08b0bb7d1343100ce98554e0cfa56cd1919200fe77746a26e16051",
+      "packages/platejs/src/lib/plugins/html/htmlAst.ts": "2807a035631521ac05d99b472f3e40767ca85576f8d79f9d7e15367f4f91a2df",
+      "packages/platejs/src/internal/utils/urlPolicy.ts": "c03ff808f801bf783a8439f502001a05aea4a08256e4f1c218c10a97eeca643d",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "6afafeae2daeb73599175091783f043cf87a0ee63527c22c7f5dc55e8fa25d8c",
+      "packages/platejs/src/docx/export/lib/internal/xml-builder.ts": "c0513d102d1737d40bd0ae15fed8de515c6e617a2bf299353e84760adc15b50a",
+      "packages/platejs/src/docx/paste/lib/WordPastePlugin.ts": "984bb90b0a062dd019867d262623ed25b1ab6209a8e21597e98117f4372b2cd0",
+      "packages/plitejs/src/core/plain-text.ts": "dd3634b4a39ec8f7768898bfd8255ff527d6361cb7833597eaf6fb35e34fb3fd",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "b20d0d9de88fe46cb58920be43fafcb840ebfb4eef8af6c90a4f7b7abec0d803",
+      "packages/platejs/src/ai/react/useAIChat.ts": "887203d9eca7f9acb81970838972d9c91c9350283912f4ca3ff33640cb918f8b",
+      "apps/www/src/registry/components/editor/ai-menu.tsx": "764ad1530ccf3b8d5e35eb3eb9c3b9e5a3e915a148078f63e3ce0644842bf1e9",
+      "docs/research/probes/2026-09-28-conversion-boundary/prior-art/findings.md": "5a07bdd8c6cbd24c09dbb22bfbe29d2ccdb84aa28c2aff71ac5301e1ecdea460",
+      "docs/research/probes/2026-09-28-conversion-boundary/safety/review.md": "e1b463941dad1e39266ad77ab3b1e046879638e645869a1df1e9b4de47a4ef85",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "docs/plans/2026-09-28-format-mapping-authoring.md": "fe043d5e5f9ce975733722fc5b26b96682a4c44e9904d862d046be690f363dcc",
+      "docs/plans/2026-09-28-markdown-commonmark-dialect-design.md": "addfed33632538be401688f271cb82dca36c17401d8774edffeac41c0b0c1f7a",
+      "docs/vision/plate.md": "9ade2aed2d02a3d0aa73e64ebe63fede3a08372dd7268a747f0203b416b41287",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/README.md": "0cf14214913df17876230c3a3af6ab86c66977d9b877b8986f142dce8e5b79f8",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/probe.ts": "bd1e1db5c277b27742d36a19a2d32e4eae38189b4e7b5818e1096da966db5914",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/probe-initial.ts": "1ae6644787d773a196aa6c28eb95e8d05b6f85ac40f7d20db29cac87aee16ffc",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/probe-measured-rich.ts": "2c54fd6b234998cc470320f6ae8952bf630a1aa100556262e3bd2dc903677506",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/dependency-probe.ts": "d75e785dc20ba36bfd519d6054f0410078bbf3af8deebf7ce313e24922405a60",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/identity-probe.ts": "1995609d42800cf5c6badb2eaeddf28eb5f5237021e4e9f6962f34f4ad2286ed",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser.spec.ts": "e497504cfbd04a4443b5e61843f02fa05bd57a97014fbf15e0db86fa26d73db0",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser.config.ts": "30d05d5dd71857f213f8b528d95ab6bcec3453b0b79a67c68e38193885f707d7",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/browser-identity.json": "441c6d4524ecd1e0f01062908f5f529749802fffddd7588a52f9dccdf65b0dd7",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/preservation.json": "6164de92f08402957e328fa9d123ba56277c1798304011beb938bfe0dfc32954",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/dependencies.json": "c35d2942bba4371805341af87da3eed5a7ad7817b89560628808e5bc1c4f2409",
+      "docs/research/probes/2026-09-28-conversion-boundary/streaming/joiner.json": "0f1099d377864b1b9131ded5ad0f8c9bc46dc85782ad002c2bc01c1a0a5d4f3e",
+      "packages/plitejs/src/core/public-state.ts": "2db70e1058d83fd0f10145c5aa54a32d86ee455d7b9043679ebabb8e56edca65",
+      "packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts": "016711230673ab35f9c38f1dcdbfec666f3aad26746bde1d3114ef31f4cedb99",
+      "packages/platejs/src/markdown/lib/__tests__/createTestEditor.tsx": "04934a83b1096bd0de121abb65c522d0fbeb16218d256225ad750781cfe65078",
+      "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/components/PlateStatic.spec.tsx": "dab10ccc34d27def8475ff15e1be65942718c61fce7baa3a52f4ba7d74d2ed2f"
+    },
+    "directories": {
+      "packages/platejs/src/static": "2444abc5f01a8f445b551d194546db93ac7c60184eb07412f36ba3d8323b7c09"
+    },
+    "features": {
+      "capability/html": "8135a4e0b278b55c07b824cfc66c5a1e164e6fba2a80f496a683a355d802d9b4",
+      "example/value/deserialize-html-value": "41cf8a0ccbd2fb68fe09d8bbbaa15555c8aa36cd205e449cb752d2d54d44c612",
+      "export/platejs/./html": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./html/server": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./static": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/html": "f70cf2e55b8a36419c68037b63c0ae3299c07698160d1e91bba62536f70a34ff",
+      "platejs/static": "2444abc5f01a8f445b551d194546db93ac7c60184eb07412f36ba3d8323b7c09",
+      "ui/html-export": "18dc4ff9da241dcce200c7d9d1de1b8267c99a81e48a108a8b2fd13d3e946e58",
+      "ui/html-export-kit": "6e510055e7d538e7ecc34a94444ff371edbcfc4c27b4296997ab41fab92c17c5",
+      "ui/html-export-schema-kit": "7852617a57c749d881f3364cb06c9ed240c4ecbc30dd3c68112b7cc313627978"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-29-static-document-rendering.md"
+  ]
+}

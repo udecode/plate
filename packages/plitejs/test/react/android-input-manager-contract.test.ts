@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { createEditor, definePlugin, editorCommands } from 'plitejs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { dom } from '../../src/dom';
 import {
   createDOMPhaseScheduler,
   type DOMPhaseScheduler,
@@ -12,6 +13,7 @@ import {
   EDITOR_TO_PLACEHOLDER_ELEMENT,
   EDITOR_TO_SCHEDULE_FLUSH,
   IS_COMPOSING,
+  IS_NODE_MAP_DIRTY,
 } from '../../src/dom/internal';
 import {
   addMark as editorAddMark,
@@ -1295,5 +1297,81 @@ describe('Android input manager SwiftKey insert-position hint', () => {
     manager.flush();
 
     expect(editorString(editor, [])).toBe('some text');
+  });
+});
+
+describe('Android input manager paste observation', () => {
+  // Plite recognizes transfer payloads by constructor name across realms.
+  class DataTransfer {
+    data = new Map<string, string>();
+    files = [] as unknown as FileList;
+
+    get types() {
+      return [...this.data.keys()];
+    }
+
+    getData(mimeType: string) {
+      return this.data.get(mimeType) ?? '';
+    }
+
+    setData(mimeType: string, value: string) {
+      this.data.set(mimeType, value);
+    }
+  }
+
+  const transferEvent = (inputType: string, dataTransfer: DataTransfer) =>
+    ({
+      cancelable: true,
+      data: null,
+      dataTransfer,
+      getTargetRanges: () => [],
+      inputType,
+      preventDefault: vi.fn(),
+    }) as unknown as InputEvent;
+
+  it('runs a deferred paste, but not a drop, inside the view paste observation', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('abc')],
+      plugins: [dom()],
+    });
+    const observed: string[] = [];
+
+    vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
+
+    const manager = createAndroidInputManager({
+      editor: editor as never,
+      inputController: createInputController(),
+      onDOMSelectionChange: createDebouncedSpy(),
+      receivedUserInput: { current: true },
+      runPaste: (paste) => {
+        observed.push('paste');
+
+        return paste();
+      },
+      scheduleOnDOMSelectionChange: createDebouncedSpy(),
+    });
+    const pasted = new DataTransfer();
+    const dropped = new DataTransfer();
+
+    pasted.setData('text/plain', 'P');
+    dropped.setData('text/plain', 'D');
+    editorSelect(editor, range(3));
+    manager.handleDOMBeforeInput(transferEvent('insertFromPaste', pasted));
+
+    expect(observed).toEqual([]);
+
+    manager.flush();
+
+    expect(observed).toEqual(['paste']);
+    expect(editorString(editor, [])).toBe('abcP');
+
+    // The mounted React commit clears the node map before the next input.
+    IS_NODE_MAP_DIRTY.set(editor, false);
+    manager.handleDOMBeforeInput(transferEvent('insertFromDrop', dropped));
+    manager.flush();
+
+    expect(observed).toEqual(['paste']);
+    expect(editorString(editor, [])).toBe('abcPD');
   });
 });

@@ -464,7 +464,6 @@ const MarkdownMarkFormatContractPlugin = definePlugin(
             };
           },
           tag: 'span',
-          mark: true,
         },
       }),
   }
@@ -479,16 +478,13 @@ const MarkdownMarkValueContractPlugin = definePlugin(
     formats: ({ defineFormats }) =>
       defineFormats({
         markdown: [
-          // @ts-expect-error Mark mappings return their schema value, not Plate nodes.
           {
+            // @ts-expect-error Mark mappings return their schema value, not Plate nodes.
             decode: ({ decode, node }) => decode(node.children),
-            mark: true,
             tag: 'span',
           },
-          // @ts-expect-error Mark mappings compose, so they take no priority.
           {
-            decode: () => true,
-            mark: true,
+            // @ts-expect-error Mark mappings compose, so they take no priority.
             priority: 1,
             tag: 'b',
           },
@@ -498,6 +494,86 @@ const MarkdownMarkValueContractPlugin = definePlugin(
 );
 
 void MarkdownMarkValueContractPlugin;
+
+const MarkdownDeclaredMarkContractPlugin = definePlugin(
+  'markdownDeclaredMarkContract',
+  {
+    schema: { mark: property.enum(['sub', 'sup']) },
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        markdown: [
+          { tag: 'sub', value: 'sub' },
+          { tag: 'sup', value: 'sup' },
+          // @ts-expect-error `value` must be a value of the mark's property.
+          { tag: 'small', value: 'small' },
+          // @ts-expect-error Element attribute names do not apply to marks.
+          { attributes: { mark: 'x' }, tag: 'span' },
+        ],
+      }),
+  }
+);
+
+void MarkdownDeclaredMarkContractPlugin;
+
+const MarkdownStyleMarkContractPlugin = definePlugin(
+  'markdownStyleMarkContract',
+  {
+    schema: { mark: property.string() },
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        markdown: [
+          { style: 'color', tag: 'span' },
+          // @ts-expect-error A CSS-valued mark is written as a tag.
+          { node: 'strong', style: 'color' },
+        ],
+      }),
+  }
+);
+
+void MarkdownStyleMarkContractPlugin;
+
+const MarkdownDeclaredTagContractPlugin = definePlugin(
+  'markdownDeclaredTagContract',
+  {
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: {
+          url: property.string({ required: true }),
+          width: property.number(),
+        },
+      },
+    },
+    formats: ({ defineFormats, schema: { type } }) =>
+      defineFormats({
+        markdown: [
+          { attributes: { url: 'src' }, tag: type },
+          {
+            encode: ({ encodeNodeAttributes, node, preserve }) => {
+              preserve('url', 'width');
+              // @ts-expect-error Claims name this plugin's own properties.
+              preserve('indent');
+
+              void node;
+
+              return {
+                attributes: encodeNodeAttributes(),
+                children: [],
+                name: type,
+                type: 'mdxJsxFlowElement',
+              };
+            },
+          },
+          // @ts-expect-error Attribute names map this plugin's own properties.
+          { attributes: { indent: 'level' }, tag: type },
+          // @ts-expect-error `value` declares a mark, not an element.
+          { tag: 'valued', value: true },
+        ],
+      }),
+  }
+);
+
+void MarkdownDeclaredTagContractPlugin;
 
 const HtmlParagraphContractPlugin = definePlugin('htmlParagraphContract', {
   schema: {
@@ -747,7 +823,7 @@ const HtmlListContractPlugin = definePlugin('htmlListContract', {
           listStart: Number(element.getAttribute('start')) || undefined,
           listStyle: element.tagName === 'OL' ? 'decimal' : 'disc',
         }),
-        encode: ({ content, node }) => {
+        encode: ({ content, node, preserve }) => {
           const exactStart: number | undefined = node.listStart;
           const exactStyle: string | undefined = node.listStyle;
           const configuredType: string = node.type;
@@ -755,6 +831,9 @@ const HtmlListContractPlugin = definePlugin('htmlListContract', {
           void exactStart;
           void exactStyle;
           void configuredType;
+          preserve('listStart', 'listStyle');
+          // @ts-expect-error A mapping claims only its target's properties.
+          preserve('indent');
 
           // @ts-expect-error A target-name list can resolve more than one element type.
           const stalePrimaryType: 'htmlParagraphContract' = node.type;

@@ -4,7 +4,16 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { property, schema, target, TextApi, type Value } from '../../core';
+import {
+  NodeApi,
+  property,
+  schema,
+  target,
+  TextApi,
+  type Value,
+} from '../../core';
+import { BaseHeadingPlugin } from '../../features/basic-nodes/lib/BaseHeadingPlugins';
+import { BaseTocPlugin } from '../../features/toc/lib/BaseTocPlugin';
 import {
   BaseParagraphPlugin,
   type Editor,
@@ -12,6 +21,7 @@ import {
   definePlugin,
 } from '../../lib';
 import { getEditorLiveSelection } from '../../testing';
+import { renderStaticHtml } from '../renderStaticHtml';
 import { EditorStatic } from './PlateStatic';
 import { EditorElement, EditorLeaf } from './plite-nodes';
 
@@ -490,5 +500,201 @@ describe('PlateStatic render slots', () => {
 
     expect(view.queryByTestId('dynamic-sibling')).not.toBeInTheDocument();
     expect(siblingRenderCount).toBe(0);
+  });
+});
+
+describe('EditorStatic document', () => {
+  it('renders a document through the editor plugins without editing the editor', () => {
+    const editor = createHeadlessEditor({
+      initialValue: [
+        { children: [{ text: 'Own content' }], type: 'paragraph' },
+      ],
+    });
+    const value = editor.read.value();
+    const commit = editor.read.lastCommit();
+    const html = ReactDOMServer.renderToStaticMarkup(
+      <EditorStatic
+        document={{
+          children: [{ children: [{ text: 'Preview' }], type: 'paragraph' }],
+        }}
+        editor={editor}
+      />
+    );
+
+    expect(html).toContain('Preview');
+    expect(html).not.toContain('Own content');
+    expect(editor.read.value()).toEqual(value);
+    expect(editor.read.lastCommit()).toBe(commit);
+  });
+
+  it('renders a table of contents from the document', async () => {
+    const heading = (text: string) => ({
+      children: [{ text }],
+      level: 1,
+      type: 'heading',
+    });
+    const editor = createHeadlessEditor({
+      initialValue: [heading('Source')],
+      plugins: [
+        BaseHeadingPlugin,
+        BaseTocPlugin.configure({
+          component: ({ editor: rendered }) => (
+            <aside>
+              {rendered
+                .plugin(BaseTocPlugin)
+                .read.headings()
+                .map((item) => item.title)
+                .join(',')}
+            </aside>
+          ),
+        }),
+      ],
+    });
+    const document = {
+      children: [{ children: [{ text: '' }], type: 'toc' }, heading('Preview')],
+    };
+
+    expect(
+      ReactDOMServer.renderToStaticMarkup(
+        <EditorStatic document={document} editor={editor} />
+      )
+    ).toContain('<aside>Preview</aside>');
+    const exported = await renderStaticHtml(editor, { document });
+
+    expect(exported.data).toContain('<aside>Preview</aside>');
+  });
+
+  it('renders again only from the first changed block of another document', () => {
+    const renders: string[] = [];
+    const editor = createHeadlessEditor({
+      plugins: [
+        BaseParagraphPlugin.configure({
+          // Reads the block before it, as list numbering does.
+          component: (props) => {
+            const children = props.editor.read.children();
+            const previous = children[children.indexOf(props.element) - 1];
+
+            renders.push(NodeApi.string(props.element));
+
+            return (
+              <EditorElement {...props}>
+                {previous ? NodeApi.string(previous) : ''}&gt;
+                {props.children};
+              </EditorElement>
+            );
+          },
+        }),
+      ],
+    });
+    const paragraph = (text: string) => ({
+      children: [{ text }],
+      type: 'paragraph',
+    });
+    const [a, b, c] = [paragraph('a'), paragraph('b'), paragraph('c')];
+    const view = render(
+      <EditorStatic document={{ children: [a, b] }} editor={editor} />
+    );
+
+    renders.length = 0;
+    view.rerender(
+      <EditorStatic document={{ children: [a, b, c] }} editor={editor} />
+    );
+
+    expect(renders).toEqual(['c']);
+
+    renders.length = 0;
+    view.rerender(
+      <EditorStatic
+        document={{ children: [paragraph('A'), b, c] }}
+        editor={editor}
+      />
+    );
+
+    expect(renders).toEqual(['A', 'b', 'c']);
+    expect(view.container.textContent).toBe('>A;A>b;b>c;');
+  });
+
+  it('renders a table of contents again when a later heading arrives', () => {
+    const heading = (text: string) => ({
+      children: [{ text }],
+      level: 1,
+      type: 'heading',
+    });
+    const editor = createHeadlessEditor({
+      plugins: [
+        BaseHeadingPlugin,
+        BaseTocPlugin.configure({
+          component: ({ editor: rendered }) => (
+            <aside>
+              {rendered
+                .plugin(BaseTocPlugin)
+                .read.headings()
+                .map((item) => item.title)
+                .join(',')}
+            </aside>
+          ),
+        }),
+      ],
+    });
+    const toc = { children: [{ text: '' }], type: 'toc' };
+    const one = heading('One');
+    const view = render(
+      <EditorStatic document={{ children: [toc, one] }} editor={editor} />
+    );
+
+    view.rerender(
+      <EditorStatic
+        document={{ children: [toc, one, heading('Two')] }}
+        editor={editor}
+      />
+    );
+
+    expect(view.container.querySelector('aside')?.textContent).toBe('One,Two');
+  });
+
+  it('marks only the last text when a reused block stops being last', () => {
+    const LastTextPlugin = definePlugin('lastText', {
+      decorate: {
+        read: ({ editor: rendered, entry: [node, path] }) =>
+          TextApi.isText(node) &&
+          NodeApi.last(
+            { children: rendered.read.children(), type: '' },
+            []
+          )[0] === node
+            ? [
+                {
+                  attributes: { 'data-last': '' },
+                  key: 'last',
+                  range: {
+                    anchor: { offset: 0, path },
+                    focus: { offset: node.text.length, path },
+                  },
+                },
+              ]
+            : [],
+      },
+    });
+    const editor = createHeadlessEditor({ plugins: [LastTextPlugin] });
+    const paragraph = (text: string) => ({
+      children: [{ text }],
+      type: 'paragraph',
+    });
+    const [a, b] = [paragraph('a'), paragraph('b')];
+    const view = render(
+      <EditorStatic document={{ children: [a, b] }} editor={editor} />
+    );
+
+    view.rerender(
+      <EditorStatic
+        document={{ children: [a, b, paragraph('c')] }}
+        editor={editor}
+      />
+    );
+
+    expect(
+      [...view.container.querySelectorAll('[data-last]')].map(
+        (node) => node.textContent
+      )
+    ).toEqual(['c']);
   });
 });

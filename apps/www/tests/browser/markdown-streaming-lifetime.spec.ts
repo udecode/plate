@@ -2,51 +2,89 @@ import {
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
+
+const open = async (page: Page, mode: 'editable' | 'static') => {
+  await page.goto('/blocks/markdown-streaming-demo', {
+    waitUntil: 'commit',
+  });
+  const heading = page.getByRole('heading', { name: /^Chunks/ });
+  await expect(heading).toBeVisible({ timeout: 20_000 });
+  await createBrowserEditorHarness(
+    page,
+    'markdown-streaming-demo',
+    page.locator('[data-editor="true"]').first()
+  ).ready({ editor: 'visible' });
+  if (mode === 'static') {
+    await page.getByLabel('Preview', { exact: true }).selectOption('static');
+  }
+
+  return {
+    heading,
+    output: page.getByRole('heading', { name: 'Editor Output' }).locator('..'),
+    status: page.locator('[data-stream-status]'),
+  };
+};
 
 for (const mode of ['editable', 'static'] as const) {
   test(`${mode} streaming renders columns`, async ({ page }) => {
     const errors = recordBrowserRuntimeErrors(page);
 
     try {
-      await page.goto('/blocks/markdown-streaming-demo', {
-        waitUntil: 'commit',
-      });
-      const heading = page.getByRole('heading', {
-        name: /^Transformed Chunks/,
-      });
-      await expect(heading).toBeVisible({ timeout: 20_000 });
-      await createBrowserEditorHarness(
-        page,
-        'markdown-streaming-demo',
-        page.locator('[data-editor="true"]').first()
-      ).ready({ editor: 'visible' });
-      await page.getByRole('combobox').first().selectOption('columns');
-      await page.getByRole('combobox').nth(1).selectOption('10');
-      if (mode === 'static') {
-        await page
-          .getByRole('button', { name: 'Switch to PlateStatic', exact: true })
-          .click();
-      }
+      const { heading, output, status } = await open(page, mode);
+      await page
+        .getByLabel('Scenario', { exact: true })
+        .selectOption('columns');
+      await page.getByLabel('Chunk delay', { exact: true }).selectOption('10');
       await page
         .getByRole('button', { name: 'Start streaming', exact: true })
         .click();
-      await expect(heading).toHaveText(
-        /^Transformed Chunks \(([1-9]\d*)\/\1\)$/
-      );
+      await expect(heading).toHaveText(/^Chunks \(([1-9]\d*)\/\1\)$/);
+      await expect(status).toHaveText('Finished: strict parse');
       await expect(
         page.getByRole('button', { name: 'Start streaming', exact: true })
       ).toBeVisible();
 
-      const output = page
-        .getByRole('heading', { name: 'Editor Output' })
-        .locator('..');
+      // Editable columns also render their drag handle glyph.
       await expect(output.locator('[class~="group/column"]')).toHaveText([
-        '1',
-        '2',
-        '3',
+        /1$/,
+        /2$/,
+        /3$/,
       ]);
       await expect(output).not.toContainText(/<\/?column(?:Group|_group)/);
+      errors.assertNone();
+    } finally {
+      errors.stop();
+    }
+  });
+
+  test(`${mode} stop parses the current draft strictly`, async ({ page }) => {
+    const errors = recordBrowserRuntimeErrors(page);
+
+    try {
+      const { heading, output, status } = await open(page, mode);
+      await page.getByLabel('Chunk delay', { exact: true }).selectOption('200');
+      await page.clock.install();
+      await page.clock.pauseAt(new Date(Date.now() + 1000));
+      await page
+        .getByRole('button', { name: 'Start streaming', exact: true })
+        .click();
+      await expect(heading).toContainText('(1/');
+      // The partial preview hides the tag that is still arriving.
+      await expect(output).toContainText('paragraph');
+      await expect(output).not.toContainText('<column');
+
+      await page
+        .getByRole('button', { name: 'Stop streaming', exact: true })
+        .click();
+      await expect(status).toHaveText('Stopped: strict parse');
+      await expect(output).toContainText('<column');
+
+      const stoppedHeading = await heading.textContent();
+      const stoppedOutput = await output.textContent();
+      await page.clock.runFor(2000);
+      await expect(heading).toHaveText(stoppedHeading!);
+      await expect(output).toHaveText(stoppedOutput!);
       errors.assertNone();
     } finally {
       errors.stop();
@@ -62,26 +100,10 @@ for (const mode of ['editable', 'static'] as const) {
   ] as const) {
     test(`${mode} streaming stops after ${action}`, async ({ page }) => {
       const errors = recordBrowserRuntimeErrors(page);
-      await page.goto('/blocks/markdown-streaming-demo', {
-        waitUntil: 'commit',
-      });
-      const heading = page.getByRole('heading', {
-        name: /^Transformed Chunks/,
-      });
-      await expect(heading).toBeVisible({ timeout: 20_000 });
-      await createBrowserEditorHarness(
-        page,
-        'markdown-streaming-demo',
-        page.locator('[data-editor="true"]').first()
-      ).ready({ editor: 'visible' });
-      await page.getByRole('combobox').first().selectOption('lists');
-      await expect(heading).toHaveText('Transformed Chunks (0/3)');
-      await page.getByRole('combobox').nth(1).selectOption('200');
-      if (mode === 'static') {
-        await page
-          .getByRole('button', { name: 'Switch to PlateStatic', exact: true })
-          .click();
-      }
+      const { heading, output, status } = await open(page, mode);
+      await page.getByLabel('Scenario', { exact: true }).selectOption('lists');
+      await expect(heading).toHaveText('Chunks (0/7)');
+      await page.getByLabel('Chunk delay', { exact: true }).selectOption('200');
       await page.clock.install();
       await page.clock.pauseAt(new Date(Date.now() + 1000));
       await page.locator('button:has(svg.lucide-play)').click();
@@ -93,21 +115,23 @@ for (const mode of ['editable', 'static'] as const) {
       if (action === 'reset' || action === 'paused reset') {
         await page.locator('button:has(svg.lucide-rotate-ccw)').click();
       } else if (action === 'scenario') {
-        await page.getByRole('combobox').first().selectOption('links');
+        await page
+          .getByLabel('Scenario', { exact: true })
+          .selectOption('links');
       } else if (action === 'navigate') {
         await page.locator('button:has(svg.lucide-chevron-last)').click();
       } else {
-        await page.getByRole('button', { name: /^Switch to/ }).click();
+        await page
+          .getByLabel('Preview', { exact: true })
+          .selectOption(mode === 'static' ? 'editable' : 'static');
       }
 
       const stoppedHeading = await heading.textContent();
-      const output = page
-        .getByRole('heading', { name: 'Editor Output' })
-        .locator('..');
       const stoppedOutput = await output.textContent();
       await page.clock.runFor(2000);
       await expect(heading).toHaveText(stoppedHeading!);
       await expect(output).toHaveText(stoppedOutput!);
+      await expect(status).not.toContainText('strict parse');
       await expect(page.locator('button:has(svg.lucide-play)')).toBeVisible();
       errors.assertNone();
       errors.stop();

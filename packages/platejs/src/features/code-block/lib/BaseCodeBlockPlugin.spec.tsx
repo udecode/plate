@@ -15,6 +15,7 @@ import {
   type BasePluginInput,
   ContentSlice,
   createEditor,
+  createEditorView,
   type CreateEditorOptions,
   DebugPlugin,
   definePlugin,
@@ -1510,6 +1511,36 @@ beforeEach(() => {
 });
 
 describe('codeBlockToDecorations', () => {
+  it('highlights the code block of the document a view renders', () => {
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const', ['token', 'keyword']))
+    );
+    editor.update.value.replace({
+      children: [{ type: 'paragraph', children: [{ text: 'own content' }] }],
+      selection: null,
+    });
+    const view = createEditorView(editor, {
+      document: {
+        children: [
+          {
+            type: 'codeBlock',
+            language: 'javascript',
+            children: [{ text: 'const value = 1;' }],
+          },
+        ],
+      },
+    });
+    const [source] = getPlateDecorationSources(editor);
+    const decorations = source.read({
+      editor: view,
+      entry: view.read.nodes.get([0, 0])!,
+    });
+
+    expect(decorations[0]).toMatchObject({
+      attributes: { className: 'token keyword' },
+    });
+  });
+
   it.each([
     { operation: 'insert', nextIndex: 2 },
     { operation: 'remove', nextIndex: 0 },

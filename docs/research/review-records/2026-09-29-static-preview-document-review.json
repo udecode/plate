@@ -1,0 +1,66 @@
+{
+  "id": "2026-09-29-static-preview-document-review",
+  "scope": "html",
+  "kind": "review",
+  "date": "2026-09-29",
+  "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "A pasted closure review: the AI menu and the Markdown streaming demo each copy a shadow-editor identity splice that belongs to the runtime; proposed a projected read-only document view.",
+  "requirements": [
+    "A read-only preview renders an immutable document through a configured editor's plugins without editing that editor, creating history or changing selection.",
+    "Copied consumers do not reimplement the parser's identity contract.",
+    "Publication stays proportional to the change at 50 KB streams (S5 gate).",
+    "The preview renders what the editor would commit.",
+    "Static rendering keeps working in React Server Components."
+  ],
+  "evidenceReuse": "Reused the S5 verdict-2 matrix and harness, the continuation oracle, renderStaticHtml's internal createProjectedEditorView and the existing EditorStatic memoization tests. New probes: projection cost (4.2 ms at 10 KB, 14.7 ms at 50 KB with a full assertDocument, against 46 and 176 ms for value.replace), fitDocument identity (0 of 3 nodes kept), and S5 projection runs 1, 2 and a quiet repeat.",
+  "summary": "Pursue a document input on the existing static components. <EditorStatic editor={editor} document={document} /> and EditorPreview render the document through the editor's plugins via a cached projected view, without editing the editor; the AI menu and the demo's static preview delete their shadow publication. Plite owns the cost: assertDocument reuses validation of deep-frozen top-level nodes per compiled schema and root, and JSON validity of frozen values is remembered, so projection is proportional. The Markdown table decoder pads short rows as GFM specifies, so a parse equals the committed document. An editable preview still publishes from the first changed block, because showing a stream in a live editable editor is an edit. React re-rendering of unchanged blocks stays open: a stable view needs a document-dependency mechanism that works in React Server Components.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [],
+  "alternatives": [
+    "Keep the consumer splice. Stop: copied UI must know the parser's identity contract, and every new preview rediscovers it.",
+    "Identity-aware value.replace in Plite. Stop: fitDocument copies every node, even canonical parser output, and fitting may repair using neighbors, so identity cannot prove prefix equivalence.",
+    "A useEditorDocumentView hook. Stop: adds a view noun and hook lifetime; EditorStatic already receives the editor and only lacked a document input.",
+    "A public reconcile-by-identity primitive. Stop: exposes the implementation trick instead of the job.",
+    "Projection with a whole-document assertDocument per publication. Stop at 50 KB: publication was 2-2.6x the splice (93% assertDocument); select node-level validation reuse in Plite.",
+    "EditorStatic document with per-node validation reuse and table padding at the parser. Select: beats the splice on every metric in every S5 cell."
+  ],
+  "proofLimits": "Static and AI compositions only; the editable demo keeps its splice. React still re-renders every block per publication because each document gets a new view. Only the table normalizer was checked for parse/commit divergence; other plugins that repair content only on commit could diverge the same way in a projected preview. Projection run 2's snapshot predates the table padding, so its CJK 50 KB text parity comes from the headless receipt (diag-cjk-ragged-row/output-after-padding.log).",
+  "references": [
+    "docs/plans/2026-09-29-static-preview-document.md",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/projection-2/README.txt",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/projection/README.txt"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/components/PlateStatic.spec.tsx": "555d01470e400aad3a9bf682d7ca8b53cbe2d86081db39051b7cc2b49db403fb",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
+    },
+    "directories": {
+      "packages/platejs/src/static": "ebabbce9dc2737904a48b9c95ebbba22fe8942c9f2beb3caff5c808a7c25f0f1"
+    },
+    "features": {
+      "capability/html": "8135a4e0b278b55c07b824cfc66c5a1e164e6fba2a80f496a683a355d802d9b4",
+      "example/value/deserialize-html-value": "41cf8a0ccbd2fb68fe09d8bbbaa15555c8aa36cd205e449cb752d2d54d44c612",
+      "export/platejs/./html": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./html/server": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./static": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/html": "a03da66fefd8aa21ce27c8c76faeff909ba0a2aa7190fc6b4dce78de5804c845",
+      "platejs/static": "ebabbce9dc2737904a48b9c95ebbba22fe8942c9f2beb3caff5c808a7c25f0f1",
+      "ui/html-export": "18dc4ff9da241dcce200c7d9d1de1b8267c99a81e48a108a8b2fd13d3e946e58",
+      "ui/html-export-kit": "6e510055e7d538e7ecc34a94444ff371edbcfc4c27b4296997ab41fab92c17c5",
+      "ui/html-export-schema-kit": "7852617a57c749d881f3364cb06c9ed240c4ecbc30dd3c68112b7cc313627978"
+    },
+    "upstreams": []
+  }
+}

@@ -14,7 +14,7 @@ import {
   readEditorHistoryReplayReceipt,
   withUpdateTagContext,
 } from '../../core/public-state';
-import type { DOMRange } from '../../dom';
+import type { DataTransferDiagnostic, DOMRange } from '../../dom';
 import {
   DOMRootRuntime,
   type DOMRootRuntimeOptions,
@@ -25,9 +25,11 @@ import {
   findEditorDOMRootRuntime,
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
+  observeDataTransferInsertion,
   resolveDOMTextFlowEntry,
   resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
+import { isDOMNode } from '../../dom/utils/dom';
 import type { EditableViewportRuntime } from '../components/editable';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import {
@@ -85,6 +87,17 @@ export type EditableHistoryReplayResult =
 export type EditableHistoryReplayEvent = Readonly<{
   direction: 'redo' | 'undo';
   result: EditableHistoryReplayResult;
+}>;
+
+/** Outcome of one paste that an editable's built-in insertion handled. */
+export type EditablePasteResult = Readonly<{
+  /**
+   * Format reports for the inserted payload, plus loss from payloads that
+   * could not be used. `impact: 'lossy'` means pasted content was left out.
+   */
+  diagnostics: readonly DataTransferDiagnostic[];
+  /** Whether the paste committed content. */
+  inserted: boolean;
 }>;
 
 type CancelableCallback = {
@@ -275,6 +288,7 @@ type EditableDOMRuntimeUpdate = {
   viewportRuntime: EditableViewportRuntime | null;
   onComposingChange: (nextValue: boolean) => void;
   onHistoryReplay: (event: EditableHistoryReplayEvent) => void;
+  onPasteResult: (result: EditablePasteResult) => void;
   onViewportBackedSelectionChange: (nextValue: boolean) => void;
   readOnly: boolean;
 };
@@ -320,6 +334,7 @@ export class EditableDOMRuntime {
   ) => void = () => {};
 
   private selectionExportAfterDOMCommitHandler: () => void = () => {};
+  private deferredCompositionDOMWrite: (() => void) | null = null;
   private historyFocusHandler: (policy: EditorHistoryFocusPolicy) => void =
     () => {};
 
@@ -327,6 +342,8 @@ export class EditableDOMRuntime {
 
   private historyReplayHandler: (event: EditableHistoryReplayEvent) => void =
     () => {};
+
+  private pasteResultHandler: (result: EditablePasteResult) => void = () => {};
 
   private externalMouseGesture = false;
 
@@ -342,8 +359,6 @@ export class EditableDOMRuntime {
 
   private modelSelectionDOMPreference: ModelSelectionDOMPreference | null =
     null;
-
-  private compositionPathValue: Path | null = null;
 
   private didAutoFocus = false;
 
@@ -378,6 +393,7 @@ export class EditableDOMRuntime {
     editor,
     onComposingChange = () => {},
     onHistoryReplay = () => {},
+    onPasteResult = () => {},
     onViewportBackedSelectionChange = () => {},
     readOnly = false,
     testRootFacts,
@@ -389,6 +405,7 @@ export class EditableDOMRuntime {
     this.editorValue = editor;
     this.onComposingChange = onComposingChange;
     this.historyReplayHandler = onHistoryReplay;
+    this.pasteResultHandler = onPasteResult;
     this.onViewportBackedSelectionChange = onViewportBackedSelectionChange;
     this.readOnlyValue = readOnly;
     this.rootRuntime = new DOMRootRuntime({
@@ -716,13 +733,6 @@ export class EditableDOMRuntime {
   }
 
   readonly setComposing = (nextValue: boolean) => {
-    this.compositionPathValue = nextValue
-      ? (() => {
-          const selection = this.editorValue.read((state) => state.selection());
-
-          return selection ? [...RangeApi.edges(selection)[0].path] : null;
-        })()
-      : null;
     setEditableComposingState({
       editor: this.editorValue,
       inputController: this.inputController,
@@ -730,10 +740,56 @@ export class EditableDOMRuntime {
       preserveEditorComposing: !nextValue && this.hasSiblingCompositionOwner(),
       setIsComposing: this.onComposingChange,
     });
+    if (!nextValue && this.deferredCompositionDOMWrite) {
+      this.domPhaseScheduler.schedule(
+        'dom-write',
+        'composition-deferred-dom-write',
+        () => {
+          const write = this.deferredCompositionDOMWrite;
+
+          this.deferredCompositionDOMWrite = null;
+          if (write) runAllRuntimeSteps([write]);
+        },
+        { key: 'composition-deferred-dom-write' }
+      );
+    }
   };
 
-  get compositionPath() {
-    return this.compositionPathValue;
+  shouldDeferCompositionSelectionExport() {
+    const epoch = this.inputController.domInputRuntime.compositionEpoch;
+    const root = this.rootElement;
+
+    return !!(
+      this.state.isComposing &&
+      !this.isAndroidHost &&
+      isDOMNode(epoch?.anchor) &&
+      root?.contains(epoch.anchor) &&
+      epoch.phase !== 'committing' &&
+      epoch.phase !== 'repairing'
+    );
+  }
+
+  private isCompositionDOMNodeProtected(node: globalThis.Node) {
+    const epoch = this.inputController.domInputRuntime.compositionEpoch;
+    const root = this.rootElement;
+
+    if (
+      !this.state.isComposing ||
+      this.isAndroidHost ||
+      !isDOMNode(epoch?.anchor) ||
+      !root?.contains(epoch.anchor)
+    ) {
+      return false;
+    }
+
+    return node.contains(epoch.anchor) || epoch.anchor.contains(node);
+  }
+
+  deferCompositionDOMWrite(node: globalThis.Node, write: () => void) {
+    if (!this.isCompositionDOMNodeProtected(node)) return false;
+
+    this.deferredCompositionDOMWrite = write;
+    return true;
   }
 
   readonly setExplicitViewportBackedSelection = (nextValue: boolean) => {
@@ -1067,11 +1123,27 @@ export class EditableDOMRuntime {
       });
   }
 
+  /**
+   * Run one user paste in this view. Its built-in insertion outcome reaches
+   * this view's current `onPasteResult` once, and only while it is mounted.
+   */
+  readonly runPaste = <T>(paste: () => T): T =>
+    observeDataTransferInsertion(
+      this.editorValue,
+      (inserted, diagnostics) => {
+        if (!this.connected) return;
+
+        this.pasteResultHandler(Object.freeze({ diagnostics, inserted }));
+      },
+      paste
+    );
+
   update(update: EditableDOMRuntimeUpdate) {
     const readOnlyChanged = this.readOnlyValue !== update.readOnly;
     this.viewportRuntimeValue = update.viewportRuntime;
     this.onComposingChange = update.onComposingChange;
     this.historyReplayHandler = update.onHistoryReplay;
+    this.pasteResultHandler = update.onPasteResult;
     this.onViewportBackedSelectionChange =
       update.onViewportBackedSelectionChange;
     this.readOnlyValue = update.readOnly;
@@ -1190,6 +1262,7 @@ export class EditableDOMRuntime {
       () => {
         this.cancelUserInputFrame();
         this.externalMouseGesture = false;
+        this.deferredCompositionDOMWrite = null;
       },
       () => {
         const cancelMicrotask = this.cancelSelectionExportMicrotask;
@@ -1209,7 +1282,6 @@ export class EditableDOMRuntime {
       },
       () => this.inputController.state.pendingCompositionEnd?.cancel(),
       () => {
-        this.compositionPathValue = null;
         this.inputController.state.pendingCompositionEnd = null;
         this.inputController.state.compositionSession = null;
         this.inputController.state.isComposing = false;

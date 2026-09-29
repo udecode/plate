@@ -144,10 +144,9 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
 
 ### 读取规则
 
-- 任意字符串都能解析。没有 mapping 接受的 raw HTML 保留为字面文本，并报告
-  `markdown-unsupported-node`：默认 `lossPolicy: 'reject'` 下为 error，`'allow'`
-  下为 warning。
-- HTML comment 会被丢弃并报告 warning。
+- 任意字符串都能解析。没有 mapping 接受的 raw HTML 保留为字面文本，并在任何策略下
+  报告无损的 `markdown-unsupported-node` warning。
+- HTML comment 会被丢弃并报告无损 warning。
 - `<br>`、`<br/>` 与 `<br />` 读取为换行。
 - 只包含一个注册 block tag 的行是 block，即使紧邻 paragraph 文本。出现在
   paragraph、heading 或 table cell 其他位置的 block tag 保留为文本。
@@ -160,6 +159,13 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
   按原始文本读取。
 - Reference-style link 与 image（`[text][ref]` 加 `[ref]: url` definition）解析为
   普通 link 与 image。
+- 任何 reader 或页面都不应执行的 destination 会在 mapping 读取之前被移除。Link
+  保留其 label，并在任何策略下报告 `markdown-unsafe-content` warning：destination
+  可能执行 script（例如 `javascript:` 或 `data:`）时为无损，否则（例如协议相对或
+  格式错误的 URL）为有损。source 无法加载的 image 保留 alt text，并报告有损的同类
+  diagnostic；script source 从未渲染，因此移除它是无损的。Link 的
+  `allowedSchemes` 在该下限之上收窄或放宽 link scheme；被其拒绝的 link 保留
+  label，并报告有损的 `markdown-unsupported-node` warning。
 
 ### Mention
 
@@ -179,23 +185,69 @@ wrapper 并报告 `markdown-unsupported-node` warning。Mapping 不能占用 `bl
 
 ## 流式预览
 
-用 `partial: true` 解析未完成的 stream prefix，stream 结束后不带该选项解析完整
-source：
+用 `partial: true` 与上一次 result 解析每个未完成的 stream prefix，然后用同一个
+hint 严格解析完整 source：
 
 ```ts
-const preview = editor.api.markdown.parse(accumulated, {
+const preview = editor.api.markdown.parseSlice(accumulated, {
   lossPolicy: 'allow',
   partial: true,
+  previous,
 });
+previous = preview.ok ? preview : undefined;
 
-// Stream 结束后：
-const result = editor.api.markdown.parse(accumulated);
+// Stream 结束或用户停止时：
+const result = editor.api.markdown.parseSlice(accumulated, { previous });
+previous = undefined;
 ```
 
 `partial: true` 会隐藏尚未完整到达的末尾 tag（例如 `Before <callo`），也不会报告
-source 末尾仍未闭合的 tag。`lossPolicy: 'allow'` 让 stream 未完成时不支持的内容
-以文本形式可见。最终解析保持严格。AI chat preview 使用这些选项；参阅
-[AI 流式传输](/docs/ai#streaming)。
+source 末尾仍未闭合的 tag。`lossPolicy: 'allow'` 让 stream 未完成时不支持的内容以
+文本形式可见。`previous` 必须来自同一 editor 的同一 method。当 source 在上一次 result 的
+source 之后继续增长，且 plugin 与 limits 未变时，它已完成的 block 保留其 node object，只
+重新转换其后的文本；其他 hint 都会解析整个 source。在另一个 `lossPolicy` 下的解析（例如
+严格的最终解析）只保留未报告任何 diagnostic 的已完成 block。包含链接引用定义或脚注定义
+（`[id]: url`、`[^1]: note`）的 source 总是完整解析，因为定义会改变它之前的 block。
+
+只读 preview 以解析得到的 block 组成的文档来渲染；editor 提供插件，本身不会被编辑：
+
+```tsx
+<EditorStatic editor={editor} document={{ children: nodes }} />
+```
+
+若要在可编辑的 editor 中显示 stream，则在 undo history 之外发布每个 result。只替换第一个
+变化的 block 之后的 block；没有保持不变的开头 block 时替换整个 value：
+
+```ts
+let start = 0;
+
+while (start < nodes.length && published[start] === nodes[start]) start += 1;
+
+if (start === 0) {
+  editor.update({ history: 'skip' }).value.replace({ children: nodes });
+} else {
+  editor.update({ history: 'skip' }, (tx) => {
+    tx.nodes.replaceChildren(nodes.slice(start), { at: [], index: start });
+  });
+}
+published = nodes;
+```
+
+启用 authored changes 的 editor 会把每次 node 写入记录为 authored change，因此启用
+authored changes 的可编辑 preview 总是替换整个 value。
+
+Source、abort signal、hint 与 preview 节奏由调用方负责：
+
+- 第一个 chunk 立即发布，之后最多每 32 ms 发布一次最新的累计 source。
+- 只把最新的 partial result 保留为 `previous`；stream 完成、被取消或替换、或卸载
+  时丢弃它。
+- Stream 完成或用户停止时，不带 `partial` 解析当前 source 一次，并延续最新的
+  preview。最终解析失败会清空 preview。
+- 取消、替换与卸载会中止 stream，并丢弃待发布的 preview，不做最终解析。
+
+AI chat preview 遵循相同规则；参阅 [AI 流式传输](/docs/ai#streaming)。
+
+<ComponentPreview name="markdown-streaming-demo" />
 
 ## Authored content
 
@@ -213,13 +265,11 @@ revision 时使用 DOCX review export。参阅
 
 ## 定义 Markdown mapping
 
-Mapping 声明在拥有 node 或 mark 的 plugin 上。`formats` authoring callback
-只接收 `defineFormats` 与静态 schema binding。运行时 mapping callback 接收冻结
-plugin state、registry/schema view、encode 时的 model location，以及 Markdown
-专用 `report`。它不会接收 live editor 或 store。
+Mapping 声明在拥有 node 或 mark 的 plugin 上。大多数 mapping 只是声明：Plate
+根据 plugin 的 schema 构建 node、转换其 property，并读写其 children。
 
 ```ts
-import { definePlugin, ElementApi, property, schema } from 'platejs';
+import { definePlugin, property, schema } from 'platejs';
 
 const CalloutPlugin = definePlugin('callout', {
   schema: {
@@ -228,86 +278,110 @@ const CalloutPlugin = definePlugin('callout', {
     }),
   },
   formats: ({ defineFormats, schema: { type } }) =>
-    defineFormats({
-      markdown: {
-        tag: type,
-        decode: ({ decode, marks, isInline, node, readTagAttributes, refuse }) => {
-          const paragraph =
-            node.children.length === 1 && node.children[0]?.type === 'paragraph'
-              ? node.children[0]
-              : undefined;
-          const children = decode(
-            paragraph ? paragraph.children : node.children,
-            marks
-          );
-
-          if (children.some((child) => ElementApi.isElement(child) && !isInline(child))) {
-            return refuse('Callout content must be inline Markdown.');
-          }
-
-          return { ...readTagAttributes().properties, children, type };
-        },
-        encode: ({ encodeAttributes, encodePhrasing, node }) => {
-          const { children, type: _, ...properties } = node;
-
-          return {
-            attributes: encodeAttributes(properties),
-            children: [{ children: encodePhrasing(children), type: 'paragraph' }],
-            name: type,
-            type: 'mdxJsxFlowElement',
-          };
-        },
-      },
-    }),
+    defineFormats({ markdown: { tag: type } }),
 });
 ```
 
 这个 mapping 读写 `<callout tone="info">Text</callout>`。
 
+- `tag` 注册 Plate tag。Element 使用其 schema `type`，因此应用重命名 type 时，
+  tag 也随之改名。
+- Element 的 content model 决定 children：void element 没有 children；text block
+  包含一个 inline content paragraph，仅在非空时写出；其他 block 包含 block。
+- Attribute 携带 element 的非 metadata property：先按 schema 顺序写出 plugin
+  自己的 property，再按 key 写出其他 plugin 的 property（例如 `textAlign`）。List
+  property 永远不会成为 attribute，因为包裹 element 的 Markdown list 已经携带它们。
+  带有未省略 default 的 property 在 attribute 缺失时会补上 default。
+- `attributes` 为 plugin 自己的 property 指定 wire name：
+
+```ts
+markdown: { tag: type, attributes: { url: 'src' } }
+```
+
+- Attribute value 按 property kind 解码，并由其 schema validator 检查。无效值会被
+  省略并报告 `markdown-property-omitted` warning。必需的值无效时（例如不安全的
+  `src`），element 会被移除，其内容保留；script URL 则报告无损的
+  `markdown-unsafe-content` warning。
+
+### Mark
+
+Schema 声明 `mark` 的 plugin 映射一个 mark。其声明说明 mark 从哪里读取、如何写出：
+
+```ts
+// 标准 Markdown container。
+markdown: { node: 'strong' }
+
+// Tag：`<kbd>` 读取为 `true`，值为 `true` 的 mark 写出 `<kbd>`。
+markdown: { tag: 'kbd' }
+
+// Enum mark 的每个值对应一个 tag。
+markdown: [
+  { tag: 'sub', value: 'sub' },
+  { tag: 'sup', value: 'sup' },
+]
+
+// CSS 值 mark：`<span style="color: red;">` 读取为 `'red'`。
+markdown: { tag: 'span', style: 'color' }
+```
+
+- `node` 接受 `'strong'`、`'emphasis'`、`'delete'` 与 `'inlineCode'`。
+- Mark 由 `value` 匹配的第一个声明写出，因此同一值的后续声明只负责读取，例如与
+  `{ node: 'delete' }` 并列的 `<del>`。
+- 同一 tag 上的每个 mark mapping 都会参与，因此
+  `<span style="color: red; background-color: yellow;">` 会同时设置两个 mark。
+  没有任何 mark mapping 读取的 tag 保留其 source text。
+- 没有 mapping 写出的 text property 保留文本，并报告 `markdown-property-omitted`
+  warning。
+
+### 自定义 callback
+
+真实的格式差异使用 `decode` 与 `encode`。Image 在 `![alt](src)`、`<img>` 与
+`<figure>` 之间选择；Date 把无法规范化的值写为文本。
+
+```ts
+markdown: {
+  node: 'heading',
+  decode: ({ decode, marks, node }) => ({
+    children: decode(node.children, marks),
+    level: node.depth,
+    type,
+  }),
+  encode: ({ encodePhrasing, node, preserve }) => {
+    preserve('level');
+
+    return {
+      children: encodePhrasing(node.children),
+      depth: node.level,
+      type: 'heading',
+    };
+  },
+}
+```
+
 - `node` 选择标准 Markdown node kind，例如 `'blockquote'`、`'link'` 或
-  `'image'`。`tag` 注册 Plate tag；element 使用其 schema `type`。两者只能选择
-  一个。`nestedTags` 声明只在该 tag 内读取的 tag，例如 Image 的 `figcaption`。
+  `'image'`。`node` 与 `tag` 只能选择一个。`nestedTags` 声明只在该 tag 内读取的
+  tag，例如 Image 的 `figcaption`。
 - `decode` 返回 `undefined` 表示放弃该 node；同一 source 的下一个 mapping 按
   `priority` 从高到低运行。Mention 以这种方式先于 Link 解码 `mention:` link。
 - `marks` 包含继承的持久化文本 mark。嵌套内容需要保留这些 mark 时，把它传给
   `decode` 或 `decodeNodes`。
+- `previousSibling` 是当前 node 之前的 Markdown node。List 用它把紧跟在另一个
+  list 之后的 list 读取为重新开始编号。
 - `readTagAttributes(tag?)` 返回 `{ attributes, properties }`：按原样写出的全部
-  attribute，以及对应 schema property 的 attribute（按 property kind 解码）。
-  字符串 property 始终保持字符串，包括看起来像 JSON 的值。无效值会被省略，
-  并报告 `markdown-property-omitted` warning。
+  attribute，以及按声明式 tag 的规则解码的 node property。
 - `refuse(message)` 把 feature 无法表示的内容报告为 `markdown-unsupported-node`。
   被拒绝的 tag 保留其 source text。
+- `report({ action, kind, message, nodeType })` 报告 mapping 自行处理的损失。
+  `kind: 'property'` 表示保留内容的损失（例如 editor 不允许的 link destination），
+  在任何策略下都是 warning；默认的 `kind: 'element'` 遵循 loss policy。
 - `caption(children)` 在 `children` 是一个 paragraph 时返回 inline content，否则
   返回 `null`。
-- `encodeAttributes(properties)` 把 property value 写为 tag attribute。`encode`
-  也可以调用 `refuse(message)`。
-- Encoder 从未读取的 element property 会报告为 `markdown-property-omitted`
-  warning。把剩余 property 传给 `encodeAttributes` 即认领全部 property。
-
-Mark mapping 设置 `mark: true`。其 `decode` 返回 mark 值（例如 `true` 或颜色），
-`wrap` 返回要写出的 inline wrapper（例如 `{ type: 'strong' }` 或一个 tag）；
-wrapper 的 children 由 Markdown 提供。同一 source 上的每个 mark mapping 都会
-参与，children 只解码一次，因此
-`<span style="color: red; background-color: yellow;">` 会同时设置两个 mark。
-没有任何 mark mapping 返回值时，该 tag 保留其 source text。Mark mapping 不接受
-`priority`；导出没有 `wrap` 的 mark 时会报告。
-
-```ts
-import { definePlugin, property } from 'platejs';
-
-const KbdPlugin = definePlugin('kbd', {
-  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-  formats: ({ defineFormats }) =>
-    defineFormats({
-      markdown: {
-        tag: 'kbd',
-        mark: true,
-        decode: () => true,
-        wrap: () => ({ name: 'kbd', type: 'mdxJsxTextElement' }),
-      },
-    }),
-});
-```
+- `preserve(...keys)` 声明返回的输出携带 plugin 的这些 property。Node 上其他
+  content property 会报告为 `markdown-property-omitted`。只有 `encode` 返回输出时
+  声明才生效。
+- `encodeNodeAttributes()` 按声明式 tag 的规则写出 node 的 attribute 并声明它们。
+  `encodeAttributes(properties)` 写出给定的 property 值，并声明返回输出中保留了其
+  attribute 的每个 property。
 
 传入数组可以为一个 plugin 声明多个 mapping。Self mapping 使用
 `defineFormats(map)`；foreign target 使用 `defineFormats(TargetPlugin, map)`。
@@ -354,9 +428,10 @@ reportWarnings(result.diagnostics);
 
 | Code | Severity | 报告内容 |
 | --- | --- | --- |
-| `markdown-unsupported-node` | `'reject'` 下为 error，`'allow'` 下为 warning | 没有 mapping 接受的内容、被拒绝的内容，或导出时丢弃的 node。HTML comment 与被移除的 `<block>` wrapper 报告 warning。 |
+| `markdown-unsupported-node` | `lossless` 时为 warning；`lossy` 遵循 `lossPolicy` | 没有 mapping 接受的内容、被拒绝的内容，或导出时丢弃的 node（`lossy`）。保留为文本的 raw HTML、HTML comment 与被移除的 `<block>` wrapper 为 `lossless`。 |
+| `markdown-unsafe-content` | `lossless` 时为 warning；`lossy` 遵循 `lossPolicy` | 被移除的 link 或 image destination。 |
 | `markdown-tag-repair` | Warning | `unclosed`、`unmatched` 或 `misplaced` 的注册 tag。 |
-| `markdown-property-omitted` | Warning | 导出时 Markdown 无法携带的 element property（例如 `textAlign`），或导入时无效的 tag attribute value。 |
+| `markdown-property-omitted` | Warning | 导出时 Markdown 无法携带的 property 或 mark（例如 paragraph 的 `textAlign`），或导入时无效的 tag attribute value。 |
 | `markdown-limit-exceeded` | Error | Source byte、node 数量或深度超过 `limits`。 |
 | `markdown-inline-blocks` | Error | `parseInline` 输入产生了 block。 |
 | `markdown-schema-repair` | Warning；`'reject'` 下有损时为 error | 对解析结果应用的 schema repair。 |
@@ -389,6 +464,7 @@ node/depth admission 在 parser 返回后执行。
 | `limits` | 覆盖 `maxBytes`、`maxNodes` 或 `maxDepth`。 |
 | `lossPolicy` | `'reject'`（默认）或 `'allow'`。 |
 | `partial` | 为 preview 解析未完成的 stream prefix。 |
+| `previous` | 仅 `editor.api.markdown.parseSlice`：要延续的增长中 source 的上一次 result。 |
 
 | Serialize option | 用途 |
 | --- | --- |

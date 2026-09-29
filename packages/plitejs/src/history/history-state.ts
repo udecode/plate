@@ -32,7 +32,8 @@ const failInvariant = (message: string): never => {
 };
 
 type PendingMapping<V extends Value> = Readonly<{
-  before: EditorDocumentValue<V>;
+  /** The value `change` produced, so replay need not apply it again. */
+  after: EditorDocumentValue<V>;
   change: DocumentChange;
   textOnly: boolean;
 }>;
@@ -376,7 +377,7 @@ const addMapping = <V extends Value>(
     previous?.entry.textOnly && entry.textOnly
       ? Object.freeze({
           entry: Object.freeze({
-            before: previous.entry.before,
+            after: entry.after,
             change: previous.entry.change.compose(entry.change),
             textOnly: true,
           }),
@@ -444,7 +445,7 @@ const resolveHead = <V extends Value>(
       a: mappedFirst.b,
       b: mappedFirst.a,
     };
-    const mappedBatchBase = mapping.change.apply(batchBase);
+    const mappedBatchBase = mapping.after;
     const mappedNextBase = transformed.b.apply(nextBase);
 
     recovery = mapAnchorHistoryRecovery(
@@ -489,7 +490,7 @@ const resolveHead = <V extends Value>(
     });
     if (!transformed.b.empty) {
       next = addMapping<V>(next, {
-        before: nextBase,
+        after: mappedNextBase,
         change: transformed.b,
         textOnly: false,
       });
@@ -656,7 +657,7 @@ export const dropPendingHistoryReplayEntry = (editor: Editor) => {
 export const queuePendingHistoryReplayMapping = <V extends Value>(
   editor: Editor<V>,
   change: DocumentChange,
-  before: EditorDocumentValue<V>
+  after: EditorDocumentValue<V>
 ) => {
   if (change.empty) return;
 
@@ -672,7 +673,7 @@ export const queuePendingHistoryReplayMapping = <V extends Value>(
       ...pending,
       replayMappings: Object.freeze({
         entry: Object.freeze({
-          before,
+          after,
           change,
           textOnly: isTextOnlyMapping(change),
         }),
@@ -1041,7 +1042,7 @@ export const completeHistoryAction = <V extends Value>(
 
     if (!correction.empty) {
       nextSource = addMapping(nextSource, {
-        before: nextSource.base,
+        after: current,
         change: correction,
         textOnly: isTextOnlyMapping(correction),
       });
@@ -1096,13 +1097,13 @@ const isTextOnlyMapping = (change: DocumentChange) => {
 export const queueHistoryMapping = <V extends Value>(
   editor: Editor<V>,
   change: DocumentChange,
-  before: EditorDocumentValue<V>
+  after: EditorDocumentValue<V>
 ) => {
   if (change.empty) return;
 
   const store = getStore(editor);
   const mapping = Object.freeze({
-    before,
+    after,
     change,
     textOnly: isTextOnlyMapping(change),
   });

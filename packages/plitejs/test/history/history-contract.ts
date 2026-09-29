@@ -292,6 +292,35 @@ describe('plite-history contract', () => {
     );
   });
 
+  it('records a history-skipped update without rebuilding the previous document', () => {
+    const editor = createEditor({
+      plugins: [history()],
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const { apply: originalApply } = DocumentChange.prototype;
+    let applied = 0;
+
+    DocumentChange.prototype.apply = function apply(value) {
+      applied += 1;
+
+      return Reflect.apply(originalApply, this, [value]);
+    };
+    try {
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.insert(paragraph('three'), { at: [2] });
+      });
+    } finally {
+      DocumentChange.prototype.apply = originalApply;
+    }
+
+    assert.equal(applied, 0);
+    assert.deepEqual(editor.read.children(), [
+      paragraph('one'),
+      paragraph('two'),
+      paragraph('three'),
+    ]);
+  });
+
   it('preserves a key revived by a skipped edit when undo restores the same content', () => {
     const editor = createEditor({
       plugins: [history()],
@@ -314,11 +343,15 @@ describe('plite-history contract', () => {
 
     assert.deepEqual(editor.read.children(), [
       paragraph('one'),
+      paragraph('two'),
       paragraph('one'),
     ]);
     assert.notEqual(editor.key([0]), revivedKey);
-    assert.equal(editor.key([1]), revivedKey);
-    assert.equal(new Set([editor.key([0]), editor.key([1])]).size, 2);
+    assert.equal(editor.key([2]), revivedKey);
+    assert.equal(
+      new Set([editor.key([0]), editor.key([1]), editor.key([2])]).size,
+      3
+    );
   });
 
   it('accepts empty structural history and change values', () => {

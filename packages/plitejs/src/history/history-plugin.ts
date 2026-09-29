@@ -582,7 +582,6 @@ const createHistoryPlugin = <
     }
 
     const { changes } = commit;
-    const { inverseChanges } = commit;
 
     const authoredCapture = captureAuthoredHistory(editor, commit);
     const effects =
@@ -617,7 +616,7 @@ const createHistoryPlugin = <
     if (replaySettlement) {
       const identity = settlePendingHistoryReplay(editor, {
         ...(replaySettlement.status === 'applied'
-          ? { change: inverseChanges, effects }
+          ? { change: commit.inverseChanges, effects }
           : {}),
         request: replaySettlement.request,
         status: replaySettlement.status,
@@ -681,7 +680,7 @@ const createHistoryPlugin = <
         destination,
         {
           ...batch,
-          change: inverseChanges,
+          change: commit.inverseChanges,
           effects: effects.toReversed().map(invertEffect),
         },
         after
@@ -702,10 +701,8 @@ const createHistoryPlugin = <
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
 
       if (!commit.tags.includes('historic') && !changes.empty) {
-        const before = inverseChanges.apply(toChangeValue(after));
-
-        queuePendingHistoryReplayMapping(editor, changes, before);
-        queueHistoryMapping(editor, changes, before);
+        queuePendingHistoryReplayMapping(editor, changes, after);
+        queueHistoryMapping(editor, changes, after);
       }
       return undefined;
     }
@@ -724,7 +721,7 @@ const createHistoryPlugin = <
     }
 
     const prepared = prepareHistoryBatch(
-      inverseChanges,
+      commit.inverseChanges,
       commit,
       effects,
       authoredCapture?.grouping

@@ -1779,10 +1779,13 @@ export const EditableTextFlow = ({
     [entries]
   );
   const reconcile = useCallback(
-    (readLiveEntries = true) => {
+    function reconcile(readLiveEntries = true): void {
       const root = rootRef.current;
 
       if (!root) return;
+      if (editableRuntime?.deferCompositionDOMWrite(root, () => reconcile())) {
+        return;
+      }
       const liveEntries = readLiveEntries
         ? entriesRef.current.flatMap((entry) => {
             const { node, path } = readNodeByKey(editor, entry.nodeKey);

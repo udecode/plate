@@ -1,4 +1,8 @@
 export {
+  observeDataTransferInsertion,
+  type DataTransferInsertionListener,
+} from '../plugin/data-transfer-format';
+export {
   domCommands,
   getDOMClipboardFormatKey,
   readDOMFragmentData,

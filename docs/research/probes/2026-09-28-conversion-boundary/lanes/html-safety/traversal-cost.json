@@ -1,0 +1,23 @@
+[
+  {
+    "blocks": 250,
+    "bytes": 48060,
+    "domPassMs": 6.901584000000014,
+    "parseAstWithSourcePassMs": 5.138209000000018,
+    "wholeParseSliceMs": 120.55070799999999
+  },
+  {
+    "blocks": 1000,
+    "bytes": 193560,
+    "domPassMs": 8.757416999999919,
+    "parseAstWithSourcePassMs": 12.157457999999906,
+    "wholeParseSliceMs": 302.22416699999997
+  },
+  {
+    "blocks": 2000,
+    "bytes": 391560,
+    "domPassMs": 9.345708000000059,
+    "parseAstWithSourcePassMs": 22.0651670000002,
+    "wholeParseSliceMs": 542.3987079999999
+  }
+]

@@ -156,6 +156,10 @@ concurrency:
 jobs:
   proof-plan:
     name: Plite affected proof
+    # Generated Changesets PRs contain release metadata produced by the release
+    # workflow. Skip before browser fan-out on every bot synchronization.
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.event.pull_request.head.ref, 'changeset-release/')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:

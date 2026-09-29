@@ -1073,7 +1073,7 @@ test('preserves the terminal newline after appending to a plain text flow', asyn
   rendered.unmount();
 });
 
-test('composition replaces only its owning retained text flow', async () => {
+test('composition preserves retained text flows while other blocks update', async () => {
   const editor = createEditor({
     initialValue: [paragraph('First text'), paragraph('Second text')],
   });
@@ -1106,7 +1106,7 @@ test('composition replaces only its owning retained text flow', async () => {
   act(() => runtime.setComposing(true));
 
   await waitFor(() =>
-    expect(blocks()[0].querySelector('[data-editor-text-flow]')).toBeNull()
+    expect(blocks()[0].querySelector('[data-editor-text-flow]')).toBe(firstFlow)
   );
   expect(blocks()[1].querySelector('[data-editor-text-flow]')).toBe(secondFlow);
 
@@ -1122,7 +1122,7 @@ test('composition replaces only its owning retained text flow', async () => {
   act(() => runtime.setComposing(false));
 
   await waitFor(() =>
-    expect(blocks()[0].querySelector('[data-editor-text-flow]')).not.toBeNull()
+    expect(blocks()[0].querySelector('[data-editor-text-flow]')).toBe(firstFlow)
   );
   expect(blocks()[1].querySelector('[data-editor-text-flow]')).toBe(secondFlow);
 });

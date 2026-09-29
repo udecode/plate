@@ -207,30 +207,49 @@ MIME negotiation belongs to root `dataTransferFormats`. Direct
 `formats: { ... }`, casts, and callback annotations bypass the owner inference
 and are invalid.
 
-A custom Plate-owned Markdown tag mapping binds its final schema identity once:
+A custom Plate-owned Markdown tag mapping binds its final schema identity once.
+Start with the declaration; the runtime builds the element from the schema,
+converts its properties as attributes and traverses children by the content
+model:
 
 ```ts
 formats: ({ defineFormats, schema: { type } }) =>
   defineFormats({
-    markdown: {
-      tag: type,
-      decode: ({ decode, node, readTagAttributes }) => ({
-        ...readTagAttributes().properties,
-        children: decode(node.children),
-        type,
-      }),
-      encode: ({ encodeAttributes, encodeFlow, node }) => {
-        const { children, type: _, ...properties } = node;
-
-        return {
-          attributes: encodeAttributes(properties),
-          children: encodeFlow(children),
-          name: type,
-          type: 'mdxJsxFlowElement',
-        };
-      },
-    },
+    markdown: { tag: type, attributes: { url: 'src' } },
   })
+```
+
+Write `decode`/`encode` only for a real format difference. A custom encoder
+writes the node's attributes with `encodeNodeAttributes()`, or chosen values
+with `encodeAttributes(properties)`, which claims each property whose attribute
+the returned output keeps; it claims anything else its output represents with
+`preserve(...keys)`. Unclaimed content properties report
+`markdown-property-omitted`:
+
+```ts
+encode: ({ encodeNodeAttributes, encodePhrasing, node }) => ({
+  attributes: encodeNodeAttributes(),
+  children: encodePhrasing(node.children),
+  name: type,
+  type: 'mdxJsxTextElement',
+}),
+```
+
+An HTML element encoder claims the properties it writes the same way, with
+`preserve(...keys)` typed to its target's own properties; a single-`value`
+mark or property mapping claims its value by returning output that writes it.
+Unclaimed content properties report `html-unsupported-content`:
+
+```ts
+encode: ({ content, node, preserve }) => {
+  preserve('variant');
+
+  return {
+    attributes: { 'data-variant': node.variant },
+    children: content,
+    tag: 'aside',
+  };
+},
 ```
 
 Use the resolved `type` for `tag`, the decoded element, and the encoded tag
@@ -243,9 +262,12 @@ kind, so do not parse or coerce attribute strings in the mapping; return
 Structural Plate wrappers and unknown-node fallbacks also resolve their
 installed schema type; only external format nodes keep literal identities.
 If a claiming mapping returns `undefined`, dispatch declines to the next mapping
-on that selector; no per-operation override exists. A mark mapping's `decode`
-returns the mark value (`true`, `'sub'`, a color), not decoded children; its
-`wrap` returns a childless wrapper, and it takes no `priority`. Foreign target mappings do
+on that selector; no per-operation override exists. A plugin whose schema
+declares a `mark` maps a mark with no flag: declare `{ node: 'strong' }`,
+`{ tag: 'kbd' }`, `{ tag: 'sub', value: 'sub' }` or
+`{ tag: 'span', style: 'color' }`. A custom mark `decode` returns the mark
+value, not decoded children; `wrap` returns a childless wrapper, and mark
+mappings take no `priority`. Foreign target mappings do
 not own configurable custom tag identity.
 Decode-only mappings still prove `tag` and decoded identity; encode-only mappings
 still prove the emitted tag. Phrasing-only wrappers decode source phrasing

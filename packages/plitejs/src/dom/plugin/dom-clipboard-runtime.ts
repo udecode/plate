@@ -37,6 +37,7 @@ import {
 import {
   createDataTransferTransactionSpec,
   insertDataTransfer,
+  recordDataTransferOutcome,
   writeDataTransferFragment,
 } from './data-transfer-format';
 import type { DOMCoverageBoundary, DOMCoverageSession } from './dom-coverage';
@@ -703,7 +704,8 @@ export const createDOMDataTransactionSpec = <V extends Value>(
       { slice }
     );
 
-    if (result !== false) return result;
+    // The exact editor fragment needs no decoder, so it reports nothing.
+    if (result !== false) return recordDataTransferOutcome(editor, result);
   }
 
   return createDataTransferTransactionSpec(editor, data, { state });

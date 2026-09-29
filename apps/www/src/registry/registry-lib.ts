@@ -12,15 +12,4 @@ export const registryLib: Registry['items'] = [
     name: 'suggestion-style',
     type: 'registry:lib',
   },
-  {
-    dependencies: ['ai@6'],
-    files: [
-      {
-        path: 'lib/markdown-joiner-transform.ts',
-        type: 'registry:lib',
-      },
-    ],
-    name: 'markdown-joiner-transform',
-    type: 'registry:hook',
-  },
 ];

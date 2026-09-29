@@ -175,7 +175,7 @@ import {
   DocumentChange,
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
-import type { JsonEditorValue } from './change/tokens';
+import { isFrozenArray, type JsonEditorValue } from './change/tokens';
 import { cloneFrozen, cloneValue, freezeOwnedJsonValue } from './clone';
 import { createEditorCommit } from './commit';
 import { ContentSlice } from './content-slice';
@@ -1425,9 +1425,23 @@ const resolveNodeTargetLocation = (
     return location;
   }
 
-  const nodeKey = getNodeKeyForNode(target, getEditorRuntimeOwner(editor));
+  const owner = getEditorRuntimeOwner(editor);
+  const readPath = () => {
+    const nodeKey = getNodeKeyForNode(target, owner);
 
-  return nodeKey ? (getPathByNodeKey(editor, nodeKey) ?? undefined) : undefined;
+    return nodeKey
+      ? (getPathByNodeKey(editor, nodeKey) ?? undefined)
+      : undefined;
+  };
+
+  const path = readPath();
+
+  if (path || !getReadProjection(owner)) return path;
+  // Nodes of a projected document register their keys when its index
+  // materializes, as in `getEditorNodeKeyForNode`.
+  getCurrentRuntimeIndex(owner).entries();
+
+  return readPath();
 };
 
 const resolveReadableNodeTarget = (
@@ -2261,8 +2275,11 @@ export const getLiveText = (editor: Editor, path: Path): Text | null => {
     : null;
 };
 
-export const getLiveSelection = (editor: Editor): Selection =>
-  getCurrentSelection(editor);
+// Typed by the runtime owner alone: relating a schema-typed editor to
+// `AnyEditor` depends on TypeScript's variance measurement order.
+export const getLiveSelection = (
+  editor: Parameters<typeof getEditorRuntimeOwner>[0]
+): Selection => getCurrentSelection(getEditorRuntimeOwner(editor));
 
 export const getNodeKey = <V extends Value>(
   editor: Editor<V>,
@@ -7607,7 +7624,7 @@ export const getSnapshot = (editor: Editor): EditorSnapshot => {
   }
 
   const liveChildren = getChildren(editor);
-  const children = Object.isFrozen(liveChildren)
+  const children = isFrozenArray(liveChildren)
     ? liveChildren
     : cloneFrozen(liveChildren);
   const selection = cloneFrozenEditorJsonValue(getCurrentSelection(editor));
@@ -7775,7 +7792,7 @@ const getTransactionRootSnapshot = (
   const index = getTransactionSnapshotIndex(editor, transactionSnapshot, root);
 
   return Object.freeze({
-    children: Object.isFrozen(children) ? children : cloneFrozen(children),
+    children: isFrozenArray(children) ? children : cloneFrozen(children),
     index,
     selection: getRootScopedSelection(
       transactionSnapshot.selection,
@@ -7797,7 +7814,7 @@ const getCurrentRootSnapshot = (
   const liveChildren = getEditorDocumentRoots(editor)[root] ?? [];
   const selectionRoot = getCurrentSelectionRoot(editor);
   const children = profileCoreDuration('snapshot-clone-children', () =>
-    Object.isFrozen(liveChildren)
+    isFrozenArray(liveChildren)
       ? liveChildren
       : previousSnapshot
         ? shareSnapshotChildren(owner, liveChildren, previousSnapshot)
@@ -9065,6 +9082,7 @@ export const runEditorTransaction = (
     );
 
     assertSynchronousTransactionAuthorResult(result);
+    authoredTransaction?.settle?.();
 
     reconcileExclusiveElementOwnedRoots(editor);
     finalizeTransactionRepresentation(editor);
