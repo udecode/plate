@@ -6,6 +6,7 @@ import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
 import { getDraftCommentKey } from '@platejs/comment';
 import { CommentPlugin } from '@platejs/comment/react';
+import { getBoundingClientRect } from '@platejs/floating';
 import { getTransientSuggestionKey } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
@@ -30,9 +31,6 @@ import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestio
 
 import { BlockSuggestionCard, isResolvedSuggestion } from './block-suggestion';
 import { Comment, CommentCreateForm } from './comment';
-
-const POPOVER_SIDE_OFFSET = 4;
-const POPOVER_VIEWPORT_MARGIN = 24;
 
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> =
   (_props) => (props) => <BlockCommentContent {...props} />;
@@ -84,9 +82,6 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
     resolvedSuggestions.some((s) => s.suggestionId === activeSuggestionId);
 
   const [_open, setOpen] = React.useState(selected);
-  const [popoverElement, setPopoverElement] =
-    React.useState<HTMLDivElement | null>(null);
-
   // in some cases, we may comment the multiple blocks
   const commentingCurrent =
     !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
@@ -96,7 +91,7 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
     selected ||
     (isCommenting && !!draftCommentNode && commentingCurrent);
 
-  const anchorElement = React.useMemo(() => {
+  const anchorElement = (() => {
     let activeNode: NodeEntry | undefined;
 
     if (activeSuggestion) {
@@ -111,59 +106,17 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
       if (activeCommentId === getDraftCommentKey()) {
         if (!draftCommentNode || !commentingCurrent) return null;
 
+        const draftCommentPaths = commentsApi
+          .nodes({ at: [], isDraft: true })
+          .map(([, path]) => path);
+
         return {
-          contextElement: editor.api.toDOMNode(element) ?? undefined,
-          getBoundingClientRect: () => {
-            const draftNodes = [
-              ...commentsApi.nodes({ at: [], isDraft: true }),
-            ];
-            const first = draftNodes[0];
-            const last = draftNodes.at(-1);
-            const start = first && editor.api.start(first[1]);
-            const end = last && editor.api.end(last[1]);
-            const domRange =
-              start && end
-                ? editor.api.toDOMRange({ anchor: start, focus: end })
-                : undefined;
-            const rangeRect = domRange?.getBoundingClientRect();
-
-            if (!domRange || !rangeRect) {
-              return (
-                editor.api.toDOMNode(element)?.getBoundingClientRect() ??
-                new DOMRect()
-              );
-            }
-
-            const viewportHeight = window.innerHeight;
-
-            if (popoverElement && popoverElement.scrollHeight > 0) {
-              const contentHeight = Math.min(
-                popoverElement.scrollHeight +
-                  popoverElement.offsetHeight -
-                  popoverElement.clientHeight,
-                viewportHeight * 0.5
-              );
-              const availableHeight = Math.max(
-                rangeRect.top,
-                viewportHeight - rangeRect.bottom
-              );
-
-              // The whole marked range must stay clear when the composer flips.
-              if (
-                availableHeight >=
-                contentHeight + POPOVER_SIDE_OFFSET + POPOVER_VIEWPORT_MARGIN
-              ) {
-                return rangeRect;
-              }
-            }
-
-            // Keep the composer usable when neither side fits the full range.
-            return (
-              [...domRange.getClientRects()].findLast(
-                ({ height, width }) => height > 0 || width > 0
-              ) ?? rangeRect
-            );
-          },
+          contextElement:
+            editor.api.toDOMNode(draftCommentNode[0]) ?? undefined,
+          getBoundingClientRect: () =>
+            getBoundingClientRect(editor, draftCommentPaths) ??
+            editor.api.toDOMNode(element)?.getBoundingClientRect() ??
+            new DOMRect(),
         };
       }
       activeNode = commentNodes.find(
@@ -175,20 +128,7 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
     if (!activeNode) return null;
 
     return editor.api.toDOMNode(activeNode[0])!;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    open,
-    activeSuggestion,
-    activeCommentId,
-    commentingCurrent,
-    editor.api,
-    element,
-    commentsApi,
-    popoverElement,
-    suggestionNodes,
-    draftCommentNode,
-    commentNodes,
-  ]);
+  })();
 
   if (!isTopLevelBlock) return <>{children}</>;
 
@@ -220,17 +160,16 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
         )}
 
         <PopoverContent
-          ref={setPopoverElement}
           className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] min-w-[130px] max-w-[calc(100vw-24px)] overflow-y-auto p-0 data-[state=closed]:opacity-0"
           collisionPadding={{
-            bottom: POPOVER_VIEWPORT_MARGIN,
-            top: POPOVER_VIEWPORT_MARGIN,
+            bottom: 24,
+            top: 24,
           }}
           onCloseAutoFocus={(e) => e.preventDefault()}
           onOpenAutoFocus={(e) => e.preventDefault()}
           align="center"
           side="bottom"
-          sideOffset={POPOVER_SIDE_OFFSET}
+          updatePositionStrategy={isCommenting ? 'always' : 'optimized'}
         >
           {isCommenting ? (
             <CommentCreateForm className="p-4" focusOnMount />
