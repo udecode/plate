@@ -1,6 +1,16 @@
 {
   "schemaVersion": 1,
   "components": {
+    "block-discussion": [
+      "2026-09-28-keep-comment-selection-visible",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
+    "comment-kit": [
+      "2026-09-28-keep-comment-selection-visible",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
     "media-file-node": [
       "2026-09-27-harden-media-file-urls",
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
@@ -89,16 +99,10 @@
       "2026-06-02-improve-large-document-editing",
       "2025-11-20-biome-ultracite"
     ],
-    "block-discussion": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-11-20-biome-ultracite",
-      "2025-10-21-add-rejectaisuggestions"
-    ],
     "discussion-kit": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2025-11-20-biome-ultracite"
     ],
-    "comment-kit": ["2026-04-29-codex-fix-discussion-suggestion-regressions"],
     "suggestion": ["2026-04-29-codex-fix-discussion-suggestion-regressions"],
     "suggestion-base-kit": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions"

@@ -6,6 +6,7 @@ import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
 import { getDraftCommentKey } from '@platejs/comment';
 import { CommentPlugin } from '@platejs/comment/react';
+import { getBoundingClientRect } from '@platejs/floating';
 import { getTransientSuggestionKey } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
@@ -81,7 +82,6 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
     resolvedSuggestions.some((s) => s.suggestionId === activeSuggestionId);
 
   const [_open, setOpen] = React.useState(selected);
-
   // in some cases, we may comment the multiple blocks
   const commentingCurrent =
     !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
@@ -91,7 +91,7 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
     selected ||
     (isCommenting && !!draftCommentNode && commentingCurrent);
 
-  const anchorElement = React.useMemo(() => {
+  const anchorElement = (() => {
     let activeNode: NodeEntry | undefined;
 
     if (activeSuggestion) {
@@ -104,29 +104,31 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
 
     if (activeCommentId) {
       if (activeCommentId === getDraftCommentKey()) {
-        activeNode = draftCommentNode;
-      } else {
-        activeNode = commentNodes.find(
-          ([node]) =>
-            editor.getApi(commentPlugin).comment.nodeId(node) ===
-            activeCommentId
-        );
+        if (!draftCommentNode || !commentingCurrent) return null;
+
+        const draftCommentPaths = commentsApi
+          .nodes({ at: [], isDraft: true })
+          .map(([, path]) => path);
+
+        return {
+          contextElement:
+            editor.api.toDOMNode(draftCommentNode[0]) ?? undefined,
+          getBoundingClientRect: () =>
+            getBoundingClientRect(editor, draftCommentPaths) ??
+            editor.api.toDOMNode(element)?.getBoundingClientRect() ??
+            new DOMRect(),
+        };
       }
+      activeNode = commentNodes.find(
+        ([node]) =>
+          editor.getApi(commentPlugin).comment.nodeId(node) === activeCommentId
+      );
     }
 
     if (!activeNode) return null;
 
     return editor.api.toDOMNode(activeNode[0])!;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    open,
-    activeSuggestion,
-    activeCommentId,
-    editor.api,
-    suggestionNodes,
-    draftCommentNode,
-    commentNodes,
-  ]);
+  })();
 
   if (!isTopLevelBlock) return <>{children}</>;
 
@@ -159,10 +161,15 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
 
         <PopoverContent
           className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] min-w-[130px] max-w-[calc(100vw-24px)] overflow-y-auto p-0 data-[state=closed]:opacity-0"
+          collisionPadding={{
+            bottom: 24,
+            top: 24,
+          }}
           onCloseAutoFocus={(e) => e.preventDefault()}
           onOpenAutoFocus={(e) => e.preventDefault()}
           align="center"
           side="bottom"
+          updatePositionStrategy={isCommenting ? 'always' : 'optimized'}
         >
           {isCommenting ? (
             <CommentCreateForm className="p-4" focusOnMount />

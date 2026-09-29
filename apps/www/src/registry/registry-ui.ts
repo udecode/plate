@@ -214,7 +214,12 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@platejs/comment', 'date-fns', '@platejs/suggestion'],
+    dependencies: [
+      '@platejs/comment',
+      '@platejs/floating',
+      '@platejs/suggestion',
+      'date-fns',
+    ],
     description:
       'A popover interface for managing discussions: comments, replies, suggestions.',
     files: [

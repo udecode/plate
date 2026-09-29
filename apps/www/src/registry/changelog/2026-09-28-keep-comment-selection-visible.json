@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-28-keep-comment-selection-visible",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-28-keep-comment-selection-visible.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep selected text visible while writing a comment",
+  "targets": [
+    {
+      "name": "block-discussion",
+      "files": ["apps/www/src/registry/ui/block-discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/comment-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-28-block-discussion-keep-text-visible-while-89b438d9",
+      "kind": "fix",
+      "summary": "Keep selected text visible when the comment composer flips above a wrapped or multi-block selection.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-discussion", "comment-kit"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-28",
+          "entry": "2026-09-28-keep-comment-selection-visible",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-28-keep-comment-selection-visible",
+      "href": "/registry/changelog/2026-09-28-keep-comment-selection-visible.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep selected text visible while writing a comment",
+      "change": {
+        "type": "source",
+        "date": "2026-09-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-discussion", "comment-kit"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-27-harden-media-file-urls",
       "href": "/registry/changelog/2026-09-27-harden-media-file-urls.json",
       "status": "draft",
