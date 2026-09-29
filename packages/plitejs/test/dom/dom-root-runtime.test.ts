@@ -342,6 +342,15 @@ test('DOM input runtime owns renderer-neutral event decisions', () => {
     selectionSource: 'model-owned',
     targetOwner: 'editor',
   });
+  const compositionInput = inputRuntime.prepareInputDecision({
+    intent: 'composition',
+    internalTarget: false,
+    selectionBefore: null,
+    selectionSource: 'composition-owned',
+    targetOwner: 'editor',
+  });
+
+  expect(compositionInput.nativeAllowed).toBe(true);
 
   expect([
     [keyDown.ownership, keyDown.selectionPolicy.kind, keyDown.stateBefore],
@@ -358,6 +367,7 @@ test('DOM input runtime owns renderer-neutral event decisions', () => {
     ],
     [focus.ownership, null, focus.stateBefore],
     [input.ownership, null, input.stateBefore],
+    [compositionInput.ownership, null, compositionInput.stateBefore],
   ]).toEqual([
     ['model-owned', 'import-dom', 'idle'],
     ['app-owned', 'none', 'idle'],
@@ -365,6 +375,7 @@ test('DOM input runtime owns renderer-neutral event decisions', () => {
     ['native-allowed', 'none', 'composition'],
     ['native-allowed', null, 'dom-selection'],
     ['model-owned', null, 'model-owned'],
+    ['native-allowed', null, 'composition'],
   ]);
 });
 

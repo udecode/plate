@@ -10,7 +10,6 @@ import {
   type NamedRootKey,
   NodeApi,
   type Path,
-  PathApi,
   RangeApi,
   type RootKey,
   type NodeKey,
@@ -75,7 +74,6 @@ import {
   useEditableDOMRuntime,
   useClaimEditableDOMCommit,
 } from '../hooks/use-claim-editable-dom-commit';
-import { useEditorComposing } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorFocused } from '../hooks/use-editor-focused';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
@@ -801,20 +799,11 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     getClientDOMSnapshot,
     getServerDOMSnapshot
   );
-  const isComposing = useEditorComposing();
-  const compositionPath = editableRuntime?.compositionPath ?? null;
-  const ownsComposition =
-    isComposing &&
-    (!compositionPath ||
-      (path !== null &&
-        (PathApi.equals(path, compositionPath) ||
-          PathApi.isAncestor(path, compositionPath))));
   const canRenderImperativeTextFlow =
     React.useContext(ImperativeTextFlowContext) &&
     hasClientDOM &&
     !renderChildrenOverride &&
-    !hasTextChildFragments &&
-    !ownsComposition;
+    !hasTextChildFragments;
   const bindNodeRef = usePliteNodeRef(nodeKey, { path, pliteNode: node });
 
   if (!node || !path) {

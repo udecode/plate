@@ -879,14 +879,16 @@ export class DOMInputRuntime {
     const ownership: DOMInputOwnership =
       intent === 'internal-control'
         ? 'app-owned'
-        : intent
-          ? 'model-owned'
-          : 'deferred';
+        : intent === 'composition'
+          ? 'native-allowed'
+          : intent
+            ? 'model-owned'
+            : 'deferred';
 
     return {
       intent,
       internalTarget,
-      nativeAllowed: false,
+      nativeAllowed: ownership === 'native-allowed',
       ownership,
       selectionBefore,
       stateBefore: resolveDOMInputKernelState(selectionSource),
@@ -1183,6 +1185,14 @@ export class DOMInputRuntime {
 
   get compositionEpoch() {
     return this.compositionEpochValue;
+  }
+
+  setCompositionAnchor(anchor: unknown) {
+    const epoch = this.compositionEpoch;
+
+    if (epoch) {
+      this.compositionEpochValue = Object.freeze({ ...epoch, anchor });
+    }
   }
 
   get compositionSession() {

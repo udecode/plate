@@ -757,7 +757,7 @@ test('Editable falls back to React when text sync reaches empty text', async () 
   ).toBeTruthy();
 });
 
-test('Editable falls back to React updates while composing', async () => {
+test('Editable defers model text projection until composition ends', async () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -791,11 +791,16 @@ test('Editable falls back to React updates while composing', async () => {
   });
 
   expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
-  expect(rendered.container.textContent).toContain('alpha!');
+  expect(rendered.container.textContent).toContain('alpha');
+  expect(rendered.container.textContent).not.toContain('alpha!');
 
   await act(async () => {
     fireEvent.compositionEnd(root!);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
   });
+  expect(rendered.container.textContent).toContain('alpha!');
 });
 
 test('Editable forwards scrollSelectionIntoView to app-owned code', async () => {

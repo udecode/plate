@@ -28,6 +28,8 @@ import {
   resolveDOMTextFlowEntry,
   resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
+import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
+import { getSelection, isDOMNode } from '../../dom/utils/dom';
 import type { EditableViewportRuntime } from '../components/editable';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import {
@@ -320,6 +322,10 @@ export class EditableDOMRuntime {
   ) => void = () => {};
 
   private selectionExportAfterDOMCommitHandler: () => void = () => {};
+  private readonly deferredCompositionDOMWrites = new Map<
+    globalThis.Node,
+    () => void
+  >();
   private historyFocusHandler: (policy: EditorHistoryFocusPolicy) => void =
     () => {};
 
@@ -342,8 +348,6 @@ export class EditableDOMRuntime {
 
   private modelSelectionDOMPreference: ModelSelectionDOMPreference | null =
     null;
-
-  private compositionPathValue: Path | null = null;
 
   private didAutoFocus = false;
 
@@ -716,13 +720,16 @@ export class EditableDOMRuntime {
   }
 
   readonly setComposing = (nextValue: boolean) => {
-    this.compositionPathValue = nextValue
-      ? (() => {
-          const selection = this.editorValue.read((state) => state.selection());
+    if (nextValue && !this.state.isComposing) {
+      const root = this.rootElement;
+      const anchor = root
+        ? getSelection(root.getRootNode() as Document | ShadowRoot)?.focusNode
+        : null;
 
-          return selection ? [...RangeApi.edges(selection)[0].path] : null;
-        })()
-      : null;
+      this.inputController.domInputRuntime.setCompositionAnchor(
+        anchor && root?.contains(anchor) ? anchor : null
+      );
+    }
     setEditableComposingState({
       editor: this.editorValue,
       inputController: this.inputController,
@@ -730,10 +737,49 @@ export class EditableDOMRuntime {
       preserveEditorComposing: !nextValue && this.hasSiblingCompositionOwner(),
       setIsComposing: this.onComposingChange,
     });
+    if (!nextValue && this.deferredCompositionDOMWrites.size > 0) {
+      this.domPhaseScheduler.schedule(
+        'dom-write',
+        'composition-deferred-dom-writes',
+        () => {
+          const writes = [...this.deferredCompositionDOMWrites.values()];
+
+          this.deferredCompositionDOMWrites.clear();
+          runAllRuntimeSteps(writes);
+        },
+        { key: 'composition-deferred-dom-writes' }
+      );
+    }
   };
 
-  get compositionPath() {
-    return this.compositionPathValue;
+  isCompositionDOMProtected(node?: globalThis.Node) {
+    const epoch = this.inputController.domInputRuntime.compositionEpoch;
+
+    if (!this.state.isComposing || this.isAndroidHost) {
+      return false;
+    }
+    // Final selection export may run during commit; text hosts must survive
+    // until completion, including a synchronous start of the next composition.
+    if (!node) {
+      return epoch?.phase !== 'committing' && epoch?.phase !== 'repairing';
+    }
+
+    const root = this.rootElement;
+    const selection = this.editorValue.read((state) => state.selection());
+    const anchor =
+      isDOMNode(epoch?.anchor) && root?.contains(epoch.anchor)
+        ? epoch.anchor
+        : selection &&
+          resolveDOMPointInRoot(this.editorValue, selection.focus, root)?.[0];
+
+    return !anchor || node.contains(anchor) || anchor.contains(node);
+  }
+
+  deferCompositionDOMWrite(node: globalThis.Node, write: () => void) {
+    if (!this.isCompositionDOMProtected(node)) return false;
+
+    this.deferredCompositionDOMWrites.set(node, write);
+    return true;
   }
 
   readonly setExplicitViewportBackedSelection = (nextValue: boolean) => {
@@ -1190,6 +1236,7 @@ export class EditableDOMRuntime {
       () => {
         this.cancelUserInputFrame();
         this.externalMouseGesture = false;
+        this.deferredCompositionDOMWrites.clear();
       },
       () => {
         const cancelMicrotask = this.cancelSelectionExportMicrotask;
@@ -1209,7 +1256,6 @@ export class EditableDOMRuntime {
       },
       () => this.inputController.state.pendingCompositionEnd?.cancel(),
       () => {
-        this.compositionPathValue = null;
         this.inputController.state.pendingCompositionEnd = null;
         this.inputController.state.compositionSession = null;
         this.inputController.state.isComposing = false;
