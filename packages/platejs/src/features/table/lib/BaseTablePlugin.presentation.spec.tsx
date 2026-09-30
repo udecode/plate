@@ -85,15 +85,22 @@ describe('table presentation', () => {
 
         const editor = createTableEditor(input);
         const element = getCell(editor, [0, 0, 0]);
+        const table = editor.plugin(BaseTablePlugin);
 
-        expect(
-          editor.plugin(BaseTablePlugin).read.cell({ at: element })?.borders
-        ).toEqual({
+        expect(table.read.cell({ at: element })?.borders).toEqual({
           bottom: { color: 'red', width: 4, style: 'solid' },
           left: { color: 'currentColor', width: 1, style: 'solid' },
           right: { color: 'currentColor', width: 1, style: 'solid' },
           top: { color: 'currentColor', width: 1, style: 'dashed' },
         });
+        expect(table.read.cell({ at: [0, 0, 0] })).toEqual(
+          table.read.cell({ at: element })
+        );
+        expect(table.read.cell({ at: [0, 0, 0, 0, 0] })).toEqual(
+          table.read.cell({ at: element })
+        );
+        expect(table.read.cell({ at: [0, 0] })).toBeNull();
+        expect(table.read.cell({ at: [1] })).toBeNull();
       });
 
       it('omits top and left borders for non-edge cells', () => {
@@ -122,13 +129,15 @@ describe('table presentation', () => {
 
         const editor = createTableEditor(input);
         const element = getCell(editor, [0, 1, 1]);
+        const table = editor.plugin(BaseTablePlugin);
 
-        expect(
-          editor.plugin(BaseTablePlugin).read.cell({ at: element })?.borders
-        ).toEqual({
+        expect(table.read.cell({ at: element })?.borders).toEqual({
           bottom: { color: 'currentColor', width: 1, style: 'solid' },
           right: { color: 'currentColor', width: 3, style: 'solid' },
         });
+        expect(table.read.cell({ at: [0, 1, 1] })).toEqual(
+          table.read.cell({ at: element })
+        );
       });
     });
   }
@@ -191,13 +200,15 @@ describe('table presentation', () => {
 
         const editor = createTableEditor(input);
         const element = getCell(editor, [0, 0, 1]);
+        const table = editor.plugin(BaseTablePlugin);
 
-        expect(
-          editor.plugin(BaseTablePlugin).read.cell({ at: element })?.size
-        ).toEqual({
+        expect(table.read.cell({ at: element })?.size).toEqual({
           minHeight: 72,
           width: 110,
         });
+        expect(table.read.cell({ at: [0, 0, 1] })).toEqual(
+          table.read.cell({ at: element })
+        );
       });
     });
   }

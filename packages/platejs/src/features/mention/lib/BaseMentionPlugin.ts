@@ -83,12 +83,18 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
         encode: ({ node }) => `@${node.label ?? node.ref}`,
       },
       html: {
-        decode: ({ element }) => {
+        decode: ({ element, preserve }) => {
           const ref = element.getAttribute('data-editor-mention-ref');
 
           if (!isNonBlankRef(ref)) return undefined;
 
           const label = element.getAttribute('data-editor-mention-label');
+
+          preserve(
+            'data-editor-mention',
+            'data-editor-mention-label',
+            'data-editor-mention-ref'
+          );
 
           return {
             children: [{ text: '' }],

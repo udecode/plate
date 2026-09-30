@@ -19,6 +19,7 @@ import {
   createEditorCommitPublicationQueue,
   publishEditorCommitInVersionOrder,
 } from '../core/commit-publication';
+import { isDocumentView } from '../core/document-view-read';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -3094,7 +3095,10 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
       return {
         canPropose: () => currentAuthorId(runtime(editor)) !== null,
         view: () => authoredView(editor),
+        // A document view renders an already projected document with no
+        // authored session, so it has no changes to report.
         change(identity) {
+          if (isDocumentView(editor)) return null;
           const value = readRecord(
             state.getField(authoredState).changes,
             identity
@@ -3103,6 +3107,9 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         },
         changes(query = {}) {
           validateAuthoredQuery(query);
+          if (isDocumentView(editor)) {
+            return Object.freeze({ items: Object.freeze([]), cursor: null });
+          }
           const limit = query.limit ?? 50;
           if (!Number.isSafeInteger(limit) || limit < 1 || limit > 200) {
             throw new Error('Authored page limit must be between 1 and 200.');
@@ -3136,7 +3143,9 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           }
           const [start, end] = RangeApi.edges(range);
           const root = start.root ?? 'main';
-          if ((end.root ?? 'main') !== root) return Object.freeze([]);
+          if ((end.root ?? 'main') !== root || isDocumentView(editor)) {
+            return Object.freeze([]);
+          }
           const live = runtime(editor);
           const current = readAuthoredViewProjection(live, editor);
           const identities = new Set<string>();

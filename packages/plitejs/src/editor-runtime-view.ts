@@ -2,6 +2,7 @@ import { createEditorAnchorApi } from './core/anchor';
 import {
   configureAuthoredView,
   getAuthoredViewCommit,
+  readAuthoredView,
   subscribeAuthoredFragment,
   withAuthoredUpdateView,
   withAuthoredViewRead,
@@ -26,6 +27,7 @@ import {
 import { getSourcesForChange } from './core/listener-state';
 import { createEditorViewPluginApis, extendEditor } from './core/plugin';
 import {
+  getCompiledEditorSchema,
   getPluginRegistry,
   inheritPluginRegistry,
 } from './core/plugin-registry';
@@ -104,6 +106,27 @@ type ViewState = {
 
 type LayeredEditorView<TEditor> = Omit<TEditor, 'blur' | 'focus' | 'root'> &
   Pick<EditorView, 'blur' | 'focus' | 'root'>;
+
+// Keyed by view runtime, which mounted React view editors share with their view.
+const VIEW_STATES = new WeakMap<object, ViewState>();
+
+// Keyed by compiled schema: a schema change validates each document once more.
+const VALIDATED_DOCUMENTS = new WeakMap<object, WeakSet<EditorDocumentValue>>();
+
+const assertViewDocument = (editor: Editor, document: EditorDocumentValue) => {
+  const schema = getCompiledEditorSchema(editor);
+  let documents = VALIDATED_DOCUMENTS.get(schema);
+
+  if (documents?.has(document)) return;
+
+  editor.read.schema.assertDocument(document);
+
+  if (!documents) {
+    documents = new WeakSet();
+    VALIDATED_DOCUMENTS.set(schema, documents);
+  }
+  documents.add(document);
+};
 
 type CreateEditorView = {
   <
@@ -1246,30 +1269,43 @@ export const createEditorViewRuntime = <
   sourceEditor: Editor<V, TPlugins>,
   options: EditorViewOptions<TRoot> = {}
 ): EditorView<V, TPlugins> => {
-  if (options.document) {
+  // A view of a view reads the document runtime directly, so only the
+  // requested root applies. The source view's document and policy carry over.
+  const runtimeEditor = getEditorRuntimeOwner(sourceEditor) as Editor<
+    V,
+    TPlugins
+  >;
+  const sourceView = VIEW_STATES.get(getEditorRuntime(sourceEditor));
+  const document = options.document ?? sourceView?.document;
+
+  if (document) {
     if (options.authored) {
       throw new Error('A document view cannot take an authored projection.');
     }
 
-    sourceEditor.read.schema.assertDocument(options.document);
+    assertViewDocument(sourceEditor, document);
   }
 
   const viewState: ViewState = {
     editor: null,
     composing: sourceEditor.read.view.isComposing(),
-    document: options.document,
+    document,
     focused: sourceEditor.read.view.isFocused(),
-    readOnly: options.document ? true : (options.readOnly ?? false),
+    readOnly: document
+      ? true
+      : Boolean(options.readOnly || sourceView?.readOnly),
     root: toInternalRoot(options.root),
   };
-  const baseRuntime = getEditorRuntime(sourceEditor);
+  const baseRuntime = getEditorRuntime(runtimeEditor);
   let viewEditor: Editor<V> | null = null;
   const viewRuntime = createViewRuntime(
-    sourceEditor,
+    runtimeEditor,
     baseRuntime,
     viewState,
     () => viewEditor
   );
+
+  VIEW_STATES.set(viewRuntime, viewState);
   const viewRead = createEditorReadApi<V, TPlugins>((fn) =>
     viewRuntime.read((state) => fn(state as EditorStateView<V, TPlugins>))
   );
@@ -1304,14 +1340,14 @@ export const createEditorViewRuntime = <
   const anchorApi = createEditorAnchorApi(() => getDefined(viewEditor));
   const createViewAnchor: EditorAnchorApi = Object.assign(
     ((value, anchorOptions) =>
-      withRootRead(sourceEditor, viewState, () =>
+      withRootRead(runtimeEditor, viewState, () =>
         anchorApi(value, anchorOptions)
       )) as EditorAnchorApi,
     {
       save: (anchor: Parameters<EditorAnchorApi['save']>[0]) =>
         anchorApi.save(anchor),
       restore: (saved: unknown) =>
-        withRootRead(sourceEditor, viewState, () => anchorApi.restore(saved)),
+        withRootRead(runtimeEditor, viewState, () => anchorApi.restore(saved)),
     }
   );
   const createViewKey: EditorKeyApi = (target) =>
@@ -1361,15 +1397,15 @@ export const createEditorViewRuntime = <
   viewEditor = view;
   viewState.editor = viewEditor;
 
-  setEditorRuntime(
-    viewEditor,
-    viewRuntime,
-    getEditorRuntimeOwner(sourceEditor),
-    viewState.root
-  );
+  setEditorRuntime(viewEditor, viewRuntime, runtimeEditor, viewState.root);
   inheritPluginRegistry(viewEditor, sourceEditor);
-  if (options.document) registerDocumentView(viewEditor);
-  else configureAuthoredView(viewEditor, options.authored);
+  if (document) registerDocumentView(viewEditor);
+  else
+    {configureAuthoredView(
+      viewEditor,
+      options.authored ??
+        (sourceView ? readAuthoredView(sourceEditor) : undefined)
+    );}
   pluginApis = createEditorViewPluginApis(viewEditor, sourceEditor);
   view.plugin = pluginApis.plugin;
   return Object.freeze(view);

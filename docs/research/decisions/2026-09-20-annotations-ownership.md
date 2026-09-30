@@ -2,12 +2,15 @@
 title: Anchors, annotations and inline paint ownership
 type: decision
 status: implemented
-updated: 2026-09-21
+updated: 2026-09-30
 review_scope: annotations
 current_review: 2026-09-21-annotations-oss-validation
 reconciled_executions:
   - 2026-09-18-recovered-2026-08-23-unify-plite-selection-anchors
   - 2026-09-21-annotations-architecture-adoption
+  - 2026-09-30-content-root-locations-design
+  - 2026-09-30-content-root-locations-execution
+  - 2026-09-30-content-root-locations-closure
 review_history:
   - ../review-records/2026-09-20-annotations-contract-and-consumers.json
   - ../review-records/2026-09-21-annotations-final-pass.json
@@ -22,6 +25,14 @@ related:
 ---
 
 # Anchors, annotations and inline paint ownership
+
+The [content-root location design](../../plans/2026-09-30-content-root-locations.md)
+retains the adopted anchor, exact-view index and separate paint owners. [Its
+execution](../../plans/2026-09-30-content-root-locations-execution.md) makes paint admission check the emitting reader's root before
+path fast paths, preserves source ownership across automatic content-root
+mounts, and paints remote selections only through a reader of their root,
+now covered by a public-API regression case ([closure](../review-records/2026-09-30-content-root-locations-closure.json)). It does not
+replace the measured mapping kernel.
 
 Status: Complete
 

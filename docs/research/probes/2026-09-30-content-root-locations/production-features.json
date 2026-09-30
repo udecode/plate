@@ -1,0 +1,127 @@
+{
+  "arm": "candidate",
+  "host": {
+    "arch": "arm64",
+    "cpu": "Apple M5 Max",
+    "load": [
+      4.94482421875,
+      7.0322265625,
+      7.1142578125
+    ],
+    "platform": "darwin"
+  },
+  "part": "features",
+  "runtime": "1.3.12",
+  "sampling": "two warmups; six measured packets",
+  "source": {
+    "packages/plitejs/src/editor-runtime-view.ts": "4e153bf294fd44c9225c511806c6b7a0c5e28c0b774bb270be50a477494f25dc",
+    "packages/plitejs/src/core/snapshot-index.ts": "1cacfc6032f4850c234e79cc5c53671969900366d4c85fc5ee7101fd9df17b46",
+    "packages/platejs/src/static/components/PlateStatic.tsx": "c714df7dd29b7bb7bd4724847c99adb853578eecf509655b264693906a06d65c",
+    "packages/platejs/src/static/internal/staticDocumentView.ts": "fe6402ba1510409f8babfd7d889ea524ff046e552442b1071c916ae5d6373b99",
+    "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts": "420941860ea1976b72cbc76b10115f431a09d81494cb9917b171644c2389b97b",
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts": "6d9f21f7719cbe44bfc49ff712dde3fd05fe803d0356fce7d43cd257d23a9d73",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "303b1256057ed49391b4d65969b9d295c6931f355a443e752f84b6b867c597fc",
+    "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+    "docs/research/probes/2026-09-30-content-root-locations/production.tsx": "a40ae3f80b7d8187d29009fd71238ba2a3758db49fd092aaf5af7e8330c3fba0"
+  },
+  "cohorts": [
+    {
+      "unrelated": 20,
+      "medianMs": {
+        "node": 0.6114169999999888,
+        "path": 0.32262500000001637
+      },
+      "counts": {
+        "nodeIndexBuilds": 2,
+        "pathIndexBuilds": 0
+      },
+      "samples": [
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 0.6114169999999888,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.367999999999995
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 0.7369579999999871,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.3062919999999849
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 0.6476249999999766,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.3590420000000165
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 0.49416700000000446,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.31920800000000327
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 0.4416659999999979,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.32116600000000517
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 0.44624999999999204,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.32262500000001637
+        }
+      ]
+    },
+    {
+      "unrelated": 500,
+      "medianMs": {
+        "node": 1.3637919999999895,
+        "path": 0.2762079999999969
+      },
+      "counts": {
+        "nodeIndexBuilds": 2,
+        "pathIndexBuilds": 0
+      },
+      "samples": [
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 1.3187500000000227,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.37495799999999235
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 1.3637919999999895,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.2762079999999969
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 1.352125000000001,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.2747499999999832
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 1.3814590000000067,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.2694169999999758
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 1.255625000000009,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.2777500000000259
+        },
+        {
+          "nodeIndexBuilds": 2,
+          "nodeMs": 1.3743749999999864,
+          "pathIndexBuilds": 0,
+          "pathMs": 0.24179199999997536
+        }
+      ]
+    }
+  ]
+}

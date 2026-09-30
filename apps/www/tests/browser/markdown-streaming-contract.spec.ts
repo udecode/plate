@@ -1228,9 +1228,11 @@ test.describe('markdown streaming contract', () => {
       const streamed = batches.at(-1)!.text;
 
       // The last chunk takes the strict parse without any stream history.
+      // The status renders with the output, so Ready shows the reset output.
       await page
         .getByRole('button', { name: 'Reset streaming', exact: true })
         .click();
+      await expect(page.locator('[data-stream-status]')).toHaveText('Ready');
       await page.locator('button:has-text("paragraph")').last().click();
       await expect(page.locator('[data-stream-status]')).toHaveText(
         'Finished: strict parse'
@@ -1277,6 +1279,8 @@ test.describe('markdown streaming contract', () => {
       await expect(heading).toHaveText(
         `Chunks (${position}/${toChunks(source).length})`
       );
+      // The chunk heading updates before a static render catches up.
+      await settle(page);
       expect(await outputText(page, mode)).toBe(streamed);
 
       if (mode === 'static') {
@@ -1333,6 +1337,7 @@ test.describe('markdown streaming contract', () => {
     await page
       .getByRole('button', { name: 'Reset streaming', exact: true })
       .click();
+    await expect(page.locator('[data-stream-status]')).toHaveText('Ready');
     await page.locator('button:has-text("zzend")').last().click();
     await expect(page.locator('[data-stream-status]')).toHaveText(
       'Finished: strict parse'

@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-30-static-list-table-known-paths",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-30-static-list-table-known-paths.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-30",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Read static list numbers and table cell presentation from the rendered path",
+  "targets": [
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-static",
+      "files": ["apps/www/src/registry/components/editor/table-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-30-block-list-numbers-table-cell-presentation-2439cc98",
+      "kind": "fix",
+      "summary": "Read list numbers and table cell presentation from the rendered path, so numbering continues inside content roots and a static preview does not index each document.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-list-static", "table-static"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-30",
+          "entry": "2026-09-30-static-list-table-known-paths",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

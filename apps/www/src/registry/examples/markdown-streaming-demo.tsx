@@ -18,6 +18,7 @@ import type { MarkdownSliceParseResult } from 'platejs/markdown';
 import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
 import {
   type HTMLAttributes,
+  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
@@ -405,6 +406,27 @@ export default function MarkdownStreamingDemo() {
   );
   // The static preview renders each parse as a document; nothing is edited.
   const [staticDocument, setStaticDocument] = useState<EditorDocumentValue>();
+  const latestOutput = useMemo(
+    () => ({ document: staticDocument, error, status }),
+    [staticDocument, error, status]
+  );
+  // A static render that falls behind the stream skips to the latest parse.
+  // The status and error describe the rendered parse, so they come from the
+  // same deferred state. The editable preview edits its editor at once.
+  const deferredOutput = useDeferredValue(latestOutput);
+  const output = preview === 'static' ? deferredOutput : latestOutput;
+  // Rendering reads every block's decorations, so the static output renders
+  // only for a new parse, not for chunk arrivals or each parse's urgent pass.
+  const staticOutput = useMemo(
+    () => (
+      <EditorView
+        className="h-[500px] overflow-y-auto rounded border"
+        document={output.document}
+        editor={editorStatic}
+      />
+    ),
+    [editorStatic, output.document]
+  );
 
   const chunks = useMemo(() => {
     if (chunkSize > 0) {
@@ -712,21 +734,17 @@ export default function MarkdownStreamingDemo() {
           <h3 className="mb-2 font-semibold">Editor Output</h3>
           <p
             className="mb-2 text-sm text-muted-foreground"
-            data-stream-status={status}
+            data-stream-status={output.status}
           >
-            {statusLabels[status]}
+            {statusLabels[output.status]}
           </p>
-          {error && (
+          {output.error && (
             <p className="mb-2 text-sm text-destructive" data-stream-error="">
-              {error}
+              {output.error}
             </p>
           )}
           {preview === 'static' ? (
-            <EditorView
-              className="h-[500px] overflow-y-auto rounded border"
-              document={staticDocument}
-              editor={editorStatic}
-            />
+            staticOutput
           ) : (
             <EditorRoot editor={editor}>
               <EditorFrame className="h-[500px] rounded border">

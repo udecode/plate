@@ -1,0 +1,119 @@
+{
+ "base": "http://localhost:3652",
+ "fixture": "cjk",
+ "size": 50000,
+ "chunks": 778,
+ "errors": [],
+ "duringStream": {
+  "samples": 772,
+  "exactlyOneMarker": 711,
+  "zeroMarkers": 61,
+  "moreThanOne": 0,
+  "decorationOnLastCodePoint": 635,
+  "decorationSamples": 635,
+  "lastTextEmpty": 137,
+  "fallbackShownWhenLastTextEmpty": 76,
+  "fallbackShownWhenLastTextNotEmpty": 0,
+  "twoChildrenAlways": true,
+  "spanAlwaysLastChild": true,
+  "sameSpanNode": true
+ },
+ "afterAccept": {
+  "markers": 0,
+  "fallbackMarked": false,
+  "fallbackVisible": false,
+  "lastTextEmpty": true,
+  "decorationText": [],
+  "lastCodePoint": null,
+  "children": 2,
+  "sameSpan": true
+ },
+ "emptyExamples": [
+  {
+   "t": 2346.4000000953674,
+   "children": 2,
+   "spanIsLastChild": true,
+   "sameSpan": true,
+   "markers": 0,
+   "fallbackMarked": false,
+   "fallbackVisible": false,
+   "lastTextEmpty": true,
+   "lastCodePoint": null,
+   "decorationText": []
+  },
+  {
+   "t": 2347.8000000715256,
+   "children": 2,
+   "spanIsLastChild": true,
+   "sameSpan": true,
+   "markers": 0,
+   "fallbackMarked": false,
+   "fallbackVisible": false,
+   "lastTextEmpty": true,
+   "lastCodePoint": null,
+   "decorationText": []
+  }
+ ],
+ "mismatches": [
+  {
+   "t": 2346.4000000953674,
+   "children": 2,
+   "spanIsLastChild": true,
+   "sameSpan": true,
+   "markers": 0,
+   "fallbackMarked": false,
+   "fallbackVisible": false,
+   "lastTextEmpty": true,
+   "lastCodePoint": null,
+   "decorationText": []
+  },
+  {
+   "t": 2347.8000000715256,
+   "children": 2,
+   "spanIsLastChild": true,
+   "sameSpan": true,
+   "markers": 0,
+   "fallbackMarked": false,
+   "fallbackVisible": false,
+   "lastTextEmpty": true,
+   "lastCodePoint": null,
+   "decorationText": []
+  },
+  {
+   "t": 2355,
+   "children": 2,
+   "spanIsLastChild": true,
+   "sameSpan": true,
+   "markers": 0,
+   "fallbackMarked": false,
+   "fallbackVisible": false,
+   "lastTextEmpty": true,
+   "lastCodePoint": null,
+   "decorationText": []
+  },
+  {
+   "t": 2371.600000023842,
+   "children": 2,
+   "spanIsLastChild": true,
+   "sameSpan": true,
+   "markers": 0,
+   "fallbackMarked": false,
+   "fallbackVisible": false,
+   "lastTextEmpty": true,
+   "lastCodePoint": null,
+   "decorationText": []
+  },
+  {
+   "t": 3769.7000000476837,
+   "children": 2,
+   "spanIsLastChild": true,
+   "sameSpan": true,
+   "markers": 0,
+   "fallbackMarked": false,
+   "fallbackVisible": false,
+   "lastTextEmpty": true,
+   "lastCodePoint": null,
+   "decorationText": []
+  }
+ ]
+}

@@ -1,0 +1,58 @@
+{
+ "base": "http://localhost:3651",
+ "fixture": "cjk",
+ "size": 50000,
+ "chunks": 778,
+ "errors": [],
+ "duringStream": {
+  "samples": 565,
+  "exactlyOneMarker": 565,
+  "zeroMarkers": 0,
+  "moreThanOne": 0,
+  "decorationOnLastCodePoint": 502,
+  "decorationSamples": 502,
+  "lastTextEmpty": 63,
+  "fallbackShownWhenLastTextEmpty": 63,
+  "fallbackShownWhenLastTextNotEmpty": 0,
+  "twoChildrenAlways": true,
+  "spanAlwaysLastChild": true,
+  "sameSpanNode": true
+ },
+ "afterAccept": {
+  "markers": 0,
+  "fallbackMarked": false,
+  "fallbackVisible": false,
+  "lastTextEmpty": true,
+  "decorationText": [],
+  "lastCodePoint": null,
+  "children": 2,
+  "sameSpan": true
+ },
+ "emptyExamples": [
+  {
+   "t": 2289.2000000476837,
+   "children": 2,
+   "spanIsLastChild": true,
+   "sameSpan": true,
+   "markers": 1,
+   "fallbackMarked": true,
+   "fallbackVisible": true,
+   "lastTextEmpty": true,
+   "lastCodePoint": null,
+   "decorationText": []
+  },
+  {
+   "t": 2303.399999976158,
+   "children": 2,
+   "spanIsLastChild": true,
+   "sameSpan": true,
+   "markers": 1,
+   "fallbackMarked": true,
+   "fallbackVisible": true,
+   "lastTextEmpty": true,
+   "lastCodePoint": null,
+   "decorationText": []
+  }
+ ],
+ "mismatches": []
+}

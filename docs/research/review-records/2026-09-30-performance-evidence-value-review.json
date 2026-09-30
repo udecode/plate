@@ -1,0 +1,157 @@
+{
+  "id": "2026-09-30-performance-evidence-value-review",
+  "scope": "performance",
+  "kind": "review",
+  "date": "2026-09-30",
+  "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+  "model": null,
+  "method": "best-api-review/history-v3",
+  "trigger": "User selected the next ledger item after streaming reconciliation and explicitly said go to the performance Best API Review. Read-only architecture assessment with audit/ledger metadata recording, not a new benchmark campaign or implementation.",
+  "requirements": [
+    "A receipt identifies source, build, fixture, action, host, sampling and metric endpoint. Current-source eligibility is separate from historical availability.",
+    "Correct output and finite, complete required observations precede acceptance; missing clocks or hashes cannot become a fast or passing result.",
+    "Paired operands have matching measurement semantics. Keep headless duration, signed deltas, memory, trusted browser latency, profiles and readiness coverage distinct.",
+    "Acceptance identifies its frozen policy and the claim it tests. Correctness, budget, adoption materiality, variability and diagnostic attribution remain distinct.",
+    "Preserve failed observations and original policies. A completed experiment or successful availability/health check does not establish passing performance or adoption.",
+    "One existing owner controls shared active target definitions; retain independent artifact adapters, research taxonomy and historical presentation. Measurement stays private without an independent public API job.",
+    "Reconcile prior research and later execution before recommending more work. Keep runtime optimization and the explicitly deferred search scope out of this audit."
+  ],
+  "evidenceReuse": "Read both historical performance iterations, their prior-candidate reconciliation and September 10 execution/follow-through; retained their original failed/budget/source limits. Inspected the current target and lab registries, materially different runner/verdict shapes, aggregation/history/health/render consumers and private runtime instrumentation through two bounded read-only partitions. Lead reproduced four false-positive S5 arrangements plus a positive control, cached-threshold and absent-coverage acceptance, two existing changed-source artifact admissions and historical ID/path attribution using real current helpers. No workload, browser, build or fresh timing ran.",
+  "summary": "Pursue executable receipt admission and assessment at the existing measurement owners. S5 can pass wrong or absent output, a missing final clock, and unlike work clocks; aggregation admits 74 ok rows from two artifacts with mismatched recorded inputs, trusts a cached passed flag above its limit and counts declared coverage without artifacts. Cut duplicated active target authority and active S5 evaluator implementations; preserve historical evidence, independent metric domains, original frozen policies and private Plite instrumentation. Do not build a universal benchmark platform or public profiling API.",
+  "verdict": "pursue",
+  "previous": "2026-09-09-performance-iteration-2",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-07-performance-iteration-1",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "Retain 34 conditional candidates, complete-operation caveats, incomparable output exclusions and unknown historical source binding. This study is not current adoption proof."
+    },
+    {
+      "record": "2026-09-09-performance-iteration-2",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "reopens",
+      "reason": "Retain the 26 independent dossiers, 65-row prior-candidate reconciliation and separate Compiler/virtualization contracts. Reopen executable evidence validity and assessment ownership on current concrete false-positive paths, without reopening rejected runtime candidates."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-07-editor-performance-research",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "Keep historical-unbound research completion and unknown proof. Recovery dates and plan hashes do not reconstruct the original runner/source identity."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-10-editor-performance-follow-through",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "Read the follow-through as related historical execution context: six further interventions rejected and four absolute budgets retained. Its immutable pagination association and unbound proof are not transferred or silently rewritten."
+    },
+    {
+      "record": "2026-09-30-static-preview-proportional-cost-execution",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "Retain original owner-level adoption and its Chromium receipts, including the separately disclosed profile-guard analysis. Do not turn the 1.25 assessment into passing proof under the original 1.20 policy."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-closure",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "Retain the no-speedup contract, six complete no-regression cells and two AI-rich cells with passing latency/text checks but inconclusive attribution. Source correctness is not refuted by the evaluator gaps; the reused 20%/100 ms work-gain criterion belongs to a different claim."
+    }
+  ],
+  "alternatives": [
+    "Keep current tooling and explain anomalies in prose: rejected because actual loader/evaluator paths can accept wrong, missing, mismatched or ineligible evidence.",
+    "Introduce a universal benchmark platform, common result schema or public profiler: rejected because distinct timing, memory, readiness and diagnosis jobs do not earn that layer.",
+    "Delete the entire lab registry, research catalog and historical presentation: reject the blanket cut; preserve artifact adapters and original evidence while merging duplicated active commands, paths and membership at the existing target owner.",
+    "Validate receipts at their existing boundary and assess identified frozen policies through one active evaluator implementation per measured job: pursue; migrate aggregation, health, history/report and S5 consumers without relabeling original observations.",
+    "Rerun every historical workload or rewrite the runtime: outside this assessment; no new measured runtime target or scope authorization justifies that campaign.",
+    "Refactor the private Plite profiling hooks into a public API: Stop for this sub-question; current internal counter/attribution consumers work without a public plugin, namespace or package, and no overhead improvement is measured."
+  ],
+  "proofLimits": "Source and existing-receipt assessment plus retained synthetic helper reproductions only. Existing mismatched inputs do not prove the original runs used the wrong checkout or invalidate their historical numbers. Synthetic S5 counterexamples do not establish wrong output in production runs. No workload/browser/build/timing/native endpoint, policy calibration or physical-device proof ran. Evidence Kit dependency unavailable locally, so its CLI discovery is unknown. Source inventory counts are not exhaustive workload review. Historical execution bindings are unchanged; adopted/verified status does not transfer to this target. Private instrumentation overhead is unmeasured. Missing-clock and throw-before-write paths are source findings, not native/failing-workload reproductions. Sparse/mutable-array helper defects have no located exercising caller. Generated viewer/history reports are stale; health success only proves its limited availability job. Docs are excluded by Oxfmt/Oxlint, so the scoped lint attempt supplies no pass.",
+  "references": [
+    "docs/research/probes/2026-09-30-performance-review/REPORT.md",
+    "docs/research/probes/2026-09-30-performance-review/reproduce.mjs",
+    "docs/research/probes/2026-09-30-performance-review/RESULTS.json",
+    "docs/research/decisions/performance-candidate-reuse.md",
+    "docs/research/review-records/2026-09-07-performance-iteration-1.json",
+    "docs/research/review-records/2026-09-09-performance-iteration-2.json",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-07-editor-performance-research.json",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-10-editor-performance-follow-through.json",
+    "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json",
+    "docs/research/review-records/2026-09-30-content-root-locations-closure.json",
+    "docs/plans/2026-09-07-editor-performance-research.md",
+    "docs/plans/artifacts/2026-09-07-editor-performance-research/report.md",
+    "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md",
+    "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md",
+    "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md",
+    "docs/plans/2026-09-10-editor-performance-execution.md",
+    "docs/plans/2026-09-10-editor-performance-follow-through.md",
+    "benchmarks/targets/slate-v2.json",
+    "benchmarks/editor/research/benchmark-registry.json",
+    "tooling/scripts/bench-targets.mjs",
+    "benchmarks/editor/src/index.mjs",
+    "benchmarks/editor/benchmarks/benchmark-health.mjs",
+    "benchmarks/editor/benchmarks/render-perf-index.mjs",
+    "benchmarks/editor/benchmarks/external-text-measurement.mjs",
+    "benchmarks/editor/benchmarks/plate-code-block-browser.mjs",
+    "benchmarks/editor/benchmarks/plite-plugin-graph-benchmark.ts",
+    "benchmarks/editor/benchmarks/plite-schema-architecture-benchmark-authority.ts",
+    "benchmarks/editor/benchmarks/plate-markdown-dialect-benchmark.ts",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/scripts/summarize-matrix-ratio125.ts",
+    "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt",
+    "packages/plitejs/src/core/profiling.ts",
+    "packages/plitejs/src/react/render-profiler.ts"
+  ],
+  "source": {
+    "files": {
+      "tooling/scripts/bench-targets.mjs": "3084428627b10c3fc062275a9b1ad5e031b1d4acc900be80f93030c330a66804",
+      "benchmarks/targets/slate-v2.json": "a62d5fe5b2c2d2026fc6ec295885acbf3229cc1ec2ab132df7b2457075a662fd",
+      "benchmarks/editor/research/benchmark-registry.json": "29c7caf79fde2b7c39211da4ac51d5e676d0970e61c6bf27e073a0a8bf3065b1",
+      "benchmarks/editor/src/index.mjs": "055db13cc1a729b4eb1fd93cb69b0c434c89af3a85faa15b1f9cd5eae86479b8",
+      "packages/plitejs/src/core/profiling.ts": "f5e8ea27a4eda605ef7d53c75907aa9904bf89a3ced01db67d70d55fcf4bf715",
+      "packages/plitejs/src/react/render-profiler.ts": "91078a23226b1906d000a258e602d3b6426bc26603dd691667e297f72d45051a",
+      "benchmarks/editor/README.md": "fbbbc1c53f5730850d10eb4958984979a70ae369009b0824ad3804ee25008e3a",
+      "benchmarks/editor/research/evidence-source-map.md": "fff53f759cb4676b8945322413050b42cb69bf0fff28427d5478b58f02f9edb1",
+      "benchmarks/editor/package.json": "df2a30553a064cf6f80023b1aad21026a5f4aa1e957c34276e81b2a0092ac954",
+      "apps/www/scripts/run-homepage-input-perf.mts": "c34c77d9eaf23f71a5061c35ae304a5e5fbc48545267c721260ecff3654adedf",
+      "apps/www/scripts/run-table-perf.mts": "5dc9b0bc90c9e113bdea89e45312c3151d2f45343544865f9eefc3719361af98",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts": "69ce2e81ce9def866211ce2826d5f8370b94af7089030db8f5bf4c59380bbee6",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/scripts/summarize-matrix-ratio125.ts": "dd9aff2c188d61e2ff637b941b4e33d74f01df872b9daebebecdb4921960d465",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md": "a2e12253d12bf7c4587cf0061796c57c6a9cc231eca21f7caa21486cb9df4ced",
+      "tooling/scripts/bench-targets.test.mjs": "5a150238abd53d44693feb7933496d685dd4d42ca46161b2e528f47960d8e21c",
+      "benchmarks/editor/benchmarks/external-text-measurement.test.mjs": "26f56e183975fd4685876b2cccda827b52e7f1c05737ade65646437c047fe8c8",
+      "benchmarks/editor/benchmarks/code-block-highlight-oracle.test.mjs": "bc454f77339fd369950c5759e17245042cfb7bf22a96d12d691593fe3d30769a",
+      "benchmarks/editor/benchmarks/benchmark-artifact.test.ts": "035ae004beeb6d93c723bd77b4013476f04861803d814a3555df1df4130d7a00",
+      "docs/research/probes/2026-09-30-performance-review/reproduce.mjs": "8729b98a352c61d4ab3265004defc3ec9ab496511af6a9c4621782af363c32ad",
+      "docs/research/probes/2026-09-30-performance-review/RESULTS.json": "7a947572ee2831397726dbc565fe87fddb852a096a42e5d2bf804077592198ca",
+      "benchmarks/targets/history/slate-v2-latest.json": "5b35aa7acd1621e0a9517f1a6efc4b4277827b48c25344f3e846464882c00b1e",
+      "benchmarks/targets/reports/slate-v2.md": "294840b38841be3a0dc41442b897300404c597a3b4d42fcdd1af53d8a1fc2aeb",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md": "7a89f49cf14b5ff0b88c420d0779bb9169948a9bb883d4b83d1603419bfa2bad",
+      "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md": "5bb9de499989bfe8e140827e706d4e87ca640c5940925924628aa7faee2828a6",
+      "docs/plans/2026-09-10-editor-performance-execution.md": "b0fa7f684c7493297095f7a76fc00ec4bd389ef459704a8b31c8701291e856e8",
+      "docs/plans/2026-09-10-editor-performance-follow-through.md": "9cb0cb9500b278740b5b98dc5f46d3f145e2bd2c11bdd19e1ef39747addca59c",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt": "1236eba2d944655ada507c41c74203212df6622d7f688aa260feaf94a92e6dcf",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json": "16980a7a7d8c78014790ee6571df736433943d8b5a81aa92334494e25731cd46",
+      "docs/research/review-records/2026-09-30-content-root-locations-closure.json": "b6a1ee96994cc9db2cfae4113f92beb124937fad3155dbf94d1cbe642e3d29ff",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "packages/plitejs/src/index.ts": "bcfeaa00ef5809e1dd8b34e7581c7bcef85a21b72355bdbf64130a5bae430a1d",
+      "packages/plitejs/src/react/index.ts": "e47da0a4e58ca90108fdd32a70df2f886a3a2d53199699ab5acd9c55692bdee3",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
+    },
+    "directories": {
+      "benchmarks/editor/benchmarks": "920e6517f1697b4bf185d05c1a2740ca0570b072506c6f43cc541de26dc30d39"
+    },
+    "features": {
+      "plitejs/core/profiling": "6092b7d1a78bd8c662a494007c646d69bc76c71fb58870b58acdd85d663faffd",
+      "tooling/performance": "4abce3d9b4a1afc91baa87d8f99a393e61e7104d7e62a79e684b3cf426851bc1"
+    },
+    "upstreams": []
+  }
+}

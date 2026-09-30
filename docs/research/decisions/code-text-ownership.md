@@ -10,6 +10,7 @@ reconciled_executions:
   - 2026-09-22-code-design-ownership-plan
   - 2026-09-22-code-commands-and-highlighter-implementation
   - 2026-09-22-code-demo-browser-closure
+  - 2026-09-30-static-preview-proportional-cost-execution
 review_history:
   - ../review-records/2026-09-04-code-external-text.json
   - ../review-records/2026-09-05-code-native-plateau.json
@@ -56,6 +57,11 @@ highlighter unchanged. The copied native/static kits register browser-safe
 Python at resource construction. Plite's canonical anchor mapping was
 repaired for disjoint edits that retain text and annotations. No compatibility
 alias remains for the removed package JSON command or `defaultType` input.
+
+Syntax highlighting reads each code block once, the granularity the live
+decoration contract re-reads when a block's text changes. Rendered documents
+reuse an unchanged block's highlighting by identity, without resolving runtime
+keys ([execution](../review-records/2026-09-30-static-preview-proportional-cost-execution.json)).
 
 The small and huge full-EditorKit demos now supply a user identity required
 by authored writes. The earlier failed Enter and large-block editing rows

@@ -2356,7 +2356,20 @@
     },
     "test:partition:html": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:html"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:details",
+        "typecheck:partition:html",
+        "typecheck:partition:media",
+        "typecheck:partition:mention",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-basic-styles",
+        "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-indent",
+        "typecheck:partition:standard-link",
+        "typecheck:partition:standard-list",
+        "typecheck:partition:table"
+      ],
       "inputs": [
         "src/html/**",
         "!src/html/server/**",
@@ -2420,12 +2433,14 @@
     "test:partition:markdown": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:code-drawing",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
         "typecheck:partition:media",
         "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-styles",
+        "typecheck:partition:standard-link",
         "typecheck:partition:standard-list"
       ],
       "inputs": [
@@ -2544,6 +2559,7 @@
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block",
         "typecheck:partition:standard-indent",
+        "typecheck:partition:standard-link",
         "typecheck:partition:standard-list",
         "typecheck:partition:table"
       ],
@@ -2601,9 +2617,11 @@
       "dependsOn": [
         "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
+        "typecheck:partition:markdown",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
         "typecheck:partition:standard-basic-nodes-react",
+        "typecheck:partition:standard-link",
         "typecheck:partition:static",
         "typecheck:partition:testing"
       ],
@@ -2873,6 +2891,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:media",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list"
@@ -2923,8 +2942,11 @@
         "typecheck:partition:core",
         "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-list",
         "typecheck:partition:static",
-        "typecheck:partition:testing"
+        "typecheck:partition:table",
+        "typecheck:partition:testing",
+        "typecheck:partition:toc"
       ],
       "inputs": [
         "src/static/**",

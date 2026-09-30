@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 251,
+  "latestVersion": 253,
   "versions": [
     {
       "version": 0,
@@ -2916,6 +2916,31 @@
         "Install autoclosure from its canonical Dotai source and keep Task as the lifecycle; do not recreate the retired project-local controller, plan template or review loop.",
         "Remove autoclosure from retiredGeneratedPaths so resource sync preserves the locked installed owner while continuing to delete genuinely retired generated skills.",
         "Verify the Dotai source matches the installed Codex skill, Claude Code points to that install, skills-lock records the source, and sync-resources check remains exact."
+      ]
+    },
+    {
+      "version": 252,
+      "date": "2026-09-30",
+      "doctrineFingerprint": "sha256:04ed32ad03181fe73b653cc4ff7a8b7c3fa6ec01e932add8a30fabc711cea7a9",
+      "summary": "Decorations: a read depends on its entry, its descendants and observed state in live and static views alike, so sources decorate where they read; document views resolve anchors by shared node identity and show no session state; HTML decoders claim the Plate attributes they represent and createsElement mappings wrap their other targets.",
+      "migrationChecks": [
+        "Decorate where the source reads: a source that paints a container's text (a code highlighter) reads the container entry once and returns ranges for its descendants, returning early for other nodes before touching plugin state.",
+        "Read decoration state through the read context; do not resolve plugins or stores per node when an existing portal or the context already holds them.",
+        "Show session-bound decorations (remote cursors, search matches, authored changes) only in the editor's own document; in a document view, resolve anchors only on nodes the document shares with the editor.",
+        "Claim the Plate attributes an HTML decode result represents with preserve(...names); parsing warns html-unsupported-content with kind: 'attribute' and source.attribute for each attribute Plate's own mappings write that no decoder claims, and an element reported lost does not repeat its attributes.",
+        "A createsElement HTML mapping writes its output around the HTML of targets other than the default block; a matched element holding exactly one block its properties apply to decodes onto that block."
+      ]
+    },
+    {
+      "version": 253,
+      "date": "2026-09-30",
+      "doctrineFingerprint": "sha256:e67da1bbddf3e61cec39fb932163d285d2dd51dc9616b467ace95730d7d626c3",
+      "summary": "Content roots: every live and static callback receives the reader of the entry's root, a view created from a view reads its requested root and keeps its document and policy, feature presentation reads known paths, and decoration output belongs to the root of the view that read it.",
+      "migrationChecks": [
+        "Create a view of another root from a view with createEditorView(view, { root }); it reads the requested root, or the primary root when root is omitted, and keeps the source view's document, read-only state and authored mode. Resolve the runtime owner only when the call needs owner identity, such as a cache key or a fixed projection.",
+        "Inside an element-owned content root, read an entry's path through the editor supplied to the render, leaf, text or decoration callback; never recover a location from a node or read through an editor captured outside that root.",
+        "Pass the known path to feature presentation reads in static components, as in read.list.ordinal(path) and read.cell({ at: path }); read.list.ordinal returns undefined for a target that is not a numbered item in the editor's root.",
+        "Return decoration ranges without roots, or with the reading view's root; a source that translates canonical external coordinates, such as awareness selections or stored anchors, emits a range only through a reader of the root those coordinates address."
       ]
     }
   ],

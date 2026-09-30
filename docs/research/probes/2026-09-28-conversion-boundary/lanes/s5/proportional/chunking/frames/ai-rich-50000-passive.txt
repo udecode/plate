@@ -1,0 +1,41 @@
+flushPassiveEffects: 5.3 ms per profile over 3 profiles
+by inclusive (ms per profile):
+       5.3  flushPassiveEffects@5319583e-150745cd7583489c.js:313573
+       2.6  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       2.6  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       2.6  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       2.6  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       1.7  commitHookEffectListMount@5319583e-150745cd7583489c.js:216333
+       1.3  t2@885-9cb09a45a1814598.js:9156
+       0.8  _s.installed.window.requestAnimationFrame@82aa5511-47b78e186c9ce35c.js:62233
+       0.8  requestAnimationFrame@:-1
+       0.5  (anon)@1233-4d37154d85cba0b9.js:527688 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_»
+       0.5  withTransactionSpecDraftRead@1233-4d37154d85cba0b9.js:1525309
+       0.5  (anon)@1233-4d37154d85cba0b9.js:527846 «()=>{let editorRead=Reflect.get(editor,"read");if("function"!=typeof editorRead)»
+       0.5  read@1233-4d37154d85cba0b9.js:718071 «fn=>runRead(fn),createGroup=groupName=>new Proxy({},{get(target,key,receiver){if»
+       0.5  (anon)@1233-4d37154d85cba0b9.js:649804 «fn=>viewRuntime.read(state=>fn(state)));viewRead.schema=sourceEditor.read.schema»
+       0.5  read@1233-4d37154d85cba0b9.js:644800 «fn=>{var _getViewEditor;return(0,_core_document_view_read__WEBPACK_IMPORTED_MODU»
+       0.5  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+       0.5  (anon)@1233-4d37154d85cba0b9.js:644959 «()=>baseRuntime.read(state=>fn((state=>{if(state!==cachedBaseState){var _getView»
+       0.5  read@1233-4d37154d85cba0b9.js:1117214 «fn=>(0,public_state.O4)(editor1,fn),runCommand:(0,command_registry.my)(()=>edito»
+       0.5  readEditor@1233-4d37154d85cba0b9.js:1648673
+       0.5  withEditorDocumentProjection@1233-4d37154d85cba0b9.js:1521883
+       0.5  (anon)@1233-4d37154d85cba0b9.js:1649539 «()=>(0,authored_runtime.mL)(editor,editor,()=>fn(getStateView(editor))))}finally»
+       0.5  withAuthoredViewRead@1233-4d37154d85cba0b9.js:512202
+       0.5  readView@4373-d151118e57d11370.js:161288
+       0.5  (anon)@1233-4d37154d85cba0b9.js:1649581 «()=>fn(getStateView(editor))))}finally{restoreDraft(),exitRead()}},updateEditor=»
+       0.5  (anon)@1233-4d37154d85cba0b9.js:644980 «state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cachedBaseStat»
+by self (ms per profile):
+       2.1  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       0.9  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       0.8  requestAnimationFrame@:-1
+       0.4  getCurrentChildrenRoot@1233-4d37154d85cba0b9.js:1533176
+       0.4  detachDeletedInstance@5319583e-150745cd7583489c.js:22034
+       0.4  getAnimationName@8255-fdc7096923fb725f.js:50306
+       0.1  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       0.1  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       0.0  (anon)@885-9cb09a45a1814598.js:9551 «()=>{window.cancelAnimationFrame(animationFrame)}},t3=[editor,previewValue,read,»
+       0.0  mq@4373-d151118e57d11370.js:344320
+       0.0  getEditorDocumentRoots@1233-4d37154d85cba0b9.js:1549004
+       0.0  hasLocationPath@1233-4d37154d85cba0b9.js:1535388
+       0.0  getEditorRuntimeOwner@1233-4d37154d85cba0b9.js:2109651

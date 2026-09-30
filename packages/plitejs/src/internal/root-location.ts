@@ -170,6 +170,22 @@ export const stripImplicitRangeRoots = (
   focus: stripImplicitPointRoot(range.focus, meta.focus),
 });
 
+/**
+ * Relate a range produced by a reader of `root`, such as decoration output, to
+ * that root. Endpoints without a root belong to the reader. Returns the range
+ * without roots, or `null` when an endpoint names another root.
+ */
+export const getReaderRange = (range: Range, root: string): Range | null => {
+  const { anchor, focus } = range;
+
+  if (anchor.root === undefined && focus.root === undefined) return range;
+  if ((anchor.root ?? root) !== root || (focus.root ?? root) !== root) {
+    return null;
+  }
+
+  return { ...range, ...stripLocationRoots({ anchor, focus }) };
+};
+
 export const stripLocationRoots = <TLocation extends Path | Point | Range>(
   location: TLocation
 ): TLocation => {

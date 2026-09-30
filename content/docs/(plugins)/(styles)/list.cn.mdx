@@ -60,7 +60,7 @@ const value = [
 ];
 ~~~
 
-第二项不保存 5。Plate 通过 editor.read.list.ordinal(element) 计算。
+第二项不保存 5。Plate 通过 editor.read.list.ordinal(at) 计算，`at` 是该项的路径、节点或键；已知路径的静态渲染器直接传入路径。
 
 listStart 保存潜在作者意图。存在兼容的前一项时 Plate 会忽略它，但仍保留该字段；如果后续编辑让该项成为第一项，它就会生效。当该项即使存在兼容前项也必须开启新序列时，使用 listRestart。
 
@@ -106,7 +106,7 @@ MDAST list.ordered 映射到 listType。两种开始策略都会序列化为当�
 | update.outdent(options) | 减少缩进。 |
 | update.clear(options?) | 仅清除选中列表项的列表属性与缩进，保留区块类型和文本。 |
 | update.insert(input, options?) | 插入指定类型的段落列表项，并由插件负责构造与位置。 |
-| read.ordinal(element) | 计算有序项显示编号。 |
+| read.ordinal(at) | 计算有序项显示编号；`at` 不是编辑器根中的有序项时返回 `undefined`。 |
 
 `clear` 可通过 `at` 指定位置或节点选区，不会扩展到未选中的相邻列表项。
 `insert({ type }, { replaceEmpty: true, select: true })` 在当前区块之后插入；

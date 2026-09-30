@@ -1,0 +1,83 @@
+renderRootSync: 33.9 ms per profile over 3 profiles
+by inclusive (ms per profile):
+      33.9  renderRootSync@5319583e-150745cd7583489c.js:296619
+      33.8  workLoopSync@5319583e-150745cd7583489c.js:298201
+      32.7  beginWork@5319583e-150745cd7583489c.js:187718
+      29.5  renderWithHooks@5319583e-150745cd7583489c.js:109327
+      29.2  updateFunctionComponent@5319583e-150745cd7583489c.js:162671
+      19.7  AIChatEditor@885-9cb09a45a1814598.js:5321
+      19.4  useCreateEditor@4373-d151118e57d11370.js:107807
+      19.4  exports.useMemo@3370-ab6f5e713678b725.js:249183
+      19.4  useMemo@5319583e-150745cd7583489c.js:139112
+      19.4  (anon)@4373-d151118e57d11370.js:108120 «()=>!1===enabled?null:(0,_withPlate__WEBPACK_IMPORTED_MODULE_2__.ie)(editorOptio»
+      19.4  withPlate_createEditor@4404-60ef0133fcd53fe0.js:1086467
+      19.4  (anon)@4404-60ef0133fcd53fe0.js:1086654 «(e,options)=>{let{navigationFeedback,plugins=[],readOnly}=options,rest=(0,esm_ob»
+      19.4  applyEditor@1233-4d37154d85cba0b9.js:1300387
+      18.6  withPlatePluginPortalCandidates@1233-4d37154d85cba0b9.js:1296476
+      18.1  withPluginPortalCandidates@1233-4d37154d85cba0b9.js:792306
+      18.1  withEditorApplicationSchemaCandidate@1233-4d37154d85cba0b9.js:979785
+      14.4  withSchemaCandidate@1233-4d37154d85cba0b9.js:1300152
+      14.4  (anon)@1233-4d37154d85cba0b9.js:1300210 «()=>(0,compilePlateModel.sE)(editor,schema,collectPlatePluginSourceCandidates(so»
+      14.4  (anon)@1233-4d37154d85cba0b9.js:1301305 «()=>{((editor,identity,plugins,userPlugins,initialization,schema)=>{let restoreM»
+      14.4  (anon)@1233-4d37154d85cba0b9.js:1301311 «(editor,identity,plugins,userPlugins,initialization,schema)=>{let restoreModelAc»
+      13.1  withCompiledPlateModelCandidate@1233-4d37154d85cba0b9.js:1017123
+      12.3  (anon)@1233-4d37154d85cba0b9.js:1301586 «()=>{(0,create_editor.ay)(editor,configuration.entries,{initialize:(null==initia»
+      12.3  initializePluginEntries@1233-4d37154d85cba0b9.js:1116746
+      12.3  publishInitialPlugins@1233-4d37154d85cba0b9.js:1111548
+      11.2  prepareScopedPluginPublication@1233-4d37154d85cba0b9.js:838739
+      10.8  prepareRecordPublication@1233-4d37154d85cba0b9.js:826602
+      10.8  runWithPluginPublicationGuard@1233-4d37154d85cba0b9.js:681981
+      10.8  (anon)@1233-4d37154d85cba0b9.js:829885 «()=>{let declarative=[...nextRecords.values()].some(param=>{let{definition}=para»
+       9.3  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+       7.5  mergeRegistries@1233-4d37154d85cba0b9.js:675956
+       7.5  buildConfiguredRegistry@1233-4d37154d85cba0b9.js:821399
+       7.1  mergeSchemaContributionRegistries@1233-4d37154d85cba0b9.js:1789249
+       6.4  validateConfiguredPluginRegistry@1233-4d37154d85cba0b9.js:681342
+       5.8  withCompiledPlatePluginCandidate@1233-4d37154d85cba0b9.js:1016645
+       5.0  prepareInitialPlatePlugins@1233-4d37154d85cba0b9.js:1296957
+       4.2  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+       3.9  createCompiledEditorSchemaDelta@1233-4d37154d85cba0b9.js:2026496
+       3.8  (anon)@1233-4d37154d85cba0b9.js:1299233 «()=>(0,compilePlateModel.sE)(editor,schema,collectPlatePluginSourceCandidates(so»
+       3.8  (anon)@1233-4d37154d85cba0b9.js:1299326 «()=>resolvePlugins(editor,sourcePlugins))),restoreStateViewTransform=(0,public_s»
+       3.8  resolvePlugins@1233-4d37154d85cba0b9.js:1205338
+by self (ms per profile):
+       2.5  _object_spread_props@3370-ab6f5e713678b725.js:174957
+       1.7  stableStringify@1233-4d37154d85cba0b9.js:1929681
+       1.3  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+       1.0  canonicalCompiledPropertyConstruction@1233-4d37154d85cba0b9.js:2025590
+       1.0  _object_spread@3370-ab6f5e713678b725.js:72578
+       0.9  (anon)@1233-4d37154d85cba0b9.js:1277102 «plugin=>{var _publishedByName_get,_model_byName_plugin_name;let published=null!=»
+       0.8  isNominalPluginDescriptor@1233-4d37154d85cba0b9.js:970844
+       0.8  assertDataTransferFormatTargetAvailable@1233-4d37154d85cba0b9.js:1170792
+       0.8  freezePluginDataSnapshot@1233-4d37154d85cba0b9.js:971327
+       0.8  collectOpaquePluginHostResources@1233-4d37154d85cba0b9.js:967121
+       0.7  shouldSetTextContent@5319583e-150745cd7583489c.js:363468
+       0.7  withRootRead@1233-4d37154d85cba0b9.js:617290
+       0.7  getOwnerDocumentFromRootContainer@5319583e-150745cd7583489c.js:362931
+       0.6  canonicalDescriptor@1233-4d37154d85cba0b9.js:1966215
+       0.6  Children@1656-507afe1003872559.js:20471
+       0.5  (anon)@6254-4c8e71b7e89bf952.js:9556 «(srcValue,key){if(stack||(stack=new Stack),isObject(srcValue))baseMergeDeep(obje»
+       0.5  bailoutOnAlreadyFinishedWork@5319583e-150745cd7583489c.js:184360
+       0.5  renderWithHooks@5319583e-150745cd7583489c.js:109327
+       0.5  hashSchemaIdentityString@1233-4d37154d85cba0b9.js:1929750
+       0.4  resolveAuthoredSelection@4373-d151118e57d11370.js:127868
+       0.4  Tj@1233-4d37154d85cba0b9.js:1498110
+       0.4  rebindCompiledEditorSchemaRuntimeValidations@1233-4d37154d85cba0b9.js:2017350
+       0.4  _temp@885-9cb09a45a1814598.js:14415
+       0.4  pu@1233-4d37154d85cba0b9.js:976359
+       0.4  get@1233-4d37154d85cba0b9.js:531394
+       0.4  (anon)@6254-4c8e71b7e89bf952.js:7055 «(object,iteratee,keysFunc){for(var index=-1,iterable=Object(object),props=keysFu»
+       0.4  brandPluginDescriptor@1233-4d37154d85cba0b9.js:968656
+       0.4  (anon)@4373-d151118e57d11370.js:129400 «(position,index)=>{let point=null===position?null:document.pointAt(position,"lef»
+       0.4  pipeRenderLeafStatic@1656-507afe1003872559.js:6409
+       0.4  cloneFrozenDeclaration@1233-4d37154d85cba0b9.js:1824405
+       0.4  canonicalContentProgram@1233-4d37154d85cba0b9.js:2019856
+       0.4  get empty@1233-4d37154d85cba0b9.js:395804
+       0.4  addProperty@1233-4d37154d85cba0b9.js:1172298
+       0.4  (anon)@1233-4d37154d85cba0b9.js:1272994 «(identity,applicationSchema,pluginInputs,model,pluginList,schemaApi,apiByPlugin,»
+       0.4  canonicalJson@1233-4d37154d85cba0b9.js:1928807
+       0.4  withResolvingPlatePlugin@1233-4d37154d85cba0b9.js:1017408
+       0.4  mergeRegistries@1233-4d37154d85cba0b9.js:675956
+       0.4  cloneFrozenPluginDescriptor@1233-4d37154d85cba0b9.js:971698
+       0.4  De@1233-4d37154d85cba0b9.js:975658
+       0.4  setValueForStyles@5319583e-150745cd7583489c.js:32925

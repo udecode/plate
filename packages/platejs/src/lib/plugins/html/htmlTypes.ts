@@ -24,6 +24,8 @@ export type HtmlSourceLocation =
       startCodeUnit: number;
     }>
   | Readonly<{
+      /** The source attribute a parse loss names. */
+      attribute?: string;
       kind: 'tree';
       path: readonly number[];
       tag?: string;

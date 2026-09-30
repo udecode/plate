@@ -1,0 +1,3 @@
+.group-last\/toolbar-group\:hidden\!:is(:where(.group\/toolbar-group):last-child *)
+.group-last\/column\:pr-0:is(:where(.group\/column):last-child *)
+.group-last\/column\:-right-1:is(:where(.group\/column):last-child *)

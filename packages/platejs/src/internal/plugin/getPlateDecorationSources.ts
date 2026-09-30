@@ -33,6 +33,36 @@ export const getPlateDecorationSources = (
       plugin.decorate ?? failInvariant('Expected value to be defined');
     const contextFor = (view: object = editor) =>
       createPluginContext(view as Editor, plugin);
+    // A read runs once per node. Its context resolves the plugin context's
+    // accessors once per view and published model instead of through the
+    // context proxy on every property read.
+    let readBase:
+      | { context: object; runtime: object; view: object }
+      | undefined;
+    const readContextFor = (view: object) => {
+      const runtime = getPlateRuntime(view);
+
+      if (readBase?.view === view && readBase.runtime === runtime) {
+        return readBase.context;
+      }
+
+      const pluginContext = contextFor(view);
+      // Another editor may not install this plugin, so its context keeps
+      // resolving lazily through the proxy.
+      const context: object =
+        runtime === getPlateRuntime(editor)
+          ? Object.fromEntries(
+              Reflect.ownKeys(pluginContext).map((key) => [
+                key,
+                Reflect.get(pluginContext, key),
+              ])
+            )
+          : pluginContext;
+
+      readBase = { context, runtime, view };
+
+      return context;
+    };
     const { attributes, observe } = decorate;
 
     return {
@@ -45,31 +75,36 @@ export const getPlateDecorationSources = (
               ]),
           }
         : {}),
-      read: ({ editor: view, entry }) => {
-        const pluginContext = contextFor(view);
-        const context = Object.assign(Object.create(pluginContext), {
-          entry,
+      read: ({ editor: view = editor, entry }) => {
+        const context = Object.create(readContextFor(view));
+
+        context.entry = entry;
+
+        // Attribute callbacks read the same document as `read`, so they run
+        // under the same guard.
+        return withDocumentViewRead(view as Editor, () => {
+          const decorations: readonly Decoration[] = Reflect.apply(
+            decorate.read,
+            undefined,
+            [context]
+          );
+
+          if (!attributes || decorations.length === 0) return decorations;
+
+          return decorations.map((decoration) => ({
+            ...decoration,
+            attributes: mergePlateRenderedAttributes(
+              decoration.attributes,
+              typeof attributes === 'function'
+                ? attributes({
+                    __proto__: readContextFor(view),
+                    decoration,
+                    entry,
+                  } as never)
+                : attributes
+            ),
+          }));
         });
-        const decorations: readonly Decoration[] = withDocumentViewRead(
-          (view ?? editor) as Editor,
-          () => Reflect.apply(decorate.read, undefined, [context])
-        );
-
-        if (!attributes || decorations.length === 0) return decorations;
-
-        return decorations.map((decoration) => ({
-          ...decoration,
-          attributes: mergePlateRenderedAttributes(
-            decoration.attributes,
-            typeof attributes === 'function'
-              ? attributes({
-                  __proto__: pluginContext,
-                  decoration,
-                  entry,
-                } as never)
-              : attributes
-          ),
-        }));
       },
     };
   });

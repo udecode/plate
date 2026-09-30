@@ -12,6 +12,7 @@ import {
 } from '../../../core';
 import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
 import { BaseIndentPlugin } from '../../indent';
+import { BaseImagePlugin } from '../../media';
 import {
   BaseListPlugin,
   BULLETED_LIST_STYLES,
@@ -592,6 +593,22 @@ describe('BaseListPlugin canonical model', () => {
     expect(second).not.toHaveProperty('listStart');
   });
 
+  it('reads an ordinal by path and none for an item outside the root', () => {
+    const item = () => ({
+      children: [{ text: 'Item' }],
+      indent: 1,
+      listType: 'numbered',
+      type: 'paragraph',
+    });
+    const editor = createEditor({
+      initialValue: [{ ...item(), listStart: 4 }, item()],
+    });
+
+    expect(editor.read.list.ordinal([1])).toBe(5);
+    expect(editor.read.list.ordinal([2])).toBeUndefined();
+    expect(editor.read.list.ordinal(item())).toBeUndefined();
+  });
+
   it('treats an omitted root indent as level one', () => {
     const editor = createEditor({
       initialValue: [
@@ -807,6 +824,31 @@ describe('BaseListPlugin canonical model', () => {
     expect(result.ok && result.document.children).toMatchObject([
       { children: [{ text: 'One' }], listType: 'bulleted', type: 'paragraph' },
       { children: [{ text: 'Two' }], listType: 'bulleted', type: 'paragraph' },
+    ]);
+  });
+
+  it('lists the one block an HTML item holds when that block can be listed', () => {
+    const editor = createProductEditor({
+      plugins: [BaseHeadingPlugin, BaseImagePlugin, BaseListPlugin],
+    });
+    const parse = (source: string) => {
+      const result = editor.api.html.parse(source);
+
+      return result.ok && result.document.children;
+    };
+
+    expect(
+      parse('<ul><li><img src="https://platejs.org/a.png"></li></ul>')
+    ).toMatchObject([
+      { listType: 'bulleted', type: 'image', url: 'https://platejs.org/a.png' },
+    ]);
+    // Headings are not list targets here, so the item keeps the heading's text.
+    expect(parse('<ul><li><h2>Title</h2></li></ul>')).toMatchObject([
+      {
+        children: [{ text: 'Title' }],
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
     ]);
   });
 
@@ -1174,6 +1216,33 @@ describe('BaseListPlugin canonical model', () => {
       listType: 'bulleted',
       type: 'callout',
     });
+  });
+
+  it('renumbers a later item when an earlier block becomes a list item', () => {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'Plain' }], type: 'paragraph' },
+        {
+          children: [{ text: 'Item' }],
+          indent: 1,
+          listStart: 5,
+          listType: ListType.Numbered,
+          type: 'paragraph',
+        },
+      ],
+    });
+    const ordinal = () =>
+      editor.plugin(BaseListPlugin).read.ordinal(editor.read.children()[1]);
+
+    expect(ordinal()).toBe(5);
+
+    editor.update.nodes.set(
+      { indent: 1, listType: ListType.Numbered },
+      { at: [0] }
+    );
+
+    // `listStart` applies only while the item starts its sequence.
+    expect(ordinal()).toBe(2);
   });
 });
 

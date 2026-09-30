@@ -2,8 +2,12 @@
 title: Plite view ownership
 type: decision
 status: proposed
-updated: 2026-09-12
+updated: 2026-09-30
 review_scope: plite-view
+reconciled_executions:
+  - 2026-09-30-content-root-locations-design
+  - 2026-09-30-content-root-locations-execution
+  - 2026-09-30-content-root-locations-closure
 review_history:
   - ../review-records/2026-07-23-api-react.json
   - ../review-records/2026-09-12-react-public-runtime-cut.json
@@ -24,6 +28,15 @@ related:
 ---
 
 # Plite view ownership
+
+The [content-root location follow-up](../../plans/2026-09-30-content-root-locations.md)
+is [adopted locally](../../plans/2026-09-30-content-root-locations-execution.md). It retains `EditorRoot` and independent mounted
+views. Automatic owned-root mounts borrow decoration source definitions into
+their own manager and follow the owner's authored mode after a switch, while
+static rendering supplies a scoped reader that follows the rendering view's
+authored mode. The retained render context restores owner sources for parent
+content inside a fragment ([closure](../review-records/2026-09-30-content-root-locations-closure.json)). It introduces no public provider
+or location carrier.
 
 **Pursue removing the generic Widget carrier from geometry and the public
 React Runtime handle.** Keep selection, native input and accessibility

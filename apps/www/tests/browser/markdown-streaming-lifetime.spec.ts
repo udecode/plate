@@ -126,12 +126,15 @@ for (const mode of ['editable', 'static'] as const) {
           .selectOption(mode === 'static' ? 'editable' : 'static');
       }
 
+      // Ready renders with the action's own output, which a static preview
+      // may commit after the action returns.
+      await expect(status).toHaveText('Ready');
       const stoppedHeading = await heading.textContent();
       const stoppedOutput = await output.textContent();
       await page.clock.runFor(2000);
       await expect(heading).toHaveText(stoppedHeading!);
       await expect(output).toHaveText(stoppedOutput!);
-      await expect(status).not.toContainText('strict parse');
+      await expect(status).toHaveText('Ready');
       await expect(page.locator('button:has(svg.lucide-play)')).toBeVisible();
       errors.assertNone();
       errors.stop();

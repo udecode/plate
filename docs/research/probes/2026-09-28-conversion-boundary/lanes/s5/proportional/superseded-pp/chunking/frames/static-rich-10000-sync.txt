@@ -1,0 +1,83 @@
+renderRootSync: 32.8 ms per profile over 3 profiles
+by inclusive (ms per profile):
+      32.8  renderRootSync@5319583e-150745cd7583489c.js:296619
+      32.5  workLoopSync@5319583e-150745cd7583489c.js:298201
+      32.0  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+      30.5  beginWork@5319583e-150745cd7583489c.js:187718
+      22.2  renderWithHooks@5319583e-150745cd7583489c.js:109327
+      19.7  updateFunctionComponent@5319583e-150745cd7583489c.js:162671
+       7.0  MarkdownStreamingDemo@9008-db6ddc41f032438f.js:23732
+       7.0  Children@1656-507afe1003872559.js:20471
+       7.0  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+       4.5  read@1233-726a72fff91f8c4c.js:1495997 «param=>{let{editor:view=editor,entry}=param,context=Object.create(readContextFor»
+       4.0  Tokens@9008-db6ddc41f032438f.js:37446
+       3.8  t2@9008-db6ddc41f032438f.js:37960
+       3.8  (anon)@9008-db6ddc41f032438f.js:38103 «c=>{let space=c.text.replaceAll("\n","⤶").replaceAll(" ","␣");return(0,react_jsx»
+       3.6  bailoutOnAlreadyFinishedWork@5319583e-150745cd7583489c.js:184360
+       3.3  (anon)@1656-507afe1003872559.js:21285 «source=>source.read({editor,entry})),own=0===read.length?EMPTY_DECORATIONS:read,»
+       3.2  splitChunksByLinebreak@9008-db6ddc41f032438f.js:37088
+       3.2  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+       3.2  withDocumentViewRead@1233-726a72fff91f8c4c.js:37387
+       2.8  (anon)@1233-726a72fff91f8c4c.js:1496170 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decora»
+       2.7  read@7460-e221bf65b958d854.js:279021 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entr»
+       2.7  attemptEarlyBailoutIfNoScheduledUpdate@5319583e-150745cd7583489c.js:185438
+       2.6  updateForwardRef@5319583e-150745cd7583489c.js:153946
+       2.2  (anon)@295-e1a970c4cd7c2ee5.js:1620 «(_0,_1)=>{let[_ref1,..._rest]=[_0,_1],{color="currentColor",size=24,strokeWidth=»
+       2.1  reconcileChildren@5319583e-150745cd7583489c.js:153696
+       2.1  (anon)@5319583e-150745cd7583489c.js:99625 «(returnFiber,currentFirstChild,newChild,lanes){try{thenableIndexCounter$1=0;var »
+       2.1  reconcileChildFibersImpl@5319583e-150745cd7583489c.js:96059
+       2.0  updateMemoComponent@5319583e-150745cd7583489c.js:154718
+       1.9  getPlugin@1233-726a72fff91f8c4c.js:523130
+       1.8  completeUnitOfWork@5319583e-150745cd7583489c.js:303391
+       1.5  reconcileChildrenArray@5319583e-150745cd7583489c.js:92092
+       1.5  bubbleProperties@5319583e-150745cd7583489c.js:199974
+       1.3  readContextFor@1233-726a72fff91f8c4c.js:1495201
+       1.3  (anon)@295-e1a970c4cd7c2ee5.js:2362 «param=>{let[tag,attrs]=param;return(0,react.createElement)(tag,attrs)}),...Array»
+       1.2  (anon)@1656-507afe1003872559.js:22714 «(child,index)=>visit(child,[...p,index])),0!==contentRoots.length||0!==decoratio»
+       1.2  visit@1656-507afe1003872559.js:22412
+       1.1  updateSlot@5319583e-150745cd7583489c.js:89696
+       1.0  ownKeys@1233-726a72fff91f8c4c.js:536379
+       1.0  visitContentRoots@1656-507afe1003872559.js:22123
+       0.9  completeWork@5319583e-150745cd7583489c.js:200744
+       0.8  exports.createElement@3370-ab6f5e713678b725.js:246772
+by self (ms per profile):
+       3.8  (anon)@9008-db6ddc41f032438f.js:38103 «c=>{let space=c.text.replaceAll("\n","⤶").replaceAll(" ","␣");return(0,react_jsx»
+       3.2  splitChunksByLinebreak@9008-db6ddc41f032438f.js:37088
+       3.2  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+       1.6  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+       1.5  MarkdownStreamingDemo@9008-db6ddc41f032438f.js:23732
+       1.5  bubbleProperties@5319583e-150745cd7583489c.js:199974
+       1.3  beginWork@5319583e-150745cd7583489c.js:187718
+       1.2  read@7460-e221bf65b958d854.js:279021 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entr»
+       0.8  exports.createElement@3370-ab6f5e713678b725.js:246772
+       0.6  getPlugin@1233-726a72fff91f8c4c.js:523130
+       0.6  _object_without_properties@8255-fdc7096923fb725f.js:52329
+       0.6  updateSlot@5319583e-150745cd7583489c.js:89696
+       0.6  getEditorRuntimeOwner@1233-726a72fff91f8c4c.js:2109645
+       0.6  renderWithHooks@5319583e-150745cd7583489c.js:109327
+       0.6  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+       0.5  getCompiledElement@1233-726a72fff91f8c4c.js:110598
+       0.5  _object_spread_props@3370-ab6f5e713678b725.js:174957
+       0.5  bailoutOnAlreadyFinishedWork@5319583e-150745cd7583489c.js:184360
+       0.4  (anon)@9008-db6ddc41f032438f.js:28454 «key=>(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("option",{value:key,»
+       0.4  checkIfContextChanged@5319583e-150745cd7583489c.js:77389
+       0.4  (anon)@295-e1a970c4cd7c2ee5.js:2559 «(_0,_1)=>{let[_ref1,..._rest]=[_0,_1],{className}=_ref1,props=(0,_object_without»
+       0.4  ownKeys@1233-726a72fff91f8c4c.js:536379
+       0.4  (anon)@295-e1a970c4cd7c2ee5.js:2362 «param=>{let[tag,attrs]=param;return(0,react.createElement)(tag,attrs)}),...Array»
+       0.4  B@4373-030fd4499fccaf9a.js:107533
+       0.4  finishRenderingHooks@5319583e-150745cd7583489c.js:109993
+       0.4  jsxProd@3370-ab6f5e713678b725.js:67396
+       0.4  getCompiledPlatePlugin@1233-726a72fff91f8c4c.js:1014548
+       0.4  reconcileChildrenArray@5319583e-150745cd7583489c.js:92092
+       0.4  createWorkInProgress@5319583e-150745cd7583489c.js:62569
+       0.4  reconcileChildFibersImpl@5319583e-150745cd7583489c.js:96059
+       0.3  withDocumentViewRead@1233-726a72fff91f8c4c.js:37387
+       0.3  pushHostContainer@5319583e-150745cd7583489c.js:8823
+       0.3  getElementContentRoots@1233-726a72fff91f8c4c.js:111588
+       0.3  appendChild@:-1
+       0.3  push@5319583e-150745cd7583489c.js:8550
+       0.2  _@3370-ab6f5e713678b725.js:73069
+       0.2  mergeClasses@295-e1a970c4cd7c2ee5.js:1109
+       0.2  deleteRemainingChildren@5319583e-150745cd7583489c.js:85865
+       0.2  (anon)@9008-db6ddc41f032438f.js:29351 «size=>(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("option",{value:si»
+       0.2  _@8255-fdc7096923fb725f.js:53061

@@ -172,13 +172,15 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
   formats: ({ defineFormats }) =>
     defineFormats({
       html: {
-        decode: ({ element, pluginState }) => {
+        decode: ({ element, pluginState, preserve }) => {
           const { offset = 24, unit = 'px' } = pluginState;
           const dataValue =
             element.dataset.indent ?? element.getAttribute('aria-level');
 
           if (dataValue) {
             const value = Number(dataValue);
+
+            if (element.dataset.indent !== undefined) preserve('data-indent');
 
             return Number.isFinite(value) && value > 0 ? value : undefined;
           }

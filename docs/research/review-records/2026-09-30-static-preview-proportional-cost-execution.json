@@ -1,0 +1,183 @@
+{
+  "id": "2026-09-30-static-preview-proportional-cost-execution",
+  "kind": "execution",
+  "date": "2026-09-30",
+  "scopes": [
+    "html",
+    "code"
+  ],
+  "reviewBasis": [
+    "2026-09-29-static-preview-document-review",
+    "2026-09-30-static-preview-decoration-cost-review",
+    "2026-09-22-code-last-pass-ownership-gates"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-30-static-preview-proportional-cost.md",
+    "sha256": "0957f694813d1c747b18247c42ae8a6c8ab59513387db9cc24b3723009851661"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Streamed previews now cost work in proportion to the change. Code highlighting reads each code block once and reuses unchanged blocks by identity, without indexing each rendered document; the Plate decoration wrapper resolves its plugin context once per view; the static renderer reads a block's sources once and compares decorations by identity first; Plite's cloneValue returns primitives as they are. The AI menu and the streaming demo render useDeferredValue of the preview document, render the preview only when its document changes, and keep their DOM stable: the demo's status commits with its output, the inline AI draft scrolls from its resize observer, and its fallback end marker stays mounted so the preview is not restyled. A seeded reuse oracle proves reused static renders equal fresh ones and found three bugs, fixed at their owners: nested document readers, list ordinals keyed by the node index, and content roots missing from a block's memo inputs. Session state stays out of other documents: anchors resolve in document views by node identity, document views report no authored changes, Yjs cursors show nothing, and the document-view guard also covers leaf and text renders. HTML list blocks keep their list properties and unclaimed Plate attributes are reported (lane); the schema-construction benchmark gates on the median paired delta (lane). On the final tree, S5 React time per stream fell 48-55% at 10 KB and 73-74% at 50 KB against snapshot w. Per-block caching and chunking are deferred on browser evidence.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "packages/platejs/src/static/components/PlateStatic.reuse-oracle.spec.tsx",
+        "sha256": "826c31b9ec2746c7596b4c13820207fc853dbbacddc59a249ce552f461eb0023",
+        "claim": "Seeded, replayable document sequences with structural sharing (blocks and captions profiles, document and live-editor paths) render exactly like a fresh render while re-rendering fewer elements; a table of contents without readsDocument is caught at seed 1. It found the nested-reader, list-ordinal and content-root bugs."
+      },
+      {
+        "path": "packages/platejs/src/static/components/PlateStatic.spec.tsx",
+        "sha256": "e7bac9aeff492a901362755844cebc5e91a88dfa27daf1c2d7eb3e593cdf44ad",
+        "claim": "A table of contents inside another block renders a later heading; a leaf render that reads the source editor while a document renders throws. Each fails with its mechanism removed."
+      },
+      {
+        "path": "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx",
+        "sha256": "541913d4db127f33d4dbbde8618a590b24e63607696d25038cc18de0d2c89b12",
+        "claim": "Code highlighting decorates code-block entries, releases its caches when the last observer leaves, and reuses a block that an undo restores."
+      },
+      {
+        "path": "packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts",
+        "sha256": "77ad3698ded4c5865bde207b53b7b9edcc170b2e3370ad019d9448233c9a1abe",
+        "claim": "A comment highlights only where a rendered document keeps its node: nothing on a foreign document, the shifted path on a document that moves it."
+      },
+      {
+        "path": "packages/platejs/src/features/suggestion/BaseSuggestionPlugin.spec.ts",
+        "sha256": "cd268f86dd2dde7abad316d937e7a0bc5ffe76d3530dfedc5d9895de2c0d43bb",
+        "claim": "Suggestions mark only the editor that holds them; a document view shows none."
+      },
+      {
+        "path": "packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx",
+        "sha256": "87740709ed8592682171c6bca15a5ea7fd538437e9a2bb97c29c7f0b33c7fbbd",
+        "claim": "A later list item renumbers when an earlier block becomes a list item; fails with the index-keyed ordinal cache."
+      },
+      {
+        "path": "packages/plitejs/test/editor-runtime-view-contract.ts",
+        "sha256": "924ad8918bd78e23c03aac0111e003f793761a6c15360fbeb8ea1ddbf9c36407",
+        "claim": "An anchor resolves in a document view only on nodes the document shares with the editor; fails without the identity mapping."
+      },
+      {
+        "path": "apps/www/src/registry/components/editor/ai-menu.spec.tsx",
+        "sha256": "8524a6d1ecef6df60f94456b01f84cd928d664fb75475cb41fdbc03a5cc507a4",
+        "claim": "The AI draft renders as a document, keeps unchanged block hosts, and one end marker covers only the last character, including a whole surrogate pair; the draft's end marker stays mounted while the draft changes, and the test fails when it is rendered conditionally."
+      },
+      {
+        "path": "apps/www/tests/browser/markdown-streaming-contract.spec.ts",
+        "sha256": "9dc3ccb1f3b7cccfd7d0c4e19f9675ef2191111016a22010d28b7189bc52fe65",
+        "claim": "Browser contract: streamed previews equal a fresh parse; after a reset the strict parse renders fresh; chunk navigation settles on the fresh partial parse; the static and AI finals render like a one-chunk response."
+      },
+      {
+        "path": "benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts",
+        "sha256": "095f379a56de4f29d42fcccd21347780418e135a35e47bedc6a0784ad7356ecb",
+        "claim": "The schema-construction benchmark gates on the median paired prefix-minus-plain delta; it passes on the final tree."
+      },
+      {
+        "path": "apps/www/tests/browser/markdown-streaming-lifetime.spec.ts",
+        "sha256": "cb7b4e381682bbe60c4bb9004d0e212ba39c0fb55b440a839071ef7a1e197c74",
+        "claim": "Streaming stops after reset, paused reset, scenario, navigation and mode changes: once the output shows Ready, heading, output and status stay unchanged while the clock runs on."
+      },
+      {
+        "path": "packages/platejs/src/html/htmlConformance.spec.ts",
+        "sha256": "1e00bf1ee894211ae47905ddb71987d44df5c215916fe6b2810b0512349a0a9c",
+        "claim": "HTML round-trip conformance over the fixtures and list-block fixtures (image, heading, code block, blockquote and details with list properties): no unreported loss and no false claim; list blocks parse back to the same document; the emitted data attributes equal the Plate attribute set exactly; an emitted attribute that no decoder claims fails."
+      },
+      {
+        "path": "packages/platejs/src/html/html.spec.ts",
+        "sha256": "9f32d28976eb91eea2f60f6e68f170f2102cf0fa3f39361fa801209ef6fda73d",
+        "claim": "A Plate attribute that no installed mapping reads is reported as html-unsupported-content."
+      },
+      {
+        "path": "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/summary-pp3.json",
+        "sha256": "e345a1e68185b9092caa68a4474e7bc6f3af1ea1b5f0ad54f07a1bfc4a9546b8",
+        "claim": "S5 run pp3 on the final tree: 8/8 cells pass in 64 streams with no page or console errors; React per stream down 48-55% at 10 KB and 73-74% at 50 KB against snapshot w; static source reads 8-21% of React time; no publication skipped."
+      },
+      {
+        "path": "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/parity.json",
+        "sha256": "8ed005a4887fd65b6385f44812937f0dcd21d0885e27cfd404577979ace25503",
+        "claim": "Final text and HTML are identical between arms in every pp3 cell; static HTML is byte-identical to snapshot w's."
+      },
+      {
+        "path": "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/README.txt",
+        "sha256": "0b88189e1801afbb1cd0406aac8d5d75e10f68a03a91bc04d9ce531acc1d4cbd",
+        "claim": "Run pp4 on the final tree, AI cells: all 4 pass; style recalculation 1.30 ms (rich) and 1.81 ms (CJK) per commit at 50 KB with one full-preview recalc per stream, against 6.61 and 11.44 ms with 21-27 in pp3; contract AI tests 3/3; ai-session matches the baseline; exactly one end marker in every frame sample."
+      },
+      {
+        "path": "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/style-isolation/summary.json",
+        "sha256": "c873848887f03b52992551eab303951c8af4bbed7eab325ac7464ada71c967cf",
+        "claim": "The AI preview's style cost came from the fallback end marker flipping the preview's last-child state under global group-last/* utilities, not from the purple styling: variants without the container purple or with per-text purple did not move it, and keeping the marker mounted did."
+      }
+    ],
+    "limits": "Working tree only, nothing committed. Browser numbers come from Chromium on one Apple M5 Max at load 1.5-4.8; static cells ran on S5 run pp3 and AI cells on run pp4, which together are the final tree. Remaining size-dependent costs: the per-commit pass over every top-level block (1.7-3.8 ms at 50 KB), static table cells indexing each new document (about 1.3 ms per commit at CJK 50 KB), the highlighter's type check through the plugin portal (0.2-0.55 ms per commit), and one end-of-stream restyle of the AI preview (90-136 ms at 50 KB). Numbered items in content roots restart; decoration sources get root-relative paths without their root; the document-view guard does not cover component bodies or reads that bypass read and key; global group-last/* utilities restyle whole subtrees when a container's last-child state flips. HTML: numbered heading items decode an explicit listRestart and the first numbered item listStart 1; an li holding several blocks still flattens; a table in a list item drops its list properties without a report. pnpm test fails 26 and pnpm test:slow 25, all in HEAD's failure lists; bench-targets report --check fails before and after because the benchmark history file lags the registry since 2026-09-15."
+  },
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/components/PlateStatic.spec.tsx": "e7bac9aeff492a901362755844cebc5e91a88dfa27daf1c2d7eb3e593cdf44ad",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": "fce8981a755e0b8d0b4a86e130fa9fb48cb30163e866950950d9f5a4b2e1daa3",
+      "apps/www/src/registry/components/editor/code-block.tsx": "295c03a94b95cd1a2029c5376c41d0456dbe23cbd82dd6ce76058db798053775",
+      "apps/www/src/registry/examples/code-block-huge-demo.tsx": "946ef9e89f11f47b9278265809dbaef2e5f8ca17c60504016f3be0eabab3715a",
+      "apps/www/tests/browser/code-block-native-interactions.spec.ts": "3428eda572f118b3b61d7f503a1900f8d8ce36c2fed32b009866a9cc4cc9a795",
+      "apps/www/tests/browser/code-block-syntax.spec.ts": "790c509832a447482d471589cdd8787d17640d4faedb2eed099e773aed6a5d96",
+      "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+      "apps/www/package.json": "fc16a2f765a3b570ac544169d7c2d09e4c094a7abb5d140af2b2bcf4e40de9f4",
+      "packages/platejs/src/internal/plugin/blockInsertion.ts": "cca8614da6bb4bde12cb9bc9e2a60a4db12301366ac5e8a803ad8ad9961a1889",
+      "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts": "7b7bf4f63bb3ad3d043c9ad20f7ca711255c6bb8c7e8a220651f660dfb025357",
+      "apps/www/src/registry/components/editor/code-block-static.tsx": "b2af1208166dc3cc2b05becb42522d54938d35eb4dbb4c32205fa4077f91595a",
+      "apps/www/src/registry/components/editor/code-block-codemirror.tsx": "ab7b976014306982ade881891f6726ff4df30946211f484e08772bc32efb120f",
+      "apps/www/src/registry/examples/code-block-codemirror-demo.tsx": "b6741adcc114982b5859cfa391ab9fc1fd5c2dc3802604578247a09c693905cf",
+      "apps/www/src/registry/examples/code-block-views-demo.tsx": "706e5767ac8807fe8576e3b4c3f7e672792dfdf9c40ffc7512e89eddfb6d364b",
+      "apps/www/src/registry/registry-features.ts": "7a8e26bf8e5b6285f2d50e3483dedf043139e15cf38353b1f0ac479f728636ff",
+      "content/docs/(plugins)/(elements)/code-block.mdx": "1e5c9746b739bc19e55f7722bae170e16a9387c0a7fadaaa0d625a1870f1a81a",
+      "content/docs/(plugins)/(elements)/code-block.cn.mdx": "f7a7396d2ebc469f3d44f1ea21ab311d615ead4bddaf15f59fff07c84625603a",
+      "content/docs/(guides)/plugin-components.cn.mdx": "d1d87c17aa2fee98976577c343ca0ec1c792c8a84c724f115775cc92ed022114",
+      "packages/platejs/package.json": "5060e24de246ce63ccaeec93c0c629f0bed4b2c93e75d8977ef00ac26f7f05a1",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "tooling/scripts/run-entrypoint-task.mjs": "2a7c478035f55226129436c0cf4ce4988edc52d8317de27500ecf33a3ab7e3ec",
+      "tooling/entrypoints/entrypoint-turbo.mjs": "29b373de283b2a7c959c1124a03aee1584e908cf6d7a569627b35ec97d3ea316"
+    },
+    "directories": {
+      "packages/platejs/src/static": "d4b2e951f9e1956599cbbb499237ec2e75f871060e34c5c69effef333a1efd37",
+      "packages/platejs/src/features/code-block": "c75a0d8f33ec11781cc0c9c50008bcbe056bf8cbda639b1819eaccb3a2e9d47e",
+      "packages/platejs/src/react/features/code-block": "7ede39552bf008eeb476cc5d77cfa66624a9ac53e06cec0a08d8a03e1f3ce652",
+      "packages/platejs/src/code-block/codemirror": "03b54c0ec4abfc5e6d3c5c2a060becea676e9eb17d926801d881e678cb5a5c78"
+    },
+    "features": {
+      "capability/html": "8135a4e0b278b55c07b824cfc66c5a1e164e6fba2a80f496a683a355d802d9b4",
+      "example/value/deserialize-html-value": "41cf8a0ccbd2fb68fe09d8bbbaa15555c8aa36cd205e449cb752d2d54d44c612",
+      "export/platejs/./html": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./html/server": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./static": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/html": "e124b15c57fee445a81455e4a54eb9e46a8b5aac568e0bd8ac0f21e3804598e8",
+      "platejs/static": "d4b2e951f9e1956599cbbb499237ec2e75f871060e34c5c69effef333a1efd37",
+      "ui/html-export": "18dc4ff9da241dcce200c7d9d1de1b8267c99a81e48a108a8b2fd13d3e946e58",
+      "ui/html-export-kit": "6e510055e7d538e7ecc34a94444ff371edbcfc4c27b4296997ab41fab92c17c5",
+      "ui/html-export-schema-kit": "7852617a57c749d881f3364cb06c9ed240c4ecbc30dd3c68112b7cc313627978",
+      "browser/code-block-demos": "72da6dfe6c8e51c60dbe739d8b2334342418ccf3806441fdd42995b1e49ac793",
+      "browser/code-block-native-interactions": "251a0ce0a5c53303486693615a6f63c094d39bddd35d41023770399ee613f580",
+      "browser/code-block-selection": "769f4c63b2ac6b896b55a7599fe93614048da61906b8f3cb847dab4c6565aa77",
+      "browser/code-block-syntax": "0f6eb83345714b1dbca39e5710c9fba53a78860a6a783eabaadd9f2cb4ff540e",
+      "capability/codeBlock": "6416ef47d18fb35b5bcfcc4fb5957705b12be703e8c03c2176fda3b6c62e4c96",
+      "capability/codeSyntax": "c95a3f7a9625edff5d85cd47e9de38d23bb2572572475d1921cead67f8e55c56",
+      "example/plite/code-highlighting": "1eccb4a1b858636f0bde95cb699a75bd737b95dcb76b9ae4ea48c4b6f2f4eae7",
+      "example/registry/code-block-demo": "5374243a9687fbf0f2395c6b53f5a841bfe7cc699cc4e5ba0a63ae34d184a9fb",
+      "example/registry/code-block-huge-demo": "92f45ff7ac649c16a86461c898f187c4523fe7448ba0ff8a3a697ef696f9c09b",
+      "example/value/code-block-value": "0e63f922786c5ef9462b1a3d7c3903c209bf599f1cca68e7fa9ff50b52539086",
+      "example/value/huge-code-block-value": "c1779f9e270099d1afa55710a6d21ff219fbedbd0909cfb44706a0860761a13f",
+      "platejs/code-block": "c75a0d8f33ec11781cc0c9c50008bcbe056bf8cbda639b1819eaccb3a2e9d47e",
+      "ui/code-block": "9b9eb29ab4b768b2202d3f5c296a56680cf043f7d6fd5f0f97cfd77458c74929",
+      "ui/code-block-lowlight": "4c5751f0e4f6a7dac12713a0eb9269f0fbc57784ae8bc504d8a74032096515ee"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-30-static-preview-proportional-cost.md"
+  ]
+}

@@ -1,0 +1,4 @@
+static-rich-10000: candidate pubs 39 commits 39 (skips in 0) | React/commit 4.93 (p90 6.99) render/commit 5.16 (p90 7.2) | React/pub 4.96 render/pub 5.21 || baseline pubs 39 commits 39 React/commit 3.65 render/commit 18.28 React/pub 3.8
+static-cjk-10000: candidate pubs 39 commits 39 (skips in 0) | React/commit 7.08 (p90 10.97) render/commit 7.41 (p90 11.97) | React/pub 7.53 render/pub 7.73 || baseline pubs 39 commits 39 React/commit 6.32 render/commit 34.6 React/pub 6.32
+static-rich-50000: candidate pubs 196 commits 196 (skips in 0) | React/commit 14.16 (p90 19.16) render/commit 14.62 (p90 19.33) | React/pub 14.22 render/pub 14.48 || baseline pubs 196 commits 196 React/commit 10.78 render/commit 74.37 React/pub 11
+static-cjk-50000: candidate pubs 197 commits 197 (skips in 0) | React/commit 21.17 (p90 32.2) render/commit 21.22 (p90 32.2) | React/pub 21.84 render/pub 22.16 || baseline pubs 196 commits 196 React/commit 17.32 render/commit 147.53 React/pub 17.78

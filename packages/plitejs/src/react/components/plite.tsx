@@ -45,6 +45,7 @@ import { ElementContext, PliteContentRootOwnerContext } from '../context';
 import {
   DecorationContext,
   DecorationRegistrationContext,
+  DecorationSourcesContext,
   type PliteDecorationRegistrar,
 } from '../decoration-context';
 import {
@@ -360,13 +361,19 @@ export const PliteRuntimeView = <
     <EditorSelectorContext value={selectorContext}>
       <DecorationContext value={decorationManager}>
         <DecorationRegistrationContext value={registerDecorationSource}>
-          <EditorContext
-            value={reactEditor as unknown as EditorContextValue<any>}
+          <DecorationSourcesContext
+            value={
+              decorations as ReadonlyArray<DecorationSource<unknown>> | null
+            }
           >
-            <ReadOnlyContext value={readOnly}>
-              <FocusedContext value={isFocused}>{children}</FocusedContext>
-            </ReadOnlyContext>
-          </EditorContext>
+            <EditorContext
+              value={reactEditor as unknown as EditorContextValue<any>}
+            >
+              <ReadOnlyContext value={readOnly}>
+                <FocusedContext value={isFocused}>{children}</FocusedContext>
+              </ReadOnlyContext>
+            </EditorContext>
+          </DecorationSourcesContext>
         </DecorationRegistrationContext>
       </DecorationContext>
     </EditorSelectorContext>
@@ -378,6 +385,7 @@ export const usePliteRenderContext = () => {
   const selector = useContext(EditorSelectorContext);
   const decorations = useContext(DecorationContext);
   const registerDecoration = useContext(DecorationRegistrationContext);
+  const decorationSources = useContext(DecorationSourcesContext);
   const editor = useContext(EditorContext);
   const readOnly = useContext(ReadOnlyContext);
   const focused = useContext(FocusedContext);
@@ -387,15 +395,17 @@ export const usePliteRenderContext = () => {
       <EditorSelectorContext value={selector}>
         <DecorationContext value={decorations}>
           <DecorationRegistrationContext value={registerDecoration}>
-            <EditorContext value={editor}>
-              <ReadOnlyContext value={readOnly}>
-                <FocusedContext value={focused}>
-                  <AuthoredFragmentRootsContext value={fragment}>
-                    {children}
-                  </AuthoredFragmentRootsContext>
-                </FocusedContext>
-              </ReadOnlyContext>
-            </EditorContext>
+            <DecorationSourcesContext value={decorationSources}>
+              <EditorContext value={editor}>
+                <ReadOnlyContext value={readOnly}>
+                  <FocusedContext value={focused}>
+                    <AuthoredFragmentRootsContext value={fragment}>
+                      {children}
+                    </AuthoredFragmentRootsContext>
+                  </FocusedContext>
+                </ReadOnlyContext>
+              </EditorContext>
+            </DecorationSourcesContext>
           </DecorationRegistrationContext>
         </DecorationContext>
       </EditorSelectorContext>
@@ -404,6 +414,7 @@ export const usePliteRenderContext = () => {
       selector,
       decorations,
       registerDecoration,
+      decorationSources,
       editor,
       readOnly,
       focused,

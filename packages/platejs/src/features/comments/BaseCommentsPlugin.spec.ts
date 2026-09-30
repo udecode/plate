@@ -1,6 +1,7 @@
 import { DefaultAuthoredPlugin } from '../../authored';
 import { createEditor, definePlugin, NodeApi, type Range } from '../../core';
 import { createEditorView, defineRuntimePlugin } from '../../facade';
+import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import {
   commentBody as body,
   commentRange as range,
@@ -1352,5 +1353,48 @@ describe('Comments mapping and conversation history', () => {
     expect(editor.read.text.string(attachment.range)).toBe('lph');
     expect(api.getThread('thread')).toBe(before);
     expect(changes).not.toHaveBeenCalled();
+  });
+
+  it('highlights a comment only where a rendered document keeps its node', () => {
+    const { editor } = setup();
+    const source = getPlateDecorationSources(editor).find(
+      ({ id }) => id === BaseCommentsPlugin.name
+    )!;
+    const ranges = (
+      document: Parameters<typeof createEditorView>[1]['document'],
+      path: number[]
+    ) => {
+      const view = createEditorView(editor, { document });
+
+      return source
+        .read({ editor: view, entry: view.read.nodes.get(path)! })
+        .map((decoration) => decoration.range);
+    };
+    const [block] = editor.read.children();
+
+    expect(
+      ranges(
+        {
+          children: [{ type: 'paragraph', children: [{ text: 'Zeta Theta' }] }],
+        },
+        [0, 0]
+      )
+    ).toEqual([]);
+    expect(
+      ranges(
+        {
+          children: [
+            { type: 'paragraph', children: [{ text: 'First' }] },
+            block,
+          ],
+        },
+        [1, 0]
+      )
+    ).toEqual([
+      {
+        anchor: { path: [1, 0], offset: 1 },
+        focus: { path: [1, 0], offset: 4 },
+      },
+    ]);
   });
 });

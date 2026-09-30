@@ -503,6 +503,8 @@ component 或 slot。
 <APIItem name="decorate" type="Decorate<D>" optional>
   `read({ entry, ...context })` 返回带 key 的临时范围。
   `observe({ refresh, ...context })` 管理失效通知与清理；静态渲染只读取来源，不订阅。
+  一次读取取决于其 entry、entry 内部的节点以及来源观察的状态，因此 element entry
+  可以返回其后代的范围。
 
   `attributes` 接受 `DecorationAttributes` 对象、纯函数，或用于清除继承样式的
   `null`。回调接收推断的插件上下文，以及 `entry` 和 `decoration`。

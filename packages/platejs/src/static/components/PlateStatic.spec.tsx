@@ -4,7 +4,9 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
+import { authored } from '../../authored';
 import {
+  createEditorView,
   NodeApi,
   property,
   schema,
@@ -13,6 +15,7 @@ import {
   type Value,
 } from '../../core';
 import { BaseHeadingPlugin } from '../../features/basic-nodes/lib/BaseHeadingPlugins';
+import { BaseListPlugin } from '../../features/list/lib/BaseListPlugin';
 import { BaseTocPlugin } from '../../features/toc/lib/BaseTocPlugin';
 import {
   BaseParagraphPlugin,
@@ -475,6 +478,193 @@ describe('PlateStatic Memoization', () => {
     expect(view.getByText('Updated caption')).toBeInTheDocument();
     expect(view.queryByText('First caption')).not.toBeInTheDocument();
   });
+
+  it('reads every callback inside a content root through that root', () => {
+    const readers: string[] = [];
+    const paragraph = (text: string) => ({
+      children: [{ text }],
+      type: 'paragraph',
+    });
+    const item = (text: string) => ({
+      ...paragraph(text),
+      indent: 1,
+      listType: 'numbered',
+    });
+    const editor = createHeadlessEditor({
+      plugins: [
+        definePlugin('figure', {
+          component: ({ slots }) => (
+            <figure>
+              <figcaption>{slots.contentRoot('caption')}</figcaption>
+            </figure>
+          ),
+          schema: {
+            element: {
+              contentRoots: {
+                caption: {
+                  content: schema.content.type('paragraph', {
+                    default: { type: 'paragraph' },
+                    min: 1,
+                  }),
+                  ownership: 'exclusive',
+                },
+              },
+              blockContent: true,
+              void: 'block',
+            },
+          },
+        }),
+        definePlugin('own', {
+          decorate: {
+            read: ({ editor: reader, entry: [node, path] }) =>
+              TextApi.isText(node) && reader.read.nodes.get(path)?.[0] === node
+                ? [
+                    {
+                      attributes: { 'data-own': node.text },
+                      key: `own:${path.join(',')}`,
+                      range: {
+                        anchor: { offset: 0, path },
+                        focus: { offset: 1, path },
+                      },
+                    },
+                  ]
+                : [],
+          },
+        }),
+        BaseListPlugin.configure({
+          slots: {
+            wrapNodeChildren: ({ element }) =>
+              element.listType === 'numbered'
+                ? (props) => (
+                    <ol
+                      start={props.editor
+                        .plugin(BaseListPlugin)
+                        .read.ordinal(props.path)}
+                    >
+                      <li>{props.children}</li>
+                    </ol>
+                  )
+                : undefined,
+          },
+        }),
+        BaseParagraphPlugin.configure({
+          component: (props) => {
+            readers.push(
+              props.editor.read.nodes.get(props.path)?.[0] === props.element
+                ? 'same'
+                : 'other'
+            );
+
+            return <EditorElement {...props} />;
+          },
+        }),
+      ],
+      initialValue: {
+        children: [
+          paragraph('Main'),
+          {
+            childRoots: { caption: 'caption:1' },
+            children: [{ text: '' }],
+            type: 'figure',
+          },
+        ],
+        roots: { 'caption:1': [item('One'), item('Two')] },
+      },
+    });
+    const document = {
+      children: [
+        paragraph('Body'),
+        {
+          childRoots: { caption: 'caption:1' },
+          children: [{ text: '' }],
+          type: 'figure',
+        },
+      ],
+      roots: { 'caption:1': [item('Uno'), item('Dos'), item('Tres')] },
+    };
+    const renders = [
+      render(<EditorStatic editor={editor} />),
+      render(<EditorStatic document={document} editor={editor} />),
+    ];
+    const [live, preview] = renders.map(({ container }) => ({
+      marked: [...container.querySelectorAll('[data-own]')].map((element) =>
+        element.getAttribute('data-own')
+      ),
+      starts: [...container.querySelectorAll('ol')].map((element) =>
+        element.getAttribute('start')
+      ),
+    }));
+
+    expect(readers).not.toContain('other');
+    expect(live).toEqual({
+      marked: ['Main', 'One', 'Two'],
+      starts: ['1', '2'],
+    });
+    expect(preview).toEqual({
+      marked: ['Body', 'Uno', 'Dos', 'Tres'],
+      starts: ['1', '2', '3'],
+    });
+    expect(editor.read.root('caption:1')).toEqual([item('One'), item('Two')]);
+  });
+
+  it('renders content roots in the current authored mode of the rendering view', () => {
+    const editor = createHeadlessEditor({
+      plugins: [
+        definePlugin('figure', {
+          component: ({ slots }) => (
+            <figure>
+              <figcaption>{slots.contentRoot('caption')}</figcaption>
+            </figure>
+          ),
+          schema: {
+            element: {
+              contentRoots: {
+                caption: {
+                  content: schema.content.type('paragraph', {
+                    default: { type: 'paragraph' },
+                    min: 1,
+                  }),
+                  ownership: 'exclusive',
+                },
+              },
+              blockContent: true,
+              void: 'block',
+            },
+          },
+        }),
+        authored({ authorId: 'alice' }),
+      ],
+      initialValue: {
+        children: [
+          {
+            childRoots: { caption: 'caption:1' },
+            children: [{ text: '' }],
+            type: 'figure',
+          },
+        ],
+        roots: {
+          'caption:1': [{ children: [{ text: 'Foot' }], type: 'paragraph' }],
+        },
+      },
+    });
+    const proposed = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'proposed' },
+    });
+
+    createEditorView(proposed, { root: 'caption:1' }).update.text.insert(
+      ' draft',
+      { at: { offset: 4, path: [0, 0] } }
+    );
+
+    const view = render(<EditorStatic editor={proposed} />);
+
+    expect(view.container.textContent).toBe('Foot draft');
+
+    proposed.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+    view.rerender(<EditorStatic editor={proposed} />);
+
+    expect(view.container.textContent).toBe('Foot');
+  });
 });
 
 describe('PlateStatic render slots', () => {
@@ -652,6 +842,50 @@ describe('EditorStatic document', () => {
     expect(view.container.querySelector('aside')?.textContent).toBe('One,Two');
   });
 
+  it('renders a table of contents inside another block again when a later heading arrives', () => {
+    const heading = (text: string) => ({
+      children: [{ text }],
+      level: 1,
+      type: 'heading',
+    });
+    const editor = createHeadlessEditor({
+      plugins: [
+        BaseHeadingPlugin,
+        BaseTocPlugin.configure({
+          component: ({ editor: rendered }) => (
+            <aside>
+              {rendered
+                .plugin(BaseTocPlugin)
+                .read.headings()
+                .map((item) => item.title)
+                .join(',')}
+            </aside>
+          ),
+        }),
+        definePlugin('box', {
+          schema: { element: { content: { allowed: { kind: 'open' } } } },
+        }),
+      ],
+    });
+    const box = {
+      children: [{ children: [{ text: '' }], type: 'toc' }],
+      type: 'box',
+    };
+    const one = heading('One');
+    const view = render(
+      <EditorStatic document={{ children: [box, one] }} editor={editor} />
+    );
+
+    view.rerender(
+      <EditorStatic
+        document={{ children: [box, one, heading('Two')] }}
+        editor={editor}
+      />
+    );
+
+    expect(view.container.querySelector('aside')?.textContent).toBe('One,Two');
+  });
+
   it('marks only the last text when a reused block stops being last', () => {
     const LastTextPlugin = definePlugin('lastText', {
       decorate: {
@@ -696,5 +930,39 @@ describe('EditorStatic document', () => {
         (node) => node.textContent
       )
     ).toEqual(['c']);
+  });
+
+  it('refuses a leaf render that reads the source editor', () => {
+    let source: Editor | undefined;
+    const editor = createHeadlessEditor({
+      plugins: [
+        definePlugin('count', {
+          schema: {
+            mark: property.boolean({ default: false, omitDefault: true }),
+          },
+          render: {
+            mark: {
+              leafAttributes: () => ({
+                'data-blocks': String(source?.read.children().length),
+              }),
+            },
+          },
+        }),
+      ],
+    });
+    source = editor;
+
+    expect(() =>
+      ReactDOMServer.renderToStaticMarkup(
+        <EditorStatic
+          document={{
+            children: [
+              { children: [{ count: true, text: 'a' }], type: 'paragraph' },
+            ],
+          }}
+          editor={editor}
+        />
+      )
+    ).toThrow(/while a document view was reading/);
   });
 });

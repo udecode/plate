@@ -1,0 +1,77 @@
+{
+  "mode": "path-prototype",
+  "runtime": "1.3.12",
+  "tableTransform": "5519b610ffb7e7a37aa731fd71edc138a072fd0ac1501d3efd67b716f076f228",
+  "listTransform": "58d9bec0b9d55b6186e86f503f32eb3addc0691da25f75fe65ea32c06d26bd1e",
+  "source": {
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "c242baaf15c7ae5286543dda65154c1ca63508dd0866dc0aab8296a08c208456",
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts": "8b98d3dcab9aa08b63632bf51c4f5d040fb675ff19e7f4f70e49eee24c6b2f24",
+    "packages/platejs/src/features/table/lib/internal/context.ts": "1e0edbfc5c2a56f6023d38cecd02df9d3340d9a99b180f2bc9bbdcaa2888cba6",
+    "packages/platejs/src/features/table/lib/internal/grid.ts": "0ad5c59d53f0c3ad0d51f81af9ec3b09cf63ef5327b7d8de7a312e79619f19e6",
+    "packages/platejs/src/features/table/lib/internal/selection.ts": "c9c0dcc1f4808796bec6ef6030d9bb5ff5e945ff6b5feb64eb06fb63d177d76d",
+    "packages/plitejs/src/core/snapshot-index.ts": "1cacfc6032f4850c234e79cc5c53671969900366d4c85fc5ee7101fd9df17b46",
+    "docs/research/probes/2026-09-30-content-root-locations/features.ts": "fd11af92f9412115765f4dd3694f0580e27294d662afc09377478f2274dae5a3"
+  },
+  "results": [
+    {
+      "unrelated": 20,
+      "samples": [
+        {
+          "duration": 0.2915830000000028,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.32716700000000287,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.2767079999999851,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.3195839999999919,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.254209000000003,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.30791599999997743,
+          "indexBuilds": 0
+        }
+      ],
+      "correctness": "pass"
+    },
+    {
+      "unrelated": 500,
+      "samples": [
+        {
+          "duration": 0.315084000000013,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.4628749999999968,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.31912499999998545,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.32200000000000273,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.22608400000001438,
+          "indexBuilds": 0
+        },
+        {
+          "duration": 0.3090410000000361,
+          "indexBuilds": 0
+        }
+      ],
+      "correctness": "pass"
+    }
+  ]
+}

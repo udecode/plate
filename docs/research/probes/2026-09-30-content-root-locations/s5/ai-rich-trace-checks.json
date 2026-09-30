@@ -1,0 +1,38 @@
+{
+  "ai-rich-10000": {
+    "status": "complete",
+    "finalP95": [
+      33.61,
+      34.03
+    ],
+    "finalOk": true,
+    "arrivalP95": [
+      40.2,
+      39.8
+    ],
+    "latencyOk": true,
+    "finalTextsMatch": true,
+    "busyMs": [
+      565.3,
+      553.8
+    ]
+  },
+  "ai-rich-50000": {
+    "status": "complete",
+    "finalP95": [
+      119.73,
+      118.58
+    ],
+    "finalOk": true,
+    "arrivalP95": [
+      42.6,
+      42.6
+    ],
+    "latencyOk": true,
+    "finalTextsMatch": true,
+    "busyMs": [
+      3026.0,
+      3017.9
+    ]
+  }
+}

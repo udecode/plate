@@ -1,0 +1,17 @@
+flushPassiveEffects: 0.4 ms per profile over 3 profiles
+by inclusive (ms per profile):
+       0.4  flushPassiveEffects@5319583e-150745cd7583489c.js:313573
+       0.4  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       0.4  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       0.4  commitHookEffectListMount@5319583e-150745cd7583489c.js:216333
+       0.4  t2@885-9cb09a45a1814598.js:9156
+       0.4  resolveDOMNode@1233-4d37154d85cba0b9.js:962766
+       0.4  resolveDOMNode@1233-4d37154d85cba0b9.js:942585
+       0.4  editable@1233-4d37154d85cba0b9.js:930177
+       0.4  getEditorDOMViewRoot@1233-4d37154d85cba0b9.js:923503
+       0.4  get@1233-4d37154d85cba0b9.js:718127
+       0.0  _s.installed.window.requestAnimationFrame@82aa5511-47b78e186c9ce35c.js:62233
+       0.0  requestAnimationFrame@:-1
+by self (ms per profile):
+       0.4  get@1233-4d37154d85cba0b9.js:718127
+       0.0  requestAnimationFrame@:-1

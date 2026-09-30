@@ -190,13 +190,26 @@ validated once, so pass the same object again to render it again.
 `EditorPreview` takes the same `document`, and copying from it copies the
 rendered document.
 
+Each render reads the decorations of every top-level block, so rendering again
+is also how decorations that depend on other state refresh. A component that
+re-renders for other reasons, such as each streamed chunk, should memoize the
+element on its document:
+
+```tsx
+const preview = useMemo(
+  () => <EditorStatic editor={editor} document={document} />,
+  [editor, document]
+);
+```
+
 Everything read through the rendered editor sees the document: `editor.read`,
 plugin reads such as `editor.plugin(TocPlugin).read.headings()`, and plugin
 APIs. Plugins get that editor from their render, decorate, read or API
 context. An editor captured when a plugin was created, as in
 `.extend(({ editor }) => …)`, is the editor you passed and still holds its own
-value; reading it while a document is being read, decorated or rendered throws
-an error that names the fix.
+value. Reading it from plugin code that reads, decorates or renders the
+document throws an error that names the fix. React runs component bodies after
+that code returns, so a component reads through its `editor` prop.
 
 ## Client-side alternative: `EditorPreview`
 

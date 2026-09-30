@@ -62,7 +62,7 @@ const value = [
 ];
 ~~~
 
-The second item does not store 5. Plate derives it with editor.read.list.ordinal(element).
+The second item does not store 5. Plate derives it with editor.read.list.ordinal(at), where `at` is the item's path, node or key; a static renderer that already knows the path passes it.
 
 listStart is latent author intent. Plate ignores it while a compatible previous item exists, keeps it in the document, and applies it if later edits make that item first. Use listRestart when the item must begin a new sequence even with a compatible predecessor.
 
@@ -124,4 +124,4 @@ distinction. Task checkboxes map to task `listType` plus `checked`.
 | update.outdent(options) | Decrease indentation and clear list fields at the outer level. |
 | update.clear(options?) | Remove list semantics from the exact selected list items. |
 | update.insert(input, options?) | Insert a list item with owned construction and placement. |
-| read.ordinal(element) | Derive a numbered item's display ordinal. |
+| read.ordinal(at) | Derive a numbered item's display ordinal, or `undefined` when `at` is not a numbered item in the editor's root. |

@@ -1,4 +1,8 @@
-import type { NodeEntry, Decoration } from '../../facade';
+import {
+  createEditorView,
+  type NodeEntry,
+  type Decoration,
+} from '../../facade';
 import { createEditor } from '../../lib/editor/withPlite';
 import { definePlugin } from '../../lib/plugin/definePlugin';
 import { getPlateDecorationSources } from './getPlateDecorationSources';
@@ -134,6 +138,28 @@ describe('Plate decoration presentation', () => {
     ).toBe('second');
     expect(seen).toEqual([second, second]);
     expect(source.read({ entry })[0].attributes['data-editor']).toBe('first');
+  });
+
+  it('guards presentation like reading on a document view', () => {
+    let captured: { read: { children: () => readonly unknown[] } } | undefined;
+    const plugin = definePlugin('paint', {
+      decorate: {
+        attributes: () => ({ 'data-count': captured?.read.children().length }),
+        read: () => rows,
+      },
+    });
+    const editor = createEditor({ plugins: [plugin] });
+    const view = createEditorView(editor, {
+      document: {
+        children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+      },
+    });
+
+    captured = editor;
+
+    expect(() =>
+      getPlateDecorationSources(editor)[0].read({ editor: view, entry })
+    ).toThrow(/while a document view was reading/);
   });
 
   it('retains empty results without evaluating presentation', () => {

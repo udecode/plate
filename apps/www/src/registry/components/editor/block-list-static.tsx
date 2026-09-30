@@ -22,7 +22,7 @@ export const BlockListStatic: ListWrapper = (props) => {
         indent={typeof indent === 'number' ? indent : undefined}
         listStart={innerProps.editor
           .plugin(BaseListPlugin)
-          .read.ordinal(innerProps.element)}
+          .read.ordinal(innerProps.path)}
         listStyle={listStyle}
         listType={listType}
       />

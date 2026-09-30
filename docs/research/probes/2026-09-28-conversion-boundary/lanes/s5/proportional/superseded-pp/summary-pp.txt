@@ -1,0 +1,12 @@
+  static-rich-10000 final tree (pp2): pass load 2.3 c 200.5 busy 558.4 blockDecor 11.8 wdvr 102.5 decor reads 31.1 final 47.4->7.55 arrival 69.8->40.7
+static-rich-10000: pass load 3.8 drift a -6% b -4% | c p2 998.8 w 382.3 pp 190.3 | busy p2 1489.6 w 854.6 pp 555.7 | blockDecor w 151.1 pp 8.1 | wdvr w 186.8 pp 101.3 | decor reads w 160.3 pp 28 | final 48.45->7.25 arrival 71->40.4
+  static-cjk-10000 final tree (pp2): pass load 2.1 c 303.4 busy 773.8 blockDecor 36.2 wdvr 188.7 decor reads 53.5 final 76.01->11.45 arrival 105.7->44.7
+static-cjk-10000: pass load 5.1 drift a -6% b -2% | c p2 1868.7 w 632.1 pp 317.7 | busy p2 2530 w 1225.4 pp 784.7 | blockDecor w 268.9 pp 39.5 | wdvr w 321.6 pp 163.4 | decor reads w 289.4 pp 55.1 | final 79.71->11.31 arrival 107.7->43.9
+ai-rich-10000: pass load 4.4 drift a -4% b -2% | c p2 1102.5 w 383.3 pp 261.4 | busy p2 1509 w 697 pp 578 | blockDecor w 87.4 pp 19.1 | wdvr w 163.4 pp 130.9 | decor reads w 108.6 pp 42 | final 74.01->33.75 arrival 76.5->40.3
+ai-cjk-10000: pass load 3.2 drift a -5% b -2% | c p2 2033.1 w 657.1 pp 400.7 | busy p2 2609.3 w 1135.4 pp 895.1 | blockDecor w 135.8 pp 54.4 | wdvr w 235.1 pp 205.3 | decor reads w 149.2 pp 73 | final 120.43->49.75 arrival 127.5->44.6
+  static-rich-50000 final tree (pp2): pass load 2.1 c 2794.8 busy 4899.4 blockDecor 369.5 wdvr 964.9 decor reads 644.9 final 197.1->12.79 arrival 200.6->44
+static-rich-50000: pass load 2.1 drift a -11% b -9% | c p2 22627.7 w 6355.4 pp 2786.5 | busy p2 27431.5 w 10087.5 pp 4948.5 | blockDecor w 3471.2 pp 361.6 | wdvr w 3069.5 pp 951.7 | decor reads w 3751.3 pp 639.4 | final 190.45->15.64 arrival 211->44.1
+  static-cjk-50000 final tree (pp2): pass load 2.5 c 4322.8 busy 7286.9 blockDecor 1357.1 wdvr 1932.8 decor reads 1419.1 final 351.95->31.99 arrival 382.4->48.9
+static-cjk-50000: pass load 3.6 drift a -22% b -23% | c p2 43099.3 w 9389.1 pp 4426.9 | busy p2 49912 w 15097.2 pp 7661.8 | blockDecor w 5475.2 pp 1363.8 | wdvr w 4723.1 pp 1927.8 | decor reads w 5693 pp 1431.7 | final 378.12->36.47 arrival 376.2->48.6
+ai-rich-50000: pass load 3.1 drift a -3% b -2% | c p2 22457.8 w 4375.1 pp 2330.4 | busy p2 25976.4 w 6106.5 pp 4035.6 | blockDecor w 1474.6 pp 330.4 | wdvr w 1494.9 pp 889.9 | decor reads w 1628.3 pp 492.8 | final 309.75->122.33 arrival 250->44.4
+ai-cjk-50000: pass load 2.3 drift a -8% b -9% | c p2 43941.5 w 8083.7 pp 4187.1 | busy p2 49353.1 w 10794.6 pp 6761 | blockDecor w 2510 pp 820.4 | wdvr w 2514 pp 1566.8 | decor reads w 2649.5 pp 969.4 | final 540.86->196.89 arrival 449.5->45.7

@@ -2,7 +2,7 @@
 title: Table selection and mounted interaction ownership
 type: decision
 status: accepted
-updated: 2026-09-18
+updated: 2026-09-30
 review_scope: table
 current_review: 2026-09-17-table-host-delivery-benchmark-closure
 review_history:
@@ -26,6 +26,9 @@ related:
   - ../reviews.md#table
   - ../../plans/2026-09-17-table-api-design.md
 reconciled_executions:
+  - 2026-09-30-content-root-locations-design
+  - 2026-09-30-content-root-locations-execution
+  - 2026-09-30-content-root-locations-closure
   - 2026-09-18-table-edge-paste-regression
   - 2026-09-18-table-strict-mode-execution-recovery
   - 2026-09-18-recovered-2026-05-18-plite-table-transform-boundary-ralplan
@@ -45,6 +48,14 @@ reconciled_executions:
 ---
 
 # Table selection and mounted interaction ownership
+
+The [content-root location design](../../plans/2026-09-30-content-root-locations.md)
+retains this topology, selection and binder architecture. [Its execution](../../plans/2026-09-30-content-root-locations-execution.md)
+adopted the presentation follow-up: a known cell path reads through the
+existing pure grid, avoiding selection compilation and native key indexing,
+and the registry static cell passes its path. A scoped reader preserves
+cell/root agreement. Keyed selection and commands stay with their current
+owner; the managed Chromium tables suite passes on the final tree.
 
 **Keep table semantics in Plate. `TablePlugin` owns one private selection
 projection per mounted view and binds it directly to canonical cell hosts. The

@@ -943,6 +943,24 @@ describe('native authored views', () => {
     assert.equal(source.read.text.string([]), 'Body');
   });
 
+  it('keeps a proposal view policy in a named-root view derived from it', () => {
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: {
+        children: [paragraph('Body')],
+        roots: { notes: [paragraph('Foot')] },
+      },
+    });
+    const proposed = createEditorView(source, { authored: proposal });
+    const notes = createEditorView(proposed, { root: 'notes' });
+
+    assert.deepEqual(notes.read.authored.view(), proposal);
+    notes.update.text.insert(' draft', { at: point(4) });
+    assert.equal(notes.read.text.string([]), 'Foot draft');
+    assert.deepEqual(source.read.root('notes'), [paragraph('Foot')]);
+    assert.equal(proposed.read.text.string([]), 'Body');
+  });
+
   it('rolls back content and view publications together', () => {
     const { source, proposed } = setup();
     let commits = 0;

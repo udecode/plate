@@ -1,0 +1,10 @@
+--- wt-si-a/apps/www/src/registry/components/editor/ai-menu.tsx	2026-09-30 03:44:52
++++ wt-si-b/apps/www/src/registry/components/editor/ai-menu.tsx	2026-09-30 05:08:40
+@@ -144,7 +144,6 @@
+         document={previewDocument}
+         editor={aiEditor}
+         className={cn(
+-          '[&_[data-editor-string]]:border-b-2 [&_[data-editor-string]]:border-b-purple-100 [&_[data-editor-string]]:bg-purple-50 [&_[data-editor-string]]:text-purple-800',
+           streaming &&
+             '[&_[data-editor-ai-end]]:after:ml-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""]'
+         )}

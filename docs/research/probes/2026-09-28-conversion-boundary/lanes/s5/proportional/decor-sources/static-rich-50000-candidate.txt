@@ -1,0 +1,50 @@
+block decoration read total 175.7 ms over 3 profiles; decorate.read bodies 74.1 ms; outside the bodies 101.7 ms
+outside the bodies, by frame (inclusive / self ms):
+      54.1      6.2  read@1233-4d37154d85cba0b9.js:1496002 «param=>{let{editor:view=editor,entry}=param,context=Object.create(readContextFor(view));co»
+      39.1     27.9  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+      17.6     10.0  (anon)@1656-507afe1003872559.js:22614 «(child,index)=>visit(child,[...nodePath,index])))},(visitContentRoots(child),child.childre»
+       8.8      1.3  readContextFor@1233-4d37154d85cba0b9.js:1495206
+       7.5      1.3  getPlateRuntime@1233-4d37154d85cba0b9.js:1013267
+       7.5      7.5  getEditorRuntimeOwner@1233-4d37154d85cba0b9.js:2109651
+       7.5      6.3  getElementContentRoots@1233-4d37154d85cba0b9.js:107575
+       7.5      0.0  visitContentRoots@1656-507afe1003872559.js:22123
+       6.3      2.5  getPlateModelPublication@1233-4d37154d85cba0b9.js:1013155
+       6.1      6.1  (anon)@1233-4d37154d85cba0b9.js:1496175 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decorations.leng»
+       5.0      2.5  isElement@1233-4d37154d85cba0b9.js:1814528
+       3.8      0.0  getPlateRuntimeOwner@1233-4d37154d85cba0b9.js:887941
+       2.5      2.5  isObject@1233-4d37154d85cba0b9.js:887326
+       1.3      1.3  jL@1233-4d37154d85cba0b9.js:2108905
+       1.3      1.3  getCompiledElement@1233-4d37154d85cba0b9.js:106585
+source read@7460-c24090794ff3990a.js:279086 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entry:[block,b»: inclusive 74.1 ms, self 49.2 ms
+  first call under the body (-> first named call below it):
+      14.9      0.0  get@1233-4d37154d85cba0b9.js:531681 -> get@1233-4d37154d85cba0b9.js:531681
+       6.3      6.3  isElement@1233-4d37154d85cba0b9.js:1814528 -> (inline)
+       3.8      0.0  get@1233-4d37154d85cba0b9.js:524001 -> get@1233-4d37154d85cba0b9.js:524001
+  by inclusive:
+      18.6      2.5  getPlugin@1233-4d37154d85cba0b9.js:519118
+      14.9      0.0  get@1233-4d37154d85cba0b9.js:531681
+      14.9      0.0  get@1233-4d37154d85cba0b9.js:531479
+      13.6      1.3  getCandidate@1233-4d37154d85cba0b9.js:518603
+       6.3      6.3  hasCompiledPlatePluginCandidate@1233-4d37154d85cba0b9.js:1014312
+       6.3      6.3  isElement@1233-4d37154d85cba0b9.js:1814528
+       6.1      4.8  hasCompiledPlateModelCandidate@1233-4d37154d85cba0b9.js:1014434
+       3.8      0.0  get@1233-4d37154d85cba0b9.js:524001
+       3.8      0.0  getConsumerSchemaIdentity@1233-4d37154d85cba0b9.js:522414
+       2.5      1.3  isDescriptorInstalled@1233-4d37154d85cba0b9.js:518138
+       1.3      0.0  getPlateRuntimeOwner@1233-4d37154d85cba0b9.js:887941
+       1.3      1.3  getEditorRuntimeOwner@1233-4d37154d85cba0b9.js:2109651
+       1.3      1.3  isPluginDescriptorSourceOf@1233-4d37154d85cba0b9.js:516609
+  by self:
+       6.3      6.3  hasCompiledPlatePluginCandidate@1233-4d37154d85cba0b9.js:1014312
+       6.3      6.3  isElement@1233-4d37154d85cba0b9.js:1814528
+       6.1      4.8  hasCompiledPlateModelCandidate@1233-4d37154d85cba0b9.js:1014434
+      18.6      2.5  getPlugin@1233-4d37154d85cba0b9.js:519118
+       2.5      1.3  isDescriptorInstalled@1233-4d37154d85cba0b9.js:518138
+       1.3      1.3  getEditorRuntimeOwner@1233-4d37154d85cba0b9.js:2109651
+      13.6      1.3  getCandidate@1233-4d37154d85cba0b9.js:518603
+       1.3      1.3  isPluginDescriptorSourceOf@1233-4d37154d85cba0b9.js:516609
+      14.9      0.0  get@1233-4d37154d85cba0b9.js:531681
+      14.9      0.0  get@1233-4d37154d85cba0b9.js:531479
+       3.8      0.0  get@1233-4d37154d85cba0b9.js:524001
+       3.8      0.0  getConsumerSchemaIdentity@1233-4d37154d85cba0b9.js:522414
+       1.3      0.0  getPlateRuntimeOwner@1233-4d37154d85cba0b9.js:887941

@@ -32,6 +32,10 @@ it('renders the draft document, keeping block hosts and marking its end', () => 
     ),
   ];
   const texts = () => blocks().map((block) => block.textContent);
+  const ends = () =>
+    [...view.container.querySelectorAll('[data-editor-ai-end]')].map(
+      (end) => end.textContent
+    );
   const show = (previewValue: Array<ReturnType<typeof paragraph>>) =>
     act(() => {
       editor.plugin(AIChatPlugin).store.set({ previewValue });
@@ -47,11 +51,10 @@ it('renders the draft document, keeping block hosts and marking its end', () => 
   expect(blocks()[0]).toBe(first);
   // Decorations read the rendered draft, not the preview editor's own value,
   // and one marker covers only its last character.
-  expect(
-    [...view.container.querySelectorAll('[data-editor-ai-end]')].map(
-      (end) => end.textContent
-    )
-  ).toEqual(['D']);
+  expect(ends()).toEqual(['D']);
+
+  show([kept, paragraph('E😀')]);
+  expect(ends()).toEqual(['😀']);
 
   show([kept]);
   expect(texts()).toEqual(['A']);
@@ -59,5 +62,32 @@ it('renders the draft document, keeping block hosts and marking its end', () => 
 
   show([paragraph('X')]);
   expect(texts()).toEqual(['X']);
+  view.unmount();
+});
+
+it('keeps the draft end marker mounted while the draft changes', () => {
+  const editor = createEditor({
+    plugins: [ParagraphPlugin, AIChatPlugin],
+    initialValue: [paragraph('')],
+  });
+  const view = render(
+    <EditorRoot editor={editor}>
+      <AIChatEditor />
+    </EditorRoot>
+  );
+  const draft = () => view.container.querySelector('[data-editor-ai-draft]');
+  const show = (previewValue: Array<ReturnType<typeof paragraph>>) =>
+    act(() => {
+      editor.plugin(AIChatPlugin).store.set({ previewValue, streaming: true });
+    });
+
+  show([paragraph('')]);
+  const tail = draft()?.lastElementChild;
+  expect(tail?.hasAttribute('data-editor-ai-end')).toBe(true);
+
+  show([paragraph('A')]);
+  // Adding or removing a sibling after the preview restyles all of it.
+  expect(draft()?.lastElementChild).toBe(tail);
+  expect(tail?.hasAttribute('data-editor-ai-end')).toBe(false);
   view.unmount();
 });

@@ -1,0 +1,500 @@
+[
+  {
+    "cell": "static-rich-10000",
+    "decorationReadsMs": 28,
+    "directMs": 25.9,
+    "underVisitMs": 1.9,
+    "streams": [
+      {
+        "file": "static-candidate-1790729413377.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 24.6,
+          "(wrapper and guard)": 2.2
+        },
+        "direct": 24.9,
+        "underVisit": 1.9,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 26.8
+        },
+        "total": 26.8,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "static-candidate-1790729416776.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 28.4,
+          "(wrapper and guard)": 4.3
+        },
+        "direct": 31.9,
+        "underVisit": 0.8,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 32.7
+        },
+        "total": 32.7,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "static-candidate-1790729429342.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 23.5,
+          "(wrapper and guard)": 4.5
+        },
+        "direct": 25.9,
+        "underVisit": 2.1,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 28
+        },
+        "total": 28,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      }
+    ],
+    "bodiesMs": {
+      "read@7460-e221bf65b958d854.js:279021": 24.6,
+      "(wrapper and guard)": 4.3
+    }
+  },
+  {
+    "cell": "static-cjk-10000",
+    "decorationReadsMs": 55.1,
+    "directMs": 39.1,
+    "underVisitMs": 16.2,
+    "streams": [
+      {
+        "file": "static-candidate-1790729447554.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 50.3,
+          "(wrapper and guard)": 4.7
+        },
+        "direct": 41.2,
+        "underVisit": 13.8,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 55
+        },
+        "total": 55,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "static-candidate-1790729451151.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 43.8,
+          "(wrapper and guard)": 11.3
+        },
+        "direct": 38.9,
+        "underVisit": 16.2,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 55.1
+        },
+        "total": 55.1,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "static-candidate-1790729465454.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 47.4,
+          "(wrapper and guard)": 8.4
+        },
+        "direct": 39.1,
+        "underVisit": 16.7,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 55.8
+        },
+        "total": 55.8,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      }
+    ],
+    "bodiesMs": {
+      "read@7460-e221bf65b958d854.js:279021": 47.4,
+      "(wrapper and guard)": 8.4
+    }
+  },
+  {
+    "cell": "ai-rich-10000",
+    "decorationReadsMs": 42,
+    "directMs": 36.4,
+    "underVisitMs": 5.6,
+    "streams": [
+      {
+        "file": "ai-candidate-1790729482736.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 27.1,
+          "read@885-0f38e168d8e57a26.js:4743": 10.2,
+          "(wrapper and guard)": 4.7
+        },
+        "direct": 36.4,
+        "underVisit": 5.6,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 42
+        },
+        "total": 42,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "ai-candidate-1790729486483.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 23.6,
+          "read@885-0f38e168d8e57a26.js:4743": 12,
+          "(wrapper and guard)": 7.4
+        },
+        "direct": 35.5,
+        "underVisit": 7.5,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 43
+        },
+        "total": 43,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "ai-candidate-1790729500002.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 28.3,
+          "read@885-0f38e168d8e57a26.js:4743": 10.6,
+          "(wrapper and guard)": 1.5
+        },
+        "direct": 36.7,
+        "underVisit": 3.8,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 40.5
+        },
+        "total": 40.5,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      }
+    ],
+    "bodiesMs": {
+      "read@7460-e221bf65b958d854.js:279021": 27.1,
+      "read@885-0f38e168d8e57a26.js:4743": 10.6,
+      "(wrapper and guard)": 4.7
+    }
+  },
+  {
+    "cell": "ai-cjk-10000",
+    "decorationReadsMs": 73,
+    "directMs": 44.9,
+    "underVisitMs": 26.4,
+    "streams": [
+      {
+        "file": "ai-candidate-1790729520842.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 46.6,
+          "read@885-0f38e168d8e57a26.js:4743": 20.1,
+          "(wrapper and guard)": 7.5
+        },
+        "direct": 47.8,
+        "underVisit": 26.4,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 74.2
+        },
+        "total": 74.2,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "ai-candidate-1790729525147.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 38.7,
+          "read@885-0f38e168d8e57a26.js:4743": 19.3,
+          "(wrapper and guard)": 1.3
+        },
+        "direct": 41.7,
+        "underVisit": 17.7,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 59.4
+        },
+        "total": 59.4,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "ai-candidate-1790729541806.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 46.3,
+          "read@885-0f38e168d8e57a26.js:4743": 20.4,
+          "(wrapper and guard)": 6.3
+        },
+        "direct": 44.9,
+        "underVisit": 28.1,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 73
+        },
+        "total": 73,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      }
+    ],
+    "bodiesMs": {
+      "read@7460-e221bf65b958d854.js:279021": 46.3,
+      "read@885-0f38e168d8e57a26.js:4743": 20.1,
+      "(wrapper and guard)": 6.3
+    }
+  },
+  {
+    "cell": "static-rich-50000",
+    "decorationReadsMs": 639.4,
+    "directMs": 465.2,
+    "underVisitMs": 174.2,
+    "streams": [
+      {
+        "file": "static-candidate-1790729636237.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 463.6,
+          "(wrapper and guard)": 165.6
+        },
+        "direct": 461,
+        "underVisit": 168.3,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 629.2
+        },
+        "total": 629.2,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "static-candidate-1790729650520.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 467.7,
+          "(wrapper and guard)": 171.8
+        },
+        "direct": 465.2,
+        "underVisit": 174.2,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 639.4
+        },
+        "total": 639.4,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "static-candidate-1790729731116.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 487.9,
+          "(wrapper and guard)": 162
+        },
+        "direct": 470.1,
+        "underVisit": 179.8,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 649.9
+        },
+        "total": 649.9,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      }
+    ],
+    "bodiesMs": {
+      "read@7460-e221bf65b958d854.js:279021": 467.7,
+      "(wrapper and guard)": 165.6
+    }
+  },
+  {
+    "cell": "ai-rich-50000",
+    "decorationReadsMs": 492.8,
+    "directMs": 311.5,
+    "underVisitMs": 181.3,
+    "streams": [
+      {
+        "file": "ai-candidate-1790729825249.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 251.7,
+          "read@885-0f38e168d8e57a26.js:4743": 184.6,
+          "(wrapper and guard)": 56.5
+        },
+        "direct": 311.5,
+        "underVisit": 181.3,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 492.8
+        },
+        "total": 492.8,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "ai-candidate-1790729838141.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 266,
+          "read@885-0f38e168d8e57a26.js:4743": 171.2,
+          "(wrapper and guard)": 66.1
+        },
+        "direct": 319.1,
+        "underVisit": 184.3,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 503.3
+        },
+        "total": 503.3,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "ai-candidate-1790729920079.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 254.4,
+          "read@885-0f38e168d8e57a26.js:4743": 154.6,
+          "(wrapper and guard)": 46.5,
+          "atBlockPath@7460-e221bf65b958d854.js:279460": 1.3
+        },
+        "direct": 310.7,
+        "underVisit": 146.1,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 456.7
+        },
+        "total": 456.7,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      }
+    ],
+    "bodiesMs": {
+      "read@7460-e221bf65b958d854.js:279021": 254.4,
+      "read@885-0f38e168d8e57a26.js:4743": 171.2,
+      "(wrapper and guard)": 56.5,
+      "atBlockPath@7460-e221bf65b958d854.js:279460": 0
+    }
+  },
+  {
+    "cell": "static-cjk-50000",
+    "decorationReadsMs": 1431.7,
+    "directMs": 692.3,
+    "underVisitMs": 715.4,
+    "streams": [
+      {
+        "file": "static-candidate-1790730074418.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 1079.7,
+          "(wrapper and guard)": 352
+        },
+        "direct": 692.3,
+        "underVisit": 739.3,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 1431.7
+        },
+        "total": 1431.7,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "static-candidate-1790730092889.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 1086.9,
+          "(wrapper and guard)": 369.7
+        },
+        "direct": 741.3,
+        "underVisit": 715.4,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 1456.7
+        },
+        "total": 1456.7,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "static-candidate-1790730221400.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 1038.7,
+          "(wrapper and guard)": 345.2
+        },
+        "direct": 674.1,
+        "underVisit": 709.8,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 1383.9
+        },
+        "total": 1383.9,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      }
+    ],
+    "bodiesMs": {
+      "read@7460-e221bf65b958d854.js:279021": 1079.7,
+      "(wrapper and guard)": 352
+    }
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "decorationReadsMs": 969.4,
+    "directMs": 524.4,
+    "underVisitMs": 445.1,
+    "streams": [
+      {
+        "file": "ai-candidate-1790730360727.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 496.8,
+          "read@885-0f38e168d8e57a26.js:4743": 344.3,
+          "(wrapper and guard)": 116.5
+        },
+        "direct": 499,
+        "underVisit": 458.6,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 957.6
+        },
+        "total": 957.6,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "ai-candidate-1790730375970.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 549.1,
+          "read@885-0f38e168d8e57a26.js:4743": 309.2,
+          "(wrapper and guard)": 111.1
+        },
+        "direct": 524.4,
+        "underVisit": 445.1,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 969.4
+        },
+        "total": 969.4,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      },
+      {
+        "file": "ai-candidate-1790730503478.cpuprofile",
+        "bodies": {
+          "read@7460-e221bf65b958d854.js:279021": 518.6,
+          "read@885-0f38e168d8e57a26.js:4743": 334.6,
+          "(wrapper and guard)": 120.4
+        },
+        "direct": 531.3,
+        "underVisit": 442.2,
+        "childrenKeys": {
+          "Children@1656-507afe1003872559.js:20471": 973.6
+        },
+        "total": 973.6,
+        "wrapperKeys": [
+          "read@1233-726a72fff91f8c4c.js:1495997"
+        ]
+      }
+    ],
+    "bodiesMs": {
+      "read@7460-e221bf65b958d854.js:279021": 518.6,
+      "read@885-0f38e168d8e57a26.js:4743": 334.6,
+      "(wrapper and guard)": 116.5
+    }
+  }
+]

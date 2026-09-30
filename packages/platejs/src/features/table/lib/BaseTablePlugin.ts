@@ -35,6 +35,7 @@ import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import {
   createDetachedTableContext,
   type createTableContext,
+  type TableContext,
 } from './internal/context';
 import {
   compileTableGrid,
@@ -1108,13 +1109,32 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
 }))
   .extend(({ editor, schema: { type }, store }) => ({
     read: ({ state }) => {
+      const cellType = () => editor.plugin(BaseTableCellPlugin).schema.type;
       const selectionView = (options: TableTargetOptions = {}) =>
         readTableSelection(state, {
           at: options.at,
-          cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+          cellTypes: [cellType()],
           selection: state.selection(),
           tableType: type,
         });
+      // A known path needs only table topology. Selection views also resolve
+      // node keys, which a document view indexes the whole root to find.
+      const cellAt = (path: Path) => {
+        const isCell = (node: unknown): node is TableCellElement =>
+          ElementApi.isElement(node) && node.type === cellType();
+        const node = state.nodes.get(path)?.[0];
+        const cell: ElementEntry<TableCellElement> | undefined = isCell(node)
+          ? [node, path]
+          : state.nodes.above({ at: path, match: isCell });
+        const table = cell && state.nodes.above({ at: cell[1], type });
+
+        if (!cell || !table) return null;
+
+        const context = createDetachedTableContext(table[0], table[1]);
+        const anchor = context.anchorAtPath(cell[1]);
+
+        return anchor ? cellInfo(context, anchor, state.view.root()) : null;
+      };
       const resolvedBorder = (
         border: TableCellBorder | undefined
       ): Required<TableCellBorder> => ({
@@ -1122,17 +1142,19 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
         style: border?.style ?? 'solid',
         width: border?.width ?? 1,
       });
-      const cellInfo = (view: TableSelectionView): TableCellInfo | null => {
-        if (view.anchors.length !== 1) return null;
-        const { anchor } = view;
-        const entry = view.context.entryAt(anchor.row, anchor.col);
+      const cellInfo = (
+        context: TableContext,
+        anchor: TableGridAnchor,
+        root: string | undefined
+      ): TableCellInfo | null => {
+        const entry = context.entryAt(anchor.row, anchor.col);
 
         if (!entry) return null;
         const [cell] = entry;
         const { defaultTableWidth, minColumnWidth } = store.get();
-        const columnWidths = getTableColumnSizes(view.table);
+        const columnWidths = getTableColumnSizes(context.table);
         const fallbackWidth = getFallbackColumnWidth({
-          columnCount: view.context.grid.width,
+          columnCount: context.grid.width,
           defaultTableWidth,
           minColumnWidth,
         });
@@ -1145,7 +1167,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
         ) {
           width += columnWidths?.[index] ?? fallbackWidth;
         }
-        const minHeight = view.table.children
+        const minHeight = context.table.children
           .slice(anchor.row, anchor.row + anchor.rowSpan)
           .reduce(
             (total, row) =>
@@ -1172,7 +1194,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           col: anchor.col,
           colSpan: anchor.colSpan,
           entry,
-          ...(view.root === undefined ? {} : { root: view.root }),
+          ...(root === undefined ? {} : { root }),
           row: anchor.row,
           rowSpan: anchor.rowSpan,
           size: Object.freeze({ minHeight, width }),
@@ -1258,9 +1280,13 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           });
         },
         cell: (options: { at?: TableCellTarget } = {}) => {
+          if (PathApi.isPath(options.at)) return cellAt(options.at);
+
           const view = selectionView(options);
 
-          return view ? cellInfo(view) : null;
+          return view?.anchors.length === 1
+            ? cellInfo(view.context, view.anchor, view.root)
+            : null;
         },
         canMerge: (options: TableTargetOptions = {}) => {
           const view = selectionView(options);

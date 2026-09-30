@@ -1,0 +1,810 @@
+[
+  {
+    "cell": "static-rich-10000",
+    "verdict": "pass",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "load": 1.7,
+    "baselineDriftVsW": {
+      "a": -2,
+      "b": -5,
+      "c": -56,
+      "busy": -23
+    },
+    "c": {
+      "p2": 998.8,
+      "w": 382.3,
+      "pp3": 186.5
+    },
+    "busy": {
+      "p2": 1489.6,
+      "w": 854.6,
+      "pp3": 500.9
+    },
+    "blockDecorations": {
+      "w": 151.1,
+      "pp3": 5
+    },
+    "withDocumentViewRead": {
+      "w": 186.8,
+      "pp3": 103.5
+    },
+    "staticDecorationReads": {
+      "w": 160.3,
+      "pp3": 18.8,
+      "direct": 13.4,
+      "underVisit": 5
+    },
+    "final": {
+      "baseline": 47.47,
+      "candidate": 6.96
+    },
+    "arrival": {
+      "baseline": 68.7,
+      "candidate": 40.4
+    },
+    "finalW": {
+      "baseline": 66.69,
+      "candidate": 7.72
+    },
+    "arrivalW": {
+      "baseline": 74,
+      "candidate": 41.7
+    },
+    "abPairs": [
+      [
+        847,
+        47
+      ],
+      [
+        861,
+        50
+      ],
+      [
+        849,
+        48
+      ]
+    ],
+    "previews": {
+      "baseline": [
+        39,
+        39,
+        39
+      ],
+      "candidate": [
+        39,
+        39,
+        39
+      ]
+    },
+    "commits": {
+      "publications": 39,
+      "previewCommits": 39,
+      "commitsShowingSkips": 0,
+      "reactPerCommitMs": 4.4,
+      "reactPerCommitP90Ms": 7.13,
+      "renderPerCommitMs": 4.51,
+      "reactPerPublicationMs": 4.67,
+      "renderPerPublicationMs": 4.85,
+      "reactPhasesPerCommitMs": {
+        "commitRoot": 0,
+        "flushPassiveEffects": 0,
+        "renderRootConcurrent": 3.74,
+        "renderRootSync": 0,
+        "otherReact": 0
+      }
+    },
+    "finalTextsMatch": true
+  },
+  {
+    "cell": "static-cjk-10000",
+    "verdict": "pass",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "load": 2,
+    "baselineDriftVsW": {
+      "a": -6,
+      "b": 0,
+      "c": -54,
+      "busy": -17
+    },
+    "c": {
+      "p2": 1868.7,
+      "w": 632.1,
+      "pp3": 289.1
+    },
+    "busy": {
+      "p2": 2530,
+      "w": 1225.4,
+      "pp3": 706.8
+    },
+    "blockDecorations": {
+      "w": 268.9,
+      "pp3": 7.8
+    },
+    "withDocumentViewRead": {
+      "w": 321.6,
+      "pp3": 169.9
+    },
+    "staticDecorationReads": {
+      "w": 289.4,
+      "pp3": 23,
+      "direct": 17.7,
+      "underVisit": 5.3
+    },
+    "final": {
+      "baseline": 75.76,
+      "candidate": 11.22
+    },
+    "arrival": {
+      "baseline": 103.3,
+      "candidate": 44.4
+    },
+    "finalW": {
+      "baseline": 85.62,
+      "candidate": 11.05
+    },
+    "arrivalW": {
+      "baseline": 112.3,
+      "candidate": 48.4
+    },
+    "abPairs": [
+      [
+        1510,
+        58
+      ],
+      [
+        1579,
+        64
+      ],
+      [
+        1589,
+        61
+      ]
+    ],
+    "previews": {
+      "baseline": [
+        39,
+        40,
+        40
+      ],
+      "candidate": [
+        39,
+        40,
+        39
+      ]
+    },
+    "commits": {
+      "publications": 39,
+      "previewCommits": 39,
+      "commitsShowingSkips": 0,
+      "reactPerCommitMs": 6.95,
+      "reactPerCommitP90Ms": 9.89,
+      "renderPerCommitMs": 7.98,
+      "reactPerPublicationMs": 7.29,
+      "renderPerPublicationMs": 7.66,
+      "reactPhasesPerCommitMs": {
+        "commitRoot": 0,
+        "flushPassiveEffects": 0,
+        "renderRootConcurrent": 6.18,
+        "renderRootSync": 0.1,
+        "otherReact": 0
+      }
+    },
+    "finalTextsMatch": true
+  },
+  {
+    "cell": "ai-rich-10000",
+    "verdict": "pass",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "load": 2.5,
+    "baselineDriftVsW": {
+      "a": -2,
+      "b": -3,
+      "c": -51,
+      "busy": -13
+    },
+    "c": {
+      "p2": 1102.5,
+      "w": 383.3,
+      "pp3": 200
+    },
+    "busy": {
+      "p2": 1509,
+      "w": 697,
+      "pp3": 564
+    },
+    "blockDecorations": {
+      "w": 87.4,
+      "pp3": 3.8
+    },
+    "withDocumentViewRead": {
+      "w": 163.4,
+      "pp3": 106.2
+    },
+    "staticDecorationReads": {
+      "w": 108.6,
+      "pp3": 25.3,
+      "direct": 22.8,
+      "underVisit": 2.5
+    },
+    "final": {
+      "baseline": 72.34,
+      "candidate": 33.92
+    },
+    "arrival": {
+      "baseline": 71.7,
+      "candidate": 39.9
+    },
+    "finalW": {
+      "baseline": 86.95,
+      "candidate": 40.41
+    },
+    "arrivalW": {
+      "baseline": 82.4,
+      "candidate": 44.3
+    },
+    "abPairs": [
+      [
+        982,
+        52
+      ],
+      [
+        987,
+        50
+      ],
+      [
+        976,
+        50
+      ]
+    ],
+    "previews": {
+      "baseline": [
+        40,
+        40,
+        40
+      ],
+      "candidate": [
+        40,
+        40,
+        40
+      ]
+    },
+    "commits": {
+      "publications": 40,
+      "previewCommits": 40,
+      "commitsShowingSkips": 0,
+      "reactPerCommitMs": 3.53,
+      "reactPerCommitP90Ms": 4.75,
+      "renderPerCommitMs": 3.76,
+      "reactPerPublicationMs": 4.27,
+      "renderPerPublicationMs": 4.46,
+      "reactPhasesPerCommitMs": {
+        "commitRoot": 0,
+        "flushPassiveEffects": 0,
+        "renderRootConcurrent": 3.32,
+        "renderRootSync": 0,
+        "otherReact": 0
+      }
+    },
+    "finalTextsMatch": true
+  },
+  {
+    "cell": "ai-cjk-10000",
+    "verdict": "pass",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "load": 2.3,
+    "baselineDriftVsW": {
+      "a": -5,
+      "b": -3,
+      "c": -56,
+      "busy": -7
+    },
+    "c": {
+      "p2": 2033.1,
+      "w": 657.1,
+      "pp3": 295.1
+    },
+    "busy": {
+      "p2": 2609.3,
+      "w": 1135.4,
+      "pp3": 826.7
+    },
+    "blockDecorations": {
+      "w": 135.8,
+      "pp3": 12.1
+    },
+    "withDocumentViewRead": {
+      "w": 235.1,
+      "pp3": 180.3
+    },
+    "staticDecorationReads": {
+      "w": 149.2,
+      "pp3": 31.2,
+      "direct": 21.1,
+      "underVisit": 10
+    },
+    "final": {
+      "baseline": 110.33,
+      "candidate": 54.79
+    },
+    "arrival": {
+      "baseline": 107.4,
+      "candidate": 44.1
+    },
+    "finalW": {
+      "baseline": 125.87,
+      "candidate": 56.77
+    },
+    "arrivalW": {
+      "baseline": 137.3,
+      "candidate": 71.5
+    },
+    "abPairs": [
+      [
+        1685,
+        76
+      ],
+      [
+        1701,
+        73
+      ],
+      [
+        1696,
+        67
+      ]
+    ],
+    "previews": {
+      "baseline": [
+        40,
+        40,
+        40
+      ],
+      "candidate": [
+        41,
+        41,
+        41
+      ]
+    },
+    "commits": {
+      "publications": 41,
+      "previewCommits": 40,
+      "commitsShowingSkips": 0,
+      "reactPerCommitMs": 5.56,
+      "reactPerCommitP90Ms": 8.06,
+      "renderPerCommitMs": 6.15,
+      "reactPerPublicationMs": 6.19,
+      "renderPerPublicationMs": 6.68,
+      "reactPhasesPerCommitMs": {
+        "commitRoot": 0,
+        "flushPassiveEffects": 0,
+        "renderRootConcurrent": 5.15,
+        "renderRootSync": 0,
+        "otherReact": 0
+      }
+    },
+    "finalTextsMatch": true
+  },
+  {
+    "cell": "static-rich-50000",
+    "verdict": "pass",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "load": 3.1,
+    "baselineDriftVsW": {
+      "a": -11,
+      "b": -10,
+      "c": -76,
+      "busy": -26
+    },
+    "c": {
+      "p2": 22627.7,
+      "w": 6355.4,
+      "pp3": 1701.3
+    },
+    "busy": {
+      "p2": 27431.5,
+      "w": 10087.5,
+      "pp3": 3912.2
+    },
+    "blockDecorations": {
+      "w": 3471.2,
+      "pp3": 59.6
+    },
+    "withDocumentViewRead": {
+      "w": 3069.5,
+      "pp3": 486.6
+    },
+    "staticDecorationReads": {
+      "w": 3751.3,
+      "pp3": 130,
+      "direct": 88.2,
+      "underVisit": 43
+    },
+    "final": {
+      "baseline": 181.1,
+      "candidate": 10.3
+    },
+    "arrival": {
+      "baseline": 204.4,
+      "candidate": 44
+    },
+    "finalW": {
+      "baseline": 217.2,
+      "candidate": 24.39
+    },
+    "arrivalW": {
+      "baseline": 232.9,
+      "candidate": 56.5
+    },
+    "abPairs": [
+      [
+        17020,
+        232
+      ],
+      [
+        17141,
+        233
+      ],
+      [
+        17225,
+        232
+      ]
+    ],
+    "previews": {
+      "baseline": [
+        197,
+        196,
+        197
+      ],
+      "candidate": [
+        196,
+        196,
+        196
+      ]
+    },
+    "commits": {
+      "publications": 196,
+      "previewCommits": 196,
+      "commitsShowingSkips": 0,
+      "reactPerCommitMs": 8.57,
+      "reactPerCommitP90Ms": 11.03,
+      "renderPerCommitMs": 8.83,
+      "reactPerPublicationMs": 8.64,
+      "renderPerPublicationMs": 8.87,
+      "reactPhasesPerCommitMs": {
+        "commitRoot": 1.25,
+        "flushPassiveEffects": 0,
+        "renderRootConcurrent": 6.4,
+        "renderRootSync": 1.2,
+        "otherReact": 0
+      }
+    },
+    "finalTextsMatch": true
+  },
+  {
+    "cell": "static-cjk-50000",
+    "verdict": "pass",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "load": 3.5,
+    "baselineDriftVsW": {
+      "a": -23,
+      "b": -24,
+      "c": -75,
+      "busy": -33
+    },
+    "c": {
+      "p2": 43099.3,
+      "w": 9389.1,
+      "pp3": 2405.2
+    },
+    "busy": {
+      "p2": 49912,
+      "w": 15097.2,
+      "pp3": 5520.4
+    },
+    "blockDecorations": {
+      "w": 5475.2,
+      "pp3": 227
+    },
+    "withDocumentViewRead": {
+      "w": 4723.1,
+      "pp3": 1125.3
+    },
+    "staticDecorationReads": {
+      "w": 5693,
+      "pp3": 223.7,
+      "direct": 83,
+      "underVisit": 136.3
+    },
+    "final": {
+      "baseline": 351.38,
+      "candidate": 28.17
+    },
+    "arrival": {
+      "baseline": 375.3,
+      "candidate": 44.9
+    },
+    "finalW": {
+      "baseline": 389.81,
+      "candidate": 38.67
+    },
+    "arrivalW": {
+      "baseline": 429.2,
+      "candidate": 79.9
+    },
+    "abPairs": [
+      [
+        32347,
+        327
+      ],
+      [
+        32648,
+        314
+      ],
+      [
+        32815,
+        322
+      ]
+    ],
+    "previews": {
+      "baseline": [
+        195,
+        196,
+        196
+      ],
+      "candidate": [
+        195,
+        195,
+        195
+      ]
+    },
+    "commits": {
+      "publications": 195,
+      "previewCommits": 195,
+      "commitsShowingSkips": 0,
+      "reactPerCommitMs": 12.07,
+      "reactPerCommitP90Ms": 16.17,
+      "renderPerCommitMs": 12.49,
+      "reactPerPublicationMs": 12.25,
+      "renderPerPublicationMs": 12.67,
+      "reactPhasesPerCommitMs": {
+        "commitRoot": 1.25,
+        "flushPassiveEffects": 0,
+        "renderRootConcurrent": 9.54,
+        "renderRootSync": 1.27,
+        "otherReact": 0
+      }
+    },
+    "finalTextsMatch": true
+  },
+  {
+    "cell": "ai-rich-50000",
+    "verdict": "pass",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "load": 2.4,
+    "baselineDriftVsW": {
+      "a": -4,
+      "b": -4,
+      "c": -73,
+      "busy": -11
+    },
+    "c": {
+      "p2": 22457.8,
+      "w": 4375.1,
+      "pp3": 1152.2
+    },
+    "busy": {
+      "p2": 25976.4,
+      "w": 6106.5,
+      "pp3": 3961.5
+    },
+    "blockDecorations": {
+      "w": 1474.6,
+      "pp3": 81.5
+    },
+    "withDocumentViewRead": {
+      "w": 1494.9,
+      "pp3": 655.2
+    },
+    "staticDecorationReads": {
+      "w": 1628.3,
+      "pp3": 244.9,
+      "direct": 184.8,
+      "underVisit": 60.2
+    },
+    "final": {
+      "baseline": 306.36,
+      "candidate": 121.35
+    },
+    "arrival": {
+      "baseline": 226.1,
+      "candidate": 43
+    },
+    "finalW": {
+      "baseline": 412.3,
+      "candidate": 153.6
+    },
+    "arrivalW": {
+      "baseline": 278.3,
+      "candidate": 87.7
+    },
+    "abPairs": [
+      [
+        19472,
+        316
+      ],
+      [
+        19220,
+        317
+      ],
+      [
+        19351,
+        315
+      ]
+    ],
+    "previews": {
+      "baseline": [
+        197,
+        196,
+        196
+      ],
+      "candidate": [
+        201,
+        204,
+        204
+      ]
+    },
+    "commits": {
+      "publications": 204,
+      "previewCommits": 203,
+      "commitsShowingSkips": 0,
+      "reactPerCommitMs": 4.97,
+      "reactPerCommitP90Ms": 7.44,
+      "renderPerCommitMs": 5.47,
+      "reactPerPublicationMs": 5.13,
+      "renderPerPublicationMs": 5.58,
+      "reactPhasesPerCommitMs": {
+        "commitRoot": 0,
+        "flushPassiveEffects": 0,
+        "renderRootConcurrent": 4.79,
+        "renderRootSync": 0,
+        "otherReact": 0
+      }
+    },
+    "finalTextsMatch": true
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "verdict": "pass",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "load": 2.1,
+    "baselineDriftVsW": {
+      "a": -8,
+      "b": -8,
+      "c": -77,
+      "busy": -16
+    },
+    "c": {
+      "p2": 43941.5,
+      "w": 8083.7,
+      "pp3": 2077.1
+    },
+    "busy": {
+      "p2": 49353.1,
+      "w": 10794.6,
+      "pp3": 6694.6
+    },
+    "blockDecorations": {
+      "w": 2510,
+      "pp3": 274.8
+    },
+    "withDocumentViewRead": {
+      "w": 2514,
+      "pp3": 1341.9
+    },
+    "staticDecorationReads": {
+      "w": 2649.5,
+      "pp3": 386.9,
+      "direct": 202.3,
+      "underVisit": 186.1
+    },
+    "final": {
+      "baseline": 535.42,
+      "candidate": 180.71
+    },
+    "arrival": {
+      "baseline": 404.9,
+      "candidate": 48
+    },
+    "finalW": {
+      "baseline": 670.31,
+      "candidate": 244.79
+    },
+    "arrivalW": {
+      "baseline": 571,
+      "candidate": 169.2
+    },
+    "abPairs": [
+      [
+        35740,
+        440
+      ],
+      [
+        35581,
+        457
+      ],
+      [
+        35454,
+        456
+      ]
+    ],
+    "previews": {
+      "baseline": [
+        196,
+        195,
+        195
+      ],
+      "candidate": [
+        210,
+        208,
+        207
+      ]
+    },
+    "commits": {
+      "publications": 208,
+      "previewCommits": 207,
+      "commitsShowingSkips": 0,
+      "reactPerCommitMs": 9.09,
+      "reactPerCommitP90Ms": 13.83,
+      "renderPerCommitMs": 9.97,
+      "reactPerPublicationMs": 9.19,
+      "renderPerPublicationMs": 10.01,
+      "reactPhasesPerCommitMs": {
+        "commitRoot": 0,
+        "flushPassiveEffects": 0,
+        "renderRootConcurrent": 8.77,
+        "renderRootSync": 0,
+        "otherReact": 0
+      }
+    },
+    "finalTextsMatch": true
+  }
+]

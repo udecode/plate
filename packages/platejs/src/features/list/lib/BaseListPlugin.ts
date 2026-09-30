@@ -23,6 +23,7 @@ import {
   type NodeEntry,
   type NodeKey,
   type NodeSelection,
+  type NodeTarget,
   type Path,
   type RootKey,
   type BlockInsertOptions,
@@ -362,13 +363,16 @@ const deriveListOrdinal = (
 
 const getListOrdinal = (
   state: Pick<EditorCoreStateView, 'nodes' | 'runtime'>,
-  element: Element,
+  entry: NodeEntry<Element>,
   options: Partial<GetSiblingListOptions> | undefined,
   headingType: string | undefined
 ): number | undefined => {
-  if (element.listType !== ListType.Numbered) return undefined;
+  if (entry[0].listType !== ListType.Numbered) return undefined;
 
-  const stateKey = state.runtime.snapshot().index;
+  // Ordinals depend on earlier siblings' list properties, so the cache lives
+  // as long as this content. The node index keeps its identity across
+  // property-only changes and would keep a stale number.
+  const stateKey = state.runtime.snapshot().children;
   let cache = listOrdinalsByState.get(stateKey);
 
   if (
@@ -383,28 +387,7 @@ const getListOrdinal = (
     };
     listOrdinalsByState.set(stateKey, cache);
   }
-  const ordinals = cache.values;
-  const path = state.nodes.path(element);
-
-  if (!path) {
-    const ordinal =
-      typeof element.listRestart === 'number'
-        ? element.listRestart
-        : typeof element.listStart === 'number'
-          ? element.listStart
-          : 1;
-
-    ordinals.set(element, ordinal);
-    return ordinal;
-  }
-
-  return deriveListOrdinal(
-    state,
-    [element, path],
-    options,
-    headingType,
-    ordinals
-  );
+  return deriveListOrdinal(state, entry, options, headingType, cache.values);
 };
 
 type DocumentListOrdinalCache = {
@@ -585,7 +568,13 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
   }),
   targetPlugins: DEFAULT_LIST_TARGET_PLUGINS,
   formats: ({ defineFormats }) => {
-    const decodeListProperties = ({ element }: { element: HTMLElement }) => {
+    const decodeListProperties = ({
+      element,
+      preserve,
+    }: {
+      element: HTMLElement;
+      preserve: (...attributes: readonly string[]) => void;
+    }) => {
       const listParent = element.closest('ul, ol') as HTMLElement | null;
       const readNumber = (value: null | string | undefined) => {
         if (!value) return undefined;
@@ -723,14 +712,22 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       const listRestart =
         encodedListRestart ??
         (hasPreviousCompatibleItem ? structuralStart : undefined);
+      const numbered = listType === ListType.Numbered;
+
+      if (checked !== undefined) preserve('data-checked');
+      if (numbered && encodedListRestart !== undefined) {
+        preserve('data-list-restart');
+      }
+      if (numbered && encodedListStart !== undefined) {
+        preserve('data-list-start');
+      }
+      if (element.dataset.listStyle) preserve('data-list-style');
+      if (encodedListType) preserve('data-list-type');
+
       return {
         ...(checked === undefined ? {} : { checked }),
-        ...(listType !== ListType.Numbered || listStart === undefined
-          ? {}
-          : { listStart }),
-        ...(listType !== ListType.Numbered || listRestart === undefined
-          ? {}
-          : { listRestart }),
+        ...(!numbered || listStart === undefined ? {} : { listStart }),
+        ...(!numbered || listRestart === undefined ? {} : { listRestart }),
         ...(normalizedListStyle ? { listStyle: normalizedListStyle } : {}),
         ...(listType ? { listType } : {}),
       };
@@ -787,21 +784,38 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               if (element.tagName === 'LI') {
                 const htmlElement = element as HTMLElement;
                 const { childNodes } = element;
+                const blocks = Array.from(element.children).filter(
+                  isHtmlBlockElement
+                );
+                // An item's paragraphs are its text, so they flatten. Another
+                // block the item holds alone, such as a heading or an image
+                // figure, stays: decoding lists that block when its type can be.
+                const holdsBlock =
+                  blocks.length === 1 &&
+                  blocks[0].tagName !== 'P' &&
+                  Array.from(childNodes).every(
+                    (child) =>
+                      child === blocks[0] ||
+                      child.nodeType === 8 ||
+                      (child.nodeType === 3 && !child.textContent?.trim())
+                  );
 
-                // Process li children and flatten block elements
-                const liChildren: globalThis.Node[] = [];
-                childNodes.forEach((child) => {
-                  if (child.nodeType === 1) {
-                    const childElement = child as globalThis.Element;
-                    if (isHtmlBlockElement(childElement)) {
-                      // Replace block elements (e.g. p) with their children
-                      liChildren.push(...childElement.childNodes);
-                      return;
+                if (!holdsBlock) {
+                  // Process li children and flatten block elements
+                  const liChildren: globalThis.Node[] = [];
+                  childNodes.forEach((child) => {
+                    if (child.nodeType === 1) {
+                      const childElement = child as globalThis.Element;
+                      if (isHtmlBlockElement(childElement)) {
+                        // Replace block elements (e.g. p) with their children
+                        liChildren.push(...childElement.childNodes);
+                        return;
+                      }
                     }
-                  }
-                  liChildren.push(child);
-                });
-                element.replaceChildren(...liChildren);
+                    liChildren.push(child);
+                  });
+                  element.replaceChildren(...liChildren);
+                }
 
                 // Keep explicit mapping metadata, then honor Google Docs.
                 const dataIndent = htmlElement.dataset.indent;
@@ -1128,7 +1142,17 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           }),
         /** Get the previous indent-list item. */
         getPrevious,
-        ordinal: (element: Element) => {
+        /**
+         * Number shown for a numbered list item: its `listRestart`, or its
+         * place in the sequence counted from the first item's `listStart`.
+         * Resolves `at` in this editor's root; a known path skips node lookup.
+         * Returns `undefined` when `at` is not a numbered list item there.
+         */
+        ordinal: (at: NodeTarget<Element>) => {
+          const entry = state.nodes.get(at, { match: ElementApi.isElement });
+
+          if (!entry) return undefined;
+
           const headingDescriptor = getCompiledPlatePlugin(
             editor,
             PLUGINS.heading
@@ -1136,7 +1160,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
           return getListOrdinal(
             state,
-            element,
+            entry,
             store.get().getSiblingListOptions,
             headingDescriptor
               ? editor.plugin(headingDescriptor).schema.type

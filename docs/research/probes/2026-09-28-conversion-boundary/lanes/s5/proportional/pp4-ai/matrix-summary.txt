@@ -1,0 +1,4 @@
+ai-cjk-10000: pass | a+b 1685.2→77.5 (-95.4%), 1705.5→66.7 (-96.1%), 1700.2→71.9 (-95.8%) | a 355.5→50.6 b 1341.5→21.5 c 266.5→286.8 busy 2467.3→723.5 | final p95 110.54→50.57 | arrival p95 108.7→43.9 | previews 40/40/40→40/40/40 | texts match
+ai-cjk-50000: pass | a+b 35764.3→431.2 (-98.8%), 36050.7→426.8 (-98.8%), 35620→422.5 (-98.8%) | a 7428.1→248.4 b 28383.5→178.4 c 1611.3→1966.1 busy 43385.3→4366 | final p95 586.21→182.03 | arrival p95 400.8→44.9 | previews 196/195/195→196/196/196 | texts match
+ai-rich-10000: inconclusive (profile lost its stacks in candidate pair-1)
+ai-rich-50000: inconclusive (profile lost its stacks in candidate pair-2)

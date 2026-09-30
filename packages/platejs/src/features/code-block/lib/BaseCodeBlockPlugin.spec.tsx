@@ -1489,7 +1489,7 @@ const getDecorations = (
   const sources = getPlateDecorationSources(innerEditor);
   const decorate = (entry: NodeEntry) =>
     sources.flatMap((source) => source.read({ editor: innerEditor, entry }));
-  const text = innerEditor.read.nodes.get([0, 0]);
+  const text = innerEditor.read.nodes.get([0]);
 
   if (!text) throw new Error('Expected code block text');
 
@@ -1533,7 +1533,7 @@ describe('codeBlockToDecorations', () => {
     const [source] = getPlateDecorationSources(editor);
     const decorations = source.read({
       editor: view,
-      entry: view.read.nodes.get([0, 0])!,
+      entry: view.read.nodes.get([0])!,
     });
 
     expect(decorations[0]).toMatchObject({
@@ -1566,7 +1566,7 @@ describe('codeBlockToDecorations', () => {
       const [source] = getPlateDecorationSources(editor);
       const before = source.read({
         editor,
-        entry: editor.read.nodes.get([1, 0])!,
+        entry: editor.read.nodes.get([1])!,
       });
 
       if (operation === 'insert') {
@@ -1582,7 +1582,7 @@ describe('codeBlockToDecorations', () => {
 
       const after = source.read({
         editor,
-        entry: editor.read.nodes.get([nextIndex, 0])!,
+        entry: editor.read.nodes.get([nextIndex])!,
       });
 
       expect(after).toHaveLength(1);
@@ -1623,7 +1623,7 @@ describe('codeBlockToDecorations', () => {
     const read = (index: number) =>
       source.read({
         editor: fixtureEditor,
-        entry: fixtureEditor.read.nodes.get([index, 0])!,
+        entry: fixtureEditor.read.nodes.get([index])!,
       });
     read(0);
     read(1);
@@ -1671,7 +1671,7 @@ describe('codeBlockToDecorations', () => {
     });
     const [source] = getPlateDecorationSources(editor);
     const read = () =>
-      source.read({ editor, entry: editor.read.nodes.get([0, 0])! });
+      source.read({ editor, entry: editor.read.nodes.get([0])! });
     const unmountFirst = source.observe?.({ refresh: () => {} });
     const unmountSecond = source.observe?.({ refresh: () => {} });
     const before = read();
@@ -1719,12 +1719,12 @@ describe('codeBlockToDecorations', () => {
     const [source] = getPlateDecorationSources(editor);
     const before = source.read({
       editor,
-      entry: editor.read.nodes.get([0, 0])!,
+      entry: editor.read.nodes.get([0])!,
     });
     editor.update.text.insert('2', { at: { path: [0, 0], offset: 11 } });
     const after = source.read({
       editor,
-      entry: editor.read.nodes.get([0, 0])!,
+      entry: editor.read.nodes.get([0])!,
     });
 
     expect(mockHighlight).toHaveBeenCalledTimes(2);
@@ -1743,13 +1743,13 @@ describe('codeBlockToDecorations', () => {
           Object.isFrozen(decoration.attributes)
       )
     ).toBe(true);
-    expect(source.read({ editor, entry: editor.read.nodes.get([0, 0])! })).toBe(
+    expect(source.read({ editor, entry: editor.read.nodes.get([0])! })).toBe(
       after
     );
     expect(mockHighlight).toHaveBeenCalledTimes(2);
   });
 
-  it('evicts a removed block and reads a replacement highlighter without an observer', () => {
+  it('reuses a restored block and reads a replacement highlighter without an observer', () => {
     mockHighlight.mockReturnValue(
       highlightResult(highlightText('const', ['keyword']))
     );
@@ -1766,12 +1766,13 @@ describe('codeBlockToDecorations', () => {
     });
     const [source] = getPlateDecorationSources(editor);
     const read = () =>
-      source.read({ editor, entry: editor.read.nodes.get([0, 0])! });
-    read();
+      source.read({ editor, entry: editor.read.nodes.get([0])! });
+    const before = read();
     editor.update.nodes.remove({ at: [0] });
     editor.api.history.undo();
-    read();
-    expect(mockHighlight).toHaveBeenCalledTimes(2);
+    // Undo restores the same block object, so its highlighting is reused.
+    expect(read()).toBe(before);
+    expect(mockHighlight).toHaveBeenCalledTimes(1);
     const highlight = mock(() =>
       highlightResult(highlightText('const', ['replacement']))
     );

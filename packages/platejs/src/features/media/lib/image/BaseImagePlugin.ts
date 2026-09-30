@@ -46,13 +46,19 @@ const readPositiveSafeInteger = (value: null | string) => {
   return isPositiveSafeInteger(parsed) ? parsed : undefined;
 };
 
-const readImageSize = (image: HTMLElement) => {
+const readImageSize = (
+  image: HTMLElement,
+  preserve: (...attributes: readonly string[]) => void
+) => {
   const naturalHeight = readPositiveSafeInteger(
     image.dataset.editorNaturalHeight ?? null
   );
   const naturalWidth = readPositiveSafeInteger(
     image.dataset.editorNaturalWidth ?? null
   );
+
+  if (naturalHeight !== undefined) preserve('data-editor-natural-height');
+  if (naturalWidth !== undefined) preserve('data-editor-natural-width');
   const width =
     readHtmlMediaWidth(image.style.width) ??
     (naturalWidth === undefined
@@ -160,7 +166,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
       },
       html: [
         {
-          decode: ({ element }) => {
+          decode: ({ element, preserve }) => {
             const image = element.querySelector<HTMLElement>(':scope > img');
 
             if (!image) return undefined;
@@ -169,7 +175,11 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
 
             if (!url) return undefined;
 
-            return { ...readImageText(image), ...readImageSize(image), url };
+            return {
+              ...readImageText(image),
+              ...readImageSize(image, preserve),
+              url,
+            };
           },
           encode: ({ content, node, preserve }) => {
             if (typeof node.url !== 'string' || node.url.length === 0) {
@@ -210,7 +220,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
           priority: 20,
         },
         {
-          decode: ({ element }) => {
+          decode: ({ element, preserve }) => {
             if (element.parentElement?.matches('figure.editor-image')) {
               return undefined;
             }
@@ -222,7 +232,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
             return {
               ...readImageText(element),
               children: [{ text: '' }],
-              ...readImageSize(element),
+              ...readImageSize(element, preserve),
               url,
             };
           },

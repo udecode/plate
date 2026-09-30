@@ -1,0 +1,120 @@
+{
+  "id": "2026-09-30-content-root-locations-adoption-review",
+  "scope": "html",
+  "kind": "review",
+  "date": "2026-09-30",
+  "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+  "model": "Codex; exact session model identifier unavailable",
+  "method": "best-api-review/history-v3",
+  "trigger": "User supplied the S1-S5 implementation and verification report. Review the claimed closure and remaining limits against the accepted plan; assessment only.",
+  "requirements": [
+    "Static render callbacks and feature reads use the same document, root and current authored policy as their supplied reader.",
+    "Preserve independent public view constructors and privately reuse static readers only while their semantic binding remains valid.",
+    "Owned-root source inheritance applies to supported retained rendering contexts, not only ordinary mounts.",
+    "Keep original final-tree browser/cadence acceptance distinct from headless output and timing evidence.",
+    "Review and disposable evidence only; no product repair, plan rewrite, staging or publication."
+  ],
+  "evidenceReuse": "Reconciled the matching 2026-09-30-content-root-locations-execution outcome and its partial-proof limits, the design and agreement review. Inspected the critical runtime, static, decoration and owned-root changes. Ran two new source-built probes: the cached root helper and actual EditorStatic server output after a proposed-to-accepted switch. Both produce stale proposed text while a fresh accepted reader/render is correct. Ran a new Yjs Plate decoration-boundary probe with public syncSelection and existing FakeAwareness copying generated opaque state; primary/named remote ranges paint only in their own root. Its in-memory root-filter mutation fails the primary-to-caption assertion. Receipt source hashes match; no broad package, browser or benchmark rerun.",
+  "summary": "Pursue bounded closure repairs, retaining the architecture and most adoption. One reproduced correctness gap remains: getStaticRootView caches by source reader and root but captures authored policy only on first construction. After its owner switches from propose/proposed to edit/accepted, the cached reader and EditorStatic caption still return/render 'Foot draft'; a fresh accepted reader/render returns 'Foot'. The private cache must invalidate or reconcile policy changes without globally interning public views. The admitted retained-fragment DecorationSourcesContext omission remains a supported-combination acceptance gap and needs a focused check rather than an edge-case dismissal. The original Chromium static/AI cadence matrix is unexecuted; matching headless HTML/noise does not pass that browser gate, so the implementation plan's 'none required' closure overstates proof. The Yjs private-wire-format blocker is disproved: public syncSelection plus opaque awareness transport exercises primary/named aliasing and an in-memory mutation makes the assertion fail. Keep this as focused regression coverage; no redesign, view manager or location carrier is needed.",
+  "verdict": "pursue",
+  "previous": "2026-09-30-content-root-locations-agreement",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-30-content-root-locations-agreement",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "reopens",
+      "reason": "Retain the settled scoped-editor target, shipped-value ordering and owner-lookup caution. Reopen adoption closure only: the implementation exposes stale cached static authored policy and unexecuted promised proof, not a need to reconsider the location model."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-execution",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "reopens",
+      "reason": "Retain the recorded successful local adoption and package/native receipts within their stated limits. Full S1-S5 acceptance is not established: static root policy is reproducibly stale, retained-source forwarding remains admitted incomplete, and the required Chromium cadence matrix was skipped. Preserve the immutable outcome as history rather than rewriting its claims."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-design",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "The document/root/policy binding, private reader reuse, exact-view managers and final-tree browser gate already cover these obligations. Fix the canonical private cache and retained adapter; no added public abstraction or fresh design plan is justified."
+    }
+  ],
+  "alternatives": [
+    "Treat matching headless HTML/timing and broad package counts as complete browser/cadence proof: Stop. The original gate measures Chromium render/style/layout and publication cadence; it was not rerun.",
+    "Keep static root readers forever by source identity/root alone: Stop. Executed helper and React server-render probes show a valid accepted-mode owner emitting stale proposed caption content.",
+    "Invalidate or reconcile private static readers when their source binding/policy changes, with unchanged inputs retaining reuse: Pursue at staticDocumentView.ts; preserve the existing public constructor semantics.",
+    "Reopen the full location architecture or add root-qualified carriers/providers/managers: Stop. Existing scoped views and the accepted policy-binding law solve the reproduced defect.",
+    "Treat retained-fragment source omission as irrelevant because shipped Plate kits do not declare content roots: Stop as a full-closure claim. Public custom roots and retained markup remain supported combinations; keep a focused acceptance row.",
+    "Defer Yjs testing because its awareness wire format is private: Stop. The executed public-syncSelection/opaque-transport probe and failing root-filter mutation provide a narrow test without constructing or exposing that format."
+  ],
+  "proofLimits": "Two source-built static scenarios with one custom Figure and one pending text insertion; one uses the private helper, the other real React server rendering. No client rerender/browser or arbitrary policy combination was measured. Yjs proof uses the real Plate source with one existing fake awareness transport; no network, geometry or browser claim. The mutant disables only the current root filter in Bun memory, not a complete pre-change checkout. Retained-fragment source omission is source-confirmed and admitted in the implementation report; no fresh retained interaction was driven. Broad suite/failure-baseline counts are the prior execution owner's evidence and were not independently rerun; an untouched test file alone cannot establish an unrelated failure. Chromium dual-build streaming benchmark remains unexecuted. Docs/probes are excluded by Ultracite; scoped lint:fix returned no targets (exit 2), N/A rather than green. Review artifact source/reference/whitespace and ledger checks apply only to this assessment.",
+  "references": [
+    "docs/plans/2026-09-30-content-root-locations.md",
+    "docs/plans/2026-09-30-content-root-locations-execution.md",
+    "docs/research/review-records/2026-09-30-content-root-locations-execution.json",
+    "packages/platejs/src/static/internal/staticDocumentView.ts",
+    "packages/platejs/src/static/components/PlateStatic.tsx",
+    "packages/plitejs/src/react/components/plite.tsx",
+    "packages/plitejs/src/react/components/editable-text-blocks.tsx",
+    "packages/plitejs/src/core/authored-runtime.ts",
+    "packages/plitejs/src/editor-runtime-view.ts",
+    "packages/platejs/src/yjs/react/YjsPlugin.tsx",
+    "packages/plitejs/test/yjs/support/provider.ts",
+    "packages/plitejs/test/yjs/awareness-contract.spec.ts",
+    "docs/research/probes/2026-09-30-content-root-locations/static-policy-review.ts",
+    "docs/research/probes/2026-09-30-content-root-locations/static-policy-review.json",
+    "docs/research/probes/2026-09-30-content-root-locations/static-policy-render-review.tsx",
+    "docs/research/probes/2026-09-30-content-root-locations/static-policy-render-review.json",
+    "docs/research/probes/2026-09-30-content-root-locations/yjs-root-review.ts",
+    "docs/research/probes/2026-09-30-content-root-locations/yjs-root-review.json",
+    "docs/research/probes/2026-09-30-content-root-locations/yjs-root-mutation-review.json"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/components/PlateStatic.spec.tsx": "574db99dc236ac2064bcc05978db2663c305147a518666876fe432278ea40f38",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "docs/plans/2026-09-30-content-root-locations.md": "5b2dc2433d219f0fad3d8d65a250d6a2b7498215dea3210978df6cb02ee539ac",
+      "docs/plans/2026-09-30-content-root-locations-execution.md": "9477a9b8313947ac738934c07cf774c51300a65c7aa77af948bd027389b9d9c0",
+      "docs/research/review-records/2026-09-30-content-root-locations-execution.json": "e615cd81db85f2ae9310d0e4f41958adfda151242d98a174abe753b5e8e8a288",
+      "packages/platejs/src/static/internal/staticDocumentView.ts": "fe6402ba1510409f8babfd7d889ea524ff046e552442b1071c916ae5d6373b99",
+      "packages/platejs/src/static/components/PlateStatic.tsx": "c714df7dd29b7bb7bd4724847c99adb853578eecf509655b264693906a06d65c",
+      "packages/plitejs/src/react/components/plite.tsx": "c873adb2328ad6f8d1b941099931320686bbb34fe4d1cef9b083d49ad55d103e",
+      "packages/plitejs/src/react/components/editable-text-blocks.tsx": "37b4548dbc37778825a69de98d0c2323311e9e5cad5c87486ca779d4aee86986",
+      "packages/plitejs/src/core/authored-runtime.ts": "2f71603acbbd30f84d229bc1a992d1adb226bb069104c4a310699127767d53cb",
+      "packages/plitejs/src/editor-runtime-view.ts": "948545b235afbeeb39ee48ff624b47f0b025f5ed53dbe065bf1a79ba52c37e7b",
+      "packages/platejs/src/yjs/react/YjsPlugin.tsx": "eb457690722ebca3d29e0f2bb66b7df27a030a9c5743327ed958916b7d0c7956",
+      "packages/plitejs/test/yjs/support/provider.ts": "37eb1447ded66ff3f5a6c5064d99c807440b0c88211541d0d9d9d7609db9cf6f",
+      "packages/plitejs/test/yjs/awareness-contract.spec.ts": "526eecef898642e7a9904ddc18fa05d3b9682192e5fc95b2fbbfd31a56d2c7b3",
+      "docs/research/probes/2026-09-30-content-root-locations/static-policy-review.ts": "d22668459b844b91bd5dbf24636e3f53def587a7d4c66f8b75ac138d3437d609",
+      "docs/research/probes/2026-09-30-content-root-locations/static-policy-review.json": "32c0c29cac0691eae204336368d11f9b230bfd7494feb2e06a99f015bb3c3e4d",
+      "docs/research/probes/2026-09-30-content-root-locations/static-policy-render-review.tsx": "15894beb236505480369d844e8d9448c28d2d0f9a8f98fb9502c980f183c21b9",
+      "docs/research/probes/2026-09-30-content-root-locations/static-policy-render-review.json": "13683f96e0e94eccda62c03ca015cded54e4ee6f9fbcdde4b2aa9af96b1c362e",
+      "docs/research/probes/2026-09-30-content-root-locations/yjs-root-review.ts": "a2724d957fe4fac470e50815ab7f8d691361d419850a87cf6bc08ce1913fef85",
+      "docs/research/probes/2026-09-30-content-root-locations/yjs-root-review.json": "db3d2b9f2fe7c2fd4d8f847ec9be89dc7815b53dbe3f98811bbf7ff050ec0801",
+      "docs/research/probes/2026-09-30-content-root-locations/yjs-root-mutation-review.json": "af6ae2460b8b2905f52479389cc7aa009ee2f478cc8f905cc638629f313aefe4"
+    },
+    "directories": {
+      "packages/platejs/src/static": "a9f781bd2b88337b7c6c58dcd3cc155cba587effa349aae77a06eb749f67e202"
+    },
+    "features": {
+      "capability/html": "8135a4e0b278b55c07b824cfc66c5a1e164e6fba2a80f496a683a355d802d9b4",
+      "example/value/deserialize-html-value": "41cf8a0ccbd2fb68fe09d8bbbaa15555c8aa36cd205e449cb752d2d54d44c612",
+      "export/platejs/./html": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./html/server": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./static": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/html": "e124b15c57fee445a81455e4a54eb9e46a8b5aac568e0bd8ac0f21e3804598e8",
+      "platejs/static": "a9f781bd2b88337b7c6c58dcd3cc155cba587effa349aae77a06eb749f67e202",
+      "ui/html-export": "18dc4ff9da241dcce200c7d9d1de1b8267c99a81e48a108a8b2fd13d3e946e58",
+      "ui/html-export-kit": "6e510055e7d538e7ecc34a94444ff371edbcfc4c27b4296997ab41fab92c17c5",
+      "ui/html-export-schema-kit": "7852617a57c749d881f3364cb06c9ed240c4ecbc30dd3c68112b7cc313627978"
+    },
+    "upstreams": []
+  }
+}

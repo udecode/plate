@@ -34,6 +34,10 @@ donor checkout as proof after the transplant.
   attributes and may observe an external owner for targeted node-key refresh.
   `Editable` renders the result without another callback. The owning feature
   adapts resolved annotations into decorations only when it needs inline paint.
+  Output endpoints without a root belong to the view that read them; output
+  naming another root paints nothing. Canonical coordinates from an external
+  owner, such as awareness selections, address the primary root when rootless,
+  so their source emits them only through a reader of their own root.
 - React components create one annotation index under each exact mounted view
   with `useAnnotationStore` and pass its typed reader explicitly. Framework
   adapters with an independent lifetime use the owned result of
@@ -117,7 +121,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   the existing view owner. Replacing the editor requires a keyed remount;
   changing the root retires queued work and commands from the prior view before
   descendants observe the next one. Nested same-document roots may share the
-  nearest private provider while retaining independent mounted views.
+  nearest private provider while retaining independent mounted views. An
+  element-owned content root mounted by `Editable` paints its owner's
+  decoration sources and follows the owner's authored mode through its own view,
+  observers and selection.
 - Public generics must correlate with a typed input, installed descriptor, or
   descriptor-owned runtime validator. Update callbacks expose only installed
   transaction groups; commands infer from their descriptors; raw schema
@@ -406,7 +413,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   editor's roots and may target node operations across roots, while
   `nodes.path(key)` remains scoped to the current editor or view root because a
   `Path` carries no root. Base-editor path inputs always address the main root;
-  view path inputs address that view's root.
+  view path inputs address that view's root. A view created from a view reads
+  its requested root, or the primary root when none is given, and keeps the
+  source view's document, read-only state and authored mode; derivation never
+  unlocks a read-only source. Callbacks receive the reader of the entry's root,
+  so a root-relative entry never needs its root recovered.
   Resolve mounted DOM through `editor.api.dom.resolveDOMNode(nodeOrKey)`.
   Foreign, removed, and unmounted keys fail closed with `null`; renderer-private
   structures stay private.

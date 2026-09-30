@@ -1,0 +1,83 @@
+renderRootSync: 55.4 ms per profile over 3 profiles
+by inclusive (ms per profile):
+      55.4  renderRootSync@5319583e-150745cd7583489c.js:296619
+      55.1  workLoopSync@5319583e-150745cd7583489c.js:298201
+      54.0  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+      53.4  beginWork@5319583e-150745cd7583489c.js:187718
+      39.6  renderWithHooks@5319583e-150745cd7583489c.js:109327
+      38.4  updateFunctionComponent@5319583e-150745cd7583489c.js:162671
+      24.3  Children@1656-507afe1003872559.js:20471
+      23.9  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+      15.7  read@1233-726a72fff91f8c4c.js:1495997 «param=>{let{editor:view=editor,entry}=param,context=Object.create(readContextFor»
+      13.8  (anon)@1656-507afe1003872559.js:22714 «(child,index)=>visit(child,[...p,index])),0!==contentRoots.length||0!==decoratio»
+      13.4  visit@1656-507afe1003872559.js:22412
+      13.0  withDocumentViewRead@1233-726a72fff91f8c4c.js:37387
+      11.1  (anon)@1233-726a72fff91f8c4c.js:1496170 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decora»
+       9.6  read@7460-e221bf65b958d854.js:279021 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entr»
+       7.7  updateMemoComponent@5319583e-150745cd7583489c.js:154718
+       6.6  (anon)@1656-507afe1003872559.js:22614 «(child,index)=>visit(child,[...nodePath,index])))},(visitContentRoots(child),chi»
+       6.3  (anon)@1656-507afe1003872559.js:21285 «source=>source.read({editor,entry})),own=0===read.length?EMPTY_DECORATIONS:read,»
+       6.0  bailoutOnAlreadyFinishedWork@5319583e-150745cd7583489c.js:184360
+       5.7  MarkdownStreamingDemo@9008-db6ddc41f032438f.js:23732
+       5.3  getPlugin@1233-726a72fff91f8c4c.js:523130
+       5.2  Tokens@9008-db6ddc41f032438f.js:37446
+       5.2  t2@9008-db6ddc41f032438f.js:37960
+       5.0  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+       4.8  (anon)@9008-db6ddc41f032438f.js:38103 «c=>{let space=c.text.replaceAll("\n","⤶").replaceAll(" ","␣");return(0,react_jsx»
+       3.5  get@1233-726a72fff91f8c4c.js:535693
+       3.4  get@1233-726a72fff91f8c4c.js:535491
+       2.9  readContextFor@1233-726a72fff91f8c4c.js:1495201
+       2.7  isDescriptorInstalled@1233-726a72fff91f8c4c.js:522150
+       2.5  attemptEarlyBailoutIfNoScheduledUpdate@5319583e-150745cd7583489c.js:185438
+       2.3  (anon)@1656-507afe1003872559.js:16508 «(prev,next)=>prev.path.join(",")===next.path.join(",")&&prev.rootStack.at(-1)===»
+       2.1  getPlateRuntime@1233-726a72fff91f8c4c.js:1013263
+       2.0  updateForwardRef@5319583e-150745cd7583489c.js:153946
+       1.8  get@1233-726a72fff91f8c4c.js:528013
+       1.8  visitContentRoots@1656-507afe1003872559.js:22123
+       1.8  getElementContentRoots@1233-726a72fff91f8c4c.js:111588
+       1.8  reconcileChildren@5319583e-150745cd7583489c.js:153696
+       1.8  (anon)@5319583e-150745cd7583489c.js:99625 «(returnFiber,currentFirstChild,newChild,lanes){try{thenableIndexCounter$1=0;var »
+       1.8  getConsumerSchemaIdentity@1233-726a72fff91f8c4c.js:526426
+       1.8  getCandidate@1233-726a72fff91f8c4c.js:522615
+       1.6  getPlateModelPublication@1233-726a72fff91f8c4c.js:1013151
+by self (ms per profile):
+       5.0  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+       4.3  read@7460-e221bf65b958d854.js:279021 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entr»
+       3.9  (anon)@9008-db6ddc41f032438f.js:38103 «c=>{let space=c.text.replaceAll("\n","⤶").replaceAll(" ","␣");return(0,react_jsx»
+       3.0  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+       2.6  visit@1656-507afe1003872559.js:22412
+       1.8  beginWork@5319583e-150745cd7583489c.js:187718
+       1.5  withDocumentViewRead@1233-726a72fff91f8c4c.js:37387
+       1.4  (anon)@1656-507afe1003872559.js:16508 «(prev,next)=>prev.path.join(",")===next.path.join(",")&&prev.rootStack.at(-1)===»
+       1.4  (anon)@1233-726a72fff91f8c4c.js:1496170 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decora»
+       1.4  MarkdownStreamingDemo@9008-db6ddc41f032438f.js:23732
+       1.3  _object_spread_props@3370-ab6f5e713678b725.js:174957
+       1.2  hasCompiledPlateModelCandidate@1233-726a72fff91f8c4c.js:1014430
+       1.1  bailoutOnAlreadyFinishedWork@5319583e-150745cd7583489c.js:184360
+       1.1  readContextFor@1233-726a72fff91f8c4c.js:1495201
+       1.0  getPluginSchemaFamily@1233-726a72fff91f8c4c.js:970398
+       1.0  getCompiledElement@1233-726a72fff91f8c4c.js:110598
+       1.0  getEditorRuntimeOwner@1233-726a72fff91f8c4c.js:2109645
+       0.9  splitChunksByLinebreak@9008-db6ddc41f032438f.js:37088
+       0.7  getPlateModelPublication@1233-726a72fff91f8c4c.js:1013151
+       0.7  _object_without_properties@8255-fdc7096923fb725f.js:52329
+       0.7  get@8255-fdc7096923fb725f.js:5755
+       0.6  jsxProd@3370-ab6f5e713678b725.js:67396
+       0.6  updateSlot@5319583e-150745cd7583489c.js:89696
+       0.6  getElementContentRoots@1233-726a72fff91f8c4c.js:111588
+       0.5  getPlateRuntime@1233-726a72fff91f8c4c.js:1013263
+       0.5  workLoopSync@5319583e-150745cd7583489c.js:298201
+       0.4  exports.c@8255-fdc7096923fb725f.js:43019
+       0.4  areStaticDecorationsEqual@1656-507afe1003872559.js:12402
+       0.4  getCompiledPlatePlugin@1233-726a72fff91f8c4c.js:1014548
+       0.4  updateReducerImpl@5319583e-150745cd7583489c.js:115423
+       0.4  completeUnitOfWork@5319583e-150745cd7583489c.js:303391
+       0.4  attemptEarlyBailoutIfNoScheduledUpdate@5319583e-150745cd7583489c.js:185438
+       0.4  push@5319583e-150745cd7583489c.js:8550
+       0.4  (anon)@1656-507afe1003872559.js:22714 «(child,index)=>visit(child,[...p,index])),0!==contentRoots.length||0!==decoratio»
+       0.4  getEditorDocumentRoots@1233-726a72fff91f8c4c.js:1548998
+       0.4  A@1418-1165aa5ada2c2842.js:95795
+       0.4  completeWork@5319583e-150745cd7583489c.js:200744
+       0.4  getCandidate@1233-726a72fff91f8c4c.js:522615
+       0.4  (anon)@1656-507afe1003872559.js:17201 «(left,right)=>{if(left===right)return!0;let equalities=blockInputEqualities.get(»
+       0.4  isPluginDescriptorSourceOf@1233-726a72fff91f8c4c.js:520621

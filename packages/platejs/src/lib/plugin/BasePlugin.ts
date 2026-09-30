@@ -438,6 +438,13 @@ type HtmlDecodeContext<C extends AnyBasePluginDefinition> =
   HtmlPluginFormatContext<C> &
     Readonly<{
       element: Readonly<HTMLElement>;
+      /**
+       * Claim that the decoded result represents these attributes of
+       * `element` or of descendants it reads, such as `'data-list-type'`.
+       * Claims count only when `decode` returns a result. Parsing reports each
+       * attribute Plate's own mappings write that no decoder claims.
+       */
+      preserve: (...attributes: readonly string[]) => void;
     }>;
 
 type HtmlElementDecodeResult<TProperties extends object> = Readonly<
@@ -662,6 +669,14 @@ type HtmlElementPropertyCreateRule<C extends AnyBasePluginDefinition> =
       HtmlElementEncodeContext<C, Element & HtmlOwnedPropertyMap<C>>,
       HtmlNodeSpec
     > & {
+      /**
+       * Matched content becomes the plugin's primary target, the schema's
+       * default block when that is a target, carrying the decoded properties;
+       * a matched element holding exactly one block those properties apply to
+       * carries them on that block instead. Encoding writes the output in
+       * place of the primary target's element and around the HTML of every
+       * other target.
+       */
       createsElement: true;
     };
 

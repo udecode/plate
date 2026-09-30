@@ -86,6 +86,6 @@ Proof entrypoints: [BaseFindPlugin.spec.ts](../../../packages/platejs/src/featur
 
 Inspection: Current owner, consumer and proof entrypoints located; this queue is not a completed feature review.
 
-Limits: Behavior, native/device coverage, performance and adoption require a scoped review and matching execution evidence.
+Limits: User deferred this review on 2026-09-30 until after the other feature reviews, before the deferred diff/AI tail. This changes queue order, not the architectural verdict or proof. Behavior, native/device coverage, performance and adoption require a scoped review and matching execution evidence.
 
 Related questions: [annotations](annotations.md), [large-documents](large-documents.md), [geometry](geometry.md).

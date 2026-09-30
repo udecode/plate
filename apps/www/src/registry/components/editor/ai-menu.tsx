@@ -18,13 +18,7 @@ import {
   Wand,
   X,
 } from 'lucide-react';
-import {
-  type Decoration,
-  ElementApi,
-  isHotkey,
-  NodeApi,
-  TextApi,
-} from 'platejs';
+import { ElementApi, isHotkey, NodeApi, TextApi } from 'platejs';
 import { BaseAIPlugin } from 'platejs/ai';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { CommentsPlugin } from 'platejs/comments/react';
@@ -55,45 +49,38 @@ import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 import { EditorStatic } from './editor-static';
 
-// The preview renders a document through this plugin's editor, so decorations
-// read that document from the rendering view in their context.
+// The preview renders a document through this plugin's editor, so its
+// decoration reads that document from the rendering view in its context.
 const PreviewAIPlugin = BaseAIPlugin.extend(() => ({
   decorate: {
+    // The end marker sits on the draft's last text, so only the last block
+    // decorates. Only the last character carries it, so it stays one element
+    // when other decorations, such as code highlighting, split that text.
     read: ({ editor, entry: [node, path] }) => {
-      if (!TextApi.isText(node) || node.text.length === 0) return [];
-
-      const end = node.text.length;
-      const decorations: Decoration[] = [
-        {
-          key: 'ai-preview',
-          range: { anchor: { path, offset: 0 }, focus: { path, offset: end } },
-          attributes: {
-            className:
-              'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',
-          },
-        },
-      ];
-
-      if (
-        NodeApi.last({ children: editor.read.children(), type: '' }, [])[0] ===
-        node
-      ) {
-        // Only the last character carries the end marker, so it stays one
-        // element when other decorations, such as code highlighting, split
-        // the text.
-        const start = end - ([...node.text].at(-1)?.length ?? 1);
-
-        decorations.push({
-          key: 'ai-preview-end',
-          range: {
-            anchor: { path, offset: start },
-            focus: { path, offset: end },
-          },
-          attributes: { 'data-editor-ai-end': '' },
-        });
+      if (path.length !== 1 || node !== editor.read.children().at(-1)) {
+        return [];
       }
 
-      return decorations;
+      const [last, lastPath] = NodeApi.last(node, []);
+
+      if (!TextApi.isText(last) || last.text.length === 0) return [];
+
+      const textPath = [...path, ...lastPath];
+      const end = last.text.length;
+      // The last code point: a surrogate pair is two UTF-16 units.
+      const start =
+        end - ((last.text.codePointAt(end - 2) ?? 0) > 0xff_ff ? 2 : 1);
+
+      return [
+        {
+          key: 'ai-preview-end',
+          range: {
+            anchor: { path: textPath, offset: start },
+            focus: { path: textPath, offset: end },
+          },
+          attributes: { 'data-editor-ai-end': '' },
+        },
+      ];
     },
   },
 }));
@@ -121,17 +108,18 @@ export function AIChatEditor({ inline = false }: { inline?: boolean }) {
   });
   const previewValue = usePluginStore(AIChatPlugin, 'previewValue');
   const streaming = usePluginStore(AIChatPlugin, 'streaming');
-  const previewDocument = React.useMemo(
-    () => (previewValue.length > 0 ? { children: previewValue } : undefined),
-    [previewValue]
+  // Renders the latest draft when rendering falls behind the stream,
+  // skipping drafts that were never shown.
+  const previewDocument = React.useDeferredValue(
+    React.useMemo(
+      () => (previewValue.length > 0 ? { children: previewValue } : undefined),
+      [previewValue]
+    )
   );
 
-  React.useEffect(() => {
-    if (!inline) return;
-
-    scrollAIPreviewEnd(editor, draftRef.current);
-  }, [editor, inline, previewDocument]);
-
+  // The draft resizes as it streams. Scrolling from the resize callback reads
+  // layout the browser has already computed, rather than forcing it after
+  // every render.
   React.useEffect(() => {
     const draft = draftRef.current;
     const Observer = draft?.ownerDocument.defaultView?.ResizeObserver;
@@ -143,28 +131,44 @@ export function AIChatEditor({ inline = false }: { inline?: boolean }) {
     return () => observer.disconnect();
   }, [editor, inline]);
 
-  const last =
-    previewValue.length > 0
-      ? NodeApi.last({ children: previewValue, type: '' }, [])[0]
-      : null;
+  const last = previewDocument
+    ? NodeApi.last({ children: previewDocument.children, type: '' }, [])[0]
+    : null;
 
-  return (
-    <div ref={draftRef} data-editor-ai-draft="">
+  // Rendering reads every block's decorations, so the preview renders only
+  // when its document or appearance changes, not on each update's urgent pass.
+  const preview = React.useMemo(
+    () => (
       <EditorStatic
         variant={inline ? 'none' : 'aiChat'}
         document={previewDocument}
         editor={aiEditor}
         className={cn(
+          '[&_[data-editor-string]]:border-b-2 [&_[data-editor-string]]:border-b-purple-100 [&_[data-editor-string]]:bg-purple-50 [&_[data-editor-string]]:text-purple-800',
           streaming &&
             '[&_[data-editor-ai-end]]:after:ml-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""]'
         )}
       />
-      {streaming && (!last || !TextApi.isText(last) || !last.text) && (
-        <span
-          data-editor-ai-end=""
-          className="inline-block size-3 rounded-full bg-purple-600 align-middle"
-        />
-      )}
+    ),
+    [aiEditor, inline, previewDocument, streaming]
+  );
+
+  const endWithoutText =
+    streaming && (!last || !TextApi.isText(last) || !last.text);
+
+  return (
+    <div ref={draftRef} data-editor-ai-draft="">
+      {preview}
+      {/* Stays mounted: adding or removing it flips whether the preview is
+          the last child, and `:last-child` descendant rules then restyle the
+          whole preview. */}
+      <span
+        data-editor-ai-end={endWithoutText ? '' : undefined}
+        className={cn(
+          'size-3 rounded-full bg-purple-600 align-middle',
+          endWithoutText ? 'inline-block' : 'hidden'
+        )}
+      />
     </div>
   );
 }

@@ -50,14 +50,25 @@ import {
 } from '../features/media';
 import { BaseMentionPlugin } from '../features/mention';
 import { BaseTablePlugin } from '../features/table';
+import { PLATE_HTML_ATTRIBUTES } from '../lib/plugins/html/HtmlPlugin';
 
 /**
  * Round-trip conformance for the first-party HTML mappings. Each fixture
  * serializes, parses back and compares every non-metadata property the
  * original carries: a property that does not survive must be reported as
  * omitted, and a reported property must not survive. A claim that does not
- * survive is therefore a failure.
+ * survive is therefore a failure, and so is an emitted Plate attribute that
+ * parsing does not read.
  */
+const listTargets = [
+  PLUGINS.heading,
+  PLUGINS.paragraph,
+  PLUGINS.blockquote,
+  PLUGINS.codeBlock,
+  PLUGINS.details,
+  PLUGINS.image,
+];
+
 const plugins = [
   BaseParagraphPlugin,
   BaseAudioPlugin,
@@ -75,12 +86,12 @@ const plugins = [
   BaseHighlightPlugin,
   BaseHorizontalRulePlugin,
   BaseImagePlugin,
-  BaseIndentPlugin,
+  BaseIndentPlugin.configure({ targetPlugins: listTargets }),
   BaseItalicPlugin,
   BaseKbdPlugin,
   BaseLineHeightPlugin,
   BaseLinkPlugin,
-  BaseListPlugin,
+  BaseListPlugin.configure({ targetPlugins: listTargets }),
   BaseMediaEmbedPlugin,
   BaseMentionPlugin,
   BaseScriptPlugin,
@@ -201,16 +212,6 @@ const fixtures: Record<string, Value> = {
       type: 'image',
       url: '/a.png',
       width: '50%',
-    },
-  ],
-  'image in a list': [
-    {
-      alt: 'A',
-      children: [{ text: '' }],
-      indent: 1,
-      listType: 'bulleted',
-      type: 'image',
-      url: '/a.png',
     },
   ],
   indent: [{ children: [{ text: 'x' }], indent: 2, type: 'paragraph' }],
@@ -399,16 +400,97 @@ const fixtures: Record<string, Value> = {
   ],
 };
 
+// Blocks other than paragraphs keep their list properties.
+const listItemFixtures: Record<string, Value> = {
+  'blockquote in a list': [
+    {
+      children: [paragraph({ text: 'q' })],
+      indent: 1,
+      listType: 'bulleted',
+      type: 'blockquote',
+    },
+  ],
+  'blocks in a numbered list': [
+    {
+      children: [{ text: 'a' }],
+      indent: 1,
+      listStart: 3,
+      listType: 'numbered',
+      type: 'paragraph',
+    },
+    {
+      alt: 'A',
+      children: [{ text: '' }],
+      indent: 1,
+      listType: 'numbered',
+      type: 'image',
+      url: '/a.png',
+    },
+    {
+      children: [{ text: 'b' }],
+      indent: 1,
+      listType: 'numbered',
+      type: 'codeBlock',
+    },
+  ],
+  'code block in a list': [
+    {
+      children: [{ text: 'const a = 1;\n' }],
+      indent: 2,
+      language: 'ts',
+      listType: 'bulleted',
+      type: 'codeBlock',
+    },
+  ],
+  'details in a task list': [
+    {
+      checked: true,
+      children: [
+        { children: [{ text: 'Title' }], type: 'summary' },
+        paragraph({ text: 'Body' }),
+      ],
+      indent: 1,
+      listType: 'task',
+      type: 'details',
+    },
+  ],
+  'heading in a list': [
+    {
+      children: [{ text: 'h' }],
+      indent: 1,
+      level: 2,
+      listType: 'bulleted',
+      type: 'heading',
+    },
+  ],
+  'image in a list': [
+    {
+      alt: 'A',
+      children: [{ text: '' }],
+      indent: 1,
+      listType: 'bulleted',
+      type: 'image',
+      url: '/a.png',
+    },
+  ],
+};
+
 type ConformanceEditor = ReturnType<typeof createEditor>;
 
-const audit = (editor: ConformanceEditor, children: Value) => {
-  const serialized = editor.api.html.serialize({
-    document: { children },
-    lossPolicy: 'allow',
-  });
+const serialize = (editor: ConformanceEditor, children: Value) =>
+  editor.api.html.serialize({ document: { children }, lossPolicy: 'allow' });
+
+const audit = (
+  editor: ConformanceEditor,
+  children: Value
+): Readonly<{ problems: string[]; reported: string[] }> => {
+  const serialized = serialize(editor, children);
 
   if (!serialized.ok) {
-    return [`serialize failed: ${serialized.diagnostics[0]?.message}`];
+    return {
+      problems: [`serialize failed: ${serialized.diagnostics[0]?.message}`],
+      reported: [],
+    };
   }
   const reported = new Set(
     serialized.diagnostics.flatMap((diagnostic) =>
@@ -422,8 +504,25 @@ const audit = (editor: ConformanceEditor, children: Value) => {
     lossPolicy: 'allow',
   });
 
-  if (!parsed.ok) return [`parse failed: ${parsed.diagnostics[0]?.message}`];
+  if (!parsed.ok) {
+    return {
+      problems: [`parse failed: ${parsed.diagnostics[0]?.message}`],
+      reported: [...reported],
+    };
+  }
   const problems: string[] = [];
+
+  parsed.diagnostics.forEach((diagnostic) => {
+    if (
+      diagnostic.code === 'html-unsupported-content' &&
+      diagnostic.kind === 'attribute' &&
+      diagnostic.source?.kind === 'tree'
+    ) {
+      problems.push(
+        `${diagnostic.source.path.join(',')} <${diagnostic.source.tag}> ${diagnostic.source.attribute}: emitted but not read`
+      );
+    }
+  });
   const compare = (
     original: Readonly<Record<string, unknown>>,
     decoded: Readonly<Record<string, unknown>> | undefined,
@@ -486,14 +585,98 @@ const audit = (editor: ConformanceEditor, children: Value) => {
 
   walk(children, parsed.document.children, []);
 
-  return problems;
+  return { problems, reported: [...reported] };
 };
 
 describe('HTML round-trip conformance', () => {
   const editor = createEditor({ plugins });
 
-  it.each(Object.entries(fixtures))('%s', (_name, children) => {
-    expect(audit(editor, children)).toEqual([]);
+  it.each(Object.entries({ ...fixtures, ...listItemFixtures }))(
+    '%s',
+    (_name, children) => {
+      expect(audit(editor, children)).toEqual({ problems: [], reported: [] });
+    }
+  );
+
+  it.each(Object.entries(listItemFixtures))(
+    '%s parses back to the same document',
+    (_name, children) => {
+      const serialized = serialize(editor, children);
+
+      expect(
+        serialized.ok &&
+          editor.api.html.parse(serialized.data, { lossPolicy: 'allow' })
+      ).toMatchObject({ document: { children }, ok: true });
+    }
+  );
+
+  it('accounts exactly the data attributes the mappings emit', () => {
+    const emitted = new Set<string>();
+
+    for (const children of Object.values({
+      ...fixtures,
+      ...listItemFixtures,
+    })) {
+      const serialized = serialize(editor, children);
+
+      if (!serialized.ok) throw new Error(serialized.diagnostics[0].message);
+      new DOMParser()
+        .parseFromString(serialized.data, 'text/html')
+        .body.querySelectorAll('*')
+        .forEach((element) => {
+          element.getAttributeNames().forEach((name) => {
+            if (name.startsWith('data-')) emitted.add(name);
+          });
+        });
+    }
+
+    expect([...emitted].sort()).toEqual([...PLATE_HTML_ATTRIBUTES].sort());
+  });
+
+  it('fails an emitted attribute that no decoder claims', () => {
+    const define = (claim: boolean) =>
+      definePlugin('htmlConformanceNote', {
+        formats: ({ defineFormats }) =>
+          defineFormats({
+            html: {
+              decode: ({ element, preserve }) => {
+                if (claim) preserve('data-language');
+
+                return element.dataset.language
+                  ? { tone: element.dataset.language }
+                  : {};
+              },
+              encode: ({ content, node, preserve }) => {
+                preserve('tone');
+
+                return {
+                  attributes: { 'data-language': node.tone },
+                  children: content,
+                  tag: 'aside',
+                };
+              },
+              match: [{ tag: 'aside' }],
+            },
+          }),
+        schema: {
+          element: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            properties: { tone: property.string() },
+          },
+        },
+      });
+    const document = [
+      { children: [{ text: 'x' }], tone: 'loud', type: 'htmlConformanceNote' },
+    ];
+
+    expect(
+      audit(createEditor({ plugins: [...plugins, define(false)] }), document)
+        .problems
+    ).toEqual(['0 <aside> data-language: emitted but not read']);
+    expect(
+      audit(createEditor({ plugins: [...plugins, define(true)] }), document)
+        .problems
+    ).toEqual([]);
   });
 
   it('fails a claim that the output does not keep', () => {
@@ -524,9 +707,10 @@ describe('HTML round-trip conformance', () => {
 
     expect(
       audit(createEditor({ plugins: [...plugins, define(true)] }), document)
+        .problems
     ).toEqual(['0 tone: "loud" read back as undefined without a report']);
     expect(
       audit(createEditor({ plugins: [...plugins, define(false)] }), document)
-    ).toEqual([]);
+    ).toEqual({ problems: [], reported: ['0:tone'] });
   });
 });

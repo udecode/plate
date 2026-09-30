@@ -1,0 +1,83 @@
+renderRootConcurrent: 154.5 ms per profile over 3 profiles
+by inclusive (ms per profile):
+     154.5  renderRootConcurrent@5319583e-150745cd7583489c.js:298295
+     154.5  workLoopConcurrentByScheduler@5319583e-150745cd7583489c.js:301027
+     152.3  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+     134.1  beginWork@5319583e-150745cd7583489c.js:187718
+     130.1  updateFunctionComponent@5319583e-150745cd7583489c.js:162671
+     128.1  renderWithHooks@5319583e-150745cd7583489c.js:109327
+      99.7  withDocumentViewRead@1233-726a72fff91f8c4c.js:37387
+      41.9  _object_spread@3370-ab6f5e713678b725.js:72578
+      38.2  getRenderNodeStaticProps@1656-507afe1003872559.js:1920
+      37.3  BaseElementStatic@1656-507afe1003872559.js:12970
+      36.9  (anon)@1656-507afe1003872559.js:15484 «()=>null==renderElement?void 0:renderElement({attributes,children,element,path,s»
+      36.9  render@1656-507afe1003872559.js:2841
+      36.9  render@1656-507afe1003872559.js:3055
+      33.5  read@1233-726a72fff91f8c4c.js:718068 «fn=>runRead(fn),createGroup=groupName=>new Proxy({},{get(target,key,receiver){if»
+      33.3  readEditor@1233-726a72fff91f8c4c.js:1648667
+      33.3  withEditorDocumentProjection@1233-726a72fff91f8c4c.js:1521877
+      32.6  (anon)@1233-726a72fff91f8c4c.js:1649533 «()=>(0,authored_runtime.mL)(editor,editor,()=>fn(getStateView(editor))))}finally»
+      32.6  withAuthoredViewRead@1233-726a72fff91f8c4c.js:516214
+      32.2  (anon)@1233-726a72fff91f8c4c.js:1649575 «()=>fn(getStateView(editor))))}finally{restoreDraft(),exitRead()}},updateEditor=»
+      31.8  Children@1656-507afe1003872559.js:20471
+      30.6  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+      27.3  (anon)@1233-726a72fff91f8c4c.js:649801 «fn=>viewRuntime.read(state=>fn(state)));viewRead.schema=sourceEditor.read.schema»
+      27.3  read@1233-726a72fff91f8c4c.js:644797 «fn=>{var _getViewEditor;return(0,_core_document_view_read__WEBPACK_IMPORTED_MODU»
+      27.3  (anon)@1233-726a72fff91f8c4c.js:644956 «()=>baseRuntime.read(state=>fn((state=>{if(state!==cachedBaseState){var _getView»
+      27.3  read@1233-726a72fff91f8c4c.js:1117210 «fn=>(0,public_state.O4)(editor1,fn),runCommand:(0,command_registry.my)(()=>edito»
+      26.1  (anon)@1233-726a72fff91f8c4c.js:644977 «state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cachedBaseStat»
+      24.7  read@1233-726a72fff91f8c4c.js:1495997 «param=>{let{editor:view=editor,entry}=param,context=Object.create(readContextFor»
+      24.3  (anon)@1656-507afe1003872559.js:21285 «source=>source.read({editor,entry})),own=0===read.length?EMPTY_DECORATIONS:read,»
+      24.1  BaseLeafStatic@1656-507afe1003872559.js:17807
+      22.8  (anon)@1233-726a72fff91f8c4c.js:1496170 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decora»
+      22.8  read@7460-e221bf65b958d854.js:279021 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entr»
+      22.4  pipeInjectNodeProps@1233-726a72fff91f8c4c.js:1375041
+      22.0  (anon)@1233-726a72fff91f8c4c.js:1375365 «name=>{let plugin=(0,compilePlateModel.zI)(editor,name);if((0,isEditOnlyDisabled»
+      19.1  _object_spread_props@3370-ab6f5e713678b725.js:174957
+      18.2  (anon)@1233-726a72fff91f8c4c.js:1375501 «(editor,plugin,nodeProps,getElementPath)=>{var _ref,_Reflect_apply,_getCompiledP»
+      18.2  completeUnitOfWork@5319583e-150745cd7583489c.js:303391
+      18.0  completeWork@5319583e-150745cd7583489c.js:200744
+      17.9  (anon)@1656-507afe1003872559.js:18799 «(segment,index)=>{var _ref,_ref1;let leaf=(0,_object_spread_props._)((0,_object_»
+      17.4  (anon)@1656-507afe1003872559.js:19472 «()=>renderLeaf({attributes:{"data-editor-leaf":!0},children:content,leaf,leafPos»
+      17.4  render@1656-507afe1003872559.js:8261
+by self (ms per profile):
+      19.1  _object_spread_props@3370-ab6f5e713678b725.js:174957
+      14.9  _object_spread@3370-ab6f5e713678b725.js:72578
+      10.1  appendChild@:-1
+       8.8  _define_property@3370-ab6f5e713678b725.js:72415
+       4.2  getEditorRuntimeOwner@1233-726a72fff91f8c4c.js:2109645
+       3.8  (anon)@1233-726a72fff91f8c4c.js:1375365 «name=>{let plugin=(0,compilePlateModel.zI)(editor,name);if((0,isEditOnlyDisabled»
+       3.6  cache@1233-726a72fff91f8c4c.js:1462698
+       3.4  createPluginAccess@1233-726a72fff91f8c4c.js:521333
+       2.9  (anon)@3370-ab6f5e713678b725.js:72918 «(key){_define_property(target,key,source[key])})}return target}__webpack_require»
+       2.6  _object_without_properties@8255-fdc7096923fb725f.js:52329
+       2.2  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+       2.0  freezeReadMethodTree@1233-726a72fff91f8c4c.js:1571994
+       2.0  read@7460-e221bf65b958d854.js:279021 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entr»
+       2.0  (anon)@1233-726a72fff91f8c4c.js:1463412 «(node,index)=>{let path=[...pathPrefix,index],nodeKey=(0,_utils_node_keys__WEBPA»
+       1.8  getOwnPropertyDescriptor@1233-726a72fff91f8c4c.js:535848
+       1.8  setAttribute@:-1
+       1.5  ownKeys@1233-726a72fff91f8c4c.js:536379
+       1.5  (anon)@1656-507afe1003872559.js:8430 «renderLeaf=>{let newChildren=renderLeaf((0,_object_spread_props._)((0,_object_sp»
+       1.4  exec@2698-c2ee67ec4838aa66.js:11910
+       1.4  createElement@:-1
+       1.4  hasCompiledPlateModelCandidate@1233-726a72fff91f8c4c.js:1014430
+       1.3  setValueForStyle@5319583e-150745cd7583489c.js:32448
+       1.3  (anon)@9008-db6ddc41f032438f.js:38103 «c=>{let space=c.text.replaceAll("\n","⤶").replaceAll(" ","␣");return(0,react_jsx»
+       1.3  now@:-1
+       1.2  (anon)@1233-726a72fff91f8c4c.js:1187410 «key=>{var _Object_getOwnPropertyDescriptor;let descriptor=null!=(_Object_getOwnP»
+       1.2  get@1233-726a72fff91f8c4c.js:535693
+       1.2  updateSlot@5319583e-150745cd7583489c.js:89696
+       1.1  mergeCapabilityValue@1233-726a72fff91f8c4c.js:1189131
+       1.1  BaseLeafStatic@1656-507afe1003872559.js:17807
+       1.0  getResolvedPluginTargetBinding@1233-726a72fff91f8c4c.js:983397
+       1.0  isBlock@1233-726a72fff91f8c4c.js:253373
+       0.9  EditorLeaf@1656-507afe1003872559.js:37899
+       0.9  setProp@5319583e-150745cd7583489c.js:343027
+       0.9  (anon)@1233-726a72fff91f8c4c.js:1375501 «(editor,plugin,nodeProps,getElementPath)=>{var _ref,_Reflect_apply,_getCompiledP»
+       0.8  getCandidate@1233-726a72fff91f8c4c.js:522615
+       0.8  set@1233-726a72fff91f8c4c.js:536685
+       0.8  collectElementPaths@1233-726a72fff91f8c4c.js:1462004
+       0.8  validateDeclarativeNodeProperties@1233-726a72fff91f8c4c.js:228017
+       0.8  withViewState@1233-726a72fff91f8c4c.js:619779
+       0.8  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288

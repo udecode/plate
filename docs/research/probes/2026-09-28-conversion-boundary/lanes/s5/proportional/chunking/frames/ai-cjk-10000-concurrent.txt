@@ -1,0 +1,123 @@
+renderRootConcurrent: 242.7 ms per profile over 3 profiles
+by inclusive (ms per profile):
+     242.7  renderRootConcurrent@5319583e-150745cd7583489c.js:298295
+     242.5  workLoopConcurrentByScheduler@5319583e-150745cd7583489c.js:301027
+     233.5  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+     225.1  beginWork@5319583e-150745cd7583489c.js:187718
+     216.0  updateFunctionComponent@5319583e-150745cd7583489c.js:162671
+     213.5  renderWithHooks@5319583e-150745cd7583489c.js:109327
+     168.1  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+      76.2  BaseElementStatic@1656-507afe1003872559.js:12970
+      75.7  (anon)@1656-507afe1003872559.js:15484 «()=>null==renderElement?void 0:renderElement({attributes,children,element,path,s»
+      75.7  render@1656-507afe1003872559.js:2841
+      75.7  render@1656-507afe1003872559.js:3055
+      69.9  read@1233-4d37154d85cba0b9.js:718071 «fn=>runRead(fn),createGroup=groupName=>new Proxy({},{get(target,key,receiver){if»
+      68.4  _object_spread@3370-ab6f5e713678b725.js:72578
+      68.2  readEditor@1233-4d37154d85cba0b9.js:1648673
+      67.8  withEditorDocumentProjection@1233-4d37154d85cba0b9.js:1521883
+      67.0  (anon)@1233-4d37154d85cba0b9.js:1649539 «()=>(0,authored_runtime.mL)(editor,editor,()=>fn(getStateView(editor))))}finally»
+      67.0  withAuthoredViewRead@1233-4d37154d85cba0b9.js:512202
+      66.6  (anon)@1233-4d37154d85cba0b9.js:1649581 «()=>fn(getStateView(editor))))}finally{restoreDraft(),exitRead()}},updateEditor=»
+      60.8  getRenderNodeStaticProps@1656-507afe1003872559.js:1920
+      50.6  (anon)@1233-4d37154d85cba0b9.js:649804 «fn=>viewRuntime.read(state=>fn(state)));viewRead.schema=sourceEditor.read.schema»
+      49.8  (anon)@1233-4d37154d85cba0b9.js:644959 «()=>baseRuntime.read(state=>fn((state=>{if(state!==cachedBaseState){var _getView»
+      49.8  read@1233-4d37154d85cba0b9.js:1117214 «fn=>(0,public_state.O4)(editor1,fn),runCommand:(0,command_registry.my)(()=>edito»
+      47.7  (anon)@1233-4d37154d85cba0b9.js:644980 «state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cachedBaseStat»
+      40.7  Children@1656-507afe1003872559.js:20471
+      40.3  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+      34.8  profileCoreDuration@1233-4d37154d85cba0b9.js:1373969
+      33.1  EditorStatic@1656-507afe1003872559.js:23507
+      32.7  (anon)@1233-4d37154d85cba0b9.js:649825 «state=>fn(state)));viewRead.schema=sourceEditor.read.schema;let viewUpdate=(0,_c»
+      32.0  TableCellElementStatic@4567-79b248131cb3a709.js:105607
+      31.1  (anon)@1233-4d37154d85cba0b9.js:527688 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_»
+      31.1  withTransactionSpecDraftRead@1233-4d37154d85cba0b9.js:1525309
+      31.1  (anon)@1233-4d37154d85cba0b9.js:527846 «()=>{let editorRead=Reflect.get(editor,"read");if("function"!=typeof editorRead)»
+      31.1  (anon)@1233-4d37154d85cba0b9.js:528024 «state=>{let{owner,value}=resolveOwnCapabilityPath(state[getPlugin().name],path);»
+      31.0  cell@3744-5709f04fa58d24f7.js:83442
+      30.2  read@1233-4d37154d85cba0b9.js:1496002 «param=>{let{editor:view=editor,entry}=param,context=Object.create(readContextFor»
+      30.1  pipeInjectNodeProps@1233-4d37154d85cba0b9.js:1375046
+      30.1  selectionView@3744-5709f04fa58d24f7.js:80779
+      29.1  readTableSelection@3744-5709f04fa58d24f7.js:7173
+      28.5  withRootRead@1233-4d37154d85cba0b9.js:617290
+      27.7  read@1233-4d37154d85cba0b9.js:617345 «()=>(0,_core_public_state__WEBPACK_IMPORTED_MODULE_1__.bq)(editor,viewState.root»
+      27.7  withEditorRootChildren@1233-4d37154d85cba0b9.js:1651008
+      27.3  (anon)@1233-4d37154d85cba0b9.js:618191 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_»
+      26.8  apply@1233-4d37154d85cba0b9.js:1575938
+      26.4  (anon)@1233-4d37154d85cba0b9.js:618329 «()=>method(...args))},rootGeneratorMethod=(editor,viewState,method)=>function(){»
+      26.3  (anon)@1233-4d37154d85cba0b9.js:1375370 «name=>{let plugin=(0,compilePlateModel.zI)(editor,name);if((0,isEditOnlyDisabled»
+      25.2  (anon)@1233-4d37154d85cba0b9.js:1375506 «(editor,plugin,nodeProps,getElementPath)=>{var _ref,_Reflect_apply,_getCompiledP»
+      24.5  _object_spread_props@3370-ab6f5e713678b725.js:174957
+      24.3  (anon)@1233-4d37154d85cba0b9.js:1496175 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decora»
+      22.4  (anon)@1656-507afe1003872559.js:3608 «name=>{var _getCompiledPlatePlugin;let wrapperPlugin=null!=(_getCompiledPlatePlu»
+      21.5  (anon)@1656-507afe1003872559.js:21285 «source=>source.read({editor,entry})),own=0===read.length?EMPTY_DECORATIONS:read,»
+      20.8  BaseLeafStatic@1656-507afe1003872559.js:17807
+      20.5  getOwnPropertyDescriptor@1233-4d37154d85cba0b9.js:531836
+      19.6  path@1233-4d37154d85cba0b9.js:1588137
+      19.6  resolveNodeTargetLocation@1233-4d37154d85cba0b9.js:1536383
+      19.6  children@1233-4d37154d85cba0b9.js:719402
+      19.2  (anon)@1233-4d37154d85cba0b9.js:718251 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_»
+      19.2  readMain@1233-4d37154d85cba0b9.js:1117628
+      19.1  materialize@1233-4d37154d85cba0b9.js:1463237
+      19.1  (anon)@1233-4d37154d85cba0b9.js:1463335 «()=>{ensureElementPaths();let entries=[],visit=(nodes,pathPrefix)=>{nodes.forEac»
+      19.1  (anon)@3370-ab6f5e713678b725.js:72918 «(key){_define_property(target,key,source[key])})}return target}__webpack_require»
+by self (ms per profile):
+      27.2  _object_spread@3370-ab6f5e713678b725.js:72578
+      24.5  _object_spread_props@3370-ab6f5e713678b725.js:174957
+       9.4  _define_property@3370-ab6f5e713678b725.js:72415
+       9.0  cache@1233-4d37154d85cba0b9.js:1462703
+       6.1  getOwnPropertyDescriptor@1233-4d37154d85cba0b9.js:531836
+       5.4  isDeepFrozenNode@1233-4d37154d85cba0b9.js:232980
+       4.9  ownKeys@1233-4d37154d85cba0b9.js:532367
+       4.6  read@7460-c24090794ff3990a.js:279086 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entr»
+       4.2  _object_without_properties@8255-fdc7096923fb725f.js:52329
+       3.8  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+       3.7  getPlugin@1233-4d37154d85cba0b9.js:519118
+       3.7  getCompiledPlatePlugin@1233-4d37154d85cba0b9.js:1014552
+       3.5  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+       3.4  (anon)@3370-ab6f5e713678b725.js:72918 «(key){_define_property(target,key,source[key])})}return target}__webpack_require»
+       3.4  appendChild@:-1
+       3.2  exec@2698-c2ee67ec4838aa66.js:11910
+       3.2  getEditorRuntimeOwner@1233-4d37154d85cba0b9.js:2109651
+       3.1  (anon)@1233-4d37154d85cba0b9.js:1463417 «(node,index)=>{let path=[...pathPrefix,index],nodeKey=(0,_utils_node_keys__WEBPA»
+       2.7  now@:-1
+       2.5  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+       2.5  createPluginAccess@1233-4d37154d85cba0b9.js:517321
+       2.5  setAttribute@:-1
+       2.4  pipeInjectNodeProps@1233-4d37154d85cba0b9.js:1375046
+       2.3  getCompiledElement@1233-4d37154d85cba0b9.js:106585
+       2.3  (anon)@1233-4d37154d85cba0b9.js:1462044 «(node,index)=>{let path=Object.freeze([...pathPrefix,index]);if("children"in nod»
+       2.2  (anon)@1233-4d37154d85cba0b9.js:888640 «(node,path)=>{var _plugin_inject;let{excludeBelowPlugins,excludePlugins,isBlock:»
+       2.2  getRenderNodeStaticProps@1656-507afe1003872559.js:1920
+       1.7  withEditorDocumentProjection@1233-4d37154d85cba0b9.js:1521883
+       1.6  mergeCapabilityValue@1233-4d37154d85cba0b9.js:1189136
+       1.3  isPlainRecord@1233-4d37154d85cba0b9.js:1186765
+       1.3  resolvePluginApi@1233-4d37154d85cba0b9.js:812855
+       1.3  getElementContentRoots@1233-4d37154d85cba0b9.js:107575
+       1.3  getEnumerableCapabilityEntries@1233-4d37154d85cba0b9.js:1187360
+       1.3  bailoutOnAlreadyFinishedWork@5319583e-150745cd7583489c.js:184360
+       1.3  visit@1656-507afe1003872559.js:22412
+       1.3  collectElementPaths@1233-4d37154d85cba0b9.js:1462009
+       1.2  freezeReadMethodTree@1233-4d37154d85cba0b9.js:1572000
+       1.2  validateTextProperties@1233-4d37154d85cba0b9.js:221011
+       1.2  setValueForStyle@5319583e-150745cd7583489c.js:32448
+       1.2  setValueForStyles@5319583e-150745cd7583489c.js:32925
+       1.2  beginWork@5319583e-150745cd7583489c.js:187718
+       1.2  read@885-9cb09a45a1814598.js:4743 «param=>{var _last_text_codePointAt;let{editor,entry:[node,path]}=param;if(1!==pa»
+       1.2  countMatchGroups@2698-c2ee67ec4838aa66.js:3676
+       1.1  (anon)@1233-4d37154d85cba0b9.js:1375370 «name=>{let plugin=(0,compilePlateModel.zI)(editor,name);if((0,isEditOnlyDisabled»
+       1.1  completeWork@5319583e-150745cd7583489c.js:200744
+       1.1  getEditorDocumentRoots@1233-4d37154d85cba0b9.js:1549004
+       1.0  isElement@1233-4d37154d85cba0b9.js:1814528
+       1.0  _@3370-ab6f5e713678b725.js:175337
+       0.9  visit@1233-4d37154d85cba0b9.js:1463382
+       0.9  bubbleProperties@5319583e-150745cd7583489c.js:199974
+       0.9  path@1233-4d37154d85cba0b9.js:665300
+       0.9  source@2698-c2ee67ec4838aa66.js:3097
+       0.8  setTextContent@5319583e-150745cd7583489c.js:31267
+       0.8  (anon)@1233-4d37154d85cba0b9.js:225190 «(node,index)=>{if(null==validated?void 0:validated(node))return;let path=[...par»
+       0.8  (anon)@1233-4d37154d85cba0b9.js:1187415 «key=>{var _Object_getOwnPropertyDescriptor;let descriptor=null!=(_Object_getOwnP»
+       0.8  readsDocumentWithin@1656-507afe1003872559.js:15912
+       0.8  compileTableElement@3744-5709f04fa58d24f7.js:18789
+       0.8  render@1656-507afe1003872559.js:8261
+       0.8  (anon)@1656-507afe1003872559.js:22714 «(child,index)=>visit(child,[...p,index])),0!==contentRoots.length||0!==decoratio»
+       0.8  isOwnedJsonValue@1233-4d37154d85cba0b9.js:691096

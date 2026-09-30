@@ -442,8 +442,11 @@ editor.read.selection.nodes()` is a regression: it
   returned output keeps, plus `preserve(...)` for other represented
   properties. HTML element encoders claim with `preserve(...)` and
   single-`value` mappings by the output they write; an encoder existing for a
-  node claims nothing. Flag feature-local attribute parsing, blanket JSON
-  coercion, blanket per-owner HTML coverage and read-tracking claims. Expected refusals return `refuse(message)`; a mapping
+  node claims nothing. HTML decoders claim the Plate attributes their result
+  represents with `preserve(...names)`. Flag feature-local attribute parsing,
+  blanket JSON coercion, blanket per-owner HTML coverage, read-tracking claims
+  and a first-party HTML encoder attribute missing from the Plate attribute
+  set. Expected refusals return `refuse(message)`; a mapping
   throws only for programmer or configuration faults.
 - Markdown has no per-operation mapping override, node filter, remark-plugin
   list, or recovery mode; `partial` is the streaming-preview parse option. A

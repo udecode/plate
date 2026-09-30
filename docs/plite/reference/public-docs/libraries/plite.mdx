@@ -41,6 +41,17 @@ last commit, and never notifies subscribers. Reading the source editor's documen
 through its own API while the view reads throws; schema queries stay allowed.
 Plugin code reads the document through the editor or state passed to it.
 
+Create a view from another view to read another of its roots. The new view
+reads the requested root, or the primary root when `root` is omitted, and keeps
+the source view's document, read-only state and authored mode:
+
+```ts
+const caption = createEditorView(preview, { root: 'caption:1' });
+
+caption.read.children(); // the preview document's caption root
+caption.read.view.isReadOnly(); // true
+```
+
 Read committed state with direct read methods, or with `editor.read(...)` when
 several reads should share one state view.
 

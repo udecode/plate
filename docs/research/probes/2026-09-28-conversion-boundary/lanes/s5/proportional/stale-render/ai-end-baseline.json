@@ -1,0 +1,98 @@
+{
+ "base": "http://localhost:3632",
+ "during": [
+  {
+   "coversLast": true,
+   "lastCodePoint": "o",
+   "draft": true,
+   "draftTextTail": "lly striking effect.Add strikethrough to",
+   "ends": 1,
+   "endText": [
+    "o"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": ".",
+   "draft": true,
+   "draftTextTail": "to indicate deleted or outdated content.",
+   "ends": 1,
+   "endText": [
+    "."
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "e",
+   "draft": true,
+   "draftTextTail": "ent.Write code snippets with inline code",
+   "ends": 1,
+   "endText": [
+    "e"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "y",
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    "y"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "d",
+   "draft": true,
+   "draftTextTail": "code formatting for easy readability.Add",
+   "ends": 1,
+   "endText": [
+    "d"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "o",
+   "draft": true,
+   "draftTextTail": "atting for easy readability.Add links to",
+   "ends": 1,
+   "endText": [
+    "o"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "e",
+   "draft": true,
+   "draftTextTail": "ernal resources or references.Use inline",
+   "ends": 1,
+   "endText": [
+    "e"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "c",
+   "draft": true,
+   "draftTextTail": " like E=mc2E = mc^2E=mc2﻿ for scientific",
+   "ends": 1,
+   "endText": [
+    "c"
+   ]
+  }
+ ],
+ "after": {
+  "coversLast": true,
+  "lastCodePoint": "a",
+  "draft": true,
+  "draftTextTail": " rule﻿Header 1Header 2Row 1DataRow 2Data",
+  "ends": 1,
+  "endText": [
+   "a"
+  ]
+ },
+ "errors": [
+  "Invalid 'X-Frame-Options' header encountered when loading 'https://pro.platejs.org/': 'allow-from https://next.platejs.org/' is not a recognized directive. The header will be ignored."
+ ]
+}

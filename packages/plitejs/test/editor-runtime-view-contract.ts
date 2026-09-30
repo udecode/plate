@@ -2309,6 +2309,48 @@ describe('editor runtime/view contract', () => {
     );
   });
 
+  it('derives a view of another root from a root view', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const main = createEditorView(editor);
+    const header = createEditorView(main, { root: 'header' });
+
+    assert.deepEqual(header.read.children(), [paragraph('header')]);
+    assert.equal(header.read.view.root(), 'header');
+    header.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
+    });
+    assert.deepEqual(editor.read.root('header'), [paragraph('header!')]);
+    assert.deepEqual(editor.read.children(), [paragraph('body')]);
+    assert.notEqual(header, createEditorView(main, { root: 'header' }));
+  });
+
+  it('keeps a view derived from a read-only view read-only', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const readOnly = createEditorView(editor, { readOnly: true });
+    const header = createEditorView(readOnly, {
+      readOnly: false,
+      root: 'header',
+    });
+
+    assert.equal(header.read.view.isReadOnly(), true);
+    assert.throws(() => {
+      header.update((tx) => {
+        tx.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+      });
+    }, /read-only editor view/);
+    assert.deepEqual(editor.read.root('header'), [paragraph('header')]);
+  });
+
   describe('document views', () => {
     const WordsPlugin = definePlugin('words', {
       api: ({ editor }) => ({
@@ -2406,6 +2448,46 @@ describe('editor runtime/view contract', () => {
       assert.equal(view.read.children().length, 2);
     });
 
+    it('resolves an anchor only on the nodes a document shares', () => {
+      const editor = createEditor({ initialValue: [paragraph('Alpha Beta')] });
+      const anchor = editor.anchor(
+        {
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 0], offset: 4 },
+        },
+        { association: 'inward', deletion: 'nearest' }
+      );
+      const [block] = editor.read.children();
+      const at = (path: Path) => ({
+        anchor: { path, offset: 1 },
+        focus: { path, offset: 4 },
+      });
+
+      assert.equal(
+        anchor.resolve(
+          createEditorView(editor, {
+            document: { children: [paragraph('Zeta Theta')] },
+          })
+        ),
+        null
+      );
+      assert.deepEqual(
+        anchor.resolve(
+          createEditorView(editor, {
+            document: { children: [paragraph('First'), block] },
+          })
+        ),
+        at([1, 0])
+      );
+      assert.deepEqual(
+        anchor.resolve(
+          createEditorView(editor, { document: { children: [block] } })
+        ),
+        at([0, 0])
+      );
+      assert.deepEqual(anchor.resolve(), at([0, 0]));
+    });
+
     it('reads a named root of the document', () => {
       const view = createEditorView(createSource(), {
         document: {
@@ -2416,6 +2498,39 @@ describe('editor runtime/view contract', () => {
       });
 
       assert.deepEqual(view.read.words.text(), ['header']);
+    });
+
+    it('derives root views that keep the document', () => {
+      const editor = createSource();
+      const documentView = createEditorView(editor, {
+        document: {
+          children: [paragraph('body'), paragraph('more')],
+          roots: { header: [paragraph('header')] },
+        },
+      });
+      const header = createEditorView(documentView, { root: 'header' });
+
+      assert.deepEqual(header.read.words.text(), ['header']);
+      assert.equal(header.plugin(WordsPlugin).api.count(), 1);
+      assert.equal(header.read.view.isReadOnly(), true);
+      assert.equal(header.read.lastCommit(), null);
+      assert.deepEqual(createEditorView(header).read.words.text(), [
+        'body',
+        'more',
+      ]);
+      assert.throws(() => {
+        header.update((tx) => {
+          tx.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+        });
+      }, /read-only editor view/);
+      assert.throws(
+        () =>
+          createEditorView(documentView, {
+            authored: { intent: 'edit', projection: 'accepted' },
+          } as never),
+        /cannot take an authored projection/
+      );
+      assert.deepEqual(editor.read.words.text(), ['source']);
     });
 
     it('refuses updates and documents outside the schema', () => {

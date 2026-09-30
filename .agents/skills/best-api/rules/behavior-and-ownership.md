@@ -297,7 +297,11 @@ matching. Whole-payload admission, source cleanup, RTF access, and post-decode
 repair belong to `DataTransferFormat`. Do not restore generic `query`,
 `transformData`, or `transformFragment` hooks on semantic mappings. A
 `createsElement` mapping creates the schema's default block when that block is
-one of its targets; target order is membership, not construction intent.
+one of its targets and writes its output around the HTML of its other
+targets; on parse, a matched element holding exactly one block its
+properties apply to decodes onto that block, and a text block they cannot
+apply to gives the created block its text. Target order is membership, not
+construction intent.
 
 Parse and import diagnostics tell the truth about loss. Every warning judged
 under `lossPolicy` declares `impact`: `lossless` for normalization such as
@@ -461,7 +465,14 @@ properties with `encodeNodeAttributes()`, the `encodeAttributes()` output they
 return, or `preserve(...)`; reading a property never claims it. HTML uses
 the same law: element encoders claim with `preserve(...)`, single-`value`
 mappings claim by writing output, and an encoder existing for a node claims
-nothing, so each unclaimed property warns as `html-unsupported-content`. Do not restore blanket JSON coercion, a feature-local
+nothing, so each unclaimed property warns as `html-unsupported-content`.
+Parsing mirrors it: a decoder claims the Plate attributes its result
+represents with `preserve(...names)`, and each attribute Plate's own mappings
+write that no decoder claims warns with `kind: 'attribute'` and
+`source.attribute`; an element reported lost does not repeat its
+attributes. The attribute set is exactly what first-party encoders emit, which
+HTML conformance pins in both directions; a custom mapping's own `data-*`
+attributes are outside it. Do not restore blanket JSON coercion, a feature-local
 attribute parser or read-tracking claims. Input a mapping cannot represent
 returns `refuse(message)`, reported as `markdown-unsupported-node` under
 `lossPolicy`; property and mark loss warns as `markdown-property-omitted`; only
@@ -477,11 +488,25 @@ block. A captured document is read through one Plite view,
 `createEditorView(editor, { document })`, whose direct reads, plugin reads and
 plugin APIs all resolve against it; plugins reach it through their context
 editor or `state`, never an editor captured in `.extend`; Plite refuses a
-source-editor read made while a document view reads, decorates or renders. Static rendering
+source-editor read inside a document view's reads, decorations and plugin
+render callbacks, and component bodies, which run later, read their `editor`
+prop. Static rendering
 reuses a block while it and every earlier block keep their identity and the
 decorations inside it stay value-equal, so decoration sources may read any
 content; an element that reads later content declares `render.readsDocument`
-instead of disabling reuse or keeping a mutable stable view. The runtime owns reuse and invalidation,
+instead of disabling reuse or keeping a mutable stable view. A decoration read
+depends on its entry, the nodes inside it and state its source observes, in
+live and static views alike: a source decorates where it reads (one read per
+code block, returning ranges for its text), not every node that might sit
+inside its target. In a document view, anchors resolve only on nodes the
+document shares with the editor by identity, search matches only on the
+searched document, and remote cursors and authored changes show nothing.
+Every live and static callback inside an element-owned content root receives
+the reader of that root, so a root-relative entry never recovers its root;
+feature presentation reads the known path, as in `read.list.ordinal(path)` and
+`read.cell({ at: path })`, instead of resolving a node, which indexes a
+document view. The
+runtime owns reuse and invalidation,
 so consumers keep no parse cache, transport joiner or chunk heuristics. A
 missing mapping is the fix for unsupported content. Claim mappings on one selector run by priority:
 `undefined` declines to the next, and `refuse` stops dispatch. Mention claims

@@ -238,7 +238,10 @@ encode: ({ encodeNodeAttributes, encodePhrasing, node }) => ({
 An HTML element encoder claims the properties it writes the same way, with
 `preserve(...keys)` typed to its target's own properties; a single-`value`
 mark or property mapping claims its value by returning output that writes it.
-Unclaimed content properties report `html-unsupported-content`:
+A decoder claims the Plate attributes its result represents the same way,
+with `preserve(...names)` on the decode context. Unclaimed content properties,
+and each Plate attribute no decoder claims, report `html-unsupported-content`;
+a custom mapping's own attributes are outside that report:
 
 ```ts
 encode: ({ content, node, preserve }) => {

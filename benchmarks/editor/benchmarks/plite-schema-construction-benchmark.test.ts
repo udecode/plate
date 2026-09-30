@@ -78,11 +78,11 @@ describe('schema-backed sparse edit benchmark authority', () => {
             samplesMs: number[];
           };
           prefixPropertyMaximumChangedSpan: number;
-          propertyP95OverheadBudgetMs: number;
-          propertyP95OverheadMs: number;
-          propertyP95WithinBudget: boolean;
+          propertyOverheadBudgetMs: number;
+          propertyOverheadMs: number;
+          propertyOverheadWithinBudget: boolean;
         }>;
-        prefixPropertyP95WithinBudget: boolean;
+        prefixPropertyOverheadWithinBudget: boolean;
         propertyOnlyDiagnostic: boolean;
       };
 
@@ -98,7 +98,7 @@ describe('schema-backed sparse edit benchmark authority', () => {
       );
       assert.equal(artifact.immutablePublicationDiagnostic.rows.length, 4);
       assert.equal(artifact.propertyOnlyDiagnostic, false);
-      assert.equal(artifact.prefixPropertyP95WithinBudget, true);
+      assert.equal(artifact.prefixPropertyOverheadWithinBudget, true);
       assert.equal(
         artifact.immutablePublicationDiagnostic.rows.every(
           ({ maximumChangedSpan }) => maximumChangedSpan < 64
@@ -127,8 +127,8 @@ describe('schema-backed sparse edit benchmark authority', () => {
             row.pairedPropertyDelta.samplesMs.length === 20 &&
             row.plainPropertyEdit.p50Ms <= row.plainPropertyEdit.p95Ms &&
             row.prefixPropertyEdit.p50Ms <= row.prefixPropertyEdit.p95Ms &&
-            row.propertyP95WithinBudget &&
-            row.propertyP95OverheadMs <= row.propertyP95OverheadBudgetMs
+            row.propertyOverheadWithinBudget &&
+            row.propertyOverheadMs <= row.propertyOverheadBudgetMs
         ),
         true
       );

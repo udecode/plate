@@ -1,0 +1,177 @@
+{
+  "arm": "baseline",
+  "host": {
+    "arch": "arm64",
+    "cpu": "Apple M5 Max",
+    "load": [
+      4.94482421875,
+      7.0322265625,
+      7.1142578125
+    ],
+    "platform": "darwin"
+  },
+  "part": "stream",
+  "runtime": "1.3.12",
+  "sampling": "one warmup; four measured runs of 16 publications",
+  "source": {
+    "packages/plitejs/src/editor-runtime-view.ts": "4e153bf294fd44c9225c511806c6b7a0c5e28c0b774bb270be50a477494f25dc",
+    "packages/plitejs/src/core/snapshot-index.ts": "1cacfc6032f4850c234e79cc5c53671969900366d4c85fc5ee7101fd9df17b46",
+    "packages/platejs/src/static/components/PlateStatic.tsx": "c714df7dd29b7bb7bd4724847c99adb853578eecf509655b264693906a06d65c",
+    "packages/platejs/src/static/internal/staticDocumentView.ts": "fe6402ba1510409f8babfd7d889ea524ff046e552442b1071c916ae5d6373b99",
+    "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts": "420941860ea1976b72cbc76b10115f431a09d81494cb9917b171644c2389b97b",
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts": "6d9f21f7719cbe44bfc49ff712dde3fd05fe803d0356fce7d43cd257d23a9d73",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "303b1256057ed49391b4d65969b9d295c6931f355a443e752f84b6b867c597fc",
+    "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+    "docs/research/probes/2026-09-30-content-root-locations/production.tsx": "a40ae3f80b7d8187d29009fd71238ba2a3758db49fd092aaf5af7e8330c3fba0"
+  },
+  "baselineSources": {
+    "packages/platejs/src/static/components/PlateStatic.tsx": "57608045c0036398969839545981aed18f663404d8b8801b33353890d3f8db9e",
+    "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts": "fb221beac3614839f46ef59e24c3caf52ac30a674a7de75a57d60e037ce54bd5",
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts": "8b98d3dcab9aa08b63632bf51c4f5d040fb675ff19e7f4f70e49eee24c6b2f24",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "c242baaf15c7ae5286543dda65154c1ca63508dd0866dc0aab8296a08c208456",
+    "packages/platejs/src/static/internal/staticDocumentView.ts": "cee8a70f2a7849adf5bcb81a657b8d1aa431555a52b197f8b46f6ac0cdff5427",
+    "packages/plitejs/src/editor-runtime-view.ts": "430759b02f47795b800fe0a874de3d120a74650b405bc020491b823766819c93"
+  },
+  "cells": [
+    {
+      "blocks": 77,
+      "bytes": 10000,
+      "cjk": false,
+      "html": "992dfaacc72aa8bea883aea5966285f2a05477e58a857f0a87a777a79e8f508b",
+      "indexBuilds": 0,
+      "medianPublicationMs": 1.2597079999999892,
+      "medianTotalMs": 23.806542999999976,
+      "runs": [
+        {
+          "html": "992dfaacc72aa8bea883aea5966285f2a05477e58a857f0a87a777a79e8f508b",
+          "indexBuilds": 0,
+          "medianPublicationMs": 1.5892499999999927,
+          "totalMs": 26.420291000000077
+        },
+        {
+          "html": "992dfaacc72aa8bea883aea5966285f2a05477e58a857f0a87a777a79e8f508b",
+          "indexBuilds": 0,
+          "medianPublicationMs": 1.2597079999999892,
+          "totalMs": 23.806542999999976
+        },
+        {
+          "html": "992dfaacc72aa8bea883aea5966285f2a05477e58a857f0a87a777a79e8f508b",
+          "indexBuilds": 0,
+          "medianPublicationMs": 1.090833000000032,
+          "totalMs": 17.671791000000155
+        },
+        {
+          "html": "992dfaacc72aa8bea883aea5966285f2a05477e58a857f0a87a777a79e8f508b",
+          "indexBuilds": 0,
+          "medianPublicationMs": 1.2075000000000387,
+          "totalMs": 21.221960000000024
+        }
+      ]
+    },
+    {
+      "blocks": 381,
+      "bytes": 50000,
+      "cjk": false,
+      "html": "d2f5916c37af385184c8216815f53896f7160f23303c6fa0981ac696105c3b14",
+      "indexBuilds": 0,
+      "medianPublicationMs": 5.050207999999998,
+      "medianTotalMs": 82.5255420000002,
+      "runs": [
+        {
+          "html": "d2f5916c37af385184c8216815f53896f7160f23303c6fa0981ac696105c3b14",
+          "indexBuilds": 0,
+          "medianPublicationMs": 4.992500000000064,
+          "totalMs": 82.80079199999989
+        },
+        {
+          "html": "d2f5916c37af385184c8216815f53896f7160f23303c6fa0981ac696105c3b14",
+          "indexBuilds": 0,
+          "medianPublicationMs": 4.9230420000000095,
+          "totalMs": 77.5666269999997
+        },
+        {
+          "html": "d2f5916c37af385184c8216815f53896f7160f23303c6fa0981ac696105c3b14",
+          "indexBuilds": 0,
+          "medianPublicationMs": 5.050207999999998,
+          "totalMs": 81.97491799999989
+        },
+        {
+          "html": "d2f5916c37af385184c8216815f53896f7160f23303c6fa0981ac696105c3b14",
+          "indexBuilds": 0,
+          "medianPublicationMs": 5.213874999999916,
+          "totalMs": 82.5255420000002
+        }
+      ]
+    },
+    {
+      "blocks": 85,
+      "bytes": 10000,
+      "cjk": true,
+      "html": "f6fb7172952c82c95edbcce5524306301136ad69b187a648d4585161564c0148",
+      "indexBuilds": 0,
+      "medianPublicationMs": 0.6106250000000273,
+      "medianTotalMs": 9.879083999999693,
+      "runs": [
+        {
+          "html": "f6fb7172952c82c95edbcce5524306301136ad69b187a648d4585161564c0148",
+          "indexBuilds": 0,
+          "medianPublicationMs": 0.6180420000000595,
+          "totalMs": 9.879083999999693
+        },
+        {
+          "html": "f6fb7172952c82c95edbcce5524306301136ad69b187a648d4585161564c0148",
+          "indexBuilds": 0,
+          "medianPublicationMs": 0.5510419999998248,
+          "totalMs": 9.528749999999945
+        },
+        {
+          "html": "f6fb7172952c82c95edbcce5524306301136ad69b187a648d4585161564c0148",
+          "indexBuilds": 0,
+          "medianPublicationMs": 0.6106250000000273,
+          "totalMs": 15.358208000000332
+        },
+        {
+          "html": "f6fb7172952c82c95edbcce5524306301136ad69b187a648d4585161564c0148",
+          "indexBuilds": 0,
+          "medianPublicationMs": 0.5034170000001268,
+          "totalMs": 8.07303900000079
+        }
+      ]
+    },
+    {
+      "blocks": 424,
+      "bytes": 50000,
+      "cjk": true,
+      "html": "89925e1ba2e3b205785a4c8c03a0443c3673b50253b6d9eae4d31272f075b295",
+      "indexBuilds": 0,
+      "medianPublicationMs": 2.6013329999998405,
+      "medianTotalMs": 42.38387499999931,
+      "runs": [
+        {
+          "html": "89925e1ba2e3b205785a4c8c03a0443c3673b50253b6d9eae4d31272f075b295",
+          "indexBuilds": 0,
+          "medianPublicationMs": 2.4376660000000356,
+          "totalMs": 41.41645800000015
+        },
+        {
+          "html": "89925e1ba2e3b205785a4c8c03a0443c3673b50253b6d9eae4d31272f075b295",
+          "indexBuilds": 0,
+          "medianPublicationMs": 2.4955830000001242,
+          "totalMs": 41.061748999999736
+        },
+        {
+          "html": "89925e1ba2e3b205785a4c8c03a0443c3673b50253b6d9eae4d31272f075b295",
+          "indexBuilds": 0,
+          "medianPublicationMs": 2.735292000000072,
+          "totalMs": 45.01087600000051
+        },
+        {
+          "html": "89925e1ba2e3b205785a4c8c03a0443c3673b50253b6d9eae4d31272f075b295",
+          "indexBuilds": 0,
+          "medianPublicationMs": 2.6013329999998405,
+          "totalMs": 42.38387499999931
+        }
+      ]
+    }
+  ]
+}

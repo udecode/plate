@@ -1,6 +1,49 @@
 {
   "schemaVersion": 1,
   "components": {
+    "block-list-static": [
+      "2026-09-30-static-list-table-known-paths",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "table-static": [
+      "2026-09-30-static-list-table-known-paths",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "ai-menu": [
+      "2026-09-30-streaming-preview-deferred-render",
+      "2026-09-28-markdown-streaming-demo-lifecycle",
+      "2026-09-21-ai-edit-suggestions",
+      "2026-09-17-ai-comment-recovery",
+      "2026-09-15-history-actions",
+      "2026-09-10-ai-menu-focus",
+      "2026-09-08-ai-session",
+      "2026-09-08-keyboard-dismissal",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-24-single-selection-authority",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-03-use-schema-handles",
+      "2026-07-31-simplify-ai-chat-source-commands",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "markdown-streaming-demo": [
+      "2026-09-30-streaming-preview-deferred-render",
+      "2026-09-28-markdown-streaming-demo-lifecycle",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-08-14-author-editor-runtime",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
     "markdown-joiner-transform": [
       "2026-09-29-markdown-joiner-removal",
       "2025-11-20-biome-ultracite"
@@ -43,35 +86,6 @@
       "2026-08-17-flat-editor-registry"
     ],
     "markdown-to-editor-demo": ["2026-09-28-markdown-registered-tags"],
-    "markdown-streaming-demo": [
-      "2026-09-28-markdown-streaming-demo-lifecycle",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-08-14-author-editor-runtime",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
-    ],
-    "ai-menu": [
-      "2026-09-28-markdown-streaming-demo-lifecycle",
-      "2026-09-21-ai-edit-suggestions",
-      "2026-09-17-ai-comment-recovery",
-      "2026-09-15-history-actions",
-      "2026-09-10-ai-menu-focus",
-      "2026-09-08-ai-session",
-      "2026-09-08-keyboard-dismissal",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-24-single-selection-authority",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-03-use-schema-handles",
-      "2026-07-31-simplify-ai-chat-source-commands",
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
-    ],
     "floating-toolbar": [
       "2026-09-26-floating-toolbar-retained-selections",
       "2026-09-08-editor-ui-lifetime",
@@ -665,12 +679,6 @@
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
-    "block-list-static": [
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "media-upload": ["2026-09-07-media-upload-lifetime"],
     "media-toolbar-button": [
       "2026-09-07-media-url-input",
@@ -962,10 +970,6 @@
       "2026-08-17-flat-editor-registry"
     ],
     "basic-blocks-static": [
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "table-static": [
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],

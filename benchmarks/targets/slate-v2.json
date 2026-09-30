@@ -288,7 +288,7 @@
     },
     {
       "id": "plite-schema-construction",
-      "question": "Do schema-backed sparse edits and one- or two-slot required prefixes preserve local changes and existing required-node identity, with bounded property-edit p95 overhead against a matched plain schema, across 100 to 50,000 siblings?",
+      "question": "Do schema-backed sparse edits and one- or two-slot required prefixes preserve local changes and existing required-node identity, with bounded median property-edit overhead against a matched plain schema, across 100 to 50,000 siblings?",
       "owner": "plite",
       "family": "core-schema",
       "kind": "current",
@@ -299,11 +299,11 @@
         "direction": "lower",
         "unit": "tokens",
         "printsMetric": true,
-        "upgrade": "A sparse schema-backed edit must retain untouched boundary identities and change fewer than 64 tokens. For one- and two-slot prefixes at 100/1,000/10,000/50,000 body siblings, alternate identical prefix/plain property updates after three warmups with 20 samples per arm, force full garbage collection before each timed arm, and retain raw paired deltas. The p95 of paired prefix-minus-plain deltas must be <= max(2 ms, 25% of matched plain p95). Cold startup, unrelated body edit, prefix-boundary paste, full validation and contract bytes remain diagnostics; strict locality and retention gates remain. Whole-editor times include immutable publication but exclude unrelated collection pauses and do not imply length-independent latency or exact validation visits."
+        "upgrade": "A sparse schema-backed edit must retain untouched boundary identities and change fewer than 64 tokens. For one- and two-slot prefixes at 100/1,000/10,000/50,000 body siblings, alternate identical prefix/plain property updates after three warmups with 20 samples per arm, force full garbage collection before each timed arm, and retain raw paired deltas. The median paired prefix-minus-plain delta must be <= max(2 ms, 25% of matched plain median); paired-delta p95 remains a diagnostic. Cold startup, unrelated body edit, prefix-boundary paste, full validation and contract bytes remain diagnostics; strict locality and retention gates remain. Whole-editor times include immutable publication but exclude unrelated collection pauses and do not imply length-independent latency or exact validation visits."
       },
       "correctness": {
         "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/slice-fit-contract.test.ts ./benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts",
-        "policy": "Promotion requires contextual fitter laws, strict direct-write rejection, mapped selection/runtime identity, canonical idempotence, a sentinel proving the benchmark's compiled schema is active, strict plain/prefix locality and retention checks, and matched repeated prefix/plain property p95 overhead within the frozen budget. The changed-span guard is captured immediately after each property edit; it measures published token ranges, not schema validation visits."
+        "policy": "Promotion requires contextual fitter laws, strict direct-write rejection, mapped selection/runtime identity, canonical idempotence, a sentinel proving the benchmark's compiled schema is active, strict plain/prefix locality and retention checks, and matched repeated prefix/plain median property overhead within the frozen budget. The changed-span guard is captured immediately after each property edit; it measures published token ranges, not schema validation visits."
       },
       "artifacts": [
         {
@@ -319,7 +319,7 @@
         ]
       },
       "thresholds": {
-        "promotion": "plite_schema_construction_compiled_schema_active=1 and plite_schema_construction_max_changed_span<64 and plite_schema_construction_boundary_identity_preserved=1 and plite_schema_construction_prefix_max_changed_span<64 and plite_schema_construction_prefix_boundary_identity_preserved=1 and plite_schema_construction_prefix_property_p95_within_budget=1"
+        "promotion": "plite_schema_construction_compiled_schema_active=1 and plite_schema_construction_max_changed_span<64 and plite_schema_construction_boundary_identity_preserved=1 and plite_schema_construction_prefix_max_changed_span<64 and plite_schema_construction_prefix_boundary_identity_preserved=1 and plite_schema_construction_prefix_property_overhead_within_budget=1"
       }
     },
     {

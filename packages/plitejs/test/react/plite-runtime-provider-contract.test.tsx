@@ -19,7 +19,9 @@ import {
   type Value,
   NodeApi,
   schema,
+  TextApi,
 } from 'plitejs';
+import { authored } from 'plitejs/authored';
 import { domCommands } from 'plitejs/dom';
 import {
   createContext,
@@ -36,6 +38,7 @@ import {
 } from '../../src/dom/internal';
 import {
   createEditor,
+  type DecorationSource,
   Editable,
   EditorRoot as ProductEditorRoot,
   useEditorContext,
@@ -50,6 +53,8 @@ import {
   useEditor,
   useRuntimeState,
 } from '../../src/react';
+import { usePliteRenderContext } from '../../src/react/components/plite';
+import { DecorationSourcesContext } from '../../src/react/decoration-context';
 import { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { didSyncTextPathToDOM } from '../../src/react/hooks/use-plite-node-ref';
 import {
@@ -499,6 +504,167 @@ describe('EditorRoot provider contract', () => {
       'data-editor-node',
       'element'
     );
+  });
+
+  test('contentRoot slot paints its owner decoration sources in its own root', async () => {
+    const childRoot = 'details-slot:body';
+    const element = {
+      type: 'details-content',
+      childRoots: { body: childRoot },
+      children: [{ text: '' }],
+    } satisfies Element & { childRoots: Record<string, string> };
+    const editor = createEditor({
+      plugins: [contentRootPlugin],
+      initialValue: {
+        children: [element],
+        roots: { [childRoot]: [paragraph('slot body')] },
+      },
+    });
+    const readRoots: Array<string | undefined> = [];
+    const marks: DecorationSource<typeof editor> = {
+      id: 'marks',
+      read: ({ editor: reader, entry: [node, path] }) => {
+        if (!TextApi.isText(node)) return [];
+
+        readRoots.push(reader.read.view.root());
+
+        return [
+          {
+            attributes: { 'data-marked': node.text },
+            key: `marked:${path.join(',')}`,
+            range: {
+              anchor: { offset: 0, path },
+              focus: { offset: 4, path },
+            },
+          },
+        ];
+      },
+    };
+
+    render(
+      <TestRoot decorations={[marks]} editor={editor}>
+        <Editable
+          aria-label="Outer editor"
+          renderElement={(props) =>
+            props.element.type === 'details-content' ? (
+              <section {...props.attributes}>
+                {props.slots.contentRoot('body', {
+                  ariaLabel: 'Details body',
+                })}
+              </section>
+            ) : (
+              <p {...props.attributes}>{props.children}</p>
+            )
+          }
+        />
+      </TestRoot>
+    );
+
+    const body = await screen.findByLabelText('Details body');
+
+    await waitFor(() =>
+      expect(body.querySelector('[data-marked="slot body"]')).toHaveTextContent(
+        'slot'
+      )
+    );
+    expect(readRoots).toContain(childRoot);
+  });
+
+  test('contentRoot slot follows its owner authored mode after a switch', async () => {
+    const childRoot = 'details-slot:body';
+    const element = {
+      type: 'details-content',
+      childRoots: { body: childRoot },
+      children: [{ text: '' }],
+    } satisfies Element & { childRoots: Record<string, string> };
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' }), contentRootPlugin],
+      initialValue: {
+        children: [element],
+        roots: { [childRoot]: [paragraph('slot body')] },
+      },
+    });
+    // Mounted views share the created editor's plugin API shape.
+    let owner!: typeof editor;
+    let body!: typeof editor;
+    const CaptureOwner = () => {
+      owner = useEditorContext() as unknown as typeof editor;
+      return null;
+    };
+    const CaptureBody = () => {
+      body = useEditorContext() as unknown as typeof editor;
+      return null;
+    };
+    const proposal = { intent: 'propose', projection: 'proposed' } as const;
+
+    render(
+      <TestRoot authored={proposal} editor={editor}>
+        <CaptureOwner />
+        <Editable
+          aria-label="Outer editor"
+          renderElement={(props) =>
+            props.element.type === 'details-content' ? (
+              <section {...props.attributes}>
+                {props.slots.contentRoot('body', {
+                  ariaLabel: 'Details body',
+                })}
+              </section>
+            ) : (
+              <p {...props.attributes}>
+                <CaptureBody />
+                {props.children}
+              </p>
+            )
+          }
+        />
+      </TestRoot>
+    );
+
+    await screen.findByLabelText('Details body');
+    expect(body.read.authored.view()).toEqual(proposal);
+
+    act(() => {
+      owner.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+    });
+
+    await waitFor(() =>
+      expect(body.read.authored.view()).toEqual({
+        intent: 'edit',
+        projection: 'accepted',
+      })
+    );
+  });
+
+  test('retained render context restores its owner decoration sources', () => {
+    const editor = createEditor({ initialValue: [paragraph('body')] });
+    const source: DecorationSource<typeof editor> = {
+      id: 'owner-source',
+      read: () => [],
+    };
+    let restored: ReadonlyArray<DecorationSource<unknown>> | null = null;
+    const Restored = () => {
+      restored = useContext(DecorationSourcesContext);
+      return null;
+    };
+    // A retained fragment provides its own view without sources; content it
+    // hands back to the parent reads the parent's.
+    const Retained = () => {
+      const renderParent = usePliteRenderContext();
+
+      return (
+        <DecorationSourcesContext value={null}>
+          {renderParent(<Restored />)}
+        </DecorationSourcesContext>
+      );
+    };
+
+    render(
+      <TestRoot decorations={[source]} editor={editor}>
+        <Retained />
+      </TestRoot>
+    );
+
+    expect(restored).toEqual([source]);
   });
 
   test('Plite editor hosts multiple root-bound Editable surfaces', async () => {

@@ -1,0 +1,23 @@
+{
+  "command": "bun --preload ./config/plite-source-aliases.ts docs/research/probes/2026-09-30-content-root-locations/yjs-root-review.ts --without-root-filter",
+  "mutation": "Remove only getReaderSelection's root filter in memory.",
+  "expectedFailure": "Primary remote cursor must not paint at the same local path in a named root.",
+  "exitCode": 1,
+  "assertionCode": "ERR_ASSERTION",
+  "actual": {
+    "primaryPaint": 1,
+    "captionPaint": 1
+  },
+  "expected": {
+    "primaryPaint": 1,
+    "captionPaint": 0
+  },
+  "source": {
+    "packages/platejs/src/yjs/react/YjsPlugin.tsx": "eb457690722ebca3d29e0f2bb66b7df27a030a9c5743327ed958916b7d0c7956",
+    "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts": "420941860ea1976b72cbc76b10115f431a09d81494cb9917b171644c2389b97b",
+    "packages/plitejs/test/yjs/support/provider.ts": "37eb1447ded66ff3f5a6c5064d99c807440b0c88211541d0d9d9d7609db9cf6f",
+    "docs/research/probes/2026-09-30-content-root-locations/yjs-root-review.ts": "a2724d957fe4fac470e50815ab7f8d691361d419850a87cf6bc08ce1913fef85"
+  },
+  "output": "92 |   assert.ok(entry);\n93 |   return paint.read({ editor: view, entry }).length;\n94 | };\n95 | publish(editor);\n96 | const primaryCursor = { primaryPaint: read(editor), captionPaint: read(caption) };\n97 | assert.deepEqual(primaryCursor, { primaryPaint: 1, captionPaint: 0 });\n            ^\nAssertionError: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   captionPaint: 1,\n-   captionPaint: 0,\n    primaryPaint: 1\n  }\n\n generatedMessage: true,\n     actual: {\n  primaryPaint: 1,\n  captionPaint: 1,\n},\n   expected: {\n  primaryPaint: 1,\n  captionPaint: 0,\n},\n   operator: \"deepStrictEqual\",\n       code: \"ERR_ASSERTION\"\n\n      at /Users/zbeyens/git/plate-2/docs/research/probes/2026-09-30-content-root-locations/yjs-root-review.ts:97:8\n\nBun v1.3.12 (macOS arm64)\n",
+  "limits": "Current implementation with one in-memory root-filter mutation; not a full pre-change checkout."
+}

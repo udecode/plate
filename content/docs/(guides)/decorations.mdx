@@ -46,6 +46,10 @@ Use `decorate.attributes` for presentation without copying an existing reader. I
 
 Document edits already refresh affected entries. External owners call `refresh({ nodeKeys })` with exact changed inputs; use `{ nodeKeys: 'all' }` only when the owner cannot identify them. Selection-only changes do not reread document decoration sources.
 
+A read depends on its entry, the nodes inside it, and state the source observes. An edit inside an element rereads the element too, so a source can return ranges for an element's descendants from the element's own entry. The code highlighter reads each code block once this way instead of once per text node.
+
+A static render of another document (`EditorStatic`'s `document`) reads that document through the context editor. Annotation ranges appear only on nodes the rendered document shares with the editor. State that belongs to the live session, such as remote cursors, search matches and authored changes, shows nothing there.
+
 Whole-element paint uses `render.useViewElementAttributes`. It runs once per enabled plugin per mounted view and returns sparse `{ key, attributes }` entries. Keep per-node render and attribute callbacks free of hooks.
 
 ## Annotations

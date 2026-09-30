@@ -8,7 +8,13 @@ import * as Y from 'yjs';
 
 import { FakeAwareness } from '../../../plitejs/test/yjs/support/provider';
 import type { Range, Value } from '../../src/index';
-import { BaseParagraphPlugin } from '../../src/index';
+import {
+  BaseParagraphPlugin,
+  createEditorView,
+  definePlugin,
+  schema,
+} from '../../src/index';
+import { getPlateDecorationSources } from '../../src/internal/plugin/getPlateDecorationSources';
 import { createEditor, EditorContent, EditorRoot } from '../../src/react/core';
 import {
   YjsPlugin,
@@ -171,6 +177,77 @@ describe('platejs/yjs React facade', () => {
       );
     } finally {
       view.unmount();
+      doc.destroy();
+    }
+  });
+
+  it('paints a remote selection only through a reader of its root', () => {
+    const doc = new Y.Doc();
+    const awareness = new DocumentAwareness(doc, doc.clientID);
+    const Collaboration = YjsPlugin.create({
+      awareness,
+      doc,
+      initialReady: true,
+      seed: true,
+    });
+    const Figure = definePlugin('yjsRootFigure', {
+      schema: {
+        element: {
+          contentRoots: {
+            caption: {
+              content: schema.content.type('paragraph', {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          blockContent: true,
+          void: 'block',
+        },
+      },
+    });
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          { children: [{ text: 'Main text' }], type: 'paragraph' },
+          {
+            childRoots: { caption: 'caption:1' },
+            children: [{ text: '' }],
+            type: 'yjsRootFigure',
+          },
+        ],
+        roots: {
+          'caption:1': [
+            { children: [{ text: 'Note text' }], type: 'paragraph' },
+          ],
+        },
+      },
+      plugins: [BaseParagraphPlugin, Figure, Collaboration],
+      schema: { id: 'plate:yjs-root-contract', version: 1 },
+    });
+    const caption = createEditorView(editor, { root: 'caption:1' });
+    const paint = getPlateDecorationSources(editor).find(
+      (source) => source.id === 'yjs'
+    );
+    const publish = (view: typeof editor | typeof caption) => {
+      view.update.selection.set(selection([0, 0], 0));
+      view.plugin(Collaboration).api.syncSelection();
+      awareness.setRemoteState(
+        101,
+        awareness.getLocalState() ?? { data: null, selection: null }
+      );
+    };
+    const painted = (view: typeof editor | typeof caption) =>
+      paint?.read({ editor: view, entry: view.read.nodes.get([0, 0])! }).length;
+
+    try {
+      publish(editor);
+      assert.deepEqual([painted(editor), painted(caption)], [1, 0]);
+
+      publish(caption);
+      assert.deepEqual([painted(editor), painted(caption)], [0, 1]);
+    } finally {
       doc.destroy();
     }
   });

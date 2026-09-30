@@ -30,6 +30,11 @@ export type PliteDecorationRegistrar = (
 export const DecorationRegistrationContext =
   createContext<PliteDecorationRegistrar | null>(null);
 
+/** Source definitions of the nearest mounted view, for the content roots it mounts. */
+export const DecorationSourcesContext = createContext<ReadonlyArray<
+  DecorationSource<unknown>
+> | null>(null);
+
 const EMPTY_DECORATIONS = Object.freeze([]) as readonly DecorationSlice[];
 const subscribeEmpty = () => () => {};
 const getEmptySnapshot = () => EMPTY_DECORATIONS;

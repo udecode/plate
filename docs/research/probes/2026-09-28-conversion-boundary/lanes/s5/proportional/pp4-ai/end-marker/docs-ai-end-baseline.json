@@ -1,0 +1,96 @@
+{
+ "base": "http://localhost:3652",
+ "during": [
+  {
+   "coversLast": false,
+   "lastCodePoint": "s",
+   "draft": true,
+   "draftTextTail": "rmatting for easy readability.Add links﻿",
+   "ends": 0,
+   "endText": []
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "e",
+   "draft": true,
+   "draftTextTail": " to external resources or references.Use",
+   "ends": 1,
+   "endText": [
+    "e"
+   ]
+  },
+  {
+   "coversLast": false,
+   "lastCodePoint": "1",
+   "draft": true,
+   "draftTextTail": "=mc2﻿ for scientific notation.Heading 1﻿",
+   "ends": 1,
+   "endText": [
+    ""
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "m",
+   "draft": true,
+   "draftTextTail": " 2Heading 3BlockquoteUnordered list item",
+   "ends": 1,
+   "endText": [
+    "m"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "d",
+   "draft": true,
+   "draftTextTail": "ed list item 2Ordered list item 1Ordered",
+   "ends": 1,
+   "endText": [
+    "d"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "]",
+   "draft": true,
+   "draftTextTail": " 1Ordered list item 2Task list item 1[x]",
+   "ends": 1,
+   "endText": [
+    "]"
+   ]
+  },
+  {
+   "coversLast": false,
+   "lastCodePoint": "2",
+   "draft": true,
+   "draftTextTail": " blocks:a2+b2=c2a^2 + b^2 = c^2a2+b2=c2﻿",
+   "ends": 1,
+   "endText": [
+    ""
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "1",
+   "draft": true,
+   "draftTextTail": "ello, World!\")Horizontal rule﻿| Header 1",
+   "ends": 1,
+   "endText": [
+    "1"
+   ]
+  }
+ ],
+ "after": {
+  "coversLast": true,
+  "lastCodePoint": "a",
+  "draft": true,
+  "draftTextTail": " rule﻿Header 1Header 2Row 1DataRow 2Data",
+  "ends": 1,
+  "endText": [
+   "a"
+  ]
+ },
+ "errors": [
+  "Invalid 'X-Frame-Options' header encountered when loading 'https://pro.platejs.org/': 'allow-from https://next.platejs.org/' is not a recognized directive. The header will be ignored."
+ ]
+}

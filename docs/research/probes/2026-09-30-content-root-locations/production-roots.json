@@ -1,0 +1,341 @@
+{
+  "arm": "candidate",
+  "host": {
+    "arch": "arm64",
+    "cpu": "Apple M5 Max",
+    "load": [
+      4.94482421875,
+      7.0322265625,
+      7.1142578125
+    ],
+    "platform": "darwin"
+  },
+  "part": "roots",
+  "runtime": "1.3.12",
+  "sampling": "two warmups; six measured packets",
+  "source": {
+    "packages/plitejs/src/editor-runtime-view.ts": "4e153bf294fd44c9225c511806c6b7a0c5e28c0b774bb270be50a477494f25dc",
+    "packages/plitejs/src/core/snapshot-index.ts": "1cacfc6032f4850c234e79cc5c53671969900366d4c85fc5ee7101fd9df17b46",
+    "packages/platejs/src/static/components/PlateStatic.tsx": "c714df7dd29b7bb7bd4724847c99adb853578eecf509655b264693906a06d65c",
+    "packages/platejs/src/static/internal/staticDocumentView.ts": "fe6402ba1510409f8babfd7d889ea524ff046e552442b1071c916ae5d6373b99",
+    "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts": "420941860ea1976b72cbc76b10115f431a09d81494cb9917b171644c2389b97b",
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts": "6d9f21f7719cbe44bfc49ff712dde3fd05fe803d0356fce7d43cd257d23a9d73",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "303b1256057ed49391b4d65969b9d295c6931f355a443e752f84b6b867c597fc",
+    "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+    "docs/research/probes/2026-09-30-content-root-locations/production.tsx": "a40ae3f80b7d8187d29009fd71238ba2a3758db49fd092aaf5af7e8330c3fba0"
+  },
+  "cohorts": [
+    {
+      "bytes": 10000,
+      "roots": 2,
+      "medianMs": {
+        "capture": 0.09270800000000179,
+        "cold": 0.09841700000000486,
+        "warm": 0.016542000000001167,
+        "totalCold": 0.19112500000000665,
+        "explicitCold": 0.08500000000000085
+      },
+      "counts": {
+        "explicitValidations": 0,
+        "indexBuilds": 0,
+        "validations": 1
+      },
+      "samples": [
+        {
+          "capture": 0.09270800000000179,
+          "cold": 0.09841700000000486,
+          "explicitCold": 0.08500000000000085,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.19112500000000665,
+          "validations": 1,
+          "warm": 0.0316659999999942
+        },
+        {
+          "capture": 0.10291600000000045,
+          "cold": 0.11837500000000034,
+          "explicitCold": 0.057583999999998525,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.2212910000000008,
+          "validations": 1,
+          "warm": 0.015541999999996392
+        },
+        {
+          "capture": 0.10412499999999625,
+          "cold": 0.09216699999999634,
+          "explicitCold": 0.13837500000000347,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.19629199999999258,
+          "validations": 1,
+          "warm": 0.024959000000002618
+        },
+        {
+          "capture": 0.09154099999999943,
+          "cold": 0.09920899999999477,
+          "explicitCold": 0.08883300000000105,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.1907499999999942,
+          "validations": 1,
+          "warm": 0.013832999999998208
+        },
+        {
+          "capture": 0.07050000000000267,
+          "cold": 0.08295799999999787,
+          "explicitCold": 0.051499999999997215,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.15345800000000054,
+          "validations": 1,
+          "warm": 0.008583000000001562
+        },
+        {
+          "capture": 0.0573750000000004,
+          "cold": 0.06983400000000017,
+          "explicitCold": 0.039041999999994914,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.12720900000000057,
+          "validations": 1,
+          "warm": 0.016542000000001167
+        }
+      ]
+    },
+    {
+      "bytes": 50000,
+      "roots": 10,
+      "medianMs": {
+        "capture": 0.09420800000000895,
+        "cold": 0.19037500000000307,
+        "warm": 0.03350000000000364,
+        "totalCold": 0.2763750000000016,
+        "explicitCold": 0.16783300000000168
+      },
+      "counts": {
+        "explicitValidations": 0,
+        "indexBuilds": 0,
+        "validations": 1
+      },
+      "samples": [
+        {
+          "capture": 0.18216700000000685,
+          "cold": 0.22937500000000455,
+          "explicitCold": 0.1874170000000106,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.4115420000000114,
+          "validations": 1,
+          "warm": 0.043000000000006366
+        },
+        {
+          "capture": 0.09979199999999366,
+          "cold": 0.17658300000000793,
+          "explicitCold": 0.1595840000000095,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.2763750000000016,
+          "validations": 1,
+          "warm": 0.03516700000000128
+        },
+        {
+          "capture": 0.09420800000000895,
+          "cold": 0.19037500000000307,
+          "explicitCold": 0.16783300000000168,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.284583000000012,
+          "validations": 1,
+          "warm": 0.03283299999999656
+        },
+        {
+          "capture": 0.08329200000000014,
+          "cold": 0.19249999999999545,
+          "explicitCold": 0.1743330000000043,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.2757919999999956,
+          "validations": 1,
+          "warm": 0.030000000000001137
+        },
+        {
+          "capture": 0.0896669999999915,
+          "cold": 0.17762499999999193,
+          "explicitCold": 0.15695900000000051,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.26729199999998343,
+          "validations": 1,
+          "warm": 0.03350000000000364
+        },
+        {
+          "capture": 0.07579200000000696,
+          "cold": 0.15737500000000182,
+          "explicitCold": 0.1524169999999998,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 0.23316700000000878,
+          "validations": 1,
+          "warm": 0.02820800000000645
+        }
+      ]
+    },
+    {
+      "bytes": 50000,
+      "roots": 100,
+      "medianMs": {
+        "capture": 0.41458299999999326,
+        "cold": 1.0497919999999965,
+        "warm": 0.2328329999999994,
+        "totalCold": 1.615041000000005,
+        "explicitCold": 1.0740420000000057
+      },
+      "counts": {
+        "explicitValidations": 0,
+        "indexBuilds": 0,
+        "validations": 1
+      },
+      "samples": [
+        {
+          "capture": 0.41458299999999326,
+          "cold": 1.2004580000000118,
+          "explicitCold": 1.123625000000004,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 1.615041000000005,
+          "validations": 1,
+          "warm": 0.210125000000005
+        },
+        {
+          "capture": 0.39424999999999955,
+          "cold": 1.0098749999999939,
+          "explicitCold": 1.0740420000000057,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 1.4041249999999934,
+          "validations": 1,
+          "warm": 0.23433300000000656
+        },
+        {
+          "capture": 0.4367079999999959,
+          "cold": 1.2376659999999902,
+          "explicitCold": 1.1498749999999944,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 1.674373999999986,
+          "validations": 1,
+          "warm": 0.2744169999999997
+        },
+        {
+          "capture": 2.002708999999996,
+          "cold": 1.0497919999999965,
+          "explicitCold": 0.9147080000000045,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 3.0525009999999924,
+          "validations": 1,
+          "warm": 0.18841700000000117
+        },
+        {
+          "capture": 0.38999999999998636,
+          "cold": 0.9813749999999999,
+          "explicitCold": 0.93587500000001,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 1.3713749999999862,
+          "validations": 1,
+          "warm": 0.2038750000000107
+        },
+        {
+          "capture": 0.36729200000000617,
+          "cold": 1.0125830000000065,
+          "explicitCold": 0.9412909999999926,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 1.3798750000000126,
+          "validations": 1,
+          "warm": 0.2328329999999994
+        }
+      ]
+    },
+    {
+      "bytes": 50000,
+      "roots": 1000,
+      "medianMs": {
+        "capture": 3.3167080000000055,
+        "cold": 11.261291999999969,
+        "warm": 2.5494999999999948,
+        "totalCold": 14.48316699999998,
+        "explicitCold": 11.693709000000013
+      },
+      "counts": {
+        "explicitValidations": 0,
+        "indexBuilds": 0,
+        "validations": 1
+      },
+      "samples": [
+        {
+          "capture": 3.616291999999987,
+          "cold": 10.866874999999993,
+          "explicitCold": 13.54245800000001,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 14.48316699999998,
+          "validations": 1,
+          "warm": 3.777249999999981
+        },
+        {
+          "capture": 3.3167080000000055,
+          "cold": 16.12983299999999,
+          "explicitCold": 8.692958000000004,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 19.446540999999996,
+          "validations": 1,
+          "warm": 2.5494999999999948
+        },
+        {
+          "capture": 5.270499999999998,
+          "cold": 9.153291999999993,
+          "explicitCold": 11.693709000000013,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 14.423791999999992,
+          "validations": 1,
+          "warm": 2.4627920000000074
+        },
+        {
+          "capture": 2.886874999999975,
+          "cold": 13.003333000000055,
+          "explicitCold": 8.40195799999998,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 15.89020800000003,
+          "validations": 1,
+          "warm": 2.363375000000019
+        },
+        {
+          "capture": 2.7636249999999905,
+          "cold": 11.261291999999969,
+          "explicitCold": 11.581083000000035,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 14.02491699999996,
+          "validations": 1,
+          "warm": 2.342667000000006
+        },
+        {
+          "capture": 2.882583000000011,
+          "cold": 9.369833999999969,
+          "explicitCold": 12.62299999999999,
+          "explicitValidations": 0,
+          "indexBuilds": 0,
+          "totalCold": 12.25241699999998,
+          "validations": 1,
+          "warm": 2.753500000000031
+        }
+      ]
+    }
+  ]
+}

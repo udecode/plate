@@ -184,10 +184,21 @@ export default async function MyStaticPage() {
 文档必须符合 editor 的 schema。每个文档对象只校验一次，再次渲染时请传入同一个对象。
 `EditorPreview` 接受相同的 `document`，从中复制时复制的是所渲染的文档。
 
+每次渲染都会读取所有顶层块的装饰，因此重新渲染也是刷新依赖其他状态的装饰的方式。
+因其他原因（例如每个流式分块）而重新渲染的组件，应按其文档缓存该元素：
+
+```tsx
+const preview = useMemo(
+  () => <EditorStatic editor={editor} document={document} />,
+  [editor, document]
+);
+```
+
 通过所渲染的 editor 进行的所有读取都看到该文档：`editor.read`、插件读取（例如
 `editor.plugin(TocPlugin).read.headings()`）以及插件 API。插件从其 render、decorate、read 或 API
 上下文中获得该 editor。插件创建时捕获的 editor（例如 `.extend(({ editor }) => …)` 中的 editor）
-是你传入的 editor，仍保存其自身的值；在读取、装饰或渲染文档期间读取它会抛出错误，并说明修复方式。
+是你传入的 editor，仍保存其自身的值。在读取、装饰或渲染文档的插件代码中读取它会抛出错误，并说明修复方式。
+React 在这些代码返回后才运行组件函数体，因此组件应通过其 `editor` prop 读取。
 
 ## 客户端替代方案：`EditorPreview`
 

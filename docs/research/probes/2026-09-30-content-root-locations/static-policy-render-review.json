@@ -1,0 +1,15 @@
+{
+  "scenario": "EditorStatic caption after its owner switches to accepted mode",
+  "before": "<div class=\"editor-editor\" data-editor=\"true\" data-editor-node=\"value\"><figure><figcaption><div data-editor-node=\"element\" data-editor-path=\"0\" data-editor-root=\"caption:review\" class=\"editor-paragraph\" style=\"position:relative\"><span data-editor-node=\"text\" data-editor-path=\"0,0\" data-editor-root=\"caption:review\"><span data-editor-leaf=\"true\"><span data-editor-end=\"10\" data-editor-start=\"0\" data-editor-string=\"true\">Foot draft</span></span></span></div></figcaption></figure></div>",
+  "after": "<div class=\"editor-editor\" data-editor=\"true\" data-editor-node=\"value\"><figure><figcaption><div data-editor-node=\"element\" data-editor-path=\"0\" data-editor-root=\"caption:review\" class=\"editor-paragraph\" style=\"position:relative\"><span data-editor-node=\"text\" data-editor-path=\"0,0\" data-editor-root=\"caption:review\"><span data-editor-leaf=\"true\"><span data-editor-end=\"10\" data-editor-start=\"0\" data-editor-string=\"true\">Foot draft</span></span></span></div></figcaption></figure></div>",
+  "fresh": "<div class=\"editor-editor\" data-editor=\"true\" data-editor-node=\"value\"><figure><figcaption><div data-editor-node=\"element\" data-editor-path=\"0\" data-editor-root=\"caption:review\" class=\"editor-paragraph\" style=\"position:relative\"><span data-editor-node=\"text\" data-editor-path=\"0,0\" data-editor-root=\"caption:review\"><span data-editor-leaf=\"true\"><span data-editor-end=\"4\" data-editor-start=\"0\" data-editor-string=\"true\">Foot</span></span></span></div></figcaption></figure></div>",
+  "staleProposedText": true,
+  "sameResult": false,
+  "source": {
+    "packages/platejs/src/static/internal/staticDocumentView.ts": "fe6402ba1510409f8babfd7d889ea524ff046e552442b1071c916ae5d6373b99",
+    "packages/platejs/src/static/components/PlateStatic.tsx": "c714df7dd29b7bb7bd4724847c99adb853578eecf509655b264693906a06d65c",
+    "packages/plitejs/src/editor-runtime-view.ts": "948545b235afbeeb39ee48ff624b47f0b025f5ed53dbe065bf1a79ba52c37e7b",
+    "docs/research/probes/2026-09-30-content-root-locations/static-policy-render-review.tsx": "15894beb236505480369d844e8d9448c28d2d0f9a8f98fb9502c980f183c21b9"
+  },
+  "limits": "Source-built React server rendering; no browser or client rerender proof."
+}

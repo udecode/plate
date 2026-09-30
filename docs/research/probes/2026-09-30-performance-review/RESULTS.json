@@ -1,0 +1,142 @@
+{
+  "mode": "synthetic receipt validation; no workload or browser measurement",
+  "summarizerSha256": "69ce2e81ce9def866211ce2826d5f8370b94af7089030db8f5bf4c59380bbee6",
+  "receiptCases": [
+    {
+      "case": "different-text",
+      "verdict": "pass",
+      "checks": {
+        "finalOk": true,
+        "latencyOk": true,
+        "outsideVariation": true,
+        "workPass": true
+      },
+      "finalTextsMatch": false,
+      "finalMs": {
+        "baseline": 10,
+        "candidate": 10
+      }
+    },
+    {
+      "case": "different-work-clock",
+      "verdict": "pass",
+      "checks": {
+        "finalOk": true,
+        "latencyOk": true,
+        "outsideVariation": true,
+        "workPass": true
+      },
+      "finalTextsMatch": true,
+      "finalMs": {
+        "baseline": 10,
+        "candidate": 10
+      }
+    },
+    {
+      "case": "missing-final-clock",
+      "verdict": "pass",
+      "checks": {
+        "finalOk": true,
+        "latencyOk": true,
+        "outsideVariation": true,
+        "workPass": true
+      },
+      "finalTextsMatch": true,
+      "finalMs": {
+        "baseline": 10,
+        "candidate": null
+      }
+    },
+    {
+      "case": "missing-text",
+      "verdict": "pass",
+      "checks": {
+        "finalOk": true,
+        "latencyOk": true,
+        "outsideVariation": true,
+        "workPass": true
+      },
+      "finalTextsMatch": true,
+      "finalMs": {
+        "baseline": 10,
+        "candidate": 10
+      }
+    },
+    {
+      "case": "valid-control",
+      "verdict": "pass",
+      "checks": {
+        "finalOk": true,
+        "latencyOk": true,
+        "outsideVariation": true,
+        "workPass": true
+      },
+      "finalTextsMatch": true,
+      "finalMs": {
+        "baseline": 10,
+        "candidate": 10
+      }
+    }
+  ],
+  "externalHelper": {
+    "sparseSampleCount": 3,
+    "sparseP95Finite": false,
+    "retainedMax": 3,
+    "samplesAfterCallerMutation": [
+      1,
+      2,
+      100
+    ],
+    "currentCallerExercisingTheseInputs": "not located"
+  },
+  "artifactAdmission": [
+    {
+      "id": "core-node-transforms",
+      "artifactSha256": "0d348ac3c17d7f1687cdc6533ac8c7e59abda01d7e65614853b1f6b5f41175d1",
+      "recordedInputs": 7,
+      "mismatchedInputs": 6,
+      "rows": 10,
+      "okRows": 10
+    },
+    {
+      "id": "collab-readiness",
+      "artifactSha256": "0a96a0831d68368c6c49b4f92eecc275c7b1fc77e238dd6805b08b7540d4ba55",
+      "recordedInputs": 7,
+      "mismatchedInputs": 7,
+      "rows": 64,
+      "okRows": 64
+    }
+  ],
+  "cachedThreshold": [
+    {
+      "status": "ok",
+      "actualMs": 100,
+      "limitMs": 1
+    }
+  ],
+  "unsupportedCoverage": [
+    {
+      "library": "slate-v2",
+      "status": "ok"
+    },
+    {
+      "library": "slate",
+      "status": "ok"
+    }
+  ],
+  "registryAndHistory": {
+    "targets": 55,
+    "artifactDefinitions": 22,
+    "sharedIds": 17,
+    "lexicallyDifferentSharedCommands": 17,
+    "lexicalDifferenceProvesSemanticDrift": false,
+    "savedHistoryTargets": 53,
+    "historyMatches": false,
+    "reportMatches": false,
+    "inheritedReceipt": {
+      "artifactExists": false,
+      "displayedCommand": "changed-command",
+      "status": "recorded"
+    }
+  }
+}

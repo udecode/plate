@@ -196,11 +196,23 @@ const NotePlugin = definePlugin('note', {
 - `preserve(...keys)` claims that the returned output carries these properties
   of the mapping's target. Claims count only when `encode` returns output.
   Reading a property claims nothing.
+- `decode` receives its own `preserve(...names)`, which claims that the
+  decoded result carries these attributes of `element` or of descendants it
+  reads, such as `preserve('data-indent')`. Claims count only when `decode`
+  returns a result.
 - A mapping for one mark or element property receives its `value` and returns
   a wrapper, such as `{ tag: 'strong' }`, or a patch, such as
   `{ style: { textAlign: value } }`. Output that writes the value represents it;
   return `null` to leave it unrepresented. A mapping for several properties
   receives `values` and claims with `preserve`.
+- A mapping for element properties that also stands for a block sets
+  `createsElement: true`, as lists do. Matched content becomes the schema's
+  default block, when that block is one of the plugin's targets, carrying the
+  decoded properties; a matched element holding exactly one block those
+  properties apply to puts them on that block instead. Encoding writes the
+  output in place of the default block's element and around the HTML of the
+  plugin's other targets, so an image, heading or code block in a list
+  serializes inside its `<li>` and parses back with its list properties.
 
 Serialization reports every content property that no mapping represents as
 `html-unsupported-content` with `kind: 'attribute'` and `model.property`. That
@@ -258,6 +270,15 @@ mapping owns reports `html-unsupported-content`, even when its fallback content
 is kept. A lost property (`kind: 'attribute'` or `'style'`) is a warning under
 every policy; serialization names it in `model.property`. Under the default `lossPolicy: 'reject'`, a lossy removal and a
 lost element are errors.
+
+Parsing reports each attribute Plate's own mappings write, such as
+`data-list-type` or `data-editor-media-provider`, that no installed mapping
+claims. The report is `html-unsupported-content` with `kind: 'attribute'` and
+names the attribute in `source.attribute`; it warns under every policy. An
+element reported lost does not repeat its attributes. The report covers only
+Plate's own attributes: other markup, such as `class`, `style` or `id`, and a
+custom mapping's own `data-*` attributes are not reported. A custom decoder
+that reads one of Plate's attributes claims it with `preserve`.
 
 Parsing defaults to these limits:
 

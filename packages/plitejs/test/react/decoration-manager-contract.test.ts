@@ -1113,6 +1113,62 @@ test('drops empty and out-of-bounds ranges without dropping valid output', () =>
   manager.destroy();
 });
 
+test('paints only output for the reader root, before the input-path fast path', () => {
+  const editor = createEditor({
+    initialValue: {
+      children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
+      roots: { notes: [{ children: [{ text: 'note' }], type: 'paragraph' }] },
+    },
+  });
+  const notes = createEditorView(editor, { root: 'notes' });
+  const noteKey = notes.key([0, 0])!;
+  const point = (offset: number, root?: string) => ({
+    offset,
+    path: [0, 0],
+    ...(root ? { root } : {}),
+  });
+  const manager = createPliteDecorationManager(notes, [
+    {
+      id: 'roots',
+      read: ({ entry: [node] }) =>
+        TextApi.isText(node)
+          ? [
+              {
+                attributes: {},
+                key: 'reader',
+                range: { anchor: point(0), focus: point(2) },
+              },
+              {
+                attributes: {},
+                key: 'same',
+                range: { anchor: point(0, 'notes'), focus: point(2) },
+              },
+              {
+                attributes: {},
+                key: 'other',
+                range: {
+                  anchor: point(0, 'header'),
+                  focus: point(2, 'header'),
+                },
+              },
+              {
+                attributes: {},
+                key: 'mixed',
+                range: { anchor: point(0, 'notes'), focus: point(2, 'header') },
+              },
+            ]
+          : [],
+    },
+  ]);
+
+  expect(manager.getNodeSnapshot(noteKey).map(({ key }) => key)).toEqual([
+    'reader',
+    'same',
+  ]);
+  expect(manager.getMetrics().invalidRangeDropCount).toBe(2);
+  manager.destroy();
+});
+
 test('isolates a source that returns unsupported DOM attributes', () => {
   const editor = createViewEditor();
   const firstKey = getNodeKey(editor, [0, 0])!;

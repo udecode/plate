@@ -575,14 +575,14 @@ export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
     defineFormats({
       html: [
         {
-          decode: ({ element, report }) => {
+          decode: ({ element, preserve, report }) => {
             const media = element.querySelector<HTMLElement>(':scope > video');
             const url = media ? readMediaSource(media) : undefined;
 
             if (!media || !url) return undefined;
 
             return {
-              ...readHtmlMediaProvider(element, report),
+              ...readHtmlMediaProvider(element, { preserve, report }),
               ...readMediaWidth(media),
               url,
             };

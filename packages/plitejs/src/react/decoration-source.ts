@@ -12,6 +12,8 @@ import type {
   Range,
 } from '..';
 import { NodeApi } from '..';
+import { getEditorRuntimeRoot } from '../core/editor-runtime';
+import { getReaderRange } from '../internal/root-location';
 import { createViewSourceFaultBoundary } from '../internal/view/mapped-view-store';
 import type { ViewSourceErrorSink } from '../internal/view/view-source';
 import { getPureTextInsertion } from './editable/native-text-input-delta';
@@ -552,6 +554,9 @@ export const createPliteDecorationManager = <E>(
   type ExactSource = DecorationSource<E>;
 
   const runtimeEditor = editor as unknown as EditorType;
+  // Paths in this view's snapshot address its root; output for another root
+  // would paint the same paths here.
+  const readerRoot = getEditorRuntimeRoot(runtimeEditor);
 
   const listenersByNodeKey = new Map<NodeKey, Set<() => void>>();
   const listeners = new Set<(changedNodeKeys: readonly NodeKey[]) => void>();
@@ -641,11 +646,15 @@ export const createPliteDecorationManager = <E>(
         addSlice(input.nodeKey, cached.slice);
         continue;
       }
-      if (!isDecorationRange(decoration.range)) {
+      const range =
+        isDecorationRange(decoration.range) &&
+        getReaderRange(decoration.range, readerRoot);
+
+      if (!range) {
         metrics.invalidRangeDropCount += 1;
         continue;
       }
-      const { anchor, focus } = decoration.range;
+      const { anchor, focus } = range;
       const anchorOnInput = arePathsEqual(anchor.path, input.path);
       const focusOnInput = arePathsEqual(focus.path, input.path);
 
@@ -702,8 +711,8 @@ export const createPliteDecorationManager = <E>(
         ) {
           immutableAttributes.add(decoration.attributes);
           compiledInputs.set(decoration, {
-            anchorRoot: anchor.root,
-            focusRoot: focus.root,
+            anchorRoot: decoration.range.anchor.root,
+            focusRoot: decoration.range.focus.root,
             inputKey: input.nodeKey,
             path: anchor.path,
             slice,
@@ -719,7 +728,7 @@ export const createPliteDecorationManager = <E>(
       let segments;
 
       try {
-        segments = projectRangeInSnapshot(snapshot, decoration.range);
+        segments = projectRangeInSnapshot(snapshot, range);
       } catch {
         metrics.invalidRangeDropCount += 1;
         continue;

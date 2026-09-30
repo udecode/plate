@@ -1,0 +1,83 @@
+renderRootSync: 268.6 ms per profile over 3 profiles
+by inclusive (ms per profile):
+     268.6  renderRootSync@5319583e-150745cd7583489c.js:296619
+     266.6  workLoopSync@5319583e-150745cd7583489c.js:298201
+     265.4  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+     256.6  beginWork@5319583e-150745cd7583489c.js:187718
+     203.7  renderWithHooks@5319583e-150745cd7583489c.js:109327
+     193.7  updateFunctionComponent@5319583e-150745cd7583489c.js:162671
+     158.6  Tokens@3425-da871ae887f1901e.js:37762
+     153.7  t2@3425-da871ae887f1901e.js:38276
+     148.4  (anon)@3425-da871ae887f1901e.js:38419 «c=>{let space=c.text.replaceAll("\n","⤶").replaceAll(" ","␣");return(0,react_jsx»
+      32.0  MarkdownStreamingDemo@3425-da871ae887f1901e.js:23732
+      28.6  reconcileChildren@5319583e-150745cd7583489c.js:153696
+      28.4  (anon)@5319583e-150745cd7583489c.js:99625 «(returnFiber,currentFirstChild,newChild,lanes){try{thenableIndexCounter$1=0;var »
+      28.3  reconcileChildFibersImpl@5319583e-150745cd7583489c.js:96059
+      25.4  reconcileChildrenArray@5319583e-150745cd7583489c.js:92092
+      22.6  splitChunksByLinebreak@3425-da871ae887f1901e.js:37404
+      17.8  updateSlot@5319583e-150745cd7583489c.js:89696
+       9.9  updateForwardRef@5319583e-150745cd7583489c.js:153946
+       9.2  attemptEarlyBailoutIfNoScheduledUpdate@5319583e-150745cd7583489c.js:185438
+       7.0  cn@layout-ccd8492b47b9fe8a.js:352
+       6.9  completeUnitOfWork@5319583e-150745cd7583489c.js:303391
+       6.5  completeWork@5319583e-150745cd7583489c.js:200744
+       6.0  bailoutOnAlreadyFinishedWork@5319583e-150745cd7583489c.js:184360
+       5.9  updateElement@5319583e-150745cd7583489c.js:87250
+       5.2  (anon)@295-e1a970c4cd7c2ee5.js:1620 «(_0,_1)=>{let[_ref1,..._rest]=[_0,_1],{color="currentColor",size=24,strokeWidth=»
+       4.7  coerceRef@5319583e-150745cd7583489c.js:85128
+       4.0  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+       3.9  (anon)@295-e1a970c4cd7c2ee5.js:2559 «(_0,_1)=>{let[_ref1,..._rest]=[_0,_1],{className}=_ref1,props=(0,_object_without»
+       3.8  callTailwindMerge@8255-fdc7096923fb725f.js:11050
+       3.6  tailwindMerge@8255-fdc7096923fb725f.js:9482
+       3.6  get@8255-fdc7096923fb725f.js:5755
+       3.4  jsxProd@3370-ab6f5e713678b725.js:67396
+       3.1  createWorkInProgress@5319583e-150745cd7583489c.js:62569
+       2.6  Button@3425-da871ae887f1901e.js:255900
+       2.6  (anon)@3425-da871ae887f1901e.js:28957 «key=>(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("option",{value:key,»
+       2.5  clsx@8255-fdc7096923fb725f.js:42590
+       2.5  r@8255-fdc7096923fb725f.js:42346
+       2.3  _object_spread@3370-ab6f5e713678b725.js:72578
+       1.8  toPascalCase@295-e1a970c4cd7c2ee5.js:912
+       1.8  _object_spread_props@3370-ab6f5e713678b725.js:174957
+       1.7  pushHostContext@5319583e-150745cd7583489c.js:9571
+by self (ms per profile):
+     139.0  (anon)@3425-da871ae887f1901e.js:38419 «c=>{let space=c.text.replaceAll("\n","⤶").replaceAll(" ","␣");return(0,react_jsx»
+      22.6  splitChunksByLinebreak@3425-da871ae887f1901e.js:37404
+      11.9  updateSlot@5319583e-150745cd7583489c.js:89696
+      11.7  beginWork@5319583e-150745cd7583489c.js:187718
+       6.8  reconcileChildrenArray@5319583e-150745cd7583489c.js:92092
+       5.1  t2@3425-da871ae887f1901e.js:38276
+       4.7  coerceRef@5319583e-150745cd7583489c.js:85128
+       4.0  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+       4.0  MarkdownStreamingDemo@3425-da871ae887f1901e.js:23732
+       3.9  Tokens@3425-da871ae887f1901e.js:37762
+       3.6  get@8255-fdc7096923fb725f.js:5755
+       3.4  jsxProd@3370-ab6f5e713678b725.js:67396
+       3.3  completeWork@5319583e-150745cd7583489c.js:200744
+       3.1  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+       3.1  createWorkInProgress@5319583e-150745cd7583489c.js:62569
+       2.8  reconcileChildFibersImpl@5319583e-150745cd7583489c.js:96059
+       2.5  r@8255-fdc7096923fb725f.js:42346
+       2.1  (anon)@3425-da871ae887f1901e.js:28957 «key=>(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("option",{value:key,»
+       1.8  _object_spread_props@3370-ab6f5e713678b725.js:174957
+       1.7  getChildHostContextProd@5319583e-150745cd7583489c.js:363255
+       1.5  popHostContext@5319583e-150745cd7583489c.js:9985
+       1.5  bubbleProperties@5319583e-150745cd7583489c.js:199974
+       1.4  toPascalCase@295-e1a970c4cd7c2ee5.js:912
+       1.3  _object_without_properties@8255-fdc7096923fb725f.js:52329
+       1.3  renderWithHooks@5319583e-150745cd7583489c.js:109327
+       1.2  mergeClasses@295-e1a970c4cd7c2ee5.js:1109
+       1.2  exports.createElement@3370-ab6f5e713678b725.js:246772
+       1.0  shouldSetTextContent@5319583e-150745cd7583489c.js:363468
+       0.8  attemptEarlyBailoutIfNoScheduledUpdate@5319583e-150745cd7583489c.js:185438
+       0.8  _define_property@3370-ab6f5e713678b725.js:72415
+       0.8  completeUnitOfWork@5319583e-150745cd7583489c.js:303391
+       0.8  markUpdateLaneFromFiberToRoot@5319583e-150745cd7583489c.js:60900
+       0.8  placeChild@5319583e-150745cd7583489c.js:86542
+       0.7  B@4373-d151118e57d11370.js:107533
+       0.7  (anon)@295-e1a970c4cd7c2ee5.js:1620 «(_0,_1)=>{let[_ref1,..._rest]=[_0,_1],{color="currentColor",size=24,strokeWidth=»
+       0.7  (anon)@3370-ab6f5e713678b725.js:72918 «(key){_define_property(target,key,source[key])})}return target}__webpack_require»
+       0.7  _object_spread@3370-ab6f5e713678b725.js:72578
+       0.7  push@5319583e-150745cd7583489c.js:8550
+       0.6  cn@layout-ccd8492b47b9fe8a.js:352
+       0.6  (anon)@5319583e-150745cd7583489c.js:99625 «(returnFiber,currentFirstChild,newChild,lanes){try{thenableIndexCounter$1=0;var »

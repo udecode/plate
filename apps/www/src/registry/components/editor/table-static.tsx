@@ -43,11 +43,11 @@ export function TableRowElementStatic(
 export function TableCellElementStatic(
   props: EditorElementProps<typeof BaseTableCellPlugin>
 ) {
-  const { editor, element } = props;
+  const { editor, element, path } = props;
   const isHeader = element.header === true;
   const table = editor.plugin(BaseTablePlugin);
 
-  const info = table.read.cell({ at: element });
+  const info = table.read.cell({ at: path });
   const { borders, size } = info ?? {
     borders: undefined,
     size: { minHeight: 0, width: 0 },

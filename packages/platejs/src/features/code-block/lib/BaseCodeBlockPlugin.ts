@@ -22,6 +22,7 @@ import {
   schema,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
+import { isDocumentView } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import {
   createBrowserHtmlDocument,
@@ -225,7 +226,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         encode: ({ children }) => children,
       },
       html: {
-        decode: ({ element }) => {
+        decode: ({ element, preserve }) => {
           const languageClass = element
             .querySelector(':scope > code')
             ?.className.match(CODE_LANGUAGE_CLASS_RE)?.[1];
@@ -235,6 +236,8 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             readCodeDomText(element),
             element
           );
+
+          preserve('data-code-trailing-newlines', 'data-language');
 
           return {
             children: [{ text }],
@@ -791,8 +794,11 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
   }),
 }).extend(({ editor, store }) => {
   const blockDecorations = new Map<string, CodeHighlightCache>();
-  // Decorations read the code block type once per text node, and resolving a
-  // portal costs more than the rest of that read; the portal stays live.
+  // Documents rendered one after another share unchanged blocks, so their
+  // highlighting is found by block identity without a key lookup.
+  let decorationsByBlock = new WeakMap<object, CodeHighlightCache>();
+  // Every node's decoration read checks the code block type, and resolving a
+  // portal costs more than the rest of that check; the portal stays live.
   const resolveCodeBlock = () => editor.plugin(BaseCodeBlockPlugin);
   let codeBlock: ReturnType<typeof resolveCodeBlock> | undefined;
   let nextSyntaxKey = 0;
@@ -828,47 +834,42 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
         observers += 1;
         const unsubscribe = store.subscribe(() => {
           blockDecorations.clear();
+          decorationsByBlock = new WeakMap();
           refresh({ nodeKeys: 'all' });
         });
 
         return () => {
           unsubscribe();
           observers -= 1;
-          if (observers === 0) blockDecorations.clear();
+          if (observers === 0) {
+            blockDecorations.clear();
+            decorationsByBlock = new WeakMap();
+          }
         };
       },
+      // Reads the code block itself: its decorations cover its text, and a
+      // change to that text invalidates the block too.
       read: ({
         editor: view,
-        entry: [node, path],
+        entry: [block, blockPath],
       }): readonly CodeBlockDecoration[] => {
+        if (!ElementApi.isElement(block)) return [];
+        codeBlock ??= resolveCodeBlock();
+        if (block.type !== codeBlock.schema.type) return [];
         const { defaultLanguage, lowlight } = store.get();
 
-        if (!lowlight || !NodeApi.isText(node)) return [];
-        codeBlock ??= resolveCodeBlock();
-        const codeBlockType = codeBlock.schema.type;
-        const entry = view.read.nodes.parent(path, { type: codeBlockType });
-
-        if (!entry) return [];
-        const [block, blockPath] = entry;
-        const blockKey = view.key(block);
-        const text = NodeApi.string(block);
+        if (!lowlight) return [];
         const language =
           (typeof block.language === 'string' ? block.language : undefined) ||
           defaultLanguage;
-        const previous = blockDecorations.get(blockKey);
+        const atBlockPath = (cached: CodeHighlightCache) => {
+          const cachedPath = cached.decorations[0]?.range.anchor.path;
 
-        if (
-          previous?.language === language &&
-          previous.text === text &&
-          previous.lowlight === lowlight
-        ) {
-          const previousPath = previous.decorations[0]?.range.anchor.path;
-
-          if (previousPath && !PathApi.isParent(blockPath, previousPath)) {
+          if (cachedPath && !PathApi.isParent(blockPath, cachedPath)) {
             const textPath = Object.freeze([...blockPath, 0]);
 
-            previous.decorations = Object.freeze(
-              previous.decorations.map((decoration) =>
+            cached.decorations = Object.freeze(
+              cached.decorations.map((decoration) =>
                 Object.freeze({
                   ...decoration,
                   range: Object.freeze({
@@ -885,7 +886,35 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
               )
             );
           }
-          return previous.decorations;
+
+          return cached.decorations;
+        };
+        const sameBlock = decorationsByBlock.get(block);
+
+        if (
+          sameBlock?.language === language &&
+          sameBlock.lowlight === lowlight
+        ) {
+          return atBlockPath(sameBlock);
+        }
+
+        const text = NodeApi.string(block);
+        // A key follows a block across the live editor's edits. Nodes of a
+        // document view get new keys, and resolving one indexes the whole
+        // document, so there only identity finds a block's highlighting.
+        const blockKey = isDocumentView(view)
+          ? ''
+          : (view.key(blockPath) ?? '');
+        const previous = blockKey ? blockDecorations.get(blockKey) : undefined;
+
+        if (
+          previous?.language === language &&
+          previous.text === text &&
+          previous.lowlight === lowlight
+        ) {
+          decorationsByBlock.set(block, previous);
+
+          return atBlockPath(previous);
         }
 
         let highlighted: HighlightResult;
@@ -997,13 +1026,16 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
           Object.freeze(decoration);
         }
         Object.freeze(decorations);
-        blockDecorations.set(blockKey, {
+        const cache = {
           attributes: attributesByClass,
           decorations,
           language,
           lowlight,
           text,
-        });
+        };
+
+        if (blockKey) blockDecorations.set(blockKey, cache);
+        decorationsByBlock.set(block, cache);
 
         if (warning?.kind === 'highlight') {
           editor

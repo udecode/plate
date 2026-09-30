@@ -1,0 +1,8 @@
+static-rich-10000: candidate style+layout+paint 121.27 ms per stream, 3.11 per commit {"UpdateLayoutTree":29.68,"Layout":19.84,"PrePaint":14,"Paint":51.72,"Layerize":6.03} | baseline 3.18 per commit
+static-cjk-10000: candidate style+layout+paint 186.51 ms per stream, 4.78 per commit {"UpdateLayoutTree":36.81,"Layout":52.08,"PrePaint":19.46,"Paint":62.51,"Layerize":16.77} | baseline 4.97 per commit
+ai-rich-10000: candidate style+layout+paint 160.23 ms per stream, 4.01 per commit {"UpdateLayoutTree":89.71,"Layout":16.02,"PrePaint":10.68,"Paint":38.76,"Layerize":5.63} | baseline 3.51 per commit
+ai-cjk-10000: candidate style+layout+paint 297.73 ms per stream, 7.44 per commit {"UpdateLayoutTree":173.76,"Layout":48.18,"PrePaint":14.06,"Paint":44.09,"Layerize":18.05} | baseline 8.34 per commit
+static-rich-50000: candidate style+layout+paint 1003.03 ms per stream, 5.12 per commit {"UpdateLayoutTree":138.02,"Layout":188.88,"PrePaint":242.58,"Paint":407.6,"Layerize":27.14} | baseline 6.75 per commit
+ai-rich-50000: candidate style+layout+paint 1750.71 ms per stream, 8.62 per commit {"UpdateLayoutTree":1341.78,"Layout":112.52,"PrePaint":67.07,"Paint":202.47,"Layerize":28.12} | baseline 6.46 per commit
+static-cjk-50000: candidate style+layout+paint 1612.65 ms per stream, 8.27 per commit {"UpdateLayoutTree":174.46,"Layout":317.74,"PrePaint":399.2,"Paint":628.59,"Layerize":92.65} | baseline 10.54 per commit
+ai-cjk-50000: candidate style+layout+paint 3077.58 ms per stream, 14.87 per commit {"UpdateLayoutTree":2367.86,"Layout":213.18,"PrePaint":122.16,"Paint":266.86,"Layerize":96.67} | baseline 14.47 per commit

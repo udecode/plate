@@ -153,8 +153,10 @@ output keeps; it claims anything else its output carries with
 encoder, including `createsElement`, or an encoder that receives `values`
 claims what it writes with `preserve(...ownedKeys)`; a mark or property
 mapping that receives one `value` claims it by returning output that writes
-it. Unclaimed content properties report `html-unsupported-content` with
-`kind: 'attribute'`. Read custom tag attributes with
+it. A decoder claims the Plate attributes its result represents with
+`preserve(...names)`. A `createsElement` mapping writes around the HTML of
+its other targets. Unclaimed content properties and unclaimed Plate
+attributes report `html-unsupported-content` with `kind: 'attribute'`. Read custom tag attributes with
 `readTagAttributes().properties`; the runtime codec follows the schema property
 kind, so features never parse or coerce attribute strings. Return
 `refuse(message)` for input the mapping cannot represent; throw only for

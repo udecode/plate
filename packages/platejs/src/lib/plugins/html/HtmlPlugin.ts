@@ -131,6 +131,7 @@ type CompiledHtmlMatcherIndex = Readonly<{
 type CompiledHtmlSerializerIndex = Readonly<{
   elementPropertiesByType: ReadonlyMap<string, readonly CompiledHtmlRule[]>;
   elementsByType: ReadonlyMap<string, readonly CompiledHtmlRule[]>;
+  elementWrappersByType: ReadonlyMap<string, readonly CompiledHtmlRule[]>;
   marksByParentType: ReadonlyMap<string, readonly CompiledHtmlRule[]>;
 }>;
 
@@ -1131,10 +1132,17 @@ const compileSerializerIndex = (
     string,
     readonly CompiledHtmlRule[]
   >();
+  const elementWrappersByType = new Map<string, readonly CompiledHtmlRule[]>();
   const marksByParentType = new Map<string, readonly CompiledHtmlRule[]>();
   const encodableRules = rules.filter(
     (rule) => typeof rule.declaration.encode === 'function'
   );
+  const targetsType = (rule: CompiledHtmlRule, type: string) =>
+    rule.properties.some(
+      ({ property }) =>
+        !property.target ||
+        targetMatchesElementType(model, property.target, type) !== false
+    );
 
   elementTypes.forEach((type) => {
     elementsByType.set(
@@ -1154,11 +1162,19 @@ const compileSerializerIndex = (
           (rule) =>
             rule.kind === 'element-property' &&
             !rule.createsElement &&
-            rule.properties.some(
-              ({ property }) =>
-                !property.target ||
-                targetMatchesElementType(model, property.target, type) !== false
-            )
+            targetsType(rule, type)
+        )
+      )
+    );
+    // A mapping that creates its primary target wraps its other targets.
+    elementWrappersByType.set(
+      type,
+      Object.freeze(
+        encodableRules.filter(
+          (rule) =>
+            rule.createsElement &&
+            rule.targetType !== type &&
+            targetsType(rule, type)
         )
       )
     );
@@ -1166,13 +1182,7 @@ const compileSerializerIndex = (
       type,
       Object.freeze(
         encodableRules.filter(
-          (rule) =>
-            rule.kind === 'mark' &&
-            rule.properties.some(
-              ({ property }) =>
-                !property.target ||
-                targetMatchesElementType(model, property.target, type) !== false
-            )
+          (rule) => rule.kind === 'mark' && targetsType(rule, type)
         )
       )
     );
@@ -1181,6 +1191,7 @@ const compileSerializerIndex = (
   return Object.freeze({
     elementPropertiesByType,
     elementsByType,
+    elementWrappersByType,
     marksByParentType,
   });
 };
@@ -1209,6 +1220,10 @@ const reportDecodeError = (
   );
 };
 
+/**
+ * Run one decoder. The attributes it claims with `preserve` join `claims` only
+ * when it returns a result.
+ */
 const invokeDecode = <T>(
   editor: Editor,
   rule: CompiledHtmlRule,
@@ -1219,10 +1234,17 @@ const invokeDecode = <T>(
   source: () => HtmlSourceLocation,
   onLoss: ((loss: HtmlMappingLoss) => void) | undefined,
   normalize: (value: unknown) => T,
-  reportErrors: boolean
+  reportErrors: boolean,
+  claims: Set<string>
 ): T | undefined => {
   try {
     const before = element.outerHTML;
+    const preserved = new Set<string>();
+    const preserve = (...attributes: readonly string[]) => {
+      for (const attribute of attributes) {
+        preserved.add(normalizeAttributeName(attribute));
+      }
+    };
     const report = (diagnostic: HtmlMappingDiagnosticInput) => {
       if (!onLoss) {
         throw new Error(
@@ -1241,6 +1263,7 @@ const invokeDecode = <T>(
       Object.freeze({
         ...getFormatContext(rule.plugin, state, operationKey),
         element,
+        preserve,
         report,
       })
     );
@@ -1250,8 +1273,12 @@ const invokeDecode = <T>(
         `Plate HTML mapping "${rule.owner}" decode must not mutate its element.`
       );
     }
+    if (result === undefined) return undefined;
+    const normalized = normalize(result);
 
-    return result === undefined ? undefined : normalize(result);
+    for (const attribute of preserved) claims.add(attribute);
+
+    return normalized;
   } catch (error) {
     if (!reportErrors) throw error;
 
@@ -1743,6 +1770,35 @@ const EMBEDDED_HTML_CONTENT = new Set([
   'video',
 ]);
 
+/**
+ * The attributes Plate's own HTML mappings write. Parsing reports each one no
+ * decoder claims, so HTML moving between editors never drops Plate data
+ * silently; other markup, such as `class`, `style` or `id`, belongs to its
+ * source. HTML conformance checks this set against what the mappings emit.
+ *
+ * @internal
+ */
+export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
+  'data-checked',
+  'data-code-trailing-newlines',
+  'data-editor-media-provider',
+  'data-editor-media-source-url',
+  'data-editor-media-url',
+  'data-editor-media-width',
+  'data-editor-mention',
+  'data-editor-mention-label',
+  'data-editor-mention-ref',
+  'data-editor-natural-height',
+  'data-editor-natural-width',
+  'data-indent',
+  'data-language',
+  'data-list-restart',
+  'data-list-start',
+  'data-list-style',
+  'data-list-type',
+  'data-text-indent',
+]);
+
 type HtmlDecodeOperation = Readonly<{
   fitSchema?: boolean;
   onLoss?: (loss: HtmlMappingLoss) => void;
@@ -1759,12 +1815,30 @@ const decodeCompiledHtml = (
 ): Descendant[] => {
   const reportMappingErrors = operation.reportMappingErrors ?? true;
   const fitSchema = operation.fitSchema ?? true;
+  // Attributes each source element's kept results represent.
+  const claimedAttributes = new Map<Element, Set<string>>();
+  const claim = (element: Element, attributes: ReadonlySet<string>) => {
+    if (attributes.size === 0) return;
+    const claimed = claimedAttributes.get(element) ?? new Set<string>();
+
+    for (const attribute of attributes) claimed.add(attribute);
+    claimedAttributes.set(element, claimed);
+  };
+  // A lost element reports once; its attributes are lost with it.
+  const lostElements = new Set<Element>();
+  const lossAt = (element: Element) =>
+    operation.onLoss &&
+    ((loss: HtmlMappingLoss) => {
+      if (loss.kind === 'element') lostElements.add(element);
+      operation.onLoss?.(loss);
+    });
   const decodeElementProperties = (
     element: HTMLElement,
     matched: readonly CompiledHtmlRule[],
     targetType: string,
     source: () => HtmlSourceLocation,
-    initial: Readonly<Record<string, unknown>> = {}
+    initial: Readonly<Record<string, unknown>>,
+    claims: Set<string>
   ) => {
     const properties: Record<string, unknown> = { ...initial };
 
@@ -1779,6 +1853,7 @@ const decodeCompiledHtml = (
       );
 
       if (!hasUnresolvedApplicableProperty) continue;
+      const ruleClaims = new Set<string>();
       const decoded = invokeDecode(
         editor,
         rule,
@@ -1787,12 +1862,15 @@ const decodeCompiledHtml = (
         artifact.getFormatContext,
         operation.operationKey,
         source,
-        operation.onLoss,
+        lossAt(element),
         (value) => propertyValuesFromDecode(rule, value),
-        reportMappingErrors
+        reportMappingErrors,
+        ruleClaims
       );
 
       if (decoded === undefined) continue;
+      let applied = false;
+
       for (const [key, value] of decoded) {
         const property =
           rule.properties.find((candidate) => candidate.key === key) ??
@@ -1803,7 +1881,11 @@ const decodeCompiledHtml = (
           !Object.hasOwn(properties, key)
         ) {
           properties[key] = value;
+          applied = true;
         }
+      }
+      if (applied) {
+        for (const attribute of ruleClaims) claims.add(attribute);
       }
     }
 
@@ -1852,6 +1934,7 @@ const decodeCompiledHtml = (
     );
     let structural:
       | Readonly<{
+          claims: ReadonlySet<string>;
           result: Record<string, unknown>;
           rule: CompiledHtmlRule;
         }>
@@ -1866,6 +1949,7 @@ const decodeCompiledHtml = (
       ) {
         continue;
       }
+      const claims = new Set<string>();
       const result = invokeDecode(
         editor,
         rule,
@@ -1874,18 +1958,19 @@ const decodeCompiledHtml = (
         artifact.getFormatContext,
         operation.operationKey,
         source,
-        operation.onLoss,
+        lossAt(element),
         (value) =>
           validateExplicitDecodedChildren(
             rule,
             elementValuesFromDecode(rule, value),
             state
           ),
-        reportMappingErrors
+        reportMappingErrors,
+        claims
       );
 
       if (result === undefined) continue;
-      structural = Object.freeze({ result, rule });
+      structural = Object.freeze({ claims, result, rule });
       break;
     }
 
@@ -1926,6 +2011,7 @@ const decodeCompiledHtml = (
       ) {
         continue;
       }
+      const ruleClaims = new Set<string>();
       const decoded = invokeDecode(
         editor,
         rule,
@@ -1934,12 +2020,15 @@ const decodeCompiledHtml = (
         artifact.getFormatContext,
         operation.operationKey,
         source,
-        operation.onLoss,
+        lossAt(element),
         (value) => propertyValuesFromDecode(rule, value),
-        reportMappingErrors
+        reportMappingErrors,
+        ruleClaims
       );
 
       if (decoded === undefined) continue;
+      let applied = false;
+
       for (const [key, value] of decoded) {
         const property =
           rule.properties.find((candidate) => candidate.key === key) ??
@@ -1947,8 +2036,10 @@ const decodeCompiledHtml = (
 
         if (!markValues.has(property.id)) {
           markValues.set(property.id, Object.freeze({ property, value }));
+          applied = true;
         }
       }
+      if (applied) claim(element, ruleClaims);
     }
     const markedChildren =
       markValues.size > 0
@@ -1970,13 +2061,15 @@ const decodeCompiledHtml = (
         initialProperties[property.key] = structural.result[property.key];
       }
     });
+    const propertyClaims = new Set<string>();
     const properties = createdType
       ? decodeElementProperties(
           element,
           matched,
           createdType,
           source,
-          initialProperties
+          initialProperties,
+          propertyClaims
         )
       : initialProperties;
 
@@ -1984,7 +2077,7 @@ const decodeCompiledHtml = (
       const tag = element.tagName.toLowerCase();
 
       if (elementRules.length === 0 && EMBEDDED_HTML_CONTENT.has(tag)) {
-        operation.onLoss?.(
+        lossAt(element)?.(
           Object.freeze({
             action:
               markedChildren.length === 0
@@ -2018,6 +2111,8 @@ const decodeCompiledHtml = (
           : [...markedChildren];
 
         if (children) {
+          claim(element, propertyClaims);
+
           return [
             {
               ...createdElement,
@@ -2044,6 +2139,43 @@ const decodeCompiledHtml = (
       return markedChildren;
     }
 
+    let content = markedChildren;
+
+    // A created element that holds one block, such as a list item holding a
+    // heading, puts its properties on that block when the block's type
+    // carries them. Otherwise a text block gives the created element its text.
+    if (structural.rule.createsElement && !hasExplicitChildren) {
+      const block = getSoleBlock(markedChildren);
+      const carried = structural.rule.properties.filter(({ key }) =>
+        Object.hasOwn(structural.result, key)
+      );
+
+      if (
+        block &&
+        carried.every((property) =>
+          propertyAppliesToType(property, state, block.type)
+        )
+      ) {
+        const blockClaims = new Set(structural.claims);
+        const blockProperties = decodeElementProperties(
+          element,
+          matched,
+          block.type,
+          source,
+          Object.fromEntries(
+            carried.map(({ key }) => [key, structural.result[key]])
+          ),
+          blockClaims
+        );
+
+        claim(element, blockClaims);
+
+        return [{ ...block, ...blockProperties }];
+      }
+      if (block && isTextBlock(block)) content = [...block.children];
+    }
+    claim(element, structural.claims);
+    claim(element, propertyClaims);
     const createdElement = state.schema.create(
       structural.rule.targetType ??
         failInvariant('Expected value to be defined'),
@@ -2051,14 +2183,45 @@ const decodeCompiledHtml = (
     );
     const children =
       fitSchema && hasDecodedChildren && !hasExplicitChildren
-        ? fitDecodedChildren(markedChildren, createdElement, state)
-        : markedChildren;
+        ? fitDecodedChildren(content, createdElement, state)
+        : content;
 
     return liftDisallowedBlocks({
       ...createdElement,
       ...properties,
       children: hasDecodedChildren ? children : createdElement.children,
     });
+  };
+
+  // The only block among `children` when the rest is white space.
+  const getSoleBlock = (children: readonly Descendant[]) => {
+    let block: EditorElement | undefined;
+
+    for (const child of children) {
+      if (TextApi.isText(child)) {
+        if (child.text.trim() !== '') return undefined;
+      } else if (
+        block ||
+        !ElementApi.isElement(child) ||
+        isInlineDescendant(child, state)
+      ) {
+        return undefined;
+      } else {
+        block = child;
+      }
+    }
+
+    return block;
+  };
+  const isTextBlock = (block: EditorElement) => {
+    const behavior = state.schema.element(block.type)?.behavior;
+
+    return (
+      behavior !== undefined &&
+      !behavior.object &&
+      !behavior.void &&
+      block.children.every((child) => isInlineDescendant(child, state))
+    );
   };
 
   // HTML permits block content such as images inside text blocks; the editor
@@ -2099,9 +2262,60 @@ const decodeCompiledHtml = (
       ? decodeChildren(root, null)
       : decodeNode(root, null);
 
+  reportUnclaimedAttributes(
+    root,
+    claimedAttributes,
+    lostElements,
+    operation.onLoss
+  );
+
   return coalesceAdjacentText(
     fitSchema ? wrapRootInlineRuns(decoded, state) : decoded
   );
+};
+
+/**
+ * Report each attribute Plate's mappings write that no kept decoder result
+ * claims, except on an element already reported lost. A claim covers its
+ * element's subtree, because a decoder may read the elements it consumes, such
+ * as an image figure's `<img>`.
+ */
+const reportUnclaimedAttributes = (
+  root: Element,
+  claimedAttributes: ReadonlyMap<Element, ReadonlySet<string>>,
+  lostElements: ReadonlySet<Element>,
+  onLoss: ((loss: HtmlMappingLoss) => void) | undefined
+) => {
+  if (!onLoss) return;
+  const visit = (element: Element, inherited: ReadonlySet<string>) => {
+    const own = claimedAttributes.get(element);
+    const claimed = own ? new Set([...inherited, ...own]) : inherited;
+    const attributes = lostElements.has(element)
+      ? []
+      : element.getAttributeNames();
+
+    for (const attribute of attributes) {
+      if (!PLATE_HTML_ATTRIBUTES.has(attribute) || claimed.has(attribute)) {
+        continue;
+      }
+
+      onLoss(
+        Object.freeze({
+          action: 'dropped' as const,
+          kind: 'attribute' as const,
+          message: `No HTML mapping represents attribute "${attribute}" on <${element.tagName.toLowerCase()}>; it was omitted.`,
+          owner: 'plate:html',
+          source: Object.freeze({
+            ...htmlTreeLocation(root, element),
+            attribute,
+          }),
+        })
+      );
+    }
+    for (const child of Array.from(element.children)) visit(child, claimed);
+  };
+
+  visit(root, new Set());
 };
 
 const normalizeAttributeName = (name: string) => name.toLowerCase();
@@ -2922,10 +3136,53 @@ const encodeCompiledHtml = (
         handledProperties.add(id);
       });
     }
+    const wrappers: Array<
+      Readonly<{
+        root: MutableHtmlNode;
+        rule: CompiledHtmlRule;
+      }>
+    > = [];
+
+    for (const rule of serializerIndex.elementWrappersByType.get(node.type) ??
+      []) {
+      const invocation = encodeContext(
+        rule,
+        node,
+        state,
+        parentType,
+        document,
+        path,
+        operation.getFormatContext,
+        operation.operationKey,
+        onLoss
+      );
+
+      if (!invocation.hasValues) continue;
+      const wrapper = encodeWithRule(
+        editor,
+        rule,
+        node,
+        parentType,
+        () => {
+          const spec = (
+            rule.declaration.encode ??
+            failInvariant('Expected value to be defined')
+          )(invocation.context);
+
+          return spec === null
+            ? null
+            : compileNodeSpec(spec, new WeakSet(), onUnsafe);
+        },
+        reportMappingErrors
+      );
+
+      if (wrapper === null) continue;
+      wrappers.push(Object.freeze({ root: wrapper, rule }));
+      invocation.retain(claimed);
+    }
     reportUnclaimedProperties(node, parentType, claimed, state, path, onLoss);
     const content = encodeChildren();
-
-    return encodeWithRule(
+    let html = encodeWithRule(
       editor,
       structuralRule,
       node,
@@ -2938,6 +3195,21 @@ const encodeCompiledHtml = (
         ),
       reportMappingErrors
     );
+
+    for (let index = wrappers.length - 1; index >= 0; index--) {
+      const wrapper = wrappers[index];
+
+      html = encodeWithRule(
+        editor,
+        wrapper.rule,
+        node,
+        parentType,
+        () => renderNodeSpec(wrapper.root, html),
+        reportMappingErrors
+      );
+    }
+
+    return html;
   };
 
   return slice.content

@@ -84,7 +84,7 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
     defineFormats({
       html: [
         {
-          decode: ({ element, report }) => {
+          decode: ({ element, preserve, report }) => {
             const iframe =
               element.querySelector<HTMLElement>(':scope > iframe');
             const dataUrl = element.getAttribute(MEDIA_EMBED_URL_ATTRIBUTE);
@@ -114,8 +114,12 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
                 )
             );
 
+            // The embedded frame and these attributes carry the same values.
+            preserve(MEDIA_EMBED_URL_ATTRIBUTE);
+            if (width !== undefined) preserve(MEDIA_EMBED_WIDTH_ATTRIBUTE);
+
             return {
-              ...readHtmlMediaProvider(element, report),
+              ...readHtmlMediaProvider(element, { preserve, report }),
               ...(width === undefined ? {} : { width }),
               url,
             };

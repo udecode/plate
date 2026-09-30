@@ -56,6 +56,7 @@ import {
 import { DocumentIndex, nodeAtPath } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
+import { isDocumentView } from './document-view-read';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -69,6 +70,7 @@ import {
 import {
   getEditorDocumentValue,
   getEditorUpdateRoot,
+  withEditorDocumentProjection,
   withEditorRootChildren,
 } from './public-state';
 import { snapshotEditorJsonValue } from './value-codec';
@@ -161,7 +163,12 @@ const createBoundAnchor = <TValue extends AnchorValue>(
       const bindingValue = activeBinding;
       if (!bindingValue) return null;
       const runtime = view ? getEditorRuntime(view) : captureRuntime;
-      const value = bindingValue.resolve(view);
+      const value = toViewValue(
+        editor,
+        saved.root,
+        view,
+        bindingValue.resolve(view)
+      ) as TValue | null;
       if (value !== null) {
         availableViews.add(runtime);
         return value;
@@ -365,6 +372,46 @@ const indexedRoot = (value: JsonEditorValue, root: string) =>
 
 const readValue = (editor: Editor) =>
   getEditorDocumentValue(editor) as JsonEditorValue;
+
+// A document view renders its own document. An anchor's source position
+// applies there only to nodes both documents share, which keep their identity.
+const toViewValue = (
+  editor: Editor,
+  root: string,
+  view: Editor | undefined,
+  value: AnchorValue | null
+): AnchorValue | null => {
+  if (!view || value === null || !isDocumentView(view)) return value;
+
+  const sourceNodes = rootNodes(
+    withEditorDocumentProjection(editor, undefined, () => readValue(editor)),
+    root
+  );
+  const toViewPath = (path: Path): Path | null => {
+    let node: JsonNode;
+
+    try {
+      node = nodeAtPath(sourceNodes, path);
+    } catch {
+      return null;
+    }
+
+    return view.read.nodes.path(node as never) ?? null;
+  };
+  const toViewPoint = (point: Point): Point | null => {
+    const path = toViewPath(point.path);
+
+    return path ? { ...point, path } : null;
+  };
+
+  if (PathApi.isPath(value)) return toViewPath(value);
+  if (PointApi.isPoint(value)) return toViewPoint(value);
+
+  const anchor = toViewPoint(value.anchor);
+  const focus = toViewPoint(value.focus);
+
+  return anchor && focus ? { ...value, anchor, focus } : null;
+};
 
 const pointRoot = (point: Point, fallback: RootKey) => point.root ?? fallback;
 
@@ -1795,11 +1842,16 @@ export function createAnchor<TValue extends AnchorValue>(
 
           ({ current, pointStates, sourceValue } = checkpoint);
 
-          return resolved as TValue | null;
+          return toViewValue(
+            runtimeEditor,
+            root,
+            view,
+            resolved
+          ) as TValue | null;
         }
       }
 
-      return current as TValue | null;
+      return toViewValue(runtimeEditor, root, view, current) as TValue | null;
     },
     root: toPublicRoot(root),
   }) as Anchor<TValue>;

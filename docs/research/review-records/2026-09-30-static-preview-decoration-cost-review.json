@@ -1,0 +1,102 @@
+{
+  "id": "2026-09-30-static-preview-decoration-cost-review",
+  "scope": "html",
+  "kind": "review",
+  "date": "2026-09-30",
+  "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3; redesign-from-first-principles; measured cost comparison",
+  "trigger": "The 2026-09-29 static-document execution left decoration reads at 21-58% of React time at 50 KB on S5 snapshot w, and left per-block decoration caching, which would need a declaration for document-reading sources, to its own decision. The user asked whether the proposed next steps (decoration read cost, per-block caching, the flaky schema benchmark, foreign-document placement and HTML leftovers) were the right target and what was missing.",
+  "requirements": [
+    "A streamed preview costs work in proportion to what changed and stays equal to a fresh render.",
+    "Decorations keep the live editor's invalidation contract in live and static views: a read depends on its entry, the nodes inside it and state its source observes.",
+    "No mutable stable view; React Server Components keep working.",
+    "State that belongs to a live session (remote cursors, search matches, authored changes) never paints another document or static output."
+  ],
+  "evidenceReuse": "Reused S5 snapshot w (summary-w.json and its per-source decoration split), the static reuse tests and the live decoration contract in Plite's decoration source and commit change keys. New: headless full-pass decoration timings on rich and CJK 50 KB documents; a headless stream through parseSlice({ partial, previous }) into EditorStatic's document at 10 KB and 50 KB; a seeded reuse oracle; and the S5 re-measure on the final tree.",
+  "summary": "Pursue owner fixes and defer skipping unchanged blocks. The decoration cost came from sources reading everywhere and from a wrapper that trapped every property access, not from the live contract. Code highlighting now reads once per code block; the wrapper resolves its context once per view; document views find highlighting by block identity without indexing each document; previews render with useDeferredValue; and the registry previews render only when their document changes. On the final tree, React time per stream fell 48-55% at 10 KB and 73-74% at 50 KB against S5 snapshot w, and static source reads are 8-21% of React time. The browser still shows a pass over every top-level block, 1.7-3.8 ms per commit at 50 KB. Per-block caching and chunking are one decision, deferred until every source reads within its entry (the AI end marker reads the whole document) and static renders can see a version of observed state. The document views and block reuse reviewed on 2026-09-29 stand.",
+  "verdict": "pursue",
+  "previous": "2026-09-29-static-preview-document-review",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-29-static-preview-document-review",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "The document input on EditorStatic and the Plite document view stay; this review settles the per-render decoration cost that the review's S5 limits left open."
+    },
+    {
+      "record": "2026-09-29-static-preview-document-execution",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "Its projection and publication path stand; nothing here changes how a preview document is built."
+    },
+    {
+      "record": "2026-09-29-static-preview-document-execution-final",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "Its projection and publication path stand; nothing here changes how a preview document is built."
+    },
+    {
+      "record": "2026-09-29-static-document-rendering-execution",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "Its block reuse, document views and guard stand. Its open limit, decorations read over every node on each render, is resolved by owner fixes, and per-block caching is deferred on browser evidence instead of being decided by a declaration."
+    }
+  ],
+  "alternatives": [
+    "Per-block decoration caching behind a source declaration such as decorate.readsDocument. Defer: the per-block pass costs 1.7-3.8 ms per commit at 50 KB while every commit stays within the 32 ms cadence. A correct cache also needs sources that read only their entry and a version of observed state, and the AI end marker reads the whole document.",
+    "Chunked rendering, as Slate does for large documents. Defer, as part of the same decision: skipping an unchanged chunk is correct only under the same two conditions, it would save about 2-4 ms per commit at 50 KB, and it does not reduce style, layout or paint, which now grow more with size.",
+    "Memoize EditorStatic itself. Stop: re-rendering it is how a consumer refreshes decorations that read other state; consumers that re-render for unrelated state memoize the element on their document.",
+    "Delete static decorations and bake code tokens into the document at parse time, as HTML-producing Markdown renderers do. Stop: highlighting is paint, not content; baking it in forks static output from the live editor and bloats stored documents.",
+    "Keep per-text code highlighting with a text-level cache. Stop: the highlighter decorates a code block, and the live contract already re-reads an element whose text changed.",
+    "Throttle publications instead of deferring the render. Stop: a fixed interval idles a fast machine and still saturates a slow one; useDeferredValue adapts to the render's actual cost."
+  ],
+  "proofLimits": "Browser numbers come from one Apple M5 Max in Chromium, S5 fixtures at 10 and 50 KB, at load 1.5-4.8. Static cells ran on run pp3 and AI cells on run pp4, which together are the final tree. Firefox, WebKit and documents beyond 50 KB were not measured. Only first-party sources were checked against the entry contract. Remaining size-dependent costs: the per-commit block pass (1.7-3.8 ms at 50 KB), static table cells that index each new document through table.read.cell (about 1.3 ms per commit at CJK 50 KB), the highlighter's type check through the plugin portal (0.2-0.55 ms per commit), and one end-of-stream restyle of the AI preview (90-136 ms at 50 KB). Global group-last/* utilities still restyle a whole subtree when a container's last-child state flips.",
+  "references": [
+    "docs/plans/2026-09-30-static-preview-proportional-cost.md",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/README.txt",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/summary-pp3.json",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/README.txt",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/style-isolation/README.txt",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/reuse/summary-w.json"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/components/PlateStatic.spec.tsx": "e7bac9aeff492a901362755844cebc5e91a88dfa27daf1c2d7eb3e593cdf44ad",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "packages/platejs/src/static/components/PlateStatic.tsx": "57608045c0036398969839545981aed18f663404d8b8801b33353890d3f8db9e",
+      "packages/platejs/src/static/components/PlateStatic.reuse-oracle.spec.tsx": "826c31b9ec2746c7596b4c13820207fc853dbbacddc59a249ce552f461eb0023",
+      "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts": "fb221beac3614839f46ef59e24c3caf52ac30a674a7de75a57d60e037ce54bd5",
+      "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": "fce8981a755e0b8d0b4a86e130fa9fb48cb30163e866950950d9f5a4b2e1daa3",
+      "packages/plitejs/src/react/decoration-source.ts": "443a03e3d1ce2db8ac5913be0965a030abc47cf1a80761a4cc1c134e0125ba9f",
+      "packages/plitejs/src/core/commit.ts": "1be86183d11ddcff651f3e53c8fcdac83bbb3a11f6ae9eef4bc3f3dc62eeb9c7",
+      "apps/www/src/registry/components/editor/ai-menu.tsx": "f31e83869fe46284853da85ce07e9b25682a70ca91947cbc3d874bcf10620acf",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "d4380cdac6642db677ef37d054240301ee0a56c661fcc5fd1cb6d110ed29165f",
+      "apps/www/tests/browser/markdown-streaming-contract.spec.ts": "9dc3ccb1f3b7cccfd7d0c4e19f9675ef2191111016a22010d28b7189bc52fe65"
+    },
+    "directories": {
+      "packages/platejs/src/static": "d4b2e951f9e1956599cbbb499237ec2e75f871060e34c5c69effef333a1efd37"
+    },
+    "features": {
+      "capability/html": "8135a4e0b278b55c07b824cfc66c5a1e164e6fba2a80f496a683a355d802d9b4",
+      "example/value/deserialize-html-value": "41cf8a0ccbd2fb68fe09d8bbbaa15555c8aa36cd205e449cb752d2d54d44c612",
+      "export/platejs/./html": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./html/server": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./static": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/html": "e124b15c57fee445a81455e4a54eb9e46a8b5aac568e0bd8ac0f21e3804598e8",
+      "platejs/static": "d4b2e951f9e1956599cbbb499237ec2e75f871060e34c5c69effef333a1efd37",
+      "ui/html-export": "18dc4ff9da241dcce200c7d9d1de1b8267c99a81e48a108a8b2fd13d3e946e58",
+      "ui/html-export-kit": "6e510055e7d538e7ecc34a94444ff371edbcfc4c27b4296997ab41fab92c17c5",
+      "ui/html-export-schema-kit": "7852617a57c749d881f3364cb06c9ed240c4ecbc30dd3c68112b7cc313627978"
+    },
+    "upstreams": []
+  }
+}

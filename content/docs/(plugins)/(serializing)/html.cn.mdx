@@ -183,10 +183,19 @@ const NotePlugin = definePlugin('note', {
   `content` 表示 node 的 children 所在位置。返回 `null` 会省略该元素。
 - `preserve(...keys)` 声明返回的输出承载了 mapping target 的这些 property。只有
   `encode` 返回输出时声明才生效。读取 property 不算声明。
+- `decode` 接收自己的 `preserve(...names)`，声明解码结果承载了 `element` 或其读取的
+  后代元素上的这些 attribute，例如 `preserve('data-indent')`。只有 `decode` 返回
+  结果时声明才生效。
 - 只负责一个 mark 或 element property 的 mapping 接收 `value`，返回 wrapper（例如
   `{ tag: 'strong' }`）或 patch（例如 `{ style: { textAlign: value } }`）。写出该值
   的输出即表示了它；返回 `null` 表示不表示该值。负责多个 property 的 mapping 接收
   `values`，并通过 `preserve` 声明。
+- 同时代表一个 block 的 element property mapping 设置 `createsElement: true`，list
+  即是如此。当 schema 的默认 block 是 plugin 的 target 之一时，匹配的内容会成为该
+  默认 block，并带上解码出的 property；若匹配元素恰好只包含一个这些 property 适用
+  的 block，则改为把 property 放在该 block 上。
+  编码时，输出会替代默认 block 的元素，并包裹 plugin 其他 target 的 HTML，因此
+  list 中的图片、标题或代码块会序列化在其 `<li>` 内，解析后仍保留 list property。
 
 序列化会把没有任何 mapping 表示的 content property 报告为
 `html-unsupported-content`，带 `kind: 'attribute'` 与 `model.property`。该损失在
@@ -225,6 +234,14 @@ media source、inline frame document 或加载资源的 style 为 `lossy`。序�
 property（`kind: 'attribute'` 或 `'style'`）在任何策略下都是 warning，序列化会在
 `model.property` 中给出其名称。在默认的
 `lossPolicy: 'reject'` 下，lossy removal 与丢失的元素都是 error。
+
+解析会报告 Plate 自身 mapping 写出、但没有任何已安装 mapping 声明的 attribute，例如
+`data-list-type` 或 `data-editor-media-provider`。该报告为
+`html-unsupported-content`，带 `kind: 'attribute'`，并在 `source.attribute` 中给出
+attribute 名称；它在任何策略下都是 warning。已报告丢失的元素不会重复报告其
+attribute。该报告只覆盖 Plate 自身的 attribute：其他 markup（例如 `class`、`style`
+或 `id`）以及自定义 mapping 自己的 `data-*` attribute 都不会报告。读取 Plate
+attribute 的自定义 decoder 用 `preserve` 声明它。
 
 默认解析限制：
 

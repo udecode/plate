@@ -1,0 +1,438 @@
+[
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 2467.3,
+        "gcMs": 144.3,
+        "parseMs": 355.5,
+        "reactMs": 266.5,
+        "reactInPublishTasksMs": 224.9,
+        "transactionMs": 1341.5
+      },
+      "candidate": {
+        "busyMs": 723.5,
+        "gcMs": 15.4,
+        "parseMs": 50.6,
+        "reactMs": 286.8,
+        "reactInPublishTasksMs": 83.1,
+        "transactionMs": 21.5
+      }
+    },
+    "cell": "ai-cjk-10000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "domMs": null,
+          "finalMs": 109.11,
+          "gcMajorMs": 0,
+          "gcMinorMs": 3.38,
+          "heapAfterLastMajorGcMB": 80.26,
+          "heapBeforeFinalMB": 131.5,
+          "parseMs": 14.45,
+          "reactMs": 37.89,
+          "lastArrivalTaskMs": 109.11,
+          "spanMs": 109.11,
+          "taskMs": 109.11,
+          "transactionMs": 47.56
+        },
+        {
+          "domMs": null,
+          "finalMs": 110.54,
+          "gcMajorMs": 0,
+          "gcMinorMs": 3.41,
+          "heapAfterLastMajorGcMB": 85.4,
+          "heapBeforeFinalMB": 119.76,
+          "parseMs": 16.88,
+          "reactMs": 37.94,
+          "lastArrivalTaskMs": 110.54,
+          "spanMs": 110.54,
+          "taskMs": 110.54,
+          "transactionMs": 50.03
+        },
+        {
+          "domMs": null,
+          "finalMs": 110.29,
+          "gcMajorMs": 0,
+          "gcMinorMs": 3.17,
+          "heapAfterLastMajorGcMB": 85.49,
+          "heapBeforeFinalMB": 118.86,
+          "parseMs": 16.76,
+          "reactMs": 35.36,
+          "lastArrivalTaskMs": 110.29,
+          "spanMs": 110.29,
+          "taskMs": 110.29,
+          "transactionMs": 49.92
+        }
+      ],
+      "candidate": [
+        {
+          "domMs": 49.9,
+          "finalMs": 49.94,
+          "gcMajorMs": 0,
+          "gcMinorMs": 0,
+          "heapAfterLastMajorGcMB": 43.81,
+          "heapBeforeFinalMB": 98.77,
+          "parseMs": 0.48,
+          "reactMs": 45.7,
+          "lastArrivalTaskMs": 38.75,
+          "spanMs": 49.95,
+          "taskMs": 49.94,
+          "transactionMs": 0
+        },
+        {
+          "domMs": 49.7,
+          "finalMs": 50.5,
+          "gcMajorMs": 0,
+          "gcMinorMs": 0,
+          "heapAfterLastMajorGcMB": 43.7,
+          "heapBeforeFinalMB": 98.68,
+          "parseMs": 1.08,
+          "reactMs": 43.5,
+          "lastArrivalTaskMs": 39.32,
+          "spanMs": 50.51,
+          "taskMs": 50.5,
+          "transactionMs": 0
+        },
+        {
+          "domMs": 50.4,
+          "finalMs": 50.57,
+          "gcMajorMs": 0,
+          "gcMinorMs": 0,
+          "heapAfterLastMajorGcMB": 45.16,
+          "heapBeforeFinalMB": 98.23,
+          "parseMs": 0.69,
+          "reactMs": 44.82,
+          "lastArrivalTaskMs": 38.91,
+          "spanMs": 50.58,
+          "taskMs": 50.57,
+          "transactionMs": 0
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 110.54,
+      "candidate": 50.57
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 108.7,
+      "candidate": 43.9
+    },
+    "packet": "acceptance",
+    "pairs": [
+      {
+        "baseline": 1685.2,
+        "candidate": 77.5,
+        "gainMs": 1607.7,
+        "gainPercent": 95.4
+      },
+      {
+        "baseline": 1705.5,
+        "candidate": 66.7,
+        "gainMs": 1638.8,
+        "gainPercent": 96.1
+      },
+      {
+        "baseline": 1700.2,
+        "candidate": 71.9,
+        "gainMs": 1628.3,
+        "gainPercent": 95.8
+      }
+    ],
+    "previews": {
+      "baseline": [
+        40,
+        40,
+        40
+      ],
+      "candidate": [
+        40,
+        40,
+        40
+      ]
+    },
+    "spreadMs": 20.3,
+    "status": "complete",
+    "verdict": "pass"
+  },
+  {
+    "breakdown": {
+      "baseline": {
+        "busyMs": 43385.3,
+        "gcMs": 3038.4,
+        "parseMs": 7428.1,
+        "reactMs": 1611.3,
+        "reactInPublishTasksMs": 1576,
+        "transactionMs": 28383.5
+      },
+      "candidate": {
+        "busyMs": 4366,
+        "gcMs": 133.8,
+        "parseMs": 248.4,
+        "reactMs": 1966.1,
+        "reactInPublishTasksMs": 404.8,
+        "transactionMs": 178.4
+      }
+    },
+    "cell": "ai-cjk-50000",
+    "checks": {
+      "finalOk": true,
+      "latencyOk": true,
+      "outsideVariation": true,
+      "workPass": true
+    },
+    "finalDiagnosis": {
+      "baseline": [
+        {
+          "domMs": 584.8,
+          "finalMs": 586.21,
+          "gcMajorMs": 0,
+          "gcMinorMs": 26.11,
+          "heapAfterLastMajorGcMB": 272.28,
+          "heapBeforeFinalMB": 967.9,
+          "parseMs": 75.33,
+          "reactMs": 159.37,
+          "lastArrivalTaskMs": 586.21,
+          "spanMs": 586.21,
+          "taskMs": 586.21,
+          "transactionMs": 318.55
+        },
+        {
+          "domMs": 534.9,
+          "finalMs": 536.44,
+          "gcMajorMs": 0,
+          "gcMinorMs": 24.85,
+          "heapAfterLastMajorGcMB": 272.74,
+          "heapBeforeFinalMB": 914.72,
+          "parseMs": 72.4,
+          "reactMs": 160.13,
+          "lastArrivalTaskMs": 536.44,
+          "spanMs": 536.44,
+          "taskMs": 536.44,
+          "transactionMs": 267
+        },
+        {
+          "domMs": 533.3,
+          "finalMs": 534.81,
+          "gcMajorMs": 0,
+          "gcMinorMs": 24.32,
+          "heapAfterLastMajorGcMB": 306.37,
+          "heapBeforeFinalMB": 923.7,
+          "parseMs": 74.19,
+          "reactMs": 157.72,
+          "lastArrivalTaskMs": 534.81,
+          "spanMs": 534.81,
+          "taskMs": 534.81,
+          "transactionMs": 264.6
+        }
+      ],
+      "candidate": [
+        {
+          "domMs": 175.6,
+          "finalMs": 175.64,
+          "gcMajorMs": 0,
+          "gcMinorMs": 1.28,
+          "heapAfterLastMajorGcMB": 121.57,
+          "heapBeforeFinalMB": 334.37,
+          "parseMs": 1.18,
+          "reactMs": 163.25,
+          "lastArrivalTaskMs": 146.85,
+          "spanMs": 175.66,
+          "taskMs": 175.64,
+          "transactionMs": 1.27
+        },
+        {
+          "domMs": 178.3,
+          "finalMs": 178.37,
+          "gcMajorMs": 0,
+          "gcMinorMs": 1.11,
+          "heapAfterLastMajorGcMB": 121.52,
+          "heapBeforeFinalMB": 321.42,
+          "parseMs": 1.35,
+          "reactMs": 162.29,
+          "lastArrivalTaskMs": 149.04,
+          "spanMs": 178.4,
+          "taskMs": 178.37,
+          "transactionMs": 2.51
+        },
+        {
+          "domMs": 181.9,
+          "finalMs": 182.03,
+          "gcMajorMs": 0,
+          "gcMinorMs": 1.11,
+          "heapAfterLastMajorGcMB": 121.75,
+          "heapBeforeFinalMB": 319.55,
+          "parseMs": 1.28,
+          "reactMs": 164.47,
+          "lastArrivalTaskMs": 151.3,
+          "spanMs": 182.06,
+          "taskMs": 182.03,
+          "transactionMs": 1.26
+        }
+      ]
+    },
+    "finalMs": {
+      "baseline": 586.21,
+      "candidate": 182.03
+    },
+    "finalTextsMatch": true,
+    "latencyP95Ms": {
+      "baseline": 400.8,
+      "candidate": 44.9
+    },
+    "packet": "acceptance",
+    "pairs": [
+      {
+        "baseline": 35764.3,
+        "candidate": 431.2,
+        "gainMs": 35333.1,
+        "gainPercent": 98.8
+      },
+      {
+        "baseline": 36050.7,
+        "candidate": 426.8,
+        "gainMs": 35623.9,
+        "gainPercent": 98.8
+      },
+      {
+        "baseline": 35620,
+        "candidate": 422.5,
+        "gainMs": 35197.5,
+        "gainPercent": 98.8
+      }
+    ],
+    "previews": {
+      "baseline": [
+        196,
+        195,
+        195
+      ],
+      "candidate": [
+        196,
+        196,
+        196
+      ]
+    },
+    "spreadMs": 430.6,
+    "status": "complete",
+    "verdict": "pass"
+  },
+  {
+    "cell": "ai-rich-10000",
+    "packet": "acceptance",
+    "status": "profile lost its stacks in candidate pair-1",
+    "streams": [
+      {
+        "arm": "baseline",
+        "gateMs": 998.1,
+        "role": "warmup",
+        "timedOut": false
+      },
+      {
+        "arm": "candidate",
+        "gateMs": 47.8,
+        "role": "warmup",
+        "timedOut": false
+      },
+      {
+        "arm": "baseline",
+        "gateMs": 976.8,
+        "role": "pair-0",
+        "timedOut": false
+      },
+      {
+        "arm": "candidate",
+        "gateMs": 45.9,
+        "role": "pair-0",
+        "timedOut": false
+      },
+      {
+        "arm": "candidate",
+        "gateMs": 49.6,
+        "role": "pair-1",
+        "timedOut": false
+      },
+      {
+        "arm": "baseline",
+        "gateMs": 997.7,
+        "role": "pair-1",
+        "timedOut": false
+      },
+      {
+        "arm": "baseline",
+        "gateMs": 978.9,
+        "role": "pair-2",
+        "timedOut": false
+      },
+      {
+        "arm": "candidate",
+        "gateMs": 48.9,
+        "role": "pair-2",
+        "timedOut": false
+      }
+    ],
+    "verdict": "inconclusive"
+  },
+  {
+    "cell": "ai-rich-50000",
+    "packet": "acceptance",
+    "status": "profile lost its stacks in candidate pair-2",
+    "streams": [
+      {
+        "arm": "baseline",
+        "gateMs": 19230.8,
+        "role": "warmup",
+        "timedOut": false
+      },
+      {
+        "arm": "candidate",
+        "gateMs": 300.4,
+        "role": "warmup",
+        "timedOut": false
+      },
+      {
+        "arm": "baseline",
+        "gateMs": 19664.4,
+        "role": "pair-0",
+        "timedOut": false
+      },
+      {
+        "arm": "candidate",
+        "gateMs": 295.3,
+        "role": "pair-0",
+        "timedOut": false
+      },
+      {
+        "arm": "candidate",
+        "gateMs": 313.7,
+        "role": "pair-1",
+        "timedOut": false
+      },
+      {
+        "arm": "baseline",
+        "gateMs": 19820.4,
+        "role": "pair-1",
+        "timedOut": false
+      },
+      {
+        "arm": "baseline",
+        "gateMs": 19761.5,
+        "role": "pair-2",
+        "timedOut": false
+      },
+      {
+        "arm": "candidate",
+        "gateMs": 295.8,
+        "role": "pair-2",
+        "timedOut": false
+      }
+    ],
+    "verdict": "inconclusive"
+  }
+]

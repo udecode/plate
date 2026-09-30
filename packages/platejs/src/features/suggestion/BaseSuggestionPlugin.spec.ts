@@ -3,6 +3,8 @@ import {
   type AuthoredChangePublication,
 } from '../../authored';
 import { createEditor } from '../../core';
+import { createEditorView } from '../../facade';
+import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { observeSuggestionChanges } from './suggestion.internal';
 
@@ -144,5 +146,33 @@ describe('BaseSuggestionPlugin', () => {
     ).toBe('pending');
     expect(refresh).toHaveBeenCalledWith({ nodeKeys: [nodeKey] });
     stop();
+  });
+
+  it('marks suggestions only in the editor that holds them', () => {
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [BaseSuggestionPlugin],
+      userId: 'alice',
+    });
+
+    editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting');
+    editor.update.text.insert(' proposed', {
+      at: { offset: 8, path: [0, 0] },
+    });
+    const source = getPlateDecorationSources(editor).find(
+      ({ id }) => id === BaseSuggestionPlugin.name
+    )!;
+    const view = createEditorView(editor, {
+      document: {
+        children: [{ children: [{ text: 'Foreign' }], type: 'paragraph' }],
+      },
+    });
+
+    expect(
+      source.read({ editor, entry: editor.read.nodes.get([0, 0])! })
+    ).toHaveLength(1);
+    expect(
+      source.read({ editor: view, entry: view.read.nodes.get([0, 0])! })
+    ).toEqual([]);
   });
 });

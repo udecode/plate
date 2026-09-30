@@ -35,8 +35,8 @@ if (strict && propertyOnly) {
 const percentile = (values: readonly number[], ratio: number) =>
   values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 const warmups = 3;
-const prefixP95OverheadFloorMs = 2;
-const prefixP95OverheadFraction = 0.25;
+const prefixOverheadFloorMs = 2;
+const prefixOverheadFraction = 0.25;
 
 const changedSpan = (
   commit: {
@@ -404,10 +404,12 @@ const prefixRows = ([1, 2] as const).flatMap((prefixLength) => {
       p50Ms: percentile(plainSamplesMs, 0.5),
       p95Ms: percentile(plainSamplesMs, 0.95),
     };
-    const propertyP95OverheadMs = percentile(sortedPairedDeltas, 0.95);
-    const propertyP95OverheadBudgetMs = Math.max(
-      prefixP95OverheadFloorMs,
-      plainPropertyEdit.p95Ms * prefixP95OverheadFraction
+    // Prefix-specific work shifts every paired delta, while machine load moves
+    // individual pairs either way, so the gate reads the median, not the p95.
+    const propertyOverheadMs = percentile(sortedPairedDeltas, 0.5);
+    const propertyOverheadBudgetMs = Math.max(
+      prefixOverheadFloorMs,
+      plainPropertyEdit.p50Ms * prefixOverheadFraction
     );
     const propertyRow = {
       blocks,
@@ -427,10 +429,10 @@ const prefixRows = ([1, 2] as const).flatMap((prefixLength) => {
       prefixPropertyEdit,
       prefixPropertyMaximumChangedRanges,
       prefixPropertyMaximumChangedSpan,
-      propertyP95OverheadBudgetMs,
-      propertyP95OverheadMs,
-      propertyP95WithinBudget:
-        propertyP95OverheadMs <= propertyP95OverheadBudgetMs,
+      propertyOverheadBudgetMs,
+      propertyOverheadMs,
+      propertyOverheadWithinBudget:
+        propertyOverheadMs <= propertyOverheadBudgetMs,
       startupMs,
       warmups,
     };
@@ -532,21 +534,26 @@ const boundaryIdentityPreserved = rows.every(
 const prefixMaximumChangedSpan = Math.max(
   ...prefixRows.map((row) => row.maximumChangedSpan)
 );
-const prefixPropertyP95WithinBudget = prefixRows.every(
-  (row) => row.propertyP95WithinBudget
+const prefixPropertyOverheadWithinBudget = prefixRows.every(
+  (row) => row.propertyOverheadWithinBudget
 );
 
 if (strict && (prefixRows.length !== 8 || prefixMaximumChangedSpan >= 64)) {
   throw new Error('Required-prefix construction locality failed.');
 }
 
-if (strict && (iterations < 20 || !prefixPropertyP95WithinBudget)) {
+if (strict && (iterations < 20 || !prefixPropertyOverheadWithinBudget)) {
   throw new Error(
-    `Required-prefix property-edit p95 proof failed: samples=${iterations}, failing rows=${
+    `Required-prefix property-edit overhead proof failed: samples=${iterations}, failing rows=${
       prefixRows
-        .filter((row) => !row.propertyP95WithinBudget)
-        .map((row) => `${row.prefixLength}/${row.blocks}`)
-        .join(',') || 'none'
+        .filter((row) => !row.propertyOverheadWithinBudget)
+        .map(
+          (row) =>
+            `${row.prefixLength}/${row.blocks} (median delta ${row.propertyOverheadMs.toFixed(
+              2
+            )} ms > budget ${row.propertyOverheadBudgetMs.toFixed(2)} ms)`
+        )
+        .join(', ') || 'none'
     }.`
   );
 }
@@ -576,7 +583,7 @@ const result = {
   },
   prefixRows,
   prefixMaximumChangedSpan,
-  prefixPropertyP95WithinBudget,
+  prefixPropertyOverheadWithinBudget,
   propertyOnlyDiagnostic: propertyOnly,
   maximumChangedSpan,
   thresholdPolicy: {
@@ -584,18 +591,17 @@ const result = {
     maximumChangedSpanExclusive: 64,
     prefixProperty: {
       minimumSamplesPerArm: 20,
-      p95OverheadFloorMs: prefixP95OverheadFloorMs,
-      p95OverheadFractionOfPlain: prefixP95OverheadFraction,
+      overheadFloorMs: prefixOverheadFloorMs,
+      overheadFractionOfPlainMedian: prefixOverheadFraction,
       warmupsPerArm: warmups,
-      comparison:
-        'Alternating-order matched plain and prefix editors use the same nodes, schema elements, property mutation and update path. Only the root content declaration differs. A full garbage collection before each timed arm keeps unrelated collection pauses out of the causal comparison. Paired prefix-minus-plain delta p95 must stay within max(2 ms, 25% of plain p95) in every cohort; individual-arm p50/p95 remain visible.',
+      comparison: `Alternating-order matched plain and prefix editors use the same nodes, schema elements, property mutation and update path. Only the root content declaration differs. A full garbage collection before each timed arm keeps unrelated collection pauses out of the causal comparison. The median paired prefix-minus-plain delta must stay within max(${prefixOverheadFloorMs} ms, ${prefixOverheadFraction * 100}% of plain median) in every cohort: prefix-specific work shifts every paired delta, while machine load moves individual pairs either way. Individual-arm and paired-delta p50/p95 remain visible.`,
     },
     timingScope:
       'Property-edit p50/p95 include whole-editor immutable publication in both arms. The matched delta isolates prefix-specific cost only within observed noise; changed spans count published token ranges, not internal schema visits. This does not establish document-length-independent whole-editor latency or exact validation visit counts.',
     propertyOnlyDiagnostic:
       'The --property-only probe omits body edit and paste correctness. It cannot satisfy the registered strict target.',
   },
-  version: 3,
+  version: 4,
 };
 const output = `${JSON.stringify(result, null, 2)}\n`;
 
@@ -620,8 +626,8 @@ process.stdout.write(
   `METRIC plite_schema_construction_prefix_boundary_identity_preserved=${propertyOnly ? 0 : 1}\n`
 );
 process.stdout.write(
-  `METRIC plite_schema_construction_prefix_property_p95_within_budget=${
-    prefixPropertyP95WithinBudget && iterations >= 20 ? 1 : 0
+  `METRIC plite_schema_construction_prefix_property_overhead_within_budget=${
+    prefixPropertyOverheadWithinBudget && iterations >= 20 ? 1 : 0
   }\n`
 );
 

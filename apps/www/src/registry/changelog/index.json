@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-30-static-list-table-known-paths",
+      "href": "/registry/changelog/2026-09-30-static-list-table-known-paths.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Read static list numbers and table cell presentation from the rendered path",
+      "change": {
+        "type": "source",
+        "date": "2026-09-30",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-list-static", "table-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-30-streaming-preview-deferred-render",
+      "href": "/registry/changelog/2026-09-30-streaming-preview-deferred-render.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Render streamed previews from the latest draft",
+      "change": {
+        "type": "source",
+        "date": "2026-09-30",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-menu", "markdown-streaming-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-29-markdown-joiner-removal",
       "href": "/registry/changelog/2026-09-29-markdown-joiner-removal.json",
       "status": "draft",

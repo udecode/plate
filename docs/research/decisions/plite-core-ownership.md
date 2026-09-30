@@ -2,8 +2,12 @@
 title: Plite core ownership
 type: decision
 status: assessed
-updated: 2026-09-11
+updated: 2026-09-30
 review_scope: plite-core
+reconciled_executions:
+  - 2026-09-30-content-root-locations-design
+  - 2026-09-30-content-root-locations-execution
+  - 2026-09-30-content-root-locations-closure
 review_history:
   - ../review-records/2026-07-23-api-schema.json
   - ../review-records/2026-09-11-runtime-document-view-ownership.json
@@ -33,6 +37,12 @@ The comparison below records the pre-adoption source. The two cuts are
 implemented locally under [the adoption plan](../../plans/2026-09-11-plite-core-cuts.md);
 full handoff remains in progress because the shared checkout has failing
 checks and concurrent source changes.
+
+The [content-root location design](../../plans/2026-09-30-content-root-locations.md)
+retains this lifetime model. [Its execution](../../plans/2026-09-30-content-root-locations-execution.md) corrects view derivation
+over the canonical runtime, including immutable, read-only and authored
+binding, and validates a document once per compiled schema, rather than
+adding another owner.
 
 Expected questions: **4**. Reviewed: **4**. Excluded questions: **0**.
 Unresolved verdicts: **0**. Browser, external compatibility and final removal

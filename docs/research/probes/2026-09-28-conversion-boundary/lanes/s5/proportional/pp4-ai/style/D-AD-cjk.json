@@ -1,0 +1,67 @@
+[
+ {
+  "label": "D",
+  "cell": "ai-cjk-50000",
+  "streams": [
+   {
+    "role": "pair-0",
+    "load1": 2.6,
+    "commits": 195,
+    "previewElements": 23435,
+    "ult": 1.79,
+    "layout": 1.04,
+    "paint": 1.29,
+    "fullRecalcs": 1,
+    "fullRecalcMs": 132.7,
+    "largestRecalc": 48994,
+    "c": 1951.3,
+    "busy": 4369.4,
+    "errors": 0
+   },
+   {
+    "role": "pair-1",
+    "load1": 2.5,
+    "commits": 195,
+    "previewElements": 23435,
+    "ult": 1.81,
+    "layout": 1.05,
+    "paint": 1.29,
+    "fullRecalcs": 1,
+    "fullRecalcMs": 133.4,
+    "largestRecalc": 49034,
+    "c": 1957.3,
+    "busy": 4361.2,
+    "errors": 0
+   }
+  ],
+  "median": {
+   "ult": 1.8,
+   "layout": 1.04,
+   "paint": 1.29,
+   "fullRecalcs": 1.0,
+   "fullRecalcMs": 133.05,
+   "c": 1954.3,
+   "busy": 4365.3,
+   "commits": 195.0,
+   "previewElements": 23435.0
+  },
+  "range": {
+   "ult": [
+    1.79,
+    1.81
+   ],
+   "fullRecalcs": [
+    1,
+    1
+   ],
+   "c": [
+    1951.3,
+    1957.3
+   ],
+   "busy": [
+    4361.2,
+    4369.4
+   ]
+  }
+ }
+]

@@ -18,6 +18,7 @@ import {
   type Text as TextNode,
 } from '../..';
 import {
+  readAuthoredView,
   readAuthoredViewFragments,
   readAuthoredViewFragmentSlots,
   subscribeAuthoredViewFragmentSlots,
@@ -47,6 +48,7 @@ import {
 } from '../context';
 import {
   DecorationContext,
+  DecorationSourcesContext,
   type PliteDecorationStore,
   useRegisterPliteDecorationSource,
 } from '../decoration-context';
@@ -82,6 +84,7 @@ import { useEditorFocused } from '../hooks/use-editor-focused';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
 import { useEditorSelection } from '../hooks/use-editor-selection';
 import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
+import { useEditorViewState } from '../hooks/use-editor-view-state';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
 import { useContentRoot } from '../hooks/use-plite-content-root';
@@ -422,6 +425,14 @@ function EditableContentRootSlot({
   const { root } = useContentRoot(element, { slot });
   const inheritedReadOnly = useEditorReadOnly();
   const readOnly = Boolean(options.readOnly || inheritedReadOnly);
+  // The owned root paints the owner's sources through its own view and keeps
+  // editing in the owner's authored mode, including after a mode switch.
+  const ownerSources = React.useContext(DecorationSourcesContext);
+  const readOwnerAuthored = React.useCallback(
+    () => readAuthoredView(ownerEditor),
+    [ownerEditor]
+  );
+  const ownerAuthored = useEditorViewState(ownerEditor, readOwnerAuthored);
   const contentRootOwner = React.useMemo(
     () => ({
       childRoot: root,
@@ -433,7 +444,15 @@ function EditableContentRootSlot({
 
   return (
     <PliteContentRootOwnerContext value={contentRootOwner}>
-      <EditorRoot editor={ownerEditor} readOnly={readOnly} root={root}>
+      <EditorRoot
+        // The owner's runtime policy is authoritative even when the owner's
+        // static editor type does not declare authored changes.
+        authored={ownerAuthored as never}
+        decorations={ownerSources}
+        editor={ownerEditor}
+        readOnly={readOnly}
+        root={root}
+      >
         <EditableContentRootView
           options={options}
           ownerPath={ownerPath}

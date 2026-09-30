@@ -14,6 +14,7 @@ import {
   TextApi,
   MAIN_ROOT_KEY,
   getEditorRuntimeOwner,
+  getReaderRange,
   withDocumentViewRead,
 } from '../../facade';
 import { mergePlateRenderedAttributes } from '../../internal/mergePlateRenderedAttributes';
@@ -28,7 +29,10 @@ import type {
   DecorationAttributes,
   DecorationSource,
 } from '../internal/plite-react';
-import { getStaticDocumentView } from '../internal/staticDocumentView';
+import {
+  getStaticDocumentView,
+  getStaticRootView,
+} from '../internal/staticDocumentView';
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic.internal';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic.internal';
 import { pipeRenderTextStatic } from '../pluginRenderTextStatic.internal';
@@ -57,85 +61,194 @@ const areStaticDecorationsEqual = (
       return (
         decoration.key === other?.key &&
         RangeApi.equals(decoration.range, other.range) &&
-        JSON.stringify(decoration.attributes) ===
-          JSON.stringify(other.attributes)
+        (decoration.attributes === other.attributes ||
+          JSON.stringify(decoration.attributes) ===
+            JSON.stringify(other.attributes))
       );
     }));
 
-const decorationEqualities = new WeakMap<
-  readonly Decoration[],
-  WeakMap<readonly Decoration[], boolean>
+const readSchema = (editor: Editor) => editor.read((state) => state.schema);
+
+type ContentRootInput = Readonly<{
+  nodes: readonly Descendant[];
+  root: string;
+}>;
+
+type BlockInputs = Readonly<{
+  contentRoots: readonly ContentRootInput[];
+  decorations: readonly Decoration[];
+  readsDocument: boolean;
+}>;
+
+const EMPTY_BLOCK_INPUTS: BlockInputs = Object.freeze({
+  contentRoots: Object.freeze([]),
+  decorations: EMPTY_DECORATIONS,
+  readsDocument: false,
+});
+
+const blockInputEqualities = new WeakMap<
+  BlockInputs,
+  WeakMap<BlockInputs, boolean>
 >();
 
-const areBlockDecorationsEqual = (
-  left: readonly Decoration[],
-  right: readonly Decoration[]
-) => {
-  let equalities = decorationEqualities.get(left);
+const areBlockInputsEqual = (left: BlockInputs, right: BlockInputs) => {
+  if (left === right) return true;
+
+  let equalities = blockInputEqualities.get(left);
 
   if (!equalities) {
     equalities = new WeakMap();
-    decorationEqualities.set(left, equalities);
+    blockInputEqualities.set(left, equalities);
   }
 
   let equal = equalities.get(right);
 
   if (equal === undefined) {
-    equal = areStaticDecorationsEqual(left, right);
+    equal =
+      left.readsDocument === right.readsDocument &&
+      left.contentRoots.length === right.contentRoots.length &&
+      left.contentRoots.every(
+        ({ nodes, root }, index) =>
+          nodes === right.contentRoots[index]?.nodes &&
+          root === right.contentRoots[index]?.root
+      ) &&
+      areStaticDecorationsEqual(left.decorations, right.decorations);
     equalities.set(right, equal);
   }
 
   return equal;
 };
 
-/** Read every source's decorations for a block and all its descendants. */
-const readBlockDecorations = (
+/**
+ * Read a source's decorations for an entry of `reader`, whose root is `root`.
+ * Output is relative to its reader: a range naming another root, or two
+ * roots, cannot paint here.
+ */
+const readDecorations = (
+  source: DecorationSource,
+  reader: Editor,
+  root: string,
+  entry: NodeEntry
+): readonly Decoration[] => {
+  const output = source.read({ editor: reader, entry });
+  let admitted: Decoration[] | undefined;
+
+  output.forEach((decoration, index) => {
+    const range = getReaderRange(decoration.range, root);
+
+    if (range === decoration.range) {
+      admitted?.push(decoration);
+      return;
+    }
+
+    admitted ??= output.slice(0, index);
+    if (range) admitted.push({ ...decoration, range });
+  });
+
+  return admitted ?? output;
+};
+
+/**
+ * Read what a block renders beyond its own nodes: every source's decorations
+ * over its subtree, the content roots owned anywhere inside it with their
+ * decorations, and whether an element in them reads the document. A reused
+ * block skips all of it, so all of it is the block's memo input.
+ */
+const readBlockInputs = (
   sources: readonly DecorationSource[],
   editor: Editor,
-  block: Descendant,
-  path: Path
-): readonly Decoration[] => {
-  if (sources.length === 0) return EMPTY_DECORATIONS;
+  root: string,
+  schema: ReturnType<typeof readSchema>,
+  block: Element,
+  path: Path,
+  own: readonly Decoration[]
+): BlockInputs => {
+  const decorations: Decoration[] = [...own];
+  const contentRoots: ContentRootInput[] = [];
+  let readsDocument = readsDocumentWithin(editor, block);
+  const visitContentRoots = (reader: Editor, element: Element) => {
+    for (const contentRoot of Object.values(
+      schema.getElementContentRoots(element)
+    )) {
+      const rootReader = getStaticRootView(reader, contentRoot);
+      const nodes = rootReader.read.children();
 
-  const decorations: Decoration[] = [];
-  const visit = (node: Descendant, nodePath: Path) => {
+      contentRoots.push({ nodes, root: contentRoot });
+      nodes.forEach((node, index) => {
+        if (
+          ElementApi.isElement(node) &&
+          readsDocumentWithin(rootReader, node)
+        ) {
+          readsDocument = true;
+        }
+        visit(rootReader, contentRoot, node, [index]);
+      });
+    }
+  };
+  const visit = (
+    reader: Editor,
+    readerRoot: string,
+    node: Descendant,
+    nodePath: Path
+  ) => {
     for (const source of sources) {
-      decorations.push(...source.read({ editor, entry: [node, nodePath] }));
+      decorations.push(
+        ...readDecorations(source, reader, readerRoot, [node, nodePath])
+      );
     }
     if (ElementApi.isElement(node)) {
+      visitContentRoots(reader, node);
       node.children.forEach((child, index) =>
-        visit(child, [...nodePath, index])
+        visit(reader, readerRoot, child, [...nodePath, index])
       );
     }
   };
 
-  visit(block, path);
+  visitContentRoots(editor, block);
+  block.children.forEach((child, index) =>
+    visit(editor, root, child, [...path, index])
+  );
 
-  return decorations;
+  if (contentRoots.length === 0 && decorations.length === 0 && !readsDocument) {
+    return EMPTY_BLOCK_INPUTS;
+  }
+
+  return {
+    contentRoots,
+    decorations: decorations.length === 0 ? EMPTY_DECORATIONS : decorations,
+    readsDocument,
+  };
 };
 
+// A range paints only its part on this leaf: another leaf's range, or the
+// rest of a range spanning several leaves, paints nothing here.
 const getStaticDecorationSlices = (
   text: Text,
+  path: Path,
   decorations: readonly Decoration[]
-): readonly StaticDecorationSlice[] =>
-  decorations.flatMap(({ attributes, key, range }) => {
-    const start = RangeApi.start(range);
-    const end = RangeApi.end(range);
+): readonly StaticDecorationSlice[] => {
+  const leaf = {
+    anchor: { offset: 0, path },
+    focus: { offset: text.text.length, path },
+  };
 
-    if (start.path.join('.') !== end.path.join('.')) return [];
+  return decorations.flatMap(({ attributes, key, range }) => {
+    const slice = RangeApi.intersection(range, leaf);
 
-    return [
-      {
-        attributes,
-        end: Math.min(text.text.length, end.offset),
-        key,
-        start: Math.max(0, start.offset),
-      },
-    ];
+    if (!slice) return [];
+
+    const [start, end] = RangeApi.edges(slice);
+
+    return [{ attributes, end: end.offset, key, start: start.offset }];
   });
+};
 
-const splitStaticText = (text: Text, decorations: readonly Decoration[]) => {
-  const slices = getStaticDecorationSlices(text, decorations);
+const splitStaticText = (
+  text: Text,
+  path: Path,
+  decorations: readonly Decoration[]
+) => {
+  const slices = getStaticDecorationSlices(text, path, decorations);
 
   if (text.text.length === 0) {
     return [{ decorations: [], end: 0, start: 0, text: '' }];
@@ -168,20 +281,20 @@ const splitStaticText = (text: Text, decorations: readonly Decoration[]) => {
 };
 
 function BaseElementStatic({
-  blockDecorations,
-  contentRootValues: _contentRootValues,
+  block,
   sources,
   decorations,
+  documentNodes,
   editor,
   element,
   path,
   rootNodes,
   rootStack,
 }: {
-  blockDecorations: readonly Decoration[];
-  contentRootValues: ReadonlyArray<readonly Descendant[]>;
+  block: BlockInputs;
   sources: readonly DecorationSource[];
   decorations: readonly Decoration[];
+  documentNodes: readonly Descendant[];
   editor: Editor;
   element: Element;
   path: Path;
@@ -190,6 +303,7 @@ function BaseElementStatic({
   style?: React.CSSProperties;
 }) {
   const renderElement = pipeRenderElementStatic(editor);
+  const schema = readSchema(editor);
 
   const attributes: RenderElementProps['attributes'] = {
     'data-editor-node': 'element',
@@ -199,9 +313,10 @@ function BaseElementStatic({
 
   const renderChildren = (range: { from?: number; to?: number } = {}) => (
     <Children
-      blockDecorations={blockDecorations}
+      block={block}
       sources={sources}
       decorations={decorations}
+      documentNodes={documentNodes}
       editor={editor}
       from={range.from}
       nodes={element.children}
@@ -221,7 +336,7 @@ function BaseElementStatic({
         ? renderChildren()
         : renderChildren({ from: scope.from, to: scope.to })),
     contentRoot: (slot) => {
-      const root = editor.read.schema.getElementContentRoots(element)[slot];
+      const root = schema.getElementContentRoots(element)[slot];
 
       if (!root) {
         throw new Error(
@@ -234,13 +349,15 @@ function BaseElementStatic({
         );
       }
 
-      const nodes = editor.read.root(root);
+      const rootEditor = getStaticRootView(editor, root);
+      const nodes = rootEditor.read.children();
 
       return (
         <Children
           sources={sources}
           decorations={[]}
-          editor={editor}
+          documentNodes={documentNodes}
+          editor={rootEditor}
           nodes={nodes}
           rootNodes={nodes}
           rootStack={[...rootStack, root]}
@@ -249,7 +366,7 @@ function BaseElementStatic({
     },
   } satisfies RenderElementSlots;
 
-  if (editor.read.schema.isVoid(element)) {
+  if (schema.isVoid(element)) {
     attributes['data-editor-void'] = true;
     children = (
       <span
@@ -264,7 +381,7 @@ function BaseElementStatic({
       </span>
     );
   }
-  if (editor.read.schema.isInline(element)) {
+  if (schema.isInline(element)) {
     attributes['data-editor-inline'] = true;
   }
 
@@ -315,16 +432,47 @@ const countUnchangedBlocks = (
 // before it are unchanged: renderers may read earlier blocks (list numbers) or
 // their own block (table borders). Elements that read later content declare
 // `render.readsDocument` and render again on any change.
+const documentReaders = new WeakMap<object, WeakMap<Element, boolean>>();
+
+// A reused element skips its whole subtree, so it reads the document when it
+// or any element inside it declares `render.readsDocument`, such as a table
+// of contents inside a table cell. Cached per block and published plugins.
+const readsDocumentWithin = (editor: Editor, element: Element): boolean => {
+  const runtime = getPlateRuntime(editor);
+  let readers = documentReaders.get(runtime);
+
+  if (!readers) {
+    readers = new WeakMap();
+    documentReaders.set(runtime, readers);
+  }
+
+  let reads = readers.get(element);
+
+  if (reads === undefined) {
+    reads =
+      getCompiledPlatePluginByType(editor, element.type)?.render
+        .readsDocument === true ||
+      element.children.some(
+        (child) =>
+          ElementApi.isElement(child) && readsDocumentWithin(editor, child)
+      );
+    readers.set(element, reads);
+  }
+
+  return reads;
+};
+
 const isSameRenderedDocument = (
   prev: Parameters<typeof BaseElementStatic>[0],
   next: Parameters<typeof BaseElementStatic>[0]
 ) =>
-  prev.rootNodes === next.rootNodes
+  // A content root can stay unchanged while the rest of the document changed,
+  // so only an unchanged document and root keep a document reader.
+  prev.documentNodes === next.documentNodes && prev.rootNodes === next.rootNodes
     ? prev.editor === next.editor
     : getEditorRuntimeOwner(prev.editor) ===
         getEditorRuntimeOwner(next.editor) &&
-      getCompiledPlatePluginByType(next.editor, next.element.type)?.render
-        .readsDocument !== true &&
+      !next.block.readsDocument &&
       countUnchangedBlocks(prev.rootNodes, next.rootNodes) > next.path[0];
 
 const ElementStatic = React.memo(
@@ -334,11 +482,7 @@ const ElementStatic = React.memo(
     prev.rootStack.at(-1) === next.rootStack.at(-1) &&
     prev.element === next.element &&
     isSameRenderedDocument(prev, next) &&
-    areBlockDecorationsEqual(prev.blockDecorations, next.blockDecorations) &&
-    prev.contentRootValues.length === next.contentRootValues.length &&
-    prev.contentRootValues.every(
-      (children, index) => children === next.contentRootValues[index]
-    ) &&
+    areBlockInputsEqual(prev.block, next.block) &&
     areStaticDecorationsEqual(prev.decorations, next.decorations)
 );
 
@@ -358,7 +502,7 @@ function BaseLeafStatic({
   const renderLeaf = pipeRenderLeafStatic(editor);
   const renderText = pipeRenderTextStatic(editor);
 
-  const segments = splitStaticText(text, decorations);
+  const segments = splitStaticText(text, path, decorations);
   const leafElements = segments.map((segment, index) => {
     const leaf = { ...text, text: segment.text };
     const position =
@@ -384,14 +528,16 @@ function BaseLeafStatic({
         {segment.text === '' ? '\uFEFF' : segment.text}
       </span>
     );
-    const leafElement = renderLeaf({
-      attributes: { 'data-editor-leaf': true },
-      children: content,
-      leaf,
-      leafPosition: position,
-      path,
-      text: leaf,
-    });
+    const leafElement = withDocumentViewRead(editor, () =>
+      renderLeaf({
+        attributes: { 'data-editor-leaf': true },
+        children: content,
+        leaf,
+        leafPosition: position,
+        path,
+        text: leaf,
+      })
+    );
 
     return (
       <React.Fragment
@@ -402,17 +548,19 @@ function BaseLeafStatic({
     );
   });
 
-  return renderText({
-    attributes: {
-      'data-editor-node': 'text' as const,
-      'data-editor-path': path.join(','),
-      'data-editor-root': rootStack.at(-1) ?? MAIN_ROOT_KEY,
-      ref: null,
-    },
-    children: leafElements,
-    path,
-    text,
-  });
+  return withDocumentViewRead(editor, () =>
+    renderText({
+      attributes: {
+        'data-editor-node': 'text' as const,
+        'data-editor-path': path.join(','),
+        'data-editor-root': rootStack.at(-1) ?? MAIN_ROOT_KEY,
+        ref: null,
+      },
+      children: leafElements,
+      path,
+      text,
+    })
+  );
 }
 
 const LeafStatic = React.memo(
@@ -426,9 +574,10 @@ const LeafStatic = React.memo(
 );
 
 function Children({
-  blockDecorations = EMPTY_DECORATIONS,
+  block = EMPTY_BLOCK_INPUTS,
   sources,
   decorations,
+  documentNodes,
   editor,
   from,
   nodes,
@@ -437,9 +586,10 @@ function Children({
   rootStack = EMPTY_ROOT_STACK,
   to,
 }: {
-  blockDecorations?: readonly Decoration[];
+  block?: BlockInputs;
   sources: readonly DecorationSource[];
   decorations: readonly Decoration[];
+  documentNodes: readonly Descendant[];
   editor: Editor;
   from?: number;
   nodes: readonly Descendant[];
@@ -452,6 +602,9 @@ function Children({
     children: rootNodes,
     type: 'static-root',
   };
+  const readerRoot = rootStack.at(-1) ?? MAIN_ROOT_KEY;
+  // Schema queries read the shared model, so one read serves every child.
+  const schema = readSchema(editor);
 
   return (
     <>
@@ -459,48 +612,59 @@ function Children({
         if (from !== undefined && (i < from || i > (to ?? from))) return null;
 
         const p = [...parentPath, i];
+        const entry: NodeEntry = [child, p];
+        const read =
+          sources.length === 0
+            ? EMPTY_DECORATIONS
+            : sources.flatMap((source) =>
+                readDecorations(source, editor, readerRoot, entry)
+              );
+        const own = read.length === 0 ? EMPTY_DECORATIONS : read;
+        let ds = own;
 
-        let ds: Decoration[] = [];
+        if (decorations.length > 0) {
+          const [first, firstPath] = NodeApi.first(root, p);
+          const [last, lastPath] = NodeApi.last(root, p);
 
-        const [first, firstPath] = NodeApi.first(root, p);
-        const [last, lastPath] = NodeApi.last(root, p);
-        const range =
-          TextApi.isText(first) && TextApi.isText(last)
-            ? {
-                anchor: { offset: 0, path: firstPath },
-                focus: { offset: last.text.length, path: lastPath },
-              }
-            : null;
+          if (TextApi.isText(first) && TextApi.isText(last)) {
+            const range = {
+              anchor: { offset: 0, path: firstPath },
+              focus: { offset: last.text.length, path: lastPath },
+            };
+            const inherited = decorations.flatMap((decoration) => {
+              const intersection = RangeApi.intersection(
+                decoration.range,
+                range
+              );
 
-        if (range) {
-          const entry: NodeEntry = [child, p];
+              return intersection
+                ? [{ ...decoration, range: intersection }]
+                : [];
+            });
 
-          ds = sources.flatMap((source) => source.read({ editor, entry }));
-
-          for (const dec of decorations) {
-            const intersection = RangeApi.intersection(dec.range, range);
-
-            if (intersection) {
-              ds.push({ ...dec, range: intersection });
-            }
+            if (inherited.length > 0) ds = [...own, ...inherited];
           }
         }
 
         return ElementApi.isElement(child) ? (
           <ElementStatic
             key={p.join('.')}
-            // A reused block keeps the decorations of everything inside it,
-            // so they are part of its memo input, like its own.
-            blockDecorations={
+            block={
               parentPath.length === 0
-                ? readBlockDecorations(sources, editor, child, p)
-                : blockDecorations
+                ? readBlockInputs(
+                    sources,
+                    editor,
+                    readerRoot,
+                    schema,
+                    child,
+                    p,
+                    own
+                  )
+                : block
             }
-            contentRootValues={Object.values(
-              editor.read.schema.getElementContentRoots(child)
-            ).map((innerRoot) => editor.read.root(innerRoot))}
             sources={sources}
             decorations={ds}
+            documentNodes={documentNodes}
             editor={editor}
             element={child}
             path={p}
@@ -545,6 +709,7 @@ export function EditorStatic<E = Editor>(props: EditorStaticProps<E>) {
   );
 
   const sources = getPlateDecorationSources(editor);
+  const readerRoot = editor.read.view.root();
 
   const content = (
     <div
@@ -556,10 +721,11 @@ export function EditorStatic<E = Editor>(props: EditorStaticProps<E>) {
       <Children
         sources={sources}
         decorations={[]}
+        documentNodes={editor.read.children()}
         editor={editor}
         nodes={editor.read.children()}
         rootNodes={editor.read.children()}
-        rootStack={[]}
+        rootStack={readerRoot ? [readerRoot] : EMPTY_ROOT_STACK}
       />
     </div>
   );

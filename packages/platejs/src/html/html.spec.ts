@@ -339,6 +339,37 @@ describe('platejs/html', () => {
     ]);
   });
 
+  it('reports a Plate attribute that no installed mapping reads', () => {
+    // `class` and `id` belong to the source; `data-text-indent` is Plate's.
+    expect(
+      parseHtmlSlice('<p class="lead" data-text-indent="1" id="a">Text</p>')
+    ).toMatchObject({
+      diagnostics: [
+        {
+          action: 'dropped',
+          code: 'html-unsupported-content',
+          kind: 'attribute',
+          phase: 'parse',
+          severity: 'warning',
+          source: {
+            attribute: 'data-text-indent',
+            kind: 'tree',
+            path: [0],
+            tag: 'p',
+          },
+        },
+      ],
+      ok: true,
+    });
+    // A lost element reports once; its attributes are lost with it.
+    expect(
+      parseHtmlSlice(
+        '<img data-editor-natural-width="320" src="https://platejs.org/a.png">',
+        { lossPolicy: 'allow' }
+      ).diagnostics
+    ).toMatchObject([{ kind: 'element' }]);
+  });
+
   it('classifies mandatory unsafe removal by the content it drops', () => {
     const quiet = parseHtmlSlice(
       '<meta charset="utf-8"><p onclick="bad()">Kept <a href="javascript:void(0)">link</a></p>' +

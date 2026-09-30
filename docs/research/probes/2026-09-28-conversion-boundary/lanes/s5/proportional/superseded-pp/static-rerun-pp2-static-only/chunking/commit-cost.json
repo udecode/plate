@@ -1,0 +1,3342 @@
+[
+  {
+    "cell": "static-rich-10000",
+    "medians": {
+      "baseline": {
+        "publications": 39,
+        "previewCommits": 39,
+        "commitsShowingSkips": 0,
+        "reactPerCommitMs": 3.65,
+        "reactPerCommitP90Ms": 5.77,
+        "renderPerCommitMs": 18.28,
+        "renderPerCommitP90Ms": 28.87,
+        "reactPerPublicationMs": 3.8,
+        "renderPerPublicationMs": 19.34,
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 7.6,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 136.5,
+          "otherReact": 2.8
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3.39,
+          "otherReact": 0
+        },
+        "namedTotalMs": {
+          "Children": 21,
+          "EditorStatic": 14.7,
+          "BaseElementStatic": 27.8,
+          "BaseLeafStatic": 21.3,
+          "readBlockInputs": 0,
+          "visit": 53.3,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 70.9,
+          "commitRoot": 7.6
+        },
+        "namedPerCommitMs": {
+          "Children": 0,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0.64,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.25,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 1.71,
+          "commitRoot": 0
+        }
+      },
+      "candidate": {
+        "publications": 39,
+        "previewCommits": 39,
+        "commitsShowingSkips": 0,
+        "reactPerCommitMs": 4.93,
+        "reactPerCommitP90Ms": 6.99,
+        "renderPerCommitMs": 5.16,
+        "renderPerCommitP90Ms": 7.2,
+        "reactPerPublicationMs": 4.96,
+        "renderPerPublicationMs": 5.21,
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 10,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 159.2,
+          "renderRootSync": 23,
+          "otherReact": 0
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 4.05,
+          "renderRootSync": 0.43,
+          "otherReact": 0
+        },
+        "namedTotalMs": {
+          "Children": 38.1,
+          "EditorStatic": 15,
+          "BaseElementStatic": 35.1,
+          "BaseLeafStatic": 25.6,
+          "readBlockInputs": 0,
+          "visit": 13.2,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 1.3,
+          "getStaticDocumentView": 8.8,
+          "withDocumentViewRead": 100.6,
+          "commitRoot": 10
+        },
+        "namedPerCommitMs": {
+          "Children": 1.25,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.23,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 0,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2.77,
+          "commitRoot": 0
+        }
+      }
+    },
+    "streams": [
+      {
+        "arm": "baseline",
+        "role": "warmup",
+        "load1": 1.7,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 38,
+        "trace": "static-baseline-1790731399530.json",
+        "profile": "static-baseline-1790731399343.cpuprofile",
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 8.8,
+          "flushPassiveEffects": 1.3,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 128.3,
+          "otherReact": 2.1
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3.01,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 3.34,
+          "p90": 5.22,
+          "mean": 3.6
+        },
+        "renderPerCommitMs": {
+          "median": 17.63,
+          "p90": 27.42,
+          "mean": 18.86
+        },
+        "reactPerPublicationMs": 3.6,
+        "renderPerPublicationMs": 18.86,
+        "namedPerCommitMs": {
+          "Children": 0,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.25,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 1.94,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 20.8,
+          "EditorStatic": 11.4,
+          "BaseElementStatic": 24.9,
+          "BaseLeafStatic": 21.1,
+          "readBlockInputs": 0,
+          "visit": 53.6,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 1.3,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 70.5,
+          "commitRoot": 10.1
+        },
+        "previewTotals": {
+          "parse": 205.5,
+          "transaction": 595.2,
+          "react": 140.5,
+          "gc": 54.8,
+          "program": 339.5,
+          "other": 16.3
+        },
+        "final": {
+          "parse": 7.5,
+          "transaction": 30,
+          "react": 4.1,
+          "gc": 2,
+          "program": 10.4,
+          "other": 1.3,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-0",
+        "load1": 2.4,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 38,
+        "trace": "static-baseline-1790731407414.json",
+        "profile": "static-baseline-1790731407229.cpuprofile",
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 6,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 136.5,
+          "otherReact": 5.6
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3.48,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 3.65,
+          "p90": 5.77,
+          "mean": 3.8
+        },
+        "renderPerCommitMs": {
+          "median": 18.28,
+          "p90": 28.84,
+          "mean": 19.39
+        },
+        "reactPerPublicationMs": 3.8,
+        "renderPerPublicationMs": 19.39,
+        "namedPerCommitMs": {
+          "Children": 0,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0.84,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.26,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 1.26,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 18.3,
+          "EditorStatic": 7.4,
+          "BaseElementStatic": 30.3,
+          "BaseLeafStatic": 21.8,
+          "readBlockInputs": 0,
+          "visit": 58.8,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 1.3,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 65.4,
+          "commitRoot": 6
+        },
+        "previewTotals": {
+          "parse": 206.9,
+          "transaction": 608,
+          "react": 148.2,
+          "gc": 51.4,
+          "program": 330.9,
+          "other": 16.1
+        },
+        "final": {
+          "parse": 8,
+          "transaction": 30,
+          "react": 3.1,
+          "gc": 2.5,
+          "program": 8.4,
+          "other": 2.6,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-1",
+        "load1": 2.5,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 38,
+        "trace": "static-baseline-1790731418669.json",
+        "profile": "static-baseline-1790731418486.cpuprofile",
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 10.1,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 137.2,
+          "otherReact": 1.3
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3.39,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 3.66,
+          "p90": 5.78,
+          "mean": 3.81
+        },
+        "renderPerCommitMs": {
+          "median": 18.86,
+          "p90": 29.77,
+          "mean": 19.34
+        },
+        "reactPerPublicationMs": 3.81,
+        "renderPerPublicationMs": 19.34,
+        "namedPerCommitMs": {
+          "Children": 0,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.25,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 1.71,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 21,
+          "EditorStatic": 18.2,
+          "BaseElementStatic": 26.2,
+          "BaseLeafStatic": 18,
+          "readBlockInputs": 0,
+          "visit": 52.8,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 70.9,
+          "commitRoot": 10.1
+        },
+        "previewTotals": {
+          "parse": 201,
+          "transaction": 605.8,
+          "react": 148.5,
+          "gc": 51.7,
+          "program": 326.6,
+          "other": 21.2
+        },
+        "final": {
+          "parse": 8.2,
+          "transaction": 33.2,
+          "react": 3.7,
+          "gc": 2.5,
+          "program": 9.4,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-2",
+        "load1": 2.5,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 38,
+        "trace": "static-baseline-1790731423135.json",
+        "profile": "static-baseline-1790731422950.cpuprofile",
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 7.6,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 133.3,
+          "otherReact": 2.8
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3.19,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 3.19,
+          "p90": 5.48,
+          "mean": 3.68
+        },
+        "renderPerCommitMs": {
+          "median": 18.12,
+          "p90": 28.87,
+          "mean": 18.78
+        },
+        "reactPerPublicationMs": 3.68,
+        "renderPerPublicationMs": 18.78,
+        "namedPerCommitMs": {
+          "Children": 0,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0.64,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.25,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 22,
+          "EditorStatic": 14.7,
+          "BaseElementStatic": 27.8,
+          "BaseLeafStatic": 21.3,
+          "readBlockInputs": 0,
+          "visit": 53.3,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 73.9,
+          "commitRoot": 7.6
+        },
+        "previewTotals": {
+          "parse": 205.9,
+          "transaction": 588.6,
+          "react": 143.6,
+          "gc": 48.2,
+          "program": 336.9,
+          "other": 16.8
+        },
+        "final": {
+          "parse": 7,
+          "transaction": 31.2,
+          "react": 3.5,
+          "gc": 2.1,
+          "program": 9.1,
+          "other": 1.3,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "warmup",
+        "load1": 1.7,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731402935.json",
+        "profile": "static-candidate-1790731402786.cpuprofile",
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 6.4,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 151.9,
+          "renderRootSync": 20.6,
+          "otherReact": 1.3
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 3.9,
+          "renderRootSync": 0.38,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 4.55,
+          "p90": 6.16,
+          "mean": 4.62
+        },
+        "renderPerCommitMs": {
+          "median": 4.56,
+          "p90": 7.07,
+          "mean": 4.87
+        },
+        "reactPerPublicationMs": 4.62,
+        "renderPerPublicationMs": 4.87,
+        "namedPerCommitMs": {
+          "Children": 1.25,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 0,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2.51,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 39.6,
+          "EditorStatic": 13.8,
+          "BaseElementStatic": 47.1,
+          "BaseLeafStatic": 15.8,
+          "readBlockInputs": 0,
+          "visit": 10.5,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 9.8,
+          "withDocumentViewRead": 94,
+          "commitRoot": 6.4
+        },
+        "previewTotals": {
+          "parse": 43.8,
+          "transaction": 9.8,
+          "react": 180.1,
+          "gc": 10.6,
+          "program": 366.5,
+          "other": 11
+        },
+        "final": {
+          "parse": 0,
+          "transaction": 0,
+          "react": 4.4,
+          "gc": 0,
+          "program": 11.6,
+          "other": 1.3,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-0",
+        "load1": 2.3,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731410814.json",
+        "profile": "static-candidate-1790731410665.cpuprofile",
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 10,
+          "flushPassiveEffects": 1.3,
+          "renderRootConcurrent": 159.2,
+          "renderRootSync": 23,
+          "otherReact": 0
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 4.05,
+          "renderRootSync": 0.43,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 4.93,
+          "p90": 7.35,
+          "mean": 4.96
+        },
+        "renderPerCommitMs": {
+          "median": 5.16,
+          "p90": 7.35,
+          "mean": 5.21
+        },
+        "reactPerPublicationMs": 4.96,
+        "renderPerPublicationMs": 5.21,
+        "namedPerCommitMs": {
+          "Children": 0.56,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 0,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2.77,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 32,
+          "EditorStatic": 18.6,
+          "BaseElementStatic": 46.6,
+          "BaseLeafStatic": 25.6,
+          "readBlockInputs": 0,
+          "visit": 6.4,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 1.3,
+          "getStaticDocumentView": 9.5,
+          "withDocumentViewRead": 106,
+          "commitRoot": 10
+        },
+        "previewTotals": {
+          "parse": 44.4,
+          "transaction": 9.5,
+          "react": 193.5,
+          "gc": 11.1,
+          "program": 351.7,
+          "other": 13.8
+        },
+        "final": {
+          "parse": 1.3,
+          "transaction": 0,
+          "react": 7,
+          "gc": 1.3,
+          "program": 6.1,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-1",
+        "load1": 2.3,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731414216.json",
+        "profile": "static-candidate-1790731414066.cpuprofile",
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 8,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 147.9,
+          "renderRootSync": 30.3,
+          "otherReact": 0
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 3.42,
+          "renderRootSync": 0.51,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 4.75,
+          "p90": 6.56,
+          "mean": 4.77
+        },
+        "renderPerCommitMs": {
+          "median": 4.99,
+          "p90": 6.66,
+          "mean": 5
+        },
+        "reactPerPublicationMs": 4.77,
+        "renderPerPublicationMs": 5,
+        "namedPerCommitMs": {
+          "Children": 1.25,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.23,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 0,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2.5,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 39.9,
+          "EditorStatic": 14.2,
+          "BaseElementStatic": 35.1,
+          "BaseLeafStatic": 21.1,
+          "readBlockInputs": 0,
+          "visit": 13.2,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 8.8,
+          "withDocumentViewRead": 96.6,
+          "commitRoot": 8
+        },
+        "previewTotals": {
+          "parse": 40.5,
+          "transaction": 8.8,
+          "react": 186.2,
+          "gc": 10.1,
+          "program": 358.1,
+          "other": 19.5
+        },
+        "final": {
+          "parse": 1.1,
+          "transaction": 0,
+          "react": 7.1,
+          "gc": 1.3,
+          "program": 4.9,
+          "other": 1.3,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-2",
+        "load1": 2.4,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731426535.json",
+        "profile": "static-candidate-1790731426386.cpuprofile",
+        "arrivals": 156,
+        "reactPhasesMs": {
+          "commitRoot": 14.9,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 164.2,
+          "renderRootSync": 19.8,
+          "otherReact": 5.7
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 4.16,
+          "renderRootSync": 0.4,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 5.23,
+          "p90": 6.99,
+          "mean": 5.24
+        },
+        "renderPerCommitMs": {
+          "median": 5.49,
+          "p90": 7.2,
+          "mean": 5.44
+        },
+        "reactPerPublicationMs": 5.24,
+        "renderPerPublicationMs": 5.44,
+        "namedPerCommitMs": {
+          "Children": 1.25,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0.91,
+          "BaseLeafStatic": 0.74,
+          "readBlockInputs": 0,
+          "visit": 0,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2.92,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 38.1,
+          "EditorStatic": 15,
+          "BaseElementStatic": 31.5,
+          "BaseLeafStatic": 32.7,
+          "readBlockInputs": 0,
+          "visit": 17.2,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 1.3,
+          "getStaticDocumentView": 7.6,
+          "withDocumentViewRead": 100.6,
+          "commitRoot": 14.9
+        },
+        "previewTotals": {
+          "parse": 45.2,
+          "transaction": 7.6,
+          "react": 204.5,
+          "gc": 11.5,
+          "program": 353.3,
+          "other": 9.4
+        },
+        "final": {
+          "parse": 1.1,
+          "transaction": 0,
+          "react": 8.3,
+          "gc": 1.3,
+          "program": 4.1,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      }
+    ]
+  },
+  {
+    "cell": "static-cjk-10000",
+    "medians": {
+      "baseline": {
+        "publications": 39,
+        "previewCommits": 39,
+        "commitsShowingSkips": 0,
+        "reactPerCommitMs": 6.32,
+        "reactPerCommitP90Ms": 8.64,
+        "renderPerCommitMs": 34.6,
+        "renderPerCommitP90Ms": 59.74,
+        "reactPerPublicationMs": 6.32,
+        "renderPerPublicationMs": 35.83,
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 17,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 231.9,
+          "otherReact": 0.5
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 5.74,
+          "otherReact": 0
+        },
+        "namedTotalMs": {
+          "Children": 43.7,
+          "EditorStatic": 12.7,
+          "BaseElementStatic": 75.2,
+          "BaseLeafStatic": 21.2,
+          "readBlockInputs": 0,
+          "visit": 118.3,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 1.2,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 133.1,
+          "commitRoot": 17.1
+        },
+        "namedPerCommitMs": {
+          "Children": 1.25,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.79,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 2.84,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 3.26,
+          "commitRoot": 0
+        }
+      },
+      "candidate": {
+        "publications": 39,
+        "previewCommits": 39,
+        "commitsShowingSkips": 0,
+        "reactPerCommitMs": 7.08,
+        "reactPerCommitP90Ms": 10.97,
+        "renderPerCommitMs": 7.41,
+        "renderPerCommitP90Ms": 11.97,
+        "reactPerPublicationMs": 7.53,
+        "renderPerPublicationMs": 7.73,
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 22.3,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 231.9,
+          "renderRootSync": 43.5,
+          "otherReact": 3.3
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 5.32,
+          "renderRootSync": 1.2,
+          "otherReact": 0
+        },
+        "namedTotalMs": {
+          "Children": 72.3,
+          "EditorStatic": 17.4,
+          "BaseElementStatic": 71.7,
+          "BaseLeafStatic": 28.1,
+          "readBlockInputs": 0,
+          "visit": 36,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 7.5,
+          "withDocumentViewRead": 182.4,
+          "commitRoot": 22.3
+        },
+        "namedPerCommitMs": {
+          "Children": 1.52,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.27,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.25,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 4.3,
+          "commitRoot": 0
+        }
+      }
+    },
+    "streams": [
+      {
+        "arm": "baseline",
+        "role": "warmup",
+        "load1": 2.4,
+        "receiptOutputBatches": 41,
+        "receiptPreviews": 40,
+        "receiptPreviewTasks": 39,
+        "receiptPreviewTasksWithOutput": 39,
+        "trace": "static-baseline-1790731431796.json",
+        "profile": "static-baseline-1790731431557.cpuprofile",
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 18.6,
+          "flushPassiveEffects": 0.1,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 228.3,
+          "otherReact": 3.7
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 5.6,
+          "otherReact": 0
+        },
+        "commits": 41,
+        "previewCommits": 40,
+        "publications": 40,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 6.08,
+          "p90": 8.63,
+          "mean": 6.27
+        },
+        "renderPerCommitMs": {
+          "median": 32.33,
+          "p90": 59.22,
+          "mean": 36.23
+        },
+        "reactPerPublicationMs": 6.27,
+        "renderPerPublicationMs": 36.23,
+        "namedPerCommitMs": {
+          "Children": 0.06,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.43,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 2.51,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2.7,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 33.8,
+          "EditorStatic": 15.2,
+          "BaseElementStatic": 71.5,
+          "BaseLeafStatic": 13.6,
+          "readBlockInputs": 0,
+          "visit": 119.1,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 130.9,
+          "commitRoot": 18.7
+        },
+        "previewTotals": {
+          "parse": 331.8,
+          "transaction": 1198.5,
+          "react": 250.7,
+          "gc": 118.4,
+          "program": 466.1,
+          "other": 23.8
+        },
+        "final": {
+          "parse": 13.8,
+          "transaction": 49.2,
+          "react": 1.1,
+          "gc": 3.8,
+          "program": 6.6,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-0",
+        "load1": 2.3,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 38,
+        "trace": "static-baseline-1790731440667.json",
+        "profile": "static-baseline-1790731440433.cpuprofile",
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 18,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 236,
+          "otherReact": 2.3
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 5.74,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 6.32,
+          "p90": 8.99,
+          "mean": 6.57
+        },
+        "renderPerCommitMs": {
+          "median": 34.6,
+          "p90": 59.78,
+          "mean": 35.83
+        },
+        "reactPerPublicationMs": 6.57,
+        "renderPerPublicationMs": 35.83,
+        "namedPerCommitMs": {
+          "Children": 1.25,
+          "EditorStatic": 0,
+          "BaseElementStatic": 2.03,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 2.65,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 3.01,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 42.8,
+          "EditorStatic": 12.7,
+          "BaseElementStatic": 75.9,
+          "BaseLeafStatic": 21.2,
+          "readBlockInputs": 0,
+          "visit": 118,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 1.3,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 133.9,
+          "commitRoot": 18
+        },
+        "previewTotals": {
+          "parse": 310.1,
+          "transaction": 1141.1,
+          "react": 256.3,
+          "gc": 122.7,
+          "program": 440.5,
+          "other": 26.4
+        },
+        "final": {
+          "parse": 13.8,
+          "transaction": 50.2,
+          "react": 7.2,
+          "gc": 3.8,
+          "program": 12.2,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-1",
+        "load1": 2.2,
+        "receiptOutputBatches": 41,
+        "receiptPreviews": 40,
+        "receiptPreviewTasks": 39,
+        "receiptPreviewTasksWithOutput": 39,
+        "trace": "static-baseline-1790731453083.json",
+        "profile": "static-baseline-1790731452846.cpuprofile",
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 17,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 229.1,
+          "otherReact": 0
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 5.14,
+          "otherReact": 0
+        },
+        "commits": 41,
+        "previewCommits": 40,
+        "publications": 40,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 5.8,
+          "p90": 8.64,
+          "mean": 6.16
+        },
+        "renderPerCommitMs": {
+          "median": 34.83,
+          "p90": 58.13,
+          "mean": 36.18
+        },
+        "reactPerPublicationMs": 6.16,
+        "renderPerPublicationMs": 36.18,
+        "namedPerCommitMs": {
+          "Children": 1.25,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.79,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 3.41,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 3.45,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 43.7,
+          "EditorStatic": 17.1,
+          "BaseElementStatic": 75.2,
+          "BaseLeafStatic": 13.4,
+          "readBlockInputs": 0,
+          "visit": 138.7,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 1.2,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 133.1,
+          "commitRoot": 17.1
+        },
+        "previewTotals": {
+          "parse": 331,
+          "transaction": 1200.9,
+          "react": 246.2,
+          "gc": 136,
+          "program": 463.7,
+          "other": 27.9
+        },
+        "final": {
+          "parse": 15,
+          "transaction": 52.8,
+          "react": 2.4,
+          "gc": 2.5,
+          "program": 3.6,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-2",
+        "load1": 2.2,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 38,
+        "trace": "static-baseline-1790731458355.json",
+        "profile": "static-baseline-1790731458129.cpuprofile",
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 14,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 231.9,
+          "otherReact": 0.5
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 5.82,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 6.34,
+          "p90": 8.52,
+          "mean": 6.32
+        },
+        "renderPerCommitMs": {
+          "median": 33.88,
+          "p90": 59.74,
+          "mean": 35.22
+        },
+        "reactPerPublicationMs": 6.32,
+        "renderPerPublicationMs": 35.22,
+        "namedPerCommitMs": {
+          "Children": 1.25,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.25,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 2.84,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 3.26,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 46.8,
+          "EditorStatic": 7.9,
+          "BaseElementStatic": 43,
+          "BaseLeafStatic": 32.6,
+          "readBlockInputs": 0,
+          "visit": 118.3,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0.2,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 118.7,
+          "commitRoot": 14
+        },
+        "previewTotals": {
+          "parse": 316.7,
+          "transaction": 1127,
+          "react": 246.5,
+          "gc": 123.6,
+          "program": 462.5,
+          "other": 22.8
+        },
+        "final": {
+          "parse": 15,
+          "transaction": 47.3,
+          "react": 5.8,
+          "gc": 3.7,
+          "program": 14,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "warmup",
+        "load1": 2.4,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731435359.json",
+        "profile": "static-candidate-1790731435196.cpuprofile",
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 26.9,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 236.7,
+          "renderRootSync": 41.4,
+          "otherReact": 2
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 5.57,
+          "renderRootSync": 0.7,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 8.07,
+          "p90": 11.1,
+          "mean": 7.87
+        },
+        "renderPerCommitMs": {
+          "median": 8.07,
+          "p90": 11.1,
+          "mean": 7.96
+        },
+        "reactPerPublicationMs": 7.87,
+        "renderPerPublicationMs": 7.96,
+        "namedPerCommitMs": {
+          "Children": 1.26,
+          "EditorStatic": 0.22,
+          "BaseElementStatic": 1.25,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.25,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 3.77,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 56.4,
+          "EditorStatic": 22.4,
+          "BaseElementStatic": 61.1,
+          "BaseLeafStatic": 24.7,
+          "readBlockInputs": 0,
+          "visit": 33,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 3.5,
+          "withDocumentViewRead": 162.5,
+          "commitRoot": 26.9
+        },
+        "previewTotals": {
+          "parse": 52.1,
+          "transaction": 3.5,
+          "react": 306.9,
+          "gc": 13.9,
+          "program": 427.4,
+          "other": 16.1
+        },
+        "final": {
+          "parse": 1.3,
+          "transaction": 0,
+          "react": 10.1,
+          "gc": 0,
+          "program": 8.9,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-0",
+        "load1": 2.1,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731444231.json",
+        "profile": "static-candidate-1790731444070.cpuprofile",
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 22.9,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 216.8,
+          "renderRootSync": 43.5,
+          "otherReact": 3.3
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 5.17,
+          "renderRootSync": 1.25,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 7.08,
+          "p90": 10.97,
+          "mean": 7.35
+        },
+        "renderPerCommitMs": {
+          "median": 7.41,
+          "p90": 11.97,
+          "mean": 7.6
+        },
+        "reactPerPublicationMs": 7.35,
+        "renderPerPublicationMs": 7.6,
+        "namedPerCommitMs": {
+          "Children": 1.52,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.27,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.25,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 4.64,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 72.3,
+          "EditorStatic": 17.7,
+          "BaseElementStatic": 71.7,
+          "BaseLeafStatic": 28.1,
+          "readBlockInputs": 0,
+          "visit": 36,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0.2,
+          "getStaticDocumentView": 9.8,
+          "withDocumentViewRead": 182.4,
+          "commitRoot": 22.9
+        },
+        "previewTotals": {
+          "parse": 47,
+          "transaction": 9.8,
+          "react": 286.6,
+          "gc": 11.5,
+          "program": 443.8,
+          "other": 11.4
+        },
+        "final": {
+          "parse": 1.3,
+          "transaction": 0,
+          "react": 10.1,
+          "gc": 0,
+          "program": 10.2,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-1",
+        "load1": 2.1,
+        "receiptOutputBatches": 40,
+        "receiptPreviews": 39,
+        "receiptPreviewTasks": 38,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731447791.json",
+        "profile": "static-candidate-1790731447622.cpuprofile",
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 18.4,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 231.9,
+          "renderRootSync": 38.6,
+          "otherReact": 5
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 5.32,
+          "renderRootSync": 0.63,
+          "otherReact": 0
+        },
+        "commits": 40,
+        "previewCommits": 39,
+        "publications": 39,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 6.9,
+          "p90": 11.2,
+          "mean": 7.53
+        },
+        "renderPerCommitMs": {
+          "median": 7.16,
+          "p90": 12.05,
+          "mean": 7.73
+        },
+        "reactPerPublicationMs": 7.53,
+        "renderPerPublicationMs": 7.73,
+        "namedPerCommitMs": {
+          "Children": 1.26,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0.41,
+          "readBlockInputs": 0,
+          "visit": 1.25,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 3.85,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 60.2,
+          "EditorStatic": 8.4,
+          "BaseElementStatic": 70.2,
+          "BaseLeafStatic": 33.3,
+          "readBlockInputs": 0,
+          "visit": 34.3,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 7.5,
+          "withDocumentViewRead": 170.1,
+          "commitRoot": 18.4
+        },
+        "previewTotals": {
+          "parse": 49.9,
+          "transaction": 7.5,
+          "react": 293.9,
+          "gc": 13.8,
+          "program": 439.8,
+          "other": 15.7
+        },
+        "final": {
+          "parse": 1.2,
+          "transaction": 0,
+          "react": 9.6,
+          "gc": 0,
+          "program": 8.5,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-2",
+        "load1": 2.9,
+        "receiptOutputBatches": 41,
+        "receiptPreviews": 40,
+        "receiptPreviewTasks": 39,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731461905.json",
+        "profile": "static-candidate-1790731461741.cpuprofile",
+        "arrivals": 155,
+        "reactPhasesMs": {
+          "commitRoot": 22.3,
+          "flushPassiveEffects": 2.5,
+          "renderRootConcurrent": 237.3,
+          "renderRootSync": 49.2,
+          "otherReact": 0
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 0,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 6,
+          "renderRootSync": 1.2,
+          "otherReact": 0
+        },
+        "commits": 41,
+        "previewCommits": 40,
+        "publications": 40,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 7.74,
+          "p90": 10.53,
+          "mean": 7.78
+        },
+        "renderPerCommitMs": {
+          "median": 8.03,
+          "p90": 10.53,
+          "mean": 7.91
+        },
+        "reactPerPublicationMs": 7.78,
+        "renderPerPublicationMs": 7.91,
+        "namedPerCommitMs": {
+          "Children": 1.52,
+          "EditorStatic": 0,
+          "BaseElementStatic": 2.45,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.25,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 4.3,
+          "commitRoot": 0
+        },
+        "namedTotalMs": {
+          "Children": 75.9,
+          "EditorStatic": 17.4,
+          "BaseElementStatic": 92.4,
+          "BaseLeafStatic": 17.4,
+          "readBlockInputs": 0,
+          "visit": 46.4,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 5.2,
+          "withDocumentViewRead": 185.2,
+          "commitRoot": 22.3
+        },
+        "previewTotals": {
+          "parse": 48.3,
+          "transaction": 5.2,
+          "react": 311.2,
+          "gc": 13.2,
+          "program": 447.9,
+          "other": 14.4
+        },
+        "final": {
+          "parse": 0,
+          "transaction": 0,
+          "react": 6.1,
+          "gc": 0.3,
+          "program": 6.6,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      }
+    ]
+  },
+  {
+    "cell": "static-rich-50000",
+    "medians": {
+      "baseline": {
+        "publications": 196,
+        "previewCommits": 196,
+        "commitsShowingSkips": 0,
+        "reactPerCommitMs": 10.78,
+        "reactPerCommitP90Ms": 14.79,
+        "renderPerCommitMs": 74.37,
+        "renderPerCommitP90Ms": 129.46,
+        "reactPerPublicationMs": 11,
+        "renderPerPublicationMs": 76.11,
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 251.3,
+          "flushPassiveEffects": 3.8,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 1877.4,
+          "otherReact": 10.4
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.26,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 9.86,
+          "otherReact": 0
+        },
+        "namedTotalMs": {
+          "Children": 641.6,
+          "EditorStatic": 72.4,
+          "BaseElementStatic": 156.9,
+          "BaseLeafStatic": 94.8,
+          "readBlockInputs": 0,
+          "visit": 1335.8,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 13.8,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 619.2,
+          "commitRoot": 255
+        },
+        "namedPerCommitMs": {
+          "Children": 3.76,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.29,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2.52,
+          "commitRoot": 1.26
+        }
+      },
+      "candidate": {
+        "publications": 196,
+        "previewCommits": 196,
+        "commitsShowingSkips": 0,
+        "reactPerCommitMs": 14.16,
+        "reactPerCommitP90Ms": 19.16,
+        "renderPerCommitMs": 14.62,
+        "renderPerCommitP90Ms": 19.33,
+        "reactPerPublicationMs": 14.22,
+        "renderPerPublicationMs": 14.48,
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 338.2,
+          "flushPassiveEffects": 5,
+          "renderRootConcurrent": 1263.6,
+          "renderRootSync": 1138.6,
+          "otherReact": 9.1
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.45,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 6.44,
+          "renderRootSync": 6.15,
+          "otherReact": 0
+        },
+        "namedTotalMs": {
+          "Children": 1018.7,
+          "EditorStatic": 69.9,
+          "BaseElementStatic": 181.3,
+          "BaseLeafStatic": 118.7,
+          "readBlockInputs": 0,
+          "visit": 372.4,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 8.4,
+          "getStaticDocumentView": 49.9,
+          "withDocumentViewRead": 963.6,
+          "commitRoot": 338.2
+        },
+        "namedPerCommitMs": {
+          "Children": 5.23,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.15,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.3,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 4.91,
+          "commitRoot": 1.45
+        }
+      }
+    },
+    "streams": [
+      {
+        "arm": "baseline",
+        "role": "warmup",
+        "load1": 2.6,
+        "receiptOutputBatches": 198,
+        "receiptPreviews": 197,
+        "receiptPreviewTasks": 196,
+        "receiptPreviewTasksWithOutput": 196,
+        "trace": "static-baseline-1790731494440.json",
+        "profile": "static-baseline-1790731493258.cpuprofile",
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 247.3,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 1880.1,
+          "otherReact": 14.7
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.26,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 9.9,
+          "otherReact": 0
+        },
+        "commits": 198,
+        "previewCommits": 197,
+        "publications": 197,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 10.79,
+          "p90": 14.96,
+          "mean": 10.87
+        },
+        "renderPerCommitMs": {
+          "median": 73.83,
+          "p90": 126.65,
+          "mean": 75.08
+        },
+        "reactPerPublicationMs": 10.87,
+        "renderPerPublicationMs": 75.08,
+        "namedPerCommitMs": {
+          "Children": 3.78,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.07,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.83,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 3.2,
+          "commitRoot": 1.26
+        },
+        "namedTotalMs": {
+          "Children": 683,
+          "EditorStatic": 77.8,
+          "BaseElementStatic": 158.8,
+          "BaseLeafStatic": 98,
+          "readBlockInputs": 0,
+          "visit": 1333.4,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 10.8,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 651.7,
+          "commitRoot": 247.3
+        },
+        "previewTotals": {
+          "parse": 4086.2,
+          "transaction": 12648.1,
+          "react": 2142.1,
+          "gc": 1444.1,
+          "program": 3009.9,
+          "other": 211.1
+        },
+        "final": {
+          "parse": 38.7,
+          "transaction": 120.4,
+          "react": 6.4,
+          "gc": 7.6,
+          "program": 12.2,
+          "other": 1.3,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-0",
+        "load1": 2.1,
+        "receiptOutputBatches": 197,
+        "receiptPreviews": 196,
+        "receiptPreviewTasks": 195,
+        "receiptPreviewTasksWithOutput": 195,
+        "trace": "static-baseline-1790731541560.json",
+        "profile": "static-baseline-1790731540352.cpuprofile",
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 248.9,
+          "flushPassiveEffects": 3.8,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 1901.2,
+          "otherReact": 6.1
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.25,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 10.02,
+          "otherReact": 0
+        },
+        "commits": 197,
+        "previewCommits": 196,
+        "publications": 196,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 10.95,
+          "p90": 14.74,
+          "mean": 11.02
+        },
+        "renderPerCommitMs": {
+          "median": 74.57,
+          "p90": 127.54,
+          "mean": 76.11
+        },
+        "reactPerPublicationMs": 11.02,
+        "renderPerPublicationMs": 76.11,
+        "namedPerCommitMs": {
+          "Children": 3.76,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.44,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2.52,
+          "commitRoot": 1.26
+        },
+        "namedTotalMs": {
+          "Children": 639.2,
+          "EditorStatic": 72.4,
+          "BaseElementStatic": 145.9,
+          "BaseLeafStatic": 94.3,
+          "readBlockInputs": 0,
+          "visit": 1335.8,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 13.8,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 594.3,
+          "commitRoot": 252.7
+        },
+        "previewTotals": {
+          "parse": 4063.4,
+          "transaction": 12757.5,
+          "react": 2160,
+          "gc": 1374,
+          "program": 2948.7,
+          "other": 210.7
+        },
+        "final": {
+          "parse": 39,
+          "transaction": 123,
+          "react": 12.8,
+          "gc": 12.1,
+          "program": 9.8,
+          "other": 4.3,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-1",
+        "load1": 2.7,
+        "receiptOutputBatches": 197,
+        "receiptPreviews": 196,
+        "receiptPreviewTasks": 195,
+        "receiptPreviewTasksWithOutput": 195,
+        "trace": "static-baseline-1790731602794.json",
+        "profile": "static-baseline-1790731601613.cpuprofile",
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 269.6,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 1876.5,
+          "otherReact": 10.4
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.27,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 9.86,
+          "otherReact": 0
+        },
+        "commits": 197,
+        "previewCommits": 196,
+        "publications": 196,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 10.64,
+          "p90": 15.16,
+          "mean": 11
+        },
+        "renderPerCommitMs": {
+          "median": 74.18,
+          "p90": 129.46,
+          "mean": 76.06
+        },
+        "reactPerPublicationMs": 11,
+        "renderPerPublicationMs": 76.06,
+        "namedPerCommitMs": {
+          "Children": 3.56,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.27,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 2.52,
+          "commitRoot": 1.27
+        },
+        "namedTotalMs": {
+          "Children": 641.6,
+          "EditorStatic": 73.3,
+          "BaseElementStatic": 156.9,
+          "BaseLeafStatic": 97.7,
+          "readBlockInputs": 0,
+          "visit": 1315.1,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 14.8,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 619.2,
+          "commitRoot": 269.6
+        },
+        "previewTotals": {
+          "parse": 4063.4,
+          "transaction": 12751.2,
+          "react": 2156.5,
+          "gc": 1362.4,
+          "program": 2900.9,
+          "other": 209.5
+        },
+        "final": {
+          "parse": 37.7,
+          "transaction": 121.4,
+          "react": 12,
+          "gc": 10.1,
+          "program": 15.8,
+          "other": 3.6,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-2",
+        "load1": 2.3,
+        "receiptOutputBatches": 197,
+        "receiptPreviews": 196,
+        "receiptPreviewTasks": 195,
+        "receiptPreviewTasksWithOutput": 195,
+        "trace": "static-baseline-1790731635705.json",
+        "profile": "static-baseline-1790731634479.cpuprofile",
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 251.3,
+          "flushPassiveEffects": 3.8,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 1877.4,
+          "otherReact": 22.1
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.26,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 9.62,
+          "otherReact": 0
+        },
+        "commits": 197,
+        "previewCommits": 196,
+        "publications": 196,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 10.78,
+          "p90": 14.79,
+          "mean": 10.99
+        },
+        "renderPerCommitMs": {
+          "median": 74.37,
+          "p90": 130.69,
+          "mean": 77.01
+        },
+        "reactPerPublicationMs": 10.99,
+        "renderPerPublicationMs": 77.01,
+        "namedPerCommitMs": {
+          "Children": 3.77,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.25,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.29,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 3.33,
+          "commitRoot": 1.26
+        },
+        "namedTotalMs": {
+          "Children": 649.4,
+          "EditorStatic": 71.1,
+          "BaseElementStatic": 188.5,
+          "BaseLeafStatic": 94.8,
+          "readBlockInputs": 0,
+          "visit": 1338.9,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 12.9,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 679.7,
+          "commitRoot": 255
+        },
+        "previewTotals": {
+          "parse": 4097.9,
+          "transaction": 12938.6,
+          "react": 2154.5,
+          "gc": 1399.5,
+          "program": 2905.8,
+          "other": 219.1
+        },
+        "final": {
+          "parse": 41.5,
+          "transaction": 133.9,
+          "react": 16.6,
+          "gc": 12.6,
+          "program": 17.1,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "warmup",
+        "load1": 2.5,
+        "receiptOutputBatches": 197,
+        "receiptPreviews": 196,
+        "receiptPreviewTasks": 195,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731508705.json",
+        "profile": "static-candidate-1790731508062.cpuprofile",
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 362.7,
+          "flushPassiveEffects": 9.1,
+          "renderRootConcurrent": 1282.2,
+          "renderRootSync": 1146.6,
+          "otherReact": 17.9
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.4,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 6.66,
+          "renderRootSync": 6.08,
+          "otherReact": 0
+        },
+        "commits": 197,
+        "previewCommits": 196,
+        "publications": 196,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 14.29,
+          "p90": 19.88,
+          "mean": 14.38
+        },
+        "renderPerCommitMs": {
+          "median": 14.52,
+          "p90": 19.96,
+          "mean": 14.63
+        },
+        "reactPerPublicationMs": 14.38,
+        "renderPerPublicationMs": 14.63,
+        "namedPerCommitMs": {
+          "Children": 5.53,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.15,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.3,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 4.9,
+          "commitRoot": 1.4
+        },
+        "namedTotalMs": {
+          "Children": 1036.3,
+          "EditorStatic": 61.6,
+          "BaseElementStatic": 175.9,
+          "BaseLeafStatic": 118.6,
+          "readBlockInputs": 0,
+          "visit": 366.4,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 11.5,
+          "getStaticDocumentView": 48,
+          "withDocumentViewRead": 980.5,
+          "commitRoot": 362.7
+        },
+        "previewTotals": {
+          "parse": 141.8,
+          "transaction": 48,
+          "react": 2818.6,
+          "gc": 107.5,
+          "program": 2156.9,
+          "other": 103.1
+        },
+        "final": {
+          "parse": 0.7,
+          "transaction": 0,
+          "react": 9.7,
+          "gc": 0,
+          "program": 0.3,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-0",
+        "load1": 2.3,
+        "receiptOutputBatches": 197,
+        "receiptPreviews": 196,
+        "receiptPreviewTasks": 195,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731555845.json",
+        "profile": "static-candidate-1790731555204.cpuprofile",
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 338.2,
+          "flushPassiveEffects": 5,
+          "renderRootConcurrent": 1306.4,
+          "renderRootSync": 1132.3,
+          "otherReact": 8.9
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.29,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 6.66,
+          "renderRootSync": 6.14,
+          "otherReact": 0
+        },
+        "commits": 197,
+        "previewCommits": 196,
+        "publications": 196,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 14.3,
+          "p90": 19.16,
+          "mean": 14.24
+        },
+        "renderPerCommitMs": {
+          "median": 14.62,
+          "p90": 19.33,
+          "mean": 14.5
+        },
+        "reactPerPublicationMs": 14.24,
+        "renderPerPublicationMs": 14.5,
+        "namedPerCommitMs": {
+          "Children": 5.23,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.23,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.29,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 4.99,
+          "commitRoot": 1.29
+        },
+        "namedTotalMs": {
+          "Children": 1018.7,
+          "EditorStatic": 69.9,
+          "BaseElementStatic": 209,
+          "BaseLeafStatic": 140.1,
+          "readBlockInputs": 0,
+          "visit": 370.7,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 16.7,
+          "getStaticDocumentView": 50.7,
+          "withDocumentViewRead": 1004,
+          "commitRoot": 338.2
+        },
+        "previewTotals": {
+          "parse": 132,
+          "transaction": 50.7,
+          "react": 2790.7,
+          "gc": 93.9,
+          "program": 2118.3,
+          "other": 133.7
+        },
+        "final": {
+          "parse": 0.8,
+          "transaction": 0,
+          "react": 12.6,
+          "gc": 0,
+          "program": 4.7,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-1",
+        "load1": 2.1,
+        "receiptOutputBatches": 197,
+        "receiptPreviews": 196,
+        "receiptPreviewTasks": 195,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731570035.json",
+        "profile": "static-candidate-1790731569396.cpuprofile",
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 337.7,
+          "flushPassiveEffects": 3.2,
+          "renderRootConcurrent": 1263.6,
+          "renderRootSync": 1168,
+          "otherReact": 9.1
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.45,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 6.44,
+          "renderRootSync": 6.31,
+          "otherReact": 0
+        },
+        "commits": 197,
+        "previewCommits": 196,
+        "publications": 196,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 14.16,
+          "p90": 18.76,
+          "mean": 14.19
+        },
+        "renderPerCommitMs": {
+          "median": 14.69,
+          "p90": 19.15,
+          "mean": 14.43
+        },
+        "reactPerPublicationMs": 14.19,
+        "renderPerPublicationMs": 14.43,
+        "namedPerCommitMs": {
+          "Children": 4.75,
+          "EditorStatic": 0,
+          "BaseElementStatic": 0.79,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.51,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 4.91,
+          "commitRoot": 1.45
+        },
+        "namedTotalMs": {
+          "Children": 970.2,
+          "EditorStatic": 84.9,
+          "BaseElementStatic": 163.8,
+          "BaseLeafStatic": 114.1,
+          "readBlockInputs": 0,
+          "visit": 372.4,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 8.4,
+          "getStaticDocumentView": 47.4,
+          "withDocumentViewRead": 938.7,
+          "commitRoot": 337.7
+        },
+        "previewTotals": {
+          "parse": 142.5,
+          "transaction": 47.4,
+          "react": 2781.6,
+          "gc": 104.9,
+          "program": 2236.2,
+          "other": 125.8
+        },
+        "final": {
+          "parse": 0.8,
+          "transaction": 0,
+          "react": 6.6,
+          "gc": 0,
+          "program": 1.2,
+          "other": 2.5,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-2",
+        "load1": 2.1,
+        "receiptOutputBatches": 197,
+        "receiptPreviews": 196,
+        "receiptPreviewTasks": 195,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731649977.json",
+        "profile": "static-candidate-1790731649331.cpuprofile",
+        "arrivals": 781,
+        "reactPhasesMs": {
+          "commitRoot": 375.9,
+          "flushPassiveEffects": 6.9,
+          "renderRootConcurrent": 1255.6,
+          "renderRootSync": 1138.6,
+          "otherReact": 10.3
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.5,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 6.41,
+          "renderRootSync": 6.15,
+          "otherReact": 0
+        },
+        "commits": 197,
+        "previewCommits": 196,
+        "publications": 196,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 13.87,
+          "p90": 19.53,
+          "mean": 14.22
+        },
+        "renderPerCommitMs": {
+          "median": 14.42,
+          "p90": 19.7,
+          "mean": 14.48
+        },
+        "reactPerPublicationMs": 14.22,
+        "renderPerPublicationMs": 14.48,
+        "namedPerCommitMs": {
+          "Children": 5.74,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.15,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 1.3,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 4.7,
+          "commitRoot": 1.5
+        },
+        "namedTotalMs": {
+          "Children": 1036.8,
+          "EditorStatic": 69.5,
+          "BaseElementStatic": 181.3,
+          "BaseLeafStatic": 118.7,
+          "readBlockInputs": 0,
+          "visit": 377,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 7.9,
+          "getStaticDocumentView": 49.9,
+          "withDocumentViewRead": 963.6,
+          "commitRoot": 375.9
+        },
+        "previewTotals": {
+          "parse": 134.2,
+          "transaction": 49.9,
+          "react": 2787.3,
+          "gc": 117,
+          "program": 2172.5,
+          "other": 108.9
+        },
+        "final": {
+          "parse": 0.9,
+          "transaction": 0,
+          "react": 7.5,
+          "gc": 0,
+          "program": 6,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      }
+    ]
+  },
+  {
+    "cell": "static-cjk-50000",
+    "medians": {
+      "baseline": {
+        "publications": 196,
+        "previewCommits": 196,
+        "commitsShowingSkips": 0,
+        "reactPerCommitMs": 17.32,
+        "reactPerCommitP90Ms": 26.1,
+        "renderPerCommitMs": 147.53,
+        "renderPerCommitP90Ms": 254.18,
+        "reactPerPublicationMs": 17.78,
+        "renderPerPublicationMs": 149.57,
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 208.3,
+          "flushPassiveEffects": 0.1,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3256.9,
+          "otherReact": 16.4
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.25,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 16,
+          "otherReact": 0
+        },
+        "namedTotalMs": {
+          "Children": 1462.4,
+          "EditorStatic": 78.5,
+          "BaseElementStatic": 336.1,
+          "BaseLeafStatic": 117.7,
+          "readBlockInputs": 0,
+          "visit": 3334.5,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 21.7,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 1305.6,
+          "commitRoot": 211.3
+        },
+        "namedPerCommitMs": {
+          "Children": 6.62,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 16.66,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 6.29,
+          "commitRoot": 1.25
+        }
+      },
+      "candidate": {
+        "publications": 197,
+        "previewCommits": 197,
+        "commitsShowingSkips": 0,
+        "reactPerCommitMs": 21.17,
+        "reactPerCommitP90Ms": 32.2,
+        "renderPerCommitMs": 21.22,
+        "renderPerCommitP90Ms": 32.2,
+        "reactPerPublicationMs": 21.84,
+        "renderPerPublicationMs": 22.16,
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 290.4,
+          "flushPassiveEffects": 7.5,
+          "renderRootConcurrent": 1882.5,
+          "renderRootSync": 2114.7,
+          "otherReact": 11.5
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.26,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 9.51,
+          "renderRootSync": 10.55,
+          "otherReact": 0
+        },
+        "namedTotalMs": {
+          "Children": 2182.3,
+          "EditorStatic": 63.8,
+          "BaseElementStatic": 342.7,
+          "BaseLeafStatic": 116.1,
+          "readBlockInputs": 0,
+          "visit": 1353,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 16.9,
+          "getStaticDocumentView": 63.5,
+          "withDocumentViewRead": 1919.8,
+          "commitRoot": 290.4
+        },
+        "namedPerCommitMs": {
+          "Children": 10.95,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.66,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 9.48,
+          "commitRoot": 1.26
+        }
+      }
+    },
+    "streams": [
+      {
+        "arm": "baseline",
+        "role": "warmup",
+        "load1": 2.1,
+        "receiptOutputBatches": 196,
+        "receiptPreviews": 195,
+        "receiptPreviewTasks": 194,
+        "receiptPreviewTasksWithOutput": 194,
+        "trace": "static-baseline-1790731704343.json",
+        "profile": "static-baseline-1790731702618.cpuprofile",
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 237.9,
+          "flushPassiveEffects": 1.3,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3149.5,
+          "otherReact": 17.5
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.25,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 15.06,
+          "otherReact": 0
+        },
+        "commits": 196,
+        "previewCommits": 195,
+        "publications": 195,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 16.35,
+          "p90": 24.94,
+          "mean": 17.47
+        },
+        "renderPerCommitMs": {
+          "median": 145.96,
+          "p90": 254.26,
+          "mean": 147.45
+        },
+        "reactPerPublicationMs": 17.47,
+        "renderPerPublicationMs": 147.45,
+        "namedPerCommitMs": {
+          "Children": 6.79,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 16.52,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 6.29,
+          "commitRoot": 1.25
+        },
+        "namedTotalMs": {
+          "Children": 1422.7,
+          "EditorStatic": 64.9,
+          "BaseElementStatic": 343.5,
+          "BaseLeafStatic": 124.8,
+          "readBlockInputs": 0,
+          "visit": 3235.4,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 19.1,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 1311.5,
+          "commitRoot": 239.1
+        },
+        "previewTotals": {
+          "parse": 6711.5,
+          "transaction": 25346.6,
+          "react": 3406.1,
+          "gc": 3016.6,
+          "program": 4187.7,
+          "other": 326.8
+        },
+        "final": {
+          "parse": 68.3,
+          "transaction": 242.3,
+          "react": 29.8,
+          "gc": 19.8,
+          "program": 27.4,
+          "other": 1.2,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-0",
+        "load1": 2.8,
+        "receiptOutputBatches": 196,
+        "receiptPreviews": 195,
+        "receiptPreviewTasks": 194,
+        "receiptPreviewTasksWithOutput": 194,
+        "trace": "static-baseline-1790731777548.json",
+        "profile": "static-baseline-1790731775810.cpuprofile",
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 208.3,
+          "flushPassiveEffects": 0.1,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3222.9,
+          "otherReact": 16.9
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.25,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 15.82,
+          "otherReact": 0
+        },
+        "commits": 196,
+        "previewCommits": 195,
+        "publications": 195,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 16.89,
+          "p90": 26.14,
+          "mean": 17.68
+        },
+        "renderPerCommitMs": {
+          "median": 145.98,
+          "p90": 254.18,
+          "mean": 147.74
+        },
+        "reactPerPublicationMs": 17.68,
+        "renderPerPublicationMs": 147.74,
+        "namedPerCommitMs": {
+          "Children": 6.31,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 16.92,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 6.29,
+          "commitRoot": 1.25
+        },
+        "namedTotalMs": {
+          "Children": 1437.9,
+          "EditorStatic": 80.5,
+          "BaseElementStatic": 323.4,
+          "BaseLeafStatic": 138.6,
+          "readBlockInputs": 0,
+          "visit": 3280.1,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 24.6,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 1289.3,
+          "commitRoot": 208.3
+        },
+        "previewTotals": {
+          "parse": 6810.6,
+          "transaction": 25361.9,
+          "react": 3448.2,
+          "gc": 3003.6,
+          "program": 4247.9,
+          "other": 345
+        },
+        "final": {
+          "parse": 67.7,
+          "transaction": 240.5,
+          "react": 29.1,
+          "gc": 20,
+          "program": 30.7,
+          "other": 3.7,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-1",
+        "load1": 2.2,
+        "receiptOutputBatches": 197,
+        "receiptPreviews": 196,
+        "receiptPreviewTasks": 195,
+        "receiptPreviewTasksWithOutput": 195,
+        "trace": "static-baseline-1790731868919.json",
+        "profile": "static-baseline-1790731867183.cpuprofile",
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 207.5,
+          "flushPassiveEffects": 3.8,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3256.9,
+          "otherReact": 16.4
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.25,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 16,
+          "otherReact": 0
+        },
+        "commits": 197,
+        "previewCommits": 196,
+        "publications": 196,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 17.32,
+          "p90": 26.1,
+          "mean": 17.78
+        },
+        "renderPerCommitMs": {
+          "median": 147.86,
+          "p90": 260.25,
+          "mean": 149.57
+        },
+        "reactPerPublicationMs": 17.78,
+        "renderPerPublicationMs": 149.57,
+        "namedPerCommitMs": {
+          "Children": 6.86,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 16.49,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 6.35,
+          "commitRoot": 1.25
+        },
+        "namedTotalMs": {
+          "Children": 1468.9,
+          "EditorStatic": 78.5,
+          "BaseElementStatic": 347.7,
+          "BaseLeafStatic": 88.6,
+          "readBlockInputs": 0,
+          "visit": 3341.4,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 14.1,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 1331.4,
+          "commitRoot": 211.3
+        },
+        "previewTotals": {
+          "parse": 6769.5,
+          "transaction": 25830.4,
+          "react": 3484.6,
+          "gc": 3024,
+          "program": 4314.3,
+          "other": 409.5
+        },
+        "final": {
+          "parse": 68.8,
+          "transaction": 238.8,
+          "react": 14.9,
+          "gc": 17.6,
+          "program": 26.9,
+          "other": 6.3,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-2",
+        "load1": 2.1,
+        "receiptOutputBatches": 197,
+        "receiptPreviews": 196,
+        "receiptPreviewTasks": 195,
+        "receiptPreviewTasksWithOutput": 195,
+        "trace": "static-baseline-1790731924934.json",
+        "profile": "static-baseline-1790731923196.cpuprofile",
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 233.2,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 3281.3,
+          "otherReact": 13.4
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.25,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 0,
+          "renderRootSync": 16.25,
+          "otherReact": 0
+        },
+        "commits": 197,
+        "previewCommits": 196,
+        "publications": 196,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 17.44,
+          "p90": 25.84,
+          "mean": 18
+        },
+        "renderPerCommitMs": {
+          "median": 147.53,
+          "p90": 254.14,
+          "mean": 149.61
+        },
+        "reactPerPublicationMs": 18,
+        "renderPerPublicationMs": 149.61,
+        "namedPerCommitMs": {
+          "Children": 6.62,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 16.66,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 6.28,
+          "commitRoot": 1.25
+        },
+        "namedTotalMs": {
+          "Children": 1462.4,
+          "EditorStatic": 71.6,
+          "BaseElementStatic": 336.1,
+          "BaseLeafStatic": 117.7,
+          "readBlockInputs": 0,
+          "visit": 3334.5,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 21.7,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 1305.6,
+          "commitRoot": 233.2
+        },
+        "previewTotals": {
+          "parse": 6792.5,
+          "transaction": 25795.4,
+          "react": 3527.8,
+          "gc": 3162.1,
+          "program": 4290.3,
+          "other": 363.3
+        },
+        "final": {
+          "parse": 69.9,
+          "transaction": 245.6,
+          "react": 10.6,
+          "gc": 17.6,
+          "program": 12.5,
+          "other": 6.7,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "warmup",
+        "load1": 2.1,
+        "receiptOutputBatches": 198,
+        "receiptPreviews": 197,
+        "receiptPreviewTasks": 196,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731722816.json",
+        "profile": "static-candidate-1790731722036.cpuprofile",
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 295,
+          "flushPassiveEffects": 6.7,
+          "renderRootConcurrent": 1862.1,
+          "renderRootSync": 2111.9,
+          "otherReact": 5.2
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.29,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 9.48,
+          "renderRootSync": 10.3,
+          "otherReact": 0
+        },
+        "commits": 198,
+        "previewCommits": 197,
+        "publications": 197,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 21,
+          "p90": 31.24,
+          "mean": 21.73
+        },
+        "renderPerCommitMs": {
+          "median": 21.23,
+          "p90": 31.5,
+          "mean": 22.13
+        },
+        "reactPerPublicationMs": 21.73,
+        "renderPerPublicationMs": 22.13,
+        "namedPerCommitMs": {
+          "Children": 11.08,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.66,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 9.45,
+          "commitRoot": 1.29
+        },
+        "namedTotalMs": {
+          "Children": 2200.5,
+          "EditorStatic": 67.5,
+          "BaseElementStatic": 362,
+          "BaseLeafStatic": 120.7,
+          "readBlockInputs": 0,
+          "visit": 1409.7,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 12.1,
+          "getStaticDocumentView": 77.7,
+          "withDocumentViewRead": 1928.3,
+          "commitRoot": 295
+        },
+        "previewTotals": {
+          "parse": 229.7,
+          "transaction": 77.7,
+          "react": 4280.9,
+          "gc": 192.6,
+          "program": 2993.8,
+          "other": 157.9
+        },
+        "final": {
+          "parse": 1.1,
+          "transaction": 0,
+          "react": 27.5,
+          "gc": 1.3,
+          "program": 17.9,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-0",
+        "load1": 2.9,
+        "receiptOutputBatches": 196,
+        "receiptPreviews": 195,
+        "receiptPreviewTasks": 194,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731795387.json",
+        "profile": "static-candidate-1790731794597.cpuprofile",
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 299.2,
+          "flushPassiveEffects": 7.5,
+          "renderRootConcurrent": 1857.3,
+          "renderRootSync": 2033.4,
+          "otherReact": 11.5
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.26,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 9.5,
+          "renderRootSync": 10.14,
+          "otherReact": 0
+        },
+        "commits": 196,
+        "previewCommits": 195,
+        "publications": 195,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 20.89,
+          "p90": 31.04,
+          "mean": 21.58
+        },
+        "renderPerCommitMs": {
+          "median": 21.04,
+          "p90": 31.4,
+          "mean": 21.9
+        },
+        "reactPerPublicationMs": 21.58,
+        "renderPerPublicationMs": 21.9,
+        "namedPerCommitMs": {
+          "Children": 10.94,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.66,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 9.52,
+          "commitRoot": 1.26
+        },
+        "namedTotalMs": {
+          "Children": 2139.1,
+          "EditorStatic": 58.6,
+          "BaseElementStatic": 354.1,
+          "BaseLeafStatic": 87,
+          "readBlockInputs": 0,
+          "visit": 1350.7,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 16.9,
+          "getStaticDocumentView": 61.4,
+          "withDocumentViewRead": 1885,
+          "commitRoot": 299.2
+        },
+        "previewTotals": {
+          "parse": 215.8,
+          "transaction": 61.4,
+          "react": 4208.9,
+          "gc": 203.8,
+          "program": 2937.6,
+          "other": 139
+        },
+        "final": {
+          "parse": 1.7,
+          "transaction": 1.3,
+          "react": 34.7,
+          "gc": 1.3,
+          "program": 16.8,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-1",
+        "load1": 2.5,
+        "receiptOutputBatches": 198,
+        "receiptPreviews": 197,
+        "receiptPreviewTasks": 196,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731813704.json",
+        "profile": "static-candidate-1790731812906.cpuprofile",
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 290.4,
+          "flushPassiveEffects": 8.8,
+          "renderRootConcurrent": 1887.1,
+          "renderRootSync": 2139.7,
+          "otherReact": 11.1
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.26,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 9.51,
+          "renderRootSync": 10.55,
+          "otherReact": 0
+        },
+        "commits": 198,
+        "previewCommits": 197,
+        "publications": 197,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 21.22,
+          "p90": 32.32,
+          "mean": 22.02
+        },
+        "renderPerCommitMs": {
+          "median": 21.22,
+          "p90": 32.73,
+          "mean": 22.37
+        },
+        "reactPerPublicationMs": 22.02,
+        "renderPerPublicationMs": 22.37,
+        "namedPerCommitMs": {
+          "Children": 11.25,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.77,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 9.48,
+          "commitRoot": 1.26
+        },
+        "namedTotalMs": {
+          "Children": 2197.4,
+          "EditorStatic": 70.5,
+          "BaseElementStatic": 336.5,
+          "BaseLeafStatic": 134.5,
+          "readBlockInputs": 0,
+          "visit": 1353,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 18,
+          "getStaticDocumentView": 68.9,
+          "withDocumentViewRead": 1919.8,
+          "commitRoot": 290.4
+        },
+        "previewTotals": {
+          "parse": 220.6,
+          "transaction": 68.9,
+          "react": 4337.1,
+          "gc": 204.9,
+          "program": 3063,
+          "other": 137.8
+        },
+        "final": {
+          "parse": 1.2,
+          "transaction": 1.2,
+          "react": 23.9,
+          "gc": 0,
+          "program": 15.7,
+          "other": 0,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-2",
+        "load1": 2.4,
+        "receiptOutputBatches": 198,
+        "receiptPreviews": 197,
+        "receiptPreviewTasks": 196,
+        "receiptPreviewTasksWithOutput": 0,
+        "trace": "static-candidate-1790731943409.json",
+        "profile": "static-candidate-1790731942625.cpuprofile",
+        "arrivals": 777,
+        "reactPhasesMs": {
+          "commitRoot": 281.7,
+          "flushPassiveEffects": 5.7,
+          "renderRootConcurrent": 1882.5,
+          "renderRootSync": 2114.7,
+          "otherReact": 18.2
+        },
+        "reactPhasesPerCommitMs": {
+          "commitRoot": 1.26,
+          "flushPassiveEffects": 0,
+          "renderRootConcurrent": 9.61,
+          "renderRootSync": 10.58,
+          "otherReact": 0
+        },
+        "commits": 198,
+        "previewCommits": 197,
+        "publications": 197,
+        "commitsShowingSkips": 0,
+        "publicationsPerCommit": 1,
+        "maxPublicationsPerCommit": 1,
+        "reactPerCommitMs": {
+          "median": 21.17,
+          "p90": 32.2,
+          "mean": 21.84
+        },
+        "renderPerCommitMs": {
+          "median": 21.65,
+          "p90": 32.2,
+          "mean": 22.16
+        },
+        "reactPerPublicationMs": 21.84,
+        "renderPerPublicationMs": 22.16,
+        "namedPerCommitMs": {
+          "Children": 10.95,
+          "EditorStatic": 0,
+          "BaseElementStatic": 1.26,
+          "BaseLeafStatic": 0,
+          "readBlockInputs": 0,
+          "visit": 6.59,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 0,
+          "getStaticDocumentView": 0,
+          "withDocumentViewRead": 9.05,
+          "commitRoot": 1.26
+        },
+        "namedTotalMs": {
+          "Children": 2182.3,
+          "EditorStatic": 63.8,
+          "BaseElementStatic": 342.7,
+          "BaseLeafStatic": 116.1,
+          "readBlockInputs": 0,
+          "visit": 1380.5,
+          "isSameRenderedDocument": 0,
+          "areBlockInputsEqual": 0,
+          "areStaticDecorationsEqual": 15.1,
+          "getStaticDocumentView": 63.5,
+          "withDocumentViewRead": 1934.8,
+          "commitRoot": 281.7
+        },
+        "previewTotals": {
+          "parse": 235.5,
+          "transaction": 63.5,
+          "react": 4302.8,
+          "gc": 186.3,
+          "program": 2990.8,
+          "other": 143.5
+        },
+        "final": {
+          "parse": 0,
+          "transaction": 0,
+          "react": 19.9,
+          "gc": 0,
+          "program": 9.9,
+          "other": 4.4,
+          "publications": 0,
+          "finalCallBeforeLastCommit": true
+        }
+      }
+    ]
+  }
+]

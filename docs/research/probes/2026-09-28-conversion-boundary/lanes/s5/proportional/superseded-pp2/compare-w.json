@@ -1,0 +1,458 @@
+[
+  {
+    "cell": "ai-cjk-10000",
+    "a": {
+      "baseline": 377.5,
+      "candidate": 50.2,
+      "candidateVsBaseline": 0.133,
+      "reference": 62.8,
+      "rawDeltaPercent": -20.1,
+      "baselineDriftPercent": 0.4,
+      "normalizedDeltaPercent": -18.9
+    },
+    "b": {
+      "baseline": 1411,
+      "candidate": 25.1,
+      "candidateVsBaseline": 0.018,
+      "reference": 23.7,
+      "rawDeltaPercent": 5.9,
+      "baselineDriftPercent": 1.6,
+      "normalizedDeltaPercent": 5.9
+    },
+    "c": {
+      "baseline": 480.3,
+      "candidate": 409.5,
+      "candidateVsBaseline": 0.853,
+      "reference": 657.1,
+      "rawDeltaPercent": -37.7,
+      "baselineDriftPercent": -20,
+      "normalizedDeltaPercent": -21.2
+    },
+    "busy": {
+      "baseline": 2784.9,
+      "candidate": 893,
+      "candidateVsBaseline": 0.328,
+      "reference": 1135.4,
+      "rawDeltaPercent": -21.3,
+      "baselineDriftPercent": -2.7,
+      "normalizedDeltaPercent": -15.7
+    },
+    "final": {
+      "baseline": 114.3,
+      "candidate": 53.6,
+      "candidateVsBaseline": 0.464,
+      "reference": 54.1,
+      "rawDeltaPercent": -0.9,
+      "baselineDriftPercent": -9.1,
+      "normalizedDeltaPercent": 8.2
+    },
+    "arrival": {
+      "baseline": 130.8,
+      "candidate": 44.1,
+      "candidateVsBaseline": 0.336,
+      "reference": 71.5,
+      "rawDeltaPercent": -38.3,
+      "baselineDriftPercent": -4.7,
+      "normalizedDeltaPercent": -35.5
+    }
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "a": {
+      "baseline": 7414.4,
+      "candidate": 256.4,
+      "candidateVsBaseline": 0.035,
+      "reference": 308.2,
+      "rawDeltaPercent": -16.8,
+      "baselineDriftPercent": -8.5,
+      "normalizedDeltaPercent": -7.9
+    },
+    "b": {
+      "baseline": 28424.8,
+      "candidate": 178.7,
+      "candidateVsBaseline": 0.006,
+      "reference": 195.9,
+      "rawDeltaPercent": -8.8,
+      "baselineDriftPercent": -7.8,
+      "normalizedDeltaPercent": 0
+    },
+    "c": {
+      "baseline": 4006.7,
+      "candidate": 3999.1,
+      "candidateVsBaseline": 0.998,
+      "reference": 8083.7,
+      "rawDeltaPercent": -50.5,
+      "baselineDriftPercent": -44,
+      "normalizedDeltaPercent": -11.6
+    },
+    "busy": {
+      "baseline": 45527.9,
+      "candidate": 6459.5,
+      "candidateVsBaseline": 0.142,
+      "reference": 10794.6,
+      "rawDeltaPercent": -40.2,
+      "baselineDriftPercent": -14.7,
+      "normalizedDeltaPercent": -29.7
+    },
+    "final": {
+      "baseline": 551.3,
+      "candidate": 188.2,
+      "candidateVsBaseline": 0.34,
+      "reference": 225.7,
+      "rawDeltaPercent": -16.6,
+      "baselineDriftPercent": -14.7,
+      "normalizedDeltaPercent": -4.2
+    },
+    "arrival": {
+      "baseline": 439.8,
+      "candidate": 46.6,
+      "candidateVsBaseline": 0.106,
+      "reference": 169.2,
+      "rawDeltaPercent": -72.5,
+      "baselineDriftPercent": -23,
+      "normalizedDeltaPercent": -64.2
+    }
+  },
+  {
+    "cell": "ai-rich-10000",
+    "a": {
+      "baseline": 230.5,
+      "candidate": 38.5,
+      "candidateVsBaseline": 0.17,
+      "reference": 45.3,
+      "rawDeltaPercent": -15,
+      "baselineDriftPercent": 0,
+      "normalizedDeltaPercent": -13.7
+    },
+    "b": {
+      "baseline": 791.9,
+      "candidate": 5,
+      "candidateVsBaseline": 0.006,
+      "reference": 5,
+      "rawDeltaPercent": 0,
+      "baselineDriftPercent": 1.2,
+      "normalizedDeltaPercent": 0
+    },
+    "c": {
+      "baseline": 253.3,
+      "candidate": 231.9,
+      "candidateVsBaseline": 0.959,
+      "reference": 383.3,
+      "rawDeltaPercent": -39.5,
+      "baselineDriftPercent": -25.6,
+      "normalizedDeltaPercent": -15.3
+    },
+    "busy": {
+      "baseline": 1571.8,
+      "candidate": 549.4,
+      "candidateVsBaseline": 0.363,
+      "reference": 697,
+      "rawDeltaPercent": -21.2,
+      "baselineDriftPercent": -7.9,
+      "normalizedDeltaPercent": -12.3
+    },
+    "final": {
+      "baseline": 75.5,
+      "candidate": 28.1,
+      "candidateVsBaseline": 0.377,
+      "reference": 38.3,
+      "rawDeltaPercent": -26.6,
+      "baselineDriftPercent": -12.6,
+      "normalizedDeltaPercent": -17.9
+    },
+    "arrival": {
+      "baseline": 78.6,
+      "candidate": 39.5,
+      "candidateVsBaseline": 0.501,
+      "reference": 44.3,
+      "rawDeltaPercent": -10.8,
+      "baselineDriftPercent": -4.6,
+      "normalizedDeltaPercent": -7.1
+    }
+  },
+  {
+    "cell": "ai-rich-50000",
+    "a": {
+      "baseline": 4576.7,
+      "candidate": 212.8,
+      "candidateVsBaseline": 0.047,
+      "reference": 235.3,
+      "rawDeltaPercent": -9.6,
+      "baselineDriftPercent": -3.4,
+      "normalizedDeltaPercent": -6
+    },
+    "b": {
+      "baseline": 15130.2,
+      "candidate": 100.7,
+      "candidateVsBaseline": 0.007,
+      "reference": 105.6,
+      "rawDeltaPercent": -4.6,
+      "baselineDriftPercent": -2.4,
+      "normalizedDeltaPercent": 0
+    },
+    "c": {
+      "baseline": 2093.4,
+      "candidate": 2361.1,
+      "candidateVsBaseline": 1.055,
+      "reference": 4375.1,
+      "rawDeltaPercent": -46,
+      "baselineDriftPercent": -44.1,
+      "normalizedDeltaPercent": -9.2
+    },
+    "busy": {
+      "baseline": 25113.3,
+      "candidate": 4042.4,
+      "candidateVsBaseline": 0.158,
+      "reference": 6106.5,
+      "rawDeltaPercent": -33.8,
+      "baselineDriftPercent": -8.7,
+      "normalizedDeltaPercent": -29.1
+    },
+    "final": {
+      "baseline": 291.8,
+      "candidate": 120.8,
+      "candidateVsBaseline": 0.414,
+      "reference": 152.2,
+      "rawDeltaPercent": -20.6,
+      "baselineDriftPercent": -20.1,
+      "normalizedDeltaPercent": -0.7
+    },
+    "arrival": {
+      "baseline": 251.9,
+      "candidate": 44.1,
+      "candidateVsBaseline": 0.176,
+      "reference": 87.7,
+      "rawDeltaPercent": -49.7,
+      "baselineDriftPercent": -9.5,
+      "normalizedDeltaPercent": -45
+    }
+  },
+  {
+    "cell": "static-cjk-10000",
+    "a": {
+      "baseline": 341.4,
+      "candidate": 56.1,
+      "candidateVsBaseline": 0.165,
+      "reference": 57.6,
+      "rawDeltaPercent": -2.6,
+      "baselineDriftPercent": -4.5,
+      "normalizedDeltaPercent": 2.5
+    },
+    "b": {
+      "baseline": 1257.6,
+      "candidate": 7.8,
+      "candidateVsBaseline": 0.006,
+      "reference": 8.7,
+      "rawDeltaPercent": -10.3,
+      "baselineDriftPercent": 1.4,
+      "normalizedDeltaPercent": -14.3
+    },
+    "c": {
+      "baseline": 291.8,
+      "candidate": 330.5,
+      "candidateVsBaseline": 1.133,
+      "reference": 632.1,
+      "rawDeltaPercent": -47.7,
+      "baselineDriftPercent": -42.8,
+      "normalizedDeltaPercent": -1.7
+    },
+    "busy": {
+      "baseline": 2442,
+      "candidate": 794.9,
+      "candidateVsBaseline": 0.324,
+      "reference": 1225.4,
+      "rawDeltaPercent": -35.1,
+      "baselineDriftPercent": -12.6,
+      "normalizedDeltaPercent": -26
+    },
+    "final": {
+      "baseline": 82.7,
+      "candidate": 10.5,
+      "candidateVsBaseline": 0.125,
+      "reference": 10.2,
+      "rawDeltaPercent": 2.9,
+      "baselineDriftPercent": -1.1,
+      "normalizedDeltaPercent": 2.5
+    },
+    "arrival": {
+      "baseline": 112.6,
+      "candidate": 44.5,
+      "candidateVsBaseline": 0.395,
+      "reference": 48.4,
+      "rawDeltaPercent": -8.1,
+      "baselineDriftPercent": 0.3,
+      "normalizedDeltaPercent": -5.7
+    }
+  },
+  {
+    "cell": "static-cjk-50000",
+    "a": {
+      "baseline": 6874.7,
+      "candidate": 230.4,
+      "candidateVsBaseline": 0.033,
+      "reference": 315.7,
+      "rawDeltaPercent": -27,
+      "baselineDriftPercent": -23.4,
+      "normalizedDeltaPercent": -2.9
+    },
+    "b": {
+      "baseline": 25918.4,
+      "candidate": 62.8,
+      "candidateVsBaseline": 0.002,
+      "reference": 83.8,
+      "rawDeltaPercent": -25.1,
+      "baselineDriftPercent": -23.3,
+      "normalizedDeltaPercent": 0
+    },
+    "c": {
+      "baseline": 3511.1,
+      "candidate": 4378.5,
+      "candidateVsBaseline": 1.247,
+      "reference": 9389.1,
+      "rawDeltaPercent": -53.4,
+      "baselineDriftPercent": -57,
+      "normalizedDeltaPercent": 10.1
+    },
+    "busy": {
+      "baseline": 43339.4,
+      "candidate": 7469.9,
+      "candidateVsBaseline": 0.172,
+      "reference": 15097.2,
+      "rawDeltaPercent": -50.5,
+      "baselineDriftPercent": -30,
+      "normalizedDeltaPercent": -29.5
+    },
+    "final": {
+      "baseline": 353.1,
+      "candidate": 29.4,
+      "candidateVsBaseline": 0.084,
+      "reference": 35.9,
+      "rawDeltaPercent": -18.1,
+      "baselineDriftPercent": -8.1,
+      "normalizedDeltaPercent": -8.7
+    },
+    "arrival": {
+      "baseline": 377.9,
+      "candidate": 48,
+      "candidateVsBaseline": 0.127,
+      "reference": 79.9,
+      "rawDeltaPercent": -39.9,
+      "baselineDriftPercent": -12,
+      "normalizedDeltaPercent": -31.7
+    }
+  },
+  {
+    "cell": "static-rich-10000",
+    "a": {
+      "baseline": 214.1,
+      "candidate": 40.5,
+      "candidateVsBaseline": 0.189,
+      "reference": 41.7,
+      "rawDeltaPercent": -2.9,
+      "baselineDriftPercent": -2.1,
+      "normalizedDeltaPercent": -1
+    },
+    "b": {
+      "baseline": 644.3,
+      "candidate": 8.7,
+      "candidateVsBaseline": 0.014,
+      "reference": 6.1,
+      "rawDeltaPercent": 42.6,
+      "baselineDriftPercent": -4.2,
+      "normalizedDeltaPercent": 55.6
+    },
+    "c": {
+      "baseline": 167.6,
+      "candidate": 197.6,
+      "candidateVsBaseline": 1.192,
+      "reference": 382.3,
+      "rawDeltaPercent": -48.3,
+      "baselineDriftPercent": -49.6,
+      "normalizedDeltaPercent": 3.7
+    },
+    "busy": {
+      "baseline": 1358.8,
+      "candidate": 551,
+      "candidateVsBaseline": 0.406,
+      "reference": 854.6,
+      "rawDeltaPercent": -35.5,
+      "baselineDriftPercent": -20.6,
+      "normalizedDeltaPercent": -18.6
+    },
+    "final": {
+      "baseline": 46,
+      "candidate": 6.2,
+      "candidateVsBaseline": 0.127,
+      "reference": 7.3,
+      "rawDeltaPercent": -15.1,
+      "baselineDriftPercent": -10.9,
+      "normalizedDeltaPercent": -0.8
+    },
+    "arrival": {
+      "baseline": 71.1,
+      "candidate": 40.3,
+      "candidateVsBaseline": 0.575,
+      "reference": 41.7,
+      "rawDeltaPercent": -3.4,
+      "baselineDriftPercent": -3.9,
+      "normalizedDeltaPercent": 2
+    }
+  },
+  {
+    "cell": "static-rich-50000",
+    "a": {
+      "baseline": 4124,
+      "candidate": 151.4,
+      "candidateVsBaseline": 0.036,
+      "reference": 199.2,
+      "rawDeltaPercent": -24,
+      "baselineDriftPercent": -11.3,
+      "normalizedDeltaPercent": -14.3
+    },
+    "b": {
+      "baseline": 13054.4,
+      "candidate": 46.4,
+      "candidateVsBaseline": 0.004,
+      "reference": 54.9,
+      "rawDeltaPercent": -15.5,
+      "baselineDriftPercent": -9.8,
+      "normalizedDeltaPercent": 0
+    },
+    "c": {
+      "baseline": 2187.2,
+      "candidate": 2863.9,
+      "candidateVsBaseline": 1.306,
+      "reference": 6355.4,
+      "rawDeltaPercent": -54.9,
+      "baselineDriftPercent": -61.8,
+      "normalizedDeltaPercent": 19.1
+    },
+    "busy": {
+      "baseline": 23530.5,
+      "candidate": 4995.3,
+      "candidateVsBaseline": 0.209,
+      "reference": 10087.5,
+      "rawDeltaPercent": -50.5,
+      "baselineDriftPercent": -23.1,
+      "normalizedDeltaPercent": -35.1
+    },
+    "final": {
+      "baseline": 183.5,
+      "candidate": 12.6,
+      "candidateVsBaseline": 0.069,
+      "reference": 24.2,
+      "rawDeltaPercent": -47.9,
+      "baselineDriftPercent": -15.1,
+      "normalizedDeltaPercent": -38.4
+    },
+    "arrival": {
+      "baseline": 210.8,
+      "candidate": 44.3,
+      "candidateVsBaseline": 0.21,
+      "reference": 56.5,
+      "rawDeltaPercent": -21.6,
+      "baselineDriftPercent": -9.5,
+      "normalizedDeltaPercent": -14.6
+    }
+  }
+]

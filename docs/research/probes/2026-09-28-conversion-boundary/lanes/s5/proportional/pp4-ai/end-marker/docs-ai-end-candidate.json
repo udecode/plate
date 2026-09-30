@@ -1,0 +1,98 @@
+{
+ "base": "http://localhost:3651",
+ "during": [
+  {
+   "coversLast": true,
+   "lastCodePoint": "g",
+   "draft": true,
+   "draftTextTail": " of these styles for a visually striking",
+   "ends": 1,
+   "endText": [
+    "g"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "h",
+   "draft": true,
+   "draftTextTail": "sually striking effect.Add strikethrough",
+   "ends": 1,
+   "endText": [
+    "h"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "d",
+   "draft": true,
+   "draftTextTail": "ct.Add strikethrough to indicate deleted",
+   "ends": 1,
+   "endText": [
+    "d"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": ".",
+   "draft": true,
+   "draftTextTail": "to indicate deleted or outdated content.",
+   "ends": 1,
+   "endText": [
+    "."
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "h",
+   "draft": true,
+   "draftTextTail": "utdated content.Write code snippets with",
+   "ends": 1,
+   "endText": [
+    "h"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "r",
+   "draft": true,
+   "draftTextTail": "snippets with inline code formatting for",
+   "ends": 1,
+   "endText": [
+    "r"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": ".",
+   "draft": true,
+   "draftTextTail": "ne code formatting for easy readability.",
+   "ends": 1,
+   "endText": [
+    "."
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "s",
+   "draft": true,
+   "draftTextTail": "ormatting for easy readability.Add links",
+   "ends": 1,
+   "endText": [
+    "s"
+   ]
+  }
+ ],
+ "after": {
+  "coversLast": true,
+  "lastCodePoint": "a",
+  "draft": true,
+  "draftTextTail": " rule﻿Header 1Header 2Row 1DataRow 2Data",
+  "ends": 1,
+  "endText": [
+   "a"
+  ]
+ },
+ "errors": [
+  "Invalid 'X-Frame-Options' header encountered when loading 'https://pro.platejs.org/': 'allow-from https://next.platejs.org/' is not a recognized directive. The header will be ignored."
+ ]
+}

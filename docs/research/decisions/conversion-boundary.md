@@ -2,7 +2,7 @@
 title: Conversion boundary ownership and incremental Markdown
 type: decision
 status: accepted
-updated: 2026-09-29
+updated: 2026-09-30
 review_scope: conversion-boundary
 current_review: 2026-09-29-conversion-next-static-read-review
 reconciled_executions:
@@ -14,6 +14,9 @@ reconciled_executions:
   - 2026-09-29-static-preview-document-execution
   - 2026-09-29-static-preview-document-execution-final
   - 2026-09-29-static-document-rendering-execution
+  - 2026-09-30-content-root-locations-design
+  - 2026-09-30-content-root-locations-execution
+  - 2026-09-30-content-root-locations-closure
 review_history:
   - ../review-records/2026-09-28-conversion-boundary-value-review.json
   - ../review-records/2026-09-29-conversion-next-static-read-review.json
@@ -26,7 +29,7 @@ related:
 
 # Conversion boundary ownership and incremental Markdown
 
-**Adopted: coherent immutable document reads, complete HTML loss accounting
+**Adopted: coherent immutable document reads, explicit HTML loss accounting
 and dependency-correct static reuse.** Retain the rest of the design:
 
 - document-first conversion;
@@ -69,12 +72,38 @@ adds reuse:
   projected documents. The profiles also found a Plite portal refresh that
   rebuilt the plugin configuration on every lookup.
 
-On S5 snapshot w, the final tree, all 8 cells pass. Streamed output equals a
-fresh render, and React is 62–82% below the pre-reuse projection. Next
-decision: per-block decoration caching, with a declaration for sources that
-read the document. Decorations still cost 21–58% of React time at 50 KB. The
-sections below keep the earlier reviews, design amendments and execution
-evidence in order; their superseded next steps are historical.
+S5 snapshot w established static reuse. The subsequent
+[proportional-cost plan](../../plans/2026-09-30-static-preview-proportional-cost.md)
+is completed with source-bound browser receipts. Decoration reads take 8–21%
+of React time. The full pass over blocks still costs 1.7–3.8 ms per commit at
+50 KB, so caching and chunking remain deferred under the plan's revisit trigger.
+The original pp4 summarizer marks two AI cells inconclusive; its companion
+assessment passes them after raising the sampled-CPU/trace-busy guard from
+1.20 to 1.25. That diagnostic adjustment is disclosed in the receipts and does
+not establish a new production API requirement.
+
+The [2026-09-30 next-work assessment](../review-records/2026-09-30-static-preview-next-content-roots.json)
+retains the conversion, parser and static-rendering choices. Current public
+checks confirm that preview and export both use projected headings, the source
+editor stays unchanged, and image titles survive semantic HTML round trips.
+The [content-root location design](../../plans/2026-09-30-content-root-locations.md)
+is [adopted locally](../../plans/2026-09-30-content-root-locations-execution.md). It uses the existing scoped editor for callback
+context, corrects view derivation and reuses static readers privately.
+Known-path list and table presentation reads avoid redundant indexing.
+Root-range admission and live owned-root source propagation are adopted; the
+streaming preview contracts pass and the static preview's DOM output is
+unchanged. The [closure](../review-records/2026-09-30-content-root-locations-closure.json) adds the Chromium S5 static and AI cells: every
+complete cell passes the no-regression checks with identical final text, and
+ai-rich profile attribution remains inconclusive under the unchanged rule.
+The design adds no public location carrier or view manager and retains the
+pure detached conversion adapters.
+The `group-last/*` restyle belongs to a direct Plate UI performance repair.
+
+HTML's explicit accounting is adopted, not an exhaustive fidelity claim. The
+completed plan records remaining multi-block list flattening, unreported table
+list properties and subtree-wide decoder claims. Those concrete boundaries
+remain open without reopening the parser dialect or all conversion APIs. The
+sections below preserve the earlier evidence and superseded next steps.
 
 ## Initial review and design
 

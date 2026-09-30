@@ -7,6 +7,10 @@ type EditorRuntimeCarrier = Parameters<typeof getEditorRuntimeOwner>[0];
 const DOCUMENT_VIEWS = new WeakSet<EditorRuntimeCarrier>();
 const DOCUMENT_VIEW_READS = new WeakMap<EditorRuntimeCarrier, number>();
 
+/** Whether a view renders its own document. @internal */
+export const isDocumentView = (view: object) =>
+  DOCUMENT_VIEWS.has(view as EditorRuntimeCarrier);
+
 /** Mark a view bound to its own document. @internal */
 export const registerDocumentView = (view: EditorRuntimeCarrier) => {
   DOCUMENT_VIEWS.add(view);

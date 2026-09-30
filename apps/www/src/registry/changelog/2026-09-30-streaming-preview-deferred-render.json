@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-30-streaming-preview-deferred-render",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-30-streaming-preview-deferred-render.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-30",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Render streamed previews from the latest draft",
+  "targets": [
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-streaming-demo",
+      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-30-ai-menu-render-streamed-previews-from-c010fece",
+      "kind": "behavior",
+      "summary": "Render streamed previews from the latest draft, skipping drafts that were never shown when rendering falls behind the stream. The streaming demo's static output shows its status and parse error with the parse it renders. Both previews render only when their document changes, not on every streamed update. The AI draft's purple text is styled by its container instead of a decoration on every text, its end marker is read from the last block only, the fallback end marker stays mounted so the preview is not restyled whenever it appears or disappears, and the inline draft scrolls when it resizes instead of measuring layout after every render.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu", "markdown-streaming-demo"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-30",
+          "entry": "2026-09-30-streaming-preview-deferred-render",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

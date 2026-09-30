@@ -1,0 +1,143 @@
+{
+  "id": "2026-09-30-streaming-history-reconciliation",
+  "scope": "streaming",
+  "kind": "review",
+  "date": "2026-09-30",
+  "question": "What makes partial document input stable, cancelable and reversible, and should the current AI-specific update owner be replaced by a neutral contract?",
+  "model": null,
+  "method": "best-api-review/history-v3",
+  "trigger": "User asked to reconcile streaming after the September 28–30 conversion and preview work, defer search, and identify the next ledger item. Metadata-only; no downstream implementation or fresh AI audit requested.",
+  "requirements": [
+    "Incremental previews preserve the value and diagnostics of a fresh partial parse; invalidation can require a whole parse.",
+    "Completion and deliberate stop strictly parse the accumulated source; cancellation and replacement must prevent stale scheduled publication.",
+    "Markdown owns parsing and continuation provenance. Consumers own transport, accumulated source, cancellation, publication cadence, acceptance and undo.",
+    "Non-AI streaming works through the same parser contract. Preview work does not create accepted-document history entries.",
+    "Keep historical source identities, failed measurements, and review/adoption/proof separate. Reconcile existing work without inventing a new implementation outcome or rerunning settled architecture research."
+  ],
+  "evidenceReuse": "Read the current Markdown API and non-AI demo, reconciled the amendment and adoption records plus subsequent document/static/root repairs, and consumed a bounded read-only source/receipt mapping. Existing browser and benchmark observations keep their original scopes and snapshot identities. No tests or browser matrix were rerun in this reconciliation.",
+  "summary": "Stop proposing another generic streaming owner. The adopted Markdown parseSlice previous-result hint supplies neutral incremental parsing, while the non-AI demo owns abort, cadence and strict finalization and AI owns acceptance/undo. September 10 AI-dependent-demo wording is superseded by current source and recorded conversion adoption. Retain converted-segment reuse and coherent immutable preview views; preserve conservative invalidation and explicit remaining proof limits. This scope gains review coverage, not a retroactively rebound implementation receipt.",
+  "verdict": "stop",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-28-conversion-boundary-value-review",
+      "question": "Which conversion laws share an owner across formats, and what Markdown reuse contract preserves every partial-prefix result without repeated whole-response work?",
+      "action": "retains",
+      "reason": "Retain common conversion laws and consumer-owned lifetime. The later amendment, not this initial syntax-only prototype, selects the adopted reuse strategy."
+    },
+    {
+      "record": "2026-09-28-conversion-boundary-adoption-amendment",
+      "question": "What makes partial document input stable, cancelable and reversible, and should the current AI-specific update owner be replaced by a neutral contract?",
+      "action": "retains",
+      "reason": "Retain converted-segment reuse, conservative invalidation and prefix equivalence; these supersede the earlier syntax-only candidate."
+    },
+    {
+      "record": "2026-09-29-conversion-boundary-closure-repairs-final",
+      "question": "What makes partial document input stable, cancelable and reversible, and should the current AI-specific update owner be replaced by a neutral contract?",
+      "action": "retains",
+      "reason": "Retain recorded parser/publication adoption and its original proof identity; do not transfer its verified flag to this newly reconciled scope."
+    },
+    {
+      "record": "2026-09-29-static-preview-document-review",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "Retain the document-first preview shape. Its later implementation repairs the partial view facade rather than introducing a new stream lifetime owner."
+    },
+    {
+      "record": "2026-09-29-static-document-rendering-execution",
+      "question": "What makes partial document input stable, cancelable and reversible, and should the current AI-specific update owner be replaced by a neutral contract?",
+      "action": "retains",
+      "reason": "Retain coherent immutable preview reads and dependency-aware static reuse, replacing the mixed-source facade."
+    },
+    {
+      "record": "2026-09-30-static-preview-proportional-cost-execution",
+      "question": "What makes partial document input stable, cancelable and reversible, and should the current AI-specific update owner be replaced by a neutral contract?",
+      "action": "retains",
+      "reason": "Retain adopted owner-level rendering fixes and deferred cache/chunking decisions; preserve the disclosed benchmark attribution qualification."
+    },
+    {
+      "record": "2026-09-30-static-preview-next-content-roots",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "Retain the bounded content-root next step and the rejection of another broad conversion/streaming redesign."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-closure",
+      "question": "What makes partial document input stable, cancelable and reversible, and should the current AI-specific update owner be replaced by a neutral contract?",
+      "action": "retains",
+      "reason": "Retain the policy-sensitive cache and decoration-root closure with its partial browser/performance proof; no new view manager is justified."
+    }
+  ],
+  "alternatives": [
+    "Keep existing owners: current Markdown continuation plus consumer-owned lifetime covers both the independent demo and AI preview without another protocol.",
+    "Add a neutral public stream handle/controller: it duplicates the consumer abort/source/cadence state and relocates product acceptance and undo without a demonstrated independent coordination job.",
+    "Move cancel/accept/undo into Markdown or Plite: parsing does not own request validity, product review or accepted-document history; this would couple independent jobs.",
+    "Replace the parser or promise unconditional tail-only work: definitions and extensible/stateful mappings can invalidate earlier output; current conservative fallbacks preserve the selected dialect and prefix oracle.",
+    "Delete the streaming scope as a duplicate of conversion-boundary: keep it as a semantic retrieval address for consumer lifetime, and link the existing immutable work instead of duplicating implementation history."
+  ],
+  "proofLimits": "Source and recorded-evidence reconciliation only. Original conversion, Markdown and HTML execution outcomes are not rebound to streaming; its generated adoption/proof progress remains unbound. Existing Chromium contract/lifetime evidence is bounded to its recorded snapshots, not all providers, native input or browsers. The earlier pp4 AI assessment changes the attribution guard from 1.20 to 1.25; the latest content-root matrix retains six complete cells and two ai-rich cells with passing latency/text but inconclusive CPU profiles. Full retained-markup interaction is not driven, and the known narrow-view AI review/undo browser failure remains open. No package suite, browser, benchmark or product mutation in this task.",
+  "references": [
+    "docs/research/decisions/streaming-ownership.md",
+    "docs/research/decisions/conversion-boundary.md",
+    "docs/plans/2026-09-10-ai-streaming-and-markdown-demo-architecture.md",
+    "docs/plans/2026-09-28-conversion-boundary-adoption.md",
+    "docs/plans/2026-09-30-static-preview-proportional-cost.md",
+    "docs/plans/2026-09-30-content-root-locations-execution.md",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",
+    "apps/www/src/registry/examples/markdown-streaming-demo.tsx",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "apps/www/src/registry/components/editor/ai-menu.tsx",
+    "apps/www/src/registry/examples/markdown-streaming-demo.spec.tsx",
+    "apps/www/tests/browser/markdown-streaming-lifetime.spec.ts",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/README.txt",
+    "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt",
+    "docs/research/review-records/2026-09-28-conversion-boundary-value-review.json",
+    "docs/research/review-records/2026-09-28-conversion-boundary-adoption-amendment.json",
+    "docs/research/review-records/2026-09-29-conversion-boundary-closure-repairs-final.json",
+    "docs/research/review-records/2026-09-29-static-preview-document-review.json",
+    "docs/research/review-records/2026-09-29-static-document-rendering-execution.json",
+    "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json",
+    "docs/research/review-records/2026-09-30-static-preview-next-content-roots.json",
+    "docs/research/review-records/2026-09-30-content-root-locations-closure.json"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "7a379b4dbb02de3c7b30fcc5c6ce38a6aa24d43af3b71b5d7e12bb8457bdd81c",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "ceea6f0aecf1128634f6245f4a8c10939578276de897e30b9959c7adf5625eb3",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "d4380cdac6642db677ef37d054240301ee0a56c661fcc5fd1cb6d110ed29165f",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "5bd1f158a2565593b4649574df4c53cee2149f80c9601d0ebf40129d037303e4",
+      "apps/www/src/registry/components/editor/ai-menu.tsx": "f31e83869fe46284853da85ce07e9b25682a70ca91947cbc3d874bcf10620acf",
+      "apps/www/tests/browser/markdown-streaming-contract.spec.ts": "9dc3ccb1f3b7cccfd7d0c4e19f9675ef2191111016a22010d28b7189bc52fe65",
+      "apps/www/tests/browser/markdown-streaming-lifetime.spec.ts": "cb7b4e381682bbe60c4bb9004d0e212ba39c0fb55b440a839071ef7a1e197c74",
+      "packages/platejs/src/markdown/lib/markdownContinuation.spec.ts": "2d388270f75fdea3a650147468f27e4a5df2735bcca0ec70fe43188244468cef",
+      "packages/platejs/src/ai/react/AIChatPlugin.streaming.spec.ts": "754ba3eeb9774f56ea39e97a0cfc7f435bf213e840f0df7d2782c7699691450a",
+      "apps/www/src/registry/examples/markdown-streaming-demo.spec.tsx": "ec385b96bfc99a09bbabb0ad7c16a41951c123b6182891489a7c117b939029a7",
+      "packages/platejs/src/markdown/lib/types.ts": "fe49e121a29a9da3a7b3a2a0e97c3ee93f14c474b0354519c55720dcd63cf7f9",
+      "packages/platejs/src/ai/react/useAIChat.ts": "887203d9eca7f9acb81970838972d9c91c9350283912f4ca3ff33640cb918f8b",
+      "docs/research/review-records/2026-09-28-conversion-boundary-adoption-amendment.json": "6e8f23f39a2b2a32ac5e661d6c4dc613aef728232ff197d6b2ea46957e5c4413",
+      "docs/research/review-records/2026-09-29-conversion-boundary-closure-repairs-final.json": "3c9ad012dc4ec17e8f3d245d9a0422129dcd880d2b0c916fb1a9e725428c41ac",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "docs/research/review-records/2026-09-30-content-root-locations-closure.json": "b6a1ee96994cc9db2cfae4113f92beb124937fad3155dbf94d1cbe642e3d29ff",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt": "1236eba2d944655ada507c41c74203212df6622d7f688aa260feaf94a92e6dcf",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json": "16980a7a7d8c78014790ee6571df736433943d8b5a81aa92334494e25731cd46",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/README.txt": "0b88189e1801afbb1cd0406aac8d5d75e10f68a03a91bc04d9ce531acc1d4cbd",
+      "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+      "apps/www/package.json": "fc16a2f765a3b570ac544169d7c2d09e4c094a7abb5d140af2b2bcf4e40de9f4",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
+    },
+    "directories": {},
+    "features": {
+      "browser/markdown-streaming-contract": "7abaf471234ea3b4d7cafb3f4eba8791cac8fb02abdf615edc08f9b05354b355",
+      "browser/markdown-streaming-lifetime": "96e8b0ace8a57472b50547bb33feab4af7792d0d38d27ec96936b501cef10084",
+      "example/registry/markdown-streaming-demo": "72494832ede82352f3ed1eb99a4ae36ab93d6b4928a02c881190289f138045ef"
+    },
+    "upstreams": []
+  }
+}

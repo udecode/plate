@@ -539,7 +539,9 @@ Renders after a node's children inside its primary component.
 <APIItem name="decorate" type="Decorate<D>" optional>
   Supplies transient keyed ranges through `read({ entry, ...context })`.
   `observe({ refresh, ...context })` owns source invalidation and cleanup;
-  static rendering reads the source without subscribing.
+  static rendering reads the source without subscribing. A read depends on
+  its entry, the nodes inside it and observed state, so an element entry may
+  return ranges for its descendants.
 
   `attributes` accepts a `DecorationAttributes` object, a pure callback
   receiving the inferred plugin context plus `entry` and `decoration`, or

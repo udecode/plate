@@ -33,19 +33,28 @@ export const writeHtmlMediaProvider = (
  */
 export const readHtmlMediaProvider = (
   element: Element,
-  report: (
-    diagnostic: Readonly<{
-      action: 'dropped';
-      kind: 'attribute';
-      message: string;
-    }>
-  ) => void
+  {
+    preserve,
+    report,
+  }: Readonly<{
+    preserve: (...attributes: readonly string[]) => void;
+    report: (
+      diagnostic: Readonly<{
+        action: 'dropped';
+        kind: 'attribute';
+        message: string;
+      }>
+    ) => void;
+  }>
 ) => {
   const provider = element.getAttribute(PROVIDER_ATTRIBUTE);
   const sourceUrl = element.getAttribute(SOURCE_URL_ATTRIBUTE);
   const validSourceUrl =
     sourceUrl !== null && isStoredUrl('navigation')(sourceUrl);
 
+  if (provider !== null) preserve(PROVIDER_ATTRIBUTE);
+  // A stored source page is kept, and any other is reported here.
+  if (sourceUrl !== null) preserve(SOURCE_URL_ATTRIBUTE);
   if (sourceUrl !== null && !validSourceUrl) {
     report({
       action: 'dropped',

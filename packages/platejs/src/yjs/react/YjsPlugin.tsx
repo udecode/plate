@@ -8,9 +8,10 @@ import {
   type NodeEntry,
   type NodeKey,
 } from '../../core';
-import type {
-  RuntimePluginFactoryTypeLambda,
-  RuntimePluginFactoryTypeProviderOf,
+import {
+  isDocumentView,
+  type RuntimePluginFactoryTypeLambda,
+  type RuntimePluginFactoryTypeProviderOf,
 } from '../../facade';
 import type { InternalBasePluginRuntimeExtension } from '../../lib/plugin/BasePlugin';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
@@ -27,8 +28,26 @@ type RemoteCursorDecorationContext = Readonly<{
   api: object;
   editor: Readonly<{
     key: (path: readonly number[]) => NodeKey | null;
+    read: Readonly<{ view: Readonly<{ root: () => string | undefined }> }>;
   }>;
 }>;
+
+// Awareness selections are canonical: one without a root is in the primary
+// root. A cursor paints only through a reader of its own root, where its paths
+// are that reader's paths.
+const getReaderSelection = (
+  editor: RemoteCursorDecorationContext['editor'],
+  cursor: YjsRemoteCursor
+) => {
+  const { selection } = cursor;
+  const root = editor.read.view.root();
+
+  return selection &&
+    selection.anchor.root === root &&
+    selection.focus.root === root
+    ? selection
+    : null;
+};
 
 const hasRemoteCursorDecorationApi = (
   api: object
@@ -49,29 +68,28 @@ const remoteCursorDecoration = {
     }) => {
       if (!hasRemoteCursorDecorationApi(api)) return () => {};
 
+      const nodeKeyOf = (cursor: YjsRemoteCursor) => {
+        const selection = getReaderSelection(editor, cursor);
+
+        return selection ? editor.key(selection.anchor.path) : null;
+      };
       let previous = new Map(
-        api.remoteCursors().map((cursor) => [
-          cursor.clientId,
-          {
-            cursor,
-            nodeKey: cursor.selection
-              ? editor.key(cursor.selection.anchor.path)
-              : null,
-          },
-        ])
+        api
+          .remoteCursors()
+          .map((cursor) => [
+            cursor.clientId,
+            { cursor, nodeKey: nodeKeyOf(cursor) },
+          ])
       );
 
       return api.subscribeRemoteCursors(() => {
         const next = new Map(
-          api.remoteCursors().map((cursor) => [
-            cursor.clientId,
-            {
-              cursor,
-              nodeKey: cursor.selection
-                ? editor.key(cursor.selection.anchor.path)
-                : null,
-            },
-          ])
+          api
+            .remoteCursors()
+            .map((cursor) => [
+              cursor.clientId,
+              { cursor, nodeKey: nodeKeyOf(cursor) },
+            ])
         );
         const nodeKeys = new Set(
           [...previous.keys(), ...next.keys()].flatMap((clientId) => {
@@ -91,18 +109,25 @@ const remoteCursorDecoration = {
         if (nodeKeys.size > 0) refresh({ nodeKeys: [...nodeKeys] });
       });
     },
+    // Remote cursors are positions in the live session's document, so a view
+    // rendering another document shows none.
     read: ({
       api,
+      editor,
       entry: [node, path],
     }: RemoteCursorDecorationContext & {
       entry: NodeEntry;
     }) => {
-      if (!TextApi.isText(node) || !hasRemoteCursorDecorationApi(api)) {
+      if (
+        !TextApi.isText(node) ||
+        !hasRemoteCursorDecorationApi(api) ||
+        isDocumentView(editor)
+      ) {
         return [];
       }
 
       return api.remoteCursors().flatMap((cursor) => {
-        const { selection } = cursor;
+        const selection = getReaderSelection(editor, cursor);
 
         if (
           !selection ||

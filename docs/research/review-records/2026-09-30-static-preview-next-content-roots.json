@@ -1,0 +1,116 @@
+{
+  "id": "2026-09-30-static-preview-next-content-roots",
+  "scope": "html",
+  "kind": "review",
+  "date": "2026-09-30",
+  "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+  "model": "GPT-6 (Codex; session model variant unavailable)",
+  "method": "best-api-review/history-v3",
+  "trigger": "User supplied completed static-preview proportional-cost results and asked whether the next Best API Review should repeat this work or move to another item.",
+  "requirements": [
+    "Reconcile the prior projected-read and image-title findings with subsequent implementation and current public-boundary behavior.",
+    "Retain completed source-bound parser/publication/static-renderer adoption without treating stale older receipts as a wholesale reset.",
+    "Rendering and decoration locations must identify the correct document root; identical local paths in distinct roots must not alias.",
+    "Use the existing root/view/location owner before adding public state or a new registry protocol; keep root-relative paths valid within a clearly bound root.",
+    "Distinguish measured runtime costs, correctness gaps and historical ledger status when ranking the next job.",
+    "Assessment and research history only; no product repair, implementation plan, staging or publication."
+  ],
+  "evidenceReuse": "Read the completed proportional-cost plan and its bound execution outcome, matching current HTML review, pp3 and pp4 receipts, source and public callback contracts. Re-ran the original image-title scenario and a current public EditorStatic/renderStaticHtml TOC scenario; both now pass. The earlier projection probe itself imports a deleted private helper and is historical rather than current executable proof. Reused the completed browser measurements with their declared source scope and guard adjustment. This is a bounded next-work decision, not a new full conversion or Plite-view audit.",
+  "summary": "Pursue content-root location context as the next architectural item; stop repeating the broad conversion/Markdown/streaming review. Coherent document reads and image-title preservation now pass direct public checks, and the proportional static-renderer program has matching execution evidence. DecorationSource.read still receives editor plus a root-relative NodeEntry with no root; static content-root traversal passes that entry against the same document editor. Static table cells resolve by node and index each document, while live list ordinal falls back to 1 when the node has no main-root path. Compare existing root-bound reader contexts with explicit root-qualified locations at the Plite owner, then remove redundant caller location recovery and detached traversal where justified. Keep converted-segment reuse, immutable document views, static reuse, registry customization and the measured decoration fixes. Per-block caching/chunking remains deferred by the existing cadence/product trigger. group-last utilities warrant direct UI performance repair, not another parser/API redesign. Remaining HTML list/subtree-accounting gaps are concrete follow-ups, not grounds for restarting every format.",
+  "verdict": "pursue",
+  "previous": "2026-09-30-static-preview-decoration-cost-review",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-30-static-preview-decoration-cost-review",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "Retain the owner fixes, immutable document input and browser-based deferral of caching/chunking. The newer request adds no requirement that justifies another parser or full static-runtime replacement."
+    },
+    {
+      "record": "2026-09-30-static-preview-proportional-cost-execution",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "Retain completed adoption and the final-tree source-bound receipts within the plan scope. Use its explicit root/location risks for the next architectural question. Preserve the pp4 attribution guard adjustment and remaining HTML fidelity limits rather than treating completion as universal correctness."
+    }
+  ],
+  "alternatives": [
+    "Repeat the whole import/export/HTML/Markdown/streaming audit: Stop. The prior decisive bugs now pass, the settled parser/format contracts have no new contradictory requirement, and remaining failures have named narrower owners.",
+    "Keep root-relative NodeEntry without binding a root and patch list/table/decorations separately: Stop. Repeated location recovery retains ambiguity and indexing work across actual content-root consumers.",
+    "Change the existing Plite root/read context or pass an explicit root-qualified location through render/decorate callbacks: Pursue. Compare these two current-owner designs before choosing a signature; preserve local tuple iteration within a clearly bound root.",
+    "Add a new view manager, location registry or mirrored decoration store: Stop absent an independent job. Existing runtime roots and views own the identity.",
+    "Implement static per-block caching/chunking now: Defer under the accepted trigger. The full pass costs 1.7-3.8 ms at 50 KB and publications fit the cadence; correctness requires source dependency/state invalidation first.",
+    "Fix group-last CSS utilities: worthwhile direct Plate UI/Sync Shadcn performance work with the existing browser trigger. It does not call for a new public conversion or parsing API.",
+    "Reopen all HTML mapping design because remaining list/subtree loss exists: prefer a targeted accounting/content-fitting repair for the named cases. The surviving public laws and adopted encoder accounting do not need a universal codec."
+  ],
+  "proofLimits": "Current public checks confirm projected TOC correctness for EditorStatic and renderStaticHtml without source mutation, and image-title preservation through serializeHtml/server parse. No full package suite, browser or new benchmark was run in this assessment. pp3 has 8 passing cells. The unmodified pp4 summarizer has 2 passes and 2 inconclusive attribution guards; the disclosed companion changes the sampled-CPU/trace-busy threshold from 1.20 to 1.25 and passes all 4. Retain observed timing/parity, but do not present the adjusted classification as an unchanged frozen gate. Root context gaps are supported by callback/static traversal source and the completed plan; the new root-context architecture remains to be designed and proven across live/static, content roots, root moves and state refresh. Current ledger check passed before this record. Historical streaming pending metadata alone is not evidence that parser adoption is undone.",
+  "references": [
+    "docs/plans/2026-09-30-static-preview-proportional-cost.md",
+    "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/matrix-summary.json",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/README.txt",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/matrix-summary.json",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/matrix-summary-ratio125.json",
+    "packages/plitejs/src/interfaces/decoration.ts",
+    "packages/plitejs/src/react/decoration-source.ts",
+    "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts",
+    "packages/platejs/src/static/components/PlateStatic.tsx",
+    "packages/platejs/src/static/internal/staticDocumentView.ts",
+    "packages/platejs/src/lib/types/RenderElementProps.ts",
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts",
+    "apps/www/src/registry/components/editor/table-static.tsx",
+    "apps/www/src/registry/components/editor/column.tsx",
+    "apps/www/src/registry/components/editor/column-static.tsx",
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "docs/research/decisions/conversion-boundary.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/components/PlateStatic.spec.tsx": "e7bac9aeff492a901362755844cebc5e91a88dfa27daf1c2d7eb3e593cdf44ad",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "docs/plans/2026-09-30-static-preview-proportional-cost.md": "0957f694813d1c747b18247c42ae8a6c8ab59513387db9cc24b3723009851661",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/matrix-summary.json": "2ed0bb43f3947ea38c87a999907e63f2052ee3fb01ebbde652f4af4637e9013d",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/README.txt": "0b88189e1801afbb1cd0406aac8d5d75e10f68a03a91bc04d9ce531acc1d4cbd",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/matrix-summary.json": "080f7f38a442e4ab7dcfba2e87990921b59583e41f8cbb940619541ad9a9441c",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/matrix-summary-ratio125.json": "4ec9855588d12b0e9ff85dff8d553b43272bd170d4f6687dda63723577782ff4",
+      "packages/plitejs/src/interfaces/decoration.ts": "f9b361ab68cc04c66a1dcee20934bf3bbe3486d99ceb5db4a4fdc51b556c9dc5",
+      "packages/plitejs/src/react/decoration-source.ts": "443a03e3d1ce2db8ac5913be0965a030abc47cf1a80761a4cc1c134e0125ba9f",
+      "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts": "fb221beac3614839f46ef59e24c3caf52ac30a674a7de75a57d60e037ce54bd5",
+      "packages/platejs/src/static/components/PlateStatic.tsx": "57608045c0036398969839545981aed18f663404d8b8801b33353890d3f8db9e",
+      "packages/platejs/src/static/internal/staticDocumentView.ts": "cee8a70f2a7849adf5bcb81a657b8d1aa431555a52b197f8b46f6ac0cdff5427",
+      "packages/platejs/src/lib/types/RenderElementProps.ts": "b33903b2f5e1ec509ed3baa6d093ee3d854edadaff7f36a3cb675019d788137d",
+      "packages/platejs/src/features/list/lib/BaseListPlugin.ts": "8b98d3dcab9aa08b63632bf51c4f5d040fb675ff19e7f4f70e49eee24c6b2f24",
+      "apps/www/src/registry/components/editor/table-static.tsx": "3ac8137206fb1ad197766c2ab65a3f46a29ec5d2724efbd5c2d024624ee932d1",
+      "apps/www/src/registry/components/editor/column.tsx": "081ee2727076ee5e2e9fa1858d07e8ad08084083122fba2e93bac18384211cd5",
+      "apps/www/src/registry/components/editor/column-static.tsx": "10aa420597eb30ef73d206eb4443b2abbeda00a7cf4d98a2c8841498ed5a4fe3",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "1f59adc0fa45b94a4f0451a6b7e50fe491b6e5ce922fa45295efdcdef1af5171",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "575a74c691bd23c2ecff9b73d8d7fc75c88a53be6b80f13a09e4c1efead1ec36",
+      "docs/research/decisions/conversion-boundary.md": "99bec9f592e6479f8137ba92b25df831654e99000c5fb28d101b5c71713a0774"
+    },
+    "directories": {
+      "packages/platejs/src/static": "d4b2e951f9e1956599cbbb499237ec2e75f871060e34c5c69effef333a1efd37"
+    },
+    "features": {
+      "capability/html": "8135a4e0b278b55c07b824cfc66c5a1e164e6fba2a80f496a683a355d802d9b4",
+      "example/value/deserialize-html-value": "41cf8a0ccbd2fb68fe09d8bbbaa15555c8aa36cd205e449cb752d2d54d44c612",
+      "export/platejs/./html": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./html/server": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "export/platejs/./static": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/html": "e124b15c57fee445a81455e4a54eb9e46a8b5aac568e0bd8ac0f21e3804598e8",
+      "platejs/static": "d4b2e951f9e1956599cbbb499237ec2e75f871060e34c5c69effef333a1efd37",
+      "ui/html-export": "18dc4ff9da241dcce200c7d9d1de1b8267c99a81e48a108a8b2fd13d3e946e58",
+      "ui/html-export-kit": "6e510055e7d538e7ecc34a94444ff371edbcfc4c27b4296997ab41fab92c17c5",
+      "ui/html-export-schema-kit": "7852617a57c749d881f3364cb06c9ed240c4ecbc30dd3c68112b7cc313627978"
+    },
+    "upstreams": []
+  }
+}

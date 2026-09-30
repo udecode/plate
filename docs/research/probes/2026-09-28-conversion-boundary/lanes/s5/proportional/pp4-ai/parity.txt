@@ -1,0 +1,4 @@
+ai-rich-10000: 8 streams, text match, html match, ai-end markers base 1 cand 1 | text {"baseline":["f6f95d31f65e9478"],"candidate":["f6f95d31f65e9478"]} html {"baseline":["47ba25156a2761a0"],"candidate":["47ba25156a2761a0"]}
+ai-cjk-10000: 8 streams, text match, html match, ai-end markers base 1 cand 1 | text {"baseline":["d9a5734485a19d3b"],"candidate":["d9a5734485a19d3b"]} html {"baseline":["6ef7938015fe199f"],"candidate":["6ef7938015fe199f"]}
+ai-rich-50000: 8 streams, text match, html match, ai-end markers base 1 cand 1 | text {"baseline":["9e9d59c16ab2d511"],"candidate":["9e9d59c16ab2d511"]} html {"baseline":["09e65cf5e7967637"],"candidate":["09e65cf5e7967637"]}
+ai-cjk-50000: 8 streams, text match, html match, ai-end markers base 0 cand 0 | text {"baseline":["aedd05ac73564d32"],"candidate":["aedd05ac73564d32"]} html {"baseline":["bf6211239eed883c"],"candidate":["bf6211239eed883c"]}

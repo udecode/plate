@@ -1,0 +1,52 @@
+flushPassiveEffects: 1982.0 ms per profile over 3 profiles
+by inclusive (ms per profile):
+    1982.0  flushPassiveEffects@5319583e-150745cd7583489c.js:313573
+    1976.4  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+    1976.4  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+    1973.8  commitHookEffectListMount@5319583e-150745cd7583489c.js:216333
+    1972.8  scrollAIPreviewEnd@885-0f38e168d8e57a26.js:5337
+    1972.4  t4@885-0f38e168d8e57a26.js:6351
+    1926.6  getBoundingClientRect@:-1
+      45.7  querySelector@:-1
+       5.1  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       5.1  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       1.2  commitPassiveUnmountEffectsInsideOfDeletedTree_begin@5319583e-150745cd7583489c.js:281961
+       0.8  detachFiberAfterEffects@5319583e-150745cd7583489c.js:243458
+       0.8  detachDeletedInstance@5319583e-150745cd7583489c.js:22034
+       0.5  t2@885-0f38e168d8e57a26.js:9527
+       0.4  (anon)@6619-04c18df73cd5678a.js:24197 «()=>{var _edgeGuards_,_edgeGuards_1;let edgeGuards=document.querySelectorAll("[d»
+       0.4  querySelectorAll@:-1
+       0.4  updateStoreInstance@5319583e-150745cd7583489c.js:120377
+       0.4  _s.installed.window.requestAnimationFrame@82aa5511-47b78e186c9ce35c.js:62233
+       0.4  requestAnimationFrame@:-1
+       0.1  (anon)@1233-726a72fff91f8c4c.js:531700 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_»
+       0.1  withTransactionSpecDraftRead@1233-726a72fff91f8c4c.js:1525303
+       0.1  (anon)@1233-726a72fff91f8c4c.js:531858 «()=>{let editorRead=Reflect.get(editor,"read");if("function"!=typeof editorRead)»
+       0.1  read@1233-726a72fff91f8c4c.js:718068 «fn=>runRead(fn),createGroup=groupName=>new Proxy({},{get(target,key,receiver){if»
+       0.1  (anon)@1233-726a72fff91f8c4c.js:649801 «fn=>viewRuntime.read(state=>fn(state)));viewRead.schema=sourceEditor.read.schema»
+       0.1  read@1233-726a72fff91f8c4c.js:644797 «fn=>{var _getViewEditor;return(0,_core_document_view_read__WEBPACK_IMPORTED_MODU»
+by self (ms per profile):
+    1926.6  getBoundingClientRect@:-1
+      45.7  querySelector@:-1
+       2.5  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       1.6  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       1.4  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       0.8  detachDeletedInstance@5319583e-150745cd7583489c.js:22034
+       0.6  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       0.5  flushPassiveEffects@5319583e-150745cd7583489c.js:313573
+       0.4  scrollAIPreviewEnd@885-0f38e168d8e57a26.js:5337
+       0.4  querySelectorAll@:-1
+       0.4  updateStoreInstance@5319583e-150745cd7583489c.js:120377
+       0.4  commitPassiveUnmountEffectsInsideOfDeletedTree_begin@5319583e-150745cd7583489c.js:281961
+       0.4  requestAnimationFrame@:-1
+       0.0  _8@1233-726a72fff91f8c4c.js:788172
+       0.0  enterEditorRootChildren@1233-726a72fff91f8c4c.js:1651931
+       0.0  (anon)@2698-c2ee67ec4838aa66.js:982871 «()=>v.removeEventListener(Z,C)},[x,r.onSelect,r.disabled]),!x)return null;let{di»
+       0.0  commitHookEffectListUnmount@5319583e-150745cd7583489c.js:216844
+       0.0  _object_spread_props@3370-ab6f5e713678b725.js:174957
+       0.0  offsetKey@4373-030fd4499fccaf9a.js:412550
+       0.0  structuredClone@:-1
+       0.0  getEditorDocumentRoots@1233-726a72fff91f8c4c.js:1548998
+       0.0  (anon)@1233-726a72fff91f8c4c.js:1124098 «param=>{let{at:innerAt11,options:innerOptions10}=param;return withQueryRoot(edit»
+       0.0  getTransactionSpecContext@1233-726a72fff91f8c4c.js:1524801
+       0.0  get@1233-726a72fff91f8c4c.js:720780

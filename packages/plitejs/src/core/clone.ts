@@ -11,7 +11,10 @@ export const freezeOwnedJsonValue = <T extends object>(value: T): T => {
   return value;
 };
 
-export const cloneValue = <T>(value: T): T => structuredClone(value);
+// Primitives clone to themselves; skipping the host call matters because
+// every projected read clones the (usually null) selection.
+export const cloneValue = <T>(value: T): T =>
+  value === null || typeof value !== 'object' ? value : structuredClone(value);
 
 export const deepFreeze = <T>(value: T): T => {
   if (value == null || typeof value !== 'object' || Object.isFrozen(value)) {

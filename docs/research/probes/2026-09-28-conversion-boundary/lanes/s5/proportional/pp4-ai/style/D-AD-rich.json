@@ -1,0 +1,67 @@
+[
+ {
+  "label": "D",
+  "cell": "ai-rich-50000",
+  "streams": [
+   {
+    "role": "pair-0",
+    "load1": 2.5,
+    "commits": 196,
+    "previewElements": 16258,
+    "ult": 1.3,
+    "layout": 0.58,
+    "paint": 1.04,
+    "fullRecalcs": 1,
+    "fullRecalcMs": 88.9,
+    "largestRecalc": 33712,
+    "c": 1182.4,
+    "busy": 2840.8,
+    "errors": 0
+   },
+   {
+    "role": "pair-1",
+    "load1": 2.3,
+    "commits": 196,
+    "previewElements": 16258,
+    "ult": 1.31,
+    "layout": 0.56,
+    "paint": 1.04,
+    "fullRecalcs": 1,
+    "fullRecalcMs": 91.1,
+    "largestRecalc": 33712,
+    "c": 1143.5,
+    "busy": 2829.8,
+    "errors": 0
+   }
+  ],
+  "median": {
+   "ult": 1.31,
+   "layout": 0.57,
+   "paint": 1.04,
+   "fullRecalcs": 1.0,
+   "fullRecalcMs": 90.0,
+   "c": 1162.95,
+   "busy": 2835.3,
+   "commits": 196.0,
+   "previewElements": 16258.0
+  },
+  "range": {
+   "ult": [
+    1.3,
+    1.31
+   ],
+   "fullRecalcs": [
+    1,
+    1
+   ],
+   "c": [
+    1143.5,
+    1182.4
+   ],
+   "busy": [
+    2829.8,
+    2840.8
+   ]
+  }
+ }
+]

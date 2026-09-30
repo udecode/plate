@@ -301,12 +301,14 @@ export const BaseTextIndentPlugin = definePlugin(PLUGINS.textIndent, {
   formats: ({ defineFormats }) =>
     defineFormats({
       html: {
-        decode: ({ element, pluginState }) => {
+        decode: ({ element, pluginState, preserve }) => {
           const { offset, unit } = pluginState;
           const dataValue = element.dataset.textIndent;
 
           if (dataValue) {
             const value = Number(dataValue);
+
+            preserve('data-text-indent');
 
             return Number.isFinite(value) && value !== 0 ? value : undefined;
           }

@@ -1,0 +1,30 @@
+{
+  "kind": "view-composition",
+  "findings": {
+    "projectedMain": {
+      "text": "PROJECTED"
+    },
+    "derivedNamed": {
+      "text": "PROJECTED"
+    },
+    "explicitNamed": {
+      "text": "PROJECTED NOTES"
+    },
+    "derivedReadOnly": false,
+    "derivedPlugin": {
+      "text": "PROJECTED"
+    },
+    "explicitPlugin": {
+      "text": "PROJECTED NOTES"
+    },
+    "derivedLiveNamed": {
+      "text": "SOURCE"
+    },
+    "derivedLiveReadOnly": false,
+    "derivedUpdate": "Error: Cannot update a read-only editor view.",
+    "sourceUnchanged": true
+  },
+  "direct": {
+    "text": "PROJECTED NOTES"
+  }
+}
