@@ -3,6 +3,7 @@ import React, {
   type ReactNode,
   type Ref,
   useCallback,
+  useRef,
 } from 'react';
 
 import { NodeApi, type Path, type NodeKey, type Text as TextNode } from '../..';
@@ -21,14 +22,19 @@ import {
   type DOMTextSyncOptOutReason,
   getDOMTextSyncCapability,
 } from '../dom-text-sync';
+import type { EditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
   getNodeKey as editorGetNodeKey,
   isInline as editorIsInline,
 } from '../editable/runtime-editor-api';
 import { readTextByKey } from '../editable/runtime-live-state';
 import { useAuthoredFragmentSlots } from '../hooks/use-authored-fragment-slots';
-import { useClaimEditableDOMCommit } from '../hooks/use-claim-editable-dom-commit';
+import {
+  useClaimEditableDOMCommit,
+  useEditableDOMRuntime,
+} from '../hooks/use-claim-editable-dom-commit';
 import { useEditorContext } from '../hooks/use-editor-context';
+import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import {
   type EditorTextSelectorContext,
   useMountedTextRenderSelector,
@@ -347,6 +353,56 @@ const getLeafAttributes = (leafPosition?: RenderLeafProps['leafPosition']) => ({
   'data-editor-leaf-start': leafPosition?.start,
 });
 
+// oxlint-disable-next-line react/prefer-function-component -- shouldComponentUpdate preserves native-owned DOM without reading refs during render.
+class EditableTextContent extends React.Component<{
+  children: (
+    bindElement: (element: HTMLSpanElement | null) => void
+  ) => ReactNode;
+  runtime: EditableDOMRuntime | null;
+  textRef?: Ref<HTMLSpanElement>;
+}> {
+  private element: HTMLSpanElement | null = null;
+  private boundRef: Ref<HTMLSpanElement> | undefined;
+
+  private readonly bindElement = (element: HTMLSpanElement | null) => {
+    if (this.element === element && this.boundRef === this.props.textRef) {
+      return;
+    }
+    if (this.element) assignRef(this.boundRef, null);
+    this.element = element;
+    this.boundRef = this.props.textRef;
+    assignRef(this.boundRef, element);
+  };
+
+  private readonly resume = () => {
+    if (this.element && !this.defer()) this.forceUpdate();
+  };
+
+  defer() {
+    return !!(
+      this.element &&
+      this.props.runtime?.deferCompositionDOMWrite(this.element, this.resume)
+    );
+  }
+
+  shouldComponentUpdate(next: Readonly<EditableTextContent['props']>) {
+    return (
+      next.runtime !== this.props.runtime ||
+      !this.element ||
+      !next.runtime?.isCompositionDOMNodeProtected(this.element)
+    );
+  }
+
+  componentDidUpdate() {
+    this.bindElement(this.element);
+    this.props.runtime?.claimReactCommit();
+  }
+
+  render() {
+    return this.props.children(this.bindElement);
+  }
+}
+
 const RenderEditableText = ({
   decorations,
   isLast = false,
@@ -387,6 +443,11 @@ const RenderEditableText = ({
   zeroWidth?: ZeroWidthOptions;
 }) => {
   useClaimEditableDOMCommit();
+  const runtime = useEditableDOMRuntime();
+  const contentRef = useRef<EditableTextContent>(null);
+  useIsomorphicLayoutEffect(() => {
+    contentRef.current?.defer();
+  });
   const editor = useEditorContext();
   const renderFragment = React.useContext(AuthoredFragmentRendererContext);
   const slots = useAuthoredFragmentSlots(nodeKey ?? null);
@@ -617,29 +678,31 @@ const RenderEditableText = ({
         );
       })();
 
-  if (renderText) {
-    return (
-      <RenderCallback
-        props={{
-          attributes: textAttributes,
-          children: content,
-          text: textNode,
-        }}
-        render={renderText}
-      />
-    );
-  }
-
   return (
-    <EditorText
-      domSync={domTextSync.enabled}
-      domSyncReason={domTextSync.reason}
-      path={path}
-      ref={textRef}
-      nodeKey={nodeKey}
-    >
-      {content}
-    </EditorText>
+    <EditableTextContent ref={contentRef} runtime={runtime} textRef={textRef}>
+      {(bindTextRef) =>
+        renderText ? (
+          <RenderCallback
+            props={{
+              attributes: { ...textAttributes, ref: bindTextRef },
+              children: content,
+              text: textNode,
+            }}
+            render={renderText}
+          />
+        ) : (
+          <EditorText
+            domSync={domTextSync.enabled}
+            domSyncReason={domTextSync.reason}
+            path={path}
+            ref={bindTextRef}
+            nodeKey={nodeKey}
+          >
+            {content}
+          </EditorText>
+        )
+      }
+    </EditableTextContent>
   );
 };
 

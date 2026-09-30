@@ -769,7 +769,8 @@ export class EditableDOMRuntime {
     );
   }
 
-  private isCompositionDOMNodeProtected(node: globalThis.Node) {
+  /** Whether a subtree overlaps this view's connected composition anchor. */
+  isCompositionDOMNodeProtected(node: globalThis.Node) {
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
     const root = this.rootElement;
 
