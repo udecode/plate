@@ -1,6 +1,5 @@
 'use client';
 
-import { useDraggable } from 'platejs/dnd/react';
 import { ImagePlugin } from 'platejs/media/react';
 import {
   EditorElement,
@@ -38,9 +37,6 @@ export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
   const editor = useEditor();
   const captionFocused = useCaptionFocused(path);
   const previewOpen = usePluginStore(imagePlugin, 'previewOpen');
-  const { isDragging, handleRef } = useDraggable({
-    element: props.element,
-  });
 
   return (
     <MediaToolbar
@@ -71,18 +67,22 @@ export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
                 direction="left"
               />
               <div>
-                {/* oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] The editor node owns a user URL, native draggable image, composed ref, and resizable width. */}
+                {/* oxlint-disable-next-line nextjs/no-img-element, jsx-a11y/no-noninteractive-element-interactions -- [P1 local-invariant] The editor node owns a user URL, native draggable image that starts its block drag, composed ref, and resizable width. */}
                 <img
-                  ref={handleRef}
                   className={cn(
                     'block w-full max-w-full cursor-pointer object-cover px-0',
                     'rounded-sm',
                     focused && selected && 'ring-2 ring-ring ring-offset-2',
-                    isDragging && 'opacity-50'
+                    '[[data-editor-dragging]_&]:opacity-50'
                   )}
                   alt={props.element.alt}
                   draggable
                   src={props.element.url}
+                  onDragStart={(event) => {
+                    editor.api.dom.drag.start(event.nativeEvent, {
+                      node: props.element,
+                    });
+                  }}
                   onDoubleClickCapture={() => {
                     editor
                       .plugin(imagePlugin)

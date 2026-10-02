@@ -224,7 +224,18 @@ Missing captured evidence makes source freshness stale; it does not invalidate
 the immutable record. New records and current scope evidence must exist.
 
 The draft is not a verdict. It captures the scope's source groups, declared
-owners, consumers, selected proof, additional evidence inputs and durable law.
+owners, consumers, selected proof, additional evidence inputs and durable law. It
+never captures the scope's own decision page, which is the review's output, so
+reconciling that page after `record` keeps the record matching.
+`draft <scope> --from <draft>` and `draft-execution <plan> --from <draft>`
+recapture the source and carry every authored field from the earlier draft.
+Captured fields come from the live tree: `kind`, `scope`, `scopes`,
+`question`, `method`, `previous`, `plan`, `binding`, `reviewBasis`,
+`workKind` and `source`. Reconciliation entries keep their `action` and
+`reason` by record ID; an entry for a record the earlier draft did not know
+stays empty, so `validate` refuses until someone fills it.
+Source files added to a draft by hand do not carry over, so declare
+decision-critical inputs in the scope's `evidenceInputs` instead.
 Directory fingerprints detect added or removed files. Add any further
 decision-critical source or runner before recording. An empty proof list must
 have an explicit gap; an unrelated test cannot fill it. Complete:
@@ -241,6 +252,9 @@ have an explicit gap; an unrelated test cannot fill it. Complete:
 - `summary`, `alternatives`, `verdict`: concise rationale and the material
   design lanes, including the strongest deletion/merger alternative, with
   `stop`, `pursue`, or `defer`.
+- `callSites`: for a Pursue verdict, `current` and `proposed`, each a normal
+  call site or, when no public call changes, the ownership flow. Records made
+  before this field existed stay valid without it.
 - `previous`, `relation`: the latest effective record and `reaffirms`,
   `supersedes`, `reverses`, or `defers`; use `null` and `initial` on first review.
 - `reconciliation`: entries with `record`, `question`, `action` (`retains`,

@@ -9,7 +9,7 @@ Plite doctrine after the lane is selected.
 
 ## Plite Source Order
 
-1. Active goal plan.
+1. Active plan.
 2. Root `VISION.md`, then this file.
 3. `docs/plite/agent-start.md`.
 4. Relevant `plite-*` source rule under `.agents/rules`.
@@ -141,6 +141,9 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - Layering beats feature buckets: document truth, DOM transport, React runtime,
   browser proof, projections/services, layout, lightweight surfaces, and
   productization need clear owners.
+- Browser proof instrumentation is opt-in. `installBrowserHandle()` in a test
+  or development entry attaches the page handle and keeps the kernel trace;
+  production bundles carry neither.
 - Fast paths follow material behavior, not installed-handler or renderer
   presence. The owning runtime publishes internal capability, unknown behavior
   fails closed, and ordinary applications never opt into correctness with a
@@ -318,6 +321,17 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   reachable named-root closure move and reject atomically. Multi-target fitting
   remaps exclusive roots per placement, preserves intentionally shared roots,
   prunes unreachable roots, and never commits partial content or root state.
+- `editor.api.transfer` is the one move and copy action for drags, custom
+  drivers and keyboard moves. A move inside one document commits its whole
+  landed content or nothing: a guard after corrections refuses a landing that
+  differs from the payload. Independent editors, read-only views and document
+  views copy, and a copy follows paste, landing what fits and reporting the
+  loss.
+- A block lands wherever the compiled schema places it, at any depth. Placement
+  checks the target's children as they will be after the transfer, for the
+  nodes that actually land. A feature narrows it with a `transferVeto`, and a
+  landing read only redirects an edge. Without a compiled content program,
+  nested edges refuse. Hover and drop resolve the same edge.
 - Inferred values preserve the primary/named root grammar and every element's
   legal child variants without an arbitrary depth cliff. Canonical output
   requiredness follows runtime defaults; construction input may omit defaulted
@@ -467,7 +481,7 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
 - Reject packets that improve metrics but weaken selection, typing, copy,
   paste, IME, focus, undo, follow-up input, native find, or scroll/caret
   behavior.
-- Escalate to `plite-plan` when the next useful win is API/runtime boundary.
+- Escalate to `plate-architecture` when the next useful win is API/runtime boundary.
 - Each mounted `Editable` owns one bounded DOM phase scheduler. Queued root
   work runs in `model -> DOM read -> DOM/React write -> selection/repair ->
 post-selection navigation` order, coalesces by semantic key, and reports
@@ -511,32 +525,34 @@ post-selection navigation` order, coalesces by semantic key, and reports
 - `maintainer`: public GitHub issue/PR/security queue control plane for the
   merged Plate + Plite repo; routes work to narrower owners and stops at
   authority boundaries.
-- `task autonomous`: internal Plate/Plite quality supervision; `improve`
-  supplies the recurring whole-project preset. Plite package/runtime/browser
-  work stays with its technical owners; measured work routes to `benchmark`.
+- pstack's Autonomous run: internal Plate/Plite quality supervision. Plite
+  package/runtime/browser work stays with its technical owners; measured work
+  routes to `benchmark`.
 - `benchmark`: sole ordered performance diagnosis/execution owner for Plite,
   Plate, current/main, pinned Slate, mount/editing, example breadth, and stress;
   pauses at a causal owner, fixes/reruns, then resumes remaining lanes.
-- `task closure`: post-merge/current-tree until-clean closure after Plite work is
+- the Babysit playbook: post-merge/current-tree until-clean closure after Plite work is
   already applied.
-- `plite-research`: external discovery, OSS/GitHub source synthesis, durable
+- `research`: external discovery, OSS/GitHub source synthesis, durable
   research ledgers, and promotion into owners.
-- `editor-audit`: exhaustive comparison of selected local editor source trees,
+- `research audit`: exhaustive comparison of selected local editor source trees,
   verified commit tracking, incremental sync, and material change dossiers
-  routed to `best-api`, `plite-plan`, or `plate-plan`.
+  routed to `best-api` or `plate-architecture`.
 - `maintainer slate-issue`: one public Slate issue coordinated through a local
   Plite repair, Plate PR targeting `next`, verified issue update, and honest
   integration/release state.
-- `patch`: sole local Plate/Plite behavior-bug and regression owner; the Plite
-  lane provides reproduction, class-level behavior coverage, durable substrate
-  repair, architecture pressure and exact proof without public GitHub
-  mutation. Structured review follows Task's existing gate and budget.
+- pstack's Bug fix playbook, driven by `verify`: sole local Plate/Plite
+  behavior-bug and regression owner; the Plite lane provides reproduction,
+  class-level behavior coverage, durable substrate repair, architecture
+  pressure and exact proof without public GitHub mutation. Structured review
+  follows the pstack block's Review rule in `AGENTS.md`.
 - `best-api`: concrete public API design, review, and P0/P1/P2/P3 debt
   ranking.
-- `plite-plan`: substrate architecture, adoption/proof planning, and accepted
-  plan execution after the target API is clear.
-- `slate-migration`: migration closure and stale API audits.
-- `tdd`: missing oracle/test design when the proof itself does not exist.
+- `plate-architecture`: Plate and Plite architecture, adoption/proof planning, and
+  accepted plan execution after the target API is clear, with separate layer
+  sections.
+- `plate-next`: migration closure and stale API audits.
+- `pstack:tdd`: missing oracle/test design when the proof itself does not exist.
 
 Do not merge distinct owners into one vague mega-skill. Repair confusing
 routing in source rules. Create narrow owners only when evidence shows no clear

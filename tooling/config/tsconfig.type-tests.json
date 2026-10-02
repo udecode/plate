@@ -41,6 +41,9 @@
       "platejs/combobox": [
         "../../packages/platejs/src/features/combobox/index.ts"
       ],
+      "platejs/combobox/react": [
+        "../../packages/platejs/src/react/features/combobox/index.ts"
+      ],
       "platejs/comments": [
         "../../packages/platejs/src/features/comments/index.ts"
       ],
@@ -60,7 +63,6 @@
         "../../packages/platejs/src/react/features/details/index.ts"
       ],
       "platejs/diff": ["../../packages/platejs/src/diff/index.ts"],
-      "platejs/dnd/react": ["../../packages/platejs/src/dnd/react/index.ts"],
       "platejs/docx/export": [
         "../../packages/platejs/src/docx/export/index.ts"
       ],

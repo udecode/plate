@@ -3,7 +3,7 @@ import {
   createEditor,
   definePlugin,
 } from '../../../packages/plitejs/src/index';
-import { writeBenchmarkArtifact } from './benchmark-artifact';
+import { writeBenchmarkResult } from './benchmark-artifact';
 
 const outputArgument = process.argv.find((argument) =>
   argument.startsWith('--output=')
@@ -97,12 +97,6 @@ const structuralFailures = rows.filter(
     row.warmFactoryCalls !== 0
 );
 
-if (strict && (widthRatio > 2 || structuralFailures.length > 0)) {
-  throw new Error(
-    `Read-view lifecycle failed: width ratio=${widthRatio}, structural failures=${structuralFailures.length}.`
-  );
-}
-
 const result = {
   benchmark: 'plite-read-view-lifecycle',
   degradationContract:
@@ -114,7 +108,20 @@ const result = {
   version: 1,
   widthRatio,
 };
-const output = `${JSON.stringify(result, null, 2)}\n`;
+const outputPath = outputArgument?.slice('--output='.length);
+
+const output = writeBenchmarkResult({
+  outputPath,
+  result,
+  strict,
+  validate: () => {
+    if (widthRatio > 2 || structuralFailures.length > 0) {
+      throw new Error(
+        `Read-view lifecycle failed: width ratio=${widthRatio}, structural failures=${structuralFailures.length}.`
+      );
+    }
+  },
+});
 
 process.stdout.write(
   `METRIC plite_read_view_lifecycle_width_ratio=${widthRatio}\n`
@@ -125,8 +132,6 @@ process.stdout.write(
     0
   )}\n`
 );
-if (outputArgument) {
-  writeBenchmarkArtifact(outputArgument.slice('--output='.length), output);
-} else {
+if (outputPath === undefined) {
   process.stdout.write(output);
 }

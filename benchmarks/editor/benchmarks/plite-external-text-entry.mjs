@@ -12,7 +12,10 @@ import {
   createEditor,
   Editable,
   EditorRoot,
+  installBrowserHandle,
 } from '../../../packages/plitejs/dist/react/index.js';
+
+installBrowserHandle();
 
 const app = document.getElementById('app');
 const projectedTextUnits = 4096;
@@ -390,6 +393,10 @@ const install = async ({
     }
     await frame();
   }
+  assert(
+    app.querySelector('[data-editor]')?.__pliteBrowserHandle,
+    'browser handle not installed'
+  );
   await paint();
   const renderToPaintMs = performance.now() - renderStart;
   current.refreshDecorations = () => {

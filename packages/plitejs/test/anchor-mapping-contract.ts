@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Descendant, type Element } from 'plitejs';
+import {
+  createEditor,
+  type Descendant,
+  type Element,
+  type Point,
+} from 'plitejs';
 
 import {
   replace as editorReplace,
@@ -319,6 +324,54 @@ describe('plite anchor mapping contract', () => {
         roots: { header: [paragraph('Xhead!')] },
       }
     );
+  });
+
+  it('maps a forward anchor past a slice fitted beside an inline element', () => {
+    const editor = createEditor();
+    extendTestSchema(editor, { inline: { inline: true } });
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'Discuss ' },
+            { type: 'inline', children: [{ text: 'link' }] },
+            { text: ' here' },
+          ],
+        },
+      ],
+      selection: null,
+    });
+
+    const at = { offset: 4, path: [0, 0] };
+    const slice = editor.read.slice.get({
+      at: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+    });
+    let start: Point | null = null;
+    let end: Point | null = null;
+
+    editor.update((tx) => {
+      const before = tx.anchor(at, {
+        association: 'backward',
+        deletion: 'nearest',
+      });
+      const after = tx.anchor(at, {
+        association: 'forward',
+        deletion: 'nearest',
+      });
+
+      assert.ok(tx.slice.replace(slice, { at }));
+      start = before.resolve();
+      end = after.resolve();
+    });
+
+    assert.ok(start && end);
+    assert.deepEqual(end, { offset: 7, path: [0, 0] });
+    assert.equal(editorString(editor, { anchor: start, focus: end }), 'Dis');
   });
 
   it('rebases across normalization-driven spacer insertion', () => {

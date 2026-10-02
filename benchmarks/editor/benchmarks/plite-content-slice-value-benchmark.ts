@@ -8,7 +8,7 @@ import {
   ElementApi,
 } from '../../../packages/plitejs/src/index';
 import { getDefined } from '../../getDefined';
-import { writeBenchmarkArtifact } from './benchmark-artifact';
+import { writeBenchmarkResult } from './benchmark-artifact';
 
 const iterationsArgument = process.argv.find((argument) =>
   argument.startsWith('--iterations=')
@@ -197,13 +197,7 @@ const closedSizeRatio =
 const fromJsonSizeRatio =
   stress.fromJsonMs.p50 / Math.max(tiny.fromJsonMs.p50, 0.001);
 
-if (process.env.PLITE_CONTENT_SLICE_VALUE_STRICT === '1') {
-  assert.equal(trustedIdentityReuse, true);
-  assert.equal(trustedPreparationReuse, true);
-  assert.equal(sourceAliasFree, true);
-  assert.equal(deeplyFrozen, true);
-}
-
+const strict = process.env.PLITE_CONTENT_SLICE_VALUE_STRICT === '1';
 const result = {
   benchmark: 'plite-content-slice-value',
   cohorts: Object.fromEntries(
@@ -233,7 +227,19 @@ const result = {
   },
   version: 1,
 };
-const output = `${JSON.stringify(result, null, 2)}\n`;
+const outputPath = outputArgument?.slice('--output='.length);
+
+const output = writeBenchmarkResult({
+  outputPath,
+  result,
+  strict,
+  validate: () => {
+    assert.equal(trustedIdentityReuse, true);
+    assert.equal(trustedPreparationReuse, true);
+    assert.equal(sourceAliasFree, true);
+    assert.equal(deeplyFrozen, true);
+  },
+});
 
 process.stdout.write(
   `METRIC plite_content_slice_value_trusted_identity_reuse=${trustedIdentityReuse ? 1 : 0}\n`
@@ -266,8 +272,6 @@ process.stdout.write(
   `METRIC plite_content_slice_value_trusted_preparation_size_ratio=${trustedPreparationSizeRatio}\n`
 );
 
-if (outputArgument) {
-  writeBenchmarkArtifact(outputArgument.slice('--output='.length), output);
-} else {
+if (outputPath === undefined) {
   process.stdout.write(output);
 }

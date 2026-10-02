@@ -108,6 +108,8 @@ const sharedAppFiles = new Set([
 const proofContractInputs = new Set([
   'benchmarks/editor/benchmarks/benchmark-artifact.ts',
   'benchmarks/editor/benchmarks/benchmark-artifact.test.ts',
+  'benchmarks/editor/research/benchmark-registry.json',
+  'benchmarks/editor/src/index.mjs',
   'benchmarks/targets/slate-v2.json',
   'tooling/scripts/bench-targets.mjs',
   'tooling/scripts/bench-targets.test.mjs',
@@ -286,7 +288,11 @@ export const createAffectedPlan = (changedFiles) => {
       affected.add(definition.name);
       relevant = true;
 
-      if (isRuntimePackageInput(file, root)) {
+      // The local-only device lane never runs in a browser job.
+      if (
+        isRuntimePackageInput(file, root) &&
+        !isPathWithin(file, 'packages/test/src/device')
+      ) {
         runtimeAffected.add(definition.name);
         browserSmoke = true;
         if (definition.name !== '@platejs/test') appTypecheck = true;

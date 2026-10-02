@@ -14,7 +14,7 @@ body:
 
         Please only report one issue per submission. Break multiple issues into separate reports.
 
-        This form is tuned for local maintainer Codex intake through `task`. Public repros, affected packages, browser surface, and concrete acceptance criteria save a debugging round-trip. Do not assume a hosted bot or private context can fill gaps after filing.
+        This form is tuned for local maintainer agent intake through `maintainer`. Public repros, affected packages, browser surface, and concrete acceptance criteria save a debugging round-trip. Do not assume a hosted bot or private context can fill gaps after filing.
   - type: dropdown
     id: bug_type
     attributes:
@@ -31,7 +31,7 @@ body:
     attributes:
       label: Browser surface
       description: >
-        Choose `Yes` only if this bug lives on a real browser/UI/editor flow that should be verified in a browser during maintainer `task` execution.
+        Choose `Yes` only if this bug lives on a real browser/UI/editor flow that should be verified in a browser during maintainer execution.
       options:
         - 'No'
         - 'Yes'

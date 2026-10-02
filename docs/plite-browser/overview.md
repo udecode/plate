@@ -8,7 +8,7 @@ status: historical
 
 > Historical April browser-proof design and reference comparison. Commands,
 > source locations, and “current” claims below belong to that captured program.
-> Select live proof through [Verify Plate](../../.agents/skills/verify-plate/SKILL.md)
+> Select live proof through [verify](../../.agents/skills/verify/SKILL.md)
 > and [Plite Agent Start](../plite/agent-start.md); consult the
 > [feature review ledger](../research/reviews.md) before reopening its proposals.
 > The retired sibling checkout is unavailable; its paths are provenance only.

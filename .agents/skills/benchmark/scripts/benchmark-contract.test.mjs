@@ -5,7 +5,6 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
-  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -20,7 +19,6 @@ import {
 } from './validate-benchmark-plan.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
-const read = (path) => readFileSync(join(root, path), 'utf8');
 const laneRows = (overrides = {}) =>
   DEFAULT_BENCHMARK_LANES.map((lane, index) => {
     const row = overrides[lane] ?? {};
@@ -84,6 +82,7 @@ const plan = ({
   invocation = '$benchmark all',
   rows = {},
   source = {},
+  verification = '- artifact: tmp/benchmarks/final.json',
 } = {}) => `
 ## Benchmark Source
 
@@ -151,6 +150,9 @@ ${laneRows(rows)}
 | Cause ID | Lane | Decision | Fix Class | Long-Term Target | Decision Owner | Layer Plan | Compatibility Verdict | Fix Owner | Causal Evidence | Pre-Fix Correctness | Benchmark Command | Benchmark Result | Correctness Command | Post-Fix Correctness | Evidence |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 ${causeHistoryRows(history)}
+
+Verification evidence:
+${verification}
 `;
 
 const provenCause = {
@@ -208,22 +210,6 @@ test('completion rejects warmed-only and substitute-profile interaction proof', 
   assert.equal(validateBenchmarkPlan(plan(), { complete: true }).filter(error => error.startsWith('Interaction Coverage')).length, 0);
   const nonBrowser = plan().replace(/^- (first-interaction|settled-interaction|route-scope|reporter-profile):.*$/gm, '- $1: N/A: package-only computation without a browser');
   assert.equal(validateBenchmarkPlan(nonBrowser, { complete: true }).filter(error => error.startsWith('Interaction Coverage')).length, 0);
-});
-
-test('route-wide rerender claims cannot close on one owner proxy', () => {
-  const rule = read('.agents/rules/benchmark.mdc');
-  const methodology = read(
-    '.agents/rules/benchmark/references/methodology.md'
-  );
-
-  assert.match(
-    rule,
-    /reporter-visible rerender[\s\S]*exact-route,[\s\S]*repeated-component inventory[\s\S]*wrapper-local Profiler[\s\S]*every family above 5%[\s\S]*at least 90%/
-  );
-  assert.match(
-    methodology,
-    /Reporter-visible rerender[\s\S]*exact-route,[\s\S]*repeated-component inventory[\s\S]*wrapper-local Profiler[\s\S]*every family above 5%[\s\S]*at least 90%/
-  );
 });
 
 test('a conclusive cause requires causal evidence and pauses later lanes', () => {
@@ -351,7 +337,7 @@ test('architectural causes require the long-term Best API and layer-plan decisio
   assert.deepEqual(validateBenchmarkPlan(hardLawPreservation), []);
 });
 
-test('correctness causes route their repair decision to Patch', () => {
+test('correctness causes keep their repair decision out of Benchmark', () => {
   const rows = Object.fromEntries(
     DEFAULT_BENCHMARK_LANES.map((lane, index) => [
       lane,
@@ -360,7 +346,7 @@ test('correctness causes route their repair decision to Patch', () => {
   );
   const cause = {
     ...provenCause,
-    decisionOwner: 'patch',
+    decisionOwner: 'bug-fix',
     fixClass: 'correctness',
   };
 
@@ -369,7 +355,7 @@ test('correctness causes route their repair decision to Patch', () => {
     validateBenchmarkPlan(
       plan({ cause: { ...cause, decisionOwner: 'benchmark' }, rows })
     ).join('\n'),
-    /correctness requires decision-owner patch/
+    /correctness belongs to the Bug fix playbook/
   );
 });
 
@@ -751,6 +737,12 @@ test('complete mode accepts all closed default lanes', () => {
   );
 });
 
+test('complete mode rejects pending or missing verification evidence', () => {
+  for (const markdown of [plan({ verification: '- Pending.' }), plan().replace(/Verification evidence:[\s\S]*$/, '')]) {
+    assert.match(validateBenchmarkPlan(markdown, { complete: true }).join('\n'), /Verification evidence must record fresh final evidence/);
+  }
+});
+
 test('complete mode requires durable per-cause rerun history', () => {
   const rows = Object.fromEntries(
     DEFAULT_BENCHMARK_LANES.map((lane) => [
@@ -910,7 +902,7 @@ test('plan validator CLI is fail-closed and accepts the Benchmark template', () 
   });
   const template = spawnSync(
     process.execPath,
-    [script, 'docs/plans/templates/benchmark.md'],
+    [script, '.agents/rules/benchmark/templates/benchmark.md'],
     { cwd: root, encoding: 'utf8' }
   );
 
@@ -918,162 +910,4 @@ test('plan validator CLI is fail-closed and accepts the Benchmark template', () 
   assert.match(missingPlan.stderr, /Usage:/);
   assert.equal(template.status, 0);
   assert.match(template.stdout, /structurally valid/);
-});
-
-
-test('the performance pack blocks architecture closeout until executable scale evidence is resolved', () => {
-  const fixtureRoot = mkdtempSync(join(tmpdir(), 'architecture-scale-pack-'));
-  const templateDir = join(fixtureRoot, 'docs/plans/templates');
-  const packDir = join(templateDir, 'packs');
-  const planPath = join(fixtureRoot, 'docs/plans/scale-smoke.md');
-  const helper = join(
-    root,
-    '.agents/skills/autogoal/scripts/create-goal-scratchpad.mjs'
-  );
-  const checker = join(root, '.agents/skills/autogoal/scripts/check-complete.mjs');
-
-  try {
-    mkdirSync(packDir, { recursive: true });
-    writeFileSync(join(fixtureRoot, 'AGENTS.md'), '# fixture\n');
-    writeFileSync(
-      join(templateDir, 'scale-smoke.md'),
-      `# {{TITLE}}
-
-Objective:
-Prove the materialized scale contract blocks unresolved architecture.
-
-Goal plan:
-{{PLAN_PATH}}
-
-Template:
-{{TEMPLATE_PATH}}
-
-Completion threshold:
-- The scale contract is executable and resolved.
-
-Verification surface:
-- command: fixture checker pass.
-
-Constraints:
-- Preserve the fixture contract.
-
-Boundaries:
-- Temporary fixture only.
-
-Blocked condition:
-- No blocker remains.
-
-Start Gates:
-| Gate | Applies | Evidence |
-| --- | --- | --- |
-| Fixture ready | yes | source-audit: fixture exists |
-
-Work Checklist:
-- [x] Fixture primary work is complete.
-
-Completion Gates:
-| Gate | Applies | Required action | Evidence |
-| --- | --- | --- | --- |
-| Fixture proof | yes | Run fixture checker | command: primary fixture passed |
-
-Phase / pass table:
-| Phase | Status | Evidence | Next |
-| --- | --- | --- | --- |
-| Fixture | complete | command: primary fixture passed | N/A: complete |
-
-Verification evidence:
-- command: primary fixture passed.
-
-Reboot status:
-| Where am I? | Where am I going? | What is the goal? | What learned? | What done? |
-| --- | --- | --- | --- | --- |
-| Complete | Closeout | Enforce scale proof | Pack gates are mechanical | Fixture ran |
-
-Open risks:
-- None.
-`
-    );
-    copyFileSync(
-      join(
-        root,
-        'docs/plans/templates/packs/performance-observability.md'
-      ),
-      join(packDir, 'performance-observability.md')
-    );
-
-    const created = spawnSync(
-      process.execPath,
-      [
-        helper,
-        '--template',
-        'scale-smoke',
-        '--with',
-        'performance-observability',
-        '--title',
-        'Scale smoke',
-        '--path',
-        'docs/plans/scale-smoke.md',
-      ],
-      { cwd: fixtureRoot, encoding: 'utf8' }
-    );
-    assert.equal(created.status, 0, created.stderr);
-
-    const unresolved = spawnSync(
-      process.execPath,
-      [checker, 'docs/plans/scale-smoke.md'],
-      { cwd: fixtureRoot, encoding: 'utf8' }
-    );
-    assert.equal(unresolved.status, 1);
-    assert.match(unresolved.stderr, /Pre-acceptance scale proof/);
-
-    const performanceGateLabels = new Set([
-      'Performance pack selected',
-      'User-facing operation and runtime owner identified',
-      'Scale variables and cohorts fixed',
-      'Budget frozen before target measurement',
-      'Baseline and target probe selected',
-      'Correctness guard selected',
-      'Production detector decision recorded',
-      'Pre-acceptance scale proof',
-      'Warm latency budget',
-      'Large/stress scaling',
-      'Cold and failure paths',
-      'Payload and fan-out',
-      'Production-path rerun',
-      'Correctness guard',
-      'Before/after receipt',
-      'Detector and privacy',
-      'Performance regression check',
-    ]);
-    const resolved = readFileSync(planPath, 'utf8')
-      .split('\n')
-      .map((line) => {
-        if (!line.startsWith('|')) return line;
-
-        const cells = line
-          .split('|')
-          .slice(1, -1)
-          .map((cell) => cell.trim());
-        if (!performanceGateLabels.has(cells[0])) return line;
-
-        cells[1] = 'yes';
-        cells[cells.length - 1] =
-          'command: matched scale fixture and correctness guard passed';
-
-        return `| ${cells.join(' | ')} |`;
-      })
-      .join('\n')
-      .replaceAll('- [ ] Performance pack:', '- [x] Performance pack:');
-    writeFileSync(planPath, resolved);
-
-    const complete = spawnSync(
-      process.execPath,
-      [checker, 'docs/plans/scale-smoke.md'],
-      { cwd: fixtureRoot, encoding: 'utf8' }
-    );
-    assert.equal(complete.status, 0, complete.stderr);
-    assert.match(complete.stdout, /\[autogoal\] complete/);
-  } finally {
-    rmSync(fixtureRoot, { force: true, recursive: true });
-  }
 });

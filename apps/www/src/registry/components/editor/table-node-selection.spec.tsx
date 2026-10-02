@@ -91,11 +91,14 @@ it('leaves a cell-range highlight with the table selection owner', async () => {
 it('paints a row selected from the mounted editor view', async () => {
   const { selectedCells, view } = mount();
   const rowControls = view.getAllByRole('button', {
-    name: 'Select or move row',
+    name: 'Drag row or open row actions',
   });
 
   await act(async () => {
     fireEvent.click(rowControls[1]);
+  });
+  await act(async () => {
+    fireEvent.click(await view.findByRole('menuitem', { name: 'Select row' }));
     await new Promise<void>((resolve) => {
       setTimeout(resolve, 0);
     });

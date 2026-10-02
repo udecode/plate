@@ -19,6 +19,7 @@
         "./src/components/site-registry/toolbar"
       ],
       "@platejs/test/browser": ["../../packages/test/src/browser"],
+      "@platejs/test/device": ["../../packages/test/src/device"],
       "@platejs/test/playwright": ["../../packages/test/src/playwright"],
       "@platejs/test/proof": ["../../packages/test/src/proof"],
       "@platejs/test/react": ["../../packages/test/src/react"],
@@ -46,6 +47,9 @@
       "platejs/combobox": [
         "../../packages/platejs/src/features/combobox/index.ts"
       ],
+      "platejs/combobox/react": [
+        "../../packages/platejs/src/react/features/combobox/index.ts"
+      ],
       "platejs/comments": [
         "../../packages/platejs/src/features/comments/index.ts"
       ],
@@ -65,7 +69,6 @@
         "../../packages/platejs/src/react/features/details/index.ts"
       ],
       "platejs/diff": ["../../packages/platejs/src/diff/index.ts"],
-      "platejs/dnd/react": ["../../packages/platejs/src/dnd/react/index.ts"],
       "platejs/docx/export": [
         "../../packages/platejs/src/docx/export/index.ts"
       ],

@@ -10,16 +10,14 @@ import {
   Grid2X2Icon,
   GripVertical,
   PaintBucketIcon,
+  Rows3Icon,
   SquareSplitHorizontalIcon,
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
-import { PathApi } from 'platejs';
-import { useDraggable, useDropLine } from 'platejs/dnd/react';
 import {
   type EditorElementProps,
   EditorElement,
-  useComposedRef,
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
@@ -39,6 +37,10 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  HandleActionsMenu,
+  startBlockDrag,
+} from '@/registry/components/editor/dnd';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -781,7 +783,6 @@ export function TableRowElement({
   children,
   ...props
 }: EditorElementProps<typeof TableRowPlugin>) {
-  const { element } = props;
   const readOnly = useEditorReadOnly();
   const rowIndex = usePath((path) => path.at(-1));
 
@@ -793,43 +794,11 @@ export function TableRowElement({
   const rowMinHeight = rowSizeOverrides.get(rowIndex) ?? rowSize;
   const hasControls = !readOnly;
 
-  const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
-    element,
-    type: element.type,
-    canDropNode: ({ dragEntry, dropEntry, editor, sourceEditor }) =>
-      sourceEditor === editor &&
-      PathApi.equals(
-        PathApi.parent(dragEntry[1]),
-        PathApi.parent(dropEntry[1])
-      ),
-    onDropHandler: (editor, { dragItem }) => {
-      if (!('key' in dragItem)) return;
-      const key = Array.isArray(dragItem.key) ? dragItem.key[0] : dragItem.key;
-
-      if (key) {
-        const path = editor.read.nodes.path(key);
-
-        if (!path) return;
-
-        const range = editor.read.ranges.get(path);
-
-        if (!range) return;
-
-        editor.update.selection.set(range);
-        editor.api.dom.focus();
-      }
-    },
-  });
-
   return (
     <EditorElement
       {...props}
-      ref={useComposedRef(props.ref, previewRef, nodeRef)}
       as="tr"
-      className={cn(
-        'group/row hover:[&>td>.editor-row-drag-handle]:opacity-100 data-[table-resizing=true]:[&>td>.editor-row-drag-handle]:opacity-0',
-        isDragging && 'opacity-50'
-      )}
+      className="group/row data-editor-dragging:opacity-50 hover:[&>td>.editor-row-drag-handle]:opacity-100 data-[table-resizing=true]:[&>td>.editor-row-drag-handle]:opacity-0"
       style={
         {
           '--tableRowMinHeight': rowMinHeight ? `${rowMinHeight}px` : undefined,
@@ -841,12 +810,7 @@ export function TableRowElement({
           className="w-2 max-w-2 min-w-2 p-0 select-none"
           contentEditable={false}
         >
-          {!hasMultiRowSelection && (
-            <>
-              <RowDragHandle dragRef={handleRef} />
-              <RowDropLine />
-            </>
-          )}
+          {!hasMultiRowSelection && <RowDragHandle />}
         </td>
       )}
       {children}
@@ -854,46 +818,67 @@ export function TableRowElement({
   );
 }
 
-function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
+function RowDragHandle() {
   const editor = useEditor();
   const element = useElement(TableRowPlugin);
+  const selected = useElementSelected();
+  const [open, setOpen] = React.useState(false);
+  const move = (to: 'next' | 'previous', announce: string) => {
+    editor.api.transfer.move({
+      announce,
+      nodes: [editor.key(element)],
+      to,
+    });
+  };
 
   return (
-    <Button
-      ref={dragRef}
-      aria-label="Select or move row"
-      variant="outline"
-      className={cn(
-        '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
-        'cursor-grab active:cursor-grabbing',
-        'editor-row-drag-handle opacity-0 transition-opacity duration-100'
-      )}
-      onClick={() => {
-        const range = editor.read.ranges.get(element);
+    <>
+      <Button
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label="Drag row or open row actions"
+        draggable
+        variant="outline"
+        className={cn(
+          '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+          'cursor-grab active:cursor-grabbing',
+          'editor-row-drag-handle opacity-0 transition-opacity duration-100',
+          selected && '[@media(hover:none)]:opacity-100'
+        )}
+        onClick={() => {
+          setOpen(true);
+        }}
+        onDragStart={(event) => startBlockDrag(editor, event, element)}
+      >
+        <GripVertical className="text-muted-foreground" />
+      </Button>
+      <HandleActionsMenu
+        actions={[
+          {
+            icon: Rows3Icon,
+            label: 'Select row',
+            run: () => {
+              const range = editor.read.ranges.get(element);
 
-        if (!range) return;
-
-        editor.update.selection.set(range);
-        editor.api.dom.focus();
-      }}
-    >
-      <GripVertical className="text-muted-foreground" />
-    </Button>
-  );
-}
-
-function RowDropLine() {
-  const { dropLine } = useDropLine();
-
-  if (!dropLine) return null;
-
-  return (
-    <div
-      className={cn(
-        'absolute inset-x-0 left-2 z-50 h-0.5 bg-brand/50',
-        dropLine === 'top' ? '-top-px' : '-bottom-px'
-      )}
-    />
+              if (range) editor.update.selection.set(range);
+            },
+          },
+          {
+            icon: ArrowUp,
+            label: 'Move up',
+            run: () => move('previous', 'Moved up'),
+          },
+          {
+            icon: ArrowDown,
+            label: 'Move down',
+            run: () => move('next', 'Moved down'),
+          },
+        ]}
+        className="top-1/2 left-0 h-6 w-4 -translate-y-1/2"
+        open={open}
+        onOpenChange={setOpen}
+      />
+    </>
   );
 }
 

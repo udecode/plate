@@ -833,7 +833,32 @@ describe('model input strategy', () => {
     });
   });
 
-  it.each(['deleteByCut', 'deleteByDrag'] as const)(
+  it('keeps the dragged source when deleteByDrag reports a drop elsewhere', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+
+    const repair = applyModelOwnedBeforeInputMutation({
+      data: null,
+      editor: editor as ReactEditor,
+      inputType: 'deleteByDrag',
+      native: false,
+      selection: editorGetSelection(editor),
+      setComposing: () => {},
+    });
+
+    expect(editorString(editor, [])).toBe('abcd');
+    expect(repair).toBeNull();
+  });
+
+  it.each(['deleteByCut'] as const)(
     'deletes the selected fragment from %s beforeinput',
     (inputType) => {
       const editor = createEditor();

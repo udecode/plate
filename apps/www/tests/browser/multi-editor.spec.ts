@@ -117,8 +117,8 @@ for (const base of ['Base UI', 'Radix']) {
       });
       await expect(slashHeading).toBeVisible();
       await page.keyboard.type('heading 2');
-      await slashHeading.focus();
-      await slashHeading.press('Enter');
+      await expect(slashHeading).toHaveAttribute('data-active-item', 'true');
+      await page.keyboard.press('Enter');
       await expect
         .poll(() => readMainBlocks(page))
         .toMatchObject([{ type: 'paragraph' }, { level: 2, type: 'heading' }]);

@@ -1,0 +1,151 @@
+{
+ "metrics": {
+  "dpr": 2.625,
+  "vvTop": 0,
+  "scale": 1
+ },
+ "calib": {
+  "x": 205.71429443359375,
+  "y": 308.952392578125,
+  "trusted": true
+ },
+ "offsetX": -0.00002288818359375,
+ "offsetY": 288.9999694824219,
+ "cases": [
+  {
+   "wantOffset": 4,
+   "target": {
+    "x": 57.14285659790039,
+    "y": 118.9523811340332,
+    "char": "e"
+   },
+   "screen": [
+    150,
+    601
+   ],
+   "got": {
+    "node": "#text",
+    "offset": 4,
+    "active": "ce",
+    "newTaps": 1,
+    "tap": {
+     "x": 57.14285659790039,
+     "y": 118.85714721679688,
+     "trusted": true
+    }
+   },
+   "tapErrorPx": [
+    0,
+    0
+   ]
+  },
+  {
+   "wantOffset": 10,
+   "target": {
+    "x": 106.66667175292969,
+    "y": 118.9523811340332,
+    "char": "e"
+   },
+   "screen": [
+    280,
+    601
+   ],
+   "got": {
+    "node": "#text",
+    "offset": 10,
+    "active": "ce",
+    "newTaps": 1,
+    "tap": {
+     "x": 106.66667175292969,
+     "y": 118.85714721679688,
+     "trusted": true
+    }
+   },
+   "tapErrorPx": [
+    0,
+    0
+   ]
+  },
+  {
+   "wantOffset": 15,
+   "target": {
+    "x": 146.57142639160156,
+    "y": 118.9523811340332,
+    "char": "i"
+   },
+   "screen": [
+    385,
+    601
+   ],
+   "got": {
+    "node": "#text",
+    "offset": 10,
+    "active": "ce",
+    "newTaps": 0,
+    "tap": {
+     "x": 106.66667175292969,
+     "y": 118.85714721679688,
+     "trusted": true
+    }
+   },
+   "tapErrorPx": [
+    -105,
+    0
+   ]
+  },
+  {
+   "wantOffset": 15,
+   "target": {
+    "x": 146.57142639160156,
+    "y": 118.9523811340332,
+    "char": "i"
+   },
+   "screen": [
+    385,
+    601
+   ],
+   "got": {
+    "node": "#text",
+    "offset": 15,
+    "active": "ce",
+    "newTaps": 1,
+    "tap": {
+     "x": 146.6666717529297,
+     "y": 118.85714721679688,
+     "trusted": true
+    }
+   },
+   "tapErrorPx": [
+    0,
+    0
+   ]
+  },
+  {
+   "wantOffset": 7,
+   "target": {
+    "x": 81.29167175292969,
+    "y": 118.9523811340332,
+    "char": "o"
+   },
+   "screen": [
+    213,
+    601
+   ],
+   "got": {
+    "node": "#text",
+    "offset": 15,
+    "active": "ce",
+    "newTaps": 0,
+    "tap": {
+     "x": 146.6666717529297,
+     "y": 118.85714721679688,
+     "trusted": true
+    }
+   },
+   "tapErrorPx": [
+    172,
+    0
+   ]
+  }
+ ]
+}

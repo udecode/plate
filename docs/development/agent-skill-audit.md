@@ -1,5 +1,7 @@
 # Plate skill audit and final set
 
+> Historical record from 2026-09-05. On 2026-09-30 pstack's poteto-mode replaced the Task lifecycle, and Task, Improve and Autogoal were retired; [AGENTS.md](../../AGENTS.md) holds current routing.
+
 Implemented in `/Users/zbeyens/git/plate-2`, on `next`. The selected design scores **97/100** under the stated preservation, ownership, discovery, proof and maintenance rubric. That score is engineering judgment; it is not a performance benchmark.
 
 The resulting set has **39 local skills and 57 shared/vendor skills**, including **40 full pstack ports**. Ten local entrypoints were absorbed or removed, Verify Plate was added, and Sync Shadcn was split by mode. Developers start ordinary work with Task.

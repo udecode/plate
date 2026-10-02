@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test, { after } from 'node:test';
 
 import { computePackageFingerprint } from '../../.agents/rules/plate-next/scripts/version.mjs';
 import {
+  readFeatureManifest,
   requiredSurfaces,
   validateFeaturePlan,
 } from './check-plate-feature.mjs';
@@ -68,7 +75,7 @@ const makePlan = (flowMode, excluded = []) => {
     ? ''
     : `\nPackage file evidence:\n- Package: ${fixtureSlug}\n- Manifest command / file count: version.mjs fingerprint ${fixtureSlug} (${fixtureFingerprint.fileCount} files).\n- Package fingerprint: ${fixtureFingerprint.fingerprint}\n${fixtureFingerprint.files.map((path) => `- File: \`packages/${fixtureSlug}/${path}\``).join('\n')}\n${fixtureFingerprint.files.map((path) => `- [x] \`packages/${fixtureSlug}/${path}\` — score: 100 — verdict: keep — owner: package — evidence: typecheck — next: none.`).join('\n')}\n`;
 
-  return `Flow mode:\n- ${flowMode}\n\nFeature Manifest:\n| Surface | Applies | Owner | Artifacts | Consumer | Proof | Status |\n| --- | --- | --- | --- | --- | --- | --- |\n${rows.join('\n')}\n${packageEvidence}\nCompletion Gates:\n| Gate | Applies | Required action | Evidence |\n| --- | --- | --- | --- |\n| P1 autoreview | yes | review | clean |\n| Goal plan complete | yes | check | pending |\n`;
+  return `Flow mode:\n- ${flowMode}\n\nFeature Manifest:\n| Surface | Applies | Owner | Artifacts | Consumer | Proof | Status |\n| --- | --- | --- | --- | --- | --- | --- |\n${rows.join('\n')}\n${packageEvidence}\nCompletion Gates:\n| Gate | Applies | Required action | Evidence |\n| --- | --- | --- | --- |\n| P1 autoreview | yes | review | clean |\n| Plan complete | yes | check | pending |\n`;
 };
 
 test('accepts a full new-package flow', () => {
@@ -187,7 +194,7 @@ test('rejects unresolved evidence and review gates', () => {
   );
 });
 
-test('accepts a Task-owned review exclusion with an explicit reason', () => {
+test('accepts a review exclusion that defers to the pstack Review rule, with an explicit reason', () => {
   const plan = makePlan('registry-only', [
     'API',
     'Package',
@@ -195,7 +202,7 @@ test('accepts a Task-owned review exclusion with an explicit reason', () => {
     'Plate Next attestation',
   ]).replace(
     '| P1 autoreview | yes | review | clean |',
-    '| P1 autoreview | no | follow Task review policy | N/A: review unrequested and this is not PR closure |'
+    '| P1 autoreview | no | follow the pstack block review rule | N/A: review unrequested and this is not PR closure |'
   );
 
   assert.deepEqual(validate(plan), []);
@@ -300,5 +307,20 @@ test('rejects missing or contradictory flow modes', () => {
   assert.match(
     validate(headlessWithRegistry).join('\n'),
     /headless package: Registry UI must be excluded/
+  );
+});
+
+test('the feature plan template lists every surface the checker requires', () => {
+  const template = readFileSync(
+    new URL(
+      '../../.agents/rules/plate-plugins/references/feature/template.md',
+      import.meta.url
+    ),
+    'utf-8'
+  );
+
+  assert.deepEqual(
+    readFeatureManifest(template).map(([surface]) => surface),
+    requiredSurfaces
   );
 });

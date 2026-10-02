@@ -3,58 +3,26 @@ import type { Emoji } from '@emoji-mart/data';
 import {
   definePlugin,
   type EditorUpdateTransaction,
-  type ElementOf,
-  property,
   PLUGINS,
 } from '../../core';
-import {
-  BaseComboboxPlugin,
-  triggerCombobox,
-  type TriggerComboboxPluginState,
-} from '../../features/combobox';
+import type { ComboboxState } from '../../features/combobox';
 
 const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
+const SHORTCODE_CHARACTER = /^[\p{L}\p{N}_+\-:]$/u;
 
-export type EmojiPluginState = {
+export type EmojiPluginState = ComboboxState & {
   createEmojiNode: (
     emoji: Emoji
   ) => Exclude<
     Parameters<EditorUpdateTransaction['nodes']['insert']>[0],
     unknown[]
   >;
-  createComboboxInput: NonNullable<
-    TriggerComboboxPluginState['createComboboxInput']
-  >;
-  trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
-  triggerPreviousCharPattern: NonNullable<
-    TriggerComboboxPluginState['triggerPreviousCharPattern']
-  >;
-} & TriggerComboboxPluginState;
-
-export const BaseEmojiInputPlugin = definePlugin(PLUGINS.emojiInput, {
-  dependencies: [BaseComboboxPlugin],
-  schema: {
-    element: {
-      properties: {
-        trigger: property.string(),
-        userId: property.string(),
-        value: property.string(),
-      },
-      void: 'inline',
-    },
-  },
-  editOnly: true,
-});
-
-export type EmojiInputElement = ElementOf<typeof BaseEmojiInputPlugin>;
+};
 
 export const BaseEmojiPlugin = definePlugin(PLUGINS.emoji, {
-  dependencies: [BaseEmojiInputPlugin],
-  initialState: ({ editor }): EmojiPluginState => ({
-    createComboboxInput: () => ({
-      children: [{ text: '' }],
-      type: editor.plugin(BaseEmojiInputPlugin).schema.type,
-    }),
+  initialState: (): EmojiPluginState => ({
+    maxQueryLength: 75,
+    queryPattern: SHORTCODE_CHARACTER,
     trigger: ':',
     triggerQuery: null,
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
@@ -67,11 +35,4 @@ export const BaseEmojiPlugin = definePlugin(PLUGINS.emoji, {
       tx.nodes.insert(store.get('createEmojiNode')(emoji));
     },
   }),
-}).extend(({ editor, store }) => ({
-  commands: (context) =>
-    triggerCombobox(context, {
-      editor,
-      getState: () => store.get(),
-      type: editor.plugin(BaseEmojiInputPlugin).schema.type,
-    }),
-}));
+});

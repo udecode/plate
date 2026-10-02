@@ -124,7 +124,8 @@ export const executeEditorRead = <
   editor: BaseEditor<any, any>,
   read: TRead,
   input: EditorReadInput<TRead>,
-  applyDefault: (input: EditorReadInput<TRead>) => EditorReadResult<TRead>
+  applyDefault: (input: EditorReadInput<TRead>) => EditorReadResult<TRead>,
+  stateSource?: BaseEditor<any, any>
 ): EditorReadResult<TRead> => {
   const owner = getEditorRuntimeOwner(editor as Editor);
   const entries =
@@ -133,7 +134,10 @@ export const executeEditorRead = <
     const exitRead = enterEditorRead(owner);
 
     try {
-      return fnWithState(fn, getEditorStateView(owner));
+      return fnWithState(
+        fn,
+        getEditorStateView((stateSource ?? owner) as Editor)
+      );
     } finally {
       exitRead();
     }

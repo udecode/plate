@@ -864,11 +864,7 @@ test.describe('native authored changes', () => {
     const valueBefore = await proposed.get.modelValue();
     const selectionBefore = await proposed.get.selection();
     const blocksBefore = await proposed.get.modelBlockTexts();
-    const selectedText = () =>
-      proposed.root
-        .locator('[data-editor-view-selection]')
-        .allTextContents()
-        .then((parts) => parts.join(''));
+    const { selectedText } = proposed.get;
     await expect.poll(selectedText).toBe(' shared ');
     const assertRefused = async () => {
       await expect(proposed.root).toHaveText(before!);
@@ -1335,14 +1331,7 @@ test.describe('native authored changes', () => {
       .poll(() => page.evaluate(() => window.getSelection()?.toString()))
       .toBe('D');
     await page.keyboard.press('Shift+ArrowLeft');
-    await expect
-      .poll(async () => {
-        const selectionText = await proposed.root
-          .locator('[data-editor-view-selection]')
-          .allTextContents();
-        return selectionText.join('');
-      })
-      .toBe('CD');
+    await expect.poll(() => proposed.get.selectedText()).toBe('CD');
     await page.keyboard.press('Shift+ArrowRight');
     await expect
       .poll(() => page.evaluate(() => window.getSelection()?.toString()))
@@ -1997,11 +1986,7 @@ test.describe('native authored changes', () => {
       .click();
     await proposed.selection.collapse({ path: [0, 0], offset: 1 });
     const modifier = process.platform === 'darwin' ? 'Alt' : 'Control';
-    const selectedText = () =>
-      proposed.root
-        .locator('[data-editor-view-selection]')
-        .allTextContents()
-        .then((parts) => parts.join(''));
+    const { selectedText } = proposed.get;
     await page.keyboard.press(`${modifier}+Shift+ArrowRight`);
     await expect.poll(selectedText).toBe(' shared');
     const copied = await proposed.clipboard.copyNativeEventPayload();

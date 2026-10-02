@@ -1,7 +1,6 @@
 import type { Locator } from '@playwright/test';
 
 import { toPlainText } from './clipboard';
-import { BROWSER_HANDLE_KEY } from './constants';
 import type { SurfaceTarget } from './surface';
 import type { HtmlNormalizationOptions } from './types';
 
@@ -29,21 +28,6 @@ export const getBlockTexts = async (root: Locator): Promise<string[]> =>
     })
   );
 
-export const includesPasteText = (candidate: string, text: string) => {
-  const normalizeSpaced = (value: string) =>
-    value
-      .replace(/\uFEFF/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-  const normalizeCompact = (value: string) =>
-    value.replace(/\uFEFF/g, '').replace(/\s+/g, '');
-
-  return (
-    normalizeSpaced(candidate).includes(normalizeSpaced(text)) ||
-    normalizeCompact(candidate).includes(normalizeCompact(text))
-  );
-};
-
 export const getSelectedText = async (root: Locator): Promise<string> =>
   root.evaluate((element: HTMLElement) => {
     const rootNode = element.getRootNode() as Document | ShadowRoot;
@@ -54,23 +38,6 @@ export const getSelectedText = async (root: Locator): Promise<string> =>
 
     return (selection?.toString() ?? '').replace(/\uFEFF/g, '');
   });
-
-export const insertTextThroughHandle = async (root: Locator, text: string) =>
-  root.evaluate(
-    (
-      element: HTMLElement,
-      { key, nextText }: { key: string; nextText: string }
-    ) => {
-      const handle = (element as Record<string, any>)[key];
-
-      if (!handle?.insertText) {
-        throw new Error('This editor surface does not expose insertText');
-      }
-
-      handle.insertText(nextText);
-    },
-    { key: BROWSER_HANDLE_KEY, nextText: text }
-  );
 
 export const dropHtml = async (
   surface: SurfaceTarget,

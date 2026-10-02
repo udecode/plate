@@ -728,6 +728,90 @@ describe('plite-react editable behavior', () => {
     }
   });
 
+  test('detaching mid-drag releases every document and window listener the view and its drag added', () => {
+    const editor = createEditor({
+      initialValue: [
+        { type: 'block', children: [{ text: 'a' }] },
+        { type: 'block', children: [{ text: 'b' }] },
+      ],
+    });
+
+    // React and jsdom's selector engine each add document listeners once and
+    // keep them.
+    render(<div />).unmount();
+    document.body.matches('*');
+
+    const listeners: unknown[][] = [];
+    const entry = (
+      target: EventTarget,
+      [type, listener, options]: Parameters<EventTarget['addEventListener']>
+    ) => [
+      target,
+      type,
+      listener,
+      typeof options === 'boolean' ? options : !!options?.capture,
+    ];
+    const indexOf = (key: unknown[]) =>
+      listeners.findIndex((listener) =>
+        listener.every((part, i) => part === key[i])
+      );
+    const spies = [document, window].flatMap((target) => {
+      const { addEventListener, removeEventListener } = target;
+
+      return [
+        vi.spyOn(target, 'addEventListener').mockImplementation((...args) => {
+          if (indexOf(entry(target, args)) < 0) {
+            listeners.push(entry(target, args));
+          }
+          addEventListener.apply(target, args);
+        }),
+        vi
+          .spyOn(target, 'removeEventListener')
+          .mockImplementation((...args) => {
+            const index = indexOf(entry(target, args));
+
+            if (index >= 0) listeners.splice(index, 1);
+            removeEventListener.apply(target, args);
+          }),
+      ];
+    });
+    const live = () => listeners.length;
+
+    try {
+      const rendered = render(
+        <EditorRoot editor={editor}>
+          <Editable />
+        </EditorRoot>
+      );
+      const view = findMountedEditableDOMRuntime(
+        rendered.container.querySelector('[data-editor]')!
+      )!.editor;
+      const mounted = live();
+      const drag = view.api.dom.drag.start(
+        {
+          clientX: 0,
+          clientY: 0,
+          dataTransfer: {
+            effectAllowed: 'none',
+            setData: () => {},
+            setDragImage: () => {},
+            types: [],
+          } as never,
+        },
+        { node: view.read.children()[0] as never }
+      );
+
+      expect(drag).not.toBe(null);
+      expect(live()).toBeGreaterThan(mounted);
+
+      rendered.unmount();
+
+      expect(live()).toBe(0);
+    } finally {
+      for (const spy of spies) spy.mockRestore();
+    }
+  });
+
   test('shows a neutral caret for a collapsed inactive selection', async () => {
     const rangePrototype = window.Range.prototype;
     const previousBoundingRect = Object.getOwnPropertyDescriptor(

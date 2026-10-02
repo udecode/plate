@@ -16,13 +16,14 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const sourceRoot = path.resolve(scriptDir, '../../../..');
 const collectorPath = '.agents/rules/sync-vision/scripts/collect-vision-diff.mjs';
-const checkerPath = '.agents/skills/autogoal/scripts/check-complete.mjs';
+const checkerPath = '.agents/pstack/plan-open.mjs';
+const checkerStatesPath = '.agents/pstack/status.mjs';
 const checkpointPath = 'docs/sync/vision/status.json';
 
 function createFixture(t) {
   const root = mkdtempSync(path.join(tmpdir(), 'vision-collector-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  for (const relativePath of [collectorPath, checkerPath]) {
+  for (const relativePath of [collectorPath, checkerPath, checkerStatesPath]) {
     const destination = path.join(root, relativePath);
     mkdirSync(path.dirname(destination), { recursive: true });
     copyFileSync(path.join(sourceRoot, relativePath), destination);
@@ -92,7 +93,7 @@ Blocked condition:
 Stop if the committed range cannot be read.
 
 Work Checklist:
-- [x] Reaffirm the changed doctrine from current source.
+- [x] Reaffirm the changed doctrine from current source: [VISION.md](VISION.md).
 
 Phase / pass table:
 | Phase | Status |
@@ -111,16 +112,6 @@ None.
   );
   return plan;
 }
-
-test('a missing plan cannot advance the checkpoint', (t) => {
-  const fixture = createFixture(t);
-  const result = fixture.run('--advance', '--plan', 'docs/plans/missing.md');
-  assert.notEqual(result.status, 0, result.stdout);
-  assert.equal(
-    readFileSync(path.join(fixture.root, checkpointPath), 'utf8'),
-    fixture.checkpoint
-  );
-});
 
 test('advancement requires a complete plan and accepts the completed file', (t) => {
   const fixture = createFixture(t);

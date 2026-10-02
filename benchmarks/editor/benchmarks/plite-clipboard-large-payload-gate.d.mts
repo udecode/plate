@@ -38,26 +38,31 @@ export declare const createClipboardIssueTargetThresholds: ({
       commitCount: {
         actual: any;
         limit: number;
+        operator: '===';
         passed: any;
       };
       cutTwoBlocksEditMsP50: {
         actualMs: any;
         limitMs: number;
+        operator: '<';
         passed: boolean;
       };
       cutTwoBlocksMaximumChangedTokenSpan: {
         actual: any;
         limit: number;
+        operator: '<=';
         passed: boolean;
       };
       cutTwoBlocksMaximumChangedTopLevelSpan: {
         actual: any;
         limit: number;
+        operator: '<=';
         passed: boolean;
       };
       cutTwoBlocksMsP50: {
         actualMs: any;
         limitMs: number;
+        operator: '<';
         passed: boolean;
       };
     }
@@ -65,31 +70,37 @@ export declare const createClipboardIssueTargetThresholds: ({
       commitCount: {
         actual: any;
         limit: number;
+        operator: '===';
         passed: any;
       };
       cutTwoBlocksEditMsP50: {
         actualMs: any;
         limitMs: number;
+        operator: '<';
         passed: boolean;
       };
       cutTwoBlocksMaximumChangedTokenSpan: {
         actual: any;
         limit: number;
+        operator: '<=';
         passed: boolean;
       };
       cutTwoBlocksMaximumChangedTopLevelSpan: {
         actual: any;
         limit: number;
+        operator: '<=';
         passed: boolean;
       };
       cutTwoBlocksMsP50: {
         actualMs: any;
         limitMs: number;
+        operator: '<';
         passed: boolean;
       };
       largePlainTextPaste10000CommitCount: {
         actual: any;
         limit: number;
+        operator: '===';
         passed: any;
       };
       largePlainTextPaste10000P50: any;
@@ -97,6 +108,7 @@ export declare const createClipboardIssueTargetThresholds: ({
       populatedMiddlePlainTextPaste10000Into10000CommitCount: {
         actual: any;
         limit: number;
+        operator: '===';
         passed: any;
       };
       populatedMiddlePlainTextPaste10000Into10000P50: any;

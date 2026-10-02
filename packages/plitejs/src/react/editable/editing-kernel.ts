@@ -713,6 +713,8 @@ const getBeforeInputDeleteCommand = ({
   inputType: string;
   selection: Range | Selection;
 }): EditableCommand | null => {
+  // Only a drop this editor settled may remove a drag source.
+  if (inputType === 'deleteByDrag') return null;
   if (
     selection &&
     (SelectionApi.isNode(selection) || RangeApi.isExpanded(selection)) &&
@@ -727,8 +729,7 @@ const getBeforeInputDeleteCommand = ({
 
   switch (inputType) {
     case 'deleteByComposition':
-    case 'deleteByCut':
-    case 'deleteByDrag': {
+    case 'deleteByCut': {
       return { kind: 'delete-fragment', selection };
     }
     case 'deleteContent':

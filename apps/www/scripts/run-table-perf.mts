@@ -198,8 +198,9 @@ async function readPressure(page: Page): Promise<RunnerPressure> {
     return {
       domNodes: root?.querySelectorAll('*').length ?? 0,
       rowDragHandles:
-        root?.querySelectorAll('button[aria-label="Select or move row"]')
-          .length ?? 0,
+        root?.querySelectorAll(
+          'button[aria-label="Drag row or open row actions"]'
+        ).length ?? 0,
       selectedCellElements:
         root?.querySelectorAll('[data-table-cell-selected="true"]').length ?? 0,
       tableCells: root?.querySelectorAll('td,th').length ?? 0,

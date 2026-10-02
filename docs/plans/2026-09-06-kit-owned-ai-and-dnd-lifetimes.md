@@ -267,6 +267,10 @@ array of view elements, session key, or feature-root wrapper is required.
    zero listeners before readiness and after detach. Scroller, menu, and slot
    customization cannot remove required cleanup. Reuse an existing DnD manager;
    keep a default backend available for standalone installed kits.
+   Superseded on 2026-10-01: block drag and drop is native, with no provider,
+   manager or backend
+   ([DnD transfer consolidation](./2026-10-01-dnd-transfer-consolidation.md),
+   phase 3). The DnD rows below are historical evidence.
 5. **Plite remains neutral.** Only a proven missing neutral view primitive may
    move there; copied feature policy, transports, and providers remain above it.
 

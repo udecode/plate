@@ -11,6 +11,28 @@ export {
 } from './core/command-registry';
 export { editorCommands } from './core/editor-commands';
 export { editorReads } from './core/editor-reads';
+export { transfer, transferVeto } from './core/transfer';
+export type {
+  TransferApi,
+  TransferPlugin,
+  TransferRead,
+} from './core/transfer';
+export type {
+  TransferCheck,
+  TransferDiagnostic,
+  TransferEdge,
+  TransferInput,
+  TransferIntent,
+  TransferLandingInput,
+  TransferOutcome,
+  TransferPayload,
+  TransferRefusalReason,
+  TransferRelation,
+  TransferSourceInput,
+  TransferLandingTarget,
+  TransferTarget,
+  TransferVeto,
+} from './core/transfer-types';
 export type {
   AddMarkCommand,
   CollapseSelectionCommand,

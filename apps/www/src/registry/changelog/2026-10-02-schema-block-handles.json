@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-02-schema-block-handles",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-02-schema-block-handles.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-02",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Give every selectable block a drag handle",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-02-dnd-give-every-selectable-block-5b93fca9",
+      "kind": "behavior",
+      "summary": "Every selectable block gets a handle at any depth, such as blocks inside blockquotes, details, columns and table cells, and only the innermost hovered block shows its handle. The handle reads its blocks from `editor.read.transfer.nodes`, and a selected table no longer hides the editor's handles.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-02",
+          "entry": "2026-10-02-schema-block-handles",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-02-block-menu-cut-transfer-nodes",
+      "kind": "behavior",
+      "summary": "Cut takes the blocks `editor.read.transfer.nodes()` returns, such as a list item with its nested items.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-menu"],
+      "source": {
+        "line": 14,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-02",
+          "entry": "2026-10-02-schema-block-handles",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -244,6 +244,12 @@ const unwrapNodesMs = measureLane(
       );
     });
 
+    const first = Editor.getSnapshot(editor).children[0];
+
+    if (!('children' in first) || first.type !== 'quote') {
+      throw new Error('unwrapNodesMs setup did not wrap the target blocks');
+    }
+
     return editor;
   },
   (editor) => {

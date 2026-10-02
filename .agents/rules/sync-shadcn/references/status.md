@@ -39,7 +39,7 @@ Status mode must not:
 - write review artifacts
 - change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
   `partialSyncs`
-- delegate implementation to `task`
+- hand implementation to pstack's poteto-mode
 - treat listed deferred items as accepted decisions
 - list settled exclusions or preserved Plate forks as if they still need
   action; those belong in `review` evidence or the plan, not routine status

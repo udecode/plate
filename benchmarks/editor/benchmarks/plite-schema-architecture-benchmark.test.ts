@@ -1,14 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { compileEditorSchemaContributions } from '../../../packages/plitejs/src/internal/index';
-import {
-  measureCohortsRoundRobin,
-  validateAndWriteStrictBenchmarkArtifact,
-} from './plite-schema-architecture-benchmark-authority';
+import { measureCohortsRoundRobin } from './plite-schema-architecture-benchmark-authority';
 import {
   createSchemaArchitectureCorpus,
   SCHEMA_ARCHITECTURE_CORPUS,
@@ -368,77 +364,5 @@ Total time:          1.50s
       'gc',
       'measure:large',
     ]);
-  });
-
-  it('leaves raw measurements marked unpassed when strict validation fails', () => {
-    const directory = mkdtempSync(
-      join(tmpdir(), 'plite-schema-benchmark-authority-')
-    );
-    const outputPath = join(directory, 'result.json');
-    const result: {
-      environment: { runtime: string };
-      plateDescriptors: {
-        rows: Array<{
-          startupMs: { p50: number; p95: number };
-          startupSamplesMs: number[];
-        }>;
-      };
-      strictValidation: { status: 'measured' | 'passed' };
-    } = {
-      environment: { runtime: 'contract' },
-      plateDescriptors: {
-        rows: [
-          {
-            startupMs: { p50: 2, p95: 3 },
-            startupSamplesMs: [1, 2, 3],
-          },
-        ],
-      },
-      strictValidation: { status: 'measured' },
-    };
-
-    try {
-      assert.throws(
-        () =>
-          validateAndWriteStrictBenchmarkArtifact({
-            outputPath,
-            result,
-            validate: () => {
-              throw new Error('budget failure');
-            },
-          }),
-        /budget failure/u
-      );
-
-      assert.deepEqual(JSON.parse(readFileSync(outputPath, 'utf-8')), result);
-      assert.equal(result.strictValidation.status, 'measured');
-    } finally {
-      rmSync(directory, { force: true, recursive: true });
-    }
-  });
-
-  it('rewrites a successful strict artifact as passed', () => {
-    const directory = mkdtempSync(
-      join(tmpdir(), 'plite-schema-benchmark-authority-')
-    );
-    const outputPath = join(directory, 'result.json');
-    const result: {
-      strictValidation: { status: 'measured' | 'passed' };
-    } = { strictValidation: { status: 'measured' } };
-
-    try {
-      validateAndWriteStrictBenchmarkArtifact({
-        outputPath,
-        result,
-        validate: () => undefined,
-      });
-
-      assert.equal(
-        JSON.parse(readFileSync(outputPath, 'utf-8')).strictValidation.status,
-        'passed'
-      );
-    } finally {
-      rmSync(directory, { force: true, recursive: true });
-    }
   });
 });

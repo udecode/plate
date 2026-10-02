@@ -1,0 +1,198 @@
+{
+ "ce": {
+  "before": "요여야애에오어아이유우으",
+  "after": "요여야애에오어아이유우으,.",
+  "steps": [
+   {
+    "label": "히읗",
+    "value": "ㅎ",
+    "events": [
+     "keydown:Unidentified",
+     "compositionstart:null:\"\"",
+     "compositionupdate:null:\"ㅎ\"",
+     "beforeinput:insertCompositionText:\"ㅎ\":c",
+     "input:insertCompositionText:\"ㅎ\":c"
+    ]
+   },
+   {
+    "label": "아",
+    "value": "하",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"하\"",
+     "beforeinput:insertCompositionText:\"하\":c",
+     "input:insertCompositionText:\"하\":c"
+    ]
+   },
+   {
+    "label": "니은",
+    "value": "한",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한\"",
+     "beforeinput:insertCompositionText:\"한\":c",
+     "input:insertCompositionText:\"한\":c"
+    ]
+   },
+   {
+    "label": "기역",
+    "value": "한ㄱ",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한ㄱ\"",
+     "beforeinput:insertCompositionText:\"한ㄱ\":c",
+     "input:insertCompositionText:\"한ㄱ\":c",
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한ㄱ\"",
+     "beforeinput:insertCompositionText:\"한ㄱ\":c",
+     "input:insertCompositionText:\"한ㄱ\":c"
+    ]
+   },
+   {
+    "label": "으",
+    "value": "한그",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한그\"",
+     "beforeinput:insertCompositionText:\"한그\":c",
+     "input:insertCompositionText:\"한그\":c",
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한그\"",
+     "beforeinput:insertCompositionText:\"한그\":c",
+     "input:insertCompositionText:\"한그\":c"
+    ]
+   },
+   {
+    "label": "리을",
+    "value": "한글",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한글\"",
+     "beforeinput:insertCompositionText:\"한글\":c",
+     "input:insertCompositionText:\"한글\":c"
+    ]
+   },
+   {
+    "label": "스페이스",
+    "value": "한글 ",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한글\"",
+     "beforeinput:insertCompositionText:\"한글\":c",
+     "input:insertCompositionText:\"한글\":c",
+     "compositionend:null:\"한글\"",
+     "keydown:Unidentified",
+     "beforeinput:insertText:\" \"",
+     "input:insertText:\" \""
+    ]
+   },
+   {
+    "label": "입력",
+    "value": "한글 \n\n",
+    "events": [
+     "keydown:Enter",
+     "beforeinput:insertParagraph",
+     "input:insertParagraph"
+    ]
+   }
+  ]
+ },
+ "ta": {
+  "before": "요여야애에오어아이유우으",
+  "after": "요여야애에오어아이유우으,.",
+  "steps": [
+   {
+    "label": "히읗",
+    "value": "ㅎ",
+    "events": [
+     "keydown:Unidentified",
+     "compositionstart:null:\"\"",
+     "compositionupdate:null:\"ㅎ\"",
+     "beforeinput:insertCompositionText:\"ㅎ\":c",
+     "input:insertCompositionText:\"ㅎ\":c"
+    ]
+   },
+   {
+    "label": "아",
+    "value": "하",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"하\"",
+     "beforeinput:insertCompositionText:\"하\":c",
+     "input:insertCompositionText:\"하\":c"
+    ]
+   },
+   {
+    "label": "니은",
+    "value": "한",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한\"",
+     "beforeinput:insertCompositionText:\"한\":c",
+     "input:insertCompositionText:\"한\":c"
+    ]
+   },
+   {
+    "label": "기역",
+    "value": "한ㄱ",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한ㄱ\"",
+     "beforeinput:insertCompositionText:\"한ㄱ\":c",
+     "input:insertCompositionText:\"한ㄱ\":c",
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한ㄱ\"",
+     "beforeinput:insertCompositionText:\"한ㄱ\":c",
+     "input:insertCompositionText:\"한ㄱ\":c"
+    ]
+   },
+   {
+    "label": "으",
+    "value": "한그",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한그\"",
+     "beforeinput:insertCompositionText:\"한그\":c",
+     "input:insertCompositionText:\"한그\":c",
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한그\"",
+     "beforeinput:insertCompositionText:\"한그\":c",
+     "input:insertCompositionText:\"한그\":c"
+    ]
+   },
+   {
+    "label": "리을",
+    "value": "한글",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한글\"",
+     "beforeinput:insertCompositionText:\"한글\":c",
+     "input:insertCompositionText:\"한글\":c"
+    ]
+   },
+   {
+    "label": "스페이스",
+    "value": "한글 ",
+    "events": [
+     "keydown:Unidentified:c",
+     "compositionupdate:null:\"한글\"",
+     "beforeinput:insertCompositionText:\"한글\":c",
+     "input:insertCompositionText:\"한글\":c",
+     "compositionend:null:\"한글\"",
+     "keydown:Unidentified",
+     "beforeinput:insertText:\" \"",
+     "input:insertText:\" \""
+    ]
+   },
+   {
+    "label": "입력",
+    "value": "한글 \n",
+    "events": [
+     "keydown:Enter",
+     "beforeinput:insertLineBreak",
+     "input:insertLineBreak"
+    ]
+   }
+  ]
+ }
+}

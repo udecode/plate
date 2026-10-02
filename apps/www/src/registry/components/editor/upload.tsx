@@ -244,6 +244,7 @@ export const UploadKit = [
         return url.href;
       },
       maxFiles: 5,
+      nativeDrop: true,
       onError: showUploadFailure,
       rules: {
         audio: {

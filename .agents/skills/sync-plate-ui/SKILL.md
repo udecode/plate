@@ -8,8 +8,6 @@ metadata:
 
 # Sync Plate UI
 
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
-
 
 Handle $ARGUMENTS.
 
@@ -25,7 +23,7 @@ that copied and customized Plate UI, such as `../potion`.
 
 This skill is consumer-side only. It reads generated Plate UI changelog JSON;
 it does not create upstream Plate changelog entries. Upstream Plate devs author
-those through `registry-changelog` and
+those through `changeset` and
 `apps/www/src/registry/changelog/entries/*.mdx`.
 
 ## Core Take
@@ -46,19 +44,10 @@ can safely reconstruct fork ownership from vibes.
 
 ## File-plan contract
 
-Task owns the file plan and lifecycle. Apply the project's standing Autogoal request for long-running work. Read the existing plan and mode before mutation.
-
-Default goal template:
-
-```bash
-node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template sync-plate-ui \
-  --title "sync plate ui <target> <scope>"
-```
-
-Task owns lifecycle, completion and blockers. `check-complete.mjs` validates
-the file plan; it does not create or complete a native goal. `sync-plate-ui` owns downstream sync policy, target repo
-mapping, fork classification, hunk decisions, and apply semantics.
+Each run keeps its plan at `<target>/.plate-ui-sync/runs/<date>-<scope>/plan.md`;
+read it and the mode before mutation. The plan lists every scoped row as a
+checkbox that closes with its decision or apply evidence. This skill runs in
+downstream apps, so it depends on no Plate-repo workflow file.
 
 ## Flow Modes
 
@@ -252,9 +241,8 @@ Planning mode may:
 - read Plate source
 - read target source
 - create or update target `.plate-ui-sync/**` artifacts
-- write a plan under `.plate-ui-sync/runs/**`
+- write and update the run plan under `.plate-ui-sync/runs/**`
 - write dashboard JSON/Markdown
-- update this Task plan
 
 Planning mode must not:
 
@@ -469,7 +457,7 @@ agent-native sync and fall back to source diffs plus explicit user acceptance.
 
 Resolve these before broad planning:
 
-- Task scope and file plan read; standing Autogoal request applied or explicit opt-out recorded.
+- Scope and plan read.
 - Target repo path resolved.
 - Plate source ref recorded, or current checkout recorded as uncommitted source.
 - Target `components.json` and package manager read.
@@ -491,16 +479,17 @@ Planning completion requires:
 - real questions are isolated
 - dashboard artifacts written when requested
 - final handoff identifies pending row decisions; existing apply authority carries through readiness
-- `check-complete.mjs` passes for the active Task plan
+- the run plan has no unchecked row without a recorded blocker
 
 Apply completion requires:
 
 - accepted rows revalidated before mutation
 - target source/status/fork ledgers updated only for accepted rows
-- target-owned verification command run or blocked with evidence
+- target-owned typecheck, lint and test run, or blocked with evidence
+- browser proof captured whenever an accepted row changes a visible target route
 - package manager and cwd named for every command
 - remaining open decisions recorded
-- `check-complete.mjs` passes for the active Task plan
+- the run plan has no unchecked accepted row
 
 ## Final Output
 

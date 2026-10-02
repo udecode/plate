@@ -25,9 +25,11 @@ docs:
 
 ## 功能特性
 
-- 创建基于触发器的组合框功能的实用工具
-- 可配置的触发字符和模式
-- 原子化的输入完成、取消和历史命令
+- 基于普通编辑器文本的自动补全：触发字符和查询直接输入到文档中
+- 只有用户在该编辑器中输入触发字符时才会打开弹出框
+- 补全在一个撤销步骤中替换触发字符和查询；撤销会恢复输入的文本
+- IME 预编辑会过滤选项，但不会选中选项
+- Escape 关闭弹出框并保留文本
 
 </PackageInfo>
 
@@ -42,143 +44,88 @@ npm install platejs
 npx shadcn@latest add @plate/inline-combobox
 ```
 
-### 创建输入插件
+### 创建插件
 
-首先创建一个输入插件，当触发器激活时将被插入：
+将触发策略放在插件状态中，将插入的节点放在插件 schema 中：
 
 ```tsx showLineNumbers
 import { property } from 'platejs';
-import { BaseComboboxPlugin } from 'platejs/combobox';
+import type { ComboboxState } from 'platejs/combobox';
 import { definePlugin } from 'platejs/react';
 
-export const TagInputPlugin = definePlugin('tagInput', {
-  dependencies: [BaseComboboxPlugin],
-  editOnly: true,
+export const HashtagPlugin = definePlugin('hashtag', {
+  initialState: (): ComboboxState => ({
+    maxQueryLength: 50,
+    queryPattern: /^[\p{L}\p{N}_-]$/u,
+    trigger: '#',
+    triggerPreviousCharPattern: /^\s?$/,
+    triggerQuery: null,
+  }),
   schema: {
     element: {
-      type: 'tag_input',
+      properties: { value: property.string({ required: true }) },
+      type: 'hashtag',
       void: 'inline',
-      properties: {
-        trigger: property.string(),
-        userId: property.string(),
-      },
     },
   },
 });
 ```
 
-### 创建主插件
+- `trigger`：输入后打开弹出框的文本（`#`）。
+- `triggerPreviousCharPattern`：必须匹配触发字符之前的字符。`/^\s?$/` 允许行首或空格之后。
+- `queryPattern`：逐个检查查询字符。这里空格会结束标签查询。
 
-使用触发器元数据创建主插件：
+### 创建弹出框
 
-```tsx showLineNumbers
-import { property } from 'platejs';
-import { triggerCombobox, type TriggerComboboxPluginState } from 'platejs/combobox';
-import { definePlugin } from 'platejs/react';
-import { TagInputPlugin } from './tag-input-plugin';
-
-const initialState: TriggerComboboxPluginState = {
-  trigger: '#',
-  triggerPreviousCharPattern: /^\s?$/,
-  createComboboxInput: () => ({
-    children: [{ text: '' }],
-    type: 'tag_input',
-  }),
-};
-
-export const TagPlugin = definePlugin('customTag', {
-  dependencies: [TagInputPlugin],
-  initialState,
-  schema: {
-    element: {
-      type: 'tag',
-      void: 'inline',
-      properties: { value: property.string({ required: true }) },
-    },
-  },
-  update: ({ tx, schema: { type } }) => ({
-    insert: (value: string) => {
-      tx.nodes.insert({ children: [{ text: '' }], type, value });
-      tx.selection.move({ unit: 'offset' });
-    },
-  }),
-}).extend(({ editor, store }) => ({
-  commands: (context) => triggerCombobox(context, {
-    editor,
-    getState: () => store.get(),
-    type: editor.plugin(TagInputPlugin).schema.type,
-  }),
-}));
-```
-
-- `schema.element`: 定义插件的元素模型行为
-- `schema.element.void: 'inline'`: 将标签定义为行内 void，并防止编辑其内部内容
-- `initialState.trigger`: 触发组合框的字符(本例为`#`)
-- `initialState.triggerPreviousCharPattern`: 必须匹配触发器前字符的正则表达式。`/^\s?$/`允许在行首或空白后触发
-- `initialState.createComboboxInput`: 触发器激活时创建输入元素节点的函数
-
-### 创建组件
-
-使用`InlineCombobox`创建输入元素组件：
+弹出框渲染在编辑器旁边，并从触发字符之后的文本读取查询：
 
 ```tsx showLineNumbers
+import * as React from 'react';
 import {
   type EditorElementProps,
   EditorElement,
-  useEditorFocused,
-  useEditorReadOnly,
-  useElementSelected,
 } from 'platejs/react';
 import {
   InlineCombobox,
   InlineComboboxContent,
   InlineComboboxEmpty,
-  InlineComboboxInput,
   InlineComboboxItem,
 } from '@/components/editor/inline-combobox';
-import { cn } from '@/lib/utils';
-import { TagInputPlugin } from './tag-input-plugin';
-import { TagPlugin } from './tag-plugin';
+import { HashtagPlugin } from './hashtag-plugin';
 
 const tags = ['Frontend', 'Backend', 'Design', 'Urgent'];
 
-export function TagInputElement(props: EditorElementProps<typeof TagInputPlugin>) {
+export function HashtagCombobox({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
-    <EditorElement {...props} as="span">
-      <InlineCombobox element={props.element} trigger="#">
-        <InlineComboboxInput />
-        <InlineComboboxContent>
-          <InlineComboboxEmpty>No tags found</InlineComboboxEmpty>
-          {tags.map((tag) => (
-            <InlineComboboxItem
-              key={tag}
-              value={tag}
-              onSelect={(tx) => tx.plugin(TagPlugin.name).insert(tag)}
-            >
-              #{tag}
-            </InlineComboboxItem>
-          ))}
-        </InlineComboboxContent>
-      </InlineCombobox>
-      {props.children}
-    </EditorElement>
+    <InlineCombobox editableRef={editableRef} plugin={HashtagPlugin}>
+      <InlineComboboxContent>
+        <InlineComboboxEmpty>未找到标签</InlineComboboxEmpty>
+        {tags.map((tag) => (
+          <InlineComboboxItem
+            key={tag}
+            value={tag}
+            onSelect={(tx) => {
+              tx.plugin(HashtagPlugin).insert({ value: tag });
+            }}
+          >
+            #{tag}
+          </InlineComboboxItem>
+        ))}
+      </InlineComboboxContent>
+    </InlineCombobox>
   );
 }
 
-export function TagElement(props: EditorElementProps<typeof TagPlugin>) {
-  const selected = useElementSelected();
-  const focused = useEditorFocused();
-  const readOnly = useEditorReadOnly();
-
+export function HashtagElement(props: EditorElementProps<typeof HashtagPlugin>) {
   return (
     <EditorElement
       {...props}
       as="span"
-      className={cn(
-        'inline-block rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-sm font-medium text-primary',
-        !readOnly && 'cursor-pointer',
-        selected && focused && 'ring-2 ring-ring'
-      )}
+      className="inline-block rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline font-medium text-primary text-sm"
     >
       #{props.element.value}
       {props.children}
@@ -189,30 +136,22 @@ export function TagElement(props: EditorElementProps<typeof TagPlugin>) {
 
 ### 添加到编辑器
 
+在插件的 `afterEditable` 插槽中挂载弹出框，该插槽会收到每个编辑器的 `editableRef`：
+
 ```tsx showLineNumbers
-import { BaseCodeBlockPlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
-import { TagPlugin } from './tag-plugin';
-import { TagInputPlugin } from './tag-input-plugin';
-import { TagElement, TagInputElement } from './tag-components';
+import { HashtagPlugin } from './hashtag-plugin';
+import { HashtagCombobox, HashtagElement } from './hashtag-components';
 
 const editor = createEditor({
   plugins: [
-    TagPlugin.configure({
-      component: TagElement,
-      initialState: {
-        triggerQuery: (editor) => {
-          const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-          return !codeBlock.installed || !editor.read.nodes.some({ type: codeBlock.schema.type });
-        },
-      },
+    HashtagPlugin.configure({
+      component: HashtagElement,
+      slots: { afterEditable: HashtagCombobox },
     }),
-    TagInputPlugin.configure({ component: TagInputElement }),
   ],
 });
 ```
-
-- `initialState.triggerQuery`: 根据编辑器状态有条件启用/禁用触发器的可选函数
 
 </Steps>
 
@@ -222,53 +161,83 @@ const editor = createEditor({
 <ComponentPreview name="slash-command-demo" />
 <ComponentPreview name="emoji-demo" />
 
+## 行为
+
+- 用户输入触发字符时打开弹出框。把光标移到已有触发文本之后、撤销、粘贴和远程编辑都不会打开它。
+- 查询是同一块内从触发字符到光标的文本，可以跨越标记。光标移到触发字符之前或越过已输入的文本、某个字符不匹配 `queryPattern`、查询以空白开头或长度超过 `maxQueryLength` 时，查询结束。
+- Escape 关闭弹出框并保留输入的文本。继续输入不会重新打开；再次输入触发字符会重新打开。
+- 补全在一个事务中删除触发字符和查询并执行插入。撤销会恢复输入的文本。
+- IME 组字期间，查询会预览可见的预编辑文本。Enter 只确认组字，从不选中选项。
+
 ## 配置选项
 
-### TriggerComboboxPluginState
+### ComboboxState
 
-基于触发器的组合框插件的配置选项。
+保存在功能插件状态中的触发策略。使用 `.configure({ initialState })` 覆盖。
 
-<API name="TriggerComboboxPluginState">
+<API name="ComboboxState">
 <APIOptions>
-  <APIItem name="createComboboxInput" type="(trigger: string) => Element">
-    触发器激活时创建输入节点的函数。
+  <APIItem name="trigger" type="RegExp | readonly string[] | string">
+    输入后打开弹出框的文本。字符串可以多于一个字符，例如 `'[^'`。正则表达式针对输入的字符进行测试。
   </APIItem>
-  <APIItem name="trigger" type="RegExp | string[] | string">
-    触发组合框的字符。可以是：
-    - 单个字符(如'@')
-    - 字符数组
-    - 正则表达式
+  <APIItem name="triggerPreviousCharPattern" type="RegExp | null">
+    针对触发字符之前的字符进行测试，在文本开头时为 `''`。`null` 允许任意字符。
   </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
-    匹配触发器前字符的模式。
-    - **示例:** `/^\s?$/` 匹配行首或空格
+  <APIItem name="triggerQuery" type="((editor: ComboboxEditor) => boolean) | null">
+    返回 `false` 时将输入的触发字符保留为普通文本，例如在代码中。
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: TriggerComboboxEditor) => boolean" optional>
-    控制触发器何时激活的自定义查询函数。
+  <APIItem name="queryPattern" type="RegExp | null">
+    逐个测试查询字符；第一个不匹配的字符会关闭弹出框。`null` 允许除换行外的任意字符。
+  </APIItem>
+  <APIItem name="maxQueryLength" type="number">
+    查询长度超过该值时关闭弹出框。
   </APIItem>
 </APIOptions>
 </API>
 
-## 输入命令
+## Hooks
 
-提及、斜杠、表情和脚注输入依赖 `BaseComboboxPlugin`。自定义输入插件也应声明
-此依赖。使用 `editor.key(element)` 获取已挂载输入的 `NodeKey`，并在事件回调中
-保留该键。
+### useCombobox
 
-| 方法 | 行为 |
-| --- | --- |
-| `read.canEdit(input)` | 检查输入是否存在、可编辑且属于当前用户。 |
-| `api.cancel(input, { text, select })` | 在一次历史记录中删除输入并恢复原始文本。Backspace 可省略 `text`；`select` 可为 `'start'`、`'end'`，或省略以保留外部选区。 |
-| `api.commit(input, callback)` | 删除输入、选中其当前位置并运行同步事务回调。回调抛出异常时回滚整个更改。 |
-| `api.undo(input)` / `api.redo(input)` | 仅为可编辑输入执行可用的历史操作。 |
+把弹出框连接到一个编辑器。从 `platejs/combobox/react` 导入，并在 `afterEditable` 插槽组件中调用。
 
-输入键已失效或属于其他用户时，完成命令返回 `false`。命令不会把文本恢复到
-无关的当前选区；节点键也适用于命名文档根中的输入。
+<API name="useCombobox">
+<APIParameters>
+  <APIItem name="editableRef" type="React.RefObject<HTMLDivElement | null>">
+    弹出框服务的编辑器，即传给插槽的 ref。
+  </APIItem>
+  <APIItem name="plugin" type="PluginReference">
+    状态中保存 `ComboboxState` 的功能插件。
+  </APIItem>
+  <APIItem name="activeOptionId" type="string | null" optional>
+    当前选项的 id，同步为编辑器的 `aria-activedescendant`。
+  </APIItem>
+  <APIItem name="open" type="boolean" optional>
+    弹出框是否正在显示。只有显示时才接管按键并写入 ARIA，因此没有结果而隐藏的弹出框会把方向键和 Escape 留给编辑器。
+    - **默认值:** `true`
+  </APIItem>
+  <APIItem name="onKeyDown" type="(event: React.KeyboardEvent<HTMLDivElement>) => boolean" optional>
+    弹出框打开时，在编辑器快捷键之前接收 Enter、Tab、ArrowUp、ArrowDown 和 Escape。处理后返回 `true`。未处理的 Escape 会关闭弹出框。
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="match" type="ComboboxMatch | null">
+    当前打开的查询，关闭时为 `null`。`match.query` 是触发字符之后的文本，`match.range` 覆盖触发字符和查询，IME 预编辑期间 `match.composing` 为 true。
+  </APIItem>
+  <APIItem name="listboxId" type="string">
+    弹出框列表的 id，同步为编辑器的 `aria-controls`。
+  </APIItem>
+  <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => false | void) => boolean">
+    通过一个同步事务替换触发字符和查询。传入提供该选项的 match。回调返回 `false` 表示拒绝并保留查询。更新的查询、进行中的组字或被拒绝的回调都不会产生更改并返回 `false`；回调抛出异常时会回滚全部更改。
+  </APIItem>
+  <APIItem name="dismiss" type="() => void">
+    关闭弹出框并保留输入的文本。
+  </APIItem>
+</APIReturns>
+</API>
 
 ## Registry UI
 
-复制的 `inline-combobox` 组件负责查询状态、过滤、弹出框导航、输入法事件和 DOM
-聚焦。在 `InlineComboboxItem.onSelect` 中使用自动推断的事务插入所选内容。
-`onClick` 适用于成功完成后执行的界面操作，例如打开另一个弹出框。
+复制的 `inline-combobox` 组件用 Ariakit 列表封装 `useCombobox`。它负责过滤、当前选项以及在触发字符处定位弹出框。在 `InlineComboboxItem.onSelect` 中使用推断的事务插入所选功能，当选项不再可用时返回 `false`。在弹出框内使用 `useInlineComboboxQuery()` 读取查询。成功补全后的 UI 操作（例如打开另一个弹出框）放在 `onClick` 中。
 
 <ComponentSource name="inline-combobox" />

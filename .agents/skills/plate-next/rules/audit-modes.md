@@ -34,7 +34,7 @@ Default suspicion list:
   `editor.read`, `editor.api`, or `editor.update`.
 - helpers in `packages/platejs` that are really generic node/range/selection/
   schema/runtime behavior.
-- `any`/`unknown` casts hiding type loss from migration.
+- The rules this section shares with `best-api` and `plate-architecture` are stated in `best-api.mdc`, `best-api/rules/authoring-and-inference.md`, `best-api/rules/behavior-and-ownership.md`, `best-api/rules/schema-and-identity.md`, and `plate-architecture.mdc`; apply them from there.
 - explicit callback/helper types in tests that replace inference from
   `definePlugin`, Plate `createEditor`, exact definitions, update groups, or editor
   API calls.
@@ -72,16 +72,6 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   the callback so it captures `tx`; pass `tx` to another function only when a
   proven shared or independent owner survives. Do not scatter local
   `editor.update` calls inside the callback.
-- plugin-owned functions whose signatures carry `editor`, `api`, `read`, `tx`,
-  `store`, resolved plugin state values, or resolved plugin type
-  instead of domain inputs. Operation options are not plumbing. Review the full
-  owner chain for an earlier honest staged API/tx capability before accepting
-  the helper.
-- live node state, arguments, DOM attributes, or protocol fields named `id` or
-  `ids`. Plite live identity is `NodeKey`; resolve it through `editor.key`,
-  contextual `state.key`, or active `tx.key`, reverse through `nodes.path`, and
-  name feature values `key` or `keys`. Keep persisted `element.id` distinct and
-  optional through `ElementIdPlugin`; never serialize a `NodeKey`.
 - later tx stages that call an earlier method through a portal one-shot,
   `context.update`, or `editor.update.*` instead of
   `tx.plugin(Plugin)` when the caller owns the descriptor,
@@ -98,7 +88,6 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   preferred shape when the caller is already inside a transform lane.
 - local JSX/editor fixture aliases in tests, especially `{ children; selection
 }` shapes that should come from `@platejs/test`.
-- duplicate Plate helpers around Plite APIs.
 - arbitrary root editor object fields such as `editor.propsChanges`,
   `editor.someCache`, direct property assignment bags, or interface extensions
   that smuggle plugin/product state onto the public `Editor`.
@@ -107,14 +96,6 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   `components/` / `hooks/` taxonomies and nested barrels where one feature
   family is the only durable owner. Multiple siblings inside that family do
   not establish reuse.
-- copied registry source outside the flat `components/editor` install
-  namespace, including Plate components under `components/ui`,
-  `components/plate`, or nested `editor/plugins`, `editor/kits`,
-  `editor/nodes`, `editor/hooks`, and feature folders. `components/ui` belongs
-  only to the selected shadcn primitive layer.
-- registry item or feature filenames ending in `-kit`. The feature item/file is
-  `foo`; its stable app-owned plugin tuple is `FooKit`, including one-descriptor
-  features. Package roots remain forbidden from exporting opinionated kits.
 - modern copied-registry item or filenames ending in `-node`, `-element`, or
   another implementation-role suffix. A standalone renderer uses the semantic
   feature name (`blockquote`, `media-image`); aggregates such as
@@ -141,8 +122,6 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
 - exported hooks whose only terminal consumers are one copied registry family,
   package wrappers that feed only that family, or one custom hook per
   subcomponent.
-- public providers/stores with no independent lifecycle or cross-family
-  consumer.
 - `forwardRef`, React 18 compatibility branches, or generic component
   factories/HOCs hiding a small fixed component family.
 
@@ -199,7 +178,7 @@ When the target is broad Plate foundation review, use full-manifest mode:
   - public API/type surface touched while a forbidden bridge remains:
     confidence score `<=75`.
 - Score gate:
-  - the autogoal plan's Plate foundation drift ledger must record the manifest command,
+  - the Plate Next plan's Plate foundation drift ledger must record the manifest command,
     expected row count, actual row count, missing/extra row count, and top drift
     rows before closure.
   - Any score `>=2` needs an owner, evidence, and next action.
@@ -244,7 +223,7 @@ Rules:
   and the package proof needed for the current package. Do not opportunistically
   migrate every consumer of the new owner API.
 - Before implementation, generate a package file manifest and materialize one
-  checkbox per reviewed file in the autogoal plan.
+  checkbox per reviewed file in the Plate Next plan.
 - Treat every production file under `transforms/`, `queries/`, `utils/`,
   `helpers/`, and similar helper folders, plus every standalone production
   function that accepts `editor`, `api`, `read`, `tx`, `store`, resolved plugin

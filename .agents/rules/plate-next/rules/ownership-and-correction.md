@@ -49,8 +49,7 @@ After any code/template/API correction:
 
 When the correction changes, removes, renames, or reinterprets a reusable
 public API or canonical plugin/registry pattern, run `best-api repair`
-automatically in the same task. Repair every affected worker rule, bump this
-doctrine when its fingerprinted source set changes, regenerate mirrors, then
+automatically in the same task. Repair every affected worker rule, regenerate mirrors, then
 rerun the scoped correction sweep against the repaired doctrine before package
 attestation. Never wait for a separate skill-repair prompt or attest a package
 against rules that still teach the rejected shape.
@@ -131,32 +130,7 @@ Plate Next means:
 - Plate owns product composition: plugins, UI, app/registry kits, product
   command ergonomics, docs/examples, and app-facing defaults.
 - Plate foundation must not wrap Plite editor APIs under Plate names.
-- Schema cleanup uses the final Plite vocabulary: direct complete/named roots,
-  safe omitted `elements`/`unknown` defaults, `schema.element.textBlock()`,
-  validator-backed narrow JSON properties, placement-owned
-  `role: "metadata"`, `schema.create`, assertion boundaries, and
-  `schema.isMarkableVoid`.
-- Application schema lineage uses `id` and `version` inside the single
-  app-owned `schema` object. Plate element membership is `blockContent`. Plate
-  schema queries accept plugin descriptors directly and do not expose
-  `schema.handle(Plugin)`.
-- Plugin `name` is capability identity only. Persisted identity is published
-  through compiled element and property handles. Only the consuming
-  application's final schema may override element type, content, groups, or
-  property targets and add app-owned properties; `.extend()` and `.configure()`
-  cannot, and plugin-owned property keys/value laws stay fixed.
-- Descriptor-aware schema builders publish normalized plugin names in their
-  structural output, retain nominal descriptors only as private metadata, and
-  validate descriptor family against the installed owner before applying the
-  policy. Same-name structural objects are not interchangeable descriptors.
-- Raw plugin runtime capabilities stay shallow. Exact recursive `Value`, final
-  handles, mutation maps, and schema fingerprints may live in opt-in generated
-  artifacts so ordinary editor API access remains finite. Generated output
-  never owns the runtime plugin array or ordinary editor setup.
-- Generated schema contracts are content-addressed data, not trusted caches.
-  Fingerprints hash compiled semantic output rather than authoring syntax;
-  readers recompute authoritative structure, and restoration compares every
-  derived table with current source contributions before publication.
+- The rules this section shares with `best-api` and `plate-architecture` are stated in `best-api.mdc`, `best-api/rules/authoring-and-inference.md`, `best-api/rules/schema-and-identity.md`, and `plate-architecture.mdc`; apply them from there.
 - Normalized schema/compiler/provider witnesses are private implementation
   machinery. If removing a public carrier breaks inference, fix the private
   descriptor compiler rather than restoring the carrier.
@@ -176,8 +150,6 @@ Plate Next means:
   normalize leaf they decide. `undefined` delegates that leaf and `false` is a
   terminal boolean decision. Reject a global matcher that selects or shadows
   an entire rule family.
-- No public compat aliases, old Slate shims, or docs for old API names.
 - Private bridges are allowed only with owner, deletion gate, and proof.
   They are not allowed to become a dumping ground for displaced product/plugin
   logic.
-- If a helper exists only because the migration was hard, cut it.

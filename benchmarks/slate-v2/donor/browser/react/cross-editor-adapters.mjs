@@ -54,9 +54,10 @@ import { getMountedEditableDOMRuntime } from 'cross-plite-dom-runtime';
 import { getEditableKernelTrace } from 'cross-plite-kernel';
 ${
   surface === 'plite'
-    ? "import {createEditor, Editable, Plite, setDOMTextSyncRendererCapability} from 'plitejs/react';"
-    : "import {createEditor, Plate, EditorContent, BoldPlugin, ParagraphPlugin} from 'platejs/react';"
+    ? "import {createEditor, Editable, EditorRoot, installBrowserHandle, setDOMTextSyncRendererCapability} from 'plitejs/react';"
+    : "import {createEditor, installBrowserHandle, EditorRoot, EditorContent, BoldPlugin, ParagraphPlugin} from 'platejs/react';"
 }
+installBrowserHandle();
 export async function mount(host, lines, options) {
   ${treeHelpers}
   const counter = createPliteReactRenderCounter();
@@ -85,11 +86,12 @@ export async function mount(host, lines, options) {
   }
   root.render(${
     surface === 'plite'
-      ? 'React.createElement(Plite,{editor},React.createElement(Editable,props))'
-      : 'React.createElement(Plate,{editor,suppressInstanceWarning:true},React.createElement(EditorContent,{...props,disableDefaultStyles:true}))'
+      ? 'React.createElement(EditorRoot,{editor},React.createElement(Editable,props))'
+      : 'React.createElement(EditorRoot,{editor,suppressInstanceWarning:true},React.createElement(EditorContent,{...props,disableDefaultStyles:true}))'
   });
   const dom = await until(() => host.querySelector('[contenteditable="true"]'));
-  const handle = await until(() => dom.__pliteBrowserHandle);
+  const handle = dom.__pliteBrowserHandle;
+  if (!handle) throw new Error('browser handle not installed');
   return {
     dom,
     lines:()=>handle.getBlockTexts(),

@@ -1,13 +1,11 @@
 ---
-description: Write and verify package release changesets and the PR’s managed auto-release choice.
+description: Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice.
 ---
 
 # Changeset
 
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
 
-
-Changesets document package changes for release. Concise bullets, imperative voice, user impact only.
+Release notes document user-visible changes: package changesets for published packages, and [registry changelog entries](./references/registry.md) for copied registry code under `apps/www/src/registry/**`. Concise bullets, imperative voice, user impact only.
 
 **Core principle:** one action verb + one impact statement = one bullet.
 
@@ -17,7 +15,7 @@ Use when:
 
 - Creating `.changeset/*.md` files
 - Documenting package changes: feat, fix, breaking
-- Updating Plate UI registry changelog source for copied registry components
+- Adding registry changelog entries for copied registry components
 
 Do not use for:
 
@@ -66,31 +64,35 @@ Never combine packages in one changeset.
 .changeset/cli-add-command.md
 ```
 
-### 3. Always relative to `main`, never last commit
+### 3. Always relative to the release baseline, never last commit
 
 NEVER write a changeset relative to the last commit, staged diff, current
 working tree, branch-local plan, or the change you just made. Those are agent
 breadcrumbs, not release truth.
 
+The release baseline is what users already have. For a package released from
+`main`, it is `main` / `origin/main`. For a package that does not exist on
+`main` yet, such as one in prerelease on `next`, it is that package's last
+published version, and `.changeset/pre.json` lists the changesets that already
+shipped in it.
+
 Before creating or editing a changeset, answer one question:
 
-> What will a user upgrading from current `main` observe?
+> What will a user upgrading from the release baseline observe?
 
-Use `main` / `origin/main` as the release baseline. If a symbol, option,
-behavior, file, or bug only existed inside the current branch and never existed
-on `main`, do **not** write a removal, migration, or breaking changeset for it.
-Instead, describe only the final user-visible delta from `main`, or write no
-changeset if there is no published package delta.
+If a symbol, option, behavior, file, or bug never existed in the release
+baseline, do **not** write a removal, migration, or breaking changeset for it.
+Instead, describe only the final user-visible delta from the baseline, or write
+no changeset if there is no published package delta. Amend an unreleased
+changeset that already describes the change instead of adding a duplicate.
 
-Write changesets for the user-visible delta from the current `main` branch.
+Write changesets for the user-visible delta from the release baseline. That means:
 
-That means:
-
-- describe what users upgrading from `main` need to know
+- describe what users upgrading from the baseline need to know
 - describe migration steps only when the user actually has to do something
 - prefer API shape, runtime behavior, serialized data shape, or config changes
-- check whether any named removed/renamed API actually exists on `main` before
-  writing removal or migration prose
+- check whether any named removed/renamed API actually exists in the baseline
+  before writing removal or migration prose
 
 Do not write:
 
@@ -103,20 +105,14 @@ Do not write:
 - "editor-owned", "normalize path", "wrap semantics", or similar internal phrasing unless the public API literally uses those words
 
 If a package changed internally on this branch but has no user-visible delta from
-`main`, do not write a changeset for that package.
+the baseline, do not write a changeset for that package.
 
-### 4. Registry work is registry-changelog work
+### 4. Registry work gets a registry changelog entry
 
-If changes are only under `apps/www/src/registry/`, do **not** write a package changeset.
-
-Use the `registry-changelog` skill instead. It owns the source entry schema,
-scaffold command, generator command, and verification check:
-
-```bash
-node tooling/scripts/generate-ui-changelog-entries.mjs --new <id> --summary "<summary>" --items <item-a,item-b> --kind <kind>
-node tooling/scripts/generate-ui-changelog-entries.mjs --write
-node tooling/scripts/generate-ui-changelog-entries.mjs --check
-```
+If changes are only under `apps/www/src/registry/`, do **not** write a package
+changeset; add a registry changelog entry per the
+[registry reference](./references/registry.md). Mixed package and registry work
+may need both.
 
 `sync-plate-ui` is for downstream user apps consuming the generated JSON. Do not use it to produce upstream Plate changelog entries.
 
@@ -215,25 +211,20 @@ Before shipping:
 - [ ] Used `minor` for `plitejs` or `platejs`? Change to `patch`
 - [ ] Multiple packages in frontmatter? Split files
 - [ ] Describes the last commit, working tree, or branch-only API instead of the
-      user-visible delta from `main`? Rewrite it
+      user-visible delta from the release baseline? Rewrite it
 - [ ] Claims an API was removed or needs migration without proving that API
-      exists on `main`? Delete that claim
+      exists in the release baseline? Delete that claim
 - [ ] Past tense verbs? Fix them
 - [ ] Multiple paragraphs? Condense
 - [ ] Too much explanation? Cut it
 - [ ] API change without before/after? Add one
-
-## Registry Changelog
-
-For `apps/www/src/registry` changes, use the `registry-changelog` skill. Do not
-duplicate its schema here.
 
 ## Managed auto-release choice
 
 For PR-body edits, preserve the existing `auto-release` marker block and its
 checked state. `tooling/scripts/auto-release-pr.mjs` owns normalization;
 `.github/workflows/changeset-auto-release.yml` supplies the default for a new
-block and excludes Version Packages PRs. Do not copy that policy into Task or
+block and excludes Version Packages PRs. Do not copy that policy into another rule or
 hand-toggle a release choice during prose cleanup. Creating or changing the
 release choice still requires the active request's authority. Read these owners
 when the task actually changes auto-release behavior.

@@ -88,6 +88,25 @@ test(
       }
     );
 
+    const receipt = JSON.parse(
+      fs.readFileSync(
+        path.join(workspace, 'tmp/bench-targets/receipts/runner-fixture.json'),
+        'utf-8'
+      )
+    );
+    assert.deepEqual(
+      receipt.processes.map(({ role, exitCode, timedOut }) => [
+        role,
+        exitCode,
+        timedOut,
+      ]),
+      [
+        ['correctness', 0, false],
+        ['benchmark', 124, true],
+      ]
+    );
+    assert.equal(receipt.result.stage, 'benchmark');
+
     const grandchildPid = Number(fs.readFileSync(pidFile, 'utf-8'));
 
     assert.equal(await waitUntil(() => !processIsAlive(grandchildPid)), true);

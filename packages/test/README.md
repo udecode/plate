@@ -123,6 +123,48 @@ test('types through the browser editor', async ({ page }) => {
 });
 ```
 
+The page under test installs the browser handle once, at module scope in a
+test or development entry, before its first editor mounts. Production entries
+never call it. Without it, `ready: { editor: 'visible' }` fails with "browser
+handle not installed".
+
+```ts
+import { installBrowserHandle } from 'platejs/react'; // or 'plitejs/react'
+
+installBrowserHandle();
+```
+
+Each Playwright project names how `editor.clipboard.pasteText` and
+`pasteHtml` deliver a paste:
+
+```ts
+import type { BrowserTestOptions } from '@platejs/test/playwright';
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig<BrowserTestOptions>({
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        clipboardTransport: 'native',
+        permissions: ['clipboard-read', 'clipboard-write'],
+      },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'], clipboardTransport: 'event' },
+    },
+  ],
+});
+```
+
+`'native'` writes the clipboard and presses the paste shortcut. `'event'`
+dispatches `paste`, then `beforeinput` when nothing cancels it. `'handle'`
+calls the editor directly and is labeled a stand-in. A paste fails when its
+transport did not apply it or the page threw, and each test records its
+transport in a `clipboard-transport` annotation.
+
 ## Proof Style
 
 Use the `ready` contract for maintained callsites and examples. For editor surfaces, do not use Playwright `locator.fill()` as proof. The editor owns model input through `beforeinput`, selection import, and editor commands; `fill()` can bypass or mis-model that path, especially in Firefox. Use `editor.type(...)` or `page.keyboard.type(...)` when the claim is real keyboard behavior: typing, selected-text replacement, undoable key input, focus/caret routing, Enter follow-up text, or visual caret proof. Use `page.keyboard.insertText(...)` only when the row deliberately bypasses keydown: native `beforeinput` / `targetRange` traces, IME or CDP input, Unicode/layout insertion that Playwright cannot key-dispatch consistently, direct browser DOM mutation import, undo grouping as one text insertion, or model-latency probes. Every remaining `insertText` call in non-pagination example specs is classified by `packages/test/test/proof/keyboard-oracle-audit.test.ts`. Then assert model text, native selection, and native event trace when the behavior depends on browser input. Use `measureTrustedTyping({ page, root, text })` after explicit editor readiness, selection, focus, and warmup when a route needs exact per-key DOM target/model readiness, a post-readiness paint boundary, trusted input, an unthrottled burst budget, and fail-closed long-task coverage. Pair it with an exact final model assertion for the whole measured text. Model-owned input binds to the runtime's recorded event selection; native input also requires its DOM target range to resolve to that same path and offset. Native event traces are browser contracts, not one-size-fits-all strings: Chromium/WebKit `insertText` may produce only `beforeinput`, while Firefox can report `insertCompositionText` and a trailing `input` event for the same Playwright call. Clipboard helpers prove delivery path and editor ownership, not feature semantics by themselves. `editor.clipboard.pasteHtml(...)` writes a rich clipboard payload and triggers the browser paste path; the route-specific test must still assert the expected parser behavior. Do not treat it as proof that a surface supports every rich HTML mark, element, sanitizer, or table policy. Use replayable scenario steps for generated stress. For direct browser DOM mutation/import proof, use `mutateTextDOM` so the artifact stays replayable; use `editor.scenario.runImperative(...)` for arbitrary browser work. Imperative scenario results are explicitly non-replayable, non-reducible, and ineligible for release proof. Generated stress artifacts carry reduction candidates. Replay the full artifact with `STRESS_REPLAY=<artifact> bun test:stress:replay:<project>`. Replay one candidate with `STRESS_REPLAY=<artifact> STRESS_REDUCTION=<label> bun test:stress:replay:<project>`. Reduced replays write a separate `.reduction-<label>.result.json` trace beside the full replay result. Decode imported JSON with `decodeScenarioReplay(...)`; never cast replay values into scenario steps. The decoder rejects unknown steps, stale metadata, non-JSON payloads, and assertion shapes that cannot prove anything.

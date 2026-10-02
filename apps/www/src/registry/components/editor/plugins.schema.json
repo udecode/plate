@@ -6,14 +6,10 @@
         "element:audio",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
       ],
       [
@@ -44,14 +40,10 @@
         "element:callout",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
       ],
       [
@@ -117,10 +109,6 @@
         ]
       ],
       [
-        "element:emojiInput",
-        []
-      ],
-      [
         "element:equation",
         []
       ],
@@ -128,14 +116,10 @@
         "element:file",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
       ],
       [
@@ -163,10 +147,6 @@
         ]
       ],
       [
-        "element:footnoteInput",
-        []
-      ],
-      [
         "element:footnoteReference",
         []
       ],
@@ -174,14 +154,10 @@
         "element:heading",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
       ],
       [
@@ -192,14 +168,10 @@
         "element:image",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
       ],
       [
@@ -214,14 +186,10 @@
         "element:mediaEmbed",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
       ],
       [
@@ -229,39 +197,23 @@
         []
       ],
       [
-        "element:mentionInput",
-        []
-      ],
-      [
         "element:paragraph",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
-      ],
-      [
-        "element:slashInput",
-        []
       ],
       [
         "element:summary",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
       ],
       [
@@ -312,14 +264,10 @@
         "element:video",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
       ],
       [
@@ -435,20 +383,6 @@
         ]
       ],
       [
-        "emojiInput",
-        [
-          "element:audio",
-          "element:callout",
-          "element:file",
-          "element:heading",
-          "element:image",
-          "element:mediaEmbed",
-          "element:paragraph",
-          "element:summary",
-          "element:video"
-        ]
-      ],
-      [
         "equation",
         [
           "element:blockquote",
@@ -479,20 +413,6 @@
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
-        ]
-      ],
-      [
-        "footnoteInput",
-        [
-          "element:audio",
-          "element:callout",
-          "element:file",
-          "element:heading",
-          "element:image",
-          "element:mediaEmbed",
-          "element:paragraph",
-          "element:summary",
-          "element:video"
         ]
       ],
       [
@@ -596,20 +516,6 @@
         ]
       ],
       [
-        "mentionInput",
-        [
-          "element:audio",
-          "element:callout",
-          "element:file",
-          "element:heading",
-          "element:image",
-          "element:mediaEmbed",
-          "element:paragraph",
-          "element:summary",
-          "element:video"
-        ]
-      ],
-      [
         "paragraph",
         [
           "element:blockquote",
@@ -618,20 +524,6 @@
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
-        ]
-      ],
-      [
-        "slashInput",
-        [
-          "element:audio",
-          "element:callout",
-          "element:file",
-          "element:heading",
-          "element:image",
-          "element:mediaEmbed",
-          "element:paragraph",
-          "element:summary",
-          "element:video"
         ]
       ],
       [
@@ -718,14 +610,10 @@
         "content": {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -852,14 +740,10 @@
         "content": {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -1185,53 +1069,6 @@
       {
         "behavior": {
           "atom": true,
-          "inline": true,
-          "isolating": false,
-          "markableVoid": false,
-          "object": false,
-          "readOnly": false,
-          "selectable": true,
-          "void": true,
-          "voidKind": "inline"
-        },
-        "content": {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        },
-        "contentRoots": [],
-        "construction": {
-          "materializedPropertyIds": [],
-          "propertyIds": [
-            "element:trigger@8324822ef56219ee",
-            "element:userId@465bbc81e0824dbc",
-            "element:value@a932f8e9c200496f"
-          ]
-        },
-        "groups": [
-          "all",
-          "element",
-          "inline"
-        ],
-        "propertyIds": [
-          "element:trigger@8324822ef56219ee",
-          "element:userId@465bbc81e0824dbc",
-          "element:value@a932f8e9c200496f"
-        ],
-        "slice": {
-          "preserveContext": false,
-          "replaceWhenCovered": true
-        },
-        "type": "emojiInput"
-      },
-      {
-        "behavior": {
-          "atom": true,
           "inline": false,
           "isolating": false,
           "markableVoid": false,
@@ -1290,14 +1127,10 @@
         "content": {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -1425,53 +1258,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:trigger@4da21d09ba877648",
-            "element:userId@352473eeeeef634e",
-            "element:value@e81ba78ee6d73aab"
-          ]
-        },
-        "groups": [
-          "all",
-          "element",
-          "inline"
-        ],
-        "propertyIds": [
-          "element:trigger@4da21d09ba877648",
-          "element:userId@352473eeeeef634e",
-          "element:value@e81ba78ee6d73aab"
-        ],
-        "slice": {
-          "preserveContext": false,
-          "replaceWhenCovered": true
-        },
-        "type": "footnoteInput"
-      },
-      {
-        "behavior": {
-          "atom": true,
-          "inline": true,
-          "isolating": false,
-          "markableVoid": false,
-          "object": false,
-          "readOnly": false,
-          "selectable": true,
-          "void": true,
-          "voidKind": "inline"
-        },
-        "content": {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        },
-        "contentRoots": [],
-        "construction": {
-          "materializedPropertyIds": [],
-          "propertyIds": [
             "element:ref@9f1cb3043add19e8"
           ]
         },
@@ -1504,14 +1290,10 @@
         "content": {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -1615,14 +1397,10 @@
         "content": {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -1784,14 +1562,10 @@
         "content": {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -1879,53 +1653,6 @@
       },
       {
         "behavior": {
-          "atom": true,
-          "inline": true,
-          "isolating": false,
-          "markableVoid": false,
-          "object": false,
-          "readOnly": false,
-          "selectable": true,
-          "void": true,
-          "voidKind": "inline"
-        },
-        "content": {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        },
-        "contentRoots": [],
-        "construction": {
-          "materializedPropertyIds": [],
-          "propertyIds": [
-            "element:trigger@a19a0c490e280a3e",
-            "element:userId@8a78b6daa51dce60",
-            "element:value@cb026ea1b6b8c47f"
-          ]
-        },
-        "groups": [
-          "all",
-          "element",
-          "inline"
-        ],
-        "propertyIds": [
-          "element:trigger@a19a0c490e280a3e",
-          "element:userId@8a78b6daa51dce60",
-          "element:value@cb026ea1b6b8c47f"
-        ],
-        "slice": {
-          "preserveContext": false,
-          "replaceWhenCovered": true
-        },
-        "type": "mentionInput"
-      },
-      {
-        "behavior": {
           "atom": false,
           "inline": false,
           "isolating": false,
@@ -1939,14 +1666,10 @@
         "content": {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -1995,53 +1718,6 @@
       },
       {
         "behavior": {
-          "atom": true,
-          "inline": true,
-          "isolating": false,
-          "markableVoid": false,
-          "object": false,
-          "readOnly": false,
-          "selectable": true,
-          "void": true,
-          "voidKind": "inline"
-        },
-        "content": {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        },
-        "contentRoots": [],
-        "construction": {
-          "materializedPropertyIds": [],
-          "propertyIds": [
-            "element:trigger@22e2f15f83b62e9d",
-            "element:userId@2d6c7ab842a758c3",
-            "element:value@902973597f984fa0"
-          ]
-        },
-        "groups": [
-          "all",
-          "element",
-          "inline"
-        ],
-        "propertyIds": [
-          "element:trigger@22e2f15f83b62e9d",
-          "element:userId@2d6c7ab842a758c3",
-          "element:value@902973597f984fa0"
-        ],
-        "slice": {
-          "preserveContext": false,
-          "replaceWhenCovered": true
-        },
-        "type": "slashInput"
-      },
-      {
-        "behavior": {
           "atom": false,
           "inline": false,
           "isolating": false,
@@ -2055,14 +1731,10 @@
         "content": {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2359,14 +2031,10 @@
         "content": {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2414,14 +2082,10 @@
         {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2471,14 +2135,10 @@
         {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2600,19 +2260,6 @@
         }
       ],
       [
-        "element:emojiInput",
-        {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        }
-      ],
-      [
         "element:equation",
         {
           "allowedElementTypes": [],
@@ -2630,14 +2277,10 @@
         {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2683,19 +2326,6 @@
         }
       ],
       [
-        "element:footnoteInput",
-        {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        }
-      ],
-      [
         "element:footnoteReference",
         {
           "allowedElementTypes": [],
@@ -2713,14 +2343,10 @@
         {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2749,14 +2375,10 @@
         {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2798,14 +2420,10 @@
         {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2830,31 +2448,14 @@
         }
       ],
       [
-        "element:mentionInput",
-        {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        }
-      ],
-      [
         "element:paragraph",
         {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2866,31 +2467,14 @@
         }
       ],
       [
-        "element:slashInput",
-        {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": 1,
-          "min": 1
-        }
-      ],
-      [
         "element:summary",
         {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -2998,14 +2582,10 @@
         {
           "allowedElementTypes": [
             "date",
-            "emojiInput",
-            "footnoteInput",
             "footnoteReference",
             "inlineEquation",
             "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
+            "mention"
           ],
           "allowsText": true,
           "allowsUnknownElements": false,
@@ -3105,12 +2685,6 @@
         }
       ],
       [
-        "element:emojiInput",
-        {
-          "kind": "text"
-        }
-      ],
-      [
         "element:equation",
         {
           "kind": "text"
@@ -3127,12 +2701,6 @@
         {
           "kind": "element",
           "type": "paragraph"
-        }
-      ],
-      [
-        "element:footnoteInput",
-        {
-          "kind": "text"
         }
       ],
       [
@@ -3184,19 +2752,7 @@
         }
       ],
       [
-        "element:mentionInput",
-        {
-          "kind": "text"
-        }
-      ],
-      [
         "element:paragraph",
-        {
-          "kind": "text"
-        }
-      ],
-      [
-        "element:slashInput",
         {
           "kind": "text"
         }
@@ -3266,11 +2822,9 @@
           "columnGroup",
           "date",
           "details",
-          "emojiInput",
           "equation",
           "file",
           "footnoteDefinition",
-          "footnoteInput",
           "footnoteReference",
           "heading",
           "horizontalRule",
@@ -3279,9 +2833,7 @@
           "link",
           "mediaEmbed",
           "mention",
-          "mentionInput",
           "paragraph",
-          "slashInput",
           "summary",
           "table",
           "tableCell",
@@ -3329,11 +2881,9 @@
           "columnGroup",
           "date",
           "details",
-          "emojiInput",
           "equation",
           "file",
           "footnoteDefinition",
-          "footnoteInput",
           "footnoteReference",
           "heading",
           "horizontalRule",
@@ -3342,9 +2892,7 @@
           "link",
           "mediaEmbed",
           "mention",
-          "mentionInput",
           "paragraph",
-          "slashInput",
           "summary",
           "table",
           "tableCell",
@@ -3358,14 +2906,10 @@
         "inline",
         [
           "date",
-          "emojiInput",
-          "footnoteInput",
           "footnoteReference",
           "inlineEquation",
           "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
+          "mention"
         ]
       ],
       [
@@ -3423,14 +2967,6 @@
         []
       ],
       [
-        "element:audio\u0000emojiInput",
-        []
-      ],
-      [
-        "element:audio\u0000footnoteInput",
-        []
-      ],
-      [
         "element:audio\u0000footnoteReference",
         []
       ],
@@ -3444,14 +2980,6 @@
       ],
       [
         "element:audio\u0000mention",
-        []
-      ],
-      [
-        "element:audio\u0000mentionInput",
-        []
-      ],
-      [
-        "element:audio\u0000slashInput",
         []
       ],
       [
@@ -3539,14 +3067,6 @@
         []
       ],
       [
-        "element:callout\u0000emojiInput",
-        []
-      ],
-      [
-        "element:callout\u0000footnoteInput",
-        []
-      ],
-      [
         "element:callout\u0000footnoteReference",
         []
       ],
@@ -3560,14 +3080,6 @@
       ],
       [
         "element:callout\u0000mention",
-        []
-      ],
-      [
-        "element:callout\u0000mentionInput",
-        []
-      ],
-      [
-        "element:callout\u0000slashInput",
         []
       ],
       [
@@ -3739,23 +3251,11 @@
         []
       ],
       [
-        "element:emojiInput\u0000\u0000text",
-        []
-      ],
-      [
         "element:equation\u0000\u0000text",
         []
       ],
       [
         "element:file\u0000date",
-        []
-      ],
-      [
-        "element:file\u0000emojiInput",
-        []
-      ],
-      [
-        "element:file\u0000footnoteInput",
         []
       ],
       [
@@ -3772,14 +3272,6 @@
       ],
       [
         "element:file\u0000mention",
-        []
-      ],
-      [
-        "element:file\u0000mentionInput",
-        []
-      ],
-      [
-        "element:file\u0000slashInput",
         []
       ],
       [
@@ -3863,23 +3355,11 @@
         []
       ],
       [
-        "element:footnoteInput\u0000\u0000text",
-        []
-      ],
-      [
         "element:footnoteReference\u0000\u0000text",
         []
       ],
       [
         "element:heading\u0000date",
-        []
-      ],
-      [
-        "element:heading\u0000emojiInput",
-        []
-      ],
-      [
-        "element:heading\u0000footnoteInput",
         []
       ],
       [
@@ -3899,14 +3379,6 @@
         []
       ],
       [
-        "element:heading\u0000mentionInput",
-        []
-      ],
-      [
-        "element:heading\u0000slashInput",
-        []
-      ],
-      [
         "element:heading\u0000\u0000text",
         []
       ],
@@ -3916,14 +3388,6 @@
       ],
       [
         "element:image\u0000date",
-        []
-      ],
-      [
-        "element:image\u0000emojiInput",
-        []
-      ],
-      [
-        "element:image\u0000footnoteInput",
         []
       ],
       [
@@ -3943,14 +3407,6 @@
         []
       ],
       [
-        "element:image\u0000mentionInput",
-        []
-      ],
-      [
-        "element:image\u0000slashInput",
-        []
-      ],
-      [
         "element:image\u0000\u0000text",
         []
       ],
@@ -3964,14 +3420,6 @@
       ],
       [
         "element:mediaEmbed\u0000date",
-        []
-      ],
-      [
-        "element:mediaEmbed\u0000emojiInput",
-        []
-      ],
-      [
-        "element:mediaEmbed\u0000footnoteInput",
         []
       ],
       [
@@ -3991,19 +3439,7 @@
         []
       ],
       [
-        "element:mediaEmbed\u0000mentionInput",
-        []
-      ],
-      [
-        "element:mediaEmbed\u0000slashInput",
-        []
-      ],
-      [
         "element:mediaEmbed\u0000\u0000text",
-        []
-      ],
-      [
-        "element:mentionInput\u0000\u0000text",
         []
       ],
       [
@@ -4012,14 +3448,6 @@
       ],
       [
         "element:paragraph\u0000date",
-        []
-      ],
-      [
-        "element:paragraph\u0000emojiInput",
-        []
-      ],
-      [
-        "element:paragraph\u0000footnoteInput",
         []
       ],
       [
@@ -4039,31 +3467,11 @@
         []
       ],
       [
-        "element:paragraph\u0000mentionInput",
-        []
-      ],
-      [
-        "element:paragraph\u0000slashInput",
-        []
-      ],
-      [
         "element:paragraph\u0000\u0000text",
         []
       ],
       [
-        "element:slashInput\u0000\u0000text",
-        []
-      ],
-      [
         "element:summary\u0000date",
-        []
-      ],
-      [
-        "element:summary\u0000emojiInput",
-        []
-      ],
-      [
-        "element:summary\u0000footnoteInput",
         []
       ],
       [
@@ -4080,14 +3488,6 @@
       ],
       [
         "element:summary\u0000mention",
-        []
-      ],
-      [
-        "element:summary\u0000mentionInput",
-        []
-      ],
-      [
-        "element:summary\u0000slashInput",
         []
       ],
       [
@@ -4191,14 +3591,6 @@
         []
       ],
       [
-        "element:video\u0000emojiInput",
-        []
-      ],
-      [
-        "element:video\u0000footnoteInput",
-        []
-      ],
-      [
         "element:video\u0000footnoteReference",
         []
       ],
@@ -4212,14 +3604,6 @@
       ],
       [
         "element:video\u0000mention",
-        []
-      ],
-      [
-        "element:video\u0000mentionInput",
-        []
-      ],
-      [
-        "element:video\u0000slashInput",
         []
       ],
       [
@@ -4304,10 +3688,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:25a6c19579c99ec6",
+  "fingerprint": "fnv1a64:8dbd436867ec3264",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:25a6c19579c99ec6",
+    "fingerprint": "fnv1a64:8dbd436867ec3264",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -5330,102 +4714,6 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:trigger@22e2f15f83b62e9d",
-        "key": "trigger",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "slashInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "slashInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:trigger@4da21d09ba877648",
-        "key": "trigger",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "footnoteInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "footnoteInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:trigger@8324822ef56219ee",
-        "key": "trigger",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "emojiInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "emojiInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:trigger@a19a0c490e280a3e",
-        "key": "trigger",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "mentionInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "mentionInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
           "required": true,
           "validationVersion": 1
         },
@@ -5576,102 +4864,6 @@
         "descriptor": {
           "kind": "string",
           "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:userId@2d6c7ab842a758c3",
-        "key": "userId",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "slashInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "slashInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:userId@352473eeeeef634e",
-        "key": "userId",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "footnoteInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "footnoteInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:userId@465bbc81e0824dbc",
-        "key": "userId",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "emojiInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "emojiInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:userId@8a78b6daa51dce60",
-        "key": "userId",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "mentionInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "mentionInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
           "required": true,
           "validationVersion": 1
         },
@@ -5691,102 +4883,6 @@
         "target": {
           "kind": "type",
           "type": "date"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:value@902973597f984fa0",
-        "key": "value",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "slashInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "slashInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:value@a932f8e9c200496f",
-        "key": "value",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "emojiInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "emojiInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:value@cb026ea1b6b8c47f",
-        "key": "value",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "mentionInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "mentionInput"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "string",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:value@e81ba78ee6d73aab",
-        "key": "value",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        },
-        "merge": "replace",
-        "owner": "footnoteInput",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "kind": "type",
-          "type": "footnoteInput"
         }
       },
       {
@@ -6402,22 +5498,6 @@
         []
       ],
       [
-        "element:trigger@22e2f15f83b62e9d",
-        []
-      ],
-      [
-        "element:trigger@4da21d09ba877648",
-        []
-      ],
-      [
-        "element:trigger@8324822ef56219ee",
-        []
-      ],
-      [
-        "element:trigger@a19a0c490e280a3e",
-        []
-      ],
-      [
         "element:url@184e5cc6a37c6e0e",
         []
       ],
@@ -6442,39 +5522,7 @@
         []
       ],
       [
-        "element:userId@2d6c7ab842a758c3",
-        []
-      ],
-      [
-        "element:userId@352473eeeeef634e",
-        []
-      ],
-      [
-        "element:userId@465bbc81e0824dbc",
-        []
-      ],
-      [
-        "element:userId@8a78b6daa51dce60",
-        []
-      ],
-      [
         "element:value@498b315ffbe887a5",
-        []
-      ],
-      [
-        "element:value@902973597f984fa0",
-        []
-      ],
-      [
-        "element:value@a932f8e9c200496f",
-        []
-      ],
-      [
-        "element:value@cb026ea1b6b8c47f",
-        []
-      ],
-      [
-        "element:value@e81ba78ee6d73aab",
         []
       ],
       [
@@ -6626,14 +5674,6 @@
         ]
       ],
       [
-        "emojiInput",
-        [
-          "element:trigger@8324822ef56219ee",
-          "element:userId@465bbc81e0824dbc",
-          "element:value@a932f8e9c200496f"
-        ]
-      ],
-      [
         "equation",
         [
           "element:latex@6c61d1f3c8305dce"
@@ -6651,14 +5691,6 @@
         "footnoteDefinition",
         [
           "element:ref@3b0dc884d77d0966"
-        ]
-      ],
-      [
-        "footnoteInput",
-        [
-          "element:trigger@4da21d09ba877648",
-          "element:userId@352473eeeeef634e",
-          "element:value@e81ba78ee6d73aab"
         ]
       ],
       [
@@ -6734,14 +5766,6 @@
         ]
       ],
       [
-        "mentionInput",
-        [
-          "element:trigger@a19a0c490e280a3e",
-          "element:userId@8a78b6daa51dce60",
-          "element:value@cb026ea1b6b8c47f"
-        ]
-      ],
-      [
         "paragraph",
         [
           "element:checked@27c77ba8343da0d2",
@@ -6752,14 +5776,6 @@
           "element:listStyle@b90bb1ea0c1c1372",
           "element:listType@8cf5be6ea266d5d9",
           "element:textAlign@187ef459f9d44620"
-        ]
-      ],
-      [
-        "slashInput",
-        [
-          "element:trigger@22e2f15f83b62e9d",
-          "element:userId@2d6c7ab842a758c3",
-          "element:value@902973597f984fa0"
         ]
       ],
       [
@@ -7145,42 +6161,6 @@
         }
       ],
       [
-        "element:trigger@22e2f15f83b62e9d",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:trigger@4da21d09ba877648",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:trigger@8324822ef56219ee",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:trigger@a19a0c490e280a3e",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
         "element:url@184e5cc6a37c6e0e",
         {
           "copy": "preserve",
@@ -7235,79 +6215,7 @@
         }
       ],
       [
-        "element:userId@2d6c7ab842a758c3",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:userId@352473eeeeef634e",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:userId@465bbc81e0824dbc",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:userId@8a78b6daa51dce60",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
         "element:value@498b315ffbe887a5",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:value@902973597f984fa0",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:value@a932f8e9c200496f",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:value@cb026ea1b6b8c47f",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "drop"
-        }
-      ],
-      [
-        "element:value@e81ba78ee6d73aab",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -7692,15 +6600,6 @@
             ]
           ],
           [
-            "trigger",
-            [
-              "element:trigger@22e2f15f83b62e9d",
-              "element:trigger@4da21d09ba877648",
-              "element:trigger@8324822ef56219ee",
-              "element:trigger@a19a0c490e280a3e"
-            ]
-          ],
-          [
             "url",
             [
               "element:url@184e5cc6a37c6e0e",
@@ -7712,22 +6611,9 @@
             ]
           ],
           [
-            "userId",
-            [
-              "element:userId@2d6c7ab842a758c3",
-              "element:userId@352473eeeeef634e",
-              "element:userId@465bbc81e0824dbc",
-              "element:userId@8a78b6daa51dce60"
-            ]
-          ],
-          [
             "value",
             [
-              "element:value@498b315ffbe887a5",
-              "element:value@902973597f984fa0",
-              "element:value@a932f8e9c200496f",
-              "element:value@cb026ea1b6b8c47f",
-              "element:value@e81ba78ee6d73aab"
+              "element:value@498b315ffbe887a5"
             ]
           ],
           [
@@ -7984,22 +6870,6 @@
         "replace"
       ],
       [
-        "element:trigger@22e2f15f83b62e9d",
-        "replace"
-      ],
-      [
-        "element:trigger@4da21d09ba877648",
-        "replace"
-      ],
-      [
-        "element:trigger@8324822ef56219ee",
-        "replace"
-      ],
-      [
-        "element:trigger@a19a0c490e280a3e",
-        "replace"
-      ],
-      [
         "element:url@184e5cc6a37c6e0e",
         "replace"
       ],
@@ -8024,39 +6894,7 @@
         "replace"
       ],
       [
-        "element:userId@2d6c7ab842a758c3",
-        "replace"
-      ],
-      [
-        "element:userId@352473eeeeef634e",
-        "replace"
-      ],
-      [
-        "element:userId@465bbc81e0824dbc",
-        "replace"
-      ],
-      [
-        "element:userId@8a78b6daa51dce60",
-        "replace"
-      ],
-      [
         "element:value@498b315ffbe887a5",
-        "replace"
-      ],
-      [
-        "element:value@902973597f984fa0",
-        "replace"
-      ],
-      [
-        "element:value@a932f8e9c200496f",
-        "replace"
-      ],
-      [
-        "element:value@cb026ea1b6b8c47f",
-        "replace"
-      ],
-      [
-        "element:value@e81ba78ee6d73aab",
         "replace"
       ],
       [
@@ -8287,24 +7125,6 @@
         ]
       ],
       [
-        "emojiInput",
-        [
-          "text:ai@2f2791ccdc09f005",
-          "text:backgroundColor@cb359bb332a9fb72",
-          "text:bold@66c11ef06c87ed62",
-          "text:code@6939885f562d0514",
-          "text:color@6093816ecb087592",
-          "text:fontFamily@b00b412164ea3c68",
-          "text:fontSize@5b3b0f080627a70d",
-          "text:highlight@b4c2a38d602e5889",
-          "text:italic@4f9fcc9f4f2d32c1",
-          "text:kbd@26be899c0d1b681a",
-          "text:script@508ca8ff29baaad6",
-          "text:strikethrough@9568299587c9032e",
-          "text:underline@e3a9db819714dd91"
-        ]
-      ],
-      [
         "equation",
         [
           "text:ai@2f2791ccdc09f005",
@@ -8342,24 +7162,6 @@
       ],
       [
         "footnoteDefinition",
-        [
-          "text:ai@2f2791ccdc09f005",
-          "text:backgroundColor@cb359bb332a9fb72",
-          "text:bold@66c11ef06c87ed62",
-          "text:code@6939885f562d0514",
-          "text:color@6093816ecb087592",
-          "text:fontFamily@b00b412164ea3c68",
-          "text:fontSize@5b3b0f080627a70d",
-          "text:highlight@b4c2a38d602e5889",
-          "text:italic@4f9fcc9f4f2d32c1",
-          "text:kbd@26be899c0d1b681a",
-          "text:script@508ca8ff29baaad6",
-          "text:strikethrough@9568299587c9032e",
-          "text:underline@e3a9db819714dd91"
-        ]
-      ],
-      [
-        "footnoteInput",
         [
           "text:ai@2f2791ccdc09f005",
           "text:backgroundColor@cb359bb332a9fb72",
@@ -8521,43 +7323,7 @@
         ]
       ],
       [
-        "mentionInput",
-        [
-          "text:ai@2f2791ccdc09f005",
-          "text:backgroundColor@cb359bb332a9fb72",
-          "text:bold@66c11ef06c87ed62",
-          "text:code@6939885f562d0514",
-          "text:color@6093816ecb087592",
-          "text:fontFamily@b00b412164ea3c68",
-          "text:fontSize@5b3b0f080627a70d",
-          "text:highlight@b4c2a38d602e5889",
-          "text:italic@4f9fcc9f4f2d32c1",
-          "text:kbd@26be899c0d1b681a",
-          "text:script@508ca8ff29baaad6",
-          "text:strikethrough@9568299587c9032e",
-          "text:underline@e3a9db819714dd91"
-        ]
-      ],
-      [
         "paragraph",
-        [
-          "text:ai@2f2791ccdc09f005",
-          "text:backgroundColor@cb359bb332a9fb72",
-          "text:bold@66c11ef06c87ed62",
-          "text:code@6939885f562d0514",
-          "text:color@6093816ecb087592",
-          "text:fontFamily@b00b412164ea3c68",
-          "text:fontSize@5b3b0f080627a70d",
-          "text:highlight@b4c2a38d602e5889",
-          "text:italic@4f9fcc9f4f2d32c1",
-          "text:kbd@26be899c0d1b681a",
-          "text:script@508ca8ff29baaad6",
-          "text:strikethrough@9568299587c9032e",
-          "text:underline@e3a9db819714dd91"
-        ]
-      ],
-      [
-        "slashInput",
         [
           "text:ai@2f2791ccdc09f005",
           "text:backgroundColor@cb359bb332a9fb72",
@@ -8715,11 +7481,9 @@
       "columnGroup",
       "date",
       "details",
-      "emojiInput",
       "equation",
       "file",
       "footnoteDefinition",
-      "footnoteInput",
       "footnoteReference",
       "heading",
       "horizontalRule",
@@ -8728,9 +7492,7 @@
       "link",
       "mediaEmbed",
       "mention",
-      "mentionInput",
       "paragraph",
-      "slashInput",
       "summary",
       "table",
       "tableCell",
@@ -8786,25 +7548,13 @@
       "element:target@5a44aa3afed09fc5",
       "element:textAlign@187ef459f9d44620",
       "element:title@d5a05c180883db8d",
-      "element:trigger@22e2f15f83b62e9d",
-      "element:trigger@4da21d09ba877648",
-      "element:trigger@8324822ef56219ee",
-      "element:trigger@a19a0c490e280a3e",
       "element:url@184e5cc6a37c6e0e",
       "element:url@88fa4e556f36a1b7",
       "element:url@b09f563d04864a0d",
       "element:url@c30b8cbe3fb07184",
       "element:url@c71768acf4ac21cd",
       "element:url@d3baa48b6dc124c6",
-      "element:userId@2d6c7ab842a758c3",
-      "element:userId@352473eeeeef634e",
-      "element:userId@465bbc81e0824dbc",
-      "element:userId@8a78b6daa51dce60",
       "element:value@498b315ffbe887a5",
-      "element:value@902973597f984fa0",
-      "element:value@a932f8e9c200496f",
-      "element:value@cb026ea1b6b8c47f",
-      "element:value@e81ba78ee6d73aab",
       "element:variant@7ed3805aa01a6807",
       "element:width@3d370e3647a01043",
       "element:width@7231be0c06083662",

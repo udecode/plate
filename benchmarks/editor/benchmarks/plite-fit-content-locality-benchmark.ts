@@ -12,7 +12,7 @@ import {
   type SchemaElement,
 } from '../../../packages/plitejs/src/index';
 import { getDefined } from '../../getDefined';
-import { writeBenchmarkArtifact } from './benchmark-artifact';
+import { writeBenchmarkResult } from './benchmark-artifact';
 
 const DOCUMENT_WIDTHS = [10, 1000, 10_000, 50_000] as const;
 const SCHEMA_WIDTHS = [5, 50, 100] as const;
@@ -239,6 +239,7 @@ const correctness = {
   ),
 };
 
+const strict = process.env.PLITE_FIT_CONTENT_LOCALITY_STRICT === '1';
 const result = {
   benchmark: 'plite-fit-content-locality',
   correctness,
@@ -280,23 +281,28 @@ const result = {
   version: 1,
 };
 
-if (process.env.PLITE_FIT_CONTENT_LOCALITY_STRICT === '1') {
-  assert.deepEqual(correctness, {
-    deterministicAndIdempotent: true,
-    editorMutationFree: true,
-    everyFitSucceeded: true,
-  });
-  assert.ok(
-    documentWidthRatio <= 1.5,
-    `document-width ratio ${documentWidthRatio} exceeds 1.5`
-  );
-  assert.ok(
-    schemaWidthRatio <= 1.5,
-    `schema-width ratio ${schemaWidthRatio} exceeds 1.5`
-  );
-}
+const outputPath = outputArgument?.slice('--output='.length);
 
-const output = `${JSON.stringify(result, null, 2)}\n`;
+const output = writeBenchmarkResult({
+  outputPath,
+  result,
+  strict,
+  validate: () => {
+    assert.deepEqual(correctness, {
+      deterministicAndIdempotent: true,
+      editorMutationFree: true,
+      everyFitSucceeded: true,
+    });
+    assert.ok(
+      documentWidthRatio <= 1.5,
+      `document-width ratio ${documentWidthRatio} exceeds 1.5`
+    );
+    assert.ok(
+      schemaWidthRatio <= 1.5,
+      `schema-width ratio ${schemaWidthRatio} exceeds 1.5`
+    );
+  },
+});
 const widestDocument = getDefined(documentWidthRows.at(-1));
 const widestSchema = getDefined(schemaWidthRows.at(-1));
 const largestSlice = getDefined(sliceSizeRows.at(-1));
@@ -320,8 +326,6 @@ process.stdout.write(
   `METRIC plite_fit_content_total_measured_calls=${result.runtime.totalMeasuredFitCalls}\n`
 );
 
-if (outputArgument) {
-  writeBenchmarkArtifact(outputArgument.slice('--output='.length), output);
-} else {
+if (outputPath === undefined) {
   process.stdout.write(output);
 }

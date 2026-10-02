@@ -8,7 +8,7 @@ common doctrine after the lane is selected.
 ## Redesign from First Principles
 
 This is the governing principle of the `next` beta redesign. Apply the full
-[shared method](../../.agents/skills/principle-redesign-from-first-principles/SKILL.md)
+shared method (`pstack:principle-redesign-from-first-principles`)
 when choosing or reviewing an API or architecture, including during initial
 planning. The current design does not need to fail first.
 
@@ -81,6 +81,7 @@ authority, and a promising direction does not prove its runtime design.
 | editor selection/caret behavior | model selection plus native DOM/window selection or geometry proof |
 | performance | honest metric target, baseline/latest/best, and correctness guard |
 | mobile viewport behavior | Playwright/mobile semantic proof, explicitly scoped |
+| Android Chrome soft-keyboard behavior | the local device lane on an emulator: real Gboard touches, guarded DevTools and a passing witness, five warm runs; scoped to that emulator and keyboard |
 | raw mobile/device behavior | real device/Appium/equivalent artifacts |
 | release-ready | release gate, package artifacts, docs/API proof, and scoped caveats |
 | issue/PR closure | live GitHub state, duplicate/claim guard, current source proof, and authority |
@@ -132,11 +133,11 @@ tests for package ownership, API intent, and public teaching surfaces.
   guards, owner routing, proof gates, authority boundaries, and decision-ready
   handoffs. Execution belongs to narrower owners.
 - Repo-wide architecture cleanup is a source-backed cleanup job before it is an
-  implementation job. `$architecture-cleanup` ranks delete, merge, inline,
+  implementation job. The Refactoring playbook ranks delete, merge, inline,
   simplify, split, keep, defer, and reject decisions for shallow modules, split
   ownership, testability gaps, over-splits, and agent-navigation friction, then
   either applies a safe behavior-neutral packet or routes broader decisions to
-  `task`, `plite-plan`, `plate-plan`, or a package owner.
+  `plate-architecture`, or a package owner.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Plite
   maintenance runs through local Codex sessions in maintainer checkouts, not
   hosted API bots, crabbox, or background cloud workers. Require public repro,
@@ -166,20 +167,16 @@ tests for package ownership, API intent, and public teaching surfaces.
   `best-api` and the correct layer plan when architecture changes, one-owner
   implementation, exact reruns, and resumed breadth. `$benchmark review`
   supplies the review method.
-- Task owns ordinary, complex, autonomous and current-checkout closure work.
-  `$task autonomous` supervises requested quality work through the technical
-  owners; `$improve` supplies its recurring whole-project preset, including
-  rule compliance and defect-triggered audits of complete affected areas.
-  Measured work routes to `$benchmark`; public queue work routes to
-  `$maintainer`. Full Poteto methods and principle leaves guide engineering.
-  File plans do not create native goals, publication authority or extra review
-  budgets.
-- `$task closure` repairs verified in-scope findings and reruns affected proof.
-  Structured review uses Task's existing explicit-review or PR-closeout budget,
-  never on `next`; an unchanged clean result needs no repeated panel.
+- pstack's poteto-mode runs ordinary, complex, autonomous and current-checkout closure
+  work and picks the playbook; the Plate owners in `AGENTS.md` supply the domain
+  method and proof inside it. Measured work routes to `$benchmark`; public queue
+  work routes to `$maintainer`. Plans create no publication authority or extra
+  review.
+- Structured review runs before opening a PR and otherwise only on request, per
+  `AGENTS.md`; an unchanged clean result needs no repeated panel.
 - Apply source-backed improvements within the active request's authority,
   including justified beta architecture and API cuts. Challenge stale doctrine
-  and repair its authorized owner. Task owns permission boundaries; technical
+  and repair its authorized owner. `AGENTS.md` owns permission boundaries; technical
   owner transitions and blast radius do not create approval requirements.
   Ask for a missing decision, access or authority only when it blocks the next
   action.
@@ -215,11 +212,11 @@ tests for package ownership, API intent, and public teaching surfaces.
 - External editors are pressure sources, not architecture to clone. Translate
   their lessons into local model, change, selection, DOM, browser, and
   package-owner proof vocabulary.
-- `$editor-audit` owns exhaustive source-level comparison against one or more
+- `$research audit` owns exhaustive source-level comparison against one or more
   local editor repositories. It maps every relevant atomic concept, proposes
   only materially valuable changes with concrete current/proposed shapes, then
-  routes public shape to `best-api` and accepted work to `plite-plan` or
-  `plate-plan`. Test and issue invariants remain harvester work.
+  routes public shape to `best-api` and accepted work to
+  `plate-architecture`. Test and issue invariants remain harvester work.
 - Research is a compiled agent layer, not a scrapbook: stable paths, one
   concept per file, outward claims, durable promotion only.
 
@@ -234,8 +231,8 @@ tests for package ownership, API intent, and public teaching surfaces.
   can still see delayed work.
 - "Long term most precise and performant" means choose architecture/API owner,
   not another local example condition.
-- "Bug report" means patch/repro first unless the user explicitly asks for a
-  plan.
+- "Bug report" means reproduce and fix first unless the user explicitly asks
+  for a plan.
 - "Make it perfect" means stabilize behavior first, then improve perf, then
   clean API/DX, then prove readiness.
 - Repeated "go next" expects one best next owner, not a menu.
@@ -270,8 +267,8 @@ honest", "all next", "go next", or reports visible editor weirdness.
 
 ## Repair Policy
 
-- runtime bug -> patch owner skill/package;
-- missing oracle -> patch/tdd owner;
+- runtime bug -> pstack's Bug fix playbook, fixed at the owning package;
+- missing oracle -> pstack's Bug fix playbook or `pstack:tdd`;
 - missing or lying metric -> `$benchmark` target/script repair;
 - weak visual proof -> Browser, screenshot, Playwright geometry proof, or a
   reusable proof-harness helper when the pattern should become first-class;
@@ -279,8 +276,8 @@ honest", "all next", "go next", or reports visible editor weirdness.
   `docs/vision/*.md`;
 - bad API -> `best-api` design/review, then the layer plan or accepted
   implementation owner;
-- external editor architecture comparison -> `editor-audit`, then `best-api`,
-  `plite-plan`, or `plate-plan` for accepted rows;
+- external editor architecture comparison -> `research audit`, then `best-api`
+  or `plate-architecture` for accepted rows;
 - wrong/missing/overlapping skill -> patch `.agents/rules/**`, sync, verify;
 - output-budget miss -> split the goal into smaller checkpoints.
 

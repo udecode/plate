@@ -1,6 +1,7 @@
 import { expect, type Locator, test } from '@playwright/test';
 import {
   assertBrowserSelectionContract,
+  type BrowserTestOptions,
   openExample,
   recordBrowserRuntimeErrors,
   startBrowserNativeEventTrace,
@@ -438,6 +439,93 @@ test.describe('plaintext example', () => {
     } finally {
       runtimeErrors.stop();
     }
+  });
+
+  test('fails a native paste the editor never receives', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      (testInfo.project.use as BrowserTestOptions).clipboardTransport !==
+        'native',
+      'Native clipboard projects only'
+    );
+
+    const editor = await openExample(page, 'plite/plaintext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+
+    await editor.click();
+    await editor.press('End');
+    await page.evaluate(() => {
+      window.addEventListener(
+        'paste',
+        (event) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        },
+        { capture: true }
+      );
+    });
+    const before = await editor.get.modelText();
+
+    await expect(editor.clipboard.pasteText(' lost')).rejects.toThrow(
+      /native paste did not apply/
+    );
+    expect(await editor.get.modelText()).toBe(before);
+  });
+
+  test('fails a paste the editor plans but inserts nothing for', async ({
+    page,
+  }) => {
+    const editor = await openExample(page, 'plite/plaintext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+
+    await editor.click();
+    await editor.press('End');
+    const before = await editor.get.modelText();
+
+    await expect(editor.clipboard.pasteHtml('<b></b>', '')).rejects.toThrow(
+      /paste did not apply/
+    );
+    expect(await editor.get.modelText()).toBe(before);
+  });
+
+  test('detects an identical-text paste after the kernel trace fills', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      (testInfo.project.use as BrowserTestOptions).clipboardTransport !==
+        'native',
+      'Native clipboard projects only'
+    );
+
+    const editor = await openExample(page, 'plite/plaintext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+
+    await editor.click();
+    await editor.press('End');
+    await page.keyboard.type('x'.repeat(150));
+    expect(
+      (await editor.get.kernelTrace()).length,
+      'the kernel trace is at its cap before the paste'
+    ).toBe(200);
+    await editor.selection.select({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 4 },
+    });
+    const before = await editor.get.modelText();
+
+    await editor.clipboard.pasteText(before.slice(0, 4));
+
+    expect(await editor.get.modelText()).toBe(before);
   });
 
   test('extends a double-click word selection while dragging', async ({
@@ -940,11 +1028,8 @@ test.describe('plaintext example', () => {
     const text = await editor.get.modelText();
 
     await editor.selection.selectAll();
-    const beforeTraceLength = (await editor.get.kernelTrace()).length;
     await editor.clipboard.pasteText(text);
-    const pasteTrace = (await editor.get.kernelTrace()).slice(
-      beforeTraceLength
-    );
+    const pasteTrace = await editor.get.kernelTrace();
 
     await expect.poll(() => editor.get.modelText()).toBe(text);
     expect(

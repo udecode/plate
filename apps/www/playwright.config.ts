@@ -1,10 +1,11 @@
+import type { BrowserTestOptions } from '@platejs/test/playwright';
 import { defineConfig, devices } from '@playwright/test';
 
 const explicitBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const baseURL = explicitBaseURL ?? 'http://localhost:3000';
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
-export default defineConfig({
+export default defineConfig<BrowserTestOptions>({
   expect: {
     timeout: 8000,
   },
@@ -21,10 +22,18 @@ export default defineConfig({
             : {}),
           ignoreDefaultArgs: ['--hide-scrollbars'],
         },
+        clipboardTransport: 'native',
+        permissions: ['clipboard-read', 'clipboard-write'],
       },
     },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'], clipboardTransport: 'native' },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'], clipboardTransport: 'event' },
+    },
   ],
   reporter: process.env.CI ? 'github' : 'list',
   retries: 0,

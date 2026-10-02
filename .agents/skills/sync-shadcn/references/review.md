@@ -30,7 +30,7 @@ Review mode may:
 - recompute upstream name-status/numstat/log data into a temporary review file
   under the same run directory or under `docs/sync/shadcn/reviews/`
 - compare recomputed inventories with the stored run artifacts
-- re-run scoped `rg`/file-existence checks for Plate owner paths, explicit
+- re-run scoped `git grep --untracked`/file-existence checks for Plate owner paths, explicit
   exclusions, preserved forks, partial sync entries, and recommended slices
 - write a dated `review.md` artifact with the verdict and evidence
 
@@ -39,7 +39,7 @@ Review mode must not:
 - patch `apps/www`
 - change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
   `partialSyncs`
-- delegate implementation to `task`
+- hand implementation to pstack's poteto-mode
 - create a new implementation plan or advance the baseline
 - treat a fresh review as user acceptance to implement
 
@@ -115,25 +115,14 @@ Report: <path>
 Next: <use the existing plan | rerun planning | fix local drift | resolve refs>
 ```
 
-Before substantive work:
-
-```bash
-node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template sync-shadcn \
-  --title "sync shadcn <short range or target>"
-```
-
-Fill the generated plan immediately. It must name the objective, flow mode,
+Before substantive work, open the plan under `docs/plans/` and fill it
+immediately. It must name the objective, flow mode,
 completion threshold, verification surface, constraints, boundaries, output
 budget strategy, blocked condition, and planned run directory. Do not replace it
 with a smaller ad hoc plan.
 
-Completion requires the named sync evidence plus:
+Completion requires the named sync evidence.
 
-```bash
-node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>
-```
-
-Never mark the active goal complete just because a range plan was written if
-the goal also required implementation, baseline advancement, or user acceptance.
+Never mark the plan complete just because a range plan was written if the plan
+also required implementation, baseline advancement, or user acceptance.
 

@@ -1,5 +1,31 @@
 # Research Log
 
+## [2026-10-02] review | Drag library choice
+
+- [Source comparison](../plite/research/2026-10-02-dnd-library-choice/README.md)
+  retains the adopted Plite transfer owner and optional copied DndKit controls.
+  The kit is unrelated to npm dnd-kit; its shared cut action is clipboard work.
+- Defer a private Pragmatic Drag and Drop replacement until native text,
+  nested views, iframe mounting and same-window custom MIME survive with less
+  retained lifecycle work. Reject React DnD and modern dnd-kit as default
+  replacements for the current job.
+- Eight repositories inspected at recorded commits; source and upstream test
+  inspection only. No new browser, device, production bundle or timing proof.
+  Library tests cannot establish editor integration correctness.
+
+## [2026-09-30] review | Autocomplete query and activation ownership
+
+- Reconciled July package reviews, April cancellation, August trigger/geometry
+  repairs and September extraction, projected-view, slash and accessibility
+  decisions. Retain live-key atomic completion and separate feature policies.
+- [Audit](probes/2026-09-30-autocomplete/REPORT.md) covers six shared units and
+  four actual inline consumers. Pursue one mounted query/activation owner;
+  compare ordinary editor text against temporary input schemas before adoption.
+- The package partition passes 52 tests. Four real-Ariakit observational DOM
+  probes reproduce ignored controlled value, composing Enter activation and
+  stateful-regex admission. Existing copied tests cannot load because their
+  React mock omits `useEditorHistory`. Browser and scale proof remain open.
+
 ## [2026-09-28] review | Markdown conversion
 
 - [Audit](../analysis/2026-09-28-markdown-api-review.md): 10/10 units reviewed,

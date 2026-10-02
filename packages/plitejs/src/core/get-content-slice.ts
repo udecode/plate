@@ -69,7 +69,8 @@ const omitOpenBoundaryRoots = (
 export const getContentSlice = <V extends Value>(
   editor: Editor<V>,
   selection: NodeSelection | Range | null,
-  sourceRoots?: ContentSliceValue['roots']
+  sourceRoots?: ContentSliceValue['roots'],
+  lifecycle: 'copy' | 'move' = 'copy'
 ): ContentSliceValue<V> => {
   if (!selection) {
     return ContentSlice.empty;
@@ -104,15 +105,17 @@ export const getContentSlice = <V extends Value>(
   const schema = getEditorSchema(editor);
   let content: readonly Descendant[];
 
+  // A move removes its source in the same update, so it keeps properties a copy drops.
   if (selectedNodes) {
     content = selectedNodes.map(([node, path]) =>
-      schema.copyNodeAt(node, path, root)
+      lifecycle === 'move' ? node : schema.copyNodeAt(node, path, root)
     );
   } else if (rangeSelection) {
-    content = schema.copyChildren(
-      fullRootContent ?? NodeApi.fragment(editor, rangeSelection),
-      root
-    );
+    const fragment =
+      fullRootContent ?? NodeApi.fragment(editor, rangeSelection);
+
+    content =
+      lifecycle === 'move' ? fragment : schema.copyChildren(fragment, root);
   } else {
     return ContentSlice.empty;
   }
@@ -157,8 +160,10 @@ export const getContentSlice = <V extends Value>(
   };
   if (editor.read.schema.hasContentRoots()) {
     collect(content);
-    for (const [name, children] of Object.entries(roots)) {
-      roots[name] = schema.copyChildren(children, name);
+    if (lifecycle === 'copy') {
+      for (const [name, children] of Object.entries(roots)) {
+        roots[name] = schema.copyChildren(children, name);
+      }
     }
   }
 

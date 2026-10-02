@@ -14,7 +14,7 @@ source_refs:
   - ../../../packages/platejs/src/internal/plugin/blockInsertion.ts
   - ../../../packages/platejs/src/lib/editor/pluginRuntimeTypes.ts
   - ../../../packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts
-  - ../../../packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.ts
+  - ../../../packages/platejs/src/react/features/combobox/useCombobox.ts
 related:
   - ../reviews.md#slash
   - registry-ui-ownership.md
@@ -29,7 +29,13 @@ reconciled_executions:
 # Slash insertion and command discovery ownership
 
 **Keep slash presentation copied and delete its repeated insertion protocol.**
-The package owns the slash trigger, transient input schema and atomic combobox
+
+The [autocomplete ownership decision](autocomplete-ownership.md) owns the
+query representation. The slash query is ordinary text, and the transient input
+schema and `BaseComboboxPlugin` no longer exist. The catalog and insertion
+verdicts stand.
+
+The package owns the slash trigger policy, and `useCombobox` owns atomic
 completion. The copied registry owns the command catalog, labels, icons,
 keywords, grouping, installed-feature choices, AI membership and JSX.
 
@@ -41,9 +47,9 @@ for shared feature operations, not a package-owned Slash command catalog.
 
 ## Target ownership
 
-`BaseSlashPlugin` continues to own trigger recognition and the slash input
-schema. `BaseComboboxPlugin.api.commit` continues to remove the transient input
-and run the chosen edit in one synchronous transaction, preserving rollback and
+`BaseSlashPlugin` owns the slash trigger policy as `ComboboxState`.
+`useCombobox`'s `complete` replaces the typed trigger and query and runs the
+chosen edit in one synchronous, refusable transaction, preserving rollback and
 one-step undo. Neither owner should learn product commands.
 
 Plate's typed plugin insertion path owns semantic block identity and the choice

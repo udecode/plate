@@ -1,65 +1,21 @@
-import {
-  definePlugin,
-  type DefinitionOf,
-  type ElementOf,
-  PLUGINS,
-  property,
-} from '../../../core';
-import {
-  BaseComboboxPlugin,
-  triggerCombobox,
-  type TriggerComboboxPluginState,
-} from '../../combobox';
+import { definePlugin, type DefinitionOf, PLUGINS } from '../../../core';
+import type { ComboboxState } from '../../combobox';
 
 const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
 
-export type SlashPluginState = TriggerComboboxPluginState & {
-  createComboboxInput: NonNullable<
-    TriggerComboboxPluginState['createComboboxInput']
-  >;
-  trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
-  triggerPreviousCharPattern: NonNullable<
-    TriggerComboboxPluginState['triggerPreviousCharPattern']
-  >;
-};
+export type SlashPluginState = ComboboxState;
 
-export const BaseSlashInputPlugin = definePlugin(PLUGINS.slashInput, {
-  dependencies: [BaseComboboxPlugin],
-  schema: {
-    element: {
-      properties: {
-        trigger: property.string(),
-        userId: property.string(),
-        value: property.string(),
-      },
-      void: 'inline',
-    },
-  },
-  editOnly: true,
-});
-
-export type SlashInputElement = ElementOf<typeof BaseSlashInputPlugin>;
-
+/** Slash command trigger policy; a `useCombobox` popup renders the menu. */
 export const BaseSlashPlugin = definePlugin(PLUGINS.slashCommand, {
-  dependencies: [BaseSlashInputPlugin],
-  initialState: ({ editor }): SlashPluginState => ({
-    createComboboxInput: () => ({
-      children: [{ text: '' }],
-      type: editor.plugin(BaseSlashInputPlugin).schema.type,
-    }),
+  initialState: (): SlashPluginState => ({
+    maxQueryLength: 75,
+    queryPattern: null,
     trigger: '/',
     triggerQuery: null,
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
   }),
 
   editOnly: true,
-}).extend(({ editor, store }) => ({
-  commands: (context) =>
-    triggerCombobox(context, {
-      editor,
-      getState: () => store.get(),
-      type: editor.plugin(BaseSlashInputPlugin).schema.type,
-    }),
-}));
+});
 
 export type SlashDefinition = DefinitionOf<typeof BaseSlashPlugin>;

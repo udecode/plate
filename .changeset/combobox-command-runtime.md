@@ -4,11 +4,11 @@
 
 Require React and React DOM 19.2 or newer.
 
-Copy `inline-combobox` for input focus, query state, keyboard navigation, and presentation. `BaseComboboxPlugin` owns cancellation and completion using the live input's `NodeKey`; the copied component routes undo and redo through `useEditorHistory`.
+Autocomplete queries are ordinary editor text. Typing a feature's trigger opens its popup over the text after the trigger; completion replaces the trigger and query in one undo step, and Escape keeps the typed text.
 
-- Handle trigger-combobox insertion through the typed `insertText` command
-- Keep transient collaboration metadata on inserted combobox inputs and reject completion from a foreign, removed, or read-only input
-- Remove and replace the input in one transaction through the inferred `onSelect(tx)` callback; cancellation restores literal query text in one undo step
-- Rename `TriggerComboboxPluginOptions` to `TriggerComboboxPluginState`
+- Add `useCombobox({ editableRef, plugin })` in `platejs/combobox/react` for popups mounted in `slots.afterEditable`; it returns the open `match`, `complete(match, callback)` and `dismiss()`
+- Return `false` from a completion callback to refuse an option and keep the query; a thrown or async callback rolls back
+- Keep trigger policy in plugin state as `ComboboxState`, including `queryPattern` and `maxQueryLength`
+- Remove the mention, slash, emoji and footnote input plugins and elements, `BaseComboboxPlugin`, `triggerCombobox` and `TriggerComboboxPluginState`
 
-**Migration:** Replace `withTriggerCombobox` with `triggerCombobox` in the descriptor's command factory. Mention, slash, emoji, and footnote input descriptors install `BaseComboboxPlugin` automatically.
+**Migration:** Mount each feature's popup with `Plugin.configure({ slots: { afterEditable: FeatureCombobox } })` instead of configuring an input plugin's `component`, and replace `TriggerComboboxPluginState` with `ComboboxState`. Run stored documents through `migrateV54`, which turns saved input nodes back into their typed text.

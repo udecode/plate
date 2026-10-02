@@ -1,11 +1,9 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
-
 import { history } from '../../../packages/plitejs/src/history/index';
 import {
   createEditor,
   type Element,
 } from '../../../packages/plitejs/src/index';
+import { writeBenchmarkResult } from './benchmark-artifact';
 
 const outputArgument = process.argv.find((argument) =>
   argument.startsWith('--output=')
@@ -99,12 +97,6 @@ const medianDepthRatio = stress.p50Ms / Math.max(normal.p50Ms, 0.000001);
 const p95DepthRatio = stress.p95Ms / Math.max(normal.p95Ms, 0.000001);
 const strict = process.env.PLITE_HISTORY_DEPTH_STRICT === '1';
 
-if (strict && (medianDepthRatio > 4 || p95DepthRatio > 4)) {
-  throw new Error(
-    `Lazy history remote commits scaled ${medianDepthRatio.toFixed(2)}x median / ${p95DepthRatio.toFixed(2)}x p95 from depth 100 to 1,000.`
-  );
-}
-
 const result = {
   benchmark: 'plite-history-depth',
   cohorts: {
@@ -122,17 +114,26 @@ const result = {
   },
   version: 1,
 };
-const output = `${JSON.stringify(result, null, 2)}\n`;
+const outputPath = outputArgument?.slice('--output='.length);
+
+const output = writeBenchmarkResult({
+  outputPath,
+  result,
+  strict,
+  validate: () => {
+    if (medianDepthRatio > 4 || p95DepthRatio > 4) {
+      throw new Error(
+        `Lazy history remote commits scaled ${medianDepthRatio.toFixed(2)}x median / ${p95DepthRatio.toFixed(2)}x p95 from depth 100 to 1,000.`
+      );
+    }
+  },
+});
 
 process.stdout.write(
   `METRIC plite_history_depth_median_ratio=${medianDepthRatio}\n`
 );
 process.stdout.write(`METRIC plite_history_depth_p95_ratio=${p95DepthRatio}\n`);
 
-if (outputArgument) {
-  const outputPath = outputArgument.slice('--output='.length);
-  mkdirSync(dirname(outputPath), { recursive: true });
-  writeFileSync(outputPath, output);
-} else {
+if (outputPath === undefined) {
   process.stdout.write(output);
 }

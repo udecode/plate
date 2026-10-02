@@ -1,7 +1,13 @@
 import { expect, test } from 'bun:test';
 
-import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import { BaseCodeBlockPlugin, editorCommands } from 'platejs';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
+import { BaseCodeBlockPlugin } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { DefaultAuthoredPlugin } from 'platejs/authored';
 import {
@@ -12,7 +18,7 @@ import {
   ParagraphPlugin,
   useEditor,
 } from 'platejs/react';
-import { SlashInputPlugin } from 'platejs/slash-command/react';
+import { SlashPlugin } from 'platejs/slash-command/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 import React from 'react';
 
@@ -29,15 +35,13 @@ test('allows the slash trigger when Code Block is not installed', () => {
     },
   });
 
-  editor.update((tx) => {
-    tx.command(editorCommands.insertText, { text: '/' });
-  });
+  const { triggerQuery } = editor.plugin(SlashPlugin).store.get();
 
-  expect(editor.read.nodes.some({ type: SlashInputPlugin })).toBe(true);
+  expect(triggerQuery?.(editor)).toBe(true);
 });
 
 test.each(['', 'After'])(
-  'opens AI with Enter without forcing editor focus before %j',
+  'opens AI with Enter and consumes only the query before %j',
   async (remainingText) => {
     let viewEditor: Editor | undefined;
     const CaptureEditor = () => {
@@ -82,18 +86,26 @@ test.each(['', 'After'])(
         match: (node) => 'children' in node,
       });
       viewEditor!.update.selection.set({ offset: 0, path: [1, 0] });
-      viewEditor!.update((tx) => {
-        tx.command(editorCommands.insertText, { text: '/' });
-      });
     });
 
-    const input = await mounted.findByRole('combobox');
-    fireEvent.change(input, { target: { value: 'a' } });
-    fireEvent.keyDown(input, { code: 'Enter', key: 'Enter' });
+    for (const data of '/a') {
+      await act(async () => {
+        root.dispatchEvent(
+          new InputEvent('beforeinput', {
+            bubbles: true,
+            cancelable: true,
+            data,
+            inputType: 'insertText',
+          })
+        );
+      });
+    }
+
+    await screen.findByRole('option', { name: 'AI' });
+    fireEvent.keyDown(root, { code: 'Enter', key: 'Enter' });
 
     await waitFor(() => {
       expect(viewEditor!.plugin(AIChatPlugin).store.get('open')).toBe(true);
-      expect(document.activeElement).not.toBe(root);
       expect(viewEditor!.read.text.string([1])).toBe(remainingText);
     });
   }

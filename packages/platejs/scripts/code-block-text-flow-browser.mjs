@@ -54,10 +54,13 @@ import {
   CodeBlockPlugin,
   CodeHighlightPlugin,
   createEditor,
-  Plate,
-  PlateContent,
+  EditorContent,
+  EditorRoot,
+  installBrowserHandle,
 } from ${JSON.stringify(modulePaths.plateReact)}
 import { all, createLowlight } from ${JSON.stringify(modulePaths.lowlight)}
+
+installBrowserHandle()
 
 const app = document.getElementById('app')
 const rawLowlight = createLowlight(all)
@@ -146,7 +149,7 @@ const getHandle = () => {
   const root = app.querySelector('[data-editor="true"]')
   const handle = root?.__pliteBrowserHandle
 
-  if (!root || !handle) throw new Error('Missing Plate browser handle')
+  if (!root || !handle) throw new Error('browser handle not installed')
 
   return { handle, root }
 }
@@ -209,9 +212,9 @@ const install = async () => {
           state.reactEvents.push({ actualDuration, baseDuration, id, phase }),
       },
       React.createElement(
-        Plate,
+        EditorRoot,
         { editor, suppressInstanceWarning: true },
-        React.createElement(PlateContent, {
+        React.createElement(EditorContent, {
           disableDefaultStyles: true,
           spellCheck: false,
         })

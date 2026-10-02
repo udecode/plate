@@ -94,22 +94,30 @@ const getNativeCompositionAnchor = (
   event: CompositionEvent<HTMLDivElement>,
   selection: Range | null
 ) => {
-  if (!selection || RangeApi.isExpanded(selection)) return null;
+  if (
+    !selection ||
+    RangeApi.isExpanded(selection) ||
+    readRuntimeText(editor, selection.focus.path)?.text === ''
+  ) {
+    return null;
+  }
 
   const root = event.currentTarget;
   const domSelection = getSelection(
     root.getRootNode() as Document | ShadowRoot
   );
-  const anchor = domSelection?.focusNode;
+  const anchor = domSelection?.focusNode ?? null;
   const anchorElement = isDOMElement(anchor) ? anchor : anchor?.parentElement;
-  const textFlow = anchorElement?.closest('[data-editor-text-flow="true"]');
+  const textHost = anchorElement?.closest('[data-editor-node="text"]');
+  const voidHost = anchorElement?.closest('[data-editor-void="true"]');
 
   if (
     !domSelection?.isCollapsed ||
-    !isDOMNode(anchor) ||
+    !ReactEditor.hasEditableTarget(editor, anchor) ||
     !root.contains(anchor) ||
-    !textFlow ||
-    !root.contains(textFlow)
+    !textHost ||
+    !root.contains(textHost) ||
+    (voidHost && root.contains(voidHost))
   ) {
     return null;
   }

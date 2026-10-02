@@ -8,6 +8,8 @@ import {
   defineEffect,
   definePlugin,
   documentReplacement,
+  ElementApi,
+  type Node,
   NodeApi,
   PLUGINS,
   type BlockInsertOptions,
@@ -16,6 +18,7 @@ import {
   type NodeEntry,
   type NodeKey,
   property,
+  transferVeto,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
@@ -833,11 +836,22 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               );
               prepared.push(...prepareByIdentity(elements));
             } else if (at === undefined || insertOptions.after !== undefined) {
+              const anchor =
+                insertOptions.after === undefined
+                  ? undefined
+                  : tx.nodes.block({ at: insertOptions.after })?.[0];
               const inserted = tx.blocks.insertAfter(
                 elements.map(({ element }) => element),
                 {
                   ...insertOptions,
                   at: insertOptions.after,
+                  // An empty structural block, such as a details summary,
+                  // keeps its slot; the file lands beside it instead.
+                  ...(insertOptions.replaceEmpty &&
+                  anchor &&
+                  !updateEditor.read.schema.isBlockContent(anchor)
+                    ? { replaceEmpty: false }
+                    : {}),
                 }
               );
               if (!inserted) return false;
@@ -885,6 +899,23 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         return handled ? transaction : next();
       }),
     ],
-  }));
+  }))
+  .extend(({ schema: { type } }) => {
+    const holdsDraft = (node: Node): boolean =>
+      ElementApi.isElement(node) &&
+      (node.type === type || node.children.some(holdsDraft));
+
+    return {
+      contributions: [
+        transferVeto.of(
+          ({ from, intent, payload }, view) =>
+            intent === 'move' &&
+            payload.kind === 'nodes' &&
+            from.read.view.root() !== view.read.view.root() &&
+            payload.nodes.some(holdsDraft)
+        ),
+      ],
+    };
+  });
 
 export type UploadElement = ElementOf<typeof BaseUploadPlugin>;

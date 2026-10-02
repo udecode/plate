@@ -1,0 +1,81 @@
+{
+  "id": "2026-10-01-link-destination-contract",
+  "scope": "link",
+  "kind": "review",
+  "date": "2026-10-01",
+  "question": "How should link detection, editing, paste and navigation share one document contract?",
+  "model": "claude-opus-5-5",
+  "method": "best-api-review/history-v3",
+  "trigger": "First real cycle of the v2 API review playbook, run on the link scope at the owner's request.",
+  "requirements": [
+    "A stored URL meets one role policy at every admission through its feature's schema validator, and no option bypasses the floor (docs/vision/plate.md).",
+    "Link validation and insertion stay local to the link feature; core owns matcher primitives only (docs/vision/plate.md).",
+    "Multiple callers of one plugin operation reuse its plugin-owned API, not a parallel raw helper (docs/vision/plate.md).",
+    "An input rule resolves read-only and delegates with next() when it does not apply (docs/vision/plate.md).",
+    "upsert stays the single place that prepares, transforms and validates a link URL (docs/plans/2026-09-07-full-plate-ui-extraction-audit.md).",
+    "A custom URL check can still veto relative and hash URLs (#4591).",
+    "The package has no floating store, controller or overlay manager for links (docs/plans/2026-09-04-decouple-link-floating-ui.md)."
+  ],
+  "evidenceReuse": "First review of this scope. It reuses the plan-level conclusions of the 2026-07-12 package review, the 2026-09-04 floating UI decoupling and the 2026-09-07 extraction audit, rechecked against current source, and runtime probes run on 2026-10-01 against the working tree.",
+  "summary": "Pursue one link destination contract. Typed autolink checks isUrl alone, paste and toolbar edits run the full validateUrl, Markdown import checks only allowedSchemes, and authored insert checks only the stored floor, so the same text gets different answers. With default options, typing a space after ftp://example.com drops the space and leaves the URL selected, a tel: link survives Markdown import but not HTML import, and validateUrl refuses input that upsert accepts after encoding. Route every entry path through the preparation upsert already owns, merge isUrl, getUrlHref and transformInput into one parseUrl option, replace api.validateUrl with api.parseUrl that returns the prepared URL, and make the space and break rules call next() when it refuses.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "LinkPlugin.configure({ initialState: { isUrl, getUrlHref, transformInput } });\nif (editor.plugin(LinkPlugin).api.validateUrl(url)) editor.update.link.upsert({ url });",
+    "proposed": "// proposed\nLinkPlugin.configure({ initialState: { allowedSchemes, parseUrl: (input) => toHref(input) } });\neditor.update.link.upsert({ url: input }); // false when parseUrl or the scheme policy refuses\nconst href = editor.plugin(LinkPlugin).api.parseUrl(input); // the same decision without writing"
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [],
+  "alternatives": [
+    "Keep the hooks and add the missing check to each path. Rejected, because five call sites would still have to stay in step by hand, which is how they drifted.",
+    "A public URL helper shared by link and media. Rejected, because the 2026-09-07 extraction audit already rejected a public URL helper, and media's isUrl options answer a different urlPolicy role.",
+    "Move autolink into a separate policy object, as the 2026-04-11 Lane 9 proposal does. Deferred, because it changes where the rules live, not which decision they apply, and it is still approval-gated.",
+    "Move the registry-only editing flow (show, hide, trigger, submit) into the package. Out of this question, because the 2026-09-04 decision rejected a package floating store; the manual-setup failure in the docs is a docs and kit gap.",
+    "Strongest cut: delete getUrlHref and transformInput with no replacement. Rejected, because apps map display text to an href (covered by a LinkRules test) and normalize toolbar input; parseUrl keeps both jobs in one hook."
+  ],
+  "proofLimits": "Source reading by the lead and three read-only lanes, plus runtime probes run outside the repository with bun test against the working tree: the ftp space case by the lead, and the tel, encoded-space and manual-setup cases by the consumers lane. Not run: the Enter variant, typed autolink inside a code block, browser rendering, click navigation, rel on target _blank, and performance. Docs claims were checked against content/docs/(plugins)/(elements)/link.mdx.",
+  "references": [
+    "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
+    "packages/platejs/src/lib/utils/isUrl.ts",
+    "packages/platejs/src/internal/utils/urlPolicy.ts",
+    "apps/www/src/registry/components/editor/link.tsx",
+    "apps/www/src/registry/components/editor/link-toolbar.spec.ts",
+    "content/docs/(plugins)/(elements)/link.mdx",
+    "docs/vision/plate.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "docs/plans/2026-09-04-decouple-link-floating-ui.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/link.tsx": "b2966cd43fd54d832e2fe5b909c7a34ed8d73dd093351fc04f00666c72fbfb6a",
+      "packages/platejs/src/features/link/lib/BaseLinkInput.spec.ts": "abba0ccd313309df8af9c4a0776b5c2fbf221593e38e42c01b3a1a6dc070ae58",
+      "apps/www/tests/browser/link-floating-toolbar.spec.ts": "edab671f8a246ef1878aac3d343135b36fee64cb668ee96780ae5a6bd33819d3",
+      "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+      "apps/www/package.json": "fc16a2f765a3b570ac544169d7c2d09e4c094a7abb5d140af2b2bcf4e40de9f4",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "d4e12fc4b28bd7d6cd077be54853ee8c873e051cf9dcc93a7e6e43fd32347129",
+      "package.json": "b8ed87d615e8bc1837713cc590298496aba461a43ee5b3aa54a5913f9c11b72b",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "ab9180cc69266078e47f8664b8510fbefaae03c1141e01338f1ff8a22e34046a",
+      ".agents/rules/best-api-review.mdc": "99f2712d5e625a44a7aed434149d697fa46d6afaa26b67f6709ea697d1258012",
+      "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts": "7d3ae606258f5921fccfb9a85aea1b730195e64113ecd050da4e709a82509541",
+      "packages/platejs/src/lib/utils/isUrl.ts": "10b55313f7c2611b4064ba400dc169bde24f54c2d67141905b258ff641c23bd8",
+      "packages/platejs/src/internal/utils/urlPolicy.ts": "c03ff808f801bf783a8439f502001a05aea4a08256e4f1c218c10a97eeca643d",
+      "apps/www/src/registry/components/editor/link-toolbar.spec.ts": "30947e23366a4b55f5eb40c4c1153c5c7996d8214a02d621a3f2cd17682fc7d4",
+      "content/docs/(plugins)/(elements)/link.mdx": "852bd49165d77bd7d289d6b59cbfaab2bd7e2e15c91f9a5b02897db8be1699ac"
+    },
+    "directories": {
+      "packages/platejs/src/features/link": "7f2e2a0828e7f90f396c6a10d35c9cc717bb0d844731816152c883916faf38d8"
+    },
+    "features": {
+      "browser/link-floating-toolbar": "cdc4eaf4e977515dbbca329310492928161347c7534100697e65a488d578e790",
+      "capability/link": "3aa98a3509269aa68a9cf019dddff4878511e76c57769c55d7e8dff38d1c9af6",
+      "example/value/link-value": "88e0f7f096fa6e90515ac702acde92570b8be0542007d6efae57cb6a34ce43a4",
+      "platejs/link": "7f2e2a0828e7f90f396c6a10d35c9cc717bb0d844731816152c883916faf38d8",
+      "ui/link": "d4affbb3162fdb3e31ad593d0b1796d897018247af714c256e220ac9d5f0c0f1",
+      "ui/link-toolbar": "77988ea90749044a0d6abae7e67d656305af94febcb4fc82b0cb16149f314b35",
+      "ui/link-toolbar-button": "e37006d9b98db0bf017f46adfa7a9fc2d7e721aa66778c25a1994bfe9f96ae77"
+    },
+    "upstreams": []
+  }
+}

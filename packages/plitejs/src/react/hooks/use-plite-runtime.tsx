@@ -44,6 +44,7 @@ import {
 import { createEditorViewRuntime } from '../../editor-runtime-view';
 import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';
 import { PliteEditableRootContext } from '../context';
+import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -125,11 +126,17 @@ export const unregisterContentRootOwnerViewEditor = <TEditor,>(
   return ownerViewEditors.delete(ownerKey);
 };
 
-const createReactApi = (domApi: DOMApi) =>
+const createReactApi = <V extends Value, TPlugins extends readonly unknown[]>(
+  domApi: DOMApi,
+  editor: ReactRuntimeEditor<V, TPlugins>
+) =>
   Object.freeze({
     isComposing: () => domApi.isComposing(),
     isFocused: () => domApi.isFocused(),
     isReadOnly: () => domApi.isReadOnly(),
+    settleInput: () =>
+      getMountedEditableDOMRuntime(editor)?.settleInput() ??
+      !domApi.isComposing(),
   });
 
 export const createPliteViewEffectQueue = () => {
@@ -251,7 +258,7 @@ export const createReactRuntimeViewEditor = <
   const { clipboard, ...domApi } = createDOMEditorCapability(
     toReactRuntimeEditor(editor)
   );
-  const reactApi = createReactApi(domApi);
+  const reactApi = createReactApi(domApi, toReactRuntimeEditor(editor));
   const scopedDomApi = Object.freeze({ ...domApi, clipboard });
   let bound: ReturnType<typeof createEditorViewPluginApis> | null = null;
   const getBound = () =>

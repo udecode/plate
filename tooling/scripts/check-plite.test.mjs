@@ -245,6 +245,16 @@ test('Plite-family test edits do not invalidate runtime dependents', () => {
   assert.equal(domTest.browserSmoke, false);
 });
 
+test('device lane edits plan package checks but no browser job', () => {
+  const plan = createAffectedPlan([
+    'packages/test/src/device/android.ts',
+    'apps/plite/tests/device/korean-placeholder.device.ts',
+  ]);
+
+  assert.deepEqual(plan.packageNames, ['@platejs/test']);
+  assert.equal(plan.browserSmoke, false);
+});
+
 test('a runtime deletion retains proof even when its replacement is outside the package', () => {
   const plan = createAffectedPlan([
     'packages/plitejs/src/react/hooks/use-plite-node-ref.tsx',
@@ -572,6 +582,8 @@ test('Plite workflows route benchmark authorities to one package-check owner', (
   for (const input of [
     'benchmarks/editor/benchmarks/benchmark-artifact.test.ts',
     'benchmarks/editor/benchmarks/benchmark-artifact.ts',
+    'benchmarks/editor/research/benchmark-registry.json',
+    'benchmarks/editor/src/index.mjs',
     'benchmarks/targets/slate-v2.json',
     'tooling/scripts/bench-targets.mjs',
     'tooling/scripts/bench-targets.test.mjs',

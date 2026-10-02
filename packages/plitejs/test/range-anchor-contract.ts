@@ -176,6 +176,35 @@ describe('plite range anchor contract', () => {
     });
   });
 
+  it('keeps a range anchor on a block moved into another parent', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        { type: 'paragraph', children: [{ text: 'alpha' }] },
+        {
+          type: 'blockquote',
+          children: [{ type: 'paragraph', children: [{ text: 'quoted' }] }],
+        },
+      ],
+      selection: null,
+    });
+
+    const anchor = createRangeAnchor(editor, {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.move({ at: [0], to: [1, 1] });
+    });
+
+    assert.deepEqual(anchor.resolve(), {
+      anchor: { path: [0, 1, 0], offset: 1 },
+      focus: { path: [0, 1, 0], offset: 3 },
+    });
+  });
+
   it('keeps public range anchors alive when an invalidating transaction discards its draft', () => {
     const editor = createEditor();
     const children = createChildren();

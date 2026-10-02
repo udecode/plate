@@ -7,6 +7,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, test } from 'node:test';
@@ -15,13 +16,9 @@ import {
   classifyPackage,
   computeDoctrineFingerprint,
   computePackageFingerprint,
-  doctrinePaths,
   getPackageStatuses,
-  haveMatchingRequiredResources,
-  haveMatchingRequiredSkills,
   haveMatchingSkillSource,
-  requiredGeneratedResources,
-  requiredGeneratedSkills,
+  lawChangesSinceVersion,
   readReviewedPackageSlugs,
   readDeclaredDoctrineVersion,
   selectDoctrineBaseRef,
@@ -95,16 +92,11 @@ const reviewedPackageSlugs = [
   assert.deepEqual(readReviewedPackageSlugs(source), ['link', 'table']);
 });
 
-test('reads the visible doctrine version and fingerprints doctrine sources', () => {
+test('reads the visible doctrine version and fingerprints version history', () => {
   const root = mkdtempSync(join(tmpdir(), 'plate-next-doctrine-'));
 
   temporaryRoots.push(root);
-  for (const doctrinePath of doctrinePaths) {
-    const target = join(root, doctrinePath);
-
-    mkdirSync(join(target, '..'), { recursive: true });
-    writeFileSync(target, `${doctrinePath}\n`);
-  }
+  mkdirSync(join(root, '.agents/rules/plate-next'), { recursive: true });
   const history = {
     schemaVersion: 1,
     versions: [
@@ -129,14 +121,6 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
     join(root, '.agents/rules/plate-next/versions.json'),
     JSON.stringify(history)
   );
-  writeFileSync(
-    join(root, '.agents/rules/plate-next.mdc'),
-    'Current doctrine version: `3`.\n'
-  );
-  writeFileSync(
-    join(root, '.agents/rules/plate-plugin-creator.mdc'),
-    'plugin authoring doctrine\n'
-  );
   const before = computeDoctrineFingerprint(root);
 
   assert.equal(
@@ -144,15 +128,6 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
     3
   );
   assert.match(before, /^sha256:[a-f0-9]{64}$/);
-  writeFileSync(
-    join(root, '.agents/rules/plate-plugin-creator.mdc'),
-    'updated plugin authoring doctrine\n'
-  );
-  assert.notEqual(computeDoctrineFingerprint(root), before);
-  writeFileSync(
-    join(root, '.agents/rules/plate-plugin-creator.mdc'),
-    'plugin authoring doctrine\n'
-  );
 
   history.versions[0].summary = 'tampered legacy';
   writeFileSync(
@@ -203,99 +178,6 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
     ),
     false
   );
-});
-
-test('requires exact generated doctrine resources', () => {
-  const root = createRoot();
-  for (const [sourcePath, generatedPath] of requiredGeneratedResources) {
-    const source = join(root, sourcePath);
-    const generated = join(root, generatedPath);
-    const value = `${sourcePath}\n`;
-
-    mkdirSync(join(source, '..'), { recursive: true });
-    mkdirSync(join(generated, '..'), { recursive: true });
-    writeFileSync(source, value);
-    writeFileSync(generated, value);
-  }
-
-  assert.equal(haveMatchingRequiredResources(root), true);
-
-  writeFileSync(
-    join(root, '.agents/skills/plate-plugin-creator/rules/typing.md'),
-    'stale typing law\n'
-  );
-
-  assert.equal(haveMatchingRequiredResources(root), false);
-
-  writeFileSync(
-    join(root, '.agents/skills/plate-plugin-creator/rules/typing.md'),
-    '.agents/rules/plate-plugin-creator/rules/typing.md\n'
-  );
-  writeFileSync(
-    join(root, '.agents/skills/plate-ui/rules/component-shape.md'),
-    'stale component shape\n'
-  );
-
-  assert.equal(haveMatchingRequiredResources(root), false);
-
-  writeFileSync(
-    join(root, '.agents/skills/plate-ui/rules/component-shape.md'),
-    '.agents/rules/plate-ui/rules/component-shape.md\n'
-  );
-  writeFileSync(
-    join(root, '.agents/skills/plate-ui/references/component-audit.md'),
-    'stale component audit\n'
-  );
-
-  assert.equal(haveMatchingRequiredResources(root), false);
-
-  writeFileSync(
-    join(root, '.agents/skills/plate-ui/references/component-audit.md'),
-    '.agents/rules/plate-ui/references/component-audit.md\n'
-  );
-  assert.equal(haveMatchingRequiredResources(root), true);
-
-  mkdirSync(join(root, '.agents/skills/auto/references'), { recursive: true });
-  writeFileSync(
-    join(root, '.agents/skills/auto/references/regression-methodology.md'),
-    'retired resource\n'
-  );
-
-  assert.equal(haveMatchingRequiredResources(root), false);
-});
-
-test('requires exact generated doctrine skill bodies', () => {
-  const root = createRoot();
-  for (const {
-    generatedPath,
-    heading,
-    name,
-    sourcePath,
-  } of requiredGeneratedSkills) {
-    const source = join(root, sourcePath);
-    const generated = join(root, generatedPath);
-    const description = `${name} doctrine`;
-
-    mkdirSync(join(source, '..'), { recursive: true });
-    mkdirSync(join(generated, '..'), { recursive: true });
-    writeFileSync(
-      source,
-      `---\ndescription: ${description}\n---\n${heading}\nbody\n`
-    );
-    writeFileSync(
-      generated,
-      `---\ndescription: ${description}\nname: ${name}\nmetadata:\n  skiller:\n    source: ${sourcePath}\n---\n${heading}\nbody\n`
-    );
-  }
-
-  assert.equal(haveMatchingRequiredSkills(root), true);
-
-  writeFileSync(
-    join(root, '.agents/skills/plate-ui/SKILL.md'),
-    'stale generated skill\n'
-  );
-
-  assert.equal(haveMatchingRequiredSkills(root), false);
 });
 
 test('validates contiguous doctrine history and exact package enrollment', () => {
@@ -601,4 +483,28 @@ test('classifies stale, current, and source-drifted packages', () => {
     getPackageStatuses({ registry, root, slugs: ['alpha'] })[0].status,
     'drifted'
   );
+});
+
+test('names review-law edits made since the last doctrine version, unless a bump is in progress', () => {
+  const root = mkdtempSync(join(tmpdir(), 'plate-next-law-'));
+  temporaryRoots.push(root);
+  const git = (...args) =>
+    spawnSync('git', ['-C', root, '-c', 'user.email=t@t', '-c', 'user.name=t', ...args]);
+  const registry = join(root, '.agents/rules/plate-next/versions.json');
+  const law = join(root, '.agents/rules/plate-next/rules/review-law.md');
+  mkdirSync(join(root, '.agents/rules/plate-next/rules'), { recursive: true });
+  writeFileSync(registry, '{"latestVersion":1}');
+  writeFileSync(law, 'Review law v1.');
+  git('init', '-q');
+  git('add', '-A');
+  git('commit', '-qm', 'doctrine v1');
+  assert.deepEqual(lawChangesSinceVersion(root), []);
+
+  writeFileSync(law, 'Review law v2.');
+  assert.deepEqual(lawChangesSinceVersion(root), [
+    '.agents/rules/plate-next/rules/review-law.md',
+  ]);
+
+  writeFileSync(registry, '{"latestVersion":2}');
+  assert.deepEqual(lawChangesSinceVersion(root), []);
 });

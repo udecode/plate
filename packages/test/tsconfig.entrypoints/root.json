@@ -13,6 +13,7 @@
   },
   "exclude": [
     "../src/browser/**/*",
+    "../src/device/**/*",
     "../src/playwright/**/*",
     "../src/proof/**/*",
     "../src/react/**/*",

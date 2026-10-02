@@ -16,7 +16,7 @@ Apply mode may:
 - read and update `docs/sync/shadcn/deltas.json`
 - patch `apps/www`, `content/docs`, and related source files when a listed row
   targets `synced` or `fork`
-- delegate a coherent implementation slice to `task` when a `synced` or `fork`
+- hand a coherent implementation slice to pstack's poteto-mode when a `synced` or `fork`
   row needs more than a tiny local edit
 - remove screenshot refs for rows applied to `synced` or `rejected`
 - delete unreferenced local screenshot files under `docs/sync/shadcn/runs/**`

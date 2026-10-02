@@ -34,7 +34,6 @@ test.describe('homepage block drag', () => {
         .locator('..')
         .locator('[aria-label="Drag block"]');
 
-      await expect(dragHandle).not.toHaveAttribute('draggable', 'true');
       await welcomeBlock.hover();
       await expect(dragHandle).toBeVisible();
       await dragHandle.hover();
@@ -58,20 +57,9 @@ test.describe('homepage block drag', () => {
           introBox.y + introBox.height * 0.84,
           { steps: 12 }
         );
-        await expect(page.locator('body')).toHaveClass(/\bdragging\b/);
-        await expect
-          .poll(() =>
-            editor.evaluate((element) => {
-              const selection = document.getSelection();
-
-              return (
-                !!selection?.isCollapsed &&
-                !!selection.anchorNode &&
-                element.contains(selection.anchorNode)
-              );
-            })
-          )
-          .toBe(false);
+        await expect(welcomeBlock).toHaveAttribute('data-editor-dragging');
+        // The handle holds focus, so the editor paints no text caret mid-drag.
+        await expect(editor).not.toBeFocused();
         await expect(
           editor.locator('[data-editor-drop-cursor]:visible')
         ).toHaveCount(0);

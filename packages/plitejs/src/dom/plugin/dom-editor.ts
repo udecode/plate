@@ -4,6 +4,7 @@ import scrollIntoViewIfNeeded, {
 
 import {
   type Descendant,
+  type Element as EditorElement,
   type Node,
   NodeApi,
   type Path,
@@ -91,6 +92,15 @@ import {
   writeDOMSelectionData,
 } from './dom-clipboard-runtime';
 import {
+  type DOMDragStart,
+  type DOMDropTarget,
+  type DOMDropTargetInput,
+  type DOMDropTargetOptions,
+  indicateDOMDropTarget,
+  resolveDOMDropTarget,
+  startDOMDrag,
+} from './dom-drag';
+import {
   eventCarriesBlockFragment,
   resolveBlockFragmentDropRange,
   resolveVoidEventRange,
@@ -148,6 +158,15 @@ export type DOMEditor<
 
 export interface DOMApi {
   blur: () => void;
+  drag: DOMDragApi;
+  /**
+   * Resolve where a drop under a pointer lands: the innermost block edge the
+   * transfer dry pass admits, or a text point for a text drag.
+   */
+  resolveDropTarget: (
+    input: DOMDropTargetInput,
+    options?: DOMDropTargetOptions
+  ) => DOMDropTarget | null;
   deselect: () => void;
   editable: (root?: RootKey) => HTMLElement | null;
   findDocumentOrShadowRoot: () => Document | ShadowRoot;
@@ -218,6 +237,21 @@ export interface DOMApi {
 
 export interface DOMEditorCapability<V extends Value = Value> extends DOMApi {
   clipboard: DOMEditorClipboardCapability<V>;
+}
+
+/** Native block drag, used by drag handles and custom drivers. */
+export interface DOMDragApi {
+  /** Publish this view's drop indicator for a target, or clear it. */
+  indicate: (target: DOMDropTarget | null) => void;
+  /**
+   * Start a block drag: select what a transfer of `node` carries, open the
+   * drag session and return inert previews for the drag image. A read-only
+   * view starts a copy-only drag.
+   */
+  start: (
+    event: Pick<DragEvent, 'clientX' | 'clientY' | 'dataTransfer'>,
+    options: { node: EditorElement }
+  ) => DOMDragStart | null;
 }
 
 /** Clipboard methods installed by the editor DOM bridge. */
@@ -2737,6 +2771,19 @@ export const createDOMEditorCapability = <
         writeDOMClipboardSlice(editor, data, payload);
       },
     }),
+    drag: Object.freeze({
+      indicate: (target: DOMDropTarget | null) => {
+        indicateDOMDropTarget(editor, target);
+      },
+      start: (
+        event: Pick<DragEvent, 'clientX' | 'clientY' | 'dataTransfer'>,
+        options: { node: EditorElement }
+      ) => startDOMDrag(editor, event, options),
+    }),
+    resolveDropTarget: (
+      input: DOMDropTargetInput,
+      options?: DOMDropTargetOptions
+    ) => resolveDOMDropTarget(editor, input, options),
     isComposing: () => DOMEditor.isComposing(editor),
     isFocused: () => DOMEditor.isFocused(editor),
     isReadOnly: () => DOMEditor.isReadOnly(editor),

@@ -1,8 +1,10 @@
 // Node contracts do not need the editor's DOM preload. Bun-only CLI flags keep
 // the selected suite on Bun so reporter, watch, and bail behavior stays intact.
 export const TEST_NODE_FILE_PATTERNS = [
+  '.agents/rules/**/*.test.mjs',
   'tooling/scripts/**/*.test.mjs',
   'apps/plite/scripts/**/*.test.mjs',
+  'benchmarks/editor/benchmarks/{external-text,markdown-streaming}-measurement.test.mjs',
 ];
 
 export const TEST_ISOLATED_FILE_PATTERNS = [
@@ -10,9 +12,11 @@ export const TEST_ISOLATED_FILE_PATTERNS = [
 ];
 
 export const TEST_FILE_PATTERNS = [
+  '.agents/rules/**/*.test.mjs',
   'apps/**/*.spec.{ts,tsx}',
   'apps/**/*.test.{ts,tsx,mts,mjs}',
   'benchmarks/editor/benchmarks/*.test.ts',
+  'benchmarks/editor/benchmarks/{external-text,markdown-streaming}-measurement.test.mjs',
   'packages/**/*.spec.{ts,tsx}',
   'tooling/scripts/**/*.test.mjs',
   'tooling/oxlint/**/*.test.mjs',

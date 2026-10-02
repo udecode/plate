@@ -23,13 +23,13 @@ topic: editor-behavior-command-refresh-evidence-ledger
 Default:
 
 ```text
-research-wiki maintain editor behavior references
+research maintain editor behavior references
 ```
 
 Escalate when compiled coverage is too thin or stale:
 
 ```text
-research-wiki full editor behavior references
+research full editor behavior references
 ```
 
 ## Inputs

@@ -1,6 +1,6 @@
 import { expect, it } from 'bun:test';
 
-import { createEditor, type Editor } from '../../core';
+import { createEditor, definePlugin, type Editor, property } from '../../core';
 import {
   BaseBlockquotePlugin,
   BaseHeadingPlugin,
@@ -336,4 +336,63 @@ it('replaces list semantics when upserting a plain paragraph', () => {
   expect(editor.read.children()).toEqual([
     { type: 'paragraph', children: [{ text: '' }] },
   ]);
+});
+
+it('leaves the caret after a generated inline void insert unless asked to select it', () => {
+  const TagPlugin = definePlugin('tagProbe', {
+    schema: {
+      element: {
+        properties: { value: property.string({ required: true }) },
+        type: 'tagProbe',
+        void: 'inline',
+      },
+    },
+  });
+  const setup = (offset = 1) =>
+    createEditor({
+      plugins: [BaseParagraphPlugin, TagPlugin],
+      initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset },
+        focus: { path: [0, 0], offset },
+      },
+    });
+  const typed = setup();
+
+  typed.update((tx) => {
+    tx.plugin(TagPlugin).insert({ value: 'x' });
+  });
+
+  expect(typed.read.selection()?.focus).toEqual({ offset: 0, path: [0, 2] });
+
+  const atEnd = setup(2);
+
+  atEnd.update((tx) => {
+    tx.plugin(TagPlugin).insert({ value: 'x' });
+  });
+  atEnd.update((tx) => {
+    tx.text.insert('z');
+  });
+
+  expect(atEnd.read.nodes.get([0, 2])?.[0]).toEqual({ text: 'z' });
+
+  const unselected = setup();
+
+  unselected.update((tx) => {
+    tx.plugin(TagPlugin).insert({ value: 'x' }, { select: false });
+  });
+
+  expect(unselected.read.selection()?.focus).toEqual({
+    offset: 0,
+    path: [0, 2],
+  });
+
+  const selected = setup();
+
+  selected.update((tx) => {
+    tx.plugin(TagPlugin).insert({ value: 'x' }, { select: true });
+  });
+
+  expect(selected.read.selection()?.focus.path).toEqual([0, 1, 0]);
 });

@@ -517,6 +517,7 @@ const result = {
   redFlags,
   sourceBefore,
   sourceAfter: fingerprint(),
+  sourceIdentity: { measuredInputs: sourceBefore },
   guards: Object.values(lanes).flatMap((lane) => lane.canonicalReplacementWork &&
     lane.canonicalReplacementWork.nodeReads > lane.canonicalReplacementWork.maximumNodeReads
     ? [`${lane.config.id}: canonical replacement exceeds linear node-read budget`]

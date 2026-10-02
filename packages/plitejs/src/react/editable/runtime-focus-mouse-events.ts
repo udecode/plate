@@ -105,12 +105,22 @@ export const useRuntimeFocusMouseEvents = ({
         ownership: decision.ownership,
         target: event.target,
       });
+      const { relatedTarget } = event;
+      const movingWithinEditor =
+        relatedTarget != null &&
+        isDOMNode(relatedTarget) &&
+        ReactEditor.hasDOMNode(editor, relatedTarget);
+
       if (
         isNativeInternalControlTarget(editor, event.target) &&
         !nativePointerFocusRef.current
       ) {
         nativeInternalFocusRef.current = false;
-        syncDOMSelectionToEditor();
+        // Writing a selection into the editor focuses it in Firefox, which
+        // would pull focus back from an outside target.
+        if (relatedTarget == null || movingWithinEditor) {
+          syncDOMSelectionToEditor();
+        }
       }
 
       applyEditableBlur({
@@ -121,12 +131,6 @@ export const useRuntimeFocusMouseEvents = ({
         state,
       });
       publishFocusState();
-
-      const { relatedTarget } = event;
-      const movingWithinEditor =
-        relatedTarget != null &&
-        isDOMNode(relatedTarget) &&
-        ReactEditor.hasDOMNode(editor, relatedTarget);
 
       if (
         !readOnly &&

@@ -15,7 +15,7 @@ After an index or review-record change, run the helper's `render` and `check`.
 
 Primary reusable entrypoint:
 
-- [$research-wiki](../../../.agents/skills/research-wiki/SKILL.md)
+- [$research](../../../.agents/skills/research/SKILL.md)
 
 Recommended command name:
 
@@ -42,7 +42,7 @@ Run the upkeep pass for the research layer.
 This command is lighter than
 [full-pipeline.md](full-pipeline.md).
 
-It is the maintain-mode sub-workflow for `research-wiki`.
+It is the maintain-mode sub-workflow for `research maintain`.
 
 It is for keeping existing research healthy, not for opening a whole new lane
 from scratch.

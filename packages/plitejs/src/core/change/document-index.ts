@@ -807,13 +807,15 @@ export class DocumentIndex {
       []
     );
 
+    // The moved node is already a frozen member, and anchors follow it by identity.
     return DocumentIndex.fromIndexedValue(
       spliceIndexedChildren(
         without,
         transformedTarget.slice(0, -1),
         getDefined(transformedTarget.at(-1)),
         0,
-        [node]
+        [node],
+        false
       )
     );
   }

@@ -15,7 +15,7 @@ import {
   createEditor,
   DocumentChange,
 } from '../../../packages/plitejs/src/index';
-import { writeBenchmarkArtifact } from './benchmark-artifact';
+import { writeBenchmarkResult } from './benchmark-artifact';
 
 const outputArgument = process.argv.find((argument) =>
   argument.startsWith('--output=')
@@ -256,8 +256,6 @@ for (const cohort of cohorts) {
 
 const passed = rows.every((row) => row.passed);
 
-if (strict) assert.equal(passed, true);
-
 const result = {
   benchmark: 'plite-structural-compare',
   cohorts,
@@ -303,7 +301,16 @@ const result = {
   version: 1,
   warmups,
 };
-const output = `${JSON.stringify(result, null, 2)}\n`;
+const outputPath = outputArgument?.slice('--output='.length);
+
+const output = writeBenchmarkResult({
+  outputPath,
+  result,
+  strict,
+  validate: () => {
+    assert.equal(passed, true);
+  },
+});
 
 process.stdout.write(
   `METRIC plite_structural_compare_passed=${passed ? 1 : 0}\n`
@@ -322,8 +329,6 @@ for (const row of rows) {
   );
 }
 
-if (outputArgument) {
-  writeBenchmarkArtifact(outputArgument.slice('--output='.length), output);
-} else {
+if (outputPath === undefined) {
   process.stdout.write(output);
 }

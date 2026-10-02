@@ -62,7 +62,7 @@ Dashboard mode must not:
 - write `docs/sync/shadcn/runs/**`
 - change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
   `partialSyncs`
-- delegate implementation to `task`
+- hand implementation to pstack's poteto-mode
 - treat a dashboard item as user acceptance to implement
 
 State meanings:

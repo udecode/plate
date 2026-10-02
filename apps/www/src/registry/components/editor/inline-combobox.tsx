@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Combobox,
   ComboboxGroup,
   ComboboxGroupLabel,
   ComboboxItem,
@@ -13,19 +12,15 @@ import {
   useStoreState,
 } from '@ariakit/react';
 import { cva } from 'class-variance-authority';
+import type { PluginReference, PluginTransaction } from 'platejs';
+import { filterWords } from 'platejs/combobox';
 import {
-  Hotkeys,
-  isHotkey,
-  type Element,
-  type PluginTransaction,
-} from 'platejs';
-import { BaseComboboxPlugin, filterWords } from 'platejs/combobox';
-import {
-  useComposedRef,
-  useEditor,
-  useEditorHistory,
-  useElementSelected,
-} from 'platejs/react';
+  type ComboboxMatch,
+  type UseComboboxOptions,
+  type UseComboboxReturn,
+  useCombobox,
+} from 'platejs/combobox/react';
+import { useEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -36,18 +31,9 @@ type FilterFn = (
 ) => boolean;
 
 type InlineComboboxContextValue = {
-  autoFocus: boolean;
+  box: UseComboboxReturn;
   filter: FilterFn | false;
-  inputProps: Required<
-    Pick<React.InputHTMLAttributes<HTMLInputElement>, 'onBlur' | 'onKeyDown'>
-  >;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  commit: (
-    callback: (tx: PluginTransaction) => void,
-    focusEditor?: boolean
-  ) => boolean;
-  showTrigger: boolean;
-  trigger: string;
+  match: ComboboxMatch | null;
   setHasEmpty: (hasEmpty: boolean) => void;
 };
 
@@ -64,6 +50,10 @@ const useInlineComboboxContext = () => {
   return context;
 };
 
+/** The text typed after the trigger, or `''` when no trigger is active. */
+const useInlineComboboxQuery = () =>
+  useInlineComboboxContext().match?.query ?? '';
+
 const defaultFilter: FilterFn = (
   { group, keywords = [], label, value },
   search
@@ -79,276 +69,144 @@ const defaultFilter: FilterFn = (
   );
 };
 
-const InlineCombobox = ({
+const InlineCombobox = <P extends PluginReference>({
   children,
-  element,
+  editableRef,
   filter = defaultFilter,
   hideWhenNoValue = false,
-  setValue: setValueProp,
-  showTrigger = true,
-  trigger,
-  value: valueProp,
+  plugin,
 }: {
   children: React.ReactNode;
-  element: Element;
-  trigger: string;
+  editableRef: React.RefObject<HTMLDivElement | null>;
+  plugin: UseComboboxOptions<P>['plugin'];
   filter?: FilterFn | false;
   hideWhenNoValue?: boolean;
-  showTrigger?: boolean;
-  value?: string;
-  setValue?: (value: string) => void;
 }) => {
-  const editor = useEditor();
-  const combobox = editor.plugin(BaseComboboxPlugin);
-  const history = useEditorHistory({ editor });
-  const inputKey = React.useMemo(() => editor.key(element), [editor, element]);
-  const selected = useElementSelected();
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  const [valueState, setValueState] = React.useState('');
-  const hasValueProp = valueProp !== undefined;
-  const value = hasValueProp ? valueProp : valueState;
-
-  const canEdit = combobox.read.canEdit(inputKey);
-
-  const commit = React.useCallback(
-    (callback: (tx: PluginTransaction) => void, focusEditor = false) => {
-      const completed = combobox.api.commit(inputKey, callback);
-
-      if (completed && focusEditor) editor.api.dom.focus();
-
-      return completed;
-    },
-    [combobox, editor, inputKey]
-  );
-  const cancelInput = React.useCallback(
-    (
-      cause:
-        | 'arrowLeft'
-        | 'arrowRight'
-        | 'backspace'
-        | 'blur'
-        | 'deselect'
-        | 'escape',
-      focusEditor = false
-    ) => {
-      const completed = combobox.api.cancel(inputKey, {
-        text:
-          cause === 'backspace'
-            ? ''
-            : trigger + (inputRef.current?.value ?? value),
-        select:
-          cause === 'arrowLeft' ? 'start' : focusEditor ? 'end' : undefined,
-      });
-
-      if (completed && focusEditor) editor.api.dom.focus();
-    },
-    [combobox, editor, inputKey, trigger, value]
-  );
-
-  const previousSelected = React.useRef(selected);
-
-  React.useEffect(() => {
-    if (previousSelected.current && !selected) cancelInput('deselect');
-
-    previousSelected.current = selected;
-  }, [cancelInput, selected]);
-
-  const inputProps = React.useMemo<InlineComboboxContextValue['inputProps']>(
-    () => ({
-      onBlur: () => {
-        cancelInput('blur');
-      },
-      onKeyDown: (event) => {
-        // oxlint-disable-next-line typescript/no-deprecated -- Safari can clear isComposing before the final IME key event.
-        if (event.nativeEvent.isComposing || event.keyCode === 229) return;
-
-        const {
-          selectionEnd,
-          selectionStart,
-          value: inputValue,
-        } = event.currentTarget;
-        const cursorCollapsed = selectionStart === selectionEnd;
-        const cursorAtStart = cursorCollapsed && selectionStart === 0;
-        const cursorAtEnd =
-          cursorCollapsed && selectionEnd === inputValue.length;
-        const cancelCause = isHotkey('escape')(event)
-          ? 'escape'
-          : cursorAtStart && isHotkey('backspace')(event)
-            ? 'backspace'
-            : cursorAtStart && isHotkey('arrowleft')(event)
-              ? 'arrowLeft'
-              : cursorAtEnd && isHotkey('arrowright')(event)
-                ? 'arrowRight'
-                : null;
-
-        if (cancelCause) {
-          event.preventDefault();
-          event.stopPropagation();
-          cancelInput(cancelCause, true);
-
-          return;
-        }
-
-        if (Hotkeys.isUndo(event) || Hotkeys.isRedo(event)) {
-          history.onKeyDown(event);
-        }
-      },
-    }),
-    [cancelInput, history]
-  );
-
-  const [hasEmpty, setHasEmpty] = React.useState(false);
-
-  const contextValue = React.useMemo<InlineComboboxContextValue>(
-    () => ({
-      autoFocus: canEdit,
-      commit,
-      filter,
-      inputProps,
-      inputRef,
-      setHasEmpty,
-      showTrigger,
-      trigger,
-    }),
-    [canEdit, commit, filter, inputProps, showTrigger, trigger]
-  );
-
-  const store = useComboboxStore({
-    setValue: (newValue) => {
-      React.startTransition(() => {
-        setValueProp?.(newValue);
-        if (!hasValueProp) setValueState(newValue);
-      });
-    },
-  });
-
+  // Without a text input, a null active id would point at no option.
+  const store = useComboboxStore({ includesBaseElement: false });
+  const activeId = useStoreState(store, 'activeId');
   const items = useStoreState(store, 'items');
+  const renderedItems = useStoreState(store, 'renderedItems');
+  const onKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (store.getState().renderedItems.length === 0) return false;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        const down = event.key === 'ArrowDown';
+        const next = down ? store.next() : store.previous();
 
-  /**
-   * If there is no active ID and the list of items changes, select the first
-   * item.
-   */
+        store.move(next ?? (down ? store.first() : store.last()));
+
+        return true;
+      }
+      if (event.key !== 'Enter' && event.key !== 'Tab') return false;
+
+      const { activeId: currentId, items: options } = store.getState();
+      const option = (
+        options.find((item) => item.id === currentId) ??
+        options.find((item) => item.id === store.first())
+      )?.element;
+
+      if (!option) return false;
+
+      option.click();
+
+      return true;
+    },
+    [store]
+  );
+  const [shown, setShown] = React.useState(false);
+  const box = useCombobox({
+    activeOptionId: activeId ?? null,
+    editableRef,
+    onKeyDown,
+    open: shown,
+    plugin,
+  });
+  const { dismiss, match } = box;
+  const query = match?.query ?? '';
+  const [hasEmpty, setHasEmpty] = React.useState(false);
+  const open =
+    !!match &&
+    (items.length > 0 || hasEmpty) &&
+    (!hideWhenNoValue || query.length > 0);
+
+  if (shown !== open) setShown(open);
+
   React.useEffect(() => {
-    if (!store.getState().activeId) {
+    store.setAnchorElement(editableRef.current);
+  }, [editableRef, store]);
+
+  React.useEffect(() => {
+    const { activeId: id } = store.getState();
+
+    if (!id || !renderedItems.some((item) => item.id === id)) {
       store.setActiveId(store.first());
     }
-  }, [items, store]);
+  }, [renderedItems, store]);
+
+  const queryBecameProse =
+    !!match && !match.composing && items.length === 0 && /\s$/.test(query);
+
+  React.useEffect(() => {
+    if (queryBecameProse) dismiss();
+  }, [dismiss, queryBecameProse]);
+
+  const contextValue = React.useMemo<InlineComboboxContextValue>(
+    () => ({ box, filter, match, setHasEmpty }),
+    [box, filter, match]
+  );
 
   return (
-    <span contentEditable={false}>
-      <ComboboxProvider
-        open={
-          canEdit &&
-          (items.length > 0 || hasEmpty) &&
-          (!hideWhenNoValue || value.length > 0)
-        }
-        store={store}
-      >
-        <InlineComboboxContext value={contextValue}>
-          {children}
-        </InlineComboboxContext>
-      </ComboboxProvider>
-    </span>
+    <ComboboxProvider
+      open={open}
+      setOpen={(nextOpen) => {
+        if (!nextOpen) dismiss();
+      }}
+      store={store}
+      value={query}
+    >
+      <InlineComboboxContext value={contextValue}>
+        {children}
+      </InlineComboboxContext>
+    </ComboboxProvider>
   );
 };
-
-function InlineComboboxInput({
-  className,
-  ref: propRef,
-  ...props
-}: React.HTMLAttributes<HTMLInputElement> & {
-  ref?: React.RefObject<HTMLInputElement | null>;
-}) {
-  const {
-    autoFocus,
-    inputProps,
-    inputRef: contextRef,
-    showTrigger,
-    trigger,
-  } = useInlineComboboxContext();
-
-  const store = useComboboxContext();
-
-  if (store == null) {
-    throw new Error('InlineComboboxInput requires a Combobox store');
-  }
-
-  const value = useStoreState(store, 'value');
-
-  const ref = useComposedRef(propRef, contextRef);
-
-  /**
-   * To create an auto-resizing input, we render a visually hidden span
-   * containing the input value and position the input element on top of it.
-   * This works well for all cases except when input exceeds the width of the
-   * container.
-   */
-
-  return (
-    <>
-      {showTrigger && trigger}
-
-      <span className="relative min-h-[1lh]">
-        <span
-          className="invisible overflow-hidden text-nowrap"
-          aria-hidden="true"
-        >
-          {value || '\u200B'}
-        </span>
-
-        <Combobox
-          ref={ref}
-          autoFocus={autoFocus}
-          disabled={!autoFocus}
-          className={cn(
-            'absolute top-0 left-0 size-full bg-transparent outline-none',
-            className
-          )}
-          value={value}
-          autoSelect
-          {...inputProps}
-          {...props}
-        />
-      </span>
-    </>
-  );
-}
 
 const InlineComboboxContent = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
-  // Portal prevents CSS from leaking into popover
-  const store = useComboboxContext();
+  const editor = useEditor();
+  const { box, match } = useInlineComboboxContext();
+  const getAnchorRect = React.useCallback(() => {
+    if (!match) return null;
 
-  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (!store) return;
+    const start = match.range.anchor;
 
-    const state = store.getState();
-    const { items, activeId } = state;
-
-    if (!items.length) return;
-
-    const currentIndex = items.findIndex((item) => item.id === activeId);
-
-    if (event.key === 'ArrowUp' && currentIndex <= 0) {
-      event.preventDefault();
-      store.setActiveId(store.last());
-    } else if (event.key === 'ArrowDown' && currentIndex >= items.length - 1) {
-      event.preventDefault();
-      store.setActiveId(store.first());
-    }
-  }
+    return editor.api.dom.resolveRangeRect({ anchor: start, focus: start });
+  }, [editor, match]);
 
   return (
     <Portal>
       <ComboboxPopover
+        id={box.listboxId}
         className={cn(
           'cn-command cn-command-list z-500 w-[300px] overflow-x-hidden overflow-y-auto shadow-md',
           className
         )}
-        onKeyDownCapture={handleKeyDown}
+        autoFocusOnHide={false}
+        autoFocusOnShow={false}
+        getAnchorRect={getAnchorRect}
+        hideOnEscape={false}
+        hideOnInteractOutside={(event) =>
+          !(event.target instanceof Node) ||
+          !editor.api.dom.root()?.contains(event.target)
+        }
+        modal={false}
+        // Keep the editor focused unless an IME is composing: the blur ends it.
+        onMouseDown={(event) => {
+          if (!match?.composing) event.preventDefault();
+        }}
         {...props}
       />
     </Portal>
@@ -374,32 +232,29 @@ const InlineComboboxItem = ({
   keywords?: string[];
   label?: string;
   value: string;
-  onSelect?: (tx: PluginTransaction) => void;
+  /** Insert the completion. Return false to refuse and keep the query. */
+  onSelect?: (tx: PluginTransaction) => false | void;
 }) => {
   const { value } = props;
-
-  const { commit, filter } = useInlineComboboxContext();
-
-  const store = useComboboxContext();
-
-  if (store == null) {
-    throw new Error('InlineComboboxItem requires a Combobox store');
-  }
-
-  const search = useStoreState(store, 'value');
-
+  const editor = useEditor();
+  const { box, filter, match } = useInlineComboboxContext();
+  const search = match?.query ?? '';
   const visible = React.useMemo(
     () => !filter || filter({ group, keywords, label, value }, search),
     [filter, group, keywords, label, value, search]
   );
 
-  if (!visible) return null;
+  if (!visible || !match) return null;
 
   return (
     <ComboboxItem
       className={cn(comboboxItemVariants(), className)}
+      hideOnClick={false}
+      setValueOnClick={false}
       onClick={(event) => {
-        if (commit((tx) => onSelect?.(tx), focusEditor)) onClick?.(event);
+        if (!box.complete(match, (tx) => onSelect?.(tx))) return;
+        if (focusEditor) editor.api.dom.focus();
+        onClick?.(event);
       }}
       {...props}
     />
@@ -468,6 +323,6 @@ export {
   InlineComboboxEmpty,
   InlineComboboxGroup,
   InlineComboboxGroupLabel,
-  InlineComboboxInput,
   InlineComboboxItem,
+  useInlineComboboxQuery,
 };

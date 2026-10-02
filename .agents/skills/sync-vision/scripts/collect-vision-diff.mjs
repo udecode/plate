@@ -139,7 +139,7 @@ function validateAdvancePlan(plan) {
   }
   const checker = path.join(
     repoRoot,
-    '.agents/skills/autogoal/scripts/check-complete.mjs'
+    '.agents/pstack/plan-open.mjs'
   );
   const result = spawnSync(process.execPath, [checker, plan], {
     cwd: repoRoot,

@@ -4,6 +4,10 @@ export declare const assertBrowserWorkerArgs: (
   args: readonly string[]
 ) => readonly string[];
 
+export declare const assertRetryFreeBrowserArgs: (
+  args: readonly string[]
+) => readonly string[];
+
 export declare const resolvePliteBrowserBaseURL: (
   explicitBaseURL: string | undefined
 ) => string;

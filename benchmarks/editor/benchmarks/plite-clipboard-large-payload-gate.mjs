@@ -34,12 +34,14 @@ export const CLIPBOARD_ISSUE_TARGET_BUDGETS = Object.freeze({
 const timedThreshold = (lane, budget, exactSize) => ({
   actualMs: Number.isFinite(lane?.p50) ? lane.p50 : null,
   ...budget,
+  operator: '<=',
   passed: exactSize && Number.isFinite(lane?.p50) && lane.p50 <= budget.limitMs,
 });
 
 const countThreshold = (actual, exactSize) => ({
   actual: Number.isInteger(actual) ? actual : null,
   limit: 1,
+  operator: '===',
   passed: exactSize && actual === 1,
 });
 
@@ -58,6 +60,7 @@ export const createClipboardIssueTargetThresholds = ({
     cutTwoBlocksEditMsP50: {
       actualMs: pathological?.cutTwoBlocksEditMs?.p50 ?? null,
       limitMs: 150,
+      operator: '<',
       passed:
         (!releaseGate || hugeCutBlocks === 50_000) &&
         Number.isFinite(pathological?.cutTwoBlocksEditMs?.p50) &&
@@ -68,6 +71,7 @@ export const createClipboardIssueTargetThresholds = ({
         pathological?.cutTwoBlocksEditMs?.metadata?.maximumChangedTokenSpan ??
         null,
       limit: 64,
+      operator: '<=',
       passed:
         (!releaseGate || hugeCutBlocks === 50_000) &&
         Number.isInteger(
@@ -80,6 +84,7 @@ export const createClipboardIssueTargetThresholds = ({
         pathological?.cutTwoBlocksEditMs?.metadata
           ?.maximumChangedTopLevelSpan ?? null,
       limit: 1,
+      operator: '<=',
       passed:
         (!releaseGate || hugeCutBlocks === 50_000) &&
         Number.isInteger(
@@ -91,6 +96,7 @@ export const createClipboardIssueTargetThresholds = ({
     cutTwoBlocksMsP50: {
       actualMs: pathological?.cutTwoBlocksMs?.p50 ?? null,
       limitMs: 250,
+      operator: '<',
       passed:
         (!releaseGate || hugeCutBlocks === 50_000) &&
         Number.isFinite(pathological?.cutTwoBlocksMs?.p50) &&

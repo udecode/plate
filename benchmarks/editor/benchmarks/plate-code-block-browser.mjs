@@ -11,6 +11,8 @@ import { chromium } from '@playwright/test';
 import {
   hasExactCodeHighlight,
   hasInsertedCodeHighlight,
+  readInputStart,
+  startInputClockBeforeEditorHandlers,
 } from './code-block-highlight-oracle.mjs';
 
 const runnerPath = fileURLToPath(import.meta.url);
@@ -201,7 +203,7 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
   });
   const page = await context.newPage();
   await page.addInitScript({
-    content: `globalThis.hasExactCodeHighlight = ${hasExactCodeHighlight.toString()}; globalThis.hasInsertedCodeHighlight = ${hasInsertedCodeHighlight.toString()}`,
+    content: `globalThis.hasExactCodeHighlight = ${hasExactCodeHighlight.toString()}; globalThis.hasInsertedCodeHighlight = ${hasInsertedCodeHighlight.toString()}; globalThis.readInputStart = ${readInputStart.toString()}; globalThis.startInputClockBeforeEditorHandlers = ${startInputClockBeforeEditorHandlers.toString()}`,
   });
   const runtimeErrors = [];
   const networkErrors = [];
@@ -232,61 +234,77 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
       );
     }
 
-    await page.waitForFunction(
-      ({
-        blockIndex: targetBlockIndex,
-        expectedLength,
-        expectedLines,
-        mode,
-      }) => {
-        const root = document.querySelector('.editor-editor');
-        const handle = root?.__pliteBrowserHandle;
-        const block = document.querySelector('.editor-codeBlock');
-        const text = handle?.getBlockText(targetBlockIndex);
+    await page
+      .waitForFunction(
+        ({
+          blockIndex: targetBlockIndex,
+          expectedLength,
+          expectedLines,
+          mode,
+        }) => {
+          const root = document.querySelector('.editor-editor');
+          const handle = root?.__pliteBrowserHandle;
+          const block = document.querySelector('.editor-codeBlock');
+          const text = handle?.getBlockText(targetBlockIndex);
 
-        if (
-          !root ||
-          !handle ||
-          !block ||
-          !text ||
-          text.length !== expectedLength ||
-          (text.match(/\n/g)?.length ?? 0) + 1 !== expectedLines
-        ) {
-          return false;
-        }
+          if (
+            !root ||
+            !handle ||
+            !block ||
+            !text ||
+            text.length !== expectedLength ||
+            (text.match(/\n/g)?.length ?? 0) + 1 !== expectedLines
+          ) {
+            return false;
+          }
 
-        if (mode === 'codemirror') {
-          const host = block.querySelector('[data-code-block-codemirror]');
-          const input = host?.querySelector(
-            '[data-code-block-codemirror-input]'
-          );
+          if (mode === 'codemirror') {
+            const host = block.querySelector('[data-code-block-codemirror]');
+            const input = host?.querySelector(
+              '[data-code-block-codemirror-input]'
+            );
+
+            return Boolean(
+              host &&
+              input &&
+              host.querySelector('.cm-line') &&
+              host.querySelector('[class*="hljs-"]')
+            );
+          }
+
+          const code = block.querySelector('pre code');
 
           return Boolean(
-            host &&
-            input &&
-            host.querySelector('.cm-line') &&
-            host.querySelector('[class*="hljs-"]')
+            code &&
+            code.textContent === text &&
+            block.querySelector('[data-editor-node="text"]') &&
+            block.querySelector('[class*="hljs-"]') &&
+            !block.querySelector('[data-code-block-codemirror]')
           );
-        }
+        },
+        {
+          blockIndex,
+          expectedLength: expectedInitialText.length,
+          expectedLines: lineCount,
+          mode: renderMode,
+        },
+        { timeout: 30_000 }
+      )
+      .catch(async (error) => {
+        const installed = await page
+          .evaluate(
+            () =>
+              !!document.querySelector('.editor-editor')?.__pliteBrowserHandle
+          )
+          .catch(() => false);
 
-        const code = block.querySelector('pre code');
-
-        return Boolean(
-          code &&
-          code.textContent === text &&
-          block.querySelector('[data-editor-node="text"]') &&
-          block.querySelector('[class*="hljs-"]') &&
-          !block.querySelector('[data-code-block-codemirror]')
-        );
-      },
-      {
-        blockIndex,
-        expectedLength: expectedInitialText.length,
-        expectedLines: lineCount,
-        mode: renderMode,
-      },
-      { timeout: 30_000 }
-    );
+        throw installed
+          ? error
+          : new Error(
+              'browser handle not installed: build the host with NEXT_PUBLIC_PLATE_BROWSER_HANDLE=1',
+              { cause: error }
+            );
+      });
     await page.evaluate(waitForPaint);
 
     const navigationToQueryableMs = performance.now() - navigationStartedAt;
@@ -372,22 +390,7 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
         mode: renderMode,
       }
     );
-    await page.evaluate((mode) => {
-      const target =
-        mode === 'codemirror'
-          ? document.querySelector('[data-code-block-codemirror-input]')
-          : document.querySelector('.editor-editor');
-
-      globalThis.__plateCodeBlockBenchmarkInputStartedAt = null;
-      target.addEventListener(
-        'beforeinput',
-        () => {
-          globalThis.__plateCodeBlockBenchmarkInputStartedAt =
-            performance.now();
-        },
-        { once: true }
-      );
-    }, renderMode);
+    await page.evaluate(() => globalThis.startInputClockBeforeEditorHandlers());
 
     await page.keyboard.insertText(insertedText);
 
@@ -396,9 +399,9 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
         const root = document.querySelector('.editor-editor');
         const handle = root.__pliteBrowserHandle;
         const block = document.querySelector('.editor-codeBlock');
-        const startedAt =
-          globalThis.__plateCodeBlockBenchmarkInputStartedAt ??
-          performance.now();
+        const startedAt = globalThis.readInputStart(
+          globalThis.__plateCodeBlockBenchmarkInputStartedAt
+        );
         let inputPaintedAt = null;
 
         for (let frame = 0; frame < 600; frame += 1) {
@@ -826,6 +829,7 @@ if (readinessOnly) {
         process.env.PLATE_CODE_BLOCK_BENCHMARK_HOST_MODE ?? 'unspecified',
       hostStartedAt:
         process.env.PLATE_CODE_BLOCK_BENCHMARK_HOST_STARTED_AT ?? 'unspecified',
+      inputClock: 'beforeinput on window, capture phase',
       insertedText,
       interleave: 'AB/BA by round',
       iterations,

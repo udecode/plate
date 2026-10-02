@@ -22,8 +22,8 @@ topic: editor-behavior-command-execute-next-batch
 ## Invocation
 
 ```text
-plate-plan execute docs/plans/<approved-plate-lane-plan>.md
-plite-plan execute docs/plans/<approved-plite-lane-plan>.md
+execute docs/plans/<approved-plate-lane-plan>.md
+execute docs/plans/<approved-plite-lane-plan>.md
 ```
 
 ## Inputs

@@ -448,6 +448,21 @@ const outputText = (page: Page, composition: Composition) =>
     outputFor(composition).root
   );
 
+// Next writes the build id into the page's flight payload as a `b` field.
+// The inline scripts keep that payload after hydration drains `__next_f`.
+const readBuildId = (page: Page) =>
+  page.evaluate(() => {
+    const ids = new Set(
+      [...document.querySelectorAll('script:not([src])')].flatMap((script) =>
+        [
+          ...(script.textContent ?? '').matchAll(/\\"b\\":\\"([\w-]{8,})\\"/g),
+        ].map((match) => match[1])
+      )
+    );
+
+    return ids.size === 1 ? [...ids][0]! : null;
+  });
+
 const outputHTML = (page: Page, composition: Composition) =>
   page.evaluate(
     (selector) => document.querySelector(selector)?.innerHTML ?? null,
@@ -952,6 +967,7 @@ const TRACE_CATEGORIES = [
 
 type StreamResult = {
   arm: Arm;
+  buildId: string | null;
   // Uncaught page errors and console errors, with stacks.
   errors: string[];
   finalTextSha256: string | null;
@@ -1001,6 +1017,7 @@ const runStream = async ({
     if (isAI(composition)) await openAI(page);
     else await openDemo(page, composition, source);
     await page.evaluate(observeOutput, outputFor(composition));
+    const buildId = await readBuildId(page);
 
     const cdp = await context.newCDPSession(page);
     await cdp.send('Tracing.start', {
@@ -1068,6 +1085,7 @@ const runStream = async ({
 
     return {
       arm: armName,
+      buildId,
       errors,
       finalTextSha256: text === null ? null : sha256(text),
       loadavg: loadavg(),
@@ -1181,13 +1199,15 @@ const runAICorrectness = async (
     });
     await openAI(page);
     await page.evaluate(observeOutput, OUTPUT.ai);
+    const buildId = await readBuildId(page);
     await arm(page, true);
     await startStream(page, 'ai');
-    await waitForFinish(page, 'ai', 30_000);
+    await waitForFinish(page, 'ai', STREAM_CAP_MS);
     const { batches } = await readRecord(page);
     const previews = batches.slice(0, -1);
 
     return {
+      buildId,
       eligible: previews.reduce((sum, batch) => sum + batch.eligible, 0),
       html: await outputHTML(page, 'ai'),
       kept: previews.reduce((sum, batch) => sum + batch.kept, 0),
@@ -1197,6 +1217,109 @@ const runAICorrectness = async (
   } finally {
     await context.close();
   }
+};
+
+const runDemoCorrectness = async (
+  browser: Browser,
+  baseURL: string,
+  mode: 'editable' | 'static',
+  source: string,
+  chunkSize = CHUNK
+) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: { height: 720, width: 1280 },
+  });
+
+  try {
+    const page = await context.newPage();
+    await page.addInitScript(installInstrumentation, {
+      arrivalMs: ARRIVAL_MS,
+      chunks: null,
+      composition: mode,
+    });
+    await openDemo(page, mode, source, chunkSize);
+    await page.evaluate(observeOutput, OUTPUT.demo);
+    const buildId = await readBuildId(page);
+    await arm(page);
+    await startStream(page, mode);
+    await waitForFinish(page, mode, STREAM_CAP_MS);
+    const streamed = {
+      html: await outputHTML(page, mode),
+      text: await outputText(page, mode),
+    };
+
+    await page
+      .getByRole('button', { name: 'Reset streaming', exact: true })
+      .click();
+    await expect(page.locator('[data-stream-status]')).toHaveText('Ready');
+    await page
+      .getByRole('heading', { name: /^Chunks/ })
+      .locator('xpath=..')
+      .getByRole('button')
+      .last()
+      .click();
+    await expect(page.locator('[data-stream-status]')).toHaveText(
+      'Finished: strict parse'
+    );
+    await settle(page);
+
+    return {
+      buildId,
+      fresh: {
+        html: await outputHTML(page, mode),
+        text: await outputText(page, mode),
+      },
+      streamed,
+    };
+  } finally {
+    await context.close();
+  }
+};
+
+const runPreflight = async ({
+  baseURL,
+  browser,
+  chunks,
+  composition,
+  source,
+}: {
+  baseURL: string;
+  browser: Browser;
+  chunks: string[];
+  composition: Composition;
+  source: string;
+}) => {
+  const verdict = (
+    buildId: string | null,
+    reference: string | null,
+    streamed: string | null
+  ) => ({
+    buildId,
+    pass: reference !== null && buildId !== null && streamed === reference,
+    referenceTextSha256: reference === null ? null : sha256(reference),
+    streamedTextSha256: streamed === null ? null : sha256(streamed),
+  });
+
+  if (isAI(composition)) {
+    const stream = await runAICorrectness(browser, baseURL, chunks);
+    const whole = await runAICorrectness(browser, baseURL, [source]);
+
+    return verdict(
+      stream.buildId === whole.buildId ? stream.buildId : null,
+      whole.text,
+      stream.text
+    );
+  }
+
+  const { buildId, fresh, streamed } = await runDemoCorrectness(
+    browser,
+    baseURL,
+    composition,
+    source
+  );
+
+  return verdict(buildId, fresh.text, streamed.text);
 };
 
 test.describe('markdown streaming contract', () => {
@@ -1320,33 +1443,19 @@ test.describe('markdown streaming contract', () => {
   // blocks (list numbers, the table of contents, footnotes) must still match
   // a render of the whole document at once.
   test('static preview renders the final document like a fresh render', async ({
-    page,
+    browser,
+    baseURL,
   }) => {
-    await page.addInitScript(installInstrumentation, {
-      arrivalMs: ARRIVAL_MS,
-      chunks: null,
-      composition: 'static' as const,
-    });
-    await openDemo(page, 'static', REUSE_SOURCE, 16);
-    await page.evaluate(observeOutput, OUTPUT.demo);
-    await arm(page);
-    await startStream(page, 'static');
-    await waitForFinish(page, 'static', 30_000);
-    const streamed = await outputHTML(page, 'static');
-
-    await page
-      .getByRole('button', { name: 'Reset streaming', exact: true })
-      .click();
-    await expect(page.locator('[data-stream-status]')).toHaveText('Ready');
-    await page.locator('button:has-text("zzend")').last().click();
-    await expect(page.locator('[data-stream-status]')).toHaveText(
-      'Finished: strict parse'
+    const { fresh, streamed } = await runDemoCorrectness(
+      browser,
+      baseURL!,
+      'static',
+      REUSE_SOURCE,
+      16
     );
-    await settle(page);
-    const fresh = await outputHTML(page, 'static');
 
-    expect(await outputText(page, 'static')).toContain('Section C');
-    expect(streamed).toBe(fresh);
+    expect(fresh.text).toContain('Section C');
+    expect(streamed.html).toBe(fresh.html);
   });
 
   test('AI preview renders the final document like a one-chunk response', async ({
@@ -1457,6 +1566,7 @@ test.describe('S5 acceptance matrix', () => {
       const spend = budget(live ? 'budget-live.json' : 'budget.json');
       const cap = live ? LIVE_CAP_MS : MATRIX_CAP_MS;
       const source = makeSource(fixture, size);
+      const sourceHash = sha256(source);
       const chunks = toChunks(source);
       const urls = { baseline: baselineURL!, candidate: baseURL! };
       const receipt = {
@@ -1478,8 +1588,18 @@ test.describe('S5 acceptance matrix', () => {
         fixture,
         packet: live ? 'live AI queue record' : 'acceptance',
         size,
-        sourceHash: sha256(source),
+        sourceHash,
         sourceUtf8Bytes: Buffer.byteLength(source),
+        pairs,
+        preflight: {
+          cell,
+          sourceHash,
+        } as {
+          baseline?: Awaited<ReturnType<typeof runPreflight>>;
+          candidate?: Awaited<ReturnType<typeof runPreflight>>;
+          cell: string;
+          sourceHash: string;
+        },
         startedAt: new Date().toISOString(),
         status: 'running' as string,
         streams: [] as Array<StreamResult & { order: number; role: string }>,
@@ -1490,6 +1610,19 @@ test.describe('S5 acceptance matrix', () => {
         mkdirSync(path.dirname(file), { recursive: true });
         writeFileSync(file, `${JSON.stringify(receipt, null, 2)}\n`);
       };
+      for (const armName of ['baseline', 'candidate'] as const) {
+        if (spend.read() > cap) break;
+        const began = Date.now();
+        receipt.preflight[armName] = await runPreflight({
+          baseURL: urls[armName],
+          browser,
+          chunks,
+          composition,
+          source,
+        });
+        spend.add(Date.now() - began);
+        save();
+      }
       const plan: Array<[Arm, string]> = [
         ['baseline', 'warmup'],
         ['candidate', 'warmup'],

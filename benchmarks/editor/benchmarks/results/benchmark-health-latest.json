@@ -1,109 +1,403 @@
 {
-  "generatedAt": "2026-06-02T11:46:14.943Z",
+  "generatedAt": "2026-09-30T23:10:06.241Z",
   "name": "benchmark-health",
   "nextActions": [
     {
-      "id": "refresh-core-node-transforms",
+      "id": "rerun-stale-artifacts",
+      "priority": 2,
+      "reason": "1 artifacts are stale: core-query-anchor-observation (no-receipt, input-changed:packages/plitejs/src/core/commit.ts)",
+      "title": "Rerun stale artifacts with pnpm bench:targets:run"
+    },
+    {
+      "id": "record-artifact-receipts",
+      "priority": 3,
+      "reason": "17 artifacts have no receipt or recorded inputs that bind them to current source: react-rerender-breadth, react-huge-document-overlays, react-active-typing-breakdown, react-huge-document-browser-trace, react-huge-document-slate-browser-trace, browser-rich-text-replay-coverage, core-normalization-current, core-text-selection, core-editor-store, clipboard-large-payload, core-huge-document-compare, core-normalization-compare, core-observation-compare, core-rich-text-operations-compare, history-compare, plite-transaction-execution, plite-history-retained-memory",
+      "title": "Run each target through pnpm bench:targets:run"
+    },
+    {
+      "id": "refresh-react-huge-document-overlays",
       "priority": 4,
-      "reason": "Active artifact is 15.0 days old: ../../tmp/slate-node-transform-benchmark.json",
-      "title": "Refresh core-node-transforms"
+      "reason": "Active artifact is 18.8 days old: tmp/slate-react-huge-document-overlays-benchmark.json",
+      "title": "Refresh react-huge-document-overlays"
     },
     {
-      "id": "refresh-core-text-selection",
+      "id": "refresh-react-active-typing-breakdown",
       "priority": 4,
-      "reason": "Active artifact is 15.0 days old: ../../tmp/slate-text-selection-benchmark.json",
-      "title": "Refresh core-text-selection"
+      "reason": "Active artifact is 18.8 days old: tmp/slate-react-active-typing-breakdown-benchmark.json",
+      "title": "Refresh react-active-typing-breakdown"
     },
     {
-      "id": "optional-core-transaction-current",
-      "priority": 5,
-      "reason": "Optional active artifact is missing: ../../tmp/slate-transaction-benchmark.json",
-      "title": "Decide whether core-transaction-current should stay optional"
+      "id": "refresh-react-huge-document-browser-trace",
+      "priority": 4,
+      "reason": "Active artifact is 21.1 days old: tmp/slate-react-huge-document-default-browser-trace-benchmark.json",
+      "title": "Refresh react-huge-document-browser-trace"
     },
     {
-      "id": "optional-history-retained-memory",
-      "priority": 5,
-      "reason": "Optional active artifact is missing: ../../tmp/slate-history-retained-memory-benchmark.json",
-      "title": "Decide whether history-retained-memory should stay optional"
+      "id": "refresh-react-huge-document-slate-browser-trace",
+      "priority": 4,
+      "reason": "Active artifact is 21.1 days old: tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-blocks-5000-iters-3-ops-10.json",
+      "title": "Refresh react-huge-document-slate-browser-trace"
+    },
+    {
+      "id": "refresh-browser-rich-text-replay-coverage",
+      "priority": 4,
+      "reason": "Active artifact is 21.1 days old: tmp/slate-browser-rich-text-replay-coverage-benchmark.json",
+      "title": "Refresh browser-rich-text-replay-coverage"
     },
     {
       "id": "discard-unregistered-artifacts",
       "priority": 6,
-      "reason": "62 unregistered benchmark JSON files are ignored by the active Evidence Kit flow.",
+      "reason": "73 unregistered benchmark JSON files are ignored by the active Evidence Kit flow.",
       "title": "Delete or ignore historical unregistered artifacts"
     }
   ],
-  "node": "v24.14.1",
+  "node": "v22.22.1",
   "registry": {
-    "activeArtifacts": 23,
-    "discardedUnregisteredArtifacts": 62,
-    "ignoredUnregisteredArtifacts": [
-      "../../packages/slate-react/tmp/slate-react-runtime-node-fanout-benchmark.json",
-      "../../tmp/slate-pagination-virtualized-char-burst-benchmark.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-20-iters-1-ops-3.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-1-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-3-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-20-iters-1-ops-3.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-1-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-1-ops-3.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-5-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-virtualized-blocks-5000-iters-3-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-20-iters-1-ops-3.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-5000-iters-1-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-20-iters-1-ops-3.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-20000-iters-1-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-0-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-1.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-10.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-3.json",
-      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-3-ops-10.json"
-    ],
-    "missingOptionalArtifacts": [
+    "activeArtifacts": 20,
+    "admissionCounts": {
+      "current": 2,
+      "stale": 1,
+      "unknown": 17
+    },
+    "admissions": [
       {
-        "ageDays": null,
-        "command": "bun run bench:core:transaction:local",
-        "cwd": "../..",
-        "id": "core-transaction-current",
-        "path": "../../tmp/slate-transaction-benchmark.json"
+        "id": "react-rerender-breadth",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
       },
       {
-        "ageDays": null,
-        "command": "bun run bench:core:history-retained-memory:local",
-        "cwd": "../..",
-        "id": "history-retained-memory",
-        "path": "../../tmp/slate-history-retained-memory-benchmark.json"
+        "id": "react-huge-document-overlays",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "react-active-typing-breakdown",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "react-huge-document-browser-trace",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "react-huge-document-slate-browser-trace",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "browser-rich-text-replay-coverage",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "core-normalization-current",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "core-query-anchor-observation",
+        "reasons": [
+          "no-receipt",
+          "input-changed:packages/plitejs/src/core/commit.ts",
+          "input-changed:packages/plitejs/src/core/change/document-index.ts",
+          "input-changed:packages/plitejs/src/core/public-state.ts",
+          "input-changed:packages/plitejs/src/core/snapshot-index.ts",
+          "input-changed:packages/plitejs/src/interfaces/editor.ts",
+          "input-changed:packages/plitejs/src/interfaces/node.ts"
+        ],
+        "state": "stale"
+      },
+      {
+        "id": "core-node-transforms",
+        "reasons": [],
+        "state": "current"
+      },
+      {
+        "id": "core-text-selection",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "core-editor-store",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "clipboard-large-payload",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "collab-readiness",
+        "reasons": [],
+        "state": "current"
+      },
+      {
+        "id": "core-huge-document-compare",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "core-normalization-compare",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "core-observation-compare",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "core-rich-text-operations-compare",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "history-compare",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "plite-transaction-execution",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
+      },
+      {
+        "id": "plite-history-retained-memory",
+        "reasons": [
+          "no-receipt",
+          "no-recorded-inputs"
+        ],
+        "state": "unknown"
       }
     ],
+    "discardedUnregisteredArtifacts": 73,
+    "ignoredUnregisteredArtifacts": [
+      "../../tmp/direct-slice-benchmark.json",
+      "../../tmp/large-documents-benchmark-smoke.json",
+      "../../tmp/plite-content-slice-value-benchmark-run-2.json",
+      "../../tmp/plite-content-slice-value-benchmark-run-3.json",
+      "../../tmp/plite-extension-graph-benchmark.json",
+      "../../tmp/plite-schema-architecture-benchmark-authority-smoke.json",
+      "../../tmp/plite-schema-architecture-benchmark-smoke.json",
+      "../../tmp/plite-yjs-event-change-bridge-benchmark-1.json",
+      "../../tmp/plite-yjs-event-change-bridge-benchmark-2.json",
+      "../../tmp/plite-yjs-event-change-bridge-benchmark-repro.json",
+      "../../tmp/slate-clipboard-large-payload-benchmark-bounded.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-20-iters-1-ops-2-after-delete-type-after-delete-text-after-200k-delete-run-2026-07-18T00-21-46.105Z.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-20-iters-1-ops-3-after-delete-type-after-delete-text-after-200k-delete-run-2026-07-18T00-23-52.602Z.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-20-iters-1-ops-3-after-delete-type-after-delete-text-after-200k-delete-run-2026-07-18T00-24-35.658Z.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-5-ops-10-after-delete-type-after-delete-text-after-200k-delete-run-2026-08-31T20-14-42.255Z.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-5-ops-10-after-delete-type-after-delete-text-after-200k-delete-run-2026-08-31T20-30-31.248Z.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-5-ops-10-after-delete-type-after-delete-text-after-200k-delete-run-2026-08-31T20-39-03.788Z.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-5-ops-10-after-delete-type-after-delete-text-after-200k-delete-run-2026-09-09T20-17-02.598Z.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedActiveDOMGroup-blocks-5000-iters-3-ops-10-after-delete-type-after-delete-text-after-200k-delete-run-2026-09-02T16-17-43.660Z.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedActiveDOMGroup-blocks-5000-iters-3-ops-10-after-delete-type-after-delete-text-after-200k-delete-run-2026-09-09T20-20-08.914Z.json"
+    ],
+    "missingOptionalArtifacts": [],
     "missingRequiredArtifacts": [],
-    "optionalArtifacts": 2,
+    "optionalArtifacts": 0,
     "registeredPath": "research/benchmark-registry.json",
-    "requiredArtifacts": 21,
+    "requiredArtifacts": 20,
     "staleActiveArtifacts": [
       {
-        "ageDays": 15,
-        "command": "bun run bench:core:node-transforms:local",
-        "cwd": "../..",
-        "id": "core-node-transforms",
-        "path": "../../tmp/slate-node-transform-benchmark.json"
+        "admission": "unknown",
+        "ageDays": 18.8,
+        "command": "bun benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx",
+        "cwd": ".",
+        "id": "react-huge-document-overlays",
+        "path": "tmp/slate-react-huge-document-overlays-benchmark.json"
       },
       {
-        "ageDays": 15,
-        "command": "bun run bench:core:text-selection:local",
-        "cwd": "../..",
+        "admission": "unknown",
+        "ageDays": 18.8,
+        "command": "bun benchmarks/slate-v2/donor/browser/react/active-typing-breakdown.tsx",
+        "cwd": ".",
+        "id": "react-active-typing-breakdown",
+        "path": "tmp/slate-react-active-typing-breakdown-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.1,
+        "command": "PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH=tmp/slate-react-huge-document-default-browser-trace-benchmark.json PLITE_BROWSER_TRACE_SURFACES=pliteComplete bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+        "cwd": ".",
+        "id": "react-huge-document-browser-trace",
+        "path": "tmp/slate-react-huge-document-default-browser-trace-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.1,
+        "command": "SLATE_LEGACY_BROWSER_TRACE_SURFACES=legacyChunkOn bun benchmarks/slate-v2/donor/browser/react/huge-document-slate-browser-trace.mjs",
+        "cwd": ".",
+        "id": "react-huge-document-slate-browser-trace",
+        "path": "tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-blocks-5000-iters-3-ops-10.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.1,
+        "command": "bun benchmarks/slate-v2/donor/browser/rich-text-replay-coverage.mjs",
+        "cwd": ".",
+        "id": "browser-rich-text-replay-coverage",
+        "path": "tmp/slate-browser-rich-text-replay-coverage-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.2,
+        "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/normalization.mjs",
+        "cwd": ".",
+        "id": "core-normalization-current",
+        "path": "tmp/slate-normalization-benchmark.json"
+      },
+      {
+        "admission": "stale",
+        "ageDays": 21.2,
+        "command": "PLITE_QUERY_ANCHOR_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/query-anchor-observation.mjs",
+        "cwd": ".",
+        "id": "core-query-anchor-observation",
+        "path": "tmp/plite-query-anchor-observation-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.1,
+        "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/text-selection.mjs",
+        "cwd": ".",
         "id": "core-text-selection",
-        "path": "../../tmp/slate-text-selection-benchmark.json"
+        "path": "tmp/slate-text-selection-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.1,
+        "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/editor-store.mjs",
+        "cwd": ".",
+        "id": "core-editor-store",
+        "path": "tmp/slate-editor-store-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 16.7,
+        "command": "PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs --output=tmp/slate-clipboard-large-payload-benchmark.json",
+        "cwd": ".",
+        "id": "clipboard-large-payload",
+        "path": "tmp/slate-clipboard-large-payload-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 18.8,
+        "command": "bun benchmarks/slate-v2/donor/core/compare/huge-document.mjs",
+        "cwd": ".",
+        "id": "core-huge-document-compare",
+        "path": "tmp/slate-core-huge-document-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.1,
+        "command": "bun benchmarks/slate-v2/donor/core/compare/normalization.mjs",
+        "cwd": ".",
+        "id": "core-normalization-compare",
+        "path": "tmp/slate-normalization-compare-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.1,
+        "command": "bun benchmarks/slate-v2/donor/core/compare/observation.mjs",
+        "cwd": ".",
+        "id": "core-observation-compare",
+        "path": "tmp/slate-core-observation-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 20.7,
+        "command": "RICH_TEXT_OPS_COMPARE_ITERATIONS=51 bun benchmarks/slate-v2/donor/core/compare/rich-text-operations.mjs",
+        "cwd": ".",
+        "id": "core-rich-text-operations-compare",
+        "path": "tmp/slate-rich-text-operations-compare-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.1,
+        "command": "HISTORY_BENCH_LEGACY_REPO=../slate bun benchmarks/slate-v2/donor/core/compare/history.mjs",
+        "cwd": ".",
+        "id": "history-compare",
+        "path": "tmp/slate-history-compare-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.2,
+        "command": "PLITE_TRANSACTION_EXECUTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/transaction-execution.mjs",
+        "cwd": ".",
+        "id": "plite-transaction-execution",
+        "path": "tmp/plite-transaction-execution-benchmark.json"
+      },
+      {
+        "admission": "unknown",
+        "ageDays": 21.2,
+        "command": "PLITE_HISTORY_RETAINED_MEMORY_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs",
+        "cwd": ".",
+        "id": "plite-history-retained-memory",
+        "path": "tmp/slate-history-retained-memory-benchmark.json"
       }
     ]
   },
   "result": {
     "path": "benchmarks/results/rich-text-editors-latest.json",
-    "rowCount": 998,
+    "rowCount": 1002,
     "statusCounts": {
-      "coverage-gap": 130,
-      "ok": 860,
-      "optional-missing-artifact": 2,
-      "unsupported": 6
+      "historical": 5,
+      "missing-metrics": 1,
+      "ok": 78,
+      "stale": 15,
+      "uncovered": 13,
+      "unknown": 883,
+      "unsupported": 7
     }
   }
 }

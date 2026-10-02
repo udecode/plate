@@ -22,6 +22,7 @@ import { useDecorationDOMRepairBridge } from './decoration-repair-bridge';
 import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
 import type {
   EditableHistoryReplayEvent,
+  EditableDropResult,
   EditablePasteResult,
 } from './editable-dom-runtime';
 import { getModelOwnedHistoryFocusRepair } from './history-focus';
@@ -103,6 +104,7 @@ export const useEditableRootRuntime = ({
   viewportRuntime,
   onDOMBeforeInput,
   onHistoryReplay,
+  onDropResult,
   onKeyDown,
   onPasteResult,
   readOnly: readOnlyProp,
@@ -116,6 +118,7 @@ export const useEditableRootRuntime = ({
   viewportRuntime: EditableViewportRuntime | null;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
+  onDropResult?: (result: EditableDropResult) => void;
   onKeyDown?: EditableKeyDownHandler;
   onPasteResult?: (result: EditablePasteResult) => void;
   readOnly: boolean;
@@ -140,6 +143,7 @@ export const useEditableRootRuntime = ({
   const rootRuntimeState = useEditableRootRuntimeState({
     viewportRuntime,
     editor,
+    onDropResult,
     onHistoryReplay,
     onPasteResult,
     readOnly,

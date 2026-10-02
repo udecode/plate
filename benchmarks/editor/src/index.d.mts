@@ -31,17 +31,34 @@ export declare function readResearchSources(filePath: any): any;
 export declare function readBenchmarkRegistry({
   registryPath,
   rootDir,
+  repoRoot,
 }?: {
   registryPath?: string | undefined;
   rootDir?: string | undefined;
+  repoRoot?: string | undefined;
 }): {
   artifacts: any;
   discardUnregistered: any;
   path: string;
   policy: any;
-  runtimeAdapters: any;
+  repoRoot: string;
+  retired: any;
+  targetRegistry: any;
   version: number;
   workloads: any;
+};
+export declare function readArtifactAdmission(
+  spec: any,
+  payload: any,
+  {
+    registry,
+  }: {
+    registry: any;
+  }
+): {
+  latestRun: any;
+  reasons: string[];
+  state: 'current' | 'stale' | 'unknown';
 };
 export declare function createEvidenceReadinessRows({
   rootDir,
@@ -74,6 +91,7 @@ export declare function createRichTextEditorBenchmarkRows({
   status: string;
 }>;
 export declare function createRichTextEditorCoverageRows({
+  artifactRows,
   registry,
   registryPath,
   rootDir,
@@ -88,8 +106,10 @@ export declare function createRichTextEditorCoverageRows({
 export declare function createBenchmarkArtifactRows(
   spec: any,
   {
+    registry,
     rootDir,
-  }?: {
+  }: {
+    registry: any;
     rootDir?: string | undefined;
   }
 ): any;

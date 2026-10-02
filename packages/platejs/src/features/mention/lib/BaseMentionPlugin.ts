@@ -7,10 +7,10 @@ import {
   property,
 } from '../../../core';
 import {
-  BaseComboboxPlugin,
-  triggerCombobox,
-  type TriggerComboboxPluginState,
-} from '../../combobox';
+  getCaretInline,
+  selectAfterInline,
+} from '../../../internal/plugin/inlineInsertion';
+import type { ComboboxState } from '../../combobox';
 
 const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
 const MENTION_URL_PREFIX = 'mention:';
@@ -23,36 +23,12 @@ export type TMentionItemBase<TRef = string> = {
   ref: TRef;
 };
 
-export type MentionPluginState = {
-  createComboboxInput: NonNullable<
-    TriggerComboboxPluginState['createComboboxInput']
-  >;
+export type MentionPluginState = ComboboxState & {
   insertSpaceAfterMention: boolean;
-  trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
-  triggerPreviousCharPattern: NonNullable<
-    TriggerComboboxPluginState['triggerPreviousCharPattern']
-  >;
-} & TriggerComboboxPluginState;
-
-export const BaseMentionInputPlugin = definePlugin(PLUGINS.mentionInput, {
-  dependencies: [BaseComboboxPlugin],
-  schema: {
-    element: {
-      properties: {
-        trigger: property.string(),
-        userId: property.string(),
-        value: property.string(),
-      },
-      void: 'inline',
-    },
-  },
-});
-
-export type MentionInputElement = ElementOf<typeof BaseMentionInputPlugin>;
+};
 
 /** Enables support for autocompleting @mentions. */
 export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
-  dependencies: [BaseMentionInputPlugin],
   schema: {
     element: {
       properties: {
@@ -66,13 +42,10 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
       void: 'markable-inline',
     },
   },
-  initialState: ({ editor }): MentionPluginState => ({
-    createComboboxInput: (trigger) => ({
-      children: [{ text: '' }],
-      trigger,
-      type: editor.plugin(BaseMentionInputPlugin).schema.type,
-    }),
+  initialState: (): MentionPluginState => ({
     insertSpaceAfterMention: false,
+    maxQueryLength: 75,
+    queryPattern: null,
     trigger: '@',
     triggerQuery: null,
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
@@ -201,18 +174,13 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
 
         if (at) tx.selection.set(at);
       } else {
-        tx.selection.move({ unit: 'offset' });
+        const inline = getCaretInline(tx, type);
+
+        if (inline) selectAfterInline(tx, inline);
       }
     },
   }),
-}).extend(({ editor, store, schema: { type } }) => ({
-  commands: (context) =>
-    triggerCombobox(context, {
-      editor,
-      getState: () => store.get(),
-      type,
-    }),
-}));
+});
 
 export type MentionDefinition = DefinitionOf<typeof BaseMentionPlugin>;
 export type MentionElement = ElementOf<typeof BaseMentionPlugin>;

@@ -2,12 +2,14 @@
 title: Plite view ownership
 type: decision
 status: proposed
-updated: 2026-09-30
+updated: 2026-10-01
 review_scope: plite-view
 reconciled_executions:
   - 2026-09-30-content-root-locations-design
   - 2026-09-30-content-root-locations-execution
   - 2026-09-30-content-root-locations-closure
+  - 2026-10-01-autocomplete-ordinary-text-adoption-design
+  - 2026-10-01-autocomplete-ordinary-text-adoption-third-pass
 review_history:
   - ../review-records/2026-07-23-api-react.json
   - ../review-records/2026-09-12-react-public-runtime-cut.json
@@ -28,6 +30,13 @@ related:
 ---
 
 # Plite view ownership
+
+The [ordinary-text autocomplete adoption plan](../../plans/2026-10-01-autocomplete-ordinary-text-adoption.md)
+proposes an exact-Editable composition read and subscription under the existing
+native input owner. It preserves canonical input arbitration and view-local
+preedit, including native IME confirmation. It does not merge the root,
+React or Android owners. The API, same-root mount isolation and native proof
+remain unimplemented gates; historical input proof does not certify them.
 
 The [content-root location follow-up](../../plans/2026-09-30-content-root-locations.md)
 is [adopted locally](../../plans/2026-09-30-content-root-locations-execution.md). It retains `EditorRoot` and independent mounted
@@ -59,7 +68,7 @@ documents must remain distinct. Feature reviews such as math and emoji remain
 separate, as the user requested.
 
 Acceptance follows [Best API Review](../../../.agents/skills/best-api-review/SKILL.md)
-and [Plate routing](../../../.agents/rules/task/references/best-api-review.md):
+and [Plate routing](../../../.agents/rules/best-api/references/review.md):
 
 - [x] Assess React, selection, native input, accessibility and geometry, with
   current owners, materially different consumers and relevant prior history.

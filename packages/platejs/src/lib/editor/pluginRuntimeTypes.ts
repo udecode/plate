@@ -784,7 +784,11 @@ type ElementInsertOptions<
     };
   };
 
-/** Inserts a new element, replacing a different empty block by default. */
+/**
+ * Inserts a new element, replacing a different empty block by default. An
+ * inline void inserted at the caret leaves the caret after it unless `select`
+ * is passed.
+ */
 type ElementInsert<
   TConstruction extends object,
   TSchema,

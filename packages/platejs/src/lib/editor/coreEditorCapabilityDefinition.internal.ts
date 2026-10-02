@@ -1,4 +1,4 @@
-import type { Value } from '../../facade';
+import type { TransferApi, TransferRead, Value } from '../../facade';
 import type {
   HistoryApi,
   HistoryStateApi,
@@ -44,7 +44,12 @@ export type CoreEditorCapabilityDefinition =
     }>
   | Readonly<{ name: 'inputRules' }>
   | Readonly<{ name: 'override' }>
-  | Readonly<{ name: 'paragraph' }>;
+  | Readonly<{ name: 'paragraph' }>
+  | Readonly<{
+      api: TransferApi;
+      name: 'transfer';
+      read: TransferRead;
+    }>;
 
 export type CoreEditorApi<V extends Value = Value> = Readonly<{
   debug: DebugApi;
@@ -52,10 +57,12 @@ export type CoreEditorApi<V extends Value = Value> = Readonly<{
   elementState: ElementStateApi;
   history: HistoryApi;
   html: HtmlApi<V>;
+  transfer: TransferApi;
 }>;
 
 export type CoreEditorRead = Readonly<{
   history: HistoryStateApi;
+  transfer: TransferRead;
 }>;
 
 export type CoreEditorTransaction = Readonly<{

@@ -18,7 +18,7 @@ Imported scope flags (unbound historical claims): adoption adopted, proof verifi
 
 ## Changes and tracking gaps
 
-Changed files: `.agents/AGENTS.md` (historical input unavailable), [patch.mdc](../../../.agents/rules/patch.mdc), [verify-plate.mdc](../../../.agents/rules/verify-plate.mdc), `.agents/rules/regression.mdc` (historical input unavailable), [workflow.md](../../../.agents/rules/task/references/workflow.md), [external-skills.md](../../../.agents/rules/task/references/external-skills.md), `.agents/rules/regression/scripts/validate-regression-plan.mjs` (historical input unavailable), `.agents/rules/regression/scripts/validate-regression-plan.test.mjs` (historical input unavailable), [VISION.md](../../../VISION.md), [common.md](../../vision/common.md), [package.json](../../../package.json), [pnpm-lock.yaml](../../../pnpm-lock.yaml), [SKILL.md](../../../.agents/skills/best-api-review/SKILL.md), [best-api-review.md](../../../.agents/rules/task/references/best-api-review.md), `.agents/rules/regression/references/methodology.md` (historical input unavailable), [task.mdc](../../../.agents/rules/task.mdc), [autonomous.md](../../../.agents/rules/task/references/autonomous.md). Changed directories: none identified. Changed source groups: none identified.
+Changed files: `.agents/AGENTS.md` (historical input unavailable), `.agents/rules/patch.mdc` (historical input unavailable), `.agents/rules/verify-plate.mdc` (historical input unavailable), `.agents/rules/testing.mdc` (historical input unavailable), `.agents/rules/regression.mdc` (historical input unavailable), `.agents/rules/task/references/workflow.md` (historical input unavailable), `.agents/rules/task/references/external-skills.md` (historical input unavailable), `.agents/rules/regression/scripts/validate-regression-plan.mjs` (historical input unavailable), `.agents/rules/regression/scripts/validate-regression-plan.test.mjs` (historical input unavailable), `.agents/rules/verify-plate/references/editor-proof.md` (historical input unavailable), `.agents/skills/maintain-verification-skill/SKILL.md` (historical input unavailable), `.agents/skills/tdd/SKILL.md` (historical input unavailable), [VISION.md](../../../VISION.md), [common.md](../../vision/common.md), [package.json](../../../package.json), [pnpm-lock.yaml](../../../pnpm-lock.yaml), [SKILL.md](../../../.agents/skills/best-api-review/SKILL.md), `.agents/rules/task/references/best-api-review.md` (historical input unavailable), `.agents/rules/regression/references/methodology.md` (historical input unavailable), `.agents/skills/diagnosing-bugs/SKILL.md` (historical input unavailable), `.agents/rules/task.mdc` (historical input unavailable), `.agents/rules/task/references/autonomous.md` (historical input unavailable). Changed directories: none identified. Changed source groups: none identified.
 
 - **missing-current-decision**: [2026-09-16-patch-consolidation.md](../../plans/2026-09-16-patch-consolidation.md).
 
@@ -83,7 +83,7 @@ Question: Which repair and proof boundaries prevent repeated editor defects with
 
 Proof limits: Instruction audit and helper semantics only. 85 validator tests and 33 source contracts pass; generated resources and shared provenance are verified. Paired fresh-agent recorded-evidence exercises both pass a blinded six-criterion artifact review; no superiority, speed or actual browser claim. No editor/release sweep. The broad ledger check detects unrelated concurrent browser/ai-session inventory drift; this scoped immutable review records its own source fingerprints.
 
-References: [2026-09-16-fix-verification-audit.md](../../plans/2026-09-16-fix-verification-audit.md), `.agents/AGENTS.md` (historical input unavailable), [patch.mdc](../../../.agents/rules/patch.mdc), [testing.mdc](../../../.agents/rules/testing.mdc), [verify-plate.mdc](../../../.agents/rules/verify-plate.mdc), [editor-proof.md](../../../.agents/rules/verify-plate/references/editor-proof.md), `.agents/rules/regression/scripts/validate-regression-plan.mjs` (historical input unavailable), `.agents/rules/regression/scripts/validate-regression-plan.test.mjs` (historical input unavailable).
+References: [2026-09-16-fix-verification-audit.md](../../plans/2026-09-16-fix-verification-audit.md), `.agents/AGENTS.md` (historical input unavailable), `.agents/rules/patch.mdc` (historical input unavailable), `.agents/rules/testing.mdc` (historical input unavailable), `.agents/rules/verify-plate.mdc` (historical input unavailable), `.agents/rules/verify-plate/references/editor-proof.md` (historical input unavailable), `.agents/rules/regression/scripts/validate-regression-plan.mjs` (historical input unavailable), `.agents/rules/regression/scripts/validate-regression-plan.test.mjs` (historical input unavailable).
 
 ### 2026-09-16: 2026-09-16-patch-skill-consolidation
 
@@ -101,7 +101,7 @@ Question: Which repair and proof boundaries prevent repeated editor defects with
 
 Proof limits: Read-only source/design assessment. No skills merged, no runtime or behavioral migration proof run. Existing validation from the earlier repair does not certify this proposed consolidation. Corpus receipts, exact input scope and diagnosis-only authority must survive adoption.
 
-References: [2026-09-16-fix-verification-audit.md](../../plans/2026-09-16-fix-verification-audit.md), [patch.mdc](../../../.agents/rules/patch.mdc), `.agents/rules/regression.mdc` (historical input unavailable), `.agents/rules/regression/references/methodology.md` (historical input unavailable), [SKILL.md](../../../.agents/skills/diagnosing-bugs/SKILL.md), [testing.mdc](../../../.agents/rules/testing.mdc), [verify-plate.mdc](../../../.agents/rules/verify-plate.mdc).
+References: [2026-09-16-fix-verification-audit.md](../../plans/2026-09-16-fix-verification-audit.md), `.agents/rules/patch.mdc` (historical input unavailable), `.agents/rules/regression.mdc` (historical input unavailable), `.agents/rules/regression/references/methodology.md` (historical input unavailable), `.agents/skills/diagnosing-bugs/SKILL.md` (historical input unavailable), `.agents/rules/testing.mdc` (historical input unavailable), `.agents/rules/verify-plate.mdc` (historical input unavailable).
 
 ### 2026-09-18: 2026-09-18-recovered-2026-09-16-fix-verification-audit
 
@@ -147,14 +147,14 @@ References: [2026-09-18-feature-history.md](../../plans/2026-09-18-feature-histo
 
 ## Owners and evidence entrypoints
 
-Owners: [AGENTS.md](../../../AGENTS.md), [patch.mdc](../../../.agents/rules/patch.mdc), [verify-plate.mdc](../../../.agents/rules/verify-plate.mdc), [testing.mdc](../../../.agents/rules/testing.mdc), [corpus.md](../../../.agents/rules/patch/references/corpus.md), [failed-fix.md](../../../.agents/rules/patch/references/failed-fix.md), [diagnosis.md](../../../.agents/rules/patch/references/diagnosis.md).
+Owners: [AGENTS.md](../../../AGENTS.md), [verify.mdc](../../../.agents/rules/verify.mdc), [regression-oracles.md](../../../.agents/rules/verify/references/regression-oracles.md), [testing.md](../../../.agents/rules/verify/references/testing.md).
 
-Consumers: [workflow.md](../../../.agents/rules/task/references/workflow.md), [external-skills.md](../../../.agents/rules/task/references/external-skills.md).
+Consumers: [maintainer.mdc](../../../.agents/rules/maintainer.mdc), [benchmark.mdc](../../../.agents/rules/benchmark.mdc).
 
-Proof entrypoints: [validate-regression-plan.mjs](../../../.agents/rules/patch/scripts/validate-regression-plan.mjs), [validate-regression-plan.test.mjs](../../../.agents/rules/patch/scripts/validate-regression-plan.test.mjs), [capture-proof-receipt.test.mjs](../../../.agents/rules/patch/scripts/capture-proof-receipt.test.mjs). These links alone are not proof of a passing run.
+Proof entrypoints: none located. These links alone are not proof of a passing run.
 
-Inspection: Accepted consolidation implemented: Patch owns local repair plus conditional corpus, diagnosis and failed-fix recovery; Verify Plate owns domain proof. Standalone Regression discovery retired; executable helper/schema contracts preserved. The immutable design review records the pre-adoption source.
+Inspection: pstack's Bug fix playbook replaced Patch. Verify Plate owns proof, interaction oracles and failed-claimed-fix recovery; Testing owns test value. The immutable records keep the pre-retirement source.
 
-Limits: Workflow scope verified by 107 executable helper checks, exact generated mirrors and four paired synthetic task exercises with independent blind artifact review. These exercises do not prove browser/native behavior or full production corpus completion; product/release proof remains outside scope.
+Limits: No executable check covers the bug-fix workflow itself; each fix is proven per case through Verify Plate.
 
 Related questions: [proof](proof.md).

@@ -1915,6 +1915,33 @@ law, not as a claim that Plate already ships the full search surface
 
 note: drag selection should clamp to strong container boundaries such as tables
 instead of producing impossible mixed native selections
+note: a block or text drag inside one document moves the content present at
+drop in one update and one undo entry, and refuses with nothing published when
+the source vanished, the edge lies inside the payload, or corrections would
+rewrite the moved content
+note: a drag from another editor, a read-only view or a document view copies and
+keeps the source; Alt on Apple platforms and Ctrl elsewhere copy inside one
+editor
+note: a drag into another application never deletes the source
+note: a block lands wherever the target's schema accepts it, at any depth, such
+as inside a blockquote, a details body, a column or a table cell; within 8px of
+a container's top or bottom edge a drop lands beside that container, and an
+edge inside collapsed content is refused
+note: features keep only what the schema cannot state: a list item lands after
+the family it would adopt, column items and table rows reorder within their own
+container, cells stay in place, the details summary stays first, footnote
+definitions land only at the top level, a row move never splits a row span, and
+an upload draft never leaves its root
+note: a block drag starts from a handle and releases the source view's focus,
+so no caret paints while it runs; each view paints one indicator on the edge a
+drop would use, and Escape, leaving the editor or a refused edge clears every
+indicator and changes nothing; dropped files land on the same edges and a
+refused file landing inserts nothing
+note: every drag has a non-drag equivalent: handle actions on click, tap, Enter
+or Space, the right-click block menu, and `Mod+Shift+ArrowUp` /
+`Mod+Shift+ArrowDown`, which move the blocks containing the selection among
+their siblings and keep the caret, and refuse blocks under different parents; the shortcut replaces native select-to-boundary while the DnD kit is
+installed
 
 ### Platform Shortcuts
 

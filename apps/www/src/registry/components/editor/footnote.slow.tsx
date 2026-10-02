@@ -193,7 +193,6 @@ mock.module('@/registry/components/editor/inline-combobox', () => ({
   InlineComboboxContent: ({ children }: any) => <div>{children}</div>,
   InlineComboboxEmpty: ({ children }: any) => <div>{children}</div>,
   InlineComboboxGroup: ({ children }: any) => <div>{children}</div>,
-  InlineComboboxInput: () => <input />,
   InlineComboboxItem: ({ children, onSelect }: any) => (
     <button
       type="button"
@@ -204,6 +203,7 @@ mock.module('@/registry/components/editor/inline-combobox', () => ({
       {children}
     </button>
   ),
+  useInlineComboboxQuery: () => '',
 }));
 
 mock.module('is-hotkey', () => ({
@@ -893,55 +893,25 @@ describe('footnote node rendering', () => {
     ).toBeDefined();
   });
 
-  it('lists the next free footnote first in the inline combobox', async () => {
+  it('lists the next free footnote first and lets insert allocate its ref', async () => {
     const insertFootnote = mock();
-    const deleteBackward = mock();
-    const { FootnoteInputElement } = await import(
+    const { FootnoteCombobox } = await import(
       `./footnote?test=${Math.random().toString(36).slice(2)}`
     );
 
-    selection = {
-      kind: 'text',
-      anchor: { offset: 1, path: [0, 0] },
-      focus: { offset: 1, path: [0, 0] },
-    };
+    withPluginEditor({
+      read: {
+        footnote: {
+          definitionText: ({ ref }: any) =>
+            ref === '1' ? 'hello there' : 'another',
+          refs: () => ['1', '2'],
+          nextRef: () => '3',
+        },
+      },
+      update: { footnote: { insert: insertFootnote } },
+    } as any);
 
-    const view = render(
-      <FootnoteInputElement
-        attributes={{}}
-        editor={withPluginEditor({
-          read: {
-            footnote: {
-              definitionText: ({ ref }: any) =>
-                ref === '1' ? 'hello there' : 'another',
-              refs: () => ['1', '2'],
-              nextRef: () => '3',
-            },
-            points: {
-              before: () => ({ offset: 0, path: [0, 0] }),
-            },
-            ranges: {
-              get: () => ({}),
-            },
-            text: {
-              string: () => '[',
-            },
-          },
-          update: {
-            footnote: {
-              insert: insertFootnote,
-            },
-            text: {
-              deleteBackward,
-            },
-          },
-        } as any)}
-        element={{ children: [{ text: '' }] } as any}
-      >
-        <span />
-      </FootnoteInputElement>
-    );
-
+    const view = render(<FootnoteCombobox editableRef={{ current: null }} />);
     const buttons = view.getAllByRole('button');
 
     expect(buttons[0].textContent).toContain('[^3]');
@@ -950,11 +920,6 @@ describe('footnote node rendering', () => {
 
     fireEvent.click(buttons[0]);
 
-    expect(deleteBackward).not.toHaveBeenCalled();
-    expect(insertFootnote).toHaveBeenCalledWith({
-      focusDefinition: false,
-      ref: '3',
-      trigger: '[',
-    });
+    expect(insertFootnote).toHaveBeenCalledWith({ focusDefinition: false });
   });
 });

@@ -5,6 +5,7 @@ import { type DOMRange, isDOMNode } from '../../dom';
 import { createDOMGeometryKernel } from '../../dom/internal';
 import type {
   EditableHistoryReplayEvent,
+  EditableDropResult,
   EditablePasteResult,
 } from '../editable/editable-dom-runtime';
 import type {
@@ -270,6 +271,7 @@ export const EditableDOMRoot = (
     onDOMBeforeInput?: EditableDOMBeforeInputHandler;
     onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
     onKeyDown?: EditableKeyDownHandler;
+    onDropResult?: (result: EditableDropResult) => void;
     onPasteResult?: (result: EditablePasteResult) => void;
     readOnly?: boolean;
     scrollSelectionIntoView?: (
@@ -292,6 +294,7 @@ export const EditableDOMRoot = (
     onKeyDown: propsOnKeyDown,
     onDOMBeforeInput: propsOnDOMBeforeInput,
     onHistoryReplay,
+    onDropResult,
     onPasteResult,
     readOnly: readOnlyProp = false,
     scrollSelectionIntoView = defaultScrollSelectionIntoView,
@@ -322,6 +325,7 @@ export const EditableDOMRoot = (
     viewportRuntime,
     onDOMBeforeInput: propsOnDOMBeforeInput,
     onHistoryReplay,
+    onDropResult,
     onKeyDown: propsOnKeyDown,
     onPasteResult,
     readOnly: readOnlyProp,
@@ -379,13 +383,14 @@ export const EditableDOMRoot = (
         !event.currentTarget.contains(relatedTarget)
       ) {
         clearEditableDropCursor(event.currentTarget);
+        editor.api.dom.drag.indicate(null);
       }
       propsOnDragLeave?.(event);
     },
     onDragOver: (event: React.DragEvent<HTMLDivElement>) => {
       const shouldHandleDragOver = editableEventBindings.onDragOver?.(event);
 
-      if (shouldHandleDragOver === false) {
+      if (shouldHandleDragOver === false || shouldHandleDragOver === 'block') {
         clearEditableDropCursor(event.currentTarget);
         return;
       }

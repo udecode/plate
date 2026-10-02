@@ -1,0 +1,105 @@
+{
+  "id": "2026-09-30-performance-evidence-s1",
+  "kind": "execution",
+  "date": "2026-09-30",
+  "scopes": [
+    "performance"
+  ],
+  "reviewBasis": [
+    "2026-09-30-performance-evidence-value-review",
+    "2026-09-30-performance-evidence-cuts"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-30-performance-evidence-execution.md",
+    "sha256": "7cb36b60ec8123ea38734f4a481e6579f742b580eb0fcddf04104e5895ce5d5a"
+  },
+  "binding": "current",
+  "outcome": "partial",
+  "summary": "S1 adopted in the target CLI. runBenchmarkTarget writes tmp/bench-targets/receipts/<id>.json for every outcome before it throws, records the executed contract, process exits, artifact digests, host and a passed or failed result with its stage, and returns { primaryMetric, receipt }. A failed run replaces the previous receipt. Autoresearch setup runs the correctness command in the target directory like the benchmark, dry-run prints both recipes, and validation rejects cwd or artifact paths outside the repo. The import-evidence-kit route and its root script are gone. Regenerating the target history and report repaired a report --check drift that predated this change.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "tooling/scripts/bench-targets.test.mjs",
+        "sha256": "410c40dd28e19dd926a17141fea6df3421927cd954e0a51afe858c42bb4f21cd",
+        "claim": "With bench-targets.slow.test.mjs, 24 tests pass. Receipt assertions cover success, each failure stage, a benchmark timeout, a receipt write failure and paths outside the repo. Eight temporary source mutations each failed exactly the intended test."
+      },
+      {
+        "path": "tooling/scripts/bench-targets.slow.test.mjs",
+        "sha256": "d2205c1b159c0ad1d5b660247d49bb21a6dd49a6f0f2e4b217eec31c0a641517",
+        "claim": "A timed-out benchmark exits 124, leaves no subprocess, and its receipt records the timeout on the benchmark process."
+      },
+      {
+        "path": "benchmarks/targets/history/slate-v2-latest.json",
+        "sha256": "9b43fb223d626f8df2d0a38aba8244281ab8e0920c82fc088aa2de5ed2329a65",
+        "claim": "Regenerated with bench-targets report; report --check passes against the committed 55-target registry."
+      }
+    ],
+    "limits": "One real target (plite-correction-worklist) ran through the CLI and passed; its receipt is untracked local state, so this record keeps only its description. Real CLI failure paths are proven through the same wrapper with fixture processes, not a failing registry target. Autoresearch setup was not exercised because its script is not installed locally; dry-run printed the recipes with setup skipped. Receipts do not yet feed admission, history or reports (S2). The global ledger check stays red on unrelated tooling/distribution inventory drift."
+  },
+  "source": {
+    "files": {
+      "tooling/scripts/bench-targets.mjs": "7980d52c14918f0fa07e5ad33a39bd05a0135a5a5c3e3635862e22e9824629fd",
+      "benchmarks/targets/slate-v2.json": "a62d5fe5b2c2d2026fc6ec295885acbf3229cc1ec2ab132df7b2457075a662fd",
+      "benchmarks/editor/research/benchmark-registry.json": "29c7caf79fde2b7c39211da4ac51d5e676d0970e61c6bf27e073a0a8bf3065b1",
+      "benchmarks/editor/src/index.mjs": "055db13cc1a729b4eb1fd93cb69b0c434c89af3a85faa15b1f9cd5eae86479b8",
+      "packages/plitejs/src/core/profiling.ts": "f5e8ea27a4eda605ef7d53c75907aa9904bf89a3ced01db67d70d55fcf4bf715",
+      "packages/plitejs/src/react/render-profiler.ts": "91078a23226b1906d000a258e602d3b6426bc26603dd691667e297f72d45051a",
+      "benchmarks/editor/README.md": "fbbbc1c53f5730850d10eb4958984979a70ae369009b0824ad3804ee25008e3a",
+      "benchmarks/editor/research/evidence-source-map.md": "fff53f759cb4676b8945322413050b42cb69bf0fff28427d5478b58f02f9edb1",
+      "benchmarks/editor/package.json": "df2a30553a064cf6f80023b1aad21026a5f4aa1e957c34276e81b2a0092ac954",
+      "apps/www/scripts/run-homepage-input-perf.mts": "c34c77d9eaf23f71a5061c35ae304a5e5fbc48545267c721260ecff3654adedf",
+      "apps/www/scripts/run-table-perf.mts": "5dc9b0bc90c9e113bdea89e45312c3151d2f45343544865f9eefc3719361af98",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts": "69ce2e81ce9def866211ce2826d5f8370b94af7089030db8f5bf4c59380bbee6",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/scripts/summarize-matrix-ratio125.ts": "dd9aff2c188d61e2ff637b941b4e33d74f01df872b9daebebecdb4921960d465",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md": "a2e12253d12bf7c4587cf0061796c57c6a9cc231eca21f7caa21486cb9df4ced",
+      "tooling/scripts/bench-targets.test.mjs": "410c40dd28e19dd926a17141fea6df3421927cd954e0a51afe858c42bb4f21cd",
+      "benchmarks/editor/benchmarks/external-text-measurement.test.mjs": "26f56e183975fd4685876b2cccda827b52e7f1c05737ade65646437c047fe8c8",
+      "benchmarks/editor/benchmarks/code-block-highlight-oracle.test.mjs": "bc454f77339fd369950c5759e17245042cfb7bf22a96d12d691593fe3d30769a",
+      "benchmarks/editor/benchmarks/benchmark-artifact.test.ts": "035ae004beeb6d93c723bd77b4013476f04861803d814a3555df1df4130d7a00",
+      "docs/research/probes/2026-09-30-performance-review/reproduce.mjs": "8729b98a352c61d4ab3265004defc3ec9ab496511af6a9c4621782af363c32ad",
+      "docs/research/probes/2026-09-30-performance-review/RESULTS.json": "7a947572ee2831397726dbc565fe87fddb852a096a42e5d2bf804077592198ca",
+      "benchmarks/targets/history/slate-v2-latest.json": "9b43fb223d626f8df2d0a38aba8244281ab8e0920c82fc088aa2de5ed2329a65",
+      "benchmarks/targets/reports/slate-v2.md": "783abce172cbd41c1c1f52d234f4424e5bebd692691cfa482ed78a46ab5f1592",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md": "7a89f49cf14b5ff0b88c420d0779bb9169948a9bb883d4b83d1603419bfa2bad",
+      "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md": "5bb9de499989bfe8e140827e706d4e87ca640c5940925924628aa7faee2828a6",
+      "docs/plans/2026-09-10-editor-performance-execution.md": "b0fa7f684c7493297095f7a76fc00ec4bd389ef459704a8b31c8701291e856e8",
+      "docs/plans/2026-09-10-editor-performance-follow-through.md": "9cb0cb9500b278740b5b98dc5f46d3f145e2bd2c11bdd19e1ef39747addca59c",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt": "1236eba2d944655ada507c41c74203212df6622d7f688aa260feaf94a92e6dcf",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json": "16980a7a7d8c78014790ee6571df736433943d8b5a81aa92334494e25731cd46",
+      "docs/research/review-records/2026-09-30-content-root-locations-closure.json": "b6a1ee96994cc9db2cfae4113f92beb124937fad3155dbf94d1cbe642e3d29ff",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "packages/plitejs/src/index.ts": "bcfeaa00ef5809e1dd8b34e7581c7bcef85a21b72355bdbf64130a5bae430a1d",
+      "packages/plitejs/src/react/index.ts": "e47da0a4e58ca90108fdd32a70df2f886a3a2d53199699ab5acd9c55692bdee3",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "5f677085b53524eed57f5a1aac329de46339ab6fabb7f0b04d37612c6f575340",
+      "package.json": "6b7cc2c7a6121b945be2c3e922d72e760c18f421c54384cae267f4d7dfc4e216",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      "docs/plans/2026-09-30-performance-evidence-execution.md": "7cb36b60ec8123ea38734f4a481e6579f742b580eb0fcddf04104e5895ce5d5a",
+      "docs/plans/2026-09-30-performance-evidence-design.md": "e61fabb1aeb5d7252fb6275520198a77df13106de0db5af54cfeaf951c16efc4",
+      "tooling/scripts/bench-targets.slow.test.mjs": "d2205c1b159c0ad1d5b660247d49bb21a6dd49a6f0f2e4b217eec31c0a641517",
+      "benchmarks/targets/README.md": "9e0adcf8f9a976c868f3cd9e3fccfc5fa911541dc2622b2a42e07f4fa250a866"
+    },
+    "directories": {
+      "benchmarks/editor/benchmarks": "920e6517f1697b4bf185d05c1a2740ca0570b072506c6f43cc541de26dc30d39"
+    },
+    "features": {
+      "plitejs/core/profiling": "6092b7d1a78bd8c662a494007c646d69bc76c71fb58870b58acdd85d663faffd",
+      "tooling/performance": "4abce3d9b4a1afc91baa87d8f99a393e61e7104d7e62a79e684b3cf426851bc1"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-30-performance-evidence-execution.md",
+    "docs/plans/2026-09-30-performance-evidence-design.md",
+    "tooling/scripts/bench-targets.mjs",
+    "tooling/scripts/bench-targets.test.mjs",
+    "tooling/scripts/bench-targets.slow.test.mjs",
+    "benchmarks/targets/README.md",
+    "benchmarks/targets/history/slate-v2-latest.json",
+    "benchmarks/targets/reports/slate-v2.md",
+    "package.json"
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "2026-09-30-performance-evidence-cuts",
+  "scope": "performance",
+  "kind": "review",
+  "date": "2026-09-30",
+  "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+  "model": "Claude Opus 5.5 (claude-opus-5-5[1m], Claude Code)",
+  "method": "best-api-review/history-v3",
+  "trigger": "The user shared the completed performance-evidence design without instruction; I reviewed it harshly against the audit it implements and recommended four cuts. The user replied go: amend the design, record the amendment and start S1.",
+  "requirements": [
+    "A receipt names what actually ran: command, correctness command, working directory, declared environment, artifact definitions and metric endpoint, with its outcome, artifact digests and host.",
+    "A failed or incomplete newer run never leaves an older passing artifact as the apparent latest evidence.",
+    "Current eligibility compares the inputs a producer records and, for browser producers, the served build. It names what it compared and never claims complete loaded-source identity.",
+    "Equal output in both arms proves parity only. Acceptance needs an independent reference for each measured fixture on each served build.",
+    "Only policies that new runs use are executable. Archived evaluator scripts, matrices and verdicts stay byte-preserved.",
+    "Keep distinct metric domains, existing budgets and private Plite instrumentation. No universal benchmark platform or public profiler."
+  ],
+  "evidenceReuse": "Reused the September 30 audit (REPORT.md, RESULTS.json), the design plan and its design record without rerunning probes. Rechecked source: bench-targets.mjs (runBenchmarkTarget runs correctness then the benchmark in the target cwd and throws without persisting anything; autoresearchSetupArgs prefixes the benchmark command with cd but passes the checks command bare; import-evidence-kit regenerates the canonical registry from the lab catalog); slate-v2.json (55 targets, all cwd '.', 34 benchmark and 4 correctness commands embed environment assignments, 53 of 56 artifact paths under gitignored tmp/); benchmark-registry.json (22 definitions, 17 shared IDs, 5 lab-only); REPORT.md:88-89 (both flagged artifacts already record their inputs, with 6 of 7 and 7 of 7 mismatching); markdown-streaming-contract.spec.ts:20 and 1203-1352 (the functional contract compares streamed finals with a fresh parse or a one-chunk response and is skipped under S5_BENCH); content-root S5 matrix-summary.json (all 48 measured streams have finite same-kind clocks, non-null hashes and one hash per cell).",
+  "summary": "Pursue, with four cuts to the completed design. The reproduced defects need receipts that record what actually ran, producers that write before validating, and a failed run that replaces the latest evidence. An immutable attempt history with per-attempt paths and writer-overlap checks adds lifecycle machinery no defect requires. Ship only the S5 policies new runs use (work gain under the 1.20 profile guard, and no-regression). Archived matrices keep their original scripts and verdicts; replaying them is an evaluator test. Admit evidence against the inputs each producer already records (match, mismatch or none, labelled) plus served-build identity for browser producers, instead of a complete loaded-source protocol that no slice retrofits across 55 producers. Establish S5 correctness by running the existing functional contract on the matrix fixtures against both served builds before the matrix and recording reference hashes the evaluator requires, instead of reference production inside the timed producer. Move interpretation metadata to S2 with the loader switch so no second active copy exists. The content-root matrix results stand.",
+  "verdict": "pursue",
+  "previous": "2026-09-30-performance-evidence-value-review",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-30-performance-evidence-value-review",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "Retain Pursue, the reproduced defects, one target authority, recomputed thresholds, measured-only coverage, loader-boundary admission, write-before-validate producers, the code-runner clock repair and one S5 evaluator."
+    },
+    {
+      "record": "2026-09-30-performance-evidence-design",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "supersedes",
+      "reason": "Supersedes D3/D7 attempt history with one latest receipt per target written for every outcome; the profile125 and trace policies; the complete loaded-source protocol and the target inputs field with producer-recorded inputs plus served-build identity; and in-producer oracle production with a functional-contract preflight. Interpretation metadata moves from S1 to S2. Retains D1, D2, D4, D5, D8, D9, the consumer map, retired-ID handling and S4."
+    }
+  ],
+  "alternatives": [
+    "Keep the design as recorded: rejected. Attempt history, two executable historical policies, a complete loaded-source census and in-producer oracle production each add machinery that no reproduced defect requires.",
+    "Delete admission and rely on reruns: rejected. The audit reproduced 74 ok rows from artifacts whose recorded inputs mismatch current source; nothing stops a consumer from reading stale rows without a check.",
+    "Immutable attempt history with contract digests, per-attempt artifact paths and writer-overlap rejection (D3/D7): replaced by one latest receipt per target, written for every outcome before the wrapper throws. A failed newer run replaces the latest, so an older pass cannot stand in for it.",
+    "Executable profile125 and trace policies to regrade archived matrices (D6): cut. Nothing current consumes a regrade and the original scripts and summaries stay authoritative. Replaying retained receipts tests the evaluator.",
+    "Complete loaded-source protocol before current eligibility: replaced by admission against producer-recorded inputs, labelled by what was compared, plus served-build identity for browser producers. The two flagged artifacts already fail that check.",
+    "Untimed exact-cell reference production inside the matrix producer (S3): replaced by the existing functional contract run on the matrix fixtures against both served builds before the matrix, recording reference final-text hashes the evaluator requires."
+  ],
+  "proofLimits": "Source inspection plus the audit's retained receipts; no probe, benchmark, browser or build run in this review. That the functional contract can run the 10KB and 50KB matrix fixtures against a served build and record hashes comparable to the matrix's final-text hashes is inferred from its fresh-parse and one-chunk comparisons, not demonstrated; S3 must establish it. Producer-recorded input admission can call a row current while an unrecorded dependency changed; the admission label names the compared inputs. That a loaded-source requirement would leave nearly every row unknown is inferred from the absence of a retrofit slice, not counted per target.",
+  "references": [
+    "docs/plans/2026-09-30-performance-evidence-design.md",
+    "docs/research/review-records/2026-09-30-performance-evidence-design.json",
+    "docs/research/review-records/2026-09-30-performance-evidence-value-review.json",
+    "docs/research/probes/2026-09-30-performance-review/REPORT.md",
+    "docs/research/probes/2026-09-30-performance-review/RESULTS.json",
+    "docs/research/probes/2026-09-30-performance-review/DESIGN-CHECKS.md",
+    "tooling/scripts/bench-targets.mjs",
+    "benchmarks/targets/slate-v2.json",
+    "benchmarks/editor/research/benchmark-registry.json",
+    "apps/www/tests/browser/markdown-streaming-contract.spec.ts",
+    "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt",
+    "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts"
+  ],
+  "source": {
+    "files": {
+      "tooling/scripts/bench-targets.mjs": "3084428627b10c3fc062275a9b1ad5e031b1d4acc900be80f93030c330a66804",
+      "benchmarks/targets/slate-v2.json": "a62d5fe5b2c2d2026fc6ec295885acbf3229cc1ec2ab132df7b2457075a662fd",
+      "benchmarks/editor/research/benchmark-registry.json": "29c7caf79fde2b7c39211da4ac51d5e676d0970e61c6bf27e073a0a8bf3065b1",
+      "benchmarks/editor/src/index.mjs": "055db13cc1a729b4eb1fd93cb69b0c434c89af3a85faa15b1f9cd5eae86479b8",
+      "packages/plitejs/src/core/profiling.ts": "f5e8ea27a4eda605ef7d53c75907aa9904bf89a3ced01db67d70d55fcf4bf715",
+      "packages/plitejs/src/react/render-profiler.ts": "91078a23226b1906d000a258e602d3b6426bc26603dd691667e297f72d45051a",
+      "benchmarks/editor/README.md": "fbbbc1c53f5730850d10eb4958984979a70ae369009b0824ad3804ee25008e3a",
+      "benchmarks/editor/research/evidence-source-map.md": "fff53f759cb4676b8945322413050b42cb69bf0fff28427d5478b58f02f9edb1",
+      "benchmarks/editor/package.json": "df2a30553a064cf6f80023b1aad21026a5f4aa1e957c34276e81b2a0092ac954",
+      "apps/www/scripts/run-homepage-input-perf.mts": "c34c77d9eaf23f71a5061c35ae304a5e5fbc48545267c721260ecff3654adedf",
+      "apps/www/scripts/run-table-perf.mts": "5dc9b0bc90c9e113bdea89e45312c3151d2f45343544865f9eefc3719361af98",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts": "69ce2e81ce9def866211ce2826d5f8370b94af7089030db8f5bf4c59380bbee6",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/scripts/summarize-matrix-ratio125.ts": "dd9aff2c188d61e2ff637b941b4e33d74f01df872b9daebebecdb4921960d465",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md": "a2e12253d12bf7c4587cf0061796c57c6a9cc231eca21f7caa21486cb9df4ced",
+      "tooling/scripts/bench-targets.test.mjs": "5a150238abd53d44693feb7933496d685dd4d42ca46161b2e528f47960d8e21c",
+      "benchmarks/editor/benchmarks/external-text-measurement.test.mjs": "26f56e183975fd4685876b2cccda827b52e7f1c05737ade65646437c047fe8c8",
+      "benchmarks/editor/benchmarks/code-block-highlight-oracle.test.mjs": "bc454f77339fd369950c5759e17245042cfb7bf22a96d12d691593fe3d30769a",
+      "benchmarks/editor/benchmarks/benchmark-artifact.test.ts": "035ae004beeb6d93c723bd77b4013476f04861803d814a3555df1df4130d7a00",
+      "docs/research/probes/2026-09-30-performance-review/reproduce.mjs": "8729b98a352c61d4ab3265004defc3ec9ab496511af6a9c4621782af363c32ad",
+      "docs/research/probes/2026-09-30-performance-review/RESULTS.json": "7a947572ee2831397726dbc565fe87fddb852a096a42e5d2bf804077592198ca",
+      "benchmarks/targets/history/slate-v2-latest.json": "5b35aa7acd1621e0a9517f1a6efc4b4277827b48c25344f3e846464882c00b1e",
+      "benchmarks/targets/reports/slate-v2.md": "294840b38841be3a0dc41442b897300404c597a3b4d42fcdd1af53d8a1fc2aeb",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md": "7a89f49cf14b5ff0b88c420d0779bb9169948a9bb883d4b83d1603419bfa2bad",
+      "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md": "5bb9de499989bfe8e140827e706d4e87ca640c5940925924628aa7faee2828a6",
+      "docs/plans/2026-09-10-editor-performance-execution.md": "b0fa7f684c7493297095f7a76fc00ec4bd389ef459704a8b31c8701291e856e8",
+      "docs/plans/2026-09-10-editor-performance-follow-through.md": "9cb0cb9500b278740b5b98dc5f46d3f145e2bd2c11bdd19e1ef39747addca59c",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt": "1236eba2d944655ada507c41c74203212df6622d7f688aa260feaf94a92e6dcf",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json": "16980a7a7d8c78014790ee6571df736433943d8b5a81aa92334494e25731cd46",
+      "docs/research/review-records/2026-09-30-content-root-locations-closure.json": "b6a1ee96994cc9db2cfae4113f92beb124937fad3155dbf94d1cbe642e3d29ff",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "packages/plitejs/src/index.ts": "bcfeaa00ef5809e1dd8b34e7581c7bcef85a21b72355bdbf64130a5bae430a1d",
+      "packages/plitejs/src/react/index.ts": "e47da0a4e58ca90108fdd32a70df2f886a3a2d53199699ab5acd9c55692bdee3",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "5f677085b53524eed57f5a1aac329de46339ab6fabb7f0b04d37612c6f575340",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/best-api/references/review.md": "19616b29ed35cb8cb2d89972acd070578010f8ce69473c599d77989e5ebe8487",
+      "docs/plans/2026-09-30-performance-evidence-design.md": "d29d546e1fc7268e4e5584aab60cf36fe723e72eca77f2b498f774f05dee60a2",
+      "docs/research/review-records/2026-09-30-performance-evidence-design.json": "4e45e6751233ebf493ed035bf9d2466658130a393f6e484ea229e875aebd6875",
+      "docs/research/review-records/2026-09-30-performance-evidence-value-review.json": "67a2889a8d84279876893d5f0a3a3f978c0b0718cb35fcca375a04678ea10d8c",
+      "docs/research/probes/2026-09-30-performance-review/REPORT.md": "b1229b09b5166577fb0f0ad59a865b39110a8329aaee4b654875e3ce24045a44",
+      "docs/research/probes/2026-09-30-performance-review/DESIGN-CHECKS.md": "7f306ba2099dc15d3b71f2d1cd2c2bc1a2babbf102eecbe198d0f2dd8bf266e1",
+      "apps/www/tests/browser/markdown-streaming-contract.spec.ts": "9dc3ccb1f3b7cccfd7d0c4e19f9675ef2191111016a22010d28b7189bc52fe65"
+    },
+    "directories": {
+      "benchmarks/editor/benchmarks": "920e6517f1697b4bf185d05c1a2740ca0570b072506c6f43cc541de26dc30d39"
+    },
+    "features": {
+      "plitejs/core/profiling": "6092b7d1a78bd8c662a494007c646d69bc76c71fb58870b58acdd85d663faffd",
+      "tooling/performance": "4abce3d9b4a1afc91baa87d8f99a393e61e7104d7e62a79e684b3cf426851bc1"
+    },
+    "upstreams": []
+  }
+}

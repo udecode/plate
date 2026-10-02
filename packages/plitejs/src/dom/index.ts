@@ -21,7 +21,15 @@ export type {
 } from './plugin/dom-coverage';
 export { DOMCoverage } from './plugin/dom-coverage';
 export type {
+  DOMDragStart,
+  DOMDropTarget,
+  DOMDropTargetInput,
+  DOMDropTargetOptions,
+} from './plugin/dom-drag';
+export type { DropIndicator } from './utils/drop-indicator';
+export type {
   DOMApi,
+  DOMDragApi,
   DOMVisualPoint,
   DOMVisualPointOptions,
   DOMEditorClipboardCapability,

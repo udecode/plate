@@ -4,7 +4,7 @@ This is the mandatory first read for Plate and Plite direction.
 
 Root `VISION.md` keeps the essential doctrine every agent must see. Detailed owner doctrine lives in `docs/vision/*.md`; read only the relevant detail file after this root file.
 
-Durable product doctrine belongs here and in `docs/vision/*.md`; Task routes work to the operational skills that apply it. When reusable taste, architecture, proof, or automation doctrine changes, update the smallest relevant owner.
+Durable product doctrine belongs here and in `docs/vision/*.md`; the routing in `AGENTS.md` sends work to the operational skills that apply it. When reusable taste, architecture, proof, or automation doctrine changes, update the smallest relevant owner.
 
 ## Detail Files
 
@@ -21,7 +21,7 @@ Use active plans for run-specific evidence. Use this file and the relevant detai
 
 ## Next beta: Redesign from First Principles
 
-**Redesign from First Principles is the governing principle of `next`.** Start every API or architecture plan, review and feedback decision from the current user job and hard laws: what would we build if these requirements had been present from the start? Apply the full [principle](.agents/skills/principle-redesign-from-first-principles/SKILL.md) and its [Plate decision method](docs/vision/common.md#redesign-from-first-principles).
+**Redesign from First Principles is the governing principle of `next`.** Start every API or architecture plan, review and feedback decision from the current user job and hard laws: what would we build if these requirements had been present from the start? Apply the full principle (`pstack:principle-redesign-from-first-principles`) and its [Plate decision method](docs/vision/common.md#redesign-from-first-principles).
 
 Existing and proposed APIs, owners, layers and packages must earn their place. Choose the strongest materially justified target, including deletion or replacement, before planning adoption. During beta, compatibility, migration convenience and implementation difficulty affect sequencing, never the target. Preserve hard correctness, security, serialized-data, native-behavior and runtime laws, plus explicit user constraints. Reuse sound decisions while their requirements and evidence hold; prove any adopted change through its real owner.
 
@@ -68,11 +68,11 @@ Executable tests outrank prose docs for behavior claims. Prose docs outrank test
 
 - Long-running automation must repair tests, metrics, skills, and docs while it works. A plan note without a future behavior change is archaeology.
 - `$benchmark` owns performance execution across Plate and Plite: all applicable lanes are inventoried by default, run in cheapest/highest-signal order, paused at a causally proven owner, routed through `best-api` and the correct layer plan when the durable target changes API or runtime architecture, fixed and rerun immediately, then resumed until breadth is complete. `$benchmark review` owns the review method.
-- `$maintainer` owns the public issue/PR/security queue, heartbeat, duplicate/claim guard, and public proof gates. `$task autonomous` owns internal Plate/Plite quality loops. `$improve` supplies the recurring whole-project audit and improvement preset through that same method. `$task closure` owns current-checkout closure of already applied work. Measured work routes to `$benchmark`.
+- `$maintainer` owns the public issue/PR/security queue, heartbeat, duplicate/claim guard, and public proof gates. Internal Plate/Plite quality loops and current-checkout closure of already applied work run through pstack's poteto-mode, with long unattended runs as its Autonomous run. Measured work routes to `$benchmark`.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Slate maintenance runs through local Codex sessions in maintainer checkouts, not a hosted API bot that can infer private context. Require enough public repro, proof, risk, and next-action state to route or stop cleanly.
 - Maintainer heartbeat state should be durable and boring: queue snapshot, candidate matrix, selected owner, proof path, authority boundary, run note when useful, and next heartbeat. Chat memory is not the queue ledger.
 - Private security advisory details must not leak into versioned queue docs. Keep public/versioned ledgers redacted and read sensitive details from live GitHub or local ignored artifacts.
-- Apply source-backed improvements within the active request's authority, including justified beta architecture and API cuts. Challenge stale doctrine and repair its authorized owner. Task owns permission boundaries; a technical owner transition or a large blast radius does not require another approval. Ask for a missing decision, access, or authority only when it blocks the next action.
+- Apply source-backed improvements within the active request's authority, including justified beta architecture and API cuts. Challenge stale doctrine and repair its authorized owner. `AGENTS.md` owns permission boundaries; a technical owner transition or a large blast radius does not require another approval. Ask for a missing decision, access, or authority only when it blocks the next action.
 - Multi-step automation must carry resumable state and stop at real approval boundaries. Never auto-approve payments, external sends/posts, credential use, destructive operations, or other irreversible user-authority actions.
 - Agent/harness integrations must preserve the harness's authentication, session, permission, and tool boundary. Do not reimplement model transport or claim stronger isolation than the underlying harness provides.
 - All issue/test harvests are issue-by-issue when the prompt says "all". Clusters and matrices are routing checkpoints, not completion.
@@ -87,7 +87,7 @@ Executable tests outrank prose docs for behavior claims. Prose docs outrank test
 - "Only uncommitted" means do not summarize older branch history.
 - "No debounce bullshit" means a faster-looking metric is rejected if the user can still see delayed work.
 - "Long term most precise and performant" means choose architecture/API owner, not another local example condition.
-- "Bug report" means patch/repro first unless the user explicitly asks for a plan.
+- "Bug report" means reproduce and fix first unless the user explicitly asks for a plan.
 - "Make it perfect" means stabilize behavior first, then improve perf, then clean API/DX, then prove readiness.
 - Repeated "go next" expects one best next owner, not a menu.
 - "Batch loop" means keep working through safe alternate owners and collect unblock questions for the end.
@@ -143,7 +143,7 @@ Read `docs/vision/plate.md` for the full Plate doctrine.
 
 Use the smallest durable target:
 
-- active goal plan for run-specific findings;
+- active plan for run-specific findings;
 - root `VISION.md` for mandatory essential taste and routing;
 - `docs/vision/*.md` for owner-specific reusable doctrine;
 - Slate docs for accepted Slate v2 architecture/proof/release claim width;

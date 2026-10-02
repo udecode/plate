@@ -1,0 +1,103 @@
+{
+  "id": "2026-10-01-autocomplete-query-activation-design",
+  "kind": "execution",
+  "date": "2026-10-01",
+  "scopes": [
+    "autocomplete"
+  ],
+  "reviewBasis": [
+    "2026-09-30-autocomplete-query-activation-ownership"
+  ],
+  "workKind": "design",
+  "plan": {
+    "path": "docs/plans/2026-10-01-autocomplete-query-activation.md",
+    "sha256": "977d5795e51a1f97e8810788012e5f57d68bbfe35310c3fd1dd7da261af2607c"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Complete the challenged autocomplete design: one local controlled-or-uncontrolled query and mounted activation owner; retain live-key atomic completion and published custom trigger authoring; cut query duplication, delayed selectable results and Ariakit completion defaults. Reject InputRules takeover and defer ordinary editor text. Three gated adoption phases are specified; no product implementation occurred.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-10-01-autocomplete-query-activation.md",
+        "sha256": "977d5795e51a1f97e8810788012e5f57d68bbfe35310c3fd1dd7da261af2607c",
+        "claim": "Selected target, ownership comparison, five challenge resolutions with clean same-family replay, frozen bounded cost results, exact adoption gates and proof limits."
+      },
+      {
+        "path": "docs/plans/2026-10-01-autocomplete-query-activation.decisions.tsv",
+        "sha256": "124776b0a69762d334811bf7c1c9ee294c58476e7b9b4d70c42f0a2dd4ae8c07",
+        "claim": "Decision trail records scope, retained behavior, probe limits, challenge cuts, reflection and the unrelated global inventory gap; decisions-check passes."
+      },
+      {
+        "path": "node_modules/.cache/autocomplete-plan/packets.json",
+        "sha256": "969659f92e340ee24b2108a89960291a705020f2f5aa7f7f7ce21f12c17e5ebd",
+        "claim": "Fourteen alternating process packets: two warmup rounds and five measured rounds per arm. Candidate passes four desired cases; baseline exposes two known defects while comparable query/output guards pass. All three cohort medians meet frozen headless owner budgets."
+      },
+      {
+        "path": "node_modules/.cache/autocomplete-plan/emoji-results.json",
+        "sha256": "4db6f2b1fb91207db52522c566ddceed0e6fdded023f9c6ee513235458f84a84",
+        "claim": "Actual 1870-entry dataset with unchanged ranking and limit, nine queries and 200 samples per query after warmup. All per-query p95 values are below 8 ms; maximum is 0.282625 ms."
+      }
+    ],
+    "limits": "Design evidence only. Candidate alters controlled-store wiring, shadow-query removal and capture-phase composition refusal, not final stale-item, pointer-gesture, mount or provider focus behavior. Happy DOM uses real Ariakit and core editor with mocked Plate React hooks; no fresh browser, physical IME, full typecheck or final production operation measurement. Owner timings mount only the picker over editor state. Emoji timings are pure search. Raw prototype fixtures/receipts live in ignored node_modules cache and will be unavailable in a fresh checkout. Global ledger check remains red for the pre-existing unrelated browser/markdown-streaming-contract inventory; autocomplete outcome is validated separately. Design completion establishes no adoption."
+  },
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/inline-combobox.tsx": "14e5c23f7d4c66cf072442c7935606822400e06951a12359115443ec5072984f",
+      "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts": "29352d824c24f00cfda02baced84bfee18cc4cb43eced3396c8da3fdbeb65361",
+      "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts": "5885533c1f85db3816f8c4f5caf22d48605cfd47f0833a20c1ce2169cc1b29ba",
+      "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts": "9b426179ad8fd1a7fa7af0ed9d5dd2041167c69db574db85b98cb45283eb2ae4",
+      "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": "2903914584a4ced92491f8cf075ed65a1ba60f8f6f35dc6bded2bca60bf8bbc9",
+      "apps/www/src/registry/components/editor/mention.tsx": "20db02cb08156f62c23f4fbeaa7231cdc080c3fef53b14ce393a4b9567b17fb6",
+      "apps/www/src/registry/components/editor/slash.tsx": "6ba3a3768fa3ff6b6a9bdcd1efb852ba77c3288d5f35cfbd027534e870f992fc",
+      "apps/www/src/registry/components/editor/emoji.tsx": "b58f39b3051bbe9e29478992e0e28913f7fc3fee75db861b328d4466938d874c",
+      "apps/www/src/registry/components/editor/footnote.tsx": "80259e29efb1974152b5c4723f7246c0987462e62e43cc7ded3434ed272cb4ab",
+      "packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.spec.ts": "88c233f839a6c3ef056e9d19c202e426345563dcc130095b22eb021eab09a8b2",
+      "apps/www/tests/browser/combobox.spec.ts": "d69283882e1afcc8df1f883dd4aee5bdcc274ac04c816a77f236c63e82138ccc",
+      "packages/platejs/src/features/combobox/lib/triggerCombobox.spec.tsx": "6c34854bf19e9024ce551bd7f4bf0ce5a919d0923cd5c1dfeecc81988df93dba",
+      "packages/platejs/src/features/combobox/lib/filterWords.spec.ts": "0b3952c969655f44f54b455e3f4a6ca757bc406b50186f13316f111656f8a8f6",
+      "apps/www/src/registry/components/editor/inline-combobox.spec.tsx": "61f3c4a121f6a7bff09dd81dd2e9ce89f669dca8753d04cb80bf7194655323dd",
+      "docs/research/probes/2026-09-30-autocomplete/current-boundaries.spec.tsx": "625b0888371e4bf0dfe9b134352255f9e6bd4c8780473722bc9718c8f015b4ad",
+      "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+      "apps/www/package.json": "fc16a2f765a3b570ac544169d7c2d09e4c094a7abb5d140af2b2bcf4e40de9f4",
+      "packages/platejs/package.json": "5060e24de246ce63ccaeec93c0c629f0bed4b2c93e75d8977ef00ac26f7f05a1",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "tooling/config/tsconfig.test.json": "e83d4caa9ff5ec9b21aafd8f0a88ab826a662c8b8c922acc1c20aefc7bc8740f",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "apps/www/src/registry/hooks/use-debounce.ts": "256b01505a863d67b278345b66a9b8340faf68247028da04fab201335a4560e4",
+      "packages/platejs/src/emoji/lib/createEmojiSearch.ts": "20432336ba8ca2402da9de3635f6224dda3e2796459f7c5b05422077031f51f9",
+      "apps/www/src/registry/components/editor/select-editor.tsx": "236f074cffcbb83efc1fb913a8f20f88fe12ef8c5ee69eb0c564699ac3f58e15",
+      "apps/www/src/registry/components/editor/select-command.tsx": "ac3ec41fc0eca2bbd8a0e8165d51b3e79756ea6272edf65e7fb32d13ab2b1404",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "d4e12fc4b28bd7d6cd077be54853ee8c873e051cf9dcc93a7e6e43fd32347129",
+      "package.json": "b8ed87d615e8bc1837713cc590298496aba461a43ee5b3aa54a5913f9c11b72b",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      "node_modules/.cache/autocomplete-plan/candidate-preload.ts": "4c2d4873f3e1e79795cae224a1ca65e4b4c212e22381beb03567868dcf037b49",
+      "node_modules/.cache/autocomplete-plan/owner-probe.spec.tsx": "7eecf27b6839cc679dd7e841fc04fda7b81a998c357cbef8b7b68b96bedac127",
+      "node_modules/.cache/autocomplete-plan/emoji-probe.ts": "3a44ad8a60615b9d3f462729c00ec8c47a0ee6d465866b25fd1187173c8e261c",
+      "node_modules/.pnpm/@ariakit+react-core@0.4.17_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@ariakit/react-core/esm/__chunks/5JTVDSTH.js": "e75ee651a663656d82732515060b8fb8274d1fc26aebd1597d022c6d2726f71c",
+      "node_modules/.pnpm/@ariakit+react-core@0.4.17_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@ariakit/react-core/esm/__chunks/JMHAJKUZ.js": "22ecb3f39451b61ac3540de33f4ac924ee5136b69acacf89520210bf2a61fc8c"
+    },
+    "directories": {
+      "packages/platejs/src/features/combobox": "ef09da1b232cb267a77a6943c7b7ecf42a8991afa58c873145f12d237a06308f",
+      "packages/platejs/src/lib/plugins/input-rules": "e2e22f1de7eaf66865257c199f53f0660387c6b29cd291882b576fd64aa7e424"
+    },
+    "features": {
+      "browser/combobox": "844f45f002397039abaf2a2292bae54cd47544ba5dbe385b33994eaa11141e21",
+      "capability/combobox": "8431e3e489780079b0895f2075eca5a72560849aa266564edbc52a87f933c599",
+      "export/platejs/./combobox": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/combobox": "ef09da1b232cb267a77a6943c7b7ecf42a8991afa58c873145f12d237a06308f",
+      "ui/inline-combobox": "994bfe868addecc104ac1c7fdc8c0fccf6272d08df62dd3f90e82e3d2f689372"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-10-01-autocomplete-query-activation.md",
+    "docs/plans/2026-10-01-autocomplete-query-activation.decisions.tsv",
+    "node_modules/.cache/autocomplete-plan/packets.json",
+    "node_modules/.cache/autocomplete-plan/emoji-results.json"
+  ]
+}

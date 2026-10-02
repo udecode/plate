@@ -9,10 +9,10 @@ import * as clientEntrypoint3 from "platejs/callout/react";
 import * as clientEntrypoint4 from "platejs/code-block/codemirror";
 import * as clientEntrypoint5 from "platejs/code-drawing";
 import * as clientEntrypoint6 from "platejs/code-drawing/react";
-import * as clientEntrypoint7 from "platejs/comments/react";
-import * as clientEntrypoint8 from "platejs/date/react";
-import * as clientEntrypoint9 from "platejs/details/react";
-import * as clientEntrypoint10 from "platejs/dnd/react";
+import * as clientEntrypoint7 from "platejs/combobox/react";
+import * as clientEntrypoint8 from "platejs/comments/react";
+import * as clientEntrypoint9 from "platejs/date/react";
+import * as clientEntrypoint10 from "platejs/details/react";
 import * as clientEntrypoint11 from "platejs/docx/export";
 import * as clientEntrypoint12 from "platejs/docx/import";
 import * as clientEntrypoint13 from "platejs/docx/paste";
@@ -51,10 +51,10 @@ const clientRuntimeEntrypoints = [
   { exports: clientEntrypoint4, runtimeProof: null, specifier: "platejs/code-block/codemirror" },
   { exports: clientEntrypoint5, runtimeProof: null, specifier: "platejs/code-drawing" },
   { exports: clientEntrypoint6, runtimeProof: null, specifier: "platejs/code-drawing/react" },
-  { exports: clientEntrypoint7, runtimeProof: "plate-plugin-client", specifier: "platejs/comments/react" },
-  { exports: clientEntrypoint8, runtimeProof: "plate-plugin-client", specifier: "platejs/date/react" },
-  { exports: clientEntrypoint9, runtimeProof: "plate-plugin-client", specifier: "platejs/details/react" },
-  { exports: clientEntrypoint10, runtimeProof: null, specifier: "platejs/dnd/react" },
+  { exports: clientEntrypoint7, runtimeProof: null, specifier: "platejs/combobox/react" },
+  { exports: clientEntrypoint8, runtimeProof: "plate-plugin-client", specifier: "platejs/comments/react" },
+  { exports: clientEntrypoint9, runtimeProof: "plate-plugin-client", specifier: "platejs/date/react" },
+  { exports: clientEntrypoint10, runtimeProof: "plate-plugin-client", specifier: "platejs/details/react" },
   { exports: clientEntrypoint11, runtimeProof: null, specifier: "platejs/docx/export" },
   { exports: clientEntrypoint12, runtimeProof: null, specifier: "platejs/docx/import" },
   { exports: clientEntrypoint13, runtimeProof: null, specifier: "platejs/docx/paste" },

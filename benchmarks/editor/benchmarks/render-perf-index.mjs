@@ -90,6 +90,7 @@ function summarizeHealth(filePath) {
   if (!payload) {
     return {
       activeArtifacts: 0,
+      admissionCounts: {},
       discardedUnregisteredArtifacts: 0,
       nextActions: [],
       rowCount: 0,
@@ -99,6 +100,7 @@ function summarizeHealth(filePath) {
 
   return {
     activeArtifacts: Number(payload.registry?.activeArtifacts) || 0,
+    admissionCounts: payload.registry?.admissionCounts || {},
     discardedUnregisteredArtifacts:
       Number(payload.registry?.discardedUnregisteredArtifacts) || 0,
     nextActions: Array.isArray(payload.nextActions)
@@ -112,48 +114,67 @@ function summarizeHealth(filePath) {
 function summarizeTargets({ historyPath, registryPath }) {
   const registry = readJsonIfExists(registryPath);
   const history = readJsonIfExists(historyPath);
-  const targets = history?.targets ?? registry?.targets ?? [];
-  const statusCounts = history?.counts?.statusCounts ?? {};
+  const recorded = new Map(
+    (history?.targets ?? []).map((target) => [target.id, target])
+  );
+  const targets = (registry?.targets ?? []).map((target) => ({
+    ...target,
+    latestRun: recorded.get(target.id)?.latestRun ?? null,
+    recipe: recorded.get(target.id)?.recipe ?? null,
+  }));
+  const runCounts = countBy(targets, (target) =>
+    target.latestRun
+      ? `${target.latestRun.status}${target.recipe === 'changed' ? ' (recipe changed)' : ''}`
+      : 'no run'
+  );
   const families = countBy(targets, (target) => target.family ?? 'unknown');
-  const unrecordedTargets = targets
-    .filter((target) => target.status && target.status !== 'recorded')
+  const targetsNeedingRuns = targets
+    .filter(
+      (target) =>
+        target.latestRun?.status !== 'passed' || target.recipe !== 'current'
+    )
     .slice(0, 6)
     .map((target) => ({
-      command: target.command,
       id: target.id,
-      metric: target.metric ?? target.metrics?.primary ?? 'unknown',
-      status: target.status,
+      metric: target.metrics?.primary ?? 'unknown',
+      state: target.latestRun
+        ? `${target.latestRun.status}${target.latestRun.stage ? `:${target.latestRun.stage}` : ''}; recipe ${target.recipe}`
+        : 'no run',
     }));
 
   return {
     artifactCounts: history?.counts ?? null,
     families,
-    unrecordedTargets,
     registryPath,
-    statusCounts,
-    targetCount: Number(history?.counts?.targets) || targets.length,
+    runCounts,
+    targetCount: targets.length,
+    targetsNeedingRuns,
   };
 }
 
 function renderIndexHtml({ evidence, health, internals, richText, targets }) {
-  const statusSummary =
-    Object.entries(targets.statusCounts)
+  const runSummary =
+    Object.entries(targets.runCounts)
       .map(([status, count]) => `${status}: ${count}`)
-      .join(', ') || 'no target history yet';
+      .join(', ') || 'no targets yet';
+  const admissionSummary =
+    Object.entries(health.admissionCounts)
+      .map(([state, count]) => `${state}: ${count}`)
+      .join(', ') || 'no health report yet';
   const familySummary =
     Object.entries(targets.families)
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([family, count]) => `${family}: ${count}`)
       .join(', ') || 'no targets yet';
   const nextActions =
-    targets.unrecordedTargets.length > 0
-      ? targets.unrecordedTargets
+    targets.targetsNeedingRuns.length > 0
+      ? targets.targetsNeedingRuns
           .map(
             (target) =>
-              `<li><strong>${escapeHtml(target.id)}</strong><br><span class="meta">status=${escapeHtml(target.status)}; metric=${escapeHtml(target.metric)}; run <code>pnpm bench:targets:dry-run -- ${escapeHtml(target.id)}</code></span></li>`
+              `<li><strong>${escapeHtml(target.id)}</strong><br><span class="meta">latest run: ${escapeHtml(target.state)}; metric=${escapeHtml(target.metric)}; run <code>pnpm bench:targets:run -- ${escapeHtml(target.id)}</code></span></li>`
           )
           .join('')
-      : '<li><strong>All required target artifacts have a recorded receipt</strong><br><span class="meta">Use <code>pnpm bench:targets:list</code>, <code>pnpm bench:targets:dry-run -- &lt;target-id&gt;</code>, then <code>pnpm bench:targets:run -- &lt;target-id&gt;</code>.</span></li>';
+      : '<li><strong>Every target has a passing latest run with its current recipe</strong><br><span class="meta">Use <code>pnpm bench:targets:list</code>, <code>pnpm bench:targets:dry-run -- &lt;target-id&gt;</code>, then <code>pnpm bench:targets:run -- &lt;target-id&gt;</code>.</span></li>';
 
   return `<!doctype html>
 <html lang="en">
@@ -183,9 +204,10 @@ function renderIndexHtml({ evidence, health, internals, richText, targets }) {
     <h1>Editor Benchmark Index</h1>
     <p>Slate v2 benchmark target dashboard. Active benchmark decisions come from <code>${escapeHtml(targets.registryPath)}</code>; Evidence Kit is retained as an audit archive.</p>
     <section class="health">
-      <h2>Recorded target evidence</h2>
-      <p>${targets.targetCount} targets. Status: ${escapeHtml(statusSummary)}.</p>
-      <p class="meta">Recorded receipts do not establish current source freshness or passing budgets.</p>
+      <h2>Target runs and evidence admission</h2>
+      <p>${targets.targetCount} targets. Latest runs: ${escapeHtml(runSummary)}.</p>
+      <p>Lab artifact admission: ${escapeHtml(admissionSummary)}.</p>
+      <p class="meta">A latest run comes from the receipt that <code>bench:targets:run</code> writes for every outcome. An artifact is current only when a passing receipt with the current recipe produced its bytes and every input it recorded still matches.</p>
       <p class="meta">Families: ${escapeHtml(familySummary)}.</p>
       <ol>
         ${nextActions}

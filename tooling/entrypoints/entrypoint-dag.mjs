@@ -114,15 +114,20 @@ export const publicFeatureReactEntrypoints = Object.freeze([
   'toc',
 ]);
 
-export const publicReactOnlyEntrypoints = Object.freeze(['resizable']);
+export const publicReactOnlyEntrypoints = Object.freeze([
+  'combobox',
+  'resizable',
+]);
 
 const standardReactDependencies = {
+  combobox: ['combobox'],
   suggestion: ['authored'],
   table: ['dom'],
 };
 
 const standardReactPeerDependencies = {
   'basic-nodes': ['react'],
+  combobox: ['react'],
   list: ['react'],
   resizable: ['react'],
   suggestion: ['react'],
@@ -228,22 +233,14 @@ export const entrypointDags = {
     entrypoints: {
       compiler: headless(directory('compiler', ['core'])),
       ai: headless(
-        directory('ai', ['core', 'markdown', 'combobox', 'table'], [], {
+        directory('ai', ['core', 'markdown', 'table'], [], {
           peerDependencies: ['fastest-levenshtein'],
         })
       ),
       'ai/react': client(
         directory(
           'ai/react',
-          [
-            'ai',
-            'authored',
-            'core',
-            'markdown',
-            'react-core',
-            'combobox',
-            'table',
-          ],
+          ['ai', 'authored', 'core', 'markdown', 'react-core', 'table'],
           [],
           { peerDependencies: ['@ai-sdk/react', 'ai', 'react'] }
         )
@@ -285,16 +282,6 @@ export const entrypointDags = {
         })
       ),
       dom: client(directory('dom', [], ['plitejs/dom'])),
-      'dnd/react': client(
-        directory('dnd/react', ['core', 'react-core', 'standard/list'], [], {
-          peerDependencies: [
-            'raf',
-            'react',
-            'react-dnd',
-            'react-dnd-html5-backend',
-          ],
-        })
-      ),
       'docx/paste': client(
         directory('docx/paste', ['core', 'docx-html'], [], {
           peerDependencies: ['juice'],
@@ -518,7 +505,6 @@ export const entrypointDags = {
         'code-drawing/react',
         'compiler',
         'csv',
-        'dnd/react',
         'docx/export',
         'docx/import',
         'docx/paste',
@@ -616,6 +602,11 @@ export const entrypointDags = {
     contractPartition: 'root',
     entrypoints: {
       browser: client(directory('browser')),
+      device: headless(
+        privateDirectory('device', ['playwright', 'proof', 'root'], [], {
+          peerDependencies: ['@playwright/test'],
+        })
+      ),
       playwright: headless(
         directory('playwright', ['browser', 'proof', 'root'], ['platejs'], {
           peerDependencies: ['@playwright/test'],
@@ -633,6 +624,7 @@ export const entrypointDags = {
     sourceMarker: '/packages/test/src/',
     taskPartitions: {
       browser: ['browser'],
+      device: ['device'],
       playwright: ['playwright'],
       proof: ['proof'],
       react: ['react'],

@@ -253,6 +253,8 @@ export const useEditableEventRuntime = ({
     onDrop: callbacks.onDrop,
     readOnly,
     repair: eventCore.repair,
+    reportDrop: runtime.reportDrop,
+    runDrop: runtime.runDrop,
     state,
     trace: eventCore.trace,
   });

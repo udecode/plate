@@ -80,3 +80,24 @@ export function hasInsertedCodeHighlight({
       mode === 'codemirror' ? expectedSuffix.length - 1 : canonicalText.length,
   });
 }
+
+export function readInputStart(startedAt) {
+  if (!Number.isFinite(startedAt)) {
+    throw new Error(
+      `beforeinput did not record a finite start time: ${String(startedAt)}`
+    );
+  }
+
+  return startedAt;
+}
+
+export function startInputClockBeforeEditorHandlers() {
+  globalThis.__plateCodeBlockBenchmarkInputStartedAt = null;
+  window.addEventListener(
+    'beforeinput',
+    () => {
+      globalThis.__plateCodeBlockBenchmarkInputStartedAt = performance.now();
+    },
+    { capture: true, once: true }
+  );
+}

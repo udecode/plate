@@ -1,6 +1,5 @@
 import {
   BaseFootnoteDefinitionPlugin,
-  BaseFootnoteInputPlugin,
   BaseFootnotePlugin,
 } from '../../../features/footnote/lib';
 import { NavigationFeedbackPlugin, toReactPlugin } from '../../core';
@@ -9,11 +8,7 @@ export const FootnoteDefinitionPlugin = toReactPlugin(
   BaseFootnoteDefinitionPlugin
 );
 
-export const FootnoteInputPlugin = toReactPlugin(BaseFootnoteInputPlugin);
-
-export const FootnotePlugin = toReactPlugin(BaseFootnotePlugin, {
-  dependencies: [FootnoteInputPlugin],
-}).extend({
+export const FootnotePlugin = toReactPlugin(BaseFootnotePlugin).extend({
   api: ({ editor, update }) => ({
     focusDefinition: ({ ref }: { ref: string }) => {
       if (!editor.api.dom.root() || editor.read.view.isReadOnly()) return false;

@@ -306,9 +306,11 @@ export const applyModelOwnedBeforeInputMutation = ({
       : preparedCommand;
 
   switch (type) {
+    case 'deleteByDrag': {
+      return null;
+    }
     case 'deleteByComposition':
     case 'deleteByCut':
-    case 'deleteByDrag':
     case 'deleteContent':
     case 'deleteContentForward':
     case 'deleteContentBackward':

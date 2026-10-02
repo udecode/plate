@@ -212,7 +212,7 @@ const expectCellSelectionDragAffordances = async (
   }
 
   await expect
-    .poll(() => visibleButtonCount(page, 'Select or move row'), {
+    .poll(() => visibleButtonCount(page, 'Drag row or open row actions'), {
       message: `Expected ${rowHandleCount} visible row handles during table cell selection`,
     })
     .toBe(rowHandleCount);
@@ -1062,7 +1062,7 @@ test(ROW_HANDLE_PAINT_CASE_ID, async ({ page }, testInfo) => {
       root
     );
     const rowHandles = root.getByRole('button', {
-      name: 'Select or move row',
+      name: 'Drag row or open row actions',
     });
     const selectedCells = root.locator(
       'table td[data-table-cell-selected="true"], table th[data-table-cell-selected="true"]'
@@ -1071,6 +1071,7 @@ test(ROW_HANDLE_PAINT_CASE_ID, async ({ page }, testInfo) => {
     await expect(rowHandles).toHaveCount(4);
 
     await rowHandles.nth(1).click();
+    await page.getByRole('menuitem', { name: 'Select row' }).click();
     await expect(selectedCells).toHaveCount(4);
     await expect(selectedCells).toHaveText(['Heading', '', '', 'No']);
     const displayedSelection = await editor.get.displayedSelection();
@@ -1088,6 +1089,7 @@ test(ROW_HANDLE_PAINT_CASE_ID, async ({ page }, testInfo) => {
       )
     ).toBe(false);
     await rowHandles.nth(2).click();
+    await page.getByRole('menuitem', { name: 'Select row' }).click();
 
     await expect(selectedCells).toHaveText(['Image', 'Yes', 'No', 'Yes']);
     runtimeErrors.assertNone();

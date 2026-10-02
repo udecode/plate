@@ -20,6 +20,9 @@
         "../platejs/src/code-drawing/react/index.ts"
       ],
       "platejs/combobox": ["../platejs/src/features/combobox/index.ts"],
+      "platejs/combobox/react": [
+        "../platejs/src/react/features/combobox/index.ts"
+      ],
       "platejs/comments": ["../platejs/src/features/comments/index.ts"],
       "platejs/comments/react": [
         "../platejs/src/react/features/comments/index.ts"
@@ -33,7 +36,6 @@
         "../platejs/src/react/features/details/index.ts"
       ],
       "platejs/diff": ["../platejs/src/diff/index.ts"],
-      "platejs/dnd/react": ["../platejs/src/dnd/react/index.ts"],
       "platejs/docx/export": ["../platejs/src/docx/export/index.ts"],
       "platejs/docx/import": ["../platejs/src/docx/import/index.ts"],
       "platejs/docx/paste": ["../platejs/src/docx/paste/index.ts"],

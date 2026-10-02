@@ -29,10 +29,10 @@ Welcome to the table.
 
 The bug form is written for execution, not storytelling.
 
-Maintainers usually work bugs through Codex using [`task`](.agents/skills/task/SKILL.md) or [`major-task`](.agents/skills/major-task/SKILL.md). That Codex run happens locally in a maintainer checkout. There is no hosted bot or API worker that can recover missing context from your machine, private account, or unstated setup.
+Maintainers usually work bugs through a local coding agent (Claude Code or Codex) running the `maintainer` skill and pstack's Bug fix playbook in a maintainer checkout. There is no hosted bot or API worker that can recover missing context from your machine, private account, or unstated setup.
 
-- Focused local regressions fit `task`
-- Cross-package, public API, architecture, and performance work often fit `major-task`
+- Focused local regressions fit the Bug fix playbook
+- Cross-package, public API, architecture, and performance work often fit `best-api`, `plate-architecture` or `benchmark`
 
 If a field cannot be answered from evidence, write exactly `NOT_ENOUGH_INFO`.
 
@@ -72,7 +72,7 @@ Issues without enough grounded evidence may be labeled `needs reproduction`, dep
     - `pnpm check`
 - If you changed package exports or public file layout, run `pnpm brl`.
 - If you changed published packages under `packages/`, add a changeset.
-- If you changed only registry code under `apps/www/src/registry/**`, update `docs/components/changelog.mdx` instead of adding a package changeset.
+- If you changed only registry code under `apps/www/src/registry/**`, add a registry changelog entry under `apps/www/src/registry/changelog/entries/` instead of a package changeset.
 - If you changed browser-facing UI, include screenshots or a short recording.
 - If you have access to Codex, run `codex review --base origin/main` locally before opening or updating your PR. Treat that as the current highest standard of AI review, even if GitHub Codex review also runs.
 - Do not submit refactor-only PRs unless a maintainer explicitly requested that refactor for an active fix or deliverable.

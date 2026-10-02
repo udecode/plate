@@ -150,6 +150,23 @@ React UI should read narrow editor facts through hooks where possible. App servi
 
 Model-only tests do not prove browser editing. DOM-only tests do not prove Plite correctness.
 
+`@platejs/test` reads the editor through a browser handle that the app under
+test installs. Call `installBrowserHandle()` once at module scope in a test or
+development entry, before the first editor mounts. Production entries never
+call it, so their bundles drop the handle.
+
+```tsx
+import { installBrowserHandle } from "plitejs/react";
+
+installBrowserHandle();
+```
+
+Plate apps import the same installer from `platejs/react`.
+
+Each Playwright project sets `use.clipboardTransport` to `'native'`, `'event'`
+or `'handle'`, typed by `BrowserTestOptions` from `@platejs/test/playwright`.
+Clipboard paste helpers fail when that transport did not apply the paste.
+
 ```tsx
 import { openExample } from "@platejs/test/playwright";
 

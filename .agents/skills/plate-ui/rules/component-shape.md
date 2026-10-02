@@ -27,8 +27,6 @@ For node renderers already inside Plate element context:
   must rerender or resynchronize as its element moves
 - do not add `usePath()` merely to replace an event-time path lookup; that
   converts cold interaction work into a dependency in every mounted node
-- do **not** reach for `useNodePath()` for dynamic validity state that must
-  survive sibling path shifts
 
 ---
 
@@ -147,7 +145,7 @@ BaseFeaturePlugin.extend(
 
 If the package does not export the exact extracted-field contract, or the
 builder cannot infer a native callback, treat that as a package API defect.
-Route the repair through `plate-plugin-creator` and `best-api`, add the smallest
+Route the repair through `plate-plugins` and `best-api`, add the smallest
 canonical contract at the field owner, and prove its public inference before
 using it in registry code. Do not leave a local shadow contract behind.
 

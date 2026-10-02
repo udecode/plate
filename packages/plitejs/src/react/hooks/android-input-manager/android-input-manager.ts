@@ -845,9 +845,11 @@ export function createAndroidInputManager({
     }
 
     switch (type) {
-      case 'deleteByComposition':
-      case 'deleteByCut':
       case 'deleteByDrag': {
+        return;
+      }
+      case 'deleteByComposition':
+      case 'deleteByCut': {
         const command = commandForTargetRange();
         if (command) {
           scheduleCommand(command, { at: innerTargetRange2 });

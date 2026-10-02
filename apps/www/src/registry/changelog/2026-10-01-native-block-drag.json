@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-01-native-block-drag",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-01-native-block-drag.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-01",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Drag blocks natively, without React DnD",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column",
+      "files": ["apps/www/src/registry/components/editor/column.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-image",
+      "files": ["apps/www/src/registry/components/editor/media-image.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video",
+      "files": ["apps/www/src/registry/components/editor/media-video.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "upload",
+      "files": ["apps/www/src/registry/components/editor/upload.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-01-native-block-drag-1",
+      "kind": "behavior",
+      "summary": "Drag handles start a native drag with `editor.api.dom.drag.start`, and `DropIndicator` paints `useDropIndicator()` in each view. `DndKit` needs no `DndProvider`, and the `react-dnd` dependencies are gone.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 11,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-native-block-drag",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-01-native-block-drag-2",
+      "kind": "remove",
+      "summary": "The column handle drags its column natively; the vertical drop line comes from `DndKit`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["column"],
+      "source": {
+        "line": 12,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-native-block-drag",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-01-native-block-drag-3",
+      "kind": "remove",
+      "summary": "The row handle drags its row natively; the drop line comes from `DndKit`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table"],
+      "source": {
+        "line": 13,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-native-block-drag",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-01-native-block-drag-4",
+      "kind": "behavior",
+      "summary": "Dragging media starts the same native block drag.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-image", "media-video"],
+      "source": {
+        "line": 14,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-native-block-drag",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-01-native-block-drag-5",
+      "kind": "behavior",
+      "summary": "The kit enables `nativeDrop`, so dropped files land at the edge under the pointer.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["upload"],
+      "source": {
+        "line": 15,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-native-block-drag",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,6 +1,6 @@
 ---
 title: Drag & Drop
-description: Drag and drop blocks to reorganize content within the editor.
+description: Drag blocks to move them within a document or copy them between editors.
 docs:
   - route: https://pro.platejs.org/docs/examples/dnd
     title: Plus
@@ -14,10 +14,12 @@ docs:
 
 ## Features
 
-- Drag and drop blocks for content movement and insertion within the editor.
-- Automatic scrolling when dragging blocks near viewport edges.
-- Optional file drop placement when `UploadPlugin` is installed.
-- Visual drop indicators and drag handles.
+- Drag a block by its handle. The selected blocks, or a list item with its nested items, move together.
+- Each view paints one drop indicator at the edge where the drop lands.
+- A drag moves blocks within one document and copies them into another editor. Hold Option on macOS, or Ctrl elsewhere, to copy instead.
+- Click a handle for Move up, Move down and Cut. `Mod+Shift+ArrowUp` and `Mod+Shift+ArrowDown` move the blocks around the caret.
+- A block drops wherever its schema allows, such as inside a blockquote, a details body, a column or a table cell. Table rows, columns, lists, the details summary and uploads keep their own rules, so the indicator only shows edges the drop can use.
+- Dropped files become uploads when `UploadPlugin` accepts native drops.
 
 </PackageInfo>
 
@@ -27,11 +29,9 @@ docs:
 
 ### Installation
 
-The fastest way to add drag and drop functionality is with the `DndKit`, which includes the pre-configured `DndPlugin` along with React DnD setup and the [`BlockDraggable`](/docs/components/dnd) UI component.
+`DndKit` adds a handle to each selectable block at any depth, such as blocks inside blockquotes, details, columns and table cells, and shows only the handle of the innermost hovered block. Rows, cells, column items and the details summary get none. It also paints the drop indicator and binds the keyboard moves. Drag and drop uses the browser's native events; it needs no provider or extra dependency.
 
 <ComponentSource name="dnd" />
-
-- [`BlockDraggable`](/docs/components/dnd): Renders drag handles and drop indicators for blocks.
 
 ### Add kit
 
@@ -47,224 +47,225 @@ const editor = createEditor({
 });
 ```
 
-### Render the editor
+</Steps>
 
-`DndKit` provides the HTML5 backend and binds cleanup to each mounted Editable, including when automatic scrolling is disabled. Render the editor inside `EditorRoot`:
+## Examples
+
+### Multiple editors
+
+<ComponentPreview name="dnd-multi-editor-demo" />
+
+Two `EditorRoot`s over one editor are two views of one document, so a drag between them moves the block. Mount the second view with `suppressInstanceWarning`. A drop into another editor copies, and the source keeps its blocks.
+
+### Tables and columns
+
+<ComponentPreview name="dnd-table-demo" />
+
+The copied `table` and `column` components add their own row and column handles. Rows land only beside rows of the same table, and the table refuses a drop that would split a merged cell. Columns reorder within their group. Other blocks can drop into a cell or a column.
+
+### File drops
+
+The React `UploadPlugin` places dropped files when `nativeDrop` is `true`; the copied [Upload](/docs/upload) kit enables it. A file drop shows the same indicator and lands only where an upload block can go. A refused drop inserts nothing.
+
+## Custom drag handle
+
+The editor resolves every `dragover` and `drop` itself. It finds the landing, publishes the indicator and runs the transfer. A handle only starts the drag, and a component paints the indicator.
 
 ```tsx
-import { EditorRoot, useCreateEditor } from 'platejs/react';
-import { DndKit } from '@/components/editor/dnd';
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import {
+  definePlugin,
+  type RenderNodeWrapperProps,
+  useDropIndicator,
+} from 'platejs/react';
 
-export function DraggableEditor() {
-  const editor = useCreateEditor({ plugins: DndKit });
+function DragHandle({ children, editor, element }: RenderNodeWrapperProps) {
+  return (
+    <div className="relative [&>[data-editor-dragging]]:opacity-50">
+      <button
+        aria-label="Drag block"
+        className="absolute -left-6 cursor-grab"
+        contentEditable={false}
+        draggable
+        type="button"
+        onDragStart={(event) => {
+          if (!editor.api.dom.drag.start(event.nativeEvent, { node: element })) {
+            event.preventDefault();
+          }
+        }}
+      >
+        ⠿
+      </button>
+      {children}
+    </div>
+  );
+}
+
+function DropIndicator() {
+  const indicator = useDropIndicator();
+
+  if (!indicator) return null;
+
+  const { line } = indicator;
 
   return (
-    <EditorRoot editor={editor}>
-      <EditorContainer>
-        <Editor />
-      </EditorContainer>
-    </EditorRoot>
+    <div
+      aria-hidden
+      className="pointer-events-none fixed top-0 left-0 h-0.5 bg-blue-500"
+      style={{
+        transform: `translate(${line.x}px, ${line.y - 1}px)`,
+        width: line.width,
+      }}
+    />
   );
+}
+
+export const DragHandlePlugin = definePlugin('dragHandle', {
+  slots: {
+    afterEditable: DropIndicator,
+    wrapNode: {
+      component: DragHandle,
+      match: ({ editor, element }) =>
+        editor.read.schema.isBlockContent(element) &&
+        editor.read.nodes.isSelectable(element),
+    },
+  },
+});
+```
+
+The match gives every selectable block a handle, at any depth; match `renderPath.length === 1` for top-level blocks only. `drag.start` returns `null` when nothing can be dragged, such as a removed block. While the drag runs, every dragged block carries `data-editor-dragging`, which the wrapper above dims. A read-only view starts a copy-only drag.
+
+The indicator moves on every `dragover`, so position it with `transform`, which skips layout. Column items lay out horizontally, so their indicator has `axis: 'x'`. Paint a vertical line from `line.x`, `line.y` and `line.height`.
+
+### Drag image
+
+`drag.start` also returns inert clones of the dragged blocks and the pointer's offset from the first one. The kit's `startBlockDrag` places them over the dragged block and hands them to the browser as the drag image:
+
+```tsx
+onDragStart={(event) => {
+  const drag = editor.api.dom.drag.start(event.nativeEvent, { node: element });
+
+  if (!drag) {
+    event.preventDefault();
+    return;
+  }
+
+  const rect = editor.api.dom.resolveDOMNode(element)?.getBoundingClientRect();
+  const image = document.createElement('div');
+
+  image.style.cssText = `position:fixed;pointer-events:none;left:${rect?.left ?? 0}px;top:${rect?.top ?? 0}px;width:${rect?.width ?? 0}px;`;
+  image.append(...drag.previews);
+  document.body.append(image);
+  event.dataTransfer.setDragImage(image, drag.origin.x, drag.origin.y);
+  // The browser snapshots the image during dragstart.
+  requestAnimationFrame(() => image.remove());
+}}
+```
+
+## Move blocks programmatically
+
+`editor.api.transfer` runs the same rules as a drop. Each call is one undo step and returns its outcome.
+
+```tsx
+const outcome = editor.api.transfer.move({
+  nodes: [editor.key(element)],
+  to: { edge: 'after', key: editor.key(target) },
+});
+
+if (outcome.status === 'refused') {
+  console.warn(outcome.reason);
 }
 ```
 
-</Steps>
-
-## Manual usage
-
-<Steps>
-
-### Installation
-
-```bash
-npm install platejs @tanstack/react-virtual raf react-dnd react-dnd-html5-backend
-```
-
-### Configure the kit
-
-Install `DndKit` and configure behavior through `DndPlugin`:
+`to` also accepts `'next'` and `'previous'`, which step the blocks past their nearest sibling inside their parent and keep the selection; blocks under different parents refuse with `policy`. Without `nodes`, the transfer carries the blocks `editor.read.transfer.nodes()` returns. Pass `announce` to give screen readers a message when the move lands:
 
 ```tsx
-import { DndPlugin } from 'platejs/dnd/react';
-import { createEditor } from 'platejs/react';
-import { DndKit } from '@/components/editor/dnd';
+editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
+```
 
-const editor = createEditor({
-  plugins: [
-    ...DndKit,
-    DndPlugin.configure({
-      initialState: { enableScroller: false },
-    }),
+Pass `from` with another editor to move or copy from it. Between independent editors a move always copies.
+
+### Refuse a landing
+
+A block lands wherever the target's schema accepts it. A plugin refuses what its schema allows but the feature does not, such as a row in another table, with a `transferVeto` contribution. It runs on the final edge for every drag, keyboard move and `editor.api.transfer` call, after features such as lists have adjusted it.
+
+```tsx
+import { transferVeto } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const PinnedPlugin = definePlugin('pinned', {
+  contributions: [
+    transferVeto.of(({ edge, target: [node] }) => edge === 'before' && node.pinned === true),
   ],
 });
 ```
 
-To supply a shared or custom manager, place your `DndProvider` above the editors. Each `DndKit` inherits that manager; otherwise, the kit supplies the default HTML5 backend.
+The input also carries the source view (`from`), the `intent` (`move` or `copy`), the `payload` and the documents' `relation`. The second argument is the target view.
 
-### Advanced configuration
+To move an edge instead, such as past a list item's nested items, wrap `editorReads.transfer.landing` in read middleware and return another edge, or `next()` to keep it. A moved edge must map to itself; the schema and the vetoes then check the final edge.
 
-Add automatic scrolling and file drop handling. `DndKit` works on its own;
-file drops submit to Files only when that plugin is installed. See
-[Upload files](/docs/upload) for the client and media destination setup.
+## API reference
 
-```tsx
-import { DndPlugin } from 'platejs/dnd/react';
-import { UploadPlugin } from 'platejs/upload/react';
-import { BlockDraggable } from '@/components/editor/dnd';
+### `editor.api.transfer.move`
 
-DndPlugin.configure({
-  initialState: {
-    enableScroller: true,
-    onDropFiles: ({ dragItem, edge, editor, key }) => {
-      const files = editor.plugin(UploadPlugin);
-      if (!files.installed) return;
-
-      files.update.submit(
-        dragItem.files,
-        edge === 'before' ? { before: key } : { after: key }
-      );
-    },
-  },
-  slots: {
-    wrapNode: BlockDraggable,
-  },
-});
-```
-
-- `enableScroller`: Enables automatic scrolling when dragging blocks near the viewport edges.
-- `onDropFiles`: Handles file drops at the target location when Files is installed.
-
-</Steps>
-
-## Plugins
-
-### `DndPlugin`
-
-Plugin for drag and drop functionality within the editor.
-
-<API name="DndPlugin">
-<APIOptions>
-  <APIItem name="enableScroller" type="boolean" optional>
-    Enables automatic scrolling when dragging blocks near viewport edges.
-    - **Default:** `false`
-  </APIItem>
-  <APIItem name="scrollerProps" type="Partial<DndScrollerOptions>" optional>
-    Automatic scrolling behavior when `enableScroller` is true.
-  </APIItem>
-  <APIItem name="onDropFiles" type="function" optional>
-    Handler for file drop events.
+<API name="move">
+<APIParameters>
+  <APIItem name="input" type="TransferInput">
     <APISubList>
-      <APISubListItem parent="onDropFiles" name="key" type="NodeKey">
-        Node key of the target element.
+      <APISubListItem parent="input" name="to" type="{ key: NodeKey; edge: 'before' | 'after' } | { point: Point } | 'next' | 'previous'">
+        Where the payload lands: beside a block, at a text point, or one step past a sibling.
       </APISubListItem>
-      <APISubListItem parent="onDropFiles" name="dragItem" type="FileDragItemNode">
-        Object containing the dropped files.
+      <APISubListItem parent="input" name="nodes" type="NodeKey[]" optional>
+        Blocks to move, by key in `from`. **Default:** the selected blocks, or the blocks containing the selection.
       </APISubListItem>
-      <APISubListItem parent="onDropFiles" name="editor" type="Editor">
-        The editor instance.
+      <APISubListItem parent="input" name="range" type="Range" optional>
+        Text to move instead of blocks.
       </APISubListItem>
-      <APISubListItem parent="onDropFiles" name="target" type="Path">
-        Path where files should be inserted.
+      <APISubListItem parent="input" name="from" type="Editor" optional>
+        Source editor or view. **Default:** the editor running the transfer.
+      </APISubListItem>
+      <APISubListItem parent="input" name="announce" type="string" optional>
+        Screen-reader message announced when the transfer lands.
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="dropTarget" type="{ key: NodeKey | null; line: DropLineDirection }" optional>
-    The current drop target state containing its node key and drop line direction.
-  </APIItem>
-</APIOptions>
-</API>
+</APIParameters>
 
-## Drag preparation
-
-Use the plugin to prepare a custom drag handle:
-
-```tsx
-const dnd = editor.plugin(DndPlugin);
-const entries = dnd.read.dragEntries(element);
-const previews = dnd.api.prepareDrag(element);
-
-for (const { domNode, preview } of previews) {
-  preview.style.width = `${domNode.clientWidth}px`;
-  previewContainer.append(preview);
-}
-```
-
-`read.dragEntries(element)` returns the selected blocks when the element is in
-the selection, or that element alone otherwise. Nested list items follow their
-selected parent. The read does not change selection.
-
-`api.prepareDrag(element)` selects that payload, records its drag keys and
-returns `{ node, domNode, preview }` pairs for mounted blocks. Clones are inert,
-hidden from accessibility and contain no Plate DOM bindings. Selected blocks
-without mounted views stay in the payload. Read-only or removed elements do not
-start preparation. The copied component owns preview placement and styling.
-
-## Hooks
-
-### `useDndPlugin`
-
-`useDndPlugin(editableElement: HTMLElement | null): void` attaches drag cleanup to one mounted view's `ownerDocument`. Pass its exact Editable element, or `null` before attachment and after detach. The hook releases the old document's listeners when the element changes or the component unmounts.
-
-`DndKit` calls this hook automatically. Use it directly only for custom integration that owns its own provider and view lifetime.
-
-### `useDraggable`
-
-A custom hook that enables draggable behavior for a given element. It provides a preview for the element, which can be customized or disabled.
-
-<API name="useDraggable">
-<APIOptions type="UseDraggableOptions">
-  <APIItem name="element" type="Element">
-    The element to make draggable.
-  </APIItem>
-  <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
-    Orientation of drag and drop.
-    - **Default:** `'vertical'`
-  </APIItem>
-  <APIItem name="type" type="string" optional>
-    Type of drag item.
-    - **Default:** `'block'`
-  </APIItem>
-  <APIItem name="onDropHandler" type="function" optional>
-    Handler called after the landing passes the drop guards. Return `true` to handle the drop; otherwise the package performs the move.
-  </APIItem>
-  <APIItem name="canDropNode" type="CanDropCallback" optional>
-    Checks every dragged element before a hover indicator or drop callback. Receives `dragEntry`, `dropEntry`, `dragItem`, the target `editor`, and `sourceEditor`. Return `false` to reject the entire payload.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="handleRef" type="(element: Element | React.ReactElement | React.RefObject<any> | null) => void">
-    Drag source connector function.
-  </APIItem>
-  <APIItem name="isDragging" type="boolean">
-    Whether element is being dragged.
-  </APIItem>
-  <APIItem name="previewRef" type="React.RefObject<HTMLDivElement>">
-    Reference to draggable element.
+<APIReturns type="TransferOutcome">
+  <APIItem name="status" type="'moved' | 'copied' | 'refused'">
+    `moved` and `copied` include the landed selection as `at`. `copied` gives its `reason`, such as `independent` for another editor. `refused` gives a `reason`: `inside-source`, `lossy`, `no-op`, `policy`, `read-only-target`, `schema` or `source-missing`.
   </APIItem>
 </APIReturns>
 </API>
 
-### `useDropLine`
+### `editor.api.transfer.copy`
 
-Returns the current drop line state for an element.
+Takes the same input as `move` and keeps the source.
 
-<API name="useDropLine">
-<APIOptions type="object">
-  <APIItem name="key" type="NodeKey" optional>
-    Node key used to show the element's drop line.
-    - **Default:** Current element node key
-  </APIItem>
-  <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
-    Filter drop lines by orientation.
-    - **Default:** `'vertical'`
-  </APIItem>
-</APIOptions>
+### `editor.read.transfer.nodes`
 
-<APIReturns type="object">
-  <APIItem name="dropLine" type="'top' | 'bottom' | 'left' | 'right' | ''">
-    Current drop line direction.
+`editor.read.transfer.nodes(options?: { node?: Element | NodeKey }): NodeKey[]` returns the blocks a transfer carries, such as a list item with its nested items. With `node`, it returns a handle's blocks: the selected blocks when the selection holds `node`, else `node` alone. Without it, it returns the selected blocks, or the blocks containing the selection. Pass the result as `nodes` to `editor.api.transfer.move`.
+
+### `useDropIndicator`
+
+`useDropIndicator(): DropIndicator | null` reads the current view's drop indicator.
+
+<API name="DropIndicator">
+<APIAttributes>
+  <APIItem name="key" type="NodeKey">
+    Block beside which the drop lands.
   </APIItem>
-</APIReturns>
+  <APIItem name="edge" type="'before' | 'after'">
+    Side of that block.
+  </APIItem>
+  <APIItem name="axis" type="'x' | 'y'">
+    `y` for stacked blocks, `x` for side-by-side items such as columns.
+  </APIItem>
+  <APIItem name="line" type="{ x: number; y: number; width: number; height: number }">
+    Viewport rectangle of the edge, with zero height on `y` and zero width on `x`.
+  </APIItem>
+</APIAttributes>
 </API>
+
+### DOM drag API
+
+[`editor.api.dom.drag.start`](/docs/api/dom#drag-and-drop), `editor.api.dom.drag.indicate` and `editor.api.dom.resolveDropTarget` drive a drag from code, such as a custom handle that is not a native draggable.

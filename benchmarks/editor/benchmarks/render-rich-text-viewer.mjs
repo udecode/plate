@@ -14,6 +14,7 @@ const slateV2InternalCategories = new Set([
   'slate-core-editor-store',
   'slate-core-node-transforms',
   'slate-core-normalization-current',
+  'slate-core-query-anchor-observation',
   'slate-core-query-ref-observation',
   'slate-core-refs-projection',
   'slate-core-text-selection',
@@ -22,6 +23,7 @@ const slateV2InternalCategories = new Set([
   'slate-react-active-typing-breakdown',
   'slate-react-huge-document-overlays',
   'slate-react-rerender-breadth',
+  'slate-transaction-execution',
 ]);
 const comparisonWorkloadFixtures = new Set([
   'browser-rich-text-replay-coverage',
@@ -104,10 +106,12 @@ function buildViewerData(payload, view = {}) {
   const groups = buildGroups(formattedRows);
   const missingRows = formattedRows.filter((row) =>
     [
-      'adapter-missing',
       'coverage-gap',
+      'integrity-error',
       'missing-artifact',
       'optional-missing-artifact',
+      'stale',
+      'uncovered',
     ].includes(row.status)
   );
 
@@ -548,7 +552,7 @@ function renderHtml({
       function renderTableRow(row, libraries) {
         const values = libraries
           .map((library) => row.cells[library])
-          .filter(Boolean)
+          .filter((cell) => cell?.status === "ok")
           .map((cell) => readMetric(cell))
           .filter((value) => Number.isFinite(value) && value > 0);
         const best = Math.min(...values);
@@ -561,7 +565,11 @@ function renderHtml({
       function renderCell(cell, best) {
         if (!cell) return '<td class="missing">-</td>';
         if (cell.status !== "ok") {
-          return \`<td class="\${statusClass(cell.status)}" title="\${escapeHtml(cell.note || "")}">\${escapeHtml(cell.status)}</td>\`;
+          const measured = readMetric(cell);
+          const label = Number.isFinite(measured)
+            ? \`<span>\${formatValue(measured)}</span><span class="factor">\${escapeHtml(cell.status)}</span>\`
+            : escapeHtml(cell.status);
+          return \`<td class="\${statusClass(cell.status)}" title="\${escapeHtml(cell.note || "")}">\${label}</td>\`;
         }
 
         const value = readMetric(cell);
@@ -632,10 +640,11 @@ function renderHtml({
       }
 
       function statusClass(status) {
-        if (status === "over-budget") return "error";
-        if (status === "adapter-missing") return "with-issues";
-        if (status === "coverage-gap") return "with-issues";
-        if (status === "optional-missing-artifact") return "warning";
+        if (status === "over-budget" || status === "integrity-error") return "error";
+        if (["coverage-gap", "stale", "uncovered"].includes(status)) return "with-issues";
+        if (["optional-missing-artifact", "unassessed", "unknown"].includes(status)) {
+          return "warning";
+        }
         return "missing";
       }
 

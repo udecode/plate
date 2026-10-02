@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { readBenchmarkRegistry } from '../src/index.mjs';
+import { readArtifactAdmission, readBenchmarkRegistry } from '../src/index.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 const rootDir = process.cwd();
@@ -40,9 +40,15 @@ function buildHealthReport({
   const rows = Array.isArray(innerResult?.rows) ? innerResult.rows : [];
   const registeredArtifacts = innerRegistry.artifacts.map((artifact) =>
     describeArtifact(artifact, {
-      rootDir: innerRootDir,
+      registry: innerRegistry,
       staleDays: innerStaleDays,
     })
+  );
+  const staleAdmissions = registeredArtifacts.filter(
+    (artifact) => artifact.admission.state === 'stale'
+  );
+  const unknownAdmissions = registeredArtifacts.filter(
+    (artifact) => artifact.admission.state === 'unknown'
   );
   const missingRequiredArtifacts = registeredArtifacts.filter(
     (artifact) => artifact.required && !artifact.exists
@@ -64,7 +70,9 @@ function buildHealthReport({
     missingRequiredArtifacts,
     rows,
     staleActiveArtifacts,
+    staleAdmissions,
     statusCounts,
+    unknownAdmissions,
   });
 
   return {
@@ -74,6 +82,15 @@ function buildHealthReport({
     node: process.version,
     registry: {
       activeArtifacts: registeredArtifacts.length,
+      admissionCounts: countBy(
+        registeredArtifacts,
+        (artifact) => artifact.admission.state
+      ),
+      admissions: registeredArtifacts.map((artifact) => ({
+        id: artifact.id,
+        reasons: artifact.admission.reasons,
+        state: artifact.admission.state,
+      })),
       discardedUnregisteredArtifacts: ignoredUnregisteredArtifacts.length,
       ignoredUnregisteredArtifacts: ignoredUnregisteredArtifacts.slice(0, 20),
       missingOptionalArtifacts: missingOptionalArtifacts.map((artifact) =>
@@ -103,9 +120,9 @@ function buildHealthReport({
 
 function describeArtifact(
   artifact,
-  { rootDir: innerRootDir2, staleDays: innerStaleDays2 }
+  { registry: innerRegistry3, staleDays: innerStaleDays2 }
 ) {
-  const resolvedPath = path.resolve(innerRootDir2, artifact.path);
+  const resolvedPath = path.resolve(innerRegistry3.repoRoot, artifact.path);
   const exists = fs.existsSync(resolvedPath);
   const stat = exists ? fs.statSync(resolvedPath) : null;
   const ageDays = stat
@@ -114,6 +131,10 @@ function describeArtifact(
 
   return {
     ...artifact,
+    admission: readHealthAdmission(artifact, resolvedPath, {
+      exists,
+      labRegistry: innerRegistry3,
+    }),
     ageDays,
     exists,
     resolvedPath,
@@ -126,9 +147,12 @@ function findIgnoredUnregisteredArtifacts(
   { rootDir: innerRootDir3 }
 ) {
   const registered = new Set(
-    innerRegistry2.artifacts.map((artifact) =>
-      path.resolve(innerRootDir3, artifact.path)
-    )
+    [
+      ...innerRegistry2.targetRegistry.targets.flatMap((target) =>
+        target.artifacts.map((artifact) => artifact.path)
+      ),
+      ...innerRegistry2.retired.map((retired) => retired.path),
+    ].map((artifactPath) => path.resolve(innerRegistry2.repoRoot, artifactPath))
   );
   const ignored = [];
 
@@ -153,9 +177,36 @@ function buildNextActions({
   missingRequiredArtifacts,
   rows,
   staleActiveArtifacts,
+  staleAdmissions,
   statusCounts,
+  unknownAdmissions,
 }) {
   const actions = [];
+
+  if (staleAdmissions.length > 0) {
+    actions.push({
+      id: 'rerun-stale-artifacts',
+      priority: 2,
+      reason: `${staleAdmissions.length} artifacts are stale: ${staleAdmissions
+        .map(
+          (artifact) =>
+            `${artifact.id} (${artifact.admission.reasons.slice(0, 2).join(', ')})`
+        )
+        .join('; ')}`,
+      title: 'Rerun stale artifacts with pnpm bench:targets:run',
+    });
+  }
+
+  if (unknownAdmissions.length > 0) {
+    actions.push({
+      id: 'record-artifact-receipts',
+      priority: 3,
+      reason: `${unknownAdmissions.length} artifacts have no receipt or recorded inputs that bind them to current source: ${unknownAdmissions
+        .map((artifact) => artifact.id)
+        .join(', ')}`,
+      title: 'Run each target through pnpm bench:targets:run',
+    });
+  }
 
   for (const artifact of missingRequiredArtifacts) {
     actions.push({
@@ -252,6 +303,7 @@ function assertHealth(innerHealth) {
 
 function pickArtifactSummary(artifact) {
   return {
+    admission: artifact.admission.state,
     ageDays:
       artifact.ageDays === null ? null : Math.round(artifact.ageDays * 10) / 10,
     command: artifact.command,
@@ -295,6 +347,22 @@ function walkFiles(root) {
 function readJsonIfExists(filePath) {
   if (!fs.existsSync(filePath)) return null;
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+}
+
+function readHealthAdmission(artifact, resolvedPath, { exists, labRegistry }) {
+  if (!exists) return { reasons: ['missing-artifact'], state: 'missing' };
+
+  let payload;
+  try {
+    payload = JSON.parse(fs.readFileSync(resolvedPath, 'utf-8'));
+  } catch (error) {
+    return {
+      reasons: [`artifact-unreadable:${error.message}`],
+      state: 'unknown',
+    };
+  }
+
+  return readArtifactAdmission(artifact, payload, { registry: labRegistry });
 }
 
 function parseArgs(argv) {

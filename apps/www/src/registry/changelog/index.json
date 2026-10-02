@@ -2,6 +2,85 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-02-schema-block-handles",
+      "href": "/registry/changelog/2026-10-02-schema-block-handles.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Give every selectable block a drag handle",
+      "change": {
+        "type": "source",
+        "date": "2026-10-02",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd", "block-menu"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-01-block-move-actions",
+      "href": "/registry/changelog/2026-10-01-block-move-actions.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Move blocks, columns and table rows without dragging",
+      "change": {
+        "type": "source",
+        "date": "2026-10-01",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd", "column", "table", "block-menu"],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-01-native-block-drag",
+      "href": "/registry/changelog/2026-10-01-native-block-drag.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Drag blocks natively, without React DnD",
+      "change": {
+        "type": "source",
+        "date": "2026-10-01",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "dnd",
+        "column",
+        "table",
+        "media-image",
+        "media-video",
+        "upload"
+      ],
+      "entries": 5,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-01-ordinary-text-combobox",
+      "href": "/registry/changelog/2026-10-01-ordinary-text-combobox.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Open autocomplete popups over typed text instead of an inline input",
+      "change": {
+        "type": "source",
+        "date": "2026-10-01",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["inline-combobox", "mention", "slash", "emoji", "footnote"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-30-static-list-table-known-paths",
       "href": "/registry/changelog/2026-09-30-static-list-table-known-paths.json",
       "status": "draft",

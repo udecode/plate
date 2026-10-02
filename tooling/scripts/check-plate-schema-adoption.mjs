@@ -295,14 +295,6 @@ const intentionalProductionExtendStageChains = new Map([
     [[['update'], ['commands', 'contributions']], [['decorate', 'on']]],
   ],
   [
-    'packages/platejs/src/dnd/react/internal/DndStorePlugin.ts',
-    [[['read'], ['api']]],
-  ],
-  [
-    'packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.ts',
-    [[['api']]],
-  ],
-  [
     'packages/platejs/src/features/comments/BaseCommentsPlugin.ts',
     [[['activate', 'api', 'decorate']]],
   ],
@@ -388,16 +380,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts',
-    [[['commands'], ['update']]],
-  ],
-  ['packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts', [[['commands']]]],
-  [
-    'packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts',
-    [[['commands']]],
-  ],
-  [
-    'packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts',
-    [[['commands']]],
+    [[['update']]],
   ],
   [
     'packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts',

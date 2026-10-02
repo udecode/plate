@@ -53,7 +53,7 @@ proof remain explicitly outside the evidence obtained here.
 | Runtime lifetime | Stop further ownership redesign | Named-root editing, shared blocks and independent editors require different identity/lifetime scopes; the runtime already belongs to the document. | None |
 | Document state | Pursue removing facets | No current application or feature facet consumers; transactions still clone and update their cache state. Fields and effects have real consumers. | Plite Plan |
 | Extension composition (`schema`) | Stop replacing the composition model | Slots own replaceable subtrees; dependencies express prerequisites; contributions serve clipboard and codec producers. Atomic candidate publication owns rollback. | None |
-| Commands | Pursue removing descriptor `.build()` | No production callers; it exposes a second, default-only evaluation path. Installed command dispatch and prepared transaction continuations have real callers. | Task for the bounded cut; coordinate in the same core adoption work |
+| Commands | Pursue removing descriptor `.build()` | No production callers; it exposes a second, default-only evaluation path. Installed command dispatch and prepared transaction continuations have real callers. | poteto-mode's Refactoring playbook for the bounded cut; coordinate in the same core adoption work |
 
 ## Ideal ownership and surviving jobs
 

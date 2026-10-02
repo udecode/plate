@@ -1,0 +1,261 @@
+{
+  "id": "2026-10-02-dnd-library-choice",
+  "scope": "dnd",
+  "kind": "review",
+  "date": "2026-10-02",
+  "question": "Which native drag owner and UI policies should block dragging and drop indicators reuse?",
+  "model": "Codex",
+  "method": "best-api-review/history-v3",
+  "trigger": "The user requested a Best API Review of React DnD versus current libraries and other editors, then asked whether a library supplies full coverage/testing and why DndKit remains after transfer moved into Plite/core. Assessment and research only.",
+  "requirements": [
+    "Plite remains the canonical owner of complete transfers, exact source/view/root authority, schema admission, lossless move/refusal, copy intent, selection and history.",
+    "Preserve native text, block and file/data transfer, same-window foreign formats, mounted iframe editors, and exactly one recipient across nested views.",
+    "Keep optional copied handles, menus, preview styling, indicators and accessible alternatives configurable without installing a second document-transfer engine.",
+    "Delegate browser mechanics only when the completed integration removes maintenance responsibility and preserves selection/repair/scroll ordering.",
+    "Do not treat library tests, source inspection, desktop browser tests or existing development-build benchmarks as full editor, mobile, OS or production proof.",
+    "Compare modern dnd-kit separately from legacy core, retain inspected-source revisions and prior decisions, and leave product code unchanged."
+  ],
+  "evidenceReuse": "Reconciled the October 1 native-transfer and interrogation reviews, design and amended design, and the October 2 execution with partial proof. Inspected current Plite DOM/session and copied registry responsibilities. Reused the earlier native-versus-React-DnD development benchmark only within its recorded limits. Three independent same-family researchers inspected three library and five editor repositories; the lead checked 43 selected files against their commit bytes. Three fresh-context same-family reviewers challenged the direction and added iframe and same-window custom-MIME gates plus the cutBlocks ownership qualification. No runtime suite or benchmark was rerun.",
+  "summary": "Defer replacing the adopted native driver with Pragmatic Drag and Drop pending one bounded integration and production comparison. Keep the current native driver now; reject React DnD reintroduction and modern dnd-kit as default replacements for the existing job. PDD is the strongest maintenance candidate because it owns native browser quirks, but source anchors, MIME capture, exact mounted-view routing, transfer admission and scheduler coordination remain editor responsibilities. The copied DndKit is optional product UI and action wiring, unrelated to npm dnd-kit; retain it while recording its shared cutBlocks helper as a clipboard ownership concern. No library supplies full editor coverage. Only the browser-driver question reopens; transfer semantics and ownership stay settled.",
+  "verdict": "defer",
+  "callSites": {
+    "current": "Native DragEvent -> Plite DOM source/landing/session -> Plite transfer or external import. Copied DndKit handles and move actions call dom.drag.start and api.transfer.move. Plite owns document, schema, selection and history.",
+    "proposed": "Provisional private PDD native lifecycle -> Plite source view/keys/range plus full MIME, landing and one recipient -> unchanged transfer/import API. Delete generic token/session routing only after replacement proof. Retain optional copied controls; do not add a public backend abstraction."
+  },
+  "previous": "2026-10-01-dnd-transfer-interrogation",
+  "relation": "defers",
+  "reconciliation": [
+    {
+      "record": "2026-10-01-dnd-transfer-interrogation",
+      "question": "Which native drag owner and UI policies should block dragging and drop indicators reuse?",
+      "action": "reopens",
+      "reason": "Retain one Plite transfer owner, explicit native-backend choice and accessible move alternatives. Reopen only the browser driver comparison because this review adds PDD and modern dnd-kit source evidence; do not reopen transfer semantics."
+    },
+    {
+      "record": "2026-10-01-dnd-transfer-consolidation-design",
+      "question": "Which native drag owner and UI policies should block dragging and drop indicators reuse?",
+      "action": "retains",
+      "reason": "Retain the canonical transfer, feature policy and copied presentation design. Compare an alternative private native lifecycle without changing the public semantic owner."
+    },
+    {
+      "record": "2026-10-01-dnd-transfer-consolidation-design-amended",
+      "question": "Which native drag owner and UI policies should block dragging and drop indicators reuse?",
+      "action": "retains",
+      "reason": "Retain the amended native adoption target and explicit React DnD deletion. A library remains responsible only for delegated gesture behavior; no published backend framework is justified."
+    },
+    {
+      "record": "2026-10-02-dnd-transfer-consolidation-execution",
+      "question": "Which native drag owner and UI policies should block dragging and drop indicators reuse?",
+      "action": "retains",
+      "reason": "Retain adopted native transfer as the baseline and all partial-proof limits. Existing development-build measurements do not decide PDD or modern dnd-kit cost, and this source review certifies no later concurrent repairs."
+    }
+  ],
+  "alternatives": [
+    "Keep native: retain as the measured baseline. It preserves one current native path but leaves browser quirks and lifecycle maintenance with Plite; source inspection does not establish it as the permanent winner.",
+    "Replace generic native lifecycle with private Pragmatic Drag and Drop: strongest alternative, deferred. Test source range capture, iframe mounting, same-window foreign custom MIME, one nested-view recipient and cleanup before matched production scale. Adopt only for real responsibility deletion with no material behavior/cost regression; speedup is not required.",
+    "Replace the default driver with modern @dnd-kit/dom: reject for the current job. Pointer/touch/keyboard sensors are useful, but the inspected native driver is incomplete/unexported and external text/files still require native transport; feedback, selection and scrolling introduce coordination. Reopen for a demonstrated independent pointer/touch need.",
+    "Reintroduce React DnD: reject. HTML5 payload support does not eliminate editor transport/semantics, touch remains a separate backend, and its keyboard option only handles cancellation. An actual application-manager integration could change this question.",
+    "Delete DndKit or move copied controls into Plite core: reject. The optional registry preset still installs handles, indicator, menus and shortcuts. It is not a third-party backend. Its shared asynchronous cutBlocks helper is clipboard action orchestration and merits separate ownership scrutiny, not a new drag engine.",
+    "Import a library solely to inherit full coverage: reject the premise. Upstream unit/browser tests cover delegated unchanged mechanics; core, mounted editor, native device/application and copied interaction proof remain ours."
+  ],
+  "proofLimits": "Source comparison only. No product or dependency change, upstream suite, editor test, browser interaction, device test, production build or new benchmark ran. Selected editor clones predate current remote tips; only stated commits were inspected. The Slate checkout is a fork and ProseMirror GitHub differs from its canonical forge. PDD's inspected native text-selection Playwright case skips non-Firefox browsers; peer editor tests also have scoped skips. Existing native benchmark uses development builds and does not compare PDD or modern dnd-kit. A concurrent session is repairing transfer validation; this review does not certify that repair. The initial global ledger check failed on concurrent unmapped scratch probes; the same HEAD check passed in a detached worktree. The remaining browser/zz-word-dnd2.probe was mapped to DnD source membership only, not used as test proof. Refresh/render/check then passed. No production performance, mobile/OS parity or full-coverage claim.",
+  "references": [
+    "docs/plite/research/2026-10-02-dnd-library-choice/README.md",
+    "docs/plite/research/2026-10-02-dnd-library-choice/repo-registry.tsv",
+    "docs/plite/research/2026-10-02-dnd-library-choice/read-log.tsv",
+    "docs/plite/research/2026-10-02-dnd-library-choice/lead-ledger.tsv",
+    "docs/plite/research/2026-10-02-dnd-library-choice/rejected-ledger.tsv",
+    "docs/plite/research/2026-10-02-dnd-library-choice/promoted-ledger.tsv",
+    "docs/plans/2026-10-01-dnd-transfer-consolidation.md",
+    "docs/plans/2026-10-01-dnd-transfer-benchmark.md",
+    "packages/plitejs/src/dom/utils/drag-session.ts",
+    "packages/plitejs/src/dom/plugin/dom-drag.ts",
+    "packages/plitejs/src/react/editable/runtime-drag-events.ts",
+    "apps/www/src/registry/components/editor/dnd.tsx",
+    "apps/www/src/registry/components/editor/block-menu.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/iframe.tsx"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/transfer.ts": "d8a5d5b2d2ea6eb2122028f0129b6a74e91a59b49820f19475da1aaa5fb39d2f",
+      "packages/plitejs/src/core/transfer-types.ts": "b8b1e9c52e86bb315c0aaafa0a3cdddc6f20fcfd4d756c5f0669ddd8dd9b1541",
+      "packages/plitejs/src/dom/plugin/dom-drag.ts": "3e0285761e55026fbf17b2d74c205acff30d4e3f8b0b3a633ffb0755a1215aef",
+      "packages/plitejs/src/dom/utils/drag-session.ts": "bdb9194603ebafd8e2153587b5c6f0b91a17b2e92320659057e3446bdb6422f6",
+      "packages/plitejs/src/dom/utils/drop-indicator.ts": "61403d51db83810e2072820b89ca708ce58089a2eb3a2054975e3cd71b33aa2e",
+      "packages/plitejs/src/react/hooks/use-drop-indicator.ts": "2d34bfcb82567e950440bdcffcd706e4d99d5877901190420739dd963bbf9acd",
+      "packages/plitejs/src/react/editable/clipboard-input-strategy.ts": "a5d32129ab6c9dd5a2b903a185d0ba76d4d08c52e355ea7552d4ecaad53642f6",
+      "packages/plitejs/src/react/editable/runtime-drag-events.ts": "2d68779e10a47badac145c4cc796f2cd1fdc79a61c14aa2b3d1a79b0325d718b",
+      "apps/www/src/registry/components/editor/dnd.tsx": "809a81dca0ddf9ee51c0f3b5c93e33a333d2675f9fb03fd9b2c59fe22e4e4f81",
+      "apps/www/src/registry/components/editor/column.tsx": "7fa7e0f27a479763aeee9509674a0966839bd27dfc130bcbe2c7dcf848b0002c",
+      "apps/www/src/registry/components/editor/table.tsx": "0c1fe4920b0456b238a41e6c98a85158b6581dcdb99d23d8a31fbf636c9b634e",
+      "apps/www/src/registry/components/editor/media-image.tsx": "fc7e374bccda798dbd92f2e435c8f3a0acf32d4da33dcc28b0c7829d22b6014e",
+      "apps/www/src/registry/components/editor/media-video.tsx": "e1929dac10cb357120ea92dd0dff5bb78cf89707d2143692f7492d46144c3070",
+      "apps/www/src/app/(app)/examples/plite/_examples/cross-editor-drag.tsx": "b96368fe6200d77e299949994def74090f2cf08b91592377f7729d72c5f1fd47",
+      "apps/www/src/app/(app)/examples/plite/_examples/plate-dnd-cross-editor.tsx": "e83f8e9273eb1eba40785d262112000050447d5bacd1403e291268f991625e54",
+      "packages/plitejs/test/transfer-contract.test.ts": "e58f53a641e7ef10b7d9aded80b8bb7db496268d6a1b15cf4e6c582999b3f404",
+      "packages/plitejs/test/react/dom-coverage-native-bridge-contract.test.ts": "11279bc67cac0aa0e05f3984a49de36bf576d607aa01b1d8f75485cfd1febd77",
+      "packages/platejs/src/features/layout/lib/BaseColumnPlugin.spec.ts": "7307ace3bedb6bce1c9948f1a4b76c4e11d9ae8d88d853d3ba2a60745d4af7da",
+      "packages/platejs/src/features/table/lib/BaseTablePlugin.transfer.spec.ts": "dc12939f540739dbdea0d452c6f47b41425e09b291f8c1377ae88b696e51a39c",
+      "packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx": "18227dfecb37948b25bce0076944ba2d149cd43a8339b9db8f992d01b38cb675",
+      "packages/platejs/src/features/upload/lib/BaseUploadPlugin.spec.ts": "1a71b5857adb1ed9802d5365ff3e3363743dc0006ea44462d8ce9c63061a3a8e",
+      "packages/platejs/src/react/features/upload/UploadPlugin.spec.ts": "d496b551d058311c65a39e84647632e0f45ebe7b60e4a4e0032c86e459fedd23",
+      "apps/www/src/registry/components/editor/dnd.spec.tsx": "224e29d983de4dce0b97d8c95d942f1e99d03c2a062365b49d653140c92c545a",
+      "apps/www/tests/browser/dnd.spec.ts": "907b08dd467c97b81d156c7a2bb5a9488919af7e7af3b6eff4243e970a1c0d99",
+      "apps/plite/tests/plite-browser/donor/examples/cross-editor-drag.test.ts": "b6710b7a83b6a9e6d986d0c78a1d2846b752af98b025007856124ccb29eff0b7",
+      "apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts": "5215bd6189769c2ce648dfad319c7a102cdb8ae297ead20c33356b5c0b7a7101",
+      "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "packages/platejs/package.json": "9ef060d69055e74235e5fdf648bf23249fd028654271706eb4de35d72a9dbaac",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/platejs/src/internal/plugin/pluginStore.ts": "eac0662328bea5d9565c058964e830d8a308b156315bef00dd57f27eedc03e25",
+      "packages/platejs/src/internal/plugin/plateRuntime.ts": "efe9484349f1e19667b28d5eabfd2d628d336126f0312281260e3f308c7cd03d",
+      "packages/plitejs/src/core/get-content-slice.ts": "75c1bdbe06a915147b25008cdab5dfa570449f5e7ede129c6b05c4c652da2da9",
+      "packages/plitejs/src/core/public-state.ts": "1d8e01c2269216ae0ddaa5da189ad1b6daada371d0cc721b8d9d76e52743bbfa",
+      "packages/plitejs/src/core/target-runtime.ts": "614f1633aa8a91189bb64096656476228d0ff7a2ce3c5b73f2eb8d37d76bb40b",
+      "packages/plitejs/src/react/editable/runtime-selection-state.ts": "ab4625180db24f1f4c114b6d836aec854bf288f25ccadd84e1d0cd81aca962a6",
+      "packages/plitejs/src/react/editable/drag-auto-scroll-target.ts": "80e64e7116afe82010c3b8a002b192d6ba48ffb70878b21001b1a025ed7bcae1",
+      "packages/plitejs/src/react/editable/root-interaction-controller.ts": "d8eb57fc64b16fd54834c14d3e6aa1be627bed6baf8f03b2d344f957fee6fffb",
+      "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts": "fc2eaea96376057f3eb41e07f4ab1a28d8a572bb5525b71f118a84f12985300c",
+      "tooling/scripts/run-entrypoint-task.mjs": "2a7c478035f55226129436c0cf4ce4988edc52d8317de27500ecf33a3ab7e3ec",
+      "tooling/entrypoints/entrypoint-dag.mjs": "825ea0db76a54e5f79209484326da0dabe4f533ec4cd21b113bde21134944bec",
+      "tooling/entrypoints/entrypoint-turbo.mjs": "29b373de283b2a7c959c1124a03aee1584e908cf6d7a569627b35ec97d3ea316",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "tooling/config/tsconfig.test.json": "fe02ec41ff9a189e8a08bc65e1f38dfb5bf8a8acd778a5228af98f1f816376c4",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "content/docs/(plugins)/(functionality)/dnd.mdx": "1d4413e3eb643d0bb945be569e0db3dc42d01e50f7aa47245c9c7b366fc60ddb",
+      "content/docs/(plugins)/(functionality)/dnd.cn.mdx": "ae7c737ae031e32028b7d8f4c5e6bb01e9cf06416506e373092d0e996e10b960",
+      "docs/vision/plate.md": "7a247c1d6ef4e4419406a1e3c9befae596ae7d189951b96ac1feaae9ec379ca1",
+      "docs/vision/plite.md": "e8280b36b62571a0848dc319630b4003eb8f1ed99855cff4a3e0ecf9da0b878a",
+      "AGENTS.md": "299dbb2e221c1fdcdbda01f74f686b6bf834904d9be32312ddeee336a906cb7c",
+      "docs/editor-behavior/editor-protocol-matrix.md": "3dca3300825cc1d17c915a1561dbba650c7722d9a785e257d0be31119d363866",
+      "docs/editor-behavior/markdown-editing-spec.md": "4d2840e97951c782288399e728dd8b608acb922b3212fddc63ef5e1523ac5cc5",
+      "docs/research/probes/2026-10-01-dnd/REPORT.md": "4d70c80aa0005c6cabfd1aee9934c4da059c8e255b8ca7de202aababd068285b",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "82f4530848a1b5ad9a36a1e4e0769a79b9944e79acd759590cdb3a3e4d851da8",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "4a1f2986f7d90a6320ef508a62a55812a606a80ad715f545faf804f5e4c57962",
+      ".agents/rules/best-api-review.mdc": "7f42719e5c7a192cb06fdd5ba8b9078b0bfca55af0f1c41b99cd927995a3ced2",
+      "docs/plite/research/2026-10-02-dnd-library-choice/README.md": "723c8210430ce8c6d41acca9ecfbd15fe91577ac60dda19ac4481c3b46febc9c",
+      "docs/plite/research/2026-10-02-dnd-library-choice/repo-registry.tsv": "8758ccad533aa7e32cc3ee08354077fe6ddf3852a7122146f0859dc0075da972",
+      "docs/plite/research/2026-10-02-dnd-library-choice/read-log.tsv": "53c825d1f7f03c2dc7749db294d9f42ac13251cd9638898a6d74a0c9bec7af8e",
+      "docs/plite/research/2026-10-02-dnd-library-choice/lead-ledger.tsv": "1509cf1c12b6a4b0816764314cddb100293e37f31c9e63477101964298725b3e",
+      "docs/plite/research/2026-10-02-dnd-library-choice/rejected-ledger.tsv": "2f7d1483073f8bf358f8b7532cf450886b2def70f277bcc0ef3d342f1e342b61",
+      "docs/plite/research/2026-10-02-dnd-library-choice/promoted-ledger.tsv": "398228295b0857463f16dec19d0b10d6dae4190aea96d85688c2e19c3b90f2d5",
+      "docs/plans/2026-10-01-dnd-transfer-consolidation.md": "4c40f88090c0df2784ba85df3d173a6250178932ccc70b07e2f0602b8b96d379",
+      "docs/plans/2026-10-01-dnd-transfer-benchmark.md": "da9be73ac834e33fbf3c8283f488f8392d3a452fca57bbb22e2f17cb7a9bdb2c",
+      "apps/www/src/registry/components/editor/block-menu.tsx": "c7643dc63fe9fff0b951c15d5671fa7089113751c4efaeccf0d02ce540d0428f",
+      "apps/www/src/app/(app)/examples/plite/_examples/iframe.tsx": "0853703dab4bf27b1745096727d17fdcb8ffa88323d348639dd58d96ea900f09",
+      "docs/plite/research/2026-10-02-dnd-library-choice/query-ledger.tsv": "68c2ec276877bdc043c21a6a6258dcd20b4307b4e937850ceede2563b7850c59"
+    },
+    "directories": {},
+    "features": {
+      "browser/dnd": "54428523ae1213c11470c2a72d0ea8d24ae8d2101166471868a8bd198c1467a9",
+      "browser/zz-word-dnd2.probe": "b2a9ef5cb4c871af9f59bde760ba552b4d6ed281d50629d862f6c780688f981a",
+      "capability/dnd": "15523d483fb6079e075f0901d46776f93546e4ee12079ceaa17539ef7149d35f",
+      "example/plite/cross-editor-drag": "df4152fb149a8e2411e492a91845a953a51920b42a5547e7134d428f6b42ff32",
+      "example/plite/plate-dnd-cross-editor": "9671a7093006d55e74add6a7d7a1c560a8aac6c2bc6a6d2694a74ccfaee3bc51",
+      "example/value/dnd-value": "0d82173deeffc1a103b3dbbfa785ae8f7632ee5e679658d2e4688cb015bd339e",
+      "plitejs/core/transfer": "27bb9af4385914a028edfa1a85c23e40e03f5131b38eccfff324027c03f69e14",
+      "plitejs/core/transfer-types": "50ac3e5f7f3cfff9c7e3816f02366b06d446b8d5ad2d50fe1bea3ebc32376a78",
+      "plitejs/react/editable/drag-auto-scroll-target": "f2c2515a1c63b9d9cc5ae10cfb51f36e9e73929aca42cacb10a161d1c51dbfa9",
+      "plitejs/react/editable/runtime-drag-events": "f24f7165144fe9cf0c006560a02cc149cc700379523a78e2ab8eee01b496b970",
+      "ui/dnd": "f35f4288f4c74dab6a2af735d825fd8a851e46974e83dd639cb3bbde77ccfb8b"
+    },
+    "upstreams": [
+      {
+        "checkout": "/Users/zbeyens/git/pragmatic-drag-and-drop",
+        "commit": "abd224dd7f0b6fc34488df8a2804e749e75f8f2e",
+        "files": {
+          "LICENSE": "0206007810ac182b80ec75ee6b090336eae4482b0638c8a8cc1b2f67f472b47b",
+          "packages/core/package.json": "2084c6e38c78ad530f924ec58ac8ba9f8146660ed826272136d4dd7f0c61d15f",
+          "packages/core/src/adapter/element-adapter.ts": "d5ff8e9ab75c0bd53e14cc658873d8176ae8b72db71c707affa7dd5c2de8ac10",
+          "packages/core/src/adapter/text-selection-adapter.ts": "82c9b53435a1761347327e718791310c53434dc24e4658000221039c7e035c42",
+          "packages/core/src/adapter/external-adapter.ts": "4841bb0d466937d9d11b92369d3a510650358068b8f782b9331c3c7e12ac74ff",
+          "packages/core/src/ledger/lifecycle-manager.ts": "86e008087a8ed4087153323bee51bcc98eed769a4c5b02c3622faeb1154a1b8f",
+          "packages/core/src/make-adapter/make-drop-target.ts": "03eb3f169697ecea34294f5ed7f89d5ecc2e143862e84dbf4e4ebf3a4156e667",
+          "packages/core/__tests__/playwright/text-selection.spec.ts": "31b722a850c707f511b7c166f34841392573881eb2899040957b26ae1b2c1e8c",
+          "packages/auto-scroll/src/shared/scheduler.ts": "6b58c7f0868b34be926455037daec693fa8eeeb4dd3d535d4795cbdd344f41da",
+          "packages/auto-scroll/src/over-element/try-scroll.ts": "cf756aa8b1a0e40236cfc7e206261ba4878ddc8cac884efc23879ede554d7457"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/dnd-kit",
+        "commit": "e522d9c6a3cbe39e6e980ee3b6fd7a78f238ab94",
+        "files": {
+          "LICENSE": "6fdf84a73d062925aa339ef281196dfee3bd73aa825739c7fdc349b360f46993",
+          "packages/dom/package.json": "7cc4ad1432059bad498a436ffb2e340ab67285f6061c9f270f00456f75a386a0",
+          "packages/dom/src/core/index.ts": "a8c3bc91b1ef8e70c743255ff491e53e1e94da996e655d398e60339eafc64e62",
+          "packages/dom/src/core/sensors/drag/DragSensor.ts": "ec77941ce17c21587ea0d0fb760b59d835fcd62aff37979c3ab6134703afb8d9",
+          "packages/dom/src/core/plugins/selection/PreventSelection.ts": "537f2693efc13aacf8ed7967cafe0bc02e3957ff5f13312d492d55814b9b8873",
+          "packages/dom/src/core/plugins/feedback/Feedback.ts": "f8d8fad5bbec3b239c7d16786133f7219cfcf794e103383c76e1c46fd049dedd",
+          "packages/dom/src/core/plugins/scrolling/Scroller.ts": "e058568caa125a0f0c11bf11c9ebf3837285e66b52765fdc6597b5344e512b9d",
+          "packages/dom/tests/pointer-sensor.test.ts": "44610a7daf7cf2b1c67c8c6f767c7cbdd2b1d7ffdb2a1ddcfb8bf431bb63328d",
+          "packages/react/src/core/context/DragDropProvider.tsx": "1d3170f2a84bfec1d0349c456ba3d03060a060ea50406e51022332b2b21be7ae"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/react-dnd",
+        "commit": "1de654eb466b9563fa50df070c244d6f3ab43ca7",
+        "files": {
+          "LICENSE": "10c8da64ecfa3067cf9231e0ba19b8d7730e7fed3ac5eaa37ccb97c3c5e71336",
+          "packages/backend-html5/src/HTML5BackendImpl.ts": "332313a13cbe5f11f43a65af2591586547d778e368f495a0b57e5828d589b630",
+          "packages/backend-html5/src/NativeDragSources/nativeTypesConfig.ts": "f2dda2a92ef27adb4c8fb28842fd62908553d572fb9928d453e3267beb97d0fa",
+          "packages/backend-touch/src/TouchBackendImpl.ts": "20e5bc325e3070858c88741030b245b77dcb67edcc4a27183514b9dc5c2a384d",
+          "packages/backend-html5/src/__tests__/HTML5Backend.spec.ts": "73db2a7dd058a10c0a79a29b3817dd19f651ee63856dfa2b77ee63ed6ce0a475"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/prosemirror-view",
+        "commit": "ca4c78e9b56f1b164c0b3758b59d8748f11b7534",
+        "files": {
+          "LICENSE": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8",
+          "package.json": "12f1cad1350b1fbef044f526cf47ab6de4bdd9bc72c2f915ac4cfe666337c640",
+          "src/input.ts": "33751f88e1361059693a7aabba9f0e062c732f2881fa8f512d9face48995d25c",
+          "src/index.ts": "164e62f3dff574c7960ab052296b03a7cd96cf26755bd57ad7cff122e4960b75"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/tiptap",
+        "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+        "files": {
+          "LICENSE.md": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9",
+          "packages/extension-drag-handle/src/drag-handle-plugin.ts": "d125509078d7c7755bc20480fc02d5722852911d5adabcbf0d2b963b46346a73",
+          "packages/extension-drag-handle/src/helpers/dragHandler.ts": "cab10bfb93ff6154f928d70cd331ae4c1c08c94144dd3892dde3d13b4c230db2"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/lexical",
+        "commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+        "files": {
+          "LICENSE": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+          "packages/lexical-clipboard/src/clipboard.ts": "f0667a903d611c7c03f14bd2071bbf9378acbbd33a1dfc0fd3e99e428b1a0dc6",
+          "packages/lexical-react/src/LexicalDraggableBlockPlugin.tsx": "efe1ba2bad292517eb50772d47ac0b0f964d8430a054ad83c0b3a9f729138c2f",
+          "packages/lexical-playground/__tests__/e2e/DraggableBlock.spec.mjs": "fe5fa41641e16207e198397110f37b6b3e222e52105e989c7994a78338479df1",
+          "packages/lexical-playground/__tests__/e2e/TextDragDrop.spec.mjs": "ff4723e99bc145cc6f97277028e5d6151b53c223954ff80759ccef1a677bc670"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/BlockNote",
+        "commit": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+        "files": {
+          "packages/core/LICENSE": "4b89d4518bd135ab4ee154a7bce722246b57a98c3d7efc1a09409898160c2bd1",
+          "packages/core/src/extensions/SideMenu/dragging.ts": "e1251a2ef577cdca71ce12e1aaac1b33c099efa36f55af8de2346593add33a70",
+          "packages/core/src/extensions/SideMenu/SideMenu.ts": "cee7ac0d3c03a5b1fc10b7fbd57c563614276d0b5f504950112cee949d1dc7d8",
+          "tests/src/end-to-end/dragdrop/dragdrop.test.tsx": "61820f399055e73a59cf11e399eb07a2711f82ad8f8e0ca0f8d31e7ab339da39"
+        }
+      },
+      {
+        "checkout": "/Users/zbeyens/git/slate",
+        "commit": "945a484df2497e4c448b33f417b0de2a49840032",
+        "files": {
+          "License.md": "519c180a1c7b62ae33d2beb749abd57dda92eddada65eb81daca7686fa1fef40",
+          "packages/slate-react/src/components/editable.tsx": "b1df26d552f1b04e2c4746d5cc8fac5de016edb2976ed0f26149381f564833e7",
+          "packages/slate-dom/src/plugin/with-dom.ts": "afb50f4353d97924f2d5561dae492972295bd850b5b5ccc6bee94e4b2a19aa96"
+        }
+      }
+    ]
+  }
+}

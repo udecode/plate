@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "registryPath": "benchmarks/targets/slate-v2.json",
   "policy": {
     "authority": "Benchmark targets are the source of truth. Evidence Kit is a legacy import/report archive.",
@@ -12,15 +12,19 @@
     }
   },
   "counts": {
-    "targets": 53,
-    "artifacts": 53,
-    "recordedArtifacts": 52,
+    "targets": 55,
+    "artifacts": 56,
+    "recordedArtifacts": 53,
     "missingOptionalArtifacts": 0,
-    "missingRequiredArtifacts": 1,
-    "requiredArtifacts": 53,
+    "missingRequiredArtifacts": 3,
+    "requiredArtifacts": 56,
     "statusCounts": {
       "recorded": 52,
-      "missing-required-artifact": 1
+      "missing-required-artifact": 3
+    },
+    "latestRunCounts": {
+      "none": 52,
+      "passed": 3
     }
   },
   "targets": [
@@ -46,10 +50,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "browser-rich-text-replay-coverage",
-        "evidenceKitCategory": "slate-browser-rich-text-replay-coverage",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "browser-rich-text-replay-coverage"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "clipboard-large-payload",
@@ -73,10 +77,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "clipboard-large-payload",
-        "evidenceKitCategory": "slate-clipboard-large-payload",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "clipboard-large-payload"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "collab-readiness",
@@ -100,10 +104,14 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "collab-readiness",
-        "evidenceKitCategory": "slate-collab-readiness",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "collab-readiness"
+      },
+      "latestRun": {
+        "status": "passed",
+        "startedAt": "2026-09-30T23:02:38.437Z",
+        "contractSha256": "9d529b98d28f4dcca59f591b3bf75708423738a054fc85aa09c713648f5eebd8"
+      },
+      "recipe": "current"
     },
     {
       "id": "core-anchors-projection",
@@ -127,10 +135,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-refs-projection",
-        "evidenceKitCategory": "slate-core-refs-projection",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-refs-projection"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-document-change-current",
@@ -152,7 +160,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-editor-store",
@@ -176,10 +186,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-editor-store",
-        "evidenceKitCategory": "slate-core-editor-store",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-editor-store"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-huge-document-compare",
@@ -203,10 +213,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-huge-document-compare",
-        "evidenceKitCategory": "slate-core-huge-document-compare",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-huge-document-compare"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-node-transforms",
@@ -230,10 +240,14 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-node-transforms",
-        "evidenceKitCategory": "slate-core-node-transforms",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-node-transforms"
+      },
+      "latestRun": {
+        "status": "passed",
+        "startedAt": "2026-09-30T22:45:58.357Z",
+        "contractSha256": "f0c86ce6c556686af9531aab102cf3d3d6f72e5bd15970dde731998444e8e106"
+      },
+      "recipe": "current"
     },
     {
       "id": "core-normalization-compare",
@@ -257,10 +271,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-normalization-compare",
-        "evidenceKitCategory": "slate-core-normalization-compare",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-normalization-compare"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-normalization-current",
@@ -284,10 +298,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-normalization-current",
-        "evidenceKitCategory": "slate-core-normalization-current",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-normalization-current"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-observation-compare",
@@ -311,10 +325,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-observation-compare",
-        "evidenceKitCategory": "slate-core-observation-compare",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-observation-compare"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-query-anchor-observation",
@@ -338,10 +352,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-query-ref-observation",
-        "evidenceKitCategory": "slate-core-query-ref-observation",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-query-ref-observation"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-resolved-token-cursor",
@@ -363,7 +377,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-rich-text-operations-compare",
@@ -387,10 +403,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-rich-text-operations-compare",
-        "evidenceKitCategory": "slate-core-rich-text-operations-compare",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-rich-text-operations-compare"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-text-selection",
@@ -414,10 +430,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-text-selection",
-        "evidenceKitCategory": "slate-core-text-selection",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "core-text-selection"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "core-update-policy-current",
@@ -439,7 +455,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "cross-editor-human-operations",
@@ -461,7 +479,9 @@
         }
       ],
       "status": "missing-required-artifact",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "decoration-manager-scalability",
@@ -483,7 +503,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "dom-phase-scheduler",
@@ -505,7 +527,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "history-compare",
@@ -529,10 +553,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "history-compare",
-        "evidenceKitCategory": "slate-history-compare",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "history-compare"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plate-code-block-text-flow-browser",
@@ -554,7 +578,38 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
+    },
+    {
+      "id": "plite-annotation-view-index",
+      "family": "react-locality",
+      "kind": "current",
+      "owner": "plitejs/annotations+react",
+      "question": "Does a grouped resolver, chunked range collection, or simple immutable snapshot materially beat the current node-key scalar/persistent-page annotation index across exact-view and annotation scale?",
+      "command": "PLITE_ANNOTATION_INDEX_BENCH_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/annotation-view-index.mjs",
+      "cwd": ".",
+      "metric": "plite_annotation_view_index_baseline_retained",
+      "direction": "higher",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/anchor-contract.ts ./packages/plitejs/test/anchor-mapping-contract.ts ./packages/plitejs/test/range-anchor-contract.ts ./packages/plitejs/test/history/anchor-history-contract.ts ./packages/plitejs/test/authored-anchor-contract.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/annotation-store-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx test/react/view-source-fault-boundary.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-annotation-view-index-benchmark.json",
+          "required": true,
+          "recorded": true
+        },
+        {
+          "path": "docs/plans/artifacts/annotations-architecture-adoption/annotation-view-index-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-authored-checkpoint",
@@ -576,7 +631,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-authored-collaboration",
@@ -598,7 +655,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-authored-mounted",
@@ -620,7 +679,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-authored-retention",
@@ -642,7 +703,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-authored-scale",
@@ -664,7 +727,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-authored-typing",
@@ -686,7 +751,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-command-dispatch",
@@ -699,7 +766,7 @@
       "metric": "plite_command_dispatch_worst_budget_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/command-spec.test.ts ./packages/plitejs/test/extension-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/command-spec.test.ts ./packages/plitejs/test/plugin-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-command-dispatch-benchmark.json",
@@ -708,7 +775,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-content-slice-value",
@@ -730,7 +799,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-correction-worklist",
@@ -752,29 +823,13 @@
         }
       ],
       "status": "recorded",
-      "migration": null
-    },
-    {
-      "id": "plite-extension-graph",
-      "family": "core-extension",
-      "kind": "current",
-      "owner": "plite",
-      "question": "Do descriptor-owned required dependencies compile and reconfigure within fixed budgets at 10, 100, and 1,000 descriptors while cleanup retains zero registry records?",
-      "command": "PLITE_EXTENSION_GRAPH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-extension-graph-benchmark.ts --output=tmp/plite-extension-graph-benchmark.json",
-      "cwd": ".",
-      "metric": "plite_extension_graph_worst_budget_ratio",
-      "direction": "lower",
-      "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/extension-configuration.test.ts ./packages/plitejs/test/extension-methods-contract.ts ./benchmarks/editor/benchmarks/plite-extension-graph-benchmark.test.ts",
-      "artifacts": [
-        {
-          "path": "tmp/plite-extension-graph-benchmark.json",
-          "required": true,
-          "recorded": true
-        }
-      ],
-      "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": {
+        "status": "passed",
+        "startedAt": "2026-09-30T20:32:28.920Z",
+        "contractSha256": "56ffeab51478f9559fcfda5f3d6f09ac61641c663384a1406737657db945fe98"
+      },
+      "recipe": "current"
     },
     {
       "id": "plite-external-text-browser",
@@ -796,7 +851,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-fit-content-locality",
@@ -818,7 +875,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-history-depth",
@@ -840,7 +899,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-history-retained-memory",
@@ -862,7 +923,33 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
+    },
+    {
+      "id": "plite-plugin-graph",
+      "family": "core-extension",
+      "kind": "current",
+      "owner": "plite",
+      "question": "Do descriptor-owned required dependencies compile and reconfigure within fixed budgets at 10, 100, and 1,000 descriptors while cleanup retains zero registry records?",
+      "command": "PLITE_PLUGIN_GRAPH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-plugin-graph-benchmark.ts --output=tmp/plite-plugin-graph-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_plugin_graph_worst_budget_ratio",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/plugin-configuration.test.ts ./packages/plitejs/test/plugin-methods-contract.ts ./benchmarks/editor/benchmarks/plite-plugin-graph-benchmark.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-plugin-graph-benchmark.json",
+          "required": true,
+          "recorded": false
+        }
+      ],
+      "status": "missing-required-artifact",
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-read-view-lifecycle",
@@ -884,20 +971,22 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-schema-architecture",
       "family": "core-schema",
       "kind": "current",
       "owner": "plite",
-      "question": "Does schema architecture stay bounded across 1/100/1,000 contributions, 100/1,000 Plate descriptors, local construction and schema deltas, equivalent/non-equivalent configuration, 10k-block migration, projected clipboard, type inference, and the established compiled corpus?",
+      "question": "Does schema architecture stay bounded across contributions, Plate descriptors, one- and two-slot prefix compilation, local construction and schema deltas, reconfiguration, migration, projected clipboard, type inference, and the established compiled corpus?",
       "command": "PLITE_SCHEMA_ARCHITECTURE_STRICT=1 PLITE_SCHEMA_TYPECHECK_BUDGET=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts --output=tmp/plite-schema-architecture-benchmark.json",
       "cwd": ".",
       "metric": "plite_schema_architecture_compile_p95_ms",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/schema-target-model-oracle.test.ts ./packages/plitejs/test/schema-compiler-laws.test.ts ./packages/plitejs/test/schema-compiler.test.ts ./packages/plitejs/test/incremental-schema-validation.test.ts ./packages/plitejs/test/react/schema-runtime-invalidation-contract.test.ts ./packages/platejs/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/projected-clipboard-contract.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/schema-target-model-oracle.test.ts ./packages/plitejs/test/schema-compiler-laws.test.ts ./packages/plitejs/test/schema-compiler.test.ts ./packages/plitejs/test/schema-contract-generation.test.ts ./packages/plitejs/test/incremental-schema-validation.test.ts ./packages/plitejs/test/react/schema-runtime-invalidation-contract.test.ts ./packages/platejs/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/projected-clipboard-contract.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-schema-architecture-benchmark.json",
@@ -906,14 +995,16 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-schema-construction",
       "family": "core-schema",
       "kind": "current",
       "owner": "plite",
-      "question": "Does a schema-backed sparse edit keep the changed representation span and untouched boundary identities local inside one deep, wide top-level node?",
+      "question": "Do schema-backed sparse edits and one- or two-slot required prefixes preserve local changes and existing required-node identity, with bounded median property-edit overhead against a matched plain schema, across 100 to 50,000 siblings?",
       "command": "PLITE_SCHEMA_CONSTRUCTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-construction-benchmark.ts --output=tmp/plite-schema-construction-benchmark.json",
       "cwd": ".",
       "metric": "plite_schema_construction_max_changed_span",
@@ -928,7 +1019,33 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
+    },
+    {
+      "id": "plite-structural-compare",
+      "family": "core-diff",
+      "kind": "current",
+      "owner": "plitejs/diff",
+      "question": "Does immutable structural comparison preserve canonical results within the frozen normal, large, stress, duplicate-heavy, and three-way budgets?",
+      "command": "PLITE_STRUCTURAL_COMPARE_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-structural-compare-benchmark.ts --output=tmp/plite-structural-compare-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_structural_compare_passed",
+      "direction": "higher",
+      "printsMetric": true,
+      "correctnessCommand": "pnpm --filter plitejs test:partition:diff && bun test packages/plitejs/test/authored-comparison-import.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-structural-compare-benchmark.json",
+          "required": true,
+          "recorded": false
+        }
+      ],
+      "status": "missing-required-artifact",
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-transaction-execution",
@@ -950,7 +1067,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "plite-yjs-event-change-bridge",
@@ -972,7 +1091,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-active-typing-breakdown",
@@ -996,10 +1117,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-active-typing-breakdown",
-        "evidenceKitCategory": "slate-react-active-typing-breakdown",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "react-active-typing-breakdown"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-huge-document-browser-trace",
@@ -1023,10 +1144,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-huge-document-browser-trace",
-        "evidenceKitCategory": "slate-react-huge-document-browser-trace",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "react-huge-document-browser-trace"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-huge-document-full",
@@ -1048,7 +1169,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-huge-document-overlays",
@@ -1072,10 +1195,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-huge-document-overlays",
-        "evidenceKitCategory": "slate-react-huge-document-overlays",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "react-huge-document-overlays"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-huge-document-slate-browser-trace",
@@ -1099,10 +1222,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-huge-document-slate-browser-trace",
-        "evidenceKitCategory": "slate-react-huge-document-browser-trace",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "react-huge-document-slate-browser-trace"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-huge-document-virtualized-type-to-paint",
@@ -1124,7 +1247,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-pagination-virtualized-char-burst",
@@ -1146,7 +1271,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-pagination-virtualized-real-editor-ops",
@@ -1168,7 +1295,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-rerender-breadth",
@@ -1192,10 +1321,10 @@
       "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-rerender-breadth",
-        "evidenceKitCategory": "slate-react-rerender-breadth",
-        "evidenceKitActive": true
-      }
+        "evidenceKitId": "react-rerender-breadth"
+      },
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-runtime-node-fanout",
@@ -1217,7 +1346,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-stable-id-overlay-source",
@@ -1230,7 +1361,7 @@
       "metric": "plite_mapped_source_trusted_one_id_p95_ms",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/stable-id-mapped-source.test.ts test/react/annotation-store-contract.test.tsx test/react/widget-layer-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx",
+      "correctnessCommand": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/stable-id-mapped-source.test.ts test/react/annotation-store-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx",
       "artifacts": [
         {
           "path": "tmp/plite-stable-id-overlay-source-benchmark.json",
@@ -1239,7 +1370,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "react-text-flow-browser-matrix",
@@ -1261,7 +1394,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     },
     {
       "id": "yjs-collaboration",
@@ -1283,7 +1418,9 @@
         }
       ],
       "status": "recorded",
-      "migration": null
+      "migration": null,
+      "latestRun": null,
+      "recipe": null
     }
   ]
 }

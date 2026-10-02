@@ -62,6 +62,7 @@ export const startBrowserNativeEventTrace = async (
         | null = null;
       let lastBeforeInput: BrowserNativeEventTraceEntry | null = null;
       let lastComposition: BrowserNativeEventTraceEntry | null = null;
+      let lastSeq = 0;
 
       const rootNode = element.getRootNode() as Document | ShadowRoot;
       const { ownerDocument } = element;
@@ -375,6 +376,8 @@ export const startBrowserNativeEventTrace = async (
       };
 
       const pushEntry = (entry: BrowserNativeEventTraceEntry) => {
+        lastSeq += 1;
+        entry.seq = lastSeq;
         entries.push(entry);
 
         if (entries.length > innerMaxEntries) {
@@ -395,20 +398,33 @@ export const startBrowserNativeEventTrace = async (
           event instanceof CompositionEvent
             ? event
             : (null as CompositionEvent | null);
+        const keyboardEvent =
+          event instanceof KeyboardEvent
+            ? event
+            : (null as KeyboardEvent | null);
+        const pointerEvent =
+          event instanceof PointerEvent ? event : (null as PointerEvent | null);
 
         if (type === 'beforeinput') {
           beforeInputTextNodes = snapshotTextNodes();
         }
 
         const entry: BrowserNativeEventTraceEntry = {
+          clientX: pointerEvent?.clientX ?? null,
+          clientY: pointerEvent?.clientY ?? null,
           data: inputEvent?.data ?? compositionEvent?.data ?? null,
           domDelta:
             type === 'input'
               ? diffTextNodes(beforeInputTextNodes, snapshotTextNodes())
               : null,
           inputType: inputEvent?.inputType ?? null,
-          isComposing: inputEvent?.isComposing ?? null,
+          isComposing:
+            inputEvent?.isComposing ?? keyboardEvent?.isComposing ?? null,
+          isTrusted: event.isTrusted,
+          key: keyboardEvent?.key ?? null,
+          keyCode: keyboardEvent?.keyCode ?? null,
           selection: takeSelection(),
+          seq: 0,
           targetRanges: inputEvent ? takeTargetRanges(inputEvent) : [],
           timestamp: Date.now(),
           type,
@@ -427,6 +443,7 @@ export const startBrowserNativeEventTrace = async (
       };
 
       const eventTypes: BrowserNativeEventTraceType[] = [
+        'keydown',
         'beforeinput',
         'input',
         'compositionstart',
@@ -438,6 +455,8 @@ export const startBrowserNativeEventTrace = async (
         element.addEventListener(type, record, { capture: true });
       });
       ownerDocument.addEventListener('selectionchange', record);
+      // Touches on toolbars outside the editor still belong to touch proof.
+      ownerDocument.addEventListener('pointerdown', record, { capture: true });
 
       (element as Record<string, any>)[key] = {
         anomalies,
@@ -454,6 +473,9 @@ export const startBrowserNativeEventTrace = async (
             element.removeEventListener(type, record, { capture: true });
           });
           ownerDocument.removeEventListener('selectionchange', record);
+          ownerDocument.removeEventListener('pointerdown', record, {
+            capture: true,
+          });
         },
       };
     },
@@ -484,6 +506,16 @@ export const stopBrowserNativeEventTrace = async (root: Locator) => {
     { key: NATIVE_EVENT_TRACE_KEY }
   );
 };
+
+/** Read only the newest trace entry's `seq`, or 0 before any entry. */
+export const readBrowserNativeEventTraceSeq = async (root: Locator) =>
+  root.evaluate(
+    (element: HTMLElement, { key }: { key: string }) =>
+      ((element as Record<string, any>)[key]?.entries?.at(-1)?.seq as
+        | number
+        | undefined) ?? 0,
+    { key: NATIVE_EVENT_TRACE_KEY }
+  );
 
 /** Read the native event trace captured for a editor browser root. */
 export const takeBrowserNativeEventTrace = async (

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { validateConceptMatrix } from '../../../../.agents/skills/editor-audit/scripts/validate-concept-matrix.mjs';
+import { validateConceptMatrix } from '../../../../.agents/skills/research/scripts/validate-concept-matrix.mjs';
 import { prosekitOwners, wordgardOwners } from './reference-owner-map.mjs';
 import { refineComparisonRows } from './refine-comparison-decisions.mjs';
 

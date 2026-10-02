@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { validateConceptMatrix } from '../../../../.agents/skills/editor-audit/scripts/validate-concept-matrix.mjs';
+import { validateConceptMatrix } from '../../../../.agents/skills/research/scripts/validate-concept-matrix.mjs';
 import { scoreArchitecture } from '../../../../tooling/scripts/plate-review-score.mjs';
 
 const root = process.cwd();

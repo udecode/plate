@@ -1259,13 +1259,7 @@ for (const action of ['Accept', 'Reject'] as const) {
       .toBeGreaterThan(0);
     const source = await image.getAttribute('src');
     const deleteImage = async () => {
-      await image.hover();
-      const handle = root
-        .locator(':scope > div')
-        .filter({ has: page.locator('.editor-image img') })
-        .getByRole('button', { name: 'Drag block', exact: true });
-      await handle.hover();
-      await handle.locator('div').first().click();
+      await image.click();
       await expect(root).toBeFocused();
       await expect(
         root.locator('.editor-image[data-editor-retained]')

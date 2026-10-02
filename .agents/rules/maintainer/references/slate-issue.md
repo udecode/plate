@@ -5,20 +5,20 @@ Handle $ARGUMENTS.
 This is the thin public coordinator for one Slate issue:
 
 ```txt
-issue intake/classification -> patch evidence packet
+issue intake/classification -> bug-fix evidence packet
 -> root check -> Plate PR to next -> issue update
 -> close only when the claimed integration state is true
 ```
 
 Bare issue numbers target `udecode/slate`; an issue URL keeps its explicit
-repository. Use `maintainer` for queue selection or batches. Use `patch`
-for a local behavior bug or regression with no public mutation.
+repository. Use `maintainer` for queue selection or batches. Use pstack's Bug
+fix playbook for a local behavior bug or regression with no public mutation.
 
 ## Authority
 
 - Issue authority: the repository resolved from the argument; default
   `udecode/slate`.
-- Implementation authority: `patch` in the current Plate checkout on
+- Implementation authority: pstack's Bug fix playbook in the current Plate checkout on
   `next`.
 - Shipping authority: a Plate PR targeting `next`.
 - Release authority: npm/GitHub release readback.
@@ -26,7 +26,7 @@ for a local behavior bug or regression with no public mutation.
 The active user request determines local repair, PR and message authority.
 This recipe prepares those steps but does not grant them. Complete local proof
 first; run public steps only when explicitly authorized. Existing authority
-remains valid across the Task and Patch handoffs.
+remains valid across the bug-fix handoff.
 
 ## Hard Rules
 
@@ -34,12 +34,12 @@ remains valid across the Task and Patch handoffs.
 - Read `CONTRIBUTING.md`, the relevant issue template,
   `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before public mutation.
 - Do not duplicate local reproduction, test design, implementation,
-  architecture pressure, focused proof, or Task's review decision here. Delegate that
-  complete local packet to `patch`.
+  architecture pressure, focused proof, or the review decision here. Run that
+  complete local packet through pstack's Bug fix playbook.
 - Do not use a sibling Slate checkout as implementation proof.
 - Current-green behavior is `already-accounted` only when Plate `next` contains
   and proves it, not when it exists only in unmerged local changes.
-- An authorized code-changing PR targets `next` after `pnpm check` passes.
+- An authorized code-changing PR follows the pstack block's Commit and PR text rule.
   A local-only request ends with the complete evidence packet.
 - Never merge unless the user explicitly asks.
 - A merge to `next` proves beta-branch integration, not stable availability.
@@ -84,17 +84,17 @@ Extract:
 
 | State | Coordinator action |
 | --- | --- |
-| `red-current` | Delegate the full local repair to `patch`, then ship its evidence-backed diff through a Plate PR. |
+| `red-current` | Run the full local repair through pstack's Bug fix playbook, then ship its evidence-backed diff through a Plate PR. |
 | `local-only-fix` | Treat as `red-current`; unmerged local state is not integrated. |
 | `already-accounted` | Verify exact current `next` behavior, comment with evidence, and close only within the proven claim. |
 | `needs-manual-proof` | Run honest supporting proof, request the exact human flow, comment, and leave open. |
-| `plate-owned` | Delegate local repair to `patch`; keep Slate issue coordination here or use `maintainer` when the public target is Plate. |
+| `plate-owned` | Run local repair through pstack's Bug fix playbook; keep Slate issue coordination here or use `maintainer` when the public target is Plate. |
 | `invalid-or-out-of-scope` | Comment only with decisive evidence; close only when ownership and confidence justify it. |
 | `blocked` | Report missing evidence/access/tooling; do not claim fixed or close. |
 
-## Delegate Local Repair
+## Local Repair
 
-For `red-current` or `local-only-fix`, invoke `patch` with the normalized
+For `red-current` or `local-only-fix`, run pstack's Bug fix playbook on the normalized
 behavior report and issue constraints. Require this evidence packet back:
 
 - classification and root cause;
@@ -103,10 +103,10 @@ behavior report and issue constraints. Require this evidence packet back:
 - Browser/device proof or explicit limitation;
 - architecture-pressure verdict;
 - changeset status;
-- Task review result or N/A with reason;
+- review result under the pstack block's Review rule, or N/A with reason;
 - unresolved caveat.
 
-Reject an incomplete packet. Do not recreate the worker's patch methodology or
+Reject an incomplete packet. Do not recreate the Bug fix playbook or
 package command matrix in this coordinator.
 
 ## Ship And Synchronize
@@ -116,7 +116,7 @@ When the user authorizes shipping and the corresponding messages:
 1. Verify the worker evidence matches the current checkout.
 2. Run the root `check` gate.
 3. Create or update a `udecode/plate` PR targeting `next`, using the repo
-   task-style body and `<owner>/<repo>#<number>`.
+   PR template body (`.github/PULL_REQUEST_TEMPLATE.md`) and `<owner>/<repo>#<number>`.
 4. Verify the PR body with `gh pr view --json body`.
 5. Comment on the Slate issue with `fix prepared`, the PR URL, exact proof, and
    the merge/release boundary.

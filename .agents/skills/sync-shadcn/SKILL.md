@@ -1,5 +1,5 @@
 ---
-description: Sync upstream shadcn docs into Plate with source inventory, fork-aware apply and baseline accounting.
+description: Sync upstream shadcn docs into Plate with source inventory, fork-aware apply and baseline accounting, or match shadcn's registry and install protocol source by source.
 name: sync-shadcn
 metadata:
   skiller:
@@ -8,9 +8,9 @@ metadata:
 
 # Sync Shadcn
 
-Handle $ARGUMENTS. Apply [the Plate workflow](../task/references/workflow.md)
-and read the complete [sync policy](./references/policy.md), then the selected
-mode below. Task owns lifecycle and existing authority; this skill owns
+Handle $ARGUMENTS. Read the complete [sync policy](./references/policy.md), then
+the selected mode below. pstack's poteto-mode owns lifecycle and existing
+authority; this skill owns
 upstream range accounting, Plate forks, slice decisions and sync state.
 
 Plate's docs app is a forked product. Upstream owns the Fumadocs/shadcn docs
@@ -26,6 +26,7 @@ MCP, Plate Plus hooks, GA and intentional forks. Keep that ownership explicit.
 | `apply` | [Accepted slice application](./references/apply.md) |
 | `dashboard` | [Review board](./references/dashboard.md) |
 | `review` | [Re-audit the current plan](./references/review.md) |
+| `parity <surface>`, or a request to mirror shadcn | [Registry and install protocol parity](./references/parity.md) |
 
 Named scope constrains the inventory. An unscoped sync inventories the whole
 tracked range. Read `docs/sync/shadcn/status.json` and `decisions.md` before

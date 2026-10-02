@@ -6,6 +6,8 @@ import { chromium } from '@playwright/test';
 import {
   hasExactCodeHighlight,
   hasInsertedCodeHighlight,
+  readInputStart,
+  startInputClockBeforeEditorHandlers,
 } from './code-block-highlight-oracle.mjs';
 
 let browser;
@@ -131,3 +133,38 @@ for (const strategy of ['codemirror', 'native']) {
     await page.close();
   });
 }
+
+test('rejects an input sample whose beforeinput clock never started', () => {
+  for (const startedAt of [null, undefined, Number.NaN, Infinity, -Infinity]) {
+    assert.throws(() => readInputStart(startedAt), /finite start time/u);
+  }
+  assert.equal(readInputStart(0), 0);
+});
+
+test('starts the input clock before an editor handler that stops propagation', async () => {
+  const page = await browser.newPage();
+  await page.setContent('<div id="editor" contenteditable="true">abc</div>');
+  await page.addScriptTag({
+    content: `globalThis.readInputStart = ${readInputStart.toString()}; globalThis.startInputClockBeforeEditorHandlers = ${startInputClockBeforeEditorHandlers.toString()}`,
+  });
+  await page.evaluate(() => {
+    const editor = document.getElementById('editor');
+    editor.addEventListener('beforeinput', (event) =>
+      event.stopImmediatePropagation()
+    );
+    globalThis.startInputClockBeforeEditorHandlers();
+    editor.focus();
+  });
+  await page.keyboard.insertText('x');
+
+  assert.ok(
+    Number.isFinite(
+      await page.evaluate(() =>
+        globalThis.readInputStart(
+          globalThis.__plateCodeBlockBenchmarkInputStartedAt
+        )
+      )
+    )
+  );
+  await page.close();
+});

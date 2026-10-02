@@ -10,7 +10,7 @@ Question: What makes partial document input stable, cancelable and reversible, a
 
 [2026-09-30-streaming-history-reconciliation](../review-records/2026-09-30-streaming-history-reconciliation.json) — **stop**. Stop proposing another generic streaming owner. The adopted Markdown parseSlice previous-result hint supplies neutral incremental parsing, while the non-AI demo owns abort, cadence and strict finalization and AI owns acceptance/undo. September 10 AI-dependent-demo wording is superseded by current source and recorded conversion adoption. Retain converted-segment reuse and coherent immutable preview views; preserve conservative invalidation and explicit remaining proof limits. This scope gains review coverage, not a retroactively rebound implementation receipt.
 
-Compiled decision: [streaming-ownership.md](../decisions/streaming-ownership.md). Source observation: matching. Source matching is not behavior proof.
+Compiled decision: [streaming-ownership.md](../decisions/streaming-ownership.md). Source observation: stale. Source matching is not behavior proof.
 
 Execution: **planned**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
 
@@ -18,7 +18,7 @@ Imported scope flags (unbound historical claims): adoption not-assessed, proof n
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [AIChatPlugin.ts](../../../packages/platejs/src/ai/react/AIChatPlugin.ts), [markdown-streaming-contract.spec.ts](../../../apps/www/tests/browser/markdown-streaming-contract.spec.ts), [playwright.config.ts](../../../apps/www/playwright.config.ts), [package.json](../../../apps/www/package.json), [VISION.md](../../../VISION.md), [common.md](../../vision/common.md), [package.json](../../../package.json), [pnpm-lock.yaml](../../../pnpm-lock.yaml), [SKILL.md](../../../.agents/skills/best-api-review/SKILL.md), `.agents/rules/task/references/best-api-review.md` (historical input unavailable). Changed directories: none identified. Changed source groups: browser/markdown-streaming-contract.
 
 - **unbound-plan**: [2026-09-10-ai-streaming-and-markdown-demo-architecture.md](../../plans/2026-09-10-ai-streaming-and-markdown-demo-architecture.md).
 
@@ -50,7 +50,7 @@ Earlier conclusions and rejected alternatives remain question-specific. A newer 
 
 ### 2026-09-30: 2026-09-30-streaming-history-reconciliation
 
-[Immutable record](../review-records/2026-09-30-streaming-history-reconciliation.json) — review; stop; observation matching.
+[Immutable record](../review-records/2026-09-30-streaming-history-reconciliation.json) — review; stop; observation stale.
 
 Stop proposing another generic streaming owner. The adopted Markdown parseSlice previous-result hint supplies neutral incremental parsing, while the non-AI demo owns abort, cadence and strict finalization and AI owns acceptance/undo. September 10 AI-dependent-demo wording is superseded by current source and recorded conversion adoption. Retain converted-segment reuse and coherent immutable preview views; preserve conservative invalidation and explicit remaining proof limits. This scope gains review coverage, not a retroactively rebound implementation receipt.
 

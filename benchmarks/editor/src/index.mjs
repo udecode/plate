@@ -1,6 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import {
+  admitArtifact,
+  readTargetRegistry,
+} from '../../../tooling/scripts/bench-targets.mjs';
+
 const compareStrings = (left, right) => {
   if (left < right) return -1;
   if (left > right) return 1;
@@ -66,6 +71,12 @@ export function normalizeBenchmarkRow(row, context = {}) {
 
   if (row.note !== undefined) normalized.note = String(row.note);
   if (context.sourcePath) normalized.sourcePath = String(context.sourcePath);
+  if (row.target !== undefined) {
+    normalized.target = requireString(row.target, 'target');
+  }
+  if (row.admission !== undefined) {
+    normalized.admission = requireString(row.admission, 'admission');
+  }
 
   return normalized;
 }
@@ -106,20 +117,23 @@ export function readResearchSources(filePath) {
 export function readBenchmarkRegistry({
   registryPath = benchmarkRegistryDefaultPath,
   rootDir = process.cwd(),
+  repoRoot = path.resolve(rootDir, '../..'),
 } = {}) {
   const resolvedPath = path.resolve(rootDir, registryPath);
   const payload = readJson(resolvedPath);
-  const artifacts = Array.isArray(payload.artifacts) ? payload.artifacts : [];
+  const targetRegistry = readTargetRegistry(repoRoot);
   const workloads = Array.isArray(payload.workloads) ? payload.workloads : [];
-  const runtimeAdapters = Array.isArray(payload.runtimeAdapters)
-    ? payload.runtimeAdapters
-    : [];
+  const retired = Array.isArray(payload.retired) ? payload.retired : [];
   const discardUnregistered = Array.isArray(payload.discardUnregistered)
     ? payload.discardUnregistered
     : [];
 
   return {
-    artifacts: artifacts.map(normalizeRegistryArtifact),
+    artifacts: targetRegistry.targets.flatMap((target) =>
+      target.artifacts
+        .filter((artifact) => artifact.evidence)
+        .map((artifact) => normalizeTargetArtifact(target, artifact))
+    ),
     discardUnregistered: discardUnregistered.map((entry) => ({
       match: requireString(entry.match, 'discardUnregistered.match'),
       root: requireString(entry.root, 'discardUnregistered.root'),
@@ -129,10 +143,31 @@ export function readBenchmarkRegistry({
       payload.policy && typeof payload.policy === 'object'
         ? { ...payload.policy }
         : {},
-    runtimeAdapters: runtimeAdapters.map(normalizeRegistryRuntimeAdapter),
+    repoRoot,
+    retired: retired.map(normalizeRetiredArtifact),
+    targetRegistry,
     version: Number(payload.version) || 1,
     workloads: workloads.map(normalizeRegistryWorkload),
   };
+}
+
+export function readArtifactAdmission(spec, payload, { registry }) {
+  const target = registry.targetRegistry.targets.find(
+    (entry) => entry.id === spec.id
+  );
+  const artifact = target?.artifacts.find((entry) => entry.path === spec.path);
+
+  if (!artifact) {
+    return { latestRun: null, reasons: ['no-target'], state: 'unknown' };
+  }
+
+  return admitArtifact({
+    artifact,
+    payload,
+    registry: registry.targetRegistry,
+    repoRoot: registry.repoRoot,
+    target,
+  });
 }
 
 export function createEvidenceReadinessRows({ rootDir = process.cwd() } = {}) {
@@ -190,6 +225,19 @@ export function createSlateLegacyCompareRows({
   const registeredSpec = benchmarkRegistry.artifacts.find(
     (spec) => spec.id === 'react-huge-document-legacy-compare'
   );
+
+  if (!registeredSpec && !artifactPath) {
+    return [
+      normalizeBenchmarkRow({
+        category: 'slate-react-huge-document-legacy-compare',
+        fixture: 'react-huge-document-legacy-compare',
+        library: 'plate-editor-evidence',
+        status: 'unavailable',
+        note: 'no target declares react-huge-document-legacy-compare; pass --artifact to read a legacy comparison artifact',
+      }),
+    ];
+  }
+
   const spec = {
     ...(registeredSpec || {
       category: 'slate-react-huge-document-legacy-compare',
@@ -197,10 +245,13 @@ export function createSlateLegacyCompareRows({
       kind: 'slate-legacy-compare',
       required: true,
     }),
-    ...(artifactPath ? { path: artifactPath } : {}),
+    ...(artifactPath ? { path: path.resolve(rootDir, artifactPath) } : {}),
   };
 
-  return createBenchmarkArtifactRows(spec, { rootDir });
+  return createBenchmarkArtifactRows(spec, {
+    registry: benchmarkRegistry,
+    rootDir,
+  });
 }
 
 export function createRichTextEditorBenchmarkRows({
@@ -210,50 +261,50 @@ export function createRichTextEditorBenchmarkRows({
 } = {}) {
   const benchmarkRegistry =
     registry || readBenchmarkRegistry({ registryPath, rootDir });
-  const rows = [
+  const artifactRows = readArtifactRows(benchmarkRegistry, rootDir);
+
+  return [
     ...createRichTextEditorCoverageRows({
+      artifactRows,
       registry: benchmarkRegistry,
       rootDir,
     }),
+    ...[...artifactRows.values()].flat(),
+    ...benchmarkRegistry.retired.map((retired) =>
+      normalizeBenchmarkRow({
+        admission: 'historical',
+        category: retired.category,
+        fixture: retired.id,
+        library: retired.library || 'slate-v2',
+        status: 'historical',
+        note:
+          `retired definition; related target ${retired.relatedTarget ?? 'none'}; ` +
+          `artifact ${retired.path} ${fs.existsSync(path.resolve(benchmarkRegistry.repoRoot, retired.path)) ? 'retained' : 'unavailable'}`,
+      })
+    ),
   ];
-
-  for (const spec of benchmarkRegistry.artifacts) {
-    rows.push(...createBenchmarkArtifactRows(spec, { rootDir }));
-  }
-
-  return rows;
 }
 
 export function createRichTextEditorCoverageRows({
+  artifactRows,
   registry,
   registryPath,
   rootDir = process.cwd(),
 } = {}) {
   const benchmarkRegistry =
     registry || readBenchmarkRegistry({ registryPath, rootDir });
-  const artifactSpecs = benchmarkRegistry.artifacts;
   const { workloads } = benchmarkRegistry;
+  const rowsBySpec =
+    artifactRows ?? readArtifactRows(benchmarkRegistry, rootDir);
+  const specs = new Map(
+    benchmarkRegistry.artifacts.map((spec) => [spec.id, spec])
+  );
   const localTargets = new Map(
     editorTargets.map((target) => [
       target.id,
       fs.existsSync(path.resolve(rootDir, target.sourcePath)),
     ])
   );
-  const measuredArtifacts = new Set(
-    artifactSpecs
-      .filter((spec) => fs.existsSync(path.resolve(rootDir, spec.path)))
-      .map((spec) => spec.id)
-  );
-  const measuredSlateV2 = new Set(
-    artifactSpecs
-      .filter((spec) => spec.owner === 'slate-v2')
-      .filter((spec) => measuredArtifacts.has(spec.id))
-      .map((spec) => spec.id)
-  );
-  const runtimeAdapterCoverage = createRuntimeAdapterCoverageMap({
-    measuredArtifacts,
-    registry: benchmarkRegistry,
-  });
   const rows = editorTargets.map((target) =>
     normalizeBenchmarkRow({
       category: 'rich-text-editor-target-coverage',
@@ -269,8 +320,8 @@ export function createRichTextEditorCoverageRows({
     for (const target of editorTargets) {
       const status = readWorkloadCoverageStatus(target, workload, {
         localTargets,
-        measuredSlateV2,
-        runtimeAdapterCoverage,
+        rowsBySpec,
+        specs,
       });
       rows.push(
         normalizeBenchmarkRow({
@@ -288,28 +339,67 @@ export function createRichTextEditorCoverageRows({
   return rows;
 }
 
+function readArtifactRows(registry, rootDir) {
+  return new Map(
+    registry.artifacts.map((spec) => [
+      spec.id,
+      createBenchmarkArtifactRows(spec, { registry, rootDir }),
+    ])
+  );
+}
+
 export function createBenchmarkArtifactRows(
   spec,
-  { rootDir = process.cwd() } = {}
+  { registry, rootDir = process.cwd() }
 ) {
-  const resolvedPath = path.resolve(rootDir, spec.path);
+  const resolvedPath = path.resolve(registry.repoRoot, spec.path);
   const relativeArtifactPath = path.relative(rootDir, resolvedPath);
+  const artifactRow = (fields) =>
+    normalizeBenchmarkRow({
+      category: spec.category,
+      fixture: spec.id,
+      library: spec.library || 'slate-v2',
+      target: spec.id,
+      ...fields,
+    });
 
   if (!fs.existsSync(resolvedPath)) {
     return [
-      normalizeBenchmarkRow({
-        category: spec.category,
-        fixture: spec.id,
-        library: spec.library || 'slate-v2',
+      artifactRow({
+        note: `missing artifact ${relativeArtifactPath}`,
         status: spec.required
           ? 'missing-artifact'
           : 'optional-missing-artifact',
-        note: `missing artifact ${relativeArtifactPath}`,
       }),
     ];
   }
 
-  const payload = readJson(resolvedPath);
+  let payload;
+  try {
+    payload = readJson(resolvedPath);
+  } catch (error) {
+    return [
+      artifactRow({
+        note: `unreadable artifact ${relativeArtifactPath}: ${error.message}`,
+        status: 'integrity-error',
+      }),
+    ];
+  }
+
+  const admission = readArtifactAdmission(spec, payload, { registry });
+
+  if (admission.latestRun?.status === 'failed') {
+    const { message, stage } = admission.latestRun;
+
+    return [
+      artifactRow({
+        admission: admission.state,
+        note: `latest run failed at ${stage}: ${message}; older artifact ${relativeArtifactPath} not shown (${admission.reasons.join(', ')})`,
+        status: admission.state,
+      }),
+    ];
+  }
+
   const rows =
     spec.kind === 'slate-legacy-compare'
       ? normalizeSlateLegacyCompareArtifact(payload, {
@@ -335,17 +425,22 @@ export function createBenchmarkArtifactRows(
 
   if (rows.length === 0) {
     return [
-      normalizeBenchmarkRow({
-        category: spec.category,
-        fixture: spec.id,
-        library: spec.library || 'slate-v2',
-        status: 'missing-metrics',
+      artifactRow({
         note: `artifact ${relativeArtifactPath} did not expose metric stats`,
+        status: 'missing-metrics',
       }),
     ];
   }
 
-  return rows;
+  return rows.map((row) => ({
+    ...row,
+    admission: admission.state,
+    ...(admission.state !== 'current' && {
+      note: `${row.note ? `${row.note}; ` : ''}status=${row.status}; admission=${admission.state} (${admission.reasons.join(', ')})`,
+      status: admission.state,
+    }),
+    target: spec.id,
+  }));
 }
 
 export function normalizeSlateLegacyCompareArtifact(
@@ -450,32 +545,44 @@ function requireString(value, name) {
   return value;
 }
 
-function normalizeRegistryArtifact(artifact) {
-  if (!artifact || typeof artifact !== 'object' || Array.isArray(artifact)) {
-    throw new TypeError('registry artifact must be an object');
-  }
-
+function normalizeTargetArtifact(target, artifact) {
   const normalized = {
-    category: requireString(artifact.category, 'artifact.category'),
-    command: artifact.command ? String(artifact.command) : '',
-    cwd: artifact.cwd ? String(artifact.cwd) : '',
-    decision: artifact.decision ? String(artifact.decision) : '',
-    family: artifact.family ? String(artifact.family) : '',
-    id: requireString(artifact.id, 'artifact.id'),
-    kind: requireString(artifact.kind, 'artifact.kind'),
-    owner: artifact.owner ? String(artifact.owner) : '',
+    category: requireString(artifact.evidence.category, 'evidence.category'),
+    command: target.command,
+    cwd: target.cwd,
+    decision: target.question,
+    family: target.family,
+    id: target.id,
+    kind: requireString(artifact.evidence.kind, 'evidence.kind'),
+    owner: target.owner,
     path: requireString(artifact.path, 'artifact.path'),
     required: artifact.required !== false,
   };
 
-  if (artifact.library !== undefined) {
-    normalized.library = String(artifact.library);
+  if (artifact.evidence.library !== undefined) {
+    normalized.library = String(artifact.evidence.library);
   }
-  if (artifact.surfaceLibraries !== undefined) {
-    normalized.surfaceLibraries = artifact.surfaceLibraries;
+  if (artifact.evidence.surfaceLibraries !== undefined) {
+    normalized.surfaceLibraries = artifact.evidence.surfaceLibraries;
   }
 
   return normalized;
+}
+
+function normalizeRetiredArtifact(retired) {
+  if (!retired || typeof retired !== 'object' || Array.isArray(retired)) {
+    throw new TypeError('retired artifact must be an object');
+  }
+
+  return {
+    category: requireString(retired.category, 'retired.category'),
+    id: requireString(retired.id, 'retired.id'),
+    ...(retired.library !== undefined && { library: String(retired.library) }),
+    path: requireString(retired.path, 'retired.path'),
+    ...(retired.relatedTarget !== undefined && {
+      relatedTarget: String(retired.relatedTarget),
+    }),
+  };
 }
 
 function normalizeRegistryWorkload(workload) {
@@ -484,30 +591,11 @@ function normalizeRegistryWorkload(workload) {
   }
 
   return {
-    artifactIds: Array.isArray(workload.artifactIds)
-      ? workload.artifactIds.map(String)
-      : [],
     id: requireString(workload.id, 'workload.id'),
-    legacy: Boolean(workload.legacy),
-    slateV2: Boolean(workload.slateV2),
+    targets: Array.isArray(workload.targets)
+      ? workload.targets.map(String)
+      : [],
     workload: requireString(workload.workload, 'workload.workload'),
-  };
-}
-
-function normalizeRegistryRuntimeAdapter(adapter) {
-  if (!adapter || typeof adapter !== 'object' || Array.isArray(adapter)) {
-    throw new TypeError('registry runtime adapter must be an object');
-  }
-
-  return {
-    artifactIds: Array.isArray(adapter.artifactIds)
-      ? adapter.artifactIds.map(String)
-      : [],
-    decision: adapter.decision ? String(adapter.decision) : '',
-    target: requireString(adapter.target, 'runtimeAdapter.target'),
-    workloadIds: Array.isArray(adapter.workloadIds)
-      ? adapter.workloadIds.map(String)
-      : [],
   };
 }
 
@@ -700,6 +788,14 @@ function collectMetricStatsRows(
   }
 }
 
+const thresholdViolations = new Map([
+  ['<', (value, limit) => value >= limit],
+  ['<=', (value, limit) => value > limit],
+  ['===', (value, limit) => value !== limit],
+]);
+
+const finiteNumber = (value) => (Number.isFinite(value) ? value : undefined);
+
 function collectThresholdRows(payload, spec, { artifactPath, rows }) {
   const thresholds = payload.issueTargetThresholds;
   if (
@@ -721,22 +817,33 @@ function collectThresholdRows(payload, spec, { artifactPath, rows }) {
       continue;
     }
 
-    const actualMs = Number(threshold.actualMs);
-    const actual = Number(threshold.actual);
+    const actualMs = finiteNumber(threshold.actualMs);
+    const observed = actualMs ?? finiteNumber(threshold.actual);
+    const limit = finiteNumber(threshold.limitMs ?? threshold.limit);
+    const violates = thresholdViolations.get(threshold.operator);
+    const violated =
+      violates !== undefined &&
+      observed !== undefined &&
+      limit !== undefined &&
+      violates(observed, limit);
     const row = {
       category: `${spec.category}-threshold`,
       fixture: name,
       library: spec.library || 'slate-v2:current',
-      status: threshold.passed ? 'ok' : 'over-budget',
-      note: `source=${artifactPath}; limitMs=${threshold.limitMs ?? 'n/a'}; limit=${threshold.limit ?? 'n/a'}`,
+      status: violated
+        ? threshold.passed === true
+          ? 'integrity-error'
+          : 'over-budget'
+        : 'unassessed',
+      note: `source=${artifactPath}; operator=${threshold.operator ?? 'unrecorded'}; limitMs=${threshold.limitMs ?? 'n/a'}; limit=${threshold.limit ?? 'n/a'}; producer passed=${threshold.passed}`,
     };
 
-    if (Number.isFinite(actualMs)) {
+    if (actualMs !== undefined) {
       row.medianUs = msToUs(actualMs);
       row.p95Us = msToUs(actualMs);
       row.ops = 1;
-    } else if (Number.isFinite(actual)) {
-      row.ops = actual;
+    } else if (observed !== undefined) {
+      row.ops = observed;
     }
 
     rows.push(normalizeBenchmarkRow(row));
@@ -802,10 +909,12 @@ function normalizeMetricStatsRow(
   return normalizeBenchmarkRow(row);
 }
 
+const editorOf = (library) => library.split(':')[0];
+
 function readWorkloadCoverageStatus(
   target,
   workload,
-  { localTargets, measuredSlateV2, runtimeAdapterCoverage }
+  { localTargets, rowsBySpec, specs }
 ) {
   if (!localTargets.get(target.id)) {
     return {
@@ -815,70 +924,50 @@ function readWorkloadCoverageStatus(
     };
   }
 
-  if (target.id === 'slate-v2') {
-    const artifactIds =
-      workload.artifactIds && workload.artifactIds.length > 0
-        ? workload.artifactIds
-        : [workload.id];
-    const measuredByRegistry = artifactIds.some((artifactId) =>
-      measuredSlateV2.has(artifactId)
-    );
-
-    return {
-      note: workload.slateV2
-        ? `measured by ${measuredByRegistry ? 'registered artifact' : 'registered artifact family'}`
-        : 'not a Slate v2 workload',
-      score: workload.slateV2 ? 1 : 0,
-      status: workload.slateV2 ? 'ok' : 'unsupported',
-    };
-  }
-
-  if (target.id === 'slate') {
-    return {
-      note: workload.legacy
-        ? 'measured as Slate baseline where artifact supports Slate v2 vs Slate compare'
-        : 'Slate v2-only workload; no Slate baseline is claimed',
-      score: workload.legacy ? 1 : 0,
-      status: workload.legacy ? 'ok' : 'unsupported',
-    };
-  }
-
-  const runtimeAdapter = runtimeAdapterCoverage.get(
-    `${target.id}:${workload.id}`
+  const claimed = workload.targets.filter((id) =>
+    readEvidenceEditors(specs.get(id)).includes(target.id)
   );
-  if (runtimeAdapter) {
+  if (claimed.length === 0) {
     return {
-      note: `measured by runtime adapter ${runtimeAdapter.artifactIds.join(', ')}; ${runtimeAdapter.decision}`,
+      note: `no ${target.label} measurement is claimed for this workload`,
+      score: 0,
+      status: 'unsupported',
+    };
+  }
+
+  const covering = claimed.filter((id) =>
+    rowsBySpec
+      .get(id)
+      .some((row) => row.status === 'ok' && editorOf(row.library) === target.id)
+  );
+  if (covering.length > 0) {
+    return {
+      note: `current observations from ${covering.join(', ')}`,
       score: 1,
       status: 'ok',
     };
   }
 
   return {
-    note: 'source exists, but equivalent runtime adapter is not implemented yet',
+    note: `no current observation: ${claimed
+      .map((id) => `${id}=${rowsBySpec.get(id)[0].status}`)
+      .join(', ')}`,
     score: 0,
-    status: 'adapter-missing',
+    status: 'uncovered',
   };
 }
 
-function createRuntimeAdapterCoverageMap({ measuredArtifacts, registry }) {
-  const coverage = new Map();
-
-  for (const adapter of registry.runtimeAdapters || []) {
-    const measuredAdapterArtifacts = adapter.artifactIds.filter((artifactId) =>
-      measuredArtifacts.has(artifactId)
-    );
-    if (measuredAdapterArtifacts.length === 0) continue;
-
-    for (const workloadId of adapter.workloadIds) {
-      coverage.set(`${adapter.target}:${workloadId}`, {
-        artifactIds: measuredAdapterArtifacts,
-        decision: adapter.decision,
-      });
-    }
+function readEvidenceEditors(spec) {
+  if (!spec) return [];
+  if (['compare', 'rows', 'slate-legacy-compare'].includes(spec.kind)) {
+    return ['slate-v2', 'slate'];
   }
 
-  return coverage;
+  const libraries = spec.surfaceLibraries
+    ? Object.values(spec.surfaceLibraries)
+    : [spec.library || 'slate-v2:current'];
+
+  return [...new Set(libraries.map(editorOf))];
 }
 
 function isMetricStatsObject(value) {
@@ -1056,5 +1145,7 @@ function formatRepoLabel(value, rootDir) {
 function sanitizeOutOfScopeFixtureLabel(value) {
   return String(value)
     .replaceAll('Lexical', 'External editor')
-    .replaceAll('lexical', 'external-editor');
+    .replaceAll('lexical', 'external-editor')
+    .replaceAll('ProseMirror', 'External editor')
+    .replaceAll('prosemirror', 'external-editor');
 }

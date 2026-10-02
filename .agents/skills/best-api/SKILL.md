@@ -9,8 +9,6 @@ metadata:
 
 # Best API
 
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
-
 
 Handle $ARGUMENTS.
 
@@ -38,11 +36,11 @@ a mandatory prelude to the other.
 - `VISION.md` and `docs/vision/**` own durable doctrine.
 - `best-api` applies that doctrine to concrete API shapes and repairs it when
   reusable taste changes.
-- `editor-audit` owns exhaustive comparison against one or more external editor
+- `research audit` owns exhaustive comparison against one or more external editor
   source trees and routes only material public-shape candidates here.
-- `plate-plan` and `plite-plan` own layer architecture, adoption, execution,
-  and proof after the target API is chosen.
-- package, `task`, and supervisor skills implement accepted work.
+- `plate-architecture` owns layer architecture, adoption, execution and proof after
+  the target API is chosen.
+- package and supervisor skills implement accepted work under pstack's poteto-mode.
 
 ## Modes
 
@@ -71,7 +69,7 @@ Read only what can change the decision:
    implementation for the named surface.
 3. Existing plans or compatibility constraints only after the ideal target is
    independently clear.
-4. For an exhaustive external editor comparison, consume `editor-audit`
+4. For an exhaustive external editor comparison, consume `research audit`
    evidence. Inspect external precedent directly only when a narrow unresolved
    call-shape question still needs it. Familiarity is a useful prior, never a
    ceiling.
@@ -83,8 +81,8 @@ runtime laws are hard constraints. Incidental implementation structure is not.
 
 ### 1. Redesign from First Principles
 
-Apply the full [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)
-method before choosing or reviewing the target. This is the governing principle
+Apply the full Redesign from First Principles
+(`pstack:principle-redesign-from-first-principles`) method before choosing or reviewing the target. This is the governing principle
 of `next` beta. Name the current user job and hard laws, then ask what we would
 build if those requirements had been present from the start. Existing substrate
 primitives and proposed abstractions must both earn their place. Reuse an
@@ -308,6 +306,13 @@ read contracts. Keep unavoidable type erasure inside that validated private
 compiler boundary; do not publish a second unchecked constructor or expose
 candidate caches merely so another package can read its own contributions.
 
+Feature policy over one shared action splits admission from refusal. The
+compiled schema admits; read middleware may only redirect an edge, and a
+redirected edge must map to itself; a plugin point collects vetoes that all run
+on the final edge, so no feature can skip another feature's veto. Do not add
+per-gesture callbacks such as `canDropNode` when the action already owns these
+hooks.
+
 Heterogeneous installation inputs use the existing nominal descriptor reference;
 normalized definition witnesses describe capabilities, not installable values.
 Keep exact schema and callback projections deferred at that boundary, with
@@ -411,19 +416,10 @@ durable fix is large, report the real blast radius and still choose it.
 
 ### Scale-Sensitive Target Gate
 
-Before accepting a public target that adds, retains, or changes a runtime
-layer, cache, index, projection, store, subscription, scheduler, geometry
-owner, repeated-unit fan-out, or other hot work, invoke Benchmark's embedded
-pre-acceptance architecture probe. Freeze the scale variables, cohorts, budget,
-baseline, target path or disposable prototype, deterministic cost indicators,
-timing/noise rule, source identities, and correctness guard before reading the
-target result.
-
-The target remains `provisional` until that executable comparison passes. An
-asymptotic argument, complexity table, review score, profiler suspicion,
-benchmark plan, or promise to measure during implementation cannot justify the
-runtime noun or owner. If the result is inconclusive, cut the machinery or hand
-off a `defer`/`gate` decision with the next probe; do not call it the best API.
+A public target that adds, retains or changes hot runtime work stays
+`provisional` until [Benchmark's pre-acceptance probe](../benchmark/SKILL.md#pre-acceptance-architecture-probe)
+passes. If the result is inconclusive, cut the machinery or hand off a
+`defer`/`gate` decision with the next probe; do not call it the best API.
 
 Best API may settle call syntax without this probe only when live source proves
 the competing call shapes share the same runtime law and the verdict explicitly
@@ -455,11 +451,12 @@ and external document updates must yield the same derived visibility. Keep
 mixed presentation in its existing composition owner instead of adding peer
 data dependencies or one-consumer presentation props.
 
-Complete transient document inputs through their current node identity. The
-owning feature checks liveness and edit eligibility at action time, then removes
-and replaces the input in one transaction. Keep query text and DOM navigation
-with the copied control; do not persist a second path, location anchor, or
-completion flag when the document already supplies identity and lifetime.
+Keep an autocomplete query as ordinary document text, never a transient input
+node. A popup opens only on a trigger typed in its Editable and tracks that
+occurrence with a range anchor over the trigger. Completion rechecks the offered
+query and replaces trigger and query in one refusable transaction. Keep catalogs,
+filtering and the active option with the copied control; persist nothing for an
+open query.
 
 For asynchronous document-bound assets, persist only the authored draft intent
 that must survive view remounts. The owning plugin admits one complete batch in
@@ -970,6 +967,15 @@ owner identity. Caller-provided success flags, scope labels, transport names,
 or nonempty source identifiers are claims, not proof. Keep aggregate workflow
 policy internal until an independent external consumer earns a public contract.
 
+Test and proof instrumentation is opt-in. The app calls one explicit installer
+at module scope in a test or development entry; a production entry that never
+calls it carries none of its code or retained state. Never attach proof
+handles, traces, or debug globals on every mount, and never gate them on
+`NODE_ENV` inside the library. A harness transport, such as how a paste is
+delivered, is validated project configuration: call sites never branch on the
+engine, and a transport that did not take effect fails instead of retrying
+another way.
+
 Plugin `read` factories compile one callable method tree per published
 configuration. Live document values are method results; stable host values use
 `api`. Reject data properties, construction-time document reads, per-read side
@@ -1143,26 +1149,28 @@ Repair the smallest durable ownership chain:
 1. update `.agents/rules/best-api.mdc`;
 2. update only the relevant `VISION.md` / `docs/vision/**` doctrine when the
    correction is durable taste rather than procedure;
-3. audit the affected execution and teaching owners, including `plate-plan`,
-   `plite-plan`, `plate-plugin-creator`, `plate-ui`, Plate Docs, and
+3. audit the affected execution and teaching owners, including `plate-architecture`,
+   `plate-plugins`, `plate-ui`, Plate Docs, and
    `plate-next` when their scope intersects the changed API; update only skills
    that teach or enforce the changed contract, remove contradictions, and link
    this owner instead of copying the full doctrine;
-4. bump any versioned doctrine whose source set changed; never forge package
-   attestations merely because the doctrine advanced;
-5. run `pnpm install` to regenerate skills and their owned resources;
+4. append a Plate Next doctrine version when the change should send packages
+   back to review; never forge package attestations because the doctrine
+   advanced;
+5. regenerate skills and their owned resources per the pstack block's Agent
+   files rule;
 6. source-audit both rule owners and generated mirrors for the rejected names,
    examples, and call shapes;
-7. when the trigger, rubric, output, or routing changed, run
-   `agent-native-reviewer` and forward-test the affected action on a real API
-   without seeding the expected answer.
+7. when the trigger, rubric, output, or routing changed, forward-test the
+   affected action on a real API without seeding the expected answer.
 
-Use the active `autogoal` plan when one exists, but do not create a goal,
-hook, registry, state file, template, or review panel merely to maintain this
-skill.
+Use the active plan when one exists, but do not create a plan, hook, registry,
+state file, template, or review panel merely to maintain this skill.
 
-If the miss belongs to every goal-backed workflow rather than API judgment,
-route it to `autogoal repair`; do not absorb lifecycle policy here.
+If the miss belongs to every long-running workflow rather than API judgment,
+repair it in `AGENTS.md` outside the pstack block, or in the block's shared
+source through `sync-pstack` when it changes a block rule; do not absorb
+lifecycle policy here.
 
 Do not turn product-specific decisions into universal rules. Preserve the
 principle; keep package details in source, plans, or the API debt ledger.
@@ -1170,8 +1178,8 @@ principle; keep package details in source, plans, or the API debt ledger.
 ## Stop
 
 Stop API design when one target clearly wins and its unresolved questions are
-implementation/proof questions. Route those questions to `plate-plan`,
-`plite-plan`, `task`, or the package owner.
+implementation/proof questions. Route those questions to `plate-architecture`
+or the package owner.
 
 Do not implement product API changes unless the user explicitly asks and the
 owning execution skill is loaded.

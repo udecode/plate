@@ -73,6 +73,7 @@ import {
   withCompiledPlatePluginCandidate,
 } from './compilePlateModel';
 import { compilePlateShortcuts } from './compilePlateShortcuts';
+import { getCaretInline, selectAfterInline } from './inlineInsertion';
 import { isEditOnly } from './isEditOnlyDisabled';
 import { mergePluginCapabilities } from './mergePluginCapabilities';
 import {
@@ -1391,6 +1392,21 @@ export const createPlateRuntimePlugins = (
 
                 if (!context.tx.schema.isBlock(element)) {
                   insert(insertOptions as BlockInsertOptions);
+
+                  const inline =
+                    context.tx.schema.element(element.type)?.behavior.void &&
+                    !(
+                      'at' in insertOptions && insertOptions.at !== undefined
+                    ) &&
+                    !(
+                      'select' in insertOptions &&
+                      insertOptions.select !== undefined
+                    )
+                      ? getCaretInline(context.tx, element.type)
+                      : null;
+
+                  if (inline) selectAfterInline(context.tx, inline);
+
                   return;
                 }
 

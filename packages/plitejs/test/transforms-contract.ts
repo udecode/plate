@@ -135,6 +135,26 @@ describe('plite transforms contract', () => {
     }
   });
 
+  it('wraps the blocks a selector matches from the document root', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+
+    editor.update((tx) => {
+      assert.equal(
+        tx.nodes.wrap(
+          { type: 'quote', children: [] },
+          { at: [], type: 'paragraph' }
+        ),
+        true
+      );
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'quote', children: [paragraph('one'), paragraph('two')] },
+    ]);
+  });
+
   it('moveNodes is a no-op when the source and destination paths are equal', () => {
     const editor = createEditor();
 

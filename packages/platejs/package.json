@@ -80,6 +80,11 @@
       "import": "./dist/features/combobox/index.js",
       "default": "./dist/features/combobox/index.js"
     },
+    "./combobox/react": {
+      "types": "./dist/react/features/combobox/index.d.ts",
+      "import": "./dist/react/features/combobox/index.js",
+      "default": "./dist/react/features/combobox/index.js"
+    },
     "./comments": {
       "types": "./dist/features/comments/index.d.ts",
       "import": "./dist/features/comments/index.js",
@@ -124,11 +129,6 @@
       "types": "./dist/diff/index.d.ts",
       "import": "./dist/diff/index.js",
       "default": "./dist/diff/index.js"
-    },
-    "./dnd/react": {
-      "types": "./dist/dnd/react/index.d.ts",
-      "import": "./dist/dnd/react/index.js",
-      "default": "./dist/dnd/react/index.js"
     },
     "./docx/paste": {
       "types": "./dist/docx/paste/index.d.ts",
@@ -409,6 +409,7 @@
     "lint:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-drawing",
     "lint:partition:code-drawing-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-drawing-react",
     "lint:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs combobox",
+    "lint:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs combobox-react",
     "lint:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments",
     "lint:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments-react",
     "lint:partition:compiler": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs compiler",
@@ -418,7 +419,6 @@
     "lint:partition:date-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs date-react",
     "lint:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs details",
     "lint:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs details-react",
-    "lint:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs dnd-react",
     "lint:partition:docx-export": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-export",
     "lint:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-html",
     "lint:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-import",
@@ -496,6 +496,7 @@
     "test:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-block-codemirror",
     "test:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-drawing",
     "test:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox",
+    "test:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox-react",
     "test:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments",
     "test:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments-react",
     "test:partition:compiler": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs compiler",
@@ -504,7 +505,6 @@
     "test:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs date",
     "test:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details",
     "test:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details-react",
-    "test:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs dnd-react",
     "test:partition:docx-export": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-export",
     "test:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-html",
     "test:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-import",
@@ -522,12 +522,10 @@
     "test:partition:math": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs math",
     "test:partition:media": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs media",
     "test:partition:mention": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs mention",
-    "test:partition:mention-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs mention-react",
     "test:partition:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs migrations",
     "test:partition:proxies": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs proxies",
     "test:partition:react-core": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs react-core",
     "test:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs resizable-react",
-    "test:partition:slash-command": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs slash-command",
     "test:partition:standard-basic-nodes": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-nodes",
     "test:partition:standard-basic-nodes-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-nodes-react",
     "test:partition:standard-basic-styles": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-styles",
@@ -571,6 +569,7 @@
     "typecheck:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-drawing",
     "typecheck:partition:code-drawing-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-drawing-react",
     "typecheck:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs combobox",
+    "typecheck:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs combobox-react",
     "typecheck:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comments",
     "typecheck:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comments-react",
     "typecheck:partition:compiler": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs compiler",
@@ -580,7 +579,6 @@
     "typecheck:partition:date-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs date-react",
     "typecheck:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs details",
     "typecheck:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs details-react",
-    "typecheck:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs dnd-react",
     "typecheck:partition:docx-export": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-export",
     "typecheck:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-html",
     "typecheck:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-import",
@@ -704,10 +702,7 @@
     "mime-types": "^2.1.35",
     "papaparse": "^5.5.3",
     "plantuml-encoder": "^1.4.0",
-    "raf": "^3.4.1",
     "react": "19.2.8",
-    "react-dnd": "16.0.1",
-    "react-dnd-html5-backend": "16.0.1",
     "react-dom": "19.2.8",
     "remark-emoji": "5.0.1",
     "remark-gfm": "4.0.1",
@@ -749,10 +744,7 @@
     "mime-types": "^2.1.35",
     "papaparse": "^5.5.3",
     "plantuml-encoder": "^1.4.0",
-    "raf": "^3.4.1",
     "react": ">=19.2.0",
-    "react-dnd": ">=14.0.0",
-    "react-dnd-html5-backend": ">=14.0.0",
     "react-dom": ">=19.2.0",
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
@@ -839,16 +831,7 @@
     "plantuml-encoder": {
       "optional": true
     },
-    "raf": {
-      "optional": true
-    },
     "react": {
-      "optional": true
-    },
-    "react-dnd": {
-      "optional": true
-    },
-    "react-dnd-html5-backend": {
       "optional": true
     },
     "react-dom": {

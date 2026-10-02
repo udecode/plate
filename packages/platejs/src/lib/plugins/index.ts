@@ -3,6 +3,7 @@
  */
 
 export * from './HistoryPlugin';
+export * from './TransferPlugin';
 export * from './affinity/index';
 export * from './debug/index';
 export * from './dom/index';

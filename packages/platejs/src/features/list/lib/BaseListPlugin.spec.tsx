@@ -3,9 +3,11 @@ import {
   createEditor as createProductEditor,
   definePlugin,
   ElementApi,
+  NodeApi,
   PLUGINS,
   schema,
   SelectionApi,
+  transferVeto,
   type CreateEditorOptions,
   type InitialValue,
   type Value,
@@ -1243,6 +1245,102 @@ describe('BaseListPlugin canonical model', () => {
 
     // `listStart` applies only while the item starts its sequence.
     expect(ordinal()).toBe(2);
+  });
+});
+
+describe('BaseListPlugin transfer steps', () => {
+  const item = (text: string, indent: number) => ({
+    children: [{ text }],
+    indent,
+    listType: ListType.Bulleted,
+    type: 'paragraph',
+  });
+  const caretIn = (index: number) =>
+    ({
+      anchor: { offset: 0, path: [index, 0] },
+      focus: { offset: 0, path: [index, 0] },
+      kind: 'text',
+    }) as const;
+  const texts = (editor: ReturnType<typeof createEditor>) =>
+    editor.read.children().map((node) => NodeApi.string(node));
+
+  it('steps a list item down past a whole family', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('moved', 1),
+        item('parent', 1),
+        item('child', 2),
+        item('next', 1),
+      ],
+      selection: caretIn(0),
+    });
+
+    editor.api.transfer.move({ to: 'next' });
+
+    expect(texts(editor)).toEqual(['parent', 'child', 'moved', 'next']);
+  });
+
+  it('steps a list item up past a whole family', () => {
+    const editor = createEditor({
+      initialValue: [item('parent', 1), item('child', 2), item('moved', 1)],
+      selection: caretIn(2),
+    });
+
+    editor.api.transfer.move({ to: 'previous' });
+
+    expect(texts(editor)).toEqual(['moved', 'parent', 'child']);
+  });
+
+  const family = [
+    item('parent', 1),
+    item('child', 2),
+    item('next', 1),
+    item('moved', 1),
+  ];
+
+  it.each([
+    ['after the parent', 0, 'after'],
+    ['before the child', 1, 'before'],
+  ] as const)(
+    'lands a list item dropped %s after the whole family',
+    (_, index, edge) => {
+      const editor = createEditor({ initialValue: family });
+
+      editor.api.transfer.move({
+        nodes: [editor.key([3])!],
+        to: { edge, key: editor.key([index])! },
+      });
+
+      expect(texts(editor)).toEqual(['parent', 'child', 'moved', 'next']);
+    }
+  );
+
+  it('refuses a retarget that a veto blocks', () => {
+    const LockPlugin = definePlugin('lock', {
+      contributions: [
+        transferVeto.of(
+          ({ edge, target: [node] }) =>
+            edge === 'after' && NodeApi.string(node) === 'child'
+        ),
+      ],
+    });
+    const editor = createProductEditor({
+      initialValue: family,
+      plugins: [BaseListPlugin, LockPlugin],
+    });
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([3])!],
+        to: { edge: 'after', key: editor.key([0])! },
+      }).status
+    ).toBe('refused');
+    expect(editor.read.children().map((node) => NodeApi.string(node))).toEqual([
+      'parent',
+      'child',
+      'next',
+      'moved',
+    ]);
   });
 });
 

@@ -56,6 +56,7 @@ import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
 import { readContentRootRenderSegments } from '../editable/content-root-owners';
 import type {
   EditableHistoryReplayEvent,
+  EditableDropResult,
   EditablePasteResult,
 } from '../editable/editable-dom-runtime';
 import { assertExternalTextElement } from '../editable/external-text-binding';
@@ -723,6 +724,8 @@ export type EditableProps<
    * insertion's result.
    */
   onPasteResult?: (result: EditablePasteResult) => void;
+  /** Reports a drop this Editable lands: the transfer outcome, or the data it inserted. */
+  onDropResult?: (result: EditableDropResult) => void;
   placeholder?: ReactNode;
   readOnly?: boolean;
   ref?: React.Ref<HTMLDivElement>;
@@ -1390,6 +1393,7 @@ const EditableInner = <TElement extends ElementNode>({
   onHistoryReplay,
   onKeyDown,
   onPaste,
+  onDropResult,
   onPasteResult,
   readOnly = false,
   placeholder,
@@ -1720,6 +1724,7 @@ const EditableInner = <TElement extends ElementNode>({
           onHistoryReplay={onHistoryReplay}
           onKeyDown={onKeyDown}
           onPaste={onPaste}
+          onDropResult={onDropResult}
           onPasteResult={onPasteResult}
           readOnly={effectiveReadOnly}
           ref={editableRootRef}

@@ -1,10 +1,14 @@
 import {
   type Value,
   type TextSelection,
+  createEditorView,
+  NodeApi,
+  SelectionApi,
   defineEditorSchema,
   type Descendant,
   type Range,
   schema,
+  setEditorReadOnly,
 } from 'plitejs';
 import type { ClipboardEvent, DragEvent } from 'react';
 
@@ -15,6 +19,7 @@ import {
   IS_FOCUSED,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
+import { readDropIndicator } from '../../src/dom/utils/drop-indicator';
 import {
   getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
@@ -31,6 +36,7 @@ import {
   applyEditablePaste,
 } from '../../src/react/editable/clipboard-input-strategy';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
+import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
 import {
   ReactEditor,
   type ReactRuntimeEditor,
@@ -271,11 +277,13 @@ const runCrossEditorTextDrop = ({
   dropPayload = 'source',
   editSource = false,
   failFirstDrop = false,
+  lockSource = false,
 }: {
   copy?: boolean;
   dropPayload?: 'empty' | 'external' | 'source';
   editSource?: boolean;
   failFirstDrop?: boolean;
+  lockSource?: boolean;
 } = {}) => {
   const source = createEditor<Value>({
     initialValue: [
@@ -357,6 +365,9 @@ const runCrossEditorTextDrop = ({
         tx.text.insert('Zulu ', { at: { offset: 0, path: [0, 0] } });
       });
     }
+    if (lockSource) {
+      setEditorReadOnly(source, true);
+    }
 
     applyEditableDrop({
       editor: target,
@@ -388,7 +399,206 @@ const runCrossEditorTextDrop = ({
   }
 };
 
+const runSameEditorTextDrop = ({
+  dropAt,
+  duringDrag,
+}: {
+  dropAt: Range;
+  duringDrag?: (editor: ReactRuntimeEditor) => void;
+}) => {
+  const editor = createEditor<Value>({
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'Alpha Bravo' }] },
+      { type: 'paragraph', children: [{ text: 'Charlie' }] },
+    ],
+  });
+
+  editor.update.selection.set({
+    kind: 'text',
+    anchor: { offset: 0, path: [0, 0] },
+    focus: { offset: 'Alpha '.length, path: [0, 0] },
+  });
+
+  const root = mountEditorRoot(editor);
+  const source = mountVisibleDragTarget(root);
+  source.setAttribute('data-editor-path', '0');
+  const dataTransfer = new FakeDataTransfer();
+  const state = {
+    draggedBlock: false,
+    draggedRange: null,
+    isDraggingInternally: false,
+  };
+  const resolveEventRange = vi
+    .spyOn(ReactEditor, 'resolveEventRange')
+    .mockReturnValue(dropAt);
+  let commits = 0;
+
+  try {
+    applyEditableDragStart({
+      editor,
+      event: createDragEvent(source, dataTransfer),
+      readOnly: false,
+      state,
+    });
+    duringDrag?.(editor);
+
+    const unsubscribe = editor.subscribeCommit(() => {
+      commits += 1;
+    });
+
+    applyEditableDrop({
+      editor,
+      event: createDragEvent(root, dataTransfer),
+      readOnly: false,
+      state,
+    });
+    unsubscribe();
+
+    return {
+      commits,
+      texts: editor.read
+        .children()
+        .map((node) =>
+          editorString(editor, [editor.read.children().indexOf(node)])
+        ),
+    };
+  } finally {
+    resolveEventRange.mockRestore();
+    cleanupEditorRoot(editor, root);
+  }
+};
+
+const endOfCharlie: Range = {
+  anchor: { offset: 'Charlie'.length, path: [1, 0] },
+  focus: { offset: 'Charlie'.length, path: [1, 0] },
+};
+
+const runTwoViewTextDrop = ({ lockSource = false } = {}) => {
+  const model = createEditor<Value>({
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'Alpha Bravo' }] },
+      { type: 'paragraph', children: [{ text: 'Charlie' }] },
+    ],
+  });
+  const sourceView = createReactRuntimeViewEditor(
+    createEditorView(model) as never
+  ) as ReactRuntimeEditor;
+  const targetView = createReactRuntimeViewEditor(
+    createEditorView(model) as never
+  ) as ReactRuntimeEditor;
+
+  sourceView.update.selection.set({
+    kind: 'text',
+    anchor: { offset: 0, path: [0, 0] },
+    focus: { offset: 'Alpha '.length, path: [0, 0] },
+  });
+
+  const sourceRoot = mountEditorRoot(sourceView);
+  const targetRoot = mountEditorRoot(targetView);
+  const sourceNode = mountVisibleDragTarget(sourceRoot);
+  sourceNode.setAttribute('data-editor-path', '0');
+  const dataTransfer = new FakeDataTransfer();
+  const resolveEventRange = vi
+    .spyOn(ReactEditor, 'resolveEventRange')
+    .mockReturnValue(endOfCharlie);
+
+  try {
+    applyEditableDragStart({
+      editor: sourceView,
+      event: createDragEvent(sourceNode, dataTransfer),
+      readOnly: false,
+      state: {
+        draggedBlock: false,
+        draggedRange: null,
+        isDraggingInternally: false,
+      },
+    });
+    if (lockSource) setEditorReadOnly(sourceView, true);
+    applyEditableDrop({
+      editor: targetView,
+      event: createDragEvent(targetRoot, dataTransfer),
+      readOnly: false,
+      state: {
+        draggedBlock: false,
+        draggedRange: null,
+        isDraggingInternally: false,
+      },
+    });
+
+    return model.read
+      .children()
+      .map((_, index) => editorString(model, [index]));
+  } finally {
+    resolveEventRange.mockRestore();
+    cleanupEditorRoot(sourceView, sourceRoot);
+    cleanupEditorRoot(targetView, targetRoot);
+  }
+};
+
 describe('DOM coverage native bridge', () => {
+  test('an edit before the dragged text still moves the dragged text', () => {
+    expect(
+      runSameEditorTextDrop({
+        dropAt: endOfCharlie,
+        duringDrag: (editor) =>
+          editor.update((tx) => {
+            tx.text.insert('Zulu ', { at: { offset: 0, path: [0, 0] } });
+          }),
+      }).texts
+    ).toEqual(['Zulu Bravo', 'CharlieAlpha ']);
+  });
+
+  test('an edit inside the dragged text moves the edited text', () => {
+    expect(
+      runSameEditorTextDrop({
+        dropAt: endOfCharlie,
+        duringDrag: (editor) =>
+          editor.update((tx) => {
+            tx.text.insert('ZZ', { at: { offset: 2, path: [0, 0] } });
+          }),
+      }).texts
+    ).toEqual(['Bravo', 'CharlieAlZZpha ']);
+  });
+
+  test('dragged text deleted before the drop is not moved', () => {
+    expect(
+      runSameEditorTextDrop({
+        dropAt: endOfCharlie,
+        duringDrag: (editor) =>
+          editor.update((tx) => {
+            tx.text.delete({
+              at: {
+                anchor: { offset: 0, path: [0, 0] },
+                focus: { offset: 'Alpha '.length, path: [0, 0] },
+              },
+            });
+          }),
+      })
+    ).toEqual({ commits: 0, texts: ['Bravo', 'Charlie'] });
+  });
+
+  test('a drop inside the dragged text changes nothing', () => {
+    expect(
+      runSameEditorTextDrop({
+        dropAt: {
+          anchor: { offset: 2, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        },
+      })
+    ).toEqual({ commits: 0, texts: ['Alpha Bravo', 'Charlie'] });
+  });
+
+  test('two views of one document move the dragged text once', () => {
+    expect(runTwoViewTextDrop()).toEqual(['Bravo', 'CharlieAlpha ']);
+  });
+
+  test('a source view that turns read-only during the drag is copied from', () => {
+    expect(runTwoViewTextDrop({ lockSource: true })).toEqual([
+      'Alpha Bravo',
+      'CharlieAlpha ',
+    ]);
+  });
+
   test('copy writes model-backed data when native selection crosses hidden content', () => {
     const editor = createHiddenSelectionEditor();
     const root = mountEditorRoot(editor);
@@ -660,11 +870,7 @@ describe('DOM coverage native bridge', () => {
             children: [{ text: 'Trailing' }],
           },
         ],
-        selection: {
-          kind: 'text',
-          anchor: { offset: 0, path: [2, 0] },
-          focus: { offset: 0, path: [2, 0] },
-        },
+        selection: { kind: 'node', paths: [[2]] },
       });
     } finally {
       resolveEventRange.mockRestore();
@@ -778,9 +984,8 @@ describe('DOM coverage native bridge', () => {
       expect(editorString(editor, [])).toBe(
         'editableThis is  plain text, just like a <textarea>!'
       );
-      expect(editorGetSnapshot(editor).selection).toEqual({
-        kind: 'text',
-        anchor: { offset: 8, path: [0, 0] },
+      expect(editorGetSnapshot(editor).selection).toMatchObject({
+        anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 8, path: [0, 0] },
       });
     } finally {
@@ -789,10 +994,68 @@ describe('DOM coverage native bridge', () => {
     }
   });
 
-  test('cross-editor expanded text drop removes the captured source range', () => {
+  test.each([
+    {
+      drop: (dataTransfer: FakeDataTransfer) => {
+        dataTransfer.dropEffect = 'copy';
+        return dataTransfer;
+      },
+      expected: 'editableThis is editable plain text, just like a <textarea>!',
+      name: 'a copy drop inserts and keeps the source range',
+    },
+  ])('internal expanded text drop: $name', ({ drop, expected }) => {
+    const text = 'This is editable plain text, just like a <textarea>!';
+    const editor = createEditor<Value>({
+      initialValue: [{ type: 'paragraph', children: [{ text }] }],
+    });
+
+    editor.update.selection.set({
+      kind: 'text',
+      anchor: { offset: 8, path: [0, 0] },
+      focus: { offset: 16, path: [0, 0] },
+    });
+
+    const root = mountEditorRoot(editor);
+    const source = mountVisibleDragTarget(root);
+    source.setAttribute('data-editor-path', '0');
+    const dataTransfer = new FakeDataTransfer();
+    const state = {
+      draggedBlock: false,
+      draggedRange: null,
+      isDraggingInternally: false,
+    };
+    const resolveEventRange = vi
+      .spyOn(ReactEditor, 'resolveEventRange')
+      .mockReturnValue({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
+
+    try {
+      applyEditableDragStart({
+        editor,
+        event: createDragEvent(source, dataTransfer),
+        readOnly: false,
+        state,
+      });
+      applyEditableDrop({
+        editor,
+        event: createDragEvent(root, drop(dataTransfer)),
+        readOnly: false,
+        state,
+      });
+
+      expect(editorString(editor, [])).toBe(expected);
+    } finally {
+      resolveEventRange.mockRestore();
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('cross-editor text drop copies and keeps the source', () => {
     expect(runCrossEditorTextDrop()).toEqual({
       bystander: 'Echo',
-      source: 'Bravo',
+      source: 'Alpha Bravo',
       target: 'CharlieAlpha ',
     });
   });
@@ -813,6 +1076,14 @@ describe('DOM coverage native bridge', () => {
     });
   });
 
+  test('cross-editor move keeps a source that turned read-only during the drag', () => {
+    expect(runCrossEditorTextDrop({ lockSource: true })).toEqual({
+      bystander: 'Echo',
+      source: 'Alpha Bravo',
+      target: 'CharlieAlpha ',
+    });
+  });
+
   test('empty transfer does not consume a pending cross-editor move', () => {
     expect(runCrossEditorTextDrop({ dropPayload: 'empty' })).toEqual({
       bystander: 'Echo',
@@ -829,11 +1100,11 @@ describe('DOM coverage native bridge', () => {
     });
   });
 
-  test('failed cross-editor landing clears source deletion authority', () => {
+  test('a repeated drop after a failed landing is consumed', () => {
     expect(runCrossEditorTextDrop({ failFirstDrop: true })).toEqual({
       bystander: 'Echo',
       source: 'Alpha Bravo',
-      target: 'CharlieAlpha ',
+      target: 'Charlie',
     });
   });
 
@@ -1438,6 +1709,314 @@ describe('DOM coverage native bridge', () => {
       ]);
     } finally {
       unsubscribe();
+      cleanupEditorRoot(editor, root);
+    }
+  });
+});
+
+describe('native block drag', () => {
+  const paragraph = (text: string) => ({
+    children: [{ text }],
+    type: 'paragraph',
+  });
+  const setup = () => {
+    const editor = createEditor<Value>({
+      initialValue: [paragraph('a'), paragraph('b'), paragraph('c')],
+    });
+    const root = mountEditorRoot(editor);
+    const hosts = editorGetSnapshot(editor).children.map((node, index) => {
+      const host = document.createElement('p');
+
+      host.setAttribute('data-editor-node', 'element');
+      host.setAttribute('data-editor-node-key', getNodeKey(editor, [index]));
+      host.textContent = NodeApi.string(node);
+      root.append(host);
+      ELEMENT_TO_NODE.set(host, node);
+      NODE_TO_ELEMENT.set(node, host);
+
+      return host;
+    });
+    const dataTransfer = new FakeDataTransfer();
+    const at = (path: number[], offset: number) =>
+      vi.spyOn(ReactEditor, 'resolveEventRange').mockReturnValue({
+        anchor: { offset, path: [...path, 0] },
+        focus: { offset, path: [...path, 0] },
+      });
+    const state = {
+      draggedBlock: false,
+      draggedRange: null,
+      isDraggingInternally: false,
+    };
+
+    return { at, dataTransfer, editor, hosts, root, state };
+  };
+  const texts = (editor: ReactRuntimeEditor) =>
+    editorGetSnapshot(editor).children.map((node) => NodeApi.string(node));
+
+  test('drag.start selects the dragged blocks, marks their hosts and returns inert previews', () => {
+    const { dataTransfer, editor, hosts, root } = setup();
+
+    editor.update.selection.set(SelectionApi.nodes([[0], [1]]));
+
+    try {
+      const drag = editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+
+      expect(drag?.previews.map((preview) => preview.textContent)).toEqual([
+        'a',
+        'b',
+      ]);
+      expect(
+        drag?.previews.some((preview) =>
+          preview.hasAttribute('data-editor-node')
+        )
+      ).toBe(false);
+      expect(dataTransfer.effectAllowed).toBe('copyMove');
+      expect(
+        hosts.map((host) => host.hasAttribute('data-editor-dragging'))
+      ).toEqual([true, true, false]);
+
+      document.dispatchEvent(new Event('dragend'));
+
+      expect(
+        hosts.some((host) => host.hasAttribute('data-editor-dragging'))
+      ).toBe(false);
+    } finally {
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('a pointermove after a drag ends a session whose source never received dragend', () => {
+    const { dataTransfer, editor, hosts, root, state } = setup();
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+      hosts[0].remove();
+      document.dispatchEvent(new Event('pointermove'));
+
+      expect(hosts[0].hasAttribute('data-editor-dragging')).toBe(false);
+
+      applyEditableDragOver({
+        editor,
+        event: createDragEvent(hosts[2], dataTransfer),
+        state,
+      });
+
+      expect(readDropIndicator(editor)).toBe(null);
+    } finally {
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('a drag releases every document and window listener it adds, however it ends', () => {
+    const { at, dataTransfer, editor, hosts, root, state } = setup();
+    const range = at([2], 1);
+
+    // jsdom's selector engine adds its hover listeners on the first match.
+    document.body.matches('*');
+
+    const listeners: unknown[][] = [];
+    const entry = (
+      target: EventTarget,
+      [type, listener, options]: Parameters<EventTarget['addEventListener']>
+    ) => [
+      target,
+      type,
+      listener,
+      typeof options === 'boolean' ? options : !!options?.capture,
+    ];
+    const indexOf = (key: unknown[]) =>
+      listeners.findIndex((listener) =>
+        listener.every((part, i) => part === key[i])
+      );
+    const spies = [document, window].flatMap((target) => {
+      const { addEventListener, removeEventListener } = target;
+
+      return [
+        vi.spyOn(target, 'addEventListener').mockImplementation((...args) => {
+          if (indexOf(entry(target, args)) < 0) {
+            listeners.push(entry(target, args));
+          }
+          addEventListener.apply(target, args);
+        }),
+        vi
+          .spyOn(target, 'removeEventListener')
+          .mockImplementation((...args) => {
+            const index = indexOf(entry(target, args));
+
+            if (index >= 0) listeners.splice(index, 1);
+            removeEventListener.apply(target, args);
+          }),
+      ];
+    });
+    const live = () => listeners.length;
+    const ends = {
+      dragend: () => document.dispatchEvent(new Event('dragend')),
+      pointermove: () => document.dispatchEvent(new Event('pointermove')),
+      drop: () =>
+        applyEditableDrop({
+          editor,
+          event: createDragEvent(hosts[2], dataTransfer),
+          readOnly: false,
+          state,
+        }),
+    };
+
+    try {
+      const before = live();
+
+      for (const [way, end] of Object.entries(ends)) {
+        // The second start ends the first drag's session.
+        for (const _ of [0, 1]) {
+          editor.api.dom.drag.start(
+            { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+            { node: editorGetSnapshot(editor).children[0] as never }
+          );
+        }
+
+        expect(live()).toBeGreaterThan(before);
+
+        end();
+
+        expect({ live: live(), way }).toEqual({ live: before, way });
+      }
+      expect(texts(editor)).toEqual(['b', 'c', 'a']);
+    } finally {
+      for (const spy of spies) spy.mockRestore();
+      range.mockRestore();
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('ending a drag clears every painted indicator', () => {
+    const { at, dataTransfer, editor, hosts, root, state } = setup();
+    const overC = at([2], 1);
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+      applyEditableDragOver({
+        editor,
+        event: createDragEvent(hosts[2], dataTransfer),
+        state,
+      });
+
+      expect(readDropIndicator(editor)).not.toBe(null);
+
+      // A cancelled drag ends on the source without a dragleave on the target.
+      document.dispatchEvent(new Event('dragend'));
+
+      expect(readDropIndicator(editor)).toBe(null);
+    } finally {
+      overC.mockRestore();
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('a block drag settles before a drop handler that claims every drop', () => {
+    const { at, dataTransfer, editor, hosts, root, state } = setup();
+    const range = at([2], 1);
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+      applyEditableDrop({
+        editor,
+        event: createDragEvent(hosts[2], dataTransfer),
+        onDrop: () => true,
+        readOnly: false,
+        state,
+      });
+
+      expect(texts(editor)).toEqual(['b', 'c', 'a']);
+    } finally {
+      range.mockRestore();
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('a dragged block whose host unmounted mid-drag still moves by key', () => {
+    const { at, dataTransfer, editor, hosts, root, state } = setup();
+    const range = at([2], 1);
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+      hosts[0].remove();
+      applyEditableDrop({
+        editor,
+        event: createDragEvent(hosts[2], dataTransfer),
+        readOnly: false,
+        state,
+      });
+
+      expect(texts(editor)).toEqual(['b', 'c', 'a']);
+    } finally {
+      range.mockRestore();
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('a read-only editor starts a copy-only drag', () => {
+    const { dataTransfer, editor, hosts, root } = setup();
+
+    setEditorReadOnly(editor, true);
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+
+      expect(dataTransfer.effectAllowed).toBe('copy');
+      expect(hosts[0].hasAttribute('data-editor-dragging')).toBe(true);
+    } finally {
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('dragover paints the indicator on an admitted edge and refuses a no-op edge', () => {
+    const { at, dataTransfer, editor, hosts, root, state } = setup();
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+
+      const overC = at([2], 1);
+      const admitted = createDragEvent(hosts[2], dataTransfer);
+
+      applyEditableDragOver({ editor, event: admitted, state });
+      overC.mockRestore();
+
+      expect(admitted.preventDefault).toHaveBeenCalled();
+      expect(readDropIndicator(editor)).toMatchObject({
+        edge: 'after',
+        key: getNodeKey(editor, [2]),
+      });
+
+      const overB = at([1], 0);
+      const refused = createDragEvent(hosts[1], dataTransfer);
+
+      applyEditableDragOver({ editor, event: refused, state });
+      overB.mockRestore();
+
+      expect(refused.preventDefault).not.toHaveBeenCalled();
+      expect(dataTransfer.dropEffect).toBe('none');
+      expect(readDropIndicator(editor)).toBe(null);
+    } finally {
       cleanupEditorRoot(editor, root);
     }
   });

@@ -1,7 +1,7 @@
 ---
 tags: [editor-benchmarks, evidence-kit, source-map]
 verdict: accepted
-decision: Use Evidence Kit source maps and benchmark rows as the new editor benchmark authority.
+decision: Use Evidence Kit source maps and admitted rows from target-owned artifacts as the editor benchmark evidence.
 ---
 
 # Evidence Source Map
@@ -12,9 +12,10 @@ Primary source config:
 
 - `research/editor-frameworks-sources.json`
 
-Primary benchmark registry:
+Benchmark authority:
 
-- `research/benchmark-registry.json`
+- `../targets/slate-v2.json` for targets, artifacts and evidence metadata
+- `research/benchmark-registry.json` for workloads and retired definitions
 
 Current local target set:
 
@@ -24,7 +25,7 @@ Current local target set:
 Accepted transfer:
 
 - Benchmark claims must use `benchmarks/results/*latest.json` rows with visible `ok`, `partial`, `unsupported`, `timeout`, `over-budget`, or error statuses.
-- Active benchmark claims must come from `research/benchmark-registry.json`. Unregistered benchmark JSON files are historical output and are ignored by the active Evidence Kit flow.
+- Active benchmark claims come from target artifacts that declare evidence metadata, and a row counts only when its artifact is admitted as current. Unregistered benchmark JSON files are historical output and are ignored by the active Evidence Kit flow.
 - Rich-text editor claims should start from `benchmarks/results/rich-text-editors-latest.json`. That file imports the registered Slate v2 vs Slate artifact families. The active comparison scope is Slate v2 and Slate only, with Slate chunk-on as the baseline.
 - External or sibling-repo inspiration starts as a fetch manifest under `research/repos/<topic>/manifest.json` or copied data under `benchmarks/data/<topic>/`.
 - Old browser-app benchmark targets are not preserved. Future comparison work adds target-owned evidence adapters and benchmark rows after the Slate-only scope is explicitly reopened.

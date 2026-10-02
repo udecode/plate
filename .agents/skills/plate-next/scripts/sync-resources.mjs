@@ -52,7 +52,6 @@ export const discoverResourcePairs = (workspaceRoot) => {
     });
 };
 
-export const resourcePairs = discoverResourcePairs(root);
 export const discoverOrphanedGeneratedResources = (workspaceRoot) => {
   const sources = join(workspaceRoot, '.agents/rules');
   if (!existsSync(sources)) return [];
@@ -104,13 +103,12 @@ export const retiredGeneratedPaths = [
     'major-task', 'vision', 'review-sweep', 'clawpatch',
     'resolve-slate-issue', 'promote-beta', 'sync-main-to-next',
     'potion-yjs-browser-test', 'agent-browser-issue', 'docs-creator',
-    'auto', 'performance', 'testing-review', 'regression',
+    'auto', 'performance', 'testing-review', 'regression', 'improve',
+    'grill-me', 'registry-changelog', 'slate-migration', 'testing',
+    'slate-ar', 'shadcn-parity', 'gpt-pro', 'plate-review',
   ].map((name) => `${agentRoot}/${name}`)),
   ...agentRoots.flatMap((agentRoot) => [
     `${agentRoot}/auto/references/quality-loop.md`,
-    `${agentRoot}/task/references/engineering.md`,
-    `${agentRoot}/task/references/docs.md`,
-    `${agentRoot}/task/references/docs`,
     `${agentRoot}/release-lanes/references/promote.md`,
   ]),
   ".agents/skills/auto/references/regression-methodology.md",

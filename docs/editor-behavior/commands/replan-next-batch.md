@@ -23,15 +23,15 @@ topic: editor-behavior-command-replan-next-batch
 Choose the runtime owner:
 
 ```text
-plate-plan plan the next accepted Plate editor-behavior batch from docs/editor-behavior/master-roadmap.md
-plite-plan plan the next accepted Plite editor-behavior batch from docs/editor-behavior/master-roadmap.md
+plan the next accepted Plate editor-behavior batch from docs/editor-behavior/master-roadmap.md
+plan the next accepted Plite editor-behavior batch from docs/editor-behavior/master-roadmap.md
 ```
 
 When one lane already has a written supporting plan:
 
 ```text
-plate-plan plan the next accepted Plate batch from docs/plans/<active-lane-plan>.md
-plite-plan plan the next accepted Plite batch from docs/plans/<active-lane-plan>.md
+plan the next accepted Plate batch from docs/plans/<active-lane-plan>.md
+plan the next accepted Plite batch from docs/plans/<active-lane-plan>.md
 ```
 
 ## Inputs

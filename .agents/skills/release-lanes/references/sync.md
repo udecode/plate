@@ -44,8 +44,8 @@ verification pass and the active user request authorizes that cleanup and messag
 ## Keep It Fast
 
 - A bounded sync checks this sequence directly without a new plan. If it grows
-  into sustained investigation or repair, apply the project-wide standing
-  Autogoal request and retain every remaining release/read-back obligation.
+  into sustained investigation or repair, continue under pstack's Autonomous run
+  playbook and retain every remaining release/read-back obligation.
 - Do not run autoreview at any priority, including P1.
 - Do not create a `main -> next` PR.
 - Do not touch promotion; this shortcut is not `next -> main`.

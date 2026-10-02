@@ -8,6 +8,7 @@ import { HistoryPlugin } from './HistoryPlugin';
 import { HtmlPlugin } from './html';
 import { InputRulesPlugin } from './input-rules/InputRulesPlugin';
 import { BaseParagraphPlugin } from './paragraph';
+import { TransferPlugin } from './TransferPlugin';
 
 export type GetCorePluginsOptions = {
   /** Enable mark/element affinity. */
@@ -19,6 +20,7 @@ export type CorePlugins = readonly [
   typeof ElementStatePlugin,
   typeof DOMPlugin,
   typeof HistoryPlugin,
+  typeof TransferPlugin,
   typeof InputRulesPlugin,
   typeof OverridePlugin,
   typeof HtmlPlugin,
@@ -33,6 +35,7 @@ export const getCorePlugins = ({
   ElementStatePlugin,
   DOMPlugin,
   HistoryPlugin,
+  TransferPlugin,
   InputRulesPlugin,
   OverridePlugin,
   HtmlPlugin,

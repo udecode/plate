@@ -8,9 +8,9 @@ Question: How should link detection, editing, paste and navigation share one doc
 
 ## Current decision
 
-Unassessed. No review conclusion is recorded.
+[2026-10-01-link-destination-contract](../review-records/2026-10-01-link-destination-contract.json) — **pursue**. Pursue one link destination contract. Typed autolink checks isUrl alone, paste and toolbar edits run the full validateUrl, Markdown import checks only allowedSchemes, and authored insert checks only the stored floor, so the same text gets different answers. With default options, typing a space after ftp://example.com drops the space and leaves the URL selected, a tel: link survives Markdown import but not HTML import, and validateUrl refuses input that upsert accepts after encoding. Route every entry path through the preparation upsert already owns, merge isUrl, getUrlHref and transformInput into one parseUrl option, replace api.validateUrl with api.parseUrl that returns the prepared URL, and make the space and break rules call next() when it refuses.
 
-Compiled decision: not associated. Source observation: unknown. Source matching is not behavior proof.
+Compiled decision: not associated. Source observation: stale. Source matching is not behavior proof.
 
 Execution: **unbound**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
 
@@ -18,7 +18,9 @@ Imported scope flags (unbound historical claims): adoption not-assessed, proof n
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [playwright.config.ts](../../../apps/www/playwright.config.ts), [package.json](../../../apps/www/package.json), [common.md](../../vision/common.md), [package.json](../../../package.json), [pnpm-lock.yaml](../../../pnpm-lock.yaml), [SKILL.md](../../../.agents/skills/best-api-review/SKILL.md), [best-api-review.mdc](../../../.agents/rules/best-api-review.mdc). Changed directories: none identified. Changed source groups: capability/link.
+
+- **missing-current-decision**: 2026-10-01-link-destination-contract.
 
 - **unbound-plan**: [2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md](../../plans/2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md).
 
@@ -47,8 +49,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-- [2026-09-18-recovered-2026-09-04-decouple-link-floating-ui](../review-records/2026-09-18-recovered-2026-09-04-decouple-link-floating-ui.json): completed; binding **historical-unbound**; Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review. Proof: unknown / unknown. Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
-- [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json): completed; binding **historical-unbound**; Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review. Proof: unknown / unknown. Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
+No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
 
 ## Inspected documents
 
@@ -83,6 +84,24 @@ Recovered historical implementation completion from the plan. complete The recor
 Proof limits: Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
 
 References: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
+
+### 2026-10-01: 2026-10-01-link-destination-contract
+
+[Immutable record](../review-records/2026-10-01-link-destination-contract.json) — review; pursue; observation stale.
+
+Pursue one link destination contract. Typed autolink checks isUrl alone, paste and toolbar edits run the full validateUrl, Markdown import checks only allowedSchemes, and authored insert checks only the stored floor, so the same text gets different answers. With default options, typing a space after ftp://example.com drops the space and leaves the URL selected, a tel: link survives Markdown import but not HTML import, and validateUrl refuses input that upsert accepts after encoding. Route every entry path through the preparation upsert already owns, merge isUrl, getUrlHref and transformInput into one parseUrl option, replace api.validateUrl with api.parseUrl that returns the prepared URL, and make the space and break rules call next() when it refuses.
+
+Question: How should link detection, editing, paste and navigation share one document contract?
+
+- Keep the hooks and add the missing check to each path. Rejected, because five call sites would still have to stay in step by hand, which is how they drifted.
+- A public URL helper shared by link and media. Rejected, because the 2026-09-07 extraction audit already rejected a public URL helper, and media's isUrl options answer a different urlPolicy role.
+- Move autolink into a separate policy object, as the 2026-04-11 Lane 9 proposal does. Deferred, because it changes where the rules live, not which decision they apply, and it is still approval-gated.
+- Move the registry-only editing flow (show, hide, trigger, submit) into the package. Out of this question, because the 2026-09-04 decision rejected a package floating store; the manual-setup failure in the docs is a docs and kit gap.
+- Strongest cut: delete getUrlHref and transformInput with no replacement. Rejected, because apps map display text to an href (covered by a LinkRules test) and normalize toolbar input; parseUrl keeps both jobs in one hook.
+
+Proof limits: Source reading by the lead and three read-only lanes, plus runtime probes run outside the repository with bun test against the working tree: the ftp space case by the lead, and the tel, encoded-space and manual-setup cases by the consumers lane. Not run: the Enter variant, typed autolink inside a code block, browser rendering, click navigation, rel on target _blank, and performance. Docs claims were checked against content/docs/(plugins)/(elements)/link.mdx.
+
+References: [BaseLinkPlugin.ts](../../../packages/platejs/src/features/link/lib/BaseLinkPlugin.ts), [isUrl.ts](../../../packages/platejs/src/lib/utils/isUrl.ts), [urlPolicy.ts](../../../packages/platejs/src/internal/utils/urlPolicy.ts), [link.tsx](../../../apps/www/src/registry/components/editor/link.tsx), [link-toolbar.spec.ts](../../../apps/www/src/registry/components/editor/link-toolbar.spec.ts), [link.mdx](../../../content/docs/(plugins)/(elements)/link.mdx), [plate.md](../../vision/plate.md), [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md), [2026-09-04-decouple-link-floating-ui.md](../../plans/2026-09-04-decouple-link-floating-ui.md).
 
 ## Retrieval boundaries
 

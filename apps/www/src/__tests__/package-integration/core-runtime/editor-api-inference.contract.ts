@@ -8,11 +8,9 @@ type ExpectedEditorApiKeys =
   | 'aiChat'
   | 'audio'
   | 'authored'
-  | 'combobox'
   | 'csv'
   | 'debug'
   | 'details'
-  | 'dnd'
   | 'dom'
   | 'elementState'
   | 'file'
@@ -28,6 +26,7 @@ type ExpectedEditorApiKeys =
   | 'react'
   | 'suggestion'
   | 'table'
+  | 'transfer'
   | 'upload'
   | 'video';
 
@@ -46,11 +45,8 @@ type _TableApiKeepsItsMethods = Assert<
     ? true
     : false
 >;
-type _DndApiKeepsItsMethods = Assert<
-  'prepareDrag' extends keyof Editor['api']['dnd'] ? true : false
->;
-type _ComboboxApiKeepsItsMethods = Assert<
-  'cancel' | 'commit' extends keyof Editor['api']['combobox'] ? true : false
+type _TransferApiKeepsItsMethods = Assert<
+  'copy' | 'move' extends keyof Editor['api']['transfer'] ? true : false
 >;
 type _LinkApiKeepsItsMethods = Assert<
   'validateUrl' extends keyof Editor['api']['link'] ? true : false

@@ -1,9 +1,14 @@
 'use client';
 
-import { type LucideProps, Trash2Icon, GripHorizontal } from 'lucide-react';
-import { PathApi } from 'platejs';
-import { useDraggable, useDropLine } from 'platejs/dnd/react';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  type LucideProps,
+  Trash2Icon,
+  GripHorizontal,
+} from 'lucide-react';
+import type { Element } from 'platejs';
+import { BaseColumnPlugin } from 'platejs/layout';
 import { ColumnItemPlugin, ColumnPlugin } from 'platejs/layout/react';
 import {
   type EditorElementProps,
@@ -14,7 +19,6 @@ import {
   useElement,
   useElementSelected,
   useFocusedLast,
-  useComposedRef,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -28,6 +32,10 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import {
+  HandleActionsMenu,
+  startBlockDrag,
+} from '@/registry/components/editor/dnd';
+import {
   FloatingPopover,
   FloatingPopoverAnchor,
   FloatingPopoverContent,
@@ -39,21 +47,9 @@ export function ColumnElement({
   ref,
   ...props
 }: EditorElementProps<typeof ColumnItemPlugin>) {
-  const editor = useEditor();
   const { width } = element;
   const readOnly = useEditorReadOnly();
-
-  const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
-    element,
-    orientation: 'horizontal',
-    type: editor.plugin(BaseColumnItemPlugin).schema.type,
-    canDropNode: ({ dragEntry, dropEntry }) =>
-      PathApi.equals(
-        PathApi.parent(dragEntry[1]),
-        PathApi.parent(dropEntry[1])
-      ),
-  });
-  const composedRef = useComposedRef(ref, previewRef, nodeRef);
+  const selected = useElementSelected();
 
   return (
     <div
@@ -62,20 +58,21 @@ export function ColumnElement({
     >
       {!readOnly && (
         <div
-          ref={handleRef}
+          contentEditable={false}
           className={cn(
             '-translate-x-1/2 -translate-y-1/2 absolute top-2 left-1/2 z-50',
             'pointer-events-auto flex items-center',
-            'editor-column-drag-handle opacity-0 transition-opacity'
+            'editor-column-drag-handle opacity-0 transition-opacity',
+            selected && '[@media(hover:none)]:opacity-100'
           )}
         >
-          <ColumnDragHandle />
+          <ColumnDragHandle element={element} />
         </div>
       )}
 
       <EditorElement
         {...props}
-        ref={composedRef}
+        ref={ref}
         element={element}
         className="h-full px-2 pt-2 group-first/column:pl-0 group-last/column:pr-0"
       >
@@ -83,56 +80,68 @@ export function ColumnElement({
           className={cn(
             'relative h-full border border-transparent p-1.5',
             !readOnly && 'rounded-lg border-border border-dashed',
-            isDragging && 'opacity-50'
+            '[[data-editor-dragging]>&]:opacity-50'
           )}
         >
           {children}
-
-          {!readOnly && <DropLine />}
         </div>
       </EditorElement>
     </div>
   );
 }
 
-function ColumnDragHandle() {
+function ColumnDragHandle({ element }: { element: Element }) {
+  const editor = useEditor();
+  const [open, setOpen] = React.useState(false);
+  const move = (to: 'next' | 'previous', announce: string) => {
+    editor.api.transfer.move({
+      announce,
+      nodes: [editor.key(element)],
+      to,
+    });
+  };
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" className="h-5 !px-1">
-            <GripHorizontal
-              className="text-muted-foreground"
-              onClick={(event) => {
-                event.stopPropagation();
-                event.preventDefault();
-              }}
-            />
+          <Button
+            aria-expanded={open}
+            aria-haspopup="menu"
+            aria-label="Drag column or open column actions"
+            variant="ghost"
+            className="h-5 cursor-grab !px-1"
+            draggable
+            onClick={(event) => {
+              event.preventDefault();
+              setOpen(true);
+            }}
+            onDragStart={(event) => startBlockDrag(editor, event, element)}
+          >
+            <GripHorizontal className="text-muted-foreground" />
           </Button>
         </TooltipTrigger>
 
-        <TooltipContent>Drag to move column</TooltipContent>
+        <TooltipContent>Drag to move column, click for actions</TooltipContent>
       </Tooltip>
+      <HandleActionsMenu
+        actions={[
+          {
+            icon: ArrowLeftIcon,
+            label: 'Move left',
+            run: () => move('previous', 'Moved left'),
+          },
+          {
+            icon: ArrowRightIcon,
+            label: 'Move right',
+            run: () => move('next', 'Moved right'),
+          },
+        ]}
+        className="inset-0"
+        open={open}
+        onOpenChange={setOpen}
+      />
     </TooltipProvider>
-  );
-}
-
-function DropLine() {
-  const { dropLine } = useDropLine({ orientation: 'horizontal' });
-
-  if (!dropLine) return null;
-
-  return (
-    <div
-      className={cn(
-        'editor-dropLine',
-        'absolute bg-brand/50',
-        dropLine === 'left' &&
-          'group-first/column:-left-1 inset-y-0 left-[-10.5px] w-1',
-        dropLine === 'right' &&
-          'group-last/column:-right-1 inset-y-0 right-[-11px] w-1'
-      )}
-    />
   );
 }
 

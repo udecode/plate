@@ -27,11 +27,11 @@ docs:
 
 ### 安装
 
-最快捷的添加表情功能方式是使用`EmojiKit`，它包含预配置的`EmojiPlugin`和`EmojiInputPlugin`以及它们的[Plate UI](/docs/installation/plate-ui)组件。
+最快捷的添加表情功能方式是使用`EmojiKit`，它包含预配置的`EmojiPlugin`以及它的[Plate UI](/docs/installation/plate-ui)弹出框。
 
 <ComponentSource name="emoji" />
 
-- [`EmojiInputElement`](/docs/components/emoji): 渲染表情输入组合框
+- [`EmojiCombobox`](/docs/components/emoji)：渲染在 `:` 处搜索表情的弹出框
 
 ### 添加套件
 
@@ -61,31 +61,11 @@ npm install platejs @emoji-mart/data @tanstack/react-virtual
 
 ### 添加插件
 
-`emojiPlugin` 使用完整的 emoji-mart 数据集配置包插件。
+`emojiPlugin` 使用完整的 emoji-mart 数据集配置包插件。在它的 `afterEditable` 插槽中挂载弹出框：
 
 ```tsx
-import { emojiPlugin } from '@/components/editor/emoji';
 import { createEditor } from 'platejs/react';
-
-const editor = createEditor({
-  plugins: [
-    // ...其他插件,
-    emojiPlugin,
-  ],
-});
-```
-
-### 配置插件
-
-需要替换依赖的组件或配置时，把完整的 `EmojiInputPlugin` 描述符加入同一数组。
-
-```tsx
-import { EmojiInputPlugin } from 'platejs/emoji/react';
-import { createEditor } from 'platejs/react';
-import {
-  EmojiInputElement,
-  emojiPlugin,
-} from '@/components/editor/emoji';
+import { EmojiCombobox, emojiPlugin } from '@/components/editor/emoji';
 
 const editor = createEditor({
   plugins: [
@@ -96,17 +76,17 @@ const editor = createEditor({
         triggerPreviousCharPattern: /^\s?$/,
         createEmojiNode: (emoji) => ({ text: emoji.skins[0].native }),
       },
+      slots: { afterEditable: EmojiCombobox },
     }),
-    EmojiInputPlugin.configure({ component: EmojiInputElement }),
   ],
 });
 ```
 
 - `initialState.data`: 来自@emoji-mart/data包的表情数据
-- `initialState.trigger`: 触发表情组合框的字符（默认：`:`）
+- `initialState.trigger`: 打开表情弹出框的文本（默认：`:`）
 - `initialState.triggerPreviousCharPattern`: 匹配触发字符前一个字符的正则表达式
 - `initialState.createEmojiNode`: 选择表情时创建表情节点的函数。默认插入Unicode字符作为文本
-- `component`: 为表情输入组合框分配UI组件
+- `slots.afterEditable`: 表情弹出框组件
 
 ### 添加工具栏按钮
 
@@ -114,7 +94,7 @@ const editor = createEditor({
 
 `EmojiPicker` 自行管理弹出层、搜索、分类焦点、预览、选择和常用表情。`EmojiToolbarButton` 只提供工具栏触发器。
 
-行内输入和工具栏共用 `platejs/emoji` 的 `createEmojiSearch(data)`。
+弹出框和工具栏共用 `platejs/emoji` 的 `createEmojiSearch(data)`。
 为每个数据集创建一次搜索函数，再调用 `search(query, { limit: 60 })`。
 搜索匹配 ID、名称和关键词，优先返回完全匹配的 ID。每次查询返回独立数组，
 空查询返回空数组。分类、行布局、常用表情记录和结果数量由复制的 UI 管理。
@@ -142,7 +122,7 @@ import {
 
 ### EmojiPlugin
 
-提供表情功能的核心插件。扩展自[TriggerComboboxPluginState](/docs/combobox#triggercomboboxpluginstate)，并要求安装 `EmojiInputPlugin`。
+提供表情功能的核心插件。其状态包含 [ComboboxState](/docs/combobox#comboboxstate) 触发策略。
 
 <API name="EmojiPlugin">
 <APIOptions>
@@ -154,20 +134,16 @@ import {
     指定选择表情时插入节点的函数。
     - **默认行为:** 插入包含表情Unicode字符的文本节点
   </APIItem>
-  <APIItem name="trigger" type="string" optional>
-    触发表情组合框的字符。
+  <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
+    打开表情弹出框的文本。
     - **默认值:** `':'`
   </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
     匹配触发字符前一个字符的模式。
     - **默认值:** `/^\s?$/`
   </APIItem>
-  <APIItem name="createComboboxInput" type="() => Element" optional>
-    创建触发激活时输入元素的函数。
+  <APIItem name="queryPattern" type="RegExp | null" optional>
+    逐个测试短代码字符；空格会关闭弹出框，结尾的 `:` 保留在查询中。
   </APIItem>
 </APIOptions>
 </API>
-
-### EmojiInputPlugin
-
-处理表情插入的必需输入依赖。仅在替换其组件或配置时直接加入。

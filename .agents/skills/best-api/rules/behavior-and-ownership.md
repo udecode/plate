@@ -26,13 +26,9 @@ Reject:
 Internal complexity may be justified when it keeps the public surface smaller
 and preserves real runtime, safety, or performance laws.
 
-Performance law is executable evidence, not an asymptotic story. When the
-complexity changes repeated or hot runtime work, use Benchmark's embedded
-pre-acceptance architecture probe to compare the current owner with the target
-path or a disposable target prototype across applicable scale cohorts. Require
-frozen budgets, deterministic work indicators, timing/noise, source identity,
-and a correctness guard before the complexity survives. A review score or a
-promise to benchmark after implementation proves nothing about the target.
+Performance law is executable evidence, not an asymptotic story: complexity
+that changes repeated or hot runtime work survives only through Benchmark's
+pre-acceptance probe.
 
 Apply a supported-domain gate before accepting that complexity. A reviewer
 edge case does not expand the product contract. Name the current user job, the

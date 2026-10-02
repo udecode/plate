@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-01-block-move-actions",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-01-block-move-actions.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-01",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Move blocks, columns and table rows without dragging",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column",
+      "files": ["apps/www/src/registry/components/editor/column.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-01-block-move-actions-1",
+      "kind": "behavior",
+      "summary": "Clicking a block's drag handle opens Move up, Move down and Cut, and `Mod+Shift+ArrowUp` / `Mod+Shift+ArrowDown` move the blocks around the caret. Dropping a block into another editor copies it, and Alt (Apple) or Ctrl copies inside one editor.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 11,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-block-move-actions",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-01-block-move-actions-2",
+      "kind": "behavior",
+      "summary": "Clicking a column's drag handle opens Move left and Move right.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["column"],
+      "source": {
+        "line": 12,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-block-move-actions",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-01-block-move-actions-3",
+      "kind": "behavior",
+      "summary": "Clicking a row's drag handle opens Select row, Move up and Move down; the handle's label is \"Drag row or open row actions\".",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table"],
+      "source": {
+        "line": 13,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-block-move-actions",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-01-block-move-actions-4",
+      "kind": "behavior",
+      "summary": "The right-click menu offers Move up, Move down and Cut.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-menu"],
+      "source": {
+        "line": 14,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-block-move-actions",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

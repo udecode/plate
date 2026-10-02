@@ -120,6 +120,10 @@ export type {
 } from './lib/plugin/PluginDefinition';
 export { definePlugin } from './lib/plugin/definePlugin';
 export * from './lib/plugins/HistoryPlugin';
+export {
+  TransferPlugin,
+  type TransferDefinition,
+} from './lib/plugins/TransferPlugin';
 export * from './lib/plugins/affinity/index';
 export * from './lib/plugins/debug/index';
 export type {

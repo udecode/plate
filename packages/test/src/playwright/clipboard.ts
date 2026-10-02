@@ -140,29 +140,6 @@ export const toPlainText = async (surface: SurfaceTarget, html: string) =>
     return container.textContent ?? '';
   }, html);
 
-export const requiresSyntheticHtmlPasteTransport = ({
-  maxTouchPoints,
-  userAgent,
-}: {
-  maxTouchPoints: number;
-  userAgent: string;
-}) => {
-  const isMobileEmulation = maxTouchPoints > 0 && userAgent.includes('Mobile');
-  const isWebKit =
-    userAgent.includes('AppleWebKit') &&
-    !['Chrome', 'Chromium', 'Edg/'].some((token) => userAgent.includes(token));
-
-  return isMobileEmulation || isWebKit;
-};
-
-export const shouldUseSyntheticHtmlPaste = async (surface: SurfaceTarget) =>
-  requiresSyntheticHtmlPasteTransport(
-    await surface.evaluate(() => ({
-      maxTouchPoints: navigator.maxTouchPoints,
-      userAgent: navigator.userAgent,
-    }))
-  );
-
 export const copyPayloadThroughEvent = async (
   root: Locator
 ): Promise<ClipboardPayloadSnapshot> =>
@@ -337,15 +314,10 @@ export const pastePayloadThroughEvent = async (
       element: HTMLElement,
       nextPayload: {
         html?: string | null;
-        key: string;
         fragment?: string | null;
         text: string;
       }
     ) => {
-      const beforeText = element.textContent;
-      const handle = (element as Record<string, any>)[nextPayload.key];
-      const beforeModelText =
-        typeof handle?.getText === 'function' ? handle.getText() : null;
       const data = new DataTransfer();
 
       if (nextPayload.html) {
@@ -365,31 +337,23 @@ export const pastePayloadThroughEvent = async (
         value: data,
       });
 
-      const wasNotCanceled = element.dispatchEvent(event);
+      // An uncanceled paste continues as beforeinput, where Chromium and
+      // Firefox editors apply rich content; untrusted events have no default.
+      if (element.dispatchEvent(event)) {
+        const input = new InputEvent('beforeinput', {
+          bubbles: true,
+          cancelable: true,
+          inputType: 'insertFromPaste',
+        });
+
+        Object.defineProperty(input, 'dataTransfer', { value: data });
+        element.dispatchEvent(input);
+      }
       await new Promise((resolve) => {
         setTimeout(resolve, 0);
       });
-
-      if (
-        wasNotCanceled &&
-        !event.defaultPrevented &&
-        element.textContent === beforeText &&
-        (beforeModelText == null ||
-          typeof handle?.getText !== 'function' ||
-          handle.getText() === beforeModelText)
-      ) {
-        if (!handle?.insertData) {
-          throw new Error('This editor surface does not expose insertData');
-        }
-
-        handle.insertData({
-          html: nextPayload.html ?? undefined,
-          pliteFragment: nextPayload.fragment ?? undefined,
-          text: nextPayload.text,
-        });
-      }
     },
-    { ...payload, key: BROWSER_HANDLE_KEY }
+    payload
   );
 
 export const insertDataThroughHandle = async (
@@ -420,3 +384,14 @@ export const insertDataThroughHandle = async (
     },
     { ...payload, key: BROWSER_HANDLE_KEY }
   );
+
+export const clearKernelTraceThroughHandle = async (root: Locator) =>
+  root.evaluate((element: HTMLElement, key: string) => {
+    const handle = (element as Record<string, any>)[key];
+
+    if (!handle?.clearKernelTrace) {
+      throw new Error('This editor surface does not expose clearKernelTrace');
+    }
+
+    handle.clearKernelTrace();
+  }, BROWSER_HANDLE_KEY);

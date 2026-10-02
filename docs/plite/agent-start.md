@@ -32,7 +32,7 @@ Historical claims and scoreboards need fresh source-bound proof before reuse.
 
 ## Proof boundaries
 
-- Local work does not authorize a release, publication, PR, or native goal.
+- Local work does not authorize a release, publication or PR.
 - Use the affected development gate during iteration and the strict package
   plus Chromium gate for handoff. A past passing run does not certify the
   current checkout.
@@ -49,12 +49,12 @@ Historical claims and scoreboards need fresh source-bound proof before reuse.
 
 ## Normal Agent Path
 
-1. Read the current Task plan and the applicable Vision owner.
+1. Read the current plan and the applicable Vision owner.
 2. Read `master-roadmap.md` when its recorded tranche applies.
 3. Read `absolute-architecture-release-claim.md` when assessing that claim.
 4. Read live Plate repo source/tests before making any current-state claim.
-5. For bugs, use `patch`.
-6. For architecture, use `plite-plan --quick` first unless the user asks for a
+5. For bugs, use pstack's Bug fix playbook with `verify` as its driver.
+6. For architecture, use `plate-architecture quick` first unless the user asks for a
    durable plan or release-grade review.
 
 ## Commands

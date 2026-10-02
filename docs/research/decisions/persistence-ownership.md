@@ -2,9 +2,12 @@
 title: Document persistence ownership
 type: decision
 status: implemented
-updated: 2026-09-16
+updated: 2026-10-01
 review_scope: persistence
 current_review: 2026-09-16-persistence-source-closure
+reconciled_executions:
+  - 2026-10-01-autocomplete-ordinary-text-adoption-design
+  - 2026-10-01-autocomplete-ordinary-text-adoption-third-pass
 review_history:
   - ../review-records/2026-09-16-persistence-detached-migration.json
   - ../review-records/2026-09-16-persistence-immutable-migration-contract.json
@@ -26,6 +29,13 @@ related:
 ---
 
 # Document persistence ownership
+
+The [ordinary-text autocomplete adoption plan](../../plans/2026-10-01-autocomplete-ordinary-text-adoption.md)
+proposes historical input-node conversion through the existing detached v54
+owner before schema deletion. It retains application lineage, explicit source
+intent and same-version fingerprint refusal. An older persisted v54 draft,
+offline history and live collaboration room need an app-owned cutover; the
+plan allocates no release version and claims no migration adoption or proof.
 
 **Pursue one complete migration operation bound to immutable target facts.**
 Keep one complete saved document, versioned feature metadata, application schema

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 253,
+  "latestVersion": 257,
   "versions": [
     {
       "version": 0,
@@ -2941,6 +2941,53 @@
         "Inside an element-owned content root, read an entry's path through the editor supplied to the render, leaf, text or decoration callback; never recover a location from a node or read through an editor captured outside that root.",
         "Pass the known path to feature presentation reads in static components, as in read.list.ordinal(path) and read.cell({ at: path }); read.list.ordinal returns undefined for a target that is not a numbered item in the editor's root.",
         "Return decoration ranges without roots, or with the reading view's root; a source that translates canonical external coordinates, such as awareness selections or stored anchors, emits a range only through a reader of the root those coordinates address."
+      ]
+    },
+    {
+      "version": 254,
+      "date": "2026-09-30",
+      "doctrineFingerprint": "sha256:bf1db67742225af6bb4fc6340bef962e08e0f600849a60e5720bcda9243c45c0",
+      "summary": "pstack's poteto-mode owns lifecycle and git versions the skills: the doctrine fingerprint now covers only version history, so a bump is a deliberate decision to send packages back to review. Task, Patch and Autoclosure are thin entry points over pstack; Architecture, Research, Verify and Best API Review are the merged owners; Plate Next keeps doctrine sync and package review only; plan templates remain where a checker reads them.",
+      "migrationChecks": [
+        "Plan through `task` or `architecture` under pstack's poteto-mode. plate-plan, plite-plan, plite-research, research-wiki, verify-plate, clawsweeper and hard-cut are typed aliases for their owners; do not recreate them as separate methods.",
+        "Record reviews through .agents/rules/best-api-review.mdc and feature-review execution through the AGENTS.md Feature review history section.",
+        "Bump the doctrine version only when a reusable review rule, completion gate or package-facing proof requirement should send packages back to review; skill edits alone need no bump.",
+        "Run structured review under the pstack block's Review rule in AGENTS.md: before any PR, otherwise only on request."
+      ]
+    },
+    {
+      "version": 255,
+      "date": "2026-10-01",
+      "doctrineFingerprint": "sha256:608ad9ad07b9914f06595ce7d747a788b54b5e2817621d99bc06c840ceb86a3e",
+      "summary": "Autocomplete queries are ordinary editor text: a popup opens only on a trigger typed in its Editable, tracks the occurrence with a range anchor, previews IME preedit, and completes through one refusable transaction. Transient combobox input nodes, BaseComboboxPlugin and triggerCombobox no longer exist.",
+      "migrationChecks": [
+        "Declare a feature's autocomplete policy as ComboboxState fields in its plugin initialState (trigger, triggerPreviousCharPattern, triggerQuery, queryPattern, maxQueryLength); never create a transient input node, an input plugin or a trigger command handler.",
+        "Mount a feature popup in slots.afterEditable and connect it with useCombobox({ editableRef, plugin }) from platejs/combobox/react; complete through complete(match, (tx) => ...) with the match that offered the option, and return false from the callback when the option is no longer available.",
+        "Keep catalogs, filtering, ranking and the active option in copied UI; keep the editor focused while options are pressed, and route Enter, Tab, arrows and Escape through useCombobox's onKeyDown instead of a native input or a raw keydown listener.",
+        "Admit stored v53 mention, slash, emoji and footnote inputs only through migrateV54, which restores their literal trigger and query."
+      ]
+    },
+    {
+      "version": 256,
+      "date": "2026-10-01",
+      "doctrineFingerprint": "sha256:5644c1d3a8793ed1812ffc7f41e5b699ca0738c9db97a403e9e2e15df61fc675",
+      "summary": "Block drag and drop is native and lands through editor.api.transfer. A handle calls editor.api.dom.drag.start, the Editable resolves every drop, and the kit paints useDropIndicator. platejs/dnd/react, React DnD and its provider no longer exist.",
+      "migrationChecks": [
+        "Express a feature's placement rule for dragged, moved or copied blocks as readMiddleware around editorReads.transfer.landing (admit, retarget or refuse) or as a transferVeto contribution; never as a drag-and-drop canDrop callback, onDropHandler or plugin store.",
+        "Move or copy blocks from code, keyboard actions and custom drag drivers through editor.api.transfer.move or .copy, and read hover feedback from editor.api.dom.resolveDropTarget; never remove and reinsert nodes to emulate a move.",
+        "Place dropped files through the React UploadPlugin with nativeDrop and resolveDropTarget's files option, so file landings pass the same landing rules and a refused landing inserts nothing.",
+        "Start drags from copied UI with editor.api.dom.drag.start(event, { node }) and style dragged hosts through data-editor-dragging; never add a drag provider, manager or backend to a kit or application root."
+      ]
+    },
+    {
+      "version": 257,
+      "date": "2026-10-02",
+      "doctrineFingerprint": "sha256:3e99a62f43f175e17a439825f089c7554f7bc4eed6553beae78d05647c127f40",
+      "summary": "A block lands wherever the compiled schema places it, at any depth. A feature keeps only what the schema cannot state as a transferVeto, a landing read only redirects an edge, and copied handles follow the schema instead of plugin types or depths.",
+      "migrationChecks": [
+        "Narrow where dragged, moved or copied blocks land with a transferVeto contribution, and redirect an edge, such as past a list item's family, with readMiddleware around editorReads.transfer.landing that returns a TransferEdge; never admit or widen landings in middleware, and never restate content legality the compiled schema already checks.",
+        "Give copied block handles to every element the schema marks as block content and selectable, at any depth, and read a handle's or a keyboard move's blocks from editor.read.transfer.nodes; never list plugin types, path depths or a copy of the drag payload rule in copied UI.",
+        "Keep Move up and Move down among siblings, so a step whose blocks span parents refuses instead of moving them to one place."
       ]
     }
   ],

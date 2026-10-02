@@ -66,9 +66,7 @@ const isCanonicalPaths = (
     (path, index) =>
       index === 0 ||
       (compareExactPaths(value[index - 1], path) < 0 &&
-        !value
-          .slice(0, index)
-          .some((candidate) => PathApi.isAncestor(candidate, path)))
+        !PathApi.isAncestor(value[index - 1], path))
   );
 
 const canonicalizePaths = (
@@ -83,11 +81,11 @@ const canonicalizePaths = (
   for (const path of paths
     .map((candidate) => [...candidate] as Path)
     .sort(compareExactPaths)) {
+    const last = canonical.at(-1);
+
     if (
-      canonical.some(
-        (candidate) =>
-          PathApi.equals(candidate, path) || PathApi.isAncestor(candidate, path)
-      )
+      last &&
+      (PathApi.equals(last, path) || PathApi.isAncestor(last, path))
     ) {
       continue;
     }

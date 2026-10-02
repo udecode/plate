@@ -1,7 +1,5 @@
 # Benchmark performance review
 
-Apply [the Plate workflow](../../task/references/workflow.md) for plan, authority, proof and review ownership.
-
 
 Handle $ARGUMENTS.
 
@@ -142,9 +140,9 @@ Use this shape for a large-document Plate review:
 
 That is enough to review a huge-document claim without rereading the entire performance rule set.
 
-## Plite Plan Performance Pass
+## Architecture Performance Pass
 
-When used inside `plite-plan`, record this lens in the implementation review matrix.
+When used inside `plate-architecture`, record this lens in the implementation review matrix.
 
 Must answer:
 

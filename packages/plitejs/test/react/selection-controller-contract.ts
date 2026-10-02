@@ -12,6 +12,7 @@ import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
+  EDITOR_TO_PENDING_ACTION,
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
@@ -52,6 +53,7 @@ import {
   shouldSuppressCollapsedSelectionMoveDOMRange,
   syncEditableDOMSelectionToEditor as syncRuntimeDOMSelectionToEditor,
 } from '../../src/react/editable/selection-controller';
+import { createAndroidInputManager } from '../../src/react/hooks/android-input-manager/android-input-manager';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor, react } from '../../src/react/plugin/with-react';
 import { createPliteViewBoundaryGraph } from '../../src/react/view-boundary-graph';
@@ -416,6 +418,72 @@ test('model selection export preserves a focused editor control', () => {
     expect(resolveDOMRange).not.toHaveBeenCalled();
   } finally {
     editorElement.remove();
+    vi.restoreAllMocks();
+  }
+});
+
+test('forced model export respects a pending Android action', () => {
+  const editor = createEditor<Value>();
+  const editorElement = document.createElement('div');
+  const textNode = document.createTextNode('abc');
+  const domSelection = document.getSelection()!;
+  const domRange = document.createRange();
+
+  editorElement.append(textNode);
+  document.body.append(editorElement);
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+  domRange.setStart(textNode, 1);
+  domRange.collapse(true);
+  domSelection.setBaseAndExtent(textNode, 2, textNode, 2);
+  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(domRange);
+  const runtime = new EditableDOMRuntime({ editor });
+  runtime.setRoot(editorElement);
+  runtime.connect();
+  testRuntimes.add(runtime);
+  const selectionChange = Object.assign(() => {}, {
+    cancel: () => {},
+    flush: () => {},
+  });
+  runtime.publishAndroidInputManager(
+    createAndroidInputManager({
+      editor,
+      inputController: runtime.inputController,
+      onDOMSelectionChange: selectionChange,
+      receivedUserInput: runtime.receivedUserInput,
+      scheduleOnDOMSelectionChange: selectionChange,
+      scheduleTask: runtime.domPhaseScheduler.schedule,
+    })
+  );
+  const sync = () =>
+    syncEditableDOMSelectionToEditor({
+      editor,
+      options: { forceModelExport: true, preserveScroll: true },
+      scrollSelectionIntoView: () => {},
+      viewportBackedSelection: false,
+      state: runtime.inputController.state,
+    });
+
+  try {
+    EDITOR_TO_PENDING_ACTION.set(editor, { run: () => {} });
+    sync();
+    expect(domSelection.focusNode).toBe(textNode);
+    expect(domSelection.focusOffset).toBe(2);
+    EDITOR_TO_PENDING_ACTION.delete(editor);
+    sync();
+    expect(domSelection.focusOffset).toBe(1);
+  } finally {
+    EDITOR_TO_PENDING_ACTION.delete(editor);
+    editorElement.remove();
+    domSelection.removeAllRanges();
     vi.restoreAllMocks();
   }
 });

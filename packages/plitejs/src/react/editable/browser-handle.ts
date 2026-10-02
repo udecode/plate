@@ -36,6 +36,7 @@ import {
   beginEditableEventFrame,
   type EditableCommand,
   type EditableKernelTraceEntry,
+  clearEditableKernelTrace,
   getEditableKernelTrace,
   recordEditableKernelTrace,
 } from './editing-kernel';
@@ -91,6 +92,7 @@ export type PliteBrowserHandle = {
     range: Range,
     policy?: EditorUpdatePolicyFor<ReactRuntimeEditor>
   ) => void;
+  clearKernelTrace: () => void;
   clearSettledPendingNativeTextInputRepair: () => boolean;
   focus: () => void;
   getKernelTrace: () => readonly EditableKernelTraceEntry[];
@@ -531,6 +533,7 @@ export const attachPliteBrowserHandle = ({
         state: inputController.state,
       });
     },
+    clearKernelTrace: () => clearEditableKernelTrace(editor),
     getKernelTrace: () => [...getEditableKernelTrace(editor)],
     getExternalTextMetrics: () =>
       getMountedEditableDOMRuntime(editor, element)?.externalText.metrics() ??

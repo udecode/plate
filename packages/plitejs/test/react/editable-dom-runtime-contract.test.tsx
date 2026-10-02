@@ -734,6 +734,63 @@ test.each(['destroy', 'setRoot'] as const)(
   }
 );
 
+test('settleInput commits an ended composition but refuses one still active', () => {
+  const editor = createEditor();
+  const runtime = new EditableDOMRuntime({ editor });
+  const root = document.createElement('div');
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 3 },
+    },
+  });
+  const event = {
+    currentTarget: root,
+    data: '文',
+    isDefaultPrevented: () => false,
+    isPropagationStopped: () => false,
+    nativeEvent: { data: '文', isTrusted: true },
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+    target: {},
+  } as unknown as CompositionEvent<HTMLDivElement>;
+  const hasSelectableTarget = vi
+    .spyOn(ReactEditor, 'hasSelectableTarget')
+    .mockReturnValue(true);
+
+  try {
+    runtime.setRoot(root);
+    runtime.connect();
+    runtime.inputController.state.activeIntent = 'composition';
+    beginEditableCompositionSession(runtime.inputController);
+    runtime.setComposing(true);
+
+    expect(runtime.settleInput()).toBe(false);
+
+    applyEditableCompositionEnd({
+      requestModelSelectionExportAfterRender: vi.fn(),
+      androidInputManagerRef: { current: null },
+      editor,
+      event,
+      inputController: runtime.inputController,
+      runOwnedDOMMutation: (callback) =>
+        runtime.runOwnedDOMMutation('composition', callback),
+      scheduleTask: runtime.domPhaseScheduler.schedule,
+      setComposing: runtime.setComposing,
+    });
+
+    expect(runtime.settleInput()).toBe(true);
+    expect(editorString(editor, [])).toBe('a文d');
+    expect(runtime.inputController.state.isComposing).toBe(false);
+  } finally {
+    hasSelectableTarget.mockRestore();
+    runtime.destroy();
+  }
+});
+
 test('tearing down one composing root preserves a sibling composition owner', () => {
   const editor = createEditor();
   const firstRuntime = new EditableDOMRuntime({ editor });

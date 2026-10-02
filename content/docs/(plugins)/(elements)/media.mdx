@@ -385,7 +385,8 @@ the React plugin adds the optional native DOM drop adapter.
 </API>
 
 The React `UploadPlugin` also accepts `nativeDrop: boolean` (default `false`).
-Leave it disabled when `DndPlugin` owns file placement.
+When enabled, dropped files land at the edge under the pointer, through the same
+landing rules as a [block drag](/docs/dnd). A refused drop inserts nothing.
 
 ## API
 

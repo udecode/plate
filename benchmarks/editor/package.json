@@ -42,7 +42,8 @@
     "research:source-pass:fetch": "node benchmarks/fetch-research.mjs --topic source-pass",
     "bench:code-block": "node benchmarks/plate-code-block-browser.mjs",
     "test:code-block-oracle": "node --test benchmarks/code-block-highlight-oracle.test.mjs",
-    "test:external-text-measurement": "node --test benchmarks/external-text-measurement.test.mjs"
+    "test:external-text-measurement": "node --test benchmarks/external-text-measurement.test.mjs",
+    "test:markdown-streaming-measurement": "node --test benchmarks/markdown-streaming-measurement.test.mjs"
   },
   "devDependencies": {
     "@shapeshift-labs/evidence-kit": "0.1.2"

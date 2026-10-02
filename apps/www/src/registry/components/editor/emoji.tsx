@@ -2,26 +2,70 @@
 
 import emojiMartData, { type EmojiMartData } from '@emoji-mart/data';
 import { createEmojiSearch } from 'platejs/emoji';
-import { EmojiInputPlugin, EmojiPlugin } from 'platejs/emoji/react';
-import {
-  type EditorElementProps,
-  EditorElement,
-  usePluginStore,
-} from 'platejs/react';
+import { EmojiPlugin } from 'platejs/emoji/react';
+import { usePluginStore } from 'platejs/react';
 import * as React from 'react';
-
-import { useDebounce } from '@/registry/hooks/use-debounce';
 
 import {
   InlineCombobox,
   InlineComboboxContent,
   InlineComboboxEmpty,
   InlineComboboxGroup,
-  InlineComboboxInput,
   InlineComboboxItem,
+  useInlineComboboxQuery,
 } from './inline-combobox';
 
 const TRAILING_COLON_REGEX = /:$/;
+
+export function EmojiCombobox({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <InlineCombobox
+      editableRef={editableRef}
+      filter={false}
+      plugin={emojiPlugin}
+      hideWhenNoValue
+    >
+      <EmojiComboboxContent />
+    </InlineCombobox>
+  );
+}
+
+function EmojiComboboxContent() {
+  const data = usePluginStore(emojiPlugin, 'data');
+  const query = useInlineComboboxQuery();
+  const search = React.useMemo(() => createEmojiSearch(data), [data]);
+  const filteredEmojis = React.useMemo(
+    () =>
+      query.trim().length === 0
+        ? []
+        : search(query.replace(TRAILING_COLON_REGEX, ''), { limit: 60 }),
+    [query, search]
+  );
+
+  return (
+    <InlineComboboxContent>
+      <InlineComboboxEmpty>No results</InlineComboboxEmpty>
+
+      <InlineComboboxGroup>
+        {filteredEmojis.map((emoji) => (
+          <InlineComboboxItem
+            key={emoji.id}
+            value={emoji.name}
+            onSelect={(tx) => {
+              tx.plugin(emojiPlugin).insert(emoji);
+            }}
+          >
+            {emoji.skins[0].native} {emoji.name}
+          </InlineComboboxItem>
+        ))}
+      </InlineComboboxGroup>
+    </InlineComboboxContent>
+  );
+}
 
 export const emojiPlugin = EmojiPlugin.extend({
   initialState: {
@@ -29,61 +73,6 @@ export const emojiPlugin = EmojiPlugin.extend({
   },
 });
 
-export function EmojiInputElement(
-  props: EditorElementProps<typeof EmojiInputPlugin>
-) {
-  const { children, element } = props;
-  const data = usePluginStore(emojiPlugin, 'data');
-  const [value, setValue] = React.useState('');
-  const debouncedValue = useDebounce(value, 100);
-  const isPending = value !== debouncedValue;
-  const search = React.useMemo(() => createEmojiSearch(data), [data]);
-
-  const filteredEmojis = React.useMemo(() => {
-    if (debouncedValue.trim().length === 0) return [];
-
-    return search(debouncedValue.replace(TRAILING_COLON_REGEX, ''), {
-      limit: 60,
-    });
-  }, [search, debouncedValue]);
-
-  return (
-    <EditorElement as="span" {...props}>
-      <InlineCombobox
-        value={value}
-        element={element}
-        filter={false}
-        setValue={setValue}
-        trigger=":"
-        hideWhenNoValue
-      >
-        <InlineComboboxInput />
-
-        <InlineComboboxContent>
-          {!isPending && <InlineComboboxEmpty>No results</InlineComboboxEmpty>}
-
-          <InlineComboboxGroup>
-            {filteredEmojis.map((emoji) => (
-              <InlineComboboxItem
-                key={emoji.id}
-                value={emoji.name}
-                onSelect={(tx) => {
-                  tx.plugin(emojiPlugin).insert(emoji);
-                }}
-              >
-                {emoji.skins[0].native} {emoji.name}
-              </InlineComboboxItem>
-            ))}
-          </InlineComboboxGroup>
-        </InlineComboboxContent>
-      </InlineCombobox>
-
-      {children}
-    </EditorElement>
-  );
-}
-
 export const EmojiKit = [
-  emojiPlugin,
-  EmojiInputPlugin.configure({ component: EmojiInputElement }),
+  emojiPlugin.configure({ slots: { afterEditable: EmojiCombobox } }),
 ];

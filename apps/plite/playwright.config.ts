@@ -1,5 +1,6 @@
 import * as os from 'node:os';
 
+import type { BrowserTestOptions } from '@platejs/test/playwright';
 import { devices, type PlaywrightTestConfig } from '@playwright/test';
 
 import {
@@ -33,7 +34,7 @@ const jsonOutput = process.env.PLITE_BROWSER_JSON_OUTPUT;
 const outputDir =
   process.env.PLITE_BROWSER_OUTPUT_DIR ?? './test-results/plite-browser';
 
-const projects: PlaywrightTestConfig['projects'] = [
+const projects: PlaywrightTestConfig<BrowserTestOptions>['projects'] = [
   {
     name: 'chromium',
     use: {
@@ -44,6 +45,7 @@ const projects: PlaywrightTestConfig['projects'] = [
           : {}),
         ignoreDefaultArgs: ['--hide-scrollbars'],
       },
+      clipboardTransport: 'native',
       permissions: ['clipboard-read', 'clipboard-write'],
     },
   },
@@ -51,6 +53,7 @@ const projects: PlaywrightTestConfig['projects'] = [
     name: 'firefox',
     use: {
       ...devices['Desktop Firefox'],
+      clipboardTransport: 'native',
     },
   },
   {
@@ -60,6 +63,7 @@ const projects: PlaywrightTestConfig['projects'] = [
       ...(chromiumExecutablePath
         ? { launchOptions: { executablePath: chromiumExecutablePath } }
         : {}),
+      clipboardTransport: 'event',
       permissions: ['clipboard-read', 'clipboard-write'],
     },
   },
@@ -70,6 +74,7 @@ if (os.type() === 'Darwin') {
     name: 'webkit',
     use: {
       ...devices['Desktop Safari'],
+      clipboardTransport: 'event',
     },
   });
   projects.push({
@@ -77,11 +82,12 @@ if (os.type() === 'Darwin') {
     testMatch: /mobile-input-proxy\.test\.ts/,
     use: {
       ...devices['iPhone 13'],
+      clipboardTransport: 'event',
     },
   });
 }
 
-const config: PlaywrightTestConfig = {
+const config: PlaywrightTestConfig<BrowserTestOptions> = {
   expect: {
     timeout: 8000,
   },

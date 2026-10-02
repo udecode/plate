@@ -8,8 +8,6 @@ metadata:
 
 # Plate UI
 
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
-
 
 This is the sole owner of Plate-specific React and component architecture.
 Package and migration skills route here instead of maintaining another hook,
@@ -29,20 +27,15 @@ layering, open-code preservation, and registry wiring.
   install over the same flat editor targets
 - `apps/www/src/registry/registry-*.ts` — registry metadata and dependencies
 - `packages/*` — upstream semantic owners; package edits route to
-  `plate-plugin-creator`
+  `plate-plugins`
 
 ## Routing Gate
 
-| Owner                  | Scope                                                               |
-| ---------------------- | ------------------------------------------------------------------- |
-| `VISION.md` / `best-api`  | durable doctrine and reusable public call shape                     |
-| `plate-plugin-creator` | package plugin mechanics and package proof                          |
-| `plate-ui`             | all Plate React/component law, copied UI, wiring, and browser proof |
-| Plate Docs         | current-state public teaching                                       |
+Ownership follows the Routing table in `AGENTS.md`.
 
 Continue here whenever a Plate package or registry task makes a React,
 component, hook, provider, store, primitive, or composition decision. Package
-implementation and proof still route to `plate-plugin-creator`; plugin builders,
+implementation and proof still route to `plate-plugins`; plugin builders,
 schema law, and application typing remain outside this skill.
 
 ## Principles
@@ -164,8 +157,10 @@ schema law, and application typing remain outside this skill.
     membership private; do not create a generic registry or hook runner.
     Read-only periods retain the adapter but fence submission and late writes.
     The last view detaching retires captured resources. Controlled read-only
-    state belongs on both Plate and Editor. Reuse supplied DnD managers and
-    preserve lazy activation.
+    state belongs on both Plate and Editor. Block drag and drop is native and
+    needs no provider. Handles call `editor.api.dom.drag.start`, the kit paints
+    `useDropIndicator`, and custom drivers resolve with `resolveDropTarget` and
+    land through `editor.api.transfer`.
 23. **Provider state stays behind semantic hooks.** Public consumers use editor,
     mount, selection, plugin and container-ref contracts. Plate and its content
     own registration and lifecycle writes; controller lookup handles stay
@@ -255,7 +250,7 @@ schema law, and application typing remain outside this skill.
   contextual inference. Never reconstruct a native field with a local object
   type, `Pick` alias, callback return annotation, or cast. If the package does
   not expose the exact contract or inference fails, repair the package owner
-  through `plate-plugin-creator` and `best-api` before wiring the registry.
+  through `plate-plugins` and `best-api` before wiring the registry.
 - Use `useElement()` for node-context element access. Treat `usePath()` as a
   reactive path dependency, not the default way to obtain a path.
 - In repeated node renderers, do not subscribe with `usePath()` when a path is
@@ -383,7 +378,7 @@ Read this reference for component families, registry feature variants, headless 
 - User-visible registry UI, kit, example, metadata, style dependency, copied-code
   install shape, or generated registry changelog changes need a registry
   changelog entry or a concrete N/A reason.
-- Use the `registry-changelog` skill for schema, scaffold, generation, and
+- `changeset`'s registry reference owns the schema, scaffold, generation and
   verification. Do not duplicate the entry contract here.
 
 ### Shadcn Proofing → [shadcn-proofing.md](./rules/shadcn-proofing.md)
@@ -468,10 +463,10 @@ from the effect. Do not query decoration markers or wrap the DOM API in another
 animation frame; the mounted DOM owner schedules the request.
 
 For inactive canonical selection, mark only the owned external focus target or
-ancestor with `data-plite-keep-selection-visible`. `Editor`/`EditorContent`
+ancestor with `data-editor-keep-selection-visible`. `Editor`/`EditorContent`
 inherits the built-in lifecycle and copied UI styles
-`data-plite-inactive-selection` and
-`data-plite-inactive-selection-caret`. Do not add a boolean prop, mirror the
+`data-editor-inactive-selection` and
+`data-editor-inactive-selection-caret`. Do not add a boolean prop, mirror the
 Range, write internal projected view selection, or create a registry install
 item whose only artifact is that policy.
 
@@ -536,8 +531,10 @@ export const BaseFootnoteKit = [
 ];
 
 export const FootnoteKit = [
-  FootnoteInputPlugin.configure({ component: FootnoteInputElement }),
-  FootnoteReferencePlugin.configure({ component: FootnoteReferenceElement }),
+  FootnoteReferencePlugin.configure({
+    component: FootnoteReferenceElement,
+    slots: { afterEditable: FootnoteCombobox },
+  }),
   FootnoteDefinitionPlugin.configure({ component: FootnoteDefinitionElement }),
 ];
 
@@ -594,7 +591,7 @@ const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
     automatic `best-api repair` chain before closeout.
 14. Verify the smallest honest surface:
 
-- affected component proof; add a regression only when Testing's value test applies
+- affected component proof; a regression only under the `AGENTS.md` Tests rule
 - source-first package typecheck when package code changed; build for artifact proof
 - browser verification when the surface is interactive
 

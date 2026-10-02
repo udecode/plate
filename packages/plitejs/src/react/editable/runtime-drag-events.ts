@@ -1,5 +1,6 @@
 import { type DragEvent, useCallback } from 'react';
 
+import type { TransferOutcome } from '../..';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   applyEditableDragEnd,
@@ -27,6 +28,8 @@ export const useRuntimeDragEvents = ({
   onDrop,
   readOnly,
   repair,
+  reportDrop,
+  runDrop,
   state,
   trace,
 }: {
@@ -38,6 +41,8 @@ export const useRuntimeDragEvents = ({
   onDrop?: DragHandler;
   readOnly: boolean;
   repair: EditableEventRuntime['repair'];
+  reportDrop: (outcome: TransferOutcome) => void;
+  runDrop: <T>(drop: () => T) => T;
   state: EditableInputControllerState;
   trace: EditableEventRuntime['trace'];
 }) => {
@@ -142,6 +147,8 @@ export const useRuntimeDragEvents = ({
         event,
         onDrop,
         readOnly,
+        reportDrop,
+        runDrop,
         state,
       });
       if (dropResult.repair) {
@@ -155,7 +162,17 @@ export const useRuntimeDragEvents = ({
         target: event.target,
       });
     },
-    [editor, inputController, onDrop, readOnly, repair, state, trace]
+    [
+      editor,
+      inputController,
+      onDrop,
+      readOnly,
+      repair,
+      reportDrop,
+      runDrop,
+      state,
+      trace,
+    ]
   );
   const onRuntimeDrop = useEditableDragHandler({ handleDrag: handleDrop });
 

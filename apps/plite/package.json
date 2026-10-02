@@ -20,7 +20,7 @@
     "test:plite-browser:project": "node scripts/run-plite-browser.mjs project",
     "test:plite-browser:smoke": "node scripts/run-plite-browser.mjs smoke",
     "test:runner": "node --test scripts/*.test.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tests/device/tsconfig.json"
   },
   "dependencies": {
     "@playwright/test": "1.61.0",

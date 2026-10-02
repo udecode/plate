@@ -1,11 +1,9 @@
 ---
 description: Promote Plate beta releases, sync main back to next and verify published npm/GitHub state with release authority.
-argument-hint: '[status | sync [dry-run] | promote [dry-run|execute] | verify | full <authorized release scope>]'
+argument-hint: '[status | verify | sync | promote] [dry-run | execute]'
 ---
 
 # Release Lanes
-
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
 
 
 Use this when the user asks to maintain Plate `latest` and `beta`, promote beta
@@ -27,25 +25,15 @@ Git/release operations; merge, public messages and unrelated cleanup still
 require the corresponding explicit authority. Do not reconfirm authority the
 user has already granted.
 
-## Autogoal Contract
+## Plan Contract
 
-Task owns the release plan and lifecycle. Native goals follow the user's direct or standing request. The optional template below is a file-based lane checklist, not
-a native goal.
-
-Default flow mode: one-shot execution of the authorized mode.
-
-Use:
-
-```bash
-node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template release-lanes \
-  --title "release lane maintenance"
-```
+Default flow mode: one-shot execution of the authorized mode. A lane that
+needs a plan keeps it at `docs/plans/<date>-<slug>.md`.
 
 Record the authorized mode and required evidence before mutating remote
 release branches. A bounded direct sync uses its complete fast mode without a new plan. If it
-grows into sustained investigation or repair, apply the standing Autogoal request
-and persist the remaining sync, release and read-back obligations. Close only when the requested lane state is true and
+grows into sustained investigation or repair, continue under pstack's Autonomous
+run playbook and persist the remaining sync, release and read-back obligations. Close only when the requested lane state is true and
 its applicable proof is recorded.
 
 ## Lanes

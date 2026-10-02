@@ -15,6 +15,7 @@ import {
   RangeApi,
   schema,
   SelectionApi,
+  transferVeto,
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 
@@ -26,6 +27,7 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
   schema: {
     element: {
       ...schema.element.textBlock(),
+      blockContent: false,
       type: 'summary',
     },
   },
@@ -67,6 +69,34 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
     }),
 })
   .extend(({ editor, plugin, schema: { type }, store }) => ({
+    contributions: [
+      // The details grammar allows a summary anywhere and a correction moves
+      // it first; a transfer never takes it or lands before it.
+      transferVeto.of(({ edge, payload, target: [, path] }, view) => {
+        const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema.type;
+
+        if (
+          payload.kind === 'nodes' &&
+          payload.nodes.some((node) =>
+            ElementApi.isElementType(node, summaryType)
+          )
+        ) {
+          return true;
+        }
+
+        const parent =
+          path.length > 1
+            ? view.read.nodes.get(PathApi.parent(path))?.[0]
+            : undefined;
+
+        return (
+          !!parent &&
+          ElementApi.isElementType(parent, type) &&
+          edge === 'before' &&
+          path.at(-1) === 0
+        );
+      }),
+    ],
     api: () => ({
       setOpen: (key: NodeKey, open: boolean) => {
         if (!open) {

@@ -14,6 +14,7 @@ import type {
 } from './documentMigrations';
 import { migratePlateV54Ast } from './migratePlateV54Ast.internal';
 import { migratePlateV54CodeBlocks } from './migratePlateV54CodeBlocks.internal';
+import { migratePlateV54Inputs } from './migratePlateV54Inputs.internal';
 import {
   type MigrationListSiblingOptions,
   migratePlateV54Profile,
@@ -30,6 +31,7 @@ type PlateV54Shape = Readonly<{
   ast: EditorDocumentValue;
   codeBlocks: ReturnType<typeof migratePlateV54CodeBlocks>;
   document: EditorDocumentValue;
+  inputs: ReturnType<typeof migratePlateV54Inputs>;
   profile: EditorDocumentValue;
   urls: ReturnType<typeof migratePlateV54Urls>;
 }>;
@@ -58,8 +60,9 @@ const shapeDocument = (
   document: EditorDocumentValue,
   options: MigratePlateV54Options
 ): PlateV54Shape => {
+  const inputs = migratePlateV54Inputs(document);
   const profile = migratePlateV54Profile(
-    { ...context, document },
+    { ...context, document: inputs.document },
     { list: options.list }
   );
   const ast = migratePlateV54Ast({ ...context, document: profile });
@@ -73,6 +76,7 @@ const shapeDocument = (
     ast,
     codeBlocks,
     document: codeBlocks.document,
+    inputs,
     profile,
     urls,
   });
@@ -98,10 +102,12 @@ export const migrateV54: PlateV54Migration = (context, options = {}) => {
     mappedSelection,
     selection,
   }: DocumentMigrationSelectionContext) => {
+    const { inputs } = shapedSource;
+    const inputSelection = inputs.mapSelection?.(selection) ?? selection;
     const profileSelection = mapBetween(
       schema,
-      selection,
-      context.document,
+      inputSelection,
+      inputs.document,
       shapedSource.profile
     );
     const astSelection = mapBetween(
@@ -111,13 +117,21 @@ export const migrateV54: PlateV54Migration = (context, options = {}) => {
       shapedSource.ast
     );
     const { mapSelection: mapUrls } = shapedSource.urls;
+    const mapped = inputs.mapSelection
+      ? mapBetween(
+          schema,
+          inputSelection,
+          inputs.document,
+          shapedSource.document
+        )
+      : mappedSelection;
 
     if (!mapUrls) {
-      return { mapped: mappedSelection, urlSelection: astSelection };
+      return { mapped, urlSelection: astSelection };
     }
 
     return {
-      mapped: mapUrls(astSelection, mappedSelection),
+      mapped: mapUrls(astSelection, mapped),
       urlSelection: mapUrls(
         astSelection,
         mapBetween(
@@ -143,7 +157,9 @@ export const migrateV54: PlateV54Migration = (context, options = {}) => {
 
     return Object.freeze({
       document: shapedSource.document,
-      ...(shapedSource.codeBlocks.mapSelection || shapedSource.urls.mapSelection
+      ...(shapedSource.codeBlocks.mapSelection ||
+      shapedSource.inputs.mapSelection ||
+      shapedSource.urls.mapSelection
         ? { mapSelection }
         : {}),
     });

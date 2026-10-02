@@ -1,0 +1,1820 @@
+{
+  "events": [
+    {
+      "clientX": 356.1905212402344,
+      "clientY": 102.85714721679688,
+      "data": null,
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "H1",
+          "parentPath": null,
+          "parentSignature": "h1[0]",
+          "path": null,
+          "text": "Plain Text"
+        },
+        "anchorOffset": 0,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "H1",
+          "parentPath": null,
+          "parentSignature": "h1[0]",
+          "path": null,
+          "text": "Plain Text"
+        },
+        "focusOffset": 0,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 1,
+      "targetRanges": [],
+      "timestamp": 1790968024268,
+      "type": "pointerdown"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": null,
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": false,
+      "isTrusted": true,
+      "key": "Unidentified",
+      "keyCode": 229,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>!"
+        },
+        "anchorOffset": 52,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>!"
+        },
+        "focusOffset": 52,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 2,
+      "targetRanges": [],
+      "timestamp": 1790968029217,
+      "type": "keydown"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": " ",
+      "domDelta": null,
+      "inputType": "insertText",
+      "isComposing": false,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>!"
+        },
+        "anchorOffset": 52,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>!"
+        },
+        "focusOffset": 52,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 3,
+      "targetRanges": [
+        {
+          "collapsed": true,
+          "end": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!"
+          },
+          "endOffset": 52,
+          "rects": [
+            {
+              "height": 18.666664123535156,
+              "width": 0,
+              "x": 357.1845397949219,
+              "y": 93.52381134033203
+            }
+          ],
+          "start": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!"
+          },
+          "startOffset": 52
+        }
+      ],
+      "timestamp": 1790968029224,
+      "type": "beforeinput"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": " ",
+      "domDelta": {
+        "textNodes": [
+          {
+            "after": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! "
+            },
+            "before": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>!"
+            },
+            "type": "modified"
+          }
+        ]
+      },
+      "inputType": "insertText",
+      "isComposing": false,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 4,
+      "targetRanges": [],
+      "timestamp": 1790968029243,
+      "type": "input"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": null,
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": false,
+      "isTrusted": true,
+      "key": "Unidentified",
+      "keyCode": 229,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 5,
+      "targetRanges": [],
+      "timestamp": 1790968029831,
+      "type": "keydown"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 6,
+      "targetRanges": [],
+      "timestamp": 1790968029832,
+      "type": "compositionstart"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅎ",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 7,
+      "targetRanges": [],
+      "timestamp": 1790968029833,
+      "type": "compositionupdate"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅎ",
+      "domDelta": null,
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! "
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 8,
+      "targetRanges": [
+        {
+          "collapsed": true,
+          "end": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! "
+          },
+          "endOffset": 53,
+          "rects": [
+            {
+              "height": 18.666664123535156,
+              "width": 0,
+              "x": 361.1547546386719,
+              "y": 93.52381134033203
+            }
+          ],
+          "start": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! "
+          },
+          "startOffset": 53
+        }
+      ],
+      "timestamp": 1790968029834,
+      "type": "beforeinput"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅎ",
+      "domDelta": {
+        "textNodes": [
+          {
+            "after": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎ"
+            },
+            "before": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! "
+            },
+            "type": "modified"
+          }
+        ]
+      },
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "anchorOffset": 54,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "focusOffset": 54,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 9,
+      "targetRanges": [],
+      "timestamp": 1790968029909,
+      "type": "input"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅎ",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": false,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 10,
+      "targetRanges": [],
+      "timestamp": 1790968029922,
+      "type": "compositionend"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": null,
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": false,
+      "isTrusted": true,
+      "key": "Unidentified",
+      "keyCode": 229,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 11,
+      "targetRanges": [],
+      "timestamp": 1790968030454,
+      "type": "keydown"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 12,
+      "targetRanges": [],
+      "timestamp": 1790968030456,
+      "type": "compositionstart"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅏ",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 13,
+      "targetRanges": [],
+      "timestamp": 1790968030456,
+      "type": "compositionupdate"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅏ",
+      "domDelta": null,
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "anchorOffset": 53,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎ"
+        },
+        "focusOffset": 53,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 14,
+      "targetRanges": [
+        {
+          "collapsed": true,
+          "end": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎ"
+          },
+          "endOffset": 53,
+          "rects": [
+            {
+              "height": 18.666664123535156,
+              "width": 0,
+              "x": 361.1547546386719,
+              "y": 93.52381134033203
+            }
+          ],
+          "start": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎ"
+          },
+          "startOffset": 53
+        }
+      ],
+      "timestamp": 1790968030456,
+      "type": "beforeinput"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅏ",
+      "domDelta": {
+        "textNodes": [
+          {
+            "after": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅏㅎ"
+            },
+            "before": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎ"
+            },
+            "type": "modified"
+          }
+        ]
+      },
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅏㅎ"
+        },
+        "anchorOffset": 54,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅏㅎ"
+        },
+        "focusOffset": 54,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 15,
+      "targetRanges": [],
+      "timestamp": 1790968030461,
+      "type": "input"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": null,
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": false,
+      "isTrusted": true,
+      "key": "Unidentified",
+      "keyCode": 229,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+        },
+        "anchorOffset": 55,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+        },
+        "focusOffset": 55,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 16,
+      "targetRanges": [],
+      "timestamp": 1790968031081,
+      "type": "keydown"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+        },
+        "anchorOffset": 55,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+        },
+        "focusOffset": 55,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 17,
+      "targetRanges": [],
+      "timestamp": 1790968031082,
+      "type": "compositionstart"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄴ",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+        },
+        "anchorOffset": 55,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+        },
+        "focusOffset": 55,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 18,
+      "targetRanges": [],
+      "timestamp": 1790968031082,
+      "type": "compositionupdate"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄴ",
+      "domDelta": null,
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+        },
+        "anchorOffset": 55,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+        },
+        "focusOffset": 55,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 19,
+      "targetRanges": [
+        {
+          "collapsed": true,
+          "end": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+          },
+          "endOffset": 55,
+          "rects": [
+            {
+              "height": 18.666671752929688,
+              "width": 0,
+              "x": 38.71428680419922,
+              "y": 115.92262268066406
+            }
+          ],
+          "start": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+          },
+          "startOffset": 55
+        }
+      ],
+      "timestamp": 1790968031082,
+      "type": "beforeinput"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄴ",
+      "domDelta": {
+        "textNodes": [
+          {
+            "after": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+            },
+            "before": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎㅏ"
+            },
+            "type": "modified"
+          }
+        ]
+      },
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "anchorOffset": 56,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "focusOffset": 56,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 20,
+      "targetRanges": [],
+      "timestamp": 1790968031087,
+      "type": "input"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄴ",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": false,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "anchorOffset": 55,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "focusOffset": 55,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 21,
+      "targetRanges": [],
+      "timestamp": 1790968031101,
+      "type": "compositionend"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": null,
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": false,
+      "isTrusted": true,
+      "key": "Unidentified",
+      "keyCode": 229,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "anchorOffset": 55,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "focusOffset": 55,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 22,
+      "targetRanges": [],
+      "timestamp": 1790968031698,
+      "type": "keydown"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "anchorOffset": 55,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "focusOffset": 55,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 23,
+      "targetRanges": [],
+      "timestamp": 1790968031698,
+      "type": "compositionstart"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄱ",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "anchorOffset": 55,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "focusOffset": 55,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 24,
+      "targetRanges": [],
+      "timestamp": 1790968031699,
+      "type": "compositionupdate"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄱ",
+      "domDelta": null,
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "anchorOffset": 55,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+        },
+        "focusOffset": 55,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 25,
+      "targetRanges": [
+        {
+          "collapsed": true,
+          "end": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+          },
+          "endOffset": 55,
+          "rects": [
+            {
+              "height": 18.666671752929688,
+              "width": 0,
+              "x": 38.71428680419922,
+              "y": 115.92262268066406
+            }
+          ],
+          "start": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+          },
+          "startOffset": 55
+        }
+      ],
+      "timestamp": 1790968031699,
+      "type": "beforeinput"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄱ",
+      "domDelta": {
+        "textNodes": [
+          {
+            "after": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄱㄴ"
+            },
+            "before": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴ"
+            },
+            "type": "modified"
+          }
+        ]
+      },
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄱㄴ"
+        },
+        "anchorOffset": 56,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄱㄴ"
+        },
+        "focusOffset": 56,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 26,
+      "targetRanges": [],
+      "timestamp": 1790968031703,
+      "type": "input"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": null,
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": false,
+      "isTrusted": true,
+      "key": "Unidentified",
+      "keyCode": 229,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+        },
+        "anchorOffset": 57,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+        },
+        "focusOffset": 57,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 27,
+      "targetRanges": [],
+      "timestamp": 1790968032314,
+      "type": "keydown"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+        },
+        "anchorOffset": 57,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+        },
+        "focusOffset": 57,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 28,
+      "targetRanges": [],
+      "timestamp": 1790968032315,
+      "type": "compositionstart"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅡ",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+        },
+        "anchorOffset": 57,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+        },
+        "focusOffset": 57,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 29,
+      "targetRanges": [],
+      "timestamp": 1790968032315,
+      "type": "compositionupdate"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅡ",
+      "domDelta": null,
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+        },
+        "anchorOffset": 57,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+        },
+        "focusOffset": 57,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 30,
+      "targetRanges": [
+        {
+          "collapsed": true,
+          "end": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+          },
+          "endOffset": 57,
+          "rects": [
+            {
+              "height": 18.666671752929688,
+              "width": 0,
+              "x": 68.1547622680664,
+              "y": 115.92262268066406
+            }
+          ],
+          "start": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+          },
+          "startOffset": 57
+        }
+      ],
+      "timestamp": 1790968032315,
+      "type": "beforeinput"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅡ",
+      "domDelta": {
+        "textNodes": [
+          {
+            "after": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+            },
+            "before": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱ"
+            },
+            "type": "modified"
+          }
+        ]
+      },
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "anchorOffset": 58,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "focusOffset": 58,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 31,
+      "targetRanges": [],
+      "timestamp": 1790968032316,
+      "type": "input"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㅡ",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": false,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "anchorOffset": 57,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "focusOffset": 57,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 32,
+      "targetRanges": [],
+      "timestamp": 1790968032333,
+      "type": "compositionend"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": null,
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": false,
+      "isTrusted": true,
+      "key": "Unidentified",
+      "keyCode": 229,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "anchorOffset": 57,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "focusOffset": 57,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 33,
+      "targetRanges": [],
+      "timestamp": 1790968032948,
+      "type": "keydown"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "anchorOffset": 57,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "focusOffset": 57,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 34,
+      "targetRanges": [],
+      "timestamp": 1790968032948,
+      "type": "compositionstart"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄹ",
+      "domDelta": null,
+      "inputType": null,
+      "isComposing": null,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "anchorOffset": 57,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "focusOffset": 57,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 35,
+      "targetRanges": [],
+      "timestamp": 1790968032948,
+      "type": "compositionupdate"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄹ",
+      "domDelta": null,
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "anchorOffset": 57,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+        },
+        "focusOffset": 57,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 36,
+      "targetRanges": [
+        {
+          "collapsed": true,
+          "end": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+          },
+          "endOffset": 57,
+          "rects": [
+            {
+              "height": 18.666671752929688,
+              "width": 0,
+              "x": 68.1547622680664,
+              "y": 115.92262268066406
+            }
+          ],
+          "start": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+          },
+          "startOffset": 57
+        }
+      ],
+      "timestamp": 1790968032948,
+      "type": "beforeinput"
+    },
+    {
+      "clientX": null,
+      "clientY": null,
+      "data": "ㄹ",
+      "domDelta": {
+        "textNodes": [
+          {
+            "after": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㄹㅡ"
+            },
+            "before": {
+              "id": "text-1",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㅡ"
+            },
+            "type": "modified"
+          }
+        ]
+      },
+      "inputType": "insertCompositionText",
+      "isComposing": true,
+      "isTrusted": true,
+      "key": null,
+      "keyCode": null,
+      "selection": {
+        "anchor": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㄹㅡ"
+        },
+        "anchorOffset": 58,
+        "collapsed": true,
+        "focus": {
+          "nodeName": "#text",
+          "parentNodeName": "SPAN",
+          "parentPath": "0,0",
+          "parentSignature": "span[0][path=0,0][text=0,0]",
+          "path": "0,0",
+          "text": "This is editable plain text, just like a <textarea>! ㅎㅏㄴㄱㄹㅡ"
+        },
+        "focusOffset": 58,
+        "rangeCount": 1,
+        "selectedText": ""
+      },
+      "seq": 37,
+      "targetRanges": [],
+      "timestamp": 1790968032950,
+      "type": "input"
+    }
+  ],
+  "steps": [
+    {
+      "kind": "content",
+      "label": "tap 0,0:52",
+      "target": {
+        "x": 356.19049072265625,
+        "y": 102.85714340209961
+      },
+      "seqEnd": 2,
+      "seqStart": 1
+    },
+    {
+      "kind": "key",
+      "label": "스페이스",
+      "seqEnd": 5,
+      "seqStart": 2
+    },
+    {
+      "kind": "key",
+      "label": "히읗",
+      "seqEnd": 11,
+      "seqStart": 5
+    },
+    {
+      "kind": "key",
+      "label": "아",
+      "seqEnd": 16,
+      "seqStart": 11
+    },
+    {
+      "kind": "key",
+      "label": "니은",
+      "seqEnd": 22,
+      "seqStart": 16
+    },
+    {
+      "kind": "key",
+      "label": "기역",
+      "seqEnd": 27,
+      "seqStart": 22
+    },
+    {
+      "kind": "key",
+      "label": "으",
+      "seqEnd": 33,
+      "seqStart": 27
+    },
+    {
+      "kind": "key",
+      "label": "리을",
+      "seqEnd": 38,
+      "seqStart": 33
+    }
+  ],
+  "violations": [
+    {
+      "seq": 10,
+      "step": "히읗",
+      "detail": "compositionend",
+      "rule": "untrusted"
+    },
+    {
+      "seq": 21,
+      "step": "니은",
+      "detail": "compositionend",
+      "rule": "untrusted"
+    },
+    {
+      "seq": 32,
+      "step": "으",
+      "detail": "compositionend",
+      "rule": "untrusted"
+    }
+  ]
+}

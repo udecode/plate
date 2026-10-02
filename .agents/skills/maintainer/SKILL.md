@@ -1,7 +1,6 @@
 ---
 description: Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof.
-argument-hint: '[heartbeat | issues | prs | security | queue | <issue-url|pr-url>] [--repo <owner/repo>]'
-disable-model-invocation: true
+argument-hint: '[issues | prs | security | heartbeat | issue-draft] <url or text>'
 name: maintainer
 metadata:
   skiller:
@@ -9,8 +8,6 @@ metadata:
 ---
 
 # Maintainer
-
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
 
 
 Handle $ARGUMENTS.
@@ -42,16 +39,15 @@ Scope:
 - route one safe item per activation to the right owner;
 - execute local docs/setup/proof repairs only when the owner is clear and the
   authority boundary allows it;
-- run at most one internal `task autonomous` fallback checkpoint only when no public
+- run at most one internal quality checkpoint through pstack's poteto-mode only when no public
   queue item is safe and the invocation allows fallback.
 
 Triggers:
 
 - explicit user invocation: `maintainer`, `maintainer heartbeat`, `maintainer
   issues`, `maintainer prs`, `maintainer security`, or a public issue/PR URL;
-- `task autonomous` front-door handoff for public queue prompts, such as `task autonomous PR #123`,
-  `task autonomous issue #123`, `task autonomous all PRs`, `task autonomous all issues`, `task autonomous queue`, or
-  `task autonomous security`;
+- a public queue prompt such as `PR #123`, `issue #123`, `all PRs`, `all issues`,
+  `queue` or `security`;
 - future local scheduler invocation that runs a single Codex heartbeat;
 - user asks for OpenClaw-like repo maintenance without choosing a narrower
   worker.
@@ -69,7 +65,7 @@ Allowed without asking:
 - run duplicate/claim guards through live GitHub and optional `gitcrawl`;
 - route to a narrower owner skill;
 - prepare one concise status comment after a user-selected non-security
-  public issue receives a complete reporter-valid `patch` packet. Post it only
+  public issue receives a complete reporter-valid bug-fix packet. Post it only
   when the user has explicitly authorized the message. Call uncommitted or
   unpushed work a local candidate, never a fixed/completed issue; state the exact
   ref/integration status and leave the issue open unless closure is separately
@@ -82,16 +78,7 @@ Allowed without asking:
 - write compact `docs/maintainer/runs/*` notes when a non-trivial heartbeat
   creates state future Codex sessions should not rediscover.
 
-Approval gates:
-
-- commit, branch, push, PR creation, merge, release, publish;
-- GitHub comment, review submission, label, close, reopen, assignment, or
-  milestone mutation without current explicit user authority;
-- external sends/posts;
-- security disclosure wording or public handling of an unpatched vulnerability;
-- credentials, payment, 2FA, captcha, account signup, secrets, or private user
-  data;
-- destructive cleanup or irreversible repo action.
+Public mutations and other hard stops follow [Authority Boundaries](#authority-boundaries).
 
 Escalate when:
 
@@ -112,104 +99,51 @@ Every heartbeat follows Execute-Verify-Report:
 
 ## Core Take
 
-`maintainer` owns the public queue brain.
+`maintainer` owns the public queue brain; execution owners do the work, routed
+by the Routing table in `AGENTS.md`. Maintainer-specific routes:
 
-Execution owners still do the work:
+- `maintainer slate-issue`: one Slate GitHub issue resolved against Plite on
+  Plate `next`, with a Plate PR for code changes, a verified issue comment, and
+  close only after the claimed integration state is true.
+- the Bug fix playbook: one local Plate/Plite behavior-bug packet with reproduction, owning
+  fix, focused proof and changeset status; no public mutation.
+- `issue-harvester`, including its Slate claims mode: Slate issue-ledger provenance and
+  external issue-by-issue closure ledgers.
+- the pstack block's panel review, `/pstack:interrogate` with the configured seats,
+  for PR review; review threads on
+  our own PRs go through pstack's Babysit playbook in `threads-only` mode.
+- the Babysit playbook: post-merge or current-tree closure of already-applied work.
 
-- `patch`: one local Plate/Plite behavior-bug or regression repair packet with reproduction,
-  durable behavior proof, owning-package fix, architecture pressure, focused
-  verification, changeset status, and Task's applicable review result or N/A; no public mutation.
-- `maintainer slate-issue`: one Slate GitHub issue resolved against Plite in the
-  Plate `next` branch, with a Plate PR for code changes, verified issue comment,
-  and close only after the claimed integration state is true.
-- `clawsweeper`: Slate issue-ledger provenance, duplicate/stale/invalid
-  classification, issue harvest discipline, and fork-local issue accounting.
-- `issue-harvester`: exhaustive external issue-by-issue closure ledgers.
-- P1 `autoreview` / `resolve-pr-feedback`: PR review and review-comment closure;
-  pass `--max-priority P1`. P2/P3 are opt-in only.
-- `task closure`: post-merge/current-tree until-clean closure for already
-  applied work.
-- `task autonomous`: internal Plate/Plite quality, behavior, API, proof, and workflow
-  self-repair.
-- `benchmark`: performance comparison, ordered measurement, causal diagnosis,
-  measured fixes, exact reruns, and resumed breadth.
-- `best-api`: concrete public call-shape design/review.
-- `plite-plan` / `plate-plan`: architecture, adoption, behavior law, and
-  maintainer-objection plans after the API target is clear.
-- `architecture-cleanup`: repo-grounded architecture/code cleanup for
-  cross-package refactors, testability gaps, shallow modules, over-splits,
-  deslop, and agent-navigation friction before a plan or patch owner is chosen.
-- `plite-research`: external OSS/GitHub discovery before local proof.
-- Plate Docs, `plate-plugin-creator`, `plate-ui`, and package owners:
-  Plate docs/product/framework execution.
+Invoke `maintainer` for the public queue: repo maintenance, issue, PR and
+security scans, heartbeats, and any public Plate or Slate issue or PR whose
+owner is not yet chosen. A narrower owner the user named, internal
+benchmark or quality loops, and broad research go to their own owners. Never
+hand public queue ownership to an internal quality run.
 
-Do not bloat `task autonomous` with public GitHub queue ownership. Do not use generic
-`github-triage` as the repo brain when Plate/Slate routing matters; use it only
-as a subordinate generic state-machine pattern when labels/comments are
-explicitly requested.
+## Plan Contract
 
-## Use When
-
-- The user invokes `maintainer`.
-- `task autonomous` routes a public GitHub issue, PR, security, queue, or heartbeat
-  prompt here.
-- The user asks to maintain the repo, scan issues, scan PRs, find agent-ready
-  work, run a heartbeat, process a queue, triage public GitHub work, or route a
-  public issue/PR/security report.
-- The task starts from a Plate or Slate GitHub issue/PR and the user has not
-  already chosen a narrower execution owner.
-- The user wants OpenClaw-like loop automation without cloud crabbox/taskflow.
-- The queue might span Slate substrate, Plate framework, docs, examples,
-  registry, security, migration, PR review, and internal quality fallback.
-
-## Do Not Use When
-
-- The user explicitly invokes a narrower owner and the route is unambiguous.
-- The task is post-merge/current-tree until-clean closure of already-applied
-  work: use `task closure`.
-- The task is an internal Plate/Slate performance comparison, benchmark, or
-  timing root-cause loop with no public queue item: use `benchmark`.
-- The task is an internal Plate/Slate quality/browser/API loop with no public
-  queue item: use `task autonomous`.
-- The task is one known Slate issue and the user wants it fixed/commented now:
-  use `maintainer slate-issue` directly.
-- The task is a local Plate/Plite behavior bug or regression with no maintainer
-  queue decision: use `patch`. Use `task`, `plate-plan`, or the package owner
-  for tooling, build, feature, refactor, docs, review, or investigation work.
-- The task asks for broad external research, not queue triage: use
-  `plite-research`.
-
-## Task Plan Contract
-
-Use one Task plan for non-trivial maintainer runs. The template below creates
-a planning file; it does not create a native goal. Apply the project's standing Autogoal request for long-running work.
-
-Plan objective:
-
-```txt
-Maintain <repo/scope>; done when queue item is routed, proved, or stopped with authority boundary; plan docs/plans/<path>.md.
-```
-
-Use the dedicated template:
-
-```bash
-node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template maintainer \
-  --title "<repo or queue scope>"
-```
-
-The plan must record invocation mode, target repo, queue source, root
+A non-trivial maintainer run keeps its plan at `docs/plans/<date>-<slug>.md`,
+or `docs/plans/<issue>-<slug>.md` when an issue backs it.
+It is done when the queue item is routed, proved, or stopped at its authority
+boundary. The plan must record invocation mode, target repo, queue source, root
 `VISION.md`, live GitHub state or auth blocker, archive/gitcrawl freshness when
 used, duplicate/claim guard, candidate matrix, VISION fit, selected owner,
 proof command or blocker, authority boundary, final handoff, and next heartbeat.
 
 ## Modes
 
+### `issue-draft <video or text>`
+
+Draft a Plate Beta issue from video or text, with exact reproduction and media,
+and publish only when the user asks. Read the complete
+[issue draft method](./references/issue-draft.md); it runs this skill's
+`scripts/` and `assets/`.
+
 ### `slate-issue <issue>`
 
 Read the complete [Slate issue recipe](./references/slate-issue.md). It owns
-intake and public claim accounting; Patch owns local repair and Task owns
-lifecycle. Execute public steps only with the active request's authority.
+intake and public claim accounting; pstack's Bug fix playbook owns local
+repair and poteto-mode owns lifecycle. Execute public steps only with the active request's authority.
 
 ### `heartbeat`
 
@@ -261,8 +195,8 @@ explicitly asks.
 ### `security`
 
 Read [security hotfix mechanics](./references/security-hotfix.md) when the
-requested work includes an advisory fix or disclosure/read-back. Task's actual
-publication authority governs those operations.
+requested work includes an advisory fix or disclosure/read-back. The active
+request's publication authority governs those operations.
 
 Keep security-shaped reports in the `maintainer security` lane until the trust
 boundary is classified. They do not belong in normal issue harvest or
@@ -275,38 +209,40 @@ Read the exact item first. Then classify route:
 | Item | Default owner |
 | --- | --- |
 | One public Slate substrate issue | `maintainer slate-issue` |
-| One public Plate behavior bug or regression | `maintainer` coordinates and delegates the local repair packet to `patch` |
+| One public Plate behavior bug or regression | `maintainer` coordinates and runs the local repair packet through pstack's Bug fix playbook |
 | One public Plate/Plite performance regression | `maintainer` coordinates and delegates the measured local packet to `benchmark` |
-| One local Plate or Plite behavior bug or regression with no public mutation | `patch` |
-| Plite public call-shape fork | `best-api`, then `plite-plan` if adoption/runtime planning is needed |
-| Already-applied PR/branch/current-tree closure | `task closure` |
+| One local Plate or Plite behavior bug or regression with no public mutation | pstack's Bug fix playbook |
+| Plite public call-shape fork | `best-api`, then `plate-architecture` if adoption/runtime planning is needed |
+| Already-applied PR/branch/current-tree closure | the Babysit playbook |
 | Plate/Slate internal performance/benchmark gap | `benchmark` |
-| Plate/Slate internal quality/browser/API gap | `task autonomous` |
-| Cross-package architecture/testability/refactor/deslop candidate | `architecture-cleanup`, then `task`, `plite-plan`, or `plate-plan` |
-| Plate framework/plugin/component/docs | `plate-plan`, `plate-plugin-creator`, `plate-ui`, Plate Docs, or `task` |
+| Plate/Slate internal quality/browser/API gap | pstack poteto-mode, as an Autonomous run when unattended |
+| Cross-package architecture/testability/refactor/deslop candidate | the Refactoring playbook, then `plate-architecture` |
+| Plate framework/plugin/component/docs | `plate-architecture`, `plate-plugins`, `plate-ui`, or Plate Docs |
 | Security/advisory | `maintainer security` |
-| PR review | P1 `autoreview` (`--max-priority P1`) |
-| PR review feedback | `resolve-pr-feedback` |
-| External corpus/issue ledger | `issue-harvester` or `clawsweeper` |
-| Unclear prior art | `plite-research` |
+| PR review | the pstack block's Review rule |
+| PR review feedback | the Babysit playbook |
+| External corpus/issue ledger | `issue-harvester` |
+| Unclear prior art | `research` |
 
-When a public Plate behavior bug or regression routes to `patch`, keep live issue state,
+When a public Plate behavior bug or regression routes to pstack's Bug fix playbook, keep live issue state,
 duplicate/claim checks, public authority, and shipping decisions in
 `maintainer`. Pass the normalized behavior report and issue constraints to
-`patch`, then require its compact evidence packet: classification and root
+the playbook, then require its compact evidence packet: classification and root
 cause; reporter-valid case ID/source refs/exact steps/claim fields; durable owner
 and files; exact red proof; final local ref and file fingerprints; five
 retry-free warm runs when the issue involves native selection/focus/DnD/paint or
 React DOM lifecycle; Browser/Chrome/device proof or limitation;
-architecture-pressure verdict; changeset status; Task's applicable review result or N/A; and
+architecture-pressure verdict; changeset status; the pstack block's Review result or N/A; and
 unresolved caveat.
 
 A complete local packet proves only `candidate-local`. It may justify a comment
 that a candidate fix exists locally, but not `fixed`, `completed`, or a
 `completed` label. After the work is pushed, replay the same case on that exact
 pushed ref from a fresh process in a clean matching checkout or immutable CI
-artifact; prove zero tracked or untracked issue-owned runtime-input differences
-and record matching fingerprints. Any commit, rebase, generation, combination,
+artifact; prove zero tracked or untracked issue-owned runtime-input differences,
+record matching fingerprints, and carry the retry-free warm ledger (5 of 5 for
+native selection, focus, drag and drop, paint and React DOM lifecycle) in the
+exact reported browser or device. Any commit, rebase, generation, combination,
 or push after a replay invalidates it. Only that clean final-pushed-ref replay
 may justify fixed/completed wording. Explicit authority to add a label never
 waives this truth gate. Do not duplicate the worker's repair methodology in
@@ -323,8 +259,9 @@ reporter says the failure remains:
    find the missing topology, claim field, environment, or final-ref replay;
 4. treat any `completed` label as stale public state requiring correction under
    the current mutation authority;
-5. route a new bounded `patch` packet. Do not defend the old proof with unit
-   tests, autoreview, or a green proxy route.
+5. route a new bounded bug-fix packet under the Bug fix playbook's failed-fix
+   recovery. Do not defend the old proof with unit
+   tests, a review, or a green proxy route.
 
 When the reporter confirms the headline fix but identifies a related residual
 symptom, record a separate observable case or explicitly split it to a new
@@ -333,7 +270,7 @@ issue. Do not leave a blanket `completed` label on an unresolved workflow.
 ## Read Order
 
 1. Latest user request and any issue/PR/advisory URL.
-2. Active goal plan when one exists.
+2. Active plan when one exists.
 3. Root `VISION.md`.
 4. Relevant detail file:
    - `docs/vision/common.md` for maintainer/automation/security/proof policy;
@@ -454,11 +391,11 @@ When no public queue item is safe:
 2. stale issue duplicate/claim guard repair;
 3. issue brief improvements;
 4. docs/setup source-backed improvements;
-5. source-backed architecture/code cleanup through `architecture-cleanup` only
+5. source-backed architecture/code cleanup through the Refactoring playbook only
    when a public item or repeated queue friction proves the need;
-6. `task closure` one current-tree closure pass when already-applied work is the
-   best fallback;
-7. `task autonomous` one internal quality checkpoint;
+6. one current-tree Babysit pass when already-applied work is the best
+   fallback;
+7. one internal quality checkpoint through pstack's poteto-mode;
 8. `sync-vision` if repeated user/agent corrections are uncaptured;
 9. `openclaw-sync` when the requested task is specifically to refresh upstream
    agent setup.

@@ -1,0 +1,168 @@
+{
+  "id": "2026-09-30-autocomplete-query-activation-ownership",
+  "scope": "autocomplete",
+  "kind": "review",
+  "date": "2026-09-30",
+  "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+  "model": null,
+  "method": "best-api-review/history-v3",
+  "trigger": "User selected autocomplete after requiring reconciliation of prior combobox work; current shared architecture and real consumers audited before recommending another iteration.",
+  "requirements": [
+    "Compose and edit native text without accepting completion during IME, including keyCode 229.",
+    "Every selectable result belongs to the current query; one owner controls input, filtering and open eligibility.",
+    "Completion uses a live target and one atomic inferred transaction, preserving rollback, stale-target refusal and one-step history.",
+    "Interaction, focus, query and popup belong to the exact mounted view and content root; remote ownership, read-only and authored projections remain correct.",
+    "Mention, slash, emoji and footnote retain their independent product catalog, ranking, insertion and focus laws.",
+    "Reconcile earlier work and keep historical execution, current source, behavior proof and adoption separate.",
+    "No product implementation, publication, search or AI product redesign in this assessment."
+  ],
+  "evidenceReuse": "Read July package, April cancellation, August trigger and geometry, September extraction and projected-view histories. Historical receipts are reused as dated alternatives, not fresh proof. Rechecked current package and all four inline consumers; the current combobox package partition passed 52 tests. Four retained observational probes use real Ariakit and actual package completion under Happy DOM with Plate hooks mocked. The old copied test cannot load due to its incomplete useEditorHistory mock. Local Lexical/Tiptap source reads are pinned, not claimed latest.",
+  "summary": "Pursue one mounted query and activation owner. Retain adopted live-key atomic completion and distinct feature policy. Current probes reproduce ignored controlled value, composing Enter commitment and stateful-regex admission; source inspection identifies selectable stale emoji results and a footnote empty-state mismatch. Compare ordinary editor text and a view-local mapped match against temporary input schemas before adopting the larger replacement.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-08-30-fix-combobox-popup-y-position",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "retains",
+      "reason": "Retain the Plite render/invalidation geometry repair and rejection of popup offsets. Historical source/proof remains unbound."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "reopens",
+      "reason": "Retain adopted live-key atomic completion and copied policy; reopen only the previously deferred temporary-input replacement comparison and current mounted query/activation defects. Execution superseded the audit session proposal."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-16-slash-ai-suggested-paragraph",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "retains",
+      "reason": "Retain exact calling-view binding for completion, cancellation and history. The new source findings do not reopen the projection repair."
+    },
+    {
+      "record": "2026-09-18-slash-command-composition-ownership",
+      "question": "Which command discovery and insertion policy belongs to the slash menu, and which can reuse canonical commands and combobox sessions?",
+      "action": "retains",
+      "reason": "Retain separate slash catalog and typed feature insertion; reject merging feature policy into combobox or promoting all copied UI."
+    },
+    {
+      "record": "2026-09-18-slash-ui-actions-execution",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "retains",
+      "reason": "Retain adopted typed feature operations and atomic completion, without transferring adjacent slash proof to autocomplete."
+    },
+    {
+      "record": "2026-09-12-accessibility-owner-boundaries",
+      "question": "Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?",
+      "action": "retains",
+      "reason": "Retain distinct mounted focus, announcement and traversal owners; no universal focus/announcement manager follows from autocomplete."
+    },
+    {
+      "record": "2026-09-21-editing-command-input-rule-convergence-execution",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "retains",
+      "reason": "Use canonical input-rule middleware as the current trigger comparator. This execution did not settle combobox, and explicit-target context remains an adoption question."
+    }
+  ],
+  "alternatives": [
+    "Keep/configure: retain live-key atomic completion, but keeping the whole design loses to current ignored controlled value, composing activation and stale result evidence.",
+    "Change existing API: choose one mounted query owner, current-query result activation and typed trigger context; remove the false controlled value contract and unused parent mirrors.",
+    "Add primitive: reject a global autocomplete manager, session class, results store or async-source contract. Existing current jobs do not pay for those owners.",
+    "Delete/merge/inline: compare deleting the four temporary input descriptors and factory/restoration/focus protocol through ordinary editor text; cut the duplicate query and unjustified result delay. Keep distinct feature policy and the independently documented filter algorithm.",
+    "Move ownership: compare the adopted canonical input-rule owner with the erased trigger command helper, preserving explicit-target and regex semantics. Neutral native matching support belongs in Plite only if needed; catalogs stay copied and popup lifetime stays mounted.",
+    "Replace architecture: ordinary editor text plus a view-local mapped match is the strongest larger cut, supported by local Lexical/Tiptap source. Its local-query/collaboration, escape suppression, projection, history and complete-operation scale proof are unresolved, so adoption remains conditional."
+  ],
+  "proofLimits": "Assessment only. Current package tests pass 52/52 and four observational DOM probes reproduce defects. Real Ariakit is used; Plate React hooks are mocked, so browser/provider lifecycle and physical IME are unproven. Existing copied tests do not execute because the mock omits useEditorHistory. Emoji and footnote findings are source-derived, without a current picker/browser replay. No new browser, full typecheck, performance, replacement prototype or adoption execution ran. Three recovered autocomplete executions remain historical-unbound. Current Playwright declares Chromium, Firefox and WebKit, but their presence is not run evidence. Global ledger check has an unrelated stale browser/markdown-streaming-contract inventory fingerprint; no blanket refresh of other owners was performed.",
+  "references": [
+    "docs/research/probes/2026-09-30-autocomplete/REPORT.md",
+    "docs/research/probes/2026-09-30-autocomplete/current-boundaries.spec.tsx",
+    "docs/research/probes/2026-09-30-autocomplete/current-boundaries.log",
+    "docs/research/probes/2026-09-30-autocomplete/existing-ui-tests.log",
+    "docs/research/decisions/autocomplete-ownership.md",
+    "docs/plans/2026-07-10-plate-next-code-drawing-combobox-comment-package-reviews.md",
+    "docs/plans/4778-inline-combobox-point-ref.md",
+    "docs/plans/2026-08-29-combobox-trigger-regressions.md",
+    "docs/plans/2026-08-30-fix-combobox-popup-y-position.md",
+    "docs/plans/artifacts/full-plate-ui-extraction-audit/families.md",
+    "docs/plans/artifacts/full-plate-ui-execution/inline-combobox-target.md",
+    "docs/plans/artifacts/full-plate-ui-execution/inline-combobox-decision.md",
+    "docs/plans/2026-09-16-slash-ai-suggested-paragraph.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/inline-combobox.tsx": "14e5c23f7d4c66cf072442c7935606822400e06951a12359115443ec5072984f",
+      "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts": "29352d824c24f00cfda02baced84bfee18cc4cb43eced3396c8da3fdbeb65361",
+      "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts": "5885533c1f85db3816f8c4f5caf22d48605cfd47f0833a20c1ce2169cc1b29ba",
+      "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts": "9b426179ad8fd1a7fa7af0ed9d5dd2041167c69db574db85b98cb45283eb2ae4",
+      "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": "2903914584a4ced92491f8cf075ed65a1ba60f8f6f35dc6bded2bca60bf8bbc9",
+      "apps/www/src/registry/components/editor/mention.tsx": "20db02cb08156f62c23f4fbeaa7231cdc080c3fef53b14ce393a4b9567b17fb6",
+      "apps/www/src/registry/components/editor/slash.tsx": "6ba3a3768fa3ff6b6a9bdcd1efb852ba77c3288d5f35cfbd027534e870f992fc",
+      "apps/www/src/registry/components/editor/emoji.tsx": "b58f39b3051bbe9e29478992e0e28913f7fc3fee75db861b328d4466938d874c",
+      "apps/www/src/registry/components/editor/footnote.tsx": "80259e29efb1974152b5c4723f7246c0987462e62e43cc7ded3434ed272cb4ab",
+      "packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.spec.ts": "88c233f839a6c3ef056e9d19c202e426345563dcc130095b22eb021eab09a8b2",
+      "apps/www/tests/browser/combobox.spec.ts": "d69283882e1afcc8df1f883dd4aee5bdcc274ac04c816a77f236c63e82138ccc",
+      "packages/platejs/src/features/combobox/lib/triggerCombobox.spec.tsx": "6c34854bf19e9024ce551bd7f4bf0ce5a919d0923cd5c1dfeecc81988df93dba",
+      "packages/platejs/src/features/combobox/lib/filterWords.spec.ts": "0b3952c969655f44f54b455e3f4a6ca757bc406b50186f13316f111656f8a8f6",
+      "apps/www/src/registry/components/editor/inline-combobox.spec.tsx": "61f3c4a121f6a7bff09dd81dd2e9ce89f669dca8753d04cb80bf7194655323dd",
+      "docs/research/probes/2026-09-30-autocomplete/current-boundaries.spec.tsx": "625b0888371e4bf0dfe9b134352255f9e6bd4c8780473722bc9718c8f015b4ad",
+      "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+      "apps/www/package.json": "fc16a2f765a3b570ac544169d7c2d09e4c094a7abb5d140af2b2bcf4e40de9f4",
+      "packages/platejs/package.json": "5060e24de246ce63ccaeec93c0c629f0bed4b2c93e75d8977ef00ac26f7f05a1",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "tooling/config/tsconfig.test.json": "e83d4caa9ff5ec9b21aafd8f0a88ab826a662c8b8c922acc1c20aefc7bc8740f",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "apps/www/src/registry/hooks/use-debounce.ts": "256b01505a863d67b278345b66a9b8340faf68247028da04fab201335a4560e4",
+      "packages/platejs/src/emoji/lib/createEmojiSearch.ts": "20432336ba8ca2402da9de3635f6224dda3e2796459f7c5b05422077031f51f9",
+      "apps/www/src/registry/components/editor/select-editor.tsx": "236f074cffcbb83efc1fb913a8f20f88fe12ef8c5ee69eb0c564699ac3f58e15",
+      "apps/www/src/registry/components/editor/select-command.tsx": "ac3ec41fc0eca2bbd8a0e8165d51b3e79756ea6272edf65e7fb32d13ab2b1404",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "d4e12fc4b28bd7d6cd077be54853ee8c873e051cf9dcc93a7e6e43fd32347129",
+      "package.json": "6b7cc2c7a6121b945be2c3e922d72e760c18f421c54384cae267f4d7dfc4e216",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "47d9a575daf17c7398fbdbd3a9143c0ae5a7a865764c7439aebabe55793b3aaa",
+      ".agents/rules/best-api-review.mdc": "5c7c3e1b732f9a9abc569e24852bccdcb8da68e62277d1634d1fcc18f5334f30",
+      "docs/research/probes/2026-09-30-autocomplete/REPORT.md": "7d4f68a2950ae9156ae9ab468604bae2010b4fb59b9aac0d5d3cbe62732b1925",
+      "docs/research/probes/2026-09-30-autocomplete/current-boundaries.log": "27cf14be0cf3d2daf0ba8123ade904ca083cd80630178139af75247e442d5913",
+      "docs/research/probes/2026-09-30-autocomplete/existing-ui-tests.log": "bbe64bc7c89f0831f88e652ff30cf1903cae60ec0fc0aabcdd4f8cdeb3d2b761",
+      "docs/research/decisions/autocomplete-ownership.md": "68b10c042be3d251628c9b53a1de5785d6b12ebc40fa3f1c3923fbb556f77651",
+      "docs/plans/2026-07-10-plate-next-code-drawing-combobox-comment-package-reviews.md": "42f47eb747d3b94b0f8ce201600eead5b32a42c5a1e0b59d534fdfafffffdc74",
+      "docs/plans/4778-inline-combobox-point-ref.md": "e3404deec69a1b2f23230967ef0b8b3a515f33bf20a5f54ffbdaeea7e751ecc2",
+      "docs/plans/2026-08-29-combobox-trigger-regressions.md": "922fe0297c2f2bdc3b92f3f7dff0138a1f748675f67a3c7eb46da5717c0c8ed4",
+      "docs/plans/2026-08-30-fix-combobox-popup-y-position.md": "b60ab4aa9f2c8e8c52e791e947f2b62db1393efbe5622927017c1557a811d1b0",
+      "docs/plans/artifacts/full-plate-ui-extraction-audit/families.md": "c3c6ea814f97cb0abb1ff3e913db8af4328e5ca05ce0265c7b5d425d3ac4912f",
+      "docs/plans/artifacts/full-plate-ui-execution/inline-combobox-target.md": "fa3857e1f4a0cdfef5b30c01bf54920b1f93ee6487153c20e274741641c9bbe2",
+      "docs/plans/artifacts/full-plate-ui-execution/inline-combobox-decision.md": "608dfa934711e18c23f1760c6ecb93c60a4ff463421149004b1a376cd18d0a4c",
+      "docs/plans/2026-09-16-slash-ai-suggested-paragraph.md": "5a00ba2e69e64d5defaac2360a92a710534d785e782990e9c03aad76894da057"
+    },
+    "directories": {
+      "packages/platejs/src/features/combobox": "ef09da1b232cb267a77a6943c7b7ecf42a8991afa58c873145f12d237a06308f",
+      "packages/platejs/src/lib/plugins/input-rules": "e2e22f1de7eaf66865257c199f53f0660387c6b29cd291882b576fd64aa7e424"
+    },
+    "features": {
+      "browser/combobox": "844f45f002397039abaf2a2292bae54cd47544ba5dbe385b33994eaa11141e21",
+      "capability/combobox": "8431e3e489780079b0895f2075eca5a72560849aa266564edbc52a87f933c599",
+      "export/platejs/./combobox": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/combobox": "ef09da1b232cb267a77a6943c7b7ecf42a8991afa58c873145f12d237a06308f",
+      "ui/inline-combobox": "994bfe868addecc104ac1c7fdc8c0fccf6272d08df62dd3f90e82e3d2f689372"
+    },
+    "upstreams": [
+      {
+        "checkout": "../lexical",
+        "commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+        "files": {
+          "packages/lexical-react/src/LexicalTypeaheadMenuPlugin.tsx": "cdaccfd4678153b32ca1db3318c6b0eff929b777819a37a9064d200cdaf6b6b9"
+        }
+      },
+      {
+        "checkout": "../tiptap",
+        "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+        "files": {
+          "packages/suggestion/src/suggestion.ts": "68ee9fe33d34083385f271cc06ad2d04225657686e7060993d637712a95ff0fa"
+        }
+      }
+    ]
+  }
+}

@@ -7,6 +7,7 @@ import {
   type NodeTarget,
   type NodeKey,
   type TextOf,
+  transfer,
 } from 'plitejs';
 
 type CustomText = {
@@ -113,3 +114,10 @@ void changes;
 void commit;
 void invalidNodeKey;
 void runtimeTarget;
+
+const headless = createEditor({ initialValue });
+const withTransfer = createEditor({ initialValue, plugins: [transfer()] });
+
+// @ts-expect-error the transfer action needs the transfer() plugin
+headless.api.transfer.move({ to: { edge: 'after', key: nodeKey } });
+withTransfer.api.transfer.move({ to: { edge: 'after', key: nodeKey } });

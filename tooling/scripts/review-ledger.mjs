@@ -365,9 +365,9 @@ export function draftReview(root, index, scopeId) {
       'package.json',
       'pnpm-lock.yaml',
       '.agents/skills/best-api-review/SKILL.md',
-      '.agents/rules/task/references/best-api-review.md',
+      '.agents/rules/best-api-review.mdc',
     ]),
-  ];
+  ].filter((path) => path !== scope.decision);
   return {
     id: '',
     scope: scopeId,
@@ -381,6 +381,7 @@ export function draftReview(root, index, scopeId) {
     evidenceReuse: '',
     summary: '',
     verdict: null,
+    callSites: { current: '', proposed: '' },
     previous,
     relation: previous ? 'reaffirms' : 'initial',
     reconciliation: [
@@ -424,6 +425,43 @@ export function draftReview(root, index, scopeId) {
       ),
       upstreams: [],
     },
+  };
+}
+
+const capturedDraftFields = new Set([
+  'binding',
+  'kind',
+  'method',
+  'plan',
+  'previous',
+  'question',
+  'reviewBasis',
+  'scope',
+  'scopes',
+  'source',
+  'workKind',
+]);
+
+function carryDraft(fresh, prior) {
+  const authored = Object.entries(prior).filter(
+    ([key]) => key in fresh && !capturedDraftFields.has(key)
+  );
+  const entries = new Map(
+    (prior.reconciliation ?? []).map((entry) => [entry.record, entry])
+  );
+  return {
+    ...fresh,
+    ...Object.fromEntries(authored),
+    ...(fresh.reconciliation
+      ? {
+          reconciliation: fresh.reconciliation.map((entry) => {
+            const carried = entries.get(entry.record);
+            return carried
+              ? { ...entry, action: carried.action, reason: carried.reason }
+              : entry;
+          }),
+        }
+      : {}),
   };
 }
 
@@ -644,7 +682,7 @@ function historyContext(root, index, live = discover(root, index)) {
   const all = records(root, index);
   const paths = new Set([
     ...files(root, 'docs/plans', [
-      { pattern: '(^|/)(artifacts|templates)/' },
+      { pattern: '(^|/)(artifacts|templates|topics)/' },
     ]).filter((path) => path.endsWith('.md')),
     ...index.scopes.flatMap((scope) => scope.plans),
     ...(index.documents ?? [])
@@ -832,7 +870,7 @@ function executionSummaryInputs(index, scopes, plan, workKind) {
       ? []
       : [
           '.agents/skills/best-api-review/SKILL.md',
-          '.agents/rules/task/references/best-api-review.md',
+          '.agents/rules/best-api-review.mdc',
         ]),
   ]);
 }
@@ -1204,6 +1242,30 @@ export function scopeHistory(
   };
 }
 
+export function openWork(root, index, context = historyContext(root, index)) {
+  return index.scopes.map((scope) => {
+    const { executions, latest, plans, progress } = scopeHistory(
+      root,
+      index,
+      scope,
+      context
+    );
+    const verdict = latest?.verdict ?? null;
+    const unboundWork =
+      executions.length > 0 ||
+      plans.some((plan) => plan.status === 'completed');
+    let open = null;
+    if (!verdict) open = 'unreviewed';
+    else if (verdict === 'pursue' && progress.adoption !== 'completed') {
+      open =
+        progress.state === 'unbound' && unboundWork
+          ? 'pursue-unbound'
+          : 'pursue-not-adopted';
+    } else if (verdict === 'defer') open = 'deferred';
+    return { id: scope.id, verdict, progress: progress.state, open };
+  });
+}
+
 export function validateRecord(
   root,
   record,
@@ -1269,6 +1331,16 @@ export function validateRecord(
   }
   if (record.kind === 'review') {
     assert.ok(record.verdict, 'Completed review requires Stop/Pursue/Defer');
+    if (recording && record.verdict === 'pursue') {
+      assert.ok(
+        ['current', 'proposed'].every(
+          (key) =>
+            typeof record.callSites?.[key] === 'string' &&
+            record.callSites[key].trim()
+        ),
+        'A Pursue review records callSites.current and callSites.proposed'
+      );
+    }
     assert.ok(
       record.requirements?.length &&
         record.requirements.every(
@@ -1314,7 +1386,7 @@ export function validateRecord(
         ...scope.proof,
         ...(scope.evidenceInputs ?? []),
       ]) {
-        if (!existsSync(join(root, path))) continue;
+        if (path === scope.decision || !existsSync(join(root, path))) continue;
         assert.ok(
           record.source.files?.[path] || record.source.directories?.[path],
           `Review must capture declared evidence: ${path}`
@@ -1676,31 +1748,43 @@ export function validate(
   };
 }
 
-export function recordReview(root, index, record) {
-  const prior = records(root, index);
+function checkRecord(root, index, record, prior) {
   const existing = prior.find((item) => item.id === record.id);
-  const path = `docs/research/review-records/${record.id}.json`;
   if (existing) {
     assert.deepEqual(
       record,
       existing,
       'Review ID already recorded with different contents'
     );
-    return path;
+    return 'duplicate';
   }
   validateRecord(root, record, index, prior);
-  if (record.kind === 'review') {
+  if (record.kind !== 'review') return 'new';
+  assert.equal(
+    record.previous,
+    latestRecord(prior, record.scope)?.id ?? null,
+    'Reconcile the latest review before recording'
+  );
+  assert.equal(
+    freshness(root, record, discover(root, index)),
+    'matching',
+    'Review source changed before recording'
+  );
+  const path = join(root, `docs/research/review-records/${record.id}.json`);
+  if (existsSync(path)) {
     assert.equal(
-      record.previous,
-      latestRecord(prior, record.scope)?.id ?? null,
-      'Reconcile the latest review before recording'
-    );
-    assert.equal(
-      freshness(root, record, discover(root, index)),
-      'matching',
-      'Review source changed before recording'
+      readFileSync(path, 'utf-8'),
+      json(record),
+      'Unindexed record already exists with different contents'
     );
   }
+  return 'new';
+}
+
+export function recordReview(root, index, record) {
+  const prior = records(root, index);
+  const path = `docs/research/review-records/${record.id}.json`;
+  if (checkRecord(root, index, record, prior) === 'duplicate') return path;
   const contents = json(record);
   mkdirSync(join(root, dirname(path)), { recursive: true });
   if (existsSync(join(root, path))) {
@@ -2261,9 +2345,58 @@ export function main(root, args) {
   }
   if (command === 'research') return searchResearch(root, argument);
   if (command === 'queue') return reviewQueue(index);
-  if (command === 'draft') return draftReview(root, index, argument);
-  if (command === 'draft-execution') {
-    return draftExecution(root, index, argument);
+  if (command === 'status') {
+    const work = openWork(root, index);
+    const count = (open) => work.filter((item) => item.open === open).length;
+    return {
+      scopes: work.length,
+      unreviewed: count('unreviewed'),
+      pursueUnbound: count('pursue-unbound'),
+      pursueNotAdopted: count('pursue-not-adopted'),
+      deferred: count('deferred'),
+      closed: count(null),
+      open: work
+        .filter((item) => item.open)
+        .map(({ id, open }) => ({ id, open })),
+    };
+  }
+  if (command === 'next') {
+    const context = historyContext(root, index);
+    const work = new Map(
+      openWork(root, index, context).map((item) => [item.id, item])
+    );
+    const actionable = (id) =>
+      work.get(id).open && work.get(id).open !== 'deferred';
+    const unit = reviewQueue(index).find((item) =>
+      item.scopes.some(actionable)
+    );
+    if (!unit) {
+      return {
+        unit: null,
+        reason: 'No scope is open except those deferred on outside evidence.',
+      };
+    }
+    return {
+      unit: unit.id,
+      title: unit.title,
+      scopes: unit.scopes.filter(actionable).map((id) => ({
+        ...work.get(id),
+        lookup: compactScope(
+          root,
+          index,
+          index.scopes.find((scope) => scope.id === id),
+          context
+        ),
+      })),
+    };
+  }
+  if (command === 'draft' || command === 'draft-execution') {
+    const fresh =
+      command === 'draft'
+        ? draftReview(root, index, argument)
+        : draftExecution(root, index, argument);
+    const from = args.indexOf('--from');
+    return from === -1 ? fresh : carryDraft(fresh, parse(root, args[from + 1]));
   }
   if (command === 'lookup') {
     assert.ok(argument, 'Supply a scope, feature or search term');
@@ -2365,6 +2498,21 @@ export function main(root, args) {
     writeFileSync(join(root, indexPath), json(index));
     return 'Inventory refreshed; reviews and proof statuses unchanged. Run render and check.';
   }
+  if (command === 'validate') {
+    assert.ok(argument, 'Supply a draft review record');
+    validate(root, index, { current: false, scopeEvidence: false });
+    const record = parse(root, argument);
+    const state = checkRecord(root, index, record, records(root, index));
+    const live = discover(root, index);
+    return {
+      valid: true,
+      ...(state === 'duplicate' ? { recorded: true } : {}),
+      freshness:
+        record.kind === 'execution'
+          ? executionFreshness(root, record, live)
+          : freshness(root, record, live),
+    };
+  }
   if (command === 'record') {
     assert.ok(argument, 'Supply a completed JSON review record');
     validate(root, index, { current: false, scopeEvidence: false });
@@ -2417,7 +2565,7 @@ export function main(root, args) {
     return { ...counts, hubs: index.scopes.length };
   }
   throw new Error(
-    'Usage: node tooling/scripts/review-ledger.mjs discover|queue|lookup <scope-or-group> [--detail]|research <key>|draft <scope>|draft-execution <plan>|record <json>|refresh|render|check'
+    'Usage: node tooling/scripts/review-ledger.mjs discover|queue|next|status|lookup <scope-or-group> [--detail]|research <key>|draft <scope> [--from <draft>]|draft-execution <plan> [--from <draft>]|validate <json>|record <json>|refresh|render|check'
   );
 }
 

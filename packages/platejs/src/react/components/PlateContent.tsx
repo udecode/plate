@@ -26,6 +26,7 @@ import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { useEditor } from '../stores';
 import { dispatchPlateShortcut } from '../utils/dispatchPlateShortcut.internal';
 import { DOM_HANDLERS } from '../utils/dom-attributes.internal';
+import { runClaimedEditableKeyDown } from '../utils/editableKeyDown.internal';
 import { pipeHandler } from '../utils/pipeHandler.internal';
 import { pipeRenderElement } from '../utils/pipeRenderElement.internal';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf.internal';
@@ -234,6 +235,11 @@ function PlateContentBranch({
         nextProps[handlerKey] = handler;
       }
     });
+
+    const pipedKeyDown = nextProps.onKeyDown;
+
+    nextProps.onKeyDown = (event, context) =>
+      runClaimedEditableKeyDown(event) || pipedKeyDown?.(event, context);
 
     return nextProps;
   }, [

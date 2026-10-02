@@ -20,6 +20,7 @@ import { createEditorHarnessAssertions } from './harness-assertions';
 import {
   createEditorHarnessClipboard,
   createEditorHarnessIme,
+  readProjectClipboardTransport,
 } from './harness-input';
 import { createEditorHarnessScenario } from './harness-scenario';
 import {
@@ -118,6 +119,7 @@ export const createEditorHarness = (
     await page.waitForTimeout(0);
   };
 
+  const clipboardTransport = readProjectClipboardTransport();
   const harness: BrowserEditorHarness = {
     name,
     page,
@@ -554,6 +556,7 @@ export const createEditorHarness = (
       root,
     }),
     clipboard: createEditorHarnessClipboard({
+      clipboardTransport,
       getHarness: () => harness,
       page,
       root,

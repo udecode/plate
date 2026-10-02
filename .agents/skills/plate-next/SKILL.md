@@ -1,6 +1,6 @@
 ---
-description: Audit or migrate Plate surfaces to current Plite doctrine, including scoped hard cuts and versioned adoption proof.
-argument-hint: '[sync [package]|specific API|path|package|current tree|hours|full-loop|batch-loop]'
+description: Keep the live Plate packages attested against Plate Next doctrine through package review with the Plate v2 review law, and doctrine sync.
+argument-hint: '[sync [package] | <package, file or API path>]'
 name: plate-next
 metadata:
   skiller:
@@ -9,30 +9,15 @@ metadata:
 
 # Plate Next
 
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
-
 Handle $ARGUMENTS.
 
-Apply [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)
-as the governing `next` beta principle. Audit against current jobs and hard
-laws, then choose the strongest justified target. Plite is the substrate owner;
-its current implementation can still require replacement. Use the owning plan
-when that repair crosses layers, and keep adoption proof separate from target
-selection. Reuse valid accepted decisions rather than restarting each audit.
+The migration is nearly done: most packages are retired and the live ones are listed in `versions.json`. This skill keeps those packages reviewed against the Plate v2 target shape: a clean Plate product layer on top of Plite, with no old Slate or Plate compatibility left in the final API. Apply `pstack:principle-redesign-from-first-principles`: Plite owns the substrate, and its current implementation can still need replacement. Public call-shape forks go to `best-api`, adoption plans to `plate-architecture`, source-shape cleanup to the Refactoring playbook, current-tree closure to the Babysit playbook, and ordinary changes to the playbook poteto-mode picks.
 
 ## Doctrine Version
 
-Current doctrine version: `253`.
+Current doctrine version: `257`.
 
-The machine-readable source is
-`.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
-the applied version, source fingerprint, verification date, and evidence plan
-for every completed Plate Next package review. Active `packages` must exactly
-match `reviewedPackageSlugs` in `tooling/scripts/check-core.mjs`. Deleted
-packages stay under `retiredPackages` with retirement date/evidence, remain
-visible in history, and are excluded from sync.
-
-Use the read-only helper:
+`.agents/rules/plate-next/versions.json` owns the immutable doctrine history and, for each live package, its applied version, source fingerprint, verification date and evidence plan. Active `packages` match `reviewedPackageSlugs` in `tooling/scripts/check-core.mjs`; deleted packages stay in `retiredPackages` with their retirement date and evidence.
 
 ```bash
 node .agents/rules/plate-next/scripts/version.mjs validate
@@ -45,226 +30,37 @@ node .agents/rules/plate-next/scripts/version.mjs doctrine-fingerprint
 
 Version law:
 
-- Use monotonic integers. Do not use semver or infer fake historical versions.
-- Every change to a reusable Plate Next pattern, review rule, topology law,
-  completion gate, or package-facing proof requirement increments
-  `latestVersion` by one and appends one immutable `versions` entry with
-  concrete `migrationChecks`.
-- The latest version entry stores a doctrine fingerprint over the Plate feature
-  coordinator, Best API, Plate Next, Plate Plugin Creator, Plate Docs, and
-  Plate UI source rules and required adjuncts; the shared resource sync owner;
-  the Plate Next and feature templates/packs; and the feature checker/tests.
-  `validate` fails when any source changes without a version bump. Treat any
-  edit to those doctrine surfaces as a bump; generated mirror regeneration is
-  not a bump.
-- `validate` also requires exact generated main-skill parity for Architecture
-  Cleanup, Task, Editor Audit, Plate Docs, Plate Feature, Plate Next, Plate Plan, Plate
-  Plugin Creator, Best API, Plate UI, and Plite Plan, plus exact
-  parity for every resource owned by the shared sync script.
-- Never edit or reorder an older version entry. Correct a bad reusable rule by
-  adding the next version. The current doctrine fingerprint hashes canonical
-  version history, excluding only the latest entry's self-referential
-  `doctrineFingerprint`, so older history and current migration law are
-  tamper-evident. Validation also compares the current fingerprint with the
-  immutable Git baseline: dirty doctrine runs use `HEAD`; clean runs use the
-  previous commit that changed `versions.json`; and CI may set
-  `PLATE_NEXT_BASE`. Current history must preserve that baseline's complete
-  version array as an exact prefix. Fingerprinted inputs may change at the same
-  version only when the base already records that fingerprint.
-- A doctrine bump never mass-updates package entries. Packages remain at their
-  last proven version until `sync` closes them.
-- Keep the visible `Current doctrine version` here equal to `latestVersion`,
-  then run `pnpm install` to regenerate the skill mirror.
+- Versions are monotonic integers. Bump deliberately, by one, when a reusable review rule, completion gate or package-facing proof requirement changes in a way that should send packages back to review, and append one immutable entry with concrete `migrationChecks`. Editing a skill file needs no bump; git versions the skills.
+- The doctrine fingerprint covers only the version history, excluding the latest entry's own `doctrineFingerprint`, so history stays tamper-evident. Validation compares it with the Git baseline (`HEAD` when the registry is dirty, otherwise the previous commit that changed `versions.json`, or `PLATE_NEXT_BASE`), and current history must keep that baseline's versions as an exact prefix.
+- `validate` also requires exact generated parity for the required skills and every resource the shared sync script owns.
+- Never edit or reorder an older entry; correct a bad rule with the next version. A bump never mass-updates packages: each stays at its last proven version until `sync` closes it.
+- Keep the visible `Current doctrine version` equal to `latestVersion`, then run `pnpm install`.
 
-Use this when the user wants Codex to do the review they keep doing manually:
-open a migrated Plate file/API, ask why every compatibility helper exists, and
-cut or move it until Plate is a clean product layer on top of Plite.
+## Sync
 
-This is a migration review method within Task. It uses Task's file plan for
-state, `best-api` for public call-shape forks, `plate-plan` for adoption and
-boundary plans, `architecture-cleanup` for source shape/deslop, and `task autonomous` for
-implementation/proof loops. Its distinct job is the Plate Next review lens:
-make Plate Plite-perfect and stop old Slate/Plate compatibility from becoming
-the final API.
+`sync` is an execution mode, not a status summary. With no argument it runs until every live package is current; `sync <package>` does the same for one. Retired packages are reported, never queued.
 
-## Use When
+1. Run `validate`, then `status`, and freeze the queue: oldest `appliedVersion` first, then slug. Keep one plan under `docs/plans/` with a row per queued package: starting and latest version, fingerprint state, missing versions, required checks, proof, final fingerprint and registry update.
+2. Process one package at a time; never attest or start the next while the active one has unchecked or deferred rows.
+3. A v0 package, or any source-fingerprint mismatch, needs a full [package review](./rules/audit-modes.md#package-review-mode) against the current law. Unchanged source runs every `migrationChecks` row after its applied version plus focused proof.
+4. After the review, proof and the Review rule close, run `fingerprint <package>` and patch its entry with the latest version, exact digest, verification date and evidence plan. Never pre-attest or copy another package's digest.
+5. Rerun `status` after every attestation and keep a package that is not `current` active until its cause is repaired.
+6. A missing reusable rule found mid-sync is repaired, then versioned, then the whole queue is recomputed; packages attested earlier in the run become stale again.
+7. All-package sync closes only when `version.mjs check all` exits zero. A blocked package keeps its old version and blocks the all-current claim.
 
-- The user invokes `plate-next`.
-- The user asks "why is this file/helper here?" during Plate migration.
-- The user wants a file-by-file or API-by-API Plate v2 cleanup pass.
-- The user wants careful package-by-package migration review before broad Plate
-  package migration.
-- The target is Plate foundation, Plate runtime, plugin API, package migration, docs/API
-  mismatch, or old Slate compatibility in Plate.
-- The user gives no target and expects autopilot to find the next Plate cleanup
-  risk.
-- The user gives a duration such as `1h`, `8h`, or `overnight`.
-- The user invokes `plate-next sync` to bring tracked packages to the current
-  doctrine.
+Package fingerprints cover code, tests, type-tests, fixtures, examples, manifests and config, and exclude generated output, caches, logs, `.npmignore`, changelogs and readmes.
 
-## Do Not Use When
+## Review
 
-- The target is pure Plite substrate design: use `plite-plan`.
-- The target is public GitHub issue/PR/security queue: use `maintainer`.
-- The target is already-applied current-tree closure before commit: use
-  `task closure`.
-- The task is one ordinary local patch with no Plate/Plite boundary question:
-  use `task`.
+A package, file or API path under a live package gets the Plate v2 review. The plan lives under `docs/plans/`.
 
-## Invocation
+- [Review law](./rules/review-law.md): the target shape and the package and file review invariants.
+- [Audit modes](./rules/audit-modes.md): the review matrix, bridge scoring, the full `platejs` sweep law and package review mode.
+- [Ownership and correction](./rules/ownership-and-correction.md): gaps, corrective sweeps, extracted-file recovery and the Plate foundation boundary.
 
-Same user-facing shape as `task autonomous`:
-
-- `plate-next`
-- `plate-next editor.api`
-- `plate-next packages/platejs/src/lib/utils/isType.ts`
-- `plate-next packages/platejs/src/features/table`
-- `plate-next packages/platejs/src/features/basic-nodes`
-- `plate-next sync`
-- `plate-next sync table`
-- `plate-next current tree`
-- `plate-next 2h`
-- `plate-next all plate packages full-loop`
-
-No argument means autopilot: scan the highest-risk Plate Next surfaces and pick
-the next cleanup packet without asking.
-
-## Sync Mode
-
-`plate-next sync` is an execution mode, not a status summary. With no package
-argument it continues until every active tracked package is current.
-`sync <package>` does the same for one active tracked package. Retired packages
-are reported but never queued.
-
-1. Run `version.mjs validate`, then `status`. Freeze the queue from the
-   machine-readable result: oldest `appliedVersion` first, then package slug.
-2. Reuse one Task-owned Plate Next file plan with a row for every queued package.
-   Record starting version, latest version, fingerprint state, missing doctrine
-   versions, required checks, proof, final fingerprint, and ledger update.
-3. Process one package at a time. Do not attest or start the next package while
-   the active package has unchecked/deferred file rows.
-4. A v0 package has no trustworthy current-doctrine attestation: rerun the full
-   package review against the latest skill. For a later version with unchanged
-   source, run every `migrationChecks` row after its applied version plus the
-   normal focused proof. Any source-fingerprint mismatch forces a full current
-   package review.
-5. After full package review, proof and Task's applicable review gate close, run
-   `fingerprint <package>`. Patch that package entry with the latest version,
-   exact digest, local verification date, and evidence plan. Never pre-attest a
-   package or copy another package's digest.
-6. Rerun `status` after every attestation. If the package is not `current`, keep
-   it active and repair the cause.
-7. If sync exposes a missing reusable rule and the rule is repaired, bump the
-   doctrine version before continuing, append its migration checks, and
-   recompute the entire queue. Packages attested earlier in the same run are
-   stale again; that is correct.
-8. Run the final goal-plan checker only after registry status is current.
-   All-package sync closes only when `version.mjs check all` exits zero. A
-   blocked/deferred package keeps its old version and blocks the all-current
-   claim.
-
-The helper is deliberately read-only. The version registry is reviewed source,
-not mutable hidden state. Package fingerprints include package code, tests,
-type-tests, fixtures, examples, manifests, and config. They exclude generated
-output, dependency/cache directories, logs, `.npmignore`, changelogs, and
-readmes so releases and prose-only edits do not trigger fake code drift.
-
-## Review Law → [review-law.md](./rules/review-law.md)
-
-Read this reference for the Plate v2 review lens, target shape, and package/file review invariants.
-
-## Ownership And Correction → [ownership-and-correction.md](./rules/ownership-and-correction.md)
-
-Read this reference when a gap, corrective sweep, extracted-file recovery, or Plate foundation boundary is active.
-
-## Audit Modes → [audit-modes.md](./rules/audit-modes.md)
-
-Read this reference for the review matrix, bridge scoring, full Plate foundation sweep, and package review mode.
-
-## Loop
-
-Use the dedicated Plate Next plan template unless a public API design fork
-requires `best-api` first:
-
-```bash
-node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template plate-next \
-  --title "plate-next <surface>"
-```
-
-Checkpoint zero must copy the user's exact target, duration, non-goals, stop
-rules, and final-handoff expectations into the plan.
-
-Then loop:
-
-1. Read `VISION.md`, `docs/vision/plate.md`, `docs/vision/common.md`, and the
-   target source/tests/docs.
-2. Build the right source map:
-   - named file/API: public API, internal bridge, caller graph, tests,
-     docs/examples, package exports, and related correction-sweep pattern;
-   - one package: package file manifest plus one plan checkbox per package
-     file, with score `100` as the only checked state;
-   - broad Plate foundation sweep: full Plate foundation manifest plus drift ledger for every file.
-3. Build the extracted-file inventory for the target scope and give every
-   untracked/extracted file a bucket before scoring confidence.
-4. Fill the review matrix for every relevant helper/API in the target. For
-   broad Plate foundation sweep, every Plate foundation file gets a drift score before any closure
-   claim.
-5. In review mode, prefer `main-parity-cleanup` when the concept and owner remain
-   durable. When `origin/main` shows a one-use migration split, prefer
-   `merge-existing-owner` or `hard-cut` instead of restoring the old file graph.
-6. If the next choice is a public API fork, route to `best-api`. Use
-   `plate-plan` afterward only when adoption/runtime/proof needs a plan, and
-   stop implementation until the target and required plan are accepted.
-7. If the smell is source shape, route to `architecture-cleanup`.
-8. If the decision is safe, implement the smallest cleanup packet.
-9. After every correction, run the related scoped sweep required by Correction
-   Sweep Law inside the active scope and patch/defer all scoped same-class
-   matches. In package review mode, broader matches become deferred rows, not
-   edits.
-10. Run focused proof: package typecheck/test/build when needed, plus `pnpm brl`
-    if exports/barrels changed.
-
-- For Plate foundation-only targets, prefer `pnpm check:core` and Plate foundation-focused tests.
-  Non-Plate foundation package failures are not blockers unless that package is named,
-  touched, or the failure proves the Plate foundation API broke it.
-
-11. Run source audits for removed legacy names. In package review mode, audit
-    broadly only to discover risk; patch only the named package and required
-    owner.
-12. For full Plate foundation sweep, close the autogoal template's drift-ledger score gate.
-13. For package review mode, close the package file checklist or defer
-    unchecked rows for user review before considering the next package.
-14. For a completed package review, update the version registry from the final
-    package fingerprint and prove that package reports `current`.
-15. Keep/revert/quarantine the packet in the plan.
-16. Pick the next in-scope packet. Honor the stated deadline or explicit minimum
-    under Task; reserve final proof and cleanup before the timebox ends.
-
-## Autopilot Priority
-
-When no target is provided, inspect in this order:
-
-1. Plate foundation public API/runtime files touched by the Plate migration.
-2. `packages/platejs/src/react/editor/withPlate.ts` and `packages/platejs/src/react/editor/useCreateEditor.ts`.
-3. Plate foundation plugin API types and plugin resolver/installers.
-4. Old Slate compatibility surfaces in Plate foundation/package exports.
-5. First-party Plate plugins, features, components, specs, type tests, or
-   fixtures importing `plitejs` instead of the relative facade or matching
-   Plate entrypoint owner, including imports hidden by test-glob exemptions.
-6. Editor-global plugins, stores, kits, or controlled props whose only job is
-   toggling derivable paint for one mounted Editable. Move neutral lifecycle
-   mechanics and the literal DOM protocol to Plite React, let Plate React
-   inherit them, and keep product markers/styling in copied UI without parallel
-   state.
-7. Docs/examples teaching old APIs.
-8. Tests with fake compatibility assertions instead of current behavior.
-9. Raw Plate component decoration props, paint callbacks, source registries, or
-   manual refresh APIs that bypass the owning plugin descriptor.
+For each target, build the source map (public API, internal bridge, callers, tests, docs and examples, exports), bucket every extracted file, fill the review matrix, and prefer `main-parity-cleanup` when the concept and owner are durable, or `merge-existing-owner` and `hard-cut` over restoring a one-use migration split. After every correction run the scoped same-class sweep the correction law requires; in package review mode, broader matches become deferred rows. A completed package review updates the registry from the final fingerprint and proves the package reports `current`. Each cleanup packet ends with a keep, revert or quarantine decision and its proof recorded in the plan; never leave speculative cleanup dirty.
 
 ## Proof
-
-For Plate foundation/Plite boundary cleanup, prefer:
 
 ```bash
 pnpm check:core
@@ -273,59 +69,8 @@ pnpm --filter platejs test
 pnpm --filter platejs build
 ```
 
-For package review mode, prefer:
+Use package-local focused tests first and broader gates only when exports, the public type surface or the foundation/Plite owner change. Never start `apps/www` from a package review unless the target is docs, registry UI or examples. `pnpm check:core` is required after a package joins `reviewedPackageSlugs`. Failures in packages outside the named scope are out-of-scope drift unless the current change caused them. Removed legacy names get an exact source audit, such as `rg -n 'oldName|old\\.api|legacyHelper' packages/platejs/src --glob '!**/dist/**'`.
 
-```bash
-pnpm turbo typecheck --filter=./packages/platejs
-pnpm --filter platejs test
-pnpm --filter platejs build
-```
+## Handoff
 
-Use package-local focused tests when available. Run broader gates only when the
-package exports, public type surface, or Plate foundation/Plite owner changes make the
-package proof insufficient.
-
-Do not start `apps/www` or hit `www` routes from Plate Next package review.
-`www` proof is a separate docs/app lane unless the current target is explicitly
-docs, registry UI, examples, or the user asks for that proof.
-
-For every completed package review, `pnpm check:core` is required after the
-package is added to `reviewedPackageSlugs` in
-`tooling/scripts/check-core.mjs`. Do not close a package review while leaving
-the shared gate blind to it.
-
-Use focused tests first. Run broader gates only before closing a risky packet.
-If a broader command reports errors in packages outside the named/touched
-scope, do not fix them in Plate Next by default. Classify them as out-of-scope
-package drift unless the failure is caused by the current Plate foundation/API change.
-For broad Plate foundation sweeps, the Plate Next autogoal template owns the drift ledger,
-manifest count, score gate, and top-drift handoff. Keep this template-only.
-
-If a source audit is the proof, make it exact and small:
-
-```bash
-rg -n 'oldName|old\\.api|legacyHelper' packages/platejs/src --glob '!**/dist/**'
-```
-
-## Final Handoff
-
-Report:
-
-- target surface and mode;
-- files/APIs reviewed;
-- package file checklist summary when package review mode applies: total rows,
-  score-100 rows, unchecked rows, deferred rows, and next package block;
-- doctrine version summary when package review or sync mode applies: starting
-  version, final applied version, source-fingerprint state, registry evidence,
-  and remaining stale/drifted package count;
-- verdict matrix: main-parity-cleanup, move-to-plite, keep-in-plate, hard-cut,
-  Plite gap, Plate gap, private-bridge, defer-with-owner;
-- changes made;
-- related scoped sweep query, active scope, match count, patched count,
-  deferred count;
-- out-of-scope matches discovered during package review;
-- tests/proof commands;
-- old compatibility names audited;
-- Plite/Plate gaps or blockers;
-- anything that still needs the user's taste review;
-- next best Plate Next packet.
+Report the target and mode; files and APIs reviewed; the package checklist (total, score-100, unchecked and deferred rows); the doctrine summary (starting and final applied version, fingerprint state, remaining stale packages); the verdict matrix (main-parity-cleanup, move-to-plite, keep-in-plate, hard-cut, Plite gap, Plate gap, private-bridge, defer-with-owner); changes made; the scoped sweep counts; out-of-scope matches; proof commands; legacy names audited; gaps and blockers; anything needing the user's taste review; and the next packet.

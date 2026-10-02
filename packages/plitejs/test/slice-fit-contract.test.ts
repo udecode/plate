@@ -1345,7 +1345,7 @@ describe('contextual schema slice fitting', () => {
       profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
-    assert.equal(events.includes('change-set-local-root-window-decode'), true);
+    assert.equal(events.includes('change-set-local-decode'), true);
     assert.equal(events.includes('change-set-apply-token-fallback'), false);
     assert.ok(editor.read.children().length > blockCount);
   });

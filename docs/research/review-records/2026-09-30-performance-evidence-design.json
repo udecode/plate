@@ -1,0 +1,94 @@
+{
+  "id": "2026-09-30-performance-evidence-design",
+  "kind": "execution",
+  "date": "2026-09-30",
+  "scopes": [
+    "performance"
+  ],
+  "reviewBasis": [
+    "2026-09-30-performance-evidence-value-review"
+  ],
+  "workKind": "design",
+  "plan": {
+    "path": "docs/plans/2026-09-30-performance-evidence-design.md",
+    "sha256": "d29d546e1fc7268e4e5584aab60cf36fe723e72eca77f2b498f774f05dee60a2"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Design completed for one executable target authority, immutable original-contract attempts, source/clock/output admission, domain-specific assessment and one active S5 evaluator with four frozen policies. Five bounded execution slices map every consumer, preserve failed/historical evidence and add exact-cell untimed oracle production. The final review corrected an overclaim that existing 6KB correctness tests supplied matrix oracle receipts. No implementation or runtime adoption occurred.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "docs/research/probes/2026-09-30-performance-review/DESIGN-CHECKS.md",
+        "sha256": "7f306ba2099dc15d3b71f2d1cd2c2bc1a2babbf102eecbe198d0f2dd8bf266e1",
+        "claim": "Source census, named owner/link checks, import-safe private helper observation and a completed separate-context draft review; its material oracle-production finding is incorporated in the finalized design. No workload or runtime claim."
+      },
+      {
+        "path": "docs/research/probes/2026-09-30-performance-review/RESULTS.json",
+        "sha256": "7a947572ee2831397726dbc565fe87fddb852a096a42e5d2bf804077592198ca",
+        "claim": "Reused original real-helper counterexamples and positive control establish the admission/evaluator gaps that each selected contract and proof arrangement addresses. This is synthetic receipt evidence, not a fresh benchmark."
+      }
+    ],
+    "limits": "Design and source inspection only. Plan completion and source identity do not establish implementation, measured performance or adoption. No workload, build, browser/native interaction, timing campaign, policy calibration or physical-device proof ran. Proposed receipt/admission/evaluator helpers and exact 10KB/50KB fixture/composition/build oracle production remain unimplemented. Existing S5 functional tests cover 6KB/special fixtures and emit no matching matrix oracle receipt; missing historical oracle or loaded-source/build bindings remain unknown/inconclusive. Evidence Kit discovery is unverified. Original runtime closures, policies and historical-unbound associations remain unchanged. Docs are excluded by Oxfmt/Oxlint, so no lint pass is claimed. Concurrent doctrine edits and removal of the old Task routing reference were reconciled against current first-principles/claim-width/storage laws. Measurement source and feature fingerprints were unchanged. This design uses current bindings; the original audit retains its immutable fingerprints and stale freshness marker."
+  },
+  "source": {
+    "files": {
+      "tooling/scripts/bench-targets.mjs": "3084428627b10c3fc062275a9b1ad5e031b1d4acc900be80f93030c330a66804",
+      "benchmarks/targets/slate-v2.json": "a62d5fe5b2c2d2026fc6ec295885acbf3229cc1ec2ab132df7b2457075a662fd",
+      "benchmarks/editor/research/benchmark-registry.json": "29c7caf79fde2b7c39211da4ac51d5e676d0970e61c6bf27e073a0a8bf3065b1",
+      "benchmarks/editor/src/index.mjs": "055db13cc1a729b4eb1fd93cb69b0c434c89af3a85faa15b1f9cd5eae86479b8",
+      "packages/plitejs/src/core/profiling.ts": "f5e8ea27a4eda605ef7d53c75907aa9904bf89a3ced01db67d70d55fcf4bf715",
+      "packages/plitejs/src/react/render-profiler.ts": "91078a23226b1906d000a258e602d3b6426bc26603dd691667e297f72d45051a",
+      "benchmarks/editor/README.md": "fbbbc1c53f5730850d10eb4958984979a70ae369009b0824ad3804ee25008e3a",
+      "benchmarks/editor/research/evidence-source-map.md": "fff53f759cb4676b8945322413050b42cb69bf0fff28427d5478b58f02f9edb1",
+      "benchmarks/editor/package.json": "df2a30553a064cf6f80023b1aad21026a5f4aa1e957c34276e81b2a0092ac954",
+      "apps/www/scripts/run-homepage-input-perf.mts": "c34c77d9eaf23f71a5061c35ae304a5e5fbc48545267c721260ecff3654adedf",
+      "apps/www/scripts/run-table-perf.mts": "5dc9b0bc90c9e113bdea89e45312c3151d2f45343544865f9eefc3719361af98",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts": "69ce2e81ce9def866211ce2826d5f8370b94af7089030db8f5bf4c59380bbee6",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/scripts/summarize-matrix-ratio125.ts": "dd9aff2c188d61e2ff637b941b4e33d74f01df872b9daebebecdb4921960d465",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md": "a2e12253d12bf7c4587cf0061796c57c6a9cc231eca21f7caa21486cb9df4ced",
+      "tooling/scripts/bench-targets.test.mjs": "5a150238abd53d44693feb7933496d685dd4d42ca46161b2e528f47960d8e21c",
+      "benchmarks/editor/benchmarks/external-text-measurement.test.mjs": "26f56e183975fd4685876b2cccda827b52e7f1c05737ade65646437c047fe8c8",
+      "benchmarks/editor/benchmarks/code-block-highlight-oracle.test.mjs": "bc454f77339fd369950c5759e17245042cfb7bf22a96d12d691593fe3d30769a",
+      "benchmarks/editor/benchmarks/benchmark-artifact.test.ts": "035ae004beeb6d93c723bd77b4013476f04861803d814a3555df1df4130d7a00",
+      "docs/research/probes/2026-09-30-performance-review/reproduce.mjs": "8729b98a352c61d4ab3265004defc3ec9ab496511af6a9c4621782af363c32ad",
+      "docs/research/probes/2026-09-30-performance-review/RESULTS.json": "7a947572ee2831397726dbc565fe87fddb852a096a42e5d2bf804077592198ca",
+      "benchmarks/targets/history/slate-v2-latest.json": "5b35aa7acd1621e0a9517f1a6efc4b4277827b48c25344f3e846464882c00b1e",
+      "benchmarks/targets/reports/slate-v2.md": "294840b38841be3a0dc41442b897300404c597a3b4d42fcdd1af53d8a1fc2aeb",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md": "7a89f49cf14b5ff0b88c420d0779bb9169948a9bb883d4b83d1603419bfa2bad",
+      "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md": "5bb9de499989bfe8e140827e706d4e87ca640c5940925924628aa7faee2828a6",
+      "docs/plans/2026-09-10-editor-performance-execution.md": "b0fa7f684c7493297095f7a76fc00ec4bd389ef459704a8b31c8701291e856e8",
+      "docs/plans/2026-09-10-editor-performance-follow-through.md": "9cb0cb9500b278740b5b98dc5f46d3f145e2bd2c11bdd19e1ef39747addca59c",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt": "1236eba2d944655ada507c41c74203212df6622d7f688aa260feaf94a92e6dcf",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json": "16980a7a7d8c78014790ee6571df736433943d8b5a81aa92334494e25731cd46",
+      "docs/research/review-records/2026-09-30-content-root-locations-closure.json": "b6a1ee96994cc9db2cfae4113f92beb124937fad3155dbf94d1cbe642e3d29ff",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "packages/plitejs/src/index.ts": "bcfeaa00ef5809e1dd8b34e7581c7bcef85a21b72355bdbf64130a5bae430a1d",
+      "packages/plitejs/src/react/index.ts": "e47da0a4e58ca90108fdd32a70df2f886a3a2d53199699ab5acd9c55692bdee3",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "5f677085b53524eed57f5a1aac329de46339ab6fabb7f0b04d37612c6f575340",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      "apps/www/tests/browser/markdown-streaming-contract.spec.ts": "9dc3ccb1f3b7cccfd7d0c4e19f9675ef2191111016a22010d28b7189bc52fe65"
+    },
+    "directories": {
+      "benchmarks/editor/benchmarks": "920e6517f1697b4bf185d05c1a2740ca0570b072506c6f43cc541de26dc30d39"
+    },
+    "features": {
+      "plitejs/core/profiling": "6092b7d1a78bd8c662a494007c646d69bc76c71fb58870b58acdd85d663faffd",
+      "tooling/performance": "4abce3d9b4a1afc91baa87d8f99a393e61e7104d7e62a79e684b3cf426851bc1"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-30-performance-evidence-design.md",
+    "docs/research/decisions/performance-candidate-reuse.md",
+    "docs/research/probes/2026-09-30-performance-review/DESIGN-CHECKS.md",
+    "docs/research/probes/2026-09-30-performance-review/REPORT.md",
+    "docs/research/probes/2026-09-30-performance-review/RESULTS.json",
+    "docs/research/review-records/2026-09-30-performance-evidence-value-review.json",
+    "apps/www/tests/browser/markdown-streaming-contract.spec.ts"
+  ]
+}

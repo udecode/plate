@@ -68,8 +68,8 @@ Scoped planning rules:
   clear the scoped plan cannot advance `lastSyncedCommit` alone.
 - If the scope is visual or route-owned, capture upstream and Plate screenshots
   for the matching route(s) at the same viewport before finalizing the plan.
-  Use `docs/sync/shadcn/runs/<range>/screenshots/` for committed evidence, and
-  include screenshot paths plus the visible deltas in the plan.
+  Use `docs/sync/shadcn/runs/<range>/screenshots/` for local evidence, which
+  stays uncommitted, and include screenshot paths plus the visible deltas in the plan.
 - Do not update `lastSyncedCommit` from a scoped plan. Scoped sync can add a
   `partialSyncs` entry after accepted implementation, but the baseline advances
   only when the full range is accounted for.
@@ -81,7 +81,7 @@ Scoped planning rules:
 
 ## 1. Establish Upstream Clone And Refs
 
-Do this only after the Task start gates are satisfied and the active
+Do this only after the start gates are satisfied and the active
 `sync-shadcn` plan records the output budget strategy.
 
 Use `../shadcn` as the upstream clone. Create it only if missing:
@@ -238,14 +238,14 @@ Useful local mapping heuristics:
 Search Plate by component/function names from upstream diffs:
 
 ```bash
-rg -n "<ComponentOrFunctionName>|<route-segment>|<registry-key>" apps/www content/docs docs/sync/shadcn
+git grep --untracked -n -E "<ComponentOrFunctionName>|<route-segment>|<registry-key>" -- apps/www content/docs docs/sync/shadcn
 ```
 
 Also search deleted/discarded vocabulary when upstream or Plate removes a
 surface:
 
 ```bash
-rg -n "v0|OpenInV0|create|charts|colors|themes|customizer|useProject|liftMode|docsConfig|Contentlayer|/api/registry/\\[name\\]" apps/www content/docs docs
+git grep --untracked -n -E "v0|OpenInV0|create|charts|colors|themes|customizer|useProject|liftMode|docsConfig|Contentlayer|/api/registry/\\[name\\]" -- apps/www content/docs docs
 ```
 
 Classify each row with one decision:
@@ -388,12 +388,12 @@ Ask one pointed question when there are `needs-question` rows. Do not ask about
 settled exclusions.
 
 Stop if the request was planning-only or a required decision remains open.
-Otherwise continue the authorized slice through Task; no repeat acceptance
+Otherwise continue the authorized slice under pstack's poteto-mode; no repeat acceptance
 is needed.
 
-## 6. Delegate Accepted Implementation Through `task`
+## 6. Hand Off Accepted Implementation
 
-When the active request authorizes the plan/slice, continue through Task
+When the active request authorizes the plan/slice, continue under pstack's poteto-mode
 with the following complete implementation handoff:
 
 ```md
@@ -421,7 +421,7 @@ Implementation:
 Acceptance:
 - <focused typecheck/test/source audit>
 - `pnpm install` only if package, lock, or agent generated output needs it
-- `pnpm lint:fix`
+- lint per the pstack block's Delivery rule
 - browser proof only if the slice changes browser-visible docs UI
 - for visual slices, screenshot both upstream shadcn and Plate pages at the
   same viewport before calling the slice done
@@ -435,7 +435,7 @@ Do not preserve obsolete Plate fork residue if the upstream change removes the
 need for it. Hard cut the residue.
 ```
 
-Then follow `task` until the implementation is verified or a real blocker is
+Then run the matching poteto-mode playbook until the implementation is verified or a real blocker is
 proven. Record the transition to implementation mode in the same plan.
 
 ## 7. Status Updates
@@ -473,30 +473,7 @@ Do not delete older run artifacts. They are the audit trail.
 
 ## Output
 
-For planning-only runs, end with:
+Planning-only runs end with the [Stop For User Review](#5-stop-for-user-review) block.
 
-```md
-Range: <base-short>..<target-short>
-Plan: <path>
-
-| Decision | Count | Notes |
-| --- | ---: | --- |
-| adopt-upstream | ... | ... |
-| smart-merge | ... | ... |
-| plate-fork | ... | ... |
-| exclude-upstream | ... | ... |
-| delete-plate-residue | ... | ... |
-| needs-question | ... | ... |
-
-Micro auto-merges:
-- <list, or none>
-
-Recommended first slice: <slice>
-Question: Review the plan. Should any decision change before implementation?
-
-To implement it, invoke `sync-shadcn` again with the accepted plan path and
-slice.
-```
-
-For implementation runs, use `task`'s final handoff format and include whether
+For implementation runs, use the playbook's reply and include whether
 `docs/sync/shadcn/status.json` was advanced or left unchanged.

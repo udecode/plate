@@ -11,7 +11,7 @@ import {
 } from '../../../packages/plitejs/src/index';
 import { getCompiledEditorSchema } from '../../../packages/plitejs/src/internal/index';
 import { getDefined } from '../../getDefined';
-import { writeBenchmarkArtifact } from './benchmark-artifact';
+import { writeBenchmarkResult } from './benchmark-artifact';
 
 const iterationsArgument = process.argv.find((argument) =>
   argument.startsWith('--iterations=')
@@ -538,32 +538,6 @@ const prefixPropertyOverheadWithinBudget = prefixRows.every(
   (row) => row.propertyOverheadWithinBudget
 );
 
-if (strict && (prefixRows.length !== 8 || prefixMaximumChangedSpan >= 64)) {
-  throw new Error('Required-prefix construction locality failed.');
-}
-
-if (strict && (iterations < 20 || !prefixPropertyOverheadWithinBudget)) {
-  throw new Error(
-    `Required-prefix property-edit overhead proof failed: samples=${iterations}, failing rows=${
-      prefixRows
-        .filter((row) => !row.propertyOverheadWithinBudget)
-        .map(
-          (row) =>
-            `${row.prefixLength}/${row.blocks} (median delta ${row.propertyOverheadMs.toFixed(
-              2
-            )} ms > budget ${row.propertyOverheadBudgetMs.toFixed(2)} ms)`
-        )
-        .join(', ') || 'none'
-    }.`
-  );
-}
-
-if (strict && (maximumChangedSpan >= 64 || !boundaryIdentityPreserved)) {
-  throw new Error(
-    `Sparse schema construction widened to ${maximumChangedSpan} tokens or replaced an untouched boundary.`
-  );
-}
-
 const result = {
   benchmark: 'plite-schema-construction',
   boundaryIdentityPreserved,
@@ -603,7 +577,38 @@ const result = {
   },
   version: 4,
 };
-const output = `${JSON.stringify(result, null, 2)}\n`;
+const outputPath = outputArgument?.slice('--output='.length);
+
+const output = writeBenchmarkResult({
+  outputPath,
+  result,
+  strict,
+  validate: () => {
+    if (prefixRows.length !== 8 || prefixMaximumChangedSpan >= 64) {
+      throw new Error('Required-prefix construction locality failed.');
+    }
+    if (iterations < 20 || !prefixPropertyOverheadWithinBudget) {
+      throw new Error(
+        `Required-prefix property-edit overhead proof failed: samples=${iterations}, failing rows=${
+          prefixRows
+            .filter((row) => !row.propertyOverheadWithinBudget)
+            .map(
+              (row) =>
+                `${row.prefixLength}/${row.blocks} (median delta ${row.propertyOverheadMs.toFixed(
+                  2
+                )} ms > budget ${row.propertyOverheadBudgetMs.toFixed(2)} ms)`
+            )
+            .join(', ') || 'none'
+        }.`
+      );
+    }
+    if (maximumChangedSpan >= 64 || !boundaryIdentityPreserved) {
+      throw new Error(
+        `Sparse schema construction widened to ${maximumChangedSpan} tokens or replaced an untouched boundary.`
+      );
+    }
+  },
+});
 
 process.stdout.write(
   `METRIC plite_schema_construction_immutable_publication_diagnostic_ratio=${sizeRatio}\n`
@@ -631,8 +636,6 @@ process.stdout.write(
   }\n`
 );
 
-if (outputArgument) {
-  writeBenchmarkArtifact(outputArgument.slice('--output='.length), output);
-} else {
+if (outputPath === undefined) {
   process.stdout.write(output);
 }

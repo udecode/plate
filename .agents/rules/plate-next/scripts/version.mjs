@@ -12,89 +12,17 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
-import {
-  discoverOrphanedGeneratedResources,
-  resourcePairs,
-  retiredGeneratedPaths,
-} from './sync-resources.mjs';
+import { syncResources } from './sync-resources.mjs';
 
 const scriptPath = fileURLToPath(import.meta.url);
 const defaultRoot = resolve(dirname(scriptPath), '../../../..');
-export const doctrinePaths = [
-  'AGENTS.md',
-  '.agents/rules/plate-feature.mdc',
-  '.agents/rules/plate-feature/rules/manifest.md',
-  '.agents/rules/plate-feature/rules/phases.md',
-  '.agents/rules/plate-feature/rules/proof-routing.md',
-  '.agents/rules/plate-next.mdc',
-  '.agents/rules/plate-next/rules/audit-modes.md',
-  '.agents/rules/plate-next/rules/ownership-and-correction.md',
-  '.agents/rules/plate-next/rules/review-law.md',
-  '.agents/rules/plate-next/scripts/version.mjs',
-  '.agents/rules/best-api.mdc',
-  '.agents/rules/best-api/rules/authoring-and-inference.md',
-  '.agents/rules/best-api/rules/behavior-and-ownership.md',
-  '.agents/rules/best-api/rules/schema-and-identity.md',
-  '.agents/rules/plate-docs.mdc',
-  '.agents/rules/plate-docs/references/lanes.md',
-  '.agents/rules/plate-docs/references/api-examples.md',
-  '.agents/rules/plate-docs/references/plugin.md',
-  '.agents/rules/plate-docs/references/mdx.md',
-  '.agents/rules/plate-plugin-creator.mdc',
-  '.agents/rules/plate-plugin-creator/references/plugin-authoring-audit.md',
-  '.agents/rules/plate-plugin-creator/rules/capabilities.md',
-  '.agents/rules/plate-plugin-creator/rules/creation-flow.md',
-  '.agents/rules/plate-plugin-creator/rules/typing.md',
-  '.agents/rules/plate-ui.mdc',
-  '.agents/rules/plate-ui/references/component-audit.md',
-  '.agents/rules/plate-ui/rules/component-family.md',
-  '.agents/rules/plate-ui/rules/component-shape.md',
-  '.agents/rules/plate-ui/rules/cross-platform.md',
-  '.agents/rules/plate-ui/rules/ownership.md',
-  '.agents/rules/plate-ui/rules/react-performance.md',
-  '.agents/rules/plate-ui/rules/registry.md',
-  '.agents/rules/plate-ui/rules/shadcn-proofing.md',
-  '.agents/rules/plate-next/scripts/sync-resources.mjs',
-  '.agents/rules/plate-next/scripts/sync-resources.test.mjs',
-  '.agents/rules/plate-next/scripts/version.test.mjs',
-  'docs/plans/templates/plate-feature.md',
-  'docs/plans/templates/packs/plate-next-attestation.md',
-  'docs/plans/templates/plate-next.md',
-  'tooling/scripts/check-plate-feature.mjs',
-  'tooling/scripts/check-plate-feature.test.mjs',
-];
-export const requiredGeneratedResources = resourcePairs;
 
-export const requiredGeneratedSkills = [
-  {
-    generatedPath: '.agents/skills/architecture-cleanup/SKILL.md',
-    heading: '# Architecture Cleanup',
-    name: 'architecture-cleanup',
-    sourcePath: '.agents/rules/architecture-cleanup.mdc',
-  },
-  {
-    generatedPath: '.agents/skills/task/SKILL.md',
-    heading: '# Task',
-    name: 'task',
-    sourcePath: '.agents/rules/task.mdc',
-  },
-  {
-    generatedPath: '.agents/skills/editor-audit/SKILL.md',
-    heading: '# Editor Audit',
-    name: 'editor-audit',
-    sourcePath: '.agents/rules/editor-audit.mdc',
-  },
+const requiredGeneratedSkills = [
   {
     generatedPath: '.agents/skills/plate-docs/SKILL.md',
     heading: '# Plate Docs',
     name: 'plate-docs',
     sourcePath: '.agents/rules/plate-docs.mdc',
-  },
-  {
-    generatedPath: '.agents/skills/plate-feature/SKILL.md',
-    heading: '# Plate Feature',
-    name: 'plate-feature',
-    sourcePath: '.agents/rules/plate-feature.mdc',
   },
   {
     generatedPath: '.agents/skills/plate-next/SKILL.md',
@@ -103,16 +31,16 @@ export const requiredGeneratedSkills = [
     sourcePath: '.agents/rules/plate-next.mdc',
   },
   {
-    generatedPath: '.agents/skills/plate-plan/SKILL.md',
-    heading: '# Plate Plan',
-    name: 'plate-plan',
-    sourcePath: '.agents/rules/plate-plan.mdc',
+    generatedPath: '.agents/skills/plate-architecture/SKILL.md',
+    heading: '# Plate Architecture',
+    name: 'plate-architecture',
+    sourcePath: '.agents/rules/plate-architecture.mdc',
   },
   {
-    generatedPath: '.agents/skills/plate-plugin-creator/SKILL.md',
-    heading: '# Plate Plugin Creator',
-    name: 'plate-plugin-creator',
-    sourcePath: '.agents/rules/plate-plugin-creator.mdc',
+    generatedPath: '.agents/skills/plate-plugins/SKILL.md',
+    heading: '# Plate Plugins',
+    name: 'plate-plugins',
+    sourcePath: '.agents/rules/plate-plugins.mdc',
   },
   {
     generatedPath: '.agents/skills/best-api/SKILL.md',
@@ -125,12 +53,6 @@ export const requiredGeneratedSkills = [
     heading: '# Plate UI',
     name: 'plate-ui',
     sourcePath: '.agents/rules/plate-ui.mdc',
-  },
-  {
-    generatedPath: '.agents/skills/plite-plan/SKILL.md',
-    heading: '# Plite Plan',
-    name: 'plite-plan',
-    sourcePath: '.agents/rules/plite-plan.mdc',
   },
 ];
 const ignoredDirectories = new Set([
@@ -183,14 +105,7 @@ export const readDeclaredDoctrineVersion = (source) => {
 export const computeDoctrineFingerprint = (root) => {
   const hash = createHash('sha256');
 
-  hash.update('plate-next-doctrine-fingerprint:v2\0');
-
-  for (const path of doctrinePaths) {
-    hash.update(path);
-    hash.update('\0');
-    hash.update(readFileSync(join(root, path)));
-    hash.update('\0');
-  }
+  hash.update('plate-next-doctrine-fingerprint:v3\0');
 
   const registry = JSON.parse(
     readFileSync(join(root, '.agents/rules/plate-next/versions.json'), 'utf8')
@@ -216,22 +131,6 @@ export const computeDoctrineFingerprint = (root) => {
   return `sha256:${hash.digest('hex')}`;
 };
 
-export const haveMatchingRequiredResources = (root) =>
-  requiredGeneratedResources.every(([sourcePath, generatedPath]) => {
-    const source = join(root, sourcePath);
-    const generated = join(root, generatedPath);
-
-    return (
-      existsSync(source) &&
-      existsSync(generated) &&
-      readFileSync(source).equals(readFileSync(generated))
-    );
-  }) &&
-  discoverOrphanedGeneratedResources(root).length === 0 &&
-  retiredGeneratedPaths.every(
-    (generatedPath) => !existsSync(join(root, generatedPath))
-  );
-
 export const haveMatchingSkillSource = (
   source,
   generated,
@@ -250,7 +149,7 @@ export const haveMatchingSkillSource = (
   return generated === expected;
 };
 
-export const haveMatchingRequiredSkills = (root) =>
+const haveMatchingRequiredSkills = (root) =>
   requiredGeneratedSkills.every(
     ({ generatedPath, heading, name, sourcePath }) => {
       const source = join(root, sourcePath);
@@ -366,14 +265,31 @@ export const selectDoctrineBaseRef = ({ dirty, override, versionCommits }) => {
   return versionCommits[1];
 };
 
+export const lawChangesSinceVersion = (root) => {
+  const registry = '.agents/rules/plate-next/versions.json';
+  const bumpInProgress =
+    spawnSync('git', ['diff', '--quiet', 'HEAD', '--', registry], { cwd: root })
+      .status === 1;
+  if (bumpInProgress) return [];
+  const last = spawnSync(
+    'git',
+    ['log', '-1', '--format=%H', '--', registry],
+    { cwd: root, encoding: 'utf8' }
+  ).stdout?.trim();
+  if (!last) return [];
+  const changed = spawnSync(
+    'git',
+    ['diff', '--name-only', last, '--', '.agents/rules/plate-next/rules'],
+    { cwd: root, encoding: 'utf8' }
+  );
+
+  return changed.status === 0 ? changed.stdout.split('\n').filter(Boolean) : [];
+};
+
 const readBaseRegistry = (root) => {
-  const doctrineInputs = [
-    ...doctrinePaths,
-    '.agents/rules/plate-next/versions.json',
-  ];
   const diff = spawnSync(
     'git',
-    ['diff', '--quiet', 'HEAD', '--', ...doctrineInputs],
+    ['diff', '--quiet', 'HEAD', '--', '.agents/rules/plate-next/versions.json'],
     { cwd: root }
   );
   if (![0, 1].includes(diff.status)) {
@@ -737,7 +653,7 @@ const loadContext = (root = defaultRoot) => {
     'utf8'
   );
   const generatedSkillsMatch = haveMatchingRequiredSkills(root);
-  const generatedResourcesMatch = haveMatchingRequiredResources(root);
+  const generatedResourcesMatch = syncResources(root, { check: true }).length === 0;
   const currentDoctrineFingerprint = computeDoctrineFingerprint(root);
   const declaredVersion = readDeclaredDoctrineVersion(ruleSource);
   const reviewedSlugs = readReviewedPackageSlugs(
@@ -895,8 +811,15 @@ export const main = (argv = process.argv.slice(2), root = defaultRoot) => {
       latestVersion: context.registry.latestVersion,
       packageCount: context.reviewedSlugs.length,
       retiredPackageCount: Object.keys(context.registry.retiredPackages).length,
+      unbumpedLawChanges: lawChangesSinceVersion(root),
       valid: true,
     };
+
+    if (result.unbumpedLawChanges.length > 0) {
+      console.warn(
+        `Review law changed since doctrine v${result.latestVersion} without a bump: ${result.unbumpedLawChanges.join(', ')}. Bump when the change should send packages back to review.`
+      );
+    }
 
     console.log(
       json

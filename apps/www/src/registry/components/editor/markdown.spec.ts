@@ -10,11 +10,7 @@ import { FootnoteKit } from './footnote';
 import { BaseFootnoteKit } from './footnote-static';
 import { MarkdownKit } from './markdown';
 
-const footnoteNames = [
-  'footnote',
-  PLUGINS.footnoteDefinition,
-  PLUGINS.footnoteInput,
-];
+const footnoteNames = ['footnote', PLUGINS.footnoteDefinition];
 
 describe('MarkdownKit', () => {
   it('configures both live and base editors', () => {

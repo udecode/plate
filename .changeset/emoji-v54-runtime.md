@@ -8,10 +8,8 @@ Keep emoji picker state, category focus, preview, and frequent storage in the co
 
 Export `EmojiPluginState` as the complete mutable state contract for `BaseEmojiPlugin`.
 
-Move emoji insertion to `editor.plugin(EmojiPlugin).update.insert`, isolate search state per emoji dataset, clean up picker observers when the menu closes, and register emoji-input properties in compiled schemas. Remove the standalone `insertEmoji` helper.
-
-Install the emoji input descriptor as a required plugin dependency. Its capability name and persisted element type are both `emojiInput`.
+Move emoji insertion to `editor.plugin(EmojiPlugin).update.insert`, isolate search state per emoji dataset, and clean up picker observers when the menu closes. Remove the standalone `insertEmoji` helper.
 
 Always render the frequent section when `showFrequent.value` is enabled, including before category data is populated.
 
-Keep the package React surface limited to `EmojiPlugin` and `EmojiInputPlugin`. Copy `emoji-toolbar-button` for the complete picker and `emoji` for inline search. Replace `EmojiInputConfig` with `DefinitionOf<typeof BaseEmojiPlugin>`. Search uses the supplied dataset without shared singleton state; grid construction and frequent-item ranking stay in the copied picker.
+Keep the package React surface limited to `EmojiPlugin`. Copy `emoji-toolbar-button` for the complete picker and `emoji` for inline search. Replace `EmojiInputConfig` with `DefinitionOf<typeof BaseEmojiPlugin>`. Search uses the supplied dataset without shared singleton state; grid construction and frequent-item ranking stay in the copied picker.

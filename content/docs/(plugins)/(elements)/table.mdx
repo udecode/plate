@@ -30,7 +30,7 @@ docs:
 
 ### Installation
 
-`TableKit` includes `TablePlugin`, `TableRowPlugin`, and `TableCellPlugin` with their [Plate UI](/docs/installation/plate-ui) components. The copied row controls require `DndKit`.
+`TableKit` includes `TablePlugin`, `TableRowPlugin`, and `TableCellPlugin` with their [Plate UI](/docs/installation/plate-ui) components. The copied row drag handle comes from the `dnd` component, and `DndKit` paints its drop indicator.
 
 ```bash
 pnpm dlx shadcn@latest add @plate/table @plate/dnd
@@ -131,7 +131,7 @@ npm install platejs @tanstack/react-virtual
 
 ### Configure plugins
 
-`TablePlugin` installs the row and cell descriptors as required dependencies. Add those descriptors directly when configuring their components. The copied row renderer requires `DndKit`.
+`TablePlugin` installs the row and cell descriptors as required dependencies. Add those descriptors directly when configuring their components. Add `DndKit` to paint the drop indicator for the copied row drag handle.
 
 ```tsx
 import { createEditor } from 'platejs/react';

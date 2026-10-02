@@ -31,6 +31,7 @@ import {
 import {
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
+  commonSuffixLength,
   encodeNodes,
   getPreparedDocumentSlice,
   type JsonEditorValue,
@@ -275,6 +276,36 @@ export type SliceFitterDelegate<V extends Value = Value> = Pick<
   | 'fitDocumentWithSelection'
   | 'findWrapping'
 >;
+
+// A local candidate replaces through the end of its block and re-emits the
+// unchanged tail; mapped as a replacement, that tail pins forward anchors at
+// the insertion point to the replacement's start.
+const withoutUnchangedTail = (
+  document: DocumentIndex,
+  candidate: MaterializedSliceFitCandidate
+): MaterializedSliceFitCandidate => {
+  if (candidate.semanticChange || candidate.to === candidate.from) {
+    return candidate;
+  }
+
+  const limit = Math.min(
+    candidate.to - candidate.from,
+    candidate.insert.length
+  );
+  const tail = commonSuffixLength(
+    document.slice(candidate.to - limit, candidate.to).tokens,
+    candidate.insert.tokens,
+    limit
+  );
+
+  return tail === 0
+    ? candidate
+    : Object.freeze({
+        ...candidate,
+        insert: candidate.insert.slice(0, candidate.insert.length - tail),
+        to: candidate.to - tail,
+      });
+};
 
 export const compileSliceFitter = <V extends Value>(
   input: SliceFitterDependencies<V>
@@ -3485,10 +3516,14 @@ export const compileSliceFitter = <V extends Value>(
               })));
 
     if (!selectedCandidate) return false;
-    const materializedCandidate = profileCoreDuration(
+    const fittedCandidate = profileCoreDuration(
       'slice-fit-candidate-materialize',
       () => materializeCandidate(selectedCandidate)
     );
+    const materializedCandidate =
+      options.target.kind === 'range'
+        ? withoutUnchangedTail(document, fittedCandidate)
+        : fittedCandidate;
     const candidate = materializedCandidate.preparation
       ? Object.freeze({
           ...materializedCandidate,

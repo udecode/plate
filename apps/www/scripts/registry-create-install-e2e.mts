@@ -635,7 +635,6 @@ export default function KitProof() {
       consumerRequire.resolve('platejs/package.json')
     );
     const peerModules = ['react', 'react-dom'];
-    if (packageJson.dependencies?.['react-dnd']) peerModules.push('react-dnd');
 
     for (const peer of peerModules) {
       const consumerPath = await fs.realpath(consumerRequire.resolve(peer));

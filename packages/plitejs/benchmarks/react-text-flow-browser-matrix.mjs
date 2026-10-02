@@ -63,8 +63,11 @@ import {
   createEditor,
   Editable,
   EditorRoot,
+  installBrowserHandle,
   setDOMTextSyncRendererCapability,
 } from ${JSON.stringify(modulePaths.pliteReact)}
+
+installBrowserHandle()
 
 const app = document.getElementById('app')
 const state = {
@@ -223,7 +226,7 @@ const clear = () => {
 const getHandle = () => {
   const root = app.querySelector('[data-editor="true"]')
   const handle = root?.__pliteBrowserHandle
-  if (!root || !handle) throw new Error('Missing Plite browser handle')
+  if (!root || !handle) throw new Error('browser handle not installed')
   return { handle, root }
 }
 

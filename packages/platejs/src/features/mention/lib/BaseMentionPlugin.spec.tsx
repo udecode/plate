@@ -1,12 +1,8 @@
 import assert from 'node:assert/strict';
 
-import { createEditor, ElementApi, schema, PLUGINS } from '../../../core';
+import { createEditor, ElementApi } from '../../../core';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
-import {
-  MentionInputPlugin,
-  MentionPlugin,
-} from '../../../react/features/mention/MentionPlugin';
-import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
+import { BaseMentionPlugin } from './BaseMentionPlugin';
 
 describe('BaseMentionPlugin', () => {
   it('requires a non-empty persisted ref', () => {
@@ -25,25 +21,7 @@ describe('BaseMentionPlugin', () => {
     ).toThrow(/ref.*validation/i);
   });
 
-  it('declares the input as an exact required Base and React dependency', () => {
-    expect(BaseMentionPlugin.dependencies).toEqual([BaseMentionInputPlugin]);
-    expect(MentionPlugin.dependencies).toEqual([MentionInputPlugin]);
-  });
-
-  it('rejects a disabled required mention-input dependency', () => {
-    expect(() =>
-      createEditor({
-        plugins: [
-          BaseMentionPlugin,
-          BaseMentionInputPlugin.configure({ enabled: false }),
-        ],
-      })
-    ).toThrow(
-      /mention.*disabled.*mentionInput|mentionInput.*disabled.*mention/i
-    );
-  });
-
-  it('configures mention defaults and inserts markable void mention nodes', () => {
+  it('inserts markable void mention nodes', () => {
     const editor = createEditor({
       plugins: [BaseMentionPlugin],
       selection: {
@@ -53,11 +31,6 @@ describe('BaseMentionPlugin', () => {
       },
       initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
-    const inputPlugin = editor.plugin(BaseMentionInputPlugin);
-    const state = editor.plugin(BaseMentionPlugin).store.get();
-
-    expect(inputPlugin.name).toBe('mentionInput');
-    expect(inputPlugin.name).toBe(PLUGINS.mentionInput);
     expect(
       editor.read.schema.element(BaseMentionPlugin)?.behavior
     ).toMatchObject({
@@ -65,19 +38,6 @@ describe('BaseMentionPlugin', () => {
       markableVoid: true,
       void: true,
       voidKind: 'markable-inline',
-    });
-    expect(state.trigger).toBe('@');
-    expect(state.createComboboxInput?.('@')).toEqual({
-      children: [{ text: '' }],
-      trigger: '@',
-      type: 'mentionInput',
-    });
-    expect(
-      editor.read.schema.element(BaseMentionInputPlugin)?.behavior
-    ).toMatchObject({
-      inline: true,
-      void: true,
-      voidKind: 'inline',
     });
 
     editor.update.mention.insert({ ref: 'u1', label: 'Ada' });
@@ -184,62 +144,6 @@ describe('BaseMentionPlugin', () => {
     ]);
   });
 
-  it('creates transient inputs with the configured schema type', () => {
-    const editor = createEditor({
-      plugins: [BaseMentionPlugin],
-      schema: {
-        overrides: [
-          schema.override(BaseMentionInputPlugin, {
-            element: { type: 'customMentionInput' },
-          }),
-        ],
-      },
-    });
-
-    expect(
-      editor.plugin(BaseMentionPlugin).store.get('createComboboxInput')('@')
-    ).toMatchObject({ type: 'customMentionInput' });
-  });
-
-  it('replaces a typed trigger with the transient mention input through the React descriptor', () => {
-    const configuredMentionPlugin = MentionPlugin.configure({
-      initialState: {
-        triggerPreviousCharPattern: /^$|^[\s"']$/,
-      },
-    });
-    const configuredMentionInputPlugin = MentionInputPlugin.configure({
-      component: () => null,
-    });
-    const editor = createEditor({
-      plugins: [configuredMentionPlugin, configuredMentionInputPlugin],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
-    });
-
-    editor.update.text.insert('@', {
-      at: editor.read.selection() ?? undefined,
-    });
-
-    expect(editor.read.children()).toMatchObject([
-      {
-        children: [
-          { text: '' },
-          {
-            children: [{ text: '' }],
-            trigger: '@',
-            type: 'mentionInput',
-          },
-          { text: '' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
-  });
-
   it('inserts a trailing space when the mention lands at block end', () => {
     const innerMentionPlugin = BaseMentionPlugin.configure({
       initialState: { insertSpaceAfterMention: true },
@@ -275,6 +179,28 @@ describe('BaseMentionPlugin', () => {
       anchor: { offset: 1, path: [0, 2] },
       focus: { offset: 1, path: [0, 2] },
     });
+  });
+
+  it('leaves the caret after a mention completed at block end without a space', () => {
+    const editor = createEditor({
+      plugins: [BaseMentionPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'hi' }], type: 'paragraph' }],
+    });
+
+    editor.update((tx) => {
+      tx.plugin(BaseMentionPlugin).insert({ ref: 'u1', label: 'Ada' });
+    });
+    editor.update((tx) => {
+      tx.text.insert('!');
+    });
+
+    expect(editor.read.text.string([0])).toBe('hi!');
+    expect(editor.read.nodes.get([0, 2])?.[0]).toEqual({ text: '!' });
   });
 
   it('skips the trailing space when the mention is inserted mid-block', () => {

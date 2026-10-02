@@ -28,6 +28,19 @@ test('a new owned method delivers nested resources to both agents and protects i
     assert.deepEqual(syncResources(root, { check: true }), []);
     assert.equal(readFileSync(join(vendor, 'SKILL.md'), 'utf8'), 'Installed vendor content.\n');
 
+    writeFileSync(join(root, '.agents/skills/custom-method/references/nested/recipe.md'), 'stale procedure\n');
+    const retired = join(root, '.agents/skills/auto/references/regression-methodology.md');
+    mkdirSync(join(retired, '..'), { recursive: true });
+    writeFileSync(retired, 'retired methodology\n');
+    assert.deepEqual(syncResources(root, { check: true }).sort(), [
+      '.agents/skills/auto',
+      '.agents/skills/auto/references/regression-methodology.md',
+      '.agents/skills/custom-method/references/nested/recipe.md',
+    ]);
+    syncResources(root);
+    assert.equal(existsSync(retired), false);
+    assert.deepEqual(syncResources(root, { check: true }), []);
+
     rmSync(join(source, 'references/nested/recipe.md'));
     assert.deepEqual(syncResources(root, { check: true }), [
       '.agents/skills/custom-method/references/nested/recipe.md',

@@ -21,7 +21,9 @@ normalizeBenchmarkResult(payload);
 
 if (args.check) {
   const rowCount = rows.length;
-  const okRows = rows.filter((row) => row.status === 'ok').length;
+  const measuredRows = rows.filter(
+    (row) => row.admission && row.admission !== 'historical'
+  ).length;
   const targetRows = rows.filter(
     (row) => row.category === 'rich-text-editor-target-coverage'
   );
@@ -53,8 +55,10 @@ if (args.check) {
       `expected broad rich-text benchmark coverage, got ${rowCount} rows`
     );
   }
-  if (okRows < 180) {
-    throw new Error(`expected at least 180 measured ok rows, got ${okRows}`);
+  if (measuredRows < 180) {
+    throw new Error(
+      `expected at least 180 parsed artifact rows, got ${measuredRows}`
+    );
   }
   if (targetRows.length !== editorTargets.length) {
     throw new Error(

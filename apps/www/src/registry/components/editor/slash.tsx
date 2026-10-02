@@ -39,13 +39,8 @@ import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 import { BaseFootnotePlugin } from 'platejs/footnote';
 import { BaseColumnPlugin } from 'platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
-import {
-  type Editor,
-  type EditorElementProps,
-  EditorElement,
-  useEditorReadOnly,
-} from 'platejs/react';
-import { SlashInputPlugin, SlashPlugin } from 'platejs/slash-command/react';
+import { type Editor, useEditor, useEditorReadOnly } from 'platejs/react';
+import { SlashPlugin } from 'platejs/slash-command/react';
 import { BaseTablePlugin } from 'platejs/table';
 import { BaseTocPlugin } from 'platejs/toc';
 import * as React from 'react';
@@ -56,7 +51,6 @@ import {
   InlineComboboxEmpty,
   InlineComboboxGroup,
   InlineComboboxGroupLabel,
-  InlineComboboxInput,
   InlineComboboxItem,
 } from './inline-combobox';
 
@@ -65,7 +59,7 @@ type Item = {
   isAvailable: (editor: Editor) => boolean;
   value: string;
   onClick?: (editor: Editor) => void;
-  onSelect?: (editor: Editor, tx: PluginTransaction) => void;
+  onSelect?: (editor: Editor, tx: PluginTransaction) => false | void;
   className?: string;
   focusEditor?: boolean;
   keywords?: string[];
@@ -301,7 +295,7 @@ const groups: Group[] = [
             !editor.plugin(BaseDatePlugin).installed ||
             editor.read.view.isReadOnly()
           ) {
-            return;
+            return false;
           }
 
           tx.plugin(BaseDatePlugin).insert({}, { select: true });
@@ -318,7 +312,7 @@ const groups: Group[] = [
             !editor.plugin(BaseFootnotePlugin).installed ||
             editor.read.view.isReadOnly()
           ) {
-            return;
+            return false;
           }
 
           tx.plugin(BaseFootnotePlugin).insert({}, { select: true });
@@ -336,7 +330,7 @@ const groups: Group[] = [
             !editor.plugin(BaseInlineEquationPlugin).installed ||
             editor.read.view.isReadOnly()
           ) {
-            return;
+            return false;
           }
 
           tx.plugin(BaseInlineEquationPlugin).insert({}, { select: true });
@@ -346,10 +340,12 @@ const groups: Group[] = [
   },
 ];
 
-export function SlashInputElement(
-  props: EditorElementProps<typeof SlashInputPlugin>
-) {
-  const { editor, element } = props;
+export function SlashCombobox({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const availableGroups = readOnly
     ? []
@@ -361,53 +357,45 @@ export function SlashInputElement(
         .filter((group) => group.items.length > 0);
 
   return (
-    <EditorElement {...props} as="span">
-      <InlineCombobox element={element} trigger="/">
-        <InlineComboboxInput />
+    <InlineCombobox editableRef={editableRef} plugin={SlashPlugin}>
+      <InlineComboboxContent>
+        <InlineComboboxEmpty>No results</InlineComboboxEmpty>
 
-        <InlineComboboxContent>
-          <InlineComboboxEmpty>No results</InlineComboboxEmpty>
+        {availableGroups.map(({ group, items }) => (
+          <InlineComboboxGroup key={group}>
+            <InlineComboboxGroupLabel>{group}</InlineComboboxGroupLabel>
 
-          {availableGroups.map(({ group, items }) => (
-            <InlineComboboxGroup key={group}>
-              <InlineComboboxGroupLabel>{group}</InlineComboboxGroupLabel>
-
-              {items.map(
-                ({
-                  focusEditor,
-                  icon,
-                  keywords,
-                  label,
-                  value,
-                  onClick,
-                  onSelect,
-                }) => (
-                  <InlineComboboxItem
-                    key={value}
-                    value={value}
-                    onClick={() => {
-                      onClick?.(editor);
-                    }}
-                    onSelect={(tx) => {
-                      onSelect?.(editor, tx);
-                    }}
-                    label={label}
-                    focusEditor={focusEditor}
-                    group={group}
-                    keywords={keywords}
-                  >
-                    <div className="mr-2 text-muted-foreground">{icon}</div>
-                    {label ?? value}
-                  </InlineComboboxItem>
-                )
-              )}
-            </InlineComboboxGroup>
-          ))}
-        </InlineComboboxContent>
-      </InlineCombobox>
-
-      {props.children}
-    </EditorElement>
+            {items.map(
+              ({
+                focusEditor,
+                icon,
+                keywords,
+                label,
+                value,
+                onClick,
+                onSelect,
+              }) => (
+                <InlineComboboxItem
+                  key={value}
+                  value={value}
+                  onClick={() => {
+                    onClick?.(editor);
+                  }}
+                  onSelect={(tx) => onSelect?.(editor, tx)}
+                  label={label}
+                  focusEditor={focusEditor}
+                  group={group}
+                  keywords={keywords}
+                >
+                  <div className="mr-2 text-muted-foreground">{icon}</div>
+                  {label ?? value}
+                </InlineComboboxItem>
+              )
+            )}
+          </InlineComboboxGroup>
+        ))}
+      </InlineComboboxContent>
+    </InlineCombobox>
   );
 }
 
@@ -425,6 +413,6 @@ export const SlashKit = [
         );
       },
     },
+    slots: { afterEditable: SlashCombobox },
   }),
-  SlashInputPlugin.configure({ component: SlashInputElement }),
 ];

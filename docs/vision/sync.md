@@ -59,7 +59,7 @@ Advance baseline only when all are true:
   `best-api` reaffirmation;
 - deferred questions are listed with recommendations;
 - generated mirrors are synced when source rules changed;
-- the active plan passes `check-complete.mjs`.
+- the active plan passes `node .agents/pstack/plan-open.mjs <plan>`.
 
 Do not advance baseline when:
 
@@ -92,7 +92,7 @@ Capture shape:
 - write one compact latest-state rule in root or the smallest matching detail
   file;
 - add an example trigger under correction patterns when wording matters;
-- keep evidence and raw answer text in the active goal plan.
+- keep evidence and raw answer text in the active plan.
 
 For reusable API taste, repair or explicitly reaffirm `best-api` in the same
 workflow. Vision stores the durable principle; the skill stores how agents

@@ -29,6 +29,8 @@ import {
   setEditorDOMRootElement,
   supportsDOMBeforeInput,
 } from '../../dom/internal';
+import { clearDragSession } from '../../dom/utils/drag-session';
+import { publishDropIndicator } from '../../dom/utils/drop-indicator';
 import {
   getPliteNodeElementByPath,
   getPliteNodePathFromDOMElement,
@@ -36,7 +38,6 @@ import {
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import { readPliteViewSelection } from '../view-selection';
-import { clearCrossEditorDragSession } from './cross-editor-drag-session';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { isInteractiveInternalTarget } from './input-controller';
 import {
@@ -385,7 +386,7 @@ export type HandleEditableClipboard = (
 
 export type HandleEditableDrag = (
   event: DragEvent<HTMLDivElement>
-) => boolean | void;
+) => 'block' | boolean | void;
 
 export type HandleEditableComposition = (
   event: CompositionEvent<HTMLDivElement>
@@ -911,7 +912,7 @@ export const attachEditableGlobalDragLifecycleListeners = ({
     state.draggedBlock = false;
     state.draggedRange = null;
     state.isDraggingInternally = false;
-    clearCrossEditorDragSession(targetDocument);
+    clearDragSession(targetDocument);
   };
   targetDocument.addEventListener('dragend', stoppedDragging);
   targetDocument.addEventListener('drop', stoppedDragging);
@@ -919,7 +920,8 @@ export const attachEditableGlobalDragLifecycleListeners = ({
   return () => {
     targetDocument.removeEventListener('dragend', stoppedDragging);
     targetDocument.removeEventListener('drop', stoppedDragging);
-    clearCrossEditorDragSession(targetDocument, editor);
+    clearDragSession(targetDocument, editor);
+    publishDropIndicator(editor, null);
   };
 };
 

@@ -186,6 +186,8 @@ export default defineConfig({
         'config/plite-test-jsx.js',
         // Shared raw examples feed the dedicated Plite proof app.
         'apps/www/src/app/(app)/examples/plite/**',
+        // The Plite proof app installs the raw Plite browser handle.
+        'apps/plite/src/app/providers.tsx',
         // This route measures raw Plite against Plate on the same fixture.
         'apps/www/src/app/dev/editor-perf/page.tsx',
       ],
@@ -199,6 +201,33 @@ export default defineConfig({
                 regex: '^plitejs(?:/|$)',
                 message:
                   'Only exact Plate facade bridges and dedicated raw Plite proof surfaces may import plitejs. Plate source and tests must import a relative Plate facade or matching entrypoint owner.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      // A device case drives the phone only through the device fixture; the
+      // lane-owned bypass test is the one case that reaches adb and DevTools.
+      files: ['apps/plite/tests/device/*.device.ts'],
+      excludeFiles: ['apps/plite/tests/device/bypass.device.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              forbiddenUdecodeImport,
+              {
+                regex: '^plitejs(?:/|$)',
+                message:
+                  'Only exact Plate facade bridges and dedicated raw Plite proof surfaces may import plitejs. Plate source and tests must import a relative Plate facade or matching entrypoint owner.',
+              },
+              {
+                regex:
+                  '^(?:node:)?child_process$|^@playwright/test$|/packages/test/src/device/',
+                message:
+                  'Device cases import test and expect from @platejs/test/device; adb, DevTools and lane internals belong to the lane.',
               },
             ],
           },

@@ -8,9 +8,9 @@ Question: Which reusable proof APIs establish package, browser and raw-device be
 
 ## Current decision
 
-Unassessed. No review conclusion is recorded.
+[2026-10-02-proof-agentic-e2e-review](../review-records/2026-10-02-proof-agentic-e2e-review.json) — **pursue**. Pursue a real-device lane inside the existing stack and stop on e2e. The drift comes from stand-ins inside green tests, not from too few end-to-end tests: the browser suites take minutes, while 12 of 20 drift cases went red only in installed or headed Chrome or with real OS input. The harness falls back to the page handle when native paste changes nothing, sends shortcut chords as constructed events, and the mobile projects run desktop engines with phone profiles. e2e cannot close that gap: its agent types with locator.fill, never sees a collapsed caret, has no IME, clipboard or held-key API, refuses URLs on mobile targets, and sends telemetry by default; a Plate integration for it would rebuild @platejs/test behind an agent that still types through fill. The mobile agent tools commit text through their own test keyboard or adb and read no page state. Playwright already reaches Chrome for Android: over adb and CDP it attached to the real page with no flags, real touches drove Gboard, and the existing model oracle read every step, including a correct mention completion from a tapped option. Gboard sent committed insertText per letter with no composition, so the emulated composition the suites assume is not what that keyboard sends. iOS Safari and screen readers stay open with named probes.
 
-Compiled decision: not associated. Source observation: unknown. Source matching is not behavior proof.
+Compiled decision: not associated. Source observation: stale. Source matching is not behavior proof.
 
 Execution: **unbound**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
 
@@ -18,7 +18,9 @@ Imported scope flags (unbound historical claims): adoption not-assessed, proof n
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [harness-input.ts](../../../packages/test/src/playwright/harness-input.ts), [harness.ts](../../../packages/test/src/playwright/harness.ts), [README.md](../../../packages/test/README.md), [playwright.config.ts](../../../apps/plite/playwright.config.ts), [playwright.config.ts](../../../apps/www/playwright.config.ts), [browser-handle.ts](../../../packages/plitejs/src/react/editable/browser-handle.ts), [verify.mdc](../../../.agents/rules/verify.mdc), [common.md](../../vision/common.md). Changed directories: none identified. Changed source groups: export/test/., export/test/./browser, export/test/./package.json, export/test/./playwright, export/test/./proof, export/test/./react, platejs/proof-and-packaging, plitejs/proof-and-packaging, test/playwright, test/proof-and-packaging, tooling/browser-proof.
+
+- **missing-current-decision**: 2026-10-02-proof-agentic-e2e-review.
 
 - **unbound-plan**: [2026-09-06-maintain-verify-plate.md](../../plans/2026-09-06-maintain-verify-plate.md).
 
@@ -34,12 +36,13 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | --- | --- | --- | --- |
 | [2026-09-06-maintain-verify-plate.md](../../plans/2026-09-06-maintain-verify-plate.md) | unknown | workflow | unbound |
 | [2026-09-18-feature-history.md](../../plans/2026-09-18-feature-history.md) | completed | workflow | unbound |
+| [2026-10-02-proof-device-lane.md](../../plans/2026-10-02-proof-device-lane.md) | blocked | implementation | [2026-10-02-proof-agentic-e2e-review](../review-records/2026-10-02-proof-agentic-e2e-review.json) |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-- [2026-09-18-feature-history-workflow-execution](../review-records/2026-09-18-feature-history-workflow-execution.json): completed; binding **historical-unbound**; Completed the accepted feature-history workflow plan: 64 generated hubs, compact and full retrieval, immutable execution records, classified history, history-first review/closure methods and 42 passing semantic tests. This task was governed by the user-approved plan, with no governing immutable API review; it does not certify the broader proof or repair feature scopes. Proof: unknown / unknown. Workflow CLI, generation, link, source/install and scoped reasoning/retrieval checks only. The missing immutable governing review keeps this outcome unbound; no product, browser, performance or release verification is claimed.
+No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
 
 ## Inspected documents
 
@@ -62,6 +65,27 @@ Completed the accepted feature-history workflow plan: 64 generated hubs, compact
 Proof limits: Workflow CLI, generation, link, source/install and scoped reasoning/retrieval checks only. The missing immutable governing review keeps this outcome unbound; no product, browser, performance or release verification is claimed.
 
 References: [2026-09-18-feature-history.md](../../plans/2026-09-18-feature-history.md), [2026-09-18-feature-history-exercises.md](../history/2026-09-18-feature-history-exercises.md), [2026-09-18-association-audit.md](../history/2026-09-18-association-audit.md).
+
+### 2026-10-02: 2026-10-02-proof-agentic-e2e-review
+
+[Immutable record](../review-records/2026-10-02-proof-agentic-e2e-review.json) — review; pursue; observation stale.
+
+Pursue a real-device lane inside the existing stack and stop on e2e. The drift comes from stand-ins inside green tests, not from too few end-to-end tests: the browser suites take minutes, while 12 of 20 drift cases went red only in installed or headed Chrome or with real OS input. The harness falls back to the page handle when native paste changes nothing, sends shortcut chords as constructed events, and the mobile projects run desktop engines with phone profiles. e2e cannot close that gap: its agent types with locator.fill, never sees a collapsed caret, has no IME, clipboard or held-key API, refuses URLs on mobile targets, and sends telemetry by default; a Plate integration for it would rebuild @platejs/test behind an agent that still types through fill. The mobile agent tools commit text through their own test keyboard or adb and read no page state. Playwright already reaches Chrome for Android: over adb and CDP it attached to the real page with no flags, real touches drove Gboard, and the existing model oracle read every step, including a correct mention completion from a tapped option. Gboard sent committed insertText per letter with no composition, so the emulated composition the suites assume is not what that keyboard sends. iOS Safari and screen readers stay open with named probes.
+
+Question: Which reusable proof APIs establish package, browser and raw-device behavior without duplicate inventories?
+
+- Adopt e2e as the end-to-end layer: rejected. Its agent types through locator.fill, which @platejs/test bans as editor proof; its text view hides a collapsed caret; it has no IME, clipboard or held-key action; mobile targets refuse app.url; cache issues for same-node text changes were closed into a private tracker; telemetry is on by default and its skill tells agents to send feedback reports.
+- Build a Plate integration for e2e, a wrapper engine with an editor fixture: rejected. It duplicates @platejs/test inside e2e's engine contract and still leaves typing to fill; the replay cache only saves model calls that Plate's agents never make, because they write deterministic Playwright through verify.
+- Adopt agent-device, argent, stim or MiniSim as the device owner: rejected. agent-device commits text through its own test keyboard by default, argent and MiniSim use adb input text, stim serves only React Native, and none reads page JavaScript in a mobile browser or captures screen-reader speech.
+- Add a device lane to @platejs/test (selected): Playwright over adb and CDP plus real touches on the soft keyboard, reusing the harness oracle, for tagged Android cases only, run on demand and nightly rather than per pull request; its receipts replace the raw-mobile schema's directAppium requirement with a transport field.
+- Make stand-ins fail loud (selected): paste without a native effect fails unless the call opts into the handle, constructed shortcut events and handle setters are labeled in the trace, and proof assertions reject labeled steps.
+- Narrow the emulated mobile projects (selected): keep viewport-tagged cases and move raw-input claims to the device lane, because the Pixel 5 project skipped 387 of 704 rows and models composition that real Gboard did not send.
+- Borrow e2e's accessibility-tree cross-check as a cheap proxy for popup and focus claims; it never stands in for a screen reader.
+- Keep the stack unchanged: loses, because 16 device and assistive-technology gates have no producer and the raw-mobile receipt validator has never received a receipt.
+
+Proof limits: The Android lane ran once per step on an emulator, not five warm runs and not a physical phone, with Gboard key positions read from a screenshot. e2e, agent-device, argent, stim and MiniSim were read, not run; no paid model call was made. Drift case counts come from plans and decision logs mined by a subagent with three spot checks. The www suite's duration is unknown. iOS Safari has no page-state reader in any surveyed tool; WebDriver against the simulator is an untested next probe. No screen reader ran. The page handle attaches with read and write methods on every mounted Editable with no environment gate; whether production builds should keep it is not settled here.
+
+References: [README.md](../../plite/research/2026-10-02-agentic-e2e-testing/README.md), [001-e2e-framework.md](../../plite/research/2026-10-02-agentic-e2e-testing/shards/001-e2e-framework.md), [002-mobile-agent-tools.md](../../plite/research/2026-10-02-agentic-e2e-testing/shards/002-mobile-agent-tools.md), [003-plate-proof-stack.md](../../plite/research/2026-10-02-agentic-e2e-testing/shards/003-plate-proof-stack.md), [004-android-device-probe.md](../../plite/research/2026-10-02-agentic-e2e-testing/shards/004-android-device-probe.md), [lead-ledger.tsv](../../plite/research/2026-10-02-agentic-e2e-testing/lead-ledger.tsv), [read-log.tsv](../../plite/research/2026-10-02-agentic-e2e-testing/read-log.tsv), [repo-registry.tsv](../../plite/research/2026-10-02-agentic-e2e-testing/repo-registry.tsv), [promoted-ledger.tsv](../../plite/research/2026-10-02-agentic-e2e-testing/promoted-ledger.tsv), [rejected-ledger.tsv](../../plite/research/2026-10-02-agentic-e2e-testing/rejected-ledger.tsv), [harness-input.ts](../../../packages/test/src/playwright/harness-input.ts), [raw-mobile-proof.ts](../../../packages/test/src/proof/raw-mobile-proof.ts), [playwright.config.ts](../../../apps/plite/playwright.config.ts).
 
 ## Retrieval boundaries
 

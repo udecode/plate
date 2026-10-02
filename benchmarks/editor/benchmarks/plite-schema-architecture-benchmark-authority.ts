@@ -1,5 +1,3 @@
-import { writeBenchmarkArtifact } from './benchmark-artifact';
-
 export type RoundRobinCohortMeasurements = Readonly<{
   order: ReadonlyArray<readonly number[]>;
   samples: ReadonlyArray<readonly number[]>;
@@ -31,35 +29,4 @@ export const measureCohortsRoundRobin = <TCohort>(
   );
 
   return { order, samples };
-};
-
-type StrictBenchmarkResult = {
-  strictValidation: {
-    status: 'measured' | 'passed';
-  };
-};
-
-const serialize = (result: StrictBenchmarkResult) =>
-  `${JSON.stringify(result, null, 2)}\n`;
-
-export const validateAndWriteStrictBenchmarkArtifact = ({
-  outputPath,
-  result,
-  validate,
-}: {
-  outputPath?: string;
-  result: StrictBenchmarkResult;
-  validate: () => void;
-}) => {
-  result.strictValidation.status = 'measured';
-  if (outputPath !== undefined) {
-    writeBenchmarkArtifact(outputPath, serialize(result));
-  }
-
-  validate();
-
-  result.strictValidation.status = 'passed';
-  if (outputPath !== undefined) {
-    writeBenchmarkArtifact(outputPath, serialize(result));
-  }
 };

@@ -25,9 +25,11 @@ Insert emojis with autocomplete using `:`
 
 ## Features
 
-- Utilities for creating trigger-based combobox functionality
-- Configurable trigger characters and patterns
-- Atomic input completion, cancellation and history commands
+- Autocomplete over ordinary editor text, with the trigger and query typed into the document
+- A popup opens only when the user types the trigger in that editor
+- Completion replaces the trigger and query in one undo step; undo restores the typed text
+- IME preedit filters options without selecting one
+- Escape closes the popup and keeps the text
 
 </PackageInfo>
 
@@ -42,143 +44,88 @@ npm install platejs
 npx shadcn@latest add @plate/inline-combobox
 ```
 
-### Create input plugin
+### Create the plugin
 
-First, create an input plugin that will be inserted when the trigger is activated:
+Keep the trigger policy in the plugin state and the inserted node in the plugin schema:
 
 ```tsx showLineNumbers
 import { property } from 'platejs';
-import { BaseComboboxPlugin } from 'platejs/combobox';
+import type { ComboboxState } from 'platejs/combobox';
 import { definePlugin } from 'platejs/react';
 
-export const TagInputPlugin = definePlugin('tagInput', {
-  dependencies: [BaseComboboxPlugin],
-  editOnly: true,
+export const HashtagPlugin = definePlugin('hashtag', {
+  initialState: (): ComboboxState => ({
+    maxQueryLength: 50,
+    queryPattern: /^[\p{L}\p{N}_-]$/u,
+    trigger: '#',
+    triggerPreviousCharPattern: /^\s?$/,
+    triggerQuery: null,
+  }),
   schema: {
     element: {
-      type: 'tag_input',
+      properties: { value: property.string({ required: true }) },
+      type: 'hashtag',
       void: 'inline',
-      properties: {
-        trigger: property.string(),
-        userId: property.string(),
-      },
     },
   },
 });
 ```
 
-### Create main plugin
+- `trigger`: Text that opens the popup when typed (`#`).
+- `triggerPreviousCharPattern`: Must match the character before the trigger. `/^\s?$/` allows the start of a line or a space.
+- `queryPattern`: Tested against each query character. A space ends a hashtag query here.
 
-Create your main plugin with trigger metadata:
+### Create the popup
 
-```tsx showLineNumbers
-import { property } from 'platejs';
-import { triggerCombobox, type TriggerComboboxPluginState } from 'platejs/combobox';
-import { definePlugin } from 'platejs/react';
-import { TagInputPlugin } from './tag-input-plugin';
-
-const initialState: TriggerComboboxPluginState = {
-  trigger: '#',
-  triggerPreviousCharPattern: /^\s?$/,
-  createComboboxInput: () => ({
-    children: [{ text: '' }],
-    type: 'tag_input',
-  }),
-};
-
-export const TagPlugin = definePlugin('customTag', {
-  dependencies: [TagInputPlugin],
-  initialState,
-  schema: {
-    element: {
-      type: 'tag',
-      void: 'inline',
-      properties: { value: property.string({ required: true }) },
-    },
-  },
-  update: ({ tx, schema: { type } }) => ({
-    insert: (value: string) => {
-      tx.nodes.insert({ children: [{ text: '' }], type, value });
-      tx.selection.move({ unit: 'offset' });
-    },
-  }),
-}).extend(({ editor, store }) => ({
-  commands: (context) => triggerCombobox(context, {
-    editor,
-    getState: () => store.get(),
-    type: editor.plugin(TagInputPlugin).schema.type,
-  }),
-}));
-```
-
-- `schema.element`: Defines the plugin's element model behavior
-- `schema.element.void: 'inline'`: Makes the tag an inline void and prevents editing inside it
-- `initialState.trigger`: Character that triggers the combobox (in this case `#`)
-- `initialState.triggerPreviousCharPattern`: RegExp pattern that must match the character before the trigger. `/^\s?$/` allows the trigger at the start of a line or after whitespace
-- `initialState.createComboboxInput`: Function that creates the input element node when the trigger is activated
-
-### Create component
-
-Create the input element component using `InlineCombobox`:
+The popup renders next to the editor and reads the query from the text after the trigger:
 
 ```tsx showLineNumbers
+import * as React from 'react';
 import {
   type EditorElementProps,
   EditorElement,
-  useEditorFocused,
-  useEditorReadOnly,
-  useElementSelected,
 } from 'platejs/react';
 import {
   InlineCombobox,
   InlineComboboxContent,
   InlineComboboxEmpty,
-  InlineComboboxInput,
   InlineComboboxItem,
 } from '@/components/editor/inline-combobox';
-import { cn } from '@/lib/utils';
-import { TagInputPlugin } from './tag-input-plugin';
-import { TagPlugin } from './tag-plugin';
+import { HashtagPlugin } from './hashtag-plugin';
 
 const tags = ['Frontend', 'Backend', 'Design', 'Urgent'];
 
-export function TagInputElement(props: EditorElementProps<typeof TagInputPlugin>) {
+export function HashtagCombobox({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
-    <EditorElement {...props} as="span">
-      <InlineCombobox element={props.element} trigger="#">
-        <InlineComboboxInput />
-        <InlineComboboxContent>
-          <InlineComboboxEmpty>No tags found</InlineComboboxEmpty>
-          {tags.map((tag) => (
-            <InlineComboboxItem
-              key={tag}
-              value={tag}
-              onSelect={(tx) => tx.plugin(TagPlugin.name).insert(tag)}
-            >
-              #{tag}
-            </InlineComboboxItem>
-          ))}
-        </InlineComboboxContent>
-      </InlineCombobox>
-      {props.children}
-    </EditorElement>
+    <InlineCombobox editableRef={editableRef} plugin={HashtagPlugin}>
+      <InlineComboboxContent>
+        <InlineComboboxEmpty>No tags found</InlineComboboxEmpty>
+        {tags.map((tag) => (
+          <InlineComboboxItem
+            key={tag}
+            value={tag}
+            onSelect={(tx) => {
+              tx.plugin(HashtagPlugin).insert({ value: tag });
+            }}
+          >
+            #{tag}
+          </InlineComboboxItem>
+        ))}
+      </InlineComboboxContent>
+    </InlineCombobox>
   );
 }
 
-export function TagElement(props: EditorElementProps<typeof TagPlugin>) {
-  const selected = useElementSelected();
-  const focused = useEditorFocused();
-  const readOnly = useEditorReadOnly();
-
+export function HashtagElement(props: EditorElementProps<typeof HashtagPlugin>) {
   return (
     <EditorElement
       {...props}
       as="span"
-      className={cn(
-        'inline-block rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-sm font-medium text-primary',
-        !readOnly && 'cursor-pointer',
-        selected && focused && 'ring-2 ring-ring'
-      )}
+      className="inline-block rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline font-medium text-primary text-sm"
     >
       #{props.element.value}
       {props.children}
@@ -189,30 +136,22 @@ export function TagElement(props: EditorElementProps<typeof TagPlugin>) {
 
 ### Add to editor
 
+Mount the popup in the plugin's `afterEditable` slot, which receives each editor's `editableRef`:
+
 ```tsx showLineNumbers
-import { BaseCodeBlockPlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
-import { TagPlugin } from './tag-plugin';
-import { TagInputPlugin } from './tag-input-plugin';
-import { TagElement, TagInputElement } from './tag-components';
+import { HashtagPlugin } from './hashtag-plugin';
+import { HashtagCombobox, HashtagElement } from './hashtag-components';
 
 const editor = createEditor({
   plugins: [
-    TagPlugin.configure({
-      component: TagElement,
-      initialState: {
-        triggerQuery: (editor) => {
-          const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-          return !codeBlock.installed || !editor.read.nodes.some({ type: codeBlock.schema.type });
-        },
-      },
+    HashtagPlugin.configure({
+      component: HashtagElement,
+      slots: { afterEditable: HashtagCombobox },
     }),
-    TagInputPlugin.configure({ component: TagInputElement }),
   ],
 });
 ```
-
-- `initialState.triggerQuery`: Optional function to conditionally enable/disable the trigger based on editor state
 
 </Steps>
 
@@ -222,56 +161,83 @@ const editor = createEditor({
 <ComponentPreview name="slash-command-demo" />
 <ComponentPreview name="emoji-demo" />
 
+## Behavior
+
+- The popup opens when the user types the trigger. Moving the caret after existing trigger text, undo, paste and remote edits never open it.
+- The query is the text from the trigger to the caret, across marks, inside one block. It ends when the caret moves before the trigger or past the typed text, a character fails `queryPattern`, it starts with whitespace or it grows past `maxQueryLength`.
+- Escape closes the popup and leaves the typed text. Typing more does not reopen it; typing the trigger again does.
+- Completion deletes the trigger and query and runs your insertion in one transaction. Undo restores the typed text.
+- While an IME composes, the query previews the visible preedit. Enter confirms the composition and never selects an option.
+
 ## Options
 
-### TriggerComboboxPluginState
+### ComboboxState
 
-Configuration options for trigger-based combobox plugins.
+Trigger policy kept in a feature plugin's state. Override it with `.configure({ initialState })`.
 
-<API name="TriggerComboboxPluginState">
+<API name="ComboboxState">
 <APIOptions>
-  <APIItem name="createComboboxInput" type="(trigger: string) => Element">
-    Function to create the input node when trigger is activated.
+  <APIItem name="trigger" type="RegExp | readonly string[] | string">
+    Text that opens the popup when typed. Strings may be longer than one character, such as `'[^'`. A pattern is tested against the typed character.
   </APIItem>
-  <APIItem name="trigger" type="RegExp | string[] | string">
-    Character(s) that trigger the combobox. Can be:
-    - A single character (e.g. '@')
-    - An array of characters
-    - A regular expression
+  <APIItem name="triggerPreviousCharPattern" type="RegExp | null">
+    Tested against the character before the trigger, or `''` at the start of a text. `null` allows any character.
   </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
-    Pattern to match the character before trigger.
-    - **Example:** `/^\s?$/` matches start of line or space
+  <APIItem name="triggerQuery" type="((editor: ComboboxEditor) => boolean) | null">
+    Return `false` to keep a typed trigger as plain text, for example inside code.
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: TriggerComboboxEditor) => boolean" optional>
-    Custom query function to control when trigger is active.
+  <APIItem name="queryPattern" type="RegExp | null">
+    Tested against each query character; the first failure closes the popup. `null` allows any character except a line break.
+  </APIItem>
+  <APIItem name="maxQueryLength" type="number">
+    The popup closes once the query is longer.
   </APIItem>
 </APIOptions>
 </API>
 
-## Input commands
+## Hooks
 
-Mention, slash, emoji and footnote inputs install `BaseComboboxPlugin` as a
-dependency. Custom input plugins declare the same dependency. Resolve the
-mounted input's `NodeKey` with `editor.key(element)` and keep that key for its
-event callbacks.
+### useCombobox
 
-| Method | Behavior |
-| --- | --- |
-| `read.canEdit(input)` | Check that the input still exists, is editable and belongs to the current user. |
-| `api.cancel(input, { text, select })` | Remove the input and restore literal text in one history entry. Omit `text` for Backspace; `select` accepts `'start'` or `'end'`, or stays omitted to preserve an outside selection. |
-| `api.commit(input, callback)` | Remove the input, select its live location and run a synchronous transaction callback. A thrown callback rolls back the change. |
-| `api.undo(input)` / `api.redo(input)` | Apply available history only for an eligible input. |
+Connects a popup to one editor. Import it from `platejs/combobox/react` and call it inside an `afterEditable` slot component.
 
-Completion commands return `false` for stale or foreign input keys. They never
-restore text at an unrelated current selection. The node key also identifies
-inputs in named document roots.
+<API name="useCombobox">
+<APIParameters>
+  <APIItem name="editableRef" type="React.RefObject<HTMLDivElement | null>">
+    The editor the popup serves, as passed to the slot.
+  </APIItem>
+  <APIItem name="plugin" type="PluginReference">
+    The feature plugin whose state holds the `ComboboxState`.
+  </APIItem>
+  <APIItem name="activeOptionId" type="string | null" optional>
+    The active option's id, mirrored as the editor's `aria-activedescendant`.
+  </APIItem>
+  <APIItem name="open" type="boolean" optional>
+    Whether the popup is showing. Keys and ARIA attach only while it shows, so a popup hidden with no results leaves arrows and Escape to the editor.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="onKeyDown" type="(event: React.KeyboardEvent<HTMLDivElement>) => boolean" optional>
+    Receives Enter, Tab, ArrowUp, ArrowDown and Escape while the popup is open, before editor shortcuts. Return `true` when handled. An unhandled Escape closes the popup.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="match" type="ComboboxMatch | null">
+    The open query, or `null` while closed. `match.query` holds the text after the trigger, `match.range` covers the trigger and query, and `match.composing` is true during IME preedit.
+  </APIItem>
+  <APIItem name="listboxId" type="string">
+    Id for the popup's listbox, mirrored as the editor's `aria-controls`.
+  </APIItem>
+  <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => false | void) => boolean">
+    Replace the trigger and query through one synchronous transaction. Pass the match that offered the option. Return `false` from the callback to refuse and keep the query. A newer query, an active composition or a refused callback changes nothing and returns `false`; a thrown callback rolls back everything.
+  </APIItem>
+  <APIItem name="dismiss" type="() => void">
+    Close the popup and keep the typed text.
+  </APIItem>
+</APIReturns>
+</API>
 
 ## Registry UI
 
-The copied `inline-combobox` component owns query state, filtering, popup
-navigation, composition events and DOM focus. Insert the chosen feature in
-`InlineComboboxItem.onSelect`, using its inferred transaction. Use `onClick`
-for a UI action after successful completion, such as opening another popover.
+The copied `inline-combobox` component wraps `useCombobox` with an Ariakit listbox. It owns filtering, the active option and the popup position at the trigger. Insert the chosen feature in `InlineComboboxItem.onSelect`, using its inferred transaction, and return `false` when the option is no longer available. Read the query inside the popup with `useInlineComboboxQuery()`. Use `onClick` for a UI action after a successful completion, such as opening another popover.
 
 <ComponentSource name="inline-combobox" />

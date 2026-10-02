@@ -34,6 +34,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/registry/components/editor/context-menu';
+import { cutBlocks } from '@/registry/components/editor/dnd';
 
 type LeafFormat = 'heading-1' | 'heading-2' | 'heading-3' | 'text';
 type Value = 'askAI' | null;
@@ -238,6 +239,35 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             }}
           >
             Duplicate
+          </ContextMenuItem>
+          <ContextMenuItem
+            disabled={!hasSelection}
+            onClick={() => {
+              editor.api.transfer.move({
+                announce: 'Moved up',
+                to: 'previous',
+              });
+            }}
+          >
+            Move up
+          </ContextMenuItem>
+          <ContextMenuItem
+            disabled={!hasSelection}
+            onClick={() => {
+              editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
+            }}
+          >
+            Move down
+          </ContextMenuItem>
+          <ContextMenuItem
+            disabled={!hasSelection}
+            onClick={() => {
+              if (editor.read.view.isReadOnly()) return;
+
+              void cutBlocks(editor, editor.read.transfer.nodes());
+            }}
+          >
+            Cut
           </ContextMenuItem>
           <ContextMenuSub>
             <ContextMenuSubTrigger disabled={!hasSelection}>

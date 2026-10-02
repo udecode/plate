@@ -1,0 +1,11 @@
+PASS trigger after space opens with query
+PASS trigger inside a word does not open
+PASS Escape closes and typing on keeps it closed
+PASS deleting the trigger ends suppression; a new trigger opens
+PASS remote insert before the trigger keeps the query and shifts its range
+PASS a dismissal survives a later remote insert
+PASS completion is one step: undo restores the typed query, redo the mention
+PASS a failing completion callback rolls back the deletion too
+PASS a stale completion (remote changed the query) is refused without edits
+PASS moving to another root view ends the match and leaves literal text
+10/10 pass

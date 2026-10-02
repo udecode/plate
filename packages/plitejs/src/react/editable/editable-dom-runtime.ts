@@ -7,6 +7,7 @@ import {
   PointApi,
   type Range,
   RangeApi,
+  type TransferOutcome,
   type Value,
 } from '../..';
 import { getInstalledPlugin } from '../../core/plugin';
@@ -99,6 +100,16 @@ export type EditablePasteResult = Readonly<{
   /** Whether the paste committed content. */
   inserted: boolean;
 }>;
+
+/** What one drop the Editable settled did. */
+export type EditableDropResult =
+  | Readonly<{
+      kind: 'data';
+      /** Format reports for external data inserted on the paste path. */
+      diagnostics: readonly DataTransferDiagnostic[];
+      inserted: boolean;
+    }>
+  | Readonly<{ kind: 'transfer'; outcome: TransferOutcome }>;
 
 type CancelableCallback = {
   cancel: () => void;
@@ -288,6 +299,7 @@ type EditableDOMRuntimeUpdate = {
   viewportRuntime: EditableViewportRuntime | null;
   onComposingChange: (nextValue: boolean) => void;
   onHistoryReplay: (event: EditableHistoryReplayEvent) => void;
+  onDropResult: (result: EditableDropResult) => void;
   onPasteResult: (result: EditablePasteResult) => void;
   onViewportBackedSelectionChange: (nextValue: boolean) => void;
   readOnly: boolean;
@@ -334,7 +346,10 @@ export class EditableDOMRuntime {
   ) => void = () => {};
 
   private selectionExportAfterDOMCommitHandler: () => void = () => {};
-  private deferredCompositionDOMWrite: (() => void) | null = null;
+  private readonly deferredCompositionDOMWrites = new Map<
+    globalThis.Node,
+    () => void
+  >();
   private historyFocusHandler: (policy: EditorHistoryFocusPolicy) => void =
     () => {};
 
@@ -344,6 +359,7 @@ export class EditableDOMRuntime {
     () => {};
 
   private pasteResultHandler: (result: EditablePasteResult) => void = () => {};
+  private dropResultHandler: (result: EditableDropResult) => void = () => {};
 
   private externalMouseGesture = false;
 
@@ -393,6 +409,7 @@ export class EditableDOMRuntime {
     editor,
     onComposingChange = () => {},
     onHistoryReplay = () => {},
+    onDropResult = () => {},
     onPasteResult = () => {},
     onViewportBackedSelectionChange = () => {},
     readOnly = false,
@@ -406,6 +423,7 @@ export class EditableDOMRuntime {
     this.onComposingChange = onComposingChange;
     this.historyReplayHandler = onHistoryReplay;
     this.pasteResultHandler = onPasteResult;
+    this.dropResultHandler = onDropResult;
     this.onViewportBackedSelectionChange = onViewportBackedSelectionChange;
     this.readOnlyValue = readOnly;
     this.rootRuntime = new DOMRootRuntime({
@@ -740,15 +758,15 @@ export class EditableDOMRuntime {
       preserveEditorComposing: !nextValue && this.hasSiblingCompositionOwner(),
       setIsComposing: this.onComposingChange,
     });
-    if (!nextValue && this.deferredCompositionDOMWrite) {
+    if (!nextValue && this.deferredCompositionDOMWrites.size > 0) {
       this.domPhaseScheduler.schedule(
         'dom-write',
         'composition-deferred-dom-write',
         () => {
-          const write = this.deferredCompositionDOMWrite;
+          const writes = [...this.deferredCompositionDOMWrites.values()];
 
-          this.deferredCompositionDOMWrite = null;
-          if (write) runAllRuntimeSteps([write]);
+          this.deferredCompositionDOMWrites.clear();
+          runAllRuntimeSteps(writes);
         },
         { key: 'composition-deferred-dom-write' }
       );
@@ -769,7 +787,7 @@ export class EditableDOMRuntime {
     );
   }
 
-  private isCompositionDOMNodeProtected(node: globalThis.Node) {
+  isCompositionDOMNodeProtected(node: globalThis.Node) {
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
     const root = this.rootElement;
 
@@ -788,7 +806,7 @@ export class EditableDOMRuntime {
   deferCompositionDOMWrite(node: globalThis.Node, write: () => void) {
     if (!this.isCompositionDOMNodeProtected(node)) return false;
 
-    this.deferredCompositionDOMWrite = write;
+    this.deferredCompositionDOMWrites.set(node, write);
     return true;
   }
 
@@ -972,6 +990,29 @@ export class EditableDOMRuntime {
     this.historySettleHandler = handler;
   }
 
+  settleInput(): boolean {
+    const root = this.rootElement;
+
+    const { pendingCompositionEnd } = this.state;
+
+    if (!this.connected || !root) return false;
+    if (this.state.isComposing && !pendingCompositionEnd) return false;
+
+    if (pendingCompositionEnd?.ownership === 'plite') {
+      pendingCompositionEnd.flush();
+    } else {
+      pendingCompositionEnd?.cancel();
+    }
+    this.state.pendingCompositionEnd?.cancel();
+    this.state.pendingCompositionEnd = null;
+    this.androidInputManagerRef.current?.flush();
+    this.historySettleHandler();
+
+    return (
+      this.connected && this.rootElement === root && !this.state.isComposing
+    );
+  }
+
   private async replayHistory(
     direction: 'redo' | 'undo',
     focusPolicy: EditorHistoryFocusPolicy = 'restore-root'
@@ -987,24 +1028,10 @@ export class EditableDOMRuntime {
     if (this.state.isComposing) {
       return { reason: 'composing', status: 'unavailable' };
     }
-
-    const { pendingCompositionEnd } = this.state;
-
-    if (pendingCompositionEnd?.ownership === 'plite') {
-      pendingCompositionEnd.flush();
-    } else {
-      pendingCompositionEnd?.cancel();
-    }
-    this.state.pendingCompositionEnd?.cancel();
-    this.state.pendingCompositionEnd = null;
-    this.androidInputManagerRef.current?.flush();
-    this.historySettleHandler();
-
-    if (!this.connected || this.rootElement !== root) {
-      return { reason: 'unmounted', status: 'unavailable' };
-    }
-    if (this.state.isComposing) {
-      return { reason: 'composing', status: 'unavailable' };
+    if (!this.settleInput()) {
+      return this.connected && this.rootElement === root
+        ? { reason: 'composing', status: 'unavailable' }
+        : { reason: 'unmounted', status: 'unavailable' };
     }
 
     const { history } = this.editorValue.api as unknown as {
@@ -1138,12 +1165,32 @@ export class EditableDOMRuntime {
       paste
     );
 
+  readonly reportDrop = (outcome: TransferOutcome) => {
+    if (this.connected) {
+      this.dropResultHandler(Object.freeze({ kind: 'transfer', outcome }));
+    }
+  };
+
+  readonly runDrop = <T>(drop: () => T): T =>
+    observeDataTransferInsertion(
+      this.editorValue,
+      (inserted, diagnostics) => {
+        if (!this.connected) return;
+
+        this.dropResultHandler(
+          Object.freeze({ diagnostics, inserted, kind: 'data' })
+        );
+      },
+      drop
+    );
+
   update(update: EditableDOMRuntimeUpdate) {
     const readOnlyChanged = this.readOnlyValue !== update.readOnly;
     this.viewportRuntimeValue = update.viewportRuntime;
     this.onComposingChange = update.onComposingChange;
     this.historyReplayHandler = update.onHistoryReplay;
     this.pasteResultHandler = update.onPasteResult;
+    this.dropResultHandler = update.onDropResult;
     this.onViewportBackedSelectionChange =
       update.onViewportBackedSelectionChange;
     this.readOnlyValue = update.readOnly;
@@ -1262,7 +1309,7 @@ export class EditableDOMRuntime {
       () => {
         this.cancelUserInputFrame();
         this.externalMouseGesture = false;
-        this.deferredCompositionDOMWrite = null;
+        this.deferredCompositionDOMWrites.clear();
       },
       () => {
         const cancelMicrotask = this.cancelSelectionExportMicrotask;

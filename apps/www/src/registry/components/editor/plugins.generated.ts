@@ -26,7 +26,7 @@ export interface EditorText extends Text {
 }
 
 export interface AudioElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "audio";
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
   readonly url: string;
@@ -45,7 +45,7 @@ export interface BlockquoteElement extends Element {
 }
 
 export interface CalloutElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "callout";
   readonly backgroundColor?: string;
   readonly icon: string;
@@ -92,14 +92,6 @@ export interface DetailsElement extends Element {
   readonly listType?: "bulleted" | "numbered" | "task";
 }
 
-export interface EmojiInputElement extends Element {
-  readonly children: readonly [EditorText];
-  readonly type: "emojiInput";
-  readonly trigger?: string;
-  readonly userId?: string;
-  readonly value?: string;
-}
-
 export interface EquationElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "equation";
@@ -107,7 +99,7 @@ export interface EquationElement extends Element {
 }
 
 export interface FileElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "file";
   readonly name?: string;
   readonly url: string;
@@ -120,14 +112,6 @@ export interface FootnoteDefinitionElement extends Element {
   readonly ref: string;
 }
 
-export interface FootnoteInputElement extends Element {
-  readonly children: readonly [EditorText];
-  readonly type: "footnoteInput";
-  readonly trigger?: string;
-  readonly userId?: string;
-  readonly value?: string;
-}
-
 export interface FootnoteElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "footnoteReference";
@@ -135,7 +119,7 @@ export interface FootnoteElement extends Element {
 }
 
 export interface HeadingElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "heading";
   readonly checked?: boolean;
   readonly indent?: number;
@@ -154,7 +138,7 @@ export interface HorizontalRuleElement extends Element {
 }
 
 export interface ImageElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "image";
   readonly alt?: string;
   readonly checked?: boolean;
@@ -185,7 +169,7 @@ export interface LinkElement extends Element {
 }
 
 export interface MediaEmbedElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "mediaEmbed";
   readonly provider?: string;
   readonly sourceUrl?: string;
@@ -201,16 +185,8 @@ export interface MentionElement extends Element {
   readonly ref: string;
 }
 
-export interface MentionInputElement extends Element {
-  readonly children: readonly [EditorText];
-  readonly type: "mentionInput";
-  readonly trigger?: string;
-  readonly userId?: string;
-  readonly value?: string;
-}
-
 export interface ParagraphElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "paragraph";
   readonly checked?: boolean;
   readonly indent?: number;
@@ -222,16 +198,8 @@ export interface ParagraphElement extends Element {
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
 }
 
-export interface SlashInputElement extends Element {
-  readonly children: readonly [EditorText];
-  readonly type: "slashInput";
-  readonly trigger?: string;
-  readonly userId?: string;
-  readonly value?: string;
-}
-
 export interface DetailsSummaryElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "summary";
 }
 
@@ -270,7 +238,7 @@ export interface UploadElement extends Element {
 }
 
 export interface VideoElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "video";
   readonly provider?: string;
   readonly sourceUrl?: string;
@@ -279,7 +247,7 @@ export interface VideoElement extends Element {
   readonly width?: number | string;
 }
 
-export type EditorElement = AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnElement | ColumnGroupElement | DateElement | DetailsElement | EmojiInputElement | EquationElement | FileElement | FootnoteDefinitionElement | FootnoteInputElement | FootnoteElement | HeadingElement | HorizontalRuleElement | ImageElement | InlineEquationElement | LinkElement | MediaEmbedElement | MentionElement | MentionInputElement | ParagraphElement | SlashInputElement | DetailsSummaryElement | TableElement | TableCellElement | TableRowElement | TocElement | UploadElement | VideoElement;
+export type EditorElement = AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnElement | ColumnGroupElement | DateElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | FootnoteElement | HeadingElement | HorizontalRuleElement | ImageElement | InlineEquationElement | LinkElement | MediaEmbedElement | MentionElement | ParagraphElement | DetailsSummaryElement | TableElement | TableCellElement | TableRowElement | TocElement | UploadElement | VideoElement;
 export type Value = readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
 export type Schema = Readonly<{
   readonly plugins: Readonly<{
@@ -308,9 +276,7 @@ export type Schema = Readonly<{
     readonly equation: Readonly<{ readonly type: "equation"; }>;
     readonly date: Readonly<{ readonly type: "date"; }>;
     readonly link: Readonly<{ readonly type: "link"; }>;
-    readonly mentionInput: Readonly<{ readonly type: "mentionInput"; }>;
     readonly mention: Readonly<{ readonly type: "mention"; }>;
-    readonly footnoteInput: Readonly<{ readonly type: "footnoteInput"; }>;
     readonly footnote: Readonly<{ readonly type: "footnoteReference"; }>;
     readonly footnoteDefinition: Readonly<{ readonly type: "footnoteDefinition"; }>;
     readonly bold: Readonly<{ readonly key: "bold"; }>;
@@ -328,8 +294,6 @@ export type Schema = Readonly<{
     readonly indent: Readonly<{ readonly key: "indent"; }>;
     readonly textAlign: Readonly<{ readonly key: "textAlign"; }>;
     readonly lineHeight: Readonly<{ readonly key: "lineHeight"; }>;
-    readonly slashInput: Readonly<{ readonly type: "slashInput"; }>;
-    readonly emojiInput: Readonly<{ readonly type: "emojiInput"; }>;
   }>;
   readonly properties: Readonly<Record<PropertyKey, never>>;
 }>;
@@ -451,20 +415,6 @@ export type Mutations = Readonly<{
     }>;
     readonly type: "details";
   }>;
-  readonly emojiInput: Readonly<{
-    readonly block: false;
-    readonly construction: Readonly<{
-      readonly trigger?: string;
-      readonly userId?: string;
-      readonly value?: string;
-    }>;
-    readonly properties: Readonly<{
-      readonly trigger?: string;
-      readonly userId?: string;
-      readonly value?: string;
-    }>;
-    readonly type: "emojiInput";
-  }>;
   readonly equation: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
@@ -498,20 +448,6 @@ export type Mutations = Readonly<{
       readonly ref: string;
     }>;
     readonly type: "footnoteDefinition";
-  }>;
-  readonly footnoteInput: Readonly<{
-    readonly block: false;
-    readonly construction: Readonly<{
-      readonly trigger?: string;
-      readonly userId?: string;
-      readonly value?: string;
-    }>;
-    readonly properties: Readonly<{
-      readonly trigger?: string;
-      readonly userId?: string;
-      readonly value?: string;
-    }>;
-    readonly type: "footnoteInput";
   }>;
   readonly footnote: Readonly<{
     readonly block: false;
@@ -641,20 +577,6 @@ export type Mutations = Readonly<{
     }>;
     readonly type: "mention";
   }>;
-  readonly mentionInput: Readonly<{
-    readonly block: false;
-    readonly construction: Readonly<{
-      readonly trigger?: string;
-      readonly userId?: string;
-      readonly value?: string;
-    }>;
-    readonly properties: Readonly<{
-      readonly trigger?: string;
-      readonly userId?: string;
-      readonly value?: string;
-    }>;
-    readonly type: "mentionInput";
-  }>;
   readonly paragraph: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
@@ -679,20 +601,6 @@ export type Mutations = Readonly<{
     }>;
     readonly toggle: true;
     readonly type: "paragraph";
-  }>;
-  readonly slashInput: Readonly<{
-    readonly block: false;
-    readonly construction: Readonly<{
-      readonly trigger?: string;
-      readonly userId?: string;
-      readonly value?: string;
-    }>;
-    readonly properties: Readonly<{
-      readonly trigger?: string;
-      readonly userId?: string;
-      readonly value?: string;
-    }>;
-    readonly type: "slashInput";
   }>;
   readonly detailsSummary: Readonly<{
     readonly block: true;
@@ -811,9 +719,7 @@ export const schema = Object.freeze({
     equation: Object.freeze({ type: "equation" }),
     date: Object.freeze({ type: "date" }),
     link: Object.freeze({ type: "link" }),
-    mentionInput: Object.freeze({ type: "mentionInput" }),
     mention: Object.freeze({ type: "mention" }),
-    footnoteInput: Object.freeze({ type: "footnoteInput" }),
     footnote: Object.freeze({ type: "footnoteReference" }),
     footnoteDefinition: Object.freeze({ type: "footnoteDefinition" }),
     bold: Object.freeze({ key: "bold" }),
@@ -831,8 +737,6 @@ export const schema = Object.freeze({
     indent: Object.freeze({ key: "indent" }),
     textAlign: Object.freeze({ key: "textAlign" }),
     lineHeight: Object.freeze({ key: "lineHeight" }),
-    slashInput: Object.freeze({ type: "slashInput" }),
-    emojiInput: Object.freeze({ type: "emojiInput" }),
   }),
   properties: Object.freeze({}),
 }) satisfies Schema;

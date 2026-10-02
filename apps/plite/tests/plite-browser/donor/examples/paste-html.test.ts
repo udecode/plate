@@ -598,11 +598,8 @@ test.describe('paste html example', () => {
     await expect.poll(() => editor.get.modelText()).toBe('hello');
 
     await editor.selection.selectAll();
-    const beforeTraceLength = (await editor.get.kernelTrace()).length;
     await editor.clipboard.pasteHtml('<strong>hello</strong>', 'hello');
-    const pasteTrace = (await editor.get.kernelTrace()).slice(
-      beforeTraceLength
-    );
+    const pasteTrace = await editor.get.kernelTrace();
 
     await expect.poll(() => editor.get.modelText()).toBe('hello');
     await expect(editor.root.locator('strong')).toHaveText('hello');

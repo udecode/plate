@@ -6,6 +6,7 @@ import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   EditableDOMRuntime,
+  type EditableDropResult,
   type EditableHistoryReplayEvent,
   type EditablePasteResult,
   isEditableDOMSelectionPartial,
@@ -15,12 +16,14 @@ import { readRuntimeSelectionRange } from './runtime-selection-state';
 export const useEditableRootRuntimeState = ({
   viewportRuntime,
   editor,
+  onDropResult,
   onHistoryReplay,
   onPasteResult,
   readOnly,
 }: {
   viewportRuntime: EditableViewportRuntime | null;
   editor: ReactRuntimeEditor;
+  onDropResult?: (result: EditableDropResult) => void;
   onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onPasteResult?: (result: EditablePasteResult) => void;
   readOnly: boolean;
@@ -34,6 +37,7 @@ export const useEditableRootRuntimeState = ({
         viewportRuntime,
         editor,
         onComposingChange: setIsComposing,
+        onDropResult,
         onHistoryReplay,
         onPasteResult,
         onViewportBackedSelectionChange: setExplicitViewportBackedSelection,
@@ -47,12 +51,20 @@ export const useEditableRootRuntimeState = ({
     runtime.update({
       viewportRuntime,
       onComposingChange: setIsComposing,
+      onDropResult: onDropResult ?? (() => {}),
       onHistoryReplay: onHistoryReplay ?? (() => {}),
       onPasteResult: onPasteResult ?? (() => {}),
       onViewportBackedSelectionChange: setExplicitViewportBackedSelection,
       readOnly,
     });
-  }, [viewportRuntime, onHistoryReplay, onPasteResult, readOnly, runtime]);
+  }, [
+    viewportRuntime,
+    onDropResult,
+    onHistoryReplay,
+    onPasteResult,
+    readOnly,
+    runtime,
+  ]);
 
   useIsomorphicLayoutEffect(() => runtime.connect(), [runtime]);
 

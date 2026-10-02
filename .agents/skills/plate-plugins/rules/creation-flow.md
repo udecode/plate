@@ -1,0 +1,289 @@
+# Creation Flow
+
+Choose semantic ownership before file topology.
+
+## Contents
+
+- Decision tree
+- Semantic owners
+- File owners
+- False ownership evidence
+- File placement
+- Layer check
+
+```text
+Need a plugin or plugin refactor?
+|
++- Does the behavior matter without React?
+|  |
+|  +- yes -> `src/lib`
+|  |   +- `definePlugin`
+|  |   +- static renderer? -> terminal `BasePlugin.configure`
+|  |   +- real React job later? -> thin `toReactPlugin` wrapper
+|  |   +- no React job? -> keep base-only
+|  |
+|  +- no -> `src/react`
+|      +- only groups complete plugins? -> app/registry kit array
+|      +- genuinely hook/DOM/component-native? -> `definePlugin`
+|
++- For every proposed source file:
+|  |
+|  +- exactly one production owner?
+|  |   +- yes -> inline in that plugin/component/test-family owner
+|  |
+|  +- React behavior passes through a package wrapper?
+|  |   +- trace to terminal product consumers
+|  |       +- all copied registry UI + UI/product policy -> registry family/kit
+|  |       +- independent owners or durable headless subsystem -> package
+|  |
+|  +- multiple callers can reuse the scoped plugin API?
+|  |   +- yes -> keep implementation inline; callers use the portal
+|  |
+|  +- real cross-plugin, cross-layer, standalone, or proof owner?
+|      +- yes -> separate file with that owner
+|      +- no  -> inline
+|
++- Public call shape or capability identity changes?
+|  +- yes -> `best-api`
+|
++- Missing generic substrate?
+   +- Plite gap -> patch/plan Plite owner
+   +- Plate composition gap -> patch/plan Plate owner
+```
+
+## Semantic Owners
+
+### Semantic base plugin
+
+Apply Best API's standalone-operation boundary before assigning file conversion
+to a plugin. An editor argument for configured decoding does not by itself
+create an installed capability.
+
+Use `definePlugin` for document semantics, parsers, normalizers, injected
+rules, update groups, and shared behavior contracts.
+
+The sole descriptor-definition grammar is `definePlugin(name, definition)` at
+the owning Plite, Base, or Plate layer. Use the flat `PLUGINS` catalog for
+first-party capability names. Element `type` and property `key` are separate
+persisted identities that default to `name` when omitted and are immutable
+after creation. Runtime AST work resolves the owning `.type`/`.key`; behavior
+plugins expose neither.
+
+When required app resources specialize the returned descriptor, expose one
+concrete non-installable factory value with `.create(options)`. Add
+`.require(key).map(stage)` only for a copied composition job that needs an
+option-dependent capability before construction. Keep descriptor `.extend()`
+for author contribution and terminal `.configure()` for consumer overrides.
+
+Do not split those implementation kinds into their own files when the plugin is
+their only production owner.
+
+### Renderer binding
+
+Base and Plate constructors accept root-level `component`; Base `.extend()`
+does not. Static owners declare or terminally replace a server-safe component
+without importing a Plate React entrypoint.
+
+Use `toReactPlugin` when the semantic base already exists and the remaining job
+is publishing its reusable Plate-layer descriptor or adding genuine Plate-only
+authoring such as a hook or live React callback. A terminal consumer never
+inserts conversion merely to set `component`.
+
+The wrapper must stay thin. Do not copy or re-declare base behavior.
+
+### Direct Plate plugin
+
+Use `definePlugin` only when:
+
+1. the plugin authors React render descriptors with no useful semantic base;
+2. the behavior exists only at a DOM/editor surface;
+3. the behavior only exists through React node props or components.
+
+Grouping already-authored complete plugins is not a plugin. Package roots must
+not export named plugin-array `*Kit` presets, including from facade packages.
+Keep that product choice in an app or registry kit array; packages export or
+reexport the individual descriptors. Encode truly inseparable structure through
+one honest descriptor's `dependencies`, not a package array.
+
+### Plite plugin
+
+Plate constructors expose genuine editor-wide Plite substrate through flat
+native fields such as `commands`, `corrections`, `contributions`, `on`, and
+`readMiddleware`. Never hide those fields in a nested `plugin` object.
+
+Use `definePlugin` from `plitejs` only for an independently reusable standalone descriptor
+that composes as a dependency. Plate consumers import it through `platejs`;
+Plate implementation imports its owning facade leaf. Only a raw Plite owner
+authors directly against `plitejs`. If several Plate
+plugins need the same generic primitive, that is evidence for a Plite owner,
+not a shared Plate helper dump.
+
+### Mapping contribution
+
+Keep a plugin's semantic format map in its owner. Author it only through the
+constructor's context-bound
+`formats: ({ defineFormats }) => defineFormats(map)` callback, or
+`defineFormats(TargetPlugin, map)` inside that callback when contributing to a
+foreign descriptor. The context helper is the inference owner and injects
+foreign targets; a format map does not earn another file, builder stage, or
+global helper. Keep it in `.extend()` only when it consumes a real capability
+introduced by an earlier stage.
+
+Select each Markdown mapping's source with one of `node` (a standard MDAST
+kind, which types the decoded `node`) or `tag` (a registered tag, plus
+`nestedTags` for tags read only inside it). For a custom Plate-owned element
+tag, destructure `schema: { type }` from the mapping context and use it for
+`tag`, the decoded element `type`, and the encoded tag `name`. Keep external
+MDAST kinds and HTML tag names literal. Migrate old persisted tags before
+mapping dispatch instead of accepting two identities.
+Resolve every other synthesized Plate wrapper or fallback through the installed
+application schema; use literals only for external format nodes or when the
+corresponding Plate plugin is genuinely absent.
+Start with a declaration: `markdown: { tag: type }` lets the runtime build the
+element, convert its non-metadata properties as attributes (own properties
+first, list properties never) and traverse children by the content model;
+`attributes: { url: 'src' }` renames owned properties on the wire. Write
+`decode`/`encode` only for a real format difference, such as Image's
+representation choice or Date's normalization. A custom encoder writes node
+attributes with `encodeNodeAttributes()`, or chosen values with
+`encodeAttributes()`, which claims each property whose attribute the returned
+output keeps; it claims anything else its output carries with
+`preserve(...ownedKeys)`. Unclaimed content properties report
+`markdown-property-omitted`. HTML follows the same claim law: an element
+encoder, including `createsElement`, or an encoder that receives `values`
+claims what it writes with `preserve(...ownedKeys)`; a mark or property
+mapping that receives one `value` claims it by returning output that writes
+it. A decoder claims the Plate attributes its result represents with
+`preserve(...names)`. A `createsElement` mapping writes around the HTML of
+its other targets. Unclaimed content properties and unclaimed Plate
+attributes report `html-unsupported-content` with `kind: 'attribute'`. Read custom tag attributes with
+`readTagAttributes().properties`; the runtime codec follows the schema property
+kind, so features never parse or coerce attribute strings. Return
+`refuse(message)` for input the mapping cannot represent; throw only for
+programmer or configuration faults. A plugin whose schema declares a `mark`
+maps a mark, with no flag: `{ node: 'strong' }`, `{ tag: 'kbd' }`,
+`{ tag: 'sub', value: 'sub' }` or `{ tag: 'span', style: 'color' }`. The first
+declaration whose `value` matches writes the mark; `wrap` and a value-returning
+`decode` remain for real exceptions. The runtime composes every mark on the
+selector and decodes the children once. Decode contexts call inherited
+persisted text properties `marks`; reserve `decoration` for transient render
+state. Apply the same mapping identity checks to
+constructor and justified staged contributions.
+Keep configurable custom tag mappings on their schema-owning plugin; a foreign
+target mapping cannot bind the target's final application identity.
+Enforce the available identity legs on decode-only and encode-only mappings. For
+phrasing-only wrappers, decode external paragraph children directly instead of
+unwrapping a decoded Plate element.
+Keep fixed external source/name literals without weakening decoded Plate
+identity. Spread decoded attribute properties before structural `children` and
+`type`.
+
+### Capability contribution
+
+Choose each field by the [capability boundary protocol](./capabilities.md#capability-boundary-protocol);
+`formats` holds semantic node mappings and `dataTransferFormats` whole-payload
+MIME negotiation.
+
+Put every independent contribution in the constructor. Use `.extend()` only
+for imported/prebuilt adaptation, a shared factory unavailable to the
+constructor, or a real earlier-capability type dependency. Keep `.configure()`
+terminal and non-widening.
+
+Write the complete chain at its public export. Before keeping any private
+plugin constant, inspect its production references. `typeof`, `ElementOf`,
+`DefinitionOf`, and one downstream `.extend()` / `.configure()` chain are one
+owner, not reuse. Derive public types after the final export. If the final type
+is needed by a later capability, use a direct `.extend(({ plugin }) => ...)`
+stage, derive the local node shape from that stage, and keep exact option
+generics private. Export the schema-derived public node/options aliases only
+after the final descriptor. Schema-contributed property capabilities use
+`ElementWith` / `TextWith`; malformed or open-world algorithms keep broad nodes
+and narrow consumed properties at runtime. If declaration emit still recurses
+through package helpers or hooks, repair the generic or declaration boundary
+instead of creating a structural AST mirror, shadow plugin descriptor, or
+widened public type. A generic factory constrained to a required schema
+must receive required flat `schema.type` / `schema.key`; optional handles are a
+Plate foundation `PluginAuthorSchemaView` bug, not permission for an assertion or guard.
+For a context-bound reusable factory, keep the installed-plugin editor in the
+authoring callback only and project its public factory/result to a portable
+contract. Fix an internal-editor declaration leak at the Plate foundation return boundary,
+not with package-level editor aliases, reconstructed rule types, annotations,
+or casts.
+
+## File Owners
+
+### Plugin owner
+
+One plugin file may own:
+
+- plugin declaration and real public contract types;
+- initial state, selectors, and schema/parser/mapping callbacks;
+- API, read, and update builders;
+- commands, corrections, decorators, normalizers, matchers, and prefixless
+  `on` callbacks;
+- plugin-only constants and implementation helpers.
+
+File length is irrelevant. Extract only when another durable owner exists.
+
+### Component family owner
+
+One `<Family>.tsx` may own exported primitives plus family-only subcomponents,
+variants, constants, render helpers, and direct component-local hook calls.
+
+A sibling import within the same family is internal composition, not reuse.
+
+### Hook or state owner
+
+Use `plate-ui` as the source of truth. A family gets zero or one
+`use<Family>.ts[x]` semantic controller, only when multiple family members or
+surfaces share real lifecycle. Do not create subcomponent hooks,
+state-hook/prop-hook pipelines, or public prop bags. Create a provider/store
+file only for independent lifecycle or cross-family reuse; otherwise keep one
+private family context.
+
+### Test-family owner
+
+Keep one `<FooPlugin>.<family>.spec.tsx` for one behavior family. Separate slow
+or integration proof only when measured runtime or an independent proof
+boundary justifies it.
+
+## False Ownership Evidence
+
+None of these justify another source file:
+
+- public export or direct import;
+- documentation entry;
+- old filename or barrel;
+- tests;
+- line count or readability preference;
+- implementation kind such as query, transform, hook, or utility;
+- multiple callers that can use the owning scoped API;
+- hypothetical future reuse.
+
+For React behavior, an intermediate package component, adapter, barrel, or
+reexport is not a production owner. Trace terminal product consumers. If all of
+them are copied registry UI and the behavior is UI/product composition, move
+the complete hook/store/provider/hotkey/plugin-plugin owner to `plate-ui`.
+
+## File Placement
+
+- Keep feature `src/react` roots flat unless a directory is a durable subsystem
+  with several cross-family owners.
+- Do not create `internal/` merely because code is private. Privacy is not
+  ownership.
+- Do not create taxonomy folders merely to shorten a large owner file.
+- Delete obsolete helper files and regenerate barrels after colocation.
+
+## Layer Check
+
+Before writing code, answer:
+
+1. Which behavior is generic Plite substrate?
+2. Which behavior is Plate plugin/product composition?
+3. Which one file owns each single-owner behavior?
+4. Which proposed extraction has a real independent consumer graph?
+5. Which public shape needs a `best-api` verdict?
+6. Which path grows with nodes, plugins, subscribers, listeners, renders,
+   queries, DOM units, or another repeated unit?
+7. Where is the passing pre-acceptance Benchmark receipt for that path, or the
+   live-source proof that runtime scale is N/A?

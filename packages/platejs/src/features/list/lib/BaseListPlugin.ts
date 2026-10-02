@@ -3,6 +3,7 @@ import {
   defineInputRule,
   definePlugin,
   editorCommands,
+  editorReads,
   ElementApi,
   getInjectMatch,
   matchBlockStart,
@@ -10,6 +11,7 @@ import {
   PLUGINS,
   property,
   schema,
+  SelectionApi,
   target,
   TextApi,
   type DefinitionOf,
@@ -194,6 +196,114 @@ const isListItem = (node: Element) => isListType(node.listType);
 
 const getListIndent = (node: Element) =>
   typeof node.indent === 'number' ? node.indent : 1;
+
+// Per sibling array and indent, the index of the last list item deeper than
+// the indent in the unbroken run starting at each asked sibling, or -1 when
+// that sibling breaks the run. A lookup walks a run once and records every
+// sibling in it, so hovers and keyboard steps never walk a family twice and
+// never read siblings outside the run they ask about.
+const RUN_ENDS = new WeakMap<
+  readonly Descendant[],
+  Map<number, Map<number, number>>
+>();
+
+const runEndAt = (
+  siblings: readonly Descendant[],
+  indent: number,
+  start: number
+) => {
+  let byIndent = RUN_ENDS.get(siblings);
+
+  if (!byIndent) {
+    byIndent = new Map();
+    RUN_ENDS.set(siblings, byIndent);
+  }
+
+  let ends = byIndent.get(indent);
+
+  if (!ends) {
+    ends = new Map();
+    byIndent.set(indent, ends);
+  }
+
+  const known = ends.get(start);
+
+  if (known !== undefined) return known;
+
+  let index = start;
+
+  while (index < siblings.length && !ends.has(index)) {
+    const node = siblings[index];
+
+    if (
+      !ElementApi.isElement(node) ||
+      !isListItem(node) ||
+      getListIndent(node) <= indent
+    ) {
+      break;
+    }
+    index += 1;
+  }
+
+  const joined = ends.get(index);
+  const last = joined !== undefined && joined >= 0 ? joined : index - 1;
+
+  for (let visited = start; visited < index; visited += 1) {
+    ends.set(visited, last);
+  }
+  if (index === start) ends.set(start, -1);
+
+  return index === start ? -1 : last;
+};
+
+const expandListFamilies = (
+  state: Pick<EditorCoreStateView, 'key' | 'nodes'>,
+  entries: ReadonlyArray<NodeEntry<Element>>
+) => {
+  const expandedEntries: Array<NodeEntry<Element>> = [];
+  const processedKeys = new Set<NodeKey>();
+
+  entries.forEach(([, path]) => {
+    const liveEntry = state.nodes.get(path, {
+      match: ElementApi.isElement,
+    });
+
+    if (!liveEntry) return;
+    const [node] = liveEntry;
+    const key = state.key(path);
+
+    if (!key || processedKeys.has(key)) return;
+    expandedEntries.push(liveEntry);
+    processedKeys.add(key);
+    const parentIndent = getListIndent(node);
+
+    if (!isListItem(node)) return;
+    let currentPath = path;
+
+    while (true) {
+      const nextPath = PathApi.next(currentPath);
+      const nextNode = state.nodes.get(nextPath, {
+        match: ElementApi.isElement,
+      })?.[0];
+
+      if (!nextNode) break;
+      const nextIndent = getListIndent(nextNode);
+
+      if (!isListItem(nextNode) || nextIndent <= parentIndent) {
+        break;
+      }
+      const childKey = state.key(nextPath);
+
+      if (childKey && !processedKeys.has(childKey)) {
+        expandedEntries.push([nextNode, nextPath]);
+        processedKeys.add(childKey);
+      }
+      currentPath = nextPath;
+    }
+  });
+
+  return expandedEntries;
+};
 
 const normalizeListStyle = (
   type: ListType,
@@ -1167,53 +1277,8 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               : undefined
           );
         },
-        expandItemsWithChildren: (
-          entries: ReadonlyArray<NodeEntry<Element>>
-        ) => {
-          const expandedEntries: Array<NodeEntry<Element>> = [];
-          const processedKeys = new Set<NodeKey>();
-
-          entries.forEach(([, path]) => {
-            const liveEntry = state.nodes.get(path, {
-              match: ElementApi.isElement,
-            });
-
-            if (!liveEntry) return;
-            const [node] = liveEntry;
-            const key = state.key(path);
-
-            if (!key || processedKeys.has(key)) return;
-            expandedEntries.push(liveEntry);
-            processedKeys.add(key);
-            const parentIndent = getListIndent(node);
-
-            if (!isListItem(node)) return;
-            let currentPath = path;
-
-            while (true) {
-              const nextPath = PathApi.next(currentPath);
-              const nextNode = state.nodes.get(nextPath, {
-                match: ElementApi.isElement,
-              })?.[0];
-
-              if (!nextNode) break;
-              const nextIndent = getListIndent(nextNode);
-
-              if (!isListItem(nextNode) || nextIndent <= parentIndent) {
-                break;
-              }
-              const childKey = state.key(nextPath);
-
-              if (childKey && !processedKeys.has(childKey)) {
-                expandedEntries.push([nextNode, nextPath]);
-                processedKeys.add(childKey);
-              }
-              currentPath = nextPath;
-            }
-          });
-
-          return expandedEntries;
-        },
+        expandItemsWithChildren: (entries: ReadonlyArray<NodeEntry<Element>>) =>
+          expandListFamilies(state, entries),
         isActive: ({
           style,
           type,
@@ -1687,6 +1752,63 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           }
         },
       },
+    ],
+  })
+  .extend({
+    readMiddleware: ({ around }) => [
+      around(editorReads.transfer.source, ({ next, state }) => {
+        const selection = next();
+        const entries = selection.paths.flatMap((path) => {
+          const entry = state.nodes.get(path, { match: ElementApi.isElement });
+
+          return entry ? [entry] : [];
+        });
+
+        return entries.some(([node]) => isListItem(node))
+          ? SelectionApi.nodes(
+              expandListFamilies(state, entries).map(([, path]) => path) as [
+                Path,
+                ...Path[],
+              ]
+            )
+          : selection;
+      }),
+      around(editorReads.transfer.landing, ({ input, next, state }) => {
+        const { edge, payload, target: landingTarget } = input;
+
+        if (payload.kind !== 'nodes') return next();
+
+        const [first] = payload.nodes;
+
+        if (!first || !ElementApi.isElement(first) || !isListItem(first)) {
+          return next();
+        }
+
+        const parent = landingTarget[1].slice(0, -1);
+        const siblings = state.nodes.children(parent);
+        const indent = getListIndent(first);
+        const moving = new Set<Descendant>(payload.nodes);
+        let index =
+          (landingTarget[1].at(-1) as number) + (edge === 'after' ? 1 : 0);
+        let last = -1;
+
+        while (index < siblings.length) {
+          if (moving.has(siblings[index])) {
+            index += 1;
+            continue;
+          }
+          const end = runEndAt(siblings, indent, index);
+
+          if (end < 0) break;
+          last = end;
+          index = last + 1;
+        }
+        while (last >= 0 && moving.has(siblings[last])) last -= 1;
+
+        const key = last >= 0 && state.key([...parent, last]);
+
+        return key ? { edge: 'after' as const, key } : next();
+      }),
     ],
   });
 

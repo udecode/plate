@@ -42,6 +42,8 @@ export {
   target,
   TextApi,
   toEditorCoreStateView,
+  transfer,
+  transferVeto,
   txRead,
   withTransactionSpecDraftRead,
 } from 'plitejs';
@@ -49,6 +51,9 @@ export {
 export type {
   Anchor,
   DefinitionOf,
+  TransferApi,
+  TransferPlugin as RuntimeTransferPlugin,
+  TransferRead,
   Descendant,
   DescendantIn,
   Editor,
@@ -215,6 +220,7 @@ export {
   isDocumentView,
   readAuthoredView,
   snapshotEditorJsonValue,
+  subscribeEditorViewState,
   withDocumentViewRead,
   type CompiledEditorSchema,
 } from 'plitejs/internal';

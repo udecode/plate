@@ -6,7 +6,6 @@ import { expect, test, type Page } from '@playwright/test';
 
 type DragOptions = {
   cancelBeforeDrop?: boolean;
-  copy?: boolean;
   dropPayload?: 'empty' | 'external' | 'source';
   editSource?: boolean;
 };
@@ -66,7 +65,6 @@ const dispatchSelectedTextDrag = async (
   sourceRoot: Awaited<ReturnType<typeof openCrossEditorDrag>>['sourceRoot'],
   {
     cancelBeforeDrop = false,
-    copy = false,
     dropPayload = 'source',
     editSource = false,
   }: DragOptions = {}
@@ -158,14 +156,6 @@ const dispatchSelectedTextDrag = async (
       if (options.dropPayload === 'external') {
         dropData.setData('text/plain', 'Delta');
       }
-      if (options.copy) {
-        dropData.dropEffect = 'copy';
-      }
-      const copyModifiers = options.copy
-        ? /Mac|iPad|iPhone|iPod/.test(navigator.platform)
-          ? { altKey: true }
-          : { ctrlKey: true }
-        : {};
       if (options.cancelBeforeDrop) {
         dragPoint.target.dispatchEvent(
           new DragEvent('dragend', {
@@ -185,7 +175,6 @@ const dispatchSelectedTextDrag = async (
           clientX: dropPoint.x,
           clientY: dropPoint.y,
           dataTransfer: dropData,
-          ...copyModifiers,
         })
       );
       dropPoint.target.dispatchEvent(
@@ -195,7 +184,6 @@ const dispatchSelectedTextDrag = async (
           clientX: dropPoint.x,
           clientY: dropPoint.y,
           dataTransfer: dropData,
-          ...copyModifiers,
         })
       );
 
@@ -218,7 +206,6 @@ const dispatchSelectedTextDrag = async (
     },
     {
       cancelBeforeDrop,
-      copy,
       dropPayload,
       editSource,
       targetLabel: 'Drag target editor',
@@ -230,7 +217,7 @@ test.describe('cross-editor selected-text drag', () => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop drag/drop proof');
   });
 
-  test('moves the source range and remains interactive', async ({ page }) => {
+  test('copies the source range and remains interactive', async ({ page }) => {
     const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
@@ -247,10 +234,10 @@ test.describe('cross-editor selected-text drag', () => {
 
       expect(payload.types).toContain('application/x-editor-fragment');
       expect(payload.text).toBe('Alpha ');
-      await expect.poll(() => source.get.modelText()).toBe('Bravo');
+      await expect.poll(() => source.get.modelText()).toBe('Alpha Bravo');
       await expect.poll(() => target.get.modelText()).toContain('Alpha ');
       await expect.poll(() => bystander.get.modelText()).toBe('Echo');
-      await expect(sourceRoot).toHaveText('Bravo');
+      await expect(sourceRoot).toHaveText('Alpha Bravo');
       await expect(targetRoot).toContainText('Alpha ');
       await expect(bystanderRoot).toHaveText('Echo');
       const targetTextAfterDrop = await target.get.modelText();
@@ -267,28 +254,7 @@ test.describe('cross-editor selected-text drag', () => {
     }
   });
 
-  test('copies when the resolved drop effect is copy', async ({ page }) => {
-    const {
-      bystander,
-      bystanderRoot,
-      source,
-      sourceRoot,
-      target,
-      targetRoot,
-    } =
-      await openCrossEditorDrag(page);
-
-    await dispatchSelectedTextDrag(sourceRoot, { copy: true });
-
-    await expect.poll(() => source.get.modelText()).toBe('Alpha Bravo');
-    await expect.poll(() => target.get.modelText()).toContain('Alpha ');
-    await expect.poll(() => bystander.get.modelText()).toBe('Echo');
-    await expect(sourceRoot).toHaveText('Alpha Bravo');
-    await expect(targetRoot).toContainText('Alpha ');
-    await expect(bystanderRoot).toHaveText('Echo');
-  });
-
-  test('degrades to copy after the source document changes', async ({
+  test('copies the dragged text present at drop after a source edit', async ({
     page,
   }) => {
     const {

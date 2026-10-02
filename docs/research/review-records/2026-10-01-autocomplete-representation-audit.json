@@ -1,0 +1,107 @@
+{
+  "id": "2026-10-01-autocomplete-representation-audit",
+  "scope": "autocomplete",
+  "kind": "review",
+  "date": "2026-10-01",
+  "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+  "model": "claude-opus-5-5",
+  "method": "best-api-review/history-v3",
+  "trigger": "User requested a last harsh audit of the completed autocomplete design plan before any adoption.",
+  "requirements": [
+    "Compose and edit native text without accepting completion during IME, including keyCode 229.",
+    "Every selectable result belongs to the current query; one owner controls input, filtering and open eligibility.",
+    "Completion uses a live target and one atomic inferred transaction, preserving rollback, stale-target refusal and one-step history.",
+    "Interaction, focus, query and popup belong to the exact mounted view and content root; remote ownership, read-only and authored projections remain correct.",
+    "Mention, slash, emoji and footnote retain their independent product catalog, ranking, insertion and focus laws.",
+    "Reconcile earlier work and keep historical execution, current source, behavior proof and adoption separate.",
+    "No product implementation, publication, search or AI product redesign in this assessment.",
+    "A transient draft must not leave a node in the shared document that no remaining collaborator can complete or cancel."
+  ],
+  "evidenceReuse": "Reused the governing audit's reproduced defects and the design plan's probe results as dated evidence. Re-read current source: the copied host keeps a shadow valueState behind startTransition, creates an uncontrolled store, guards composition only while bubbling and reimplements first-option selection and wrapping; triggerCombobox inserts the input node into the document with a userId stamp; canEdit refuses foreign authors; the four input schemas declare trigger, userId and value. The audit, plan and decision page contain no orphan or collaborator-disconnect handling. Ariakit core 0.4.15 types expose focusLoop, and Combobox autoSelect accepts 'always'.",
+  "summary": "Defer the design's native-input hardening; its model-independent defect fixes need no further design. Most of the private state the selected target adds (capture-phase composition refusal, pointer-gesture provenance, native-interaction lifetime over six cancellation causes, the autofocus and eligibility split, passive-renderer rules) exists because the query lives in a separate native input inside a void node. The plan deferred ordinary editor text on save, share, history and remount grounds, yet the current model already inserts a userId-stamped input node into the persisted, synced document, and nothing removes one whose author leaves, because canEdit refuses everyone else. It priced the alternative's behavior changes but not its own target's permanent complexity. One prototype of ordinary text with a view-local anchored range on Plite, held to IME composition, Escape suppression, remote-edit mapping, two views and one-step completion undo, decides the representation. Synchronous emoji search, footnote's offered-option predicate, stateless regex matching, typed registration and the controlled value connection are bug fixes under either model.",
+  "verdict": "defer",
+  "previous": "2026-09-30-autocomplete-query-activation-ownership",
+  "relation": "defers",
+  "reconciliation": [
+    {
+      "record": "2026-09-30-autocomplete-query-activation-ownership",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "reopens",
+      "reason": "Reopen its pursue verdict for the native-input target until the representation is settled. Retain its reproduced defects, live-key atomic completion, distinct feature policy and the rejection of a global manager, results service or InputRules takeover."
+    },
+    {
+      "record": "2026-10-01-autocomplete-query-activation-design",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "reopens",
+      "reason": "Reopen the representation choice the design deferred. Its deferral counted ordinary text's behavior changes as costs, missed that the input node is already persisted and synced under an author lock that orphans on disconnect, and never priced the native-input lifetime state its Phase 1 adds."
+    }
+  ],
+  "alternatives": [
+    "Keep or configure: build Phase 1 as designed. It loses because most of its new private state pays for the native input rather than the user job.",
+    "Change the existing API: ship only the reproduced, model-independent repairs (controlled value through the Ariakit store, synchronous emoji search, footnote offered-option predicate, stateless regex, typed trigger registration, no Ariakit select, value or hide action on completion items). It wins now and survives either representation.",
+    "Delete or inline: Ariakit autoSelect and focusLoop appear to cover the host's manual first-option effect and wrap handler; a one-test real-control comparison decides the cut. Inferred from Ariakit 0.4.15 types.",
+    "Replace the architecture: ordinary editor text with a view-local anchored range and popup deletes four input schemas, the author stamp, api.cancel (dismissal leaves literal text), native focus transfer, autofocus gating, passive-renderer rules, undo forwarding and orphaned foreign nodes. It needs proof of IME, Escape suppression, remote mapping and per-view ownership on Plite, so it is the decisive experiment rather than the selected target.",
+    "Add a primitive or move ownership: reject a global autocomplete manager, results service or InputRules takeover, as the governing review and the design did."
+  ],
+  "proofLimits": "Assessment only, from source reading. No browser, IME, provider or collaboration run. The orphaned-node failure is inferred from triggerCombobox inserting a userId-stamped node and canEdit refusing foreign authors; no peer-disconnect reproduction ran. The Ariakit autoSelect and focusLoop overlap is inferred from types. Ordinary text's IME, suppression and remote-mapping behavior on Plite is unproven; Lexical and Tiptap precedent is design evidence only. The design outcome's raw probe artifacts live in node_modules/.cache and cannot be reproduced from a fresh checkout. The design's same-family challenge did not include the Codex cross-model reviewer.",
+  "references": [
+    "docs/plans/2026-10-01-autocomplete-query-activation.md",
+    "docs/plans/2026-10-01-autocomplete-query-activation.decisions.tsv",
+    "docs/research/probes/2026-09-30-autocomplete/REPORT.md",
+    "docs/research/decisions/autocomplete-ownership.md",
+    "apps/www/src/registry/components/editor/inline-combobox.tsx",
+    "apps/www/src/registry/components/editor/mention.tsx",
+    "packages/platejs/src/features/combobox/lib/triggerCombobox.ts",
+    "packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.ts",
+    "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/inline-combobox.tsx": "14e5c23f7d4c66cf072442c7935606822400e06951a12359115443ec5072984f",
+      "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts": "29352d824c24f00cfda02baced84bfee18cc4cb43eced3396c8da3fdbeb65361",
+      "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts": "5885533c1f85db3816f8c4f5caf22d48605cfd47f0833a20c1ce2169cc1b29ba",
+      "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts": "9b426179ad8fd1a7fa7af0ed9d5dd2041167c69db574db85b98cb45283eb2ae4",
+      "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": "2903914584a4ced92491f8cf075ed65a1ba60f8f6f35dc6bded2bca60bf8bbc9",
+      "apps/www/src/registry/components/editor/mention.tsx": "20db02cb08156f62c23f4fbeaa7231cdc080c3fef53b14ce393a4b9567b17fb6",
+      "apps/www/src/registry/components/editor/slash.tsx": "6ba3a3768fa3ff6b6a9bdcd1efb852ba77c3288d5f35cfbd027534e870f992fc",
+      "apps/www/src/registry/components/editor/emoji.tsx": "b58f39b3051bbe9e29478992e0e28913f7fc3fee75db861b328d4466938d874c",
+      "apps/www/src/registry/components/editor/footnote.tsx": "80259e29efb1974152b5c4723f7246c0987462e62e43cc7ded3434ed272cb4ab",
+      "packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.spec.ts": "88c233f839a6c3ef056e9d19c202e426345563dcc130095b22eb021eab09a8b2",
+      "apps/www/tests/browser/combobox.spec.ts": "d69283882e1afcc8df1f883dd4aee5bdcc274ac04c816a77f236c63e82138ccc",
+      "packages/platejs/src/features/combobox/lib/triggerCombobox.spec.tsx": "6c34854bf19e9024ce551bd7f4bf0ce5a919d0923cd5c1dfeecc81988df93dba",
+      "packages/platejs/src/features/combobox/lib/filterWords.spec.ts": "0b3952c969655f44f54b455e3f4a6ca757bc406b50186f13316f111656f8a8f6",
+      "apps/www/src/registry/components/editor/inline-combobox.spec.tsx": "61f3c4a121f6a7bff09dd81dd2e9ce89f669dca8753d04cb80bf7194655323dd",
+      "docs/research/probes/2026-09-30-autocomplete/current-boundaries.spec.tsx": "625b0888371e4bf0dfe9b134352255f9e6bd4c8780473722bc9718c8f015b4ad",
+      "apps/www/playwright.config.ts": "580f5ac865e5c47f0de43a691e86e5779ed7a374883b8d0314d2108c3ac7c2c2",
+      "apps/www/package.json": "fc16a2f765a3b570ac544169d7c2d09e4c094a7abb5d140af2b2bcf4e40de9f4",
+      "packages/platejs/package.json": "5060e24de246ce63ccaeec93c0c629f0bed4b2c93e75d8977ef00ac26f7f05a1",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "tooling/config/tsconfig.test.json": "e83d4caa9ff5ec9b21aafd8f0a88ab826a662c8b8c922acc1c20aefc7bc8740f",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "apps/www/src/registry/hooks/use-debounce.ts": "256b01505a863d67b278345b66a9b8340faf68247028da04fab201335a4560e4",
+      "packages/platejs/src/emoji/lib/createEmojiSearch.ts": "20432336ba8ca2402da9de3635f6224dda3e2796459f7c5b05422077031f51f9",
+      "apps/www/src/registry/components/editor/select-editor.tsx": "236f074cffcbb83efc1fb913a8f20f88fe12ef8c5ee69eb0c564699ac3f58e15",
+      "apps/www/src/registry/components/editor/select-command.tsx": "ac3ec41fc0eca2bbd8a0e8165d51b3e79756ea6272edf65e7fb32d13ab2b1404",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "d4e12fc4b28bd7d6cd077be54853ee8c873e051cf9dcc93a7e6e43fd32347129",
+      "package.json": "b8ed87d615e8bc1837713cc590298496aba461a43ee5b3aa54a5913f9c11b72b",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "022099274738cf0b9d759d3f102b4952e66795071a064f222abeb4d870a6bf40",
+      ".agents/rules/best-api-review.mdc": "731017b50586e605ab26c4d4d1c79770b2757227f4ad319aa470c00f77e071bf"
+    },
+    "directories": {
+      "packages/platejs/src/features/combobox": "ef09da1b232cb267a77a6943c7b7ecf42a8991afa58c873145f12d237a06308f",
+      "packages/platejs/src/lib/plugins/input-rules": "e2e22f1de7eaf66865257c199f53f0660387c6b29cd291882b576fd64aa7e424"
+    },
+    "features": {
+      "browser/combobox": "844f45f002397039abaf2a2292bae54cd47544ba5dbe385b33994eaa11141e21",
+      "capability/combobox": "8431e3e489780079b0895f2075eca5a72560849aa266564edbc52a87f933c599",
+      "export/platejs/./combobox": "b3d3d1cbee400c9120e0e0170459bb5895c524d6a589a10ca28902f16cfc4d2f",
+      "platejs/combobox": "ef09da1b232cb267a77a6943c7b7ecf42a8991afa58c873145f12d237a06308f",
+      "ui/inline-combobox": "994bfe868addecc104ac1c7fdc8c0fccf6272d08df62dd3f90e82e3d2f689372"
+    },
+    "upstreams": []
+  }
+}

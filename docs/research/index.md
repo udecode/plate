@@ -4,6 +4,10 @@ This is the entrypoint for the compiled agent research layer.
 
 ## Feature review and prior work
 
+- [Drag library choice](../plite/research/2026-10-02-dnd-library-choice/README.md):
+  retain Plite transfer and optional copied controls; compare React DnD,
+  modern dnd-kit and Pragmatic Drag and Drop against five editor implementations.
+  A PDD replacement remains deferred pending integration and production proof.
 - [Feature review ledger](reviews.md): current-source membership, preliminary
   payoff, dependency order, AI last, and independent review/adoption/proof states.
   Only Plite core, Plite view architecture and Plate core share review groups;
@@ -21,6 +25,10 @@ This is the entrypoint for the compiled agent research layer.
   keep declarative input rules as canonical command middleware, make each rule
   attempt atomic, and cut false public executor/helper layers plus type-only
   normalization. Includes the complete 33-member audit and runtime probes.
+- [Autocomplete ownership](decisions/autocomplete-ownership.md): retain adopted
+  live-key completion and separate feature policies; pursue one mounted query
+  and activation owner, with temporary-node replacement gated by browser,
+  collaboration and scale comparison.
 - [Plite view ownership](decisions/plite-view-ownership.md): five-question audit;
   pursue removing the Widget geometry carrier and public React Runtime handle;
   keep selection, native input and accessibility responsibilities distinct.

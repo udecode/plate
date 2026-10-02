@@ -3,6 +3,7 @@ import {
   createEditor,
   definePlugin,
   schema,
+  NodeApi,
   SelectionApi,
 } from '../../../core';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
@@ -344,5 +345,60 @@ describe('BaseDetailsPlugin', () => {
       ],
       type: 'details',
     });
+  });
+});
+
+describe('details transfer landing', () => {
+  const createDetails = () =>
+    createEditor({
+      plugins,
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'sum' }], type: 'summary' },
+            { children: [{ text: 'body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+        { children: [{ text: 'loose' }], type: 'paragraph' },
+      ],
+    });
+  const detailsTexts = (editor: ReturnType<typeof createDetails>) =>
+    editor.read.children()[0].children.map((child) => NodeApi.string(child));
+
+  it('lands a block in the body after the summary', () => {
+    const editor = createDetails();
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { edge: 'after', key: editor.key([0, 0])! },
+      }).status
+    ).toBe('moved');
+    expect(detailsTexts(editor)).toEqual(['sum', 'loose', 'body']);
+  });
+
+  it('refuses a block before the summary', () => {
+    const editor = createDetails();
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { edge: 'before', key: editor.key([0, 0])! },
+      }).status
+    ).toBe('refused');
+    expect(detailsTexts(editor)).toEqual(['sum', 'body']);
+  });
+
+  it('refuses dragging the summary before it edits anything', () => {
+    const editor = createDetails();
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([0, 0])!],
+        to: { edge: 'after', key: editor.key([0, 1])! },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
+    expect(detailsTexts(editor)).toEqual(['sum', 'body']);
   });
 });

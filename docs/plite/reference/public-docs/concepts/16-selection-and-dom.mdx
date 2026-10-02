@@ -236,7 +236,9 @@ for explicit omission.
 
 ## Browser proof
 
-Selection proof should assert the layers named by the claim.
+Selection proof should assert the layers named by the claim. The app under
+test installs the browser handle first, as
+[Editing Behavior](15-editing-behavior#browser-proof) shows.
 
 ```tsx
 import { openExample } from "@platejs/test/playwright";

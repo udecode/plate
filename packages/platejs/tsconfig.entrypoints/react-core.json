@@ -34,6 +34,7 @@
     "../src/react/features/table/**/*",
     "../src/react/features/tag/**/*",
     "../src/react/features/toc/**/*",
+    "../src/react/features/combobox/**/*",
     "../src/react/features/resizable/**/*",
     "../src/**/*.spec.*",
     "../src/**/*.test.*",

@@ -81,7 +81,6 @@ declare global {
       hlic: HyperscriptIntrinsicAttributes;
       hmediaembed: HyperscriptIntrinsicAttributes;
       hmention: HyperscriptIntrinsicAttributes;
-      hmentioninput: HyperscriptIntrinsicAttributes;
       hnli: HyperscriptIntrinsicAttributes;
       hol: HyperscriptIntrinsicAttributes;
       hp: HyperscriptIntrinsicAttributes;
@@ -135,7 +134,6 @@ export const elements = {
   hlic: { type: 'listItemContent' },
   hmediaembed: { type: 'mediaEmbed' },
   hmention: { type: 'mention' },
-  hmentioninput: { type: 'mentionInput' },
   hnli: { type: 'nli' },
   hol: { type: 'numberedList' },
   hp: { type: 'paragraph' },
@@ -174,7 +172,6 @@ const defaultTextElementCreators = {
   himg: createElementWithDefaultText('image'),
   hmediaembed: createElementWithDefaultText('mediaEmbed'),
   hmention: createElementWithDefaultText('mention'),
-  hmentioninput: createElementWithDefaultText('mentionInput'),
   hplaceholder: createElementWithDefaultText('placeholder'),
   hvideo: createElementWithDefaultText('video'),
 } satisfies HyperscriptCreators<Element>;

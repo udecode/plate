@@ -28,7 +28,7 @@ Record `## Interaction Coverage` before closure: `first-interaction`,
 reload, warmup, or viewport changes. Page-scrolling proof includes the outer
 page and embedded scrollers at first exposure and after settlement. Keep
 extension/profile evidence with the real reporter host; a clean-browser result
-cannot replace it. A reporter contradiction reopens coverage through Patch.
+cannot replace it. A reporter contradiction reopens coverage through `verify`'s failed claimed fix recovery.
 
 Resolve every lane's applicability before executing the first lane. Workflow
 status advances as one ordered prefix: completed rows, at most one active row,
@@ -37,8 +37,8 @@ product smoke; it does not authorize skipping the ordered attribution lanes.
 
 ## Embedded Architecture Probe
 
-When `best-api`, `task`, `plate-plan`, `plite-plan`,
-`plate-plugin-creator`, `plate-feature`, or `architecture-cleanup` needs scale
+When `best-api`, `plate-architecture`, a plan,
+`plate-plugins` or the Refactoring playbook needs scale
 evidence before accepting a target, run the smallest decisive subset of this
 methodology inside that owner's active plan. This is a design falsification
 probe, not a comprehensive Benchmark completion claim.
@@ -125,8 +125,13 @@ comparison signature, and artifact paths to still match the measured packets.
 
 Use any `*_SKIP_BUILD=1` benchmark flag only after a successful fresh build
 from the exact measured runtime source. If runtime, example, package export,
-fixture, or injected browser-handle code changed, rerun once without skip-build
-before trusting the artifact.
+fixture, or browser-handle code changed, rerun once without skip-build before
+trusting the artifact.
+
+A benchmark page that reads the browser handle calls `installBrowserHandle()`
+before its first mount, which also keeps the kernel trace. Report that
+trace-retaining result apart from a DOM-only production control such as
+`pnpm --filter www perf:editor` against a build without the handle.
 
 ## Two Comparison Classes
 
@@ -166,6 +171,11 @@ Editing rows:
 
 Programmatic `insertText`, transforms, or transaction timing are owner probes.
 They do not prove real keyboard latency.
+
+Start an input clock from a `beforeinput` listener on `window` in the capture
+phase, because an editor handler that stops immediate propagation silences
+element listeners. A sample without that start is invalid; never fall back to
+a later timestamp.
 
 Report sample count, warmup count, raw artifact path, p50, p75, p95, p99 when
 sample size supports it, max, absolute delta, relative delta, and measured
@@ -217,58 +227,11 @@ Examples of causal intervention:
 A flame chart, broad diff, correlation, or one suspicious function is not a
 causal intervention.
 
-## Iteration Protocol
+## Run Lifecycle
 
-When the cause becomes conclusive:
-
-1. Give the cause a stable ID. Mark every completed diagnostic prefix row `complete`, the active cause lane
-   `red`, and later applicable lanes `paused` or `pending`. Lane status records
-   workflow progress; metric verdicts live in Evidence and the packet ledger.
-2. Validate the plan.
-3. Resolve the durable fix decision before product edits. Classify the fix as
-   `internal-implementation`, `correctness`, `public-api`, or
-   `runtime-architecture`. Public API and runtime architecture run `best-api`
-   from the ideal target, then `plite-plan`, `plate-plan`, or both for adoption.
-4. Choose exactly one implementation owner for the accepted target. A bounded
-   package owner may implement directly; cross-owner execution may use `task autonomous`.
-   Before stability, hard-cut compatibility when that buys materially better
-   lasting value. Preserve only correctness, security, serialized-data,
-   native-behavior, or runtime law; migration effort, compiler difficulty, old
-   callers, and current machinery do not vote on the target.
-5. Run the exact original benchmark command before broad checks; a nearby
-   target or replacement command is not the same rerun.
-6. Run the exact original correctness command. Record both rerun outcomes as structured
-   `pass: <evidence>` or `fail: <evidence>` fields; commands alone cannot turn
-   the cause green.
-7. If the metric or correctness remains red, continue the same lane. Mark the
-   cause invalidated when evidence disproves it. Persist the failed benchmark
-   result in Cause History and keep that lane `pending` or `in_progress`; an
-   invalidated cause never completes its lane.
-8. If both pass, append a `kept` Cause History row with the durable fix
-   decision, causal evidence, pre-fix correctness, and both successful post-fix
-   results; mark the cause lane complete and set `resume-lane` to the first
-   unfinished applicable row in the full inventory.
-9. Validate the plan again, resume that row, then reset the current checkpoint
-   to `none` without deleting Cause History.
-
-Do not rerun all expensive lanes after every fix. Do not skip the exact red
-lane and call a different green benchmark proof.
-
-## Fix Ownership
-
-- lying/stale/unfair measurement -> benchmark target, runner, fixture, host, or
-  metric owner first;
-- straightforward internal performance defect -> Benchmark applies and proves
-  the fix;
-- behavior/correctness defect or missing oracle -> `patch`, then Benchmark reruns;
-- public API or runtime architecture -> `best-api` chooses the best long-term
-  target, then `plite-plan`, `plate-plan`, or both own adoption; a bounded
-  package owner implements directly or `task autonomous` supervises broad execution;
-- multiple measured optimization hypotheses after one target is selected ->
-  Benchmark may use `codex-autoresearch` as packet machinery while retaining
-  lane/cause ownership;
-- architecture/code-shape cleanup without a measured owner ->
-  `architecture-cleanup`, then return to the same benchmark lane.
+The Perf issue playbook (`.agents/playbooks/perf-issue.md`) owns what happens
+once a cause is conclusive: the iteration protocol, fix ownership, the exact
+reruns, resume and completion.
 
 ## Artifact Contract
 
@@ -292,20 +255,3 @@ Each measured packet records:
 
 Keep this compact in the active Benchmark plan and durable benchmark artifact.
 Do not create another target registry or permanent benchmark ledger.
-
-## Completion
-
-An early conclusive cause is a successful diagnostic checkpoint, not completion.
-
-The Benchmark goal completes only when:
-
-- every applicable default lane is complete or N/A with a concrete reason;
-- Cause History records every kept, invalidated, reverted, quarantined, or
-  deferred cause with its durable fix decision; every kept fix has explicit
-  successful benchmark and correctness results; a no-cause run records one
-  explicit `none` row;
-- the current cause checkpoint is reset to `none` after its terminal history
-  row is recorded;
-- final candidate/baseline identities still match the measured artifacts;
-- the Benchmark validator passes with `--complete`;
-- the Autogoal plan checker and required review pass.

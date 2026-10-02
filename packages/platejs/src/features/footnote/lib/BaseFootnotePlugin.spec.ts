@@ -6,9 +6,9 @@ import {
   type Selection,
   type Value,
 } from '../../../core';
+import { BaseTablePlugin } from '../../table/lib/BaseTablePlugin';
 import {
   BaseFootnoteDefinitionPlugin,
-  BaseFootnoteInputPlugin,
   BaseFootnotePlugin,
 } from './BaseFootnotePlugin';
 
@@ -36,29 +36,10 @@ describe('BaseFootnotePlugins', () => {
     ).toThrow(/ref.*validation/i);
   });
 
-  it('declares the input as an exact required Base dependency', () => {
-    expect(BaseFootnotePlugin.dependencies).toEqual([BaseFootnoteInputPlugin]);
-  });
-
-  it('rejects a disabled required footnote-input dependency', () => {
-    expect(() =>
-      createEditor({
-        plugins: [
-          BaseFootnotePlugin,
-          BaseFootnoteInputPlugin.configure({ enabled: false }),
-        ],
-      })
-    ).toThrow(
-      /footnote.*disabled.*footnoteInput|footnoteInput.*disabled.*footnote/i
-    );
-  });
-
   it('configures footnote reference as an inline void element', () => {
     const editor = createEditor({
       plugins: [BaseFootnotePlugin],
     });
-    const state = editor.plugin(BaseFootnotePlugin).store.get();
-
     expect(
       editor.read.schema.element(BaseFootnotePlugin)?.behavior.inline
     ).toBe(true);
@@ -68,20 +49,6 @@ describe('BaseFootnotePlugins', () => {
     expect(
       editor.read.schema.element(BaseFootnotePlugin)?.behavior.voidKind
     ).toBe('inline');
-    expect(state.trigger).toBe('^');
-    expect(state.triggerPreviousCharPattern?.test('[')).toBe(true);
-    expect(state.triggerPreviousCharPattern?.test('x')).toBe(false);
-    expect(state.createComboboxInput?.('^')).toEqual({
-      children: [{ text: '' }],
-      type: 'footnoteInput',
-    });
-    expect(
-      editor.read.schema.element(BaseFootnoteInputPlugin)?.behavior
-    ).toMatchObject({
-      inline: true,
-      void: true,
-      voidKind: 'inline',
-    });
     expect(
       editor.read.schema.getElementBehavior({
         children: [{ text: '' }],
@@ -100,23 +67,6 @@ describe('BaseFootnotePlugins', () => {
         ],
       })
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
-  });
-
-  it('creates transient inputs with the configured schema type', () => {
-    const editor = createEditor({
-      plugins: [BaseFootnotePlugin],
-      schema: {
-        overrides: [
-          schema.override(BaseFootnoteInputPlugin, {
-            element: { type: 'customFootnoteInput' },
-          }),
-        ],
-      },
-    });
-
-    expect(
-      editor.plugin(BaseFootnotePlugin).store.get('createComboboxInput')('^')
-    ).toMatchObject({ type: 'customFootnoteInput' });
   });
 
   it('configures footnote definition as a block element', () => {
@@ -258,41 +208,6 @@ describe('BaseFootnotePlugins', () => {
     });
   });
 
-  it('typing "^" after "[" inserts a footnote combobox input', () => {
-    const editor = createEditor({
-      plugins: [BaseFootnotePlugin],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      },
-      initialValue: [
-        {
-          children: [{ text: '[' }],
-          type: 'paragraph',
-        },
-      ],
-    });
-
-    editor.update.text.insert('^');
-
-    expect(editor.read.value().children).toMatchObject([
-      {
-        children: [
-          { text: '[' },
-          {
-            children: [{ text: '' }],
-            type: 'footnoteInput',
-          },
-          { text: '' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
-  });
-});
-
-describe('BaseFootnotePlugin read', () => {
   it('stays current across text edits and footnote insertion', () => {
     const editor = createEditor({
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
@@ -617,26 +532,25 @@ describe('BaseFootnotePlugin updates', () => {
     ]);
   });
 
-  it('removes a matching trigger in the insertion transaction', () => {
+  it('keeps the caret after a reference inserted at the start of text', () => {
     const editor = createEditor({
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
       selection: {
         kind: 'text',
-        anchor: { offset: 4, path: [0, 0] },
-        focus: { offset: 4, path: [0, 0] },
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'abc[' }], type: 'paragraph' }],
+      initialValue: [{ children: [{ text: ' and more' }], type: 'paragraph' }],
     });
 
-    editor.update.footnote.insert({
-      focusDefinition: false,
-      trigger: '[',
-    });
+    editor.update.footnote.insert({ focusDefinition: false });
 
-    expect(editor.read.text.string([0])).toBe('abc');
     expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({
-      ref: '1',
       type: 'footnoteReference',
+    });
+    expect(editor.read.selection()?.anchor).toEqual({
+      offset: 0,
+      path: [0, 2],
     });
   });
 
@@ -992,3 +906,59 @@ describe('BaseFootnotePlugin updates', () => {
     });
   });
 }
+
+describe('footnote definition transfer landing', () => {
+  const createWithTable = () =>
+    createEditor({
+      plugins: [
+        BaseFootnotePlugin,
+        BaseFootnoteDefinitionPlugin,
+        BaseTablePlugin,
+      ],
+      initialValue: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    { children: [{ text: 'cell' }], type: 'paragraph' },
+                  ],
+                  type: 'tableCell',
+                },
+              ],
+              type: 'tableRow',
+            },
+          ],
+          type: 'table',
+        },
+        {
+          children: [{ children: [{ text: 'note' }], type: 'paragraph' }],
+          ref: '1',
+          type: 'footnoteDefinition',
+        },
+      ] as Value,
+    });
+
+  it('refuses a definition inside a table cell', () => {
+    const editor = createWithTable();
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { edge: 'after', key: editor.key([0, 0, 0, 0])! },
+      }).status
+    ).toBe('refused');
+  });
+
+  it('moves a definition among root blocks', () => {
+    const editor = createWithTable();
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { edge: 'before', key: editor.key([0])! },
+      }).status
+    ).toBe('moved');
+  });
+});

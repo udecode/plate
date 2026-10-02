@@ -114,6 +114,18 @@ export type SelectionRectSnapshot = {
   height: number;
 };
 
+/**
+ * How a Playwright project delivers `editor.clipboard.pasteText` and `pasteHtml`: `'native'` writes the system
+ * clipboard and presses the paste shortcut, `'event'` dispatches a synthetic paste event, and `'handle'` inserts through
+ * the page handle as a stand-in. Every paste fails when its transport did not apply it.
+ */
+export type BrowserClipboardTransport = 'event' | 'handle' | 'native';
+
+/** Project `use` options the editor browser harness reads. */
+export type BrowserTestOptions = {
+  clipboardTransport?: BrowserClipboardTransport;
+};
+
 /** Native event categories recorded by the browser trace helper. */
 export type BrowserNativeEventTraceType =
   | 'beforeinput'
@@ -121,6 +133,8 @@ export type BrowserNativeEventTraceType =
   | 'compositionstart'
   | 'compositionupdate'
   | 'input'
+  | 'keydown'
+  | 'pointerdown'
   | 'selectionchange';
 
 /** DOM node summary captured in a native event trace. */
@@ -198,11 +212,23 @@ export type BrowserNativeEventTraceAnomaly = {
 
 /** One recorded native browser event with selection and DOM evidence. */
 export type BrowserNativeEventTraceEntry = {
+  /** Viewport x in CSS pixels for pointerdown entries. */
+  clientX: number | null;
+  /** Viewport y in CSS pixels for pointerdown entries. */
+  clientY: number | null;
   data: string | null;
   domDelta: BrowserNativeEventTraceDOMDelta | null;
   inputType: string | null;
   isComposing: boolean | null;
+  /** False for events a script dispatched; true for browser-delivered input. */
+  isTrusted: boolean;
+  /** `KeyboardEvent.key` for keydown entries. */
+  key: string | null;
+  /** `KeyboardEvent.keyCode` for keydown entries; 229 while an IME owns the key. */
+  keyCode: number | null;
   selection: BrowserNativeEventTraceSelectionSnapshot;
+  /** Increases by one per recorded entry from the trace start, so entries stay ordered after the cap trims older ones. */
+  seq: number;
   targetRanges: BrowserNativeEventTraceTargetRangeSnapshot[];
   timestamp: number;
   type: BrowserNativeEventTraceType;
@@ -1399,7 +1425,13 @@ export type BrowserEditorHarness = {
       text: string;
     }) => Promise<void>;
     pasteNativeText: (text: string) => Promise<void>;
+    /**
+     * Paste through the project's `clipboardTransport`, failing when the paste
+     * does not apply. Clears the kernel trace first, so the trace afterwards
+     * holds only this paste.
+     */
     pasteText: (text: string) => Promise<void>;
+    /** Paste HTML like `pasteText`, with `plainText` as the text flavor. */
     pasteHtml: (html: string, plainText?: string) => Promise<void>;
     assert: {
       textContains: (expected: string) => Promise<void>;

@@ -57,11 +57,8 @@ import {
   writePliteViewSelection,
 } from '../../../packages/plitejs/src/react/view-selection';
 import { getDefined } from '../../getDefined';
-import { writeBenchmarkArtifact } from './benchmark-artifact';
-import {
-  measureCohortsRoundRobin,
-  validateAndWriteStrictBenchmarkArtifact,
-} from './plite-schema-architecture-benchmark-authority';
+import { writeBenchmarkResult } from './benchmark-artifact';
+import { measureCohortsRoundRobin } from './plite-schema-architecture-benchmark-authority';
 import {
   createSchemaArchitectureCorpus,
   createSchemaArchitectureValue,
@@ -1948,10 +1945,6 @@ const result = {
     warmManyTypesNs: warmInvalidationManyTypesNs,
     warmSmallNs: warmInvalidationSmallNs,
   },
-  strictValidation: {
-    requested: strictValidationRequested,
-    status: 'measured' as 'measured' | 'passed',
-  },
   thresholdPolicy: {
     absolute:
       'Compile p95 stays below 16 ms and equivalent reconfiguration performs zero compiler runs.',
@@ -2193,17 +2186,12 @@ const validateStrictBenchmark = () => {
   );
 };
 
-if (strictValidationRequested) {
-  validateAndWriteStrictBenchmarkArtifact({
-    outputPath,
-    result,
-    validate: validateStrictBenchmark,
-  });
-} else if (outputPath !== undefined) {
-  writeBenchmarkArtifact(outputPath, `${JSON.stringify(result, null, 2)}\n`);
-}
-
-const output = `${JSON.stringify(result, null, 2)}\n`;
+const output = writeBenchmarkResult({
+  outputPath,
+  result,
+  strict: strictValidationRequested,
+  validate: validateStrictBenchmark,
+});
 
 process.stdout.write(
   `METRIC plite_schema_architecture_compile_p95_ms=${compileMs.p95}\n`

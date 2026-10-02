@@ -1,7 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { render } from '@testing-library/react';
-import * as actualDnd from 'platejs/dnd/react';
 import * as actualMedia from 'platejs/media';
 import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
@@ -10,12 +9,6 @@ const parseTwitterUrlMock = mock();
 const parseVideoUrlMock = mock();
 const parseMediaUrlMock = mock();
 const useEditorMountedMock = mock();
-const useDraggableMock = mock();
-
-mock.module('platejs/dnd/react', () => ({
-  ...actualDnd,
-  useDraggable: useDraggableMock,
-}));
 
 mock.module('platejs/media', () => ({
   ...actualMedia,
@@ -76,10 +69,8 @@ describe('VideoElement', () => {
     parseVideoUrlMock.mockReset();
     parseMediaUrlMock.mockReset();
     useEditorMountedMock.mockReset();
-    useDraggableMock.mockReset();
 
     useEditorMountedMock.mockReturnValue(true);
-    useDraggableMock.mockReturnValue({});
   });
 
   afterAll(() => {

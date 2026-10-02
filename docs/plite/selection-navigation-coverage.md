@@ -8,7 +8,7 @@ This matrix is generic editor law. It is not a content-root checklist.
 
 ## How To Use
 
-For each `patch` bug, pick the smallest honest slice that covers the bug
+For each selection or navigation bug, pick the smallest honest slice that covers the bug
 class. Add one sibling topology when the same owner likely handles it. Record
 skipped rows when the final handoff could otherwise imply broader coverage.
 
@@ -173,7 +173,7 @@ Plite route proof.
   same-point/non-overlap native composition coherence, rich text replacement,
   and WebKit compositionend cleanup, but they do not claim accepted behavior for
   app/model/remote edits that intersect the active native composition span.
-  Before runtime overlap work, `plite-plan` must accept the conflict rule and
+  Before runtime overlap work, `plate-architecture` must accept the conflict rule and
   `plite-browser` must prove a real native composition span, stale terminal
   events, follow-up typing, undo/redo, model selection, native selection, and
   event trace coherence.
@@ -193,7 +193,7 @@ Plite route proof.
   visual/native agreement instead.
 - App-level `selectstart.preventDefault()` does not currently veto Plite's
   model-owned keyboard selection extension. Do not claim WPT
-  `selectstart`-veto parity unless `plite-plan` first defines that as editor
+  `selectstart`-veto parity unless `plate-architecture` first defines that as editor
   policy and `plite-browser` adds route proof.
 - CSS vertical writing-mode editing is not declared supported behavior. Current
   ArrowUp/ArrowDown rows cover horizontal writing mode with visual line
@@ -202,7 +202,7 @@ Plite route proof.
 - Mixed bidi line-boundary extension with browser
   `Selection.modify("extend", left/right, "lineboundary")` is policy-owned.
   RTL text-unit and deletion proof do not claim mixed bidi line-boundary
-  navigation until `plite-plan` defines the expected behavior and route proof
+  navigation until `plate-architecture` defines the expected behavior and route proof
   exists.
 
 ## Coverage Claim Levels

@@ -719,7 +719,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-react-rerender-breadth-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-react-rerender-breadth",
+            "library": "slate-v2:react-rerender-breadth"
+          }
         }
       ],
       "docs": {
@@ -730,9 +735,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-rerender-breadth",
-        "evidenceKitCategory": "slate-react-rerender-breadth",
-        "evidenceKitActive": true
+        "evidenceKitId": "react-rerender-breadth"
       }
     },
     {
@@ -789,7 +792,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-react-huge-document-overlays-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-react-huge-document-overlays",
+            "library": "slate-v2:react-overlays"
+          }
         }
       ],
       "docs": {
@@ -800,9 +808,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-huge-document-overlays",
-        "evidenceKitCategory": "slate-react-huge-document-overlays",
-        "evidenceKitActive": true
+        "evidenceKitId": "react-huge-document-overlays"
       }
     },
     {
@@ -971,7 +977,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-react-active-typing-breakdown-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-react-active-typing-breakdown",
+            "library": "slate-v2:react-active-typing"
+          }
         }
       ],
       "docs": {
@@ -982,9 +993,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-active-typing-breakdown",
-        "evidenceKitCategory": "slate-react-active-typing-breakdown",
-        "evidenceKitActive": true
+        "evidenceKitId": "react-active-typing-breakdown"
       }
     },
     {
@@ -1071,7 +1080,14 @@
       "artifacts": [
         {
           "path": "tmp/slate-react-huge-document-default-browser-trace-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "browser-trace",
+            "category": "slate-react-huge-document-browser-trace",
+            "surfaceLibraries": {
+              "pliteComplete": "slate-v2:complete-dom"
+            }
+          }
         }
       ],
       "docs": {
@@ -1082,9 +1098,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-huge-document-browser-trace",
-        "evidenceKitCategory": "slate-react-huge-document-browser-trace",
-        "evidenceKitActive": true
+        "evidenceKitId": "react-huge-document-browser-trace"
       }
     },
     {
@@ -1142,7 +1156,15 @@
       "artifacts": [
         {
           "path": "tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-blocks-5000-iters-3-ops-10.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "browser-trace",
+            "category": "slate-react-huge-document-browser-trace",
+            "library": "slate:browser-trace",
+            "surfaceLibraries": {
+              "legacyChunkOn": "slate"
+            }
+          }
         }
       ],
       "docs": {
@@ -1153,9 +1175,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-huge-document-slate-browser-trace",
-        "evidenceKitCategory": "slate-react-huge-document-browser-trace",
-        "evidenceKitActive": true
+        "evidenceKitId": "react-huge-document-slate-browser-trace"
       }
     },
     {
@@ -1180,7 +1200,11 @@
       "artifacts": [
         {
           "path": "tmp/slate-browser-rich-text-replay-coverage-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "rows",
+            "category": "slate-browser-rich-text-replay-coverage"
+          }
         }
       ],
       "docs": {
@@ -1191,9 +1215,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "browser-rich-text-replay-coverage",
-        "evidenceKitCategory": "slate-browser-rich-text-replay-coverage",
-        "evidenceKitActive": true
+        "evidenceKitId": "browser-rich-text-replay-coverage"
       }
     },
     {
@@ -1218,7 +1240,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-normalization-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-core-normalization-current",
+            "library": "slate-v2:core-current"
+          }
         }
       ],
       "docs": {
@@ -1229,9 +1256,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-normalization-current",
-        "evidenceKitCategory": "slate-core-normalization-current",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-normalization-current"
       }
     },
     {
@@ -1285,7 +1310,12 @@
       "artifacts": [
         {
           "path": "tmp/plite-query-anchor-observation-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-core-query-anchor-observation",
+            "library": "slate-v2:core-current"
+          }
         }
       ],
       "docs": {
@@ -1296,9 +1326,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-query-ref-observation",
-        "evidenceKitCategory": "slate-core-query-ref-observation",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-query-ref-observation"
       },
       "thresholds": {
         "promotion": "plite_commit_query_guard_failures=0"
@@ -1358,7 +1386,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-node-transform-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-core-node-transforms",
+            "library": "slate-v2:core-current"
+          }
         }
       ],
       "docs": {
@@ -1369,9 +1402,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-node-transforms",
-        "evidenceKitCategory": "slate-core-node-transforms",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-node-transforms"
       }
     },
     {
@@ -1396,7 +1427,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-text-selection-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-core-text-selection",
+            "library": "slate-v2:core-current"
+          }
         }
       ],
       "docs": {
@@ -1407,9 +1443,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-text-selection",
-        "evidenceKitCategory": "slate-core-text-selection",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-text-selection"
       }
     },
     {
@@ -1434,7 +1468,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-editor-store-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-core-editor-store",
+            "library": "slate-v2:core-current"
+          }
         }
       ],
       "docs": {
@@ -1445,9 +1484,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-editor-store",
-        "evidenceKitCategory": "slate-core-editor-store",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-editor-store"
       }
     },
     {
@@ -1483,9 +1520,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-refs-projection",
-        "evidenceKitCategory": "slate-core-refs-projection",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-refs-projection"
       }
     },
     {
@@ -1510,7 +1545,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-clipboard-large-payload-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-clipboard-large-payload",
+            "library": "slate-v2:clipboard"
+          }
         }
       ],
       "docs": {
@@ -1521,9 +1561,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "clipboard-large-payload",
-        "evidenceKitCategory": "slate-clipboard-large-payload",
-        "evidenceKitActive": true
+        "evidenceKitId": "clipboard-large-payload"
       }
     },
     {
@@ -1589,7 +1627,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-collab-readiness-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-collab-readiness",
+            "library": "slate-v2:collab-readiness"
+          }
         }
       ],
       "docs": {
@@ -1600,9 +1643,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "collab-readiness",
-        "evidenceKitCategory": "slate-collab-readiness",
-        "evidenceKitActive": true
+        "evidenceKitId": "collab-readiness"
       }
     },
     {
@@ -1627,7 +1668,11 @@
       "artifacts": [
         {
           "path": "tmp/slate-core-huge-document-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "compare",
+            "category": "slate-core-huge-document-compare"
+          }
         }
       ],
       "docs": {
@@ -1638,9 +1683,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-huge-document-compare",
-        "evidenceKitCategory": "slate-core-huge-document-compare",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-huge-document-compare"
       }
     },
     {
@@ -1665,7 +1708,11 @@
       "artifacts": [
         {
           "path": "tmp/slate-normalization-compare-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "compare",
+            "category": "slate-core-normalization-compare"
+          }
         }
       ],
       "docs": {
@@ -1676,9 +1723,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-normalization-compare",
-        "evidenceKitCategory": "slate-core-normalization-compare",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-normalization-compare"
       }
     },
     {
@@ -1703,7 +1748,11 @@
       "artifacts": [
         {
           "path": "tmp/slate-core-observation-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "compare",
+            "category": "slate-core-observation-compare"
+          }
         }
       ],
       "docs": {
@@ -1714,9 +1763,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-observation-compare",
-        "evidenceKitCategory": "slate-core-observation-compare",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-observation-compare"
       }
     },
     {
@@ -1741,7 +1788,11 @@
       "artifacts": [
         {
           "path": "tmp/slate-rich-text-operations-compare-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "compare",
+            "category": "slate-core-rich-text-operations-compare"
+          }
         }
       ],
       "docs": {
@@ -1757,9 +1808,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-rich-text-operations-compare",
-        "evidenceKitCategory": "slate-core-rich-text-operations-compare",
-        "evidenceKitActive": true
+        "evidenceKitId": "core-rich-text-operations-compare"
       }
     },
     {
@@ -1783,7 +1832,11 @@
       "artifacts": [
         {
           "path": "tmp/slate-history-compare-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "compare",
+            "category": "slate-history-compare"
+          }
         }
       ],
       "docs": {
@@ -1798,9 +1851,7 @@
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "history-compare",
-        "evidenceKitCategory": "slate-history-compare",
-        "evidenceKitActive": true
+        "evidenceKitId": "history-compare"
       }
     },
     {
@@ -1825,7 +1876,12 @@
       "artifacts": [
         {
           "path": "tmp/plite-transaction-execution-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-transaction-execution",
+            "library": "slate-v2:transaction-execution"
+          }
         }
       ],
       "docs": {
@@ -1924,7 +1980,12 @@
       "artifacts": [
         {
           "path": "tmp/slate-history-retained-memory-benchmark.json",
-          "required": true
+          "required": true,
+          "evidence": {
+            "kind": "current",
+            "category": "slate-history-retained-memory",
+            "library": "slate-v2:history-memory"
+          }
         }
       ],
       "docs": {

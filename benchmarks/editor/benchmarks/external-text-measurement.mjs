@@ -2,21 +2,23 @@ export const mountSampling = { warmups: 3, samples: 30 };
 export const noisePolicy = { ratio: 1.6, absoluteMs: 4 };
 
 export function summarize(values) {
+  // Array.from turns holes into undefined, so sparse input fails the check.
+  const samples = Array.from(values);
   if (
-    !values.length ||
-    values.some((value) => !Number.isFinite(value) || value < 0)
+    !samples.length ||
+    samples.some((value) => !Number.isFinite(value) || value < 0)
   ) {
     throw new Error('Timing samples must be nonempty, finite and nonnegative');
   }
-  const sorted = [...values].sort((a, b) => a - b);
+  const sorted = [...samples].sort((a, b) => a - b);
   const percentile = (ratio) => sorted[Math.ceil(sorted.length * ratio) - 1];
   return {
     p50: percentile(0.5),
     p95: percentile(0.95),
     min: sorted[0],
     max: sorted.at(-1),
-    sampleCount: values.length,
-    samples: values,
+    sampleCount: samples.length,
+    samples,
   };
 }
 

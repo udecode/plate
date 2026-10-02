@@ -1,6 +1,5 @@
 'use client';
 
-import { useDraggable } from 'platejs/dnd/react';
 import {
   parseMediaUrl,
   parseTwitterUrl,
@@ -61,10 +60,6 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
     isEditorMounted && (provider === 'file' || !isVideo);
   const isTweet = embed?.provider === 'twitter';
 
-  const { isDragging, handleRef } = useDraggable({
-    element: props.element,
-  });
-
   return (
     <EditorElement
       {...props}
@@ -81,7 +76,7 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
               focused &&
                 selected &&
                 'rounded-sm ring-2 ring-ring ring-offset-2',
-              isDragging && 'opacity-50'
+              '[[data-editor-dragging]_&]:opacity-50'
             )}
             align={textAlign}
             maxWidth={isTweet ? 550 : '100%'}
@@ -103,7 +98,14 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
               />
 
               {provider !== 'file' && youtubeId && (
-                <div ref={handleRef}>
+                <div
+                  draggable
+                  onDragStart={(event) => {
+                    editor.api.dom.drag.start(event.nativeEvent, {
+                      node: props.element,
+                    });
+                  }}
+                >
                   <LiteYouTubeEmbed
                     id={youtubeId}
                     title="youtube"
@@ -128,7 +130,14 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
               )}
 
               {shouldRenderFileVideo && (
-                <div ref={handleRef}>
+                <div
+                  draggable
+                  onDragStart={(event) => {
+                    editor.api.dom.drag.start(event.nativeEvent, {
+                      node: props.element,
+                    });
+                  }}
+                >
                   {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}
                   <video
                     className="w-full max-w-full rounded-sm object-cover px-0"
@@ -139,7 +148,14 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
               )}
 
               {shouldRenderEmbedPlayer && (
-                <div ref={handleRef}>
+                <div
+                  draggable
+                  onDragStart={(event) => {
+                    editor.api.dom.drag.start(event.nativeEvent, {
+                      node: props.element,
+                    });
+                  }}
+                >
                   <ReactPlayer
                     height="100%"
                     src={unsafeUrl}

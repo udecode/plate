@@ -10,6 +10,9 @@ import {
   type EditorUpdatePolicy,
   type EditorUpdateTransaction,
   type EditorValueFromOptions,
+  transfer,
+  type TransferApi,
+  type TransferPlugin,
   type Value,
 } from '../..';
 import type { DOMEditorOptions, DOMPlugin, DOMPluginTypes } from '../../dom';
@@ -19,7 +22,9 @@ import {
   EDITOR_TO_PENDING_SELECTION,
   findEditorDOMRootRuntime,
 } from '../../dom/internal';
+import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import type { AnyEditor } from '../editable/runtime-editor-api';
+import type { ReactRuntimeEditor } from './react-editor';
 
 type AnyDOMPlugin = DOMPlugin | DOMPlugin<false> | DOMPlugin<boolean>;
 
@@ -36,6 +41,12 @@ export type ReactApi = {
   isComposing: () => boolean;
   isFocused: () => boolean;
   isReadOnly: () => boolean;
+  /**
+   * Commit pending native input, such as a finished composition, into the
+   * model. Returns false while a composition is still active or when the
+   * editor unmounts during the flush.
+   */
+  settleInput: () => boolean;
 };
 
 const createReactApi = (editor: AnyEditor): ReactApi =>
@@ -43,6 +54,10 @@ const createReactApi = (editor: AnyEditor): ReactApi =>
     isComposing: () => DOMEditor.isComposing(editor),
     isFocused: () => DOMEditor.isFocused(editor),
     isReadOnly: () => DOMEditor.isReadOnly(editor),
+    settleInput: () =>
+      getMountedEditableDOMRuntime(
+        editor as ReactRuntimeEditor
+      )?.settleInput() ?? !DOMEditor.isComposing(editor),
   });
 
 const createReactPlugin = <const TDOMPlugin extends AnyDOMPlugin>(
@@ -50,7 +65,7 @@ const createReactPlugin = <const TDOMPlugin extends AnyDOMPlugin>(
 ) =>
   definePlugin('react', {
     api: ({ editor }) => createReactApi(editor),
-    dependencies: [domPlugin],
+    dependencies: [domPlugin, transfer()],
     on: {
       commit(context) {
         if (
@@ -79,6 +94,7 @@ export const react = <const TDOMPlugin extends AnyDOMPlugin>({
 type ReactDefaultPlugins<TPlugins extends readonly unknown[]> = readonly [
   ...TPlugins,
   DOMPlugin,
+  TransferPlugin,
   ReactPlugin,
 ];
 type EditorBase<
@@ -91,7 +107,7 @@ export type Editor<
   TPlugins extends readonly unknown[] = readonly [],
 > = Omit<EditorBase<V, TPlugins>, 'api' | 'update'> & {
   readonly api: EditorBase<V, TPlugins>['api'] &
-    DOMPluginTypes['api'] & { react: ReactApi };
+    DOMPluginTypes['api'] & { react: ReactApi; transfer: TransferApi };
   update: EditorBase<V, TPlugins>['update'] & DOMPluginTypes['update'];
 };
 

@@ -5,9 +5,18 @@ import type { DOMPhaseScheduler } from '../../dom/internal';
 import type { EditableViewportScrollAlign } from '../components/editable';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { attachPliteBrowserHandle } from './browser-handle';
+import type { attachPliteBrowserHandle } from './browser-handle';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableInputController } from './input-state';
+
+// A static import would keep the handle in every production bundle.
+let attachBrowserHandle: typeof attachPliteBrowserHandle | null = null;
+
+export const registerBrowserHandle = (
+  attach: typeof attachPliteBrowserHandle
+) => {
+  attachBrowserHandle = attach;
+};
 
 export const useRuntimeBrowserHandle = ({
   browserHandleNextId,
@@ -40,11 +49,11 @@ export const useRuntimeBrowserHandle = ({
   setExplicitViewportBackedSelection: (nextValue: boolean) => void;
 }) => {
   useIsomorphicLayoutEffect(() => {
-    if (!rootRef.current) {
+    if (!rootRef.current || !attachBrowserHandle) {
       return undefined;
     }
 
-    return attachPliteBrowserHandle({
+    return attachBrowserHandle({
       browserHandleNextId,
       browserHandleRangeAnchors,
       domPhaseScheduler,

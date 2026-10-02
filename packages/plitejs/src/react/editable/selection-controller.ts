@@ -507,6 +507,15 @@ export const syncEditorSelectionFromDOM = ({
   ignoreModelSelectionPreference?: boolean;
   inputController: EditableInputController;
 }) => {
+  const epoch = inputController.domInputRuntime.compositionEpoch;
+
+  if (
+    inputController.state.isComposing &&
+    epoch?.owner === 'native' &&
+    epoch.phase === 'native-composing'
+  ) {
+    return;
+  }
   if (
     isEditableModelSelectionPreferred(inputController) &&
     !ignoreModelSelectionPreference
@@ -1434,6 +1443,7 @@ export const syncEditableDOMSelectionToEditor = ({
   if (!runtime) return;
   if (runtime.externalText.focusSelection()) return;
   if (runtime.shouldDeferCompositionSelectionExport()) return;
+  if (runtime.androidInputManagerRef.current?.hasPendingAction()) return;
   if (
     runtime.inputController.state.isNativeSelectionDragActive &&
     !runtime.inputController.state.isProjectingSelection

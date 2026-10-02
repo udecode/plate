@@ -66,6 +66,7 @@ export {
   type DOMIntegrityRepairEvidence,
 } from '../plugin/dom-integrity-observer';
 export {
+  enableKernelTraceRetention,
   selectDOMInputDefaultActionPhase,
   type DOMInputDefaultActionPhase,
   type DOMInputDefaultActionPhaseInput,

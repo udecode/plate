@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-01-ordinary-text-combobox",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-01-ordinary-text-combobox.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-01",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Open autocomplete popups over typed text instead of an inline input",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention",
+      "files": ["apps/www/src/registry/components/editor/mention.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji",
+      "files": ["apps/www/src/registry/components/editor/emoji.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-01-inline-combobox-keep-autocomplete-queries-editor-f953ab8c",
+      "kind": "behavior",
+      "summary": "Open the popup when the trigger is typed and filter on the text after it, keeping the editor focused. Enter or Tab completes the active option in one undo step, Escape keeps the typed text, and IME preedit filters without selecting.",
+      "details": [],
+      "migrationNotes": [
+        "Mount MentionCombobox, SlashCombobox, EmojiCombobox and FootnoteCombobox through each plugin's slots.afterEditable; the input elements are gone."
+      ],
+      "targets": ["inline-combobox", "mention", "slash", "emoji", "footnote"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-01",
+          "entry": "2026-10-01-ordinary-text-combobox",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

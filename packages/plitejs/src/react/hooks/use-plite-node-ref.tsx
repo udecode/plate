@@ -30,6 +30,7 @@ import {
 } from '../../dom/utils/weak-maps';
 import { AuthoredFragmentRootsContext } from '../authored-fragment-context';
 import { EditorContext } from '../context';
+import { findMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
   type Editor,
   getNodeKey as editorGetNodeKey,
@@ -555,7 +556,14 @@ export const syncChangedTextToDOM = <V extends Value>(
     if (didSyncEveryElement) {
       synced.add(key);
     } else {
-      if (requiresRemount) {
+      if (
+        requiresRemount &&
+        !elements.some((element) =>
+          findMountedEditableDOMRuntime(element)?.isCompositionDOMNodeProtected(
+            element
+          )
+        )
+      ) {
         bumpDOMTextRenderRevision(editor, nodeKey);
       }
       invalidatedNodeKeys.add(nodeKey);

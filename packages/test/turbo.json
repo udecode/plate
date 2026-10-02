@@ -26,6 +26,7 @@
       "cache": true,
       "dependsOn": [
         "lint:partition:browser",
+        "lint:partition:device",
         "lint:partition:playwright",
         "lint:partition:proof",
         "lint:partition:react",
@@ -45,6 +46,21 @@
       "inputs": [
         "src/browser/**",
         "test/browser/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:device": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/device/**",
+        "test/device/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -105,11 +121,13 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "!src/browser/**",
+        "!src/device/**",
         "!src/playwright/**",
         "!src/proof/**",
         "!src/react/**",
         "test/**",
         "!test/browser/**",
+        "!test/device/**",
         "!test/playwright/**",
         "!test/proof/**",
         "!test/react/**",
@@ -140,7 +158,10 @@
     },
     "test:partition:browser": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:browser"],
+      "dependsOn": [
+        "typecheck:partition:browser",
+        "typecheck:partition:playwright"
+      ],
       "inputs": [
         "src/browser/**",
         "test/browser/**",
@@ -210,11 +231,13 @@
       "inputs": [
         "src/**",
         "!src/browser/**",
+        "!src/device/**",
         "!src/playwright/**",
         "!src/proof/**",
         "!src/react/**",
         "test/**",
         "!test/browser/**",
+        "!test/device/**",
         "!test/playwright/**",
         "!test/proof/**",
         "!test/react/**",
@@ -234,6 +257,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:browser",
+        "typecheck:partition:device",
         "typecheck:partition:playwright",
         "typecheck:partition:proof",
         "typecheck:partition:react",
@@ -299,6 +323,32 @@
       "outputs": [
         ".turbo/entrypoint-types/browser/**",
         ".turbo/entrypoint-types/browser.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:device": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:playwright"],
+      "inputs": [
+        "src/device/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/device.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/device/**",
+        ".turbo/entrypoint-types/device.tsbuildinfo"
       ]
     },
     "typecheck:partition:playwright": {
@@ -393,6 +443,7 @@
       "inputs": [
         "src/**",
         "!src/browser/**",
+        "!src/device/**",
         "!src/playwright/**",
         "!src/proof/**",
         "!src/react/**",

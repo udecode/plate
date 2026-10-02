@@ -104,6 +104,25 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root?: RootKey
     ) => boolean;
     canContainAtRoot: (child: Descendant, root?: RootKey) => boolean;
+    /**
+     * Whether `fit` can land before child `at` of `children`, the children of
+     * `parent` (null for a root), once the `removing` indexes leave. Checks the
+     * content prefix, the landed positions and `max` on the children after the
+     * transfer; `strict` checks landed blocks without the derived schema's
+     * unknown-element allowance. A nested parent without a compiled content
+     * program refuses.
+     */
+    canPlaceAt: (
+      parent: Element | null,
+      children: readonly Descendant[],
+      fit: readonly Descendant[],
+      at: number,
+      options?: Readonly<{
+        removing?: readonly number[];
+        root?: RootKey;
+        strict?: boolean;
+      }>
+    ) => boolean;
     /** Register one trusted immutable document installed by the runtime owner. */
     adoptDocumentBaseline: (value: EditorDocumentValue) => void;
     /** Fit an external document and preserve one explicit selection through it. */
@@ -1381,6 +1400,70 @@ export const createEditorSchema = <V extends Value = Value>(
     }
 
     return parent ? canContain(parent, child) : canContainAtRoot(child, root);
+  };
+
+  const canPlaceAt: InternalEditorSchemaApi<V>['canPlaceAt'] = (
+    parent,
+    children,
+    fit,
+    at,
+    { removing = [], root = 'main', strict = false } = {}
+  ) => {
+    const schema = getDeclarativeSchema();
+    const content = parent
+      ? getCompiledElement(parent)?.content
+      : getRootContent(root);
+
+    if (!schema || !content) {
+      return !parent && fit.every((child) => canContainAtRoot(child, root));
+    }
+
+    const removed = [...removing].sort((a, b) => a - b);
+    const index = at - removed.filter((position) => position < at).length;
+    const length = children.length - removed.length + fit.length;
+
+    if (content.max !== null && length > content.max) return false;
+
+    const remaining = (position: number) => {
+      let original = position;
+
+      for (const gone of removed) {
+        if (gone <= original) original += 1;
+      }
+
+      return children[original];
+    };
+    const childAt = (position: number) =>
+      position < index
+        ? remaining(position)
+        : position < index + fit.length
+          ? fit[position - index]
+          : remaining(position - fit.length);
+    const options = { ancestors: parent ? [parent] : [], root };
+    const prefixLength = content.prefix?.length ?? 0;
+    // Nodes that shift across the prefix boundary change slot, so the window
+    // runs past the prefix by as many positions as the transfer adds or removes.
+    const shifted = Math.min(
+      length,
+      prefixLength > 0 ? prefixLength + fit.length + removed.length : 0
+    );
+
+    for (let position = 0; position < shifted; position++) {
+      if (position >= index && position < index + fit.length) continue;
+      if (
+        !contentAllowsAt(schema, content, childAt(position), position, options)
+      ) {
+        return false;
+      }
+    }
+
+    return fit.every((child, offset) => {
+      const position = index + offset;
+
+      return position < prefixLength || !strict
+        ? contentAllowsAt(schema, content, child, position, options)
+        : contentAllows(schema, content.remainder ?? content, child);
+    });
   };
 
   const createDeclarativeAndFill = (
@@ -4241,6 +4324,7 @@ export const createEditorSchema = <V extends Value = Value>(
     canContain,
     canContainAt,
     canContainAtRoot,
+    canPlaceAt,
     canonicalizeTextPropertiesAt,
     canonicalizeChildren,
     copyChildren,

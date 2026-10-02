@@ -170,9 +170,9 @@ const validateFixDecision = (decision, label, errors) => {
       `${label} internal-implementation requires decision-owner benchmark`
     );
   }
-  if (fixClass === 'correctness' && decisionOwner !== 'patch') {
+  if (fixClass === 'correctness' && decisionOwner === 'benchmark') {
     errors.push(
-      `${label} correctness requires decision-owner patch`
+      `${label} correctness belongs to the Bug fix playbook, not decision-owner benchmark`
     );
   }
 };
@@ -385,6 +385,23 @@ const parseCauseHistory = (markdown) => {
   return { rows };
 };
 
+const parseVerificationEvidence = (markdown) => {
+  const lines = markdown.split('\n');
+  const label = lines.findIndex((line) => line.startsWith('Verification evidence:'));
+
+  if (label === -1) return [];
+
+  const block = [lines[label].slice('Verification evidence:'.length)];
+  for (const line of lines.slice(label + 1)) {
+    if (line.trim()) block.push(line);
+    else if (block.some((entry) => entry.trim())) break;
+  }
+
+  return block
+    .map((line) => line.replace(/^\s*-\s*/, '').replace(/\.$/, '').trim())
+    .filter((line) => isResolved(line) && !/^none yet$/i.test(line));
+};
+
 const isNotApplicable = (value) => {
   const match = value?.match(/^n\/a:\s*(.*)$/i);
 
@@ -402,6 +419,9 @@ export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
       if (!isSuccessfulResult(result) && !isNotApplicable(result)) {
         errors.push(`Interaction Coverage requires ${field}: pass: <proof> or N/A: <reason>`);
       }
+    }
+    if (parseVerificationEvidence(markdown).length === 0) {
+      errors.push('Verification evidence must record fresh final evidence');
     }
   }
   const benchmarkSource = parseBulletSection(markdown, '## Benchmark Source');

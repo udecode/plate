@@ -28,7 +28,7 @@ docs:
 
 ### 安装
 
-`TableKit` 包含 `TablePlugin`、`TableRowPlugin`、`TableCellPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。复制的行控件需要 `DndKit`。
+`TableKit` 包含 `TablePlugin`、`TableRowPlugin`、`TableCellPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。复制的行拖拽手柄来自 `dnd` 组件，`DndKit` 负责绘制其放置指示线。
 
 ```bash
 pnpm dlx shadcn@latest add @plate/table @plate/dnd
@@ -129,7 +129,7 @@ npm install platejs @tanstack/react-virtual
 
 ### 插件配置
 
-`TablePlugin` 会安装必需的行和单元格描述符。需要配置组件时，直接添加这些描述符。复制的行渲染器需要 `DndKit`。
+`TablePlugin` 会安装必需的行和单元格描述符。需要配置组件时，直接添加这些描述符。添加 `DndKit` 以绘制复制的行拖拽手柄的放置指示线。
 
 ```tsx
 import { createEditor } from 'platejs/react';

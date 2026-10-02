@@ -159,10 +159,10 @@ mock.module('./inline-combobox', () => ({
   InlineComboboxGroup: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>
   ),
-  InlineComboboxInput: () => null,
   InlineComboboxItem: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>
   ),
+  useInlineComboboxQuery: () => '',
 }));
 
 describe('inline authored-change styling', () => {

@@ -91,14 +91,15 @@ test('does not count its own unignored receipt files', () => {
     const receiptPath = path.join(repo, 'evidence', 'receipt.json');
 
     runHelper(['capture', '--output', baselinePath], repo);
-    runHelper(
-      ['compare', '--baseline', baselinePath, '--output', receiptPath],
-      repo
-    );
-
-    const receipt = readReceipt(receiptPath);
-    assert.equal(receipt.producedFileDiff, false);
-    assert.deepEqual(receipt.changedPaths, []);
+    for (let pass = 0; pass < 2; pass += 1) {
+      runHelper(
+        ['compare', '--baseline', baselinePath, '--output', receiptPath],
+        repo
+      );
+      const receipt = readReceipt(receiptPath);
+      assert.equal(receipt.producedFileDiff, false, `compare pass ${pass + 1}`);
+      assert.deepEqual(receipt.changedPaths, []);
+    }
   } finally {
     rmSync(repo, { recursive: true, force: true });
   }
@@ -112,16 +113,21 @@ test('detects executable-bit and untracked-file changes', () => {
     const receiptPath = path.join(repo, '.git', 'receipt.json');
 
     runHelper(['capture', '--output', baselinePath], repo);
-    chmodSync(path.join(repo, 'tracked.txt'), 0o755);
     writeFileSync(path.join(repo, 'new.txt'), 'new\n');
     runHelper(
       ['compare', '--baseline', baselinePath, '--output', receiptPath],
       repo
     );
+    const untracked = readReceipt(receiptPath);
+    assert.equal(untracked.producedFileDiff, true, 'an untracked file alone is a file diff');
+    assert.deepEqual(untracked.changedPaths, ['new.txt']);
 
-    const receipt = readReceipt(receiptPath);
-    assert.equal(receipt.producedFileDiff, true);
-    assert.deepEqual(receipt.changedPaths, ['new.txt', 'tracked.txt']);
+    chmodSync(path.join(repo, 'tracked.txt'), 0o755);
+    runHelper(
+      ['compare', '--baseline', baselinePath, '--output', receiptPath],
+      repo
+    );
+    assert.deepEqual(readReceipt(receiptPath).changedPaths, ['new.txt', 'tracked.txt']);
   } finally {
     rmSync(repo, { recursive: true, force: true });
   }

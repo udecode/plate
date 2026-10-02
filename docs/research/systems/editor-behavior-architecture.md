@@ -61,7 +61,7 @@ implementation contributions. They do not map one-to-one to capabilities.
 | proven optional or replaceable capability                         | ordinary Plate plugin or Plite extension |
 | product personality and chosen defaults                           | app kit                                  |
 | public promotion decision                                         | `best-api`                               |
-| adoption and proof plan                                           | `plate-plan` or `plite-plan`             |
+| adoption and proof plan                                           | `plate-architecture`                      |
 
 ## Goals
 
@@ -389,7 +389,7 @@ For each feature family:
 1. Audit real repository callers before promoting Table clipboard behavior.
 2. Keep the complete Base and React Table presets as the default path.
 3. Route any concrete replacement proposal through `best-api design`.
-4. Hand an accepted API to `plate-plan` for adoption and proof.
+4. Hand an accepted API to `plate-architecture` for adoption and proof.
 
 ## Open Questions
 

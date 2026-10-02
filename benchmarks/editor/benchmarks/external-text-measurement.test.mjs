@@ -28,9 +28,18 @@ test('summary preserves raw sample order and rejects missing or invalid observat
     samples: values,
   });
   assert.deepEqual(values, [5, 1, 3, 2, 4]);
-  for (const invalid of [[], [Number.NaN], [Infinity], [-1]]) {
+  for (const invalid of [[], [Number.NaN], [Infinity], [-1], new Array(3)]) {
     assert.throws(() => summarize(invalid));
   }
+  assert.equal(summarize([0, 0, 0]).p95, 0);
+});
+
+test('summary keeps its own copy of the samples', () => {
+  const values = [5, 1, 3];
+  const result = summarize(values);
+
+  values[0] = 99;
+  assert.deepEqual(result.samples, [5, 1, 3]);
 });
 
 test('sub-millisecond frame jitter does not become a noise failure through division', () => {

@@ -1,7 +1,6 @@
 'use client';
 import { NodeApi } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
-import { DndPlugin } from 'platejs/dnd/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { createEditor, ParagraphPlugin, EditorRoot } from 'platejs/react';
 import * as React from 'react';
@@ -9,14 +8,10 @@ import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 
 import { AIKit as ProductionAIKit } from '@/registry/components/editor/ai';
-import { DndKit as ProductionDndKit } from '@/registry/components/editor/dnd';
+import { DndKit } from '@/registry/components/editor/dnd';
 import { Editor } from '@/registry/components/editor/editor';
 
 import { AIChatSession, AIKit as BaselineAIKit } from './baseline-ai';
-import {
-  DndRoot as BaselineDndRoot,
-  DndKit as BaselineDndKit,
-} from './baseline-dnd';
 
 export type Cohort = {
   blocks: number;
@@ -37,19 +32,11 @@ function BaselineView({
   index: number;
   readOnly: boolean;
 }) {
-  const [element, setElement] = React.useState<HTMLDivElement | null>(null);
   const ref = React.useCallback(
-    (next: HTMLDivElement | null) => {
-      setElement(next);
-      attach(index, next);
-    },
+    (next: HTMLDivElement | null) => attach(index, next),
     [attach, index]
   );
-  return (
-    <BaselineDndRoot editableElement={element}>
-      <Editor ref={ref} readOnly={readOnly} />
-    </BaselineDndRoot>
-  );
+  return <Editor ref={ref} readOnly={readOnly} />;
 }
 function Assembly({
   editor,
@@ -120,11 +107,10 @@ function makeEditor(variant: Variant) {
         ? [
             MarkdownPlugin,
             ...(variant === 'production' ? ProductionAIKit : BaselineAIKit),
-            ...(variant === 'current' ? BaselineDndKit : ProductionDndKit),
+            ...DndKit,
             AIChatPlugin.configure({
               slots: { afterEditable: () => null, afterContainer: () => null },
             }),
-            DndPlugin.configure({ initialState: { enableScroller: false } }),
           ]
         : []),
     ],
@@ -194,20 +180,6 @@ function resources() {
     return observer;
   } as unknown as typeof MutationObserver;
   return {
-    listeners: () =>
-      [...active.values()].reduce((sum, keys) => {
-        const pattern = [...keys].sort().join(',');
-        return (
-          sum +
-          ([
-            'dragleave:true',
-            'drop:true',
-            'dragend:false,drop:false,mouseup:false',
-          ].includes(pattern)
-            ? keys.size
-            : 0)
-        );
-      }, 0),
     allListeners: () =>
       [...active.values()].reduce((sum, keys) => sum + keys.size, 0),
     observers: () => observers.size,
@@ -333,7 +305,6 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
     flushSync(() => root.render(tree()));
     const mount = performance.now() - start;
     const mountedCommits = commits;
-    const ownedListeners = tracked.listeners();
     const ownedObservers = tracked.observers();
     const mountedDOM = container.querySelectorAll(
       '[data-editor-node="element"]'
@@ -341,11 +312,6 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
     check(
       mountedDOM === cohort.blocks * cohort.views * cohort.editors,
       `full DOM count ${mountedDOM}`
-    );
-    check(
-      ownedListeners ===
-        (cohort.features ? cohort.views * cohort.editors * 5 : 0),
-      `owned listeners ${ownedListeners}`
     );
     check(
       ownedObservers ===
@@ -357,9 +323,6 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
     let firstChunk = 0;
     let chunks = 0;
     let streamCommits = 0;
-    let activation = 0;
-    let activationStart = 0;
-    let activeCommits = 0;
     let siblingDetach = 0;
     if (cohort.features) {
       const editor = editors[0];
@@ -441,10 +404,6 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
           'first view actually detached'
         );
         check(
-          tracked.listeners() === (cohort.views - 1) * cohort.editors * 5,
-          'detached view listeners'
-        );
-        check(
           tracked.observers() ===
             cohort.editors * (variant === 'current' ? 1 : cohort.views - 1),
           'detached view observers'
@@ -482,18 +441,6 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
       request.close();
       await pending;
       await waitFor(() => !store.get('streaming'), 'stream completion');
-      const drag = container.querySelector<HTMLButtonElement>(
-        'button[aria-label="Drag block"]'
-      );
-      check(drag, 'drag handle');
-      const beforeActivation = commits;
-      activationStart = performance.now();
-      flushSync(() =>
-        drag!.dispatchEvent(new FocusEvent('focusin', { bubbles: true }))
-      );
-      activation = performance.now() - activationStart;
-      activeCommits = commits - beforeActivation;
-      flushSync(() => document.dispatchEvent(new Event('mouseup')));
     }
     const beforeReadOnly = commits;
     const readOnlyStart = performance.now();
@@ -508,10 +455,8 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
     for (let cycle = 0; cycle < cohort.cycles; cycle++) {
       visible = visible.map(() => false);
       flushSync(() => root.render(tree()));
-      check(tracked.listeners() === 0, 'detached listeners');
       visible = visible.map(() => true);
       flushSync(() => root.render(tree()));
-      check(tracked.listeners() === ownedListeners, 'reattached listeners');
       flushSync(() => root.render(tree(true)));
       check(
         editors.every((editor) => editor.read.view.isReadOnly()),
@@ -524,7 +469,6 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
     unmounted = true;
     const cleanup = performance.now() - cleanupStart;
     const workflow = performance.now() - constructionStart;
-    check(tracked.listeners() === 0, 'retained listeners');
     check(tracked.observers() === 0, 'retained observers');
     check(tracked.allListeners() === 0, 'retained document listeners');
     if (cohort.features) {
@@ -543,21 +487,15 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
       mount,
       firstChunk,
       chunks,
-      activation,
       readonly,
       siblingDetach,
       churn,
       cleanup,
       workflow,
       timeline: {
-        activation: cohort.features
-          ? [activationStart, activationStart + activation]
-          : null,
         readonly: [readOnlyStart, readOnlyStart + readonly],
         cleanup: [cleanupStart, cleanupStart + cleanup],
       },
-      ownedListeners,
-      retainedListeners: tracked.listeners(),
       ownedObservers,
       retainedObservers: tracked.observers(),
       retainedRequests: http.activeRequests(),
@@ -568,7 +506,6 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
           ? {
               mount: mountedCommits,
               stream: streamCommits,
-              active: activeCommits,
               readonly: readOnlyCommits,
             }
           : null,

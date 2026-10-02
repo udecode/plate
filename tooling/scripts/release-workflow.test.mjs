@@ -213,10 +213,7 @@ test('release branch helpers build promote PR and direct sync metadata', () => {
   assert.match(promotePullRequest.body, /Create a merge commit/);
   assert.match(promotePullRequest.body, /not a style preference/);
   assert.match(promotePullRequest.body, /Wait for `release\.yml` on `main`/);
-  assert.match(
-    promotePullRequest.body,
-    /Run the `release-lanes` autogoal workflow/
-  );
+  assert.match(promotePullRequest.body, /Run the `release-lanes` sync mode/);
   assert.match(promotePullRequest.body, /sync `main` directly into `next`/);
   assert.match(
     promotePullRequest.body,

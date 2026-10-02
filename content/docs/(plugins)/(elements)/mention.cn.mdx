@@ -13,10 +13,12 @@ docs:
 
 ## 功能特性
 
-- 智能自动补全，可用于提及用户、页面或任何引用
-- 通过可配置字符触发（默认：`@`）
-- 键盘导航与选择
-- 可自定义的提及数据与渲染方式
+- 输入 `@` 打开弹出框，按 `@` 之后输入的文本过滤
+- 选中后用带 `ref` 和可选 `label` 的行内 void `mention` 节点替换输入的文本
+- 可配置的触发字符串、正则表达式和触发查询
+- 可标记的 void 渲染，加粗、斜体和下划线可以作用于提及
+- 可选的提及后空格
+- 通过 `[显示文本](mention:ref)` 链接支持 Markdown
 
 </PackageInfo>
 
@@ -26,12 +28,12 @@ docs:
 
 ### 安装
 
-最快捷的添加提及功能方式是使用 `MentionKit`，它包含预配置的 `MentionPlugin` 和 `MentionInputPlugin` 以及它们的 [Plate UI](/docs/installation/plate-ui) 组件。
+最快捷的添加提及功能方式是使用 `MentionKit`，它包含预配置的 `MentionPlugin` 以及它的 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="mention" />
 
-- [`MentionElement`](/docs/components/mention): 渲染提及元素
-- [`MentionInputElement`](/docs/components/mention): 渲染提及输入组合框
+- [`MentionElement`](/docs/components/mention)：渲染提及元素
+- `MentionCombobox`：在 `@` 处渲染提及弹出框
 
 ### 添加套件
 
@@ -61,28 +63,12 @@ npm install platejs @tanstack/react-virtual
 
 ### 添加插件
 
-`MentionPlugin` 会把 `MentionInputPlugin` 作为必需依赖安装。
+在插件的 `afterEditable` 插槽中挂载弹出框：
 
 ```tsx
 import { MentionPlugin } from 'platejs/mention/react';
 import { createEditor } from 'platejs/react';
-
-const editor = createEditor({
-  plugins: [
-    // ...其他插件
-    MentionPlugin,
-  ],
-});
-```
-
-### 配置插件
-
-需要替换依赖的渲染组件或配置时，把完整的 `MentionInputPlugin` 描述符加入同一数组。
-
-```tsx
-import { MentionPlugin, MentionInputPlugin } from 'platejs/mention/react';
-import { createEditor } from 'platejs/react';
-import { MentionElement, MentionInputElement } from '@/components/editor/mention';
+import { MentionCombobox, MentionElement } from '@/components/editor/mention';
 
 const editor = createEditor({
   plugins: [
@@ -90,20 +76,38 @@ const editor = createEditor({
     MentionPlugin.configure({
       component: MentionElement,
       initialState: {
+        insertSpaceAfterMention: false,
         trigger: '@',
         triggerPreviousCharPattern: /^$|^[\s"']$/,
-        insertSpaceAfterMention: false,
       },
+      slots: { afterEditable: MentionCombobox },
     }),
-    MentionInputPlugin.configure({ component: MentionInputElement }),
   ],
 });
 ```
 
-- `options.trigger`: 触发提及组合框的字符
-- `options.triggerPreviousCharPattern`: 触发字符前一个字符的正则表达式模式。套件使用 `/^$|^[\s"']$/` 允许在行首、空白符后或引号后触发提及
-- `options.insertSpaceAfterMention`: 是否在插入提及后自动添加空格
-- `component`: 分配用于渲染提及和提及输入的UI组件
+- `initialState.trigger`：打开提及弹出框的字符
+- `initialState.triggerPreviousCharPattern`：触发字符前一个字符的正则表达式。套件使用 `/^$|^[\s"']$/`，允许在行首、空白符后或引号后触发
+- `initialState.insertSpaceAfterMention`：提及位于块末尾时是否在其后插入空格
+- `slots.afterEditable`：渲染弹出框的组件
+
+### 选择条目
+
+在条目的 `onSelect` 中调用提及更新。弹出框会在同一个事务中先删除输入的 `@` 和查询。
+
+```tsx
+<InlineComboboxItem
+  value={item.label}
+  onSelect={(tx) => {
+    tx.plugin(MentionPlugin).insert({
+      label: item.label,
+      ref: item.ref,
+    });
+  }}
+>
+  {item.label}
+</InlineComboboxItem>
+```
 
 </Steps>
 
@@ -111,47 +115,40 @@ const editor = createEditor({
 
 ### MentionPlugin
 
-提供提及功能的插件。扩展自 [TriggerComboboxPluginState](/docs/combobox#triggercomboboxpluginstate)，并要求安装 `MentionInputPlugin`。
+提供提及功能的插件。其状态包含 [ComboboxState](/docs/combobox#comboboxstate) 触发策略。
 
 <API name="MentionPlugin">
 <APIOptions>
   <APIItem name="insertSpaceAfterMention" type="boolean" optional>
-    是否在提及后插入空格。
+    提及位于块末尾时是否在其后插入空格。
     - **默认值:** `false`
   </APIItem>
-  <APIItem name="trigger" type="string" optional>
-    触发提及组合框的字符。
+  <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
+    打开提及弹出框的文本。
     - **默认值:** `'@'`
   </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
     匹配触发字符前一个字符的模式。
     - **默认值:** `/^\s?$/`
   </APIItem>
-  <APIItem name="createComboboxInput" type="(trigger: string) => Element" optional>
-    当触发字符激活时创建输入元素的函数。
-  </APIItem>
 </APIOptions>
 </API>
-
-### MentionInputPlugin
-
-提供提及输入功能的必需依赖。仅在替换其组件或配置时直接加入。
 
 ## API接口
 
 ### editor.plugin(MentionPlugin).update.insert
 
-在当前选区插入提及元素。
+在当前选区插入提及元素，并把光标移到其后。
 
 <API name="editor.plugin(MentionPlugin).update.insert">
 <APIParameters>
   <APIItem name="options" type="object">
     <APISubList>
-      <APISubListItem parent="options" name="value" type="string">
-        存储在提及元素中的值。
+      <APISubListItem parent="options" name="ref" type="string">
+        与被提及实体的持久关联，不能为空。
       </APISubListItem>
-      <APISubListItem parent="options" name="key" type="string" optional>
-        提及元素的可选键值。
+      <APISubListItem parent="options" name="label" type="string" optional>
+        可见文本；缺省时渲染使用 `ref`。
       </APISubListItem>
     </APISubList>
   </APIItem>

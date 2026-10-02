@@ -1,33 +1,26 @@
 'use client';
 
-import { GripVertical } from 'lucide-react';
-import { PathApi, type Element, type Path } from 'platejs';
 import {
-  DndPlugin,
-  type DropLineDirection,
-  useDraggable,
-  useDndPlugin,
-  useDropLine,
-} from 'platejs/dnd/react';
-import { BaseColumnItemPlugin } from 'platejs/layout';
+  ArrowDownIcon,
+  ArrowUpIcon,
+  GripVertical,
+  type LucideIcon,
+  ScissorsIcon,
+} from 'lucide-react';
+import { type Element, type NodeKey, PathApi } from 'platejs';
 import {
+  definePlugin,
   type Editor,
-  type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
   type WrapRootProps,
+  useDropIndicator,
   useEditor,
   useEditorSelector,
-  useElement,
-  usePluginStore,
+  useElementSelected,
 } from 'platejs/react';
-import {
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from 'platejs/table';
+import { BaseTablePlugin } from 'platejs/table';
 import * as React from 'react';
-import { DndContext, DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { createPortal } from 'react-dom';
 
 import {
   Tooltip,
@@ -36,281 +29,253 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/registry/components/editor/dropdown-menu';
 
-const UNDRAGGABLE_PLUGINS = [
-  BaseColumnItemPlugin,
-  BaseTableRowPlugin,
-  BaseTableCellPlugin,
-];
+/**
+ * Start a native block drag from a handle and use the dragged blocks as the
+ * drag image, held at the pointer's offset from the first block.
+ */
+export const startBlockDrag = (
+  editor: Editor,
+  event: React.DragEvent,
+  element: Element
+) => {
+  const drag = editor.api.dom.drag.start(event.nativeEvent, { node: element });
 
-const DndInteractionContext = React.createContext({
-  activate: () => {},
-  active: false,
-  hasTableCellSelection: false,
-});
+  if (!drag) {
+    event.preventDefault();
 
-const isBlockDraggable: NonNullable<
-  RenderNodeWrapperDescriptor<typeof DndPlugin>['match']
-> = ({ editor, element, renderPath }) => {
-  if (editor.read.view.isReadOnly()) return false;
+    return;
+  }
 
-  const isUndraggable = UNDRAGGABLE_PLUGINS.some((plugin) => {
-    const portal = editor.plugin(plugin);
+  const document = event.currentTarget.ownerDocument;
+  const rect = editor.api.dom.resolveDOMNode(element)?.getBoundingClientRect();
+  const image = document.createElement('div');
 
-    return portal.installed && portal.schema.type === element.type;
+  image.style.cssText = `position:fixed;pointer-events:none;left:${rect?.left ?? 0}px;top:${rect?.top ?? 0}px;width:${rect?.width ?? 0}px;`;
+  image.className = 'flow-root bg-background';
+  image.append(...drag.previews);
+  document.body.append(image);
+  event.dataTransfer.setDragImage(image, drag.origin.x, drag.origin.y);
+  // The browser snapshots the image during dragstart.
+  requestAnimationFrame(() => image.remove());
+};
+
+/**
+ * Cut blocks to the clipboard. They are removed only once the clipboard holds
+ * them, so a refused clipboard write loses nothing.
+ */
+export const cutBlocks = async (editor: Editor, keys: readonly NodeKey[]) => {
+  if (keys.length === 0) return;
+
+  editor.update.selection.setNodes(keys);
+
+  const data = new Map<string, string>();
+
+  editor.api.dom.clipboard.writeSelection({
+    getData: (type) => data.get(type) ?? '',
+    setData: (type, value) => {
+      data.set(type, value);
+    },
   });
 
-  const container = !isUndraggable
-    ? getDraggableContainer(editor, renderPath)
-    : null;
+  const items: Record<string, Blob> = {};
 
-  return !!container;
+  for (const type of ['text/html', 'text/plain']) {
+    const value = data.get(type);
+
+    if (value !== undefined) items[type] = new Blob([value], { type });
+  }
+
+  try {
+    await navigator.clipboard.write([new ClipboardItem(items)]);
+  } catch {
+    return;
+  }
+  editor.update((tx) => {
+    const paths = keys
+      .flatMap((key) => {
+        const entry = tx.nodes.get(key);
+
+        return entry ? [entry[1]] : [];
+      })
+      .toSorted((a, b) => PathApi.compare(b, a));
+
+    for (const path of paths) tx.nodes.remove({ at: path });
+  });
 };
 
-const BlockDraggableComponent = (props: RenderNodeWrapperProps) => {
-  const container = getDraggableContainer(props.editor, props.renderPath);
-  const interaction = React.useContext(DndInteractionContext);
-
-  if (!container) return <>{props.children}</>;
-
-  return (
-    <Draggable
-      {...props}
-      activate={interaction.activate}
-      active={interaction.active}
-      container={container}
-      hasTableCellSelection={interaction.hasTableCellSelection}
-    />
-  );
-};
-
-export const BlockDraggable: RenderNodeWrapperDescriptor<typeof DndPlugin> = {
-  component: BlockDraggableComponent,
-  match: isBlockDraggable,
-};
-
-type DraggableContainer = 'column' | 'root' | 'table';
-
-function Draggable({
-  activate,
-  active,
-  container,
-  hasTableCellSelection,
-  ...props
-}: RenderNodeWrapperProps & {
-  activate: () => void;
-  active: boolean;
-  container: DraggableContainer;
-  hasTableCellSelection: boolean;
+/**
+ * A drag handle's actions. The handle opens it on click, which a drag never
+ * fires, so the anchor stays out of pointer events.
+ */
+export function HandleActionsMenu({
+  actions,
+  className,
+  onOpenChange,
+  open,
+  style,
+}: {
+  actions: ReadonlyArray<{ icon: LucideIcon; label: string; run: () => void }>;
+  className?: string;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
+  style?: React.CSSProperties;
 }) {
-  const { children, editor, element } = props;
-  const [dragButtonTop, setDragButtonTop] = React.useState(0);
-  const [dropLine, setDropLine] = React.useState<DropLineDirection>('');
-  const [isPointerActive, setIsPointerActive] = React.useState(false);
-  const [isThisDragging, setIsThisDragging] = React.useState(false);
-  const nodeRef = React.useRef<HTMLDivElement>(null);
-  const previewRef = React.useRef<HTMLDivElement>(null);
-  const dragButtonRef = React.useRef<HTMLButtonElement>(null);
-  const [previewTop, setPreviewTop] = React.useState(0);
-  const resetPreview = React.useCallback(() => {
-    if (previewRef.current) {
-      previewRef.current.replaceChildren();
-      previewRef.current.classList.add('hidden');
-    }
-  }, []);
-  const isInColumn = container === 'column';
-  const isInTable = container === 'table';
-  const isActive = active || isPointerActive;
+  const editor = useEditor();
+
   return (
+    <DropdownMenu modal={false} open={open} onOpenChange={onOpenChange}>
+      <DropdownMenuTrigger tabIndex={-1}>
+        <span
+          aria-hidden
+          className={cn('pointer-events-none absolute', className)}
+          style={style}
+        />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="left">
+        {actions.map(({ icon: Icon, label, run }) => (
+          <DropdownMenuItem
+            key={label}
+            finalFocus={() => editor.api.dom.focus()}
+            onSelect={run}
+          >
+            <Icon />
+            {label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function Draggable(props: RenderNodeWrapperProps) {
+  const { children, editor, element, renderPath } = props;
+  const [buttonTop, setButtonTop] = React.useState(0);
+  const [actionsOpen, setActionsOpen] = React.useState(false);
+  const selected = useElementSelected();
+  // A drag node-selects the handle's blocks, so their gutter stays laid out;
+  // a containing selection keeps nested gutters hidden. Without hover, the
+  // selection's blocks keep theirs, since a tap's pointerleave clears the flag.
+  const nodeSelected = useElementSelected({ mode: 'node' });
+  const hasTableCellSelection = React.useContext(TableCellSelectionContext);
+  const nodes = () => editor.read.transfer.nodes({ node: element });
+  const move = (to: 'next' | 'previous', announce: string) => {
+    editor.api.transfer.move({ announce, nodes: nodes(), to });
+  };
+  const openActions = () => {
+    const keys = nodes();
+
+    if (!keys.every((key) => editor.read.selection.contains(key))) {
+      editor.update.selection.setNodes(keys);
+    }
+    setActionsOpen(true);
+  };
+
+  return (
+    // Only the innermost hovered block shows its handle. The hovered flag is a
+    // DOM attribute, not React state, so toggling it re-renders nothing, and a
+    // nested gutter is display: none until hovered, so a large table lays out
+    // no gutter per cell block.
     <div
       className={cn(
-        'relative hover:[&>.editor-gutterLeft]:opacity-100',
-        isThisDragging && 'opacity-50'
+        'editor-draggable relative data-hovered:[&>.editor-gutterLeft]:opacity-100 [&>.editor-blockWrapper>[data-editor-dragging]]:opacity-50',
+        renderPath.length > 1 &&
+          'not-data-hovered:[&>.editor-gutterLeft]:hidden'
       )}
-      onMouseEnter={() => {
-        if (isThisDragging) return;
-        setDragButtonTop(calcDragButtonTop(editor, element));
+      onMouseEnter={() => setButtonTop(calcDragButtonTop(editor, element))}
+      onPointerLeave={(event) => {
+        event.currentTarget.removeAttribute('data-hovered');
+      }}
+      onPointerOver={(event) => {
+        event.currentTarget.toggleAttribute(
+          'data-hovered',
+          (event.target as globalThis.Element).closest('.editor-draggable') ===
+            event.currentTarget
+        );
       }}
     >
-      {isActive && (
-        <DraggableRuntime
-          dragButtonRef={dragButtonRef}
-          element={element}
-          nodeRef={nodeRef}
-          onDraggingChange={setIsThisDragging}
-          onDropLineChange={setDropLine}
-          previewRef={previewRef}
-          resetPreview={resetPreview}
-        />
-      )}
-
-      {!isInTable && !hasTableCellSelection && (
-        <Gutter active={isPointerActive}>
-          <button
-            ref={dragButtonRef}
-            aria-label="Drag block"
-            className={cn(
-              'pointer-events-auto absolute -left-0 h-6 w-4.5 cursor-grab p-0 text-muted-foreground',
-              isInColumn && 'w-4'
-            )}
-            style={{ top: `${dragButtonTop + 3}px` }}
-            type="button"
-            data-editor-prevent-deselect
-            data-editor-selectable
-            onFocus={() => {
-              activate();
-              setIsPointerActive(true);
-            }}
-            onMouseEnter={() => {
-              activate();
-              setIsPointerActive(true);
-            }}
-            onPointerOver={() => {
-              activate();
-              setIsPointerActive(true);
-            }}
-          >
-            {isPointerActive ? (
-              <DragHandle
-                isDragging={isThisDragging}
-                previewRef={previewRef}
-                resetPreview={resetPreview}
-                setPreviewTop={setPreviewTop}
-              />
-            ) : (
-              '⠿'
-            )}
-          </button>
+      {!hasTableCellSelection && (
+        <Gutter
+          className={cn(
+            actionsOpen && 'opacity-100',
+            selected &&
+              '[@media(hover:none)]:flex! [@media(hover:none)]:opacity-100',
+            (nodeSelected || actionsOpen) && 'flex!'
+          )}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                aria-expanded={actionsOpen}
+                aria-haspopup="menu"
+                aria-label="Drag block"
+                className="pointer-events-auto absolute -left-0 flex h-6 w-4.5 cursor-grab items-center justify-center p-0 text-muted-foreground [:is(td,th)_&]:w-3"
+                data-editor-prevent-deselect
+                data-editor-selectable
+                draggable
+                style={{ top: `${buttonTop + 3}px` }}
+                type="button"
+                onClick={openActions}
+                onDragStart={(event) => startBlockDrag(editor, event, element)}
+              >
+                <GripVertical />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Drag to move, click for actions</TooltipContent>
+          </Tooltip>
+          {actionsOpen && (
+            <HandleActionsMenu
+              actions={[
+                {
+                  icon: ArrowUpIcon,
+                  label: 'Move up',
+                  run: () => move('previous', 'Moved up'),
+                },
+                {
+                  icon: ArrowDownIcon,
+                  label: 'Move down',
+                  run: () => move('next', 'Moved down'),
+                },
+                {
+                  icon: ScissorsIcon,
+                  label: 'Cut',
+                  run: () => {
+                    void cutBlocks(editor, nodes());
+                  },
+                },
+              ]}
+              className="-left-0 h-6 w-4.5"
+              open
+              style={{ top: `${buttonTop + 3}px` }}
+              onOpenChange={setActionsOpen}
+            />
+          )}
         </Gutter>
       )}
 
-      <div
-        ref={previewRef}
-        className={cn('-left-0 absolute hidden w-full')}
-        style={{ top: `${-previewTop}px` }}
-        contentEditable={false}
-      />
-
-      <DropLine dropLine={dropLine} />
-
-      <div ref={nodeRef} className="editor-blockWrapper flow-root">
-        {children}
-      </div>
+      <div className="editor-blockWrapper flow-root">{children}</div>
     </div>
   );
 }
 
-const getDraggableContainer = (
-  editor: Editor,
-  path: Path
-): DraggableContainer | null => {
-  if (path.length === 1) return 'root';
-
-  if (path.length === 3) {
-    const column = editor.plugin(BaseColumnItemPlugin);
-
-    if (
-      column.installed &&
-      editor.read.nodes.some({ at: path, type: BaseColumnItemPlugin })
-    ) {
-      return 'column';
-    }
-  }
-
-  if (path.length === 4) {
-    const table = editor.plugin(BaseTablePlugin);
-
-    if (
-      table.installed &&
-      editor.read.nodes.some({ at: path, type: BaseTablePlugin })
-    ) {
-      return 'table';
-    }
-  }
-
-  return null;
-};
-
-function DraggableRuntime({
-  dragButtonRef,
-  element,
-  nodeRef,
-  onDraggingChange,
-  onDropLineChange,
-  previewRef,
-  resetPreview,
-}: {
-  dragButtonRef: React.RefObject<HTMLButtonElement | null>;
-  element: Element;
-  nodeRef: React.RefObject<HTMLDivElement | null>;
-  onDraggingChange: (dragging: boolean) => void;
-  onDropLineChange: (dropLine: DropLineDirection) => void;
-  previewRef: React.RefObject<HTMLDivElement | null>;
-  resetPreview: () => void;
-}) {
-  const { handleRef, isAboutToDrag, isDragging } = useDraggable({
-    element,
-    multiplePreviewRef: previewRef,
-    nodeRef,
-    onDropHandler: () => {
-      resetPreview();
-    },
-  });
-  const { dropLine } = useDropLine();
-
-  React.useEffect(() => {
-    handleRef(dragButtonRef.current);
-
-    return () => {
-      handleRef(null);
-    };
-  }, [dragButtonRef, handleRef]);
-
-  React.useEffect(() => {
-    onDraggingChange(isDragging);
-
-    return () => {
-      onDraggingChange(false);
-    };
-  }, [isDragging, onDraggingChange]);
-
-  React.useEffect(() => {
-    onDropLineChange(dropLine ?? '');
-
-    return () => {
-      onDropLineChange('');
-    };
-  }, [dropLine, onDropLineChange]);
-
-  React.useEffect(() => {
-    if (!isDragging) resetPreview();
-  }, [isDragging, resetPreview]);
-
-  React.useEffect(() => {
-    if (isAboutToDrag) {
-      previewRef.current?.classList.remove('opacity-0');
-    }
-  }, [isAboutToDrag, previewRef]);
-
-  return null;
-}
-
 function Gutter({
-  active,
   children,
   className,
   ...props
-}: React.ComponentProps<'div'> & {
-  active: boolean;
-}) {
+}: React.ComponentProps<'div'>) {
   return (
     <div
       {...props}
       className={cn(
         'editor-gutterLeft',
-        '-translate-x-full absolute top-0 z-50 flex h-full w-[22px] cursor-text select-none hover:opacity-100 sm:opacity-0',
+        '-translate-x-full absolute top-0 z-50 flex h-full w-[22px] cursor-text select-none hover:opacity-100 sm:opacity-0 [:is(td,th)_&]:w-3',
         'focus-within:opacity-100',
-        active && 'opacity-100',
         className
       )}
       contentEditable={false}
@@ -321,305 +286,97 @@ function Gutter({
   );
 }
 
-function DragHandle({
-  isDragging,
-  previewRef,
-  resetPreview,
-  setPreviewTop,
-}: {
-  isDragging: boolean;
-  previewRef: React.RefObject<HTMLDivElement | null>;
-  resetPreview: () => void;
-  setPreviewTop: (top: number) => void;
-}) {
-  const editor = useEditor();
-  const element = useElement();
-  const dnd = editor.plugin(DndPlugin);
-  const selectElement = () => {
-    const path = editor.read.nodes.path(element);
-
-    if (!path) return;
-
-    if (
-      !editor.read.selection
-        .nodes()
-        .some(([, selectedPath]) => PathApi.equals(selectedPath, path))
-    ) {
-      editor.update.selection.setNodes([element]);
-    }
-    editor.api.dom.focus();
-  };
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          className="flex size-full items-center justify-center"
-          onClick={(e) => {
-            e.preventDefault();
-            selectElement();
-          }}
-          onKeyDown={(event) => {
-            if (event.key !== 'Enter' && event.key !== ' ') return;
-
-            event.preventDefault();
-            selectElement();
-          }}
-          onMouseDown={(e) => {
-            resetPreview();
-
-            if ((e.button !== 0 && e.button !== 2) || e.shiftKey) return;
-
-            const elements = styleDragPreviewElements(
-              dnd.api.prepareDrag(element)
-            );
-            previewRef.current?.append(...elements);
-            previewRef.current?.classList.remove('hidden');
-            previewRef.current?.classList.add('opacity-0');
-            editor
-              .plugin(DndPlugin)
-              .store.set({ multiplePreviewRef: previewRef });
-          }}
-          onMouseEnter={() => {
-            if (isDragging) return;
-
-            const processedBlocks = dnd.read.dragEntries(element);
-            const elementNodeKey = editor.key(element);
-            const keys = processedBlocks.map(([block]) => editor.key(block));
-
-            if (keys.length > 1 && keys.includes(elementNodeKey)) {
-              const previewTop = calculatePreviewTop(editor, {
-                blocks: processedBlocks.map((block) => block[0]),
-                element,
-              });
-              setPreviewTop(previewTop);
-            } else {
-              setPreviewTop(0);
-            }
-          }}
-          onMouseUp={() => {
-            resetPreview();
-          }}
-          data-editor-prevent-deselect
-          role="button"
-          tabIndex={0}
-        >
-          <GripVertical className="text-muted-foreground" />
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>Drag to move</TooltipContent>
-    </Tooltip>
-  );
-}
-
-function DropLine({
-  className,
-  dropLine,
-  ...props
-}: React.ComponentProps<'div'> & { dropLine: DropLineDirection }) {
-  return (
-    <div
-      {...props}
-      aria-hidden
-      className={cn(
-        'editor-dropLine',
-        'pointer-events-none absolute inset-x-0 h-0.5 transition-opacity',
-        'bg-brand/50',
-        dropLine ? 'opacity-100' : 'opacity-0',
-        dropLine === 'top' && '-top-px',
-        dropLine === 'bottom' && '-bottom-px',
-        className
-      )}
-      contentEditable={false}
-    />
-  );
-}
-
-const styleDragPreviewElements = (
-  previews: Array<{ domNode: HTMLElement; preview: HTMLElement }>
-): HTMLElement[] =>
-  previews.map(({ domNode, preview }, index) => {
-    const document = domNode.ownerDocument;
-    const { scrollLeft } = domNode;
-
-    if (scrollLeft > 0) {
-      const scrollWrapper = document.createElement('div');
-      scrollWrapper.style.overflow = 'hidden';
-      scrollWrapper.style.width = `${domNode.clientWidth}px`;
-      const innerContainer = document.createElement('div');
-      innerContainer.style.transform = `translateX(-${scrollLeft}px)`;
-      innerContainer.style.width = `${domNode.scrollWidth}px`;
-      while (preview.firstChild) innerContainer.append(preview.firstChild);
-      preview.style.padding = '0';
-      innerContainer.style.padding =
-        document.defaultView?.getComputedStyle(domNode).padding ?? '';
-      scrollWrapper.append(innerContainer);
-      preview.append(scrollWrapper);
-    }
-
-    const wrapper = document.createElement('div');
-    wrapper.append(preview);
-    wrapper.style.display = 'flow-root';
-    const previous = previews[index - 1]?.domNode.parentElement;
-    const current = domNode.parentElement;
-
-    if (previous && current) {
-      const distance =
-        current.getBoundingClientRect().top -
-        previous.getBoundingClientRect().bottom;
-      if (distance > 15) wrapper.style.marginTop = `${distance}px`;
-    }
-    return wrapper;
-  });
-
-const calculatePreviewTop = (
-  editor: Editor,
-  {
-    blocks,
-    element,
-  }: {
-    blocks: readonly Element[];
-    element: Element;
-  }
-): number => {
-  const child = editor.api.dom.resolveDOMNode(element);
-
-  if (!child) return 0;
-  const editable = editor.api.dom.resolveDOMNode(editor);
-  const window = child.ownerDocument.defaultView;
-  if (!editable || !window) return 0;
-
-  let firstDomNode: HTMLElement | null = null;
-  for (const block of blocks) {
-    firstDomNode = editor.api.dom.resolveDOMNode(block);
-    if (firstDomNode) break;
-  }
-  if (!firstDomNode) return 0;
-  // Get editor's top padding
-  const editorPaddingTop = Number(
-    window.getComputedStyle(editable).paddingTop.replace('px', '')
-  );
-
-  // Calculate distance from first selected node to editor top
-  const firstNodeToEditorDistance =
-    firstDomNode.getBoundingClientRect().top -
-    editable.getBoundingClientRect().top -
-    editorPaddingTop;
-
-  // Get margin top of first selected node
-  const firstMarginTopString = window.getComputedStyle(firstDomNode).marginTop;
-  const marginTop = Number(firstMarginTopString.replace('px', ''));
-
-  // Calculate distance from current node to editor top
-  const currentToEditorDistance =
-    child.getBoundingClientRect().top -
-    editable.getBoundingClientRect().top -
-    editorPaddingTop;
-
-  const currentMarginTopString = window.getComputedStyle(child).marginTop;
-  const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
-
-  const previewElementsTopDistance =
-    currentToEditorDistance -
-    firstNodeToEditorDistance +
-    marginTop -
-    currentMarginTop;
-
-  return previewElementsTopDistance;
-};
-
 const calcDragButtonTop = (editor: Editor, element: Element): number => {
   const child = editor.api.dom.resolveDOMNode(element);
-
   const window = child?.ownerDocument.defaultView;
+
   if (!child || !window) return 0;
 
-  const currentMarginTopString = window.getComputedStyle(child).marginTop;
-  const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
-
-  return currentMarginTop;
+  return Number(window.getComputedStyle(child).marginTop.replace('px', ''));
 };
 
-const DndIntegration = ({ children, editableRef }: WrapRootProps) => {
-  const [editableElement, setEditableElement] =
-    React.useState<HTMLDivElement | null>(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- The stable ref can receive a different element during any commit.
-  React.useLayoutEffect(() => {
-    if (editableElement !== editableRef.current) {
-      setEditableElement(editableRef.current);
-    }
-  });
-  const { dragDropManager } = React.useContext(DndContext);
-  useDndPlugin(editableElement);
-  const hasTableCellSelection = useEditorSelector((innerEditor) => {
-    const table = innerEditor.plugin(BaseTablePlugin);
+function DropIndicator() {
+  const editor = useEditor();
+  const indicator = useDropIndicator();
 
-    return table.installed && (table.read.selection()?.cells.length ?? 0) > 1;
-  });
-  const isDragging = usePluginStore(DndPlugin, 'isDragging');
-  const [active, setActive] = React.useState(false);
-  const activate = React.useCallback(() => {
-    setActive(true);
-  }, []);
+  if (!indicator) return null;
 
-  React.useEffect(() => {
-    if (!editableElement) return undefined;
+  const { axis, line } = indicator;
 
-    const document = editableElement.ownerDocument;
-    const deactivate = () => {
-      setActive(false);
-    };
-
-    document.addEventListener('dragend', deactivate);
-    document.addEventListener('drop', deactivate);
-    document.addEventListener('mouseup', deactivate);
-
-    return () => {
-      document.removeEventListener('dragend', deactivate);
-      document.removeEventListener('drop', deactivate);
-      document.removeEventListener('mouseup', deactivate);
-    };
-  }, [editableElement]);
-  const interaction = React.useMemo(
-    () => ({
-      activate,
-      active: active || isDragging,
-      hasTableCellSelection,
-    }),
-    [activate, active, hasTableCellSelection, isDragging]
+  return createPortal(
+    <div
+      aria-hidden
+      className="pointer-events-none fixed top-0 left-0 z-50 rounded-full bg-brand/50"
+      data-drop-indicator={axis}
+      style={
+        axis === 'y'
+          ? {
+              height: 2,
+              transform: `translate(${line.x}px, ${line.y - 1}px)`,
+              width: line.width,
+            }
+          : {
+              height: line.height,
+              transform: `translate(${line.x - 1}px, ${line.y}px)`,
+              width: 2,
+            }
+      }
+    />,
+    editor.api.dom.getWindow().document.body
   );
+}
+
+const TableCellSelectionContext = React.createContext(false);
+
+/** One table-selection subscription for every handle in the editor. */
+function DndRoot({ children }: WrapRootProps) {
+  // A selected table node also reports its cells; only a text selection
+  // across cells hides the handles, so a drag's own selection never removes
+  // its source.
+  const hasTableCellSelection = useEditorSelector((editor) => {
+    const table = editor.plugin(BaseTablePlugin);
+
+    return (
+      table.installed &&
+      editor.read.selection.nodes().length === 0 &&
+      (table.read.selection()?.cells.length ?? 0) > 1
+    );
+  });
 
   return (
-    <TooltipProvider>
-      <DndInteractionContext value={interaction}>
-        {dragDropManager ? (
-          children
-        ) : (
-          <DndProvider backend={HTML5Backend}>{children}</DndProvider>
-        )}
-      </DndInteractionContext>
-    </TooltipProvider>
+    <TableCellSelectionContext value={hasTableCellSelection}>
+      <TooltipProvider>{children}</TooltipProvider>
+    </TableCellSelectionContext>
   );
-};
+}
 
-export const DndKit = [
-  DndPlugin.configure({
-    initialState: {
-      enableScroller: true,
-      onDropFiles: ({ dragItem, edge, editor, key }) => {
-        editor.update((tx) => {
-          if (!tx.plugins.has('upload')) return;
+/** Block handles, the drop indicator and the keyboard block move. */
+export const DndPlugin = definePlugin('dnd', {
+  shortcuts: {
+    moveBlockDown: {
+      keys: 'mod+shift+arrowdown',
+      handler: ({ editor }) =>
+        editor.api.transfer.move({ announce: 'Moved down', to: 'next' })
+          .status !== 'refused',
+    },
+    moveBlockUp: {
+      keys: 'mod+shift+arrowup',
+      handler: ({ editor }) =>
+        editor.api.transfer.move({ announce: 'Moved up', to: 'previous' })
+          .status !== 'refused',
+    },
+  },
+  slots: {
+    afterEditable: DropIndicator,
+    wrapNode: {
+      component: Draggable,
+      match: ({ editor, element }) =>
+        !editor.read.view.isReadOnly() &&
+        editor.read.schema.isBlockContent(element) &&
+        editor.read.nodes.isSelectable(element),
+    },
+    wrapRoot: DndRoot,
+  },
+});
 
-          tx.plugin('upload').submit(
-            dragItem.files,
-            edge === 'before' ? { before: key } : { after: key }
-          );
-        });
-      },
-    },
-    slots: {
-      wrapNode: BlockDraggable,
-      wrapRoot: DndIntegration,
-    },
-  }),
-];
+export const DndKit = [DndPlugin];

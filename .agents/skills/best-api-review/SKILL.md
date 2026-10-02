@@ -1,94 +1,48 @@
 ---
+description: Reconcile earlier reviews, then judge whether a Plate or Plite API or architecture direction earns further work before detailed design or implementation, and record the verdict in the review ledger.
+argument-hint: '[next | audit <scope> | <proposal, path or plan>]'
 name: best-api-review
-description: "Judge whether a proposed API or architecture direction merits pursuit before detailed design or implementation."
 metadata:
-  source: udecode/dotai
-  source-path: skills/best-api-review
+  skiller:
+    source: .agents/rules/best-api-review.mdc
 ---
 
 # Best API Review
 
-Decide whether further work is justified. Agreement is not the default. A
-successful review can end with "Keep the current design; this change adds no
-material value."
+Handle $ARGUMENTS.
 
-Invoke `$best-api-review <proposal, path, or plan>`. Use `audit <scope>` when
-every candidate in a bounded set needs a verdict.
+Decide whether further work is justified. Agreement is not the default. A successful review can end with "Keep the current design; this change adds no material value." Its purpose is not to find work for another skill.
 
-This skill compares design directions before deciding their value. It must
-consider changes to the API and architecture, not just ways to use them. It
-does not replace detailed API design, architecture scoring, adoption planning,
-code review, or implementation. Read the project's routing instructions and
-applicable design methods when present. Do not turn every ordinary
-implementation request into another architecture review.
+Use `audit <scope>` when every candidate in a bounded set needs a verdict. This review compares design directions, including changes to the API and architecture and not only ways to use them, before deciding their value. It does not replace detailed call-shape design (`best-api`), adoption planning (`plate-architecture`), code review or implementation; a PR or correctness diff review follows the Review rule in `AGENTS.md`. Do not turn every ordinary implementation request into another architecture review.
 
-## Resolve the question
+## Start from review history
 
-Before expensive investigation, use the project's existing decision index,
-research ledgers and review artifacts to find earlier work on the same user
-job. Match the question and constraints, not only its feature name. Read the
-current decision and the earlier material alternatives, including rejected
-leads. Reconcile later implementation and proof with that decision: a completed
-design is not adopted behavior, a completed implementation can outdate its
-summary, and missing or stale evidence stays explicit. Inspect relevant
-historical candidates before associating them; a filename match is only a lead.
-Follow project routing for storage and lookup; do not create another history
-system or independently maintained progress tracker.
+`next` runs `node tooling/scripts/review-ledger.mjs next`, which returns the first unit in queue order with open work, with its compact lookup. `status` counts open work across the ledger. The API review playbook (`.agents/playbooks/api-review.md`) says where to stop. Before recommending any other ledger item, answering "what is next?", or starting an audit, run `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` from the repository root for each item selected or recommended. The queue orders questions; `unassessed` does not mean untouched. [The feature review ledger](../../../docs/research/reviews.md) maps current package, registry and tooling capabilities to stable semantic questions. Compact lookup and the generated `docs/research/features/<scope>.md` hub locate the current decision, earlier alternatives, newer execution, changed inputs and unresolved conflicts; read those linked sources before proposing more work.
 
-Invoking this skill again requests another review, including when the source
-is unchanged. No special flag or model change is required. Reuse source
-observations whose version, scope and relevant dependencies still match, then
-challenge the strongest deletion or replacement alternative afresh. A previous
-verdict is evidence, not a hard law. When the challenge adds no material value,
-reaffirm and Stop without another implementation plan or repeated external
-research. Reconsideration does not require redoing a settled investigation.
+- Compact `history` holds recent summaries only. Inspect `historyTotal`, `historyOmitted`, `subsequentExecution`, `plans`, `historyCandidates`, `conflicts` and relevant `related` scopes even when `current` is null, and use `lookup <scope> --detail` when omitted records, candidate lists or full evidence can change the recommendation. Filename matches in the index's `documents` stay candidates until inspected.
+- `research <key-or-term>` on the same helper finds reads, leads and rejections across dated research runs. A text hit routes inspection; it does not prove semantic equivalence or current source reuse.
+- Search `docs/plans`, `docs/research/decisions` and retained review records for the user job, older package and API names and related consumers. A broad UI audit or regression plan may hold completed feature work without its own review record.
+- Treat the source census and the semantic questions separately. A populated directory bucket does not establish feature coverage. Check a local observation against its base commit and fingerprint before reading a GitHub-versus-local discrepancy, and do not transfer a related scope's review or proof status.
 
-Record which prior conclusions this review retains, reopens or supersedes and
-why. Changed requirements, contradictory evidence, source changes or a
-materially better argument can justify reopening. Keep that boundary at the
-question level: a paint defect does not silently reopen settled topology or
-resize decisions. A changed fingerprint calls for inspecting the changed input;
-it does not by itself invalidate every decision or establish a better design.
-Name unresolved contradictions between the decision, implementation and proof
-before recommending more work.
+A next-item answer needs a brief prior-work summary and the remaining question, not a new audit. Missing bindings and stale evidence stay proof limits; they never make a feature untouched. Say "no prior work found" only after the lookup and the plan search, with the search's limits stated. This applies to a feature's first indexed audit too.
 
-Use the supplied proposal, code, plan, or conversation to name the current job,
-the proposed change, and the claimed benefit. Inspect the current owner and a
-real consumer before judging it. Compare plans and past claims with source.
-Ask only when the missing target or requirement cannot be recovered from that
-context.
+Invoking this skill again requests another review, even when the source is unchanged. Reuse observations whose version, scope and dependencies still match, then challenge the strongest deletion or replacement alternative afresh against current jobs and hard laws. A previous verdict is evidence, not law. When the challenge adds no material value, reaffirm and Stop without another plan or repeated external research.
 
-For one proposal, expand the review only to owners, callers, lifetimes and hard
-constraints that could change the verdict. Stop investigating after the
-plausible design lanes have been considered and the decisive evidence is
-sufficient. Do not manufacture a full audit to reject a thin idea.
+Name what this review retains, reopens or supersedes, and why. Changed requirements, contradictory evidence, source changes or a materially better argument justify reopening, at the question level: a paint defect does not reopen settled topology or resize decisions. A changed fingerprint calls for inspecting the changed input; it does not invalidate every decision. A completed design is not runtime adoption, and an implementation receipt may correct the decision's progress. Name contradictions between the decision, implementation and proof before recommending more work.
 
-For an explicit audit, enumerate the selected units and their materially
-different consumers. Give every unit a disposition; report expected, reviewed,
-excluded and unresolved counts. An early rejection ends work on that candidate,
-not the remaining requested audit. Do not call a partial scan exhaustive.
+## Frame the proposal
 
-Before generalizing an implementation pattern, census the materially different
-production call shapes and classify their static contract, runtime guard and
-dependency boundary. A runtime presence check does not make dynamic dispatch
-statically typed. Treat an erased escape hatch at an intentionally decoupled
-boundary as an exception, not evidence for the general pattern. Where the
-consumer already owns the dependency, compare and prefer the exact inferred
-path unless erasure has a separate proven job.
+Use the supplied proposal, code, plan or conversation to name the current job, the proposed change and the claimed benefit. Read `VISION.md`, `docs/vision/common.md` and the relevant Plate or Plite owner when they can change the verdict. Inspect the owning implementation, public types and materially different consumers, including copied UI and kits when they own the policy; a package-only trace cannot settle that. Ask only when the missing target or requirement cannot be recovered from context.
+
+For one proposal, expand only to the owners, callers, lifetimes and hard constraints that could change the verdict, and stop once the plausible lanes are considered and the decisive evidence suffices. For an explicit audit, enumerate the selected units and their materially different consumers, give every unit a disposition, and report expected, reviewed, excluded and unresolved counts. An early rejection ends that candidate, not the audit; never call a partial scan exhaustive.
+
+Before generalizing a plugin access pattern, census every in-scope production call shape and separate descriptor portals, generated direct transaction groups and dynamic name dispatch. A presence guard makes name dispatch runtime-safe, not statically capability-safe. Accept the erased path only at an independently optional package or entrypoint boundary where importing the descriptor creates the wrong dependency; when an integration already chooses both features, require the descriptor and its inferred portal. Never present `editor.plugin(pluginName)` as the name-only alternative: the escape hatch is `tx.plugin(pluginName)` inside the active transaction, guarded when the peer is optional. One exceptional boundary cannot establish a registry-wide pattern.
 
 ## Compare the full design space
 
-Apply [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)
-before judging the proposed direction. Read the full method once; a familiar
-name or a paraphrase does not replace it.
+Apply `pstack:principle-redesign-from-first-principles` first; it is the governing `next` beta principle, not a fallback after the current design fails. Name the required behavior and hard laws without preserving current symbols, and sketch the smallest clear contract and owner as if the need had been part of the original design. Current APIs and architecture are the baseline, not the boundary.
 
-First name the required behavior and hard laws without preserving current
-symbols. Ask what the smallest clear contract and owner would be if this need
-were part of the original design. Sketch that ideal before fitting it to the
-current implementation. Current APIs and architecture establish the baseline;
-they are not the boundary of the answer.
-
-Consider each lane that can materially change the decision:
+Consider each lane that can change the decision:
 
 | Lane | Question |
 | --- | --- |
@@ -99,25 +53,17 @@ Consider each lane that can materially change the decision:
 | Move ownership | Does a higher or lower layer own the law, including a substrate that must change to support it? |
 | Replace the architecture | Would a different state model, lifetime or responsibility split remove the need for the current protocol? |
 
-For a small question, screen irrelevant lanes briefly. For competing material
-lanes, show the strongest candidates and why each wins, loses or needs evidence.
-Do not equate full consideration with inventing an abstraction for every lane.
+Screen irrelevant lanes briefly; for competing lanes, show the strongest candidates and why each wins, loses or needs evidence. Treat every current and proposed public noun as deletable, and look above and below the named owner. Existing primitives earn reuse by fitting the job; a missing primitive earns addition only through a current job or hard law.
 
-Treat every current and proposed public noun as deletable. Look above and below
-the named owner. Existing primitives earn reuse by fitting the job; familiarity
-and availability do not make them correct. A missing primitive earns addition
-only through a current job or hard law. Do not preserve an inadequate lower
-layer by making its callers assemble glue.
+Apply the Plate decision methods, not only their handoff routes, reading their ownership and decision sections without starting their workflows: [Best API](../best-api/SKILL.md) for the ideal-first call shape, maximum-value hard cut and scale gates, and [Architecture](../plate-architecture/SKILL.md) for the Plate and Plite ownership laws, using both layers when the boundary is contested. On `next`, breaking APIs and architecture are permitted: preserve hard laws and explicit user constraints, not incidental signatures or package topology. Reject Plate glue when the durable repair belongs in Plite, keep product policy out of neutral substrate, and never let "Plite does not expose it" settle the verdict.
 
-Reject "this already works with today's API" as a sufficient recommendation.
-Do not defer the strongest missing-API or architecture alternative to a later
-skill while presenting a current-API workaround as best. This review must name
-that alternative, its owner and material benefit before the value verdict;
-the next skill can settle the detailed contract and proof.
+For cross-feature presentation, compare changing the producer's presentation contract, a justified lower primitive, and removing or merging producers, as well as a new consumer subscription. Moving classes into a kit through an existing hook does not establish the best design.
+
+"This already works with today's API" is not a recommendation. Name the strongest missing-API or architecture alternative, its owner and its material benefit before the verdict; the next skill settles the detailed contract and proof.
 
 ## Test the value
 
-Trace the consequence of each claimed improvement:
+Trace each claimed improvement:
 
 - Which current user, caller, maintainer or runtime job becomes better?
 - Does ownership, lifetime, inference, discoverability or customization improve?
@@ -125,105 +71,48 @@ Trace the consequence of each claimed improvement:
 - What new concepts, dependencies, mutable state or failure paths remain?
 - Which behaviors, callers, data or native laws could regress?
 
-Demand a concrete benefit. Symmetry, a fashionable pattern, fewer lines, a
-larger configuration surface, or hypothetical reuse do not establish value.
-Use the project's durable architecture and API criteria rather than inventing
-a competing doctrine.
+A cut that removes a verification step or safeguard shows that the step catches nothing, or names the independent check that covers the same failure. Run `pstack:why` on code called a workaround before deleting it, and record each cut's predicted benefit so closure can mark it held or falsified.
 
-Judge the long-term target before adoption effort. A large repair can be worth
-doing. Compatibility, sunk effort and implementation difficulty can change its
-order or timing; they cannot make the weaker architecture the better target.
-Separate migration cost from the complexity the target would retain forever.
-Breaking changes are an adoption consequence, not a reason to disqualify a
-target. Preserve actual correctness, security, data and native/runtime laws,
-plus explicit user constraints; do not silently promote current signatures or
-package boundaries into hard laws.
+Demand a concrete benefit; symmetry, a fashionable pattern, fewer lines, a larger configuration surface or hypothetical reuse do not establish value. Judge the long-term target before adoption effort: compatibility, sunk effort and difficulty change order or timing, never which architecture is better. Separate migration cost from the complexity the target keeps forever.
 
-For the strongest direction, show a small ownership flow or normal call site
-and identify the APIs or owners to add, change, move or remove. Label new
-signatures and imports as proposed; cite live source for current claims. Do not
-invent an existing API or require the ideal example to compile today.
-
-Keep facts, judgments and proof gaps distinct. Passing behavior tests do not
-prove good ownership. Source inspection does not prove performance or native
-parity. When one missing fact can change the choice, identify the smallest
-decisive observation or experiment; do not invent measurements or guarantees.
+For the strongest direction, show a small ownership flow or normal call site and the APIs or owners to add, change, move or remove. Label new signatures as proposed, cite live source for current claims, and name the deleted protocol or caller work. Keep facts, judgments and proof gaps distinct: passing tests do not prove good ownership, and source inspection does not prove performance or native parity. When one missing fact can change the choice, name the smallest decisive observation or experiment. Changed runtime machinery needs its executable scale comparison, and an unmeasured runtime target stays provisional even when its direction earns more work.
 
 ## Give one verdict
 
 | Verdict | Meaning | End of this review |
 | --- | --- | --- |
-| **Stop** | The proposal has no material benefit, adds unjustified machinery, violates a hard constraint, or loses to keeping the current design. | State why and keep the current design. No plan, task or consolation backlog. |
-| **Pursue** | A material problem and a better direction are supported by evidence. The better direction may replace the user's proposal. | Recommend the single next owner and its first bounded question or action. |
-| **Defer** | A named evidence gap or external prerequisite can change the verdict. | State what would settle it and recommend only that next investigation. |
+| **Stop** | No material benefit, unjustified machinery, a violated hard constraint, or it loses to the current design. | State why and keep the current design. No plan, task or consolation backlog. |
+| **Pursue** | Evidence supports a material problem and a better direction, which may replace the user's proposal. | Recommend the single next owner and its first bounded question or action. |
+| **Defer** | A named evidence gap or external prerequisite can change the verdict. | State what would settle it and recommend only that investigation. |
 
-Missing evidence alone is not a Stop verdict. A Pursue verdict approves further
-work on a direction; it does not certify an unmeasured runtime design or select
-an API whose important questions remain unresolved.
-An API that does not exist yet is design work, not an evidence gap by itself.
-Stop only after the stronger change lanes also fail to justify further work.
-
-Be blunt about the proposal, not the person. Lead with the verdict and its
-strongest reason. Do not soften rejection with invented minor improvements,
-balanced praise, or a menu of equally good choices.
+Missing evidence alone is not Stop, and an API that does not exist yet is design work, not an evidence gap. Stop only after the stronger change lanes also fail. Be blunt about the proposal, not the person: lead with the verdict and its strongest reason, without invented minor improvements or a menu of equal choices.
 
 ## Recommend the next owner
 
-Choose the next owner for the whole remaining job, not merely its first
-unresolved question. When public contracts, ownership, lifetimes, adoption and
-proof need to be designed together, recommend the project's task owner in its
-design/planning mode. It applies API design and other specialist methods within
-one workflow; an unresolved API does not require a separate user handoff first.
-Keep the review's candidate directions open to that design, not predetermined
-implementation instructions.
+Choose the owner for the whole remaining job:
 
-Choose from routes that actually exist in the project:
+| Remaining question | Next owner |
+| --- | --- |
+| API and architecture choices stay coupled across owners, with adoption or proof to resolve together | "plan", the Plan playbook, applying Best API, `plate-architecture` and Benchmark inside one plan |
+| One bounded public-contract decision | `best-api`, `design` or `review` on the exact surface |
+| The target is clear; adoption and proof span owners | `plate-architecture`, for the layer that owns the first unresolved boundary |
+| The target and a bounded implementation and proof path are clear | The matching playbook in one run, such as Bug fix, or "plan" when the change needs a plan |
+| Runtime scale decides whether the target is justified | `benchmark` with the exact comparison; the verdict stays Defer |
+| Ownership or lifetime evidence is missing | A deeper `best-api-review audit` of that one surface; the verdict stays Defer |
 
-- A bounded public-contract decision is the remaining job: the API design skill.
-- Architecture and API choices remain coupled across owners, with adoption or
-  proof to resolve together: the task's design/planning workflow.
-- The target is clear but adoption crosses owners or needs a proof sequence:
-  the owning architecture or migration plan skill.
-- The target and scope are clear, with a direct implementation and proof path:
-  the task or implementation owner.
-- One factual uncertainty controls the decision: the appropriate investigation
-  or measurement owner, with the exact question to settle.
+Do not narrow coupled work to a standalone Best API handoff because its contract is unresolved, and keep assessed cuts as candidates for the design to validate. Recommend one copyable next invocation, not a chain. A review request authorizes assessment only: do not invoke the next owner, plan or edit product code unless the active request already authorizes that execution, in which case continue under it without asking again.
 
-Verify the selected skill's path and invocation. If no matching skill exists,
-describe the next job directly. Recommend one next invocation, not a mandatory
-chain of review, design, plan and task skills.
+## Return and record
 
-A review request authorizes assessment, not downstream execution. Do not invoke
-the recommended owner, create implementation plans, edit product code or publish
-from a recommendation alone. If the user already authorized proceeding when the
-change is worthwhile, continue that work after the verdict under the existing
-task and authority; do not ask for permission again.
+A single-proposal answer is short: the verdict and one concrete reason; the current and proposed normal call site side by side, or the ownership flow when no public call changes; current versus strongest target with its owner and add, change, move or remove impact; the lanes considered, decisive evidence, regression risk and proof limits; and one next invocation for Pursue or Defer. An audit adds one row per unit with its verdict, evidence and next owner, ranks worthwhile work and names the first step.
 
-## Return the decision
+Record every material review, including Stop and Defer, before the verdict reply. Another review of the same scope, including "again", writes a new record that reaffirms or supersedes this one:
 
-Keep a single-proposal answer short:
+1. If no scope matches a new proposal, add its semantic question to `docs/research/review-index.json` with the current comparison owners and explicit evidence inputs; a proposed scope's real comparator files supply the fingerprints.
+2. Run `draft <scope>` to capture current source, owners, consumers, selected proof and `evidenceInputs` into a JSON draft under `docs/plans/artifacts/`. Add decision-critical shared contracts, fixtures and runner inputs explicitly. When no relevant proof exists, record the gap instead of borrowing an unrelated test or a demo.
+3. Complete the requirements, alternatives, rationale, source references, proof limits, model identity and relation to the previous review, and for a Pursue verdict `callSites` with the `current` and `proposed` call site, and fill `reconciliation` with exact record IDs, question, `retains`/`reopens`/`supersedes` and reason.
+4. Run `validate <draft-path>` to see what `record` would refuse without writing, then `check`; when `check` fails, run the same check at `HEAD` in a detached worktree and attribute the failure before recording. Run `record <draft-path>` last, after the evidence census, the file and line references, the writing passes and any decision-trail review; the record binds the bytes it hashes, so a later edit forces a superseding record. Then reconcile the decision page, `render` and `check`.
 
-1. **Stop, Pursue, or Defer**, followed by one concrete reason.
-2. Current versus strongest target, with its owner and add/change/move/remove
-   impact; label proposed APIs.
-3. The material lanes considered, decisive source evidence, regression risk
-   and proof limits. State why current-API composition beats a breaking
-   alternative if it is the recommendation.
-4. One copyable next invocation for Pursue or Defer; none for Stop.
+**Never leave a record pending.** This holds for review and execution records alike. When `record` refuses because sources moved since the draft, run `draft <scope> --from <draft>` or `draft-execution <plan> --from <draft>`, which recaptures the source and carries every filled field, then `validate` and record. When a cause the run does not own blocks `validate` or `record`, such as another session's unmapped inventory groups, schedule the retry: `CronCreate` with a recurring prompt in Claude Code, `/goal` in Codex. The prompt redrafts with `--from`, validates, records, reconciles the decision page, runs `render` and `check`, and deletes its job once the record exists. Name the draft path, the blocker and the job in the reply and in the plan's decision log, so a later session finishes the record if this one ends. A redraft that gains a reconciliation entry or a different previous review needs judgment, so the retry stops and reports it instead of recording.
 
-An audit adds one row per selected unit with its verdict, evidence and next
-owner. Rank worthwhile work and recommend the first step overall. Reuse an
-existing plan or artifact when the scope needs a durable record. Do not create
-a scoring system, review panel or checklist suite merely to issue this verdict.
-
-Persist material reviews, including Stop and Defer, through the project's
-existing history owner before closing. Record the question and requirements,
-alternatives, verdict and rationale, source/consumer references and versions,
-proof limits, reconciled prior conclusions and reasons, subsequent execution,
-prior-review relation, date, and available model/method identity.
-Keep unknown historical provenance explicit. Preserve completed earlier
-records; correct them with a linked later record. The current summary may
-change while the earlier result remains readable. A negative review record
-does not create a task, implementation plan or consolation backlog. Keep small
-reviews compact in an existing artifact instead of adding a mandatory planning
-workflow.
+The helper appends an immutable record; adoption and proof derive from bound execution outcomes. A Stop record is history, not a task, and small reviews use the same compact record without a plan. When the source inventory changes, map added or renamed features in the index and run `refresh`, `render` and `check`; refresh never updates an old review or certifies behavior. Execution tied to a review follows the Build playbook's close (`.agents/playbooks/build.md`), and [the record contract](../../../docs/research/schema.md#review-history) owns the exact fields. AI remains last in the global review order; a direct feature request still selects that feature.

@@ -1,7 +1,5 @@
 # Sync Shadcn
 
-Apply [the Plate workflow](../../task/references/workflow.md) for plan, authority, proof and review ownership.
-
 
 Handle $ARGUMENTS.
 
@@ -24,9 +22,9 @@ MCP, Plate Plus hooks, GA, and a small set of intentional forks.
 
 ## File-plan contract
 
-Task owns the file plan and lifecycle. Apply the project's standing Autogoal request for long-running work. Read the existing plan and mode before mutation.
+Keep one plan under `docs/plans/`; read it and the mode before mutation.
 
-`sync-shadcn` has planning and implementation modes within Task:
+`sync-shadcn` has planning and implementation modes:
 
 - Planning mode is the default. It writes the range plan, updates
   `lastPlannedCommit`, directly applies qualifying micro-overlap merges,
@@ -38,21 +36,14 @@ Task owns the file plan and lifecycle. Apply the project's standing Autogoal req
   execution for accepted implementation mode. An already-authorized task may continue between them.
 - Use collaborative planning only when the user is explicitly deciding policy
   before a range plan is written.
-- Primary template:
-  `docs/plans/templates/sync-shadcn.md`.
-- Default packs: none. Add `docs` if docs/content pages are edited during an
-  accepted implementation, `browser` if visible docs UI is edited, and
-  `agent-native` if `.agents/**`, `.claude/**`, `.codex/**`, skills, commands,
-  prompts, or user-action tooling are edited.
 - Required evidence types: `command`, `source-audit`, `artifact`, and `N/A`
   rows. Add `browser` evidence when a planning scope or accepted
   implementation touches visible docs UI.
 - Visual sync scopes must capture comparable screenshots of the upstream
   shadcn page and the Plate page before making or closing a visual parity call.
   Save only screenshots and notes, not broad upstream patch files.
-- Task owns lifecycle, mode, existing authority, plan and output scope. The
-  file helper and `check-complete.mjs` support the plan without native goal
-  state. Apply mode can follow planning in the same authorized task.
+- pstack's poteto-mode owns lifecycle, mode, existing authority, plan and output scope.
+  Apply mode can follow planning in the same authorized task.
 - `sync-shadcn` owns shadcn range policy, commit accounting, upstream inventory
   classification, Plate fork/exclusion decisions, status JSON semantics, and
   merge-slice handoff.
@@ -120,7 +111,7 @@ is resolved; do not require a later message or a second invocation.
 Planning mode may:
 
 - fetch/pull `../shadcn`
-- create the active Task plan
+- create the active plan
 - write `docs/sync/shadcn/runs/<range>/` artifacts
 - update `lastPlannedCommit` and `lastPlan`
 - directly apply qualifying micro-overlap merges and record them as partial
@@ -130,7 +121,7 @@ Planning mode may:
 Planning mode must not:
 
 - patch `apps/www` except for qualifying micro-overlap direct merges
-- delegate to `task`
+- hand implementation to pstack's poteto-mode
 - advance `lastSyncedCommit`
 - treat "recommended first slice" as accepted
 - implement a slice without existing user authorization
@@ -144,7 +135,7 @@ plan path and slice.
 ```
 
 Implementation mode requires current authority for the plan/slice. Continue
-the same Task plan and record the accepted slice. A later message is needed
+the same plan and record the accepted slice. A later message is needed
 only when that authority or a required product decision is still missing.
 
 ## Hard Rules
@@ -169,10 +160,10 @@ only when that authority or a required product decision is still missing.
 - On `next`, run `pnpm --filter www build:registry` when accepted registry
   source changes. Other branches follow the repo's CI-generation rule. Never
   generate registry output during a planning-only run.
-- Continue accepted implementation through Task in the same activation when
+- Continue accepted implementation under pstack's poteto-mode in the same activation when
   authorized. A new scope or unresolved product decision needs user input;
   the internal owner transition does not.
-- Keep the active `sync-shadcn` Task plan current after every meaningful
+- Keep the active `sync-shadcn` plan current after every meaningful
   decision, artifact write, classification pass, status JSON edit, accepted
   implementation slice, verification run, or blocker.
 - Prefer deleting old Plate fork residue over preserving compatibility layers
@@ -191,10 +182,10 @@ only when that authority or a required product decision is still missing.
 
 ## Start Gates
 
-These gates must be resolved in the active `sync-shadcn` Task plan before broad
+These gates must be resolved in the active `sync-shadcn` plan before broad
 exploration:
 
-- Task scope and file plan read; standing Autogoal request applied or explicit opt-out recorded.
+- Scope and plan read.
 - `docs/sync/shadcn/status.json` read.
 - `docs/sync/shadcn/decisions.md` read.
 - Prior migration plans and solution notes checked when relevant.
@@ -208,8 +199,7 @@ exploration:
 
 ## Completion Gates
 
-These gates belong in `docs/plans/templates/sync-shadcn.md` and must be closed
-in the instantiated Task plan:
+These gates must be closed in the active plan:
 
 - Upstream range artifacts exist and are non-empty, or a target-only bootstrap
   exception is recorded.
@@ -234,7 +224,6 @@ in the instantiated Task plan:
 - Planning-mode final handoff lists any direct micro-overlap merges, asks the
   user to review the remaining plan, and invokes `sync-shadcn` again with the
   accepted plan path and slice for bigger work.
-- `check-complete.mjs` passes for the active Task plan.
 
 ## Durable Policy
 
@@ -244,7 +233,7 @@ Read these before making decisions:
 - `docs/sync/shadcn/decisions.md`
 - `docs/plans/2026-05-23-shadcn-docs-restart-comparison.md`
 - `docs/plans/2026-05-24-shadcn-base-migration-progress.md`
-- `.agents/rules/shadcn-parity.mdc`
+- [parity](./parity.md)
 - `docs/solutions/best-practices/2026-05-23-shadcn-docs-restart-comparison.md`
 - `docs/solutions/developer-experience/2026-05-27-shadcn-docs-sidebar-parity-needs-source-and-dom-metrics.md`
 - `docs/solutions/developer-experience/2026-05-24-shadcn-v4-registry-schema-needs-source-only-validation.md`

@@ -29,6 +29,45 @@ The Node-safe `@platejs/test` root owns headless fixtures and JSX test builders.
 Use the [Unit Testing Plate](/docs/unit-testing) guide for those APIs and the
 React test helpers.
 
+## Setup
+
+The app under test installs the browser handle once, at module scope in a test
+or development entry, before its first editor mounts. Production entries never
+call it, so their bundles drop the handle.
+
+```ts
+import { installBrowserHandle } from "platejs/react";
+
+installBrowserHandle();
+```
+
+Each Playwright project names how clipboard paste helpers deliver a paste.
+`'native'` writes the clipboard and presses the paste shortcut, `'event'`
+dispatches synthetic paste events, and `'handle'` calls the editor directly as
+a labeled stand-in. A paste fails when its transport did not apply it.
+
+```ts
+import type { BrowserTestOptions } from "@platejs/test/playwright";
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig<BrowserTestOptions>({
+  projects: [
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        clipboardTransport: "native",
+        permissions: ["clipboard-read", "clipboard-write"],
+      },
+    },
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"], clipboardTransport: "event" },
+    },
+  ],
+});
+```
+
 ## First test
 
 ```ts

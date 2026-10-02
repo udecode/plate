@@ -1,0 +1,3 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+dnd:default-pointer-driver	github.com/clauderic/dnd-kit	dnd:default-pointer-driver:source	Requires parallel native transport and competing DOM owners for current job	A concrete pointer/touch block interaction cannot be met by current native handling
+dnd:react-backend-reintroduction	github.com/react-dnd/react-dnd	dnd:react-backend-reintroduction:source	Reintroduces manager/backend coordination without full input or editor coverage	A current product requires integration with an existing React DnD manager

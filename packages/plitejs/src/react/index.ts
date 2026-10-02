@@ -25,8 +25,10 @@ export type {
 export type {
   EditableHistoryReplayEvent,
   EditableHistoryReplayResult,
+  EditableDropResult,
   EditablePasteResult,
 } from './editable/editable-dom-runtime';
+export { installBrowserHandle } from './editable/install-browser-handle';
 export type {
   RenderLeafProps,
   RenderPlaceholderProps,
@@ -132,6 +134,7 @@ export {
   useContentRoot,
 } from './hooks/use-plite-content-root';
 export { type UseEditorOptions, useEditor } from './hooks/use-editor';
+export { useDropIndicator } from './hooks/use-drop-indicator';
 export { useClaimEditableDOMCommit } from './hooks/use-claim-editable-dom-commit';
 export {
   type DOMTextSyncRendererCapabilityContext,

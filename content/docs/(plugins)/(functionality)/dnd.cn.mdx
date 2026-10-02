@@ -1,6 +1,6 @@
 ---
 title: 拖拽功能
-description: 通过拖拽区块来重新组织编辑器中的内容。
+description: 拖拽区块，在同一文档内移动，或复制到另一个编辑器。
 docs:
   - route: /docs/components/dnd
     title: 可拖拽区块组件
@@ -12,10 +12,12 @@ docs:
 
 ## 功能特性
 
-- 通过拖拽区块实现内容移动和插入
-- 拖拽至视窗边缘时自动滚动
-- 安装 `UploadPlugin` 后可拖放文件并指定插入位置
-- 可视化拖放指示器和拖拽手柄
+- 通过手柄拖拽区块。选中的区块，或列表项及其嵌套项，会一起移动。
+- 每个视图在放置位置的边缘绘制一条放置指示线。
+- 在同一文档内拖拽会移动区块，拖到另一个编辑器会复制区块。按住 Option（macOS）或 Ctrl（其他平台）可改为复制。
+- 点击手柄可使用“上移”“下移”和“剪切”。`Mod+Shift+ArrowUp` 和 `Mod+Shift+ArrowDown` 移动光标所在的区块。
+- 区块可以放到 schema 允许的任何位置，例如引用块、详情正文、分栏或表格单元格内。表格行、分栏、列表、详情摘要和上传保留各自的规则，指示线只显示可以放置的边缘。
+- `UploadPlugin` 接受原生拖放时，拖入的文件会变成上传。
 
 </PackageInfo>
 
@@ -25,11 +27,9 @@ docs:
 
 ### 安装
 
-最快捷的方式是使用 `DndKit` 套件，它包含预配置的 `DndPlugin`、React DnD 设置以及 [`BlockDraggable`](/docs/components/dnd) UI组件。
+`DndKit` 为任意层级的每个可选中区块添加手柄，例如引用块、详情、分栏和表格单元格内的区块，并且只显示最内层悬停区块的手柄。表格行、单元格、分栏项和详情摘要没有手柄。它还绘制放置指示线，并绑定键盘移动。拖放使用浏览器原生事件，不需要 provider 或额外依赖。
 
 <ComponentSource name="dnd" />
-
-- [`BlockDraggable`](/docs/components/dnd): 为区块渲染拖拽手柄和放置指示器
 
 ### 添加套件
 
@@ -39,211 +39,231 @@ import { DndKit } from '@/components/editor/dnd';
 
 const editor = createEditor({
   plugins: [
-    // ...其他插件
+    // ...otherPlugins,
     ...DndKit,
   ],
 });
 ```
 
-### 渲染编辑器
+</Steps>
 
-`DndKit` 提供 HTML5 backend，并将清理绑定到每个已挂载的 Editable，包括禁用自动滚动时的清理。在 `EditorRoot` 内渲染编辑器即可：
+## 示例
+
+### 多个编辑器
+
+<ComponentPreview name="dnd-multi-editor-demo" />
+
+同一个编辑器上的两个 `EditorRoot` 是同一文档的两个视图，因此在它们之间拖拽会移动区块。挂载第二个视图时传入 `suppressInstanceWarning`。拖放到另一个编辑器会复制，源编辑器保留原区块。
+
+### 表格与分栏
+
+<ComponentPreview name="dnd-table-demo" />
+
+复制的 `table` 和 `column` 组件会添加各自的行手柄和分栏手柄。行只能落在同一表格的行旁边，表格会拒绝会拆分合并单元格的拖放。分栏只在所属分栏组内重新排序。其他区块可以拖入单元格或分栏。
+
+### 文件拖放
+
+`nativeDrop` 为 `true` 时，React 版 `UploadPlugin` 会放置拖入的文件；复制的 [Upload](/docs/upload) 套件已启用它。文件拖放显示相同的指示线，只会落在上传区块可以放置的位置。被拒绝的拖放不会插入任何内容。
+
+## 自定义拖拽手柄
+
+编辑器自己处理每个 `dragover` 和 `drop`。它解析放置位置、发布指示线并执行转移。手柄只负责开始拖拽，组件负责绘制指示线。
 
 ```tsx
-import { EditorRoot, useCreateEditor } from 'platejs/react';
-import { DndKit } from '@/components/editor/dnd';
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import {
+  definePlugin,
+  type RenderNodeWrapperProps,
+  useDropIndicator,
+} from 'platejs/react';
 
-export function DraggableEditor() {
-  const editor = useCreateEditor({ plugins: DndKit });
+function DragHandle({ children, editor, element }: RenderNodeWrapperProps) {
+  return (
+    <div className="relative [&>[data-editor-dragging]]:opacity-50">
+      <button
+        aria-label="Drag block"
+        className="absolute -left-6 cursor-grab"
+        contentEditable={false}
+        draggable
+        type="button"
+        onDragStart={(event) => {
+          if (!editor.api.dom.drag.start(event.nativeEvent, { node: element })) {
+            event.preventDefault();
+          }
+        }}
+      >
+        ⠿
+      </button>
+      {children}
+    </div>
+  );
+}
+
+function DropIndicator() {
+  const indicator = useDropIndicator();
+
+  if (!indicator) return null;
+
+  const { line } = indicator;
 
   return (
-    <EditorRoot editor={editor}>
-      <EditorContainer>
-        <Editor />
-      </EditorContainer>
-    </EditorRoot>
+    <div
+      aria-hidden
+      className="pointer-events-none fixed top-0 left-0 h-0.5 bg-blue-500"
+      style={{
+        transform: `translate(${line.x}px, ${line.y - 1}px)`,
+        width: line.width,
+      }}
+    />
   );
+}
+
+export const DragHandlePlugin = definePlugin('dragHandle', {
+  slots: {
+    afterEditable: DropIndicator,
+    wrapNode: {
+      component: DragHandle,
+      match: ({ editor, element }) =>
+        editor.read.schema.isBlockContent(element) &&
+        editor.read.nodes.isSelectable(element),
+    },
+  },
+});
+```
+
+这个 match 为任意层级的每个可选中区块添加手柄；只给顶层区块添加时匹配 `renderPath.length === 1`。没有可拖拽内容时，例如区块已被删除，`drag.start` 返回 `null`。拖拽期间，每个被拖拽的区块都带有 `data-editor-dragging`，上面的包装组件据此降低其不透明度。只读视图开始的拖拽只能复制。
+
+指示线在每次 `dragover` 时移动，因此用 `transform` 定位，它不会触发布局。分栏项水平排列，其指示线为 `axis: 'x'`。用 `line.x`、`line.y` 和 `line.height` 绘制竖线。
+
+### 拖拽图像
+
+`drag.start` 还返回被拖拽区块的惰性克隆，以及指针相对第一个区块的偏移。套件的 `startBlockDrag` 将它们放在被拖拽区块上方，并交给浏览器作为拖拽图像：
+
+```tsx
+onDragStart={(event) => {
+  const drag = editor.api.dom.drag.start(event.nativeEvent, { node: element });
+
+  if (!drag) {
+    event.preventDefault();
+    return;
+  }
+
+  const rect = editor.api.dom.resolveDOMNode(element)?.getBoundingClientRect();
+  const image = document.createElement('div');
+
+  image.style.cssText = `position:fixed;pointer-events:none;left:${rect?.left ?? 0}px;top:${rect?.top ?? 0}px;width:${rect?.width ?? 0}px;`;
+  image.append(...drag.previews);
+  document.body.append(image);
+  event.dataTransfer.setDragImage(image, drag.origin.x, drag.origin.y);
+  // The browser snapshots the image during dragstart.
+  requestAnimationFrame(() => image.remove());
+}}
+```
+
+## 以代码移动区块
+
+`editor.api.transfer` 执行与放置相同的规则。每次调用是一个撤销步骤，并返回其结果。
+
+```tsx
+const outcome = editor.api.transfer.move({
+  nodes: [editor.key(element)],
+  to: { edge: 'after', key: editor.key(target) },
+});
+
+if (outcome.status === 'refused') {
+  console.warn(outcome.reason);
 }
 ```
 
-</Steps>
-
-## 手动配置
-
-<Steps>
-
-### 安装依赖
-
-```bash
-npm install platejs @tanstack/react-virtual raf react-dnd react-dnd-html5-backend
-```
-
-### 配置工具包
-
-安装 `DndKit`，并通过 `DndPlugin` 配置行为：
+`to` 也接受 `'next'` 和 `'previous'`，在父级内将区块越过最近的同级区块并保留选区；位于不同父级下的区块会以 `policy` 拒绝。不传 `nodes` 时，转移携带 `editor.read.transfer.nodes()` 返回的区块。传入 `announce` 可在移动完成时向屏幕阅读器播报：
 
 ```tsx
-import { DndPlugin } from 'platejs/dnd/react';
-import { createEditor } from 'platejs/react';
-import { DndKit } from '@/components/editor/dnd';
+editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
+```
 
-const editor = createEditor({
-  plugins: [
-    ...DndKit,
-    DndPlugin.configure({
-      initialState: { enableScroller: false },
-    }),
+传入另一个编辑器作为 `from`，即可从该编辑器移动或复制。在相互独立的编辑器之间，移动总是复制。
+
+### 拒绝放置
+
+区块落在目标 schema 接受它的任何位置。schema 允许但功能不允许的放置，例如把表格行放进另一个表格，由插件通过 `transferVeto` 贡献拒绝。它在列表等功能调整之后，对每次拖拽、键盘移动和 `editor.api.transfer` 调用的最终边缘运行。
+
+```tsx
+import { transferVeto } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const PinnedPlugin = definePlugin('pinned', {
+  contributions: [
+    transferVeto.of(({ edge, target: [node] }) => edge === 'before' && node.pinned === true),
   ],
 });
 ```
 
-若应用提供了 `DndProvider`，请将其放在编辑器的共同父组件中。每个 `DndKit` 都会使用该 manager；否则，工具包会提供默认的 HTML5 backend。
+输入还包含源视图（`from`）、`intent`（`move` 或 `copy`）、`payload` 以及文档之间的 `relation`。第二个参数是目标视图。
 
-### 高级配置
+若要移动边缘，例如越过列表项的嵌套项，用读取中间件包裹 `editorReads.transfer.landing` 并返回另一个边缘，或返回 `next()` 保持原边缘。被移动的边缘必须映射到它自身；随后由 schema 和否决检查最终边缘。
 
-添加自动滚动和文件拖放处理。`DndKit` 可单独使用；仅在安装 Files 插件时
-提交拖放文件。客户端和媒体目标插件的配置见[上传文件](/cn/docs/upload)。
+## API 参考
 
-```tsx
-import { DndPlugin } from 'platejs/dnd/react';
-import { UploadPlugin } from 'platejs/upload/react';
-import { BlockDraggable } from '@/components/editor/dnd';
+### `editor.api.transfer.move`
 
-DndPlugin.configure({
-  initialState: {
-    enableScroller: true,
-    onDropFiles: ({ dragItem, edge, editor, key }) => {
-      const files = editor.plugin(UploadPlugin);
-      if (!files.installed) return;
-
-      files.update.submit(
-        dragItem.files,
-        edge === 'before' ? { before: key } : { after: key }
-      );
-    },
-  },
-  slots: {
-    wrapNode: BlockDraggable,
-  },
-});
-```
-
-- `enableScroller`: 启用拖拽至视窗边缘时的自动滚动
-- `onDropFiles`: 安装 Files 后在目标位置插入拖放文件
-
-</Steps>
-
-## 插件
-
-### `DndPlugin`
-
-实现编辑器内拖拽功能的插件。
-
-<API name="DndPlugin">
-<APIOptions>
-  <APIItem name="enableScroller" type="boolean" optional>
-    是否启用拖拽至视窗边缘自动滚动
-    - **默认值:** `false`
-  </APIItem>
-  <APIItem name="scrollerProps" type="Partial<DndScrollerOptions>" optional>
-    启用自动滚动时的行为选项
-  </APIItem>
-  <APIItem name="onDropFiles" type="function" optional>
-    文件拖放事件处理器
+<API name="move">
+<APIParameters>
+  <APIItem name="input" type="TransferInput">
     <APISubList>
-      <APISubListItem parent="onDropFiles" name="key" type="NodeKey">
-        目标元素的运行时标识
+      <APISubListItem parent="input" name="to" type="{ key: NodeKey; edge: 'before' | 'after' } | { point: Point } | 'next' | 'previous'">
+        放置位置：某个区块旁、某个文本点，或越过一个同级区块。
       </APISubListItem>
-      <APISubListItem parent="onDropFiles" name="dragItem" type="FileDragItemNode">
-        包含拖放文件的对象
+      <APISubListItem parent="input" name="nodes" type="NodeKey[]" optional>
+        要移动的区块，以 `from` 中的键表示。**默认值：** 选中的区块，或包含选区的区块。
       </APISubListItem>
-      <APISubListItem parent="onDropFiles" name="editor" type="Editor">
-        编辑器实例
+      <APISubListItem parent="input" name="range" type="Range" optional>
+        要移动的文本，代替区块。
       </APISubListItem>
-      <APISubListItem parent="onDropFiles" name="target" type="Path">
-        文件应插入的路径
+      <APISubListItem parent="input" name="from" type="Editor" optional>
+        源编辑器或视图。**默认值：** 执行转移的编辑器。
+      </APISubListItem>
+      <APISubListItem parent="input" name="announce" type="string" optional>
+        转移完成时播报的屏幕阅读器消息。
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="dropTarget" type="{ key: NodeKey | null; line: DropLineDirection }" optional>
-    当前拖放目标状态，包含目标元素的运行时标识和放置线方向
-  </APIItem>
-</APIOptions>
-</API>
+</APIParameters>
 
-## 钩子
-
-## 拖拽准备
-
-`editor.plugin(DndPlugin).read.dragEntries(element)` 读取当前拖拽区块及其嵌套列表项，不修改选择。
-`api.prepareDrag(element)` 选择完整拖拽内容，并返回已挂载区块的 `{ node, domNode, preview }`。
-预览副本为 inert、设置 `aria-hidden`，且不包含 Plate DOM 绑定；未挂载的选中区块仍保留在拖拽内容中。
-预览的位置、间距和滚动补偿由组件负责。
-
-`canDropNode` 对每个拖拽区块执行检查，并提供目标 `editor` 与 `sourceEditor`。
-任何区块被拒绝时，不显示落点，也不调用 `onDropHandler`。
-
-### `useDndPlugin`
-
-`useDndPlugin(editableElement: HTMLElement | null): void` 将拖放清理监听器绑定到一个已挂载视图的 `ownerDocument`。传入该视图的实际 Editable 元素；挂载前和卸载后传入 `null`。元素变化或组件卸载时，钩子会移除旧文档上的监听器。
-
-`DndKit` 会自动调用此钩子。只有在自行管理 Provider 和视图生命周期的自定义集成中，才需要直接使用它。
-
-### `useDraggable`
-
-使元素具备可拖拽行为的自定义钩子，提供可自定义或禁用的拖拽预览效果。
-
-<API name="useDraggable">
-<APIOptions type="UseDraggableOptions">
-  <APIItem name="element" type="Element">
-    要设为可拖拽的元素
-  </APIItem>
-  <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
-    拖拽方向
-    - **默认值:** `'vertical'`
-  </APIItem>
-  <APIItem name="type" type="string" optional>
-    拖拽项类型
-    - **默认值:** `'block'`
-  </APIItem>
-  <APIItem name="onDropHandler" type="function" optional>
-    元素放置时的处理函数
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="handleRef" type="(element: Element | React.ReactElement | React.RefObject<any> | null) => void">
-    拖拽源连接函数
-  </APIItem>
-  <APIItem name="isDragging" type="boolean">
-    元素是否正在被拖拽
-  </APIItem>
-  <APIItem name="previewRef" type="React.RefObject<HTMLDivElement>">
-    可拖拽元素的引用
+<APIReturns type="TransferOutcome">
+  <APIItem name="status" type="'moved' | 'copied' | 'refused'">
+    `moved` 和 `copied` 以 `at` 给出放置后的选区。`copied` 给出其 `reason`，例如另一个编辑器对应 `independent`。`refused` 给出 `reason`：`inside-source`、`lossy`、`no-op`、`policy`、`read-only-target`、`schema` 或 `source-missing`。
   </APIItem>
 </APIReturns>
 </API>
 
-### `useDropLine`
+### `editor.api.transfer.copy`
 
-返回元素的当前放置线状态。
+输入与 `move` 相同，并保留源内容。
 
-<API name="useDropLine">
-<APIOptions type="object">
-  <APIItem name="key" type="NodeKey" optional>
-    用于显示元素放置线的运行时标识
-    - **默认值:** 当前元素的运行时标识
-  </APIItem>
-  <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
-    按方向过滤放置线
-    - **默认值:** `'vertical'`
-  </APIItem>
-</APIOptions>
+### `editor.read.transfer.nodes`
 
-<APIReturns type="object">
-  <APIItem name="dropLine" type="'top' | 'bottom' | 'left' | 'right' | ''">
-    当前放置线方向
+`editor.read.transfer.nodes(options?: { node?: Element | NodeKey }): NodeKey[]` 返回转移携带的区块，例如列表项及其嵌套项。传入 `node` 时返回手柄的区块：选区包含 `node` 时为选中的区块，否则只有 `node`。不传时返回选中的区块，或包含选区的区块。把结果作为 `nodes` 传给 `editor.api.transfer.move`。
+
+### `useDropIndicator`
+
+`useDropIndicator(): DropIndicator | null` 读取当前视图的放置指示线。
+
+<API name="DropIndicator">
+<APIAttributes>
+  <APIItem name="key" type="NodeKey">
+    放置位置所在的区块。
   </APIItem>
-</APIReturns>
+  <APIItem name="edge" type="'before' | 'after'">
+    该区块的哪一侧。
+  </APIItem>
+  <APIItem name="axis" type="'x' | 'y'">
+    纵向堆叠的区块为 `y`，分栏等横向排列的项为 `x`。
+  </APIItem>
+  <APIItem name="line" type="{ x: number; y: number; width: number; height: number }">
+    边缘在视口中的矩形：`y` 轴时高度为零，`x` 轴时宽度为零。
+  </APIItem>
+</APIAttributes>
 </API>
+
+### DOM 拖拽 API
+
+[`editor.api.dom.drag.start`](/docs/api/dom#drag-and-drop)、`editor.api.dom.drag.indicate` 和 `editor.api.dom.resolveDropTarget` 用于以代码驱动拖拽，例如不是原生 draggable 的自定义手柄。

@@ -2,7 +2,7 @@
 
 Primary reusable entrypoint:
 
-- [$research-wiki](.agents/skills/research-wiki/SKILL.md)
+- [$research](../../../.agents/skills/research/SKILL.md)
 
 Recommended command name:
 
@@ -37,7 +37,7 @@ research system itself:
 - fill what can be filled safely
 - leave explicit unresolved gaps where evidence is still missing
 
-This is the full-mode sub-workflow for `research-wiki`.
+This is the full-mode sub-workflow for `research full`.
 
 Use it when the goal area is big enough that trusting the currently visible
 local slice would be reckless.

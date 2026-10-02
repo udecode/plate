@@ -405,7 +405,7 @@ export const validateFeaturePlan = (
     ([gate]) => gate === 'P1 autoreview'
   );
   const goalIndex = completionRows.findIndex(
-    ([gate]) => gate === 'Goal plan complete'
+    ([gate]) => gate === 'Plan complete'
   );
   const p1Gate = completionRows[p1Index];
   const goalGate = completionRows[goalIndex];
@@ -418,10 +418,10 @@ export const validateFeaturePlan = (
     errors.push('Excluded P1 autoreview completion gate needs an N/A reason.');
   }
   if (!goalGate || goalGate[1] !== 'yes') {
-    errors.push('Missing required Goal plan complete gate.');
+    errors.push('Missing required Plan complete gate.');
   }
   if (p1Index === -1 || goalIndex === -1 || p1Index > goalIndex) {
-    errors.push('P1 autoreview must appear before Goal plan complete.');
+    errors.push('P1 autoreview must appear before Plan complete.');
   }
 
   return errors;

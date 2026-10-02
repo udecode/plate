@@ -26,6 +26,7 @@ import {
   schema,
   SelectionApi,
   TextApi,
+  transferVeto,
   type BlockInsertOptions,
   type BlockUpsertOptions,
 } from '../../../core';
@@ -477,6 +478,75 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
         },
       },
     }),
+}).extend(({ editor, schema: { type } }) => {
+  const isRow = (node: Node): boolean =>
+    ElementApi.isElement(node) && node.type === type;
+  const splitsSpan = (table: Node, gap: number): boolean =>
+    compileTableGrid(table as TableElement).anchors.some(
+      ({ row, rowSpan }) => row < gap && gap < row + rowSpan
+    );
+  const spansRow = (table: Node, index: number): boolean =>
+    compileTableGrid(table as TableElement).anchors.some(
+      ({ row, rowSpan }) => rowSpan > 1 && row <= index && index < row + rowSpan
+    );
+
+  return {
+    // A grid's width and spans are not schema, so these limits stay here.
+    contributions: [
+      // Cells never transfer.
+      transferVeto.of(({ payload }) => {
+        const cellType = editor.plugin(BaseTableCellPlugin).schema.type;
+
+        return (
+          payload.kind === 'nodes' &&
+          payload.nodes.some((node) => ElementApi.isElementType(node, cellType))
+        );
+      }),
+      // Rows land only beside the rows of their own table in one document.
+      transferVeto.of(({ payload, relation, target: [node, path] }, view) => {
+        if (payload.kind !== 'nodes' || !payload.nodes.some(isRow)) {
+          return false;
+        }
+        if (relation !== 'document' || !isRow(node)) return true;
+
+        const tableKey = view.key(PathApi.parent(path));
+
+        return !payload.nodes.every(
+          (row, index) => isRow(row) && payload.parentKeys[index] === tableKey
+        );
+      }),
+      // A row edge never splits a row span, and a move never takes a row out
+      // of one.
+      transferVeto.of(
+        ({ edge, from, intent, payload, target: [node, path] }, view) => {
+          if (
+            payload.kind !== 'nodes' ||
+            !payload.nodes.some(isRow) ||
+            !isRow(node)
+          ) {
+            return false;
+          }
+
+          const table = view.read.nodes.get(PathApi.parent(path))?.[0];
+          const gap = (path.at(-1) as number) + (edge === 'after' ? 1 : 0);
+
+          if (table && splitsSpan(table, gap)) return true;
+          if (intent !== 'move') return false;
+
+          return payload.nodes.some((row, index) => {
+            const parentKey = payload.parentKeys[index];
+            const source = parentKey && from.read.nodes.get(parentKey)?.[0];
+
+            return (
+              !!source &&
+              ElementApi.isElement(source) &&
+              spansRow(source, source.children.indexOf(row))
+            );
+          });
+        }
+      ),
+    ],
+  };
 });
 
 const initialState: TablePluginState = {

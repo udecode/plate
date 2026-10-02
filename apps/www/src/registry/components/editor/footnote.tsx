@@ -4,7 +4,6 @@ import { PathApi, type Path } from 'platejs';
 import {
   FootnotePlugin,
   FootnoteDefinitionPlugin,
-  FootnoteInputPlugin,
 } from 'platejs/footnote/react';
 import {
   type Editor,
@@ -41,8 +40,8 @@ import {
   InlineComboboxContent,
   InlineComboboxEmpty,
   InlineComboboxGroup,
-  InlineComboboxInput,
   InlineComboboxItem,
+  useInlineComboboxQuery,
 } from '@/registry/components/editor/inline-combobox';
 
 const NUMERIC_FOOTNOTE_QUERY = /^\d+$/;
@@ -370,16 +369,27 @@ export function FootnoteDefinitionElement(
   );
 }
 
-export function FootnoteInputElement(
-  props: EditorElementProps<typeof FootnoteInputPlugin>
-) {
-  const { element } = props;
-  const { read: footnoteApi } = useEditor().plugin(FootnotePlugin);
-  const [search, setSearch] = React.useState('');
+export function FootnoteCombobox({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <InlineCombobox
+      editableRef={editableRef}
+      filter={false}
+      plugin={FootnotePlugin}
+    >
+      <FootnoteComboboxContent />
+    </InlineCombobox>
+  );
+}
 
+function FootnoteComboboxContent() {
+  const { read: footnoteApi } = useEditor().plugin(FootnotePlugin);
+  const query = useInlineComboboxQuery().trim();
   const refs = footnoteApi.refs?.() ?? [];
   const nextRef = footnoteApi.nextRef?.() ?? '1';
-  const query = search.trim();
   const numericQuery = NUMERIC_FOOTNOTE_QUERY.test(query) ? query : '';
   const proposedRef = numericQuery || nextRef;
   const showCreateOption = !refs.includes(proposedRef);
@@ -395,78 +405,64 @@ export function FootnoteInputElement(
   });
 
   return (
-    <EditorElement {...props} as="span">
-      <InlineCombobox
-        value={search}
-        element={element}
-        filter={false}
-        setValue={setSearch}
-        trigger="^"
-      >
-        <InlineComboboxInput className="min-w-[1ch]" />
+    <InlineComboboxContent className="my-1.5 w-72">
+      {showCreateOption || filteredRefs.length > 0 ? null : (
+        <InlineComboboxEmpty>No footnotes</InlineComboboxEmpty>
+      )}
 
-        <InlineComboboxContent className="my-1.5 w-72">
-          {showCreateOption || filteredRefs.length > 0 ? null : (
-            <InlineComboboxEmpty>No footnotes</InlineComboboxEmpty>
-          )}
+      <InlineComboboxGroup>
+        {showCreateOption && (!query || numericQuery) ? (
+          <InlineComboboxItem
+            value={`new-${proposedRef}`}
+            onSelect={(tx) => {
+              if (
+                numericQuery &&
+                tx.plugin(FootnotePlugin).definition({ ref: numericQuery })
+              ) {
+                return false;
+              }
 
-          <InlineComboboxGroup>
-            {showCreateOption && (!query || numericQuery) ? (
-              <InlineComboboxItem
-                value={`new-${proposedRef}`}
-                onSelect={(tx) => {
-                  tx.plugin(FootnotePlugin).insert({
-                    focusDefinition: false,
-                    ref: proposedRef,
-                    trigger: '[',
-                  });
-                }}
-              >
-                <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-                  <span className="font-mono text-muted-foreground">
-                    [^{proposedRef}]
-                  </span>
-                  <span className="truncate">: New footnote...</span>
-                </span>
-              </InlineComboboxItem>
-            ) : null}
+              tx.plugin(FootnotePlugin).insert({
+                focusDefinition: false,
+                ...(numericQuery ? { ref: numericQuery } : {}),
+              });
+            }}
+          >
+            <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+              <span className="font-mono text-muted-foreground">
+                [^{proposedRef}]
+              </span>
+              <span className="truncate">: New footnote...</span>
+            </span>
+          </InlineComboboxItem>
+        ) : null}
 
-            {filteredRefs.map((ref: string) => (
-              <InlineComboboxItem
-                key={ref}
-                value={`footnote-${ref}`}
-                onSelect={(tx) => {
-                  tx.plugin(FootnotePlugin).insert({
-                    focusDefinition: false,
-                    ref,
-                    trigger: '[',
-                  });
-                }}
-              >
-                <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-                  <span className="font-mono text-muted-foreground">
-                    [^{ref}]
-                  </span>
-                  <span className="truncate">
-                    :{' '}
-                    {getFootnotePreviewLabel(
-                      footnoteApi.definitionText?.({ ref })
-                    )}
-                  </span>
-                </span>
-              </InlineComboboxItem>
-            ))}
-          </InlineComboboxGroup>
-        </InlineComboboxContent>
-      </InlineCombobox>
-
-      {props.children}
-    </EditorElement>
+        {filteredRefs.map((ref: string) => (
+          <InlineComboboxItem
+            key={ref}
+            value={`footnote-${ref}`}
+            onSelect={(tx) => {
+              tx.plugin(FootnotePlugin).insert({ focusDefinition: false, ref });
+            }}
+          >
+            <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+              <span className="font-mono text-muted-foreground">[^{ref}]</span>
+              <span className="truncate">
+                :{' '}
+                {getFootnotePreviewLabel(footnoteApi.definitionText?.({ ref }))}
+              </span>
+            </span>
+          </InlineComboboxItem>
+        ))}
+      </InlineComboboxGroup>
+    </InlineComboboxContent>
   );
 }
 
 export const FootnoteKit = [
-  FootnoteInputPlugin.configure({ component: FootnoteInputElement }),
-  FootnotePlugin.configure({ component: FootnoteReferenceElement }),
+  FootnotePlugin.configure({
+    component: FootnoteReferenceElement,
+    slots: { afterEditable: FootnoteCombobox },
+  }),
   FootnoteDefinitionPlugin.configure({ component: FootnoteDefinitionElement }),
 ];

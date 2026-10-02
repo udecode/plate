@@ -1,4 +1,4 @@
-import { definePlugin, DOMPlugin } from '../../lib';
+import { definePlugin, DOMPlugin, TransferPlugin } from '../../lib';
 import { plateDOMPlugin } from '../../lib/plugins/dom/plateDOMPlugin.internal';
 import { react, type ReactPlugin as RuntimeReactPlugin } from '../plite-react';
 import { toReactPlugin } from '../plugin/toReactPlugin';
@@ -12,7 +12,7 @@ const plateReactPlugin: RuntimeReactPlugin = react({
 });
 const ReactPlugin = toReactPlugin(
   definePlugin('react', {
-    dependencies: [DOMPlugin],
+    dependencies: [DOMPlugin, TransferPlugin],
   }).extend<RuntimeReactPlugin>(plateReactPlugin)
 );
 

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -105,6 +106,10 @@ function completed(root, index, overrides = {}) {
     ],
     summary: 'Keep the existing owner.',
     verdict: 'stop',
+    callSites: {
+      current: 'comments.owner.read(editor)',
+      proposed: 'editor.comments.ranges()',
+    },
     proofLimits: 'Synthetic helper contract fixture only.',
     references: ['docs/evidence.md'],
     ...overrides,
@@ -165,6 +170,36 @@ test('recording is not blocked by unavailable evidence from another scope', (t) 
     /2026-09-11-comments-first/
   );
   assert.throws(() => main(root, ['check']), /Missing evidence/);
+});
+
+test('a redraft from an earlier draft records after its sources moved', (t) => {
+  const { root, put, index } = fixture(t);
+  put('docs/research/review-index.json', JSON.stringify(index));
+  put('docs/review-draft.json', JSON.stringify(completed(root, index)));
+  put(
+    'packages/platejs/src/features/comments/owner.ts',
+    'export const comments = 2;'
+  );
+  assert.throws(
+    () => main(root, ['record', 'docs/review-draft.json']),
+    /Source changed before recording/
+  );
+
+  put(
+    'docs/review-redraft.json',
+    JSON.stringify(
+      main(root, ['draft', 'comments', '--from', 'docs/review-draft.json'])
+    )
+  );
+  main(root, ['record', 'docs/review-redraft.json']);
+
+  const recorded = JSON.parse(
+    readFileSync(
+      join(root, 'docs/research/review-records/2026-09-11-comments-first.json'),
+      'utf-8'
+    )
+  );
+  assert.equal(recorded.summary, 'Keep the existing owner.');
 });
 
 test('a review records an explicit gap instead of inventing missing evidence', (t) => {
@@ -244,6 +279,18 @@ test('source changes invalidate only affected observations and stale drafts cann
   );
   assert.equal(freshness(root, record, discover(root, index)), 'stale');
   assert.throws(() => recordReview(root, index, record), /Source changed/);
+});
+
+test('reconciling the decision page after recording keeps the review matching', (t) => {
+  const { root, put, index } = fixture(t);
+  const decision = 'docs/research/decisions/comments.md';
+  put(decision, '---\ncurrent_review: null\n---\n# Comments\n');
+  index.scopes[0].decision = decision;
+  index.scopes[0].evidenceInputs = [decision];
+  const record = completed(root, index);
+  recordReview(root, index, record);
+  put(decision, `---\ncurrent_review: ${record.id}\n---\n# Comments\n`);
+  assert.equal(freshness(root, record, discover(root, index)), 'matching');
 });
 
 test('historical references survive source deletion while new references must exist', (t) => {
@@ -783,6 +830,26 @@ test('CLI actions persist history and regenerate a checked human view', (t) => {
   assert.equal(main(root, ['check']).records, 1);
 });
 
+test('validate refuses what record refuses and writes nothing', (t) => {
+  const { root, put, index } = fixture(t);
+  put('docs/research/review-index.json', JSON.stringify(index));
+  const review = completed(root, index);
+  put(
+    'docs/draft.json',
+    JSON.stringify({ ...review, verdict: 'pursue', callSites: undefined })
+  );
+  assert.throws(() => main(root, ['validate', 'docs/draft.json']), /callSites/);
+  put('docs/draft.json', JSON.stringify(review));
+  assert.deepEqual(main(root, ['validate', 'docs/draft.json']), {
+    valid: true,
+    freshness: 'matching',
+  });
+  assert.equal(
+    existsSync(join(root, `docs/research/review-records/${review.id}.json`)),
+    false
+  );
+});
+
 test('incomplete decisions and unreconciled repeats are rejected', (t) => {
   const { root, index } = fixture(t);
   const first = completed(root, index);
@@ -793,6 +860,15 @@ test('incomplete decisions and unreconciled repeats are rejected', (t) => {
   assert.throws(
     () => recordReview(root, index, { ...first, alternatives: [] }),
     /alternatives/
+  );
+  assert.throws(
+    () =>
+      recordReview(root, index, {
+        ...first,
+        verdict: 'pursue',
+        callSites: undefined,
+      }),
+    /callSites/
   );
   recordReview(root, index, first);
   assert.throws(
@@ -873,6 +949,37 @@ test('execution after a review is discoverable, bound to evidence, and never rep
     main(root, ['draft-execution', plan]).plan.sha256,
     execution.plan.sha256
   );
+});
+
+test('next returns the first open unit in queue order and moves past it once its Pursue is adopted', (t) => {
+  const { root, index, execution, persist } = executionFixture(t);
+  persist();
+  assert.equal(main(root, ['next']).unit, 'comments');
+  assert.deepEqual(main(root, ['status']).open, [
+    { id: 'comments', open: 'pursue-unbound' },
+    { id: 'link', open: 'unreviewed' },
+  ]);
+  recordReview(root, index, execution);
+  persist();
+  assert.equal(main(root, ['next']).unit, 'link');
+});
+
+test('next skips a scope deferred on outside evidence', (t) => {
+  const { root, put, index } = fixture(t);
+  recordReview(root, index, completed(root, index, { verdict: 'defer' }));
+  put('docs/research/review-index.json', JSON.stringify(index));
+  assert.equal(main(root, ['next']).unit, 'link');
+});
+
+test('a legacy adopted flag alone leaves a Pursue not adopted rather than unbound', (t) => {
+  const { root, put, index } = fixture(t);
+  index.scopes[0].adoption = 'adopted';
+  recordReview(root, index, completed(root, index, { verdict: 'pursue' }));
+  put('docs/research/review-index.json', JSON.stringify(index));
+  assert.deepEqual(main(root, ['status']).open[0], {
+    id: 'comments',
+    open: 'pursue-not-adopted',
+  });
 });
 
 test('proof, plan and source changes independently invalidate an execution without rewriting it', (t) => {

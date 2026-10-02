@@ -103,7 +103,7 @@ Domain constraints, coordinated document mutations and neutral pointer/keyboard
 lifecycle belong to their semantic owner, even with one current consumer.
 Purity alone establishes neither package ownership nor a reason to stay local.
 
-For registry siblings like `*-node.tsx` and `*-node-static.tsx`, do not extract
+For registry siblings like `foo.tsx` and `foo-static.tsx`, do not extract
 a third registry helper just to share labels, menu items, or display names.
 Duplicating that local presentation data keeps each installed registry file
 easier to read and copy.

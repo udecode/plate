@@ -1169,6 +1169,69 @@ export const demoExamples: Registry['items'] = (
     },
     {
       dependencies: ['@platejs/test'],
+      description:
+        'Drags blocks between two views of one document, where they move, and into another editor, where they copy.',
+      files: [
+        {
+          path: 'examples/dnd-multi-editor-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/dnd-multi-editor-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/dnd',
+            title: 'Drag & Drop',
+          },
+        ],
+      },
+      name: 'dnd-multi-editor-demo',
+      registryDependencies: [
+        '@plate/basic-nodes',
+        '@plate/dnd',
+        '@plate/editor',
+      ],
+      title: 'Drag & Drop Between Editors',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Drags table rows, columns and the blocks inside columns.',
+      files: [
+        {
+          path: 'examples/dnd-table-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/dnd-table-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/dnd',
+            title: 'Drag & Drop',
+          },
+        ],
+      },
+      name: 'dnd-table-demo',
+      registryDependencies: [
+        '@plate/basic-nodes',
+        '@plate/column',
+        '@plate/dnd',
+        '@plate/editor',
+        '@plate/table',
+      ],
+      title: 'Drag & Drop in Tables and Columns',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
       description: 'Emoji insertion via toolbar or colon-triggered combobox.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },

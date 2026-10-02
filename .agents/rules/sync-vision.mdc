@@ -1,12 +1,9 @@
 ---
 description: Update Plate’s root and scoped Vision from changed attributable inputs while preserving baseline accounting.
 argument-hint: '[status | preview | sync | advance] [scope]'
-disable-model-invocation: true
 ---
 
 # Sync Vision
-
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
 
 
 Handle $ARGUMENTS.
@@ -15,7 +12,7 @@ Handle $ARGUMENTS.
 should learn from repeated human answers, agent misses, plans, docs, skills,
 research, and review handoffs, then forget noise.
 
-This skill is the incremental sync lane. Task routes implementation work.
+This skill is the incremental sync lane. pstack's poteto-mode routes implementation work.
 Sync Vision keeps root `VISION.md` and relevant `docs/vision/*.md` detail files
 current by analyzing only changed durable inputs since the last synced commit.
 Root `VISION.md` stays the mandatory essential read. Detail files scale the
@@ -23,22 +20,17 @@ doctrine by owner.
 
 ## File-plan contract
 
-Use one Task-owned file plan before nontrivial mutable work. Apply the project's standing Autogoal request for long-running work.
+Keep one plan under `docs/plans/` before nontrivial mutable work.
 
-- Primary template: `docs/plans/templates/sync-vision.md`.
 - Default flow: one-shot sync.
 - Preview flow: one-shot planning, no vision-doc patch and no baseline
   advancement.
 - Required evidence: command, artifact, source-audit, and N/A rows.
-- Task owns lifecycle and requirement extraction. Autogoal supplies file helpers and native-goal mechanics for direct or standing user requests.
 - `sync-vision` owns input-range accounting, candidate classification, root vs
   detail doctrine patch rules, status semantics, and baseline advancement.
 
-Goal handle shape:
-
-```txt
-Sync vision; done when changed inputs are classified, vision docs are patched or reaffirmed, baseline semantics are recorded, and checks pass; plan docs/plans/<path>.md.
-```
+The run is done when changed inputs are classified, vision docs are patched or
+reaffirmed, baseline semantics are recorded, and checks pass.
 
 ## State
 
@@ -97,23 +89,9 @@ The helper writes:
 
 ## Input Scope
 
-Analyze changed durable inputs, not the whole repo every time:
-
-- `VISION.md`
-- `docs/vision/**`
-- `AGENTS.md`
-- `.agents/rules/**`
-- `docs/plans/**`
-- `docs/sync/**` except `docs/sync/vision/runs/**`
-- `docs/research/**`
-- `docs/plite/**`
-- `docs/editor-behavior/**`
-- `docs/solutions/**`
-- `content/docs/**`
-- other Markdown-like root docs when they appear in the changed-file list
-
-Generated `.agents/skills/**` mirrors are not primary input when a source rule
-exists. Use them only for sync audits.
+Analyze only changed durable inputs. `sourcePathspecs` and
+`excludedPathPrefixes` in `scripts/collect-vision-diff.mjs` own the exact
+scope; generated `.agents/skills/**` mirrors are never primary input.
 
 ## Classification
 
@@ -148,8 +126,7 @@ Do not promote:
 
 ## Sync Workflow
 
-1. Reuse or create a Task-owned `sync-vision` file plan, and copy every
-   user requirement into checkpoint zero.
+1. Reuse or keep the `sync-vision` plan under `docs/plans/`.
 2. Read root `VISION.md`.
 3. Read `docs/sync/vision/status.json`.
 4. Run the helper in `status` or collection mode.
@@ -163,15 +140,14 @@ Do not promote:
    - skill/rule miss -> `.agents/rules/**`, then `pnpm install`;
    - reusable API design/review correction -> `best-api repair`, plus the
      smallest relevant Vision owner;
-   - editor behavior law -> `docs/editor-behavior/**` or `plite-plan`;
-   - Slate automation loop miss -> `task autonomous`;
-   - research system miss -> `plite-research`;
-   - migration miss -> `slate-migration`;
+   - editor behavior law -> `docs/editor-behavior/**` or `plate-architecture`;
+   - Slate automation loop miss -> an `AGENTS.md` override, since pstack is never edited here;
+   - research system miss -> `research`;
+   - migration miss -> `plate-next`;
    - benchmark truth -> benchmark target/script owner.
 10. Record a decision ledger in the plan or run summary.
 11. If `.agents/rules/**` changed, run `pnpm install` and mirror audit.
-12. Run `check-complete.mjs`.
-13. Advance `lastSyncedCommit` only when the committed range is fully
+12. Advance `lastSyncedCommit` only when the committed range is fully
     classified.
 
 ## Baseline Advancement
@@ -186,8 +162,7 @@ Advance baseline when all are true:
 - reusable API-taste changes record `best-api repair` or an explicit
   `best-api` reaffirmation;
 - deferred questions are listed with recommendations;
-- generated mirrors are synced when source rules changed;
-- the active plan passes `check-complete.mjs`.
+- generated mirrors are synced when source rules changed.
 
 Do not advance baseline when:
 
@@ -200,17 +175,7 @@ Do not advance baseline when:
 
 ## Final Handoff
 
-Include:
-
-- base commit, target commit, and whether baseline advanced;
-- changed input count and candidate count;
-- root/detail vision doc changes;
-- reaffirmed existing sections;
-- rejected/noise clusters;
-- owner-routed follow-ups;
-- deferred questions;
-- changed files;
-- commands run;
-- next `sync-vision` command.
-
-Keep it short. The run artifacts hold the detail.
+Report the base and target commits and whether the baseline advanced, changed
+input and candidate counts, Vision changes, reaffirmed sections, rejected
+clusters, owner-routed follow-ups, deferred questions, and the next
+`sync-vision` command. The run artifacts hold the detail.

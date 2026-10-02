@@ -68,7 +68,7 @@ export function buildPromotePullRequest({ version }) {
       'After this PR lands:',
       '',
       '1. Wait for `release.yml` on `main`.',
-      '2. Run the `release-lanes` autogoal workflow to sync `main` directly into `next`, re-enter beta when needed, and verify the beta lane.',
+      '2. Run the `release-lanes` sync mode to sync `main` directly into `next`, re-enter beta when needed, and verify the beta lane.',
       '3. Do not wait for a generated `main -> next` sync PR; release-lanes owns that deterministic metadata repair loop.',
     ].join('\n'),
     head: 'next',

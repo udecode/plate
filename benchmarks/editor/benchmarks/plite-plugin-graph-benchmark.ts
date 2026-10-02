@@ -5,7 +5,7 @@ import {
 } from '../../../packages/plitejs/src/index';
 import { getPluginRegistry } from '../../../packages/plitejs/src/internal';
 import { getDefined } from '../../getDefined';
-import { writeBenchmarkArtifact } from './benchmark-artifact';
+import { writeBenchmarkResult } from './benchmark-artifact';
 
 const outputArgument = process.argv.find((argument) =>
   argument.startsWith('--output=')
@@ -186,12 +186,6 @@ const budgetRatios = {
 };
 const worstBudgetRatio = Math.max(...Object.values(budgetRatios));
 
-if (strict && worstBudgetRatio >= 1) {
-  throw new Error(
-    `Plugin graph worst p95 budget ratio ${worstBudgetRatio} must stay below 1.`
-  );
-}
-
 const result = {
   benchmark: 'plite-plugin-graph',
   budgetRatios,
@@ -218,7 +212,20 @@ const result = {
   version: 1,
   worstBudgetRatio,
 };
-const output = `${JSON.stringify(result, null, 2)}\n`;
+const outputPath = outputArgument?.slice('--output='.length);
+
+const output = writeBenchmarkResult({
+  outputPath,
+  result,
+  strict,
+  validate: () => {
+    if (worstBudgetRatio >= 1) {
+      throw new Error(
+        `Plugin graph worst p95 budget ratio ${worstBudgetRatio} must stay below 1.`
+      );
+    }
+  },
+});
 
 process.stdout.write(
   `METRIC plite_plugin_graph_worst_budget_ratio=${worstBudgetRatio}\n`
@@ -227,8 +234,6 @@ process.stdout.write(
   `METRIC plite_plugin_graph_removed_registry_records=${stress.removedRegistryRecords}\n`
 );
 
-if (outputArgument) {
-  writeBenchmarkArtifact(outputArgument.slice('--output='.length), output);
-} else {
+if (outputPath === undefined) {
   process.stdout.write(output);
 }

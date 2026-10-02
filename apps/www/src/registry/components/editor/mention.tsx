@@ -1,7 +1,7 @@
 'use client';
 
 import { IS_APPLE } from 'platejs';
-import { MentionInputPlugin, MentionPlugin } from 'platejs/mention/react';
+import { MentionPlugin } from 'platejs/mention/react';
 import {
   type EditorElementProps,
   EditorElement,
@@ -20,7 +20,6 @@ import {
   InlineComboboxContent,
   InlineComboboxEmpty,
   InlineComboboxGroup,
-  InlineComboboxInput,
   InlineComboboxItem,
 } from './inline-combobox';
 
@@ -74,49 +73,34 @@ export function MentionElement(
   );
 }
 
-export function MentionInputElement(
-  props: EditorElementProps<typeof MentionInputPlugin>
-) {
-  const { element } = props;
-  const [search, setSearch] = React.useState('');
-
+export function MentionCombobox({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
-    <EditorElement {...props} as="span">
-      <InlineCombobox
-        value={search}
-        element={element}
-        setValue={setSearch}
-        showTrigger={false}
-        trigger="@"
-      >
-        <span className="inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm ring-ring focus-within:ring-2">
-          <InlineComboboxInput />
-        </span>
+    <InlineCombobox editableRef={editableRef} plugin={MentionPlugin}>
+      <InlineComboboxContent className="my-1.5">
+        <InlineComboboxEmpty>No results</InlineComboboxEmpty>
 
-        <InlineComboboxContent className="my-1.5">
-          <InlineComboboxEmpty>No results</InlineComboboxEmpty>
-
-          <InlineComboboxGroup>
-            {MENTIONABLES.map((item) => (
-              <InlineComboboxItem
-                key={item.ref}
-                value={item.label}
-                onSelect={(tx) => {
-                  tx.plugin(MentionPlugin).insert({
-                    label: item.label,
-                    ref: item.ref,
-                  });
-                }}
-              >
-                {item.label}
-              </InlineComboboxItem>
-            ))}
-          </InlineComboboxGroup>
-        </InlineComboboxContent>
-      </InlineCombobox>
-
-      {props.children}
-    </EditorElement>
+        <InlineComboboxGroup>
+          {MENTIONABLES.map((item) => (
+            <InlineComboboxItem
+              key={item.ref}
+              value={item.label}
+              onSelect={(tx) => {
+                tx.plugin(MentionPlugin).insert({
+                  label: item.label,
+                  ref: item.ref,
+                });
+              }}
+            >
+              {item.label}
+            </InlineComboboxItem>
+          ))}
+        </InlineComboboxGroup>
+      </InlineComboboxContent>
+    </InlineCombobox>
   );
 }
 
@@ -203,6 +187,6 @@ export const MentionKit = [
     initialState: {
       triggerPreviousCharPattern: /^$|^[\s"']$/,
     },
+    slots: { afterEditable: MentionCombobox },
   }),
-  MentionInputPlugin.configure({ component: MentionInputElement }),
 ];

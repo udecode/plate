@@ -703,6 +703,10 @@ type EditorTransactionGuard = (context: {
 }) => void | (() => void);
 
 const TRANSACTION_GUARDS = new WeakMap<Editor, Set<EditorTransactionGuard>>();
+const DRAFT_GUARDS = new WeakMap<
+  Editor,
+  Set<(written: EditorDocumentValue) => void>
+>();
 const PREPARING_COMMIT = new WeakSet<Editor>();
 
 export type EditorHistoryReplayReceipt = Readonly<{
@@ -1047,6 +1051,28 @@ export const registerEditorTransactionGuard = (
     active = false;
     guards.delete(guard);
     if (guards.size === 0) TRANSACTION_GUARDS.delete(owner);
+  };
+};
+
+/**
+ * Register an internal guard over the corrected draft, in the projection the
+ * update wrote, before authored publication reduces it to accepted content.
+ */
+export const registerEditorDraftGuard = (
+  editor: Editor,
+  guard: (written: EditorDocumentValue) => void
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const guards = DRAFT_GUARDS.get(owner) ?? new Set();
+
+  guards.add(guard);
+  DRAFT_GUARDS.set(owner, guards);
+
+  return () => {
+    guards.delete(guard);
+    if (guards.size === 0 && DRAFT_GUARDS.get(owner) === guards) {
+      DRAFT_GUARDS.delete(owner);
+    }
   };
 };
 
@@ -2893,6 +2919,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
   slice: import('../interfaces/editor').ContentSlice,
   options?: Parameters<EditorTransactionSliceApi<V>['replace']>[1],
   internal?: Readonly<{
+    boundary?: boolean;
     childrenAt?: NodeKey | Path;
     rootsPrepared?: boolean;
   }>
@@ -2952,7 +2979,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     const inputSlice = internal?.rootsPrepared
       ? sourceSlice
       : remapContentSliceRoots(editor, sourceSlice);
-    const limitedSlice = limitSliceInsert(editor, inputSlice, localOptions);
+    const limitedSlice = limitSliceInsert(state, inputSlice, localOptions);
 
     if (limitedSlice.content.length === 0 && inputSlice.content.length > 0) {
       return false;
@@ -2971,7 +2998,9 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     } else {
       const point = LocationApi.isPoint(at)
         ? at
-        : state.points.get(at, { edge: 'start' });
+        : internal?.boundary
+          ? undefined
+          : state.points.get(at, { edge: 'start' });
 
       if (point) {
         range = { anchor: point, focus: point };
@@ -3369,6 +3398,34 @@ export const fitSlicePlacements = <V extends Value>(
     if (error instanceof EditorSchemaValidationError) return false;
     throw error;
   }
+};
+
+/**
+ * Fit one slice between two children at `boundary`, never into an existing
+ * block, inside the active update.
+ *
+ * @internal
+ */
+export const replaceSliceAtBlockBoundary = <V extends Value>(
+  editor: Editor<V>,
+  slice: import('../interfaces/editor').ContentSlice,
+  boundary: Path
+): boolean => {
+  let applicable = false;
+  const spec = createTransactionSpec(editor, () => {
+    applicable = fitSliceIntoActiveDraft(
+      editor,
+      slice,
+      { at: boundary },
+      { boundary: true }
+    );
+  });
+
+  if (!applicable) return false;
+
+  applyTransactionSpec(editor, spec);
+
+  return true;
 };
 
 const createSliceFitTransactionSpec = <V extends Value>(
@@ -5621,7 +5678,11 @@ const getUpdateView = <
             const runtimeOptions = resolvedOptions as
               | NodeInsertNodesOptions<PliteNode, NodeTypeSelector | undefined>
               | undefined;
-            const limited = limitNodeInsert(editor, nodes, runtimeOptions);
+            const limited = limitNodeInsert(
+              getStateView(editor),
+              nodes,
+              runtimeOptions
+            );
 
             if (!limited || (Array.isArray(limited) && limited.length === 0)) {
               return;
@@ -5689,7 +5750,7 @@ const getUpdateView = <
         runNodeTargetMutation(options, (resolvedOptions) => {
           const at = resolvedOptions?.at;
 
-          if (at && PathApi.isPath(at)) {
+          if (at && PathApi.isPath(at) && resolvedOptions?.match == null) {
             const entry = state.nodes.get(at);
 
             if (!entry || !ElementApi.isElement(entry[0])) return false;
@@ -6054,7 +6115,11 @@ const getUpdateView = <
       insert: defineSemanticUpdateMethod<EditorTransactionTextApi['insert']>(
         (text, options = {}) =>
           runTargetMutation(options, (resolvedOptions) => {
-            const limited = limitTextInsert(editor, text, resolvedOptions);
+            const limited = limitTextInsert(
+              getStateView(editor),
+              text,
+              resolvedOptions
+            );
 
             if (limited.length === 0 && text.length > 0) return;
 
@@ -9200,6 +9265,11 @@ export const runEditorTransaction = (
         throw new Error(
           'Install authored changes before editing a document with authored data.'
         );
+      }
+      for (const guard of [
+        ...(DRAFT_GUARDS.get(getEditorRuntimeOwner(editor)) ?? []),
+      ]) {
+        guard(snapshot.builder.value as EditorDocumentValue);
       }
       authoredTransaction?.finish({
         // Authored publication resets the draft before inheriting projection keys.

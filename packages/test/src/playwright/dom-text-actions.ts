@@ -1,7 +1,6 @@
 import { expect, type Locator } from '@playwright/test';
 
 import { READY_TIMEOUT_MS, BROWSER_HANDLE_KEY } from './constants';
-import { getBlockTexts, includesPasteText } from './dom-text';
 import {
   scrollTextPathIntoViewAndCheckMaterialized,
   waitForTextPathMaterialized,
@@ -9,7 +8,6 @@ import {
 import { setDOMSelection, setSelection } from './selection-actions';
 import { waitForHandleSelection } from './selection-anchors';
 import {
-  hasExpandedSelection,
   setSelectionWithHandle,
   waitForSelectionRange,
 } from './selection-handle';
@@ -18,72 +16,9 @@ import type {
   SelectionPoint,
   SelectionSnapshot,
   BrowserDOMPathOptions,
-  BrowserKernelTraceEntry,
   BrowserScenarioStep,
   BrowserTextPathRangeClickOptions,
 } from './types';
-
-const selectionsEqual = (
-  left: SelectionSnapshot | null,
-  right: SelectionSnapshot | null
-) =>
-  left === right ||
-  (!!left &&
-    !!right &&
-    left.anchor.offset === right.anchor.offset &&
-    left.focus.offset === right.focus.offset &&
-    left.anchor.path.join(',') === right.anchor.path.join(',') &&
-    left.focus.path.join(',') === right.focus.path.join(','));
-
-export const didPasteApplyText = async ({
-  afterText,
-  afterSelection,
-  afterTrace,
-  beforeSelectedText,
-  beforeSelection,
-  beforeTraceLength,
-  beforeText,
-  root,
-  text,
-}: {
-  afterText: string;
-  afterSelection: SelectionSnapshot | null;
-  afterTrace: readonly BrowserKernelTraceEntry[];
-  beforeSelectedText: string;
-  beforeSelection: SelectionSnapshot | null;
-  beforeTraceLength: number;
-  beforeText: string;
-  root: Locator;
-  text: string;
-}) => {
-  if (
-    afterTrace
-      .slice(beforeTraceLength)
-      .some(
-        (entry) =>
-          entry.eventFamily === 'paste' && entry.command?.kind === 'insert-data'
-      )
-  ) {
-    return true;
-  }
-
-  if (afterText !== beforeText) {
-    if (includesPasteText(afterText, text)) {
-      return true;
-    }
-
-    const blockTexts = await getBlockTexts(root);
-
-    return includesPasteText(blockTexts.join('\n'), text);
-  }
-
-  return (
-    hasExpandedSelection(beforeSelection) &&
-    !selectionsEqual(beforeSelection, afterSelection) &&
-    beforeSelectedText !== '' &&
-    includesPasteText(beforeSelectedText, text)
-  );
-};
 
 export const mutateTextDOM = async (
   root: Locator,

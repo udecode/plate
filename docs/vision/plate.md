@@ -371,10 +371,11 @@ Current priorities:
   compatible `<block id>` reads restore IDs only through the optional plugin.
   Registries install it explicitly as product policy, never transitively
   through an unrelated feature.
-- Transient input completion uses the live input's node key. The feature checks
-  current liveness and edit eligibility, then removes and replaces the input in
-  one transaction. Copied controls own query text, composition, navigation, and
-  DOM focus without duplicating the document's location or completion state.
+- Autocomplete queries stay ordinary editor text. A popup opens only on a
+  trigger typed in its Editable, tracks that occurrence with a range anchor,
+  previews IME preedit without publishing it, and completes by replacing trigger
+  and query in one refusable transaction. Copied controls own catalogs,
+  filtering, the active option and presentation.
 - The optional `platejs/upload` feature owns asynchronous file admission through
   `UploadClient`, the single-file upload capability expressed with Files SDK
   call and outcome types, not a generic transport contract. A Files SDK client
@@ -836,15 +837,21 @@ Current priorities:
   editor assemblies render EditorRoot and Editor without feature-root mounts or
   feature-only ref plumbing. Plate supplies the exact Editable ref through
   its existing root slot; copied feature policy stays in the kit. One AI
-  session owns one editor object across mounted views, while DnD cleanup owns
+  session owns one editor object across mounted views, while DOM cleanup owns
   each Editable and its ownerDocument. Readiness, read-only changes,
   replacement, and final detach define asynchronous authority. Replaceable
   sibling presentation preserves the feature plugin's root integration.
   Explicit root-slot replacement owns integration and cleanup; additional
   wrappers compose through JSX in that slot. Each slot accepts one component.
   A companion plugin needs an independent capability beyond protecting a root
-  wrapper from replacement. Reuse an application-supplied
-  DnD manager. Keep optional SDKs and backends out of generic editor components,
+  wrapper from replacement. Block drag and drop is native. A handle calls
+  `editor.api.dom.drag.start`, the Editable resolves each drop and runs
+  `editor.api.transfer`, and the kit paints `useDropIndicator`. It needs no
+  provider, manager or backend. Copied handles follow the schema: every
+  selectable block-content element gets one, at any depth, and only the
+  innermost hovered one shows; copied UI never lists plugin types or depths. A gesture the browser does not drag natively,
+  such as touch, gets a pointer driver over `resolveDropTarget` and
+  `editor.api.transfer`. Keep optional SDKs and backends out of generic editor components,
   and keep dedicated render-attribute hooks private to their existing host.
   Do not provide a generic plugin hook runner or session framework.
 - A copied feature with mutually exclusive external backends keeps one
@@ -979,7 +986,7 @@ Current priorities:
   API shape to `best-api`; route adoption and implementation to the layer
   owner after the target is clear.
 - If the public pattern is settled and the task is plugin execution, hand off
-  to `plate-plugin-creator`.
+  to `plate-plugins`.
 - App-local convenience, one-off demos, and package-local mechanics do not need
   doctrine unless they create a reusable public pattern.
 - Every lane that introduces or materially changes a reusable public API,
@@ -991,22 +998,22 @@ Owner map:
 | Concern                                              | Owner                                     |
 | ---------------------------------------------------- | ----------------------------------------- |
 | public GitHub issue/PR/security queue control plane  | `maintainer`                              |
-| local Plate/Plite behavior-bug or regression repair  | `patch`                                   |
-| internal Plate/Plite long quality loops              | `task autonomous`; `improve` preset       |
+| local Plate/Plite behavior-bug or regression repair  | pstack Bug fix playbook, via `verify` |
+| internal Plate/Plite long quality loops              | pstack Autonomous run                     |
 | performance measurement, diagnosis, and fix/rerun    | `benchmark`                               |
-| post-merge/current-tree until-clean closure          | `task closure`                            |
+| post-merge/current-tree until-clean closure          | the Babysit playbook                      |
 | reusable architecture doctrine                       | root `VISION.md` and `docs/vision/*.md`   |
 | durable public API doctrine                          | root `VISION.md` and `docs/vision/*.md`   |
 | concrete public API design, review, and debt ranking | `best-api`                                |
-| Plate API adoption, rollout, and proof plan          | `plate-plan`                              |
+| Plate API adoption, rollout, and proof plan          | `plate-architecture`                              |
 | runtime/service-boundary patterns                    | root `VISION.md` and `docs/vision/*.md`   |
 | layering / ownership law                             | root `VISION.md` and `docs/vision/*.md`   |
 | performance/scalability law                          | root `VISION.md` and `docs/vision/*.md`   |
 | anti-pattern catalog                                 | root `VISION.md` and `docs/vision/*.md`   |
-| plugin file placement / wrappers / typing mechanics  | `plate-plugin-creator`                    |
-| plugin authoring execution flow                      | `plate-plugin-creator`                    |
+| plugin file placement / wrappers / typing mechanics  | `plate-plugins`                    |
+| plugin authoring execution flow                      | `plate-plugins`                    |
 | app-local sugar                                      | local app/kits                            |
-| public docs shape                                    | Technical Writing and Task docs mechanics |
+| public docs shape                                    | Plate Docs; `pstack:technical-writing`    |
 | UI/component registry shape                          | `plate-ui`                                |
 | Plate Next migration/adoption audit                  | `plate-next`                              |
 

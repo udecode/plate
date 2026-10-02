@@ -519,6 +519,11 @@ describe('clipboard large-payload benchmark authority', () => {
     assert.equal(targets[0].metrics.unit, 'ms');
     assert.deepEqual(targets[0].artifacts, [
       {
+        evidence: {
+          category: 'slate-clipboard-large-payload',
+          kind: 'current',
+          library: 'slate-v2:clipboard',
+        },
         path: 'tmp/slate-clipboard-large-payload-benchmark.json',
         required: true,
       },

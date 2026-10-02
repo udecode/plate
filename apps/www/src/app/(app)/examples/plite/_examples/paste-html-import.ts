@@ -2,7 +2,6 @@ import { type Descendant, definePlugin, schema } from 'plitejs';
 import { domCommands } from 'plitejs/dom';
 import { jsx } from 'plitejs/hyperscript';
 
-import { failInvariant } from '../../../../../lib/failInvariant';
 import type {
   CustomElement,
   CustomElementType,
@@ -33,12 +32,17 @@ interface TextAttributes {
 type DeserializedChild = string | Descendant;
 type DeserializedResult = DeserializedChild | DeserializedChild[] | null;
 
-const ELEMENT_TAGS: Record<string, (el: HTMLElement) => ElementAttributes> = {
-  A: (el) => ({
-    type: 'link',
-    url:
-      el.getAttribute('href') ?? failInvariant('Expected value to be defined'),
-  }),
+const ELEMENT_TAGS: Record<
+  string,
+  (el: HTMLElement) => ElementAttributes | null
+> = {
+  // Browsers strip unsafe href and src values on copy, and Word bookmarks and
+  // lazy images omit them; without one, the tag contributes only its children.
+  A: (el) => {
+    const url = el.getAttribute('href');
+
+    return url ? { type: 'link', url } : null;
+  },
   BLOCKQUOTE: () => ({ type: 'block-quote' }),
   H1: () => ({ type: 'heading-one' }),
   H2: () => ({ type: 'heading-two' }),
@@ -46,11 +50,11 @@ const ELEMENT_TAGS: Record<string, (el: HTMLElement) => ElementAttributes> = {
   H4: () => ({ type: 'heading-four' }),
   H5: () => ({ type: 'heading-five' }),
   H6: () => ({ type: 'heading-six' }),
-  IMG: (el) => ({
-    type: 'image',
-    url:
-      el.getAttribute('src') ?? failInvariant('Expected value to be defined'),
-  }),
+  IMG: (el) => {
+    const url = el.getAttribute('src');
+
+    return url ? { type: 'image', url } : null;
+  },
   LI: () => ({ type: 'list-item' }),
   OL: () => ({ type: 'numbered-list' }),
   P: (el) => elementAttributes({ type: 'paragraph' }, el),
@@ -669,8 +673,9 @@ export const deserialize = (
     }
   }
 
-  if (ELEMENT_TAGS[nodeName]) {
-    const attrs = ELEMENT_TAGS[nodeName](el as HTMLElement);
+  const attrs = ELEMENT_TAGS[nodeName]?.(el as HTMLElement);
+
+  if (attrs) {
     return jsx('element', attrs, children);
   }
 

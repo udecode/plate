@@ -6,6 +6,7 @@ import {
   ElementApi,
   type ElementOf,
   type Location,
+  type Node,
   NodeApi,
   type NodeEntry,
   type NodeTarget,
@@ -16,6 +17,7 @@ import {
   property,
   RangeApi,
   schema,
+  transferVeto,
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 
@@ -124,7 +126,31 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
       },
     }),
   }))
-  .extend({ shortcuts: { selectAll: { keys: 'mod+a' } } });
+  .extend({ shortcuts: { selectAll: { keys: 'mod+a' } } })
+  .extend(({ schema: { type } }) => {
+    const isColumn = (node: Node) =>
+      ElementApi.isElement(node) && node.type === type;
+
+    return {
+      contributions: [
+        // The schema admits a column in any group; a column lands only beside
+        // the columns of its own group in one document.
+        transferVeto.of(({ payload, relation, target: [node, path] }, view) => {
+          if (payload.kind !== 'nodes' || !payload.nodes.some(isColumn)) {
+            return false;
+          }
+          if (relation !== 'document' || !isColumn(node)) return true;
+
+          const group = view.key(PathApi.parent(path));
+
+          return !payload.nodes.every(
+            (column, index) =>
+              isColumn(column) && payload.parentKeys[index] === group
+          );
+        }),
+      ],
+    };
+  });
 
 export type ColumnElement = ElementOf<typeof BaseColumnItemPlugin>;
 

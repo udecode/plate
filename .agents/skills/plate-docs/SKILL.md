@@ -10,12 +10,16 @@ metadata:
 
 Own Plate's public documentation experience: house style, page composition,
 example coverage, setup, API teaching, MDX and navigation. Use
-[Technical Writing](../technical-writing/SKILL.md) for prose, voice, document
-modes and preservation. Its general rules serve this project's house style.
+`pstack:technical-writing` for prose, voice and document modes. Its general
+rules serve this project's house style. A docs edit keeps code, commands,
+identifiers, frontmatter and link targets unchanged unless the change covers
+them, and keeps numbers, versions and names tied to their source. It also keeps obligation words (must, may, never), uncertainty and meaningful scope limits as strong as the source says; never turn a possibility into a guarantee, whatever `technical-writing` says about hedging. Code snippets
+follow the repository formatter's two-space indentation, not technical-writing's
+tab rule.
 
 Handle the requested page, feature or documentation audit. An audit reports
 source-backed gaps; edits stay within the requested scope. General prose in
-plans, reports, READMEs and PR descriptions goes directly to Technical Writing.
+plans, reports, READMEs and PR descriptions goes directly to `pstack:technical-writing`.
 For a tiny copy edit, read the text and resolve changed links without loading
 unrelated docs mechanics.
 
@@ -31,8 +35,8 @@ search, LLM output, examples and installable docs as well as visible prose.
 
 ## House style: shadcn
 
-This house style takes precedence over Technical Writing's generic presentation
-defaults. Use shadcn for density and page composition; Plate source owns API
+This house style takes precedence over the generic presentation defaults of
+`pstack:technical-writing`. Use shadcn for density and page composition; Plate source owns API
 behavior, imports, requirements and examples.
 
 - Start fast. Frontmatter supplies the title and description. Add a short lead
@@ -62,8 +66,16 @@ page, not the whole corpus. This comparison does not require an upstream sync.
 
 ## Cover the feature's actual use
 
-Apply Technical Writing's example-selection method to the selected page and
-reader goal. For feature and component pages:
+Choose examples by reader need. Identify the page's important reader tasks,
+claims and likely misunderstandings, and give each a clear home in an example,
+a precise reference section or a linked guide. Choose each example for
+something distinct it helps the reader do or understand, keep it small enough
+to understand and complete enough to use, and name its prerequisites. Reuse or
+link an existing example when it already serves the reader. Label a mock
+service or local snapshot at the example, and state unsupported or unverified
+behavior as a limitation instead of inventing it. An audit reports missing
+coverage; implementation stays within the requested scope. For feature and
+component pages:
 
 - Lead with a focused example of the named feature. Use its kit and required
   dependencies in setup; a full application `EditorKit` belongs in an example
@@ -105,10 +117,8 @@ setup in the feature page, and cross-package explanations in a concept guide.
 Merge duplicated concepts and link to one owner. Read `content/docs/meta.json`
 only when adding, moving, merging or deleting routes or changing navigation.
 
-Follow [Task's workflow](../task/references/workflow.md) for scope, authority and
-completion. Keep one Task plan when the job needs durable state. The optional `docs`
-template or `docs` pack records the selected claims and proof. It is not a
-second lifecycle and a page edit does not create a native goal.
+Keep one plan under `docs/plans/` when the job needs durable state; it records
+the selected claims and proof. A page edit needs no plan.
 
 ## Verify the changed claims
 
@@ -118,7 +128,7 @@ second lifecycle and a page edit does not create a native goal.
 | MDX structure or examples | `pnpm --filter www build:source`; verify symbols, imports and fence content against source |
 | Docs source parity or generated docs | `pnpm --filter www check:docs` |
 | New/moved route or navigation | Parse changed metadata and request the exact route; inspect pager/sidebar when they changed |
-| Preview or visible component behavior | Resolve the real demo and use [Verify Plate](../verify-plate/SKILL.md) on that exact route/state |
+| Preview or visible component behavior | Resolve the real demo and use [`verify`](../verify/SKILL.md) on that exact route/state |
 | Registry source | [Plate UI](../plate-ui/SKILL.md) and the branch's registry-generation rule |
 
 Run applicable checks once after the final prose pass. New source changes or a
@@ -127,4 +137,4 @@ API behavior or browser input. Report the exact proof limit.
 
 Public reference teaches the latest state without changelog or migration
 narration. Release data and an explicitly requested migration guide retain
-their own jobs. General writing and preservation rules stay in Technical Writing.
+their own jobs. General writing rules stay in `pstack:technical-writing`.

@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 
-import { ContentSlice, createEditor } from '../../../core';
+import {
+  ContentSlice,
+  createEditor,
+  createEditorView,
+  definePlugin,
+  schema,
+} from '../../../core';
 import { writeDataTransferFragment } from '../../../dom';
+import { BaseColumnPlugin } from '../../layout/lib/BaseColumnPlugin';
 import { BaseUploadPlugin } from './BaseUploadPlugin';
 
 describe('BaseUploadPlugin', () => {
@@ -87,4 +94,88 @@ describe('BaseUploadPlugin', () => {
       ).toThrow(/Upload/);
     }
   );
+});
+
+describe('upload draft transfer', () => {
+  const paragraph = (text: string) => ({
+    children: [{ text }],
+    type: 'paragraph',
+  });
+  const card = {
+    childRoots: { body: 'card:1' },
+    children: [{ text: '' }],
+    type: 'card',
+  };
+  const draft = { children: [{ text: '' }], kind: 'image', type: 'upload' };
+  const cardPlugin = (...bodyTypes: string[]) =>
+    definePlugin('card', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          contentRoots: {
+            body: schema.content.types(['paragraph', ...bodyTypes], {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          },
+        },
+      },
+    });
+  const types = (nodes: ReadonlyArray<{ type?: unknown }>) =>
+    nodes.map((node) => node.type);
+
+  it('refuses to move a draft across roots', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('top'), card],
+        roots: { 'card:1': [draft, paragraph('stays')] },
+      } as never,
+      plugins: [cardPlugin('upload'), BaseUploadPlugin],
+    });
+    const body = createEditorView(editor, { root: 'card:1' });
+
+    expect(
+      editor.api.transfer.move({
+        from: body,
+        nodes: [body.key([0])!],
+        to: { edge: 'before', key: editor.key([0])! },
+      }).status
+    ).toBe('refused');
+    expect(types(editor.read.root('card:1'))).toEqual(['upload', 'paragraph']);
+  });
+
+  it('keeps the draft veto when a column admits the landing', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [draft, card],
+        roots: {
+          'card:1': [
+            {
+              children: ['a', 'b'].map((text) => ({
+                children: [paragraph(text)],
+                type: 'column',
+                width: '50%',
+              })),
+              type: 'columnGroup',
+            },
+          ],
+        },
+      } as never,
+      plugins: [
+        cardPlugin('columnGroup', 'upload'),
+        BaseColumnPlugin,
+        BaseUploadPlugin,
+      ],
+    });
+    const body = createEditorView(editor, { root: 'card:1' });
+
+    expect(
+      body.api.transfer.move({
+        from: editor,
+        nodes: [editor.key([0])!],
+        to: { edge: 'after', key: body.key([0, 0, 0])! },
+      }).status
+    ).toBe('refused');
+    expect(types(editor.read.children())).toEqual(['upload', 'card']);
+  });
 });

@@ -1,6 +1,7 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page, test } from '@playwright/test';
 
 import {
+  clearKernelTraceThroughHandle,
   copyPayloadThroughNativeEvent,
   copyPayloadThroughEvent,
   cutPayloadThroughNativeEvent,
@@ -10,14 +11,11 @@ import {
   readClipboardHtml,
   readClipboardText,
   readClipboardTypes,
-  shouldUseSyntheticHtmlPaste,
   toPlainText,
   withExclusiveClipboardAccess,
   writeClipboardHtml,
   writeClipboardText,
 } from './clipboard';
-import { insertTextThroughHandle } from './dom-text';
-import { didPasteApplyText } from './dom-text-actions';
 import {
   commitSyntheticCompositionText,
   composeText,
@@ -27,14 +25,129 @@ import {
   updateSyntheticComposition,
 } from './ime';
 import type { SurfaceTarget } from './surface';
-import type { BrowserEditorHarness } from './types';
+import type {
+  BrowserClipboardTransport,
+  BrowserEditorHarness,
+  BrowserTestOptions,
+} from './types';
+
+const CLIPBOARD_TRANSPORTS = new Set<BrowserClipboardTransport>([
+  'event',
+  'handle',
+  'native',
+]);
+
+/** Reads the running Playwright project's `use.clipboardTransport`, or undefined outside a test. */
+export const readProjectClipboardTransport = ():
+  | BrowserClipboardTransport
+  | undefined => {
+  let info: ReturnType<typeof test.info>;
+
+  try {
+    info = test.info();
+  } catch {
+    return undefined;
+  }
+
+  const value = (info.project.use as BrowserTestOptions).clipboardTransport;
+
+  if (value !== undefined && !CLIPBOARD_TRANSPORTS.has(value)) {
+    throw new Error(
+      `Invalid use.clipboardTransport ${String(value)}: use 'native', 'event' or 'handle'.`
+    );
+  }
+
+  return value;
+};
+
+const pasteThroughTransport = async ({
+  getHarness,
+  page,
+  payload,
+  root,
+  surface,
+  transport,
+}: {
+  getHarness: () => BrowserEditorHarness;
+  page: Page;
+  payload: { html?: string; text: string };
+  root: Locator;
+  surface: SurfaceTarget;
+  transport: BrowserClipboardTransport | undefined;
+}) => {
+  if (!transport) {
+    throw new Error(
+      "Set use.clipboardTransport ('native', 'event' or 'handle') on this Playwright project before pasting."
+    );
+  }
+
+  test.info().annotations.push({
+    description: transport === 'handle' ? 'handle (stand-in)' : transport,
+    type: 'clipboard-transport',
+  });
+
+  const harness = getHarness();
+  await harness.focus();
+  await clearKernelTraceThroughHandle(root);
+
+  // Clipboard inserts commit under the paste tag; a traced insert-data command
+  // only shows that the kernel planned one, which a handler can still cancel.
+  const pasteCommitVersion = async () => {
+    const commit = (await harness.get.lastCommit()) as {
+      tags?: string[];
+      version?: number;
+    } | null;
+
+    return commit?.tags?.includes('paste') ? (commit.version ?? null) : null;
+  };
+  const before = await pasteCommitVersion();
+  // A handler can apply part of a paste and then throw.
+  const pageErrors: Error[] = [];
+  const onPageError = (error: Error) => pageErrors.push(error);
+
+  page.on('pageerror', onPageError);
+
+  try {
+    if (transport === 'handle') {
+      await insertDataThroughHandle(root, payload);
+    } else if (transport === 'event') {
+      await pastePayloadThroughEvent(root, payload);
+    } else {
+      await (payload.html
+        ? writeClipboardHtml(surface, payload.html, payload.text)
+        : writeClipboardText(surface, payload.text));
+      await page.keyboard.press('ControlOrMeta+V');
+    }
+
+    await expect
+      .poll(
+        async () => {
+          const after = await pasteCommitVersion();
+
+          return after !== null && after !== before;
+        },
+        { message: `The ${transport} paste did not apply`, timeout: 2000 }
+      )
+      .toBe(true);
+  } finally {
+    page.off('pageerror', onPageError);
+  }
+
+  if (pageErrors.length > 0) {
+    throw new Error(`The ${transport} paste threw: ${pageErrors[0].message}`, {
+      cause: pageErrors[0],
+    });
+  }
+};
 
 export const createEditorHarnessClipboard = ({
+  clipboardTransport,
   getHarness,
   page,
   root,
   surface,
 }: {
+  clipboardTransport: BrowserClipboardTransport | undefined;
   getHarness: () => BrowserEditorHarness;
   page: Page;
   root: Locator;
@@ -113,92 +226,29 @@ export const createEditorHarnessClipboard = ({
   },
   pasteText: async (text: string) => {
     await withExclusiveClipboardAccess(async () => {
-      const harness = getHarness();
-      const beforeSelectedText = await harness.get.selectedText();
-      const beforeSelection = await harness.selection.get();
-      const beforeText = await harness.get.modelText();
-      const beforeTrace = await harness.get.kernelTrace();
-      const beforeTraceLength = beforeTrace.length;
-
-      await harness.focus();
-
-      try {
-        await writeClipboardText(surface, text);
-      } catch {
-        await insertDataThroughHandle(root, { text });
-        return;
-      }
-
-      await page.keyboard.press('ControlOrMeta+V');
-      await page.waitForTimeout(50);
-
-      const afterSelection = await harness.selection.get();
-      const afterText = await harness.get.modelText();
-      const afterTrace = await harness.get.kernelTrace();
-
-      if (
-        !(await didPasteApplyText({
-          afterSelection,
-          afterText,
-          afterTrace,
-          beforeSelectedText,
-          beforeSelection,
-          beforeTraceLength,
-          beforeText,
-          root,
-          text,
-        }))
-      ) {
-        await insertTextThroughHandle(root, text);
-      }
+      await pasteThroughTransport({
+        getHarness,
+        page,
+        payload: { text },
+        root,
+        surface,
+        transport: clipboardTransport,
+      });
     });
   },
   pasteHtml: async (html: string, plainText?: string) => {
     await withExclusiveClipboardAccess(async () => {
-      const harness = getHarness();
-      const beforeSelectedText = await harness.get.selectedText();
-      const beforeSelection = await harness.selection.get();
-      const beforeText = await harness.get.modelText();
-      const beforeTrace = await harness.get.kernelTrace();
-      const beforeTraceLength = beforeTrace.length;
-      const text = plainText ?? (await toPlainText(surface, html));
-
-      await harness.focus();
-
-      if (await shouldUseSyntheticHtmlPaste(surface)) {
-        await pastePayloadThroughEvent(root, { html, text });
-        return;
-      }
-
-      try {
-        await writeClipboardHtml(surface, html, text);
-      } catch {
-        await insertDataThroughHandle(root, { html, text });
-        return;
-      }
-
-      await page.keyboard.press('ControlOrMeta+V');
-      await page.waitForTimeout(50);
-
-      const afterSelection = await harness.selection.get();
-      const afterText = await harness.get.modelText();
-      const afterTrace = await harness.get.kernelTrace();
-
-      if (
-        !(await didPasteApplyText({
-          afterSelection,
-          afterText,
-          afterTrace,
-          beforeSelectedText,
-          beforeSelection,
-          beforeTraceLength,
-          beforeText,
-          root,
-          text,
-        }))
-      ) {
-        await pastePayloadThroughEvent(root, { html, text });
-      }
+      await pasteThroughTransport({
+        getHarness,
+        page,
+        payload: {
+          html,
+          text: plainText ?? (await toPlainText(surface, html)),
+        },
+        root,
+        surface,
+        transport: clipboardTransport,
+      });
     });
   },
   assert: {

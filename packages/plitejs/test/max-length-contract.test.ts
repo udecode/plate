@@ -133,6 +133,20 @@ describe('maxLength editor option', () => {
     ]);
   });
 
+  it('frees the length a same-update removal releases', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('AAAAA'), paragraph('BBBBB')],
+      maxLength: 10,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.remove({ at: SelectionApi.nodes([[0]]) });
+      tx.text.insert('AAAAA', { at: { path: [0, 0], offset: 5 } });
+    });
+
+    assert.equal(editor.read.text.string([]), 'BBBBBAAAAA');
+  });
+
   it('permits an empty replacement when maxLength is zero', () => {
     const editor = createEditor({
       initialSelection: {

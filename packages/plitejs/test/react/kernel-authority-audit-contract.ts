@@ -1004,6 +1004,31 @@ test('kernel frame and trace ownership remains centralized', () => {
         'Selectionchange traces are owned by the runtime selection engine.',
     },
   });
+
+  expectAuthorityInventory(/\bclearEditableKernelTrace\(/g, {
+    'packages/plitejs/src/react/editable/browser-handle.ts': {
+      count: 1,
+      next: 'explicit-bridge',
+      owner: 'Browser proof handle',
+      rationale:
+        'Only the proof handle clears the trace, so a harness paste reads its own entries; product code never erases proof evidence.',
+    },
+  });
+
+  for (const pattern of [
+    /\benableKernelTraceRetention\(/g,
+    /\bregisterBrowserHandle\(/g,
+  ]) {
+    expectAuthorityInventory(pattern, {
+      'packages/plitejs/src/react/editable/install-browser-handle.ts': {
+        count: 1,
+        next: 'explicit-bridge',
+        owner: 'Browser handle installer',
+        rationale:
+          'Only installBrowserHandle() retains the trace and attaches the handle, so production bundles that never call it carry neither.',
+      },
+    });
+  }
 });
 
 test('selection bridge authority has an explicit remaining inventory', () => {

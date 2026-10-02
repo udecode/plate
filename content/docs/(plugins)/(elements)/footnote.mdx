@@ -17,7 +17,7 @@ Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitio
 
 - GFM-compatible footnote references and definitions as dedicated Plate nodes.
 - One-transform insertion with automatic numeric ref allocation.
-- `[^` inline combobox for insertion from the default UI kit.
+- Typing `[^` opens a reference picker from the default UI kit.
 - Recreate a missing definition from an unresolved reference without duplicating.
 - Keep the first duplicate definition canonical; renumber later duplicates on demand.
 - Navigation helpers that jump between reference and definition with a landed-target flash.
@@ -30,7 +30,7 @@ Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitio
 
 ### Installation
 
-Use `FootnoteKit` for the reference, definition, and input components. Add `MarkdownKit` for Markdown parsing and serialization.
+Use `FootnoteKit` for the reference and definition components and the `[^` picker. Add `MarkdownKit` for Markdown parsing and serialization.
 
 <ComponentSource name="footnote" />
 
@@ -66,7 +66,7 @@ npm install platejs @tanstack/react-virtual marked remark-gfm remark-parse remar
 
 ### Add plugins
 
-Add the inline reference and block definition. `FootnotePlugin` installs its combobox input as a required dependency; pair the footnote plugins with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
+Add the inline reference and block definition. Pair the footnote plugins with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
 
 ```tsx
 import { FootnoteDefinitionPlugin, FootnotePlugin } from 'platejs/footnote/react';
@@ -88,7 +88,11 @@ const editor = createEditor({
 });
 ```
 
-`FootnoteInputPlugin` is a required dependency of `FootnotePlugin`. Add a complete input descriptor to the same array only when you need to replace its default component or configuration.
+Mount `FootnoteCombobox` in the plugin's `afterEditable` slot to open the picker when the reader types `[^`:
+
+```tsx
+FootnotePlugin.configure({ slots: { afterEditable: FootnoteCombobox } });
+```
 
 ### Insert a footnote
 
@@ -196,23 +200,20 @@ The package owns node semantics, ref allocation, and navigation helpers. App-lev
 
 ### `FootnotePlugin`
 
-Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, ref registry, navigation transforms, and query API. Requires `FootnoteInputPlugin`.
+Inline void node rendered as `<sup>`. Owns the `[^` trigger policy, ref registry, navigation transforms, and query API. Its state is a [ComboboxState](/docs/combobox#comboboxstate).
 
 <API name="FootnotePlugin">
 <APIOptions>
-  <APIItem name="trigger" type="RegExp | string[] | string" optional>
-    Character that opens the footnote combobox.
-    - **Default:** `'^'`
+  <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
+    Text that opens the footnote picker. Completion replaces the whole `[^` and query, so `claim[^1` works after a word.
+    - **Default:** `'[^'`
   </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
-    Only trigger when the previous character matches. The default requires `[` so bare `^` in prose doesn't open the combobox.
-    - **Default:** `/^\[$/`
+  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
+    Only trigger when the previous character matches. `null` allows any character.
+    - **Default:** `null`
   </APIItem>
-  <APIItem name="createComboboxInput" type="(trigger: string) => Element" optional>
-    Factory for the node inserted when the combobox opens. Defaults to a `footnoteInput` element.
-  </APIItem>
-  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
-    Extra predicate gating the combobox. Return `false` to suppress triggering at the current selection.
+  <APIItem name="triggerQuery" type="((editor: ComboboxEditor) => boolean) | null" optional>
+    Extra predicate gating the picker. Return `false` to keep a typed `[^` as text.
   </APIItem>
 </APIOptions>
 </API>
@@ -222,12 +223,6 @@ Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, ref regist
 Block node for footnote definitions. Lives at the bottom of the document and carries the ref + body content.
 
 <API name="FootnoteDefinitionPlugin" />
-
-### `FootnoteInputPlugin`
-
-Inline void used as the live combobox input while the reader is typing `[^…`. Installed as a required dependency of `FootnotePlugin`; add it directly only to replace its default configuration or component.
-
-<API name="FootnoteInputPlugin" />
 
 ## Reads
 

@@ -6,6 +6,7 @@ import {
   definePlugin,
   type Element,
   ElementApi,
+  NodeApi,
   schema,
   type Selection,
   PLUGINS,
@@ -14,6 +15,8 @@ import {
   ColumnItemPlugin,
   ColumnPlugin,
 } from '../../../react/features/layout/ColumnPlugin';
+import { BaseIndentPlugin } from '../../indent';
+import { BaseListPlugin, ListType } from '../../list/lib/BaseListPlugin';
 import {
   BaseColumnItemPlugin,
   BaseColumnPlugin,
@@ -731,3 +734,118 @@ describe('BaseColumnPlugin schema', () => {
     });
   });
 }
+
+describe('column transfer landing', () => {
+  const paragraph = (text: string) => ({
+    children: [{ text }],
+    type: 'paragraph',
+  });
+  const columns = (...texts: string[]) => ({
+    children: texts.map((text) => ({
+      children: [paragraph(text)],
+      type: 'column',
+      width: `${100 / texts.length}%`,
+    })),
+    type: 'columnGroup',
+  });
+  const createColumns = (
+    ...children: Array<ReturnType<typeof columns | typeof paragraph>>
+  ) =>
+    createRuntimeEditor({
+      initialValue: children as never,
+      plugins: columnPlugins,
+    });
+  const columnTexts = (editor: ReturnType<typeof createColumns>, at: number) =>
+    (editor.read.children()[at] as Element).children.map((column) =>
+      NodeApi.string(column)
+    );
+
+  it('reorders column items inside their group', () => {
+    const editor = createColumns(columns('a', 'b'));
+
+    editor.api.transfer.move({
+      nodes: [editor.key([0, 0])!],
+      to: { edge: 'after', key: editor.key([0, 1])! },
+    });
+
+    expect(columnTexts(editor, 0)).toEqual(['b', 'a']);
+  });
+
+  it('refuses a column item from another editor at the same path', () => {
+    const source = createColumns(columns('a', 'b'));
+    const target = createColumns(columns('c', 'd'));
+
+    expect(
+      target.api.transfer.move({
+        from: source,
+        nodes: [source.key([0, 0])!],
+        to: { edge: 'after', key: target.key([0, 1])! },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
+    expect(columnTexts(target, 0)).toEqual(['c', 'd']);
+  });
+
+  it('refuses a block beside a column item', () => {
+    const editor = createColumns(paragraph('x'), columns('a', 'b'));
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([0])!],
+        to: { edge: 'after', key: editor.key([1, 0])! },
+      }).status
+    ).toBe('refused');
+    expect(columnTexts(editor, 1)).toEqual(['a', 'b']);
+  });
+
+  it('lands a block beside a block inside a column item', () => {
+    const editor = createColumns(paragraph('x'), columns('a', 'b'));
+
+    editor.api.transfer.move({
+      nodes: [editor.key([0])!],
+      to: { edge: 'after', key: editor.key([1, 1, 0])! },
+    });
+
+    expect(
+      (editor.read.children()[0] as Element).children.map((column) =>
+        (column as Element).children.map((node) => NodeApi.string(node))
+      )
+    ).toEqual([['a'], ['b', 'x']]);
+  });
+
+  it('keeps the list family rule inside a column item', () => {
+    const item = (text: string, indent: number) => ({
+      children: [{ text }],
+      indent,
+      listType: ListType.Bulleted,
+      type: 'paragraph',
+    });
+    const editor = createRuntimeEditor({
+      initialValue: [
+        item('moved', 1),
+        {
+          children: [
+            {
+              children: [item('parent', 1), item('child', 2)],
+              type: 'column',
+              width: '50%',
+            },
+            { children: [paragraph('b')], type: 'column', width: '50%' },
+          ],
+          type: 'columnGroup',
+        },
+      ] as never,
+      plugins: [BaseIndentPlugin, ...columnPlugins, BaseListPlugin],
+    });
+
+    editor.api.transfer.move({
+      nodes: [editor.key([0])!],
+      to: { edge: 'before', key: editor.key([1, 0, 1])! },
+    });
+
+    expect(
+      (
+        (editor.read.children()[0] as Element).children[0] as Element
+      ).children.map((node) => NodeApi.string(node))
+    ).toEqual(['parent', 'child', 'moved']);
+  });
+});

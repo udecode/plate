@@ -1,0 +1,33 @@
+import { writeFileSync } from 'node:fs';
+import { adb, serve, connect, visiblePage, closeOthers, dumpWindows, gboardKeys, sleep, tap } from './kit.mjs';
+const server = await serve(new URL('./www', import.meta.url).pathname, 8765);
+adb('reverse', 'tcp:8765', 'tcp:8765');
+adb('shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'http://localhost:8765/?census2', 'com.android.chrome');
+await sleep(2500);
+const browser = await connect();
+const page = await visiblePage(browser, '?census2');
+await closeOthers(browser, page);
+const fmt = (events) => events.filter((e) => !e.type.startsWith('pointer') && e.type !== 'keyup').map((e) => `${e.type}:${e.inputType ?? e.key}${e.data != null ? ':' + JSON.stringify(e.data) : ''}${e.trusted ? '' : ':UNTRUSTED'}`);
+const value = (id) => page.evaluate((id) => id === 'ta' ? document.getElementById(id).value : document.getElementById(id).innerText, id);
+const out = {};
+for (const id of ['ta', 'ce']) {
+  const r = await page.evaluate((id) => { const el = document.getElementById(id); if (id === 'ta') el.value = ''; else el.textContent = ''; document.activeElement?.blur(); return el.getBoundingClientRect().toJSON(); }, id);
+  await sleep(700);
+  tap((r.left + 20) * 2.625, 289 + (r.top + r.height / 2) * 2.625); await sleep(1200);
+  let keys = gboardKeys(dumpWindows());
+  const typeKeys = async (labels) => { await page.evaluate(() => { window.__probe = []; }); for (const l of labels) { tap(keys[l].x, keys[l].y); await sleep(350); } await sleep(900); return { value: await value(id), events: fmt(await page.evaluate((id) => window.__probe.filter((e) => e.id === id), id)) }; };
+  const steps = {};
+  steps.letters = await typeKeys(['t', 'e', 'h']);
+  steps.spaceAutocorrect = await typeKeys(['Space']);
+  steps.enter = await typeKeys(['Enter']);
+  steps.lettersAfterEnter = await typeKeys(['h', 'e', 'l', 'o']);
+  keys = gboardKeys(dumpWindows());
+  const candidate = Object.keys(keys).find((k) => /^hello$/i.test(k));
+  steps.stripReplace = candidate ? { tapped: candidate, ...(await typeKeys([candidate])) } : { tapped: null, strip: Object.keys(keys).slice(0, 8) };
+  steps.backspace = await typeKeys(['Delete']);
+  steps.backspaceTwice = await typeKeys(['Delete', 'Delete']);
+  out[id] = steps;
+}
+writeFileSync(new URL('./census-result.json', import.meta.url), JSON.stringify(out, null, 1));
+for (const [id, steps] of Object.entries(out)) for (const [name, s] of Object.entries(steps)) console.log(id, name, JSON.stringify(s.value), (s.events ?? []).join(' '), s.tapped ? 'tapped=' + s.tapped : '');
+await browser.close().catch(() => {}); server.close();

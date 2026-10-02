@@ -1,6 +1,6 @@
 # Security advisory hotfix mechanics
 
-Apply Task publication and disclosure authority to every write below.
+Every write below needs the active request's publication and disclosure authority.
 
 ## Security Advisory Hotfixes
 
@@ -25,12 +25,14 @@ package security hotfix.
   when available. If a public PR is necessary before disclosure, keep the title,
   body, branch, commits, tests, and comments sanitized unless the user
   explicitly approves disclosure.
-- Use `--with security-advisory` in the goal plan. Also use
-  `--with package-api` when a published package, changeset, or npm release is
-  part of the fix.
+- Record the advisory, disclosure and release order in the plan, together with
+  the package, changeset and npm release checks when a published package is part
+  of the fix.
 - Do not stop at a merged PR, merged Version Packages PR, or created GitHub
   Release while the advisory is still draft, lacks a patched version, or points
   at the wrong affected range.
+- Record failing-before and passing-after regression proof, a PoC validation,
+  or an N/A reason before advisory closeout.
 - Verify the patched package is actually published before publishing the
   advisory. For npm packages, read back `npm view <package>@<version>` and the
   GitHub release/tag when relevant.

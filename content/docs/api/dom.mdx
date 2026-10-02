@@ -203,6 +203,38 @@ Check whether an editor range can currently be mapped to DOM.
 
 Check whether a DOM event target is inside a non-read-only void element.
 
+## Drag and drop
+
+#### `editor.api.dom.drag`
+
+Native block dragging for drag handles and custom drivers. A block drag moves
+inside one document and copies between editors; every drop runs
+`editor.api.transfer`.
+
+#### `editor.api.dom.drag.start(event: DragEvent, options: { node: Element }): { origin: { x: number; y: number }; previews: HTMLElement[] } | null`
+
+Start a block drag from a handle's `dragstart`. It selects the blocks
+`editor.read.transfer.nodes({ node })` returns, such as the selected blocks
+around `node` or a list item's family, marks their hosts with `data-editor-dragging`, and returns inert previews plus
+the pointer's offset for `event.dataTransfer.setDragImage`. A read-only view
+starts a copy-only drag. Returns `null` when nothing can be dragged.
+
+#### `editor.api.dom.drag.indicate(target: DropTarget | null): void`
+
+Publish this view's drop indicator for a target from `resolveDropTarget`, or
+clear it. `useDropIndicator` reads it.
+
+#### `editor.api.dom.resolveDropTarget(input: { clientX: number; clientY: number; target?: EventTarget | null; dataTransfer?: DataTransfer | null }, options?: { copy?: boolean; files?: Element; from?: Editor; nodes?: NodeKey[]; range?: Range }): { key: NodeKey; edge: 'after' | 'before'; axis: 'x' | 'y' } | { point: Point } | null`
+
+Resolve where a drop under a pointer lands: an edge the schema, the landing
+redirects and the vetoes admit, or a text point for a text drag. Within 8px of a
+container's top or bottom edge, the drop lands beside that container; otherwise
+it lands beside the block under the pointer, or beside an outer block when the
+schema or a veto refuses that edge. An edge inside the dragged blocks, or one
+that would not move them, drops nothing, and edges inside collapsed content are
+refused. Without options it reads the active drag session. Pass `files` with the
+block that dropped files become to place an upload.
+
 ## DataTransfer
 
 #### `editor.api.dom.clipboard.insertData(data: DataTransfer): boolean`

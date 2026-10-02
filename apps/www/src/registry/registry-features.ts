@@ -397,7 +397,7 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'block-menu',
-    registryDependencies: ['@plate/editor-context-menu'],
+    registryDependencies: ['@plate/editor-context-menu', '@plate/dnd'],
     type: 'registry:component',
     description: 'A context menu for block-level operations.',
     title: 'Block Menu',
@@ -543,6 +543,7 @@ export const registryFeatures: Registry['items'] = [
       'button',
       'separator',
       'tooltip',
+      '@plate/dnd',
       '@plate/floating-popover',
     ],
     type: 'registry:component',
@@ -705,7 +706,7 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: ['platejs', 'react-dnd', 'react-dnd-html5-backend'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/dnd.tsx',
@@ -713,7 +714,7 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'dnd',
-    registryDependencies: ['button', 'tooltip'],
+    registryDependencies: ['button', 'tooltip', '@plate/editor-dropdown-menu'],
     type: 'registry:component',
     description: 'Block drag handles and drop indicators.',
     title: 'Drag and Drop',
@@ -722,7 +723,12 @@ export const registryFeatures: Registry['items'] = [
         { route: '/docs/dnd', title: 'Drag & Drop' },
         { route: 'https://pro.platejs.org/docs/components/dnd' },
       ],
-      examples: ['dnd-demo', 'dnd-pro'],
+      examples: [
+        'dnd-demo',
+        'dnd-multi-editor-demo',
+        'dnd-table-demo',
+        'dnd-pro',
+      ],
       usage: [`createEditor({ plugins: DndKit })`],
       // Click the plus button next to the drag button to insert blocks
     },
@@ -815,9 +821,9 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'emoji',
-    registryDependencies: ['@plate/inline-combobox', '@plate/use-debounce'],
+    registryDependencies: ['@plate/inline-combobox'],
     type: 'registry:component',
-    description: 'An input component for emoji search and insertion.',
+    description: 'A popup for emoji search and insertion.',
     title: 'Emoji',
     meta: {
       docs: [
@@ -932,7 +938,8 @@ export const registryFeatures: Registry['items'] = [
       '@plate/inline-combobox',
     ],
     type: 'registry:component',
-    description: 'Inline footnote references, definitions, and input UI.',
+    description:
+      'Inline footnote references, definitions, and a reference picker.',
     title: 'Footnote',
     meta: {
       docs: [{ route: '/docs/footnote' }],
@@ -1213,6 +1220,7 @@ export const registryFeatures: Registry['items'] = [
     name: 'table',
     registryDependencies: [
       'button',
+      '@plate/dnd',
       '@plate/editor-dropdown-menu',
       '@plate/floating-popover',
       '@plate/toolbar',

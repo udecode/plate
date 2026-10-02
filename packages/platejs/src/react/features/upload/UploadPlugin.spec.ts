@@ -3,6 +3,7 @@ import { describe, expect, it, mock, spyOn } from 'bun:test';
 import { createFilesClient } from 'files-sdk/client';
 
 import { createEditor } from '../../../core';
+import { BaseDetailsPlugin } from '../../../features/details/lib/BaseDetailsPlugin';
 import { BaseImagePlugin } from '../../../features/media/lib/image/BaseImagePlugin';
 import type {
   UploadFailure,
@@ -19,6 +20,7 @@ const createDropEvent = () => {
     event: {
       dataTransfer: {
         files: [new File(['image'], 'image.png', { type: 'image/png' })],
+        types: ['Files'],
       },
       nativeEvent: {},
       preventDefault,
@@ -76,13 +78,12 @@ describe('UploadPlugin', () => {
     expect(stopPropagation).not.toHaveBeenCalled();
   });
 
-  it('admits native file drops when explicitly enabled', () => {
+  it('admits native file drops at the resolved landing', () => {
     const editor = createSelectedEditor(configured({ nativeDrop: true }));
     const { event, preventDefault, stopPropagation } = createDropEvent();
-    spyOn(editor.api.dom, 'resolveEventRange').mockReturnValue({
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-      kind: 'text',
+    spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue({
+      edge: 'after',
+      key: editor.key([0])!,
     });
 
     pipeHandler(editor, { handlerKey: 'onDrop' })?.(event);
@@ -91,6 +92,19 @@ describe('UploadPlugin', () => {
     expect(stopPropagation).toHaveBeenCalledTimes(1);
     expect(editor.read.children()).toMatchObject([
       { kind: 'image', type: 'upload' },
+    ]);
+  });
+
+  it('consumes a refused file landing without an upload', () => {
+    const editor = createSelectedEditor(configured({ nativeDrop: true }));
+    const { event, preventDefault } = createDropEvent();
+    spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue(null);
+
+    pipeHandler(editor, { handlerKey: 'onDrop' })?.(event);
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
@@ -153,5 +167,40 @@ describe('UploadPlugin', () => {
     const owner = editor.plugin(UploadPlugin);
     expect(owner.store.get('task', editor.key([1])!)?.file).toBe(first);
     expect(owner.store.get('task', editor.key([2])!)?.file).toBe(second);
+  });
+
+  it('keeps an empty details summary when a file drops after it', () => {
+    const editor = createEditor({
+      plugins: [BaseImagePlugin, BaseDetailsPlugin, configured()],
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: '' }], type: 'summary' },
+            { children: [{ text: 'body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+      ],
+    });
+    const summary = editor.key([0, 0])!;
+
+    editor
+      .plugin(UploadPlugin)
+      .update.submit(
+        [new File(['image'], 'image.png', { type: 'image/png' })],
+        {
+          after: summary,
+          replaceEmpty: true,
+        }
+      );
+
+    expect(editor.read.nodes.get(summary)?.[1]).toEqual([0, 0]);
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [
+        { type: 'summary' },
+        { type: 'upload' },
+        { type: 'paragraph' },
+      ],
+    });
   });
 });

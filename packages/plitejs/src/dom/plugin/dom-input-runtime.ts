@@ -345,6 +345,13 @@ type RecentTextInputRepairEcho = {
 
 const TRACE_LIMIT = 200;
 
+// Only the proof handle reads the trace, so production keeps none.
+let kernelTraceRetention = false;
+
+export const enableKernelTraceRetention = () => {
+  kernelTraceRetention = true;
+};
+
 const describeDOMInputEditingCommand = (command: unknown) => {
   if (!command || typeof command !== 'object') return null;
 
@@ -957,6 +964,8 @@ export class DOMInputRuntime {
   }
 
   recordTrace<T>(trace: T) {
+    if (!kernelTraceRetention) return trace;
+
     this.traces.push(trace);
     if (this.traces.length > TRACE_LIMIT) {
       this.traces.splice(0, this.traces.length - TRACE_LIMIT);

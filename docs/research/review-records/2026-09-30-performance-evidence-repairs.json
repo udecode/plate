@@ -1,0 +1,142 @@
+{
+  "id": "2026-09-30-performance-evidence-repairs",
+  "kind": "execution",
+  "date": "2026-09-30",
+  "scopes": [
+    "performance"
+  ],
+  "reviewBasis": [
+    "2026-09-30-performance-evidence-value-review",
+    "2026-09-30-performance-evidence-cuts"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-30-performance-evidence-execution.md",
+    "sha256": "79b811f0204436c0b5f88e7e583e36083e049d4670c373e87d2e4a11afab955d"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "This pass repairs what the same-family trail review of S2 to S5 found. The S5 evaluator also requires both arms to share one preflight reference, so a candidate that renders different text everywhere fails correctness. A failed latest run shows its failure stage instead of older values. Admission reads recorded inputs only from sourceIdentity.measuredInputs and computes states from reason codes. Threshold rows use the comparison operator the clipboard producer now records. Registry validation allows evidence on one artifact per target and recipe variables only before the first word. The issue #6038 workload drops its non-equivalent stand-in. writeBenchmarkResult sets strictValidation for eight producers. The evaluator and external-text tests run in the fast suite. The core-node-transforms guard exposed a Plite regression in tx.nodes.wrap with a root path and a selector, which the public binding fix and a transforms contract test close; the unwrap lane now checks its setup.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "tooling/scripts/bench-targets.test.mjs",
+        "sha256": "7da5f12b304f95b00d0404316a676b2b7e910f47a325de34ae6c1da92c94c6d5",
+        "claim": "31 tests: receipts, recipe isolation, history, registry validation of one evidence artifact per target and leading recipe variables, and loader tests that run a fixture target through the real CLI for current, stale and unknown admission, a failed-run row without older values, an unreadable receipt, bytes no receipt describes, a producer without recorded inputs, an unreadable artifact and operator-based thresholds. On the final code, a single-rule mutation of each admission and validation rule fails it."
+      },
+      {
+        "path": "benchmarks/editor/benchmarks/markdown-streaming-measurement.test.mjs",
+        "sha256": "5d8d3ae8ceb5f5fb4fe5dcb4c25142b8089e262c3bc815ff0c60bae4e62fa81a",
+        "claim": "10 evaluator tests, including the shared reference and the work-gain spread; on the final code, removing the shared-reference, same-build or spread rule fails its test."
+      },
+      {
+        "path": "packages/plitejs/test/transforms-contract.ts",
+        "sha256": "5aa822de625a2fb05aa18c93099ea2cb2dfed8c289dcc720f665a534a224ecc3",
+        "claim": "The root-path selector wrap test failed before the public binding fix (false !== true) and passes with it; the transforms and schema-fit contracts pass (886)."
+      },
+      {
+        "path": "benchmarks/editor/benchmarks/benchmark-artifact.test.ts",
+        "sha256": "aea943a2848e1b5b0d4b67b40fe85bb5b0c6fab3aed66d9861ac1558e6eb30bc",
+        "claim": "writeBenchmarkResult replaces an older passing artifact with measured, unpassed data when strict validation fails, and rewrites a successful strict artifact as passed; removing the measured write fails the test."
+      },
+      {
+        "path": "benchmarks/editor/docs/perf/index.html",
+        "sha256": "0c896326a0f96550378062d4053fafb56ce00f7ed66f20adfd3e1a47fced987c",
+        "claim": "Regenerated after the fix and real CLI reruns: two current, one stale and 17 unknown lab artifacts; report, rich-text, health, viewer, index and Evidence Kit docs checks pass."
+      }
+    ],
+    "limits": "Browser and CLI runtime proofs live in scratch and are described in the plan. On three production builds of snapshot d96ecb4f55bd82a0: 8 functional spec tests pass on the baseline; a 12-cell preflight sweep passes on the baseline and a slower candidate; a candidate that drops the last parsed block fails only on the shared reference and passes without that rule; the slower candidate fails latency. A source-matched native code-block run passes validity and misses native budgets, which stays inconclusive without a matched baseline. A strict schema-construction run replaced a hand-written passing stub; the other seven producers rely on the helper tests. core-node-transforms and collab-readiness reran current. Not claimed: performance acceptance, calibration of the 1.20 attribution guard, all-target reruns. 17 of 20 lab artifacts stay unknown because their producers record no inputs, and tracked generated outputs reflect this host. check:plite:contracts fails on three test-suite-routing cases and the clipboard live-encode test, all failing identically at HEAD. The ledger inventory is stale in four groups that mix this plan with other sessions, pending the user refresh."
+  },
+  "source": {
+    "files": {
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "apps/www/scripts/run-homepage-input-perf.mts": "c34c77d9eaf23f71a5061c35ae304a5e5fbc48545267c721260ecff3654adedf",
+      "apps/www/scripts/run-table-perf.mts": "5dc9b0bc90c9e113bdea89e45312c3151d2f45343544865f9eefc3719361af98",
+      "apps/www/tests/browser/markdown-streaming-contract.spec.ts": "5924d253437dcf01f12fbb1f8db8d9478d18e3ebb4a8eaba99f421143c786d96",
+      "benchmarks/editor/README.md": "4e941eaceacf1c6ddc628cfb436016ed28a503bd143145b7cbe1608855c37f62",
+      "benchmarks/editor/benchmarks/benchmark-artifact.test.ts": "aea943a2848e1b5b0d4b67b40fe85bb5b0c6fab3aed66d9861ac1558e6eb30bc",
+      "benchmarks/editor/benchmarks/benchmark-artifact.ts": "5f525fcb558a1b2071b021762fd7f0c21fcf7b575991cae8d9b0ac69843e8572",
+      "benchmarks/editor/benchmarks/benchmark-health.mjs": "bfa8edf645fde5cfffa9d3e851f0011f8d5016358453f90b056aea7fc8342f53",
+      "benchmarks/editor/benchmarks/code-block-highlight-oracle.mjs": "d86a180449648df3159bfd2c54729bf3e029288d49f676ee42cc407fabdb10d1",
+      "benchmarks/editor/benchmarks/code-block-highlight-oracle.test.mjs": "dc4bb9d69a7d16925c58c35729adfdcd39fe5a23a842f50af1b6c8799d45e41d",
+      "benchmarks/editor/benchmarks/external-text-measurement.mjs": "cf035698ce3e47117804ed56b0f8f8db1cf15d11e9813965aeb6bb06766ca80e",
+      "benchmarks/editor/benchmarks/external-text-measurement.test.mjs": "452b0b9f9fe4bc5d94fb42fe73886f1e911a87fe09355238e4fb027d9ec0b96b",
+      "benchmarks/editor/benchmarks/markdown-streaming-measurement.mjs": "3d8e9a5adeda16e3085f414e1a6a69eea7d898e63e4c9c783f8c569e6a254404",
+      "benchmarks/editor/benchmarks/markdown-streaming-measurement.test.mjs": "5d8d3ae8ceb5f5fb4fe5dcb4c25142b8089e262c3bc815ff0c60bae4e62fa81a",
+      "benchmarks/editor/benchmarks/plate-code-block-browser.mjs": "c5d0ff9698e65908b934ac0349215f93c610c4017de90d6941689d3c93d39515",
+      "benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts": "e0345f6d81e3bd6b5d7200fe99b5d70993577f22d96d7654ec9e9e14086424ed",
+      "benchmarks/editor/benchmarks/plite-clipboard-large-payload-gate.d.mts": "ee6fa84a9d4e014cfa56fb25c184a659b8cf2284ea2e8b624530ff2675b0c37b",
+      "benchmarks/editor/benchmarks/plite-clipboard-large-payload-gate.mjs": "cbf7beead5c8abfc4d19330adbfc2618cdbc8bb1c819fddf3c18da3b5bc8d2f6",
+      "benchmarks/editor/benchmarks/plite-content-slice-value-benchmark.ts": "4c1073db5e25e82f87e3665155c0986f36050affffcb27b49478d22d8f609d77",
+      "benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.ts": "f74d7c0de6eca6dff78b6b59e9d71623f0078459ecb72f82e71e0a0043690998",
+      "benchmarks/editor/benchmarks/plite-history-depth-benchmark.ts": "717db245f4e63690d8979b18c12b9435ac94fe416c07868a4e01a952a545f8cc",
+      "benchmarks/editor/benchmarks/plite-plugin-graph-benchmark.ts": "f3e3b3b9ba304e2aa7f50df1c4d4c27f2ff2402b3a971c2a250f06d9652b1b62",
+      "benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.ts": "03f3d53e5465372e2e55dc0edf1ace48f9290d4809251b1ff4319d77a5edefa7",
+      "benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts": "41a54ab8623de1db2da5a3df8b1807b1f85bd3853590aac37598bbc2d64735ae",
+      "benchmarks/editor/benchmarks/plite-schema-construction-benchmark.ts": "4d9d01f830ba624e47dd9d44755e7f49e1030a745033aded1524fbb4e1d69cda",
+      "benchmarks/editor/benchmarks/plite-structural-compare-benchmark.ts": "dc73a6128f865a4603a349237a962cafe8057046453f9c47f136e89313d4c28e",
+      "benchmarks/editor/benchmarks/render-rich-text-viewer.mjs": "cd0818c437b980d0e5a79b2fc5ac728aa9030c9c05efdff84185e9048c233743",
+      "benchmarks/editor/benchmarks/rich-text-editors-benchmark.mjs": "452c359acc77e46b0812e6ad5d2926acd405f3d8ae4d010b47b82549c1e4a6c9",
+      "benchmarks/editor/docs/perf/index.html": "0c896326a0f96550378062d4053fafb56ce00f7ed66f20adfd3e1a47fced987c",
+      "benchmarks/editor/package.json": "ee860dc24fcdcbe052c52b0ed48a9dd0a2847b23e5b24a899936fd10a95ec165",
+      "benchmarks/editor/research/benchmark-registry.json": "c5b0ef7fb581b4ecc77eb12eadb7cfd861064bd67f0a667d2965fb0be368046f",
+      "benchmarks/editor/research/evidence-source-map.md": "2dc3969934e538d5d045f1a9dc99f15bae0c03031a1097928e271728054e00d9",
+      "benchmarks/editor/src/index.d.mts": "66d79156e392f9433de79e8fdece875c3429c5fc631502bd5eee0922f58d864b",
+      "benchmarks/editor/src/index.mjs": "e7de8391ee5a18f1a5bfef0f30fc6488580bca5bd34db3e5afd95a4cf7f297e6",
+      "benchmarks/slate-v2/donor/core/current/collab-readiness.mjs": "aa333437afb01345ec5bb2267e4c55192b027c74eb113996e5fab644e51c2dee",
+      "benchmarks/slate-v2/donor/core/current/node-transforms.mjs": "cb54fc68c484a9bd228a7062e3238c1f85159d185cde0553e0617f6326cea1dc",
+      "benchmarks/targets/README.md": "3de31c8e9a79303a3c9aa39dc20123aa7c13c208ae965c6b46863df1e869e112",
+      "benchmarks/targets/history/slate-v2-latest.json": "4e9e125ba78c0f9a49198ab59a9db9fe59e97bff44c16900be58f6999c1ed356",
+      "benchmarks/targets/reports/slate-v2.md": "e2d6495dc88d384eac2da7c2a38d0d2d85ed146a2781652235dd3031f5ffc258",
+      "benchmarks/targets/slate-v2.json": "dceac93cfbc9b0d489aa401bfcf78765b18b9872b3a22944cd128a480eaa8e38",
+      "docs/plans/2026-09-10-editor-performance-execution.md": "b0fa7f684c7493297095f7a76fc00ec4bd389ef459704a8b31c8701291e856e8",
+      "docs/plans/2026-09-10-editor-performance-follow-through.md": "9cb0cb9500b278740b5b98dc5f46d3f145e2bd2c11bdd19e1ef39747addca59c",
+      "docs/plans/2026-09-30-performance-evidence-design.md": "fcfd843a326b6a15c42f0add1bcff291849496338313d2493bef516bcbe9e118",
+      "docs/plans/2026-09-30-performance-evidence-execution.md": "79b811f0204436c0b5f88e7e583e36083e049d4670c373e87d2e4a11afab955d",
+      "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md": "5bb9de499989bfe8e140827e706d4e87ca640c5940925924628aa7faee2828a6",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md": "a2e12253d12bf7c4587cf0061796c57c6a9cc231eca21f7caa21486cb9df4ced",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md": "7a89f49cf14b5ff0b88c420d0779bb9169948a9bb883d4b83d1603419bfa2bad",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/scripts/summarize-matrix-ratio125.ts": "dd9aff2c188d61e2ff637b941b4e33d74f01df872b9daebebecdb4921960d465",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts": "69ce2e81ce9def866211ce2826d5f8370b94af7089030db8f5bf4c59380bbee6",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt": "1236eba2d944655ada507c41c74203212df6622d7f688aa260feaf94a92e6dcf",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json": "16980a7a7d8c78014790ee6571df736433943d8b5a81aa92334494e25731cd46",
+      "docs/research/probes/2026-09-30-performance-review/RESULTS.json": "7a947572ee2831397726dbc565fe87fddb852a096a42e5d2bf804077592198ca",
+      "docs/research/probes/2026-09-30-performance-review/reproduce.mjs": "8729b98a352c61d4ab3265004defc3ec9ab496511af6a9c4621782af363c32ad",
+      "docs/research/review-records/2026-09-30-content-root-locations-closure.json": "b6a1ee96994cc9db2cfae4113f92beb124937fad3155dbf94d1cbe642e3d29ff",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "docs/vision/common.md": "d4e12fc4b28bd7d6cd077be54853ee8c873e051cf9dcc93a7e6e43fd32347129",
+      "package.json": "b8ed87d615e8bc1837713cc590298496aba461a43ee5b3aa54a5913f9c11b72b",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/src/core/profiling.ts": "f5e8ea27a4eda605ef7d53c75907aa9904bf89a3ced01db67d70d55fcf4bf715",
+      "packages/plitejs/src/core/public-state.ts": "1e71b980cd8fb6f9e6d49d281456a70f55b4d65ea2d6a6a3135e041436f041cd",
+      "packages/plitejs/src/index.ts": "bcfeaa00ef5809e1dd8b34e7581c7bcef85a21b72355bdbf64130a5bae430a1d",
+      "packages/plitejs/src/react/index.ts": "e47da0a4e58ca90108fdd32a70df2f886a3a2d53199699ab5acd9c55692bdee3",
+      "packages/plitejs/src/react/render-profiler.ts": "91078a23226b1906d000a258e602d3b6426bc26603dd691667e297f72d45051a",
+      "packages/plitejs/test/transforms-contract.ts": "5aa822de625a2fb05aa18c93099ea2cb2dfed8c289dcc720f665a534a224ecc3",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      "tooling/config/test-suites.mjs": "9e91e86a92a97888d76665fc75294155c6e190308490cf17bc630ac3d5226b93",
+      "tooling/scripts/bench-targets.mjs": "8b4041033e184af47e1d023ccc25a047278815f880f2a2d182896ccf42dcc4bd",
+      "tooling/scripts/bench-targets.test.mjs": "7da5f12b304f95b00d0404316a676b2b7e910f47a325de34ae6c1da92c94c6d5"
+    },
+    "directories": {
+      "benchmarks/editor/benchmarks": "f68a3ca82628c11b087671cf1ecffae9a3f22d9ef2fbeeb0a862782eaa2efd28"
+    },
+    "features": {
+      "plitejs/core/profiling": "6092b7d1a78bd8c662a494007c646d69bc76c71fb58870b58acdd85d663faffd",
+      "tooling/performance": "aab54316325276c640b734fb3873696c989031ba9541937d980fe1d0d39a2e8a"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-30-performance-evidence-execution.md",
+    "docs/plans/2026-09-30-performance-evidence-execution.decisions.tsv",
+    "docs/research/review-records/2026-09-30-performance-evidence-execution.json",
+    "tooling/scripts/bench-targets.mjs",
+    "benchmarks/editor/src/index.mjs",
+    "benchmarks/editor/benchmarks/markdown-streaming-measurement.mjs",
+    "packages/plitejs/src/core/public-state.ts",
+    "benchmarks/editor/benchmarks/benchmark-artifact.ts",
+    "benchmarks/editor/README.md"
+  ]
+}

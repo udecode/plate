@@ -1,19 +1,12 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { render } from '@testing-library/react';
-import * as actualDnd from 'platejs/dnd/react';
 import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
 
 const selectionMock = mock();
 const useEditorSelectorMock = mock();
-const useDraggableMock = mock();
 const usePluginStoreMock = mock();
-
-mock.module('platejs/dnd/react', () => ({
-  ...actualDnd,
-  useDraggable: useDraggableMock,
-}));
 
 mock.module('platejs/react', () => ({
   ...actualCoreReact,
@@ -73,11 +66,9 @@ describe('ImageElement', () => {
   beforeEach(() => {
     selectionMock.mockReset();
     useEditorSelectorMock.mockReset();
-    useDraggableMock.mockReset();
     usePluginStoreMock.mockReset();
 
     selectionMock.mockReturnValue(null);
-    useDraggableMock.mockReturnValue({});
     usePluginStoreMock.mockReturnValue(false);
     useEditorSelectorMock.mockImplementation(
       (selector: (editor: unknown) => unknown) =>

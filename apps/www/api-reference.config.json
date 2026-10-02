@@ -749,6 +749,23 @@
             "TrailingBlockPlugin",
             "TrailingBlockPluginState",
             "TransactionSpec",
+            "TransferApi",
+            "TransferCheck",
+            "TransferDefinition",
+            "TransferDiagnostic",
+            "TransferEdge",
+            "TransferInput",
+            "TransferIntent",
+            "TransferLandingInput",
+            "TransferLandingTarget",
+            "TransferOutcome",
+            "TransferPayload",
+            "TransferRead",
+            "TransferRefusalReason",
+            "TransferRelation",
+            "TransferSourceInput",
+            "TransferTarget",
+            "TransferVeto",
             "TransformInputRuleContext",
             "TransformOptions",
             "TxOnlyMethod",
@@ -837,6 +854,7 @@
             "target",
             "toEditorCoreStateView",
             "toUnitLess",
+            "transfer",
             "txOnly",
             "txRead",
             "valueCodecs",
@@ -845,17 +863,19 @@
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {
             "AnyObject": "/docs/api/utils",
+            "BlockInsertOptions": "/docs/api/core#plateblockinsertoptions",
             "DebugValueScrubber": "/docs/debugging#scrubbing-values",
+            "EditorSchemaElementStructure": "/docs/api/core",
+            "EditorSchemaStructureProperty": "/docs/api/core",
             "IS_APPLE": "/docs/api/utils",
             "Nullable": "/docs/api/utils",
+            "SchemaElementStructure": "/docs/api/core",
+            "TransferPlugin": "/docs/dnd#move-blocks-programmatically",
             "UnknownObject": "/docs/api/utils",
             "isDefined": "/docs/api/utils",
             "isUrl": "/docs/api/utils",
             "setDebugValueScrubber": "/docs/debugging#scrubbing-values",
-            "BlockInsertOptions": "/docs/api/core#plateblockinsertoptions",
-            "EditorSchemaElementStructure": "/docs/api/core",
-            "EditorSchemaStructureProperty": "/docs/api/core",
-            "SchemaElementStructure": "/docs/api/core"
+            "transferVeto": "/docs/dnd#refuse-a-landing"
           }
         },
         "./callout": {
@@ -864,17 +884,18 @@
           "include": {}
         },
         "./combobox": {
-          "exclude": [
-            "FilterWordsOptions",
-            "TriggerComboboxEditor",
-            "TriggerComboboxOptions",
-            "TriggerComboboxPluginState",
-            "filterWords",
-            "triggerCombobox"
-          ],
+          "exclude": ["ComboboxEditor", "FilterWordsOptions", "filterWords"],
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {
-            "BaseComboboxPlugin": "/docs/combobox"
+            "ComboboxState": "/docs/combobox"
+          }
+        },
+        "./combobox/react": {
+          "exclude": ["UseComboboxOptions", "UseComboboxReturn"],
+          "excludeReason": "No curated reference page owns this symbol yet.",
+          "include": {
+            "ComboboxMatch": "/docs/combobox",
+            "useCombobox": "/docs/combobox"
           }
         },
         "./comments": {
@@ -943,7 +964,6 @@
         "./footnote": {
           "exclude": [
             "BaseFootnoteDefinitionPlugin",
-            "BaseFootnoteInputPlugin",
             "BaseFootnotePlugin",
             "CreateFootnoteDefinitionOptions",
             "FootnoteDefinition",
@@ -1039,11 +1059,9 @@
         },
         "./mention": {
           "exclude": [
-            "BaseMentionInputPlugin",
             "BaseMentionPlugin",
             "MentionDefinition",
             "MentionElement",
-            "MentionInputElement",
             "MentionPluginState",
             "TMentionItemBase"
           ],
@@ -1075,13 +1093,7 @@
           }
         },
         "./slash-command": {
-          "exclude": [
-            "BaseSlashInputPlugin",
-            "BaseSlashPlugin",
-            "SlashDefinition",
-            "SlashInputElement",
-            "SlashPluginState"
-          ],
+          "exclude": ["BaseSlashPlugin", "SlashDefinition", "SlashPluginState"],
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {}
         },

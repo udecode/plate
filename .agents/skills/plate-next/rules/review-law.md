@@ -50,16 +50,7 @@ Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
     If a concrete root-pollution field is in the active package/file scope, do
     not merely score or mention it. Fix it in the owner before closeout, or stop
     with a named Plite/Plate gap and deletion path.
-- On a concrete inferred editor, `editor.api.<name>` is the canonical
-  discovery path. Use `editor.plugin(FooPlugin).api` for generic package code,
-  exact Plate ownership, and raw Plite ownership. All paths expose the same descriptor-owned API
-  contributed once at root `api` and projected under `name`. Reject root-merged
-  methods, `getApi`, and `pluginApi`.
-- The root `api` field is factory-only at Plite, Base, and Plate layers,
-  including context-free APIs: write `api: () => ({ ... })`, never
-  `api: { ... }`. The factory receives one context object; Base and Plate add
-  their authoring fields to that same object. Reject positional
-  `(editor, context)` factories and `.configure({ api })`.
+- The rules this section shares with `best-api` and `plate-architecture` are stated in `best-api.mdc`, `best-api/rules/authoring-and-inference.md`, `best-api/rules/behavior-and-ownership.md`, and `best-api/rules/schema-and-identity.md`; apply them from there.
 - When a generic caller legitimately accepts an optional descriptor, use
   `const foo = editor.plugin(FooPlugin)` and check `foo.installed` before any
   other portal access. Disabled plugins count as absent. Do not cast or probe
@@ -129,13 +120,6 @@ editor.read.selection.nodes()` is a regression: it
   or `schema.key`; if Plate foundation makes that handle optional, repair
   `PluginAuthorSchemaView` instead of asserting, guarding, or duplicating the
   identity locally.
-- Context-bound factories may use the exact installed-plugin editor only while
-  authoring their callback. Their public factory and emitted value types must
-  project to the smallest portable public contract. If declaration emit leaks
-  `InternalBaseEditorWithInstalledPlugins`, repair the Plate foundation factory return
-  boundary; do not annotate package exports with `Editor<typeof Plugin>`,
-  rebuild callback option types, cast the result, or export an internal editor
-  carrier.
 - Treat TS7056 as an owning generic or declaration-boundary defect. The only
   accepted package target is one direct inferred export. Never add another
   `@plate-plugin-declaration-stage`, private definition carrier, annotated
@@ -147,73 +131,9 @@ editor.read.selection.nodes()` is a regression: it
   factory. Let `definePlugin` infer its exact definition from the author
   object. Keep explicit state, API, update, or domain types only for real
   exported/reused contracts; they do not wrap the whole plugin.
-- `DefinitionOf<typeof FooPlugin>` is the sole public descriptor-definition
-  extractor. Export it as `FooDefinition`, never `FooConfig` or an unsuffixed
-  alias. Preserve real domain/runtime `*Config` types, but hard-cut
-  `InferConfig` and every competing extractor.
-- Plite, Base, and Plate use the sole public descriptor-definition grammar
-  `define*(name, definition)`, with no caller-supplied generics. Internally,
-  TypeScript may require a small inferred
-  environment parameter—Plite dependencies, or Plate dependencies plus
-  initial state—beside the author-input parameter to preserve contextual
-  callback inference. That is valid internal machinery; do not fake a
-  one-self-referential-generic claim, expose the environment, or compensate
-  with caller generics, annotations, casts, or `any`. Reject excess fields and
-  normalize one exact definition carried by a private invariant witness.
-  Reject public `__config`, raw callback/dependency graphs in declarations, or
-  another accumulator machine.
-- An app-resource-dependent Plate integration may expose a concrete
-  non-installable factory with `.create(options)`. `.require(key)` exists only
-  for non-nullish root-input refinement before copied `.map(stage)`
-  composition, and `.map()` must reuse the complete descriptor `.extend()`
-  relation. The factory has no descriptor identity, authoring, or terminal
-  configuration methods. Each create returns a fresh complete nominal
-  unconfigured descriptor. Keep its higher-kinded relation and mapper private;
-  do not add a public factory-definition grammar from one integration.
 - The positional name is required, lower camel case, and human-readable. Keep
   a different serialized node identity in `type`; never encode storage syntax
   in the descriptor name.
-- Public package roots expose author-facing contracts only. Keep `Any*`,
-  `Internal*`, normalized/compiler types, accumulators, witnesses, and raw
-  callback graphs private or under an explicit internal entrypoint. An
-  unparameterized editor exposes guaranteed Plate foundation capabilities only; package
-  consumers carry their concrete editor or descriptor generic instead of
-  manufacturing installed groups with `any`. Every editor entrypoint calls its
-  public runtime type `Editor`; package and entrypoint establish the layer.
-- Audit every public generic for a typed source. Installed descriptors own
-  update capabilities and validated external data; command descriptors own
-  command inputs; typed schema handles own property values. Hard-cut caller
-  generics that can forge a transaction group or choose a read result. Raw
-  property strings and unvalidated remote metadata remain `unknown` until a
-  runtime owner narrows them.
-- Plite owns one nominal `Plugin` descriptor family across raw, Base,
-  configured, and React plugins. Authored descriptors carry one invariant
-  definition witness; Plate adds product authoring and a lazy capability
-  provider to that same identity. `PluginReference` is the erased nominal input
-  contract. Root `PluginDependencyReference` is shallow and non-generic: only
-  `name` and optional `enabled`, with no capability, provider, witness, or
-  recursive exact ancestry.
-- `PluginTypeProvider` is the sole public descriptor-to-installed-capability
-  bridge. Keep its higher-kinded encoding, normalized installed-capability
-  carrier, and transitive dependency expansion in `plitejs/internal`; never
-  expose or teach those internals, and
-  never recursively materialize the complete dependency ancestry.
-  A static portal must prove literal-name uniqueness plus mutual capability
-  assignability. Runtime portal access must prove the installed descriptor or a
-  compatible source ancestor rather than accepting a same-name surrogate. Keep
-  `Plugin<Definition>` to one public definition parameter, and derive
-  official factory return types instead of reconstructing them with another
-  public generic.
-- Keep descriptor identity separate from installed state. Plite snapshots raw
-  author fields or Plate's compiled definition into one private installed
-  record, binds terminal descriptors and eligible ancestors to it, and checks
-  dependencies and conflicts through direct nominal references. Reject
-  synthetic replacement descriptors, name-remapped topology, global aliases,
-  and portal kind dispatch.
-- Plate foundation may use internal aliases to translate the contextually typed author
-  source into the canonical lowered Plite definition. Do not export, document,
-  or make users name that compiler split: public authoring remains one object
-  call returning one exact descriptor.
 - The low-level React bridge is exactly `react({ dom })`: one required object
   containing the exact DOM descriptor. Permit one explicit erased
   implementation boundary only where TypeScript 7 cannot reduce the invariant
@@ -232,11 +152,6 @@ editor.read.selection.nodes()` is a regression: it
   `type` means the structural field on a persisted element and the resolved
   identity exposed by an element owner; `key` is the resolved property
   identity. Never use `plugin.name` as either.
-- State that selects a capability stores the descriptor or normalized `name`,
-  never its persisted `type` or `key`. Resolve schema identity only at the AST
-  read/write boundary. Transient-node factories resolve the installed schema
-  identity when invoked so application overrides cannot leave stale literals
-  captured in plugin state.
 - Plate exposes native Plite fields directly at the plugin root: dependencies,
   conflicts, `readMiddleware`, commands, corrections, declarations,
   contributions, `on`, activation, and config-free `validate`. Reject a nested
@@ -257,28 +172,7 @@ editor.read.selection.nodes()` is a regression: it
 - Plite owner-local capability factories are `read` and `update`; pure
   core-read policy is `readMiddleware`. Reject descriptor `state`/`tx`
   authoring and the old middleware-overloaded `read`.
-- `.extend()` widens the exact definition; `.configure()` is terminal and
-  non-widening; `toReactPlugin()` is the exact Base-to-React adapter. Factories
-  replace cloning, so hard-cut `clone()` and any third copy verb.
-- Install plugins with `editor.install(...)` and create DOM/React views with
-  `createEditorView(editor, options)`. Reject an editor runtime wrapper and
-  `editor.extend(...)`. Root standalone utilities are limited to genuinely
-  editor-independent value operations such as `NodeApi`, `PathApi`, and
-  `isEditor`; editor behavior belongs on `read`, `update`, or an plugin.
-- Descriptor-aware schema queries are identity operations only. Read document
-  properties through typed property handles or semantic plugin APIs; reject
-  the arbitrary one-property-descriptor shortcut.
-- Audit plugin updates toward one object-patch law:
-  `tx.nodes.set({ property: value }, options)`. Owned keys and values infer from
-  the shallow plugin plus required-dependency graph; duplicate persisted keys
-  infer their value union. Aliases use their authored persisted key in the
-  object patch. `tx.nodes.unset` accepts a typed key or exact handle. Dynamic
-  string-keyed patches are the runtime-schema escape hatch; prefix families and
-  cross-node behavior use semantic owner operations. Reject scalar
-  `set(key, value)`, `tx.properties`, and any second mutation namespace.
-  `tx.plugin(pluginOrName)` selects an installed plugin's flat active-
-  transaction group.
-- Use `plate-plugin-creator`'s Capability Boundary Protocol as the sole
+- Use `plate-plugins`'s Capability Boundary Protocol as the sole
   plugin-authoring owner. Plate Next audits each contribution into exactly one
   row:
   - `initialState`: descriptor defaults for mutable editor-local state;
@@ -294,12 +188,6 @@ editor.read.selection.nodes()` is a regression: it
     Reject document reads hidden in `api`, document mutations outside `update`,
     impure selectors/reads, plugin-scoped behavior smuggled into native fields,
     and any contribution with no honest row.
-- Reject feature migration plugins, legacy-shape normalizers, generic plugin
-  document-preparation hooks, and editor migration options. Persisted source
-  lineage belongs to an app envelope; one named app schema and plugin tuple own
-  exact historical source fingerprints, ascending target-version steps, and the
-  detached `migrateDocument` app/CLI runner. Raw input requires an explicit
-  source at each conversion. Ordinary editor loads accept current input only.
 - Enforce the creator's state mechanics without restating another model:
   every state-owning production descriptor has a named `*PluginState`, exported
   with an exported descriptor; owner defaults use a typed constant or explicit
@@ -334,15 +222,6 @@ editor.read.selection.nodes()` is a regression: it
   to `best-api`; an accepted capability descriptor may remain colocated in the
   same plugin owner file. Do not force another file, and do not keep a real
   capability anonymous merely because it has one source owner.
-- Within one owned plugin array, terminal configurations derived from the same
-  authored plugin compose in source order; later defined values win and exact
-  identity deduplicates. Unrelated plugins and divergent authoring branches
-  sharing a name still conflict. Across independently optional app or registry
-  kits, map who owns membership and prove each kit alone and in combination.
-  Import access does not establish membership ownership. A kit must not install
-  an independently optional peer merely to adapt it; route that public
-  composition fork to `best-api`, whose weak-peer path preserves adapting-only,
-  target-only, both, and explicit-target-configuration behavior.
 - Registry examples are teaching and copied-install surfaces, not optimized
   app presets. Do not delete an explicit feature plugin, kit, renderer binding,
   or dependency merely because the inherited application plugin array already
@@ -363,22 +242,10 @@ editor.read.selection.nodes()` is a regression: it
   Plate UI doctrine. The accepted family shape is one `<Family>.tsx` plus zero
   or one semantic `use<Family>.ts[x]` controller. Direct component behavior
   stays direct; complex siblings may consume one private family context.
-- Cut sibling render prop bags that inherit Editable or container DOM props,
-  runtime spreads of those host props, and callbacks whose only job is
-  forwarding the exact slot ref. Keep only `editableRef` or `containerRef`,
-  register complete components directly, and retain callbacks only for real
-  custom composition.
 - Cut state-hook/prop-hook pipelines, public prop-bag hooks used by one
   renderer, one custom hook per subcomponent, hooks defined in plugin
   descriptors, speculative public providers/stores, small component factories
   or HOCs, React 18 branches, and `forwardRef`.
-- Audit public package hooks by terminal product consumer, following package
-  wrappers, adapters, barrels, and reexports. Intermediate package imports,
-  tests, and docs do not establish reuse. When every terminal consumer is
-  copied registry UI and the behavior is UI/product composition, move the
-  complete hook/store/provider/hotkey/plugin-plugin owner into its registry
-  family or kit. Keep package publication only for independent terminal owners
-  or a durable headless subsystem contract.
 - Do not keep a mixed renderer hook merely because one responsibility is a
   durable headless subsystem. Split the row: retain only subscription,
   observer, imperative DOM projection, and cleanup in a minimal package hook;
@@ -388,9 +255,6 @@ editor.read.selection.nodes()` is a regression: it
 - Inventory every returned field and each terminal consumer destructure. Unused
   renderer-state fields, exported result types, optional fallback inputs, and
   callback props are hard-cut evidence, not reasons to preserve the bag.
-- Purity does not establish a public owner. When deleting the hook leaves a
-  trivial pure calculation used only by that copied family, keep it private in
-  the family instead of replacing one bad export with another.
 - Keep feature-package React roots flat. A nested directory or separate
   context/store earns its keep only through independent lifecycle, cross-family
   reuse, or a durable public subsystem—not taxonomy, file size, or exports.
@@ -399,12 +263,6 @@ editor.read.selection.nodes()` is a regression: it
   merely to move an inferred callback into another file. Keep explicit types
   when they are a real exported contract, recursive shape, external boundary,
   or reused API/update contract.
-- Audit authoring stages against `plate-plugin-creator` instead of maintaining
-  a second builder model. The constructor owns every independent contribution;
-  `.extend()` survives only for imported/prebuilt adaptation, a shared factory
-  unavailable to the constructor, or a real earlier-capability type
-  dependency; `.configure()` is terminal and never widens. Context access alone
-  is not an `.extend()` reason.
 - Every surviving `.extend()` must name the earlier type it consumes or the
   external declaration it adapts. Keep the contribution inferred; when a real
   public contract needs an explicit generic, type the contribution object, not
@@ -423,10 +281,6 @@ editor.read.selection.nodes()` is a regression: it
   may use the direct `tx.pluginName` group. Never index the transaction object
   with a runtime plugin name or use a nested editor portal one-shot. Raw Plite
   and Plate share the selector semantics.
-- Ordinary Markdown is CommonMark with GFM and math; Plate extension elements
-  are registered tags recognized by the runtime's selective grammar. Full MDX
-  is not a Plate dialect. Legacy MDX-written output reads through the dialect
-  law that only fenced code is code inside a registered block tag.
 - A Markdown mapping selects `node` (standard MDAST kind) or `tag` (registered
   tag, with `nestedTags`), never a mixed `from`. For a Plate-owned custom
   element tag, bind `schema: { type }` in the format factory and use that
@@ -463,9 +317,6 @@ editor.read.selection.nodes()` is a regression: it
 - Enforce every identity leg a mapping actually declares. Decode-only custom
   tag mappings still bind `tag` and decoded `type`; encode-only mappings still
   bind the emitted tag `name`.
-- A fixed external `tag` or encoded `name` exempts only that external-format
-  leg. Every decoder that constructs a Plate element still uses the resolved
-  target schema type.
 - Spread decoded or conditional properties before `children` and resolved
   `type`. Format attributes never override Plate structural fields.
 - A mapping that accepts only phrasing content decodes the external paragraph's
@@ -475,25 +326,9 @@ editor.read.selection.nodes()` is a regression: it
 - Markdown `node` selectors are typed by the standard MDAST kind map and `tag`
   selectors by registered tag names. Do not restore a public rule-name union
   such as `MarkdownNodeName` to type feature sources.
-- Any Plate element synthesized during format conversion, including structural
-  wrappers and unknown-node fallbacks, uses the installed application schema
-  type. Literal node types belong only to the external MDAST/HTML tree or to a
-  genuinely absent Plate plugin's authored default.
 - Every portal read from a plugin factory must be installed by that plugin's
   declared dependency graph. Declare a required dependency at the lowest owner
   that needs it; optional peers require an `installed` guard.
-- `component` is ordinary render publication data. Declare it in
-  the headless or React `definePlugin()` call so the descriptor renders in
-  static/RSC and live Plate consumers; replace it through one terminal
-  `.configure({ component })`. Base `.extend()` rejects it because independent
-  defaults belong in the constructor. Use `toReactPlugin()` at the owning React
-  adapter to publish a reusable Plate-layer descriptor or add real Plate-only
-  authoring. A terminal consumer never inserts conversion merely to set
-  `component`, including an intrinsic HTML tag. Static/base owners bind a server-safe component without
-  importing a Plate React entrypoint. `.configure()` never widens.
-  Hard-delete `.withComponent()` and any second node-component channel.
-  Keep renderer attributes and mark placement under `render`; keep structural
-  composition under `slots`.
 - Hard-delete `extendApi`, `extendEditorApi`, `extendSelectors`, `extendTx`,
   `extendTxGroup`, `extendExtension`, `extendCodecs`, and `extendHtmlCodec`.
   Do not keep aliases, shims, deprecations, forwarding wrappers, or old
@@ -502,7 +337,7 @@ editor.read.selection.nodes()` is a regression: it
 - When colocation makes a helper obsolete, delete its file and barrel export.
   Do not preserve a helper export, forwarding wrapper, alias, or old filename
   for compatibility. Route a genuine public API fork through `best-api`, then
-  `plate-plan` for adoption/proof when needed; compatibility is not the default
+  `plate-architecture` for adoption/proof when needed; compatibility is not the default
   answer.
 - Never replace an old helper body with a wrapper like
   `editor.plugin(FooPlugin).editor.update((tx) => tx.foo.bar(...))`. If the
@@ -544,6 +379,12 @@ editor.read.selection.nodes()` is a regression: it
   Use callback form only when grouping multiple reads/writes under one
   snapshot/transaction, sharing intermediate state, branching/looping, or
   calling behavior that has no direct one-shot API yet.
+- Do not annotate a local whose initializer should infer its type, such as
+  `const entries: NodeEntry<T>[] = editor.read...` or
+  `const value: Value = [...]`; remove the annotation and fix the source API
+  when inference is weak. Annotate only uninferrable locals (empty arrays,
+  deliberate narrowing or widening), exported signatures and external boundary
+  callbacks.
 - Prefer Plite's live node targets and inferred structural selectors over
   migrated query boilerplate. If code already has a live descendant, pass it directly
   to an `at` option or another `NodeTarget` parameter. Resolve
@@ -556,13 +397,6 @@ editor.read.selection.nodes()` is a regression: it
   Element component and node-wrapper props never expose `path`; keep
   `usePath()` only when a descendant must react to path changes. Every
   newly introduced `usePath()` in migrated code requires that classification.
-- Use `type: FooPlugin` for Plate element selection and a persisted string or
-  schema handle in raw Plite. Arrays select a union. `match` is function-only
-  and adds computed schema policy, property checks, path-dependent logic, or a
-  type guard. Never write `match: { type }`, `match: { id }`, or a caller result
-  generic such as `nodes.find<FooElement>()`. Keep `at` independent from the
-  selected result. Insert split-target selection belongs under
-  `split: { type, match }`.
 - Flat compatibility lookups are forbidden: migrate `editor.api.findPath(node)`
   to `editor.read.nodes.path(node)` and `editor.api.some(options)` to
   `editor.read.nodes.some(options)`. Do not re-add aliases, Plate wrappers, or
@@ -620,12 +454,6 @@ editor.read.selection.nodes()` is a regression: it
   body inside the owning plugin tx group, command, correction, or middleware
   callback and capture `tx`, `api`, `store`, resolved state, editor, and type
   from that builder context.
-- New scoped methods and surviving functions take domain inputs by default.
-  Do not thread `editor`, `api`, `read`, `tx`, `store`, resolved plugin state
-  values, or resolved plugin type through a helper graph. Operation options
-  remain valid domain input. Keep one-use machinery lexical; if later plugin
-  stages or dependents need an honest capability, publish it in an earlier
-  builder stage.
 - Before keeping a state/read-view parameter, try the active tx stage or
   callback owner. An explicit active-state boundary survives only when the same
   public query must observe an uncommitted transaction snapshot. Require

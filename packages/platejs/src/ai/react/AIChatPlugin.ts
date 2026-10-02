@@ -40,7 +40,6 @@ import {
   editorCommands,
   HistoryPlugin,
 } from '../../core';
-import type { TriggerComboboxPluginState } from '../../features/combobox';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
@@ -131,11 +130,12 @@ export type AIChatPluginState = {
   previewValue: Value;
   streaming: boolean;
   toolName: AIToolName;
-  trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
-  triggerPreviousCharPattern: NonNullable<
-    TriggerComboboxPluginState['triggerPreviousCharPattern']
-  >;
-} & TriggerComboboxPluginState;
+  /** Text that opens AI Space, or a pattern tested against the typed text. */
+  trigger: readonly string[] | RegExp | string;
+  triggerPreviousCharPattern: RegExp;
+  /** Return false to keep a typed trigger as plain text. */
+  triggerQuery: ((editor: Editor) => boolean) | null;
+};
 
 type MarkdownType = 'block' | 'editor' | 'nodeSelection' | 'tableCellWithRef';
 
@@ -173,7 +173,6 @@ const initialState: AIChatPluginState = {
   chat: null,
   chatNodes: [],
   chatSelection: null,
-  createComboboxInput: null,
   mode: 'insert',
   open: false,
   previewValue: [],

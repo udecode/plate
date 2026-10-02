@@ -1,7 +1,6 @@
 ---
 description: Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence.
-argument-hint: <repo-key|owner/repo|ledger-path> [--state all|open|closed] [--refresh-only] [--slate-v2-only] [--plate-only] [--continue] [--batch-loop|timed 1h]
-disable-model-invocation: true
+argument-hint: '[slate] <repo or ledger>'
 name: issue-harvester
 metadata:
   skiller:
@@ -9,8 +8,6 @@ metadata:
 ---
 
 # Issue Harvester
-
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
 
 
 Handle $ARGUMENTS.
@@ -21,11 +18,14 @@ closed issues that predate AI-written tests. The prompt should be small:
 ```txt
 issue-harvester prosemirror
 issue-harvester facebook/lexical --state all
-auto issue-harvester prosemirror
 ```
 
 The skill expands that into the full issue-by-issue loop. Do not make the user
 paste the long closure-ledger prompt again.
+
+## Slate claims mode
+
+`issue-harvester slate ...` keeps the Slate v2 fork's issue provenance and claim hygiene: the v2 sync ledger, exact claim levels, the fork issue dossier, coverage-matrix and PR-text claim sync, and gitcrawl upkeep. Read [Slate claims](./references/slate-claims.md) in full for that mode.
 
 ## Core Take
 
@@ -47,23 +47,22 @@ Clusters and matrices route work. They never close an issue row.
 
 - `issue-harvester`: exhaustive issue closure ledger, resume/new-issue refresh,
   PR/test provenance, unchecked-row loop, and final issue handoff.
-- `editor-audit`: source architecture comparison and commit-aware orchestration.
+- `research audit`: source architecture comparison and commit-aware orchestration.
   Its `sync` mode may invoke this skill with `--refresh-only`; it never owns or
   advances issue closure rows itself.
-- `editor-test-harvester`: first-pass external repo inventory, license gate,
+- `research harvest`: first-pass external repo inventory, license gate,
   issue corpus clustering, portable invariant matrix, and source test inventory.
-- `clawsweeper`: provenance discipline: exact thread, exact behavior, no claim
-  without proof, no GitHub mutations unless explicitly asked.
-- `task autonomous`: timeboxed/batch supervisor; delegates `issue-harvester`
-  to this skill, then continues safe checkpoints.
+- Slate claims mode: provenance discipline: exact thread, exact behavior, no
+  claim without proof.
+- pstack's Autonomous run: timeboxed or batch supervision.
 - `maintainer slate-issue`: receive one public Slate issue row, run coordinator
   intake, and delegate a normalized local repair packet when warranted.
 - `maintainer`: receive any other public issue row, run queue/claim/authority
   checks, and delegate a normalized local repair packet when warranted.
-- `patch` or `tdd`: receive only the resulting normalized local repair/test
+- pstack's Bug fix playbook or `pstack:tdd`: receive only the resulting normalized local repair/test
   packet, never a public issue row directly.
 - `best-api`: review broad public API/DX gaps.
-- `plite-plan`: defer broad runtime/adoption gaps that cannot be proved by one
+- `plate-architecture`: defer broad runtime/adoption gaps that cannot be proved by one
   small test.
 
 ## Scope
@@ -77,29 +76,15 @@ This skill works for:
 - resuming an existing closure ledger;
 - adding only missing local tests for unchecked relevant issues.
 
-For external repos, never copy upstream code, fixtures, helper shape, snapshots,
-expected output blobs, or expressive test prose into versioned Slate/Plate
-output. Extract the behavior invariant, then write a fresh local proof using
-local fixtures, helpers, names, and assertions.
+External repos follow `research harvest`'s license gate: extract the
+behavior invariant and write a fresh local proof, never copied upstream code,
+fixtures or prose.
 
-## Required First Checkpoint
-
-For broad or timeboxed work, capture the following rows once in the active
-Task plan. Apply the project's standing Autogoal request for long-running work.
-The first checkpoint records:
-
-- target repo and repo key;
-- issue state, default `all`;
-- scope flags: `slate-v2-only`, `plate-only`, or both;
-- ledger path and whether it was found or created;
-- latest-issue refresh command;
-- existing unchecked count and next issue number;
-- PR/test provenance requirement for closed relevant issues;
-- copy-policy: behavior invariant only for external repos;
-- final handoff sections.
-
-Use one checkpoint per complex runtime issue, or one checkpoint per ten trivial
-skip/covered rows.
+Broad or timeboxed work records in its plan the target repo and key, issue
+state, scope flags (`slate-v2-only`, `plate-only` or both), the ledger path and
+whether it was found or created, the refresh command, the unchecked count and
+next issue number, and the provenance requirement for closed issues.
+Checkpoint after each complex runtime issue or each ten trivial rows.
 
 ## Ledger Autodiscovery
 
@@ -158,7 +143,7 @@ If a ledger exists:
 
 If no ledger exists:
 
-1. run the target repo/license gate from `editor-test-harvester`;
+1. run the target repo/license gate from `research harvest`;
 2. inventory issues with `state=all` unless explicitly narrowed;
 3. cluster first;
 4. build the coverage matrix;
@@ -263,6 +248,8 @@ last_checked_at
 next_action
 ```
 
+Existing ledgers keep their own headers, so parse by header name, never by column position. Three header families exist: lexical and prosemirror (`check`, `issue`, `state`, `relevant`, `closureKind`, `disposition`, …), prosekit and wordgard (`check`, `issue`, `state`, `relevant`, `classification`, `owner`, `status`, …), and slate (`issue_number`, `number`, `kind`, `state`, …, with no `check` column). New ledgers use the schema above.
+
 `owner` values:
 
 - `slate-v2`
@@ -300,8 +287,10 @@ objective. For each unchecked row:
    to defer Plate rows instead of patching Plate.
 6. If exact coverage exists, link file:line, test name, and focused command;
    run that command before marking covered.
-7. If coverage is absent, write the smallest correct local regression,
-   contract, or browser test in the owner surface.
+7. If coverage is absent, name the defect the issue describes and write the
+   smallest local regression, contract, or browser test in the owner surface
+   that fails for that defect, per the Tests rule in `AGENTS.md`. When a type,
+   lint rule or existing test already catches it, record that owner instead.
 8. For external sources, express the test fresh from the invariant. Do not
    preserve upstream fixture/helper shape.
 9. Run focused verification.
@@ -313,7 +302,7 @@ Do not patch runtime just because an external issue exists. Patch runtime only
 after a local failing proof exists or the missing test proves a current behavior
 contract gap. Return that issue-bearing candidate to `maintainer slate-issue` for
 one public Slate issue or `maintainer` for any other public issue; only the
-coordinator delegates the normalized local repair packet to `patch`.
+coordinator hands the normalized local repair packet to pstack's Bug fix playbook.
 
 ## Coverage Search
 
@@ -362,36 +351,15 @@ After each issue, or each batch of ten trivial skip/covered issues:
 If no generator script exists, update the TSV/MD by the smallest reliable local
 method and record that the generator is missing as a workflow gap.
 
-## Stop Rules
+## Stop and hand off
 
-Stop only when:
+Stop only when every relevant row for the objective is checked, a real blocker
+prevents all progress, a broad API or runtime decision belongs to `best-api` or
+`plate-architecture`, or the timebox expires with the active packet decided. Never
+stop after a cluster summary, a first matrix or the first ten rows unless a
+sample was asked for.
 
-- all relevant rows for the objective are checked;
-- a real blocker prevents all useful issue progress;
-- commit, push, PR, or destructive cleanup authority is needed;
-- a broad API decision belongs in `best-api`; runtime/adoption belongs in
-  `plite-plan`;
-- the timebox expires and the active issue packet has a keep/defer/block
-  decision.
-
-Do not stop after a cluster summary, first matrix, first ten rows, or first test
-unless the invocation mode explicitly asked for a sample.
-
-## Final Handoff
-
-Include:
-
-- target repo, state, and ledger path;
-- issue inventory refresh command and freshness;
-- issues checked this run;
-- tests written;
-- existing tests linked and verified;
-- PR/test provenance used for closed issues;
-- skips/deferred with reasons;
-- remaining unchecked count;
-- next issue number;
-- changed files;
-- commands run;
-- anything needing user attention.
-
-Keep it concise. The ledger carries the detail.
+The handoff names the target, state and ledger path, the refresh command and
+freshness, issues checked, tests written or linked and verified, provenance used
+for closed issues, skips and defers with reasons, the remaining unchecked count
+and next issue number. The ledger carries the detail.

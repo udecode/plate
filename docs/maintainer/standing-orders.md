@@ -19,10 +19,9 @@ repo-maintenance prompts, or a future local scheduled Codex activation.
 
 **Primary owner:** `$maintainer`.
 
-**Execution owners:** `$task`, Maintainer's Slate issue mode, `$auto`,
-`$security-triage`, `$autoreview` under Task's one review budget (P1 by default;
-P2/P3 only when explicitly requested; never on `next`),
-`$resolve-pr-feedback`, `$docs-creator`, `$plate-plan`, `$plite-plan`,
+**Execution owners:** pstack's Bug fix playbook with `verify`, Maintainer's
+Slate issue and security modes, `$autoreview` under the pstack block's Review
+rule in `AGENTS.md`, the Babysit playbook, Plate Docs, `$plate-architecture`,
 `$issue-harvester`, and other narrower owners.
 
 ## Allowed Without Asking
