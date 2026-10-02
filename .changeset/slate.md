@@ -2,4 +2,4 @@
 "@platejs/slate": patch
 ---
 
-Updated `slate-hyperscript`.
+Updated `slate-react`.
