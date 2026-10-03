@@ -193,6 +193,53 @@ describe('deserializeMd', () => {
     ]);
   });
 
+  it('removes inline html elements whose deserialize rule key is disallowed', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        'a<br/>b <u>c</u> <a href="https://platejs.org">d</a>',
+        { disallowedNodes: ['underline'] }
+      )
+    ).toEqual([
+      {
+        children: [
+          { text: 'a' },
+          { text: '\n' },
+          { text: 'b ' },
+          { text: ' ' },
+          {
+            children: [{ text: 'd' }],
+            type: 'a',
+            url: 'https://platejs.org',
+          },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('keeps inline html under an allowlist that admits mdxJsxTextElement', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(editor, 'a<br/>b <u>c</u>', {
+        allowedNodes: ['p', 'text', 'mdxJsxTextElement'],
+      })
+    ).toEqual([
+      {
+        children: [
+          { text: 'a' },
+          { text: '\n' },
+          { text: 'b ' },
+          { text: 'c', underline: true },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
   it('preserves raw html blocks as editable source text paragraphs', () => {
     const editor = createTestEditor();
 
