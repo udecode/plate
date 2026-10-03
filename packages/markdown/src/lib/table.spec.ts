@@ -648,6 +648,41 @@ describe('markdown tables', () => {
     ).toEqual([{ children: [{ text: 'x' }], type: 'p' }]);
   });
 
+  it('applies the markdown list node filter to table-cell lists', () => {
+    const editor = createTableEditor();
+
+    expect(
+      getFirstCellChildren(
+        deserializeMd(
+          editor,
+          '| A | B |\n| - | - |\n| <ul><li>a</li></ul> | z |\n',
+          {
+            disallowedNodes: ['list'],
+          }
+        )
+      )
+    ).toEqual([{ children: [{ text: '<ul><li>a</li></ul>' }], type: 'p' }]);
+  });
+
+  it('keeps html link destinations in table-cell list items', () => {
+    const editor = createTableEditor();
+    const input =
+      '| A | B |\n| - | - |\n| <ul><li><a href="https://platejs.org">docs</a></li></ul> | z |\n';
+
+    expect(getFirstCellChildren(deserializeMd(editor, input))).toMatchObject([
+      {
+        children: [
+          {
+            children: [{ text: 'docs' }],
+            type: 'a',
+            url: 'https://platejs.org',
+          },
+        ],
+        listStyleType: 'disc',
+      },
+    ]);
+  });
+
   it('keeps the text fallback for table-cell list items with block children', () => {
     const editor = createTableEditor();
     const input =
@@ -760,7 +795,9 @@ describe('markdown tables', () => {
 
     const markdown = serializeMd(editor, {
       allowNode: {
-        serialize: (node: any) => node.type !== 'p' || node.id === 'keep',
+        serialize: (node: any) =>
+          node.type !== 'p' ||
+          (node.id === 'keep' && node.listStyleType === 'disc'),
       },
       value,
     });
@@ -805,28 +842,6 @@ describe('markdown tables', () => {
     expect(serializeMd(editor, { value: editor.children }).split('\n')[2]).toBe(
       row
     );
-  });
-
-  it('serializes list item content after allowNode.serialize accepts it by list props', () => {
-    const editor = createTableEditor();
-    const value = createCellTable([
-      {
-        type: 'p',
-        indent: 1,
-        listStyleType: 'disc',
-        children: [{ text: 'kept' }],
-      },
-    ]);
-
-    const markdown = serializeMd(editor, {
-      allowNode: {
-        serialize: (node: any) =>
-          node.type !== 'p' || node.listStyleType === 'disc',
-      },
-      value,
-    });
-
-    expect(markdown.split('\n')[2]).toBe('| <ul><li>kept</li></ul> |   |');
   });
 
   it('round-trips an empty table-cell list item as empty text', () => {
@@ -877,6 +892,7 @@ describe('markdown tables', () => {
       '<ol><li value="5">a</li></ol>',
       '<ol start="0"><li>a</li></ol>',
       '<ol start="-1"><li>a</li></ol>',
+      '<ol start="9007199254740993"><li>a</li></ol>',
       '<ul><li><input type="checkbox" checked={false} /> a</li></ul>',
     ]) {
       expect(
