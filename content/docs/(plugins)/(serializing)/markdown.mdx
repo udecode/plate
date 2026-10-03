@@ -996,6 +996,8 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 | `<callout>...</callout>`               | `callout`                | Callout block                               |
 | `<column_group>...</column_group>`     | `column_group`           | Multi-column layout container               |
 | `<column width="50%">...</column>`     | `column`                 | Single column with optional width attribute |
+| `<ul><li>...</li></ul>` in `td`/`th`   | `p` (list indent props)  | Table cells only; needs `ListPlugin`        |
+| `<ol start="n"><li>...</li></ol>`      | `p` (list indent props)  | `start` sets `listStart`; checkboxes: todo  |
 
 ## Appendix C: Components for Rendering
 

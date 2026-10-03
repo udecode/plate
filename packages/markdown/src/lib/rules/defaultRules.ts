@@ -23,9 +23,6 @@ import type {
   MdMdxJsxTextElement,
   MdParagraph,
   MdRootContent,
-  MdTable,
-  MdTableCell,
-  MdTableRow,
 } from '../mdast';
 import type { MentionNode } from '../plugins/remarkMention';
 import type { MdRules } from '../types';
@@ -40,6 +37,7 @@ import { convertNodesSerialize } from '../serializer';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
+import { tableRules } from './internal/tableRules';
 
 import { parseAttributes, propsToAttributes } from './utils';
 
@@ -172,7 +170,13 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => ({
       children: convertChildrenDeserialize(mdastNode.children, deco, options),
       type: getPluginType(options.editor!, KEYS.a),
-      url: mdastNode.url,
+      url:
+        mdastNode.url ??
+        // remark-mdx parses inline HTML `<a href>` as JSX, so its URL is an attribute.
+        (mdastNode as any).attributes?.find(
+          (attribute: any) =>
+            attribute.name === 'href' && typeof attribute.value === 'string'
+        )?.value,
     }),
     serialize: (node, options): any => {
       const children = convertNodesSerialize(
@@ -958,133 +962,11 @@ export const defaultRules: MdRules = {
       };
     },
   },
-  table: {
-    deserialize: (node, deco, options) => {
-      const paragraphType = getPluginType(options.editor!, KEYS.p);
-      const rows =
-        node.children?.map((row, rowIndex) => ({
-          children:
-            row.children?.map((cell) => {
-              const cellType = rowIndex === 0 ? 'th' : 'td';
-
-              const cellChildren = convertChildrenDeserialize(
-                cell.children,
-                deco,
-                options
-              );
-              const groupedChildren: any[] = [];
-              let currentParagraphChildren: any[] = [];
-
-              for (const child of cellChildren) {
-                // Text nodes or inline elements should be grouped into paragraphs
-                if (
-                  !child.type ||
-                  child.type === KEYS.inlineEquation ||
-                  options.editor!.api.isInline(child)
-                ) {
-                  currentParagraphChildren.push(child);
-                } else {
-                  // Block-level elements should end the current paragraph and be added directly
-                  if (currentParagraphChildren.length > 0) {
-                    groupedChildren.push({
-                      children: currentParagraphChildren,
-                      type: paragraphType,
-                    });
-                    currentParagraphChildren = [];
-                  }
-                  groupedChildren.push(child);
-                }
-              }
-
-              // Add any remaining paragraph child elements
-              if (currentParagraphChildren.length > 0) {
-                groupedChildren.push({
-                  children: currentParagraphChildren,
-                  type: paragraphType,
-                });
-              }
-
-              return {
-                children:
-                  groupedChildren.length > 0
-                    ? groupedChildren
-                    : [{ children: [{ text: '' }], type: paragraphType }],
-                type: getPluginType(options.editor!, cellType),
-              };
-            }) || [],
-          type: getPluginType(options.editor!, KEYS.tr),
-        })) || [];
-
-      return {
-        children: rows,
-        type: getPluginType(options.editor!, KEYS.table),
-      };
-    },
-    serialize: (node, options) => ({
-      children: convertNodesSerialize(
-        node.children,
-        options
-      ) as MdTable['children'],
-      type: 'table',
-    }),
-  },
-  td: {
-    serialize: (node, options) => {
-      const children = convertNodesSerialize(
-        node.children,
-        options
-      ) as MdTableCell['children'];
-
-      // Insert <br/> between multiple blocks in table cells
-      // since markdown tables don't support multiple blocks natively
-      if (children.length > 1) {
-        const result: MdTableCell['children'] = [];
-
-        for (let i = 0; i < children.length; i++) {
-          result.push(children[i]);
-
-          if (i < children.length - 1) {
-            result.push({ type: 'html', value: '<br/>' } as any);
-          }
-        }
-
-        return { children: result, type: 'tableCell' };
-      }
-
-      return { children, type: 'tableCell' };
-    },
-  },
   text: {
     deserialize: (mdastNode, deco) => ({
       ...deco,
       text: mdastNode.value.replace(LEADING_NEWLINE_REGEX, ''),
     }),
-  },
-  th: {
-    serialize: (node, options) => {
-      const children = convertNodesSerialize(
-        node.children,
-        options
-      ) as MdTableCell['children'];
-
-      // Insert <br/> between multiple blocks in table cells
-      // since markdown tables don't support multiple blocks natively
-      if (children.length > 1) {
-        const result: MdTableCell['children'] = [];
-
-        for (let i = 0; i < children.length; i++) {
-          result.push(children[i]);
-
-          if (i < children.length - 1) {
-            result.push({ type: 'html', value: '<br/>' } as any);
-          }
-        }
-
-        return { children: result, type: 'tableCell' };
-      }
-
-      return { children, type: 'tableCell' };
-    },
   },
   toc: {
     deserialize: (mdastNode, deco, options) => ({
@@ -1096,15 +978,6 @@ export const defaultRules: MdRules = {
       children: convertNodesSerialize(node.children, options) as any,
       name: 'toc',
       type: 'mdxJsxFlowElement',
-    }),
-  },
-  tr: {
-    serialize: (node, options) => ({
-      children: convertNodesSerialize(
-        node.children,
-        options
-      ) as MdTableRow['children'],
-      type: 'tableRow',
     }),
   },
   underline: {
@@ -1127,6 +1000,7 @@ export const defaultRules: MdRules = {
   ...fontRules,
   ...mediaRules,
   ...columnRules,
+  ...tableRules,
 };
 
 export const buildRules = (editor: SlateEditor) => {
