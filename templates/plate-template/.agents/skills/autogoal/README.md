@@ -1,66 +1,9 @@
 # Autogoal
 
-Autogoal asks Codex to write a goal-backed plan ending with verified evidence.
+Native goals require a direct or applicable standing user request. Long-running work preserves every applicable source-linked checklist obligation in one plan and reconciles the original checklists before closure. Short work checks its applicable requirements directly. The same file helpers support ordinary plans without creating a goal.
 
-## Install
+Use create-goal-scratchpad.mjs with --title and a project or builtin --template. Repeated/comma-separated --with selects only relevant packs; --ticket, --date, --slug, --path and --force remain supported. Existing files are preserved unless forced. Stdout prints the relative result path.
 
-```sh
-npx skills add udecode/dotai --skill autogoal
-```
+create-goal-template.mjs supports --skill/--path, --from, --print and --force. Templates resolve from the project first. init-templates.mjs is an explicit opt-in initializer; ordinary creation does not seed every template. The shared major-task template name remains for external callers, without creating a second task lifecycle.
 
-## Use
-
-Use autogoal for non-trivial work with an auditable finish line:
-
-- debugging loops
-- migrations
-- benchmarks
-- architecture plans
-- pass-gated reviews
-- multi-step issue work
-
-Skip it for one-off answers, typo fixes, or tiny edits where the final response
-can carry the evidence.
-
-## Flow
-
-1. Define the outcome, completion threshold, verification surface, constraints,
-   boundaries, and blocked condition.
-2. Create or continue the active Codex goal with a short objective handle.
-3. Create a plan from a built-in or project template and put the full contract
-   there.
-4. First checkpoint: copy every explicit prompt requirement into the plan as
-   checkable rows before implementation.
-5. Work in slices and record evidence as you go.
-6. Run a scoped self-check and close accepted findings.
-7. Run the completion check.
-8. Mark the goal complete only when the outcome is true and the plan passes.
-
-After a complete end-to-end feature is already verified, Codex may recommend
-`autoreview` as an optional second pass. It never gates goal completion and runs
-only when the user explicitly requests or accepts it.
-
-## Helpers
-
-```sh
-node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template task \
-  --with browser \
-  --title "short title"
-```
-
-```sh
-node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<plan>.md
-```
-
-```sh
-node .agents/skills/autogoal/scripts/init-templates.mjs
-```
-
-## Templates
-
-Autogoal ships generic templates in `skills/autogoal/assets/templates`.
-Installed skills expose them under `.agents/skills/autogoal/assets/templates`.
-
-Project repos can keep their own templates in `docs/plans/templates`; the helper
-prefers project templates before built-in templates.
+check-complete.mjs accepts one docs/plans path. It rejects missing concrete obligations/evidence, unfinished checkboxes throughout the plan, unresolved optional legacy gate tables, and missing/incomplete/cyclic linked children. Fenced examples and comments are excluded. Phase/Reboot tables are optional. The checker cannot detect a requirement omitted from the plan; source-to-plan reconciliation and real proof remain required.

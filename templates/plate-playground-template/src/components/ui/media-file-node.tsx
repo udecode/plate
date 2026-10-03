@@ -3,7 +3,7 @@
 import { useMediaState } from '@platejs/media/react';
 import { ResizableProvider } from '@platejs/resizable';
 import { FileUp } from 'lucide-react';
-import type { TFileElement } from 'platejs';
+import { sanitizeUrl, type TFileElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 import { PlateElement, useReadOnly, withHOC } from 'platejs/react';
 
@@ -15,6 +15,11 @@ export const FileElement = withHOC(
   function FileElement(props: PlateElementProps<TFileElement>) {
     const readOnly = useReadOnly();
     const { name, unsafeUrl } = useMediaState();
+    const url =
+      sanitizeUrl(unsafeUrl, {
+        allowedSchemes: ['blob', 'http', 'https'],
+        permitInvalid: true,
+      }) ?? undefined;
 
     return (
       <PlateElement className="my-px rounded-sm" {...props}>
@@ -24,7 +29,7 @@ export const FileElement = withHOC(
           )}
           contentEditable={false}
           download={name}
-          href={unsafeUrl}
+          href={url}
           rel="noopener noreferrer"
           role="button"
           target="_blank"

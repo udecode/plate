@@ -1,134 +1,44 @@
 # {{TITLE}}
 
 Objective:
-TODO: Write the short create_goal objective, under 240 characters. Put the full major-task contract in the sections below.
+TODO: State the requested outcome.
 
-Goal plan:
-{{PLAN_PATH}}
+Task source:
+{{TASK_SOURCE_LINK}}
 
 Template:
 {{TEMPLATE_PATH}}
 
-Linked plans:
-- None.
-
-Major source:
-- type: pending
-- id / link: pending
-- title: pending
-- decision to make: pending
-- decision criteria: pending
-
-First checkpoint:
-- Before implementation or broad exploration, copy every explicit prompt
-  requirement into this plan as checkable checkpoints: scope, non-goals,
-  timing/duration, stop conditions, deliverables, final handoff sections,
-  verification surface, and success criteria.
-- Do not continue into implementation until this extraction is complete or
-  explicitly marked N/A with reason.
-
-Timed checkpoint:
-- requested duration: pending
-- semantics: pending
-- initial confidence score: pending
-- improvement loop: pending
-- final score / loop closure: pending
-
 Completion threshold:
-- TODO: Define the decision, proposal, benchmark, architecture, or migration done state.
+TODO: Name the observable done state.
 
 Verification surface:
-- TODO: Name repo audit, benchmark, external-source audit, review pass, prototype, command, or plan artifact.
+TODO: Name the applicable source, command, runtime or external proof.
 
 Constraints:
-- Start from repo evidence before external claims.
-- Separate measured evidence, source evidence, inference, and recommendation.
-- Do not execute implementation unless this goal explicitly includes it.
+Preserve behavior and authority outside scope. Apply the caller repository's test policy.
 
 Boundaries:
-- Source of truth: TODO.
-- Allowed edit scope: TODO.
-- External sources: TODO.
-- Browser surface: TODO.
-- Non-goals: TODO.
+TODO: Name allowed edits, source authority and non-goals.
+
+Delivery:
+local-only: No publication or named live-target repair is requested. Replace this with the applicable Live-target closure contract when delivery applies.
 
 Blocked condition:
-- TODO: Name missing source, benchmark, access, decision, external evidence, or user judgment that stops autonomous work.
-
-Completion rule:
-- Do not call `update_goal(status: complete)` until evidence is recorded and `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
-
-Start Gates:
-| Gate | Applies | Evidence |
-|------|---------|----------|
-| Prompt requirements captured before work | pending | pending |
-| Timed checkpoint parsed | pending | pending |
-| Active goal checked or created | pending | pending |
-| Source of truth read before analysis | pending | pending |
-| Decision criteria stated | pending | pending |
-| Existing repo patterns / prior decisions checked | pending | pending |
-| External research decision recorded | pending | pending |
-| Runtime scale applicability resolved | pending | Identify repeated units, collection/data growth, fan-out, hot work, and runtime-layer changes; apply `performance-observability` when any can change, or record a source-backed N/A |
-| Walkthrough baseline for possible UI change | pending | Before the first mutation, capture `.agents/skills/walkthrough/scripts/diff-baseline.mjs` or record N/A because UI/rendered output cannot change |
+TODO: Name a real missing decision, access, prerequisite or tool.
 
 Work Checklist:
-- [ ] First checkpoint complete: every explicit prompt requirement, scope
-      boundary, timing constraint, stop condition, deliverable, final handoff
-      section, verification surface, and success criterion is copied into this
-      plan as checkable checkpoints before implementation.
-- [ ] Current state is mapped before proposing a new architecture, migration, benchmark, or plan.
-- [ ] If a duration was requested, it is recorded as minimum active work unless
-      explicitly marked hard stop; when no better metric exists, initial and
-      final confidence scores are recorded.
-- [ ] Existing repo patterns and prior decisions are recorded before external research.
-- [ ] Options, recommendation, tradeoffs, blast radius, and rejection reasons are recorded.
-- [ ] Facts, inference, and recommendation are separated.
-- [ ] Review or pressure passes are completed, or marked N/A with reason.
-- [ ] Scale-sensitive architecture/API work materializes the performance pack
-      and completes an executable current-owner versus proposed-target probe
-      before the target is accepted; prose budgets and deferred measurement do
-      not satisfy this row.
-
-Completion Gates:
-| Gate | Applies | Required action | Evidence |
-|------|---------|-----------------|----------|
-| Decision criteria satisfied | pending | Map evidence to each criterion | pending |
-| Source audit complete | pending | Record repo evidence and external evidence | pending |
-| Pre-acceptance scale proof | pending | For scale-sensitive architecture, record the frozen budget, current baseline, target prototype/result, cohorts, deterministic cost indicators, timing/noise, and correctness guard; otherwise give a source-backed zero-runtime N/A | pending |
-| Review / pressure pass | pending | Record review lens or N/A | pending |
-| UI walkthrough | pending | If implementation changed UI or rendered output, run `.agents/skills/walkthrough/SKILL.md` after final proof and show annotated images in the final handoff; otherwise record N/A | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
-
-Phase / pass table:
-| Phase | Status | Evidence | Next |
-|-------|--------|----------|------|
-| Intake and source read | in_progress | created plan | research / analysis |
-| Current-state map | pending | | options |
-| Options and recommendation | pending | | review |
-| Review / pressure pass | pending | | closeout |
-| Closeout | pending | | final response |
-
-Findings:
-- None yet.
+- [ ] Representative callers, governing invariant and riskiest unknown are resolved.
+- [ ] Selected architecture, complete migration/deletion and affected proof are recorded.
 
 Decisions and tradeoffs:
-- None yet.
-
-Timeline:
-- {{CREATED_AT}}: plan created.
+Record only material choices and their reasons.
 
 Verification evidence:
-- Pending.
-
-Reboot status:
-| Question | Answer |
-|----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Research / analysis, options, review, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
+Pending.
 
 Open risks:
-- Pending.
+Pending.
+
+Next action:
+Resolve the requested scope and carry out the checklist.

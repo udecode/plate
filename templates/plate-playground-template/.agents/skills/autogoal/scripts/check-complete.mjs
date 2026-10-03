@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const CHECKLIST_ITEM_PATTERN = /^-\s+\[([ xX])\]\s+/;
+const CHECKLIST_ITEM_PATTERN = /^\s*(?:[-+*]|\d+[.)])\s+\[([ xX])\]\s+/;
 const GATE_SECTION_NAMES = ['Start Gates', 'Completion Gates'];
 const HEADING_PATTERN = /^#{1,6}\s+\S/;
 const HTML_COMMENT_PATTERN = /<!--[\s\S]*?-->/g;
@@ -147,11 +147,11 @@ function checkPlanContent(content) {
     failures.push('Work Checklist must contain checklist items');
   }
 
-  const unchecked = checklist.filter((item) => item.state === ' ');
+  const unchecked = getChecklistItems(content).filter((item) => item.state === ' ');
 
   if (unchecked.length > 0) {
     failures.push(
-      `Work Checklist has unchecked items: ${unchecked
+      `Plan has unchecked items: ${unchecked
         .map((item) => `line ${item.line}`)
         .join(', ')}`
     );
@@ -161,7 +161,7 @@ function checkPlanContent(content) {
 
   const phaseStatuses = getPhaseStatuses(content);
 
-  if (phaseStatuses.length === 0) {
+  if (getSectionBlock(content, 'Phase / pass table').trim() && phaseStatuses.length === 0) {
     failures.push('Phase / pass table must contain at least one status row');
   }
 
@@ -185,7 +185,7 @@ function checkPlanContent(content) {
 
   const rebootStatus = getSectionBlock(content, 'Reboot status');
 
-  if (!hasConcreteContent(rebootStatus)) {
+  if (rebootStatus.trim() && !hasConcreteContent(rebootStatus)) {
     failures.push('Reboot status must be current');
   }
 
@@ -378,10 +378,33 @@ function getWorkChecklist(content) {
   const block =
     getSectionBlock(content, 'Work Checklist') ||
     getSectionBlock(content, 'Required checklist');
-  const lines = block.split(NEWLINE_PATTERN);
+
+  return getChecklistItems(block);
+}
+
+function getChecklistItems(content) {
+  const lines = content
+    .replace(HTML_COMMENT_PATTERN, (comment) => comment.replace(/[^\n]/g, ''))
+    .split(NEWLINE_PATTERN);
   const items = [];
+  let fence = '';
 
   for (let index = 0; index < lines.length; index += 1) {
+    const marker = /^\s*(`{3,}|~{3,})/.exec(lines[index])?.[1];
+
+    if (marker) {
+      if (!fence) {
+        fence = marker;
+      } else if (marker[0] === fence[0] && marker.length >= fence.length) {
+        fence = '';
+      }
+      continue;
+    }
+
+    if (fence) {
+      continue;
+    }
+
     const match = CHECKLIST_ITEM_PATTERN.exec(lines[index]);
 
     if (match) {
@@ -505,9 +528,9 @@ function printHelp() {
   console.log(`Usage:
   node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
 
-Validates the active goal plan before update_goal(status: complete). The check
-is mechanical: it proves the checklist, phase table, verification evidence,
-reboot status, risks, and any Start Gates / Completion Gates tables are
+Validates a goal or ordinary task plan. The check is mechanical: it checks
+the checklist, verification evidence, risks, and any optional phase, reboot,
+Start Gates / Completion Gates sections are
 recorded. If the plan has a Linked plans / Linked goal plans / Child plans
 section with docs/plans/*.md links, those child plans are checked recursively.
 It does not replace the goal's named tests, browser proof, source audit, or
