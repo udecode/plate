@@ -187,7 +187,6 @@ declare global {
   }
 }
 
-/** A product assertion that may be a known product failure, never a lane failure. */
 /**
  * A product bug the lane reproduces. The case passes only while `read`
  * returns `observed`; the desired value means the bug is fixed and any other
@@ -224,7 +223,6 @@ export type DeviceLane = {
   openExample: (example: string) => Promise<DeviceEditor>;
   openWww: (path: string) => Promise<DeviceEditor>;
   knownFailure: <T>(failure: DeviceKnownFailure<T>) => Promise<void>;
-  state: DeviceRunState;
   /** Steps on the current page. */
   steps: () => readonly DeviceWitnessStep[];
   tapStrip: (candidate: RegExp | string) => Promise<string>;
@@ -234,6 +232,8 @@ export type DeviceLane = {
   };
   /** The current page's trace. */
   trace: () => Promise<BrowserNativeEventTraceEntry[]>;
+  /** The www server the run reverses to the phone, or null without one. */
+  www: string | null;
   /** Every page this case opened, each judged against its own steps. */
   witness: () => Promise<{
     pages: Array<{
@@ -624,19 +624,33 @@ export const createDeviceLane = ({
     knownFailure: async ({ desired, issue, name, observed, read }) => {
       const same = (left: unknown, right: unknown) =>
         JSON.stringify(left) === JSON.stringify(right);
+      // Gboard can still be committing when the last tap settles, and the
+      // known value can pass through on the way to the desired one, so
+      // classify only a value that held for 500 ms.
       let value = await read();
+      let stableSince = Date.now();
+      let settled = false;
 
-      // Gboard can still be committing when the last tap settles.
-      for (
-        const deadline = Date.now() + 3000;
-        !same(value, desired) &&
-        !same(value, observed) &&
-        Date.now() < deadline;
-        value = await read()
-      ) {
+      for (const deadline = Date.now() + 3000; Date.now() < deadline;) {
         await sleep(100);
+
+        const next = await read();
+
+        if (!same(next, value)) {
+          value = next;
+          stableSince = Date.now();
+          settled = false;
+        } else if (Date.now() - stableSince >= 500) {
+          settled = true;
+          if (same(value, desired) || same(value, observed)) break;
+        }
       }
 
+      if (!settled) {
+        throw new Error(
+          `"${name}" never held one value for 500 ms; last read ${JSON.stringify(value)}.`
+        );
+      }
       if (same(value, desired)) {
         throw new Error(
           `The known failure "${name}" no longer reproduces; close ${issue} and assert the desired behavior.`
@@ -656,7 +670,6 @@ export const createDeviceLane = ({
         type: 'known-product-failure',
       });
     },
-    state,
     steps: () => steps,
     tapStrip: async (candidate) => {
       const nodes = readKeyboard(state.serial);
@@ -707,6 +720,7 @@ export const createDeviceLane = ({
 
       return entries;
     },
+    www: state.wwwURL,
     witness: async () => {
       const all = [...pages, { events: await lane.trace(), steps }];
 

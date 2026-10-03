@@ -16,6 +16,13 @@ test('a pending Korean word survives a toolbar block-type tap (Slate #5019)', as
   await device.keyboard.type('ㅎㅏㄴ');
 
   const [typed] = await editor.get.modelBlockTexts();
+  const typing = await device.trace();
+  const lastComposition = typing.findLast((entry) =>
+    entry.type.startsWith('composition')
+  );
+
+  // The toolbar tap must land while the word is still composing.
+  expect(lastComposition?.type).toMatch(/^composition(start|update)$/);
 
   await device.touch.tapTestId('block-button-heading-one');
 

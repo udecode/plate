@@ -9,10 +9,8 @@
 import { execFileSync } from 'node:child_process';
 import {
   existsSync,
-  linkSync,
   mkdirSync,
   readFileSync,
-  renameSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -51,7 +49,8 @@ export type DeviceKeyMap = {
 };
 
 export type DeviceRestoreState = {
-  addedLanguages: DeviceLanguage[];
+  /** Korean layouts before setup added its own; null when setup added none. */
+  koreanLayoutsBefore: string[] | null;
   changedSettings: Array<{ name: string; from: boolean }>;
   createdAt: string;
   forwards: string[];
@@ -120,6 +119,29 @@ const isEmulator = (serial: string) =>
   serial.startsWith('emulator-') ||
   shell(serial, 'getprop', 'ro.kernel.qemu') === '1';
 
+// Creates `path` only if it does not exist; false means someone holds it.
+const createExclusive = (path: string, owner: number) => {
+  try {
+    writeFileSync(
+      path,
+      `${JSON.stringify({ owner, startedAt: new Date().toISOString() })}\n`,
+      { flag: 'wx' }
+    );
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST') return false;
+    throw error;
+  }
+};
+
+const readLockOwner = (serial: string, path: string) => {
+  try {
+    return readJSON<{ owner: number }>(path)?.owner ?? null;
+  } catch {
+    throw new Error(`Device ${serial} is being locked by another process.`);
+  }
+};
+
 /**
  * Take the serial's lock with an exclusive create. Only `restore` passes
  * `takeOverStale`, because a dead owner can leave settings and ports behind.
@@ -131,62 +153,42 @@ export const acquireSerialLock = (
   const path = lockPath(serial);
 
   mkdirSync(dirname(path), { recursive: true });
-  for (;;) {
-    try {
-      writeFileSync(
-        path,
-        `${JSON.stringify({ owner, startedAt: new Date().toISOString() })}\n`,
-        { flag: 'wx' }
-      );
-      return;
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
-    }
+  if (createExclusive(path, owner)) return;
 
-    let held: { owner: number } | null;
+  const held = readLockOwner(serial, path);
 
-    try {
-      held = readJSON<{ owner: number }>(path);
-    } catch {
-      throw new Error(`Device ${serial} is being locked by another process.`);
-    }
-    if (held?.owner === owner) return;
-    if (held && isAlive(held.owner)) {
-      throw new Error(`Device ${serial} is locked by process ${held.owner}.`);
-    }
-    if (!takeOverStale) {
-      throw new Error(
-        `Device ${serial} has a stale lock from process ${held?.owner}; run tooling/device/android.mjs restore ${serial}.`
-      );
-    }
-    // Move the file aside, then check it is the stale lock this taker read:
-    // a slower taker can move a fresh lock another just created, and puts it
-    // back.
-    const aside = `${path}.stale-${owner}`;
+  if (held === owner) return;
+  if (held !== null && isAlive(held)) {
+    throw new Error(`Device ${serial} is locked by process ${held}.`);
+  }
+  if (!takeOverStale) {
+    throw new Error(
+      `Device ${serial} has a stale lock from process ${held}; run tooling/device/android.mjs restore ${serial}.`
+    );
+  }
 
-    try {
-      renameSync(path, aside);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-      continue;
-    }
+  // Takers hold this marker through the check and the replace, so one taker
+  // never removes a lock another taker just created.
+  const marker = `${path}.takeover`;
 
-    let moved: { owner: number } | null = null;
+  if (!createExclusive(marker, owner)) {
+    throw new Error(
+      `Another process is recovering ${serial}; if none is, delete ${marker}.`
+    );
+  }
+  try {
+    const current = readLockOwner(serial, path);
 
-    try {
-      moved = readJSON<{ owner: number }>(aside);
-    } catch {
-      // A lock caught mid-write is a fresh one.
+    if (current === owner) return;
+    if (current !== null && isAlive(current)) {
+      throw new Error(`Device ${serial} is locked by process ${current}.`);
     }
-    if (moved?.owner !== held?.owner) {
-      try {
-        linkSync(aside, path);
-      } finally {
-        rmSync(aside, { force: true });
-      }
-      throw new Error(`Device ${serial} is being locked by another process.`);
+    rmSync(path, { force: true });
+    if (!createExclusive(path, owner)) {
+      throw new Error(`Device ${serial} was locked by another process.`);
     }
-    rmSync(aside, { force: true });
+  } finally {
+    rmSync(marker, { force: true });
   }
 };
 
@@ -208,11 +210,11 @@ export const readRestoreState = (serial: string) =>
   readJSON<DeviceRestoreState>(restorePath(serial));
 
 const recordRestore = (serial: string, patch: Partial<DeviceRestoreState>) => {
-  const current = readRestoreState(serial) ?? {
-    addedLanguages: [],
+  const current: DeviceRestoreState = readRestoreState(serial) ?? {
     changedSettings: [],
     createdAt: new Date().toISOString(),
     forwards: [],
+    koreanLayoutsBefore: null,
     ownedTargets: [],
     reverses: [],
     selectedSubtype: shell(
@@ -233,7 +235,8 @@ const recordRestore = (serial: string, patch: Partial<DeviceRestoreState>) => {
 
   writeJSON(restorePath(serial), {
     ...current,
-    addedLanguages: union(current.addedLanguages, patch.addedLanguages),
+    koreanLayoutsBefore:
+      current.koreanLayoutsBefore ?? patch.koreanLayoutsBefore ?? null,
     changedSettings: [
       ...current.changedSettings,
       ...(patch.changedSettings ?? []).filter(
@@ -517,17 +520,22 @@ const flipSettings = async (
   return changed;
 };
 
-const gboardLanguages = async (serial: string) => {
+// Each language row carries "<language>, <layout>" as its description; its
+// visible text splits the two across nodes.
+const koreanLayouts = async (serial: string) => {
   await openGboardSettings(serial, /^Languages$/);
-  return dumpApp(serial).map((node) => node.text);
+  return dumpApp(serial)
+    .map((node) => node.desc)
+    .filter((desc) => desc.startsWith('한국어, '));
 };
 
 const addKorean = async (serial: string) => {
-  const languages = await gboardLanguages(serial);
+  const before = await koreanLayouts(serial);
 
-  if (languages.includes('한국어, 두벌식')) return false;
+  if (before.includes('한국어, 두벌식')) return false;
 
-  recordRestore(serial, { addedLanguages: ['ko'] });
+  // Gboard can enable more than one layout for a new language.
+  recordRestore(serial, { koreanLayoutsBefore: before });
   await clickText(serial, /^Add keyboard$/, 2500);
   await clickText(serial, /^Search language$/);
 
@@ -549,14 +557,20 @@ const addKorean = async (serial: string) => {
   return true;
 };
 
-// The journal records Korean before setup adds it, so an interrupted setup or
-// restore can find it already absent.
-const removeKorean = async (serial: string) => {
-  const languages = await gboardLanguages(serial);
+// The journal records the layouts before setup adds Korean, so an interrupted
+// setup or restore finds nothing, or only some layouts, left to remove.
+const removeAddedKorean = async (serial: string, before: string[]) => {
+  const layouts = await koreanLayouts(serial);
+  const added = layouts.filter((desc) => !before.includes(desc));
 
-  if (!languages.includes('한국어, 두벌식')) return;
+  if (added.length === 0) return;
   await clickText(serial, /^EDIT$/);
-  await clickText(serial, /^한국어, 두벌식$/, 800);
+  for (const node of dumpApp(serial).filter((row) =>
+    added.includes(row.desc)
+  )) {
+    createDeviceTouch(serial).tap(node.x, node.y);
+    await sleep(800);
+  }
   await clickText(serial, /^REMOVE$/);
 };
 
@@ -610,7 +624,14 @@ export const switchKeyboardLanguage = async (
   serial: string,
   language: DeviceLanguage
 ) => {
-  for (let attempt = 0; attempt < 4; attempt++) {
+  // The language key cycles through every enabled Gboard layout.
+  const layouts =
+    shell(serial, 'settings', 'get', 'secure', 'enabled_input_methods')
+      .split(':')
+      .find((entry) => entry.startsWith(GBOARD_IME))
+      ?.split(';').length ?? 2;
+
+  for (let attempt = 0; attempt < layouts; attempt++) {
     const keys = readKeyboard(serial);
 
     if (keyboardLanguage(keys) === language) return selectedSubtype(serial);
@@ -671,23 +692,28 @@ export const currentKeyMap = (
 };
 
 // Closes the tabs an intent opened at `url` through DevTools' HTTP endpoint,
-// since an intent-opened tab has no target id the lane recorded.
+// since an intent-opened tab has no target id the lane recorded. A failure
+// only warns, so the caller's cleanup and its original error still run.
 const closeTabsAt = async (serial: string, url: string) => {
-  const port = adb(serial, [
-    'forward',
-    'tcp:0',
-    'localabstract:chrome_devtools_remote',
-  ]).trim();
+  let port: string | null = null;
 
   try {
+    port = adb(serial, [
+      'forward',
+      'tcp:0',
+      'localabstract:chrome_devtools_remote',
+    ]).trim();
+
     const response = await fetch(`http://127.0.0.1:${port}/json/list`);
     const tabs = (await response.json()) as Array<{ id: string; url: string }>;
 
     for (const tab of tabs.filter((candidate) => candidate.url === url)) {
       await fetch(`http://127.0.0.1:${port}/json/close/${tab.id}`);
     }
+  } catch (error) {
+    process.stderr.write(`Could not close the tab at ${url}: ${error}\n`);
   } finally {
-    removePorts(serial, [`tcp:${port}`], []);
+    if (port) removePorts(serial, [`tcp:${port}`], []);
   }
 };
 
@@ -928,8 +954,8 @@ export const restoreDevice = async (
       )
     );
   }
-  if (restore.addedLanguages.includes('ko')) {
-    await removeKorean(serial);
+  if (restore.koreanLayoutsBefore) {
+    await removeAddedKorean(serial, restore.koreanLayoutsBefore);
   }
 
   shell(
@@ -947,8 +973,8 @@ export const restoreDevice = async (
   if (unclosed.length > 0) {
     writeJSON(restorePath(serial), {
       ...restore,
-      addedLanguages: [],
       changedSettings: [],
+      koreanLayoutsBefore: null,
       forwards: [],
       ownedTargets: unclosed,
       reverses: [],

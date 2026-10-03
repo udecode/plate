@@ -228,12 +228,16 @@ clear it. `useDropIndicator` reads it.
 
 Resolve where a drop under a pointer lands: an edge the schema, the landing
 redirects and the vetoes admit, or a text point for a text drag. Within 8px of a
-container's top or bottom edge, the drop lands beside that container; otherwise
+container's top or bottom edge, clamped to a quarter of its height, the drop lands
+beside that container when that edge is admitted; otherwise
 it lands beside the block under the pointer, or beside an outer block when the
 schema or a veto refuses that edge. An edge inside the dragged blocks, or one
-that would not move them, drops nothing, and edges inside collapsed content are
-refused. Without options it reads the active drag session. Pass `files` with the
-block that dropped files become to place an upload.
+that would not move them, drops nothing. A move whose pointer is over or beside
+its own blocks also drops nothing, even within a container's band. Edges inside
+collapsed content are refused. Without options it reads the active drag session.
+Pass `files` with the block that dropped files become to place an upload. The
+drop checks one such block per file the browser exposes, and one block when the
+browser hides them during the drag.
 
 ## DataTransfer
 

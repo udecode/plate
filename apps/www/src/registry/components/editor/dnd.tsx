@@ -159,9 +159,9 @@ function Draggable(props: RenderNodeWrapperProps) {
   const [buttonTop, setButtonTop] = React.useState(0);
   const [actionsOpen, setActionsOpen] = React.useState(false);
   const selected = useElementSelected();
-  // A drag node-selects the handle's blocks, so their gutter stays laid out;
-  // a containing selection keeps nested gutters hidden. Without hover, the
-  // selection's blocks keep theirs, since a tap's pointerleave clears the flag.
+  // A drag node-selects the handle's blocks, so their gutter stays laid out.
+  // Mode 'node' matches those blocks only, so with hover the blocks nested
+  // inside them keep their gutters hidden.
   const nodeSelected = useElementSelected({ mode: 'node' });
   const hasTableCellSelection = React.useContext(TableCellSelectionContext);
   const nodes = () => editor.read.transfer.nodes({ node: element });
@@ -204,6 +204,8 @@ function Draggable(props: RenderNodeWrapperProps) {
         <Gutter
           className={cn(
             actionsOpen && 'opacity-100',
+            // Without hover, a tap's pointerleave clears data-hovered, so
+            // every block the selection touches keeps its gutter.
             selected &&
               '[@media(hover:none)]:flex! [@media(hover:none)]:opacity-100',
             (nodeSelected || actionsOpen) && 'flex!'

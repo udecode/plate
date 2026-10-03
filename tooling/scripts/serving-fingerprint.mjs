@@ -28,7 +28,11 @@ export const servingFingerprint = (cwd = process.cwd()) => {
     .split('\0')
     .filter(Boolean)) {
     const absolute = join(root, path);
-    const stat = lstatSync(absolute);
+    const stat = lstatSync(absolute, { throwIfNoEntry: false });
+
+    // Another process can delete a file between the listing and this read.
+    if (!stat) continue;
+
     const contents = stat.isSymbolicLink()
       ? Buffer.from(readlinkSync(absolute))
       : stat.isFile()
@@ -41,5 +45,6 @@ export const servingFingerprint = (cwd = process.cwd()) => {
   return {
     dirtyFingerprint: hash.digest('hex'),
     head: git(root, ['rev-parse', 'HEAD']).trim(),
+    root,
   };
 };

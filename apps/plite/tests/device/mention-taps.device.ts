@@ -9,7 +9,7 @@ test('a mention option tap commits once and Backspace removes the mention (autoc
   device,
 }) => {
   test.skip(
-    !device.state.wwwURL,
+    !device.www,
     'Set PLATE_DEVICE_WWW_PORT to the www dev server that serves /blocks/mention-demo.'
   );
 

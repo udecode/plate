@@ -60,7 +60,8 @@ await startBrowserNativeEventTrace(target, {
   references, 10,255 bytes); a `platejs/react` import still carries it because
   Plate's unbundled barrel defeats tree-shaking.
 - Harness pastes go through one per-project transport and fail unless a newer
-  commit carries the `paste` tag, or when the page threw. The event transport
+  commit carries the `paste` tag and changes the document, or when the page
+  threw. The event transport
   sends `paste`, then `beforeinput` when nothing cancels it, instead of
   calling `insertData`.
 - A private Android lane in `packages/test/src/device` types with real Gboard
@@ -116,8 +117,8 @@ taps.
 
 | Behavior | Current evidence | Limit |
 | --- | --- | --- |
-| Desktop paste per engine | Ten paste spec files: Chromium 381 and Firefox 340 native, WebKit 352 and Pixel 5 155 event, mobile WebKit 349 with 9 failures outside paste | Two Plite tests fail outside paste and stay open |
-| Gboard strip replacement, Bold toggle, toolbar tap during composition, mention tap and Backspace | Device lane, five warm runs each on `Pixel_9_API_36_Play`, all passing | One emulator and Gboard 17.0.14; no physical phone |
+| Desktop paste per engine | Ten paste spec files: Chromium 382 and Firefox 341 native, WebKit 353 and Pixel 5 156 event, mobile WebKit 350 with 9 failures outside paste | Two Plite tests stay excluded; the Apple converted spaces one fails the same way under the old handle transport |
+| Gboard strip replacement, Bold toggle, toolbar tap during composition, mention tap and Backspace | Device lane from a cold boot, five warm runs each on `Pixel_9_API_36_Play`, all passing; setup and restore leave the device as found | One emulator and Gboard 17.0.14; no physical phone; Android replaces the cold-boot implicit input subtype with the enabled English one |
 | Gboard Korean composition | Device lane, five of five runs: Plite commits each jamo separately and Enter splits before the composing jamo | Product bug, local draft only |
 | Gboard autocorrect on space | Device lane, five of five runs: `becuase go` ends as `BecuasegoBecause ` | Product bug, local draft only |
 | Typing after a handle-set selection | Probe on five projects: same input ownership as a click | none |

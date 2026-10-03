@@ -1,0 +1,10 @@
+enabled_input_methods: com.google.android.tts/com.google.android.apps.speech.tts.googletts.settings.asr.voiceime.VoiceInputMethodService:com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME;1594443099
+selected_input_method_subtype: 1891618174
+default_input_method: com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME
+forwards:  
+reverses:  
+Auto-correction title y 718-795 true@784
+Auto-capitalization title y 935-1012 true@1025
+Suggestion strip title y 2064-2141 true@2130
+Word suggestions title y 2281-2358 true@2347
+lane state: keymap.json 

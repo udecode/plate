@@ -13,7 +13,7 @@ export type NativeImeState = {
   endpoint: string;
   /** The process that holds the host input-source lock for the whole run. */
   lockOwner: number;
-  serving: { dirtyFingerprint: string; head: string };
+  serving: { dirtyFingerprint: string; head: string; root: string };
 };
 
 export const readNativeImeState = (): NativeImeState =>

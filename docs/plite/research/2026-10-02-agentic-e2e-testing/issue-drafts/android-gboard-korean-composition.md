@@ -56,7 +56,8 @@ leaving an empty second paragraph. Authority: the neutral-page census in
 - `sources/android-probes/korean-result.json`: the same jamo composing `한글`
   in a textarea and a bare contenteditable.
 - `apps/plite/tests/device/korean-placeholder.device.ts`: the device case;
-  both product assertions fail the same way in five of five warm runs.
+  both `device.knownFailure` checks read `ㅇㅏㄴㄴㅕㅇ` and then
+  `["ㅇㅏㄴㄴㅕ", "ㅇ"]` in five of five warm runs.
 
 ## Caveat
 

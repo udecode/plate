@@ -199,9 +199,9 @@ const getListIndent = (node: Element) =>
 
 // Per sibling array and indent, the index of the last list item deeper than
 // the indent in the unbroken run starting at each asked sibling, or -1 when
-// that sibling breaks the run. A lookup walks a run once and records every
+// that sibling starts no run. A lookup walks a run once and records every
 // sibling in it, so hovers and keyboard steps never walk a family twice and
-// never read siblings outside the run they ask about.
+// read at most one sibling past the run they ask about.
 const RUN_ENDS = new WeakMap<
   readonly Descendant[],
   Map<number, Map<number, number>>
@@ -245,15 +245,20 @@ const runEndAt = (
     index += 1;
   }
 
+  if (index === start) {
+    ends.set(start, -1);
+
+    return -1;
+  }
+
   const joined = ends.get(index);
   const last = joined !== undefined && joined >= 0 ? joined : index - 1;
 
   for (let visited = start; visited < index; visited += 1) {
     ends.set(visited, last);
   }
-  if (index === start) ends.set(start, -1);
 
-  return index === start ? -1 : last;
+  return last;
 };
 
 const expandListFamilies = (

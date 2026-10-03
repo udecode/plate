@@ -2,7 +2,7 @@
 title: Drag transfer and block policy ownership
 type: decision
 status: accepted
-updated: 2026-10-02
+updated: 2026-10-03
 review_scope: dnd
 current_review: 2026-10-02-dnd-schema-derived-landing
 review_history:
@@ -18,6 +18,7 @@ reconciled_executions:
   - 2026-10-02-dnd-transfer-consolidation-review-repair-execution
   - 2026-10-02-dnd-transfer-consolidation-docs-execution
   - 2026-10-02-dnd-schema-derived-landing-execution
+  - 2026-10-03-dnd-schema-derived-landing-panel-repair-execution
 source_refs:
   - ../../plite/research/2026-10-02-dnd-library-choice/README.md
   - ../probes/2026-10-01-dnd/REPORT.md
@@ -42,7 +43,13 @@ The [landing execution](../review-records/2026-10-02-dnd-schema-derived-landing-
 built this in part: one per-edge law admits by the compiled schema, features
 keep vetoes and List a redirect, and copied handles follow the schema. A drop
 after a closed details with only a summary still lands in its hidden body,
-because coverage has no empty range.
+because coverage has no empty range. The
+[panel repair](../review-records/2026-10-03-dnd-schema-derived-landing-panel-repair-execution.json)
+fixed what two panel rounds found: a copy and its check read one slice, a file
+drop checks one block per file, a keyboard step stays in its parent, a release
+over the dragged block or its handle moves nothing, and List finds a family's
+end without walking the family. The landing plan's Open findings list what
+stays open, each with an owner.
 
 **Keep native handling now; defer a private Pragmatic Drag and Drop
 replacement until it proves a maintenance benefit.** The

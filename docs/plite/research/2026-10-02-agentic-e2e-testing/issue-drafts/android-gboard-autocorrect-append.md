@@ -45,9 +45,12 @@ Authority: the census in `shards/010-android-lane-probes.md` and Slate #5891.
 
 ## Evidence
 
+- `sources/android-probes/plite-autocorrect-trace.json`: the device lane's
+  event trace and gesture steps for one run, whose model ends as
+  `BecuasegoBecause `.
 - `apps/plite/tests/device/autocorrect-empty.device.ts`: the device case; its
-  product assertion fails the same way in five of five warm runs, and the run
-  attaches each trace as `device-witness.json`.
+  `device.knownFailure` reads `BecuasegoBecause ` in five of five warm runs,
+  and the run attaches each trace as `device-witness.json`.
 
 ## Caveat
 

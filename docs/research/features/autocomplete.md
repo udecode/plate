@@ -52,7 +52,6 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-09-16-slash-ai-suggested-paragraph.md](../../plans/2026-09-16-slash-ai-suggested-paragraph.md) | completed | implementation | unbound |
 | [2026-10-01-autocomplete-ordinary-text-adoption.md](../../plans/2026-10-01-autocomplete-ordinary-text-adoption.md) | unknown | implementation | [2026-10-01-autocomplete-ordinary-text-prototype](../review-records/2026-10-01-autocomplete-ordinary-text-prototype.json), [2026-09-12-native-input-authority](../review-records/2026-09-12-native-input-authority.json), [2026-09-16-persistence-source-closure](../review-records/2026-09-16-persistence-source-closure.json) |
 | [2026-10-01-autocomplete-query-activation.md](../../plans/2026-10-01-autocomplete-query-activation.md) | completed | design | [2026-09-30-autocomplete-query-activation-ownership](../review-records/2026-09-30-autocomplete-query-activation-ownership.json) |
-| [2026-10-02-proof-device-lane.md](../../plans/2026-10-02-proof-device-lane.md) | blocked | implementation | [2026-10-02-proof-agentic-e2e-review](../review-records/2026-10-02-proof-agentic-e2e-review.json) |
 
 ### Outcomes recorded after the latest review
 

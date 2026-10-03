@@ -251,13 +251,14 @@ const requestOf = (
   source: NodeSource | TextSource,
   slice: ContentSlice | null
 ): LandingRequest => ({
-  // A text slice keeps its open ancestors, which the fitter unwraps to suit
-  // the target, so only a node payload states the blocks that land.
+  // A text slice's content keeps its open ancestors, which the slice fitter
+  // unwraps to suit the target, so it is not the blocks that land.
   fit:
-    source.kind === 'nodes'
-      ? ((slice?.content as readonly Descendant[] | undefined) ??
-        source.entries.map(([node]) => node))
-      : [],
+    source.kind !== 'nodes'
+      ? []
+      : slice
+        ? (slice.content as readonly Descendant[])
+        : source.entries.map(([node]) => node),
   from,
   intent,
   moving:

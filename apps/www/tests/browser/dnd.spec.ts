@@ -545,9 +545,31 @@ test.describe(LANDING_CASE_ID, () => {
     to: () => Promise<{ x: number; y: number }>,
     { at, copy = false }: { at?: { x: number; y: number }; copy?: boolean } = {}
   ) => {
-    // The tall viewport holds the payload and its target once it is centered.
+    // Center the midpoint of the payload and its target, so the tall viewport
+    // keeps both in view even when late layout moves the target.
     await block.evaluate((element) =>
       element.scrollIntoView({ block: 'center' })
+    );
+    const start = await box(block);
+    const target = await to();
+
+    await block.evaluate(
+      (element, delta) => {
+        let scroller = element.parentElement;
+
+        while (
+          scroller &&
+          !(
+            scroller.scrollHeight > scroller.clientHeight &&
+            /auto|scroll/.test(getComputedStyle(scroller).overflowY)
+          )
+        ) {
+          scroller = scroller.parentElement;
+        }
+        (scroller ?? document.scrollingElement)?.scrollBy(0, delta);
+      },
+      (start.y + start.height / 2 + target.y) / 2 -
+        page.viewportSize()!.height / 2
     );
     await block.hover({ position: at });
 

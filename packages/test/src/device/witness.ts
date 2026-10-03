@@ -71,10 +71,11 @@ const expectedKey = (step: DeviceWitnessStep): DeviceWitnessKey => {
  * fall inside a step window. Every `keydown` must carry the key its step
  * produces. Every `beforeinput` needs its own preceding `keydown`, except a
  * composition commit carried by a content touch, and every `input` needs its
- * own preceding `beforeinput`. A key or strip step that expects a key must
- * show one. Content touches must deliver a `pointerdown` near their target. An insertion that copies all of this from inside a real
- * tap window is indistinguishable here; the guarded DevTools connection is
- * what blocks it.
+ * own preceding `beforeinput` of the same input type. A key or strip step
+ * that expects a key must show one. Content touches must deliver a
+ * `pointerdown` near their target. An insertion that copies all of this from
+ * inside a real tap window is indistinguishable here; the guarded DevTools
+ * connection is what blocks it.
  */
 export const judgeDeviceWitness = ({
   events,
@@ -107,7 +108,8 @@ export const judgeDeviceWitness = ({
   let compositionOpen = false;
   let compositionData: string | null = null;
   let pendingKeydowns = 0;
-  let pendingBeforeInputs = 0;
+  // A canceled beforeinput sends no input, so unmatched ones stay pending.
+  let pendingBeforeInputs: Array<string | null> = [];
   let currentStep: DeviceWitnessStep | null = null;
   const pointerSteps = new Set<DeviceWitnessStep>();
   const keyedSteps = new Set<DeviceWitnessStep>();
@@ -123,7 +125,7 @@ export const judgeDeviceWitness = ({
     if (step !== currentStep) {
       currentStep = step;
       pendingKeydowns = 0;
-      pendingBeforeInputs = 0;
+      pendingBeforeInputs = [];
     }
     // A selection write while composing makes the browser end the
     // composition from script; that compositionend repeats the last trusted
@@ -147,8 +149,12 @@ export const judgeDeviceWitness = ({
 
     if (event.type === 'keydown') {
       const key = expectedKey(step);
+      // An IME-driven delete can arrive as Unidentified instead of Backspace.
+      const matches =
+        event.key === key ||
+        (key === 'Backspace' && event.key === 'Unidentified');
 
-      if (event.key !== key) {
+      if (!matches) {
         violations.push({
           ...at,
           detail: `keydown key ${event.key}, expected ${key ?? 'none'}`,
@@ -163,7 +169,7 @@ export const judgeDeviceWitness = ({
         compositionOpen &&
         event.inputType === 'insertCompositionText';
 
-      pendingBeforeInputs += 1;
+      pendingBeforeInputs.push(event.inputType ?? null);
       if (pendingKeydowns > 0) pendingKeydowns -= 1;
       else if (!touchCommit) {
         violations.push({
@@ -173,13 +179,16 @@ export const judgeDeviceWitness = ({
         });
       }
     } else if (event.type === 'input') {
-      if (pendingBeforeInputs > 0) pendingBeforeInputs -= 1;
-      else {
+      const match = pendingBeforeInputs.indexOf(event.inputType ?? null);
+
+      if (match === -1) {
         violations.push({
           ...at,
           detail: `input ${event.inputType} without its own beforeinput`,
           rule: 'unpaired-input',
         });
+      } else {
+        pendingBeforeInputs.splice(match, 1);
       }
     } else if (event.type === 'compositionstart') {
       compositionOpen = true;

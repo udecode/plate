@@ -1,0 +1,18 @@
+{
+  "gboardVersion": "17.0.14.880768217-release-arm64-v8a",
+  "lockOwner": null,
+  "ok": true,
+  "problems": [],
+  "restorePending": {
+    "changedSettings": [],
+    "createdAt": "2026-10-02T23:15:39.372Z",
+    "forwards": [],
+    "koreanLayoutsBefore": [],
+    "ownedTargets": [],
+    "reverses": [],
+    "selectedSubtype": "1594443099",
+    "setupCompletedAt": "2026-10-02T23:16:41.647Z",
+    "zenMode": null
+  },
+  "serial": "emulator-5554"
+}

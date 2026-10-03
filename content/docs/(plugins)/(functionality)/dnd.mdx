@@ -65,7 +65,7 @@ The copied `table` and `column` components add their own row and column handles.
 
 ### File drops
 
-The React `UploadPlugin` places dropped files when `nativeDrop` is `true`; the copied [Upload](/docs/upload) kit enables it. A file drop shows the same indicator and lands only where an upload block can go. A refused drop inserts nothing.
+The React `UploadPlugin` places dropped files when `nativeDrop` is `true`; the copied [Upload](/docs/upload) kit enables it. A file drop shows the same indicator and lands only where one upload block per file can go. A browser that hides the file count while dragging gets an indicator checked for one block. The drop itself checks every file. A refused drop inserts nothing.
 
 ## Custom drag handle
 

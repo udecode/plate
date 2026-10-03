@@ -1,0 +1,4 @@
+2c2
+< selected_input_method_subtype: 1891618174
+---
+> selected_input_method_subtype: 1594443099

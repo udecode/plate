@@ -238,8 +238,8 @@ describe('DOM drop target geometry', () => {
     });
 
     expect(drop('1.0', 33, '1.0')).toBeNull();
-    // The handle's gutter sits outside the block's host, so it hits the
-    // container's host at the block's height.
+    // The pointer over the handle's gutter, outside the block's host, hits
+    // the container's host at the block's height.
     expect(drop('1', 33, '1.0')).toBeNull();
     expect(drop('1', 88, '1.1')).toMatchObject({
       edge: 'after',

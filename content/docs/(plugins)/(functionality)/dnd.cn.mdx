@@ -63,7 +63,7 @@ const editor = createEditor({
 
 ### 文件拖放
 
-`nativeDrop` 为 `true` 时，React 版 `UploadPlugin` 会放置拖入的文件；复制的 [Upload](/docs/upload) 套件已启用它。文件拖放显示相同的指示线，只会落在上传区块可以放置的位置。被拒绝的拖放不会插入任何内容。
+`nativeDrop` 为 `true` 时，React 版 `UploadPlugin` 会放置拖入的文件；复制的 [Upload](/docs/upload) 套件已启用它。文件拖放显示相同的指示线，只会落在能放下每个文件各一个上传区块的位置。如果浏览器在拖动时隐藏文件数量，指示线只按一个区块检查。放下时会检查每个文件。被拒绝的拖放不会插入任何内容。
 
 ## 自定义拖拽手柄
 

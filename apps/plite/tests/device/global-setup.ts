@@ -191,13 +191,9 @@ export default async function globalSetup(config: FullConfig) {
   try {
     www = wwwPort ? serverIdentity(wwwPort) : null;
 
-    const local = servingFingerprint(fromApp('.'));
-
-    if (
-      www &&
-      (www.head !== local.head ||
-        www.dirtyFingerprint !== local.dirtyFingerprint)
-    ) {
+    // Other sessions edit this tree, so the two fingerprints can differ by
+    // the time both are read; the checkout root is the identity.
+    if (www && www.root !== servingFingerprint(fromApp('.')).root) {
       throw new Error(
         `The www server on port ${wwwPort} serves ${www.cwd}, not this checkout.`
       );

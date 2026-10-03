@@ -1,0 +1,81 @@
+{
+  "config": "apps/plite/playwright.device.config.ts",
+  "repeatEach": 5,
+  "retries": 0,
+  "device": "Pixel_9_API_36_Play emulator",
+  "gboard": "17.0.14.880768217-release-arm64-v8a",
+  "chromePid": "14103",
+  "targetId": "9019C8239F46C3D75E9C6A80FF8066D5",
+  "buildFingerprint": "a05d8f60e6cd1996992ae28bb72eaed8a7538d0f663506a41df8f61d25880fb1",
+  "www": {
+    "root": "/Users/zbeyens/git/plate-2/apps/www",
+    "head": "cf1572560313960e87226640b93f73f2486c9aab"
+  },
+  "stats": {
+    "startTime": "2026-10-02T21:45:32.599Z",
+    "duration": 691492.6240000001,
+    "expected": 34,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "cases": {
+    "autocorrect-empty.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {
+        "autocorrect replaces Becuase before go is typed: read \"BecuasegoBecause \", desired \"Because go\"": 5
+      }
+    },
+    "bold-toggle.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    },
+    "bypass.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {
+        "adb input text: wrong-key; adb input keyevent: wrong-key. An equivalent replay is the witness limit; the lane exposes no text input and the guard refuses CDP Input.*.": 5
+      }
+    },
+    "korean-placeholder.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {
+        "Gboard composes 안녕 into one word under the placeholder: read \"ㅇㅏㄴㄴㅕㅇ\", desired \"안녕\"": 5,
+        "Enter splits after the composing jamo: read [\"ㅇㅏㄴㄴㅕ\",\"ㅇ\"], desired [\"ㅇㅏㄴㄴㅕㅇ\",\"\"]": 5
+      }
+    },
+    "mention-taps.device.ts": {
+      "results": {
+        "passed": 4,
+        "failed": 1
+      },
+      "annotations": {},
+      "failure": "Error: Gboard does not show the en letter panel; switch with device.keyboard.use('en')."
+    },
+    "pending-korean-toolbar.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    },
+    "strip-replace.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    }
+  },
+  "guardRefusals": {
+    "Input.insertText": 10,
+    "Input.imeSetComposition": 10,
+    "Input.dispatchKeyEvent": 15,
+    "Target.exposeDevToolsProtocol": 10
+  }
+}

@@ -52,6 +52,12 @@ const forbiddenUdecodeImport = {
     'The @udecode package namespace is retired. Import Plate contracts from platejs or platejs/react, and keep copied UI helpers local.',
 };
 
+const plitejsImportPattern = {
+  regex: '^plitejs(?:/|$)',
+  message:
+    'Only exact Plate facade bridges and dedicated raw Plite proof surfaces may import plitejs. Plate source and tests must import a relative Plate facade or matching entrypoint owner.',
+};
+
 const platePliteBridgePatterns = [
   'packages/platejs/src/authored/PlateAuthoredPlugin.ts',
   'packages/platejs/src/authored/authored.api.spec.ts',
@@ -195,14 +201,7 @@ export default defineConfig({
         'no-restricted-imports': [
           'error',
           {
-            patterns: [
-              forbiddenUdecodeImport,
-              {
-                regex: '^plitejs(?:/|$)',
-                message:
-                  'Only exact Plate facade bridges and dedicated raw Plite proof surfaces may import plitejs. Plate source and tests must import a relative Plate facade or matching entrypoint owner.',
-              },
-            ],
+            patterns: [forbiddenUdecodeImport, plitejsImportPattern],
           },
         ],
       },
@@ -210,22 +209,31 @@ export default defineConfig({
     {
       // A device case drives the phone only through the device fixture; the
       // lane-owned bypass test is the one case that reaches adb and DevTools.
-      files: ['apps/plite/tests/device/*.device.ts'],
+      files: [
+        'apps/plite/tests/device/*.device.ts',
+        'apps/plite/tests/device/device-reads.ts',
+      ],
       excludeFiles: ['apps/plite/tests/device/bypass.device.ts'],
       rules: {
+        'no-restricted-globals': [
+          'error',
+          ...['fetch', 'globalThis', 'process', 'require', 'WebSocket'].map(
+            (name) => ({
+              name,
+              message:
+                'Device cases reach the phone only through the device fixture.',
+            })
+          ),
+        ],
         'no-restricted-imports': [
           'error',
           {
             patterns: [
               forbiddenUdecodeImport,
-              {
-                regex: '^plitejs(?:/|$)',
-                message:
-                  'Only exact Plate facade bridges and dedicated raw Plite proof surfaces may import plitejs. Plate source and tests must import a relative Plate facade or matching entrypoint owner.',
-              },
+              plitejsImportPattern,
               {
                 regex:
-                  '^(?:node:)?child_process$|^@playwright/test$|/packages/test/src/device/',
+                  '^(?:node:)?(?:child_process|http|https|module|net|tls)$|^@playwright/test$|^playwright(?:-core)?(?:/|$)|/packages/test/src/device/',
                 message:
                   'Device cases import test and expect from @platejs/test/device; adb, DevTools and lane internals belong to the lane.',
               },

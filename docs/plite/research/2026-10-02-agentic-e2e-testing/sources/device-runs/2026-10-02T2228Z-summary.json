@@ -1,0 +1,79 @@
+{
+  "config": "apps/plite/playwright.device.config.ts",
+  "repeatEach": 5,
+  "retries": 0,
+  "device": "Pixel_9_API_36_Play emulator",
+  "gboard": "17.0.14.880768217-release-arm64-v8a",
+  "chromePid": "14103",
+  "targetId": "9C33F942C4FDF687EF90CB907187880B",
+  "buildFingerprint": "d7eaab50a7f5bc528b66d84d676ae5b43932bee024567e839211e4b8c0862cdb",
+  "www": {
+    "root": "/Users/zbeyens/git/plate-2",
+    "head": "4e16eada7da07999381c23bc809e763bf5f81d39"
+  },
+  "stats": {
+    "startTime": "2026-10-02T22:28:36.896Z",
+    "duration": 699677.311,
+    "expected": 35,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": {
+    "autocorrect-empty.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {
+        "autocorrect replaces Becuase before go is typed: read \"BecuasegoBecause \", desired \"Because go\"": 5
+      }
+    },
+    "bold-toggle.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    },
+    "bypass.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {
+        "adb input text: wrong-key; adb input keyevent: wrong-key. An equivalent replay is the witness limit; the lane exposes no text input and the guard refuses CDP Input.*.": 5
+      }
+    },
+    "korean-placeholder.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {
+        "Gboard composes 안녕 into one word under the placeholder: read \"ㅇㅏㄴㄴㅕㅇ\", desired \"안녕\"": 5,
+        "Enter splits after the composing jamo: read [\"ㅇㅏㄴㄴㅕ\",\"ㅇ\"], desired [\"ㅇㅏㄴㄴㅕㅇ\",\"\"]": 5
+      }
+    },
+    "mention-taps.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    },
+    "pending-korean-toolbar.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    },
+    "strip-replace.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    }
+  },
+  "guardRefusals": {
+    "Input.insertText": 10,
+    "Input.imeSetComposition": 10,
+    "Input.dispatchKeyEvent": 15,
+    "Target.exposeDevToolsProtocol": 10
+  }
+}

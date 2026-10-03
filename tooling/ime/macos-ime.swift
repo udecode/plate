@@ -66,33 +66,42 @@ func lockOwner() -> Int32? {
 }
 
 // O_EXCL makes the create the ownership check, so two runs cannot both win.
-// A dead owner's lock is renamed aside and checked: a slower taker can move a
-// fresh lock another just created, and links it back.
+func createLock(_ path: String, _ owner: Int32) -> Bool {
+  let fd = open(path, O_CREAT | O_EXCL | O_WRONLY, 0o644)
+  guard fd >= 0 else {
+    guard errno == EEXIST else { refuse("lock-failed", ["errno": Int(errno)]) }
+    return false
+  }
+  let data = try! JSONSerialization.data(withJSONObject: ["owner": Int(owner)])
+  _ = data.withUnsafeBytes { write(fd, $0.baseAddress, data.count) }
+  close(fd)
+  return true
+}
+
+// A dead owner's lock is taken over while holding a takeover marker, so one
+// taker never removes a lock another taker just created. `refuse` exits, so
+// each refusal releases the marker first.
 func acquireLock(_ owner: Int32) {
   try? FileManager.default.createDirectory(at: stateDirectory, withIntermediateDirectories: true)
-  for _ in 0..<2 {
-    let fd = open(lockURL.path, O_CREAT | O_EXCL | O_WRONLY, 0o644)
-    if fd >= 0 {
-      let data = try! JSONSerialization.data(withJSONObject: ["owner": Int(owner)])
-      _ = data.withUnsafeBytes { write(fd, $0.baseAddress, data.count) }
-      close(fd)
-      return
-    }
-    guard errno == EEXIST else { refuse("lock-failed", ["errno": Int(errno)]) }
-    guard let held = lockOwner() else { refuse("locked", ["lockOwner": -1]) }
-    if held == owner { return }
-    if isAlive(held) { refuse("locked", ["lockOwner": held]) }
-    let aside = lockURL.path + ".stale-\(owner)"
-    guard rename(lockURL.path, aside) == 0 else { continue }
-    let moved = (readJSON(URL(fileURLWithPath: aside))?["owner"] as? Int).map(Int32.init)
-    if moved != held {
-      link(aside, lockURL.path)
-      unlink(aside)
-      refuse("locked", ["lockOwner": moved ?? -1])
-    }
-    unlink(aside)
+  if createLock(lockURL.path, owner) { return }
+  guard let held = lockOwner() else { refuse("locked", ["lockOwner": -1]) }
+  if held == owner { return }
+  if isAlive(held) { refuse("locked", ["lockOwner": held]) }
+  let marker = lockURL.path + ".takeover"
+  guard createLock(marker, owner) else { refuse("recovering", ["marker": marker]) }
+  let current = lockOwner()
+  if current == owner {
+    unlink(marker)
+    return
   }
-  refuse("locked", ["lockOwner": lockOwner() ?? -1])
+  if let current, isAlive(current) {
+    unlink(marker)
+    refuse("locked", ["lockOwner": current])
+  }
+  unlink(lockURL.path)
+  let created = createLock(lockURL.path, owner)
+  unlink(marker)
+  if !created { refuse("locked", ["lockOwner": lockOwner() ?? -1]) }
 }
 
 func frontmostPID() -> Int32 {

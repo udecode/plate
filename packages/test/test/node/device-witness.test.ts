@@ -22,6 +22,15 @@ const fixtures = JSON.parse(
   )
 ) as Fixture[];
 
+// A passing korean-placeholder run of the device lane, with the lane's own
+// gesture windows.
+const [korean] = JSON.parse(
+  readFileSync(
+    new URL('fixtures/device-witness-lane-traces.json', import.meta.url),
+    'utf-8'
+  )
+) as Fixture[];
+
 const rulesFor = (name: string) => {
   const fixture = fixtures.find((candidate) => candidate.name === name);
 
@@ -52,6 +61,43 @@ describe('device witness over real emulator traces', () => {
     ['script-beforeinput-inside', ['unpaired-input', 'untrusted']],
   ])('rejects %s', (name, rules) => {
     expect(rulesFor(name)).toEqual(rules);
+  });
+
+  test('rejects an input whose beforeinput had another type', () => {
+    const typing = fixtures.find((fixture) => fixture.name === 'real-typing');
+    // A canceled insertion followed by a trusted deletion, as execCommand can send.
+    const events = (typing?.events ?? []).map((event, index, all) =>
+      index === all.findIndex((candidate) => candidate.type === 'input')
+        ? { ...event, inputType: 'deleteContentBackward' }
+        : event
+    );
+
+    expect(
+      judgeDeviceWitness({ events, steps: typing?.steps ?? [] }).map(
+        (violation) => violation.rule
+      )
+    ).toEqual(['unpaired-input']);
+  });
+
+  test('accepts the lane trace of Korean jamo, Enter and script composition ends', () => {
+    expect(
+      judgeDeviceWitness({ events: korean.events, steps: korean.steps })
+    ).toEqual([]);
+  });
+
+  test('rejects a script compositionend that carries new text', () => {
+    const scriptEnd = korean.events.findIndex(
+      (event) => event.type === 'compositionend' && !event.isTrusted
+    );
+    const events = korean.events.map((event, index) =>
+      index === scriptEnd ? { ...event, data: 'z' } : event
+    );
+
+    expect(
+      judgeDeviceWitness({ events, steps: korean.steps }).map(
+        (violation) => violation.rule
+      )
+    ).toEqual(['untrusted']);
   });
 
   test('rejects key steps whose trace never arrived', () => {

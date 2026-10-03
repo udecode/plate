@@ -90,15 +90,19 @@ const pasteThroughTransport = async ({
   await harness.focus();
   await clearKernelTraceThroughHandle(root);
 
-  // Clipboard inserts commit under the paste tag; a traced insert-data command
-  // only shows that the kernel planned one, which a handler can still cancel.
+  // Clipboard inserts commit under the paste tag, and an applied paste changes
+  // the document; a traced insert-data command only shows that the kernel
+  // planned one, and a handler can still cancel it or only move the selection.
   const pasteCommitVersion = async () => {
     const commit = (await harness.get.lastCommit()) as {
+      changedRoots?: unknown[];
       tags?: string[];
       version?: number;
     } | null;
 
-    return commit?.tags?.includes('paste') ? (commit.version ?? null) : null;
+    return commit?.tags?.includes('paste') && commit.changedRoots?.length
+      ? (commit.version ?? null)
+      : null;
   };
   const before = await pasteCommitVersion();
   // A handler can apply part of a paste and then throw.

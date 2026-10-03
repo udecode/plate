@@ -48,8 +48,8 @@
     ],
     "snapshot": {
       "kind": "working-tree",
-      "baseCommit": "cf1572560313960e87226640b93f73f2486c9aab",
-      "fingerprint": "52af0bdf321ff263f35443b76bf831d969cdbc2738d35ae7c7eb18bfcea3d551"
+      "baseCommit": "4e16eada7da07999381c23bc809e763bf5f81d39",
+      "fingerprint": "dc3f7bb91f325c9b04d0e030075db04201df5503719acadd2929e1fe60cbc221"
     }
   },
   "features": [
@@ -210,7 +210,7 @@
       "scope": "dnd",
       "disposition": "support",
       "count": 1,
-      "fingerprint": "6587aed4bf7d7bec02df8b4739eaaeb2e66bd37b194682cdaa6d7b3445fa76f5",
+      "fingerprint": "e65ffa6ed8c51e03c88d493eaed45f2a2fe78f47762361a24b83bd931d1dc931",
       "source": "apps/www/tests/browser/dnd.spec.ts"
     },
     {
@@ -471,7 +471,7 @@
       "scope": "media",
       "disposition": "grouped",
       "count": 8,
-      "fingerprint": "ed4c5fe525401591423ab019d6e0cbe07ff98257d1aa982d16e0768f373c1dcc",
+      "fingerprint": "1360e117e64e244f893fa9b589e90d3e97bbc400515a9e86cbcec648ae79f011",
       "source": "apps/www/src/registry/components/editor/align.tsx",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -534,7 +534,7 @@
       "scope": "code",
       "disposition": "grouped",
       "count": 17,
-      "fingerprint": "1921e5c967b9934104a4b485ef328be4e3f2c07318773c3da813f3029b7e1043",
+      "fingerprint": "ce5fb6dd42eea4d412752fceead7971c59bcf40f6ac0ae433019fbfc0556f8e3",
       "source": "apps/www/src/registry/components/editor/indent-static.tsx",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -705,7 +705,7 @@
       "scope": "media",
       "disposition": "grouped",
       "count": 5,
-      "fingerprint": "c24ade8149a9805d795e6b0ff6fb3ce2bfab884a20ce7ba44b41b322e8987d8b",
+      "fingerprint": "b99fba7a0aef330270eb7b63452559ffa974972a826fd8afccea4819e464f980",
       "source": "apps/www/src/registry/components/editor/media-toolbar-button.tsx",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -777,7 +777,7 @@
       "scope": "basic",
       "disposition": "grouped",
       "count": 17,
-      "fingerprint": "0fc0f7c9b5e041c1387486b03fe258ea596c620e79068b66129082caf4d3bc6f",
+      "fingerprint": "d45fcc55c23106ccb2c1afbd18d1b526a5aa16f537178b9cdc8c204074b0fed7",
       "source": "apps/www/src/registry/components/editor/align.tsx",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -822,7 +822,7 @@
       "scope": "media",
       "disposition": "grouped",
       "count": 17,
-      "fingerprint": "653dc87088516c104dd3a6930ab9e9aa1fcbaf770787d85ded0b87deb30d7b79",
+      "fingerprint": "26bf26b8c473439ac9538e06cfa5d31698f780fd73271e03336b102b1c1d1cc2",
       "source": "apps/www/src/registry/components/editor/align.tsx",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -831,7 +831,7 @@
       "scope": "list",
       "disposition": "grouped",
       "count": 4,
-      "fingerprint": "45e331579488c79ada725b2ca1c0913f06e4a444458bd80d129cc38b71279023",
+      "fingerprint": "88f3076a8f4e8bb5324b551401fd753c0887d4ae64a7cc52d0801ce2df95b121",
       "source": "apps/www/src/registry/components/editor/tabbable.tsx",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -894,7 +894,7 @@
       "scope": "list",
       "disposition": "grouped",
       "count": 2,
-      "fingerprint": "3ae521e694e47abdcb807ff6a7e3b84388f92f5666a0efd435bd083d2766d81a",
+      "fingerprint": "67f2b13f3025804b5c68593ea9ad2f47d12c848fc4a8f09001c2a2026cfa6e14",
       "source": "packages/platejs/src/features/list/lib/BaseListPlugin.ts",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -1109,7 +1109,7 @@
       "scope": "uploads",
       "disposition": "grouped",
       "count": 2,
-      "fingerprint": "f656da5b797008febc776553346ee055084fa23eeb5030fd761f8b573d6222e6",
+      "fingerprint": "4f6d27dceb96b1ee248314fa213726b27d561da91efec743f5b2387b158538f1",
       "source": "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts"
     },
     {
@@ -1117,7 +1117,7 @@
       "scope": "media",
       "disposition": "grouped",
       "count": 8,
-      "fingerprint": "ed4c5fe525401591423ab019d6e0cbe07ff98257d1aa982d16e0768f373c1dcc",
+      "fingerprint": "1360e117e64e244f893fa9b589e90d3e97bbc400515a9e86cbcec648ae79f011",
       "source": "apps/www/src/registry/components/editor/align.tsx",
       "evidence": "Declared first-party capability plus literal PLUGINS property consumers; reachability and behavior are not certified."
     },
@@ -3440,7 +3440,7 @@
       "scope": "list",
       "disposition": "grouped",
       "count": 5,
-      "fingerprint": "09a86bee997f6ba492fd73b94351fbd2634129dd80438580a2f8cc12c66a536a",
+      "fingerprint": "c5901b891a6fad0676a50242ac89f8ffaf2ce23e3a4dfc7d55360557500694e4",
       "source": "packages/platejs/src/features/list/index.ts"
     },
     {
@@ -3576,7 +3576,7 @@
       "scope": "uploads",
       "disposition": "grouped",
       "count": 9,
-      "fingerprint": "fab296997704ef166c010a22f2ec09131cbeeb78a15263beb2cb79dddb5f051b",
+      "fingerprint": "1c80bcac9eea29cbdb68eeb2361cbf035fbcbc835c6a2782fdf18bd16234f751",
       "source": "packages/platejs/src/features/upload/index.ts"
     },
     {
@@ -4128,7 +4128,7 @@
       "scope": "dnd",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "46c06f27f9ef9af45b3d7424f6272c7fcfeef3a3e2d84fb4442a5eac8bab85fa",
+      "fingerprint": "9149a49fe635b0df478af012e2f4d68464996b4f41b63c7cf64c825ca256a9d0",
       "source": "packages/plitejs/src/core/transfer.ts"
     },
     {
@@ -4184,7 +4184,7 @@
       "scope": "native",
       "disposition": "grouped",
       "count": 31,
-      "fingerprint": "92acb48c72d3b1cd62c385400facb39a33385d1ac5e8bb5df7ecacef24666cd7",
+      "fingerprint": "3c78e9ac388b287547ac8f41e68daab6c1c82e6556c9ab6ccf3ff8beda80cebf",
       "source": "packages/plitejs/src/dom/index.ts"
     },
     {
@@ -4640,7 +4640,7 @@
       "scope": "proof",
       "disposition": "support",
       "count": 1336,
-      "fingerprint": "535943fb24802e54d327eaee7c3cb6eb50f2e186be115374ecaa11f502f3ce1f",
+      "fingerprint": "cff61e4d49faaa041ecc54e52f7d379bf544b12bfb0137586fb8168fdd457b88",
       "source": "packages/plitejs/index.ts"
     },
     {
@@ -5815,9 +5815,9 @@
       "id": "test/device",
       "scope": "proof",
       "disposition": "support",
-      "count": 4,
+      "count": 5,
       "source": "packages/test/src/device/index.ts",
-      "fingerprint": "a655bc7495afc45575deffcaf4a1f38417f6ed1a203930dac2de6734c19c862c"
+      "fingerprint": "d974babcada5beb147374bae88ec64fb416475544502313ba846510f2b58ccda"
     },
     {
       "id": "test/entrypoints",
@@ -5840,7 +5840,7 @@
       "scope": "proof",
       "disposition": "support",
       "count": 40,
-      "fingerprint": "8e6a9f199a7f6e647b5265236c1f969b832804c8fb56ce01b66fc2ff081e3b97",
+      "fingerprint": "9fc12a3e4689fe468ceb442c486050a2f851c3e7e25019f8964fc38dbe1eefbc",
       "source": "packages/test/src/playwright/index.ts"
     },
     {
@@ -5855,8 +5855,8 @@
       "id": "test/proof-and-packaging",
       "scope": "proof",
       "disposition": "support",
-      "count": 37,
-      "fingerprint": "00d4f294de983634fcb57c09996310ff19f92f7f8d741756a5f870eaa4c89cf1",
+      "count": 38,
+      "fingerprint": "1d3cc6145d9198ac4f945456fa3e8208931854e5746071031de3c158635dfb01",
       "source": "packages/test/package.json"
     },
     {
@@ -5871,8 +5871,8 @@
       "id": "tooling/browser-proof",
       "scope": "proof",
       "disposition": "support",
-      "count": 106,
-      "fingerprint": "8c8169234e3c3ae5ad554a03ce00aff55ce38b4bb0ef268e222252a0b5eaaba9",
+      "count": 107,
+      "fingerprint": "53bc25ded3c70c6e96447482cfa61bd2e84af09c87cb4191bcf7d4c6da70c91d",
       "source": "apps/plite/next-env.d.ts"
     },
     {
@@ -5880,7 +5880,7 @@
       "scope": "distribution",
       "disposition": "support",
       "count": 106,
-      "fingerprint": "610709a166902a0d536c45be9d2222c0fb89cc2406e2b51c40a76386627d34de",
+      "fingerprint": "68ca86d5f10f14f07c4cd066b148a5debed1e00f39d0c98443f7f17b2eeb047c",
       "source": "apps/www/package.json"
     },
     {
@@ -5888,7 +5888,7 @@
       "scope": "performance",
       "disposition": "support",
       "count": 82,
-      "fingerprint": "be1791a469df2f66187670bc19f30aab1f5081369412a7e7779333c151972467",
+      "fingerprint": "1c45ef7c1bcd76efd895f39a9d2429f2b64699dcd4def3d84d60ba46817955c3",
       "source": "benchmarks/editor/benchmarks/benchmark-artifact.ts"
     },
     {
@@ -6128,7 +6128,7 @@
       "scope": "dnd",
       "disposition": "grouped",
       "count": 2,
-      "fingerprint": "b860032e9e856f7bc631815be6ad7eb3ff8f427b96e1530eb3de67d4e1c40603",
+      "fingerprint": "80f6efeafcaa0110130770ee7251f83a0f9aa1c4b582da5085c987a77fe3bb0a",
       "source": "apps/www/src/registry/components/editor/dnd.tsx"
     },
     {
@@ -14091,6 +14091,18 @@
     {
       "path": "docs/research/review-records/2026-10-02-dnd-schema-derived-landing-execution.json",
       "sha256": "8d9581f6244ac65e78da3b1dfaaf53e96d7139244eff6f9989cec7b181335cdf"
+    },
+    {
+      "path": "docs/research/review-records/2026-10-03-dnd-schema-derived-landing-panel-repair-execution.json",
+      "sha256": "65e02d24fd1ef57b0e8cc8e8e5e5ff2a3a0d9811aa66d79ecef58377d7d485a0"
+    },
+    {
+      "path": "docs/research/review-records/2026-10-02-proof-device-lane-execution.json",
+      "sha256": "b1e34f2c9c649041cb1d69c27b3c944344ef07d15313fd3846fda9aa15ade08d"
+    },
+    {
+      "path": "docs/research/review-records/2026-10-02-proof-release-trust.json",
+      "sha256": "f7e0e2dc8fccb6dbe73f18f96dbdf37314240c5763e7dfa5f391b2570e83b047"
     }
   ],
   "reviewGroups": [

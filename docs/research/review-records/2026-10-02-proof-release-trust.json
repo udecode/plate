@@ -1,0 +1,115 @@
+{
+  "id": "2026-10-02-proof-release-trust",
+  "scope": "proof",
+  "kind": "review",
+  "date": "2026-10-02",
+  "question": "Which reusable proof APIs establish package, browser and raw-device behavior without duplicate inventories?",
+  "model": "claude-opus-5-5",
+  "method": "best-api-review/history-v3",
+  "trigger": "Phase 3 of docs/plans/2026-10-02-proof-device-lane.md asks how a release trusts local device evidence before any receipt schema change, under the owner direction of local runs and no new GitHub Actions minutes.",
+  "requirements": [
+    "A release raw-mobile claim needs evidence that real soft-keyboard input reached the released build on a named device.",
+    "Device runs are local; they add no GitHub Actions minutes.",
+    "Caller-provided success flags, transport names and labels are claims, not proof; the gate validates evidence and exact owner identity (best-api Taste).",
+    "The raw-mobile gate keeps its per-artifact SHA-256 readback and expected-commit binding."
+  ],
+  "evidenceReuse": "Reuses the e2e review and the built device lane: the cold-boot five-run summary (Chrome pid, DevTools target, served build fingerprint, per-case results and known-failure values), the guard log of refused commands, the witness unit test over recorded emulator and lane traces, the recovery and leave-as-found sequence, and a source read of packages/test/src/proof/raw-mobile-proof.ts and tooling/plite/donor/proof/mobile-device-proof.mjs. New: the iOS probe, blocked because Xcode 26.6 needs the iOS 26.5 platform.",
+  "summary": "Defer the receipt schema change and keep the raw-mobile gate as it is: device-lane evidence stays verify-scoped. When a release must claim Android soft-keyboard behavior, the gate trusts a lane receipt only by re-deriving it: it re-runs judgeDeviceWitness over the raw traces, recomputes every artifact digest, matches the source commit and served build fingerprint, and requires the guard log. A maintainer signature may add provenance but never replaces re-derivation, because any agent on the same machine holds the same key. The change waits for a release that needs raw Android proof or for the iOS probe to run, since the gate pairs both platforms.",
+  "verdict": "defer",
+  "callSites": {
+    "current": "bun test:mobile-device-proof:raw reads test-results/release-proof/mobile-device-proof.json and accepts only directAppium, realDevice receipts whose artifacts match their SHA-256 pointers and whose build commit equals expectedCommit; the device lane writes test-results/device/run.json, guard-<serial>.json and device-witness.json, which the gate never reads.",
+    "proposed": "Proposed, when a release needs it: the gate also accepts a device-lane receipt after re-running judgeDeviceWitness over its traces, recomputing each artifact digest, matching expectedCommit and the served .editor-proof-build.json fingerprint, and reading a guard log with every Input.* command, Target.sendMessageToTarget and Target.exposeDevToolsProtocol refused."
+  },
+  "previous": "2026-10-02-proof-agentic-e2e-review",
+  "relation": "defers",
+  "reconciliation": [
+    {
+      "record": "2026-10-02-proof-agentic-e2e-review",
+      "question": "Which reusable proof APIs establish package, browser and raw-device behavior without duplicate inventories?",
+      "action": "reopens",
+      "reason": "Reopens only the release-trust question that review left to Phase 3 of the device-lane plan; its Stop on adopting e2e and its Pursue of the local device lane stand."
+    },
+    {
+      "record": "2026-10-02-proof-device-lane-execution",
+      "question": "Which reusable proof APIs establish package, browser and raw-device behavior without duplicate inventories?",
+      "action": "retains",
+      "reason": "Keeps the built lanes and their proof as the evidence a future gate would re-derive; the lane stays verify-scoped until then."
+    }
+  ],
+  "alternatives": [
+    "Signed local attestation as the trust root: rejected as the root. A maintainer key signs whatever the machine produces, including a hand-written receipt, so it names who ran the lane, not that real input happened; it stays an optional provenance layer.",
+    "Count verify-scoped lane runs as release proof now: rejected. The gate requires both platforms and real devices, the iOS half is quarantined, and the lane covers one emulator and one Gboard version.",
+    "Re-run the device lane in CI: rejected by the owner direction against new GitHub Actions minutes and because hosted runners have no Android emulator with Gboard state.",
+    "Re-derived lane receipt: kept as the target. It reuses the gate digest and commit checks and the existing pure judge, adds no trusted flag, and fails closed on edited traces that break pairing, trust or windows."
+  ],
+  "proofLimits": "No receipt schema or gate change ran; the target is a design. Re-derivation stops hand-edited verdicts but not fully fabricated traces, which the guard and lane code review address. The iOS probe never opened Safari (xcodebuild: iOS 26.5 is not installed). Emulator only: Pixel_9_API_36_Play, Chrome 146.0.7680.177, Gboard 17.0.14.",
+  "references": [
+    "docs/plans/2026-10-02-proof-device-lane.md",
+    "docs/plans/2026-10-02-proof-device-lane.decisions.tsv",
+    "docs/plite/research/2026-10-02-agentic-e2e-testing/shards/010-android-lane-probes.md",
+    "docs/plite/research/2026-10-02-agentic-e2e-testing/sources/ios-probe/probe-ios-safari.result.json",
+    "packages/test/src/device/witness.ts",
+    "packages/test/src/proof/raw-mobile-proof.ts",
+    "tooling/plite/donor/proof/mobile-device-proof.mjs",
+    "docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json",
+    "packages/test/src/device/guard.ts",
+    "docs/research/review-records/2026-10-02-proof-device-lane-execution.json"
+  ],
+  "source": {
+    "files": {
+      "packages/test/src/proof/feature-contracts.ts": "e7de07cfcb33499e0b9c81e6f5dd8fd1eb51f4fab6b636ba3582d905b5bd7d6b",
+      "apps/plite/scripts/plite-browser-runner.mjs": "d85706bd249efcfa947c67c34e0e2a76ee0282e9dcfd4cef2ea19a5666fc20ca",
+      "apps/plite/scripts/plite-browser-runner.test.mjs": "2f1796b5e4a669623b71e7cd257c30d884c41b8fd08395317b3c7ade40c33247",
+      "packages/test/src/proof/first-party-browser-contracts.ts": "56de527b8e12dcf486b9993cde2d47ff1b8cb86a96580ecc70ff3958921b60c8",
+      "packages/test/test/proof/proof.test.ts": "852191c2e1ca7fb91ba122dc337afcba134734fd26173a4bab85f25dab62c659",
+      "packages/test/test/proof/raw-mobile-proof.test.ts": "c1fbea03a1f86c7a2e56fcf075d4b0b93251a8c4530d439cdf657dd8879e54b5",
+      "packages/test/src/playwright/harness-input.ts": "3eca1b53013da6bf01cd0dcc7086673ba60949680cd4faec781000985ce6196e",
+      "packages/test/src/playwright/harness.ts": "c967605fe599a5678716c19127f00f8174c57264cc03c76acb0e425b8c1175df",
+      "packages/test/src/playwright/ime.ts": "0bcaba0f2e33b67e31d899a62c19d9040090ee0cf2e1a39dd28cc7ca6eaa5459",
+      "packages/test/src/proof/raw-mobile-proof.ts": "27fb408e54733ba698665f4c0789e21975621ed30448ac559e7c133891e317d6",
+      "packages/test/README.md": "33e8d00838363d3bf9e850cf8f9dcfed80c6f86eff801dcbad5f7782c6e63520",
+      "apps/plite/playwright.config.ts": "4a3abbbb0b06fbd79b239ae068185043f7389c6b4f23bd78202a24d5b6b62f60",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      ".github/workflows/plite-ci.yml": "a91dd4d67cae68cae24d2f0e770ef38f83f181dffed47b63e776e6019f6ecb2d",
+      "packages/plitejs/src/react/editable/browser-handle.ts": "be722ba18a00d7b0d7c0eec6013df479b8e45a2fead03498308b3fd97e7bdf5d",
+      "packages/plitejs/src/react/editable/runtime-event-engine.ts": "4cfb6cb51c289687da302cacf5a6e50fa99d3105605f9c2f28942f5856c11c3d",
+      ".agents/rules/verify.mdc": "1db12181b325d34a906d89b915217c3b6e7d861b8badab453d0fda1444c615dd",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "18a0131a934d253be3ad0e1833521be9b55f9e3334404681b6254d320ebad3fb",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "4a1f2986f7d90a6320ef508a62a55812a606a80ad715f545faf804f5e4c57962",
+      ".agents/rules/best-api-review.mdc": "7f42719e5c7a192cb06fdd5ba8b9078b0bfca55af0f1c41b99cd927995a3ced2"
+    },
+    "directories": {},
+    "features": {
+      "capability/debug": "15523d483fb6079e075f0901d46776f93546e4ee12079ceaa17539ef7149d35f",
+      "export/platejs/./hyperscript": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./testing": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/plitejs/./hyperscript": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/plitejs/./testing": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/test/.": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./browser": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./package.json": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./playwright": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./proof": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./react": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "platejs/hyperscript": "9b2232a359148ca6716727b795f9c5458e1f1178bc1595586fc6ab4f1ad18302",
+      "platejs/proof-and-packaging": "9b47572690194726274967cb2a4c076c1500a700e13a78af088fc9c435b19c66",
+      "platejs/testing": "334a88a0f9b678981cc033df98c5c1e936e951a88b87c177086de53c81fb88fb",
+      "plitejs/hyperscript": "4b1ba4b2198696c89902e9fbdeb4ca4f4b9aeb53526ac02615999ebce9de74e6",
+      "plitejs/proof-and-packaging": "cff61e4d49faaa041ecc54e52f7d379bf544b12bfb0137586fb8168fdd457b88",
+      "plitejs/testing": "fea0a523f7390b15cb35d18b8347fd645b02bde98c342240c29f5c4ad152ee7e",
+      "test/browser": "431d819e182f93c359427b13c3e4623b74323faadbf540abbb6115064134d1c3",
+      "test/device": "d974babcada5beb147374bae88ec64fb416475544502313ba846510f2b58ccda",
+      "test/entrypoints": "f02e42914d03598d8cc39255508fe5fcfbd582cec41cbca6f05f6448e25fa359",
+      "test/internal": "d86b64fecea986e1e1e10f2145011f6cf7f9ec25a751525453bbff2d3b255343",
+      "test/playwright": "9fc12a3e4689fe468ceb442c486050a2f851c3e7e25019f8964fc38dbe1eefbc",
+      "test/proof": "9961f3441897574eec57f12f2bd8fbd0c3e8ed9fb8460a1f80172b76261a0002",
+      "test/proof-and-packaging": "1d3cc6145d9198ac4f945456fa3e8208931854e5746071031de3c158635dfb01",
+      "test/react": "5862a9316dca0bd5e194e792da270fca91cb29e88216c2987c9dbb9ef68ec478",
+      "tooling/browser-proof": "53bc25ded3c70c6e96447482cfa61bd2e84af09c87cb4191bcf7d4c6da70c91d"
+    },
+    "upstreams": []
+  }
+}

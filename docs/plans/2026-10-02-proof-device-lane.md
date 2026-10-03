@@ -8,7 +8,7 @@ work_kind: implementation
 
 # Local proof lanes: real IME, honest stand-ins and an Android device lane
 
-Status: blocked on owner steps. #5137 runs wait for Pinyin - Simplified and iOS waits for the iOS 26.5 platform. Open, owner: zbeyens: a Plate production import still carries the handle, the production-handle check is not wired into check:plite, the DOM-only production control has not run, two benchmark drivers are blocked by another session's landing.ts cycle, and physical phones and other keyboards are unproven
+Status: blocked on owner steps. #5137 runs wait for Pinyin - Simplified and iOS waits for the iOS 26.5 platform. Open, owner: zbeyens: a Plate production import still carries the handle, the production-handle check is not wired into check:plite, the DOM-only production control has not run, two benchmark drivers are blocked by another session's landing.ts cycle, physical phones and other keyboards are unproven, and the panel's deferred items (decision log, phase panel) wait
 
 Plate's unit and DOM tests keep passing while real browsers show caret, IME
 and Android bugs. This plan builds three local proof lanes that catch them,
@@ -125,7 +125,7 @@ and its decision-log row.
 | --- | --- | --- | --- |
 | "Desktop Chromium uses `'native'`, Firefox uses `'handle'`" | Firefox uses `'native'` too | Playwright Firefox delivers a trusted paste after a clipboard write, so the stand-in hid a real path | 17:06:53Z |
 | "Remove ... the `handle.insertData` retry in `pastePayloadThroughEvent`" | Removed, and the event transport also sends `beforeinput` `insertFromPaste` after an uncanceled `paste` | Chromium and Firefox apply rich paste in `beforeinput`; without it, event pastes never reached the editor | 17:06:53Z |
-| "They fail when the chosen transport did not apply the paste" | A paste applies only when a newer commit carries the `paste` tag | A traced `insert-data` command only shows that the kernel planned the insert | 21:48:59Z |
+| "They fail when the chosen transport did not apply the paste" | A paste applies only when a newer commit carries the `paste` tag and changes the document | A traced `insert-data` command only shows that the kernel planned the insert, and a handler can commit a selection move under the tag | 21:48:59Z |
 | "platejs.org production builds drop the handle" | Holds for `plitejs/react`; a `platejs/react` production import still carries it | Plate's unbundled barrel wraps every export in a namespace object; owner: zbeyens | 17:35:56Z |
 | (not in the plan) | `NEXT_PUBLIC_PLATE_BROWSER_HANDLE=1` marks a www test build that installs the handle | The code-block product benchmark reads the handle on a production host | 17:35:56Z |
 | "Bugs the lanes find become local drafts" | The paste-html example's own throw on a bare `<a>` is fixed in the example | The throw sat inside the proof path, not in a product package | 21:50:14Z |
@@ -155,6 +155,24 @@ Each project names its paste transport. Paste call sites stay unchanged.
 ```ts after
 // apps/www/playwright.config.ts
 { name: 'webkit', use: { ...devices['Desktop Safari'], clipboardTransport: 'event' } }
+```
+
+Native event traces gain `keydown` and `pointerdown`, and each entry
+carries `isTrusted`, `key`, `keyCode`, `clientX`, `clientY` and a `seq`.
+
+```ts before
+// packages/test/src/device/lane.ts
+await startBrowserNativeEventTrace(root, {
+  events: ['beforeinput', 'input', 'compositionstart', 'compositionupdate', 'compositionend'],
+});
+```
+
+```ts after
+// packages/test/src/device/lane.ts
+await startBrowserNativeEventTrace(target, {
+  events: TRACED_EVENTS,
+  maxEntries: 10_000,
+});
 ```
 
 A Plate test app installs the handle before mounting its first editor.
@@ -354,13 +372,15 @@ or quarantined on its own.
       `table-resize.spec.ts` on its three projects.
 
       Closed by `pnpm --filter plite test:plite-browser:project <project>`
-      over the ten paste spec files (chromium 381 passed, firefox 340, mobile
-      155, webkit 352), a widened-matcher run on mobile WebKit (349 passed, 9
-      failed outside paste), `apps/www/tests/browser/table-resize.spec.ts`
-      (15 passed) and the red-then-green cases in
+      over the ten paste spec files on the final oracle (chromium 382 passed,
+      firefox 341, mobile 156, webkit 353), a widened-matcher run on mobile
+      WebKit (350 passed, the same 9 failing outside paste),
+      `apps/www/tests/browser/table-resize.spec.ts` (15 passed) and the
+      red-then-green cases in
       `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts`. Two
-      tests that fail outside this change were excluded; the decision log
-      names each exclusion and failure with its owner.
+      tests were excluded: the standalone-HTML descriptor test and the Apple
+      converted spaces test, which fails the same way under the old handle
+      transport in this tree but was not run at `HEAD` (decision log).
 - [ ] Move the page handle to an explicit installer in one step:
       - `useRuntimeBrowserHandle` calls a registered attach function;
         `browser-handle.ts` stays at its path, and `plitejs/react` exports
@@ -533,7 +553,8 @@ A split result is a lane defect until someone attributes it.
         follows its own `keydown`, each `input` its own `beforeinput`, and
         each step names the key class its tap produces. Composition updates
         are not paired, because autocorrect on space sends one before its
-        `keydown`.
+        `keydown`. The overlap, unexpected-pointer and missing-pointer rules
+        have no unit case; real runs exercise them only on passing traces.
       - A touch step may carry a composition commit when a composition was
         open.
       - `pointerdown` with client coordinates must land within a few pixels of
@@ -546,9 +567,10 @@ A split result is a lane defect until someone attributes it.
       that insertion. Do not assert that an event-only judge rejects it.
       Closed by `packages/test/src/device/witness.ts` and
       `packages/test/test/node/device-witness.test.ts` over
-      `test/node/fixtures/device-witness-traces.json`: 9 passed, and the
-      trust, input-pairing, missing-key and per-step key rules each failed
-      their case when removed. Inside a
+      `test/node/fixtures/device-witness-traces.json` and a lane-recorded
+      Korean trace in `device-witness-lane-traces.json`: 12 passed, and the
+      trust, input-pairing, input-type, missing-key, per-step key and
+      script-compositionend rules each failed their case when removed. Inside a
       tap window, a CDP `Input.dispatchKeyEvent` with key Unidentified is an
       equivalent trace. adb `input text` and `input keyevent` arrived as an
       Unidentified keydown in one recording and with their real key name,
@@ -593,18 +615,17 @@ A split result is a lane defect until someone attributes it.
       run log with one pid and target across five runs and a fingerprint
       matching the local build manifest, plus a forced worker restart that
       reattaches to the same target and an interrupted-run cleanup record.
-      Closed by the five-run re-proof after the lint and deslop fixes: Chrome
-      pid 14103 and target `A96840B4BD7F881DBB11C86023FD65D1` on all 35 runs,
-      build `a5c51ade…` matching `out/.editor-proof-build.json`, www served
-      from this checkout at `cf15725603` with dirty fingerprint
-      `8bcce9176d70…`. The forced worker restart and the interrupted run ran
-      on the earlier bytes (pid 4577, target `4804D5B2…`): a deliberate
-      failure moved the next test to worker 1, which reattached to target
-      `C96B542284EAB0BEEEBABFAD8FF069C0`, and a SIGKILLed runner left a stale
-      lock that `doctor` refused until `restore` cleared it. The lock,
-      doctor and reattach code did not change since; global setup's path
-      resolution did, and the re-proof covers it only on clean runs
-      (decision log).
+      Closed by the cold-boot sequence on the final code
+      (`sources/device-runs/2026-10-02T2315Z-final/`): Chrome pid 20881
+      recorded once at setup, target `8B1C1FBD146C89A00C36B8E8D6879528` for
+      all 35 runs, build `8daa9ed1…` matching `out/.editor-proof-build.json`,
+      and www served from this checkout's root. A deliberate failure moved
+      the next test to a new worker that read the owned tab, and a runner
+      killed by exact pid left a stale lock that `doctor` refused until
+      `restore` took it over and removed the run's tab, ports, Korean layout
+      and journal. The before and after snapshots match except the selected
+      subtype, which Android itself moves from the cold-boot implicit value
+      to the enabled English one (`subtype-check.txt`).
 - [x] Add the six cases from shard 005 as named-defect tests: Closed by `apps/plite/tests/device/`.
       1. A Korean first syllable in an empty paragraph with the placeholder,
          then Enter (Slate #5493, #5883).
@@ -625,9 +646,10 @@ A split result is a lane defect until someone attributes it.
       must pass in either result. A disabled case remains open with its owner
       and probe evidence; it does not count as device coverage.
       Closed by `apps/plite/tests/device/*.device.ts` with
-      `PLATE_DEVICE_WWW_PORT=3000`: the re-proof passed 30 of 30 case runs
-      with clean witness gates, plus the bypass test five of five (Playwright
-      JSON stats: 35 expected, 0 unexpected, 0 flaky). Cases 2, 4, 5 and 6
+      `PLATE_DEVICE_WWW_PORT=3000`: the cold-boot proof passed 30 of 30 case
+      runs with clean witness gates, plus the bypass test five of five
+      (Playwright JSON stats: 35 expected, 0 unexpected, 0 flaky;
+      `sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json`). Cases 2, 4, 5 and 6
       pass outright. Cases 1 and 3 hit the same named product failures in
       five of five runs, drafted in
       `docs/plite/research/2026-10-02-agentic-e2e-testing/issue-drafts/`.
@@ -658,9 +680,16 @@ releases trust local evidence.
       events, what physical-device signing needs, and whether Appium would
       become a repository dependency. Proof: the probe log and a keep or
       quarantine row in the decision log.
-- [ ] Decide how a release trusts local device evidence, for example a
+- [x] Decide how a release trusts local device evidence, for example a Closed by `docs/research/review-records/2026-10-02-proof-release-trust.json`.
       signed local attestation the gate verifies, before any receipt schema
       change. Proof: a `best-api-review` record for the `proof` scope.
+      Closed by review `2026-10-02-proof-release-trust`, verdict defer,
+      recorded right after this plan's execution record: the gate keeps its
+      trust model, and when a release needs raw Android proof it trusts a
+      lane receipt only by re-running `judgeDeviceWitness` over its traces,
+      recomputing every digest, matching the commit and served build
+      fingerprint, and reading the guard log; a signature adds provenance
+      only.
 
 ## Evidence
 
@@ -690,6 +719,8 @@ releases trust local evidence.
   - A real touch, `adb shell input text` and CDP `Input.insertText` each leave
     a distinct `keydown` shape in those isolated probes. This does not prove
     event-only rejection of an insertion inside a real gesture window.
+    Later recordings narrowed this: `adb shell input` sometimes arrives as an
+    Unidentified keydown, like a real touch (decision log, superseded row).
 
 ### Challenge delta
 

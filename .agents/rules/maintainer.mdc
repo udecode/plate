@@ -202,6 +202,8 @@ duplicate-close flow before that.
 
 Read the exact item first. Then classify route:
 
+For a PR, check `baseRefName` before routing. A PR based on `main` is worked in `../plate`, the main-line checkout, through the Babysit playbook's main-line PR rule. This repository's skills and rules still govern it, because `../plate` carries older copies of them.
+
 | Item | Default owner |
 | --- | --- |
 | One public Slate substrate issue | `maintainer slate-issue` |

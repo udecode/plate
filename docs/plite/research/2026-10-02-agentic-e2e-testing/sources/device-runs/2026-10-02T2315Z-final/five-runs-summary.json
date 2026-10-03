@@ -1,0 +1,79 @@
+{
+  "config": "apps/plite/playwright.device.config.ts",
+  "repeatEach": 5,
+  "retries": 0,
+  "device": "Pixel_9_API_36_Play emulator, cold boot",
+  "gboard": "17.0.14.880768217-release-arm64-v8a",
+  "chromePid": "20881",
+  "targetId": "8B1C1FBD146C89A00C36B8E8D6879528",
+  "buildFingerprint": "8daa9ed16cc963f6d370be4f52cef841d74e112a0e95c228ac7ee71e7eee8959",
+  "www": {
+    "root": "/Users/zbeyens/git/plate-2",
+    "head": "4e16eada7da07999381c23bc809e763bf5f81d39"
+  },
+  "stats": {
+    "startTime": "2026-10-02T23:17:17.284Z",
+    "duration": 706739.447,
+    "expected": 35,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": {
+    "autocorrect-empty.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {
+        "autocorrect replaces Becuase before go is typed: read \"BecuasegoBecause \", desired \"Because go\"": 5
+      }
+    },
+    "bold-toggle.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    },
+    "bypass.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {
+        "adb input text: equivalent; adb input keyevent: equivalent. An equivalent replay is the witness limit; the lane exposes no text input and the guard refuses CDP Input.*.": 5
+      }
+    },
+    "korean-placeholder.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {
+        "Gboard composes 안녕 into one word under the placeholder: read \"ㅇㅏㄴㄴㅕㅇ\", desired \"안녕\"": 5,
+        "Enter splits after the composing jamo: read [\"ㅇㅏㄴㄴㅕ\",\"ㅇ\"], desired [\"ㅇㅏㄴㄴㅕㅇ\",\"\"]": 5
+      }
+    },
+    "mention-taps.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    },
+    "pending-korean-toolbar.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    },
+    "strip-replace.device.ts": {
+      "results": {
+        "passed": 5
+      },
+      "annotations": {}
+    }
+  },
+  "guardRefusals": {
+    "Input.insertText": 10,
+    "Input.imeSetComposition": 10,
+    "Input.dispatchKeyEvent": 15,
+    "Target.exposeDevToolsProtocol": 10
+  }
+}
