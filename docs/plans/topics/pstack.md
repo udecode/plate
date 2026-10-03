@@ -15,8 +15,8 @@ next
 review <scope>, then again or interrogate
 the verdict leads with today's and the proposed call site
 plan <goal>
-$plate-architecture [quick | deep | audit] <question>
-$plate-architecture [quick | deep | audit] <question>
+plan <question>    (the Plan playbook reads .agents/playbooks/references/architecture.md)
+plan <question>    (the Plan playbook reads .agents/playbooks/references/architecture.md)
 go
 plan <goal>, then go; a long run uses /loop or /goal
 describe the goal
@@ -31,7 +31,7 @@ the report, screenshot or recording
 clean up PR <number>, or finish the current tree
 clean up PR <number>
 clean up <surface>
-remove <feature>: Build with plate-architecture's Hard cut
+remove <feature>: Build with the architecture reference's Hard cut
 ```
 
 Features, plugins, UI, docs and proof.
@@ -70,11 +70,11 @@ $changeset
 $changeset (registry changelog reference)
 $release-lanes
 $plate-next <package>
-$plate-architecture audit <scope>
+audit the architecture of <scope>    (the architecture reference's Audit)
 $sync-shadcn parity <surface>
 $sync-shadcn
 $sync-plate-ui
-$sync-vision
+retired
 retired
 ```
 
@@ -94,13 +94,13 @@ pstack:create-verification-skill, pstack:maintain-verification-skill
 pstack:principle-* (23 skills, two of them new)
 $grill-me (global)
 retired
-$gpt-pro (global)
-$agent-native-reviewer (global)
+/pstack:interrogate    (Codex seats give the other-model review)
+retired
 the sync-pstack skill in dotai
 pstack:thermo-nuclear-code-quality-review, pstack:unslop, pstack:deslop, $cross-review (global)
 ```
 
-Unchanged: `best-api`, `benchmark`, `changeset`, `issue-harvester`, `maintainer`, `plate-docs`, `plate-next`, `plate-ui`, `release-lanes`, `sync-plate-ui`, `sync-shadcn`, `sync-vision`, `autoreview`, `optimise-github-actions`, `shadcn`, `tanstack-virtual`, `typescript-advanced-types`, `vercel-composition-patterns`, `vercel-react-best-practices`, `video-transcripts` and `walkthrough`.
+Unchanged: `best-api`, `benchmark`, `changeset`, `issue-harvester`, `maintainer`, `plate-docs`, `plate-next`, `plate-ui`, `release-lanes`, `sync-plate-ui`, `sync-shadcn`, `shadcn`, `tanstack-virtual`, `vercel-react-best-practices`, `video-transcripts` and `walkthrough`.
 
 Later iterations: the regression corpus, the prototype cut, model-invocable skills, plan pages and panel reviews.
 
@@ -117,6 +117,23 @@ arena runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 decision-trail reviewer: a codex:gpt-6.1-sol @xhigh seat
 node .agents/pstack/cross.mjs --to codex --model gpt-6-astra --effort high --timeout 1800 --prompt-file <file>    (one Codex seat)
 $cross-review <plan>    (typed only)
+```
+
+The drift audit and the cuts that keep plate-2, Ellie and dotai close to pstack.
+
+```text
+/sync-pstack audit <project>    (node scripts/audit.mjs lists facts and candidates; /pstack:interrogate judges cut, fold or keep)
+the goal in plain words    (pstack's Autonomous run; Codex /goal; three goal sentences in Long runs)
+/pstack:interrogate    (Codex seats give the other-model review)
+pstack:teach, or an Artifact
+/ui-audit, or a plain "improve this for an hour"    (Autonomous run)
+"prototype <idea>"    (pstack's Prototype playbook; Ellie's bullets in AGENTS.md)
+verify's runtime reference    (now holds the Next MCP tool list)
+(retired)
+the Plan playbook    (its layer gates move to a reference plan.md loads)
+/pstack:interrogate
+pstack:typescript-best-practices, plate-ui's own rules
+$cross-review <plan>    (session discovery feeding /pstack:interrogate)
 ```
 
 ## Hard cuts and app migration
@@ -333,14 +350,16 @@ $cross-review <plan>    (typed only)
 
 - **pstack runs the method.** poteto-mode, its playbooks and the pstack block in `AGENTS.md` own lifecycle, tests, review, plans and delivery; Plate skills keep only Plate knowledge. Claude Code runs Opus and Codex runs gpt-6.1-sol, and pstack's own panels bring in the other family.
 - **Plate's lifecycle is project playbooks on pstack's.** Plan, Build, Bug fix, Refactoring, Perf issue, Babysit and API review extend pstack playbooks with anchored changes; a pstack upgrade that rewords an anchored step fails loudly, and a step that contradicts the block is replaced, not added to.
-- **Fewer skills, each with one owner.** `research` absorbed editor audits and test harvests, `maintainer` issue drafting, `plate-plugins` feature delivery, `plate-architecture` the hard cut, the registry law and Plate Review's audit; failed-fix recovery lives only in the Bug fix playbook.
+- **Fewer skills, each with one owner.** `research` absorbed editor audits and test harvests, `maintainer` issue drafting, `plate-plugins` feature delivery, the Plan playbook's architecture reference the hard cut, the registry law and Plate Review's audit; failed-fix recovery lives only in the Bug fix playbook.
 - **Every pre-pstack code-quality law the audits found is back** in the file an agent loads for that job, except the doctrine fingerprint rows and the P1 autoreview gate, which the block's Review rule replaces.
 - **Gates block in code.** `plan-open.mjs` fails a Done plan on an unresolved gate row or an open box in a numbered step; `validate-benchmark-plan.mjs --complete` refuses missing or pending verification evidence.
 - **pstack's panels get their model diversity back.** `interrogate` and `arena` seat Opus, gpt-6-astra at high and gpt-6.1-sol at xhigh instead of three Opus runs, so the adversarial signal comes from different models, as pstack designs it.
 - **A Codex seat runs through `cross.mjs`, read-only.** `node .agents/pstack/cross.mjs --to codex --model <model> --effort <effort>` runs `codex exec --sandbox read-only` with hooks off on the filled prompt file, in both runtimes, and exits non-zero when the seat gives no answer, so the seat shows as missing.
 - **Big work reviews itself and then asks you.** Public API or architecture changes, high-risk work, long or unattended runs, each project's `bigWork` and a best-api-review Pursue verdict's record get a panel round before the user is asked; a round with an applied critical finding earns one more, two at most. A plan then asks Build now, Another round or Hold; a small plan asks Build now or Hold.
-- **cross-review and autoreview stop being stages.** High-risk code gets the panel on one commit in a detached worktree. Both skills stay installed for when you type them, and bare `cross-review` lists the latest finished sessions.
+- **cross-review and autoreview stop being stages.** High-risk code gets the panel on one commit in a detached worktree. autoreview is uninstalled; cross-review stays for when you type it, finds the author's session and feeds its asks to an interrogate panel, and bare `cross-review` lists the latest finished sessions.
 - **The page shows the review.** Each `seats` row in the decision log opens a panel round; the header tags the round count and the latest seats, and a review history at the bottom lists each round's findings by severity with what was applied and dismissed. `decisions-check.mjs` refuses a panel finding without a severity, before a `seats` row or without an applied or dismissed reason.
-- **One page per subject, shared with Ellie.** `plan-page.mjs` is a sync-pstack helper; a plan joins its subject through `Topic:` or, in plate-2, its first review scope, and plate-architecture plans add the editor comparison, document shape, layer and owner, hard cuts and native proof sections.
+- **One page per subject, shared with Ellie.** `plan-page.mjs` is a sync-pstack helper; a plan joins its subject through `Topic:` or, in plate-2, its first review scope, and architecture plans add the editor comparison, document shape, layer and owner, hard cuts and native proof sections.
 - **A subject page shows the open plan's delta, then the result.** A plan carries its delta, `Delta`-marked rows and before and after pairs, under the subject's section titles; the subject file keeps the current state. The newest open iteration leads the page, and once every iteration is executed or Done the page shows the current state alone with the iterations as history. The renderer refuses a subject file with a pair in a paired section and a just-finished plan whose rows or calls the subject file does not show.
 - **One status vocabulary, and no silent rollback.** `.agents/pstack/status.mjs` reads the first word of a `Status:` line for the page mode, the pill and plan-open's `--done` sweep, which checks every landed word. A sync from committed shared source refuses to overwrite a project last synced from uncommitted shared edits.
+- **Drift from pstack is audited, and the copies are cut.** `node skills/sync-pstack/scripts/audit.mjs <project>` in dotai lists each skill's typed uses, routes and stale copies, and the sentences that repeat pstack or the block; sync-pstack's Audit mode hands the report to an interrogate panel. Typed counts include only what a person wrote. Every block rule carries an overrides note or an adds marker, and `verify` flags one with neither.
+- **What pstack covers is gone.** dotai cut autogoal and gpt-pro; Ellie cut improve, its prototype rule, next-dev-loop, two process docs and nine vendor skills; plate-2 retired sync-vision, folded plate-architecture into `.agents/playbooks/references/architecture.md`, dropped maintainer's heartbeat and the feature pack's process copies, and uninstalled four vendor skills. The best-api dedup has its own plan.

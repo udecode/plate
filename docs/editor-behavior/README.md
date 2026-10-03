@@ -158,7 +158,7 @@ Use it to answer three different questions:
 - Use the audit when a rule needs external grounding.
 - Use the architecture doc only when the question is structural, not behavioral.
 - Editor-behavior defines law and evidence. `best-api` decides public promotion;
-  `plate-architecture` owns adoption after that decision, for the Plate or
+  the Plan playbook owns adoption after that decision, for the Plate or
   Plite layer.
 - If two docs appear to say the same thing, the spec wins for law, the protocol
   matrix wins for exhaustive cases, and the parity matrix wins for ship gate.

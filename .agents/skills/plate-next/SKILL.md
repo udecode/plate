@@ -11,7 +11,7 @@ metadata:
 
 Handle $ARGUMENTS.
 
-The migration is nearly done: most packages are retired and the live ones are listed in `versions.json`. This skill keeps those packages reviewed against the Plate v2 target shape: a clean Plate product layer on top of Plite, with no old Slate or Plate compatibility left in the final API. Apply `pstack:principle-redesign-from-first-principles`: Plite owns the substrate, and its current implementation can still need replacement. Public call-shape forks go to `best-api`, adoption plans to `plate-architecture`, source-shape cleanup to the Refactoring playbook, current-tree closure to the Babysit playbook, and ordinary changes to the playbook poteto-mode picks.
+The migration is nearly done: most packages are retired and the live ones are listed in `versions.json`. This skill keeps those packages reviewed against the Plate v2 target shape: a clean Plate product layer on top of Plite, with no old Slate or Plate compatibility left in the final API. Apply `pstack:principle-redesign-from-first-principles`: Plite owns the substrate, and its current implementation can still need replacement. Public call-shape forks go to `best-api`, adoption plans to the Plan playbook, source-shape cleanup to the Refactoring playbook, current-tree closure to the Babysit playbook, and ordinary changes to the playbook poteto-mode picks.
 
 ## Doctrine Version
 

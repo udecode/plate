@@ -4,14 +4,13 @@ This is the mandatory first read for Plate and Plite direction.
 
 Root `VISION.md` keeps the essential doctrine every agent must see. Detailed owner doctrine lives in `docs/vision/*.md`; read only the relevant detail file after this root file.
 
-Durable product doctrine belongs here and in `docs/vision/*.md`; the routing in `AGENTS.md` sends work to the operational skills that apply it. When reusable taste, architecture, proof, or automation doctrine changes, update the smallest relevant owner.
+Durable product doctrine belongs here and in `docs/vision/*.md`; the routing in `AGENTS.md` sends work to the operational skills that apply it. When reusable taste, architecture, proof, or automation doctrine changes, update the smallest relevant owner. Promote a rule to this file only when every agent must see it first: global taste, source order, cross-boundary law, essential Plite or Plate direction, proof standards or stop conditions. Put the rest in the smallest detail file, and keep command output, route state, branch history, raw issue text and artifact paths in plans.
 
 ## Detail Files
 
 - `docs/vision/common.md`: shared taste, proof, automation, research, maintainer policy, correction patterns, repair, and consolidation.
 - `docs/vision/plite.md`: Plite substrate, API/runtime/browser/perf doctrine, proof hierarchy, and Slate skill topology.
 - `docs/vision/plate.md`: Plate framework/product doctrine, plugin/component policy, docs/API ownership, security, AI, setup, and non-merge lines.
-- `docs/vision/sync.md`: `sync-vision`, baseline advancement, classification, and taste capture.
 
 ## How To Use
 
@@ -68,9 +67,9 @@ Executable tests outrank prose docs for behavior claims. Prose docs outrank test
 
 - Long-running automation must repair tests, metrics, skills, and docs while it works. A plan note without a future behavior change is archaeology.
 - `$benchmark` owns performance execution across Plate and Plite: all applicable lanes are inventoried by default, run in cheapest/highest-signal order, paused at a causally proven owner, routed through `best-api` and the correct layer plan when the durable target changes API or runtime architecture, fixed and rerun immediately, then resumed until breadth is complete. `$benchmark review` owns the review method.
-- `$maintainer` owns the public issue/PR/security queue, heartbeat, duplicate/claim guard, and public proof gates. Internal Plate/Plite quality loops and current-checkout closure of already applied work run through pstack's poteto-mode, with long unattended runs as its Autonomous run. Measured work routes to `$benchmark`.
+- `$maintainer` owns the public issue/PR/security queue, duplicate/claim guard, and public proof gates. Internal Plate/Plite quality loops and current-checkout closure of already applied work run through pstack's poteto-mode, with long unattended runs as its Autonomous run. Measured work routes to `$benchmark`.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Slate maintenance runs through local Codex sessions in maintainer checkouts, not a hosted API bot that can infer private context. Require enough public repro, proof, risk, and next-action state to route or stop cleanly.
-- Maintainer heartbeat state should be durable and boring: queue snapshot, candidate matrix, selected owner, proof path, authority boundary, run note when useful, and next heartbeat. Chat memory is not the queue ledger.
+- Maintainer queue state should be durable and boring: queue snapshot, candidate matrix, selected owner, proof path, authority boundary, and a run note when useful. Chat memory is not the queue ledger.
 - Private security advisory details must not leak into versioned queue docs. Keep public/versioned ledgers redacted and read sensitive details from live GitHub or local ignored artifacts.
 - Apply source-backed improvements within the active request's authority, including justified beta architecture and API cuts. Challenge stale doctrine and repair its authorized owner. `AGENTS.md` owns permission boundaries; a technical owner transition or a large blast radius does not require another approval. Ask for a missing decision, access, or authority only when it blocks the next action.
 - Multi-step automation must carry resumable state and stop at real approval boundaries. Never auto-approve payments, external sends/posts, credential use, destructive operations, or other irreversible user-authority actions.

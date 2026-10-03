@@ -149,7 +149,7 @@ Record:
 ### Sync Main To Next
 
 Use the complete [direct sync recipe](./references/sync.md) for this fast mode.
-It skips planning and Autoreview unless a planning artifact was requested.
+It skips planning and panel review unless a planning artifact was requested.
 
 Run after a stable release, after merging a promote PR, or whenever `main` has
 commits missing from `next`.

@@ -32,7 +32,7 @@ The bug form is written for execution, not storytelling.
 Maintainers usually work bugs through a local coding agent (Claude Code or Codex) running the `maintainer` skill and pstack's Bug fix playbook in a maintainer checkout. There is no hosted bot or API worker that can recover missing context from your machine, private account, or unstated setup.
 
 - Focused local regressions fit the Bug fix playbook
-- Cross-package, public API, architecture, and performance work often fit `best-api`, `plate-architecture` or `benchmark`
+- Cross-package, public API, architecture, and performance work often fit `best-api`, the Plan playbook or `benchmark`
 
 If a field cannot be answered from evidence, write exactly `NOT_ENOUGH_INFO`.
 

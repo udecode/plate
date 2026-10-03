@@ -1,6 +1,6 @@
 ---
 description: Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof.
-argument-hint: '[issues | prs | security | heartbeat | issue-draft] <url or text>'
+argument-hint: '[queue | issues | prs | security | issue-draft] <url or text>'
 name: maintainer
 metadata:
   skiller:
@@ -15,87 +15,6 @@ Handle $ARGUMENTS.
 Use this as the repo-local OpenClaw-style control plane for Plate and Slate
 maintenance. It decides fit, priority, routing, authority, and proof. It does
 not become the runtime execution skill unless no better owner exists.
-
-This is the future automation entrypoint: a scheduler can run
-`maintainer heartbeat`, and the skill will pick one safe item, route it, prove
-it, or stop at the right authority boundary.
-
-In this repo, maintainer automation runs through local Codex sessions in a
-maintainer checkout. Do not assume hosted OpenClaw crabbox, background workers,
-or API-run bots. Public issue and PR bodies must contain enough durable context
-for a local maintainer session to reproduce, route, review, or stop cleanly.
-
-## Standing Orders
-
-These are the permanent operating orders for local maintainer automation. They
-apply whenever the user invokes `maintainer heartbeat`, asks to maintain the
-repo, or later wires a local scheduled Codex activation to this skill.
-
-Scope:
-
-- maintain the public Plate/Slate issue, PR, and security queue;
-- improve public intake when issue/PR/security templates make local Codex work
-  weaker than it should be;
-- route one safe item per activation to the right owner;
-- execute local docs/setup/proof repairs only when the owner is clear and the
-  authority boundary allows it;
-- run at most one internal quality checkpoint through pstack's poteto-mode only when no public
-  queue item is safe and the invocation allows fallback.
-
-Triggers:
-
-- explicit user invocation: `maintainer`, `maintainer heartbeat`, `maintainer
-  issues`, `maintainer prs`, `maintainer security`, or a public issue/PR URL;
-- a public queue prompt such as `PR #123`, `issue #123`, `all PRs`, `all issues`,
-  `queue` or `security`;
-- future local scheduler invocation that runs a single Codex heartbeat;
-- user asks for OpenClaw-like repo maintenance without choosing a narrower
-  worker.
-
-Allowed without asking:
-
-- read public GitHub issue/PR/advisory state;
-- read public intake docs, root `VISION.md`, relevant `docs/vision/*.md`, and
-  owner skill rules;
-- refresh the local queue ledger with
-  `.agents/rules/maintainer/scripts/queue-snapshot.mjs` for broad queue or
-  heartbeat work;
-- build a candidate matrix and pick one item;
-- classify invalid/support/noise/needs-repro/agent-ready state;
-- run duplicate/claim guards through live GitHub and optional `gitcrawl`;
-- route to a narrower owner skill;
-- prepare one concise status comment after a user-selected non-security
-  public issue receives a complete reporter-valid bug-fix packet. Post it only
-  when the user has explicitly authorized the message. Call uncommitted or
-  unpushed work a local candidate, never a fixed/completed issue; state the exact
-  ref/integration status and leave the issue open unless closure is separately
-  authorized;
-- patch local docs, templates, plans, rules, or tests when the execution owner
-  allows it and no public mutation is required;
-- update local maintainer docs/rules/templates when a recurring workflow gap is
-  proven;
-- produce a decision-ready brief when authority or evidence is missing.
-- write compact `docs/maintainer/runs/*` notes when a non-trivial heartbeat
-  creates state future Codex sessions should not rediscover.
-
-Public mutations and other hard stops follow [Authority Boundaries](#authority-boundaries).
-
-Escalate when:
-
-- intake is too thin for local Codex to reproduce, route, or prove the item;
-- VISION fit is unclear;
-- duplicate/claim guard finds active ownership;
-- proof requires unavailable credentials, devices, private accounts, or
-  external services;
-- the next useful action is a public mutation and the user did not authorize it;
-- security scope is plausible but the report arrived publicly.
-
-Every heartbeat follows Execute-Verify-Report:
-
-1. execute the selected queue scan or route;
-2. verify live state, owner, proof path, and authority boundary;
-3. report selected item, rejected candidates, proof, mutations, changed files,
-   attention items, and next heartbeat recommendation.
 
 ## Core Take
 
@@ -115,7 +34,7 @@ by the Routing table in `AGENTS.md`. Maintainer-specific routes:
 - the Babysit playbook: post-merge or current-tree closure of already-applied work.
 
 Invoke `maintainer` for the public queue: repo maintenance, issue, PR and
-security scans, heartbeats, and any public Plate or Slate issue or PR whose
+security scans, and any public Plate or Slate issue or PR whose
 owner is not yet chosen. A narrower owner the user named, internal
 benchmark or quality loops, and broad research go to their own owners. Never
 hand public queue ownership to an internal quality run.
@@ -128,7 +47,7 @@ It is done when the queue item is routed, proved, or stopped at its authority
 boundary. The plan must record invocation mode, target repo, queue source, root
 `VISION.md`, live GitHub state or auth blocker, archive/gitcrawl freshness when
 used, duplicate/claim guard, candidate matrix, VISION fit, selected owner,
-proof command or blocker, authority boundary, final handoff, and next heartbeat.
+proof command or blocker, authority boundary, and final handoff.
 
 ## Modes
 
@@ -145,16 +64,11 @@ Read the complete [Slate issue recipe](./references/slate-issue.md). It owns
 intake and public claim accounting; pstack's Bug fix playbook owns local
 repair and poteto-mode owns lifecycle. Execute public steps only with the active request's authority.
 
-### `heartbeat`
+### `queue`
 
-One local activation, not a daemon.
+A broad scan: "queue", "all issues", "all PRs" or repo maintenance.
 
-1. Read root `VISION.md`, then relevant `docs/vision/*.md`, then
-   `docs/maintainer/standing-orders.md` and
-   `docs/maintainer/heartbeat.md` when present.
-2. Resolve repo. Default to `udecode/plate` after Slate v2 merges; use the URL
-   repo or `--repo` when provided.
-3. Refresh `docs/maintainer/queue.md` with:
+1. Refresh `docs/maintainer/queue.md` with:
 
    ```bash
    node .agents/rules/maintainer/scripts/queue-snapshot.mjs \
@@ -164,21 +78,15 @@ One local activation, not a daemon.
      --json .tmp/maintainer/queue-snapshot.json
    ```
 
-   If `gh` auth/network is blocked, record the blocker and use the last queue
+   If `gh` auth or network is blocked, record the blocker and use the last
    ledger only as stale context.
-4. Scan the smallest useful queue slice: security/advisories, PRs with
-   review/CI/merge attention, issues needing triage, stale user-visible bugs,
-   docs/setup breakage, then internal Slate quality fallback only if no public
-   item is safe.
-5. Build a candidate matrix.
-6. Pick at most one autonomous item.
-7. Route to the owner skill, execute the safe local slice, or stop with a
-   compact decision-ready brief.
-8. Write a compact `docs/maintainer/runs/*` note for non-trivial runs when it
-   prevents duplicate work.
-9. End with the heartbeat handoff: selected item, rejected candidates, live
-   proof, authority boundary, public mutations, changed files, needs-user
-   attention, and next heartbeat.
+2. Scan the smallest useful slice: security and advisories, PRs with review, CI
+   or merge attention, issues needing triage, stale user-visible bugs, then docs
+   or setup breakage.
+3. Build the candidate matrix, pick at most one item, and route it, run its
+   safe local slice, or stop with a decision-ready brief.
+4. Write a compact `docs/maintainer/runs/*` note when the run creates state a
+   later session should not rediscover.
 
 ### `issues`
 
@@ -214,12 +122,12 @@ For a PR, check `baseRefName` before routing. A PR based on `main` is worked in 
 | One public Plate behavior bug or regression | `maintainer` coordinates and runs the local repair packet through pstack's Bug fix playbook |
 | One public Plate/Plite performance regression | `maintainer` coordinates and delegates the measured local packet to `benchmark` |
 | One local Plate or Plite behavior bug or regression with no public mutation | pstack's Bug fix playbook |
-| Plite public call-shape fork | `best-api`, then `plate-architecture` if adoption/runtime planning is needed |
+| Plite public call-shape fork | `best-api`, then the Plan playbook if adoption or runtime planning is needed |
 | Already-applied PR/branch/current-tree closure | the Babysit playbook |
 | Plate/Slate internal performance/benchmark gap | `benchmark` |
 | Plate/Slate internal quality/browser/API gap | pstack poteto-mode, as an Autonomous run when unattended |
-| Cross-package architecture/testability/refactor/deslop candidate | the Refactoring playbook, then `plate-architecture` |
-| Plate framework/plugin/component/docs | `plate-architecture`, `plate-plugins`, `plate-ui`, or Plate Docs |
+| Cross-package architecture/testability/refactor/deslop candidate | the Refactoring playbook, then the Plan playbook |
+| Plate framework/plugin/component/docs | the Plan playbook, `plate-plugins`, `plate-ui`, or Plate Docs |
 | Security/advisory | `maintainer security` |
 | PR review | the pstack block's Review rule |
 | PR review feedback | the Babysit playbook |
@@ -278,15 +186,14 @@ issue. Do not leave a blanket `completed` label on an unresolved workflow.
    - `docs/vision/common.md` for maintainer/automation/security/proof policy;
    - `docs/vision/plite.md` for Plite substrate;
    - `docs/vision/plate.md` for Plate framework/product/docs;
-   - `docs/vision/sync.md` only for doctrine sync.
 5. `AGENTS.md` for repo command/authority policy.
 6. Public intake docs when they apply:
    - `CONTRIBUTING.md`;
    - `.github/PULL_REQUEST_TEMPLATE.md` for PR work;
    - `.github/ISSUE_TEMPLATE/*.yml` for issue work;
    - `SECURITY.md` for security-shaped work.
-7. `docs/maintainer/queue.md` and `.tmp/maintainer/queue-snapshot.json` when
-   the invocation is heartbeat or broad queue work.
+7. `docs/maintainer/queue.md` and `.tmp/maintainer/queue-snapshot.json` for a
+   `queue` scan or other broad queue work.
 8. Issue/PR/advisory live state through `gh` or the connected GitHub tool.
 9. `gitcrawl` archive/cluster/neighbor data when it can reduce duplicates.
 10. Current source/tests/docs for the claimed owner.
@@ -342,8 +249,7 @@ For every candidate considered, record compact rows:
 - authority needed;
 - decision: route, brief-only, skip, defer, or blocked.
 
-Do not pad the queue with weak candidates. If no item is safe, say no item is
-safe and run one internal-quality fallback only when the invocation allows it.
+Do not pad the queue with weak candidates. If no item is safe, say so and stop.
 
 ## Fit Gate
 
@@ -385,33 +291,12 @@ Hard stops:
 If the user explicitly asked for one of these, perform it through the correct
 owner and record proof.
 
-## Fallback Ladder
-
-When no public queue item is safe:
-
-1. security/doc/PR blockers with clear proof;
-2. stale issue duplicate/claim guard repair;
-3. issue brief improvements;
-4. docs/setup source-backed improvements;
-5. source-backed architecture/code cleanup through the Refactoring playbook only
-   when a public item or repeated queue friction proves the need;
-6. one current-tree Babysit pass when already-applied work is the best
-   fallback;
-7. one internal quality checkpoint through pstack's poteto-mode;
-8. `sync-vision` if repeated user/agent corrections are uncaptured;
-9. `openclaw-sync` when the requested task is specifically to refresh upstream
-   agent setup.
-
-Do not run broad internal automation as a substitute for a public queue item
-when the user asked for issue/PR maintenance and a public blocker remains.
-
 ## Final Handoff
 
 Report repo/mode, queue snapshot path and freshness, queue slice inspected,
 selected item and owner, candidate matrix summary, live GitHub proof or auth
 blocker, duplicate/claim guard, execution/proof commands, public mutations,
-changed list, run artifact, needs-user-attention, and next heartbeat
-recommendation.
+changed list, run artifact, and needs-user-attention.
 
 Keep it short. The maintainer should be able to approve the next action without
 reading raw diffs or raw issue dumps.

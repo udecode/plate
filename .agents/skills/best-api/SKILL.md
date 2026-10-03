@@ -38,8 +38,8 @@ a mandatory prelude to the other.
   reusable taste changes.
 - `research audit` owns exhaustive comparison against one or more external editor
   source trees and routes only material public-shape candidates here.
-- `plate-architecture` owns layer architecture, adoption, execution and proof after
-  the target API is chosen.
+- the Plan playbook and its architecture reference own layer architecture and
+  adoption after the target API is chosen; the Build playbook executes it.
 - package and supervisor skills implement accepted work under pstack's poteto-mode.
 
 ## Modes
@@ -1149,7 +1149,8 @@ Repair the smallest durable ownership chain:
 1. update `.agents/rules/best-api.mdc`;
 2. update only the relevant `VISION.md` / `docs/vision/**` doctrine when the
    correction is durable taste rather than procedure;
-3. audit the affected execution and teaching owners, including `plate-architecture`,
+3. audit the affected execution and teaching owners, including the architecture reference
+   (`.agents/playbooks/references/architecture.md`),
    `plate-plugins`, `plate-ui`, Plate Docs, and
    `plate-next` when their scope intersects the changed API; update only skills
    that teach or enforce the changed contract, remove contradictions, and link
@@ -1178,7 +1179,7 @@ principle; keep package details in source, plans, or the API debt ledger.
 ## Stop
 
 Stop API design when one target clearly wins and its unresolved questions are
-implementation/proof questions. Route those questions to `plate-architecture`
+implementation/proof questions. Route those questions to the Plan playbook
 or the package owner.
 
 Do not implement product API changes unless the user explicitly asks and the

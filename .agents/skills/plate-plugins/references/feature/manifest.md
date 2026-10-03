@@ -75,8 +75,5 @@ Flow presets are classification aids, not generated schemas:
 
 Choose the mode that matches the structural rows. API, docs, and release rows
 may vary in non-new-package flows when their explicit evidence explains why.
-Before selecting `registry-only`, prove that the feature does not expose a
-neutral reusable contract of one mounted Editable. Derivable runtime or DOM
-behavior makes `API` and `React adapter` applicable even when the public
-contract is a literal marker and neutral output hooks instead of a prop.
-Registry rows own only product markers, exclusions, and styling.
+Before selecting `registry-only`, apply the registry-only test in
+`.agents/playbooks/references/architecture.md` (Pick the layer).

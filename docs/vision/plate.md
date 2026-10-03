@@ -1005,7 +1005,7 @@ Owner map:
 | reusable architecture doctrine                       | root `VISION.md` and `docs/vision/*.md`   |
 | durable public API doctrine                          | root `VISION.md` and `docs/vision/*.md`   |
 | concrete public API design, review, and debt ranking | `best-api`                                |
-| Plate API adoption, rollout, and proof plan          | `plate-architecture`                              |
+| Plate API adoption, rollout, and proof plan          | the Plan playbook                                 |
 | runtime/service-boundary patterns                    | root `VISION.md` and `docs/vision/*.md`   |
 | layering / ownership law                             | root `VISION.md` and `docs/vision/*.md`   |
 | performance/scalability law                          | root `VISION.md` and `docs/vision/*.md`   |

@@ -1,6 +1,6 @@
 # plate-next-attestation pack
 
-This is a project-owned plan pack. Append it to a feature-delivery plan when a package is attested. The pstack block in `AGENTS.md` governs timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+Append this pack to a feature plan when a package is attested.
 
 Use this pack when a Plate feature changes or creates a package that needs a
 current Plate Next review. Reuse the plan's Feature Manifest; do not create a

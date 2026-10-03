@@ -2,9 +2,9 @@
 title: Markdown conversion ownership and fidelity
 type: decision
 status: accepted
-updated: 2026-09-28
+updated: 2026-10-03
 review_scope: markdown
-current_review: 2026-09-28-markdown-dialect-prototype-correction
+current_review: 2026-10-03-markdown-table-cell-blocks-constraints
 reconciled_executions:
   - 2026-09-18-recovered-2026-07-29-colocate-markdown-feature-codecs
   - 2026-09-18-recovered-2026-07-30-hard-cut-markdown-codec-package
@@ -19,6 +19,9 @@ review_history:
   - ../review-records/2026-09-28-markdown-dialect-last-pass.json
   - ../review-records/2026-09-28-markdown-dialect-prototype.json
   - ../review-records/2026-09-28-markdown-dialect-prototype-correction.json
+  - ../review-records/2026-10-03-markdown-table-cell-blocks.json
+  - ../review-records/2026-10-03-markdown-table-cell-blocks-again.json
+  - ../review-records/2026-10-03-markdown-table-cell-blocks-constraints.json
 source_refs:
   - ../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts
   - ../../../packages/platejs/src/markdown/lib/internal/markdownConversion.ts
@@ -173,3 +176,29 @@ The tracked receipt, regenerated on the final tree, passes correctness and the
 adoption gate with serialize at 0.97×; the absolute B4 inline-tag budget still
 fails. The `apps/www` Markdown fixtures pass after repair against the adopted
 contract.
+
+## Table cells
+
+A [2026-10-03 review](../review-records/2026-10-03-markdown-table-cell-blocks-constraints.json)
+reopens D6 for table cells. On `next`, a cell holding list paragraphs refuses,
+and the refusal cascades through the row and the table: the whole serialize
+fails under `reject`, and the whole table disappears under `allow`. A break
+inside a cell paragraph becomes a space with no diagnostic, a trailing break
+writes a raw newline into the row, and the cell-list HTML that `main` released
+in PR 5139 reads on `next` as literal text.
+
+On parse, when a list decoder is installed, the `remarkToSlate` compiler turns
+a cell's `<ul>`, `<ol start>` and `<li>` run, with nested lists and a leading
+checkbox in `<ul>`, into a private list shape that the List decoder builds
+paragraphs from. Without a list decoder the run stays literal. On serialize, a
+typed helper on the Markdown encode context turns a cell's children into
+one-line HTML and `<br/>`, follows `main`'s joining rule and replaces the cell
+mapping's own `<br/>` join. An unspanned cell that still cannot be
+represented keeps its column as an empty cell with a lossy diagnostic, and a
+span flattens through the table grid or keeps the table refusal. Reusing the
+feature HTML mappings loses, because their output is verbose and unsafe in a
+GFM row, and reading it back needs a DOM that Markdown parsing avoids.
+
+The plan settles two policies on the merits: whether raw HTML that no mapping
+accepts is lossless, as the shipped docs say, or lossy, as D8 says, and which
+signal a paragraph boundary folded into `<br/>` gets.

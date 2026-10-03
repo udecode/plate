@@ -34,7 +34,7 @@ Default suspicion list:
   `editor.read`, `editor.api`, or `editor.update`.
 - helpers in `packages/platejs` that are really generic node/range/selection/
   schema/runtime behavior.
-- The rules this section shares with `best-api` and `plate-architecture` are stated in `best-api.mdc`, `best-api/rules/authoring-and-inference.md`, `best-api/rules/behavior-and-ownership.md`, `best-api/rules/schema-and-identity.md`, and `plate-architecture.mdc`; apply them from there.
+- The rules this section shares with `best-api` and the architecture reference are stated in `best-api.mdc`, `best-api/rules/authoring-and-inference.md`, `best-api/rules/behavior-and-ownership.md`, `best-api/rules/schema-and-identity.md`, and `.agents/playbooks/references/architecture.md`; apply them from there.
 - explicit callback/helper types in tests that replace inference from
   `definePlugin`, Plate `createEditor`, exact definitions, update groups, or editor
   API calls.

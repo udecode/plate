@@ -397,12 +397,21 @@ export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
             );
           }
           const children = blocks.flatMap((block, index) => {
-            const content =
+            const content = (
               block.type === 'paragraph'
                 ? block.children
                 : isPhrasing(block)
                   ? [block]
-                  : [];
+                  : []
+            ).map((child) =>
+              // GFM writes a hard break in a cell as a space and HTML verbatim,
+              // where a newline would end the row.
+              child.type === 'break'
+                ? { type: 'html' as const, value: '<br/>' }
+                : child.type === 'html'
+                  ? { ...child, value: child.value.replaceAll('\n', '') }
+                  : child
+            );
 
             return index === blocks.length - 1
               ? content

@@ -60,9 +60,12 @@ Rules:
   including through `multi_tool_use.parallel`. The managed route builds and
   serves the Next example app, and concurrent runs can trip the Next build lock
   (`Another next build process is already running`) or prove the wrong stale
-  server. Parallelize file reads and package-level non-server tests, but
-  serialize managed Playwright proofs unless one checkpoint explicitly owns a
-  prebuilt server plus `PLAYWRIGHT_BASE_URL`;
+  server. Parallelize file reads, but serialize managed Playwright proofs
+  unless one checkpoint explicitly owns a prebuilt server plus
+  `PLAYWRIGHT_BASE_URL`. During a managed proof, run nothing that writes under
+  the runner's source entries, such as a bun test that rewrites snapshots,
+  `build:registry` or a writing pass, because the runner then stops at
+  `source-changed` and its next run starts from the first batch;
 - the managed Plite runner validates its app and browser build manifests.
   An explicit `PLAYWRIGHT_BASE_URL` delegates serving to that instance; bind
   its source/build identity before trusting it. If it serves stale content,
@@ -203,14 +206,26 @@ The local device lane is `verify`-scoped proof and does not satisfy that raw
 gate:
 
 ```bash
+emulator -list-avds
+emulator -avd <avd> -no-window -no-audio -no-snapshot-save &
+adb wait-for-device
+until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; do sleep 3; done
+node tooling/device/android.mjs setup && node tooling/device/android.mjs calibrate
 node tooling/device/android.mjs doctor
 PLATE_DEVICE_WWW_PORT=3000 pnpm --filter plite exec playwright test --config playwright.device.config.ts
 ```
 
 Each run writes `test-results/device/run.json` (Chrome pid, DevTools target,
-served build fingerprint) and `guard-<serial>.json` (refused commands). After
-an interrupted run, `doctor` refuses until `restore` runs; then `setup` and
-`calibrate` again.
+served build fingerprint), `report.json` and `guard-<serial>.json` (refused
+commands). After an interrupted run, `doctor` refuses until `restore` runs;
+then `setup` and `calibrate` again.
+
+`playwright test --list`, typecheck and lint never execute `globalSetup`, and
+Playwright loads `apps/plite` TypeScript as CommonJS, so `import.meta` there
+fails only at run time. After any edit to the device config, global setup or
+lane fixtures, run one case once before the default five repeats, which take
+about twelve minutes:
+`PLATE_DEVICE_REPEAT=1 pnpm --filter plite exec playwright test --config playwright.device.config.ts bypass`.
 
 ## Local install recovery
 

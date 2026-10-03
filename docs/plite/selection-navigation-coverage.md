@@ -173,7 +173,7 @@ Plite route proof.
   same-point/non-overlap native composition coherence, rich text replacement,
   and WebKit compositionend cleanup, but they do not claim accepted behavior for
   app/model/remote edits that intersect the active native composition span.
-  Before runtime overlap work, `plate-architecture` must accept the conflict rule and
+  Before runtime overlap work, an accepted architecture plan must accept the conflict rule and
   `plite-browser` must prove a real native composition span, stale terminal
   events, follow-up typing, undo/redo, model selection, native selection, and
   event trace coherence.
@@ -193,7 +193,7 @@ Plite route proof.
   visual/native agreement instead.
 - App-level `selectstart.preventDefault()` does not currently veto Plite's
   model-owned keyboard selection extension. Do not claim WPT
-  `selectstart`-veto parity unless `plate-architecture` first defines that as editor
+  `selectstart`-veto parity unless an architecture plan first defines that as editor
   policy and `plite-browser` adds route proof.
 - CSS vertical writing-mode editing is not declared supported behavior. Current
   ArrowUp/ArrowDown rows cover horizontal writing mode with visual line
@@ -202,7 +202,7 @@ Plite route proof.
 - Mixed bidi line-boundary extension with browser
   `Selection.modify("extend", left/right, "lineboundary")` is policy-owned.
   RTL text-unit and deletion proof do not claim mixed bidi line-boundary
-  navigation until `plate-architecture` defines the expected behavior and route proof
+  navigation until an architecture plan defines the expected behavior and route proof
   exists.
 
 ## Coverage Claim Levels

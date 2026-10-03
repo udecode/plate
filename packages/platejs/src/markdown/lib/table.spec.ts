@@ -430,6 +430,36 @@ describe('markdown tables', () => {
     ]);
   });
 
+  it('keeps line breaks inside a table cell on one row', () => {
+    const editor = createTableEditor();
+    const cell = (text: string) => ({
+      type: 'tableCell',
+      children: [{ type: 'paragraph', children: [{ text }] }],
+    });
+    const row = (texts: string[], header?: true) => ({
+      type: 'tableRow',
+      children: texts.map((text) => ({
+        ...cell(text),
+        ...(header && { header }),
+      })),
+    });
+    const input = [
+      {
+        type: 'table',
+        children: [row(['A', 'B'], true), row(['a\nb', 'c\n'])],
+      },
+    ];
+
+    const markdown = serializeTestMarkdown(editor, {
+      document: { children: input },
+    }).data;
+
+    expect(markdown).toBe(
+      '| A       | B       |\n| ------- | ------- |\n| a<br/>b | c<br /> |\n'
+    );
+    expect(parseTestMarkdown(editor, markdown).children).toMatchObject(input);
+  });
+
   it.each([{ colSpan: 2 }, { rowSpan: 2 }])(
     'rejects lossy table span serialization: %o',
     (span) => {

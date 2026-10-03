@@ -46,7 +46,7 @@ verification pass and the active user request authorizes that cleanup and messag
 - A bounded sync checks this sequence directly without a new plan. If it grows
   into sustained investigation or repair, continue under pstack's Autonomous run
   playbook and retain every remaining release/read-back obligation.
-- Do not run autoreview at any priority, including P1.
+- Do not run a panel review on the sync merge.
 - Do not create a `main -> next` PR.
 - Do not touch promotion; this shortcut is not `next -> main`.
 - Do not re-run broad release status commands once the pushed SHA is known.

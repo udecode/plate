@@ -14,12 +14,21 @@ entrypoint:
 4. regenerate Turbo and runtime-proof state, then run entrypoint, package,
    packed-artifact, SSR, and browser proof as required.
 
+The generated runtime matrix Node-imports every public entrypoint, runs every
+headless entrypoint without React or DOM, renders every SSR entrypoint without
+DOM and exercises every client entrypoint in a real browser.
+
 Existing entrypoints are evidence, not doctrine. Reject compatibility aliases,
 redundant helpers, and topology that conflicts with current skills.
 
 ## Package Host Law
 
 Treat `platejs` as the shared Plate host, not another feature dependency.
+
+- Editor features live in `platejs`; do not create another editor-facing
+  package. The only other package roots are `plitejs`, `@platejs/cli` and
+  `@platejs/test`; the last two peer on `platejs` with `workspace:^` as their
+  local dev provider and no normal `platejs` dependency.
 
 - Only `packages/platejs` declares `plitejs`. Its local
   `dependencies.plitejs` stays `workspace:*` so a prerelease publishes one

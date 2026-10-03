@@ -478,7 +478,7 @@ When law exposes a packaging question:
    to classify invariant, parameter, substitutable capability, or app policy;
 3. run `best-api design` or `best-api review` before naming a public plugin;
 4. run `best-api repair` when the classification changes reusable doctrine;
-5. hand an accepted public target to `plate-architecture`.
+5. hand an accepted public target to the Plan playbook.
 
 Do not infer one plugin from one protocol row, handler, extension block, or
 non-universal behavior.

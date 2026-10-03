@@ -19,7 +19,7 @@ Before changing reusable API shape, naming, builder/factory patterns,
 composition identity, or runtime/perf law, read `VISION.md` and the relevant `docs/vision/*.md` per the Source authority
 section of `AGENTS.md`
 and route the target call shape to [best-api](../best-api/SKILL.md). Use
-`plate-architecture` only when adoption, runtime law, or layer ownership
+the Plan playbook only when adoption, runtime law, or layer ownership
 needs a plan. Use [Plate Docs](../plate-docs/SKILL.md) for public documentation.
 
 ## Required Reads
@@ -264,12 +264,21 @@ dependencies or peers, or moving a package into a `platejs/<feature>`
 entrypoint. It holds the package host law, entrypoint creation and the Oxlint
 boundary graph.
 
-## Feature Delivery → [delivery.md](./references/feature/delivery.md)
+## Feature Delivery → [manifest.md](./references/feature/manifest.md)
 
 Read this reference when one feature must reach registry consumers across its
 package, React adapter, copied UI, docs and release. The Plan playbook copies
-its [template](./references/feature/template.md) into the plan, and the Build
-playbook closes it with `node tooling/scripts/check-plate-feature.mjs <plan>`.
+the [template](./references/feature/template.md) into the plan, appends the
+[plate-next-attestation pack](./references/feature/plate-next-attestation.md)
+when a package is attested and Benchmark's performance-observability pack when
+the Scale proof row is `yes`, and the Build playbook closes it with
+`node tooling/scripts/check-plate-feature.mjs <plan>`.
+
+- Headless and registry-only flows are first-class modes, not incomplete full
+  flows. Skip a manifest row only as `no` with a concrete N/A reason.
+- Resolve the Scale proof row before source writes, per the Scale Gate below.
+- Never mass-attest packages after a doctrine bump. A package advances only
+  after its own full current review and recorded evidence.
 
 ## Package And Barrel Law
 
@@ -293,7 +302,7 @@ scheduler, geometry owner, repeated-unit fan-out, or other hot work. If yes,
 the active plan must include the performance-observability pack and contain a
 passing Benchmark pre-acceptance receipt for the selected target, or a
 source-backed type-only N/A. Route an unresolved public/runtime owner through
-`best-api` and `plate-architecture` first.
+`best-api` and the Plan playbook first.
 
 ## Workflow
 
@@ -355,5 +364,7 @@ source-backed type-only N/A. Route an unresolved public/runtime owner through
   examples and rejected precedent
 - [package-host.md](./references/package-host.md) — package host law, entrypoint
   creation and the import graph
-- [delivery.md](./references/feature/delivery.md) — cross-layer feature delivery,
-  its manifest, phases, proof routing and plan template
+- [manifest.md](./references/feature/manifest.md) — the Feature Manifest,
+  package boundary contract and flow modes, with its plan
+  [template](./references/feature/template.md) and
+  [attestation pack](./references/feature/plate-next-attestation.md)

@@ -16,6 +16,7 @@
     "architecture",
     "architecture-cleanup",
     "autoclosure",
+    "autoreview",
     "clawsweeper",
     "editor-audit",
     "editor-test-harvester",
@@ -36,35 +37,24 @@
     "slate-ar",
     "task",
     "testing",
+    "typescript-advanced-types",
+    "vercel-composition-patterns",
     "verify-plate"
   ],
   "synced": {
-    "block": "5f5eeaebcd2f38fdd83f7ea1fea91a31b8ef23cabe3d0bddcced5fb8ecd0430e",
+    "block": "bebb29026c0f1ec9658e4202e13597e3573e0263432ab59505eace051dea65ea",
     "files": {
       ".agents/pstack/cross.mjs": "fbc38412b89397422abae04fe2791d0b6b704e16d2345b7f4298bfa85763be24",
       ".agents/pstack/decisions-check.mjs": "ceebf2d0f94d1e97a9e685dd6c979c902452a8d33affee459e54301ad588e603",
       ".agents/pstack/plan-open.mjs": "87d9ac344a78478d142d5fa4f97b58ab3f9e94ce9b2d7839ec110bfd6e9e8b78",
-      ".agents/pstack/plan-page.mjs": "391d0b6928bd438060f6360dcab45533fd4b6c52e10a3c930a63ddd225c8d3ec",
-      ".agents/pstack/status.mjs": "445dfa9c2c8e2a543ee3dfa4a0f923ffa2eb9502816bce7d54b6b85efb285b22"
+      ".agents/pstack/plan-page.mjs": "b9f188cdbf096251d73246abd64ade26eda0f6c13a819e6a68ecd4e5cb3a4913",
+      ".agents/pstack/status.mjs": "5579e56a262264709116ea570abc46fbd1bc01608153cef7abe64e1132efd511"
     },
-    "source": "819d8be8f7ff73d5176d647c648210545806c189"
+    "source": "9d41499954190949a676ee003dc3b3e39eb499f6"
   },
-  "pageLead": [
-    "What other editors do",
-    "Document shape",
-    "Layer and owner",
-    "Hard cuts and app migration",
-    "Native behavior and proof"
-  ],
-  "pagePairs": [
-    "Document shape"
-  ],
   "pageTopic": {
     "field": "review_scopes",
-    "hub": "docs/research/features/{topic}.md",
-    "require": [
-      "What other editors do"
-    ]
+    "hub": "docs/research/features/{topic}.md"
   },
-  "bigWork": "a change to a package export, a `review_scopes` ledger decision (a best-api-review record or a plate-architecture target), or a plan with more than one phase"
+  "bigWork": "a change to a package export, a `review_scopes` ledger decision (a best-api-review record or an architecture plan's target), or a plan with more than one phase"
 }

@@ -37,7 +37,7 @@ product smoke; it does not authorize skipping the ordered attribution lanes.
 
 ## Embedded Architecture Probe
 
-When `best-api`, `plate-architecture`, a plan,
+When `best-api`, a plan,
 `plate-plugins` or the Refactoring playbook needs scale
 evidence before accepting a target, run the smallest decisive subset of this
 methodology inside that owner's active plan. This is a design falsification

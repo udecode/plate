@@ -31,12 +31,6 @@ const requiredGeneratedSkills = [
     sourcePath: '.agents/rules/plate-next.mdc',
   },
   {
-    generatedPath: '.agents/skills/plate-architecture/SKILL.md',
-    heading: '# Plate Architecture',
-    name: 'plate-architecture',
-    sourcePath: '.agents/rules/plate-architecture.mdc',
-  },
-  {
     generatedPath: '.agents/skills/plate-plugins/SKILL.md',
     heading: '# Plate Plugins',
     name: 'plate-plugins',

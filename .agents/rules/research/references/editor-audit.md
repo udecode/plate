@@ -19,7 +19,7 @@ selected local editor source trees
 ```
 
 `research` discovers repositories and leads, the harvesters own test and issue
-evidence, `best-api` decides call shapes and `plate-architecture` plans adoption.
+evidence, `best-api` decides call shapes and the Plan playbook plans adoption.
 
 ## Value Rule
 
@@ -337,7 +337,7 @@ Every `P0`-`P3` candidate must include:
 4. What becomes hidden, deleted, merged, or moved.
 5. Plite/Plate adoption impact and dependency ordering.
 6. Required correctness, type, property/fuzz, browser, and benchmark proof.
-7. Primary planning owner: `best-api` or `plate-architecture`.
+7. Primary planning owner: `best-api` or the Plan playbook.
 8. Dependent planning owner when the change crosses layers.
 
 Use realistic TypeScript with public imports. Do not present pseudocode as a
@@ -422,6 +422,6 @@ provenance and full verified commits are recorded, no row stays unresolved
 except evidence-backed defers, and the plan records expected, reviewed and
 excluded counts.
 
-Standalone mode returns the planning-only audit. A delegating `plate-architecture`
+Standalone mode returns the planning-only audit. A delegating Plan playbook
 run receives the evidence and packet list and continues into layer planning.
 Editor Audit never implements or opens a PR.

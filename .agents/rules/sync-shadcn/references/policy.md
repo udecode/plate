@@ -6,7 +6,8 @@ Handle $ARGUMENTS.
 Goal: compare the tracked upstream shadcn docs baseline with the current
 `../shadcn/apps/v4` target, inventory every added/modified/deleted upstream
 change, map each change to Plate's docs app, classify the merge decision, write
-a reviewable plan under `docs/sync/shadcn`, directly merge any qualifying tiny
+a reviewable plan at `docs/plans/<date>-sync-shadcn-<base7>-to-<target7>.md`, with
+its artifacts under `docs/sync/shadcn/runs/<range>/`, directly merge any qualifying tiny
 overlap fixes, then stop for user review of the remaining slices. Implementation mode requires current user authorization for the named scope.
 Existing authorization remains valid after the plan is written.
 
@@ -22,7 +23,7 @@ MCP, Plate Plus hooks, GA, and a small set of intentional forks.
 
 ## File-plan contract
 
-Keep one plan under `docs/plans/`; read it and the mode before mutation.
+Keep the plan at `docs/plans/<date>-sync-shadcn-<base7>-to-<target7>.md` with its decision log beside it, per the pstack block's Plans and trails rule; read it and the mode before mutation.
 
 `sync-shadcn` has planning and implementation modes:
 
@@ -32,8 +33,9 @@ Keep one plan under `docs/plans/`; read it and the mode before mutation.
 - Implementation mode follows the user-authorized plan and slice. Do not
   request the same acceptance twice. Explicit planning-only requests stop at
   handoff and never apply micro-overlap edits.
-- Default flow mode: one-shot execution for planning mode and one-shot
-  execution for accepted implementation mode. An already-authorized task may continue between them.
+- Accepted implementation with more than one slice runs as pstack's Autonomous
+  run. Its exit condition is every accepted slice verified and `status.json`
+  updated per Status Updates, or a `needs-question` row.
 - Use collaborative planning only when the user is explicitly deciding policy
   before a range plan is written.
 - Required evidence types: `command`, `source-audit`, `artifact`, and `N/A`
@@ -130,8 +132,7 @@ The final planning response must say:
 
 ```md
 Review the plan. I directly merged these micro-overlap fixes: <list or none>.
-To implement the remaining slices, invoke `sync-shadcn` again with the accepted
-plan path and slice.
+Say go to apply the remaining slices, or name the decisions to change.
 ```
 
 Implementation mode requires current authority for the plan/slice. Continue
@@ -177,7 +178,7 @@ only when that authority or a required product decision is still missing.
   artifact paths in the response.
 - Do not persist `.patch` files in the repo. Inspect focused diffs on demand
   with capped `git diff` commands, summarize the relevant hunks in
-  `inventory.md` or `plan.md`, and leave broad upstream patches out of
+  `inventory.md` or the plan, and leave broad upstream patches out of
   committed sync artifacts.
 
 ## Start Gates
@@ -221,9 +222,8 @@ These gates must be closed in the active plan:
   framing.
 - `lastSyncedCommit` advances only after full-row accounting, verification, and
   user acceptance.
-- Planning-mode final handoff lists any direct micro-overlap merges, asks the
-  user to review the remaining plan, and invokes `sync-shadcn` again with the
-  accepted plan path and slice for bigger work.
+- Planning-mode final handoff lists any direct micro-overlap merges and asks the
+  user to review the remaining plan; "go" runs every remaining slice.
 
 ## Durable Policy
 

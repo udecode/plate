@@ -1,15 +1,11 @@
 # {{TITLE}}
 
-This is a project-owned plan template. Copy it to `docs/plans/<date>-<slug>.md` and fill its `{{…}}` placeholders. The pstack block in `AGENTS.md` governs timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+Status: planned
+
+Copy this template to `docs/plans/<date>-<slug>.md` and fill every `{{…}}` and TODO.
 
 Objective:
 TODO: State the end-to-end Plate feature outcome in one sentence.
-
-Plan:
-{{PLAN_PATH}}
-
-Template:
-{{TEMPLATE_PATH}}
 
 Optional packs:
 
@@ -24,7 +20,7 @@ Completion threshold:
 - Every applicable Feature Manifest row is complete with evidence.
 - Every excluded row has an explicit N/A reason.
 - Selected packs, applicable Plate Next attestation, review decision, feature
-  checker, and goal checker are closed.
+  checker and `plan-open` are closed.
 
 Verification surface:
 
@@ -44,14 +40,6 @@ Boundaries:
 - Browser surface: TODO or N/A with reason.
 - Release surface: TODO: package changeset, registry changelog, both, or N/A.
 - Non-goals: TODO.
-
-Output budget strategy:
-
-- TODO: Prefer manifests, counts, and focused proof over broad output.
-
-Blocked condition:
-
-- TODO: Name the external decision or unavailable proof that stops work.
 
 Feature Manifest:
 | Surface | Applies | Owner | Artifacts | Consumer | Proof | Status |
@@ -89,12 +77,6 @@ Package boundary contract:
 | external dependency ownership | pending or N/A with reason | pending or N/A with reason |
 | entrypoint direction | pending or N/A with reason | pending or N/A with reason |
 | Oxlint coverage | pending or N/A with reason | pending or N/A with reason |
-
-Phase state:
-
-- current phase: intake
-- status: in_progress
-- next phase: API and layer gate
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -150,29 +132,6 @@ Decisions and tradeoffs:
 
 - None yet.
 
-Review fixes:
-
-- None yet.
-
-Error attempts:
-| Error / failed attempt | Count | Next different move | Resolution |
-| --- | --- | --- | --- |
-| None yet | 0 | | |
-
 Verification evidence:
 
 - Pending.
-
-Final handoff contract:
-
-- Outcome: pending
-- Evidence: pending
-- Browser proof: pending
-- Scale receipt / N/A: pending
-- Release artifacts: pending
-- Residual risk: pending
-- Next owner: pending
-
-Timeline:
-
-- pending

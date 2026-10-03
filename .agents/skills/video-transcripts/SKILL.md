@@ -1,7 +1,6 @@
 ---
 name: video-transcripts
 description: "Transcribe a supplied local or linked video with Gemini Files API when its contents are needed as evidence."
-disable-model-invocation: true
 ---
 
 # Video Transcripts

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded]
+// Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check]
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -12,7 +12,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
-import { SEATS, SEVERITIES, STATES, stateOf } from './status.mjs';
+import { SEATS, SEVERITIES, STATES, reopened, stateOf } from './status.mjs';
 
 // The owner reads the top of the page and rarely opens the details.
 const ROLES = [
@@ -27,21 +27,45 @@ const roleOf = (section, lead) =>
     ? 'lead'
     : (ROLES.find(([pattern]) => pattern.test(section.title))?.[1] ?? 'idea');
 
-function titles(config, key) {
-  const value = config[key] ?? [];
-  if (!Array.isArray(value)) {
-    throw new Error(`${key} in .agents/pstack.json must be a list of section titles`);
-  }
-  return value.map((title) => title.toLowerCase());
-}
+const listOf = (meta, key) => (meta[key] ?? '').split(',').map((entry) => entry.trim()).filter(Boolean);
 
 function pageConfig(root) {
   const path = join(root, '.agents/pstack.json');
   const config = existsSync(path) ? JSON.parse(readFileSync(path, 'utf-8')) : {};
+  const legacy = ['pageLead', 'pagePairs'].filter((key) => key in config);
+  if (config.pageTopic?.require) legacy.push('pageTopic.require');
+  if (legacy.length > 0) {
+    throw new Error(
+      `.agents/pstack.json still sets ${legacy.join(', ')}; move each list into the frontmatter of the playbook whose plans write those sections, as page-lead, page-pairs or page-require`
+    );
+  }
+  const dir = join(root, '.agents/playbooks');
+  const playbooks = existsSync(dir)
+    ? readdirSync(dir)
+        .filter((name) => name.endsWith('.md'))
+        .sort()
+        .map((name) => {
+          const { meta } = parsePlan(readFileSync(join(dir, name), 'utf-8'));
+          return {
+            name: basename(name, '.md'),
+            lead: listOf(meta, 'page-lead'),
+            pairs: listOf(meta, 'page-pairs'),
+            require: listOf(meta, 'page-require'),
+          };
+        })
+    : [];
+  return { playbooks, topic: config.pageTopic ?? {} };
+}
+
+function pageSections(playbooks, name, where) {
+  const named = name ? playbooks.find((entry) => entry.name === name) : null;
+  if (name && !named) throw new Error(`${where} names playbook ${name}, but .agents/playbooks/${name}.md does not exist`);
+  const union = (key, list) => [...new Set(list.flatMap((entry) => entry[key]))];
+  const lower = (list) => list.map((title) => title.toLowerCase());
   return {
-    lead: titles(config, 'pageLead'),
-    pairs: ['public api', ...titles(config, 'pagePairs')],
-    topic: config.pageTopic ?? {},
+    lead: lower(union('lead', named ? [named, ...playbooks.filter((entry) => entry !== named)] : playbooks)),
+    pairs: ['public api', ...lower(union('pairs', playbooks))],
+    require: named ? named.require : union('require', playbooks),
   };
 }
 
@@ -78,12 +102,12 @@ function fencePairs(lines) {
   return { pairs, unpaired };
 }
 
-function assertPairs(sections, paired) {
+function assertPairs(sections, paired, where) {
   for (const section of sections.filter((entry) => paired.includes(entry.title.toLowerCase()))) {
     const { pairs, unpaired } = fencePairs(section.lines);
     if (pairs.length === 0 || unpaired.length > 0) {
       throw new Error(
-        `${section.title} needs each before fence followed directly by its after fence, at least once; remove the section when nothing in it changes`
+        `${where}: ${section.title} needs each before fence followed directly by its after fence, at least once; remove the section when nothing in it changes`
       );
     }
   }
@@ -102,6 +126,8 @@ function assertNoPairs(sections, paired, where) {
 const DELTA = ['added', 'changed', 'removed'];
 const sameText = (text) => text.replace(/\s+/g, ' ').trim().toLowerCase();
 const sameRow = (a, b) => a.length === b.length && a.every((cell, index) => sameText(cell) === sameText(b[index]));
+const sameContent = (text) => text.replace(/\s+/g, ' ').trim();
+const sameCells = (a, b) => a.length === b.length && a.every((cell, index) => sameContent(cell) === sameContent(b[index]));
 const sectionNamed = (doc, title) =>
   doc.sections.find((section) => section.title.toLowerCase() === title.toLowerCase());
 
@@ -150,19 +176,23 @@ function rowsByKey(lines, head) {
 
 const isDelta = (head) => sameText(head[0]) === 'delta';
 
-const codeLines = (body) => body.split('\n').map(sameText).filter((line) => /[a-z0-9]/.test(line));
+const codeLines = (body) => body.split('\n').map((line) => line.trim()).filter((line) => /[A-Za-z0-9]/.test(line));
+const blockLines = (body) => body.split('\n').map((line) => line.trimEnd()).filter((line) => line.trim());
+const sameBlock = (a, b) => a.length === b.length && a.every((line, index) => line === b[index]);
+const holds = (lines, block) => block.length > 0 && lines.some((_, start) => block.every((line, offset) => lines[start + offset] === line));
+
+const deltaKeys = (source) =>
+  source.sections.flatMap((section) =>
+    tablesOf(section.lines)
+      .filter((table) => isDelta(table.head))
+      .flatMap((table) => table.rows.map((row) => `${sameText(section.title)}\n${sameText(row[1] ?? '')}`))
+  );
 
 // A later iteration may rewrite a call this plan folded, so a line another iteration's before fence holds is not checked.
 function assertFolded(plan, doc, { isChange, others, paired, where }) {
   const fail = (what) => {
     throw new Error(`${where} ${what}; fold the plan's delta into it before its Status says executed`);
   };
-  const deltaKeys = (source) =>
-    source.sections.flatMap((section) =>
-      tablesOf(section.lines)
-        .filter((table) => isDelta(table.head))
-        .flatMap((table) => table.rows.map((row) => `${sameText(section.title)}\n${sameText(row[1] ?? '')}`))
-    );
   const touched = new Set(others.flatMap(deltaKeys));
   for (const section of plan.sections.filter(isChange)) {
     const current = sectionNamed(doc, section.title);
@@ -174,28 +204,86 @@ function assertFolded(plan, doc, { isChange, others, paired, where }) {
         if (touched.has(`${sameText(section.title)}\n${key}`)) continue;
         const mark = sameText(cell);
         if (mark === 'removed' && keys.has(key)) fail(`still shows the removed row "${row[0]}" of ## ${section.title}`);
-        if (mark !== 'removed' && !sameRow(shown.get(key) ?? [], row)) fail(`does not show the ${mark} row "${row[0]}" of ## ${section.title}`);
+        if (mark !== 'removed' && !sameCells(shown.get(key) ?? [], row)) fail(`does not show the ${mark} row "${row[0]}" of ## ${section.title}`);
       }
     }
   }
   for (const section of plan.sections.filter((entry) => paired.includes(entry.title.toLowerCase()))) {
-    const linesOf = (sources, side) =>
+    const linesOf = (sources, side, read = codeLines) =>
       new Set(
         sources.flatMap((source) => {
           const match = sectionNamed(source, section.title);
-          return match ? fencePairs(match.lines).pairs.flatMap((pair) => codeLines(pair[side].body)) : [];
+          return match ? fencePairs(match.lines).pairs.flatMap((pair) => read(pair[side].body)) : [];
         })
       );
     const rewritten = linesOf(others, 'first');
     const kept = linesOf([plan, ...others], 'after');
     const current = sectionNamed(doc, section.title);
     const shown = new Set(current ? fencesOf(current.lines).flatMap((fence) => codeLines(fence.body)) : []);
+    const blocks = current ? fencesOf(current.lines).map((fence) => blockLines(fence.body)) : [];
+    const rewrittenExact = linesOf(others, 'first', blockLines);
     for (const { first, after } of fencePairs(section.lines).pairs) {
       const missing = codeLines(after.body).find((line) => !rewritten.has(line) && !shown.has(line));
       if (missing) fail(`does not show the after line "${missing.slice(0, 60)}" in ## ${section.title}`);
       const stale = codeLines(first.body).find((line) => !kept.has(line) && shown.has(line));
       if (stale) fail(`still shows the before line "${stale.slice(0, 60)}" in ## ${section.title}`);
+      const next = blockLines(after.body);
+      if (next.length > 0 && !next.some((line) => rewrittenExact.has(line)) && !blocks.some((lines) => holds(lines, next))) {
+        fail(`does not show the after block of a ## ${section.title} pair in order`);
+      }
     }
+  }
+}
+
+// Lines and rows another iteration also changes may match by coincidence, so only this plan's own delta is checked.
+function assertUnfolded(plan, doc, { name, others, paired, where }) {
+  const fail = (what, hint = '') => {
+    throw new Error(
+      `${where} ${what} from ${name}, which is still open. Keep the subject at its state before the plan until execution ends${hint}, or start the plan's Status with "reopened" when it reopened after its fold`
+    );
+  };
+  const touched = new Set(others.flatMap(deltaKeys));
+  for (const section of plan.sections) {
+    const current = sectionNamed(doc, section.title)?.lines ?? [];
+    const keys = new Set(tablesOf(current).flatMap((table) => table.rows.map((row) => sameText(row[0] ?? ''))));
+    for (const table of tablesOf(section.lines).filter((entry) => isDelta(entry.head))) {
+      const shown = rowsByKey(current, table.head.slice(1));
+      for (const [cell, ...row] of table.rows) {
+        const key = sameText(row[0] ?? '');
+        const mark = sameText(cell);
+        if (!DELTA.includes(mark) || touched.has(`${sameText(section.title)}\n${key}`)) continue;
+        if (mark === 'removed' && !keys.has(key)) fail(`has no row "${row[0]}" in ## ${section.title} for the removed row`, '; when the key is mistyped, fix it');
+        if (mark !== 'removed' && shown.has(key) && sameCells(shown.get(key), row)) fail(`already shows the ${mark} row "${row[0]}" of ## ${section.title}`);
+      }
+    }
+  }
+  for (const section of plan.sections.filter((entry) => paired.includes(entry.title.toLowerCase()))) {
+    const fences = (source) => fencesOf(sectionNamed(source, section.title)?.lines ?? []).map((fence) => blockLines(fence.body));
+    const shown = fences(doc);
+    const held = new Set(others.flatMap(fences).flat());
+    for (const { first, after } of fencePairs(section.lines).pairs) {
+      const before = blockLines(first.body);
+      const next = blockLines(after.body);
+      // A deleted call proves nothing: the subject may never have listed it.
+      if (next.length === 0 || sameBlock(before, next)) continue;
+      const changed = [...next.filter((line) => !before.includes(line)), ...before.filter((line) => !next.includes(line))];
+      if (changed.length > 0 && changed.every((line) => held.has(line))) continue;
+      const beforeShown = before.length > 0 && !holds(next, before) && shown.some((lines) => holds(lines, before));
+      if (shown.some((lines) => holds(lines, next)) && !beforeShown) {
+        fail(`already shows the after side of a ## ${section.title} pair`, '; when the before call is a current call site the subject does not list, add it to the subject');
+      }
+    }
+  }
+}
+
+const DEFAULTS_HEAD = ['decision', 'pick', 'alternative', 'word'];
+const headCell = (cell) => sameText(cell.replace(/[*_`]/g, ''));
+
+function assertDefaults(plan, where) {
+  const section = sectionNamed(plan, 'Defaults');
+  if (!section?.lines.some((line) => line.trim())) return;
+  if (!tablesOf(section.lines).some((table) => DEFAULTS_HEAD.every((cell, index) => headCell(table.head[index] ?? '') === cell))) {
+    throw new Error(`## Defaults in ${where} needs a table whose columns start with Decision, Pick, Alternative and Word, one row per call made for the owner`);
   }
 }
 
@@ -326,18 +414,34 @@ function splitRow(row) {
 const tds = (row) => row.map((cell) => `<td>${inline(cell)}</td>`).join('');
 const markedRow = (mark, row) => `<tr class="${mark}"><td><span class="mark ${mark}">${mark}</span></td>${tds(row)}</tr>`;
 
-function deltaRowHtml([cell, ...row], prior, marks) {
+function deltaRow([cell, ...row], prior, marks) {
   const mark = sameText(cell);
+  const of = marks.name ? ` of ${marks.name}` : '';
   if (!DELTA.includes(mark)) {
-    throw new Error(`A Delta cell in ## ${marks.title} is added, changed or removed, not "${cell}"`);
+    throw new Error(`A Delta cell in ## ${marks.title}${of} is added, changed or removed, not "${cell}"`);
   }
   const old = prior.get(sameText(row[0] ?? ''));
-  const folded = old ? sameRow(old, row) : mark === 'removed';
+  const folded = old ? sameCells(old, row) : mark === 'removed';
   if (!folded && (mark === 'added') === Boolean(old)) {
     throw new Error(
-      `## ${marks.title} marks "${row[0]}" ${mark}, but ${marks.where} ${old ? 'already has that row' : 'has no such row'}`
+      `## ${marks.title}${of} marks "${row[0]}" ${mark}, but ${marks.where} ${old ? 'already has that row' : 'has no such row'}`
     );
   }
+  return { mark, old, folded, row };
+}
+
+function assertDelta(plan, doc, { name, where }) {
+  for (const section of plan.sections) {
+    const current = sectionNamed(doc, section.title)?.lines ?? [];
+    for (const table of tablesOf(section.lines).filter((entry) => isDelta(entry.head))) {
+      const prior = rowsByKey(current, table.head.slice(1));
+      for (const row of table.rows) deltaRow(row, prior, { name, title: section.title, where });
+    }
+  }
+}
+
+function deltaRowHtml(cells, prior, marks) {
+  const { mark, old, folded, row } = deltaRow(cells, prior, marks);
   if (mark === 'removed') return markedRow(mark, old ?? row);
   return markedRow(mark, row) + (old && !folded ? markedRow('was', old) : '');
 }
@@ -555,7 +659,7 @@ function parsePlan(source) {
   const lead = [];
   const sections = [];
   for (const line of lines) {
-    const field = line.match(/^(Status|Page|Topic):\s*(.*)$/);
+    const field = line.match(/^(Status|Page|Topic|Playbook):\s*(.*)$/);
     if (field && sections.length === 0) {
       meta[field[1].toLowerCase()] = field[2].trim();
       fields[field[1].toLowerCase()] = field[2].trim();
@@ -616,7 +720,7 @@ function page(planPath, { folded = false } = {}) {
   }).trim();
   const repoPath = relative(root, planPath);
   const status = plan.meta.status ?? 'unknown';
-  const { lead, pairs, topic } = pageConfig(root);
+  const { playbooks, topic } = pageConfig(root);
   const plansDir = dirname(planPath);
   let subject = subjectOf(plan, topic);
   const missing = subject && !existsSync(join(plansDir, 'topics', `${subject}.md`));
@@ -643,11 +747,23 @@ function page(planPath, { folded = false } = {}) {
   const pageEntry = doc === plan ? null : (focusEntry ?? iterations[0]);
   const focus = focusEntry?.plan;
   const delta = Boolean(focusEntry);
+  const leader = pageEntry ?? { path: planPath, plan };
+  const leaderPlaybook = leader.plan.meta.playbook;
+  // An executed plan stays as written, so a playbook renamed since then falls back to every playbook's sections.
+  const known = !leaderPlaybook || !finished(leader.plan.meta.status ?? '') || playbooks.some((entry) => entry.name === leaderPlaybook);
+  const { lead, pairs, require } = pageSections(playbooks, known ? leaderPlaybook : null, relative(root, leader.path));
   const isChange = (section) => {
     const role = roleOf(section, lead);
     return ['api', 'lead', 'main'].includes(role) || (role === 'idea' && Boolean(sectionNamed(doc, section.title)));
   };
-  assertPairs(plan.sections, pairs);
+  // Open iterations meet their own rules whichever plan is passed; executed ones stay as written.
+  for (const entry of doc === plan ? [{ path: planPath, plan }] : iterations.filter(isOpen)) {
+    const where = relative(root, entry.path);
+    pageSections(playbooks, entry.plan.meta.playbook, where);
+    assertPairs(entry.plan.sections, pairs, where);
+    if (!finished(entry.plan.meta.status ?? '')) assertDefaults(entry.plan, where);
+    if (doc !== plan && isOpen(entry)) assertDelta(entry.plan, doc, { name: where, where: subjectWhere });
+  }
   if (folded && doc === plan) throw new Error(`${repoPath} has no subject file to fold into`);
   if (doc !== plan) {
     assertNoPairs(doc.sections, pairs, subjectWhere);
@@ -655,6 +771,11 @@ function page(planPath, { folded = false } = {}) {
     if (folded) {
       const others = iterations.filter((entry) => entry.path !== planPath).map((entry) => entry.plan);
       assertFolded(plan, doc, { isChange, others, paired: pairs, where: subjectWhere });
+    }
+    for (const entry of iterations.filter(isOpen)) {
+      if ((folded && entry.path === planPath) || reopened(entry.plan.meta.status ?? '')) continue;
+      const others = iterations.filter((other) => other !== entry).map((other) => other.plan);
+      assertUnfolded(entry.plan, doc, { name: relative(root, entry.path), others, paired: pairs, where: subjectWhere });
     }
   }
   const hasContent = (section) => section?.lines.some((line) => line.trim());
@@ -718,9 +839,9 @@ function page(planPath, { folded = false } = {}) {
   const hubPath = subject && topic.hub ? topic.hub.replaceAll('{topic}', subject) : null;
   const hub = hubPath && existsSync(join(root, hubPath)) ? hubPath : null;
   if (hub) {
-    for (const required of titles(topic, 'require')) {
-      if (!doc.sections.some((section) => section.title.toLowerCase() === required && hasContent(section))) {
-        throw new Error(`${subject} needs ## ${topic.require.find((title) => title.toLowerCase() === required)} in ${relative(root, subjectPath)}, because it is a ledger scope`);
+    for (const required of require) {
+      if (![doc, focus].some((source) => source && hasContent(sectionNamed(source, required)))) {
+        throw new Error(`${subject} needs ## ${required} in ${relative(root, subjectPath)} or its open plan, because its hub exists and the leading plan's playbook requires it`);
       }
     }
   }
@@ -952,8 +1073,8 @@ document.querySelectorAll('.diff code').forEach((element) => window.hljs?.highli
 const args = process.argv.slice(2);
 const target = args.find((arg) => !arg.startsWith('--'));
 const planPath = target && resolve(target);
-if (!planPath || !existsSync(planPath) || args.some((arg) => arg.startsWith('--') && arg !== '--folded')) {
-  console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded]');
+if (!planPath || !existsSync(planPath) || args.some((arg) => arg.startsWith('--') && !['--folded', '--check'].includes(arg))) {
+  console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check]');
   process.exit(2);
 }
 let rendered;
@@ -963,6 +1084,7 @@ try {
   console.error(error.message);
   process.exit(1);
 }
+if (args.includes('--check')) process.exit(0);
 const out = join(dirname(planPath), 'artifacts', `${rendered.name}.html`);
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, rendered.html);

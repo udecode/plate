@@ -56,7 +56,9 @@ accepted contract picks one, ask before writing the product test or fix.
 For flaky, native, lifecycle, compositor, focus, selection, drag-and-drop or
 device risk, run the final proof five times, warm and without retries. One
 failure keeps the case open. Each run executes the proof command; a cached
-result does not count.
+result does not count. Run the five repeats once, after every step that can
+still change code, such as writing passes and review fixes; while a review or
+its fixes are pending, run a one-repeat smoke of the changed path instead.
 
 Report local verification separately from publication. Accepted implementation
 review and current-checkout proof with known serving-source identity can close
@@ -332,7 +334,10 @@ collaboration comparison. Potion proves reference behavior, never a local fix.
 Keep command logs, source/build fingerprints, actual route, host identity,
 input/action, observed result, runtime errors and relevant screenshots under
 `docs/plans/artifacts/<task-slug>/`. Use temporary output locations only when
-the final evidence is copied there before cleanup. Preserve originals locally;
+the final evidence is copied there before cleanup. Treat a runner's output
+directory and the reports it overwrites, such as Playwright's `test-results`,
+as temporary, and copy a failure's artifacts to the artifact tree when a log
+row or plan first cites them, before the next run of that config. Preserve originals locally;
 this artifact tree is Git-ignored. Keep concise conclusions and required proof
 summaries in the versioned plan or analysis document. Reusable runners, required
 fixtures and pinned benchmark inputs belong with their source or test owner,

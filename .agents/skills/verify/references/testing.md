@@ -96,7 +96,13 @@ For an escaped defect, identify what the test could miss before adding cases:
 wrong input path, missing consumer/plugin mode, unobserved follow-up state, or
 an assertion that can pass on invalid output. Extend the existing helper when
 that omission recurs. Prove a changed assertion rejects the known bad result
-and accepts the valid one. A fake runtime cannot certify native browser behavior.
+and accepts the valid one, on the bytes the runner executes: raw
+`playwright test` runs the built `@platejs/test`, so drive the red run through
+`pnpm --filter plite test:plite-browser:project <project> <files>` or rebuild
+that package after each source swap. Before a new or changed oracle's positive suite runs, list
+each way a wrong result can look right, such as a throw after the logged step,
+a canceled insert or a selection-only commit, and add one rejecting case for
+each. A fake runtime cannot certify native browser behavior.
 
 ## File Organization
 

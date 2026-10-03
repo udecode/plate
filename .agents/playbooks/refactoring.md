@@ -5,7 +5,7 @@ when: Use it to audit or simplify Plate or Plite code ownership, such as "clean 
 
 # Refactoring
 
-Find, rank and, when safe, clean source-backed architecture sludge so the codebase is easier for humans and agents to understand: delete, merge, inline, simplify, or split only when the split earns its keep. The Routing table in `AGENTS.md` sends public call shapes to `best-api`, adoption to `plate-architecture`, performance to `benchmark`, bugs to the Bug fix playbook and closure to the Babysit playbook. A cleanup that removes behavior is a hard cut: it runs through the Build playbook per `plate-architecture`'s Hard cut.
+Find, rank and, when safe, clean source-backed architecture sludge so the codebase is easier for humans and agents to understand: delete, merge, inline, simplify, or split only when the split earns its keep. The Routing table in `AGENTS.md` sends public call shapes to `best-api`, adoption to the Plan playbook, performance to `benchmark`, bugs to the Bug fix playbook and closure to the Babysit playbook. A cleanup that removes behavior is a hard cut: it runs through the Build playbook per the architecture reference's Hard cut (`.agents/playbooks/references/architecture.md`).
 
 - **Before** "Pin the behavior contract first": set the authority. Audit (`audit`, review, explain, plan, or a read-only delegation) inspects, ranks and routes candidates and writes only plan and evidence artifacts. Implement (implement, execute, change, fix, cleanup) applies only packets that pass the packet law. A loop or a timebox controls repetition and never grants mutation authority. A delegating supervisor keeps its plan and scope; return findings to it.
 - **Replace** "Pin the behavior contract first": run the **how** skill over the affected subsystem to learn the contract. Pin behavior only where no existing test or type covers it, per `AGENTS.md`'s Tests rule, with one public-boundary test or an equivalence check that runs before any structure moves. No snapshots.
@@ -25,7 +25,7 @@ Inspect at least five candidate areas unless the prompt names a smaller surface.
 1. **Deletion:** deleting it makes complexity disappear (shallow) or spreads it across callers (earning its keep).
 2. **Navigation:** the files, owners and proof commands an agent touches to understand or fix one behavior.
 3. **Interface depth:** callers learn less while behavior and proof become more local.
-4. **VISION fit:** a cleanup outside `VISION.md`, or missing reusable taste, routes to `sync-vision`; an unresolved call shape routes to `best-api`.
+4. **VISION fit:** a cleanup outside `VISION.md`, or missing reusable taste, first records that taste in the smallest Vision owner; an unresolved call shape routes to `best-api`.
 
 A candidate whose owner runs per node, plugin, subscriber, listener, render, query or DOM unit gets Benchmark's embedded probe with the performance pack before ranking; a behavior-neutral label does not prove scale neutrality.
 

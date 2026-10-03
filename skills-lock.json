@@ -1,16 +1,11 @@
 {
   "version": 1,
   "skills": {
-    "autoreview": {
-      "source": "openclaw/agent-skills",
+    "plan-page": {
+      "source": "udecode/dotai",
       "sourceType": "github",
-      "skillPath": "skills/autoreview/SKILL.md",
-      "computedHash": "7b3f1ec6848b850a7cc9288cc0a43c58448bc5dae1cc76ed4f7873df7c03e2dd"
-    },
-    "optimise-github-actions": {
-      "source": "enesgules/dotfiles",
-      "sourceType": "github",
-      "computedHash": "30b1cdadc54922883984c5dfbd8ca343d800928cffddde67e251870424cdbb24"
+      "skillPath": "skills/plan-page/SKILL.md",
+      "computedHash": "58390e9c795fcb2f92c67cc6015954b1aa727875a8fe47763c5ee9a50f83474f"
     },
     "shadcn": {
       "source": "shadcn/ui",
@@ -28,16 +23,6 @@
       "skillPath": "skills/test-audit/SKILL.md",
       "computedHash": "07e5177ef0268811cb63439a9a654152f15b00ad66f1a8a663611ad9e0a4cea6"
     },
-    "typescript-advanced-types": {
-      "source": "wshobson/agents",
-      "sourceType": "github",
-      "computedHash": "8cbf2bf600f392d7260e476e3202932a876e2281cda3b15a8b6a5a43f383252d"
-    },
-    "vercel-composition-patterns": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "computedHash": "f98931159fa9c7fed043bcd18a891a46dcf89ababa38df13a4c5b7b30dc0ce07"
-    },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
@@ -46,7 +31,7 @@
     "video-transcripts": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "0081070a3658151f4421cf5ef3bfa459f755df36b0c374b03371c1627dca58b4"
+      "computedHash": "a601063e0c3eae8bb5c862feb25e86eca2180ef3499de5914afb38b8e3c19bd8"
     },
     "walkthrough": {
       "source": "../dotai",

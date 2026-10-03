@@ -50,7 +50,7 @@ Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
     If a concrete root-pollution field is in the active package/file scope, do
     not merely score or mention it. Fix it in the owner before closeout, or stop
     with a named Plite/Plate gap and deletion path.
-- The rules this section shares with `best-api` and `plate-architecture` are stated in `best-api.mdc`, `best-api/rules/authoring-and-inference.md`, `best-api/rules/behavior-and-ownership.md`, and `best-api/rules/schema-and-identity.md`; apply them from there.
+- The rules this section shares with `best-api` are stated in `best-api.mdc`, `best-api/rules/authoring-and-inference.md`, `best-api/rules/behavior-and-ownership.md`, and `best-api/rules/schema-and-identity.md`; apply them from there.
 - When a generic caller legitimately accepts an optional descriptor, use
   `const foo = editor.plugin(FooPlugin)` and check `foo.installed` before any
   other portal access. Disabled plugins count as absent. Do not cast or probe
@@ -337,7 +337,7 @@ editor.read.selection.nodes()` is a regression: it
 - When colocation makes a helper obsolete, delete its file and barrel export.
   Do not preserve a helper export, forwarding wrapper, alias, or old filename
   for compatibility. Route a genuine public API fork through `best-api`, then
-  `plate-architecture` for adoption/proof when needed; compatibility is not the default
+  the Plan playbook for adoption and proof when needed; compatibility is not the default
   answer.
 - Never replace an old helper body with a wrapper like
   `editor.plugin(FooPlugin).editor.update((tx) => tx.foo.bar(...))`. If the

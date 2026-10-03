@@ -130,7 +130,7 @@ Plate Next means:
 - Plate owns product composition: plugins, UI, app/registry kits, product
   command ergonomics, docs/examples, and app-facing defaults.
 - Plate foundation must not wrap Plite editor APIs under Plate names.
-- The rules this section shares with `best-api` and `plate-architecture` are stated in `best-api.mdc`, `best-api/rules/authoring-and-inference.md`, `best-api/rules/schema-and-identity.md`, and `plate-architecture.mdc`; apply them from there.
+- The rules this section shares with `best-api` and the architecture reference are stated in `best-api.mdc`, `best-api/rules/authoring-and-inference.md`, `best-api/rules/schema-and-identity.md`, and `.agents/playbooks/references/architecture.md`; apply them from there.
 - Normalized schema/compiler/provider witnesses are private implementation
   machinery. If removing a public carrier breaks inference, fix the private
   descriptor compiler rather than restoring the carrier.

@@ -142,7 +142,7 @@ Work Checklist:
 - [ ] Every proven cause records its fix class, best long-term target, decision
       owner, layer plan, compatibility verdict, and implementation owner.
 - [ ] `public-api` and `runtime-architecture` causes run `best-api`, then
-      `plate-architecture` before implementation. Broad accepted
+      the Plan playbook before implementation. Broad accepted
       execution may use pstack's Autonomous run playbook; target selection may not.
 - [ ] One isolated owner is fixed, then the exact benchmark and correctness
       guard rerun before breadth resumes.

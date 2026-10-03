@@ -14103,6 +14103,22 @@
     {
       "path": "docs/research/review-records/2026-10-02-proof-release-trust.json",
       "sha256": "f7e0e2dc8fccb6dbe73f18f96dbdf37314240c5763e7dfa5f391b2570e83b047"
+    },
+    {
+      "path": "docs/research/review-records/2026-10-03-proof-device-lane-execution.json",
+      "sha256": "ff82fae3f7547239d6c9c34b9d3e9ed9c08b6c2bda4215401519ea6ed7b08499"
+    },
+    {
+      "path": "docs/research/review-records/2026-10-03-markdown-table-cell-blocks.json",
+      "sha256": "faca32d82e844185687e9ce9c4bf0eb07de28f92a2a3467914592b8494b43fd3"
+    },
+    {
+      "path": "docs/research/review-records/2026-10-03-markdown-table-cell-blocks-again.json",
+      "sha256": "c62522b935cf43e0bd8caa19daa03d27f9226f579ac41596acce1395e680860b"
+    },
+    {
+      "path": "docs/research/review-records/2026-10-03-markdown-table-cell-blocks-constraints.json",
+      "sha256": "10e8da9bcaf328dbfcf1b4702228416f9a6a696c9b70bbb25b0768b5f510801c"
     }
   ],
   "reviewGroups": [

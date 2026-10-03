@@ -27,7 +27,7 @@ Benchmark's run lifecycle. `benchmark` holds the knowledge: the lanes and their 
 ## Intake
 
 1. Correctness-only work with no timing claim goes to the Bug fix playbook. Routine DX and CI verification runs the affected correctness owners and skips this playbook.
-2. A public API or runtime boundary that must be chosen before measurement can be fair goes to `best-api`, then the Plan playbook with `plate-architecture`.
+2. A public API or runtime boundary that must be chosen before measurement can be fair goes to `best-api`, then the Plan playbook.
 3. Plite Autoresearch status, gates, quality gaps or packet mechanics go to `benchmark`'s Autoresearch reference.
 4. Read-only explanation of existing artifacts needs no plan; load `benchmark`, answer and stop.
 5. Otherwise load `benchmark` and read its methodology in full before the plan, any measurement or any runtime change.
@@ -61,7 +61,7 @@ Resolve it while later lanes stay paused, before any product code changes:
 1. Classify the fix as `internal-implementation`, `correctness`, `public-api` or `runtime-architecture`.
 2. Record the best long-term target independently of compatibility, migration convenience, compiler difficulty, current machinery or implementation cost. A cheaper patch does not win by being cheaper.
 3. `internal-implementation` stays in this run with `decision-owner: benchmark`. `correctness` goes to the Bug fix playbook with `decision-owner: bug-fix`, and the run reruns once it returns. Both record `layer-plan` and `compatibility-verdict` as `N/A: <reason>`.
-4. `public-api` and `runtime-architecture` run `best-api` from the ideal target with `decision-owner: best-api`, then the Plan playbook with `plate-architecture` for adoption, and record `layer-plan` as `plite-plan`, `plate-plan` or both. A bounded package owner may implement directly; broad cross-owner execution may run as pstack's Autonomous run, which never selects the target.
+4. `public-api` and `runtime-architecture` run `best-api` from the ideal target with `decision-owner: best-api`, then the Plan playbook for adoption, and record `layer-plan` as `plite-plan`, `plate-plan` or both. A bounded package owner may implement directly; broad cross-owner execution may run as pstack's Autonomous run, which never selects the target.
 5. Before stability, default to `hard-cut: <material lasting value>` when the best target breaks current API or architecture. Preserve compatibility only as `preserve: <hard law> - <reason>`, where the hard law is correctness, security, serialized-data, native-behavior or runtime. Old callers, migration effort, deadlines and compiler limits are not hard laws.
 6. Record one concrete implementation owner as `fix-owner`. Best API and the layer plan choose the target and adoption; they never replace that owner, and whoever implements never downgrades the accepted target to a compatible local patch.
 7. Code-shape cleanup with no measured owner goes to the Refactoring playbook and returns to the same lane.

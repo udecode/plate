@@ -44,7 +44,7 @@ Purpose:
 
 - compare the tracked upstream range, but inventory and classify only changes
   that affect the named scope
-- write a reviewable scope-specific plan under `docs/sync/shadcn`
+- write a reviewable scope-specific plan in `docs/plans/`, with its artifacts in a scope-named run directory
 - avoid the default full-range lane unless the user invokes `sync-shadcn`
   without a command or scope
 
@@ -164,7 +164,7 @@ git -C ../shadcn ls-files apps/v4 > "$RUN_DIR/upstream-files.txt"
 
 Do not stream huge diffs into chat and do not write `.patch` files. Inspect
 focused diffs on demand with capped commands, then summarize only the relevant
-hunks in `inventory.md` or `plan.md`:
+hunks in `inventory.md` or the plan:
 
 ```bash
 git -C ../shadcn diff --stat "$BASE..$TARGET" -- apps/v4/app apps/v4/components apps/v4/lib
@@ -267,13 +267,16 @@ Classify each row with one decision:
 Write a Markdown plan:
 
 ```bash
-PLAN="docs/sync/shadcn/runs/$(date +%Y-%m-%d)-${BASE:0:7}-to-${TARGET:0:7}/plan.md"
+PLAN="docs/plans/$(date +%Y-%m-%d)-sync-shadcn-${BASE:0:7}-to-${TARGET:0:7}.md"
+RUN="docs/sync/shadcn/runs/$(date +%Y-%m-%d)-${BASE:0:7}-to-${TARGET:0:7}"
 ```
 
 The plan must include these sections:
 
 ```md
 # Sync Shadcn <base-short>..<target-short>
+
+Status: planned
 
 ## Range
 
@@ -355,7 +358,7 @@ not, identify the remaining groups.
 ```
 
 If the inventory is very large, the plan still needs every row. Put the full row
-table in `inventory.md` in the same run directory and link it from `plan.md`.
+table in `$RUN/inventory.md` and link it from the plan.
 
 ## 5. Stop For User Review
 
@@ -379,9 +382,8 @@ Micro auto-merges:
 
 Recommended first slice: <slice>
 
-Question: Review the plan. Should any decision change before implementation?
-To implement it, invoke `sync-shadcn` again with the accepted plan path and
-slice.
+Question: Review the plan. Say go to apply the recommended slices, or name the
+decisions to change.
 ```
 
 Ask one pointed question when there are `needs-question` rows. Do not ask about
@@ -401,7 +403,7 @@ Implement this shadcn docs sync slice.
 
 Upstream: shadcn-ui/ui `../shadcn/apps/v4`
 Range: <base-sha>..<target-sha>
-Plan: <docs/sync/shadcn/runs/.../plan.md>
+Plan: <docs/plans/<date>-sync-shadcn-...md>
 Slice: <one-sentence selected slice>
 Class: <adopt-upstream | smart-merge | plate-fork cleanup | delete-plate-residue>
 
@@ -464,7 +466,7 @@ When advancing the baseline, include:
 {
   "lastSyncedCommit": "<target-sha>",
   "lastSyncedAt": "YYYY-MM-DD",
-  "lastSyncPlan": "docs/sync/shadcn/runs/.../plan.md",
+  "lastSyncPlan": "docs/plans/<date>-sync-shadcn-<range>.md",
   "lastVerification": ["<commands or proof>"]
 }
 ```

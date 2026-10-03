@@ -481,7 +481,7 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
 - Reject packets that improve metrics but weaken selection, typing, copy,
   paste, IME, focus, undo, follow-up input, native find, or scroll/caret
   behavior.
-- Escalate to `plate-architecture` when the next useful win is API/runtime boundary.
+- Escalate to the Plan playbook when the next useful win is API/runtime boundary.
 - Each mounted `Editable` owns one bounded DOM phase scheduler. Queued root
   work runs in `model -> DOM read -> DOM/React write -> selection/repair ->
 post-selection navigation` order, coalesces by semantic key, and reports
@@ -537,7 +537,7 @@ post-selection navigation` order, coalesces by semantic key, and reports
   research ledgers, and promotion into owners.
 - `research audit`: exhaustive comparison of selected local editor source trees,
   verified commit tracking, incremental sync, and material change dossiers
-  routed to `best-api` or `plate-architecture`.
+  routed to `best-api` or the Plan playbook.
 - `maintainer slate-issue`: one public Slate issue coordinated through a local
   Plite repair, Plate PR targeting `next`, verified issue update, and honest
   integration/release state.
@@ -548,9 +548,9 @@ post-selection navigation` order, coalesces by semantic key, and reports
   follows the pstack block's Review rule in `AGENTS.md`.
 - `best-api`: concrete public API design, review, and P0/P1/P2/P3 debt
   ranking.
-- `plate-architecture`: Plate and Plite architecture, adoption/proof planning, and
-  accepted plan execution after the target API is clear, with separate layer
-  sections.
+- the Plan playbook (`.agents/playbooks/plan.md`) with its architecture reference:
+  Plate and Plite architecture and adoption planning after the target API is
+  clear, with separate layer sections; the Build playbook executes it.
 - `plate-next`: migration closure and stale API audits.
 - `pstack:tdd`: missing oracle/test design when the proof itself does not exist.
 

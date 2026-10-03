@@ -73,7 +73,7 @@ pagination work; change pagination only on an explicit pagination request.
 | benchmark targets/runners | executable workloads, metric output, correctness commands, and durable result artifacts |
 | `benchmark review` | cohorts, repeated-unit budgets, interaction percentiles, degradation/native-behavior review, and RUM/trace expectations |
 | pstack's Bug fix playbook | missing or failing correctness oracle and behavior repair, not timing diagnosis |
-| `best-api` plus `plate-architecture` | best long-term public API or runtime architecture required by a proven hot owner, including breaking/adoption decisions |
+| `best-api` plus the Plan playbook | best long-term public API or runtime architecture required by a proven hot owner, including breaking/adoption decisions |
 | `codex-autoresearch` | optional packet/log/dashboard machinery after Benchmark selects one metric and correctness guard |
 | pstack Autonomous run | broader quality supervision and ergonomic routing into Benchmark |
 

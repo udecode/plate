@@ -13,7 +13,7 @@ Research is a resumable evidence system, not chat browsing:
 pick -> question -> registry -> queries -> leads -> read log -> score -> promote
 ```
 
-It discovers and synthesizes. It does not run measured packets (`benchmark`), close an issue corpus row by row (`issue-harvester`, which also owns issue-by-issue closure after `harvest --issues`) or patch product code. `best-api` decides call shapes and `plate-architecture` plans adoption. Discovery never escalates into `audit` or `harvest` on its own.
+It discovers and synthesizes. It does not run measured packets (`benchmark`), close an issue corpus row by row (`issue-harvester`, which also owns issue-by-issue closure after `harvest --issues`) or patch product code. `best-api` decides call shapes and the Plan playbook plans adoption. Discovery never escalates into `audit` or `harvest` on its own.
 
 ## Modes
 
@@ -87,7 +87,7 @@ A lead becomes exactly one of:
 
 - `test-packet`: a native unit, Playwright or Browser oracle with its verification command;
 - `benchmark-packet`: a metric or harness repair with a target and before/after command;
-- `plan-packet`: a `best-api` verdict on the call shape, plus an `plate-architecture` row when runtime or adoption ownership is unclear;
+- `plan-packet`: a `best-api` verdict on the call shape, plus a decision-ledger row (`.agents/playbooks/references/architecture.md`) when runtime or adoption ownership is unclear;
 - `docs-packet`: an accepted research note or current-state decision;
 - `no-code-decision`: rejected or quarantined with its reason and reopen condition.
 

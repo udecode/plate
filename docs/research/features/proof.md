@@ -10,17 +10,15 @@ Question: Which reusable proof APIs establish package, browser and raw-device be
 
 [2026-10-02-proof-release-trust](../review-records/2026-10-02-proof-release-trust.json) — **defer**. Defer the receipt schema change and keep the raw-mobile gate as it is: device-lane evidence stays verify-scoped. When a release must claim Android soft-keyboard behavior, the gate trusts a lane receipt only by re-deriving it: it re-runs judgeDeviceWitness over the raw traces, recomputes every artifact digest, matches the source commit and served build fingerprint, and requires the guard log. A maintainer signature may add provenance but never replaces re-derivation, because any agent on the same machine holds the same key. The change waits for a release that needs raw Android proof or for the iOS probe to run, since the gate pairs both platforms.
 
-Compiled decision: not associated. Source observation: matching. Source matching is not behavior proof.
+Compiled decision: not associated. Source observation: stale. Source matching is not behavior proof.
 
-Execution: **partial**. Proof: **partial**. The #5137 macOS lane never selected Pinyin - Simplified, so neither its helper typing nor its gated spec ran. iOS is quarantined: Xcode 26.6 needs the iOS 26.5 platform. A production platejs/react import still carries the handle, and no check guards the plitejs/react production bundle. The DOM-only production control and two benchmark drivers did not run. Device proof covers one emulator and Gboard 17.0.14; physical phones and other keyboards are unproven. The Apple converted spaces paste test was attributed under the old transport in this tree, not at HEAD. Deferred panel items: canceled-beforeinput pairing, restored-tab cleanup, a typed last-commit read and rebuilding the recorder on the lane.
-
-Outcome: [2026-10-02-proof-device-lane-execution](../review-records/2026-10-02-proof-device-lane-execution.json). Governing reviews: [2026-10-02-proof-agentic-e2e-review](../review-records/2026-10-02-proof-agentic-e2e-review.json). Work kind: implementation. Reconciled with current review: yes.
+Execution: **decision-changed**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [verify.mdc](../../../.agents/rules/verify.mdc). Changed directories: none identified. Changed source groups: none identified.
 
 - **missing-current-decision**: 2026-10-02-proof-release-trust.
 
@@ -29,6 +27,10 @@ Changed files: none identified. Changed directories: none identified. Changed so
 - **unbound-plan**: [2026-09-18-feature-history.md](../../plans/2026-09-18-feature-history.md).
 
 - **unreconciled-execution**: [2026-09-18-feature-history-workflow-execution](../review-records/2026-09-18-feature-history-workflow-execution.json).
+
+- **stale-execution-proof**: [2026-10-02-proof-device-lane-execution](../review-records/2026-10-02-proof-device-lane-execution.json).
+
+- **decision-changed**: [2026-10-03-proof-device-lane-execution](../review-records/2026-10-03-proof-device-lane-execution.json).
 
 ## Plans and execution
 
@@ -44,7 +46,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
+- [2026-10-03-proof-device-lane-execution](../review-records/2026-10-03-proof-device-lane-execution.json): partial; binding **current**; Built the plan's local proof lanes with no GitHub Actions minutes. Harness pastes go through one per-project clipboardTransport and fail unless a newer paste-tagged commit changes the document; the browser handle and kernel-trace retention attach only after installBrowserHandle() from plitejs/react, re-exported by platejs/react. A private Android lane in packages/test/src/device types with real Gboard touches over adb behind a guarded DevTools relay, gates each case on a structural witness, records known product failures by their observed values, and leaves the device as found. A macOS lane for #5137 is built but has not run. Two rounds of a three-seat panel and two decision-trail reviews were applied. Proof: matching / partial. The #5137 macOS lane never selected Pinyin - Simplified, so neither its helper typing nor its gated spec ran. iOS is quarantined: Xcode 26.6 needs the iOS 26.5 platform. A production platejs/react import still carries the handle, and no check guards the plitejs/react production bundle. The DOM-only production control and two benchmark drivers did not run. Device proof covers one emulator and Gboard 17.0.14; physical phones and other keyboards are unproven. The Apple converted spaces paste test was attributed under the old transport in this tree, not at HEAD. Deferred panel items: canceled-beforeinput pairing, restored-tab cleanup, a typed last-commit read and rebuilding the recorder on the lane.
 
 ## Inspected documents
 
@@ -91,7 +93,7 @@ References: [README.md](../../plite/research/2026-10-02-agentic-e2e-testing/READ
 
 ### 2026-10-02: 2026-10-02-proof-device-lane-execution
 
-[Immutable record](../review-records/2026-10-02-proof-device-lane-execution.json) — execution; partial; observation matching.
+[Immutable record](../review-records/2026-10-02-proof-device-lane-execution.json) — execution; partial; observation stale.
 
 Built the plan's local proof lanes with no GitHub Actions minutes. Harness pastes go through one per-project clipboardTransport and fail unless a newer paste-tagged commit changes the document; the browser handle and kernel-trace retention attach only after installBrowserHandle() from plitejs/react, re-exported by platejs/react. A private Android lane in packages/test/src/device types with real Gboard touches over adb behind a guarded DevTools relay, gates each case on a structural witness, records known product failures by their observed values, and leaves the device as found. A macOS lane for #5137 is built but has not run. Two rounds of a three-seat panel and two decision-trail reviews were applied.
 
@@ -102,7 +104,7 @@ References: [2026-10-02-proof-device-lane.md](../../plans/2026-10-02-proof-devic
 
 ### 2026-10-02: 2026-10-02-proof-release-trust
 
-[Immutable record](../review-records/2026-10-02-proof-release-trust.json) — review; defer; observation matching.
+[Immutable record](../review-records/2026-10-02-proof-release-trust.json) — review; defer; observation stale.
 
 Defer the receipt schema change and keep the raw-mobile gate as it is: device-lane evidence stays verify-scoped. When a release must claim Android soft-keyboard behavior, the gate trusts a lane receipt only by re-deriving it: it re-runs judgeDeviceWitness over the raw traces, recomputes every artifact digest, matches the source commit and served build fingerprint, and requires the guard log. A maintainer signature may add provenance but never replaces re-derivation, because any agent on the same machine holds the same key. The change waits for a release that needs raw Android proof or for the iOS probe to run, since the gate pairs both platforms.
 
@@ -118,6 +120,17 @@ Question: Which reusable proof APIs establish package, browser and raw-device be
 Proof limits: No receipt schema or gate change ran; the target is a design. Re-derivation stops hand-edited verdicts but not fully fabricated traces, which the guard and lane code review address. The iOS probe never opened Safari (xcodebuild: iOS 26.5 is not installed). Emulator only: Pixel_9_API_36_Play, Chrome 146.0.7680.177, Gboard 17.0.14.
 
 References: [2026-10-02-proof-device-lane.md](../../plans/2026-10-02-proof-device-lane.md), [2026-10-02-proof-device-lane.decisions.tsv](../../plans/2026-10-02-proof-device-lane.decisions.tsv), [010-android-lane-probes.md](../../plite/research/2026-10-02-agentic-e2e-testing/shards/010-android-lane-probes.md), [probe-ios-safari.result.json](../../plite/research/2026-10-02-agentic-e2e-testing/sources/ios-probe/probe-ios-safari.result.json), [witness.ts](../../../packages/test/src/device/witness.ts), [raw-mobile-proof.ts](../../../packages/test/src/proof/raw-mobile-proof.ts), [mobile-device-proof.mjs](../../../tooling/plite/donor/proof/mobile-device-proof.mjs), [five-runs-summary.json](../../plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json), [guard.ts](../../../packages/test/src/device/guard.ts), [2026-10-02-proof-device-lane-execution.json](../review-records/2026-10-02-proof-device-lane-execution.json).
+
+### 2026-10-03: 2026-10-03-proof-device-lane-execution
+
+[Immutable record](../review-records/2026-10-03-proof-device-lane-execution.json) — execution; partial; observation matching.
+
+Built the plan's local proof lanes with no GitHub Actions minutes. Harness pastes go through one per-project clipboardTransport and fail unless a newer paste-tagged commit changes the document; the browser handle and kernel-trace retention attach only after installBrowserHandle() from plitejs/react, re-exported by platejs/react. A private Android lane in packages/test/src/device types with real Gboard touches over adb behind a guarded DevTools relay, gates each case on a structural witness, records known product failures by their observed values, and leaves the device as found. A macOS lane for #5137 is built but has not run. Two rounds of a three-seat panel and two decision-trail reviews were applied.
+
+
+Proof limits: The #5137 macOS lane never selected Pinyin - Simplified, so neither its helper typing nor its gated spec ran. iOS is quarantined: Xcode 26.6 needs the iOS 26.5 platform. A production platejs/react import still carries the handle, and no check guards the plitejs/react production bundle. The DOM-only production control and two benchmark drivers did not run. Device proof covers one emulator and Gboard 17.0.14; physical phones and other keyboards are unproven. The Apple converted spaces paste test was attributed under the old transport in this tree, not at HEAD. Deferred panel items: canceled-beforeinput pairing, restored-tab cleanup, a typed last-commit read and rebuilding the recorder on the lane.
+
+References: [2026-10-02-proof-device-lane.md](../../plans/2026-10-02-proof-device-lane.md), [2026-10-02-proof-device-lane.decisions.tsv](../../plans/2026-10-02-proof-device-lane.decisions.tsv), [proof.md](../../plans/topics/proof.md), [010-android-lane-probes.md](../../plite/research/2026-10-02-agentic-e2e-testing/shards/010-android-lane-probes.md), [codex-gpt-6.1-sol.md](../../plite/research/2026-10-02-agentic-e2e-testing/review/execution-trail/codex-gpt-6.1-sol.md).
 
 ## Retrieval boundaries
 

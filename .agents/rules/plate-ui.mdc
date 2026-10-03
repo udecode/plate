@@ -10,7 +10,7 @@ Package and migration skills route here instead of maintaining another hook,
 component, or React rulebook.
 
 Use the `shadcn` skill for CLI, upstream docs, and generic shadcn/ui rules.
-Use the Vercel React skills for selected implementation tactics. Use this skill
+Use `vercel-react-best-practices` for selected implementation tactics. Use this skill
 for the final Plate decision: public component shape, component-family
 topology, package extraction boundaries, base/live kit split, cross-platform
 layering, open-code preservation, and registry wiring.

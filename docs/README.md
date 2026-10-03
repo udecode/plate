@@ -48,7 +48,7 @@ Filename matches are search candidates until their contents are classified.
 | [editor-benchmarks](editor-benchmarks/) | Earlier benchmark plans and scratch findings. Use a scope hub and bound receipts for current performance decisions. |
 | [editor-issue-harvester](editor-issue-harvester/) | Source-specific issue/PR inventories, classifications, and refresh cursors. A cursor describes the recorded refresh, not live upstream state. |
 | [editor-test-harvester](editor-test-harvester/) | Source-specific test inventories and portable behavior extraction. Reading or mapping an upstream test is distinct from executing it locally. |
-| [maintainer](maintainer/) | Public-maintenance queues, standing orders, and dated run receipts; revalidate external state before acting. |
+| [maintainer](maintainer/) | Public-maintenance queues and dated run receipts; revalidate external state before acting. |
 | [performance](performance/README.md) | Benchmark contracts and historical narratives. Numbers belong to their captured workload, source, and machine. |
 | [plans](plans/) | Dated execution/design plans and templates. Each plan owns one lifecycle status; scope associations connect it to review history. Raw `artifacts/` may be ignored or unavailable elsewhere. |
 | [plite](plite/overview.md) | Mixed current runtime contracts, active research, historical migration plans, and proof inventories. Classify documents individually; the tree is not one archived or universally current authority. |

@@ -9,7 +9,7 @@ handoffs for the active Slate v2 rewrite.
 
 Do not use this mode as the public GitHub queue brain. `maintainer` owns
 public issue/PR/security queue orchestration, VISION fit, priority, route
-selection, authority boundaries, and heartbeat scans. If the request is to
+selection, authority boundaries, and queue scans. If the request is to
 maintain the repo, scan public queues, pick work, route a PR/issue, or decide
 what should be worked next, route to `maintainer` first.
 
@@ -99,8 +99,8 @@ ledgers, issue refs or cluster scope, live/archive proof needs, duplicate and
 claim evidence, exact claim levels, dossier/matrix/PR-text sync, owner handoff,
 public mutation authority, and final handoff.
 
-If a run needs public queue selection, broad priority ranking, PR triage,
-security routing, or heartbeat behavior, use `maintainer` instead.
+If a run needs public queue selection, broad priority ranking, PR triage
+or security routing, use `maintainer` instead.
 
 ## Gitcrawl Install And CLI Baseline
 

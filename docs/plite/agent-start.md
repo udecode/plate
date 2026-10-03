@@ -54,8 +54,8 @@ Historical claims and scoreboards need fresh source-bound proof before reuse.
 3. Read `absolute-architecture-release-claim.md` when assessing that claim.
 4. Read live Plate repo source/tests before making any current-state claim.
 5. For bugs, use pstack's Bug fix playbook with `verify` as its driver.
-6. For architecture, use `plate-architecture quick` first unless the user asks for a
-   durable plan or release-grade review.
+6. For architecture, ask the question directly; a durable plan or release-grade
+   review runs the Plan playbook.
 
 ## Commands
 

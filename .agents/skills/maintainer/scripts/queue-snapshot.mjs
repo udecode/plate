@@ -326,13 +326,13 @@ ${snapshot.warnings?.length ? snapshot.warnings.map((warning) => `- ${escapeCell
 | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 ${topRows.map((row, index) => `| ${index + 1} | ${row.score} | ${displayItem(row)} | ${escapeCell(row.type)} | ${displayTitle(row)} | ${escapeCell(row.category)} | ${escapeCell(row.intake)} | ${escapeCell(row.owner)} | ${escapeCell(row.proof)} | ${escapeCell(row.decision)} | ${escapeCell(row.updatedAt)} |`).join('\n')}
 
-## Next Heartbeat
+## Next Step
 
 1. Pick the highest ranked row that fits \`VISION.md\`.
 2. Read live state and public intake for that row.
 3. Run duplicate/claim guard.
 4. Route to the narrow owner or execute one safe local slice.
-5. Record changed files, proof, public mutation boundary, needs-attention, and next heartbeat.
+5. Record changed files, proof, public mutation boundary, and needs-attention.
 `;
 }
 

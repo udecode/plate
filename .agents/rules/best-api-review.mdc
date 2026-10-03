@@ -9,7 +9,7 @@ Handle $ARGUMENTS.
 
 Decide whether further work is justified. Agreement is not the default. A successful review can end with "Keep the current design; this change adds no material value." Its purpose is not to find work for another skill.
 
-Use `audit <scope>` when every candidate in a bounded set needs a verdict. This review compares design directions, including changes to the API and architecture and not only ways to use them, before deciding their value. It does not replace detailed call-shape design (`best-api`), adoption planning (`plate-architecture`), code review or implementation; a PR or correctness diff review follows the Review rule in `AGENTS.md`. Do not turn every ordinary implementation request into another architecture review.
+Use `audit <scope>` when every candidate in a bounded set needs a verdict. This review compares design directions, including changes to the API and architecture and not only ways to use them, before deciding their value. It does not replace detailed call-shape design (`best-api`), adoption planning (the Plan playbook), code review or implementation; a PR or correctness diff review follows the Review rule in `AGENTS.md`. Do not turn every ordinary implementation request into another architecture review.
 
 ## Start from review history
 
@@ -51,7 +51,7 @@ Consider each lane that can change the decision:
 
 Screen irrelevant lanes briefly; for competing lanes, show the strongest candidates and why each wins, loses or needs evidence. Treat every current and proposed public noun as deletable, and look above and below the named owner. Existing primitives earn reuse by fitting the job; a missing primitive earns addition only through a current job or hard law.
 
-Apply the Plate decision methods, not only their handoff routes, reading their ownership and decision sections without starting their workflows: [Best API](../best-api/SKILL.md) for the ideal-first call shape, maximum-value hard cut and scale gates, and [Architecture](../plate-architecture/SKILL.md) for the Plate and Plite ownership laws, using both layers when the boundary is contested. On `next`, breaking APIs and architecture are permitted: preserve hard laws and explicit user constraints, not incidental signatures or package topology. Reject Plate glue when the durable repair belongs in Plite, keep product policy out of neutral substrate, and never let "Plite does not expose it" settle the verdict.
+Apply the Plate decision methods, not only their handoff routes, reading their ownership and decision sections without starting their workflows: [Best API](../best-api/SKILL.md) for the ideal-first call shape, maximum-value hard cut and scale gates, and `.agents/playbooks/references/architecture.md` for the Plate and Plite ownership laws, using both layers when the boundary is contested. On `next`, breaking APIs and architecture are permitted: preserve hard laws and explicit user constraints, not incidental signatures or package topology. Reject Plate glue when the durable repair belongs in Plite, keep product policy out of neutral substrate, and never let "Plite does not expose it" settle the verdict.
 
 For cross-feature presentation, compare changing the producer's presentation contract, a justified lower primitive, and removing or merging producers, as well as a new consumer subscription. Moving classes into a kit through an existing hook does not establish the best design.
 
@@ -89,9 +89,9 @@ Choose the owner for the whole remaining job:
 
 | Remaining question | Next owner |
 | --- | --- |
-| API and architecture choices stay coupled across owners, with adoption or proof to resolve together | "plan", the Plan playbook, applying Best API, `plate-architecture` and Benchmark inside one plan |
+| API and architecture choices stay coupled across owners, with adoption or proof to resolve together | "plan", the Plan playbook, applying Best API, the architecture reference and Benchmark inside one plan |
 | One bounded public-contract decision | `best-api`, `design` or `review` on the exact surface |
-| The target is clear; adoption and proof span owners | `plate-architecture`, for the layer that owns the first unresolved boundary |
+| The target is clear; adoption and proof span owners | the Plan playbook, for the layer that owns the first unresolved boundary |
 | The target and a bounded implementation and proof path are clear | The matching playbook in one run, such as Bug fix, or "plan" when the change needs a plan |
 | Runtime scale decides whether the target is justified | `benchmark` with the exact comparison; the verdict stays Defer |
 | Ownership or lifetime evidence is missing | A deeper `best-api-review audit` of that one surface; the verdict stays Defer |

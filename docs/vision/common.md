@@ -129,7 +129,7 @@ tests for package ownership, API intent, and public teaching surfaces.
 - Long-running automation must repair tests, metrics, skills, and docs while it
   works. A plan note without a future behavior change is archaeology.
 - Public repo maintenance is a control-plane job. `$maintainer` owns
-  issue/PR/security queue scans, heartbeat runs, VISION fit, duplicate/claim
+  issue/PR/security queue scans, VISION fit, duplicate/claim
   guards, owner routing, proof gates, authority boundaries, and decision-ready
   handoffs. Execution belongs to narrower owners.
 - Repo-wide architecture cleanup is a source-backed cleanup job before it is an
@@ -137,7 +137,7 @@ tests for package ownership, API intent, and public teaching surfaces.
   simplify, split, keep, defer, and reject decisions for shallow modules, split
   ownership, testability gaps, over-splits, and agent-navigation friction, then
   either applies a safe behavior-neutral packet or routes broader decisions to
-  `plate-architecture`, or a package owner.
+  the Plan playbook or a package owner.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Plite
   maintenance runs through local Codex sessions in maintainer checkouts, not
   hosted API bots, crabbox, or background cloud workers. Require public repro,
@@ -146,11 +146,10 @@ tests for package ownership, API intent, and public teaching surfaces.
 - Contributor automation should improve intake quality, not create hidden
   authority. PR templates, issue forms, and security policy are part of the
   agent control plane because future local Codex runs read them first.
-- Maintainer standing orders are local and narrow. A heartbeat is one local
-  Codex activation: scan the smallest useful public queue slice, pick at most
-  one safe item, verify live state and authority, then route, execute a safe
-  local slice, or hand off a decision-ready brief. It is not a daemon, not a
-  cloud worker, and not permission to mutate GitHub without explicit authority.
+- A maintainer run scans the smallest useful public queue slice, picks at most
+  one safe item, verifies live state and authority, then routes it, runs a safe
+  local slice, or hands off a decision-ready brief. It is not a daemon or a
+  cloud worker, and it never mutates GitHub without explicit authority.
 - Maintainer queue state should be explicit: refresh `docs/maintainer/queue.md`
   through the queue snapshot script, treat it as a ranking ledger rather than
   truth, then write `docs/maintainer/runs/*` only when the run creates state
@@ -158,9 +157,6 @@ tests for package ownership, API intent, and public teaching surfaces.
 - Versioned queue docs must redact private advisory details. Sensitive GHSA
   content belongs in live GitHub or local ignored artifacts, not committed
   ledgers.
-- Standing orders should make Codex less prompt-dependent, not less
-  accountable. Every autonomous maintainer action needs a scope, trigger,
-  approval gate, escalation rule, verification surface, and short report.
 - `$benchmark` is the sole performance execution owner across Plate and Plite:
   fair current/main and cross-editor baselines, ordered all-lane discovery,
   causal diagnosis, metric/harness repair, durable target selection through
@@ -216,7 +212,7 @@ tests for package ownership, API intent, and public teaching surfaces.
   local editor repositories. It maps every relevant atomic concept, proposes
   only materially valuable changes with concrete current/proposed shapes, then
   routes public shape to `best-api` and accepted work to
-  `plate-architecture`. Test and issue invariants remain harvester work.
+  the Plan playbook. Test and issue invariants remain harvester work.
 - Research is a compiled agent layer, not a scrapbook: stable paths, one
   concept per file, outward claims, durable promotion only.
 
@@ -277,7 +273,7 @@ honest", "all next", "go next", or reports visible editor weirdness.
 - bad API -> `best-api` design/review, then the layer plan or accepted
   implementation owner;
 - external editor architecture comparison -> `research audit`, then `best-api`
-  or `plate-architecture` for accepted rows;
+  or the Plan playbook for accepted rows;
 - wrong/missing/overlapping skill -> patch `.agents/rules/**`, sync, verify;
 - output-budget miss -> split the goal into smaller checkpoints.
 
@@ -296,3 +292,8 @@ answers in source or plans; promote only the durable principle.
   temporary plans.
 - Public docs explain current user/operator behavior. Internal "why this must
   work this way" belongs in the durable owner that future agents will read.
+- When a run stopped for the user's taste and the answer changes future
+  routing, proof, API, architecture, performance, docs or handoff behavior,
+  write it as one current-state rule in the smallest owner, add a trigger under
+  User Correction Patterns when the wording matters, and keep the raw answer in
+  the plan.

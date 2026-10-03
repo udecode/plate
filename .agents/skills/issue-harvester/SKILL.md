@@ -62,8 +62,8 @@ Clusters and matrices route work. They never close an issue row.
 - pstack's Bug fix playbook or `pstack:tdd`: receive only the resulting normalized local repair/test
   packet, never a public issue row directly.
 - `best-api`: review broad public API/DX gaps.
-- `plate-architecture`: defer broad runtime/adoption gaps that cannot be proved by one
-  small test.
+- the Plan playbook: defer broad runtime or adoption gaps that one small test
+  cannot prove.
 
 ## Scope
 
@@ -355,7 +355,7 @@ method and record that the generator is missing as a workflow gap.
 
 Stop only when every relevant row for the objective is checked, a real blocker
 prevents all progress, a broad API or runtime decision belongs to `best-api` or
-`plate-architecture`, or the timebox expires with the active packet decided. Never
+the Plan playbook, or the timebox expires with the active packet decided. Never
 stop after a cluster summary, a first matrix or the first ten rows unless a
 sample was asked for.
 

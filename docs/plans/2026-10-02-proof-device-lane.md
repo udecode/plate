@@ -8,7 +8,7 @@ work_kind: implementation
 
 # Local proof lanes: real IME, honest stand-ins and an Android device lane
 
-Status: blocked on owner steps. #5137 runs wait for Pinyin - Simplified and iOS waits for the iOS 26.5 platform. Open, owner: zbeyens: a Plate production import still carries the handle, the production-handle check is not wired into check:plite, the DOM-only production control has not run, two benchmark drivers are blocked by another session's landing.ts cycle, physical phones and other keyboards are unproven, and the panel's deferred items (decision log, phase panel) wait
+Status: blocked on owner steps: Pinyin - Simplified for #5137 and the iOS 26.5 platform for the iOS probe
 
 Plate's unit and DOM tests keep passing while real browsers show caret, IME
 and Android bugs. This plan builds three local proof lanes that catch them,
@@ -26,95 +26,44 @@ interrogate passes under `review/`.
 
 ## Defaults
 
-- **Lanes run locally only.** No workflow runs them, and no CI job is added.
-  The Plite CI planner also learns to ignore the device lane's files, because
-  today any change under `packages/test/src` starts the full browser matrix.
-  The alternative is a nightly Linux runner with KVM. Reverse with "ci lane".
-- **Android driver: stock Chrome over `adb` and CDP.** Playwright attaches
-  with `adb forward localabstract:chrome_devtools_remote` and
-  `connectOverCDP(url, { noDefaults: true })`, and every input is an
-  `adb shell input` touch or gesture. The alternatives were Appium
-  UiAutomator2 and agent-device, whose test keyboard bypasses Gboard. Reverse
-  with "appium lane".
-- **The witness is structural.** A run counts when three things hold. The
-  selected keyboard is Gboard at the version recorded in setup. The lane's
-  Android module can only tap and move, and a guard on the whole CDP connection
-  refuses every `Input.*` call, including Playwright's internal sessions.
-  Every editor input event is trusted and falls inside a lane
-  gesture window, with at most one `keydown` per tap. Per-key event shapes are
-  recorded as evidence, not used as pass rules, because Korean composition and
-  autocorrect make them depend on the editor's state. Event attribution alone
-  cannot distinguish a trusted CDP insertion inside a real tap window. The
-  input claim therefore requires the command guard and exclusive device
-  ownership as well as the event judge. The alternative is a
-  calibrated signature per key or per input class. Reverse with "signature
-  witness".
-- **Key map from the accessibility tree, at setup only.** Setup reads
-  `uiautomator dump --windows` for each layout the cases use. The cache key
-  includes keyboard version, language, screen, orientation, panel and shift
-  state. Calibrate English letters, the symbols used by `@bi`, Korean jamo,
-  space, Enter and Backspace. A worker checks the active layout before using
-  coordinates and fails closed on a cache miss. Reverse with "screenshot keys".
-- **First Android cases come from Slate's issue history** (shard 005), not
-  from the 16-row raw-mobile matrix. Reverse with "matrix first".
-- **Composition cases use Gboard Korean.** English Gboard committed one letter
-  at a time even in a plain `<textarea>` (shard 009). Reverse with "english
-  composition".
-- **Case 5 runs on www's `/blocks/mention-demo`.** The gate it closes belongs
-  to Plate's combobox and `settleInput()`, which the Plite mentions example
-  does not use. Reverse with "plite mentions".
-- **The release gate keeps its current trust model.** Device lane results are
-  `verify` evidence, kept as Playwright reports with per-run attachments.
-  `check-plite-release-proof.mjs` trusts only a `workflow_dispatch` artifact,
-  so receipt schema 2 and the gate wait for Phase 3's decision. Reverse with
-  "gate now".
-- **The page handle is installed by test apps.** `installBrowserHandle()`
-  comes from `plitejs/react`, which has `sideEffects: false`, so an app that
-  never calls it drops the code. Plate apps import its `platejs/react` facade.
-  apps/plite, the www dev and test builds, the Plite contract tests and the
-  benchmark page entries call it before their
-  first editor mounts. A `NODE_ENV` gate breaks the Plite suite, which runs
-  against a production static export. Reverse with "always attach".
-- **platejs.org production builds drop the handle.** No recorded probe ever
-  read it there (shard 007). A www test build that a benchmark reads sets
-  `NEXT_PUBLIC_PLATE_BROWSER_HANDLE=1`. Reverse with "keep on platejs.org".
-- **Installing the handle turns kernel trace retention on.** Paste detection
-  and kernel-transition checks read that trace. One production-config
-  benchmark reads only DOM state, so performance still has a production
-  baseline. Reverse with "retention off".
-- **Clipboard transport is a per-project setting.** `pasteText` and
-  `pasteHtml` use the project's `clipboardTransport` (`'native'`, `'event'` or
-  `'handle'`). They fail when the chosen transport did not apply the paste,
-  or the page threw during it, and record which transport ran. Desktop
-  Chromium and Firefox use `'native'`, because both deliver a trusted paste
-  after a clipboard write. WebKit, Pixel 5 and mobile WebKit use `'event'`;
-  WebKit's clipboard write rewrites HTML with inline computed styles. The
-  event transport dispatches `paste` and, when nothing cancels it,
-  `beforeinput` `insertFromPaste`, which is where Chromium and Firefox
-  editors apply rich content. A single setting changes text paste on WebKit
-  and mobile from a native attempt to an explicit stand-in; it preserves
-  their current first HTML path. The alternative was a per-call option,
-  which would spread engine branches across 77 call sites. Reverse with
-  "per-call transport", or "firefox handle" for Firefox alone.
-- **The `'browser-handle'` selection preference changes only after a probe.**
-  Today that reason keeps typing after a handle selection on the native fast
-  path, and a contract test pins that behavior. Phase 1 measures it first.
-  Reverse with "skip the probe". The probe refuted the fast-path premise:
-  typing after a click and after a handle selection is model-owned on both
-  paths (decision log, 21:50:14Z).
-- **The Pixel 5 project's scenarios and labels are unchanged.** It is the only
-  routine browser coverage of Plite's Android code path. Its labels already say
-  `playwright-mobile`, and no relabel step could fail for a named defect.
-  The explicit clipboard setting above still applies to this project.
-  Reverse with "relabel emulation".
-- **The #5137 lane comes first.** It is the cheapest open gate and needs no
-  device. Reverse with "android first".
-- **Bugs the lanes find become local drafts.** A red case records its trace
-  and gets an issue draft through Maintainer's issue-draft mode, with an
-  `owner:` row in the decision log. Nothing is filed without the owner.
-- **tester-army `e2e` is not adopted,** for the reasons in the governing
-  review. Reverse with "adopt e2e".
-- **iOS Safari stays a probe in this plan.** Reverse with "ios lane".
+Each row is a call this plan made for the owner. The word reverses it.
+
+| Decision | Pick | Alternative | Word |
+| --- | --- | --- | --- |
+| Where the lanes run | Locally only, with no workflow or CI job; the Plite CI planner ignores the device lane's files, because any change under `packages/test/src` otherwise starts the full browser matrix | A nightly Linux runner with KVM | ci lane |
+| Android driver | Stock Chrome over `adb` and CDP (`adb forward localabstract:chrome_devtools_remote`, `connectOverCDP(url, { noDefaults: true })`); every input is an `adb shell input` touch or gesture | Appium UiAutomator2, or agent-device, whose test keyboard bypasses Gboard | appium lane |
+| Input witness | Structural: Gboard at the version setup recorded, a guard on the whole CDP connection that refuses every `Input.*` call, exclusive device ownership, and trusted events inside lane gesture windows | A calibrated signature per key or input class | signature witness |
+| Key map | Read from `uiautomator dump --windows` at setup for each layout the cases use; a worker checks the active layout and fails closed on a cache miss | Keys located from screenshots | screenshot keys |
+| First Android cases | From Slate's issue history (shard 005) | The 16-row raw-mobile matrix | matrix first |
+| Composition keyboard | Gboard Korean, because English Gboard commits one letter at a time even in a plain `<textarea>` (shard 009) | English composition | english composition |
+| Mention case | www's `/blocks/mention-demo`, which runs Plate's combobox and `settleInput()` | The Plite mentions example | plite mentions |
+| Release gate | Keeps its trust model. Device results are `verify` evidence kept as Playwright reports, and receipt schema 2 waits for Phase 3 | Change the gate now | gate now |
+| Handle installation | Test apps call `installBrowserHandle()` from `plitejs/react`, or its `platejs/react` facade, before their first mount; a `NODE_ENV` gate would break the Plite suite, which runs against a production export | Attach on every mount | always attach |
+| platejs.org production | Drops the handle; a www test build that a benchmark reads sets `NEXT_PUBLIC_PLATE_BROWSER_HANDLE=1` | Keep the handle on platejs.org | keep on platejs.org |
+| Trace retention | On whenever the handle is installed; one DOM-only production benchmark keeps a baseline | Retention off | retention off |
+| Clipboard transport | One `clipboardTransport` per project: `'native'` on Chromium and Firefox, `'event'` on WebKit, Pixel 5 and mobile WebKit. A paste fails when it did not apply or the page threw, and records its transport | A per-call option across 77 call sites, or Firefox alone on `'handle'` | per-call transport, firefox handle |
+| `'browser-handle'` selection reason | Changes only after a probe. The probe found typing model-owned after a click and after a handle selection, so the reason stays (decision log, 21:50:14Z) | Change it without the probe | skip the probe |
+| Pixel 5 project | Scenarios and labels unchanged; it is the only routine browser coverage of Plite's Android path | Relabel it | relabel emulation |
+| Lane order | The #5137 lane first, the cheapest open gate, needing no device | Android first | android first |
+| Bugs the lanes find | Local drafts through Maintainer's issue-draft mode, each with an `owner:` row in the decision log | Filing, which needs the owner | none |
+| tester-army `e2e` | Not adopted, for the reasons in the governing review | Adopt it | adopt e2e |
+| iOS Safari | A probe in this plan | An iOS lane | ios lane |
+
+## Open work
+
+zbeyens owns each item, and the decision log tracks it.
+
+- A Plate production import still carries the handle, because Plate's
+  unbundled `react/index.js` wraps every export in a namespace object.
+- `tooling/scripts/measure-browser-handle.mjs` is wired into no check, so the
+  `plitejs/react` production claim has no automated gate.
+- The DOM-only production benchmark control has not run. The code-block
+  text-flow driver waits on another session's
+  `packages/plitejs/src/core/landing.ts`, and the external-text driver on its
+  stale ignored baseline bundle.
+- Physical phones, Samsung Keyboard and the other keyboards are unproven.
+- The panel's deferred findings are open; their decision-log rows use phase
+  `panel`.
 
 ## Execution deviations
 
@@ -142,72 +91,145 @@ and its decision-log row.
 
 ## Public API
 
-These pairs are proposed in this iteration. The subject file records current
-behavior until execution proves the changes.
+Each before fence is a call site at `cf15725603`, the commit before this plan;
+each after fence is the same call in the checkout.
 
-Each project names its paste transport. Paste call sites stay unchanged.
+Each Playwright project names its paste transport. Paste call sites stay
+unchanged.
 
 ```ts before
 // apps/www/playwright.config.ts
-{ name: 'webkit', use: { ...devices['Desktop Safari'] } }
+{ name: 'webkit', use: { ...devices['Desktop Safari'] } },
 ```
 
 ```ts after
 // apps/www/playwright.config.ts
-{ name: 'webkit', use: { ...devices['Desktop Safari'], clipboardTransport: 'event' } }
+{
+  name: 'webkit',
+  use: { ...devices['Desktop Safari'], clipboardTransport: 'event' },
+},
 ```
 
-Native event traces gain `keydown` and `pointerdown`, and each entry
-carries `isTrusted`, `key`, `keyCode`, `clientX`, `clientY` and a `seq`.
+Native event traces gain `keydown` and `pointerdown`, and every entry carries
+`isTrusted`, `key`, `keyCode`, `clientX`, `clientY` and a monotonic `seq`.
 
 ```ts before
-// packages/test/src/device/lane.ts
-await startBrowserNativeEventTrace(root, {
-  events: ['beforeinput', 'input', 'compositionstart', 'compositionupdate', 'compositionend'],
+// packages/test/test/proof/playwright-native-event-trace.test.ts
+await startBrowserNativeEventTrace(locator, {
+  events: ['beforeinput', 'input'],
 });
 ```
 
 ```ts after
 // packages/test/src/device/lane.ts
+const TRACED_EVENTS = [
+  'keydown',
+  'pointerdown',
+  'beforeinput',
+  'input',
+  'compositionstart',
+  'compositionupdate',
+  'compositionend',
+] as const;
+
 await startBrowserNativeEventTrace(target, {
   events: TRACED_EVENTS,
   maxEntries: 10_000,
 });
 ```
 
-A Plate test app installs the handle before mounting its first editor.
-The import below is copied from the basic editor. Put installation in the
-dev/test entry that owns the mount, so a platejs.org production entry never
-calls it.
+An app under test installs the browser handle at module scope before its first
+editor mounts; nothing attaches it by default. www installs it in development
+and in test builds only, and `apps/plite/src/app/providers.tsx` calls the same
+installer from `plitejs/react`.
 
 ```ts before
-// apps/www/src/registry/blocks/editor-basic/components/editor/rich-text-editor.tsx
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+// apps/www/src/components/context/providers.tsx
+import { Provider as JotaiProvider } from 'jotai';
+
+import { TooltipProvider } from '@/components/ui/tooltip';
 ```
 
 ```ts after
-// a www dev or test entry; registry components never call it
-import { EditorRoot, installBrowserHandle, useCreateEditor } from 'platejs/react';
+// apps/www/src/components/context/providers.tsx
+import { Provider as JotaiProvider } from 'jotai';
+import { installBrowserHandle } from 'platejs/react';
 
-installBrowserHandle();
+import { TooltipProvider } from '@/components/ui/tooltip';
+
+if (
+  process.env.NODE_ENV !== 'production' ||
+  process.env.NEXT_PUBLIC_PLATE_BROWSER_HANDLE === '1'
+) {
+  installBrowserHandle();
+}
 ```
-
-Plite test apps use the same installer through `plitejs/react`.
 
 ## Main changes
 
-- A macOS helper drives the real Pinyin input method into exact Google Chrome
-  and captures caret pixels from the OS with controls, for desktop IME proof.
-- The harness's paste fallbacks are replaced by one per-project transport
-  that fails loudly, including when the page throws mid-paste. The event
-  transport follows the browser's `paste` then `beforeinput` order instead
-  of jumping to `insertData`. The shortcut and IME stand-ins are recorded as
-  deferred.
-- Plite's page handle moves from every mount to an explicit installer, so
-  production bundles drop it.
-- A private Android lane in `@platejs/test` types on the real soft keyboard
-  over `adb` and CDP. It blocks prohibited commands and rejects events the
-  judge can distinguish from its recorded gestures.
+- `Editable` attaches the browser handle only through a function that
+  `installBrowserHandle()` registers, and the kernel trace keeps entries only
+  after it runs. A production `plitejs/react` import drops the handle (0
+  references, 10,255 bytes); a `platejs/react` import still carries it because
+  Plate's unbundled barrel defeats tree-shaking.
+- Harness pastes go through one per-project transport and fail unless a newer
+  commit carries the `paste` tag and changes the document, or when the page
+  threw. The event transport sends `paste`, then `beforeinput` when nothing
+  cancels it, instead of calling `insertData`. The shortcut and IME stand-ins
+  stay, recorded as deferred.
+- A private Android lane in `packages/test/src/device` types with real Gboard
+  touches over `adb`, attaches through a DevTools relay that refuses every
+  `Input.*` command and both channels that could carry one. A witness gates
+  every case: each `beforeinput` follows its own `keydown`, each `input` its
+  own `beforeinput`, and each tap produces its key's class.
+  `apps/plite/playwright.device.config.ts` runs its cases five times on each
+  attached device.
+- `tooling/ime` holds the helper and gated spec that drive the real macOS
+  Pinyin input method into exact Google Chrome for #5137. Pinyin selection
+  has not succeeded on this machine, so neither has run.
+
+## What other editors do
+
+| Delta | Tool | Typing reaches the editor as | Reads the editor model | Mobile web |
+| --- | --- | --- | --- | --- |
+| changed | `@platejs/test` with Playwright | trusted keys, CDP IME, and real Gboard touches over `adb` in the device lane | yes, through the installed handle | Chrome for Android over a guarded DevTools endpoint |
+
+## Layer and owner
+
+| Delta | Current capability | Layer | Package | Why |
+| --- | --- | --- | --- | --- |
+| changed | Browser model oracle | proof tooling | `@platejs/test/playwright` | One harness serves desktop, emulated mobile and the device lane; each project names its paste transport. |
+| changed | Browser page handle | Plite | `plitejs/react` `installBrowserHandle()`, re-exported by `platejs/react` | Proof instrumentation is opt-in; a production `plitejs/react` entry carries none of it, and a `platejs/react` one still does (open). |
+| added | Android device lane | proof tooling | private `packages/test/src/device`, reached through `@platejs/test/device` | Local only; no package export and no CI job. |
+| added | macOS IME helper | tooling | `tooling/ime` | Drives OS input for one gated spec. |
+
+## Hard cuts and app migration
+
+- The browser handle no longer attaches on every mount. An app read by
+  `@platejs/test` calls `installBrowserHandle()` before its first editor
+  mounts, as in the Public API pair; otherwise `ready` fails with "browser
+  handle not installed".
+- Paste fallbacks are gone. A Playwright project that pastes sets
+  `use.clipboardTransport`; a paste that never applied fails instead of
+  retrying through the handle. Tests that sliced the kernel trace from a
+  pre-paste length read the whole trace, which each paste clears first.
+
+## Native behavior and proof
+
+| Delta | Behavior | Current evidence | Limit |
+| --- | --- | --- | --- |
+| changed | Desktop paste per engine | Ten paste spec files: Chromium 382 and Firefox 341 native, WebKit 353 and Pixel 5 156 event, mobile WebKit 350 with 9 failures outside paste | Two Plite tests stay excluded; the Apple converted spaces one fails the same way under the old handle transport |
+| removed | Android soft-keyboard input | Pixel 5 device emulation | Emulation sends no soft-keyboard events; Android gates have no producer |
+| added | Gboard strip replacement, Bold toggle, toolbar tap during composition, mention tap and Backspace | Device lane from a cold boot, five warm runs each on `Pixel_9_API_36_Play`, all passing; setup and restore leave the device as found | One emulator and Gboard 17.0.14; no physical phone; Android replaces the cold-boot implicit input subtype with the enabled English one |
+| added | Gboard Korean composition | Device lane, five of five runs: Plite commits each jamo separately and Enter splits before the composing jamo | Product bug, local draft only |
+| added | Gboard autocorrect on space | Device lane, five of five runs: `becuase go` ends as `BecuasegoBecause ` | Product bug, local draft only |
+| changed | Typing after a handle-set selection | Probe on five projects: same input ownership as a click | none |
+| changed | Pinyin preedit caret paint (#5137) | Helper, exact-Chrome launch and gated spec built | Blocked until Pinyin - Simplified is fully installed |
+| changed | iOS Safari typing | Probe written | Quarantined: Xcode 26.6 needs the iOS 26.5 platform |
+
+Device-lane evidence stays local and does not satisfy the raw-mobile release
+gate. A release would trust it only by re-deriving its witness verdicts,
+digests and build binding (review `2026-10-02-proof-release-trust`).
 
 ## Scope
 
@@ -427,7 +449,7 @@ or quarantined on its own.
       code-block text-flow driver is blocked by another session's in-flight
       `packages/plitejs/src/core/landing.ts`, and the external-text driver by
       its stale ignored baseline bundle.
-- [x] Repair what Phase 1 makes false, run Best API's doctrine repair for Closed by `.agents/rules/verify.mdc`.
+- [x] Repair what Phase 1 makes false, run Best API's doctrine repair for
       `installBrowserHandle()` and `clipboardTransport`, and add changesets:
       - `verify.mdc:264-267`, which says paste can fall back;
       - the benchmark methodology's injected-handle rule;

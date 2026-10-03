@@ -176,9 +176,9 @@ and canonical utilities.
 
 ## Vercel Advisory Boundary
 
-`vercel-react-best-practices` and `vercel-composition-patterns` provide selected
-implementation tactics. They do not decide Plate public APIs, extraction,
-file ownership, or provider visibility.
+`vercel-react-best-practices` provides selected implementation tactics. It
+does not decide Plate public APIs, extraction, file ownership, or provider
+visibility.
 
 - Load exact rule files for the problem; never import the whole catalog as
   doctrine.

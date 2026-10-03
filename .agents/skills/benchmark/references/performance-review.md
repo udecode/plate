@@ -142,7 +142,7 @@ That is enough to review a huge-document claim without rereading the entire perf
 
 ## Architecture Performance Pass
 
-When used inside `plate-architecture`, record this lens in the implementation review matrix.
+When used inside an architecture plan, record this lens in its decision ledger.
 
 Must answer:
 

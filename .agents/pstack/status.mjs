@@ -33,3 +33,5 @@ export const SEVERITIES = ['critical', 'warning', 'nit'];
 
 // Superseded and cancelled plans close without their work, so only landed ones face the Done gate.
 export const landed = (status) => LANDED.includes(words(status)[0]);
+
+export const reopened = (status) => words(status)[0] === 'reopened';

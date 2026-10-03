@@ -40,7 +40,7 @@ A request to process an existing harvest into "all Slate tests", "all Plate rows
 4. Plate package, docs and example owners when the behavior is a plugin, kit, UI, React integration or product policy.
 5. `docs/solutions/` for prior browser, IME, selection and mobile proof lessons.
 6. `issue-harvester`'s Slate claims mode for issue and PR provenance when a test exists because of a known upstream bug.
-7. For lane-plan mode, `plate-architecture`, with the Plite layer for `slate-v2` and the Plate layer for `plate`.
+7. For lane-plan mode, the Plan playbook, with the Plite layer for `slate-v2` and the Plate layer for `plate`.
 
 In issue mode, GitHub issue data is candidate and provenance input, not implementation source. Use `gitcrawl` or `gh` for issue metadata and comments, and the local checkout for source, tests and license evidence.
 
@@ -151,7 +151,7 @@ Infer an unknown lane only when the harvest's owner labels make it obvious; othe
 5. Account for every harvest row as `in-lane`, `out-of-lane`, `split`, `duplicate`, `skip` or `unresolved`.
 6. For `slate-v2`, include raw substrate (selection DOM mapping, beforeinput and input, IME and composition, clipboard, paste, drag and drop, history, normalization, transforms, delete and backspace, fragment insertion, marks and inlines, void primitives, shadow DOM, browser engines, focus and blur, large-document performance) and split out product policy (links, lists, Markdown UX, mention-style plugins, media decorators, toolbar, menu and dialog state, React plugin hosts, NodeView- and PluginView-style authoring).
 7. Search current owner coverage before claiming covered or missing: the Plate repo by behavior words for `slate-v2`; packages, kits, docs, examples and behavior-law docs for `plate`.
-8. Apply `plate-architecture`'s gates for the lane's layer: Plite for `slate-v2`, Plate for `plate`.
+8. Apply the Layer gates in `.agents/playbooks/references/architecture.md` for the lane's layer: Plite for `slate-v2`, Plate for `plate`.
 9. Write the lane plan's sections: Lane contract, Full harvest row accounting, In-lane candidate matrix, Execution queue, Downstream lane application and Accepted-plan execution handoff. The handoff names the plan path, lane, execution queue IDs, implementation boundaries, focused commands, broad final gate, issue and claim sync rule and stop rule.
 10. Below threshold, keep `pending` and name the next pass. The lane plan is `done` only when the harvest report path and license mode are recorded, inventory and test-index status are recorded with reasons for missing files, every harvest row is accounted for, no unresolved in-lane row remains, every in-lane row has owner coverage, action, target location, proof kind and a verification command or explicit defer reason, downstream lane gates are recorded, behavior-only rows use fresh invariant wording only, and the execution handoff is present. When the gates pass, mark the result `done` and hand off: a planning-only request stops there; existing apply authority continues through the lane owner.
 
