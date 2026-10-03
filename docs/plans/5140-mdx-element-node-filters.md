@@ -1,6 +1,7 @@
 # Issue 5140: node filters for inline HTML elements
 
 Status: in review
+PR: https://github.com/udecode/plate/pull/5141
 
 ## Outcome
 
