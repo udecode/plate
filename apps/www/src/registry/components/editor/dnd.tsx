@@ -164,6 +164,8 @@ function Draggable(props: RenderNodeWrapperProps) {
   // inside them keep their gutters hidden.
   const nodeSelected = useElementSelected({ mode: 'node' });
   const hasTableCellSelection = React.useContext(TableCellSelectionContext);
+  const table = editor.plugin(BaseTablePlugin);
+  const isTable = table.installed && element.type === table.schema.type;
   const nodes = () => editor.read.transfer.nodes({ node: element });
   const move = (to: 'next' | 'previous', announce: string) => {
     editor.api.transfer.move({ announce, nodes: nodes(), to });
@@ -185,8 +187,13 @@ function Draggable(props: RenderNodeWrapperProps) {
     <div
       className={cn(
         'editor-draggable relative data-hovered:[&>.editor-gutterLeft]:opacity-100 [&>.editor-blockWrapper>[data-editor-dragging]]:opacity-50',
+        // A table keeps its handle while the pointer is anywhere inside it, so
+        // the handles of its cell blocks do not make it flicker.
+        isTable && 'hover:[&>.editor-gutterLeft]:opacity-100',
         renderPath.length > 1 &&
-          'not-data-hovered:[&>.editor-gutterLeft]:hidden'
+          (isTable
+            ? 'not-hover:[&>.editor-gutterLeft]:hidden'
+            : 'not-data-hovered:[&>.editor-gutterLeft]:hidden')
       )}
       onMouseEnter={() => setButtonTop(calcDragButtonTop(editor, element))}
       onPointerLeave={(event) => {
@@ -229,7 +236,11 @@ function Draggable(props: RenderNodeWrapperProps) {
                 <GripVertical />
               </button>
             </TooltipTrigger>
-            <TooltipContent>Drag to move, click for actions</TooltipContent>
+            {/* A hidden nested gutter leaves the trigger at 0,0; hide the tooltip
+                there instead of fading it out in the corner. */}
+            <TooltipContent hideWhenDetached>
+              Drag to move, click for actions
+            </TooltipContent>
           </Tooltip>
           {actionsOpen && (
             <HandleActionsMenu

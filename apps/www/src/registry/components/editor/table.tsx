@@ -67,7 +67,7 @@ import {
   DEFAULT_COLORS,
 } from './font-color-toolbar-button';
 
-type TableResizeDirection = 'bottom' | 'left' | 'right';
+type TableResizeDirection = 'bottom' | 'right';
 
 type TableResizeStartOptions = {
   colIndex: number;
@@ -90,7 +90,7 @@ type TableResizeContextValue = {
   ) => void;
 };
 
-const TABLE_CONTROL_COLUMN_WIDTH = 8;
+const TABLE_CONTROL_COLUMN_WIDTH = 16;
 
 const TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT = 1200;
 
@@ -138,9 +138,6 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
   const [rowSizeOverrides, setRowHeightOverrides] = React.useState(
     new Map<number, number>()
   );
-  const [marginLeftOverride, overrideMarginLeft] = React.useState<
-    number | null
-  >(null);
   const overrideRowSize = React.useCallback(
     (index: number, size: number | null) => {
       setRowHeightOverrides((overrides) => {
@@ -154,7 +151,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
     },
     [setRowHeightOverrides]
   );
-  const marginLeft = marginLeftOverride ?? props.element.marginLeft ?? 0;
+  const marginLeft = props.element.marginLeft ?? 0;
   const baseColSizes = api.columnWidths(props.element);
   const columnWidths = baseColSizes.map(
     (width, index) => colSizeOverrides.get(index) ?? width
@@ -195,7 +192,6 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
     paintIndicator(hoverIndicatorRef, null);
     setColSizeOverrides(new Map());
     setRowHeightOverrides(new Map());
-    overrideMarginLeft(null);
   };
   const beginResize = useTableResize({
     element: props.element,
@@ -209,13 +205,11 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
 
       const first = resize.columns[0];
       const offset =
-        resize.edge === 'left'
-          ? controlColumnWidth + resize.marginLeft - marginLeft
-          : controlColumnWidth +
-            baseColSizes
-              .slice(0, first.colIndex)
-              .reduce((total, width) => total + width, 0) +
-            first.width;
+        controlColumnWidth +
+        baseColSizes
+          .slice(0, first.colIndex)
+          .reduce((total, width) => total + width, 0) +
+        first.width;
 
       paintIndicator(
         deferColumnResize ? dragIndicatorRef : hoverIndicatorRef,
@@ -225,9 +219,6 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
       setColSizeOverrides(
         new Map(resize.columns.map(({ colIndex, width }) => [colIndex, width]))
       );
-      if (resize.edge === 'left') {
-        overrideMarginLeft(resize.marginLeft);
-      }
     },
   });
   const showResizePreview = React.useCallback(
@@ -276,9 +267,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
           event,
           direction === 'bottom'
             ? { edge: 'bottom', rowIndex }
-            : direction === 'left'
-              ? { edge: 'left' }
-              : { edge: 'right', colIndex }
+            : { edge: 'right', colIndex }
         )
       ) {
         return;
@@ -306,11 +295,9 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
       paintIndicator(
         deferColumnResize ? dragIndicatorRef : hoverIndicatorRef,
         controlColumnWidth +
-          (direction === 'left'
-            ? 0
-            : baseColSizes
-                .slice(0, colIndex + 1)
-                .reduce((total, width) => total + width, 0))
+          baseColSizes
+            .slice(0, colIndex + 1)
+            .reduce((total, width) => total + width, 0)
       );
     },
     [
@@ -357,7 +344,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
       }}
       className={cn(
         'overflow-x-auto py-5',
-        hasControls && '-ml-2 *:data-[slot=node-selection-highlight]:left-2'
+        hasControls && '-ml-4 *:data-[slot=node-selection-highlight]:left-4'
       )}
       style={{ paddingLeft: marginLeft }}
     >
@@ -798,7 +785,14 @@ export function TableRowElement({
     <EditorElement
       {...props}
       as="tr"
-      className="group/row data-editor-dragging:opacity-50 hover:[&>td>.editor-row-drag-handle]:opacity-100 data-[table-resizing=true]:[&>td>.editor-row-drag-handle]:opacity-0"
+      className={cn(
+        'group/row data-[table-resizing=true]:[&>td>.editor-row-drag-handle]:opacity-0',
+        // Opacity on the row would trap the handle's z-index below the table's
+        // block gutter, and Chrome cancels a drag whose origin gets covered.
+        hasControls
+          ? 'data-editor-dragging:[&>:not(:first-child)]:opacity-50'
+          : 'data-editor-dragging:opacity-50'
+      )}
       style={
         {
           '--tableRowMinHeight': rowMinHeight ? `${rowMinHeight}px` : undefined,
@@ -807,7 +801,7 @@ export function TableRowElement({
     >
       {hasControls && (
         <td
-          className="w-2 max-w-2 min-w-2 p-0 select-none"
+          className="relative z-51 w-4 max-w-4 min-w-4 p-0 select-none hover:[&>.editor-row-drag-handle]:opacity-100"
           contentEditable={false}
         >
           {!hasMultiRowSelection && <RowDragHandle />}
@@ -840,7 +834,9 @@ function RowDragHandle() {
         draggable
         variant="outline"
         className={cn(
-          '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+          // Any overflow past the control column would cover the first cell's
+          // block handle and keep this column hovered.
+          '-translate-y-1/2 absolute top-1/2 left-0 h-6 w-4 overflow-hidden p-0 has-[>svg]:px-0 focus-visible:ring-0 focus-visible:ring-offset-0',
           'cursor-grab active:cursor-grabbing',
           'editor-row-drag-handle opacity-0 transition-opacity duration-100',
           selected && '[@media(hover:none)]:opacity-100'
@@ -966,8 +962,6 @@ function TableCellResizeControls({
     useTableResizeContext();
   const rightHandleKey = `right:${rowIndex}:${colIndex}`;
   const bottomHandleKey = `bottom:${rowIndex}:${colIndex}`;
-  const leftHandleKey = `left:${rowIndex}:${colIndex}`;
-  const isLeftHandle = colIndex === 0;
 
   return (
     <div
@@ -1038,39 +1032,6 @@ function TableCellResizeControls({
           });
         }}
       />
-      {isLeftHandle && (
-        <div
-          className="pointer-events-auto absolute top-0 -left-1 z-40 h-full w-2 cursor-col-resize touch-none"
-          data-table-resize-handle="column-start"
-          onPointerEnter={(event) => {
-            showResizePreview(event, {
-              colIndex,
-              direction: 'left',
-              handleKey: leftHandleKey,
-              rowIndex,
-            });
-          }}
-          onPointerMove={(event) => {
-            showResizePreview(event, {
-              colIndex,
-              direction: 'left',
-              handleKey: leftHandleKey,
-              rowIndex,
-            });
-          }}
-          onPointerLeave={() => {
-            clearResizePreview(leftHandleKey);
-          }}
-          onPointerDown={(event) => {
-            startResize(event, {
-              colIndex,
-              direction: 'left',
-              handleKey: leftHandleKey,
-              rowIndex,
-            });
-          }}
-        />
-      )}
     </div>
   );
 }
