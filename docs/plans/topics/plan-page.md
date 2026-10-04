@@ -6,13 +6,14 @@ How a plan and its subject become one page per subject: the files agents write u
 
 ## Public API
 
-Agents render a page after every change to a plan or its subject file, fold an executed plan's delta with `--folded`, and run every refusal without writing with `--check`.
+Agents render a page after every change to a plan or its subject file, fold an executed plan's delta with `--folded`, run every refusal without writing with `--check`, and render every subject's page and the topic index with `--index`.
 
 ```sh
 # skills/plan-page/SKILL.md
 node .agents/pstack/plan-page.mjs <plan>
 node .agents/pstack/plan-page.mjs <plan> --folded
 node .agents/pstack/plan-page.mjs <plan> --check
+node .agents/pstack/plan-page.mjs --index
 ```
 
 The project config keeps only how a plan finds its subject and its ledger scope file.
@@ -45,6 +46,10 @@ page-require: What other editors do
 - A plan's `## Close` holds the close report. The renderer shows the leading iteration's Needs you and Close on top, executed or not, until a newer iteration opens, and `--folded` refuses a plan with no Close.
 - `decisions-check.mjs` refuses a panel row in the plans directory until its plan sits beside the log, and dotai's validate-skills refuses a stray double quote inside a quoted frontmatter value.
 - plate-2's api-review playbook writes a next answer and a verdict onto the scope's subject page, as `proposed`, then `planning`, `closed` or `blocked`. Build, Perf issue, Refactoring and Babysit put their close report in `## Close`.
+- `--index` renders every subject's page into `<plans>/artifacts/topics/` and writes `index.html` beside them, with each subject's lead, status, iteration count and newest date, open subjects first. With `pageTopic.hub` set, every hub without a subject file shows as a topic with no page yet. The index is never published.
+- The rendered file under the plans directory is the lasting copy of a page; a published claude.ai page is where the owner comments on one hand-back, and a link that no longer opens gets a new page on the next publish. Codex renders the page and replies with its file path.
+- Needs you collects the Open questions of every iteration, each older one labeled with its plan, so a newer plan no longer hides an older question; the index marks a subject that waits on you.
+- plate-2's API review playbook creates a missing subject file with its editor comparison and what has landed and been proven, at its first stop and in a ledger triage audit, so the required "What other editors do" section exists before the page renders.
 
 ## Hard cuts and app migration
 
@@ -59,3 +64,6 @@ page-require: What other editors do
 - Have sync-pstack's `verify` fail when the block names a skill the project cannot resolve, or when `skills-lock.json` records a local source for a dotai skill. owner: zbeyens.
 - `docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md` refuses to render until its Defaults becomes the decision table. owner: zbeyens.
 - No fresh session has yet published a page under the page hand-back rule; the trials that proved its routing were read-only. Check the first real hand-back on its page. owner: zbeyens.
+- plate-2's 22 ledger topics with plans and no subject file get their pages when the API review playbook's first stop or a ledger triage audit reaches them. owner: Ziad, tracked here.
+- The block calls the rendered file the durable page, but `docs/plans/artifacts/` is gitignored, so the page lasts only on the machine that rendered it; a Claude smoke flagged it on 2026-10-04. owner: Ziad, tracked here.
+- A plan the reviews list does not name ends with an `AskUserQuestion`, while Plan pages says the hand-back reply is the page link alone; a Claude smoke flagged it on 2026-10-04. owner: Ziad, tracked here.
