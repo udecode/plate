@@ -2013,9 +2013,132 @@ describe('native block drag', () => {
       applyEditableDragOver({ editor, event: refused, state });
       overB.mockRestore();
 
-      expect(refused.preventDefault).not.toHaveBeenCalled();
+      // Block drags always preventDefault to suppress the native text cursor.
+      expect(refused.preventDefault).toHaveBeenCalled();
       expect(dataTransfer.dropEffect).toBe('none');
       expect(readDropIndicator(editor)).toBe(null);
+    } finally {
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('dragover with browser-initialized dropEffect=copy but no modifier key sets move', () => {
+    const { at, dataTransfer, editor, hosts, root, state } = setup();
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+
+      const overC = at([2], 1);
+      // Simulate browser initializing dropEffect to 'copy' before dragover
+      dataTransfer.dropEffect = 'copy';
+      const event = createDragEvent(hosts[2], dataTransfer);
+
+      applyEditableDragOver({ editor, event, state });
+      overC.mockRestore();
+
+      // Block drag copy intent ignores dataTransfer.dropEffect;
+      // without a modifier key the effect must be 'move'.
+      expect(dataTransfer.dropEffect).toBe('move');
+    } finally {
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('self-drop on own block refuses and does not duplicate', () => {
+    const { at, dataTransfer, editor, hosts, root, state } = setup();
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+
+      // Drop back on the dragged block itself
+      const overA = at([0], 0);
+      const dropEvent = createDragEvent(hosts[0], dataTransfer);
+
+      applyEditableDrop({
+        editor,
+        event: dropEvent,
+        readOnly: false,
+        state,
+      });
+      overA.mockRestore();
+
+      // The block list must be unchanged — no duplication
+      expect(texts(editor)).toEqual(['a', 'b', 'c']);
+    } finally {
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('indicator line rect is identical for "P1 after" and "P2 before" when adjacent', () => {
+    const { at, dataTransfer, editor, hosts, root, state } = setup();
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+
+      // "P2 after" → indicator between b and c
+      const overB = at([1], 1);
+
+      applyEditableDragOver({
+        editor,
+        event: createDragEvent(hosts[1], dataTransfer),
+        state,
+      });
+      overB.mockRestore();
+
+      const indicatorAfterB = readDropIndicator(editor);
+
+      // "P3 before" → indicator between b and c
+      const overC = at([2], 0);
+
+      applyEditableDragOver({
+        editor,
+        event: createDragEvent(hosts[2], dataTransfer),
+        state,
+      });
+      overC.mockRestore();
+
+      const indicatorBeforeC = readDropIndicator(editor);
+
+      expect(indicatorAfterB).not.toBe(null);
+      expect(indicatorBeforeC).not.toBe(null);
+      // Both indicators must produce the identical line rectangle
+      expect(indicatorAfterB!.line).toEqual(indicatorBeforeC!.line);
+    } finally {
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('Alt (macOS) / Ctrl (other) modifier during block drag sets copy dropEffect', () => {
+    const { at, dataTransfer, editor, hosts, root, state } = setup();
+
+    try {
+      editor.api.dom.drag.start(
+        { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
+        { node: editorGetSnapshot(editor).children[0] as never }
+      );
+
+      const overC = at([2], 1);
+      // Create an event with the platform copy modifier (altKey for Apple, ctrlKey otherwise).
+      // jsdom typically does not identify as Apple, so ctrlKey is the modifier.
+      const event = {
+        ...createDragEvent(hosts[2], dataTransfer),
+        ctrlKey: true,
+        altKey: true,
+      } as unknown as DragEvent<HTMLDivElement>;
+
+      applyEditableDragOver({ editor, event, state });
+      overC.mockRestore();
+
+      expect(dataTransfer.dropEffect).toBe('copy');
     } finally {
       cleanupEditorRoot(editor, root);
     }

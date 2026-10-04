@@ -15,7 +15,7 @@ import {
 } from '../../core/transfer';
 import type { TransferCheck, TransferEdge } from '../../core/transfer-types';
 import { type AnyEditor, isBlock } from '../../interfaces/editor';
-import { beginDragSession, readDragSession } from '../utils/drag-session';
+import { type DragSession, beginDragSession, readDragSession } from '../utils/drag-session';
 import { publishDropIndicator } from '../utils/drop-indicator';
 import { usesAppleDOMHotkeys } from '../utils/environment';
 import { writeDOMSelectionData } from './dom-clipboard-runtime';
@@ -481,6 +481,10 @@ export const copyIntentOf = (input: DOMDropTargetInput) =>
   input.dataTransfer?.dropEffect === 'copy' ||
   !!(usesAppleDOMHotkeys(input) ? input.altKey : input.ctrlKey);
 
+/** Block-drag copy intent: session flag or the platform copy modifier. */
+export const blockCopyIntent = (session: DragSession, input: DOMDropTargetInput) =>
+  session.copyOnly || !!(usesAppleDOMHotkeys(input) ? input.altKey : input.ctrlKey);
+
 export const resolveDOMDropTarget = (
   editor: AnyEditor,
   input: DOMDropTargetInput,
@@ -687,12 +691,62 @@ export const indicateDOMDropTarget = (
     return;
   }
 
-  const host = asDOM(editor).resolveDOMNode(target.key);
+  const dom = asDOM(editor);
+  const host = dom.resolveDOMNode(target.key);
 
-  publishDropIndicator(
-    editor,
-    host ? { ...target, line: lineOf(host, target.axis, target.edge) } : null
-  );
+  if (!host) {
+    publishDropIndicator(editor, null);
+
+    return;
+  }
+
+  let line = lineOf(host, target.axis, target.edge);
+
+  // Stabilize the indicator for adjacent vertical edges: compute the gap
+  // center between this block and its neighbor so that "P1 after" and
+  // "P2 before" produce the same line.
+  if (target.axis === 'y') {
+    const node = dom.resolveNode(host);
+    const path =
+      node && ElementApi.isElement(node) ? editor.read.nodes.path(node) : null;
+
+    if (path) {
+      const neighborPath =
+        target.edge === 'after'
+          ? PathApi.next(path)
+          : PathApi.hasPrevious(path)
+            ? PathApi.previous(path)
+            : null;
+      const neighborNode = neighborPath
+        ? editor.read.nodes.get(neighborPath)?.[0]
+        : null;
+      const neighborHost =
+        neighborNode && ElementApi.isElement(neighborNode)
+          ? dom.resolveDOMNode(neighborNode)
+          : null;
+      const neighborRect = rectOf(neighborHost);
+      const hostRect = rectOf(host);
+
+      if (neighborRect && hostRect) {
+        const prevBottom =
+          target.edge === 'after' ? hostRect.bottom : neighborRect.bottom;
+        const nextTop =
+          target.edge === 'after' ? neighborRect.top : hostRect.top;
+        const y = (prevBottom + nextTop) / 2;
+        const wider =
+          hostRect.width >= neighborRect.width ? hostRect : neighborRect;
+
+        line = Object.freeze({
+          height: 0,
+          width: wider.width,
+          x: wider.left,
+          y,
+        });
+      }
+    }
+  }
+
+  publishDropIndicator(editor, { ...target, line });
 };
 
 const previewOf = (host: HTMLElement) => {
