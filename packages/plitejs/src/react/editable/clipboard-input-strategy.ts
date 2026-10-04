@@ -26,6 +26,7 @@ import {
   supportsDOMBeforeInput,
 } from '../../dom/internal';
 import {
+  blockCopyIntent,
   copyIntentOf,
   indicateDOMDropTarget,
   resolveDOMDropTarget,
@@ -615,10 +616,12 @@ export const applyEditableDragOver = ({
     const root = editor.api.dom.root();
 
     indicateDOMDropTarget(editor, target);
+    // Always preventDefault for block drags to suppress the native text cursor,
+    // even when no valid drop target is found.
+    event.preventDefault();
     if (target) {
-      event.preventDefault();
       event.dataTransfer.dropEffect =
-        session.copyOnly || copyIntentOf(dropInputOf(event)) ? 'copy' : 'move';
+        blockCopyIntent(session, dropInputOf(event)) ? 'copy' : 'move';
     } else {
       event.dataTransfer.dropEffect = 'none';
     }
@@ -762,7 +765,9 @@ const applySessionDrop = ({
   reportDrop: (outcome: TransferOutcome) => void;
   session: DragSession;
 }): EditableClipboardResult => {
-  const copy = session.copyOnly || copyIntentOf(dropInputOf(event));
+  const copy = session.draggedBlock
+    ? blockCopyIntent(session, dropInputOf(event))
+    : session.copyOnly || copyIntentOf(dropInputOf(event));
   const { transfer } = editor.api;
   const from = session.sourceEditor;
   const range =
