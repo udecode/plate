@@ -1,13 +1,11 @@
 {
-  "tag": "v0.9.54",
+  "tag": "v0.9.64",
   "branch": "next",
   "protected": "main",
   "delivery": "user",
   "lintFix": "pnpm lint:fix",
   "check": "pnpm check",
   "plans": "docs/plans",
-  "risk": "",
-  "reviewPr": true,
   "proof": "verify",
   "skiller": true,
   "regen": "pnpm install",
@@ -18,6 +16,7 @@
     "autoclosure",
     "autoreview",
     "clawsweeper",
+    "cross-review",
     "editor-audit",
     "editor-test-harvester",
     "github-issue-reporter",
@@ -42,19 +41,36 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "bebb29026c0f1ec9658e4202e13597e3573e0263432ab59505eace051dea65ea",
+    "block": "63bf5e36e0f47d5b8db6df96db2abae1b983f4c65563a63d80317793b9a11862",
     "files": {
       ".agents/pstack/cross.mjs": "fbc38412b89397422abae04fe2791d0b6b704e16d2345b7f4298bfa85763be24",
-      ".agents/pstack/decisions-check.mjs": "ceebf2d0f94d1e97a9e685dd6c979c902452a8d33affee459e54301ad588e603",
+      ".agents/pstack/decisions-check.mjs": "2c7295b7e65d6aee34d9a46bbbff5962fa22e9396c0778090fb45a8ef06d0faf",
       ".agents/pstack/plan-open.mjs": "87d9ac344a78478d142d5fa4f97b58ab3f9e94ce9b2d7839ec110bfd6e9e8b78",
-      ".agents/pstack/plan-page.mjs": "b9f188cdbf096251d73246abd64ade26eda0f6c13a819e6a68ecd4e5cb3a4913",
+      ".agents/pstack/plan-page.mjs": "f15fb14329048355924e30eac515a51cd63bc8dd6b9ed7f626720272f88d07f0",
       ".agents/pstack/status.mjs": "5579e56a262264709116ea570abc46fbd1bc01608153cef7abe64e1132efd511"
     },
-    "source": "9d41499954190949a676ee003dc3b3e39eb499f6"
+    "source": null
   },
   "pageTopic": {
     "field": "review_scopes",
-    "hub": "docs/research/features/{topic}.md"
+    "hub": "docs/research/review-scopes/{topic}.json"
   },
-  "bigWork": "a change to a package export, a `review_scopes` ledger decision (a best-api-review record or an architecture plan's target), or a plan with more than one phase"
+  "reviews": [
+    {
+      "id": "api-plan",
+      "rule": "A plan with an API or architecture target runs `architect` to pick the target, then a panel on the finished plan."
+    },
+    {
+      "id": "api-build",
+      "rule": "A build of an `api-plan` plan gets a panel on its diff."
+    },
+    {
+      "id": "pr",
+      "rule": "Before a PR is opened, its diff gets a panel."
+    },
+    {
+      "id": "external-pr",
+      "rule": "Someone else's PR, asked for as \"review PR <number>\", gets a review-only panel on its diff, briefed with its body, linked issue and plan."
+    }
+  ]
 }

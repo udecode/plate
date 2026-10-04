@@ -1,0 +1,80 @@
+{
+  "id": "2026-10-04-emoji-audit",
+  "scope": "emoji",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What should own emoji search, insertion and frequent-item preferences, and which state belongs outside the editor document?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 53. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Emoji persist as ordinary text; there is no schema, mapping or document property (BaseEmojiPlugin).",
+    "Copied controls own catalogs, filtering, the active option and presentation (docs/vision/plate.md).",
+    "A plugin stage used only by copied registry UI for product composition is registry-owned; package publication needs independent terminal consumers or a durable headless contract (docs/vision/plate.md).",
+    "Frequent-item preferences are per-user product state outside the document and plugin store.",
+    "The autocomplete query stays ordinary text and completion is one refusable transaction (docs/vision/plate.md)."
+  ],
+  "evidenceReuse": "No prior review. Used the 2026-09-07 extraction audit (19 declarations cut, shared query kept, picker owns frequent history) and the 2026-10-03 autocomplete plan, which retains catalogs, ranking and feature inserts and plans an emoji/react to combobox/react edge. Rechecked the live package, copied emoji.tsx, emoji-picker.tsx and emoji-toolbar-button.tsx, emoji.mdx and the platejs peers; git grep shows only copied UI, docs and generated proofs import platejs/emoji. Batch files are clean in git status.",
+  "summary": "The job is to type :shortcode or open a picker, find an emoji, insert it as text, and remember a user's frequent picks outside the document. platejs/emoji exports BaseEmojiPlugin (combobox trigger state, a createEmojiNode factory and insert(emoji) typed by @emoji-mart/data), createEmojiSearch and EmojiPlugin behind an optional @emoji-mart/data peer. The copied emoji.tsx puts the dataset in plugin state and runs the search. The copied picker holds a second default dataset, runs the same search and stores frequent counts in localStorage. Frequent preferences already have the right lifetime. The strongest keep argument is the 2026-09-07 extraction audit's shared query, but that audit predates the 2026-10-03 rule that copied controls own catalogs and filtering, and the search is catalog filtering, not a semantic invariant. The target moves the plugin, trigger, insertion and search into the copied emoji items, inserts with tx.text.insert, and deletes platejs/emoji, platejs/emoji/react, createEmojiNode and the optional peer.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "import { createEmojiSearch } from 'platejs/emoji'; import { EmojiPlugin } from 'platejs/emoji/react'; const emojiPlugin = EmojiPlugin.extend({ initialState: { data } }); tx.plugin(emojiPlugin).insert(emoji); // inserts createEmojiNode(emoji)",
+    "proposed": "// proposed, copied emoji.tsx: const EmojiPlugin = definePlugin('emoji', { editOnly: true, initialState: { trigger: ':', queryPattern } }); // trigger form follows the autocomplete plan; const search = createEmojiSearch(emojiData); // copied; onSelect={(tx) => { tx.text.insert(emoji.skins[0].native); }}"
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "What should own emoji search, insertion and frequent-item preferences, and which state belongs outside the editor document?",
+      "action": "reopens",
+      "reason": "It kept the shared search and the insertion contracts in the package; the 2026-10-03 copied-controls rule and the copied-only consumer census reopen that disposition."
+    }
+  ],
+  "alternatives": [
+    "Keeping the package loses. It keeps two entrypoints, an optional vendor peer and a createEmojiNode option whose only consumers are copied, against the copied-controls and terminal-consumer rules.",
+    "Move only createEmojiSearch to copied UI: partial, it still publishes a trigger-only plugin and a vendor-typed insert command with no semantic contract.",
+    "The strongest cut is chosen. Define the emoji plugin, trigger, search and text insertion in the copied emoji items with one dataset owner for combobox and picker, and delete platejs/emoji, platejs/emoji/react, createEmojiNode and the @emoji-mart/data optional peer.",
+    "Moving frequent preferences into plugin state or the document loses. They are per-user preferences with a browser or account lifetime, and the copied picker already holds them correctly."
+  ],
+  "proofLimits": "Source review and an in-repository git grep census only; no downstream consumer census, tests, browser or performance runs. Sequencing with the active autocomplete plan's Phase 2 emoji/react edge is unresolved, and the filterWords export in platejs/combobox raises the same question for the autocomplete unit.",
+  "references": [
+    "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts",
+    "packages/platejs/src/emoji/lib/createEmojiSearch.ts",
+    "packages/platejs/src/emoji/react/EmojiPlugin.tsx",
+    "packages/platejs/package.json",
+    "apps/www/src/registry/components/editor/emoji.tsx",
+    "apps/www/src/registry/components/editor/emoji-picker.tsx",
+    "apps/www/src/registry/components/editor/emoji-toolbar-button.tsx",
+    "content/docs/(plugins)/(functionality)/(combobox)/emoji.mdx",
+    "docs/vision/plate.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "docs/plans/2026-10-03-autocomplete-occurrence-host.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/emoji.tsx": "e6e4fac67b3185c33abe092e572349d1fdc7d64a5478e82b310544ef3343dd62",
+      "packages/platejs/src/emoji/lib/BaseEmojiPlugin.spec.ts": "e4f4477965c18fb0d10b12e3eceec9d3102c6a826f89eec10abdb95930f72c49",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/emoji": "6678458c4915f618f542a53fa4b45051eb7239a42ac3507d4afa91fd6d8c6fde"
+    },
+    "features": {
+      "capability/emoji": "0b63747118f520b5a31c67789756ac7f3e6fde6f7acfdc60de68ec0ad5be9b3e",
+      "example/value/emoji-value": "9cc073a63af8ad17ab5b38314c67d2eac07c328b17f8bc441d47635cbd8448d9",
+      "export/platejs/./emoji": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./emoji/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/emoji": "6678458c4915f618f542a53fa4b45051eb7239a42ac3507d4afa91fd6d8c6fde",
+      "ui/emoji": "913d8941eeaa00f798dc16311eb5523aacf13737ff35e5db35b026e3bb4db368",
+      "ui/emoji-picker": "a4eadc616f1f28ebaf3815da7eac8366f672a3a4dbd1a5c06370b362944c121e",
+      "ui/emoji-toolbar-button": "69de1bde474c4e429c74da4115ea2c7db41c5e8b0c3645ca0ec9e749c3d8a398"
+    },
+    "upstreams": []
+  }
+}

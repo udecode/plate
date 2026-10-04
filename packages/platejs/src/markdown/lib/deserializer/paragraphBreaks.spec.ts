@@ -1,3 +1,4 @@
+import { NodeApi } from '../../../core';
 import {
   createTestEditor,
   parseTestMarkdown,
@@ -6,6 +7,20 @@ import {
 
 describe('paragraph breaks preservation', () => {
   const editor = createTestEditor();
+
+  it('keeps a trailing line break after bold text', () => {
+    const serialized = serializeTestMarkdown(editor, {
+      document: {
+        children: [
+          { children: [{ bold: true, text: 'a\n' }], type: 'paragraph' },
+        ],
+      },
+    }).data;
+
+    expect(
+      NodeApi.string(parseTestMarkdown(editor, serialized).children[0])
+    ).toBe('a\n');
+  });
 
   it('preserve empty paragraphs during serialization and deserialization', () => {
     const originalValue = [

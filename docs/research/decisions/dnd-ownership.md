@@ -2,23 +2,7 @@
 title: Drag transfer and block policy ownership
 type: decision
 status: accepted
-updated: 2026-10-03
-review_scope: dnd
-current_review: 2026-10-02-dnd-schema-derived-landing
-review_history:
-  - ../review-records/2026-10-01-dnd-native-transfer-ownership.json
-  - ../review-records/2026-10-01-dnd-transfer-interrogation.json
-  - ../review-records/2026-10-02-dnd-library-choice.json
-  - ../review-records/2026-10-02-dnd-schema-derived-landing.json
-reconciled_executions:
-  - 2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit
-  - 2026-10-01-dnd-transfer-consolidation-design
-  - 2026-10-01-dnd-transfer-consolidation-design-amended
-  - 2026-10-02-dnd-transfer-consolidation-execution
-  - 2026-10-02-dnd-transfer-consolidation-review-repair-execution
-  - 2026-10-02-dnd-transfer-consolidation-docs-execution
-  - 2026-10-02-dnd-schema-derived-landing-execution
-  - 2026-10-03-dnd-schema-derived-landing-panel-repair-execution
+updated: 2026-10-04
 source_refs:
   - ../../plite/research/2026-10-02-dnd-library-choice/README.md
   - ../probes/2026-10-01-dnd/REPORT.md

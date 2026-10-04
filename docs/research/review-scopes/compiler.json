@@ -1,0 +1,56 @@
+{
+  "id": "compiler",
+  "title": "Schema compilation and CLI workflow",
+  "question": "When do generated contracts earn their cost over inference, and can compiler and CLI workflows share one semantic owner?",
+  "dependsOn": [
+    "schema"
+  ],
+  "prerequisiteReason": "Generated contracts must agree with extension/schema semantics before the optional CLI workflow is justified.",
+  "last": false,
+  "opportunity": {
+    "score": 8,
+    "reason": "Optional generation and checking should serve a current advanced workflow without becoming mandatory editor setup."
+  },
+  "owners": [
+    "packages/platejs/src/compiler/",
+    "packages/plitejs/src/core/schema-compiler.ts",
+    "packages/cli/src/bin.ts"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "packages/platejs/package.json",
+    "packages/platejs/src/compiler/",
+    "packages/plitejs/src/core/schema-compiler.ts"
+  ],
+  "consumers": [
+    "apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx",
+    "packages/cli/test/generate.test.ts"
+  ],
+  "proof": [
+    "packages/cli/test/generate.test.ts",
+    "packages/plitejs/test/schema-compiler.test.ts"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "packages/cli/src/generate.ts",
+    "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts",
+    "packages/platejs/src/react/stores/plate/useEditor.ts",
+    "packages/platejs/type-tests/combobox-input-contracts.ts",
+    "apps/www/src/registry/components/editor/more-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/link-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/plugins.ts",
+    "apps/www/src/registry/components/editor/plugins.generated.ts",
+    "apps/www/src/__tests__/package-integration/core-runtime/editor-api-inference.contract.ts",
+    "docs/research/decisions/plate-core-ownership.md",
+    "docs/research/decisions/generated-contract-boundary.md"
+  ],
+  "relatedScopes": [
+    "plate-api",
+    "distribution",
+    "persistence"
+  ],
+  "decision": "docs/research/decisions/generated-contract-boundary.md"
+}

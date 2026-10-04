@@ -457,6 +457,47 @@ describe('createReactEditor', () => {
       ).toThrow(/unknown editor element type "not-a-plate-element"/i);
     });
 
+    it('reads initialValue as a document, so a selection takes its option', () => {
+      const children = [{ children: [{ text: 'Hello' }], type: 'paragraph' }];
+      const selection = {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+        kind: 'text' as const,
+      };
+
+      expect(() =>
+        createReactEditor({
+          editor: createPliteEditor(),
+          initialValue: { children, selection } as never,
+        })
+      ).toThrow('field "selection" is not supported');
+      expect(
+        createReactEditor({
+          editor: createPliteEditor(),
+          initialValue: { children },
+          selection,
+        }).read.selection()
+      ).toMatchObject({ anchor: selection.anchor, focus: selection.focus });
+    });
+
+    it('refuses an initialValue field that a spread would hide', () => {
+      const children = [{ children: [{ text: 'Hello' }], type: 'paragraph' }];
+      const hidden = Object.defineProperty({ children }, 'title', {
+        enumerable: false,
+        value: 'Draft',
+      });
+      const accessor = Object.defineProperty({ children }, 'title', {
+        enumerable: true,
+        get: () => 'Draft',
+      });
+
+      for (const initialValue of [hidden, accessor]) {
+        expect(() =>
+          createReactEditor({ editor: createPliteEditor(), initialValue })
+        ).toThrow('JSON-compatible data');
+      }
+    });
+
     it('installs persisted element identity only when requested', () => {
       let nextId = 0;
       const editor = createHeadlessEditor({

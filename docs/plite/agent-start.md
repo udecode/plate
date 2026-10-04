@@ -14,8 +14,8 @@ source and proof commands in the Plate checkout.
 - Live implementation source: Plite packages under `packages/**`, docs under
   `content/docs/plite/**`, and examples under
   `apps/www/src/app/(app)/examples/plite/**`.
-- Current decisions and execution: [feature review ledger](../research/reviews.md)
-  and its generated feature hubs.
+- Current decisions and execution: the [review ledger](../research/schema.md#review-history),
+  through `lookup <scope>` and `show <scope>`.
 - Current runtime invariants: [architecture contract](references/architecture-contract.md).
   [This directory](overview.md) also contains historical migration material;
   inspect the specific document before using it as authority.

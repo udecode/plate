@@ -22,6 +22,8 @@ type EditorDocumentValue = {
 
 功能属性平铺在所属节点上。运行时 NodeKey 不写入文档。
 
+文档顶层只包含 `children`、`roots` 和 `meta`。所有加载路径都会拒绝其他顶层字段，应用数据请存入 `meta`。
+
 ## 应用 Schema
 
 ~~~ts
@@ -47,7 +49,9 @@ const EditorSchema = {
 
 `defineDocumentMigrations` 将递增迁移链绑定到应用 Schema。运行时和 CLI 都在 Schema
 适配前调用同一个 `migrateDocument`。命名 Schema 的 root 语法变化时，应递增版本并迁移
-已存储文档。`migrateV54` 将冻结的 v53.3.6 结构迁移到 v54，包括最终 AST
+已存储文档。迁移步骤的文档只包含 `children`、`roots` 和 `meta`；其他已存储的顶层字段
+会进入该步骤的 `legacy` 记录，由步骤提升到 `meta`，没有任何步骤提升的字段会被
+`migrateDocument` 拒绝。`migrateV54` 将冻结的 v53.3.6 结构迁移到 v54，包括最终 AST
 约束，并把每个旧代码块的行元素序列合并为一个带换行符的文本子节点。如果链接或媒体存储的
 URL 被当前 Schema 拒绝，迁移会将其链接文本、标题、`alt` 文本或文件名保留为普通内容。已存储的
 提及、表情、斜杠命令和脚注输入节点会变为普通文本形式的触发符与已输入的查询。

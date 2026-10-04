@@ -41,12 +41,19 @@ const isTriggerEnabled = (
     ? trigger(event, eventDetails)
     : trigger !== false;
 
+export const isImeConfirmKeyEvent = (event: KeyboardEvent) =>
+  event.isComposing ||
+  // oxlint-disable-next-line typescript/no-deprecated -- WebKit sends the IME confirmation Enter after compositionend with only this code.
+  event.keyCode === 229;
+
 export const dispatchPlateShortcut = (
   editor: Editor,
   event: KeyboardEvent,
   phase: 'keydown' | 'keyup',
   shortcutTable: readonly CompiledPlateShortcut[]
 ) => {
+  if (isImeConfirmKeyEvent(event)) return false;
+
   for (const compiled of shortcutTable) {
     if (!compiled[phase]) continue;
     const { shortcut } = compiled;

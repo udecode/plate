@@ -1,0 +1,61 @@
+{
+  "id": "toc",
+  "title": "Table of contents",
+  "question": "How should heading reads and navigation feed a table of contents?",
+  "dependsOn": [
+    "reads"
+  ],
+  "prerequisiteReason": "Heading reads must have a canonical owner before table-of-contents subscriptions and navigation are chosen.",
+  "last": false,
+  "opportunity": {
+    "score": 5,
+    "reason": "This can reuse canonical heading/search subscriptions instead of another index."
+  },
+  "owners": [
+    "packages/platejs/src/features/toc/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/components/editor/toc-static.tsx",
+    "apps/www/src/registry/components/editor/toc.spec.tsx",
+    "apps/www/src/registry/components/editor/toc.tsx",
+    "apps/www/src/registry/examples/values/cn/toc-value.tsx",
+    "apps/www/src/registry/examples/values/toc-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/features/toc/index.ts",
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts",
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts",
+    "packages/platejs/src/features/toc/lib/index.ts",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/toc.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "basic",
+    "accessibility",
+    "search"
+  ],
+  "historyCandidates": [
+    "docs/plans/4935-use-toc-sidebar-state-types.md",
+    "docs/plans/2026-08-29-toc-click-scroll-regression.md",
+    "docs/plans/2026-08-25-audit-shadcn-protocol-parity.md",
+    "docs/plans/2026-07-13-plate-next-tag-toc-toggle-package-reviews.md",
+    "docs/plans/2026-06-17-autoclosure-skill-and-template.md",
+    "docs/plans/2026-04-09-plite-deletion-closure-protocol-rollout.md",
+    "docs/plans/2026-04-09-plite-deletion-closure-protocol-hardening-consensus-plan.md",
+    "docs/plans/2026-04-08-toc-click-spec.md",
+    "docs/plans/2026-04-08-toc-click-implementation.md",
+    "docs/plans/2026-04-07-debug-toc-demo-nav.md",
+    "docs/plans/2026-04-07-debug-toc-demo-nav-progress.md",
+    "docs/plans/2026-04-07-debug-toc-demo-nav-findings.md",
+    "docs/plans/2026-04-06-toc-interaction-polish.md",
+    "docs/plans/2026-04-03-editor-protocol-matrix-completion.md",
+    "docs/plans/2026-03-23-toc-coverage-pass.md"
+  ]
+}

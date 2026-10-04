@@ -67,7 +67,9 @@ provider, publisher, source IDs, or precedence machinery.
   generated `sourceFingerprints` for historical envelopes. Bind `plugins` and
   the named `schema` in the definition, run `migrateDocument` at the storage
   boundary, and pass its current `output` to the editor. Raw documents require
-  `source: number | 'current'` at that call. Import the builder, runner, and
+  `source: number | 'current'` at that call. A legacy top-level field reaches
+  a step through `legacy` and is lifted into `meta`; never teach a cast that
+  reads it from the step's document. Import the builder, runner, and
   Plate release steps from `platejs/migrations`. Never teach editor migration
   options, plugin preparation hooks, migration plugins, historical normalizers,
   per-node versions, or CLI-only runtime policy.

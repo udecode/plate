@@ -32,6 +32,23 @@ const dispatch = ({
 };
 
 describe('dispatchPlateShortcut', () => {
+  it('runs no shortcut for a composing key or an IME-confirm Enter', () => {
+    const enter = mock();
+    const editor = createEditor({ enter: { handler: enter, keys: 'enter' } });
+    const composing = dispatch({
+      editor,
+      event: { code: 'Enter', isComposing: true, key: 'Enter' },
+    });
+    const confirm = dispatch({
+      editor,
+      event: { code: 'Enter', key: 'Enter', keyCode: 229 },
+    });
+
+    expect(enter).not.toHaveBeenCalled();
+    expect(composing.defaultPrevented).toBe(false);
+    expect(confirm.defaultPrevented).toBe(false);
+  });
+
   it('dispatches the first handled shortcut in priority order', () => {
     const fallback = mock();
     const specific = mock();

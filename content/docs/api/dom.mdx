@@ -56,6 +56,23 @@ Focus the editor.
 
 Clear the native DOM selection and the editor selection.
 
+## Typed text
+
+#### `editor.api.react.subscribeTypedText(listener: (typed: TypedText) => void): () => void`
+
+Call `listener` with the text each mounted editable types: an `insertText`
+input or IME composition commit whose one change is an insertion ending at a
+collapsed caret. `typed.editable` is the editable root element that received
+the input, `typed.range` the inserted text in the model, ending at the caret,
+and `typed.text` that text. Returns the unsubscribe function.
+
+Paste, drop, yank, replacement text, history replay, remote edits and typing
+over a selection report nothing, and so does a commit that an earlier commit
+listener edits before the report. Android keyboards that paste through
+`insertText` report the pasted text. When an Android keyboard sends typed and
+pasted text for the same text node before one `input` event, that input reports
+nothing.
+
 ## DOM scope
 
 #### `editor.api.dom.root(): HTMLElement | null`
@@ -134,6 +151,14 @@ range is not currently mappable.
 
 Resolve the bounding rect for an editor range. Returns `null` when the range is
 not currently mappable to mounted DOM.
+
+#### `editor.api.dom.textToCaret(from: Point): string | null`
+
+Read the DOM text from `from` to the native caret, including IME preedit text
+the editor has not received yet. Non-editable, retained and nested-editor DOM
+is left out. Returns `null` when the editor root or `from` is not mounted, when
+`from` is in another root, or when the caret is outside this editor or before
+`from`.
 
 #### `editor.api.dom.resolveVisualPoint(point: Point, options: { affinity?: SelectionAssociation; direction: 'left' | 'right'; unit: 'character' | 'word' }): DOMVisualPoint | null`
 

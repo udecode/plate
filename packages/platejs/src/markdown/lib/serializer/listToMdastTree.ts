@@ -7,7 +7,11 @@ import {
   convertNodesSerialize,
   encodeMdastNode,
 } from './convertNodesSerialize';
-import { isMdFlowContent, isMdPhrasingContent } from './mdastContent';
+import {
+  isMdFlowContent,
+  isMdLineContent,
+  isMdPhrasingContent,
+} from './mdastContent';
 import { reportOmittedProperties } from './reportOmittedProperties';
 
 // List topology Markdown writes through list structure, never tag attributes.
@@ -178,7 +182,7 @@ export const listToMdastTree = (
       content = [
         {
           children: convertNodesSerialize(node.children, options).filter(
-            isMdPhrasingContent
+            isMdLineContent
           ),
           type: 'paragraph',
         },

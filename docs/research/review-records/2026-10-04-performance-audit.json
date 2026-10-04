@@ -1,0 +1,157 @@
+{
+  "id": "2026-10-04-performance-audit",
+  "scope": "performance",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest pursue verdict, at queue position 33. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "A receipt records what actually ran (contract, host, processes, artifact digests and outcome), and a failed or incomplete newer run never leaves an older passing artifact as the latest evidence.",
+    "Stored evidence counts as current only against the inputs its producer recorded, plus served-build identity for browser producers; a producer that records nothing stays unknown.",
+    "A performance verdict needs an independent correctness reference per served build, complete interleaved pairs and a noise rule frozen before reading results; budget failures stay failures.",
+    "Keep distinct metric domains, original archived receipts and verdicts, and private Plite instrumentation; no universal benchmark platform or public profiler without a second job.",
+    "Do not call perf closed from rerender or locality evidence alone, and do not hide latency behind benchmark tricks (VISION.md common essentials)."
+  ],
+  "evidenceReuse": "Reused the 2026-09-30 value and cuts reviews, the design and execution plans, and the S1, execution, repairs and closure outcomes with their open-findings table. Rechecked in live source receipt writing on every outcome, recipe variable stripping, the admitArtifact states and reason codes, the measuredInputs reader, writeBenchmarkResult ordering, the S5 policies, the preflight, attribution and work assessors, the README policy teaching, and which producers now record measuredInputs. Confirmed that the adopted code landed in commit 4e16eada7d and has no later commit or uncommitted change. The only uncommitted perf-adjacent edits are staged methodology additions in .agents/rules/benchmark.mdc and methodology.md from another session.",
+  "summary": "The job is to tell a real runtime improvement or regression apart from noise, stale artifacts and wrong output, and to reuse stored evidence only when it still describes current source. Live tooling/scripts/bench-targets.mjs writes a receipt for every run, including failures, strips recipe-named variables from the inherited environment, and admitArtifact downgrades evidence to stale or unknown on a failed latest run, a changed contract, bytes no receipt describes, changed recorded inputs or no recorded inputs; benchmark-artifact.ts writes measured data before strict validation; the S5 evaluator fails a cell whose arms serve the same build, disagree on the preflight reference or whose smallest work gain sits inside arm variation. The strongest cuts are deleting admission and rerunning everything on demand, which brings back the reproduced false ok rows on shared dashboards and forbids evidence reuse, and building a generic paired-experiment platform, which still has only one evaluator consumer. The open findings (the 0.8-1.2 sampled/trace guard sits next to identical-build noise at 1.1991, most lab producers record no inputs, host-generated tracked outputs, the lab's in-repo import of the target CLI) change parameters or coverage under the same design and already carry owners, so the adopted design stays.",
+  "verdict": "stop",
+  "previous": "2026-09-30-performance-evidence-cuts",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-30-performance-evidence-cuts",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "supersedes",
+      "reason": "Its Pursue target is adopted and holds in live source; this Stop keeps that design and leaves the remaining calibration and coverage items with the owners named in the execution plan."
+    },
+    {
+      "record": "2026-09-30-performance-evidence-design-cuts",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "The amended design (recipe-scoped environment, no attempt history, no declared environment map) is what live source implements."
+    },
+    {
+      "record": "2026-09-30-performance-evidence-s1",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "One recipe per command and a latest receipt per target still hold in bench-targets.mjs."
+    },
+    {
+      "record": "2026-09-30-performance-evidence-design-wording",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "Wording outcome of the design; nothing in live source contradicts it."
+    },
+    {
+      "record": "2026-09-30-performance-evidence-design-env",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "Recipe-named variables are still removed from the inherited environment at bench-targets.mjs 787-791."
+    },
+    {
+      "record": "2026-09-30-performance-evidence-s1-repairs",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "Failure receipts and environment isolation repairs are present in live source."
+    },
+    {
+      "record": "2026-09-30-performance-evidence-execution",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "S2 to S5 adoption (admission, interpretation metadata, the S5 evaluator and write-before-validate producers) is present and unchanged since commit 4e16eada7d."
+    },
+    {
+      "record": "2026-09-30-performance-evidence-repairs",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "The shared preflight reference rule, failed-run rows and measuredInputs-only admission are present in live source."
+    },
+    {
+      "record": "2026-10-01-performance-evidence-closure",
+      "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+      "action": "retains",
+      "reason": "The closure and its open-findings table remain the owner record for the guard calibration, producer coverage, tracked-output and lab-boundary follow-ups."
+    }
+  ],
+  "alternatives": [
+    "Keeping the adopted design is selected. Receipts, loader admission, write-before-validate producers and one frozen S5 evaluator close every reproduced defect with no lifecycle machinery beyond them.",
+    "Deleting admission and stored-evidence reuse, rerunning every target when evidence is needed, loses. Dashboards and health would again show mismatched-source artifacts as ok (the 74-row defect), and the repository rule to reuse valid evidence would have no safe check.",
+    "Building a generic paired-experiment platform shared by every lane loses. The S5 evaluator is the only paired evaluator consumer, and the benchmark rule already owns the paired method (interleaving, frozen budgets and noise rule) for other lanes.",
+    "Restoring immutable attempt history or a complete loaded-source census loses. The cuts review showed no defect needs attempt history, and the closure found the census would leave most rows unknown, just as producer-recorded inputs do.",
+    "Recalibrating the S5 sampled-to-trace guard, or adding measuredInputs to the remaining producers, are valid follow-ups that change a parameter or coverage, not the design. Each is already an owned open finding in the execution plan."
+  ],
+  "proofLimits": "Source review only; no bench target, S5 matrix, Playwright spec or test suite was run, so the current admission counts per artifact were not regenerated. The noise distribution of the S5 sampled/trace ratio rests on the single identical-build observation the closure recorded. Performance acceptance, all-target reruns and the native code-block budget gap are outside this review. Staged methodology edits in .agents/rules/benchmark.mdc and methodology.md from another session add guidance but do not change this verdict.",
+  "references": [
+    "tooling/scripts/bench-targets.mjs",
+    "tooling/scripts/bench-targets.test.mjs",
+    "benchmarks/editor/src/index.mjs",
+    "benchmarks/editor/benchmarks/markdown-streaming-measurement.mjs",
+    "benchmarks/editor/benchmarks/markdown-streaming-measurement.test.mjs",
+    "benchmarks/editor/benchmarks/benchmark-artifact.ts",
+    "benchmarks/editor/benchmarks/benchmark-artifact.test.ts",
+    "benchmarks/editor/README.md",
+    "benchmarks/editor/package.json",
+    "benchmarks/targets/slate-v2.json",
+    "apps/www/tests/browser/markdown-streaming-contract.spec.ts",
+    "docs/plans/2026-09-30-performance-evidence-execution.md",
+    "docs/plans/2026-09-30-performance-evidence-design.md",
+    "docs/research/decisions/performance-candidate-reuse.md",
+    "docs/research/review-records/2026-09-30-performance-evidence-cuts.json",
+    "docs/research/review-records/2026-10-01-performance-evidence-closure.json",
+    "docs/research/features/performance.md",
+    ".agents/rules/benchmark.mdc"
+  ],
+  "source": {
+    "files": {
+      "tooling/scripts/bench-targets.mjs": "8b4041033e184af47e1d023ccc25a047278815f880f2a2d182896ccf42dcc4bd",
+      "benchmarks/targets/slate-v2.json": "dceac93cfbc9b0d489aa401bfcf78765b18b9872b3a22944cd128a480eaa8e38",
+      "benchmarks/editor/research/benchmark-registry.json": "c5b0ef7fb581b4ecc77eb12eadb7cfd861064bd67f0a667d2965fb0be368046f",
+      "benchmarks/editor/src/index.mjs": "e7de8391ee5a18f1a5bfef0f30fc6488580bca5bd34db3e5afd95a4cf7f297e6",
+      "packages/plitejs/src/core/profiling.ts": "f5e8ea27a4eda605ef7d53c75907aa9904bf89a3ced01db67d70d55fcf4bf715",
+      "packages/plitejs/src/react/render-profiler.ts": "91078a23226b1906d000a258e602d3b6426bc26603dd691667e297f72d45051a",
+      "benchmarks/editor/README.md": "2332b88cbf46ce0b08167d35d4acade757f491e4d9822d79157909b0fa755bd0",
+      "benchmarks/editor/research/evidence-source-map.md": "2dc3969934e538d5d045f1a9dc99f15bae0c03031a1097928e271728054e00d9",
+      "benchmarks/editor/package.json": "ee860dc24fcdcbe052c52b0ed48a9dd0a2847b23e5b24a899936fd10a95ec165",
+      "apps/www/scripts/run-homepage-input-perf.mts": "c34c77d9eaf23f71a5061c35ae304a5e5fbc48545267c721260ecff3654adedf",
+      "apps/www/scripts/run-table-perf.mts": "0cad03a4f124d94502a670b1faa4bc54e4ca07bda9b9219efe54bec6107acc47",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts": "69ce2e81ce9def866211ce2826d5f8370b94af7089030db8f5bf4c59380bbee6",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/scripts/summarize-matrix-ratio125.ts": "dd9aff2c188d61e2ff637b941b4e33d74f01df872b9daebebecdb4921960d465",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md": "a2e12253d12bf7c4587cf0061796c57c6a9cc231eca21f7caa21486cb9df4ced",
+      "tooling/scripts/bench-targets.test.mjs": "7da5f12b304f95b00d0404316a676b2b7e910f47a325de34ae6c1da92c94c6d5",
+      "benchmarks/editor/benchmarks/external-text-measurement.test.mjs": "452b0b9f9fe4bc5d94fb42fe73886f1e911a87fe09355238e4fb027d9ec0b96b",
+      "benchmarks/editor/benchmarks/code-block-highlight-oracle.test.mjs": "dc4bb9d69a7d16925c58c35729adfdcd39fe5a23a842f50af1b6c8799d45e41d",
+      "benchmarks/editor/benchmarks/benchmark-artifact.test.ts": "aea943a2848e1b5b0d4b67b40fe85bb5b0c6fab3aed66d9861ac1558e6eb30bc",
+      "docs/research/probes/2026-09-30-performance-review/reproduce.mjs": "8729b98a352c61d4ab3265004defc3ec9ab496511af6a9c4621782af363c32ad",
+      "docs/research/probes/2026-09-30-performance-review/RESULTS.json": "7a947572ee2831397726dbc565fe87fddb852a096a42e5d2bf804077592198ca",
+      "benchmarks/targets/history/slate-v2-latest.json": "4e9e125ba78c0f9a49198ab59a9db9fe59e97bff44c16900be58f6999c1ed356",
+      "benchmarks/targets/reports/slate-v2.md": "e2d6495dc88d384eac2da7c2a38d0d2d85ed146a2781652235dd3031f5ffc258",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md": "7a89f49cf14b5ff0b88c420d0779bb9169948a9bb883d4b83d1603419bfa2bad",
+      "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md": "5bb9de499989bfe8e140827e706d4e87ca640c5940925924628aa7faee2828a6",
+      "docs/plans/2026-09-10-editor-performance-execution.md": "b0fa7f684c7493297095f7a76fc00ec4bd389ef459704a8b31c8701291e856e8",
+      "docs/plans/2026-09-10-editor-performance-follow-through.md": "9cb0cb9500b278740b5b98dc5f46d3f145e2bd2c11bdd19e1ef39747addca59c",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt": "1236eba2d944655ada507c41c74203212df6622d7f688aa260feaf94a92e6dcf",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json": "16980a7a7d8c78014790ee6571df736433943d8b5a81aa92334494e25731cd46",
+      "docs/research/review-records/2026-09-30-content-root-locations-closure.json": "b6a1ee96994cc9db2cfae4113f92beb124937fad3155dbf94d1cbe642e3d29ff",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "packages/plitejs/src/index.ts": "f4d8cbcebb860555f7cf574f2566ebe33cd106d175c12ca330b1aa16396c2cb2",
+      "packages/plitejs/src/react/index.ts": "7357ed7a95d6599977eda6bb16d88389bbfd68d4f150af621e5b429361e48d97",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "benchmarks/editor/benchmarks": "c0ac58e98d234f039eb82b764b628844fa1360e3c6074a277e05cbd551914944"
+    },
+    "features": {
+      "plitejs/core/profiling": "6092b7d1a78bd8c662a494007c646d69bc76c71fb58870b58acdd85d663faffd",
+      "tooling/performance": "1c45ef7c1bcd76efd895f39a9d2429f2b64699dcd4def3d84d60ba46817955c3"
+    },
+    "upstreams": []
+  }
+}

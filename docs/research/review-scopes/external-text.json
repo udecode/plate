@@ -1,0 +1,91 @@
+{
+  "id": "external-text",
+  "title": "External text editors and shared views",
+  "question": "Which editing and selection authority may an external text view own while sharing canonical document text, history and other views?",
+  "dependsOn": [
+    "runtime",
+    "selection"
+  ],
+  "prerequisiteReason": "Shared-view lifetime and selection authority must be established before an external editor can own input.",
+  "last": false,
+  "opportunity": {
+    "score": 9,
+    "reason": "External adapters have distinct focus, IME, selection and text-ownership contracts from native syntax rendering."
+  },
+  "owners": [
+    "packages/plitejs/src/react/external-text.ts",
+    "packages/plitejs/src/react/editable/external-text-binding.ts",
+    "packages/plitejs/src/react/editable/external-text-runtime.ts",
+    "packages/plitejs/src/react/components/editable-external-text.tsx",
+    "packages/platejs/src/code-block/codemirror/createCodeMirrorAdapter.ts"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/external-text.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/registry/components/editor/code-block-codemirror.tsx",
+    "apps/www/src/registry/examples/code-block-codemirror-demo.tsx",
+    "apps/www/src/registry/examples/code-block-views-demo.tsx",
+    "apps/www/tests/browser/code-block-codemirror.spec.ts",
+    "apps/www/tests/browser/code-block-views.spec.ts",
+    "packages/platejs/package.json",
+    "packages/platejs/src/code-block/",
+    "packages/plitejs/src/react/editable/external-text-binding.ts",
+    "packages/plitejs/src/react/editable/external-text-runtime.ts",
+    "packages/plitejs/src/react/external-text.ts"
+  ],
+  "consumers": [
+    "apps/www/src/app/(app)/examples/plite/_examples/external-text.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/authored-changes.tsx",
+    "apps/www/src/registry/components/editor/code-block-codemirror.tsx",
+    "apps/www/src/registry/examples/code-block-codemirror-demo.tsx",
+    "apps/www/src/registry/examples/code-block-views-demo.tsx"
+  ],
+  "proof": [
+    "packages/plitejs/test/react/external-text-contract.test.tsx",
+    "packages/platejs/src/code-block/codemirror/createCodeMirrorAdapter.spec.ts",
+    "packages/platejs/src/code-block/codemirror/createCodeMirrorAdapter.integration.spec.tsx",
+    "packages/platejs/type-tests/external-text-slot-contracts.tsx",
+    "apps/plite/tests/plite-browser/donor/examples/external-text.test.ts",
+    "apps/www/tests/browser/code-block-codemirror.spec.ts",
+    "apps/www/tests/browser/code-block-views.spec.ts",
+    "docs/plans/artifacts/2026-09-15-external-text-plan/scale-adopted.json"
+  ],
+  "evidenceInputs": [
+    "apps/www/playwright.config.ts",
+    "apps/www/package.json",
+    "packages/plitejs/src/react/components/editable-text-blocks.tsx",
+    "packages/plitejs/src/react/components/editable-dom-commit-fence.tsx",
+    "packages/plitejs/src/react/editable/interaction-owner.ts",
+    "packages/plitejs/src/react/editable/editable-dom-runtime.ts",
+    "packages/plitejs/src/authored/decisions.ts",
+    "packages/plitejs/src/authored/state.ts",
+    "packages/plitejs/src/authored/types.ts",
+    "packages/plitejs/src/authored/authored.ts",
+    "packages/plitejs/test/public-api-contract.tsx",
+    "packages/plitejs/vitest.config.mjs",
+    "packages/plitejs/test/react/vitest-setup.ts",
+    "packages/plitejs/package.json",
+    "packages/platejs/package.json",
+    "packages/platejs/src/code-block/codemirror/index.ts",
+    "packages/platejs/tsconfig.entrypoints/code-block-codemirror.json",
+    "apps/plite/tests/plite-browser/authored-changes.spec.ts",
+    "content/docs/(guides)/external-text.mdx",
+    "content/docs/(plugins)/(elements)/code-block.mdx",
+    "bunfig.toml",
+    "config/plite-source-aliases.ts",
+    "tooling/config/bunTestSetup.ts",
+    "tooling/config/tsconfig.test.json",
+    "tooling/scripts/run-entrypoint-task.mjs",
+    "docs/plans/artifacts/2026-09-15-external-text-review/adapter-ordering.probe.test.ts",
+    "docs/plans/artifacts/2026-09-15-external-text-review/synchronous-candidate.ts",
+    "docs/plans/artifacts/2026-09-15-external-text-review/proof.md"
+  ],
+  "relatedScopes": [
+    "code",
+    "native",
+    "history",
+    "authored"
+  ],
+  "decision": "docs/research/decisions/external-text-ownership.md"
+}

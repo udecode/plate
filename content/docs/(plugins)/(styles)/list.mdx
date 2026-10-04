@@ -111,7 +111,9 @@ HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listSt
 MDAST `list.ordered` maps to `listType`. Both start policies serialize as the
 currently visible `list.start`, and a non-default structural MDAST start parses
 as `listRestart`. Markdown cannot retain the conditional-versus-forced
-distinction. Task checkboxes map to task `listType` plus `checked`.
+distinction. Task checkboxes map to task `listType` plus `checked`. Inside a
+GFM table cell, list paragraphs are written as inline `<ul>`, `<ol start>`, and
+`<li>` HTML and read back as lists; see [Markdown](/docs/markdown#table-cells).
 
 ## API Reference
 

@@ -65,6 +65,7 @@ const SlashProbe = ({
 const setup = (
   text = 'Hi ',
   {
+    beforeMount,
     caret = { offset: text.length, path: [0, 0] },
     children = [{ text }],
     previous = /^\s?$/,
@@ -72,6 +73,7 @@ const setup = (
     slash = false,
     trigger = '@',
   }: {
+    beforeMount?: (editor: ReturnType<typeof createEditor>) => void;
     caret?: { offset: number; path: number[] };
     children?: Array<{ bold?: true; text: string }>;
     previous?: RegExp | null;
@@ -96,6 +98,9 @@ const setup = (
     shortcuts,
     initialValue: [{ children, type: 'paragraph' }],
   });
+
+  beforeMount?.(editor);
+
   const rendered = render(
     <EditorRoot editor={editor}>
       <EditorContent />
@@ -274,6 +279,52 @@ describe('useCombobox', () => {
     expect(box!.match?.query).toBe('jo');
   });
 
+  it('makes the editor root a combobox for the occurrence and restores it after', async () => {
+    const { editable } = setup();
+    const aria = () => ({
+      expanded: editable.getAttribute('aria-expanded'),
+      haspopup: editable.getAttribute('aria-haspopup'),
+      multiline: editable.getAttribute('aria-multiline'),
+      role: editable.getAttribute('role'),
+    });
+
+    await type(editable, '@jo');
+    await waitFor(() => expect(box?.match?.query).toBe('jo'));
+
+    expect(aria()).toEqual({
+      expanded: 'true',
+      haspopup: 'listbox',
+      multiline: null,
+      role: 'combobox',
+    });
+
+    act(() => box!.dismiss());
+
+    expect(aria()).toEqual({
+      expanded: null,
+      haspopup: null,
+      multiline: 'true',
+      role: 'textbox',
+    });
+  });
+
+  it('restores an attribute the app changed during the occurrence to the app value', async () => {
+    const { editable } = setup();
+
+    await type(editable, '@jo');
+    await waitFor(() => expect(box?.match?.query).toBe('jo'));
+
+    act(() => editable.setAttribute('role', 'application'));
+    await type(editable, 'a');
+    await waitFor(() => expect(box?.match?.query).toBe('joa'));
+
+    expect(editable.getAttribute('role')).toBe('combobox');
+
+    act(() => box!.dismiss());
+
+    expect(editable.getAttribute('role')).toBe('application');
+  });
+
   it('leaves keys to the editor while the popup is hidden', async () => {
     popupOpen = false;
     const { editable } = setup();
@@ -375,6 +426,115 @@ describe('useCombobox', () => {
     await waitFor(() => expect(box!.match).toBeNull());
   });
 
+  it('does not open for typing reported while another element has focus', async () => {
+    const { editable } = setup('Hi ');
+    const button = document.createElement('button');
+
+    document.body.append(button);
+    try {
+      await act(async () => {
+        editable.focus();
+      });
+      await act(async () => {
+        button.focus();
+      });
+      await act(async () => {
+        editable.dispatchEvent(
+          new InputEvent('beforeinput', {
+            bubbles: true,
+            cancelable: true,
+            data: '@',
+            inputType: 'insertText',
+          })
+        );
+      });
+
+      expect(box?.match).toBeNull();
+      expect(editable.getAttribute('role')).toBe('textbox');
+    } finally {
+      button.remove();
+    }
+  });
+
+  it('does not open on a trigger a commit listener writes over typed text', async () => {
+    let rewritten = false;
+    const { editable, editor } = setup('Hi ', {
+      beforeMount: (target) => {
+        // Subscribed before the popup's owner, so it rewrites the typed x first.
+        target.subscribeCommit(() => {
+          if (rewritten || target.read.text.string([0]) !== 'Hi x') return;
+          rewritten = true;
+          target.update((tx) => {
+            tx.selection.set({
+              anchor: { offset: 3, path: [0, 0] },
+              focus: { offset: 4, path: [0, 0] },
+            });
+            tx.text.insert('@');
+          });
+        });
+      },
+    });
+
+    await insert(editable, 'x');
+
+    expect(text(editor)).toBe('Hi @');
+    expect(box?.match).toBeNull();
+  });
+
+  it('does not open on an untyped trigger a commit listener leaves in the typed range', async () => {
+    let removed = false;
+    const { editable, editor } = setup('Hi @', {
+      beforeMount: (target) => {
+        target.subscribeCommit(() => {
+          if (removed || target.read.text.string([0]) !== 'Hi @@') return;
+          removed = true;
+          target.update((tx) => {
+            tx.selection.set({
+              anchor: { offset: 3, path: [0, 0] },
+              focus: { offset: 4, path: [0, 0] },
+            });
+            tx.text.delete();
+            tx.selection.set({
+              anchor: { offset: 4, path: [0, 0] },
+              focus: { offset: 4, path: [0, 0] },
+            });
+          });
+        });
+      },
+      caret: { offset: 3, path: [0, 0] },
+    });
+
+    await insert(editable, '@');
+
+    expect(text(editor)).toBe('Hi @');
+    expect(box?.match).toBeNull();
+  });
+
+  it('keeps the root a combobox when one insertion ends a query and types a new trigger', async () => {
+    const { editable } = setup('Hi ');
+    const roles: Array<string | null> = [];
+
+    await type(editable, `@${'j'.repeat(75)}`);
+    expect(editable.getAttribute('role')).toBe('combobox');
+
+    const collect = (records: MutationRecord[]) => {
+      for (const record of records) roles.push(record.oldValue);
+    };
+    const observer = new MutationObserver(collect);
+
+    observer.observe(editable, {
+      attributeFilter: ['role'],
+      attributeOldValue: true,
+    });
+    await insert(editable, ' @');
+    collect(observer.takeRecords());
+    observer.disconnect();
+    roles.push(editable.getAttribute('role'));
+
+    expect(box?.match?.trigger).toBe('@');
+    expect(roles).not.toContain('textbox');
+  });
+
   it('opens only for typed triggers, never for a caret placed after one', async () => {
     const { editable, editor } = setup('Hi @jo');
 
@@ -459,6 +619,28 @@ describe('useCombobox', () => {
       ).toBe(false);
     });
     expect(text(editor)).toBe('Hi @joa');
+  });
+
+  it('refuses a match from a dismissed occurrence on a newer one with equal text', async () => {
+    const { editable, editor } = setup();
+
+    await type(editable, '@jo');
+    await waitFor(() => expect(box?.match?.query).toBe('jo'));
+
+    const dismissed = box!.match!;
+
+    act(() => box!.dismiss());
+    await type(editable, ' @jo');
+    await waitFor(() => expect(box?.match?.query).toBe('jo'));
+
+    act(() => {
+      expect(
+        box!.complete(dismissed, (tx) => {
+          tx.text.insert('!');
+        })
+      ).toBe(false);
+    });
+    expect(text(editor)).toBe('Hi @jo @jo');
   });
 
   it('rolls back the deletion when the callback throws or returns a promise', async () => {

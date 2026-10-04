@@ -177,8 +177,27 @@ const current = migrateDocument(legacyDocument, {
 }).output;
 ```
 
-只有当原始文档已使用当前 schema 时，才使用 `source: 'current'`。persisted envelope
-不能同时传入 `source` option。
+只有当原始文档已使用当前 schema 时，才使用 `source: 'current'`。显式 `source` 会把输入
+当作原始文档读取，所以 persisted envelope 不要传入它。
+
+步骤的 `document` 只包含 `children`、`meta` 和 `roots`。文档顶层存储的其他字段会进入
+`legacy`。把字段提升到 `meta`，再把剩余字段作为 `legacy` 返回；省略 `legacy` 的步骤会原样
+传递它。没有任何步骤提升的字段会被 `migrateDocument` 拒绝。
+
+```ts
+import type { DocumentMigration } from "platejs/migrations";
+
+const liftTitle: DocumentMigration = ({
+  document,
+  legacy: { title, ...legacy },
+}) => ({
+  document:
+    title === undefined
+      ? document
+      : { ...document, meta: { ...document.meta, title } },
+  legacy,
+});
+```
 
 <Callout type="warning" title="历史和协作需要切换边界">
   文档迁移不会重写已序列化的 history 或已有内容的 Yjs room。离线迁移或丢弃旧
@@ -362,7 +381,7 @@ scaffold 包含带类型的 `FromValue`、`ToValue` 快照、指纹和结构 dif
 加入 `EditorMigrations.steps`，key 是该步骤生成的版本，并把导出的 `from` 指纹绑定到
 `sourceFingerprints`。
 
-编辑器会在初始和延迟完整文档加载时运行已配置的迁移。离线 JSON 文件的 entry module
+离线 JSON 文件的 entry module
 使用下方命令要求的精确导出名：`EditorKit`、`EditorSchema` 和 `EditorMigrations`。即使
 module 还导出其他数组或类似 schema 的对象，显式名称也能让可执行 runner 保持确定性。
 
@@ -375,6 +394,9 @@ cat document.json | pnpm exec plate migrate run --entry src/editor.ts --stdin
 没有 `--write` 时命令只做 dry run。`--check` 在任一文档需要迁移时返回非零退出码。
 `--stdin` 将迁移后的 envelope 写到标准输出，不修改存储。envelope selection 会通过同一
 文档迁移和准备 pipeline 完成映射并保留。
+
+原始文档需要 `--from <version>` 或 `--from current`。传入 `--from` 时，每个输入都按原始文档
+读取，所以 persisted envelope 不要带它运行。
 
 ### 编译 Schema 产物
 

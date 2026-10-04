@@ -2,33 +2,18 @@
 title: Comments data ownership
 type: decision
 status: accepted
-updated: 2026-09-19
-review_scope: comments
-current_review: 2026-09-18-comments-attachment-design-gate
-reconciled_executions:
-  - 2026-09-18-comments-attachment-design-partial
-  - 2026-09-18-comments-canonical-provenance-analysis
-  - 2026-09-18-comments-attachment-design-complete
-  - 2026-09-18-comments-attachment-discovery-implementation
-review_history:
-  - ../review-records/2026-09-04-comments-ownership.json
-  - ../review-records/2026-09-05-comments-execution.json
-  - ../review-records/2026-09-09-comments-package-data.json
-  - ../review-records/2026-09-16-comments-anchor-deletion-history.json
-  - ../review-records/2026-09-16-comments-history-api-design.json
-  - ../review-records/2026-09-16-comments-history-api-last-pass.json
-  - ../review-records/2026-09-17-comments-mounted-view-ownership.json
-  - ../review-records/2026-09-18-comments-attachment-and-discovery.json
-  - ../review-records/2026-09-18-comments-attachment-design-gate.json
+updated: 2026-10-04
 source_refs:
   - ../../plans/2026-09-09-comments-package-data.md
   - ../../plans/2026-09-16-comments-history-api.md
   - ../../plans/2026-09-18-comments-attachment-discovery.md
 related:
-  - ../reviews.md#comments
+  - ../review-scopes/comments.json
 ---
 
 # Comments data ownership
+
+**Audit of 2026-10-04.** Stop. The evidence the Defer named, a native retained-target runtime that passes a frozen cold, changed-state, count-times-depth and retention comparison, now exists and its selected design landed in live source, and no stronger delete or replacement lane survives the hard laws. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-comments-audit` hold the evidence.
 
 The Comments package owns serializable thread records, editor binding,
 range mapping, subscriptions and disposal. Applications own database I/O,
@@ -200,5 +185,5 @@ and the isolated production benchmark pass. Per-thread message rendering,
 changed-baseline Yjs transport, persisted browser undo and non-text targets
 remain separate jobs.
 
-[History and proof entry points](../reviews.md#comments) retain the earlier
+History and proof entry points (`node tooling/scripts/review-ledger.mjs show comments`) retain the earlier
 audit, execution and adoption records alongside this correction.

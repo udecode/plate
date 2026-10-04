@@ -1,0 +1,3190 @@
+[
+  {
+    "path": "docs/research/decisions/dnd-ownership.md",
+    "scopes": [
+      "dnd"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "One Plite transfer owner earns design. Backend deletion, plugin survival, public API and runtime adoption remain provisional; preserve prior setup and preview guarantees.",
+    "reviewBasis": [
+      "2026-10-01-dnd-native-transfer-ownership"
+    ]
+  },
+  {
+    "path": "docs/research/probes/2026-10-01-dnd/REPORT.md",
+    "scopes": [
+      "dnd"
+    ],
+    "kind": "report",
+    "disposition": "active",
+    "rationale": "Eight audit units and consumer families, 57 passing existing tests and seven local observations. Retains dated history, source-only findings and physical drag/scale gaps; no product adoption.",
+    "reviewBasis": [
+      "2026-10-01-dnd-native-transfer-ownership"
+    ]
+  },
+  {
+    "path": "docs/plans/2026-03-23-dnd-coverage-pass.md",
+    "scopes": [
+      "dnd"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Inspected coverage proposal without a completion receipt. July deleted the unused direction helper it proposed to test; do not infer present adoption or revive dead-helper tests."
+  },
+  {
+    "path": "docs/plans/2026-04-10-dnd-missing-context-runtime-guard.md",
+    "scopes": [
+      "dnd"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Retain SSR safety and stable hook ordering. Current DOM-capable hooks still require a React DnD manager, so the plan's absent-manager guarantee is not current proof."
+  },
+  {
+    "path": "docs/plans/2026-07-10-plate-next-dnd-package-review.md",
+    "scopes": [
+      "dnd"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Retain selected-block preservation, equal-ID editor isolation, collision handling and destination-before-source settlement. Package review did not establish browser or copied-registry adoption."
+  },
+  {
+    "path": "docs/plans/2026-09-18-dnd-preview-origin-regression.md",
+    "scopes": [
+      "dnd"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Retain preview preparation through the mounted view's API factory and DOM map. The plan's local tests and Chromium receipts remain dated, without a bound current DnD execution outcome."
+  },
+  {
+    "path": "docs/plans/2026-09-19-upload-draft-asset-protocol.md",
+    "scopes": [
+      "dnd",
+      "uploads"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Inspected optional DnD-to-Upload handoff, atomic batch admission and root-aware placement. Upload has its own governing review and lifecycle; its completion and proof do not close DnD transfer correctness.",
+    "reviewBasis": [
+      "2026-09-19-uploads-node-model-correction"
+    ],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/analysis/best-api-review.md",
+    "scopes": [
+      "model",
+      "react",
+      "schema",
+      "transactions"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Best API Review Date: 2026-07-23 Historical assessment. Its source references and verdicts describe the July review. Use the [feature review ledger](../research/reviews.md) to locate current owners and later decisions before reusing a conclusion. Scope: current Plate and Plite public types, exports, docs, representative call sites, and owning implementations. This ranks public API debt only. It does not authorize product API changes. ## Verdict",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/editor-audits/reports/2026-09-07-plate-ui-execution.md",
+    "scopes": [
+      "autocomplete",
+      "basic",
+      "callout",
+      "canvas",
+      "collaboration",
+      "dnd",
+      "documents",
+      "drawing",
+      "emoji",
+      "footnote",
+      "html",
+      "link",
+      "list",
+      "math",
+      "media",
+      "slash",
+      "table",
+      "tags",
+      "toc",
+      "ui",
+      "uploads"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "Preserved final 46-family/637-disposition execution account, withdrawn command-menu cut, browser/typecheck/service/device limits and original hashes."
+  },
+  {
+    "path": "docs/editor-audits/reports/editor-performance-research-iteration-2-2026-09-09.md",
+    "scopes": [
+      "performance",
+      "large-documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "Dated experimental performance research with rejected alternatives and measurement limits."
+  },
+  {
+    "path": "docs/editor-audits/reports/multi-editor-focus-api-review-2026-09-08.md",
+    "scopes": [
+      "selection",
+      "react"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "External focus ownership alternatives and exact-view selection evidence; historical source versions retained."
+  },
+  {
+    "path": "docs/editor-audits/reports/rendering-api-editor-audit-2026-09-01.md",
+    "scopes": [
+      "react",
+      "ui"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "Compared external rendering APIs; preserves rejected identity/host ownership directions and source-pinned limits."
+  },
+  {
+    "path": "docs/editor-audits/reports/slate-regression-proof-2026-08-14.md",
+    "scopes": [
+      "proof",
+      "repair-verification-workflow"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "Preserved external behavior corpus report and its unresolved evidence boundaries."
+  },
+  {
+    "path": "docs/editor-audits/reports/wordgard-full-strict.md",
+    "scopes": [
+      "proof"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "Full-source audit conclusions and strict proof limits preserved from ignored report."
+  },
+  {
+    "path": "docs/editor-audits/reports/wordgard-latest-diff-2026-09-02.md",
+    "scopes": [
+      "proof"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "Pinned Wordgard source-diff assessment; references only, no adopted-code or current coverage claim."
+  },
+  {
+    "path": "docs/plans/2026-03-15-phase-4-table-execution.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Complete the phase-4 `table` slice only. Add high-ROI non-React logic coverage for merge-heavy table behavior plus the remaining small sizing and selection helpers in `packages/table/src/lib`. ## Checklist - [completed] Audit table merge and transform seams plus current test helpers - [completed] Add merge-focused table lib specs - [completed] Add size and selection helper specs - [completed] Fix any real runtime bug exposed by the new specs - [c",
+    "reviewBasis": [],
+    "workKind": "verification"
+  },
+  {
+    "path": "docs/plans/2026-03-23-comment-coverage-pass.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Add a narrow, high-value non-React pass for `@platejs/comment` around the only worthwhile seams: - `BaseCommentPlugin.ts` - `getCommentKeys.ts` - `getCommentCount.ts` ## Constraints - Fast-lane only. - No `/react`. - Cover `withComment` through the plugin override, not a fake standalone unit test. - Stop after the helper seam and the real plugin API/transform seam. ## Slice 1. Add tiny helper specs for comment key extraction and comment counting.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-03-24-coverage-batch-depset-table-leaves.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Cover the next user-approved non-React batch from the 2026-03-24 coverage map: - `@udecode/depset` - `table` - `caption` - `callout` - `excalidraw` - `cursor` Keep it in the fast lane. Add only honest unit or editor-contract specs. ## Scope ### `@udecode/depset` - `get-package-manager.ts` - `logger.ts` - `handle-error.ts` - `spinner.ts` ### `table` - `merge/getSelectionWidth.ts` - `withTable.ts` - `merge/deleteRow.ts` - `queries/getSelectedCells.",
+    "reviewBasis": [],
+    "workKind": "verification"
+  },
+  {
+    "path": "docs/plans/2026-03-29-table-arrow-navigation.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Make plain `ArrowUp` / `ArrowDown` table navigation stable. - Remove the transient caret flash when moving across cells. - Keep caret movement inside the current cell until it reaches the visual first or last line. ## Plan - [completed] Trace plain table arrow handling through the shared `moveLine` path. - [completed] Add regression coverage for synchronous cross-cell movement. - [completed] Add coverage for multi-block, soft-break, and soft-wrap",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-03-30-table-multi-cell-selection.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix the `/docs/table` multi-cell selection runtime error: `Unable to find the path for Plite node: {\"text\":\"\"}` ## Status - Phase 1: Gather prior learnings and reproduce the failure — completed - Phase 2: Trace the owning table-selection seam — completed - Phase 3: Add regression coverage and implement the fix — completed - Phase 4: Verify in tests and browser — completed ## Findings - The failure is reported on the local docs route `http://local",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-03-31-merge-main-4111-table-border.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Merge `main` into `codex/4111-table-border-wrong-cell`, resolve conflicts cleanly, and verify the branch is in a good state. ## Scope - switch to `codex/4111-table-border-wrong-cell` - merge `main` - resolve merge conflicts without dropping intended branch work - run narrow verification based on touched files ## Progress - 2026-03-31: Started merge task and captured plan.",
+    "reviewBasis": [],
+    "workKind": "workflow"
+  },
+  {
+    "path": "docs/plans/2026-03-31-table-shift-arrow-eager-selection.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Remove the transient native text-range flash when `Shift+Arrow` expands from one table cell into another. ## Plan - [completed] Add keydown-level regression coverage for eager single-cell `Shift+Arrow`. - [completed] Route single-cell `Shift+Arrow` through table-owned selection movement before native selection applies. - [completed] Remove `withApplyTable` repair behavior and delete `overrideSelectionFromCell`. - [completed] Update coverage and d",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-04-04-footnote-support.md",
+    "scopes": [
+      "footnote",
+      "markdown"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Replace markdown footnote fallback text preservation with real first-class footnote parse and serialize support. ## Phases - [x] Audit current footnote fallback, markdown seams, and standards refs - [x] Add red tests for real footnote parse/serialize behavior - [x] Implement first-class footnote support and sync docs - [x] Verify, changeset if needed, and summarize the contract",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-04-08-suggestion-mention-backspace.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "- Fix the failing regression in `packages/suggestion/src/lib/withSuggestion.spec.tsx`. - Scope: suggestion-mode `deleteBackward('character')` on a previous mention-shaped inline void. - Goal: backspace should mark the mention as a remove suggestion instead of doing nothing. ## Plan 1. Keep the new failing spec red as the guardrail. 2. Inspect the mention vs link delete path in `deleteSuggestion`. 3. Apply the narrowest package fix in `packages/su",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-04-10-math-trigger-execution.md",
+    "scopes": [
+      "math"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Implement the first safe rich-mode math trigger slice directly. ## Scope - no selection-wrap shipping by default - no opening-delimiter pair-on-type for `$` - allow explicit-completion rich-mode conversion - implement `$$` + `Enter` block promotion ## Planned Slice 1. shared math trigger plugin in `@platejs/math` 2. inline conversion on completed `$...$` only 3. block conversion on `$$` then `Enter` 4. math kit wiring 5. package + app integration",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-04-13-inline-void-suggestion-styles.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Make inline void elements such as mention, date, and inline equation render visible suggestion styling when they carry suggestion metadata. ## Current Facts - `SuggestionLeaf` styles text leaves only. - `link`, `media-file`, and several media/block void nodes already read suggestion data and apply explicit classes. - `mention`, `date`, and `InlineEquationElement` still render their normal token styles even when `suggestionData(...)` returns inser",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-04-23-date-suggestion-injection.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Move date suggestion styling out of `apps/www/src/registry/ui/date-node.tsx` so the node no longer imports suggestion helpers directly. Suggestion state should be injected from the suggestion plugin layer. ## Scope - Add a test that proves suggestion styling reaches the date trigger through plugin injection. - Refactor `date-node` to expose a stable trigger slot only. - Update suggestion rendering to inject date-specific styling through `inject.n",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-04-25-remove-inline-suggestion-helper.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Remove the old runtime inline-suggestion lookup helper and migrate remaining callers to injected suggestion state while preserving current rendering behavior. ## Scope - Audit remaining runtime and doc references to the old helper. - Add regression coverage for mention and inline equation under injected suggestion styling. - Migrate callers to injected data attributes or direct suggestion APIs. - Delete the helper if nothing depends on it. - Rege",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-04-27-plite-table-horizontal-navigation-offset.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix `/examples/tables` so moving right from the end of the first table cell lands at offset `0` in the second cell, not offset `1`. ## Scope - Code repo: `/Users/zbeyens/git/plite`. - Plan repo: `/Users/zbeyens/git/plate-2`. - Primary route: `/examples/tables`. - Primary behavior: horizontal keyboard navigation across table cell boundaries must preserve cell-boundary affinity. ## Findings - User report: focus first cell, press ArrowRight, caret m",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-05-18-plite-table-transform-boundary-ralplan.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Plite table transform boundary ralplan Date: 2026-05-18 Status: complete Owner: Plite Ralplan planning only Execution owner: `ralph` in `Plate repo root` Completion id: `019e1fc0-dba0-7de1-9236-b484a144cda6` Current pass: closure-final-gates Score: 0.94, ready for Ralph execution ## Verdict Harsh answer: the table example is currently wrong. The public hard cut away from `Editable onCommand` was correct, but the follow-up example rewrite overco",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-05-22-plite-cut-markdown-table-packages.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Remove raw Plite `plite-markdown` and `plite-table` package surfaces. Markdown syntax policy and table feature policy belong in Plate or app/example code, not in unopinionated Plite. ## Decisions - Raw Plite keeps substrate APIs: schema, transforms, selections, normalization, clipboard/input hooks, and layout primitives. - Plate owns Markdown parse/serialize/input-rule packages. - Plate owns table maps, commands, cell-selection UX, and GFM table ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-05-23-plite-clipboard-fragment-serialization-ralplan.md",
+    "scopes": [
+      "clipboard"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Plite Clipboard / Fragment Serialization Ralplan ## Verdict Do not rewrite the clipboard architecture. The current split is the right long-term shape: ```txt slate: fragment extraction, fragment insertion, selection/resulting model shape plite-dom: DataTransfer, internal MIME keys, embedded HTML fragment fallback, malformed payload rejection, plain-text fallback, DOM coverage policy slate-react: copy/cut/paste/drop event routing, DOM coverage m",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-05-23-plite-table-selection-arrow-navigation-ralplan.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Plite Table Selection And Arrow Navigation Ralplan ## Verdict Do not rewrite the Plite runtime for this lane. The current architecture is the right shape: - Plite core owns path/point/range semantics and character-position iteration. - `plite-dom` owns DOM-to-Plite point import, mounted text bounds, and fail-closed DOM coverage policy. - `plite-react` owns browser event import, selection reconciliation, focus, and native-selection repair. - The",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-05-26-plite-comment-mode-text-selection.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix the Plite `examples/comment-mode` regression where users cannot select text inside the comment-mode editor. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-05-29-plite-pagination-architecture-review.md",
+    "scopes": [
+      "pagination"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Plite pagination architecture review ## Objective Review whether the current pagination architecture in `Plate repo root` is clean, spaghetti, or needs decoupling. Close the Plite Plan only after every scheduled pass, issue/reference sync row, Evidence Kit mapping, pressure review, score gate, and final handoff is complete. One activation completes one pass. This activation closes pass 12: closure score and final gates. ## Current verdict Stron",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-05-31-exact-virtualized-pagination-plan.md",
+    "scopes": [
+      "pagination"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Perfect the Plite exact virtualized pagination architecture plan for user review: define the long-term exact-and-fast layout model, demote cold-block estimation to non-authoritative skeleton use only, gate autoresearch behind a replayable oracle, and keep issue/reference accounting conservative until execution proof exists. ",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-06-02-pagination-virtualized-stability-perf.md",
+    "scopes": [
+      "pagination"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Stabilize and speed up virtualized pagination real-user editing; done after 8h loop gates pass; plan docs/plans/2026-06-02-pagination-virtualized-stability-perf.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-06-12-plite-table-fragment-rectangle-algebra-plan.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Define Plite table-fragment rectangle semantics and proof gates before any runtime/test execution unskips table fragment fixtures. ",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-06-12-table-fragment-contract.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Define Plite table-fragment rectangle-algebra contract; done when the planning pass records policy, evidence, proof gates, and user-review boundary. ",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-06-15-4706-block-discussion-responsive-display.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix #4706 block discussion responsive display; done when source issue/video is covered, responsive behavior is fixed or ruled out, verification and PR/tracker sync are complete. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-06-15-table-fragment-merge-policy.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Complete Plite table-fragment merge policy; done when policy/docs/tests/proof gates pass; plan docs/plans/2026-06-15-table-fragment-merge-policy.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-03-plate-next-static-clipboard-payload-owner.md",
+    "scopes": [
+      "clipboard"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Move static clipboard fragment payload writing to Plite DOM; done when `setFragmentData`/`originEvent` are gone and focused proof passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-06-plate-next-basic-nodes-package-review.md",
+    "scopes": [
+      "basic"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Review `packages/basic-nodes`; done when all 39 package files score 100, `check:core` includes the package, and focused package proof passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-07-plate-next-basic-styles-package-review.md",
+    "scopes": [
+      "styles"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Review and migrate `packages/basic-styles` to the Plite-first Plate v2 shape, then close every package source/spec file at score 100 before moving to the next package. Plate Next source: - Prompt: `[$plate-next] next package`. - Mode: package review. - Package: `packages/basic-styles`. - Rule: no next package until all package rows are score 100 or explicitly deferred. - Boundary: package sources/specs, package manifest, smallest Plite owner gap,",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-08-plate-next-suggestion-package-review.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Finish `packages/suggestion` Plate Next package review. Done when 49/49 Suggestion source/spec files score 100, stale Slate/Plate compatibility API audits are clean, the required Plite substrate gap is covered by Plite tests, and focused package proof passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-09-plate-next-suggestion-plugin-portal-cut.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Cut suggestion plugin portal API; done when suggestion scoped sweep and Core proof pass; plan docs/plans/2026-07-09-plate-next-suggestion-plugin-portal-cut.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-10-plate-next-code-drawing-combobox-comment-package-reviews.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close the next three Plate Next package reviews in order: Code Drawing, Combobox, then Comment, with every file scored 100 and package proof green. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-10-plate-next-csv-cursor-date-package-reviews.md",
+    "scopes": [
+      "csv",
+      "date",
+      "geometry"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close CSV, Cursor, then Date as sequential Plate Next package reviews, with every package file scored 100 and focused package proof green before advancing. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-11-plate-next-docx-docx-io-emoji-package-reviews.md",
+    "scopes": [
+      "documents",
+      "emoji"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close docx, docx-io, and emoji package drift; done when all 194 tracked rows score 100 or are explicitly deferred and package proof plus autoreview pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-12-plate-next-excalidraw-find-replace-floating-package-reviews.md",
+    "scopes": [
+      "canvas",
+      "search"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close excalidraw, find-replace, and floating package drift; done when all 61 current rows (60 initial tracked rows plus one regression spec) score 100 or are explicitly deferred and package proof plus autoreview pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-12-plate-next-footnote-indent-juice-package-reviews.md",
+    "scopes": [
+      "footnote",
+      "html",
+      "layout"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close footnote, indent, and juice package drift; done when all 65 reviewed rows score 100 or are explicitly deferred and package proof plus autoreview pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md",
+    "scopes": [
+      "layout",
+      "link",
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close layout, link, and legacy-list-model drift; done when 172 rows score 100 or are deferred and proof plus autoreview pass; plan docs/plans/2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-12-plate-next-list-markdown-math-package-reviews.md",
+    "scopes": [
+      "list",
+      "markdown",
+      "math"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close List, Markdown, and Math Plate Next reviews; done when every package row scores 100 or is explicitly deferred and package proof/review pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-13-plate-next-media-mention-resizable-package-reviews.md",
+    "scopes": [
+      "media",
+      "mentions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close Media, Mention, and Resizable Plate Next reviews; done when all 142 package rows score 100 or are explicitly deferred and package proof/autoreview pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-13-plate-next-slash-command-tabbable-table-package-reviews.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close Slash Command, Tabbable, and Table Plate Next reviews; done when all 194 package rows score 100 or are explicitly deferred and focused proof/autoreview pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-13-plate-next-tag-toc-toggle-package-reviews.md",
+    "scopes": [
+      "callout",
+      "tags",
+      "toc"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close Tag, TOC, and Toggle Plate Next reviews; done when all 92 package rows score 100 or are explicitly deferred and focused proof/review/checker pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-14-plate-next-table-no-drift-re-audit.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Re-audit `packages/table` against `origin/main` and the Plate Next laws; classify every behavior/API/ownership deviation as intentional migration, real drift, or an exact Plite/Plate gap. ",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-07-14-plate-next-table-package-review.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Review and repair every `packages/table` source/type-test file for a clean Plate v2 package on Plite, with score-100 or explicit deferral per file. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-15-restore-insert-column-parity.md",
+    "scopes": [
+      "layout"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore `insertColumn` to the simple Plite transaction transform and restore its main-parity tests without changing the existing column normalizer. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-22-plate-next-table-full-colocation.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fully colocate the table package; done when every manifest row scores 100 or is explicitly deferred, no unjustified single-owner helper or tx-carrier remains, and package proof passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-23-flatten-table-plugin-commands.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Flatten Table plugin commands and codify scoped API naming; done when callers/docs/types/skill sync and focused package/browser proofs pass; plan docs/plans/2026-07-23-flatten-table-plugin-commands.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-23-plate-next-media-full-colocation.md",
+    "scopes": [
+      "media"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fully colocate @platejs/media by durable plugin/component/hook ownership; done when every manifest row scores 100, package/Core gates pass, and autoreview has 0 accepted findings. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-23-table-test-family-colocation.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Merge `BaseTablePlugin` tests into behavior-family fast/slow specs and repair Plate Next doctrine so future package cleanups do not preserve method-level test confetti. ",
+    "reviewBasis": [],
+    "workKind": "verification"
+  },
+  {
+    "path": "docs/plans/2026-07-24-decouple-live-and-base-registry-kits.md",
+    "scopes": [
+      "ui"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Decouple live/base registry kits; done when Markdown is self-contained, audit finds zero dishonest cross-layer imports/dependencies, and focused checks pass; plan docs/plans/2026-07-24-decouple-live-and-base-registry-kits.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-24-fix-optional-suggestion-trailing-block-kit-composition.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Keep suggestion and trailing-block registry kits independently composable, with weak suggestion adaptation only when trailing block is installed. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-24-table-staged-capability-refactor.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Refactor the `BaseTablePlugin` owner graph to staged inferred capabilities; done when every runtime-plumbing helper is classified, accepted edits pass focused tests/typecheck/build/lint/review, and this goal plan closes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-24-unify-markdown-registry-kit.md",
+    "scopes": [
+      "ui"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Unify Markdown into one runtime-neutral registry kit; done when `markdown-base-kit` has zero live references, both editors compose the correct Footnote renderer family, and focused checks pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-26-plate-next-html-plugin-colocation.md",
+    "scopes": [
+      "html"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Colocate the complete Core `HtmlPlugin` family. Inline or delete single-owner helpers, retain only independently owned shared DOM algorithms, merge proof by behavior family, and preserve inferred Core editor API/tx typing. Completion threshold: - All 52 original HtmlPlugin-family source/proof files have a score-100 resolution. - The live family has one plugin/compiler/parser owner, one shared DOM algorithm owner, generated barrel, and behavior-fa",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-28-repair-media-table-list-utils-plugin-ownership.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Implement every accepted P1/P2 plugin-ownership repair in media, table, list, and utils without Core or skill edits, then prove the four package surfaces. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-29-colocate-markdown-feature-codecs.md",
+    "scopes": [
+      "markdown"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Colocate Markdown node conversion with feature plugins without creating feature-package dependencies on `@platejs/markdown`; delete the central feature registry and parallel plugin-state registration path, then close package, docs, browser, type, release, and review proof. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-30-hard-cut-markdown-codec-package.md",
+    "scopes": [
+      "markdown"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hard-cut `@platejs/markdown-codec` into Core; done when the package and live references are gone and scoped type, test, export, install, docs, release, and review gates pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-03-hard-cut-table-cell-header-plugin.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hard-cut the table-cell header plugin into one typed tableCell model; done when stale symbols are zero and package, generated-contract, browser, and review gates pass; plan docs/plans/2026-08-03-hard-cut-table-cell-header-plugin.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-12-remove-link-preview-feature.md",
+    "scopes": [
+      "link"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Remove the link-preview feature while preserving only its reusable lifecycle law under `docs/editor-behavior/`. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-13-audit-registry-dependency-metadata.md",
+    "scopes": [
+      "ui"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Audit every `apps/www/src/registry/registry-*.ts` dependency declaration; done when all items have source-backed package and registry dependency verdicts and every mismatch is reported. ",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-08-13-cut-editor-kit-facades.md",
+    "scopes": [
+      "ui"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Remove both handwritten editor-kit facades and all consumers; done when generated imports, registry/docs/browser checks, and zero-reference audit pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-13-repair-heading-component-family.md",
+    "scopes": [
+      "basic"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Repair live and static heading component-family reuse; done when H1-H6 wrappers delegate to one descriptor-exact shared renderer and focused proof passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-13-restore-direct-suggestion-wrapper-typing.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore direct descriptor inference for the static Suggestion wrapper and remove leaked definition/name-normalization types without changing runtime behavior. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-17-finalize-list-start-and-restart-semantics.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Finalize the public flat-list start/restart contract and its v53 migration; done when the rejected field is absent, focused regressions pass, docs and generated schema agree, and `pnpm check` passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-17-hard-cut-table-renderer-hooks.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hard-cut Table renderer state hooks; done when package/registry/docs adopt the DOM-only hook and focused proof passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-18-cache-editor-read-views-and-cut-hot-path-capability-rebuilding.md",
+    "scopes": [
+      "reads"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Execute the accepted Plite read-view and Plate capability lifecycle repair; done when slices 0-6 and all proof gates pass; plan docs/plans/2026-08-18-cache-editor-read-views-and-cut-hot-path-capability-rebuilding.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-18-separate-registry-migrations.md",
+    "scopes": [
+      "persistence"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Move document lineage and migrations out of the copied `editor-kit` registry item into the dedicated migration example. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-22-plite-long-ime-history-atomicity-regression.md",
+    "scopes": [
+      "native"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close Plite long-IME history atomicity; done when the expanded marked-selection undo/redo case passes 5 retry-free runs, any reproduced defect is fixed, and Regression gates pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-23-fix-plite-react-provider-lifetime.md",
+    "scopes": [
+      "react"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix Plite React provider identity leaks; done when exact lifecycle repros turn green, package/browser proof passes 5/5, API doctrine is current, and P1 autoreview passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-23-hard-cut-yjs-public-entrypoints.md",
+    "scopes": [
+      "collaboration"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Execute the accepted Yjs entrypoint hard cut; done when all adoption, packed, docs, browser, strict Plite, and P1 review gates pass; plan `docs/plans/2026-08-23-hard-cut-yjs-public-entrypoints.md`. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-23-unify-plite-selection-anchors.md",
+    "scopes": [
+      "annotations",
+      "selection"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hard-cut Plite selection/ref API debt; done when scoped anchors, sound guards, docs, callers, focused proof, and review pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-26-hide-drag-handles-during-table-cell-selection.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hide block drag handles while table cells are selected; done when the exact table case fails before the fix, passes focused proof and 5/5 Browser replays, and lint passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-26-hide-native-table-highlight-during-drag.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hide native text highlight while dragging across multiple table cells; done when the exact browser repro fails before, passes 5 warm runs after, focused tests and review pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-26-ignore-table-resize-handles-during-cell-selection-drag.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Ignore table resize handles during cell-selection drag; done when exact repro turns red-to-green and passes 5/5 browser runs; plan docs/plans/2026-08-26-ignore-table-resize-handles-during-cell-selection-drag.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-26-media-caption-block-reset-api.md",
+    "scopes": [
+      "editing",
+      "media"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Add `tx.blocks.reset()` as the canonical schema-default block mutation, migrate the proven consumers, and keep Enter in a media caption splitting into a paragraph instead of another media node. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-26-shrink-table-cell-selection-on-drag-back.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix table drag selection so returning to the origin shrinks back to one cell; done when the recording-exact browser case is red then green and passes 5/5. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-26-table-cell-only-selection-paint-regression.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Remove the duplicate table-wide selection layer while preserving per-cell highlights, then prove the exact all-cell selection paint 5/5 in a real browser. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-26-table-native-highlight-reporter-contradiction-regression.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Repair the false-green paint oracle, then hide native text highlight during a held multi-cell drag with pixel-valid red/green proof and 5/5 final replay. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-26-table-selection-cursor-regression.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Eliminate the table resize-cursor flash during a held cell-selection drag; done when the capture-phase cursor oracle and exact replay pass 5/5. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-26-table-selection-drag-handle-regression-repair.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hide every drag affordance during expanded table-cell selection; done when the contradicted proof method is repaired and the exact case passes 5/5 with Browser proof. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-28-cut-comment-editor-alias.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Cut the fake `CommentEditor` type and its supporting helpers; done when the type/import/helpers have zero matches, behavior is inlined at three call sites, and www typecheck, lint, source audit, and Browser proof pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-28-finalize-platejs-entrypoint-ownership.md",
+    "scopes": [
+      "distribution",
+      "plate-api"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Finalize platejs entrypoint ownership; done when every export, adoption slice, runtime gate, and proof is resolved and the plan checker passes; plan docs/plans/2026-08-28-finalize-platejs-entrypoint-ownership.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-29-combobox-trigger-regressions.md",
+    "scopes": [
+      "autocomplete",
+      "mentions",
+      "slash"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore `@` mention and `/` slash-command triggers through executable RED/GREEN coverage and fresh Browser proof, then push the complete checkout and leave all local and PR CI green. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-29-comment-suggestion-scroll-jump-regression.md",
+    "scopes": [
+      "comments",
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Prevent comment/suggestion annotations from snapping an upward scroll downward; done when exact RED/green proof and 5 retry-free browser runs preserve scroll ownership. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-29-replace-toggle-with-semantic-details.md",
+    "scopes": [
+      "callout"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Lock an execution-ready hard-cut plan that replaces the flat, indentation-based Toggle feature with semantic Details and Summary nodes across `platejs`, the registry, serialization, migration, docs, tests, and entrypoint proof. ",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-08-29-semantic-details-hard-cut.md",
+    "scopes": [
+      "callout"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Replace Toggle with semantic Details across `platejs`, migration, registry, docs, release artifacts, and runtime proof; finish only when every manifest, size, browser, review, and repository gate passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-29-toc-click-scroll-regression.md",
+    "scopes": [
+      "toc"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore TOC click scrolling on the Playground; done when exact click-to-target movement passes 5/5 with durable coverage. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-29-unify-list-model.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Remove the alternative list model completely; done when implementation, exports, registry, docs, generated artifacts, and agent doctrine have zero live references and all scoped proofs pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-30-cursor-find-overlay-architecture.md",
+    "scopes": [
+      "geometry"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Design the canonical Plite cursor/find/overlay architecture; done when the Plate Plan scores at least 0.92 with source-backed ownership, API, migration, performance, and proof rows. ",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-08-30-enforce-plate-facade-dogfooding.md",
+    "scopes": [
+      "distribution",
+      "plate-api"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Enforce Plate facade dogfooding; done when only exact bridge modules import `plitejs` and authorable Plate source, proof, and doctrine pass. User correction: - Plate specs, tests, slow tests, and `__tests__` fixtures are first-party authoring surfaces. They must not receive a blanket raw-Plite exemption. - Mirror the one missing Plite public subpath as `platejs/testing`, migrate all Plate source tests to Plate-owned root/DOM/React/testing leaves,",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-30-fix-combobox-popup-y-position.md",
+    "scopes": [
+      "autocomplete",
+      "mentions",
+      "slash"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix shared Plate combobox Y anchoring; done when exact @ and / browser repro is red before the fix and passes 5/5 after with focused checks green; plan docs/plans/2026-08-30-fix-combobox-popup-y-position.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-30-rename-page-layout-entrypoints-to-pagination.md",
+    "scopes": [
+      "pagination"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hard-cut the public `page-layout` entrypoints to `pagination`; done when both distributions, all current consumers/docs/proofs, and packed artifacts expose only `plitejs/pagination[/react]` and `platejs/pagination[/react]`. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-31-date-popover-first-click-regression.md",
+    "scopes": [
+      "date"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix Date popover first-click regression; done when the exact reporter path is red before the fix, green for 5 retry-free runs after it, the real Playground confirms first-click open/reopen, and P1 review passes. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-31-hard-cut-comments-ownership.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Ship the Comments hard cut; done when every proof gate in this plan passes and stale APIs are zero. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-02-comments-discussion-product-recovery.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Recover all fourteen audited Comments and Discussion product regressions without restoring the deleted Discussion store, document comment marks, or legacy render callbacks. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-02-comments-docs-route-regression.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Repair and fully validate the Comments docs route; done when exact-route core interaction cases pass 5 fresh runs with both the persistent sidebar and the active-thread floating view. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-02-comments-view-switch.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Recover one canonical Discussion UI over Comments and Suggestions. Sidebar and Floating must be exclusive, complete views; AI, HTML, docs, scale, and package behavior must remain correct. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-02-hard-cut-discussion-sidebar.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hard-cut Discussion Sidebar and its mode API; done when per-block Floating Discussion is the only path, current interactions remain green, and no live consumer or docs teach Sidebar. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-02-restore-block-discussion-design.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore the established Block Discussion design without undoing the Floating-only architecture; done when old affordances and current behaviors pass source, test, and browser proof. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-02-restore-discussion-demo-identity.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore `discussion-demo` as the sole combined review example; done when zero live `comment-demo` consumers remain and registry, docs, and browser proof pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-02-restore-per-block-discussions.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore scalable per-block Discussions; done when combined comments and suggestions open per block in Sidebar and Floating with focused tests and Browser proof. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-03-comments-render-bounded-regression.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore the established zero-text-render contract when an app-owned comment reply changes, without hiding profiler events or weakening the browser oracle. Preserve every overlapping decoration's identity through updates in both Plite text renderers. Completion threshold: - The exact existing Chromium case changes from two retained text-flow renders to zero on the same complete Discussion fixture. - The final shared-owner bytes pass focused packag",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-03-hard-cut-plate-migrations-after-v54.md",
+    "scopes": [
+      "persistence"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Hard-cut Plate migration v55/v56, fold all unreleased AST and code-block-line work into public v54, repair migration-version doctrine, and prove the package, CLI, docs, registry, browser, and generated skill surfaces. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-03-plite-comment-anchor-edit-and-history.md",
+    "scopes": [
+      "annotations",
+      "comments",
+      "history"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Repair persistent Plite anchors so an anchor that exists before a saved edit round-trips to its exact geometry through undo and redo. Adopt that law in Plate Comments so character insertion, partial deletion, complete deletion, replacement, overlap, and repeated history never delete a thread or silently detach it from the document. Completion threshold: - Planning is complete when the current failure is reproduced, the root owner and public API a",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-03-restore-exact-block-discussion-spacing.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore the before-image Floating Discussion presentation and content without regressing Comments, Suggestions, overlap handling, or the AI editor layout. Completion threshold: - The AI demo shows three compact suggestion rows with visible 1px dividers, followed by both complete comment threads. - The supplied before-image values are present: `01/01/2024`, `comments`, `10m`, `8m`, Bob's reply, and Charlie's reply. - The exact browser row passes f",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-04-clean-link-comments-subscription.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Clean Link's optional Comments subscription; done when focused hook tests, `www` typecheck, registry generation, scoped lint, and live browser checks pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-04-code-block-external-text-architecture-audit.md",
+    "scopes": [
+      "code"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Audit the past week's code-block and external-text plans against current Plite/Plate source, public APIs, correctness, and benchmark evidence; deliver ranked findings, a challenged target, and at most three adoption phases. ",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-04-comments-source-and-api-architecture-audit.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Audit the complete Comments source/API and the past week's related plans; finish with source-backed ranked cuts, a challenged target, explicit proof limits, and at most three adoption phases. ",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-04-comments-suggestion-lifecycle-cut.md",
+    "scopes": [
+      "comments",
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Implement the Comments audit's first phase; done when suggestion replies use subject identity, survive accept/reject undo/redo, preserve explicit resolution and pass focused UI, type, scale and browser proof. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-04-decouple-link-floating-ui.md",
+    "scopes": [
+      "comments",
+      "link",
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Decouple Link floating UI from Comments and Suggestions; done when zero cross-feature state dependencies remain and source, focused tests, registry, and browser proof pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-04-move-docx-export-presentation-to-registry.md",
+    "scopes": [
+      "documents",
+      "exports",
+      "ui"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Make DOCX export presentation registry-owned; done when package API, registry adoption, docs, browser proof, and required checks pass. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-04-yjs-cursor-presentation.md",
+    "scopes": [
+      "collaboration"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Keep Yjs tracking headless while copied cursor UI owns all selection and caret presentation; verify package contracts, the installed demo, reconnect behavior, and narrow layouts. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-05-comments-complete-source-and-api-execution.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close Comments audit C1-C7 end to end, with package, copied UI, consumers, docs, and source-bound correctness/scale/browser proof. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-05-comments-improve.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Complete one Improve iteration from the latest Comments C1-C7 plans, including the full audits triggered by confirmed defects. Completion threshold: Every applicable governed set has a contextual disposition; confirmed actionable defects pass their owning proof; no required investigation or started gate remains unresolved. Verification surface: The coverage ledger, source-first typechecks, package and mounted tests, actual website routes, strict ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-05-native-code-full-dom-investigation.md",
+    "scopes": [
+      "code"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "retain measured, correct Plate/Plite performance improvements, starting with full-native highlighted-code mount and editing. Follow the remaining measured bottlenecks through their owning packages, components, consumers and proof tools. Preserve full DOM and native editing semantics. Completion threshold: stop after three consecutive distinct, evidence-backed optimization candidates fail to produce a material improvement, or after the ranked in-s Preserve the rejected CSS/kernel experiments and explicit no-certified-timing-gain plateau; completion does not mean performance success.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-06-comments-discussions-main-parity.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Complete one Improve audit of Comments against main, preserve or improve the scoped UI and UX contracts, and prove that Comments and Suggestions work together through Discussions. Completion threshold: Every scoped owner, consumer and comparison scenario has an evidence-backed disposition. Confirmed defects are repaired and the affected package, website, visual, type and registry checks pass on the final source. Verification surface: Pinned main ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-06-kit-owned-ai-and-dnd-lifetimes.md",
+    "scopes": [
+      "ui",
+      "dnd"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Implement kit-owned AI and DnD setup through all three phases, remove routine caller wiring, and prove behavior, installation, public teaching, and scale.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-06-maintain-verify-plate.md",
+    "scopes": [
+      "proof",
+      "repair-verification-workflow"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Maintain Verify Plate Outcome: **blocked**. The unscoped source audit and live-attempt ledger are complete. Full measurement coverage and replay of several benchmark harness edits remain blocked. Verified local corrections are retained alongside explicitly unverified candidates; the complete change set is not ready to publish. Scope: Verify Plate source, canonical verification inventories and harnesses in `/Users/zbeyens/git/plate-2`, branch `n",
+    "reviewBasis": [],
+    "workKind": "workflow"
+  },
+  {
+    "path": "docs/plans/2026-09-07-ai-dnd-root-slots.md",
+    "scopes": [
+      "ai",
+      "dnd",
+      "ui"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Put each kit's required root wrapper on its existing feature plugin. The user accepted this cut on September 7 with “ok go”. Work stays local in `/Users/zbeyens/git/plate-2` on `next`. Completion threshold: Both companion plugin identities are gone; the existing AI session and exact-view DnD lifetimes pass focused proof; current teaching and generated consumers match the direct slot ownership. Verification surface: AI and DnD lifecycle suites, re",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-07-editor-performance-research.md",
+    "scopes": [
+      "performance"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Build the source-backed, measurable route to superior editor performance across human operations, including Wordgard and ProseKit; investigate techniques from VS Code and other strong implementations, React 19 Compiler, and virtualization. ",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "scopes": [
+      "autocomplete",
+      "basic",
+      "callout",
+      "canvas",
+      "collaboration",
+      "dnd",
+      "documents",
+      "drawing",
+      "emoji",
+      "footnote",
+      "html",
+      "link",
+      "list",
+      "math",
+      "media",
+      "slash",
+      "table",
+      "tags",
+      "toc",
+      "ui",
+      "uploads"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Complete a read-only audit of the copied editor UI/package boundary under the repaired extraction rule. Semantic invariants and durable neutral lifecycles qualify with one consumer; visual composition remains local. Task source: User: \"ok full audit first with that new rule\" after the table ownership cut. Primary template: docs/plans/templates/task.md ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-07-table-resize-ownership.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Repair Plate UI extraction doctrine first, then move table resize semantics and the minimal pointer lifecycle to the existing table package and simplify copied table presentation. Complete local package, registry and browser proof. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-09-comments-initialization.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Replace imperative demo thread replay with complete records loaded through the existing copied Comments channel. Simplify editor-ai and Discussion without changing the package ownership split. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-09-comments-package-data.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Consumers fetch database-friendly comment records with document ranges, pass them to the Comments plugin, and persist records with current mapped ranges. The package owns comment data operations, editor binding, subscriptions and cleanup. Copied UI owns presentation. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-09-find-range-scrolling.md",
+    "scopes": [
+      "geometry",
+      "search"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Replace the copied Find decoration query and manual animation-frame scheduling with `editor.api.dom.scrollIntoView(activeMatch.range)`, preserving cancellation, navigation and the exact mounted view. Mode: Local implementation authorized by the user's “go” after the range-scroll recommendation. Current checkout: next. No commit, push, PR, other feature cleanup or public messages. Completion threshold: Find uses the semantic range and the existing",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-09-find-view-ownership.md",
+    "scopes": [
+      "search"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Remove model-scoped Find UI state and commands. Each mounted view owns its Find opening, draft, deferred execution, focus and scroll effects; headless search remains editor-owned. Completion threshold: Opening Find in one view creates one bar and focuses that view's input, including two views of one model and two Editables under one Plate. Search, navigation, selection, close, IME, pending input, detach and current custom controls retain behavior",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-10-ai-streaming-and-markdown-demo-architecture.md",
+    "scopes": [
+      "ai",
+      "markdown",
+      "streaming"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "制定 Markdown 流式测试页修复与 AI 流式架构改造方案，保留现有 Markdown、MDX、流式富文本和原位审阅体验；本轮不修改实现。 ",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-09-10-comments-docs-examples.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Comments documentation and examples Status: complete. Local implementation and verification passed. ## Outcome and scope Make `/docs/comment` teach Comments through four focused examples, followed by integration details and compact API reference. Preserve the familiar Charlie/Bob conversations. Keep the mixed Comments/Suggestions example on Discussion. ## Acceptance and proof | Unit | Required outcome | Evidence | | --- | --- | --- | | Core com",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-10-editor-performance-follow-through.md",
+    "scopes": [
+      "pagination"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix the known CodeMirror read-only failure; pursue the remaining E01/E02 shared document construction/publication costs, E04 table selection and E03 complete code highlighting without per-target stops; prepare the complete current checkout for a PR locally. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
+    "scopes": [
+      "authored",
+      "history",
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Implement the complete native authored-change and Suggestions architecture, its public API, adoption and production proof contract. Cover editable proposals, author-selected decisions, Discussions, collaboration and retained per-author history. Complete S1-S8 and the applicable F01-F32 proofs in this checkout. Completion threshold: All eight execution slices are complete with current package, type, browser, collaboration, format, registry, docume",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-10-repair-markdown-streaming-demo-correction-cycle.md",
+    "scopes": [
+      "ai",
+      "markdown",
+      "streaming"
+    ],
+    "kind": "plan",
+    "disposition": "superseded",
+    "rationale": "# Markdown streaming demo diagnosis Status: superseded by user-requested planning-only work. Canonical plan: [AI streaming and Markdown demo architecture](2026-09-10-ai-streaming-and-markdown-demo-architecture.md). Browser reproduced Columns stopping at 2/33 with a list correction cycle. A temporary absent-property deletion guard and focused AI regression passed 46 tests, then were reverted after the user requested a plan without code changes. No",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-10-structural-document-diff.md",
+    "scopes": [
+      "diff"
+    ],
+    "kind": "plan",
+    "disposition": "active",
+    "rationale": "Design structural document comparison, its Plite model/API, Suggestions integration and adoption after native authored changes. Complete a source-backed design and executable planning probes without changing production code.  Final design specification and probes are complete; all 43 production acceptance families remain uncertified. Do not promote this design status to implementation completion.",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-09-11-large-documents-api-review.md",
+    "scopes": [
+      "large-documents",
+      "pagination"
+    ],
+    "kind": "plan",
+    "disposition": "active",
+    "rationale": "replace implicit and mode-shaped DOM omission with one explicit, truthful large-document contract; preserve one mounted Editable lifetime; move page-window ownership to pagination; migrate all repository callers and remove the rejected API and runtime paths. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-11-model-api-review.md",
+    "scopes": [
+      "model"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Reassess the model review question: the smallest schema-valid document and identity contract that all editors and codecs must preserve. Completion threshold: One fresh Stop, Pursue or Defer verdict grounded in live owners and materially different consumers, the strongest delete/merge/replacement alternative, precise proof limits and reconciliation with the July model assessment. Persist the review through the existing ledger and verify its record",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-11-model-document-boundary-patch.md",
+    "scopes": [
+      "model"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Make every public Plite document ingress reject malformed `meta` and `roots` containers before construction, schema fitting, or editor replacement can accept or discard them. Completion threshold: One shared private document-shape owner is used by initial-value normalization, `schema.assertDocument`, and schema fitting. A focused regression proves the current mismatch red and the repaired behavior green for raw and closed schemas, including schem",
+    "reviewBasis": [
+      "2026-09-11-model-document-boundary"
+    ],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-11-plite-core-api-review.md",
+    "scopes": [
+      "distribution",
+      "plate-api"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Audit `plite-core` as one architecture, covering runtime, state, extension composition (`schema`) and commands. Record a source-backed value verdict for each question and recommend one next owner overall. Completion threshold: Four expected questions, four recorded verdicts, no silently omitted consumer class. Compare current composition, owner/API changes, new primitives, delete/merge/inline and replacement. Name the strongest justified cut, ret",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-11-plite-core-cuts.md",
+    "scopes": [
+      "commands",
+      "state"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fully adopt the two approved cuts from [the core review](../research/decisions/plite-core-ownership.md): remove facets and public command descriptor `build()`. User authority is `$task full` after the completed assessment. Continue implementation and proof in this checkout. Completion threshold: The rejected APIs and their runtime/forwarding machinery are absent from current product source, exports, examples, public docs and generated teaching. R",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-11-reads-api-review.md",
+    "scopes": [
+      "reads"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Decide whether the current read, snapshot and subscription architecture warrants a change, and identify one next owner from source-backed alternatives. Completion threshold: Trace the canonical owners and materially different consumers, compare keeping, changing, adding, deleting, moving and replacing their contracts, record one Stop/Pursue/Defer verdict in the existing review ledger, and state the decisive evidence, regression risks and proof li",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-11-synchronous-transaction-authors.md",
+    "scopes": [
+      "transactions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Reject thenable authors consistently across Plite extension updates and pure or extended command specs. Preserve rollback, synchronous return values, read behavior and exact editor/view ownership. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-12-authored-live-state-implementation.md",
+    "scopes": [
+      "authored"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Implement and prove one versioned, directly loadable native authored checkpoint. Opening a current document must avoid operation-log reduction and pending-edit projection replay while preserving the public API, authored and collaboration semantics, continued editing, and real-time suggestion behavior. Completion threshold: The result is complete when current state loads directly; versions 1–3 migrate; malformed or corrupt values reject; authored ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-12-authored-loadable-state-design.md",
+    "scopes": [
+      "authored",
+      "persistence"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Execute the user's “go” on the Best API design recommendation: choose the smallest loading/saving contract and compare compact checkpoints with retained-content representations before accepting runtime machinery. The preceding review and both completed reload benchmarks remain evidence, not approval of a physical representation. Completion threshold: Show ordinary and retention-customized call sites, one authority and lifetimes, the maximum justi Complete means design/probe completion only; production representation was gated and subsequently adopted under a separate implementation plan.",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-09-12-authored-reload-performance.md",
+    "scopes": [
+      "authored"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Find and repair the cause of the measured 38-second cold reload of a document with 10,000 authored changes, with matched timing and unchanged document behavior. Completion threshold: A material improvement on the same saved payload (at least 20% and 1 second at 10,000 changes), outside repeated baseline variability, plus affected correctness, type and lint proof. Stop after three optimization trials without a verified positive impact, retain evid",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-12-authored-reload-prosemirror.md",
+    "scopes": [
+      "authored"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Answer the user's follow-up, “Still a lot vs prosemirror no? Benchmark and find the cause,” with matched saved-document measurements and causal attribution of the remaining Plite cost. Completion threshold: Pin actual local loaded implementations; compare plain content and explicitly identified tracked-change representations at 100/1,000/10,000 changes; profile the full authored load and prove or reject its dominant owner with an isolated measure",
+    "reviewBasis": [],
+    "workKind": "verification"
+  },
+  {
+    "path": "docs/plans/2026-09-12-editor-public-naming-adoption.md",
+    "scopes": [
+      "editor-public-naming"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Neutral editor API and public documentation adoption Status: Complete User authorization: “Ok go all” accepts the reviewed neutral public naming and Plate-only documentation direction. Execute locally through verification. No commit, push or publication is requested. Decisions: [neutral naming](../research/decisions/editor-public-naming.md) and [documentation audit](2026-09-12-plate-public-docs-audit.md). Keep the earlier audit evidence and imm",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-12-plate-core-api-review.md",
+    "scopes": [
+      "distribution",
+      "plate-api"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Give each installed capability one registry owner and one ordinary lookup, `editor.extension(Descriptor)`. Remove `editor.plugin`, `tx.plugin`, duplicated Plate installation maps, the redundant `useEditorPlugin` lookup hook and public `getCorePlugins` construction exports. Preserve inferred authoring, product stores/schema/rendering and independent package/feature entrypoints. The [design contract](artifacts/plate-core-api-review/design-contract.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-12-plate-public-docs-audit.md",
+    "scopes": [
+      "editor-public-naming"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Plate public documentation boundary audit Status: Complete — audit only; findings remain open for implementation. User constraint: Plate documentation teaches Plate. Plite is an internal sublayer. The user explicitly allows both the Performance comparison and From Plite to Plate migration guide, including the latter's translation. This audit records findings; product documentation, APIs and publishing configuration remain outside its write scop",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-12-plite-view-design.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Choose the smallest truthful Plite view API and architecture for direct-domain geometry and React mounting, with exact lifetime ownership, Plate/Yjs adoption and executable evidence. The user's `go $task` accepts the broader design/plan handoff discussed after the plite-view review and routing repair. Completion threshold: A source-grounded target, resolved alternatives and owners, implemented call sites, complete consumer adoption and source-bou",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-12-suggestions-docs-demo.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Suggestions docs demo Status: Complete The user wants the suggestion examples directly on the Suggestions docs page. Keep its canonical `/docs/suggestion` route, existing API teaching, and a focused Plate example. Do not replace it with the contributor sandbox. - [x] Register a focused demo with separate insertion and deletion proposals. - [x] Embed it above setup on the English and Chinese Suggestions pages. - [x] Supply the copied dependencie",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-13-clipboard-transfer-policy.md",
+    "scopes": [
+      "clipboard"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Execute one complete-slice contract and one clipboard policy owner across Plite, Plate and mounted views, migrate every affected caller, and prove the result. Completion threshold: The accepted target is implemented across every listed owner and consumer; complete slices, command dispatch, exact mounted targeting, retained provenance, table/static transfer and upload lifetime have matching package and browser proof. Teaching, generated registries",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-13-complete-suggestion-semantics.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Complete suggestion semantics Status: Complete ## Outcome Make native authored changes reviewable through real editor commands without restoring a second Suggestion mutation engine. Keep discovery complete for large documents, derive semantic detail only for an opened change, surface review failures, and prove the paragraph-boundary and valued-mark lifecycles that the Google Docs audit identified as the first release boundary. ## Authority and ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-13-shared-plugin-identity-feasibility.md",
+    "scopes": [
+      "plate-api"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Decide whether Plite and Plate can share one public plugin descriptor identity without moving Plate's product authoring compiler into Plite. Build and remove a disposable raw/headless/React prototype, record the result, and produce an implementation-ready adoption and proof plan only if the candidate deletes the current identity/topology translation instead of renaming it. Production execution expansion (authorized 2026-09-13): - Implement the ac",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-09-13-suggestion-deleted-pointer-selection.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Allow a physical mouse drag to expand a selection across retained deleted suggestion text and adjacent live text on `/blocks/suggestion-demo`. Completion threshold: Forward and reverse drags cross both live/deleted boundaries, paint the complete visible range once, preserve exact view/model selection ownership, and allow a valid follow-up action without runtime errors. Verification surface: The existing `apps/www/tests/browser/suggestion.spec.ts`",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-13-suggestion-package-over-authored-changes.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Implement `platejs/suggestion` and `platejs/suggestion/react` feature that packages reusable suggesting-mode, change-marker, active-change, and change-query behavior over the one canonical authored-change owner. Keep visual styling, cards, comments composition, toolbars, popovers, and kit assembly in the copied registry. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-13-suggestion-retained-caret.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Restore the visible caret when clicking and navigating struck-through suggestion text on `/blocks/suggestion-demo`. Completion threshold: The reporter's click inside retained text shows one caret at the native selection endpoint, left/right movement and subsequent input remain coherent, and final source-bound browser proof and focused checks pass. Verification surface: The existing www suggestion Browser runner and source-first React/selection te",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-13-suggestion-self-edit-regression.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Cancel an author's inverse suggestion edits, show only the remaining change, and preserve other authors, history, saved documents and the discussion lifecycle. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-13-suggestions-docs-coverage.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Suggestions docs coverage Status: Complete ## Outcome Expand `/docs/suggestion` using Comments as the nearest sibling and Plate Docs as the page owner. Preserve the existing insertion/deletion review example. ## Acceptance - [x] Complete mounted kit setup, correct dependencies and identity requirements. - [x] Distinct previews for formatting/block changes, accepted/proposed/markup views, and an in-memory save/reload round trip. - [x] Explain de",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-14-collaboration-lifetimes.md",
+    "scopes": [
+      "collaboration"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "implement and validate the smallest collaboration API and ownership model for ledger item 10, `collaboration`, including native Plite ownership, the Plate facade, React presentation, public exports, current teaching and executable production-path proof. Completion threshold: a selected contract with concrete raw/Plate calls, acceptance and admission laws, complete public-surface disposition, one executable implementation that combines those laws,",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-14-documents-api-research-review.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Audit the documents ledger question against current Plate and bounded current OSS source, compile reusable research, and issue one Best API Review verdict. Completion threshold: Seven scoped corpora have official discovery, exact local source reads or explicit evidence gaps, and dispositions; every documents census group is covered by a semantic audit unit; current and strongest target owners are compared; ledgers, wiki index/log, immutable revie",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-14-docx-canonical-conversion-contract.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Replace the competing DOCX import/export surfaces with one canonical document result, one projection-aware export captured from a single editor snapshot, structured fidelity diagnostics, a bounded untrusted-package reader, and one Word-semantics pass whose heavyweight work does not multiply by revision count. Keep Word clipboard fitting as its own truthfully named plugin and preserve feature-specific media, table, math, emoji, comment-storage, an",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-14-parameterized-plugin-factories.md",
+    "scopes": [
+      "plate-api"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Replace Plate Yjs's handwritten forwarding factories and overload mirrors with one non-installable, fully inferred factory object. `YjsPlugin.create(options)` must return one complete exact descriptor; `YjsPlugin.require(key)` must refine the accepted construction input; and `YjsPlugin.map(stage)` must derive another factory while preserving the exact input-to-descriptor relation through Plate adaptation and copied collaboration UI. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-14-suggestion-grouping-regression.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Make contiguous authored edits one review suggestion, define the merge/split law from `main` and Google Docs evidence, and prove the behavior with executable Plite contracts and the reported Playground route. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-14-suggestion-restoration-resolver.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Audit deletion restoration against Google Docs authorship semantics, add prefix, suffix, full, mismatch, and author-boundary coverage, and change production only if the resolver violates independent review ownership. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-15-docx-retained-source-preservation.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Add an explicit, bounded DocxSource artifact to the existing DOCX import, edit, and export workflow. An opted-in import retains one admitted source package and an immutable semantic baseline; export can return the exact source bytes for a proven unchanged review document and can preserve only relationship-closed source package units after edits. Any source unit without safe provenance is regenerated or omitted with structured diagnostics. Keep se",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-15-external-text-ordered-feedback.md",
+    "scopes": [
+      "external-text"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Implement the design/adoption plan requested after the [external-text audit](../research/decisions/external-text-ownership.md): delete deferred canonical feedback, choose its correct publication boundary, and complete implementation and proof. The audit's 11-unit inventory remains the scope; authored behavior supplies integration evidence, not another feature. Completion threshold: Adopted source with falsified alternatives, bounded correctness/s",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md",
+    "scopes": [
+      "history"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Resolve history replay, grouping, availability and mounted-view ownership, then adopt and prove the resulting design across every consumer in the [ten-unit audit](../research/decisions/history-ownership.md). Decision brief: - outcome: honest local replay, configured grouping and atomic publication, with a concrete migration for every actual consumer. - chosen shape: two history services; transaction-local grouping/restore; narrow availability; on",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-15-pagination-view-owned-layout.md",
+    "scopes": [
+      "pagination"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Complete the user's pagination design and adoption plan: own live layout in the paged view, remove false page-break authority, and make fragmentation explicit. The source acceptance is the [pagination audit](../research/decisions/pagination-ownership.md). Completion threshold: Resolve public call sites and ownership, challenge the larger deletion, record executable design evidence, and provide concrete adoption and production proof. Do not confus",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-16-ai-continuation-render-recovery.md",
+    "scopes": [
+      "ai",
+      "fixed-toolbar-scroll"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Keep Generate Markdown sample scrolled to its committed preview tail with both the final generated block and review controls inside the editor scrollport. Completion threshold: The exact docs-embed empty-list-item → Space → Generate Markdown sample interaction passes two-sided scrollport oracles for the generated endpoint and review menu plus native Chrome replay after registry generation, with the full AI browser file and scoped closure checks g",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-16-comments-history-api.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Select the smallest scalable Comments persistence model, settle its live/saved API, history and collaboration boundaries, durable mutation contract, adoption order, and executable proof so implementation can proceed without inventing a generic editor checkpoint. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-16-fix-verification-audit.md",
+    "scopes": [
+      "repair-verification-workflow"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Bug repair and verification workflow Status: Complete — scoped workflow repair, not product certification ## Outcome and scope Repair the bug-fix/verification decision chain under the user's September 16 request: explicit pokayoke in `.agents/AGENTS.md`, durable ownership and regression prevention, proportionate first-principles escalation, and truthful proof. Audit only the fix/verification skills, their shared sources and callers. No product ",
+    "reviewBasis": [],
+    "workKind": "workflow"
+  },
+  {
+    "path": "docs/plans/2026-09-16-fixed-toolbar-scrollport-layout.md",
+    "scopes": [
+      "fixed-toolbar-scroll"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Replace the fixed toolbar's measured scroll-padding workaround with a copied UI layout in which the toolbar and editor scrollport are separate siblings, while preserving the registered `EditorContainer` DOM/ref contract, shared toolbars, bounded demos, and AI review-menu scrolling. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-16-patch-consolidation.md",
+    "scopes": [
+      "repair-verification-workflow"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Make Patch the single local bug-repair entrypoint, preserving diagnosis-only authority and corpus proof without duplicate coordinators. Completion threshold: One Patch repair owner; current callers and generated mirrors resolve; existing executable proof contracts pass; paired synthetic tasks retain acceptance and authority without materially worse outcomes. Verification surface: Source and generated helper tests, real source generator, generated",
+    "reviewBasis": [],
+    "workKind": "workflow"
+  },
+  {
+    "path": "docs/plans/2026-09-16-persistence-immutable-conversion.md",
+    "scopes": [
+      "persistence"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Turn the [final persistence review](../research/decisions/persistence-ownership.md) into one source-backed public contract and adoption plan. A successful conversion must produce a complete current saved envelope, preserve supported document data and selection, isolate caller input, and need no live editor to finish its work. Completion threshold: Met for all four persistence ledger units. Source, target, selection and metadata contracts have can",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-16-slash-ai-suggested-paragraph.md",
+    "scopes": [
+      "ai",
+      "autocomplete",
+      "slash",
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Slash AI completion in a suggested paragraph Status: Complete ## Scope and acceptance Source: the user's September 16 recordings at 12:57:53 and 13:32:03. On the homepage in suggesting mode, Enter after `/AI` must remove the slash input and open AI. The caret must remain in the new empty paragraph; Escape must return typing to that paragraph. Mouse activation is the adjacent case. Local repair only; no publication or unrelated checkout cleanup.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-17-authored-direct-editing-with-visible-suggestions.md",
+    "scopes": [
+      "authored",
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Make the playground and AI editor open in Editing while existing suggestions remain visible and reviewable. Settle native input/publication ownership, pending-content semantics, Plate adoption and exact proof. ",
+    "reviewBasis": [
+      "2026-09-17-suggestions-authored-editing-final"
+    ],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-17-table-api-design.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Select the smallest truthful table API and a concrete adoption plan for complete-content preservation, root-aware explicit targets, and exact-view selection ownership. Completion threshold: Source-linked public decisions, complete implementation of the accepted 21-method contract and content/selection laws, package/UI/docs/doctrine adoption, and passing required source, package, browser and frozen runtime proof. Publication remains outside this r",
+    "reviewBasis": [
+      "2026-09-17-table-public-contract-final-pass"
+    ],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-17-table-direction-model-revalidation.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "- Independently re-evaluate the recorded first-principles table direction after the model change. Reaffirm, narrow, supersede, reverse, or defer it from current source and matching research evidence. Completion threshold: - One fresh immutable `table` review reconciles the latest record. - The current decision page states the validated target and its proof limits. - The ledger renders and `review-ledger.mjs check` passes. Verification surface: -  Read-only question revalidation, not an adoption plan. Its completed outcome belongs to the immutable direction-model-revalidation review.",
+    "reviewBasis": [],
+    "workKind": "research"
+  },
+  {
+    "path": "docs/plans/2026-09-17-table-host-delivery-benchmark.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Select and adopt the smallest correct table-selection host owner by comparing the repaired painter, a table-specific binding and an explicit scalar host channel under matched long-lived action, mount, heap and native-browser proof. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-17-table-selection-host-projection-design.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Delete the table-specific DOM painter and duplicate row/table highlight context. Keep table projection in Plate, bind transient selection state through canonical cell host refs, and preserve the public `render.useViewElementAttributes` contract. Add no public selection, registry, scalar-host or Plite runtime API. Completion threshold: A settled ownership/API target, executable semantic and matched scale evidence, production adoption across framew",
+    "reviewBasis": [
+      "2026-09-17-table-host-projection-final-design",
+      "2026-09-17-table-host-delivery-benchmark-closure"
+    ],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-18-comments-attachment-discovery.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "active",
+    "rationale": "Settle the native range law and copied Comments/Discussion presentation needed to retain conversations after deleting their text, without stale block badges or attachment to unrelated later typing. Task owns this design and proof plan. Completion threshold: The plan is ready when the native algorithm and UI contract have one owner each, disposable correctness and scale probes support every changed runtime choice, adoption and browser proof are co Observed current gated planning state; a concurrent owner is updating this plan/decision. Reread before any metadata or lifecycle edit.",
+    "reviewBasis": [
+      "2026-09-18-comments-attachment-and-discovery"
+    ],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/4111-table-border-wrong-cell.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix `#4111` so table border toggles target the correct adjacent cell after merges introduce `rowSpan` / `colSpan`. ## Source Of Truth - GitHub issue: `#4111` `Table: the table cell border is removed from the wrong cell` - Type: bug fix - Expected outcome: after merging cells, toggling top or left borders on adjacent cells updates the correct neighbor cell instead of the wrong path-derived sibling - Browser surface: yes, but code seam is determini",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/4731-comments-direction.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Decide whether GitHub issue #4731 is a valid Plate bug/feature gap and recommend the best direction for comment architecture in collaborative editors. ## Phases - [in_progress] Gather issue context and local repo patterns - [pending] Inspect existing comment and collaboration code paths - [pending] Recommend product/technical direction ## Findings - The issue claims the collaboration demo syncs text but not comments. - The user question is broade",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/4803-update-upload-history.md",
+    "scopes": [
+      "history",
+      "media",
+      "uploads"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "# Issue 4803: updateUploadHistory throws when undos is empty ## Source Of Truth - GitHub issue: https://github.com/udecode/plate/issues/4803 - Title: `updateUploadHistory throws an error when undos is empty` - Type: bug - Expected outcome: avoid the crash when no matching undo batch exists, preserve intended upload history behavior, and verify with targeted coverage. ## Scope - Investigate `updateUploadHistory` in the media placeholder flow. - Co",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/5064-fix-homepage-table-grid-enter-crash.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix Plate #5064 locally; done when red proof turns green, homepage Browser proof and table checks pass, changeset and P2 close. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/5065-fix-table-tab-navigation.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix Plate #5065 locally so Tab and Shift+Tab navigate horizontally between table cells, with red/green package and Browser proof, a changeset, and clean P2 review. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/5066-hard-cut-native-input-cliff.md",
+    "scopes": [
+      "native"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Close #5066 native-input architecture; done when every Plite binary readiness gate passes; plan docs/plans/5066-hard-cut-native-input-cliff.md. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/5086-seeded-removal-suggestion-crash-regression.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix Plate #5086 so accepting the seeded removal suggestion deletes the text, closes its card, preserves an interactive Playground, and produces no runtime error in five retry-free exact runs. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/5112-clear-abandoned-comment-draft-marks.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Clear abandoned Plate comment draft marks; done when close-without-submit removes draft/base marks in 5 browser runs, focused checks and P1 autoreview pass; no commit or push. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/5112-comment-popover-lifecycle-regression.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Repair the abandoned-comment popover lifecycle so closing removes only draft comment marks and preserves the live user selection/caret, including `rich-t|ext` from the reporter video. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/5112-fix-first-comment-popover-position.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Fix Plate Beta #5112 first-comment composer positioning; done when exact repro is green in 5 browser runs, focused tests and P1 autoreview pass; no commit, push, or public mutation. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/5112-push-and-close-comment-issue.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Commit and push the complete current checkout, prove issue #5112 on the final pushed `next` ref, then post a factual status comment and close the issue. ",
+    "reviewBasis": [],
+    "workKind": "verification"
+  },
+  {
+    "path": "docs/plans/5112-resolve-comment-floating-toolbar-regression.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Repair the submitted-comment resolve lifecycle so resolving removes the comment mark without poisoning editor selection/focus, and the floating toolbar opens and works on the next valid text selection. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/5125-5126-date-navigation-and-comment-activation-regression.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Reproduce and locally repair #5125 Date arrow navigation and #5126 first-click comment activation, with exact executable regressions, browser verification, five stable native runs, and final receipts. ",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plite/research/2026-06-12-oss-history-undo-architecture/README.md",
+    "scopes": [
+      "history"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# OSS History And Undo Architecture Research Question: which portable history, undo, redo, and skipped-edit invariants from mature editors should Plite promote into tests, docs, or runtime owners? Scope: - source-inspected history grouping, redo/undo replay, skipped/non-history edits, composition-aware grouping, selection restoration, and collaborative rebase paths; - local sibling repositories only for code-level claims; - promote only Plite-nat",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md",
+    "scopes": [
+      "performance"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Editor performance research, iteration 2 [Read the research report](../../../plans/artifacts/2026-09-09-editor-performance-research-iteration-2/report.md), [independent experiment dossiers](experiments.md), [React Compiler analysis](react-compiler.md), and [separate virtualization analysis](virtualization.md). Question: which current editor mechanisms and proven techniques can materially improve the complete Plate/Plite editing experience? The ",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md",
+    "scopes": [
+      "performance",
+      "reads"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Independent experiments The largest measured opportunity is full-DOM mount and structural editing. The strongest precisely scoped deletion to test is narrower: stop copying every hidden node key when the virtualization boundary only consumes the endpoint keys. Neither finding justifies replacing the document model, removing React, or adding a second state system. This is a portfolio of questions, not a cascade of implementation phases. Run one ",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-10-authored-changes/README.md",
+    "scopes": [
+      "authored"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Suggestions, Discussions and authored changes Question: Which production architecture should own proposed rich-text edits, accepted document state, authored changes, accept/reject-by-author and durable revision history, targeting Google Docs behavior? Scope: Current Plate Suggestions/Discussion/Comments, Plite operation/transaction/history/anchor/Yjs owners, and a bounded broad survey of editor and CRDT implementations. Stop rule: Cover the mat",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-10-authored-changes/assessment.md",
+    "scopes": [
+      "authored"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Suggestions, Discussions and authored revisions **Pursue native authored-change semantics in Plite. Delete Suggestion's independent mutation engine.** Keep Plate responsible for suggesting mode, review grouping and presentation. Build on `DocumentChange`, `EditorCommit` and the existing state/effect infrastructure. Accepted content and durable pending changes must be logically distinct, with a native editable review view. The physical represent",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-10-authored-changes/skill-audit.md",
+    "scopes": [
+      "authored"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Authored changes: skill audit and design corrections **Pursue native authored-change semantics. Do not approve the proposed Revisions subsystem or call the assessment implementation-ready.** The first pass supported removing Plate's mutation engine, but underexamined its own replacement owner, existing state/effect infrastructure, concurrent decisions, and performance acceptance criteria. This follow-up applies the relevant review methods. It d",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+    "scopes": [
+      "diff"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Structural diff OSS validation **Pursue the revised plan.** Keep ordinary schema-valid JSON and the native change/identity owners. Replace annotated diff nodes with immutable span correspondence and composable effects. Preserve every branch contribution in three-way comparisons; use pure resolution for detached merging and the native authored command for live review import. The [amended plan](../../../plans/2026-09-10-structural-document-diff.m",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-10-structural-diff-oss/quality-scenarios.md",
+    "scopes": [
+      "diff"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Structural comparison quality scenarios These requirements cover exact content, structural continuity, review and readable output. The 14 fixture recipes comprise four list-order, three section-order, three cross-move and four table/format cases. They specify acceptance behavior; they are not passing production tests. Production coverage remains **0/43 acceptance families certified by this research**. | Required job | Plan coverage | Proof boun",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-11-large-documents-contract/README.md",
+    "scopes": [
+      "large-documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Large-document rendering contract research Status: **research complete; production design gated**. Started September 11, closed September 12, 2026. The [Task plan](../../../plans/2026-09-11-large-documents-api-review.md) owns the lifecycle. The [proposed contract](../../../research/decisions/large-documents-rendering-api.md) owns the current recommendation; immutable assessment `2026-09-12-large-documents-deep-contract` reconciles the preceding",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-14-docx-interoperability-oss/README.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# DOCX interoperability OSS research Status: Research and final adversarial reassessment complete; canonical records and validation receipt are linked below. Question: Which laws should DOCX import, export and Word paste share, and which fidelity boundaries must be explicit? Scope: `documents`; current Plate source and six bounded source families: Mammoth, html-to-docx, docx, docx-preview, SuperDoc, and Pandoc. Compare semantic conv",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-14-docx-interoperability-oss/promotion-packets.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Documents promotion packets Status: Research handoff only. The review verdict is Pursue; implementation, library adoption and a replacement runtime have not been accepted. One next owner: `$task design plan documents: make DOCX fidelity explicit and replace competing conversion owners`. | Packet | Kind / baseline | Decision and proof gate",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/final-reassessment.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Documents final adversarial reassessment Read-only Best API Review reassessment, 2026-09-14. This corrects and extends the earlier source audit without rewriting its historical observations. ## Conclusion The `Pursue` verdict survives, but the earlier target was incomplete. The largest remaining public cuts are: 1. delete `exportAuthoredToDocx` in favor of one projection-aware `exportToDocx` result; 2. delete `ImportDocxResult.nodes` and always",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/pandoc-preview.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Pandoc and docx-preview: bounded DOCX source audit Completed 2026-09-14. Upstream tips rechecked at **2026-09-14T18:08:39Z**. Scope: Pandoc and docx-preview only; independent inspection of local source and test assertions. **13 implementation/test files, two license files, and two short package metadata reads**; no expanded corpus or runtime. Machine-readable companion: [documents-oss-pandoc-preview.json](/Users/zbeyens/git/plate-2/docs/plite/r",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/plate-audit.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Documents: Plate source audit Read-only sidecar consolidation, 2026-09-14. Repository: `/Users/zbeyens/git/plate-2`. Method: Best API Review and Redesign from First Principles. Main owns external research, durable review records, four DOCX package-partition runs, and the authority reproduction. This sidecar did not change product/research/ledger files, run builds, create goals, consult external sources, or duplicate main's reproduction. This fi",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-14-docx-interoperability-oss/shards/superdoc.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "DOCX interoperability OSS sidecar — SuperDoc. Public v2 integration/export contracts and the proprietary engine evidence boundary.",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-15-docx-post-implementation-oss/README.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# DOCX post-implementation OSS reassessment Question: Does current OSS evidence justify replacing or materially changing Plate's adopted canonical DOCX import/export contract after its implementation? Scope: retained-package editing, unknown-part preservation, tracked revisions, comment ranges, package resource limits, detached versus editor-bound APIs, and proof methods that can change the `documents` Best API Review verdict. Stop rule: stop aft",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-15-docx-post-implementation-oss/shards/retained-source-and-package-editing.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Retained source and package editing Read-only source and GitHub history reassessment for the `documents` Best API Review on 2026-09-15. All repositories were inspected from local clones at the revisions in `source-manifest.json`. GitHub issue and pull-request pages supplied failure history and intent, not implementation proof. ## What the strongest engines actually own | Engine | Canonical authority | Preservation mechanism | Important limit | ",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-17-table-substrate-ownership/README.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Table substrate ownership research Status: Complete — Pursue focused design; product implementation not authorized by this review. Question: From first principles, which table selection, resizing, topology, transfer and view responsibilities belong in Plite, Plate or copied UI? Does source evidence from other editors justify redesign after the September 17 adoption? Scope: Current table owners and real consumers; generic Plite selection and mou",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/research/2026-09-17-table-substrate-ownership/REPORT.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Table ownership from first principles **Pursue a focused redesign of Plate's table selection and mounted interaction.** The strongest cut is the interaction machinery that every copied cell and table renderer must install: per-cell resize targets, table-specific selection paint bookkeeping, and range assembly for semantic table actions. Put those jobs in the existing table integration, with a small headless selection API. Keep the actual topolo",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/plite/table-fragment-semantics.md",
+    "scopes": [
+      "clipboard",
+      "table"
+    ],
+    "kind": "specification",
+    "disposition": "superseded",
+    "rationale": "June 13 Plite-native grid proposal superseded by June 15 structural-core, extension-owned-grid policy; preserve rejected rectangle-owner rationale.",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/ai-preview-ownership.md",
+    "scopes": [
+      "ai",
+      "fixed-toolbar-scroll"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# AI preview ownership **Keep temporary AI generation outside the persistent suggestion workflow.** The adopted implementation preserves the user's editing intent, renders one temporary purple draft, and applies it with one normal transaction. Native interaction and the frozen package scaling comparison support this target. No additional public draft, branch or projection primitive is justified for this job. This bounded decision does not certify",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/authored-change-ownership.md",
+    "scopes": [
+      "ai",
+      "authored",
+      "suggestions"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Native authored-change ownership **Keep native authored ownership and persist its current state directly.** Plite owns contribution identity, dependencies, retained content, positions, atomic review decisions and accepted/projected views. Plate owns review workflow and presentation. Applications keep the ordinary `initialValue` and `editor.read.value()` calls; there is no public authored loader, cache, trusted-input mode, worker protocol or bac",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/clipboard-and-delete-commands-need-explicit-lanes.md",
+    "scopes": [
+      "clipboard"
+    ],
+    "kind": "decision",
+    "disposition": "historical",
+    "rationale": "# Clipboard and delete commands need explicit lanes ## Question Should clipboard behavior and delete commands be folded into ordinary editing rows, or modeled as explicit lanes? ## Decision They need explicit lanes. ## Why Typora gives strong evidence that: - clipboard behavior is multi-format and target-aware - delete commands have context-specific semantics beyond ordinary Backspace Treating them as generic side effects hides important behavior",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/clipboard-content-fitting.md",
+    "scopes": [
+      "clipboard",
+      "documents"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Clipboard interchange and content fitting Status: Review complete — Pursue. The selected design and reported adoption are in the [clipboard transfer plan](../../plans/2026-09-13-clipboard-transfer-policy.md). That plan is Complete and reports every clipboard-owned proof gate closed. The September 18 history migration recovers this later execution claim but does not replay it or recover a complete original source/receipt binding. Current proof i",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/code-text-ownership.md",
+    "scopes": [
+      "code",
+      "external-text"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Code text ownership The retained design uses one newline-bearing Text for code content and separate native and external renderers. The September 4 audit kept the narrow external-text protocol and recommended removing whole-block Lowlight transport from CodeMirror. Native highlighting, neutral annotations and native editing retain independent jobs. Current source has the [code-block owner](../../../packages/platejs/src/features/code-block/lib/Ba",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/collaboration-ownership.md",
+    "scopes": [
+      "collaboration",
+      "history",
+      "plate-api"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Collaboration binding, transport and presence ownership Status: **Implemented; adopted and verified** for ledger item 10, `collaboration`. The [completed lifetime plan](../../plans/2026-09-14-collaboration-lifetimes.md) and [implementation review](../review-records/2026-09-14-collaboration-lifetime-implementation.json) supersede the earlier deferred assessment. They record the combined lifecycle, package, real-provider/browser and balanced comp",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/comments-data-ownership.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Comments data ownership The Comments package owns serializable thread records, editor binding, range mapping, subscriptions and disposal. Applications own database I/O, authentication and authorization. Copied UI owns presentation. [BaseCommentsPlugin](../../../packages/platejs/src/features/comments/BaseCommentsPlugin.ts) declares immutable semantic `CommentThread` records and private native anchors. `attachment(id)` projects the live location.",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/documents-conversion-fidelity.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# DOCX conversion fidelity and source authority **The semantic converter and explicit retained-source path are adopted and implemented.** DOCX file conversion has one canonical import result, one projection-aware export operation captured from one immutable editor snapshot, structured fidelity diagnostics, bounded package work, and an opt-in source artifact for exact unchanged reuse and safe edited package overlay. Word clipboard fitting remains ",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/editor-public-naming.md",
+    "scopes": [
+      "editor-public-naming"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Neutral editor public names The user accepted this direction with “Ok go all.” The neutral top-level source API, DOM/codec boundary, copied UI and public documentation are adopted. A 2026-09-13 hard cut also closes the nested public test contract, browser-test protocols, public JSDoc and Plate's emitted declaration provenance. Prior branded clipboard, authored HTML/DOCX, mention and media formats are not a supported input domain; the adopted co",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/external-text-ownership.md",
+    "scopes": [
+      "external-text"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# External text ownership **Canonical feedback is synchronous and ordered at CodeMirror's dispatch boundary; external-text delivery is monotonic under callback failure.** The public slot and narrow versioned protocol survive this review. A mounted reproduction leaves CodeMirror displaying `agoodd` while Plite's canonical text is `Ragood`. Changing public names, exposing the editor to adapters, or adding another text store would leave the demonstr",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/fixed-toolbar-scroll-ownership.md",
+    "scopes": [
+      "fixed-toolbar-scroll"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Fixed toolbar scroll ownership **Eliminate toolbar overlap through copied editor layout.** Keep `FixedToolbar` presentational. The editor panel should allocate a toolbar row and a separate content scroll area, so toolbar height does not require an editor subscription, measurement, observer, or mutation of somebody else's inline style. Status: Implemented and verified. `EditorFrame` owns the flex-column panel, `EditorContainer` remains the regis",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/generated-contract-boundary.md",
+    "scopes": [
+      "compiler"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Generated contracts belong to the application graph **Stop requiring CLI-generated application types in reusable registry items.** Keep descriptor-derived feature access and optional application-owned generation. A copied item is a reusable consumer of Plate, while its host owns the complete plugin composition. Being consumer-side does not make those owners identical. The current generated `Editor` names the entire exported `EditorKit`, and its",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/history-ownership.md",
+    "scopes": [
+      "history"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "Review all 10 history ledger units, their public contracts and materially different consumers; compare keeping, cutting, merging and replacing owners before deciding whether further design work is justified. Completion threshold: Every unit has a disposition, decisive claims cite live source or a bounded executable diagnostic, prior evidence and its limits are reconciled, and the immutable review plus generated ledger validate. Hard laws: Undo pr",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/large-documents-dom-coverage.md",
+    "scopes": [
+      "large-documents"
+    ],
+    "kind": "decision",
+    "disposition": "historical",
+    "rationale": "# Large documents need explicit DOM omission The [design follow-up](large-documents-rendering-api.md) selects one `Editable` with a proposed `virtualize` input. Its runtime, geometry and packaging changes remain provisional. The assessment below records the reasons for pursuing that work; it does not certify the proposed implementation. **Pursue an explicit DOM coverage contract. Delete implicit omission from the ordinary editing contract; challe",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/large-documents-rendering-api.md",
+    "scopes": [
+      "large-documents"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Explicit DOM omission and large-document rendering Status: **implementation complete; stable-snapshot closure pending**. The dedicated entrypoints, mounted-view runtime and pagination-owned page window are installed in production source. Final cross-browser recording must use one unchanged checkout snapshot. The durable target is one explicit omission permission, one native view owner, and separate spatial owners for ordinary flow and paginated",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/model-document-boundary.md",
+    "scopes": [
+      "model"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Model document boundary **Use one shared document-shape validation owner inside Plite.** Construction, schema assertion, schema fitting, and document replacement establish the same container contract before applying their entry-specific work. Retain the JSON tree, one compiled schema, and separate runtime and persisted identities. The evidence supports this bounded repair; it does not justify replacing the document architecture. The September 1",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/pagination-ownership.md",
+    "scopes": [
+      "pagination"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Pagination ownership **Live pagination is an owned capability of the mounted paged view, and the derived layout reader's page-break persistence protocol is deleted.** Applications configure `PagedEditable` instead of assembling a live controller, projection cache and decoration publisher. Independent headless measurement, canonical document ownership and explicit page omission remain. Status: implemented and verified through the [Task plan](../",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/performance-candidate-reuse.md",
+    "scopes": [
+      "performance"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Reuse performance candidate evidence Begin performance research with both recorded iterations. The first study produced 34 conditional experiments and proposed lazy history recovery projection as the first supported adoption candidate. Iteration 2 reconciles material prior candidates and keeps Compiler and virtualization analyses separate. Each candidate's dossier owns its verdict, rejected alternatives, source identity and reopening conditions",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/persistence-ownership.md",
+    "scopes": [
+      "persistence"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Document persistence ownership **Pursue one complete migration operation bound to immutable target facts.** Keep one complete saved document, versioned feature metadata, application schema lineage, and separate local history. Cut the runner's mutable editor and plugin store authority, caller-input aliasing, implicit raw-source guess, hidden selection-mapper side channel, and incomplete output contract. Moving those dependencies into a persisten",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/plate-core-ownership.md",
+    "scopes": [
+      "compiler",
+      "distribution",
+      "plate-api"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Plate core ownership ## Current implementation: mapped parameterized plugin factories **The typed factory mapping contract is implemented for Plate Yjs and copied collaboration composition.** Required app resources remain an explicit options-to-plugin construction boundary, while one private input-to-descriptor relation carries native capability inference across Plite, Plate, and copied UI without handwritten API groups or forwarding overloads.",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/plite-core-ownership.md",
+    "scopes": [
+      "commands",
+      "react",
+      "runtime",
+      "schema",
+      "state"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Plite core ownership **Pursue deleting facets and the public command descriptor's default-only `build()` method. Keep one document runtime, root-scoped views, document fields and effects, and atomic extension replacement.** These are two cuts within the core architecture review; they do not merge independent Plate feature reviews. The comparison below records the pre-adoption source. The two cuts are implemented locally under [the adoption plan",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/plite-view-ownership.md",
+    "scopes": [
+      "accessibility",
+      "external-text",
+      "geometry",
+      "native",
+      "react",
+      "selection",
+      "suggestions"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Plite view ownership **Pursue removing the generic Widget carrier from geometry and the public React Runtime handle.** Keep selection, native input and accessibility responsibilities at their existing owners. This is the five-question review of ledger group `plite-view`, requested after Plate core. The geometry cut has the largest material benefit: it removes a derived store and protocol between semantic data and measurement. The React cut remo",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/reads-demand-driven-invalidation.md",
+    "scopes": [
+      "reads"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Reads and demand-driven invalidation **Pursue:** remove whole-root change analysis from a single-key invalidation query. Keep that query and its memoized answer on the canonical commit. Route mounted consumers by their actual dependencies; enumerate complete change sets only when the consumer needs the complete set. This is a direction for further work. The warm, primary-root membership probe passes; the complete React dispatch architecture is ",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/registry-ui-ownership.md",
+    "scopes": [
+      "ui"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Registry composition, installation and command ownership **Pursue deleting redundant ownership: open-ended string action dispatch, duplicated neutral kit policy, and manually listed installation facts that existing source can determine.** Keep copied feature composition, explicit install intent and renderer-specific lifetimes. No universal runtime feature or command catalog earns its cost here. The user job is to install working source, choose ",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/slate-v2-read-update-runtime-architecture.md",
+    "scopes": [
+      "reads",
+      "transactions"
+    ],
+    "kind": "decision",
+    "disposition": "historical",
+    "rationale": "# Slate v2 should use read/update as the public runtime lifecycle ## Decision Slate v2 should expose: ```ts editor.read(fn) editor.update(fn, options?) ``` as the public runtime lifecycle. `tx.resolveTarget()` remains internal. It is not normal plugin/app DX. ## Why The strongest cross-editor evidence points to the same discipline: - Lexical uses read/update lifecycle and dirty reconciliation. - ProseMirror uses transactions plus centralized DOM ",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/structural-comparison.md",
+    "scopes": [
+      "diff"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Structural comparison ownership The selected design keeps ordinary schema-valid JSON and compares immutable span correspondence with composable effects. Three-way review preserves every branch contribution. Detached resolution derives a result; live review import uses native authored commands with baseline validation. The research rejected an annotated-node document protocol, merge-only review output, a public persistent graph and a second diff",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/suggestion-review-semantics.md",
+    "scopes": [
+      "suggestions"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Suggestion review semantics ## Editing while showing pending changes **Keep separate authored write intent and displayed content.** The September 17 screenshot contradicts the claim that removing the playground's `propose/markup` override preserves visible suggestions. It selects `edit/accepted`, which hides pending insertions. The user requires direct editing by default while existing suggestions remain visible and reviewable. The September 17",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/table-ownership.md",
+    "scopes": [
+      "table"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Table selection and mounted interaction ownership **Keep table semantics in Plate. `TablePlugin` owns one private selection projection per mounted view and binds it directly to canonical cell hosts. The public painter hook and copied row/table overlay owner are deleted. Add no Plite table marker, public selection API or generic scalar host channel.** | Responsibility | Decision | | --- | --- | | Implicit table selection reads | Use the canonica",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/transactions-synchronous-boundary.md",
+    "scopes": [
+      "history",
+      "transactions"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "# Atomic updates and synchronous transaction authors **Accepted and locally implemented:** enforce synchronous transaction authors through the existing update, prepared-spec and canonical-change owners. Extension writers and spec callbacks reject thenable results, and named-root views forward author results to the same check. Independent read results keep their existing contract. ## Job and hard laws An editor operation must publish one coherent ",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/open-questions/documents-conversion-proof.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# DOCX fidelity decisions and proof The canonical conversion contract resolves this design packet. It does not promise arbitrary Word-package fidelity or Microsoft Word certification. | Question | Resolution | | --- | --- | | Import truth and failure | `DocxImportResult` returns one complete `EditorDocumentValue` on success and no document on expected package, limit, or decode failure. | | Export input and capture | `exportToDocx(editor, options)",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/sources/docx-interoperability-oss.md",
+    "scopes": [
+      "documents"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# DOCX conversion and preservation Six current upstream source families distinguish **semantic import, Word generation, package retention, preview, and editable package preservation**. One capability does not establish another. This is a bounded source comparison, not a ranking of all DOCX software or a claim that upstream tests pass. The [corpus ledger](../../plite/research/2026-09-14-docx-interoperability-oss/corpus-ledger.tsv) closes all sev",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md",
+    "scopes": [
+      "pagination"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "# Pretext Pagination And Page Virtualization ## Scope Evidence for the Slate v2 pagination / virtualization planning lane. Sources: - live `../pretext` source and research log, read on 2026-05-25. - live `Plate repo root` layout and React source, read on 2026-05-25. - Cyrus Radfar, \"Pretext is a text measurement library. The most interesting use cases have no DOM at all.\", fetched on 2026-05-25. - local `../tiptap-docs` Pages limitations and tabl",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/solutions/best-practices/2026-05-09-hashtag-like-text-tokens-should-use-dynamic-decorations.md",
+    "scopes": [
+      "annotations"
+    ],
+    "kind": "lesson",
+    "disposition": "historical",
+    "rationale": "Inspected failure/solution: editable hashtag-like text is a dynamic decoration, not a mention/inline void or the constrained Tag picker. Preserve the rejected ownership comparison under annotations.",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/solutions/logic-errors/2026-03-23-csv-header-mode-validity-check-must-handle-object-rows.md",
+    "scopes": [
+      "csv"
+    ],
+    "kind": "lesson",
+    "disposition": "historical",
+    "rationale": "# CSV header-mode validity check must handle object rows ## Problem `CsvPlugin` is supposed to deserialize plain CSV into a Plite table. Valid input like `name,age\\nAda,36` returned `undefined` on the default path because Papa Parse was configured with `header: true`, but the validity check still treated the parsed rows like arrays. ## Root cause `deserializeCsv` used one validation shape for both parse modes: ```ts data.length < 2 || data[0].len",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/table/table-perf-benchmark-input-snapshot.md",
+    "scopes": [
+      "performance",
+      "table"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "Inspected benchmark environment, metric cohorts and results. Historical snapshot; not current production proof. Dated 2026-03-12 at commit 98ae3116f.",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/table/table-selection-latency-snapshot.md",
+    "scopes": [
+      "performance",
+      "table"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "Inspected benchmark environment, metric cohorts and results. Historical snapshot; not current production proof. No date/source identity supplied in the document.",
+    "reviewBasis": []
+  },
+  {
+    "path": "docs/research/decisions/editing-command-ownership.md",
+    "scopes": [
+      "editing"
+    ],
+    "kind": "decision",
+    "disposition": "active",
+    "rationale": "Current bounded editing API/architecture assessment with complete census and current runtime probes."
+  },
+  {
+    "path": "docs/plans/2026-07-01-plate-next-input-rules-before-api.md",
+    "scopes": [
+      "editing"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Inspected adoption of neutral point-before matching and structural toggles into Plite; old-package proof retained as historical."
+  },
+  {
+    "path": "docs/plans/2026-07-22-plite-plate-agent-native-api-shape-audit.md",
+    "scopes": [
+      "editing"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Inspected earlier helper-injection cut and installed-editor command inference exception; the proposed inputRule namespace was not adopted."
+  },
+  {
+    "path": "docs/research/systems/editor-behavior-architecture.md",
+    "scopes": [
+      "editing"
+    ],
+    "kind": "report",
+    "disposition": "historical",
+    "rationale": "Inspected one-execution-model and feature policy/promotion law; prospective structural helpers remain candidates."
+  },
+  {
+    "path": "docs/research/decisions/current-kit-autoformat-normalization-split.md",
+    "scopes": [
+      "editing"
+    ],
+    "kind": "decision",
+    "disposition": "historical",
+    "rationale": "Inspected historical Enter-owned fence/HR target; current kits still choose match-triggered completion."
+  },
+  {
+    "path": "docs/research/decisions/autoformat-families-are-input-assist-surfaces.md",
+    "scopes": [
+      "editing"
+    ],
+    "kind": "decision",
+    "disposition": "historical",
+    "rationale": "Inspected independent block/mark/substitution jobs; input assists are not parser law or an automatic packaging unit."
+  },
+  {
+    "path": "docs/plans/2026-09-02-remove-code-line-model.md",
+    "scopes": [
+      "code"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Retain the explicit no-CodeLine model decision and matched planning probe as historical context; current source confirms one Text adoption.",
+    "reviewBasis": [],
+    "workKind": "design"
+  },
+  {
+    "path": "docs/plans/2026-09-03-external-text-execution.md",
+    "scopes": [
+      "code"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Generic external-text slot execution; explicitly excluded CodeMirror. Its textarea proof does not certify the later adapter.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-04-code-block-external-text-execution.md",
+    "scopes": [
+      "code"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Implemented optional CodeMirror parser ownership, omission of native syntax in external-only composition and retained mixed views. Later checkpoints supersede its stale in-progress table; rejected shared recipe API remains rejected.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-09-06-code-block-plate-plite-tiptap-perf-audit.md",
+    "scopes": [
+      "code"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Final R4 adoption and matched native rendering measurements postdate the Sep5 plateau. Historical runtime evidence and limits remain distinct from current behavior/performance proof.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-08-17-restore-conditional-list-start-semantics.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "superseded",
+    "rationale": "Proposed unconditional listStart plus listStartIfFirst; replaced the same day by the finalize start/restart plan.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/4985-ordered-list-heading-paragraph-numbering.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Established heading/non-heading numbering partitions within equal indent, type and style; retained as a private sequence law.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/4649-liststart-setvalue.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "superseded",
+    "rationale": "Markdown starts above one as a conditional start; current Markdown decode emits a forced listRestart.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-12-list-v2-api.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Kept list policy in Plate with a declared Indent dependency and split method options; its hooks, isActive signature and normalization-based numbering were later superseded.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-16-execute-list-v2-api.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Execution of the list v2 API; partly superseded by read-time ordinals and the read/update split.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-12-legacy-list-model-v2-api.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "superseded",
+    "rationale": "Pending legacy container-model API work made moot by the 2026-08-29 unified list model cut.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-26-plate-next-list-read-hard-cut.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Moved snapshot queries to read and pure services to api; the one-stage extend claim is contradicted by five current stages.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-24-plate-next-list-owner-cleanup.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "One-file list owner, exported isOrderedList and root outdent clearing list fields.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-07-07-plate-next-indent-package-review.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Made BaseIndentPlugin the single indent owner exposed as a transaction group.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/plans/2026-06-15-4951-block-placeholder-list-item.md",
+    "scopes": [
+      "list"
+    ],
+    "kind": "plan",
+    "disposition": "historical",
+    "rationale": "Placeholder utility must not hardcode list or indent element state.",
+    "reviewBasis": [],
+    "workKind": "implementation"
+  },
+  {
+    "path": "docs/research/probes/2026-09-30-performance-review/REPORT.md",
+    "scopes": [
+      "performance"
+    ],
+    "kind": "report",
+    "disposition": "active",
+    "rationale": "Current first-principles review of measurement authority, receipt admission, frozen assessments and their materially different consumers; runtime benchmark adoption remains outside this review."
+  },
+  {
+    "path": "docs/research/probes/2026-09-30-autocomplete/REPORT.md",
+    "scopes": [
+      "autocomplete"
+    ],
+    "kind": "report",
+    "disposition": "active",
+    "rationale": "Six-unit source and history audit, real-Ariakit observational probes, strongest replacement comparison and explicit adoption limits."
+  },
+  {
+    "path": "docs/plans/4900-pr-and-comment.md",
+    "scopes": [
+      "comments"
+    ],
+    "kind": "plan",
+    "disposition": "rejected",
+    "rationale": "Inspected objective: open/update a pull request and a GitHub issue comment for AI history issue #4900. This is publication workflow, not the Comments feature."
+  },
+  {
+    "path": "docs/brainstorms/plite-canvas.md",
+    "scopes": [
+      "canvas"
+    ],
+    "kind": "plan",
+    "disposition": "rejected",
+    "rationale": "Inspected goal: optional html-in-canvas editor runtime adapter. Scope canvas owns embedded Excalidraw document interaction; matching the noun canvas does not establish this association."
+  }
+]

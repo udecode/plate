@@ -1,6 +1,6 @@
 # dev/table-perf Performance Snapshot
 
-Historical measurement; use the [Table hub](../research/features/table.md)
+Historical measurement; use `node tooling/scripts/review-ledger.mjs lookup table`
 for current decisions and bound evidence. The original snapshot records neither
 a test date nor source revision. Its numbers remain unbound; they cannot prove
 the current implementation’s latency.

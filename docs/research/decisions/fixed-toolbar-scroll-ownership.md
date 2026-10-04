@@ -2,18 +2,16 @@
 title: Fixed toolbar scroll ownership
 type: decision
 status: implemented
-updated: 2026-09-17
-review_scope: fixed-toolbar-scroll
-current_review: 2026-09-16-fixed-toolbar-scroll-ownership
-review_history:
-  - ../review-records/2026-09-16-fixed-toolbar-scroll-ownership.json
+updated: 2026-10-04
 related:
-  - ../reviews.md#fixed-toolbar-scroll
+  - ../review-scopes/fixed-toolbar-scroll.json
   - ai-preview-ownership.md
   - ../../plans/2026-09-16-fixed-toolbar-scrollport-layout.md
 ---
 
 # Fixed toolbar scroll ownership
+
+**Audit of 2026-10-04.** Stop. The Pursue target landed: FixedToolbar is presentational with no editor subscription, ResizeObserver or scroll-padding write, and the copied EditorFrame allocates a toolbar row beside the registered EditorContainer scrollport, so no materially better design remains. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-fixed-toolbar-scroll-audit` hold the evidence.
 
 **Eliminate toolbar overlap through copied editor layout.** Keep
 `FixedToolbar` presentational. The editor panel should allocate a toolbar row

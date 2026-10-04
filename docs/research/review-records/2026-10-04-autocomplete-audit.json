@@ -1,0 +1,128 @@
+{
+  "id": "2026-10-04-autocomplete-audit",
+  "scope": "autocomplete",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-not-adopted at queue position 35. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "The query stays ordinary editor text; a popup opens only on a trigger typed in its own Editable and tracks that occurrence with range anchors (docs/vision/plate.md autocomplete law).",
+    "IME preedit previews the query without publishing it; completion replaces trigger and query in one refusable new-batch transaction that undoes in one step.",
+    "Paste, drop, yank, replacement, history, remote and migrated commits never open a popup (adoption plan law 5).",
+    "While a query is open, assistive technology recognizes a combobox with an expanded popup and the active option (law 14, the reason Plate adopted the input element in udecode/plate#3168).",
+    "Plate reads no private Plite internals and hides no Plite API gap in Plate glue (Boundary Law).",
+    "Copied registry UI owns catalogs, filtering, the active option and presentation; typing cost stays bounded at any paragraph size."
+  ],
+  "evidenceReuse": "Reused the 2026-10-02 rechallenge's twelve-editor survey and Chromium accessibility comparison, the Phase 1a record's receipts (21 package cases, chars-read probe, AX tree, five warm browser repeats, frozen key-to-paint +0.7 ms p95) and the plan's three panel rounds. Rechecked on the live tree: HEAD's readTypedInsertion private-tag filter and readPreview, the staged Phase 1a owner (occurrence identity, combobox role writer, IME-confirm skip), the unstaged Phase 1b move onto subscribeTypedText and textToCaret with the untracked Plite typed-text.ts, the copied inline-combobox.tsx and mention.tsx call sites, and the plan's Phase 2 grammar rows against docs/vision/plate.md.",
+  "summary": "The job is to open a popup only on a trigger typed in one Editable, keep the query as ordinary text, preview IME preedit, and complete in one refusable transaction. The 2026-10-02 rechallenge target, combobox semantics on the editor root while a query is open, is in the working tree as Phase 1a (staged, uncommitted). Phase 1b is built but unrecorded. Its owner now listens to view.api.react.subscribeTypedText and reads view.api.dom.textToCaret instead of HEAD's private dom-text-input tag filter and U+FEFF-stripping DOM range read. The strongest replacement lanes fail. An isolated query input (Atlassian-style or the old void) breaks undo and native IME ownership, and a public Plite typeahead host puts product policy in Plite. Phase 2 of the live plan would add a combobox field to every plugin definition type, a conditional slots.combobox, a name-keyed host-presence throw in core and a companion ComboboxPlugin, which reverses the no-companion rule. Its own round-3 panel found that Phase 1 already removes the private tags, the DOM mapping and the recognition gap, and the measured idle-popup cost is about 0.2 ms. So the live Phase 1a and 1b work is the right target, Phase 3's screen-reader run is the open proof, and Phase 2 should not run on current evidence.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "Copied popup: const box = useCombobox({ activeOptionId, editableRef, onKeyDown, open: shown, plugin }); item click calls box.complete(match, (tx) => onSelect?.(tx)). Owner at HEAD: view.subscribeCommit(commit => readTypedInsertion(commit)) filters private dom-text-input and native-text-input tags, and readPreview maps Plite DOM itself and strips U+FEFF.",
+    "proposed": "Copied popup call site unchanged. Owner on proposed public Plite calls (built, uncommitted): view.api.react.subscribeTypedText(({ editable, range, text }) => { if (editable === element) onTyped({ caret: RangeApi.end(range), length: text.length }) }) and view.api.dom.textToCaret(RangeApi.end(trigger)). No combobox plugin field, slots.combobox or ComboboxPlugin host."
+  },
+  "previous": "2026-10-02-autocomplete-input-element-rechallenge",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-10-02-autocomplete-input-element-rechallenge",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "retains",
+      "reason": "Ordinary text and the in-place root-combobox repair still win; Phase 1a implements that repair in the working tree and only a real screen reader can reopen it."
+    },
+    {
+      "record": "2026-10-03-autocomplete-ordinary-text-adoption-finalize",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "retains",
+      "reason": "Its law-5 violation census and open gates stand; Phase 1b is the repair for the string-data cases and leaves the Android keyboard-clipboard paste as the named exception."
+    },
+    {
+      "record": "2026-10-04-autocomplete-occurrence-host-phase-1a",
+      "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+      "action": "retains",
+      "reason": "Its occurrence identity, bounded reads, root combobox role and IME-confirm skip are the right repairs in the existing owner; its proof limits (no screen reader, no calibrated production benchmark) stay open."
+    }
+  ],
+  "alternatives": [
+    "Keeping the HEAD owner as it is loses. It leaves the root a textbox, completes a stale equal-text row, reads unbounded text, filters on private Plite tags and admits string paste, drop and yank as typing.",
+    "Returning to an isolated query (the old persisted input void or Atlassian's view-local nested contenteditable) is rejected. It loses the query on undo, moves IME out of DOMInputRuntime and needs custom history steps, and Phase 1a restores its one benefit, combobox recognition, on the root.",
+    "Moving the whole typeahead into a public Plite host (useTypeahead) is rejected. Latest-trigger choice, the key set and role switching are product policy, and it adds seven public Plite names with one consumer.",
+    "Phase 1b, two neutral Plite calls (subscribeTypedText by input intent naming its Editable, and textToCaret), is the lane to pursue. It is the smallest owner for typing intent and DOM text mapping, has ProseMirror handleTextInput as prior art, and deletes Plate's private-tag and placeholder handling.",
+    "The Phase 2 host (a combobox field in core plugin types, slots.combobox, a name-keyed host check and a companion ComboboxPlugin) is rejected on current evidence. It widens the universal plugin grammar for one feature to save about 0.2 ms of idle popups and to rename editableRef and plugin to occurrence.",
+    "Change the existing API instead of Phase 2: if custom-trigger DX is a real job, make ComboboxState fields optional with defaults inside the feature's own state channel, without any core grammar change."
+  ],
+  "proofLimits": "Source review only; nothing was run. Phase 1a is staged and Phase 1b is unstaged or untracked work of another session (comboboxOwner.internal.ts, combobox.internal.ts, typed-text.ts, dom-editor.ts, dom.mdx), with no Phase 1b execution record; its Android emulator, raw Plite typing cohort and check:docs exits are open per its decision log. No screen reader has run, so root-combobox recognition rests on Chromium's accessibility tree. The key-to-paint receipt is the development-server contract, not the calibrated production benchmark. The Phase 2 judgment is a source and doctrine judgment, not a measured comparison.",
+  "references": [
+    "docs/research/decisions/autocomplete-ownership.md",
+    "docs/research/features/autocomplete.md",
+    "docs/research/review-records/2026-10-02-autocomplete-input-element-rechallenge.json",
+    "docs/research/review-records/2026-10-03-autocomplete-ordinary-text-adoption-finalize.json",
+    "docs/research/review-records/2026-10-04-autocomplete-occurrence-host-phase-1a.json",
+    "docs/plans/2026-10-03-autocomplete-occurrence-host.md",
+    "docs/plans/2026-10-03-autocomplete-occurrence-host.decisions.tsv",
+    "docs/plans/topics/autocomplete.md",
+    "packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts",
+    "packages/platejs/src/react/features/combobox/useCombobox.ts",
+    "packages/platejs/src/features/combobox/lib/combobox.internal.ts",
+    "packages/platejs/src/features/combobox/lib/combobox.ts",
+    "packages/platejs/src/react/utils/dispatchPlateShortcut.internal.ts",
+    "packages/plitejs/src/react/editable/typed-text.ts",
+    "packages/plitejs/src/dom/plugin/dom-editor.ts",
+    "apps/www/src/registry/components/editor/inline-combobox.tsx",
+    "apps/www/src/registry/components/editor/mention.tsx",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "content/docs/api/dom.mdx",
+    "docs/vision/plate.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/inline-combobox.tsx": "f06c84db4fcf9041291d3103fb9d8b6fdb3848decfba8b3611f270897cf4a616",
+      "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts": "cbee93dafefa0d3dcebeae594d5ccdea7a442169f4d93b01cc9d2cd277a9ac98",
+      "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts": "c7b50621af092622a1cd8009879b5bec2b199e6efdc02c47f409abead954fa0e",
+      "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts": "54a593415938be2971ef5f300da816c85ce48c95958162402d92ede08911b3ac",
+      "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": "26409780d782910ba62246ef82e7f92fdac22b4c8e25204d740047f8e9a97a99",
+      "apps/www/src/registry/components/editor/mention.tsx": "847298e9959a636a5d4ae6d94c6a250c1d19f39bd461d3e60d44d8aa56c89cb4",
+      "apps/www/src/registry/components/editor/slash.tsx": "09c138fdcd5e0e1c44a4be96dd8d093267a50caf82dce5f7facc8240c99d8659",
+      "apps/www/src/registry/components/editor/emoji.tsx": "e6e4fac67b3185c33abe092e572349d1fdc7d64a5478e82b310544ef3343dd62",
+      "apps/www/src/registry/components/editor/footnote.tsx": "c0a04066e9300c7a826d7e61f0c55b2a0de3d8a1f738c00abad6c1cf6e2e2bcd",
+      "packages/platejs/src/react/features/combobox/useCombobox.spec.tsx": "8e7305352597c9dab81179fc4cd59d9bdf29cdf494901210587f068e5b1c3ebd",
+      "packages/platejs/type-tests/combobox-input-contracts.ts": "5ec01afab8474b122c8f59c56ded87c8c791867c17278e04eb15003e510ad49c",
+      "apps/www/tests/browser/combobox.spec.ts": "47815639a105693d747e6dadf78c1b0249f3d7f05fd6a7ba5b2452ce02765d1c",
+      "packages/platejs/src/migrations/migratePlateV54Inputs.spec.ts": "699aa46634ce27a09f10a3b09c8063bf73cfef346492b048d2b92c2d4303c069",
+      "packages/platejs/src/features/combobox/lib/filterWords.spec.ts": "0b3952c969655f44f54b455e3f4a6ca757bc406b50186f13316f111656f8a8f6",
+      "docs/research/probes/2026-09-30-autocomplete/current-boundaries.spec.tsx": "625b0888371e4bf0dfe9b134352255f9e6bd4c8780473722bc9718c8f015b4ad",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "packages/platejs/package.json": "9ef060d69055e74235e5fdf648bf23249fd028654271706eb4de35d72a9dbaac",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "tooling/config/tsconfig.test.json": "fe02ec41ff9a189e8a08bc65e1f38dfb5bf8a8acd778a5228af98f1f816376c4",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "apps/www/src/registry/hooks/use-debounce.ts": "256b01505a863d67b278345b66a9b8340faf68247028da04fab201335a4560e4",
+      "packages/platejs/src/emoji/lib/createEmojiSearch.ts": "20432336ba8ca2402da9de3635f6224dda3e2796459f7c5b05422077031f51f9",
+      "apps/www/src/registry/components/editor/select-editor.tsx": "236f074cffcbb83efc1fb913a8f20f88fe12ef8c5ee69eb0c564699ac3f58e15",
+      "apps/www/src/registry/components/editor/select-command.tsx": "ac3ec41fc0eca2bbd8a0e8165d51b3e79756ea6272edf65e7fb32d13ab2b1404",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/combobox": "32364fdeb49c58bdb2b6567b0f47be440f37a9e67931d7f2efdbb65b5f6a0ffc",
+      "packages/platejs/src/react/features/combobox": "62ebf31a087ad4a2db6d76fea778368422d80804078740cc3cd52166349bb4b5",
+      "packages/platejs/src/lib/plugins/input-rules": "e2e22f1de7eaf66865257c199f53f0660387c6b29cd291882b576fd64aa7e424"
+    },
+    "features": {
+      "browser/combobox": "b58eb8c325bf92b6f30b95482ae34ffacf2b5131603e49a47cdbfe436fb2d139",
+      "export/platejs/./combobox": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./combobox/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/combobox": "32364fdeb49c58bdb2b6567b0f47be440f37a9e67931d7f2efdbb65b5f6a0ffc",
+      "ui/inline-combobox": "0ebd30e6c61c49340dad3b7244a684a0899403e1ed9466360eb36dfe9d6a02b3"
+    },
+    "upstreams": []
+  }
+}

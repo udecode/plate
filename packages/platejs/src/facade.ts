@@ -212,8 +212,17 @@ export type {
 } from 'plitejs/internal';
 export {
   assertDetachedSelectionSupported,
+  assertEditorDocumentContainers,
   completePersistedDocumentFields,
   createDetachedEditorSchema,
+  EDITOR_DOCUMENT_FIELDS,
+  type EditorDocumentShapeIssue,
+  getEditorDocumentShapeIssueMessage,
+  isEnvelopeInput,
+  readDocumentRecord,
+  readEditorDocument,
+  readPersistedEnvelope,
+  rejectEditorRecord,
   fitSlicePlacements,
   getReaderRange,
   mapDetachedSelectionThroughChange,

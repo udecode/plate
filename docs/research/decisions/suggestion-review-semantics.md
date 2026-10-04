@@ -2,45 +2,19 @@
 title: Suggestion review semantics
 type: decision
 status: provisional
-updated: 2026-09-23
-review_scope: suggestions
-current_review: 2026-09-23-suggestions-direct-delete-retained-selection
-review_history:
-  - ../review-records/2026-09-13-suggestions-google-docs-audit.json
-  - ../review-records/2026-09-13-suggestions-omission-audit.json
-  - ../review-records/2026-09-13-suggestions-entrypoint-review.json
-  - ../review-records/2026-09-14-suggestions-content-attributes.json
-  - ../review-records/2026-09-14-suggestions-initialization.json
-  - ../review-records/2026-09-14-suggestions-view-initialization-api.json
-  - ../review-records/2026-09-17-suggestions-editing-visibility.json
-  - ../review-records/2026-09-17-suggestions-authored-editing-final-plan.json
-  - ../review-records/2026-09-17-suggestions-authored-editing-final.json
-  - ../review-records/2026-09-23-suggestions-direct-delete-retained-selection.json
+updated: 2026-10-04
 source_refs:
   - ../../plans/artifacts/google-docs-suggestion-audit/audit.md
   - ../../plans/artifacts/google-docs-suggestion-audit/coverage-crosswalk.json
   - ../../plans/artifacts/google-docs-suggestion-audit/omission-synthesis.md
 related:
   - authored-change-ownership.md
-  - ../reviews.md#suggestions
-reconciled_executions:
-  - 2026-09-23-mixed-suggestion-selection-deletion-execution
-  - 2026-09-18-recovered-2026-07-24-fix-optional-suggestion-trailing-block-kit-composition
-  - 2026-09-18-recovered-2026-09-04-decouple-link-floating-ui
-  - 2026-09-18-recovered-2026-09-10-native-authored-changes-and-suggestions
-  - 2026-09-18-recovered-2026-09-12-plite-view-design
-  - 2026-09-18-recovered-2026-09-12-suggestions-docs-demo
-  - 2026-09-18-recovered-2026-09-13-complete-suggestion-semantics
-  - 2026-09-18-recovered-2026-09-13-suggestion-deleted-pointer-selection
-  - 2026-09-18-recovered-2026-09-13-suggestion-retained-caret
-  - 2026-09-18-recovered-2026-09-13-suggestion-self-edit-regression
-  - 2026-09-18-recovered-2026-09-13-suggestions-docs-coverage
-  - 2026-09-18-recovered-2026-09-14-suggestion-restoration-resolver
-  - 2026-09-18-recovered-2026-09-16-slash-ai-suggested-paragraph
-  - 2026-09-18-recovered-2026-09-17-authored-direct-editing-with-visible-suggestions
+  - ../review-scopes/suggestions.json
 ---
 
 # Suggestion review semantics
+
+**Audit of 2026-10-04.** Pursue. The 2026-09-23 direct-delete target landed, but attribution still has two writable current-actor truths (editor.runtime.userId read through Reflect by DefaultAuthoredPlugin, and Comments' currentUserId), and the homepage playground still seeds suggestions by replaying edits under switched identities, which plate.md forbids. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-suggestions-audit` hold the evidence.
 
 ## Editing while showing pending changes
 
@@ -269,7 +243,7 @@ for all dispositions, alternatives, sources, and unresolved Google behavior.
 
 ## Recovered execution history
 
-The [feature hub](../features/suggestions.md) links the recovered plan outcomes,
+`node tooling/scripts/review-ledger.mjs show suggestions` lists the recovered plan outcomes,
 including completed work and rejected experiments. These imports preserve
 reported completion with **unknown current proof**: their full original
 source/runner/result binding is not recovered. Their recovery date does not

@@ -1,0 +1,181 @@
+{
+  "id": "2026-10-04-clipboard-audit",
+  "scope": "clipboard",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest pursue verdict, at queue position 9. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Copy exact selected and mounted authored content, including visible segment order and independent root ownership.",
+    "Preserve open structural edges and every root referenced by surviving nodes through rewriting, limiting and destination remapping.",
+    "One clipboard ingress command so handler, codec and export policy cannot diverge between ordinary and projected paste.",
+    "Fit through one destination-schema law with atomic replacement, cut safety, selection intent and one undo batch.",
+    "Keep product format interpretation, table placement and upload lifetime with their Plate owners; whole-payload MIME negotiation stays in DataTransferFormat."
+  ],
+  "evidenceReuse": "Reused the September 13 census and root-preservation probe, the clipboard transfer policy plan's design and adoption claims, the verified table edge paste execution, and the dnd consolidation receipts. Rechecked on the live tree the domCommands.insertData definition, every Plate insertData middleware consumer, the projected paste transaction in mutation-controller, the drop path in clipboard-input-strategy, the ContentSlice.withContent root carry, and the table paste readSlice path. No tests, browser or benchmark were run.",
+  "summary": "The job is to copy the exact selected and mounted content with its open edges and referenced roots, then fit it at the destination atomically under schema, trust and history laws, with product format and table placement kept by their owners. Live dom-clipboard-runtime defines domCommands.insertData, and the code block, image, table, upload and input-rule plugins adopt it as around() middleware, replacing the old clipboard-handler contribution pipeline. The projected paste adapter evaluates deleteFragment per visible range and insertData inside one extended transaction spec and returns without publishing when insertion declines. ContentSlice.withContent carries source.roots through closed and preserved rewrites. The strongest alternatives each lose. A public clipboard or transfer object has no job beyond DataTransferFormat, the command and ContentSlice. Folding table and format repair into the fitter would push product policy into the neutral base layer. Deleting the exact-view adapter would collapse authored projection order to one canonical range. Remaining limits are proof, not design, because the recovered implementation receipt was never replayed and the decision page still lists the review as proposed.",
+  "verdict": "stop",
+  "previous": "2026-09-13-clipboard-transfer-convergence",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-13-clipboard-transfer-convergence",
+      "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+      "action": "supersedes",
+      "reason": "Its Pursue target (cut the separate projected paste pipeline, converge at the DOM clipboard owner, preserve referenced roots) is adopted in live source; the fresh verdict keeps that design and closes the open Pursue."
+    },
+    {
+      "record": "2026-09-18-table-edge-paste-regression",
+      "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+      "action": "retains",
+      "reason": "The repair stays in the Plate table paste owner over the same command, consistent with keeping product placement out of the fitter."
+    },
+    {
+      "record": "2026-10-01-dnd-transfer-consolidation-design",
+      "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+      "action": "retains",
+      "reason": "Its transfer design routes drops through the shared ingress and changes no clipboard slice or fitting contract."
+    },
+    {
+      "record": "2026-10-01-dnd-transfer-consolidation-design-amended",
+      "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+      "action": "retains",
+      "reason": "The amendment adds the transfer move guard and vetoes without reopening clipboard interchange."
+    },
+    {
+      "record": "2026-10-02-dnd-transfer-consolidation-execution",
+      "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+      "action": "retains",
+      "reason": "Drops between independent editors copy through the same insertData and slice path; no competing clipboard owner was added."
+    },
+    {
+      "record": "2026-10-02-dnd-transfer-consolidation-review-repair-execution",
+      "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+      "action": "retains",
+      "reason": "Its content-loss and listener repairs concern transfer moves, not clipboard fitting."
+    },
+    {
+      "record": "2026-10-02-dnd-transfer-consolidation-docs-execution",
+      "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+      "action": "retains",
+      "reason": "Its column drop-caret fix and open resolveEventRange finding belong to dnd; clipboard contracts are unchanged."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-13-clipboard-transfer-policy",
+      "question": "What does transfer preserve across schemas and editor instances, and can one content-fitting owner replace feature-specific paste repair?",
+      "action": "retains",
+      "reason": "Live source matches its adoption claim; its proof stays unknown because the original receipt was never recovered or replayed."
+    }
+  ],
+  "alternatives": [
+    "Keeping the adopted single-command design is selected. Ordinary, projected and drop paths share one command, feature middleware and canonical fitter.",
+    "Adding a public clipboard plugin or transfer object is rejected. It has no independent job beyond DataTransferFormat, domCommands.insertData and ContentSlice, and the plan's hostile pass already cut the internal-only public arms.",
+    "Moving table, image, code-block and upload paste policy into the neutral fitter is rejected. That is product policy, and each consumer is a small around() middleware over one command.",
+    "Deleting the projected exact-view adapter and pasting through the canonical range is rejected. It loses authored retained fragments, visible segment order and repeated root owners.",
+    "Replacing ContentSlice with bare node arrays is rejected. Bare nodes lose open edges and referenced roots, the failure the review reproduced."
+  ],
+  "proofLimits": "Source review only; no package, browser, native or benchmark run. The recovered transfer-policy execution has unknown proof and its September 14 benchmark is historical. The decision page still says proposed and does not reconcile the three dnd executions. Other sessions have uncommitted edits in mutation-controller.ts (typed-text intent, unrelated to paste), dom-editor.ts, compiled-slice-fitter.ts, BaseTablePlugin.ts and table grid.ts; the cited paste and command lines exist at HEAD, but table paste details could shift with that work.",
+  "references": [
+    "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts",
+    "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
+    "packages/plitejs/src/dom/plugin/with-dom.ts",
+    "packages/plitejs/src/core/content-slice.ts",
+    "packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts",
+    "packages/plitejs/src/react/editable/mutation-controller.ts",
+    "packages/plitejs/src/react/editable/projected-clipboard.ts",
+    "packages/plitejs/src/react/editable/clipboard-input-strategy.ts",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
+    "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts",
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts",
+    "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts",
+    "docs/research/decisions/clipboard-content-fitting.md",
+    "docs/research/review-records/2026-09-13-clipboard-transfer-convergence.json",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-13-clipboard-transfer-policy.json",
+    "docs/plans/2026-09-13-clipboard-transfer-policy.md",
+    "docs/plans/2026-10-01-dnd-transfer-consolidation.md"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/content-slice.ts": "8b528feb0d09802c9ce220019e6954882643002c61f3fdcfc6a7ace9f3239dc4",
+      "packages/plitejs/src/core/editor-read-execution.ts": "16da1ddbd83c8654ef5c43f7f3f80f461907bca2be8bffd32f7cb1cc7a25935a",
+      "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts": "fc2eaea96376057f3eb41e07f4ab1a28d8a572bb5525b71f118a84f12985300c",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "b20d0d9de88fe46cb58920be43fafcb840ebfb4eef8af6c90a4f7b7abec0d803",
+      "packages/plitejs/src/react/editable/projected-clipboard.ts": "02c6e85fe12e9aefc347cb67eae6630d7a1dc54771e1e63c835727aba4e31426",
+      "packages/plitejs/src/react/editable/mutation-controller.ts": "97b84b1037bac3f0a924f17d28e7739ebae51c1ffaf371e284a8ec01b9f5e1fd",
+      "apps/www/src/app/(app)/examples/plite/_examples/paste-html.tsx": "5ef2f2e77b8f5f2b37f0cd5cf363bf31c04ef6bfd5317efaa8af3da2015fbc49",
+      "apps/www/src/app/(app)/examples/plite/_examples/cross-editor-drag.tsx": "b96368fe6200d77e299949994def74090f2cf08b91592377f7729d72c5f1fd47",
+      "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "3119f481d73cdc9103e130b54ed5c423f85c6b7d3884cac510d668d537a1281a",
+      "packages/platejs/src/features/table/lib/internal/paste.ts": "f91d8668b12cafa758d5cbd91e46e718ce3a4ea48ceb81e0d90b371d8231edb0",
+      "packages/platejs/src/static/internal/writeStaticSelectionClipboardData.ts": "4ffc7835d047b12c1f4965168ec00f0535de2ac88e4444ce0750a70f3332b918",
+      "packages/plitejs/test/slice-fit-laws.test.ts": "59298688f6dbddcb1dd4c985eead333a28f05ed3d5e57623e278081fb01bbadc",
+      "packages/plitejs/test/react/projected-clipboard-contract.test.ts": "35d6cdac819af3dcc106124325f52418f449bb62a38c151bcf4d7eaf0d24ef7a",
+      "apps/www/tests/browser/clipboard.spec.ts": "9dd23a472b311b431ae4b0f0783a5244f225bfdb165e3df08e9e7674d044c254",
+      "packages/plitejs/test/content-slice.test.ts": "4a63a42dda8b7484dcde4845d4328737a5026b6343a14fc88add8955cffd5278",
+      "packages/plitejs/test/content-slice-laws.test.ts": "76a3952f8d6686d6fe5282138855193f81c350ece6243aab188d454580ba6dab",
+      "packages/plitejs/test/slice-fit-contract.test.ts": "b8220ecd4bc5af4e94b97695fa9ed9cc84c51bc46be4d66365d7e1021b17da6a",
+      "packages/plitejs/test/slice-fit-content-contract.test.ts": "a18f2e8f303d1795e1c8f29c75a7da484567648cbc3aeff551b5543a3be946bf",
+      "packages/plitejs/test/slice-public-api-contract.test.ts": "a8eacf607b17ae506af7fde2909cfff10cc4d259175e73f23c52f77f9cf5a33b",
+      "packages/plitejs/test/clipboard-contract.ts": "3f3cf374cb7284a88d4af9566a8a3839d7ab9df802a23f58a03ada8df958cd60",
+      "packages/plitejs/test/dom/clipboard-boundary.test.ts": "fd50fe52cab7f15fee91bcfe76e15808609cba09913063c7e77e1d5b9f6dd851",
+      "packages/plitejs/test/react/projected-command-contract.test.ts": "33f6cd0f490957382998e619a52d601f15c3d4162eb139e11d27e75d6586fdd5",
+      "packages/plitejs/test/authored-retained-contract.test.ts": "2b0318900fdfc3f638f154f20552567a1d940fd14037a5986591c9077cd7421f",
+      "packages/plitejs/test/native-transaction-spec-contract.test.ts": "71bda83a114b825d834577a960030e40e0504d1f279a5427d2c33c5c6f6a19e0",
+      "packages/platejs/src/features/upload/lib/BaseUploadPlugin.lifecycle.spec.ts": "063975ffccca8f63b370d853a62196d557589eb5f782b51937d2d31cca5b887e",
+      "packages/platejs/src/features/table/lib/BaseTablePlugin.clipboard.spec.tsx": "27d2340ce5c24a042de1654e483f159d73fc3ff6138e6ae5c50c7feec9a7f702",
+      "packages/platejs/src/features/table/lib/BaseTablePlugin.paste.spec.tsx": "c1730167199e80d438c7bccc042a6b07142d0f41c64b201407b8ca79db914dfb",
+      "packages/platejs/src/features/table/lib/internal/paste.spec.ts": "2ee08e71dc9fdf561c02eafe4d16279ba7fd94b43b69e7335cb2be8b374c68f9",
+      "packages/platejs/src/static/internal/writeStaticSelectionClipboardData.spec.tsx": "8922a939c238845820eee926b4dbab4a96cda594b6cedc01df3b1de25e9d89f0",
+      "apps/www/tests/browser/static-clipboard.spec.ts": "2bd2b206486fc86d835c45cb3ff5b2d21fb7eb1611e81baa8bd057cc49d3f942",
+      "apps/www/tests/browser/clipboard-upload.spec.ts": "e59ff5c9d32975b019733d65a17fe0a9645e2bbdbdddee0a76d14b85cf4e418f",
+      "benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts": "e0345f6d81e3bd6b5d7200fe99b5d70993577f22d96d7654ec9e9e14086424ed",
+      "docs/plans/artifacts/clipboard-production-benchmark.json": "10ed07dc64e57fa50b24c9d7d25b609f95d9c74f96ed6c52b7ec6caf181953fd",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+      "packages/plitejs/src/core/insert-limit.ts": "f4a6d40523b39c88f699f60565d91c2188536e73e50aa756fbef12f5ea156c7f",
+      "packages/plitejs/src/core/public-state.ts": "e7e799227c5ba12393911c18c850b158fad216f24a0bab76e7b22c651ac24d43",
+      "packages/plitejs/src/interfaces/editor.ts": "9f46f0711f22f9dde8c3e9f470a2d122f571aa3fc2b20d5039278a2b3ca03bc1",
+      "packages/plitejs/src/dom/plugin/with-dom.ts": "22c66cc09eb9429dd27e319f4377311518f534a8b9bc50a132da21d3f1f57fb2",
+      "packages/plitejs/src/dom/plugin/dom-editor.ts": "a90f9b86cb68317b7d90fe4e9d80dd26ca7beb46716f8179c5e4d9b712b0d6d2",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-test-jsx.js": "c3f46dd2258e36c41a0ba1a77f52fd0592936493cfd56e00db740e4b97612e4a",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "packages/plitejs/vitest.config.mjs": "c4831d8ab6b6fab76a2dc0dbf5cfae26345e1efb001ad1a8d28e96356cc9445d",
+      "packages/plitejs/test/react/vitest-setup.ts": "aad016736b109572f3985e0cd87c738c9dc5cdae1f80c41852070b4a3d2b16fc",
+      "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+      "docs/vision/plate.md": "4a0e6c187965994850a77771ed954d644f9a255a2d776966d33ec82c9cef5f3b",
+      "docs/plans/artifacts/clipboard-root-preservation-probe.ts": "8aa2c9643558b844ae9d2febef348851026ef2bc4dfbc5fccbbc4336f8eda440",
+      "docs/plans/artifacts/clipboard-root-preservation-results.json": "a2c00e45c681e576a291a78858ec4bd0a3f8e1305b7660cb5ac3d52f5cf4e076",
+      "docs/plans/artifacts/clipboard-review-proof.md": "217aa9c209545e8783c875136784bfef42016e31de4a6aef89f175f5d0de2e22",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/plitejs/src/core/slice-fit": "4fde1d515592a7ac83e179e1570b1f5df49253296f6b31ef687f439b36e141f9"
+    },
+    "features": {
+      "browser/clipboard": "a34d2060edf1ec17521afd7cb7f501d54447baeb9daa13d5845227e66052d34d",
+      "browser/clipboard-upload": "f7e68cff0e038bdec406e830b27fe295cbba4e27bacd43c58dbc99fc3b5cac5f",
+      "browser/static-clipboard": "559b3b1b7d0609a528ab7f0c9a3c72092b97525524c0da4c27f0ef3aefeb492c",
+      "example/plite/paste-html": "3d2b95334ff0518b6a81dcf917d35a2658707572efdfdd0133d877a96ec68f31",
+      "example/plite/paste-html-import": "9c559c3f330a0506a4cd283f8cbdeb602033255d33614b6f884fc318a4842036",
+      "plitejs/core/content-slice": "b37c78bd83ea476095a1fac69286872a41b179154c4d441fc8682070464c314b",
+      "plitejs/core/content-slice-roots": "d1258db9d41ff64678e00de10b7bf8033c5863cd01008960bfe89c73cafdc2d8",
+      "plitejs/core/get-content-slice": "33434c460676139ff5a5f425fb0239c688130ebc476883839495d8a53657e3cf",
+      "plitejs/core/get-fragment": "33795c58b4f9a2a02759c1129739dfe5749e1d2762679af864742a29978dbd68",
+      "plitejs/core/slice-fit": "4fde1d515592a7ac83e179e1570b1f5df49253296f6b31ef687f439b36e141f9",
+      "plitejs/react/editable/clipboard-input-strategy": "b2d888b1a802be68d498aeab6bb15cb36460802af726c8bc7849fa7f486d74c3",
+      "plitejs/react/editable/projected-clipboard": "fc40bf5cccb70d1f46a5d53a2fe7110b92f82211ef3e9a5fd48320f149e0c8b1",
+      "plitejs/react/editable/runtime-clipboard-events": "9bf11f27d2483e5eb1b5c8274767e46bef314c3c9026857f5f1f328437e2caf2"
+    },
+    "upstreams": []
+  }
+}

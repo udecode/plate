@@ -1,0 +1,95 @@
+{
+  "id": "2026-10-04-fixed-toolbar-scroll-audit",
+  "scope": "fixed-toolbar-scroll",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Should FixedToolbar measure itself and mutate an editor scroll container, or should copied editor layout eliminate the overlap?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 54. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "A fixed toolbar stays visible without obscuring the caret or generated content inside the editor scrollport.",
+    "A shared toolbar renders with no selected editor, and manual toolbars outside EditorContainer keep working.",
+    "Copied editor layout owns height and scroll placement; Plite keeps only its neutral CSS scroll-padding support.",
+    "EditorContainer keeps its registered scroll-element DOM, props and ref identity."
+  ],
+  "evidenceReuse": "Reused the 2026-09-16 review's caller census and the decision page's adoption account (focused DOM tests, Base/Nova and Radix/Luma installs, Chromium and native Chrome replays). Rechecked on the live tree fixed-toolbar.tsx, editor.tsx, the PlateContainer.tsx slot placement, the manual marks demo, the shared multiple-editors toolbar, and a repository grep showing no scroll-padding or ResizeObserver in the toolbar. The files are committed since 3a7b31d737.",
+  "summary": "The job is a fixed toolbar that never covers the caret or generated content, works with no selected editor, and keeps copied layout policy out of Plite. Live source has FixedToolbar as a shrink-0 presentational Toolbar, and FixedToolbarPlugin renders it through beforeContainer, which PlateContainer places as a sibling before the registered scroll element. EditorFrame is a flex-column panel with EditorContainer as the flex-1 scrollport, and no scroll-padding or ResizeObserver code remains in the toolbar. Manual and shared toolbars follow the same shape, and the shared toolbar reads useOptionalEditor, so a null editor no longer throws. The strongest alternatives fail. Merging EditorFrame into EditorContainer retargets its props and ref away from the registered scroll element, deleting FixedToolbarPlugin forces every app to hand-place the toolbar against the kit-installs-its-integration rule, and a Plite obstruction API adds an owner the job does not need. Keep the current design.",
+  "verdict": "stop",
+  "previous": "2026-09-16-fixed-toolbar-scroll-ownership",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-16-fixed-toolbar-scroll-ownership",
+      "question": "Should FixedToolbar measure itself and mutate an editor scroll container, or should copied editor layout eliminate the overlap?",
+      "action": "supersedes",
+      "reason": "Its Pursue target is adopted in committed source; this Stop keeps the landed layout instead of asking for more work."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-16-fixed-toolbar-scrollport-layout",
+      "question": "Should FixedToolbar measure itself and mutate an editor scroll container, or should copied editor layout eliminate the overlap?",
+      "action": "retains",
+      "reason": "It is the adoption account the live source confirms; its proof stays historical and unbound."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-16-ai-continuation-render-recovery",
+      "question": "Should FixedToolbar measure itself and mutate an editor scroll container, or should copied editor layout eliminate the overlap?",
+      "action": "retains",
+      "reason": "The AI preview follow-scroll targeting the registered scrollport is unchanged and outside this toolbar question."
+    }
+  ],
+  "alternatives": [
+    "Keeping the adopted layout wins. The layout removes the overlap, so no measurement, observer or style mutation exists to maintain.",
+    "Returning to the measured scroll-padding effect, or extracting it into a hook, is rejected. It assumes every toolbar obstructs the selected editor's scrollport, which shared and external toolbars contradict.",
+    "Merging EditorFrame into EditorContainer, or wrapping it internally, is rejected. It moves className, style, ARIA, events and ref off the registered scroll element.",
+    "Delete FixedToolbarPlugin and require manual JSX: reject; copied kits install their own React integration, and the beforeContainer slot already places the toolbar correctly.",
+    "Adding a Plite obstruction registry or toolbar-aware scrolling is rejected. Plite already honors CSS scroll padding for deliberate overlays."
+  ],
+  "proofLimits": "Source review only; no browser, zoom or geometry run. The adoption proof is the plan's historical account, unbound to a current execution outcome. All cited files are committed and clean.",
+  "references": [
+    "docs/research/decisions/fixed-toolbar-scroll-ownership.md",
+    "docs/research/features/fixed-toolbar-scroll.md",
+    "docs/research/review-records/2026-09-16-fixed-toolbar-scroll-ownership.json",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-16-fixed-toolbar-scrollport-layout.json",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-16-ai-continuation-render-recovery.json",
+    "docs/plans/2026-09-16-fixed-toolbar-scrollport-layout.md",
+    "apps/www/src/registry/components/editor/fixed-toolbar.tsx",
+    "apps/www/src/registry/components/editor/editor.tsx",
+    "apps/www/src/registry/components/editor/fixed-toolbar.spec.tsx",
+    "apps/www/src/registry/examples/installation-next-02-marks-demo.tsx",
+    "apps/www/src/registry/examples/multiple-editors-demo.tsx",
+    "packages/platejs/src/react/components/PlateContainer.tsx",
+    "apps/www/tests/browser/editor-ai-layout.spec.ts",
+    "apps/www/tests/browser/multi-editor.spec.ts"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/fixed-toolbar.tsx": "a4c0b752f9f23ae5698d4efe67cdfb92fec22824aae1f1a26321abc3ba04f3c7",
+      "apps/www/src/registry/components/editor/editor.tsx": "1e88264d89a94429cfc97a841bc0194b891aca48f1917be276ba4f5c56abbfaa",
+      "apps/www/src/registry/examples/ai-demo.tsx": "6d799a80ed194a14957fe890b68ad5ecfa02ff20129ee14ca69e0d3923ec54a4",
+      "apps/www/src/registry/examples/multiple-editors-demo.tsx": "afcb8934c0f8a2b008a3d4e103ea970a06cfa1f6a38c8a2ded258c826843f4a3",
+      "apps/www/src/registry/examples/installation-next-02-marks-demo.tsx": "72bd5c1076e0821a08df6500cf6f28bd17615b40d3e66c0f22aa1e7499f6578a",
+      "apps/www/src/registry/examples/docx-demo.tsx": "4df0970d5c0eaab610d8789c0dd654fbb46b871a84107f0d6addc5bf5c502afd",
+      "apps/www/src/registry/components/editor/fixed-toolbar.spec.tsx": "d562d69d6a96eda8300667ac07c720618aaa850ec576ba6b8aa2ab9db928925f",
+      "apps/www/src/registry/components/editor/editor.spec.tsx": "edaf16e18281b9fa32da82b40f9da3f7fd33baf8ab095dbfc3dbbbeff9ad2ba3",
+      "apps/www/tests/browser/ai-session.spec.ts": "0079cb8c66e1452aaf0a2d7ba5cc6be852b0c0bc69db434aecc1abe6b5e236c9",
+      "apps/www/tests/browser/editor-ai-layout.spec.ts": "c94ac2bccf296d3d27b4ad5f37b94a6a3af9a7bc11729f1bcd26820618b927ae",
+      "apps/www/tests/browser/multi-editor.spec.ts": "654c03f39911b40657f35c852404944d218062aed0d346236ec205c84f52e6b7",
+      "packages/platejs/src/react/components/PlateContainer.tsx": "a5dbe651b6cc2aaaa2db3717febf00059ccaa99d6e0ba92fda6a2aa4c9e6fd38",
+      "packages/platejs/src/react/components/PlateController.tsx": "6b4144a4f99f30f980afcd48a2b7625d55388d6d9f31a27e12c1e55dfc7a207d",
+      "packages/platejs/src/react/stores/plate/useEditor.ts": "c9a6cfc63e0960a6b41944e1e11c756a2db4aecb76f8e120e1f00faeb57da666",
+      "packages/plitejs/src/react/hooks/use-editor-dom-scope.ts": "25bf846906077cf1eb7485a88c8cfa55deaf6b3147e7a9616dca34a228257733",
+      "packages/plitejs/src/react/components/editable.tsx": "c0cd0ad1c33bf9a3e1a25b640ee7d51a3c3329fe98b0525e6fc2dbe7e3bc5892",
+      "docs/vision/plate.md": "4a0e6c187965994850a77771ed954d644f9a255a2d776966d33ec82c9cef5f3b",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": []
+  }
+}

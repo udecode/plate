@@ -2,16 +2,7 @@
 title: DOCX conversion fidelity and source authority
 type: decision
 status: adopted
-updated: 2026-09-15
-review_scope: documents
-current_review: 2026-09-15-documents-retained-source-implementation
-review_history:
-  - ../review-records/2026-09-14-documents-oss-fidelity-review.json
-  - ../review-records/2026-09-14-documents-final-reassessment.json
-  - ../review-records/2026-09-15-documents-canonical-conversion-implementation.json
-  - ../review-records/2026-09-15-documents-retained-source-reassessment.json
-  - ../review-records/2026-09-15-documents-retained-source-final-reassessment.json
-  - ../review-records/2026-09-15-documents-retained-source-implementation.json
+updated: 2026-10-04
 source_refs:
   - ../sources/docx-interoperability-oss.md
   - ../../plite/research/2026-09-14-docx-interoperability-oss/shards/plate-audit.md
@@ -22,13 +13,15 @@ source_refs:
   - ../../plite/research/2026-09-15-docx-post-implementation-oss/read-log.tsv
   - ../../plite/research/2026-09-15-docx-post-implementation-oss/shards/retained-source-and-package-editing.md
 related:
-  - ../reviews.md#documents
+  - ../review-scopes/documents.json
   - authored-change-ownership.md
   - clipboard-content-fitting.md
   - ../open-questions/documents-conversion-proof.md
 ---
 
 # DOCX conversion fidelity and source authority
+
+**Audit of 2026-10-04.** Pursue. The September retained-source and canonical-conversion target is live, but DOCX still ships a hidden Plate envelope (nativeState, authoredTrust, editor/authored.json). The envelope has no production caller and restores only from byte-identical packages. It is a second persistence channel that the hidden-native-payload law forbids and that the September 26 cut already removed from HTML and Markdown. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-documents-audit` hold the evidence.
 
 **The semantic converter and explicit retained-source path are adopted and
 implemented.** DOCX file conversion has one canonical import result, one

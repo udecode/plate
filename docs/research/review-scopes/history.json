@@ -1,0 +1,100 @@
+{
+  "id": "history",
+  "title": "Undo, redo and grouping",
+  "question": "Which edit grouping and replay rules preserve user intent, and can competing history owners be removed?",
+  "dependsOn": [
+    "selection"
+  ],
+  "prerequisiteReason": "Undo grouping and replay depend on committed changes and rebased selection intent.",
+  "last": false,
+  "opportunity": {
+    "score": 9,
+    "reason": "Undo semantics constrain ordinary editing, async completion and review workflows independently of collaboration."
+  },
+  "owners": [
+    "packages/plitejs/src/history/",
+    "packages/platejs/src/history/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/history-toolbar-button.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/history/",
+    "packages/platejs/src/utils/plate-keys.ts",
+    "packages/plitejs/package.json",
+    "packages/plitejs/src/history/",
+    "packages/plitejs/src/react/editable/history-focus.ts",
+    "packages/plitejs/src/react/editable/history-keyboard.ts",
+    "packages/plitejs/src/react/editable/input-history.ts",
+    "packages/plitejs/src/react/editable/mutation-history.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/history-toolbar-button.tsx"
+  ],
+  "proof": [
+    "packages/plitejs/test/history/index.spec.ts",
+    "packages/plitejs/test/history/anchor-history-contract.ts",
+    "packages/plitejs/test/history/announcement-history-contract.test.ts",
+    "packages/plitejs/test/history/history-branch-contract.spec.ts",
+    "packages/plitejs/test/history/history-persistence-contract.spec.ts",
+    "packages/plitejs/test/authored-history-contract.test.ts",
+    "packages/plitejs/test/yjs/authored-contract.spec.ts",
+    "packages/plitejs/test/authored-revert-contract.test.ts",
+    "packages/plitejs/test/authored-retention-contract.test.ts",
+    "packages/plitejs/test/authored-ingress-contract.test.ts",
+    "packages/plitejs/test/authored-view-contract.test.ts",
+    "docs/plans/artifacts/2026-09-15-history-review/transaction.probe.test.ts",
+    "docs/plans/artifacts/2026-09-15-history-review/availability.probe.test.ts",
+    "docs/plans/artifacts/2026-09-15-history-review/grouping.probe.test.ts",
+    "docs/plans/artifacts/2026-09-15-history-design/proof.md",
+    "docs/plans/artifacts/2026-09-15-history-design/scale-final-receipt.md",
+    "docs/plans/artifacts/2026-09-15-history-design/publication-merge-receipt.md",
+    "docs/plans/artifacts/2026-09-15-history-design/publication-timing-receipt.md",
+    "docs/plans/artifacts/2026-09-15-history-design/ai-timing-corrected-receipt.md",
+    "docs/plans/artifacts/2026-09-15-history-design/production-harness-receipt.md"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "packages/plitejs/test/history/history-contract.ts",
+    "packages/plitejs/test/history/document-state-history-contract.ts",
+    "packages/plitejs/test/history/generic-history-contract.ts",
+    "packages/plitejs/src/core/command-registry.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/editor-lifecycle-api.ts",
+    "packages/plitejs/src/react/editable/history-focus.ts",
+    "packages/plitejs/src/react/editable/history-keyboard.ts",
+    "packages/plitejs/src/react/editable/input-history.ts",
+    "packages/plitejs/src/react/editable/mutation-history.ts",
+    "packages/plitejs/src/react/editable/runtime-keyboard-events.ts",
+    "packages/plitejs/src/react/editable/composition-state.ts",
+    "packages/plitejs/src/react/hooks/use-plite-history.ts",
+    "packages/plitejs/src/react/view-selection.ts",
+    "packages/plitejs/test/react/input-history-contract.test.ts",
+    "packages/plitejs/test/react/use-plite-history.test.tsx",
+    "packages/plitejs/src/authored/authored.ts",
+    "packages/plitejs/src/yjs/core/editor-adapter.ts",
+    "packages/plitejs/src/yjs/core/controller.ts",
+    "packages/plitejs/test/yjs/support/collaboration.ts",
+    "packages/platejs/src/lib/plugins/HistoryPlugin.ts",
+    "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts",
+    "packages/platejs/src/ai/lib/BaseAIPlugin.ts",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "apps/www/src/registry/examples/collaboration-demo.tsx",
+    "apps/www/src/registry/examples/version-history-demo.tsx",
+    "apps/www/src/registry/bases/base/toolbar.tsx",
+    "content/docs/(guides)/history.mdx",
+    "bunfig.toml",
+    "config/plite-source-aliases.ts",
+    "tooling/config/bunTestSetup.ts",
+    "tooling/config/tsconfig.test.json",
+    "tooling/scripts/run-entrypoint-task.mjs",
+    "docs/plans/artifacts/2026-09-15-history-review/proof.md",
+    ".agents/skills/best-api/SKILL.md"
+  ],
+  "relatedScopes": [
+    "authored",
+    "persistence",
+    "collaboration"
+  ],
+  "decision": "docs/research/decisions/history-ownership.md"
+}

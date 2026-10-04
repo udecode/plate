@@ -2,11 +2,11 @@
 
 This is the compiled research layer for Plate.
 
-Start feature and architecture work with the [feature review ledger](reviews.md).
+Start feature and architecture work with the [review ledger](schema.md#review-history).
 It connects current source to earlier reviews, decisions and research runs.
 Use `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` from the
 repository root; use `research <key-or-term>` for cross-run lead/read lookup.
-Use `queue` for the ordered reviews. The configured `plite-core`, `plite-view`
+Use `status` for the ordered reviews. The configured `plite-core`, `plite-view`
 and `plate-core` groups combine foundational architecture questions; every
 other feature stays independent. `lookup <group-id>` returns all its questions.
 Every repeated review reconsiders the design automatically. The

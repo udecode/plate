@@ -1,0 +1,77 @@
+{
+  "id": "2026-10-04-mentions-audit",
+  "scope": "mentions",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which entity identity and insertion behavior belong in the document, and which lookup/display policy belongs to an application?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 40. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Persisted associations use ref; runtime NodeKey never persists (docs/vision/plate.md).",
+    "Detached Markdown, HTML and plain-text conversion runs from installed mappings without a live editor or app service (docs/vision/plate.md).",
+    "Copied controls own catalogs, filtering, the active option and presentation (docs/vision/plate.md autocomplete).",
+    "Completion replaces trigger and query in one refusable transaction (docs/vision/plate.md).",
+    "Package defaults stay neutral; catalogs and visuals stay in copied UI (plate-plugins)."
+  ],
+  "evidenceReuse": "This scope has no prior review. This review used the 2026-07-13 package review's keep-in-plate verdict and the 2026-10-03 autocomplete plan's retention of catalogs, inserts and mention spacing as context only. It rechecked the live BaseMentionPlugin, MentionPlugin, copied mention.tsx and inline-combobox.tsx, mention.mdx and the v54 migration, and these files are clean in git status. The combobox owner files are uncommitted, but nothing here rests on them.",
+  "summary": "The job is to insert a reference to an app entity from an @ query, keep it portable through Markdown, HTML and plain text, and let the app decide who can be mentioned and how they look now. BaseMentionPlugin persists a required non-blank ref and an optional label, maps them to data-editor-mention-* HTML and [label](mention:ref) Markdown, and inserts atomically with an optional trailing space. The copied mention.tsx owns the catalog, filtering through inline-combobox, and display as label ?? ref. The strongest cut keeps only ref and resolves the label through the app. That breaks detached export and plain-text egress, which run without the app's lookup. The label is authored content captured at insertion, not state derivable from the document. Merging mention and tag into one generic chip deletes no job. The trigger fields belong to the separate autocomplete unit and its active plan. Keep the current design.",
+  "verdict": "stop",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-08-30-fix-combobox-popup-y-position",
+      "question": "Which entity identity and insertion behavior belong in the document, and which lookup/display policy belongs to an application?",
+      "action": "retains",
+      "reason": "Popup anchoring is copied presentation and does not bear on what a mention persists or who owns lookup."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current design is the chosen lane. The document owns ref plus the authored label snapshot and portable mappings, and the app owns catalog, lookup, filtering and live display in copied source.",
+    "The strongest cut deletes label and resolves display through an app lookup. It loses because plain-text, Markdown, HTML and static export run without the app service.",
+    "Merging mention and tag into one generic inline chip loses. Their persisted types and Markdown and HTML semantics differ, and no owner disappears.",
+    "Adding a package entity-lookup or search API loses, because it moves app catalog policy into npm against the copied-controls law.",
+    "Moving insertSpaceAfterMention into the copied onSelect is possible but immaterial. The flag keeps the space inside the one atomic insert, and the autocomplete plan retains it."
+  ],
+  "proofLimits": "This is a source review only, and this review did not run tests. It has no browser, IME or screen-reader proof of mention insertion. Trigger and popup lifetime belong to the autocomplete unit, including its uncommitted combobox owner changes.",
+  "references": [
+    "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts",
+    "packages/platejs/src/react/features/mention/MentionPlugin.tsx",
+    "apps/www/src/registry/components/editor/mention.tsx",
+    "apps/www/src/registry/components/editor/mention-static.tsx",
+    "apps/www/src/registry/components/editor/inline-combobox.tsx",
+    "content/docs/(plugins)/(elements)/mention.mdx",
+    "packages/platejs/src/migrations/migratePlateV54Ast.internal.ts",
+    "docs/plans/2026-07-13-plate-next-media-mention-resizable-package-reviews.md",
+    "docs/plans/2026-10-03-autocomplete-occurrence-host.md",
+    "docs/vision/plate.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/mention.tsx": "847298e9959a636a5d4ae6d94c6a250c1d19f39bd461d3e60d44d8aa56c89cb4",
+      "apps/www/src/app/(app)/examples/plite/_examples/mentions.tsx": "dcb5540f806b374080dd5d7a890f6c30b63260662494d49ba827914db3c41844",
+      "packages/platejs/src/features/mention/lib/BaseMentionPlugin.spec.tsx": "1600301dbe205789f7e9e035f415e37705ea99d4f06982b089cd7e04ca4785f0",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/mention": "c202e535fc02b00e4119db4111f0758db3258fa0e977e511177960d6cbb1f132"
+    },
+    "features": {
+      "capability/mention": "cd3920631f32b3af000b6177c49660cf52cbe8af2321b924f0d84e1601023446",
+      "example/plite/inlines": "b10f0d4cec152b2c5c23f4397e067e63bc79db2290b4087d2e90e87e5042830d",
+      "example/plite/mentions": "e31590a904f559ac361a5e426458af624e2dd6078d3aa27620da7c8f033631a5",
+      "example/value/mention-value": "411725b78c355068de558dffcfdcc995eca937130f5d14d15a22ab6652ee4c9f",
+      "export/platejs/./mention": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./mention/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/mention": "c202e535fc02b00e4119db4111f0758db3258fa0e977e511177960d6cbb1f132",
+      "ui/mention": "38de82e28130f9cd5d6b36654be202f516e0d254d11a85fa8e89bd81dafb298c"
+    },
+    "upstreams": []
+  }
+}

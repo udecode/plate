@@ -1,0 +1,88 @@
+{
+  "id": "2026-10-04-canvas-audit",
+  "scope": "canvas",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which document value and interaction contract should an embedded canvas expose without leaking its editor runtime?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 44. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Persist an Excalidraw scene inside the document as a void block with JSON-safe, validated data.",
+    "Keep the Excalidraw runtime and its types out of the headless value contract (ledger question).",
+    "Project document changes, undo and read-only into the mounted canvas without echo writes or transient viewport state.",
+    "Let the embedded canvas own its pointer, keyboard and DOM mutations inside the editor (native-behavior law).",
+    "A closed schema property needs a reader or writer; derived display state stays out of canonical JSON.",
+    "Copied UI owns loading, frame and presentation; durable neutral lifecycle stays with the feature owner even with one consumer (plate.md 905-914)."
+  ],
+  "evidenceReuse": "No prior review. Reused the 2026-09-07 UI extraction execution account (sync hook, Plite control-boundary repair, package and browser proof) as history. Rechecked live BaseExcalidrawPlugin, useExcalidrawSync, copied excalidraw.tsx, the demo value, the docs page, the three Plite control-boundary selectors, the closed-schema refusal and the installed @excalidraw/excalidraw 0.18.0 ImportedDataState declaration.",
+  "summary": "The job is to persist an Excalidraw scene as document data and let a mounted canvas edit it without leaking Excalidraw's runtime into the headless contract. Live source stores data { elements, state, files } on a void block. useExcalidrawSync in platejs/excalidraw/react owns echo-free document and canvas sync, undo projection and read-only rejection, and copied excalidraw.tsx owns lazy loading and the fixed frame. That split matches doctrine and has package and browser proof. Three contract defects remain. The only named data type, ExcalidrawDataState, is Excalidraw's ImportedDataState (appState, version, libraryItems) and has no code consumer, so the documented type describes a value the schema rejects. Width is a closed-schema persisted property that the demo sets to 50% and no renderer or command reads or writes. Custom copies must know the undocumented data-editor-root-chrome-ignore marker, which Plite reads in three places to hand input, mouse-down and DOM mutations to the embed. Deleting the package hook loses durable sync invariants, and moving the scene out of the document adds storage machinery for no current job, so the strongest direction is a bounded contract repair at the existing owners.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "import { BaseExcalidrawPlugin, type ExcalidrawDataState } from 'platejs/excalidraw'; editor.plugin(BaseExcalidrawPlugin).update.insert({ data: { elements, state } }); copied ExcalidrawElement renders <div contentEditable={false} data-editor-root-chrome-ignore='true'> and calls useExcalidrawSync({ api, excalidraw }); a stored width is accepted and ignored.",
+    "proposed": "Same insert and useExcalidrawSync({ api, excalidraw }); the only public value type is the stored data (proposed: NonNullable<ExcalidrawElement['data']>, named only if a consumer needs it); ExcalidrawDataState and the persisted width are deleted; copied embeds mark a documented Plite embedded-control boundary (name chosen by best-api) instead of relying on the undocumented root-chrome-ignore marker."
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "Which document value and interaction contract should an embedded canvas expose without leaking its editor runtime?",
+      "action": "retains",
+      "reason": "Its Excalidraw sync ownership and Plite control-boundary repair stay; this verdict adds the value-type, width and boundary-documentation gaps it did not address."
+    }
+  ],
+  "alternatives": [
+    "Keeping everything loses, but only narrowly. The void block, package sync hook and copied frame are sound and proven, while the public type, the persisted width and the undocumented boundary contradict the actual contract.",
+    "Deleting platejs/excalidraw and copying everything into the registry loses. The hook carries durable document-to-canvas invariants (no echo, undo projection, read-only rejection, stale-callback guard) that doctrine keeps with the feature owner.",
+    "Persisting Excalidraw's exact serializeAsJSON envelope (type, version, appState, files), so an Excalidraw-shaped type is truthful, is a viable option for the best-api review. It trades the renamed state field for Excalidraw's own naming in Plate documents.",
+    "Storing the scene outside the document behind an app URL, as media does, loses. It adds a storage gateway and orphan lifecycle for an unmeasured size problem and drops document undo and collaboration of the drawing.",
+    "A generic embedded-editor sync API shared with external-text loses. It has one current consumer, so the reuse is hypothetical.",
+    "Repairing the contract at its owners is the proposed lane. Delete ExcalidrawDataState or replace it with the schema-derived stored type, delete the dead width with a document migration (or give the copied frame a real resize job), and document the embedded-control DOM boundary under a truthful name."
+  ],
+  "proofLimits": "Source review only; no tests, typechecks or browser runs. Per-onChange serializeAsJSON cost on image-heavy scenes was not measured. The appState versus state mismatch is read from the installed @excalidraw/excalidraw 0.18.0 declarations, not repo source. Whether downstream apps already persist width is unknown.",
+  "references": [
+    "packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.ts",
+    "packages/platejs/src/excalidraw/react/useExcalidrawSync.ts",
+    "packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.spec.ts",
+    "packages/platejs/src/excalidraw/react/useExcalidrawSync.spec.tsx",
+    "apps/www/src/registry/components/editor/excalidraw.tsx",
+    "apps/www/src/registry/examples/values/excalidraw-value.tsx",
+    "apps/www/tests/browser/excalidraw.spec.ts",
+    "content/docs/(plugins)/(elements)/excalidraw.mdx",
+    "packages/plitejs/src/react/editable/input-controller.ts",
+    "packages/plitejs/src/react/editable/root-interaction-resolver.ts",
+    "packages/plitejs/src/dom/plugin/dom-integrity-observer.ts",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json",
+    "docs/research/features/canvas.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/excalidraw.tsx": "40a01d556dd9702be7d8b04e4549653d6ccec2f90a7b226b3ed0f91750b8dbd9",
+      "apps/www/tests/browser/excalidraw.spec.ts": "151b480a5c0b8371d3b0459150a83ab64ac8be9c89559ce3116d997a60ee0806",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/excalidraw": "c7f941ecbb8f9d9afdf5b27a3514ca8f41d9089423b35dc31fe811dac27398d1"
+    },
+    "features": {
+      "browser/excalidraw": "78ca7013cbd09bf8f66b9d67b6666ff01cf70bf5d859c3c1db20ee6915862be5",
+      "capability/excalidraw": "93b35dca5e686e1acec7f64aa5b6d9e9e383b0538e731212dea0024fffcdddf3",
+      "example/registry/excalidraw-demo": "4a782b7b2b3025f0fab575dfc6d2465e463275bd6d08b7a361b89d09b35d7e6b",
+      "example/value/excalidraw-value": "d93107fbb17af0d164c80976029e55427fa6e6ccab65621d512ea09b317c5136",
+      "export/platejs/./excalidraw": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./excalidraw/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/excalidraw": "c7f941ecbb8f9d9afdf5b27a3514ca8f41d9089423b35dc31fe811dac27398d1",
+      "ui/excalidraw": "902529cd916e46610abab92c04ca3e967014825e59c614fd4911275b1688aa87"
+    },
+    "upstreams": []
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "id": "2026-10-04-repair-verification-workflow-audit",
+  "scope": "repair-verification-workflow",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 34. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "One entry for individual and related bug repairs, including diagnosis-only requests.",
+    "A green proxy never closes a failing or unexecuted reporter interaction; the reporter assertion must run (AGENTS.md Pokayoke).",
+    "Failed-fix recovery revokes earlier green claims and escalates to best-api-review on a second failed fix or cross-layer compensation.",
+    "Repeated or corpus regression work keeps its validator, plan template and proof receipts.",
+    "Commits, pushes and PRs wait for the user's word (AGENTS.md Delivery).",
+    "One owner per rule; no duplicate repair coordinators."
+  ],
+  "evidenceReuse": "Reused the two 2026-09-16 records, the patch-consolidation and fix-verification-audit plans and the recovered 2026-09-18 executions. Rechecked on the live tree which old owners still exist (patch.mdc, task.mdc, regression.mdc, verify-plate.mdc, testing.mdc and the diagnosing-bugs and tdd skills are all deleted), the deleting commits, AGENTS.md routing, Pokayoke and alias retirement, .agents/playbooks/bug-fix.md, the verify.mdc ownership lines, every failed-fix mention across rules and playbooks, the corpus validator's last use in plans, and the 2026-10-01 playbooks and 2026-10-02 skills-law-restore plans that made the change.",
+  "summary": "The job is one bug-repair entry that requires exact reporter proof, recovers failed fixes with escalation, keeps a corpus method for repeated regressions, and never forces publication, with one owner per rule. Commit 3a7b31d737 deleted regression.mdc and added Patch's corpus, diagnosis and failed-fix references, which is the old Pursue landing. Commit 4e16eada7d then deleted Patch, Task, testing.mdc and the local diagnosis and tdd skills, moved corpus, the regression validator and testing under verify, and added the Bug fix playbook override. Live source now routes every Plate or Plite bug report and diagnose request to that playbook, gives failed-fix recovery one text owner that verify only points to, bans green-proxy closure in AGENTS.md Pokayoke, and replaces the playbook's PR step with the user's word. The strongest deletion, cutting the corpus mode and its 3139-line validator, loses for now. It was restored on 2026-10-02 after a law-loss audit with a reversal word, repair plans used it through 2026-09-21, and no evidence shows it catches nothing. Size alone is not a defect. Restoring a local Patch would duplicate the pstack steps the owner retired.",
+  "verdict": "stop",
+  "previous": "2026-09-16-patch-skill-consolidation",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-16-patch-skill-consolidation",
+      "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
+      "action": "supersedes",
+      "reason": "Its target, one repair entry with conditional batch, failed-fix and corpus methods and no separate TDD handoff, landed in Patch on 2026-09-18 and was superseded on 2026-10-03 by the Bug fix playbook; the Patch noun no longer exists."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-16-patch-consolidation",
+      "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
+      "action": "retains",
+      "reason": "Historical adoption evidence for the Patch phase of the target."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-16-fix-verification-audit",
+      "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
+      "action": "retains",
+      "reason": "Its pokayoke and exact-interaction closure rules survive in AGENTS.md Pokayoke and bug-fix.md failed-fix recovery."
+    },
+    {
+      "record": "2026-09-18-feature-history-workflow-execution",
+      "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
+      "action": "retains",
+      "reason": "Review-ledger tooling execution; it does not bear on repair or proof boundaries."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current Bug fix playbook, verify and corpus split wins. One entry, one failed-fix owner, an opt-in corpus and no compulsory publication already hold.",
+    "Restoring a local Patch or Regression skill as the repair entry loses. It duplicates pstack bug-fix steps, and the owner retired the $patch alias on 2026-10-01 and lists it under dropped in .agents/pstack.json.",
+    "Deleting verify's corpus mode, validate-regression-plan.mjs and its template is the strongest deletion, and it loses for now. It was restored deliberately on 2026-10-02 after a law-loss audit, it was used through 2026-09-21, and no evidence shows it catches nothing.",
+    "Folding failed-fix recovery into verify loses. verify.mdc already defers to bug-fix.md and supplies only evidence, so one owner holds.",
+    "Adding an executable checker for the bug-fix workflow itself (the index's named gap) is rejected as machinery without a named escaped defect. Each fix is proven per case through verify."
+  ],
+  "proofLimits": "Source and history review only; no bug-fix run, corpus validator run or fresh-agent routing trial ran here. AGENTS.md, .agents/rules/verify.mdc, verify/references/testing.md and docs/research/review-index.json carry other sessions' uncommitted edits; the cited lines exist at HEAD. The scope's index owners omit .agents/playbooks/bug-fix.md and the corpus files, and its inspection text still names Verify Plate and Testing, so the record would not fingerprint the real repair owner unless the lead adds them as evidenceInputs before recording. Corpus mode's defect-catch rate is unmeasured.",
+  "references": [
+    "AGENTS.md",
+    ".agents/playbooks/bug-fix.md",
+    ".agents/rules/verify.mdc",
+    ".agents/rules/verify/references/corpus.md",
+    ".agents/rules/verify/references/regression-oracles.md",
+    ".agents/rules/verify/references/testing.md",
+    ".agents/rules/verify/scripts/validate-regression-plan.mjs",
+    ".agents/rules/verify/templates/regression.md",
+    ".agents/rules/maintainer.mdc",
+    ".agents/pstack.json",
+    "docs/plans/2026-09-16-patch-consolidation.md",
+    "docs/plans/2026-09-16-fix-verification-audit.md",
+    "docs/plans/2026-10-01-plate-playbooks.md",
+    "docs/plans/2026-10-02-plate-skills-law-restore.md",
+    "docs/research/review-records/2026-09-16-patch-skill-consolidation.json",
+    "docs/research/review-records/2026-09-16-repair-verification-pokayoke.json",
+    "docs/research/features/repair-verification-workflow.md"
+  ],
+  "source": {
+    "files": {
+      "AGENTS.md": "4cebb62601d23c60db1a517240c5dd12ddc3d37df87f9bd7b9e33b7d0d18d21a",
+      ".agents/rules/verify.mdc": "0ae0815d63e51bcfae566fb6d9d2ff323678f8bc750ff1ca489103e0dc52e3db",
+      ".agents/rules/verify/references/regression-oracles.md": "ff6f9a59b90830eec61c6ce045ee5583da8bd2385a301c69dfe7347891e50c73",
+      ".agents/rules/verify/references/testing.md": "3a94614a782b2ba1626947c9ec2e08931a561fea2456ba081ae3dd8d2ce92372",
+      ".agents/rules/maintainer.mdc": "57dcef0cfb3d0746509ba6c173dfccc6ea39783662c0d54a1b5bba46b76389a7",
+      ".agents/rules/benchmark.mdc": "6fab8eba2b53a578514f74e89d409c15ce39303b91ea4f9f078a2168be5090f3",
+      ".agents/rules/verify/references/editor-proof.md": "66a981abd43acbd621a7e266f0b82c7256bf9cf685e19d2ef770905c6380e56c",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b",
+      ".agents/playbooks/bug-fix.md": "ab6cacb171a29329acc218361e614d9a590c6b4d2f0971462c742b9a8f16c4c4",
+      ".agents/rules/verify/references/corpus.md": "e37d3b85d69be6cd520502dff29df1725ae2cae2f9675d1b20387bad68230cff",
+      ".agents/rules/verify/scripts/validate-regression-plan.mjs": "ef0f018e74aa278fd137a7f46b8ad76c60ebbccdbcc2e0926abffbadb140c50e"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": []
+  }
+}

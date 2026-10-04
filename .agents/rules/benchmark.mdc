@@ -1,5 +1,5 @@
 ---
-description: Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. Use before checking, skipping or deferring a performance gate, and before explaining a benchmark result or failure.
+description: Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. Use before writing, reviewing, running, rerunning, checking, skipping or deferring a performance gate, including a plan's scale gate, before writing a benchmark script, and before explaining a benchmark result or failure.
 argument-hint: '[review | only] <scope, lane or plan>'
 ---
 
@@ -91,10 +91,15 @@ Before the architecture owner may lock that target:
    scale variables, repeated units, and applicable normal, large, stress, and
    pathological cohorts.
 2. Freeze the absolute/relative budget and noise rule before reading the target
-   result. Reuse an honest existing budget when one exists.
+   result. Reuse an honest existing budget when one exists. Run each budget
+   line on the baseline first. A line the baseline already fails or nears
+   measures existing cost, so restate it before freezing.
 3. Capture a comparable current-owner baseline. If the proposed path is not
    executable, build the smallest disposable prototype that can falsify its
    claimed owner and scaling law; do not start production implementation.
+   Time the baseline only on cohorts where it does the candidate's work; a
+   baseline that refuses or reads the input literally is a control, not a
+   comparison.
 4. Run matched baseline/target cohorts and record source identity, fixture,
    action, environment, sampling/noise, deterministic work indicators, timing,
    and the correctness/native guard.
@@ -156,6 +161,9 @@ inconclusive; do not relabel it green or require a quiet user workstation.
   route.
 - Mount and trusted editing are primary. Heap/DOM are supporting guards unless
   memory, DOM growth, or a degraded mode is a plausible cause.
+- When the measured diff also holds an unrelated performance fix, measure the
+  feature against a baseline with that fix applied, and report the fix's effect
+  separately, so its speedup cannot hide the feature's cost.
 - Before attributing a metric shift or calling a result the first of its kind,
   look up earlier values in durable history (`node tooling/scripts/review-ledger.mjs
   lookup <scope>`, `docs/plans`), not only in scratch artifacts.
@@ -172,7 +180,9 @@ If no correctness oracle exists, pause the perf claim and create the smallest
 one through pstack's Bug fix playbook. Do not bury missing behavior proof
 inside a benchmark artifact. A candidate's correctness oracle never comes from
 the build it judges, so a performance-only candidate's output must match the
-baseline's.
+baseline's. A candidate that changes output on purpose asserts each side's
+expected output shape for every cohort before timing, because a fast refusal or
+a literal fallback also reports success.
 
 ## Harness Repair
 

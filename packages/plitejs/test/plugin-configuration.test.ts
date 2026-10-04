@@ -851,6 +851,43 @@ describe('transactional plugin configuration', () => {
     assert.equal(commits, 0);
   });
 
+  it('refuses an unknown field in a schema migration result', () => {
+    const slot = definePluginSlot('migration-result-field');
+    const articleSchema = (version: number, type: string) =>
+      defineEditorSchema('schema:migration-result-field', {
+        elements: {
+          [type]: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          } as const,
+        },
+        id: 'migration-result-field',
+        root: schema.content.type(type, { default: { type }, min: 1 }),
+        unknown: 'reject',
+        version,
+      });
+    const editor = createEditor({
+      plugins: [slot.of(articleSchema(1, 'paragraph'))] as const,
+      initialValue: [paragraph('before')],
+    });
+    const children = [{ children: [{ text: 'before' }], type: 'heading' }];
+
+    assert.throws(
+      () =>
+        editor.update.plugins.reconfigure(slot, articleSchema(2, 'heading'), {
+          migrate: () => ({ children, extra: 1 }) as never,
+        }),
+      /field "extra" is not supported/
+    );
+    assert.equal(namedIdentity(editor.read.schema.identity()).version, 1);
+    assert.deepEqual(editor.read.children(), [paragraph('before')]);
+
+    editor.update.plugins.reconfigure(slot, articleSchema(2, 'heading'), {
+      migrate: () => ({ children }),
+    });
+    assert.equal(namedIdentity(editor.read.schema.identity()).version, 2);
+    assert.deepEqual(editor.read.children(), children);
+  });
+
   it('treats the exact same complete schema descriptor as a no-op', () => {
     const slot = definePluginSlot('equivalent-schema-migration');
     const createSchema = () =>

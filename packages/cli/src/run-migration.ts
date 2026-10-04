@@ -131,12 +131,16 @@ const request = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const outputs = request.paths.map((path) => {
   const sourceText = readFileSync(path, 'utf8');
   const source = JSON.parse(sourceText);
-  const persisted = !Array.isArray(source) && source && typeof source === 'object' &&
-    Object.hasOwn(source, 'document');
-  const migration = migrateDocument(source, {
-    migrations,
-    ...(!persisted && request.source !== undefined ? { source: request.source } : {}),
-  });
+  let migration;
+
+  try {
+    migration = migrateDocument(source, {
+      migrations,
+      ...(request.source === undefined ? {} : { source: request.source }),
+    });
+  } catch (error) {
+    throw new Error(path + ': ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
   const output = migration.output;
   const outputText = JSON.stringify(output, null, 2) + '\\n';
 

@@ -100,7 +100,9 @@ diagnosed result.
 
 `lossPolicy` defaults to `'reject'`. Unsupported visible content returns
 `{ ok: false, diagnostics }` without `data`. `lossPolicy: 'allow'` can publish
-only a drop, replacement, or unwrap that the format reports as a warning.
+only a drop, replacement, or unwrap that the format reports as a warning. A
+loss that keeps the content, such as a paragraph boundary folded into `<br/>`
+in a [table cell](#table-cells), warns under every policy.
 
 ## Syntax
 
@@ -147,7 +149,7 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
   indentation.
 - A block holding one single-line paragraph stays on one line.
 - Attribute values are double-quoted. `&` is written as `&amp;`, `"` as
-  `&quot;`, and a newline as `&#10;`.
+  `&quot;`, a newline as `&#10;`, and `|` as `&#124;`.
 - Footnote labels that CommonMark would merge, such as `A` and `a`, are written
   as distinct labels.
 
@@ -177,6 +179,39 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
   removal is lossless. Link's `allowedSchemes` narrows or widens link schemes
   above that floor; a link it rejects keeps its label and reports a lossy
   `markdown-unsupported-node` warning.
+
+### Table cells
+
+A GFM row is one line, so Plate writes a table cell's blocks inline on that
+line:
+
+```md
+| Plan |
+| ---- |
+| Intro<ul><li><input type="checkbox" checked disabled /> ship</li></ul><ol start="3"><li>step</li></ol> |
+```
+
+- Plate writes list paragraphs as `<ul>`, `<ol start="n">`, and `<li>` HTML,
+  with a disabled checkbox leading each task item. With [List](/docs/list)
+  installed, parsing reads that HTML back as list paragraphs; without it, the
+  HTML stays literal text.
+- Plate joins other paragraphs with `<br/>`. Parsing reads them back as one
+  paragraph with line breaks, so serializing reports the folded boundary as a
+  lossy warning.
+- A heading or quote keeps its inline content, and a code or math block keeps
+  its text, each with a lossy warning. Serializing drops any other block, such
+  as a horizontal rule or a captioned image, and reports it under `lossPolicy`.
+- Plate writes a merged cell in its first slot and empty cells in the slots it
+  covers. Each span reports `markdown-property-omitted`.
+- No line ending or `|` ends a cell early. In inline math, serializing writes
+  `|` as `\vert` and `\|` as `\Vert`, writes `|` in a text-mode group such as
+  `\text{…}` as `\textbar{}`, and gives `\verb` a delimiter other than `|`.
+  Inline math with a `|` or `\|` it cannot place, such as one in another
+  command's argument, an array column spec or `\verb` text, becomes text.
+  Serializing writes `|` as `%7C` in an autolink destination and `&#124;` in
+  raw HTML, turns a line ending in inline math or raw HTML into a space, and
+  writes inline code holding `\|` as text. Each kind of rewrite reports one
+  lossy warning per cell.
 
 ### Mentions
 
@@ -414,6 +449,9 @@ markdown: {
 - `encodeNodeAttributes()` writes the node's attributes as a declared tag does
   and claims them. `encodeAttributes(properties)` writes the given property
   values and claims each property whose attribute the returned output keeps.
+- `encodeLine(children)` writes block children on one line, as Plate writes a
+  [table cell](#table-cells). `encodePhrasing(children)` writes inline
+  children. `decodeLine(children, marks?)` reads that line back into blocks.
 
 Pass an array to declare several mappings for one plugin. Use
 `defineFormats(map)` for self mappings and `defineFormats(TargetPlugin, map)`
@@ -462,7 +500,7 @@ reportWarnings(result.diagnostics);
 
 | Code | Severity | Reports |
 | --- | --- | --- |
-| `markdown-unsupported-node` | Warning when `lossless`; `lossy` follows `lossPolicy` | Content no mapping accepts, refused content, or nodes dropped on export (`lossy`). Raw HTML kept as text, HTML comments and removed `<block>` wrappers are `lossless`. |
+| `markdown-unsupported-node` | Warning when `lossless` or when the content stays; other `lossy` follows `lossPolicy` | Content no mapping accepts, refused content, or nodes dropped on export (`lossy`). Raw HTML kept as text, HTML comments and removed `<block>` wrappers are `lossless`. A [table cell](#table-cells)'s folded paragraph boundary or collapsed block keeps its content and warns. |
 | `markdown-unsafe-content` | Warning when `lossless`; lossy follows `lossPolicy` | A removed link or image destination. |
 | `markdown-tag-repair` | Warning | An `unclosed`, `unmatched`, or `misplaced` registered tag. |
 | `markdown-property-omitted` | Warning | A property or mark Markdown cannot carry on export, such as a paragraph's `textAlign`, or an invalid tag attribute value on import. |

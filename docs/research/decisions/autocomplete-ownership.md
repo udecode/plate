@@ -2,30 +2,16 @@
 title: Autocomplete query and activation ownership
 type: decision
 status: proposed
-updated: 2026-10-02
-review_scope: autocomplete
-current_review: 2026-10-02-autocomplete-input-element-rechallenge
-review_history:
-  - ../review-records/2026-09-30-autocomplete-query-activation-ownership.json
-  - ../review-records/2026-10-01-autocomplete-representation-audit.json
-  - ../review-records/2026-10-01-autocomplete-ordinary-text-prototype.json
-  - ../review-records/2026-10-02-autocomplete-input-element-rechallenge.json
-reconciled_executions:
-  - 2026-09-18-recovered-2026-08-30-fix-combobox-popup-y-position
-  - 2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit
-  - 2026-09-18-recovered-2026-09-16-slash-ai-suggested-paragraph
-  - 2026-10-01-autocomplete-query-activation-design
-  - 2026-10-01-autocomplete-ordinary-text-adoption-design
-  - 2026-10-01-autocomplete-ordinary-text-adoption-third-pass
-  - 2026-10-01-autocomplete-ordinary-text-adoption-execution
-  - 2026-10-01-autocomplete-ordinary-text-adoption-execution-closure
+updated: 2026-10-04
 related:
   - slash-command-ownership.md
   - editing-command-ownership.md
-  - ../reviews.md#autocomplete
+  - ../review-scopes/autocomplete.json
 ---
 
 # Autocomplete query and activation ownership
+
+**Audit of 2026-10-04.** Pursue. Ordinary text with one private owner per Editable is still the right owner, and the in-flight Phase 1b Plite typed-text report is the right remaining target because it closes the law-5 string-paste violation and stops Plate reading private Plite commit tags, while the plan's gated Phase 2 host adds core plugin grammar with no measured gain over the repaired owner. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-autocomplete-audit` hold the evidence.
 
 **Keep ordinary text and fix the screen-reader regression in place.** The
 [re-challenge](../review-records/2026-10-02-autocomplete-input-element-rechallenge.json)
@@ -177,6 +163,16 @@ composition. The v54 converter migrates stored inputs to literal trigger and
 query text. Inline voids inserted through the generated plugin `insert` or
 `MentionPlugin` leave the caret after them, including at a block end. Copilot
 keeps its auto-trigger beside an open popup.
+
+On October 3 the plan was finalized as executed and folded into the
+`autocomplete` subject file, `docs/plans/topics/autocomplete.md`, whose
+Open work also tracks two gates found that day: hard law 5's known
+violations and the registry install proof failing on DnD registry types.
+The next iteration is `docs/plans/2026-10-03-autocomplete-occurrence-host.md`.
+Its Phase 1a, recorded on October 4, refuses a match from an earlier query with
+equal text, gives the editor root combobox semantics while a query is open,
+skips IME-confirm keys in Plate's shortcut table, and bounds the trigger and
+query reads in characters. Phase 1b waits on the native owner.
 
 The execution outcome is partial; see the plan's latest record for the
 evidence and limits. The gates below stay open.

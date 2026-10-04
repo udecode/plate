@@ -2,43 +2,7 @@
 title: Export fidelity
 type: decision
 status: accepted
-updated: 2026-09-28
-review_scope: exports
-current_review: 2026-09-27-exports-adversarial-audit-feedback
-reconciled_executions:
-  - 2026-09-25-document-conversion-contracts-design
-  - 2026-09-25-document-conversion-schema-admission-design
-  - 2026-09-24-exports-first-principles-research-closure
-  - 2026-09-24-exports-projection-menu-implementation
-  - 2026-09-24-exports-final-repair
-  - 2026-09-24-exports-authored-capture-conflict-design
-  - 2026-09-24-exports-authored-capture-implementation
-  - 2026-09-24-exports-authored-capture-closure
-  - 2026-09-24-document-first-export-contracts-design
-  - 2026-09-25-document-first-export-contracts-implementation
-  - 2026-09-25-document-first-export-contracts-closure
-  - 2026-09-25-document-first-export-docx-registry-closure
-  - 2026-09-26-document-conversion-vocabulary-design
-  - 2026-09-26-document-conversion-vocabulary-doctrine-design
-  - 2026-09-27-document-conversion-contracts-implementation
-  - 2026-09-27-document-conversion-architecture-corrections
-  - 2026-09-27-document-conversion-closure-repairs
-  - 2026-09-27-document-conversion-closure-repairs-final
-  - 2026-09-28-document-conversion-standalone-value-types
-  - 2026-09-28-document-conversion-open-findings
-  - 2026-09-28-conversion-correctness-guarantees
-  - 2026-09-28-paste-proof-and-media-html
-review_history:
-  - ../review-records/2026-09-24-exports-audit.json
-  - ../review-records/2026-09-24-exports-final-pass.json
-  - ../review-records/2026-09-24-exports-post-implementation-audit.json
-  - ../review-records/2026-09-24-exports-post-implementation-audit-closure.json
-  - ../review-records/2026-09-24-exports-model-switch-final-audit.json
-  - ../review-records/2026-09-24-exports-first-principles-architecture.json
-  - ../review-records/2026-09-24-exports-final-reassessment.json
-  - ../review-records/2026-09-26-exports-conversion-vocabulary-hard-cut.json
-  - ../review-records/2026-09-26-exports-conversion-vocabulary-doctrine-closure.json
-  - ../review-records/2026-09-27-exports-adversarial-audit-feedback.json
+updated: 2026-10-04
 source_refs:
   - ../../plite/research/2026-09-24-export-architecture/README.md
   - ../../plite/research/2026-09-24-export-architecture/shards/001-direction.md
@@ -50,12 +14,14 @@ source_refs:
   - ../../../packages/plitejs/src/core/plain-text.ts
   - ../../../apps/www/src/registry/components/editor/export-toolbar-button.tsx
 related:
-  - ../reviews.md#exports
+  - ../review-scopes/exports.json
   - authored-change-ownership.md
   - documents-conversion-fidelity.md
 ---
 
 # Export fidelity
+
+**Audit of 2026-10-04.** Pursue. The adopted export contract says an authored document without an explicit projection throws, yet standalone serializeHtml defaults it to the proposed projection, because each export path keeps its own copy of the guard instead of the shared projection helper owning it. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-exports-audit` and `2026-10-04-exports-audit-2` hold the evidence.
 
 The [adversarial audit feedback](../../plans/artifacts/2026-09-27-document-conversion-audit-feedback/feedback.md)
 retains document-first format ownership but reopens the blanket conversion

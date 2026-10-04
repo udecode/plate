@@ -1,0 +1,82 @@
+{
+  "id": "state",
+  "title": "Document state, fields and effects",
+  "question": "Which values must persist with a document and which belong to transient view or application state?",
+  "group": "plite-core",
+  "dependsOn": [
+    "transactions"
+  ],
+  "prerequisiteReason": "Committed update semantics determine which state participates in durable change and which remains transient.",
+  "last": false,
+  "opportunity": {
+    "score": 9,
+    "reason": "Competing stores and lifecycle meanings create recurring coordination across history and plugins."
+  },
+  "owners": [
+    "packages/plitejs/src/core/state-field.ts",
+    "packages/plitejs/src/core/state-fields.ts",
+    "packages/plitejs/src/core/transaction-values.ts"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/document-state.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "packages/platejs/src/utils/plate-keys.ts",
+    "packages/plitejs/src/core/state-field.ts",
+    "packages/plitejs/src/core/state-fields.ts",
+    "packages/plitejs/src/core/transaction-values.ts"
+  ],
+  "consumers": [
+    "apps/www/src/app/(app)/examples/plite/_examples/document-state.tsx",
+    "packages/platejs/src/lib/plugin/"
+  ],
+  "proof": [
+    "packages/plitejs/test/react/state-field-selector-contract.test.tsx",
+    "packages/plitejs/test/history/document-state-history-contract.ts",
+    "packages/plitejs/test/state-field-contract.test.ts",
+    "packages/plitejs/test/plugin-configuration.test.ts"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/editor-lifecycle-api.ts",
+    "config/plite-source-aliases.ts",
+    "config/plite-source-test-setup.ts",
+    "config/workspace-source-entries.mjs",
+    "config/plite-test-jsx.js",
+    "tooling/config/bunTestSetup.ts",
+    "docs/plans/artifacts/plite-core-api-review/verification.json",
+    "apps/plite/src/",
+    "apps/www/src/",
+    "packages/cli/src/",
+    "packages/platejs/src/",
+    "packages/plitejs/src/",
+    "docs/plans/artifacts/plite-core-api-review/consumer-census.json",
+    "docs/plans/artifacts/plite-core-api-review/facet-probe-contract.json",
+    "docs/plans/artifacts/plite-core-api-review/facet-probe-results.json",
+    "docs/plans/artifacts/plite-core-api-review/facet-work-results.json",
+    "docs/plans/artifacts/plite-core-api-review/without-facets.ts",
+    "packages/plitejs/src/core/plugin-registry.ts",
+    "packages/plitejs/src/core/plugin.ts",
+    "packages/plitejs/test/state-field-contract.test.ts",
+    "packages/plitejs/test/transaction-plugin-contract.ts",
+    "packages/plitejs/vitest.config.mjs",
+    "packages/plitejs/test/react/vitest-setup.ts",
+    "packages/platejs/src/ai/lib/BaseAIPlugin.ts",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    ".agents/rules/best-api/rules/authoring-and-inference.md",
+    ".agents/rules/plate-plugins/rules/capabilities.md",
+    "content/docs/(guides)/document-meta.mdx",
+    "docs/plans/artifacts/plite-core-cuts/verification.json",
+    "docs/plans/artifacts/plite-core-cuts/production-probe-results.json",
+    "docs/plans/artifacts/plite-core-cuts/production-work-counts.json"
+  ],
+  "relatedScopes": [
+    "schema",
+    "persistence",
+    "react"
+  ],
+  "decision": "docs/research/decisions/plite-core-ownership.md"
+}

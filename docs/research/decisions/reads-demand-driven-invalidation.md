@@ -2,11 +2,7 @@
 title: Reads and demand-driven invalidation
 type: decision
 status: proposed
-updated: 2026-09-11
-review_scope: reads
-current_review: 2026-09-11-reads-demand-driven-invalidation
-review_history:
-  - ../review-records/2026-09-11-reads-demand-driven-invalidation.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/core/commit.ts
   - ../../../packages/plitejs/src/core/public-state.ts
@@ -17,6 +13,8 @@ related:
 ---
 
 # Reads and demand-driven invalidation
+
+**Audit of 2026-10-04.** Pursue. Both earlier reads targets landed, but the root editor still publishes two subscriptions for one job. editor.subscribe and editor.subscribeCommit both fire once per published commit with the same commit and snapshot, and they differ only in argument order and phase. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-reads-audit` hold the evidence.
 
 **Pursue:** remove whole-root change analysis from a single-key invalidation
 query. Keep that query and its memoized answer on the canonical commit. Route

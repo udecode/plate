@@ -11,7 +11,7 @@ node tooling/scripts/review-ledger.mjs research <key-or-term>
 Read the matched originals and reconcile the current conclusion through the
 [review-history contract](../schema.md#review-history). Repeated reviews are
 automatic; they do not require a mode flag or an external research refresh.
-After an index or review-record change, run the helper's `render` and `check`.
+After a scope, group or document file change, or a new record, run the helper's `check`.
 
 Primary reusable entrypoint:
 

@@ -29,7 +29,11 @@ same editor.
 
 `meta` stores fields whose descriptors define a versioned `persist` codec.
 Plate encodes those fields in `editor.read.value()` and validates their codec
-version when loading `initialValue`.
+version when loading `initialValue`. Undeclared `meta` keys are kept as plain
+JSON, so application data without a state field belongs there too.
+
+Loading refuses any other top-level field, such as `{ children, title }`; store
+it as `{ children, meta: { title } }`.
 
 ## Save the document
 

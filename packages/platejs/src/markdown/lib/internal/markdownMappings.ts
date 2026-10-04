@@ -55,6 +55,7 @@ import {
   toMarkdownCaptionContent,
 } from './markdownDocument';
 import { markdownIntrinsicDecoders } from './markdownIntrinsics';
+import { decodeMarkdownLine, encodeMarkdownLine } from './markdownLine';
 import {
   MARKDOWN_TAG_NAME,
   type MarkdownTagElement,
@@ -595,6 +596,8 @@ const createDecodeContext = (
   caption: (children) => toMarkdownCaptionContent(options, [...children]),
   decode: (children, nextMarks = marks) =>
     convertChildrenDeserialize([...children], nextMarks, options),
+  decodeLine: (children, nextMarks = marks) =>
+    decodeMarkdownLine(children, nextMarks, options),
   decodeNodes: (children, nextMarks = marks) =>
     convertNodesDeserialize([...children], nextMarks, options),
   marks,
@@ -654,102 +657,11 @@ const createEncodeContext = (
   options: SerializeMdContext,
   claimed: Set<string>,
   written = new Map<object, string>()
-): MarkdownEncodeContext => ({
-  ...createCommonContext(compiled, options),
-  ...createPluginFormatModelView(
-    options.document,
-    node,
-    options.modelLocation(node)?.path ??
-      failInvariant('Markdown encode node is missing its model path.'),
-    options.modelLocation(node)?.root ?? 'main'
-  ),
-  encode: (children) => convertNodesSerialize(children, options),
-  encodeBlocks: (children) => {
-    const encoded = convertNodesSerialize(children, options);
-
-    if (
-      !encoded.every(
-        (child) =>
-          isMdFlowContent(child) &&
-          child.type !== 'definition' &&
-          child.type !== 'footnoteDefinition'
-      )
-    ) {
-      throw new Error(
-        `Markdown node mapping "${compiled.owner}" expected block content.`
-      );
-    }
-
-    return encoded;
-  },
-  encodeFlow: (children) => {
-    const encoded = convertNodesSerialize(children, options);
-
-    if (!encoded.every(isMdFlowContent)) {
-      throw new Error(
-        `Markdown node mapping "${compiled.owner}" expected flow content.`
-      );
-    }
-
-    return encoded;
-  },
-  encodePhrasing: (children) => {
-    const encoded = convertNodesSerialize(children, options);
-
-    if (!encoded.every(isMdPhrasingContent)) {
-      throw new Error(
-        `Markdown node mapping "${compiled.owner}" expected inline content.`
-      );
-    }
-
-    return encoded;
-  },
-  encodeAttributes: (properties) =>
-    Object.entries(properties).flatMap(([key, value]) => {
-      const attributes = encodeMarkdownTagAttributes(
-        options.state,
-        'type' in node && typeof node.type === 'string' ? node.type : null,
-        { [key]: value },
-        compiled.aliases
-      );
-
-      for (const attribute of attributes) written.set(attribute, key);
-
-      return attributes;
-    }),
-  encodeNodeAttributes: () => {
-    const shape = compiled.resolveNode?.(options.state);
-
-    if (!shape) return [];
-    const { attributes, represented } = encodeMarkdownNodeAttributes(
-      options.state,
-      shape.type,
-      shape.owned,
-      node,
-      structureKeys.get(options.operation)?.get(node) ?? NO_KEYS
-    );
-
-    for (const key of represented) claimed.add(key);
-
-    return attributes;
-  },
-  isFlow: isMdFlowContent,
-  isPhrasing: isMdPhrasingContent,
-  node,
-  preserve: (...keys: readonly string[]) => {
-    for (const key of keys) {
-      if (!compiled.ownedPropertyKeys.has(key)) {
-        throw new Error(
-          `Markdown node mapping "${compiled.owner}" cannot preserve "${key}": it is not a property of "${compiled.targetPlugin}".`
-        );
-      }
-      claimed.add(key);
-    }
-  },
-  preserveEmptyParagraphs: options.preserveEmptyParagraphs,
-  readPlainInline: readPlainMarkdownInlineContent,
-  refuse,
-  report: ({ kind = 'element', ...diagnostic }) =>
+): MarkdownEncodeContext => {
+  const report: MarkdownEncodeContext['report'] = ({
+    kind = 'element',
+    ...diagnostic
+  }) =>
     options.report({
       ...diagnostic,
       code: 'markdown-unsupported-node',
@@ -761,9 +673,114 @@ const createEncodeContext = (
         kind === 'property' || options.lossPolicy === 'allow'
           ? 'warning'
           : 'error',
-    }),
-  resourceLink: options.remarkStringifyOptions?.resourceLink === true,
-});
+    });
+  const resourceLink = options.remarkStringifyOptions?.resourceLink === true;
+
+  return {
+    ...createCommonContext(compiled, options),
+    ...createPluginFormatModelView(
+      options.document,
+      node,
+      options.modelLocation(node)?.path ??
+        failInvariant('Markdown encode node is missing its model path.'),
+      options.modelLocation(node)?.root ?? 'main'
+    ),
+    encode: (children) => convertNodesSerialize(children, options),
+    encodeBlocks: (children) => {
+      const encoded = convertNodesSerialize(children, options);
+
+      if (
+        !encoded.every(
+          (child) =>
+            isMdFlowContent(child) &&
+            child.type !== 'definition' &&
+            child.type !== 'footnoteDefinition'
+        )
+      ) {
+        throw new Error(
+          `Markdown node mapping "${compiled.owner}" expected block content.`
+        );
+      }
+
+      return encoded;
+    },
+    encodeFlow: (children) => {
+      const encoded = convertNodesSerialize(children, options);
+
+      if (!encoded.every(isMdFlowContent)) {
+        throw new Error(
+          `Markdown node mapping "${compiled.owner}" expected flow content.`
+        );
+      }
+
+      return encoded;
+    },
+    encodeLine: (children) =>
+      encodeMarkdownLine(
+        convertNodesSerialize(children, options),
+        report,
+        resourceLink
+      ),
+    encodePhrasing: (children) => {
+      const encoded = convertNodesSerialize(children, options);
+
+      if (!encoded.every(isMdPhrasingContent)) {
+        throw new Error(
+          `Markdown node mapping "${compiled.owner}" expected inline content.`
+        );
+      }
+
+      return encoded;
+    },
+    encodeAttributes: (properties) =>
+      Object.entries(properties).flatMap(([key, value]) => {
+        const attributes = encodeMarkdownTagAttributes(
+          options.state,
+          'type' in node && typeof node.type === 'string' ? node.type : null,
+          { [key]: value },
+          compiled.aliases
+        );
+
+        for (const attribute of attributes) written.set(attribute, key);
+
+        return attributes;
+      }),
+    encodeNodeAttributes: () => {
+      const shape = compiled.resolveNode?.(options.state);
+
+      if (!shape) return [];
+      const { attributes, represented } = encodeMarkdownNodeAttributes(
+        options.state,
+        shape.type,
+        shape.owned,
+        node,
+        structureKeys.get(options.operation)?.get(node) ?? NO_KEYS
+      );
+
+      for (const key of represented) claimed.add(key);
+
+      return attributes;
+    },
+    isFlow: isMdFlowContent,
+    isPhrasing: isMdPhrasingContent,
+    node,
+    preserve: (...keys: readonly string[]) => {
+      for (const key of keys) {
+        if (!compiled.ownedPropertyKeys.has(key)) {
+          throw new Error(
+            `Markdown node mapping "${compiled.owner}" cannot preserve "${key}": it is not a property of "${compiled.targetPlugin}".`
+          );
+        }
+        claimed.add(key);
+      }
+    },
+    preserveEmptyParagraphs: options.preserveEmptyParagraphs,
+    readPlainInline: readPlainMarkdownInlineContent,
+    refuse,
+    report,
+    resourceLink,
+  };
+};
 
 /**
  * Run an element encoder. Claims made with `preserve` count only when the

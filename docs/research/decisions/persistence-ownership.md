@@ -2,18 +2,7 @@
 title: Document persistence ownership
 type: decision
 status: implemented
-updated: 2026-10-01
-review_scope: persistence
-current_review: 2026-09-16-persistence-source-closure
-reconciled_executions:
-  - 2026-10-01-autocomplete-ordinary-text-adoption-design
-  - 2026-10-01-autocomplete-ordinary-text-adoption-third-pass
-review_history:
-  - ../review-records/2026-09-16-persistence-detached-migration.json
-  - ../review-records/2026-09-16-persistence-immutable-migration-contract.json
-  - ../review-records/2026-09-16-persistence-immutable-conversion-implementation.json
-  - ../review-records/2026-09-16-persistence-teaching-closure.json
-  - ../review-records/2026-09-16-persistence-source-closure.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/core/value-codec.ts
   - ../../../packages/plitejs/src/core/persisted-document.ts
@@ -24,11 +13,13 @@ source_refs:
   - ../../../packages/platejs/src/migrations/migratePlateV54.ts
   - ../../../packages/cli/src/run-migration.ts
 related:
-  - ../reviews.md#persistence
+  - ../review-scopes/persistence.json
   - plite-core-ownership.md
 ---
 
 # Document persistence ownership
+
+**Audit of 2026-10-04.** Stop. The detached immutable conversion target is adopted at HEAD, and its strongest deletions still lose. One material gap is left, the silent loss of unknown top-level stored fields at migration completion. The model scope's 2026-10-04 Pursue already owns that gap and its build is under way, so a persistence Pursue would duplicate an owner. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-persistence-audit` hold the evidence.
 
 The [ordinary-text autocomplete adoption plan](../../plans/2026-10-01-autocomplete-ordinary-text-adoption.md)
 proposes historical input-node conversion through the existing detached v54

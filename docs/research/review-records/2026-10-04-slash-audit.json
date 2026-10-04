@@ -1,0 +1,91 @@
+{
+  "id": "2026-10-04-slash-audit",
+  "scope": "slash",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which command discovery and insertion policy belongs to the slash menu, and which can reuse canonical commands and combobox sessions?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest pursue verdict, at queue position 50. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "A popup opens only on a trigger typed in its own Editable, the query stays ordinary text, and completion replaces trigger and query in one refusable transaction (docs/vision/plate.md:374).",
+    "Copied controls own catalogs, filtering, the active option and presentation (docs/vision/plate.md:377).",
+    "A plugin used only by copied registry UI for product composition is registry-owned; package publication needs independent terminal consumers or a durable headless contract (docs/vision/plate.md:915).",
+    "Feature plugins own semantic insert and upsert; Plite owns structural replaceEmpty.",
+    "Stay consistent with the autocomplete verdict, so useCombobox({ plugin }) reads ComboboxState from the feature plugin state, with no combobox host field or companion plugin."
+  ],
+  "evidenceReuse": "Reused the 2026-09-18 slash record's catalog census and the slash-ui-actions execution. Rechecked on the live tree all 21 items in slash.tsx, BaseSlashPlugin and SlashPlugin, every import of SlashPlugin across packages and apps, plugins defined in copied registry source, the combobox owner's read-only refusal, and the first-wave autocomplete and emoji records.",
+  "summary": "The job is to type / in an Editable, filter a product catalog of block and inline actions, and complete in one refusable transaction. The 2026-09-18 Pursue landed. Every block item calls tx.plugin(X).upsert, transforms.ts and the 17 matcher recipes are gone, and slash.tsx is 418 lines. The package now holds only BaseSlashPlugin, five ComboboxState defaults plus editOnly, and a toReactPlugin wrapper, published at two subpaths with no node, command or data. Its only terminal consumer is copied slash.tsx, which already configures triggerQuery and the afterEditable slot, the way copied FixedToolbarPlugin, FloatingToolbarPlugin and DndPlugin are defined in registry source. Defining the slash plugin in slash.tsx and deleting both entrypoints follows the copied-catalog rule, the terminal-consumer rule and the emoji cut, and it needs neither autocomplete Phase 1b nor Phase 2. Keeping the entrypoint loses, because the package owns no slash workflow, only defaults.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "import { SlashPlugin } from 'platejs/slash-command/react'; export const SlashKit = [SlashPlugin.configure({ initialState: { triggerQuery }, slots: { afterEditable: SlashCombobox } })]; <InlineCombobox editableRef={editableRef} plugin={SlashPlugin}>",
+    "proposed": "(proposed, copied slash.tsx) const SlashPlugin = definePlugin('slashCommand', { editOnly: true, initialState: { trigger: '/', triggerPreviousCharPattern: /^\\s?$/, maxQueryLength: 75, queryPattern: null, triggerQuery }, slots: { afterEditable: SlashCombobox } }); export const SlashKit = [SlashPlugin]; the InlineCombobox call site is unchanged, and platejs/slash-command and platejs/slash-command/react are deleted."
+  },
+  "previous": "2026-09-18-slash-command-composition-ownership",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-slash-command-composition-ownership",
+      "question": "Which command discovery and insertion policy belongs to the slash menu, and which can reuse canonical commands and combobox sessions?",
+      "action": "supersedes",
+      "reason": "Its typed-upsert and recipe-deletion target is adopted; its retention of BaseSlashPlugin predates the copied-catalog and terminal-consumer rules applied here."
+    },
+    {
+      "record": "2026-09-18-slash-ui-actions-execution",
+      "question": "Which command discovery and insertion policy belongs to the slash menu, and which can reuse canonical commands and combobox sessions?",
+      "action": "retains",
+      "reason": "The Slash migration to typed insert and upsert holds in live source; its proof stays historical."
+    }
+  ],
+  "alternatives": [
+    "Keeping platejs/slash-command and SlashPlugin loses. Two public subpaths and four exported names carry five default values for one copied terminal consumer.",
+    "Defining the slash plugin in copied slash.tsx with definePlugin('slashCommand', { editOnly, initialState with the ComboboxState defaults, slots.afterEditable }), and deleting both entrypoints, the docs API section and the PLUGINS key, is the lane to pursue.",
+    "Moving the 21-item catalog or a slash item factory into the package stays rejected, because labels, icons, groups, AI membership and feature choice are product policy.",
+    "Making ComboboxState fields optional with defaults, so copied plugins can omit the trigger shape, belongs to the autocomplete unit, which already names it as the custom-trigger lever. This cut does not need it.",
+    "Stopping slash from importing optional-feature descriptors (math, excalidraw, code-drawing, ai/react), so installing slash stops pulling katex, the AI SDK and similar peers, is rejected. plate.md:930 keeps integration with the item it modifies even when it needs an optional dependency, and users trim copied items.",
+    "Merging slash into combobox package ownership is rejected. Combobox owns the neutral occurrence and completion contract that mention, emoji and footnote also use."
+  ],
+  "proofLimits": "Source review only; nothing was run. The combobox owner files (comboboxOwner.internal.ts, combobox.internal.ts, useCombobox.ts) carry another session's uncommitted Phase 1a and 1b work; the read-only refusal also exists at HEAD (comboboxOwner.internal.ts:235). The SlashPlugin consumer census is in-repository only, so external apps importing platejs/slash-command are unknown. Sequencing with the active autocomplete plan, which edits the same popup owners, is unresolved.",
+  "references": [
+    "docs/research/decisions/slash-command-ownership.md",
+    "docs/research/features/slash.md",
+    "docs/research/review-records/2026-09-18-slash-command-composition-ownership.json",
+    "docs/research/review-records/2026-10-04-autocomplete-audit.json",
+    "docs/research/review-records/2026-10-04-emoji-audit.json",
+    "docs/plans/2026-09-18-slash-ui-actions-implementation.md",
+    "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts",
+    "packages/platejs/src/react/features/slash-command/SlashPlugin.tsx",
+    "packages/platejs/src/react/features/combobox/useCombobox.ts",
+    "packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/components/editor/inline-combobox.tsx",
+    "apps/www/src/registry/components/editor/fixed-toolbar.tsx",
+    "apps/www/src/app/dev/combobox-typing/page.tsx",
+    "content/docs/(plugins)/(functionality)/(combobox)/slash-command.mdx",
+    "docs/vision/plate.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/slash.tsx": "09c138fdcd5e0e1c44a4be96dd8d093267a50caf82dce5f7facc8240c99d8659",
+      "apps/www/src/registry/components/editor/slash.spec.tsx": "cf6d03aafacfe89fd39882cd43cd0b5f186ef1a45f53ca8c230e839dc40e19df",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/slash-command": "d86f10c08b236fa715831b542c7fa3d471c3950115daf2d1107ca772ea683e9b"
+    },
+    "features": {
+      "capability/slashCommand": "d8c41dfe1c383a261c7f42d1cc499b18dcd45c9f7192872ce5df30c2d115eced",
+      "example/value/slash-command-value": "7cc9972cb24fce8ce17f6917a1c48f9b7d6cec8683eeeddfd4ae08854d467522",
+      "export/platejs/./slash-command": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./slash-command/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/slash-command": "d86f10c08b236fa715831b542c7fa3d471c3950115daf2d1107ca772ea683e9b",
+      "ui/slash": "62781e8738f27d526b9694d8afd6fd952a8483acdac6d3702bf29770898d571d"
+    },
+    "upstreams": []
+  }
+}

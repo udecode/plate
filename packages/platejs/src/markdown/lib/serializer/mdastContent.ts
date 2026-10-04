@@ -1,3 +1,5 @@
+import type { PhrasingContent } from 'mdast';
+
 import type { MdMdxJsxFlowElement, MdRootContent } from '../mdast';
 
 type MdFlowContent = MdMdxJsxFlowElement['children'][number];
@@ -27,3 +29,7 @@ export const isMdFlowContent = (node: MdRootContent): node is MdFlowContent =>
 export const isMdPhrasingContent = (
   node: MdRootContent
 ): node is MdPhrasingContent => PHRASING_TYPES.has(node.type);
+
+/** Content one line of phrasing can hold: phrasing, plus raw HTML written inline. */
+export const isMdLineContent = (node: MdRootContent): node is PhrasingContent =>
+  node.type === 'html' || isMdPhrasingContent(node);

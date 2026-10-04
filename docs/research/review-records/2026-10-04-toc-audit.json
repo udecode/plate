@@ -1,0 +1,85 @@
+{
+  "id": "2026-10-04-toc-audit",
+  "scope": "toc",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "How should heading reads and navigation feed a table of contents?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 55. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Headings come from the installed heading descriptor's persisted type and level, never a same-name foreign plugin.",
+    "Live identity uses NodeKey; DOCX uses export-local bookmarks; no runtime key is persisted.",
+    "read.headings is a pure supplied-state read usable by live, static and DOCX renderers of one document.",
+    "Copied UI owns observer, scroll, flash and presentation; NavigationFeedback owns arrival paint.",
+    "Every public configuration path needs a distinct user job (VISION.md plugin authoring law)."
+  ],
+  "evidenceReuse": "Reused the 2026-09-07 extraction execution (observer and click navigation stay in copied UI, scale cohorts 5-1,000 headings), the 2026-08-29 TOC click regression fix, and the 2026-09-29 static-document-rendering execution (static TOC reads the rendered document). Rechecked live: BaseTocPlugin.ts and spec, TocPlugin.tsx, copied toc.tsx and toc-static.tsx, package docxStaticComponents.tsx, the entrypoint DAG, the TOC docs, and that no production code sets queryHeading.",
+  "summary": "The job is a live outline of headings for an in-document TOC block and its static and DOCX renderers, with click navigation and an active-heading highlight. BaseTocPlugin owns the void toc node and a pure read.headings(). Copied UI owns the IntersectionObserver, click scroll and NavigationFeedback flash (settled by the 2026-09-07 extraction work), and the 2026-09-29 static-document execution made static TOC reads coherent with the rendered document. The defects sit at the read owner. The heading lookup bypasses the nominal descriptor (its spec installs a foreign definePlugin(PLUGINS.heading) and passes), so TOC re-validates level 1-6 by hand. TocPluginState.queryHeading stores a function in plugin state that only a spec uses, yet docs teach it. The public Heading shape renames level to depth and carries a constant type field. Copied TOC indentation covers depths 1-3 through a cast, so H4-H6 lose indentation, and copied TocElementDocx duplicates the package TocDocx with no consumer. The strongest target keeps the TOC node and read but reads editor.plugin(BaseHeadingPlugin) through an honest edge from toc to standard/basic-nodes, deletes queryHeading, and returns { key, level, title }. Moving the outline read onto HeadingPlugin or deleting the TOC plugin both lose, because only TOC renderers consume it and the node needs a schema and format owner.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "TocPlugin.configure({ component: TocElement }); BaseTocPlugin.configure({ initialState: { queryHeading } }); editor.plugin(TocPlugin).read.headings() // { depth, key, title, type }[] via getCompiledPlatePlugin(editor, PLUGINS.heading)",
+    "proposed": "editor.plugin(TocPlugin).read.headings() // proposed: { key, level, title }[] read from editor.plugin(BaseHeadingPlugin); custom outlines filter in copied UI or replace read.headings in an ordinary .extend() stage; queryHeading and TocPluginState deleted"
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "How should heading reads and navigation feed a table of contents?",
+      "action": "retains",
+      "reason": "Its copied-UI ownership of the TOC observer and click navigation still holds; this review changes only the package read contract."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current read loses, because identity laundering and an unused public function-in-state override remain.",
+    "Changing the existing API wins with fewer public names. Read through BaseHeadingPlugin with an installed check, delete queryHeading and TocPluginState, and return { key, level, title }.",
+    "Moving ownership to HeadingPlugin.read.outline() in root platejs loses, because only TOC renderers consume it and it adds public API to a standard feature.",
+    "Deleting the TOC plugin and letting copied UI scan headings loses. Static and DOCX output and the toc node schema and markdown tag need a package owner.",
+    "Replace the architecture with a maintained heading index: Plite already has an internal by-type snapshot index; adopting it is a scale question with no measurement yet, so not part of this target."
+  ],
+  "proofLimits": "Source review only; no tests or browser run. read.headings scans the document on each document change while a TOC is mounted; cost was not measured (the 09-07 cohorts measured observer work by heading count, not document size). That an .extend() stage can replace read.headings rests on docs/vision/plate.md:612-615, not an executed probe.",
+  "references": [
+    "docs/research/features/toc.md",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json",
+    "docs/research/review-records/2026-09-29-static-document-rendering-execution.json",
+    "docs/plans/2026-07-13-plate-next-tag-toc-toggle-package-reviews.md",
+    "docs/plans/2026-08-29-toc-click-scroll-regression.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts",
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts",
+    "packages/platejs/src/react/features/toc/TocPlugin.tsx",
+    "packages/platejs/src/internal/plugin/compilePlateModel.ts",
+    "packages/platejs/src/docx/export/lib/docxStaticComponents.tsx",
+    "apps/www/src/registry/components/editor/toc.tsx",
+    "apps/www/src/registry/components/editor/toc-static.tsx",
+    "content/docs/(plugins)/(elements)/toc.mdx",
+    "tooling/entrypoints/entrypoint-dag.mjs",
+    "packages/plitejs/src/core/snapshot-index.ts",
+    "docs/vision/plate.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/toc.tsx": "d550cb06965ba27c41fc9917525e1014b29201f3d3872213dbfc6cf308d3ddba",
+      "packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts": "e063b58eebfd1e3a19a6c077799c6489648878da7408e67530a76c693d9a0cc1",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/toc": "7d0ac82f0df529dbd5808015d9311cbd915a9161df008c78fac0bcdede3eec38"
+    },
+    "features": {
+      "capability/toc": "1cfac680db8eff6efc71f35caee8475b43795da916712b3716a422a56048a1d6",
+      "example/value/toc-value": "8000ffae600b74b72392b0013162456d6a5c3a4ec7e859496f5bcc88da5ae887",
+      "export/platejs/./toc": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./toc/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/toc": "7d0ac82f0df529dbd5808015d9311cbd915a9161df008c78fac0bcdede3eec38",
+      "ui/toc": "d764cf009d01043a42a857e7cfb3a16719dc1e9678b4c5af3dc9281796b38580"
+    },
+    "upstreams": []
+  }
+}

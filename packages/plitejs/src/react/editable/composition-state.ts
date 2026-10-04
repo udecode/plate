@@ -50,6 +50,7 @@ import {
   armModelOwnedTextInputGuard,
   setEditableModelSelectionPreference,
 } from './selection-controller';
+import { withTypedTextIntent } from './typed-text';
 
 type EditableCompositionHandler = (
   event: CompositionEvent<HTMLDivElement>
@@ -683,7 +684,17 @@ export const commitChromeCompositionEndFallback = ({
           };
         })();
 
-    updateNativeTextInput(editor, insertCompositionText, input);
+    withTypedTextIntent(
+      editor,
+      inputController,
+      {
+        at: RangeApi.start(target),
+        inputType: 'insertFromComposition',
+        text,
+      },
+      () =>
+      updateNativeTextInput(editor, insertCompositionText, input)
+    );
   });
   finishCleanup();
   const committed = editor.read((state) => state.children()) !== childrenBefore;

@@ -1,0 +1,42 @@
+{
+  "id": "tags",
+  "title": "Tags and form-value editors",
+  "question": "Which selected values and editing rules should a tag/form editor persist, and can duplicate selection stores disappear?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Selected form values must have a document contract before application selection state is compared.",
+  "last": false,
+  "opportunity": {
+    "score": 7,
+    "reason": "Form-value and multi-selection consumers have different jobs from referenced inline entities."
+  },
+  "owners": [
+    "packages/platejs/src/features/tag/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/select-command.bridge.spec.tsx",
+    "apps/www/src/registry/components/editor/select-command.spec.tsx",
+    "apps/www/src/registry/components/editor/select-command.tsx",
+    "apps/www/src/registry/components/editor/select-editor.tsx",
+    "apps/www/src/registry/components/editor/tag.tsx",
+    "apps/www/src/registry/examples/select-editor-demo.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/features/tag/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/examples/select-editor-demo.tsx",
+    "apps/www/src/registry/components/editor/select-editor.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/tag/lib/BaseTagPlugin.spec.tsx",
+    "packages/platejs/src/features/tag/lib/BaseMultiSelectPlugin.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "autocomplete",
+    "editing",
+    "accessibility"
+  ]
+}

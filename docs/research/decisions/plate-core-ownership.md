@@ -2,31 +2,21 @@
 title: Plate core ownership
 type: decision
 status: implemented
-updated: 2026-09-14
-review_scope: plate-core
-current_review: 2026-09-14-plugin-factory-mapping-implementation
-review_history:
-  - ../review-records/2026-09-12-plate-api-capability-identity.json
-  - ../review-records/2026-09-12-distribution-public-ownership.json
-  - ../review-records/2026-09-13-plate-plugin-extension-boundary.json
-  - ../review-records/2026-09-13-shared-plugin-contract.json
-  - ../review-records/2026-09-13-shared-plugin-identity-feasibility.json
-  - ../review-records/2026-09-13-shared-plugin-identity-prototype.json
-  - ../review-records/2026-09-13-shared-plugin-identity-production.json
-  - ../review-records/2026-09-14-plugin-construction-inputs.json
-  - ../review-records/2026-09-14-plugin-construction-inputs-reassessment.json
-  - ../review-records/2026-09-14-plugin-factory-mapping.json
-  - ../review-records/2026-09-14-plugin-factory-mapping-implementation.json
+updated: 2026-10-04
 source_refs:
   - ../../plans/2026-09-12-plate-core-api-review.md
   - ../../plans/2026-09-13-shared-plugin-identity-feasibility.md
 related:
-  - ../reviews.md#plate-api
-  - ../reviews.md#distribution
+  - ../review-scopes/plate-api.json
+  - ../review-scopes/distribution.json
   - plite-core-ownership.md
 ---
 
 # Plate core ownership
+
+**Audit of 2026-10-04, `plate-api`.** Stop. The open Pursue target is live, with one shared nominal descriptor behind editor.plugin and tx.plugin over Plite's installed owner and YjsPlugin.create/require/map in place of the handwritten factories, and every stronger deletion or replacement lane still loses to that design. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-plate-api-audit` hold the evidence.
+
+**Audit of 2026-10-04, `distribution`.** Pursue. The getCorePlugins cut landed, but the same public-export leak is larger one layer down. The plitejs root publishes 16 values that its own JSDoc tags @internal (view, transaction and snapshot transforms, initializePlugins, schema-identity and command-dispatch hooks) plus MAIN_ROOT_KEY. The guarded plitejs/internal bridge already exports all of them, and platejs republishes every one through export * from 'plitejs'. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-distribution-audit` hold the evidence.
 
 ## Current implementation: mapped parameterized plugin factories
 

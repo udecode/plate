@@ -1,5 +1,7 @@
 # Plite document boundary patch
 
+Status: done; landed in e0c1500b95 and reconciled by execution record 2026-10-03-model-document-boundary-execution.
+
 Objective:
 Make every public Plite document ingress reject malformed `meta` and `roots`
 containers before construction, schema fitting, or editor replacement can accept

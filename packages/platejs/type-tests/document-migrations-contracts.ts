@@ -151,3 +151,51 @@ migrateDocument(raw, { migrations, source: 1 });
 migrateDocument(raw, { migrations, source: 'current' });
 // @ts-expect-error source intent is numeric or current
 migrateDocument(raw, { migrations, source: 'latest' });
+
+type TitledDocument = Readonly<{
+  children: V1Document['children'];
+  title: string;
+}>;
+
+// @ts-expect-error a migration input admits only document fields
+void (null as unknown as DocumentMigration<TitledDocument, V2Document, 1, 2>);
+// @ts-expect-error a migration output admits only document fields
+void (null as unknown as DocumentMigration<V1Document, TitledDocument, 1, 2>);
+
+const functionLegacy: DocumentMigration = ({ document }) => ({
+  document,
+  // @ts-expect-error legacy fields are JSON values
+  legacy: { load: () => null },
+});
+
+void functionLegacy;
+
+const envelopeShaped = {
+  children: raw.children,
+  document: raw,
+  schema: {
+    fingerprint: 'fnv1a64:v1',
+    id: 'article',
+    kind: 'named' as const,
+    version: 1,
+  },
+};
+
+migrateDocument(envelopeShaped, { migrations, source: 1 });
+// @ts-expect-error envelope-shaped raw input needs explicit source intent
+migrateDocument(envelopeShaped, { migrations });
+
+const envelope = { document: raw, schema: envelopeShaped.schema };
+
+migrateDocument(envelope, { migrations });
+// @ts-expect-error an envelope carries its own source
+migrateDocument(envelope, { migrations, source: 1 });
+
+// @ts-expect-error an inferred step's document admits only document fields
+defineDocumentMigrations({
+  plugins: [BaseParagraphPlugin],
+  schema: { id: 'article', version: 2 } as const,
+  steps: {
+    2: ({ document }) => ({ document: { ...document, title: 'Draft' } }),
+  },
+});

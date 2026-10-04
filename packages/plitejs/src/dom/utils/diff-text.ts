@@ -33,6 +33,8 @@ export type TextDiff = {
   id: number;
   path: Path;
   diff: StringDiff;
+  /** The input type the diff carries into the model; a merged diff takes the latest non-typing type that added text. */
+  inputType?: string;
 };
 
 const getPendingDiffRoot = (editor?: EditorType) =>
@@ -401,7 +403,7 @@ export function transformTextDiff(
   context: PendingDocumentChange,
   editor?: EditorType
 ): TextDiff | null {
-  const { path, diff, id } = textDiff;
+  const { path, diff, id, inputType } = textDiff;
   const root = getPendingDiffRoot(editor);
 
   if (!hasInternalDocumentChangeRoot(context.change, root)) {
@@ -428,6 +430,7 @@ export function transformTextDiff(
     return {
       diff: { start: start.offset, end: end.offset, text: diff.text },
       id,
+      inputType,
       path: start.path,
     };
   }
@@ -443,6 +446,7 @@ export function transformTextDiff(
       text: diff.text,
     },
     id,
+    inputType,
     path: start.path,
   };
 }

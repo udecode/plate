@@ -2,7 +2,7 @@ import { ChangeDraft } from '../core/change/builder';
 import { DocumentChange } from '../core/change/document-change';
 import { DocumentIndex } from '../core/change/document-index';
 import type { JsonEditorValue } from '../core/change/tokens';
-import { assertEditorDocumentShape } from '../core/document-shape';
+import { assertEditorDocumentContainers } from '../core/document-shape';
 import {
   getCompiledEditorSchemaFromApi,
   type InternalEditorSchemaApi,
@@ -64,7 +64,7 @@ export const assertAuthoredDocumentValue = (
     throw new Error('Authored JSON must contain a valid document envelope.');
   };
 
-  assertEditorDocumentShape(value, () => invalid());
+  assertEditorDocumentContainers(value, () => invalid());
 
   if (
     !value.children.every(isDocumentNode) ||

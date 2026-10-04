@@ -1,0 +1,149 @@
+{
+  "id": "2026-10-04-format-mappings-audit",
+  "scope": "format-mappings",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest pursue verdict, at queue position 37. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Plugin authors declare simple Markdown tags and marks without hand-writing node construction, property conversion and child traversal.",
+    "Ordinary Markdown stays CommonMark with GFM and math plus registered Plate tags; a Plate tag uses the resolved schema type symmetrically, and HTML tag names stay literal.",
+    "Schema membership alone never authorizes external representation; exposure is owner-scoped and fidelity claims come from what the output actually writes.",
+    "HTML, Markdown, plain text, static rendering and DOCX keep distinct semantics; no universal codec or public intermediate AST.",
+    "Input a mapping cannot represent is a diagnosed refusal under the loss policy; mappings take no per-operation override."
+  ],
+  "evidenceReuse": "Reused the 2026-09-28 value review, the format-mapping-authoring design plan (D1-D7) and the conversion-boundary execution records as history. Rechecked on the live tree every Markdown tag and mark declaration in feature plugins, the MarkdownNodeMapping contract at HEAD (claim helpers and tag and mark mapping shapes), the absence of mark: true and basicMarkdownMarks, the HTML rule types in BasePlugin.ts, every HTML mapping in basic marks and blocks, the plain-text compiler and Plite's structural fallback, and the uncommitted encodeLine and decodeLine additions. No tests, probes or benchmarks were run.",
+  "summary": "The job is letting feature plugins declare simple format mappings without hand-writing construction, property conversion and child traversal, while HTML, Markdown and plain text keep their own semantics. Live source has the adopted design. 11 element mappings are markdown: { tag: type } (media adds attributes: { url: 'src' }), and marks are { tag }, { tag, style }, { tag, value } or { node }. The mark flag and runtime key switch are gone, custom encoders claim through preserve, encodeAttributes and encodeNodeAttributes, and Markdown and HTML round-trip conformance specs guard the claims. The strongest new cut, an HTML { tag } shorthand, would delete only about six trivial match, decode and encode triples (blockquote, hr, details, summary, highlight, kbd) while adding a second HTML authoring form, and most HTML mappings carry real format semantics such as tag aliases, style matchers and cancellation. Deriving semantic HTML from the intrinsic component tag conflates presentation with semantics and breaks when copied UI replaces component. Four plainText identity mappings (callout, column, columnGroup, code block) duplicate Plite's fallback, but deleting them is a four-line cleanup, not a contract change. The in-flight encodeLine and decodeLine context members belong to the markdown table-cell build, already judged, and are not reopened here.",
+  "verdict": "stop",
+  "previous": "2026-09-28-format-mappings-value-review",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-28-format-mappings-value-review",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "supersedes",
+      "reason": "Its bounded Markdown authoring target is adopted in live source; this Stop keeps that design and closes the scope's next-work question."
+    },
+    {
+      "record": "2026-09-28-format-mapping-authoring-design",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "retains",
+      "reason": "D1-D7 match live source, with callback-free tag and mark declarations, owner-scoped exposure, standard-kind callbacks kept, and HTML and plain text unchanged."
+    },
+    {
+      "record": "2026-09-28-conversion-boundary-adoption-design",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "retains",
+      "reason": "Its replacement of preservation inference by actual-emission claims holds, and preserve, encodeAttributes and encodeNodeAttributes are the live claim paths."
+    },
+    {
+      "record": "2026-09-28-conversion-boundary-adoption-amendment",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "retains",
+      "reason": "Loss severity and preserve claims behind round-trip harnesses stand; markdownConformance.spec.ts and htmlConformance.spec.ts exist."
+    },
+    {
+      "record": "2026-09-29-conversion-boundary-adoption-execution",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "retains",
+      "reason": "Adoption evidence for the declarative mappings; its test and benchmark proof stays historical and was not replayed."
+    },
+    {
+      "record": "2026-09-29-conversion-boundary-closure-repairs",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "retains",
+      "reason": "Closure repairs sit outside mapping authoring; nothing in live source contradicts them."
+    },
+    {
+      "record": "2026-09-29-conversion-boundary-closure-repairs-final",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "retains",
+      "reason": "Rebinding record for the closure repairs; same retention."
+    },
+    {
+      "record": "2026-09-29-static-preview-document-execution",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "retains",
+      "reason": "Static preview document work is outside mapping authoring and is retained as recorded."
+    },
+    {
+      "record": "2026-09-29-static-preview-document-execution-final",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "retains",
+      "reason": "Rebinding record for the static preview execution; same retention."
+    }
+  ],
+  "alternatives": [
+    "Keeping the adopted declarative Markdown design wins. Construction, owner-scoped property conversion and content-model traversal are runtime-owned for every simple tag and mark, and callbacks remain only for real format work (date, image, standard MDAST kinds).",
+    "Adding an HTML { tag } shorthand that mirrors Markdown loses. It deletes about six trivial triples but adds a second HTML authoring form, and most HTML mappings need tag aliases, style matchers or cancellation (bold, italic, underline, strikethrough, paragraph), which a shorthand cannot express.",
+    "Deriving semantic HTML from the plugin's intrinsic component tag is rejected. Vision keeps semantic HTML separate from styled static output, and copied UI routinely replaces component with a React component.",
+    "Deleting the four plainText identity mappings (callout, column, columnGroup, code block) is correct but immaterial. Plite's fallback already yields children plus owned roots for non-atom, non-void elements, and a four-line cleanup does not change the contract.",
+    "Deriving standard-kind containers such as blockquote from the schema like registered tags loses. Blockquote is the only pure container among standard kinds, and one mapping does not pay for another declaration form.",
+    "Merging formats into one codec or public AST, or exporting every schema property automatically, is rejected again. No new requirement exists, and ElementId metadata, media URL aliases and captions remain counterexamples."
+  ],
+  "proofLimits": "Source review only; no tests, conformance runs, browser or benchmark were executed. MarkdownNodeMapping.ts, markdownMappings.ts and BaseTablePlugin.ts carry another session's uncommitted markdown table-cell build (encodeLine, decodeLine); the verdict cites HEAD for the contract and does not rely on those changes. Plain-text redundancy is inferred from source, not run.",
+  "references": [
+    "docs/research/decisions/format-mapping-authoring.md",
+    "docs/research/review-records/2026-09-28-format-mappings-value-review.json",
+    "docs/plans/2026-09-28-format-mapping-authoring.md",
+    "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts",
+    "packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts",
+    "packages/platejs/src/lib/plugin/BasePlugin.ts",
+    "packages/platejs/src/internal/plugin/compilePlainTextMappings.ts",
+    "packages/plitejs/src/core/plain-text.ts",
+    "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.ts",
+    "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts",
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts",
+    "packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts",
+    "packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts",
+    "packages/platejs/src/markdown/lib/markdownConformance.spec.ts",
+    "packages/platejs/src/html/htmlConformance.spec.ts",
+    "docs/vision/plate.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugin/BasePlugin.ts": "003feace34289039f95d7105f3aee032ef6d7c7ee910bfc42315196db746a32e",
+      "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts": "f5d346bf5c277dce95345db859f67179e25c1c876b5d1413a7e1cf273f67e595",
+      "packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts": "39e2113ead3ad1167e72dec90fdf9b18afdef64d9b01af21d45c0ec159eda1da",
+      "packages/platejs/src/internal/plugin/collectPlateNodeMappings.ts": "bd7123c5c5e572f8dcf16c6a029e373eee93a87848761094f56688629bf72071",
+      "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts": "316232b97c07b22afcac7f47caf2dcdacc515d8563564849d633228235d145d5",
+      "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.ts": "7d84a1e653b974f14a362f968713ec8f8e05af3c3b29d8fff090936189ff74d7",
+      "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts": "c123ee5108681614beeb90e3b0cdf54aef53256c781aa016a4d2987f2ca33709",
+      "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts": "5fc2a64ae8f9d8e6186a2e427a5ea6933ae089b94da228a95a179c3609111ff8",
+      "packages/platejs/src/features/date/lib/BaseDatePlugin.ts": "eb5d96ce3990f94bbf98d984780cbdb91363b9fc99273409c56562a6e53864ce",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "1f59adc0fa45b94a4f0451a6b7e50fe491b6e5ce922fa45295efdcdef1af5171",
+      "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts": "cbee93dafefa0d3dcebeae594d5ccdea7a442169f4d93b01cc9d2cd277a9ac98",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "df62b3f645782fb26d89bf12050d130601f2852c218131d5e997a8fce500cece",
+      "packages/platejs/src/markdown/lib/internal/markdownMappings.spec.ts": "4e79eba5c27e802eca522d3159450bfca1f8383669584866d44a37ad75b40cd9",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.mapping.spec.ts": "826801ff0a2ec47f48a5c086e1dc80419775ecfbfe6b2964d72ac4b43ca497c7",
+      "packages/platejs/type-tests/base-plugin-contracts.ts": "cb56fbdf480fbf44648d73fdd7ca71cbe9db91f5b15902b2485142377a70989d",
+      "packages/platejs/src/markdown/lib/internal/markdownMappings.ts": "1e9ba9cd58b604b895549959beaaa48aad3e2a7a33cd26e902164e2bd9b0af13",
+      "packages/platejs/src/markdown/lib/internal/markdownAttributes.ts": "7714c035ec9a772ace9f16c8f4efc9ddb766f5c60786ccd35e90717446a46558",
+      "packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts": "472c1c32fd9bd908fa08d0db08c681bfad666323d219d45d5a69c06dc27dcc6d",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "575a74c691bd23c2ecff9b73d8d7fc75c88a53be6b80f13a09e4c1efead1ec36",
+      "packages/platejs/src/lib/plugins/html/htmlConversion.ts": "e09fdda86ae8229779db17bcf6c391758a15b9fd18e3ffce66ac35e4e8b807b3",
+      "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts": "80e4504bec9be55642374c3600bb335bbb1ba234c884b0957a451da850f57a67",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "f262cc3b34f6d3753974c02469f2bb37d849cb0bd5c7c697c420c4c5f3bdcdfb",
+      "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts": "d161bc5afdd386ec708e0d0acc132d61195492ecf8bb6b3d24e380affe219fbd",
+      "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts": "bc8198d05f9ea7af76c251362e4d7341467f2311614d248e3c12329f07436f09",
+      "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "3119f481d73cdc9103e130b54ed5c423f85c6b7d3884cac510d668d537a1281a",
+      "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": "26409780d782910ba62246ef82e7f92fdac22b4c8e25204d740047f8e9a97a99",
+      "packages/platejs/src/plain-text.ts": "326d72c1993c7d6a27a550a20b7f74c1e8bf056706a9839eb15d7b4dd7589864",
+      "docs/research/decisions/markdown-conversion.md": "55a1e7fbc5834840ee54ec1d9157d1b862a2a586c57784a1827b84b616794f36",
+      "docs/research/decisions/import-fidelity.md": "ac5f5f6972a4673e0db06d4e69202e5d0b20907eb7377294e2e51bd2beadc8cc",
+      "docs/research/decisions/export-fidelity.md": "f613b4530f6862096006d49b7fc26b33a0dd3d2f2573902670fa805255fe59e4",
+      "docs/vision/plate.md": "4a0e6c187965994850a77771ed954d644f9a255a2d776966d33ec82c9cef5f3b",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": []
+  }
+}

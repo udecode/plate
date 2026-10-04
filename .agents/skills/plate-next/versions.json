@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 257,
+  "latestVersion": 258,
   "versions": [
     {
       "version": 0,
@@ -2988,6 +2988,17 @@
         "Narrow where dragged, moved or copied blocks land with a transferVeto contribution, and redirect an edge, such as past a list item's family, with readMiddleware around editorReads.transfer.landing that returns a TransferEdge; never admit or widen landings in middleware, and never restate content legality the compiled schema already checks.",
         "Give copied block handles to every element the schema marks as block content and selectable, at any depth, and read a handle's or a keyboard move's blocks from editor.read.transfer.nodes; never list plugin types, path depths or a copy of the drag payload rule in copied UI.",
         "Keep Move up and Move down among siblings, so a step whose blocks span parents refuses instead of moving them to one place."
+      ]
+    },
+    {
+      "version": 258,
+      "date": "2026-10-04",
+      "doctrineFingerprint": "sha256:60b1ea2a6fd6157e40f5283d6b4c637d1797d25a99e1763137606245ef138c5f",
+      "summary": "A document's top level is children, meta and roots, and every load path refuses any other field on the caller's raw object instead of dropping it. Migration steps see only those fields and lift a stored top-level field from their legacy record; completion refuses a field no step lifted.",
+      "migrationChecks": [
+        "Pass Plite and Plate editors, views, snapshots and schema calls a document whose top level is only children, meta and roots, a snapshot that adds only selection, or an envelope of document, schema and selection; put application data in meta and a selection in the selection option, never in initialValue.",
+        "Write a migration step that reads a stored top-level field from legacy and lifts it into meta or roots, returning the rest as legacy; never cast the step's document to read an extra key, and never return a document that carries one.",
+        "Run plate migrate run --from only over raw documents; run persisted envelopes without --from."
       ]
     }
   ],

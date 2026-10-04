@@ -6,7 +6,7 @@ topic: plite-archive-readme
 # Plite Archive
 
 > Archive only. Use [Plite Agent Start](../../plite/agent-start.md) and the
-> [feature review ledger](../../research/reviews.md) for current work. The
+> [feature review ledger](../../research/schema.md#review-history) for current work. The
 > roadmap and verdict links below preserve the prior program’s context.
 
 This folder keeps retired historical docs from the old `docs/plite` root

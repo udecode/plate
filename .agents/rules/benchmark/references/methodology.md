@@ -186,6 +186,8 @@ packets or omit p99 with reason.
 
 Use adaptive evidence, not a ceremonial fixed count.
 
+- Before fixing a packet count, time one sample per cohort per side, then size
+  the protocol from that wall time and the measured noise.
 - Interleave candidate and baseline to limit thermal/order drift.
 - A large stable delta plus causal intervention may become conclusive quickly.
 - A result near budget or inside noise needs more samples and repeat packets.

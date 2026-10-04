@@ -1,0 +1,87 @@
+{
+  "id": "collaboration",
+  "title": "Collaborative synchronization and presence",
+  "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
+  "dependsOn": [
+    "selection"
+  ],
+  "prerequisiteReason": "Local and remote changes must preserve transaction and selection identity laws before provider policy is compared.",
+  "last": false,
+  "opportunity": {
+    "score": 9,
+    "reason": "Collaboration correctness constrains authored changes, history and document identity."
+  },
+  "owners": [
+    "packages/plitejs/src/yjs/"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/yjs-collaboration.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/yjs-hocuspocus.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/registry/components/editor/remote-cursor-overlay.spec.tsx",
+    "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx",
+    "apps/www/src/registry/examples/collaboration-demo.spec.tsx",
+    "apps/www/src/registry/examples/collaboration-demo.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/utils/plate-keys.ts",
+    "packages/platejs/src/yjs/",
+    "packages/plitejs/package.json",
+    "packages/plitejs/src/yjs/"
+  ],
+  "consumers": [
+    "packages/platejs/src/yjs/",
+    "apps/www/src/app/(app)/examples/plite/_examples/yjs-collaboration.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/yjs-hocuspocus.tsx"
+  ],
+  "proof": [
+    "packages/plitejs/test/yjs/admission-lifecycle-contract.spec.ts",
+    "packages/platejs/src/yjs/YjsPlugin.api.spec.ts",
+    "packages/platejs/type-tests/yjs-collaboration-contracts.ts",
+    "apps/plite/tests/plite-browser/donor/examples/yjs-hocuspocus.test.ts",
+    "benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "persistence",
+    "history",
+    "runtime",
+    "authored"
+  ],
+  "decision": "docs/research/decisions/collaboration-ownership.md",
+  "historyCandidates": [
+    "docs/plans/4140-use-editor-selection-yjs.md",
+    "docs/plans/2026-09-04-yjs-cursor-presentation.md",
+    "docs/plans/2026-08-23-hard-cut-yjs-public-entrypoints.md",
+    "docs/plans/2026-07-14-plate-next-yjs.md",
+    "docs/plans/2026-07-14-plate-next-yjs-plugin-adapter.md",
+    "docs/plans/2026-06-17-plite-plite-yjs-beta-readiness-closure.md",
+    "docs/plans/2026-06-17-merged-yjs-closure.md",
+    "docs/plans/2026-06-15-4650-indexeddb-yjs-provider.md",
+    "docs/plans/2026-06-14-yjs-research-mode-8h.md",
+    "docs/plans/2026-06-14-yjs-incremental-remote-import-architecture.md",
+    "docs/plans/2026-06-13-yjs-research-mode-8h.zh-CN.md",
+    "docs/plans/2026-06-13-yjs-research-mode-8h.md",
+    "docs/plans/2026-06-13-yjs-perfection-strict-8h-no-long-soak.md",
+    "docs/plans/2026-06-12-yjs-optimization-strict-8h.md",
+    "docs/plans/2026-06-11-yjs-perfection-8h.md",
+    "docs/plans/2026-06-11-yjs-cleanup-8h.md",
+    "docs/plans/2026-06-11-yjs-cleanup-8h-continuation.md",
+    "docs/plans/2026-06-11-plite-yjs-controller-split-until-stop.md",
+    "docs/plans/2026-06-10-yjs-hocuspocus-known-issues-fix.md",
+    "docs/plans/2026-06-09-yjs-package-architecture-cleanliness-5h.md",
+    "docs/plans/2026-06-08-yjs-placeholder-leaf-path-fixes.md",
+    "docs/plans/2026-06-08-fix-plite-yjs-structural-replays.md",
+    "docs/plans/2026-05-29-plite-yjs-from-scratch-operation-matrix.md",
+    "docs/plans/2026-05-29-plite-yjs-follow-up-risk-fixes.md",
+    "docs/plans/2026-05-28-plite-yjs-current-architecture-operation-matrix.md",
+    "docs/plans/2026-05-25-plite-yjs-structural-operation-coverage-ralplan.md",
+    "docs/plans/2026-05-18-plite-yjs-package-readiness-ralplan.md",
+    "docs/plans/2026-05-13-yjs-collaboration-harvest.md",
+    "docs/plans/2026-05-13-plite-yjs-core-readiness-ralplan.md",
+    "docs/plans/2026-04-09-plite-operation-history-collaboration-integrity-completion-plan.md",
+    "docs/plans/2026-03-22-yjs-testing-plan.md",
+    "docs/plans/2026-03-22-yjs-testing-execution.md",
+    "docs/plans/2026-03-22-coverage-priority-map-post-yjs.md"
+  ]
+}

@@ -164,15 +164,114 @@ describe('schema identity contract', () => {
     }, /does not match current schema/);
   });
 
-  it('does not confuse direct snapshots with application document metadata', () => {
+  it('refuses a document field in a direct snapshot', () => {
     const editor = createEditor();
+    const children = [{ children: [{ text: 'after' }], type: 'paragraph' }];
+    const before = editor.read.value();
 
-    editor.update.value.replace({
-      children: [{ children: [{ text: 'after' }], type: 'paragraph' }],
-      document: { application: true },
-    } as never);
+    assert.throws(() => {
+      editor.update.value.replace({
+        children,
+        document: { application: true },
+      } as never);
+    }, /field "children" is not supported/);
+    assert.deepEqual(editor.read.value(), before);
+  });
 
+  it('refuses an unknown field before reading its JSON value', () => {
+    const editor = createEditor();
+    const children = [{ children: [{ text: 'a' }], type: 'paragraph' }];
+
+    assert.throws(
+      () => editor.read.schema.assertDocument({ children, extra: () => null }),
+      (error: unknown) =>
+        error instanceof EditorSchemaValidationError &&
+        error.diagnostics[0]?.code === 'invalid-document' &&
+        error.message.includes('field "extra"')
+    );
+  });
+
+  it('treats a field holding undefined as absent', () => {
+    const editor = createEditor();
+    const children = [{ children: [{ text: 'a' }], type: 'paragraph' }];
+    const document = { children, meta: undefined };
+
+    assert.doesNotThrow(() => editor.read.schema.assertDocument(document));
+    assert.deepEqual(
+      editor.read.schema.fitDocument(document).children,
+      children
+    );
+    assert.doesNotThrow(() =>
+      createEditorView(editor).update.value.replace({
+        children,
+        meta: undefined,
+      })
+    );
+  });
+
+  it("admits the caller's snapshot before a host transform rewrites it", () => {
+    const editor = createEditor();
+    const children = [{ children: [{ text: 'after' }], type: 'paragraph' }];
+    const restore = setEditorSnapshotInputTransform(editor, (input) =>
+      'children' in input ? { children: input.children } : input
+    );
+    const before = editor.read.value();
+
+    assert.throws(
+      () => editor.update.value.replace({ children, extra: 1 } as never),
+      /field "extra" is not supported/
+    );
+    assert.deepEqual(editor.read.value(), before);
+
+    editor.update.value.replace({ children });
     assert.equal(editor.read.text.string([]), 'after');
+    restore();
+  });
+
+  it('refuses an unknown root-view snapshot field before host transforms run', () => {
+    const editor = createEditor();
+    const view = createEditorView(editor);
+    const children = [{ children: [{ text: 'after' }], type: 'paragraph' }];
+    let transforms = 0;
+    const restore = setEditorSnapshotInputTransform(editor, (input) => {
+      transforms += 1;
+
+      return input;
+    });
+    const before = editor.read.value();
+
+    assert.throws(
+      () => view.update.value.replace({ children, extra: 1 } as never),
+      /field "extra" is not supported/
+    );
+    assert.equal(transforms, 0);
+    assert.deepEqual(editor.read.value(), before);
+
+    view.update.value.replace({ children });
+    assert.equal(transforms, 1);
+    restore();
+  });
+
+  it('revalidates a mutable caller document on every document view', () => {
+    const ClosedDocumentSchema = defineEditorSchema('schema:view-document', {
+      elements: { paragraph: schema.element.textBlock() },
+      root: schema.content.type('paragraph', { min: 1 }),
+    });
+    const editor = createEditor({ plugins: [ClosedDocumentSchema] });
+    const document = {
+      children: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+    };
+
+    createEditorView(editor, { document });
+    assert.doesNotThrow(() => createEditorView(editor, { document }));
+
+    document.children[0].type = 'unknown';
+    assert.throws(
+      () => createEditorView(editor, { document }),
+      (error: unknown) =>
+        error instanceof EditorSchemaValidationError &&
+        error.diagnostics[0]?.code === 'unknown-element'
+    );
   });
 
   it('rejects persisted envelopes with unsupported direct snapshot fields', () => {
@@ -215,6 +314,7 @@ describe('schema identity contract', () => {
         },
       ],
       ['non-array named root', { ...validDocument, roots: { sidebar: {} } }],
+      ['unknown field', { ...validDocument, extra: 1 }],
     ] as const;
     const modes = [
       {

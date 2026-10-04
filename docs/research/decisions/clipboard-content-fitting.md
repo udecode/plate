@@ -2,17 +2,12 @@
 title: Clipboard interchange and content fitting
 type: decision
 status: proposed
-updated: 2026-09-18
-review_scope: clipboard
-current_review: 2026-09-13-clipboard-transfer-convergence
-review_history:
-  - ../review-records/2026-09-13-clipboard-transfer-convergence.json
-reconciled_executions:
-  - 2026-09-18-table-edge-paste-regression
-  - 2026-09-18-recovered-2026-09-13-clipboard-transfer-policy
+updated: 2026-10-04
 ---
 
 # Clipboard interchange and content fitting
+
+**Audit of 2026-10-04.** Stop. The September 13 Pursue target is in live source. Every paste, including an exact projected selection, runs through one domCommands.insertData command whose feature middleware and canonical fitter decide the result, the projected path composes deletion and insertion into one spec that publishes nothing on decline, and ContentSlice rewrites keep their referenced roots. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-clipboard-audit` hold the evidence.
 
 Status: Review complete — Pursue. The selected design and reported adoption are in
 the [clipboard transfer plan](../../plans/2026-09-13-clipboard-transfer-policy.md).
@@ -248,7 +243,7 @@ This read-only review does not change doctrine or product code.
 
 ## Recovered execution history
 
-The [feature hub](../features/clipboard.md) links the recovered plan outcomes,
+`node tooling/scripts/review-ledger.mjs show clipboard` lists the recovered plan outcomes,
 including completed work and rejected experiments. These imports preserve
 reported completion with **unknown current proof**: their full original
 source/runner/result binding is not recovered. Their recovery date does not

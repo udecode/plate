@@ -1,6 +1,6 @@
 # dev/table-perf Performance Snapshot
 
-Historical measurement; use the [Table hub](../research/features/table.md)
+Historical measurement; use `node tooling/scripts/review-ledger.mjs lookup table`
 for current decisions and bound evidence. The recorded March source, browser,
 and workload below limit the claim; no current rerun is implied.
 

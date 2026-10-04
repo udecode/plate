@@ -2,19 +2,7 @@
 title: Schema-bound format mapping authoring
 type: decision
 status: accepted
-updated: 2026-09-29
-review_scope: format-mappings
-current_review: 2026-09-28-format-mappings-value-review
-reconciled_executions:
-  - 2026-09-28-format-mapping-authoring-design
-  - 2026-09-28-conversion-boundary-adoption-design
-  - 2026-09-29-conversion-boundary-adoption-execution
-  - 2026-09-29-conversion-boundary-closure-repairs
-  - 2026-09-29-conversion-boundary-closure-repairs-final
-  - 2026-09-29-static-preview-document-execution
-  - 2026-09-29-static-preview-document-execution-final
-review_history:
-  - ../review-records/2026-09-28-format-mappings-value-review.json
+updated: 2026-10-04
 related:
   - markdown-conversion.md
   - import-fidelity.md
@@ -22,6 +10,8 @@ related:
 ---
 
 # Schema-bound format mapping authoring
+
+**Audit of 2026-10-04.** Stop. The adopted target holds in live source. Simple Markdown tags and marks are callback-free declarations derived from the schema, claims come from actual output, and no remaining lane deletes material author work without erasing format semantics. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-format-mappings-audit` hold the evidence.
 
 **Pursue** a bounded design for simpler feature mappings. Retain the selected
 Markdown grammar and each format's semantic owner. This value decision does

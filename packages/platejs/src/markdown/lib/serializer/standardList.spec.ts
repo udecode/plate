@@ -6,6 +6,29 @@ import {
 const editor = createTestEditor();
 
 describe('editor.api.markdown.serialize list', () => {
+  it('keeps a bare URL inside a list item', () => {
+    const input = [
+      {
+        children: [
+          { text: 'see ' },
+          {
+            children: [{ text: 'https://x.dev' }],
+            type: 'link',
+            url: 'https://x.dev',
+          },
+          { text: ' end' },
+        ],
+        indent: 1,
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+    ];
+
+    expect(
+      serializeTestMarkdown(editor, { document: { children: input } }).data
+    ).toBe('* see https://x.dev end\n');
+  });
+
   it('serialize unordered lists', () => {
     const input = [
       {

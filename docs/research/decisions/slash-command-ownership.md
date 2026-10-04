@@ -2,11 +2,7 @@
 title: Slash insertion and command discovery ownership
 type: decision
 status: adopted
-updated: 2026-09-18
-review_scope: slash
-current_review: 2026-09-18-slash-command-composition-ownership
-review_history:
-  - ../review-records/2026-09-18-slash-command-composition-ownership.json
+updated: 2026-10-04
 source_refs:
   - ../../../apps/www/src/registry/components/editor/slash.tsx
   - ../../../apps/www/src/registry/components/editor/inline-combobox.tsx
@@ -16,17 +12,14 @@ source_refs:
   - ../../../packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts
   - ../../../packages/platejs/src/react/features/combobox/useCombobox.ts
 related:
-  - ../reviews.md#slash
+  - ../review-scopes/slash.json
   - registry-ui-ownership.md
   - ../../vision/plate.md
-reconciled_executions:
-  - 2026-09-18-slash-ui-actions-execution
-  - 2026-09-18-recovered-2026-08-30-fix-combobox-popup-y-position
-  - 2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit
-  - 2026-09-18-recovered-2026-09-16-slash-ai-suggested-paragraph
 ---
 
 # Slash insertion and command discovery ownership
+
+**Audit of 2026-10-04.** Pursue. The adopted typed-upsert catalog holds, but platejs/slash-command still publishes a trigger-only plugin whose only terminal consumer is copied slash.tsx; plate.md makes that registry-owned, and the first-wave emoji verdict cuts the same shape. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-slash-audit` and `2026-10-04-slash-audit-2` hold the evidence.
 
 **Keep slash presentation copied and delete its repeated insertion protocol.**
 

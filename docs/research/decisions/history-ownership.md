@@ -2,32 +2,20 @@
 title: History ownership
 type: decision
 status: accepted
-updated: 2026-09-24
-review_scope: history
-current_review: 2026-09-23-history-session-effect-authoring-final
-reconciled_executions:
-  - 2026-09-23-history-replay-lifecycle-design
-  - 2026-09-23-history-replay-lifecycle-revised-design
-  - 2026-09-23-history-replay-lifecycle-implementation
-  - 2026-09-24-history-session-effect-authoring-implementation
-review_history:
-  - ../review-records/2026-09-15-history-replay-boundary.json
-  - ../review-records/2026-09-16-history-post-adoption-reassessment.json
-  - ../review-records/2026-09-23-history-async-replay-api.json
-  - ../review-records/2026-09-23-history-post-implementation-api-cut.json
-  - ../review-records/2026-09-23-history-post-implementation-api-cut-correction.json
-  - ../review-records/2026-09-23-history-session-effect-authoring-final.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/history/history-plugin.ts
   - ../../../packages/plitejs/src/history/history-state.ts
   - ../../../packages/plitejs/src/react/hooks/use-plite-history.ts
 related:
-  - ../reviews.md#history
+  - ../review-scopes/history.json
   - transactions-synchronous-boundary.md
   - collaboration-ownership.md
 ---
 
 # History ownership
+
+**Audit of 2026-10-04.** Stop. The last Pursue target is adopted. Local fallible replay is one typed history: { replay } value on a local-only effect union, the split session literal, sibling callback and policy export are gone, and the one replay lifecycle, grouping authority, mounted dispatcher and Plate adapter each still own a proved job that no deletion or merge removes. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-history-audit` hold the evidence.
 
 **Keep the implemented replay lifecycle and adopt one final bounded cut in
 session-effect authoring.** `undo()` and `redo()` retain

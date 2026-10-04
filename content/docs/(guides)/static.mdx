@@ -185,8 +185,9 @@ editor can render a streamed preview or a stored revision this way:
 <EditorStatic editor={editor} document={{ children: blocks }} />
 ```
 
-The document must be valid for the editor's schema. Each document object is
-validated once, so pass the same object again to render it again.
+The document must be valid for the editor's schema. The editor validates a
+document from `editor.read.value()` once and any other document object on every
+render, because that object can change between renders.
 `EditorPreview` takes the same `document`, and copying from it copies the
 rendered document.
 

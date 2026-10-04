@@ -1,0 +1,121 @@
+{
+  "id": "2026-10-04-ai-audit",
+  "scope": "ai",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "How should AI edits and streaming reuse authored commands, selection and application policy?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest stop verdict, at queue position 59. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Generated or inserted content is a temporary draft until applied; streaming and previewing leave the document and its history untouched; apply is one ordinary transaction (docs/vision/plate.md:1080).",
+    "Selection edits stream into one request-owned native suggestion decided through the authored owner (docs/vision/plate.md:1086).",
+    "Copied UI owns the purple draft presentation and the stream indicator.",
+    "AI support stays optional, composable and plugin-first, and a persisted schema property needs a current job.",
+    "Stored documents from earlier versions reach the current schema through migrateDocument steps, not live compatibility marks."
+  ],
+  "evidenceReuse": "Reused the 2026-09-16 preview, regression-audit and closure records, the September 21 selection-edit correction and the 2026-09-25 separated-suggestion repair. Rechecked on the live tree BaseAIPlugin, AIPlugin, AIChatPlugin's preview, apply and comment paths, copied ai.tsx and ai-menu.tsx, every caller of insertNodes, removeMarks, removeNodes and findTextRangeInBlock, writers of ai: true across packages, registry, examples and docs, and the generated EditorText contract.",
+  "summary": "The job is to generate and insert through one temporary draft applied in one ordinary transaction, edit a selection through one request-owned native suggestion, and keep comments, Copilot and request lifetimes isolated. Live source still matches the 2026-09-16 decisions. AIChatPlugin parses the accumulated response into previewValue, copied AIChatEditor paints it purple with CSS on the draft container, and selection edits go through the authored owner. What is left over is BaseAIPlugin's main-era API, namely a persisted boolean ai mark with text rendering and selection rules, three update operations that write and strip it, the AIPlugin React wrapper, and AILeaf installed by AIKit. A git grep finds no production writer of the mark and no caller of the three operations. The only live uses are findTextRangeInBlock, called once by AIChatPlugin, and ai-menu extending BaseAIPlugin to host its end decoration. Deleting the mark removes a persisted property from every AIKit app's generated document type and public docs that teach direct AI-marked insertion. Keeping it for older documents loses, because migration steps own legacy fields.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "AIKit = [AIPlugin.configure({ component: AILeaf }), AIChatTransportPlugin.extend(...)]; docs teach editor.update.ai.insertNodes(nodes) to insert AI-marked nodes and editor.update.ai.removeMarks() to clear them; AIChatPlugin calls commandEditor.plugin(BaseAIPlugin).api.findTextRangeInBlock(...) to anchor generated comments.",
+    "proposed": "(proposed) AIKit = [AIChatTransportPlugin.extend(...)] with no ai mark plugin; AIChatPlugin anchors comments through a private findTextRange(block, text); copied ai-menu defines its preview end decoration on its own plugin; platejs/ai keeps AIChatRequestContext and the request ref types."
+  },
+  "previous": "2026-09-16-ai-main-regression-closure",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-16-ai-main-regression-closure",
+      "question": "How should AI edits and streaming reuse authored commands, selection and application policy?",
+      "action": "reopens",
+      "reason": "Retains its draft, native-proposal and request-lifetime ownership, and reopens the AI API for the persisted ai mark and its operations, which no AI review assessed after the draft redesign."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current AI API loses on the mark. A persisted property with no writer, a leaf that never renders and documented insert and remove operations contradict the draft law.",
+    "Deleting the ai mark schema, its render and selection rules, update.insertNodes, removeMarks and removeNodes, AIPlugin, AILeaf and its AIKit entry and docs, while making findTextRangeInBlock a private AIChatPlugin helper and giving ai-menu's end decoration its own plugin, is the lane to pursue.",
+    "Reusing the ai mark as durable AI provenance after Accept is rejected. Tracked AI edits already carry author identity in authored records, and plain Apply is ordinary content by law.",
+    "Returning to in-document marked streaming as on main stays rejected by the 2026-09-16 records, because it couples drafts to history and undoes unrelated edits.",
+    "Adding a public draft, session or projection layer stays rejected, because plugin state, mapped anchors and per-request SDK chats cover the jobs."
+  ],
+  "proofLimits": "Source review only; nothing was run. The no-writer claim rests on an in-repository git grep of packages, copied registry, examples, tests and docs; external apps and stored documents holding ai marks are not visible. Copilot ghost text and the AI Space trigger were read only for ai mark use, not reviewed in full. The AI package and copied AI files are committed.",
+  "references": [
+    "docs/research/decisions/ai-preview-ownership.md",
+    "docs/research/features/ai.md",
+    "docs/research/review-records/2026-09-16-ai-main-regression-closure.json",
+    "docs/plans/2026-09-25-ai-separated-suggestion-diff-repair.md",
+    "packages/platejs/src/ai/lib/BaseAIPlugin.ts",
+    "packages/platejs/src/ai/react/AIPlugin.ts",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "apps/www/src/registry/components/editor/ai.tsx",
+    "apps/www/src/registry/components/editor/ai-menu.tsx",
+    "apps/www/src/registry/components/editor/plugins.generated.ts",
+    "content/docs/(plugins)/(ai)/ai.mdx",
+    "docs/vision/plate.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/ai.tsx": "63bbd9e63be33a46a14ecfcf3c179ea19413665c3ecccd18304e8a07f9cc1946",
+      "apps/www/src/registry/components/editor/use-chat.ts": "92e0400f4171112f4a92ef75afb129045d75170ed2f332741591b56829db846a",
+      "apps/www/src/app/api/ai/command/route.ts": "a90b127393227a1c85accb26df23ac8f3a21cde85ac244e8a14e20fcc2f99c88",
+      "apps/www/src/app/api/ai/copilot/route.ts": "742d8bfccba19cf23a693618ebd97d23fda85ebb591aa2a4cf5bce0d57d8cd60",
+      "apps/www/src/registry/examples/ai-demo.tsx": "6d799a80ed194a14957fe890b68ad5ecfa02ff20129ee14ca69e0d3923ec54a4",
+      "packages/platejs/src/ai/lib/AIChatRequestContext.spec.ts": "f60e3fef8446df84ab36bddcaa4727fe90d634bc476931739b0ce0196c25d743",
+      "apps/www/tests/browser/ai-session.spec.ts": "0079cb8c66e1452aaf0a2d7ba5cc6be852b0c0bc69db434aecc1abe6b5e236c9",
+      "packages/platejs/src/ai/react/AIChatPlugin.focus.spec.tsx": "37d07ac03a2048dbfa1b1f893676007e296a510b9aaece9628006f447e58e1f5",
+      "apps/www/src/registry/components/editor/ai.lifecycle.spec.tsx": "edeec273339891ec3e45ee0f0af4423d41fb862946fff33bbb2783b2421057a4",
+      "apps/www/src/registry/components/editor/use-chat.lifecycle.spec.tsx": "6dfaf6f2cebb5337cb321e5864eec507a3762f9f90dcd48c48bfbf4a56e38c75",
+      "apps/www/tests/browser/markdown-streaming-lifetime.spec.ts": "cb7b4e381682bbe60c4bb9004d0e212ba39c0fb55b440a839071ef7a1e197c74",
+      "packages/plitejs/test/slice-public-api-contract.test.ts": "a8eacf607b17ae506af7fde2909cfff10cc4d259175e73f23c52f77f9cf5a33b",
+      "packages/plitejs/test/slice-fit-contract.test.ts": "b8220ecd4bc5af4e94b97695fa9ed9cc84c51bc46be4d66365d7e1021b17da6a",
+      "apps/www/src/registry/components/editor/ai-menu.tsx": "f31e83869fe46284853da85ce07e9b25682a70ca91947cbc3d874bcf10620acf",
+      "apps/www/src/registry/components/editor/suggestion.tsx": "eae83fba25a3c562c5c19c55cf61da0959d665d4dfc4ed364199a374f52e85f5",
+      "packages/platejs/src/lib/plugin/createPluginContext.internal.ts": "947fce288ccf34751498a58cc3751e3eb45ec3fe816883d6d6c6b49094a87f2a",
+      "packages/platejs/src/lib/plugin/createPluginContext.internal.spec.ts": "c13924a73aeb42a2858accf96a9336e3b57afcac584dd0d7de76609384b4149b",
+      "docs/plans/artifacts/ai-preview-ownership/final-source.json": "c5195ea3ec6425cf1786d0ef40ce2c895ba54600ffb7f64f12fb9a81156ee502",
+      "docs/plans/artifacts/ai-preview-ownership/candidate-probe.test.ts": "5c4d897341f5c7c29341438b0ea0f0be25a4cc3411530cb9ef188db8d7ac261b",
+      "docs/plans/artifacts/ai-preview-ownership/candidate-summary.json": "0047108d5ebf790485d91e17b5cb267cae70591fb0011526480c92baa15943e6",
+      "packages/plitejs/src/authored/authored.ts": "9e488a054a29f040a4a23472e1998b891eb8c8756cc0cfb9aae0dfdba372a416",
+      "packages/plitejs/src/interfaces/editor.ts": "9f46f0711f22f9dde8c3e9f470a2d122f571aa3fc2b20d5039278a2b3ca03bc1",
+      "packages/platejs/src/react/plugin/PlatePlugin.ts": "f429ec7cbe4d2a034c77bd376e6815873e84309e8f17f710b7d544d0a439a255",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "docs/vision/plate.md": "4a0e6c187965994850a77771ed954d644f9a255a2d776966d33ec82c9cef5f3b",
+      "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+      "packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts": "a9ed0ac768a4aa56c2554528e3773a9a1d709d80d6628ae2bd4458460ece62d9",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "d4380cdac6642db677ef37d054240301ee0a56c661fcc5fd1cb6d110ed29165f",
+      "apps/www/src/registry/registry-examples.ts": "ddfd93c0d1379f96648ccc7b2ae9e692971aba451839772054e7ac9148f9fc2a",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/ai": "bae7c80d9220181f78cf28604abaf21d255a187866f6f629b36aeace8f1ecd43"
+    },
+    "features": {
+      "application/ai": "3b876e861622666a27187a3e1c39a3b4a59345635fd2e5ed5b6bf8d5f393e310",
+      "application/ai-command": "e791e2b11c50b707252d77f648d18c242313107e6d43b70013cd010690f46a31",
+      "application/ai-copilot": "5c60b7b6ffad2bed4106d1bc8a7d32f93f479e3bf72195e1da4eb7ffb804dfea",
+      "browser/ai-session": "d7745004b93ae31e14354d416c7f62428262896f510b0f7a3a372c0d2c4f6c21",
+      "browser/editor-ai-layout": "f134773ef8eae824a19844a3e0aeb9cdc44a45581b625755fedc130f6235de16",
+      "capability/ai": "a78f811b162c770353ab1a634933a89846b978be6b407f60d8cae72a20fa51e2",
+      "capability/aiChat": "1e87596064e5d567863ba63229585b854f297a8867ec562b3f67e43fc8455e7e",
+      "capability/copilot": "444bfe63f0ef47a5ae4500a196fa756a927674cf74dd6e1c04329e5adf932e68",
+      "example/registry/ai-demo": "9d029b174454ff9603ae2f8431a30cf76bd3ab3b603c199a8c9c884da9300472",
+      "example/registry/copilot-demo": "479289ed519c8ab43419a9cef126b94cd98e4832e4f2abd7c5529315de138394",
+      "example/value/ai-value": "a7b97f84b579913f4c5b546d9f3e359314714f4cddd3d0fb09c1bf3a1b8c7a97",
+      "example/value/copilot-value": "9b55145ed2a5e097991f020fec2e86ca8664d611dad525c5a5884f3f01c3ef0f",
+      "export/platejs/./ai": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./ai/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/ai": "bae7c80d9220181f78cf28604abaf21d255a187866f6f629b36aeace8f1ecd43",
+      "ui/ai": "ec3ecb1ecafdcbd45f6a8f5963924770140c711d7e50c98c30aa62b5ab728e86",
+      "ui/ai-menu": "bcb7a74d710d08c085958af01803dbe81c151fbbc1aa3073b9198d204c663512",
+      "ui/ai-toolbar-button": "fa8d3a38d55bae2724eaefdf5402de76ab8a84aece0550173c0caa4935f439a0",
+      "ui/copilot": "8e4880436dd545ed7406ac414967b490e6358aa8878eeaa2aa848cb00af5892a",
+      "ui/use-chat": "83f41de2448a6be508b9da1091b5d8634767b6ef1488733bff1042af879f23c3"
+    },
+    "upstreams": []
+  }
+}

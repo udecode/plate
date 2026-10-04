@@ -303,6 +303,18 @@ export {
 } from '../core/selection-protocol';
 export { createEditorEffect } from '../core/transaction-values';
 export {
+  assertEditorDocumentContainers,
+  EDITOR_DOCUMENT_FIELDS,
+  type EditorDocumentShapeIssue,
+  type EditorRecordIssue,
+  getEditorDocumentShapeIssueMessage,
+  isEnvelopeInput,
+  readDocumentRecord,
+  readEditorDocument,
+  readPersistedEnvelope,
+  rejectEditorRecord,
+} from '../core/document-shape';
+export {
   areEditorJsonValuesEqual,
   assertEditorJsonValue,
   cloneEditorJsonValue,

@@ -3,604 +3,2119 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   existsSync,
+  linkSync,
   mkdirSync,
-  readFileSync,
   readdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const indexPath = 'docs/research/review-index.json';
+import { landed } from '../../.agents/pstack/status.mjs';
+
+export const scopesDir = 'docs/research/review-scopes';
+export const recordsDir = 'docs/research/review-records';
+export const groupsPath = 'docs/research/review-groups.json';
+export const documentsPath = 'docs/research/review-documents.json';
+export const legacyPath = 'docs/research/review-legacy.json';
+export const method = 'best-api-review/history-v4';
+
+export const census = {
+  roots: [
+    'packages',
+    'apps/www/src/registry',
+    'apps/plite',
+    'benchmarks/editor/benchmarks',
+    'tooling/scripts',
+    'tooling/plite',
+    'apps/www/src/app/(app)/examples/plite',
+    'apps/www/tests/browser',
+  ],
+  files: [
+    'package.json',
+    'benchmarks/editor/package.json',
+    'apps/www/playwright.config.ts',
+    'apps/www/package.json',
+  ],
+  extension: /\.(?:[cm]?[jt]sx?|json|css|mdx?|snap|html|txt|ya?ml)$/,
+  exclusions: [
+    {
+      pattern: /\/(?:AGENTS|CLAUDE|README|CHANGELOG)\.md$/,
+      reason: 'Package and workflow prose is context, not a product capability.',
+    },
+    {
+      pattern: /^apps\/www\/src\/registry\/changelog\//,
+      reason: 'Historical release prose is not current feature source.',
+    },
+    { pattern: /\/tsconfig\.tsbuildinfo$/, reason: 'Build cache.' },
+    {
+      pattern: /^apps\/plite\/(out|plite|tmp)\//,
+      reason: 'Static build output, nested proof copies and stress artifacts.',
+    },
+    {
+      pattern: /^apps\/www\/tests\/browser\/docs-sidebar\.spec\.ts$/,
+      reason: 'Documentation-site navigation is not editor proof.',
+    },
+  ],
+};
+
+// Directory digests skip the directories the retired inventory walker skipped,
+// so legacy directory digests stay comparable.
+const skippedDirectories = new Set([
+  'node_modules',
+  '.claude',
+  '.next',
+  '.git',
+  '.turbo',
+  '.tmp',
+  '.cache',
+  'dist',
+  'test-results',
+  'playwright-report',
+]);
+// Legacy drafts hashed these method and package files into records regardless of scope.
+const legacyPolicyInputs = new Set([
+  'package.json',
+  'pnpm-lock.yaml',
+  '.agents/skills/best-api-review/SKILL.md',
+  '.agents/rules/best-api-review.mdc',
+]);
+const isLaw = (path) => path === 'VISION.md' || path.startsWith('docs/vision/');
+
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 const json = (value) => `${JSON.stringify(value, null, 2)}\n`;
 const read = (root, path) => readFileSync(join(root, path), 'utf-8');
-const parse = (root, path) => JSON.parse(read(root, path));
-const compareStrings = (a, b) => a.localeCompare(b);
-const latestRecord = (all, scope) =>
-  all.findLast(
-    (record) => record.scope === scope && record.kind === 'review'
-  ) ??
-  all
-    .filter((record) => record.scope === scope && record.kind === 'historical')
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .at(-1);
+const isDigest = (value) => /^[a-f0-9]{64}$/.test(value ?? '');
+const isText = (value) => typeof value === 'string' && value.trim() !== '';
+const byId = (a, b) => a.id.localeCompare(b.id);
+const bounded = (items, limit) => ({
+  items: items.slice(0, limit),
+  total: items.length,
+});
+const clip = (text = '', limit = 600) =>
+  text.length > limit ? `${text.slice(0, limit - 3)}...` : text;
 
-export function files(root, path, exclusions = []) {
-  if (exclusions.some((item) => new RegExp(item.pattern).test(`${path}/`))) {
-    return [];
+function bySegment(a, b) {
+  const left = a.split('/');
+  const right = b.split('/');
+  for (let i = 0; i < Math.min(left.length, right.length); i++) {
+    if (left[i] !== right[i]) return left[i].localeCompare(right[i]);
   }
-  if (!existsSync(join(root, path))) return [];
-  return readdirSync(join(root, path), { withFileTypes: true })
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .flatMap((entry) => {
-      if (
-        [
-          'node_modules',
-          '.claude',
-          '.next',
-          '.git',
-          '.turbo',
-          '.tmp',
-          '.cache',
-          'dist',
-          'test-results',
-          'playwright-report',
-        ].includes(entry.name)
-      ) {
-        return [];
-      }
-      const child = `${path}/${entry.name}`;
-      return entry.isDirectory()
-        ? files(root, child, exclusions)
-        : entry.isFile()
-          ? [child]
-          : [];
-    });
+  return left.length - right.length;
 }
 
-export function featureId(path) {
-  const parts = path.split('/');
-  if (parts[0] === 'packages') {
-    const pkg = parts[1];
-    if (parts[2] !== 'src') return `${pkg}/proof-and-packaging`;
-    if (pkg === 'platejs' && parts[3] === 'features') {
-      return `platejs/${parts[4]}`;
-    }
-    if (
-      pkg === 'platejs' &&
-      parts[3] === 'code-block' &&
-      parts[4] === 'codemirror'
-    ) {
-      return 'platejs/code-block/codemirror';
-    }
-    if (pkg === 'plitejs' && parts[3] === 'core') {
-      return `plitejs/core/${parts[4].replace(/\.[^.]+$/, '')}`;
-    }
-    if (pkg === 'plitejs' && parts[3] === 'react') {
-      const owner = parts[4] === 'editable' ? `editable/${parts[5]}` : parts[4];
-      return `plitejs/react/${owner.replace(/\.[^.]+$/, '')}`;
-    }
-    if (pkg === 'platejs' && parts[3] === 'lib') {
-      return `platejs/lib/${parts[4].replace(/\.[^.]+$/, '')}`;
-    }
-    if (pkg === 'plitejs' && parts[3] === 'editor') {
-      return `plitejs/editor/${parts[4].replace(/\.[^.]+$/, '')}`;
-    }
-    return `${pkg}/${parts.length > 4 ? parts[3] : 'entrypoints'}`;
-  }
-  if (path.startsWith('apps/www/src/registry/components/editor/')) {
-    return `ui/${parts[6]
-      .replace(/\.(spec|test|slow|lifecycle|keyboard|navigation|type).*$/, '')
-      .replace(/\.[^.]+$/, '')
-      .replace(/-static$/, '')}`;
-  }
-  if (path.startsWith('apps/www/src/registry/examples/')) {
-    if (parts[5] === 'values') {
-      return `example/value/${parts[6] === 'cn' ? parts[7] : parts[6]}`
-        .replace(/\.(spec|test).*$/, '')
-        .replace(/\.[^.]+$/, '');
-    }
-    return `example/registry/${parts[5].replace(/\.(spec|test).*$/, '').replace(/\.[^.]+$/, '')}`;
-  }
-  if (
-    path.startsWith('apps/www/src/registry/lib/') ||
-    path.startsWith('apps/www/src/registry/hooks/')
-  ) {
-    return `registry/${parts[4]}/${parts[5].replace(/\.[^.]+$/, '')}`;
-  }
-  if (path.startsWith('apps/www/src/registry/app/api/')) {
-    return `application/${parts[6]}`;
-  }
-  if (path.startsWith('apps/www/src/app/(app)/examples/plite/_examples/')) {
-    return `example/plite/${parts[8].replace(/\.[^.]+$/, '')}`;
-  }
-  if (path.startsWith('apps/www/src/app/(app)/examples/plite/')) {
-    return 'application/plite-examples';
-  }
-  if (path.startsWith('apps/www/tests/browser/')) {
-    return `browser/${parts[4].replace(/\.spec\.ts$/, '')}`;
-  }
-  if (path.startsWith('apps/www/src/app/api/ai/')) {
-    return `application/ai-${parts[6]}`;
-  }
-  if (path.startsWith('apps/www/src/registry/')) return `registry/${parts[4]}`;
-  if (path.startsWith('apps/plite/')) return 'tooling/browser-proof';
-  if (path.startsWith('benchmarks/')) return 'tooling/performance';
-  return 'tooling/distribution';
+function repoPath(path) {
+  assert.ok(
+    isText(path) && !path.startsWith('/') && !path.split('/').includes('..'),
+    `Expected a repository-relative path: ${path}`
+  );
+  return path;
 }
 
-export function discover(root, index) {
-  const groups = new Map();
-  for (const path of [
-    ...new Set([
-      ...index.inventory.roots.flatMap((dir) =>
-        files(root, dir, index.inventory.exclusions)
-      ),
-      ...(index.inventory.inputs ?? []),
-    ]),
-  ].sort(compareStrings)) {
-    if (!/\.(?:[cm]?[jt]sx?|json|css|mdx?|snap|html|txt|ya?ml)$/.test(path)) {
-      continue;
-    }
-    if (
-      index.inventory.exclusions.some((item) =>
-        new RegExp(item.pattern).test(path)
-      )
-    ) {
-      continue;
-    }
-    const id = featureId(path);
-    if (!groups.has(id)) groups.set(id, []);
-    groups.get(id).push(path);
-  }
-  for (const pkg of readdirSync(join(root, 'packages')).sort(compareStrings)) {
-    const path = `packages/${pkg}/package.json`;
-    if (!existsSync(join(root, path))) continue;
-    const manifest = parse(root, path);
-    for (const entry of Object.keys(manifest.exports ?? {})) {
-      groups.set(`export/${pkg}/${entry}`, [path]);
-    }
-  }
-  const catalogPath = 'packages/platejs/src/utils/plate-keys.ts';
-  if (existsSync(join(root, catalogPath))) {
-    const body = read(root, catalogPath).match(
-      /export const PLUGINS = \{([\s\S]*?)\} as const;/
-    )?.[1];
-    assert.ok(
-      body,
-      'Capability catalog changed shape; reconcile its inventory parser'
-    );
-    const keys = [...body.matchAll(/^\s+(\w+): (["'])[^"']+\2,?$/gm)].map(
-      (match) => match[1]
-    );
-    assert.equal(
-      keys.length,
-      body.split('\n').filter((line) => line.trim()).length,
-      'Unparsed capability declaration'
-    );
-    const sources = [...new Set([...groups.values()].flat())]
+/** Live observation of the working tree, memoized for one command. */
+export function observe(root) {
+  let listed;
+  const digests = new Map();
+  const files = () => {
+    listed ??= execFileSync(
+      'git',
+      ['-C', root, 'ls-files', '-z', '-co', '--exclude-standard'],
+      { encoding: 'utf-8', maxBuffer: 1 << 28 }
+    )
+      .split('\0')
       .filter(
         (path) =>
-          /^(packages|apps\/www\/src\/registry)\//.test(path) &&
-          /\.[jt]sx?$/.test(path)
+          path &&
+          !path
+            .split('/')
+            .slice(0, -1)
+            .some((part) => skippedDirectories.has(part)) &&
+          existsSync(join(root, path))
       )
-      .map((path) => [path, read(root, path)]);
-    for (const key of keys) {
-      const use = new RegExp(`\\bPLUGINS\\.${key}\\b`);
-      groups.set(
-        `capability/${key}`,
-        [
-          catalogPath,
-          ...sources
-            .filter(([path, text]) => path !== catalogPath && use.test(text))
-            .map(([path]) => path),
-        ].sort(compareStrings)
+      .sort(bySegment);
+    return listed;
+  };
+  const fileDigest = (path) => {
+    if (!digests.has(path)) {
+      digests.set(
+        path,
+        existsSync(join(root, path)) && statSync(join(root, path)).isFile()
+          ? hash(readFileSync(join(root, path)))
+          : null
       );
     }
-  }
-  for (const example of pliteExamples(root)) {
-    const id = `example/plite/${example.id}`;
-    groups.set(
-      id,
-      [...new Set([...(groups.get(id) ?? []), ...example.paths])].sort(
-        compareStrings
-      )
+    return digests.get(path);
+  };
+  const under = (directory) => {
+    const prefix = directory.endsWith('/') ? directory : `${directory}/`;
+    return files().filter((path) => path.startsWith(prefix));
+  };
+  const digest = (entry) => {
+    if (!entry.endsWith('/')) return fileDigest(entry);
+    if (!existsSync(join(root, entry))) return null;
+    return hash(
+      under(entry)
+        .map((path) => `${path}\0${fileDigest(path)}`)
+        .join('\n')
     );
-  }
-  return [...groups]
-    .map(([id, paths]) => ({
-      id,
-      paths,
-      count: paths.length,
-      fingerprint: hash(
-        paths
-          .map((path) => `${path}\0${hash(readFileSync(join(root, path)))}`)
-          .join('\n')
-      ),
-    }))
-    .sort((a, b) => a.id.localeCompare(b.id));
+  };
+  return { root, files, under, digest };
 }
 
-export function pliteExamples(root) {
-  const directory = 'apps/www/src/app/(app)/examples/plite';
-  const catalog = `${directory}/plite-example-registry.ts`;
-  if (!existsSync(join(root, catalog))) return [];
-  const loaders = `${directory}/plite-example-loaders.tsx`;
-  const body = read(root, catalog).match(
-    /export const EXAMPLE_NAMES_AND_PATHS = \[([\s\S]*?)\] as const/
-  )?.[1];
-  assert.ok(body, 'Plite example catalog changed shape');
-  const entries = [...body.matchAll(/\['([^']+)', '([^']+)'\]/g)];
-  assert.equal(
-    entries.length,
-    body.split('\n').filter((line) => line.trim()).length,
-    'Unparsed Plite example declaration'
-  );
-  const source = read(root, loaders);
-  const starts = [
-    ...source.matchAll(
-      /^ {2}(?:'([^']+)'|(\w+)): (?:createPliteExampleLoader|dynamic)\(/gm
-    ),
-  ];
-  assert.deepEqual(
-    entries.map((entry) => entry[2]).sort(compareStrings),
-    starts.map((entry) => entry[1] ?? entry[2]).sort(compareStrings),
-    'Plite example catalog and loaders disagree'
-  );
-  return entries.map((entry) => {
-    const i = starts.findIndex((item) => (item[1] ?? item[2]) === entry[2]);
-    const imported = source
-      .slice(starts[i].index, starts[i + 1]?.index)
-      .match(/import\('([^']+)'\)/)?.[1];
-    assert.ok(imported, `Missing loader for ${entry[2]}`);
-    const stem = imported.startsWith('@/')
-      ? `apps/www/src/${imported.slice(2)}`
-      : `${directory}/${imported.replace(/^\.\//, '')}`;
-    const implementation = [`${stem}.tsx`, `${stem}.ts`].find((path) =>
-      existsSync(join(root, path))
-    );
-    assert.ok(implementation, `Missing example implementation: ${entry[2]}`);
+const entryOf = (root, path) =>
+  path.endsWith('/') ||
+  !existsSync(join(root, path)) ||
+  !statSync(join(root, path)).isDirectory()
+    ? path
+    : `${path}/`;
+
+
+function readJson(root, path, warnings, fallback = null) {
+  if (!existsSync(join(root, path))) return { value: fallback, sha256: null };
+  try {
+    const text = read(root, path);
+    return { value: JSON.parse(text), sha256: hash(text) };
+  } catch (error) {
+    warnings.push(`${path}: ${error.message.split('\n')[0]}`);
+    return { value: fallback, sha256: null };
+  }
+}
+
+function jsonFiles(root, directory) {
+  if (!existsSync(join(root, directory))) return [];
+  return readdirSync(join(root, directory))
+    .filter((name) => name.endsWith('.json') && !name.startsWith('.'))
+    .sort()
+    .map((name) => `${directory}/${name}`);
+}
+
+function evidenceOf(raw) {
+  if (raw.inputs) {
     return {
-      id: entry[2],
-      title: entry[1],
-      paths: [catalog, loaders, implementation],
+      inputs: raw.inputs,
+      upstreams: raw.upstreams ?? [],
+      legacyGroups: 0,
     };
-  });
+  }
+  if (!raw.source) return null;
+  const inputs = {};
+  for (const [path, digest] of Object.entries(raw.source.files ?? {})) {
+    if (!legacyPolicyInputs.has(path)) inputs[path] = digest;
+  }
+  for (const [path, digest] of Object.entries(raw.source.directories ?? {})) {
+    inputs[path.endsWith('/') ? path : `${path}/`] = digest;
+  }
+  return {
+    inputs,
+    upstreams: raw.source.upstreams ?? [],
+    legacyGroups: Object.keys(raw.source.features ?? {}).length,
+  };
 }
 
-const directoryFingerprint = (root, path) =>
-  hash(
-    files(root, path)
-      .map((file) => `${file}\0${hash(readFileSync(join(root, file)))}`)
-      .join('\n')
-  );
+function normalize(raw) {
+  const common = {
+    id: raw.id,
+    kind: raw.kind,
+    date: raw.date,
+    summary: raw.summary ?? '',
+    references: raw.references ?? [],
+    evidence: evidenceOf(raw),
+    raw,
+  };
+  if (raw.kind === 'execution') {
+    return {
+      ...common,
+      scopes: raw.scopes ?? [],
+      reviewBasis: raw.reviewBasis ?? [],
+      workKind: raw.workKind,
+      plan: raw.plan?.path ?? raw.plan ?? null,
+      previous: raw.previous ?? [],
+      outcome: raw.outcome,
+      proof: raw.proof ?? { state: 'unknown', evidence: [], limits: '' },
+      // Imported completion claims without a recovered binding never adopt.
+      bound: raw.binding
+        ? raw.binding === 'current'
+        : (raw.reviewBasis ?? []).length > 0,
+    };
+  }
+  return {
+    ...common,
+    scope: raw.scope,
+    question: raw.question,
+    verdict: raw.verdict ?? null,
+    previous: raw.previous ?? null,
+    relation: raw.relation,
+    reconciliation: raw.reconciliation ?? [],
+    callSites: raw.callSites ?? null,
+    alternatives: raw.alternatives ?? [],
+    proofLimits: raw.proofLimits ?? '',
+  };
+}
 
-const inventoryFingerprint = (inventory) =>
-  hash(json(inventory.map(({ id, fingerprint }) => ({ id, fingerprint }))));
+const strings = (value) =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+const optionalStrings = (value) => value === undefined || strings(value);
 
-export function freshness(root, record, inventory = []) {
-  if (!record.source) return 'unknown';
-  const inputs = record.source.files ?? {};
-  const features = record.source.features ?? {};
-  if (
-    !Object.keys(inputs).length &&
-    !Object.keys(features).length &&
-    !Object.keys(record.source.directories ?? {}).length
-  ) {
-    return 'unknown';
+const isObject = (value) =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+const stringMap = (value) =>
+  isObject(value) &&
+  Object.values(value).every((item) => typeof item === 'string');
+const upstreamsShape = (value) =>
+  value === undefined ||
+  (Array.isArray(value) &&
+    value.every(
+      (item) =>
+        isObject(item) &&
+        typeof item.checkout === 'string' &&
+        typeof item.commit === 'string' &&
+        (item.files === undefined || stringMap(item.files))
+    ));
+
+/** Why a parsed record cannot be read, or null. Readers and `record` share it. */
+function recordShape(raw) {
+  if (!isObject(raw) || typeof raw.id !== 'string') return 'id is not a string';
+  if (typeof raw.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw.date)) {
+    return 'date is not YYYY-MM-DD';
   }
-  if (
-    Object.entries(inputs).some(
-      ([path, digest]) =>
-        !existsSync(join(root, path)) ||
-        hash(readFileSync(join(root, path))) !== digest
-    )
-  ) {
-    return 'stale';
-  }
-  if (
-    Object.entries(features).some(
-      ([id, digest]) =>
-        inventory.find((item) => item.id === id)?.fingerprint !== digest
-    )
-  ) {
-    return 'stale';
-  }
-  if (
-    Object.entries(record.source.directories ?? {}).some(
-      ([path, digest]) =>
-        !existsSync(join(root, path)) ||
-        directoryFingerprint(root, path) !== digest
-    )
-  ) {
-    return 'stale';
-  }
-  for (const upstream of record.source.upstreams ?? []) {
-    if (!existsSync(upstream.checkout)) return 'unknown';
-    try {
-      if (
-        execFileSync('git', ['-C', upstream.checkout, 'rev-parse', 'HEAD'], {
-          encoding: 'utf-8',
-          stdio: ['ignore', 'pipe', 'ignore'],
-        }).trim() !== upstream.commit
-      ) {
-        return 'stale';
-      }
-    } catch {
-      return 'unknown';
-    }
+  if (raw.kind === 'execution') {
+    if (!strings(raw.scopes)) return 'scopes is not a list';
+    if (!optionalStrings(raw.reviewBasis)) return 'reviewBasis is not a list';
+    if (!optionalStrings(raw.previous)) return 'previous is not a list';
     if (
-      Object.entries(upstream.files).some(
-        ([path, digest]) =>
-          !existsSync(join(upstream.checkout, path)) ||
-          hash(readFileSync(join(upstream.checkout, path))) !== digest
+      raw.proof !== undefined &&
+      !(
+        isObject(raw.proof) &&
+        (raw.proof.evidence === undefined ||
+          (Array.isArray(raw.proof.evidence) &&
+            raw.proof.evidence.every(
+              (item) => isObject(item) && typeof item.path === 'string'
+            )))
       )
     ) {
-      return 'stale';
+      return 'proof.evidence is not a list of paths';
+    }
+  } else if (['review', 'historical'].includes(raw.kind)) {
+    if (typeof raw.scope !== 'string') return 'scope is not a string';
+    if (![null, undefined].includes(raw.previous) && typeof raw.previous !== 'string') {
+      return 'previous is not a record id';
+    }
+    if (
+      raw.reconciliation !== undefined &&
+      !(
+        Array.isArray(raw.reconciliation) &&
+        raw.reconciliation.every(
+          (entry) => isObject(entry) && typeof entry.record === 'string'
+        )
+      )
+    ) {
+      return 'reconciliation is not a list of records';
+    }
+  } else return `unknown kind ${raw.kind}`;
+  if (raw.inputs !== undefined && !stringMap(raw.inputs)) {
+    return 'inputs is not a map of digests';
+  }
+  if (!upstreamsShape(raw.upstreams)) return 'upstreams is malformed';
+  if (raw.source !== undefined && raw.source !== null) {
+    if (
+      !isObject(raw.source) ||
+      !['files', 'directories', 'features'].every(
+        (key) => raw.source[key] === undefined || stringMap(raw.source[key])
+      ) ||
+      !upstreamsShape(raw.source.upstreams)
+    ) {
+      return 'source is malformed';
     }
   }
-  return 'matching';
+  if (!optionalStrings(raw.references)) return 'references is not a list';
+  return null;
 }
 
-export function draftReview(root, index, scopeId) {
-  const scope = index.scopes.find((item) => item.id === scopeId);
-  assert.ok(scope, 'Unknown scope');
-  const members = new Set(
-    index.features
-      .filter((feature) => feature.scope === scopeId)
-      .map((feature) => feature.id)
-  );
-  const all = records(root, index);
-  const prior = latestRecord(all, scopeId);
-  const previous = prior?.id ?? null;
-  const paths = [
-    ...new Set([
-      ...scope.owners,
-      ...scope.consumers,
-      ...scope.proof,
-      ...(scope.evidenceInputs ?? []),
-      'VISION.md',
-      'docs/vision/common.md',
-      'package.json',
-      'pnpm-lock.yaml',
-      '.agents/skills/best-api-review/SKILL.md',
-      '.agents/rules/best-api-review.mdc',
-    ]),
-  ].filter((path) => path !== scope.decision);
-  return {
-    id: '',
-    scope: scopeId,
-    kind: 'review',
-    date: new Date().toISOString().slice(0, 10),
-    question: scope.question,
-    model: null,
-    method: 'best-api-review/history-v3',
-    trigger: '',
-    requirements: [],
-    evidenceReuse: '',
-    summary: '',
-    verdict: null,
-    callSites: { current: '', proposed: '' },
-    previous,
-    relation: previous ? 'reaffirms' : 'initial',
-    reconciliation: [
-      ...(prior ? [prior] : []),
-      ...all
-        .slice(prior ? all.indexOf(prior) + 1 : 0)
-        .filter(
-          (record) =>
-            record.kind === 'execution' &&
-            record.binding === 'current' &&
-            belongsTo(record, scopeId)
-        ),
-    ].map((record) => ({
-      record: record.id,
-      question: record.question ?? scope.question,
-      action: 'retains',
-      reason: '',
-    })),
-    alternatives: [],
-    proofLimits: '',
-    references: [],
-    source: {
-      files: Object.fromEntries(
-        paths
-          .filter(
-            (path) => existsSync(join(root, path)) && !readdirSafe(root, path)
-          )
-          .map((path) => [path, hash(readFileSync(join(root, path)))])
-      ),
-      directories: Object.fromEntries(
-        paths
-          .filter(
-            (path) => existsSync(join(root, path)) && readdirSafe(root, path)
-          )
-          .map((path) => [path, directoryFingerprint(root, path)])
-      ),
-      features: Object.fromEntries(
-        discover(root, index)
-          .filter((item) => members.has(item.id))
-          .map((item) => [item.id, item.fingerprint])
-      ),
-      upstreams: [],
-    },
-  };
-}
-
-const capturedDraftFields = new Set([
-  'binding',
-  'kind',
-  'method',
-  'plan',
-  'previous',
-  'question',
-  'reviewBasis',
-  'scope',
-  'scopes',
-  'source',
-  'workKind',
-]);
-
-function carryDraft(fresh, prior) {
-  const authored = Object.entries(prior).filter(
-    ([key]) => key in fresh && !capturedDraftFields.has(key)
-  );
-  const entries = new Map(
-    (prior.reconciliation ?? []).map((entry) => [entry.record, entry])
-  );
-  return {
-    ...fresh,
-    ...Object.fromEntries(authored),
-    ...(fresh.reconciliation
-      ? {
-          reconciliation: fresh.reconciliation.map((entry) => {
-            const carried = entries.get(entry.record);
-            return carried
-              ? { ...entry, action: carried.action, reason: carried.reason }
-              : entry;
-          }),
-        }
-      : {}),
-  };
-}
-
-function readdirSafe(root, path) {
-  try {
-    readdirSync(join(root, path));
-    return true;
-  } catch {
-    return false;
+function scopeShape(scope) {
+  if (typeof scope?.id !== 'string') return 'id is not a string';
+  for (const key of [
+    'owners',
+    'members',
+    'consumers',
+    'proof',
+    'evidenceInputs',
+    'dependsOn',
+    'relatedScopes',
+    'historyCandidates',
+  ]) {
+    if (!optionalStrings(scope[key])) return `${key} is not a list of strings`;
   }
+  return null;
 }
 
-export function orderScopes(scopes) {
-  const result = [];
-  const pending = [...scopes];
-  while (pending.length) {
-    const ready = pending.filter((scope) =>
-      scope.dependsOn.every((id) => result.some((item) => item.id === id))
+/**
+ * Reads every ledger file. A file that does not parse or has the wrong shape
+ * becomes a warning, so another session's half-written file does not stop this
+ * command; `check` reports it.
+ */
+export function loadLedger(root) {
+  const warnings = [];
+  const scopes = new Map();
+  for (const path of jsonFiles(root, scopesDir)) {
+    const scope = readJson(root, path, warnings).value;
+    if (!scope) continue;
+    const problem = scopeShape(scope);
+    if (problem) {
+      warnings.push(`${path}: ${problem}`);
+      continue;
+    }
+    if (scope.id !== path.slice(scopesDir.length + 1, -5)) {
+      warnings.push(`${path}: id ${scope.id} differs from its file name`);
+      continue;
+    }
+    scopes.set(scope.id, scope);
+  }
+  const topLevel = (path, fallback, valid, kind) => {
+    const { value } = readJson(root, path, warnings, fallback);
+    if (valid(value)) return value;
+    warnings.push(`${path}: not ${kind}`);
+    return fallback;
+  };
+  const groupFile = topLevel(groupsPath, {}, isObject, 'an object');
+  const groups = new Map(
+    Object.entries(groupFile).filter(([id, group]) => {
+      if (isObject(group)) return true;
+      warnings.push(`${groupsPath}: group ${id} is not an object`);
+      return false;
+    })
+  );
+  const listed = topLevel(documentsPath, [], Array.isArray, 'a list');
+  const documents = listed.filter((document) => {
+    const valid =
+      typeof document?.path === 'string' &&
+      strings(document.scopes) &&
+      optionalStrings(document.reviewBasis);
+    if (!valid) warnings.push(`${documentsPath}: malformed entry ${JSON.stringify(document)?.slice(0, 80)}`);
+    return valid;
+  });
+  const manifest = topLevel(legacyPath, [], Array.isArray, 'a list');
+  const legacy = new Map();
+  for (const [position, item] of manifest.entries()) {
+    if (typeof item?.id === 'string' && isDigest(item.sha256)) {
+      legacy.set(item.id, { ...item, position });
+    } else warnings.push(`${legacyPath}: malformed entry at ${position}`);
+  }
+  const records = new Map();
+  for (const path of jsonFiles(root, recordsDir)) {
+    const { value: raw, sha256 } = readJson(root, path, warnings);
+    if (!raw) continue;
+    const problem = recordShape(raw);
+    if (problem) {
+      warnings.push(`${path}: malformed record, ${problem}`);
+      continue;
+    }
+    if (raw.id !== path.slice(recordsDir.length + 1, -5)) {
+      warnings.push(`${path}: id ${raw.id} differs from its file name`);
+      continue;
+    }
+    records.set(raw.id, { ...normalize(raw), sha256 });
+  }
+  const reviews = new Map();
+  const executions = new Map();
+  for (const record of records.values()) {
+    if (record.kind === 'execution') {
+      for (const scope of record.scopes) {
+        if (!executions.has(scope)) executions.set(scope, []);
+        executions.get(scope).push(record);
+      }
+    } else {
+      if (!reviews.has(record.scope)) reviews.set(record.scope, []);
+      reviews.get(record.scope).push(record);
+    }
+  }
+  const byDate = (a, b) => a.date.localeCompare(b.date) || byId(a, b);
+  for (const list of [...reviews.values(), ...executions.values()]) {
+    list.sort(byDate);
+  }
+  const membership = new Map();
+  for (const scope of scopes.values()) {
+    for (const entry of scope.members ?? []) {
+      if (!membership.has(entry)) membership.set(entry, new Set());
+      membership.get(entry).add(scope.id);
+    }
+  }
+  return {
+    root,
+    scopes,
+    groups,
+    documents,
+    records,
+    reviews,
+    executions,
+    membership,
+    legacy,
+    warnings,
+  };
+}
+
+
+/**
+ * Reviews of a scope that no other review of that scope names as previous or
+ * reconciles. Imported historical records only stand in when no review exists.
+ */
+export function headsOf(ledger, scopeId) {
+  const all = ledger.reviews.get(scopeId) ?? [];
+  const reviews = all.filter((record) => record.kind === 'review');
+  if (!reviews.length) return all.slice(-1);
+  const named = new Set();
+  for (const review of reviews) {
+    if (review.previous) named.add(review.previous);
+    for (const entry of review.reconciliation) named.add(entry.record);
+  }
+  return reviews.filter((review) => !named.has(review.id));
+}
+
+const latest = (heads) => heads.at(-1) ?? null;
+
+const adopting = (execution) =>
+  execution.bound &&
+  ['implementation', 'workflow'].includes(execution.workKind);
+
+/**
+ * The implementation or workflow executions that currently stand for a review:
+ * a later execution supersedes the ones it names as previous, and imported
+ * executions supersede each other in their original append order.
+ */
+export function effectiveExecutions(ledger, reviewId) {
+  const review = ledger.records.get(reviewId);
+  const candidates = (ledger.executions.get(review?.scope) ?? []).filter(
+    (record) => adopting(record) && record.reviewBasis.includes(reviewId)
+  );
+  const superseded = new Set(candidates.flatMap((record) => record.previous));
+  const legacy = candidates
+    .filter((record) => ledger.legacy.has(record.id))
+    .sort(
+      (a, b) =>
+        ledger.legacy.get(a.id).position - ledger.legacy.get(b.id).position
     );
-    assert.ok(
-      ready.length,
-      'Review dependencies contain a cycle or missing scope'
+  for (const record of legacy.slice(0, -1)) superseded.add(record.id);
+  return candidates.filter((record) => !superseded.has(record.id));
+}
+
+export function adoptionOf(ledger, review) {
+  const effective = effectiveExecutions(ledger, review.id);
+  return effective.length === 1 && effective[0].outcome === 'completed'
+    ? effective[0]
+    : null;
+}
+
+/**
+ * A plan's review association. Front matter wins; a classified document entry
+ * covers historical plans without it.
+ */
+export function associationOf(root, ledger, path) {
+  const text = read(root, path);
+  const meta = documentMetadata(text);
+  if (['review_scopes', 'review_basis', 'work_kind'].some((key) => Object.hasOwn(meta, key))) {
+    const invalid = [
+      ...(Array.isArray(meta.review_scopes) ? [] : ['review_scopes']),
+      ...(Object.hasOwn(meta, 'review_basis') && !Array.isArray(meta.review_basis)
+        ? ['review_basis']
+        : []),
+      ...(meta.work_kind && !workKinds.includes(meta.work_kind)
+        ? ['work_kind']
+        : []),
+    ];
+    return {
+      path,
+      scopes: Array.isArray(meta.review_scopes) ? meta.review_scopes : [],
+      reviewBasis: Array.isArray(meta.review_basis) ? meta.review_basis : [],
+      workKind: meta.work_kind ?? null,
+      ...planStatus(text),
+      association: 'plan-metadata',
+      ...(invalid.length ? { invalid } : {}),
+    };
+  }
+  const document = ledger.documents.find(
+    (item) =>
+      item.path === path &&
+      item.kind === 'plan' &&
+      !['candidate', 'rejected'].includes(item.disposition)
+  );
+  if (!document) return null;
+  const invalid =
+    document.workKind && !workKinds.includes(document.workKind)
+      ? ['workKind']
+      : [];
+  return {
+    path,
+    scopes: document.scopes,
+    reviewBasis: document.reviewBasis ?? [],
+    workKind: document.workKind ?? null,
+    ...planStatus(text),
+    association: 'classified-document',
+    ...(invalid.length ? { invalid } : {}),
+  };
+}
+
+/** Plans that declare review metadata, plus classified historical plans. */
+export function plansOf(root, ledger) {
+  let declared = [];
+  try {
+    declared = execFileSync(
+      'git',
+      [
+        '-C',
+        root,
+        'grep',
+        '-l',
+        '--untracked',
+        '-E',
+        '^review_scopes:',
+        '--',
+        'docs/plans/*.md',
+      ],
+      { encoding: 'utf-8' }
+    )
+      .split('\n')
+      .filter(Boolean);
+  } catch (error) {
+    if (error.status !== 1) throw error;
+  }
+  const paths = new Set([
+    ...declared,
+    ...ledger.documents
+      .filter((document) => document.kind === 'plan')
+      .map((document) => document.path),
+  ]);
+  return [...paths]
+    .filter((path) => existsSync(join(root, path)))
+    .map((path) => associationOf(root, ledger, path))
+    .filter(Boolean)
+    .sort((a, b) => b.path.localeCompare(a.path));
+}
+
+/**
+ * A plan's lifecycle labels. It counts as landed only when every label is a
+ * landed word, so a reopened Status beside an old completion is not landed.
+ */
+export function planStatus(text) {
+  const labels = [
+    ...text.matchAll(
+      /^(?:[-*][ \t]+)?(?:\*\*)?(?:[Ss]tatus|goal_status)(?:\*\*)?:[ \t]*(\S.*)$/gm
+    ),
+    ...text.matchAll(/^[Ss]tatus:[ \t]*\r?\n[ \t]*-[ \t]+(.+)$/gm),
+  ].map((match) => match[1].replaceAll('**', '').trim());
+  const verdicts = new Set(labels.map((label) => landed(label)));
+  return {
+    status: labels[0] ?? '',
+    landed: verdicts.size === 1 && verdicts.has(true),
+    ...(verdicts.size > 1 ? { conflict: labels } : {}),
+  };
+}
+
+/** The open state of one scope, derived from its records and plans. */
+export function openState(ledger, scopeId, plans) {
+  const heads = headsOf(ledger, scopeId);
+  if (heads.length > 1) {
+    return { open: 'fork', heads: heads.map((review) => review.id) };
+  }
+  const head = heads[0];
+  if (!head?.verdict) return { open: 'unreviewed', head: head?.id ?? null };
+  if (head.verdict === 'stop') return { open: null, head: head.id, by: 'stop' };
+  if (head.verdict === 'defer') return { open: 'deferred', head: head.id };
+  const adopted = adoptionOf(ledger, head);
+  if (adopted) return { open: null, head: head.id, by: adopted.id };
+  const recorded = new Set(
+    (ledger.executions.get(scopeId) ?? []).map((execution) => execution.plan)
+  );
+  const unbound = plans
+    .filter(
+      (plan) =>
+        plan.scopes.includes(scopeId) &&
+        plan.reviewBasis.includes(head.id) &&
+        plan.landed &&
+        !recorded.has(plan.path)
+    )
+    .map((plan) => plan.path);
+  if (unbound.length) {
+    return { open: 'pursue-unbound', head: head.id, unbound };
+  }
+  const started = (ledger.executions.get(scopeId) ?? []).some((execution) =>
+    execution.reviewBasis.includes(head.id)
+  );
+  return {
+    open: 'pursue-not-adopted',
+    head: head.id,
+    progress: started ? 'in-progress' : 'none',
+  };
+}
+
+/** Records a new review of the scope must reconcile, given its previous review. */
+export function requiredReconciliation(ledger, scopeId, previousId) {
+  const reviews = ledger.reviews.get(scopeId) ?? [];
+  const reconciled = new Set(
+    reviews.flatMap((review) =>
+      review.reconciliation.map((entry) => entry.record)
+    )
+  );
+  return [
+    ...new Set([
+      ...(previousId ? [previousId] : []),
+      ...headsOf(ledger, scopeId)
+        .map((review) => review.id)
+        .filter((id) => id !== previousId),
+      ...(ledger.executions.get(scopeId) ?? [])
+        .filter(
+          (execution) => execution.bound && !reconciled.has(execution.id)
+        )
+        .map((execution) => execution.id),
+    ]),
+  ];
+}
+
+export function owningScopes(ledger, path) {
+  const owners = new Set(ledger.membership.get(path) ?? []);
+  const parts = path.split('/');
+  for (let i = 1; i < parts.length; i++) {
+    for (const id of ledger.membership.get(`${parts.slice(0, i).join('/')}/`) ??
+      []) {
+      owners.add(id);
+    }
+  }
+  return [...owners].sort();
+}
+
+/**
+ * Review units in queue order: dependencies first, AI-last, then payoff.
+ * Read commands get a usable order despite a dangling dependency or a cycle,
+ * reported in ledger.warnings; `strict` throws instead, for `check`.
+ */
+export function orderUnits(ledger, { strict = false } = {}) {
+  const problem = (message) => {
+    assert.ok(!strict, message);
+    if (!ledger.warnings.includes(message)) ledger.warnings.push(message);
+  };
+  const rank = new Map();
+  const waiting = [...ledger.scopes.values()];
+  while (waiting.length) {
+    const ready = waiting.filter((scope) =>
+      (scope.dependsOn ?? []).every(
+        (id) => rank.has(id) || !ledger.scopes.has(id)
+      )
     );
+    if (!ready.length) {
+      problem(
+        `Review dependencies contain a cycle: ${waiting.map((scope) => scope.id).join(', ')}`
+      );
+      ready.push(...waiting);
+    }
     ready.sort(
       (a, b) =>
-        Number(a.last) - Number(b.last) ||
-        b.opportunity.score - a.opportunity.score ||
+        (b.opportunity?.score ?? 0) - (a.opportunity?.score ?? 0) ||
         a.id.localeCompare(b.id)
     );
-    const next = ready[0];
-    assert.ok(
-      !next.last || pending.every((scope) => scope.last),
-      'AI-last constraint conflicts with dependencies'
+    for (const scope of ready) {
+      rank.set(scope.id, rank.size);
+      waiting.splice(waiting.indexOf(scope), 1);
+    }
+  }
+  const scopes = [...ledger.scopes.values()].sort(
+    (a, b) => rank.get(a.id) - rank.get(b.id)
+  );
+  const unitOf = (scope) => scope.group ?? scope.id;
+  const units = new Map();
+  for (const scope of scopes) {
+    const id = unitOf(scope);
+    if (!units.has(id)) {
+      const group = scope.group ? ledger.groups.get(scope.group) : null;
+      units.set(id, {
+        id,
+        title: group?.title ?? scope.title,
+        scopes: [],
+        dependsOn: new Set(),
+        last: false,
+        score: 0,
+      });
+    }
+    const unit = units.get(id);
+    unit.scopes.push(scope.id);
+    unit.last ||= scope.last;
+    unit.score = Math.max(unit.score, scope.opportunity?.score ?? 0);
+    for (const dependency of scope.dependsOn ?? []) {
+      const target = ledger.scopes.get(dependency);
+      if (!target) problem(`Unknown dependency of ${scope.id}: ${dependency}`);
+      else if (unitOf(target) !== id) unit.dependsOn.add(unitOf(target));
+    }
+  }
+  const result = [];
+  const pending = [...units.values()];
+  while (pending.length) {
+    const ready = pending.filter((unit) =>
+      [...unit.dependsOn].every((id) => result.some((item) => item.id === id))
     );
-    result.push(next);
+    const rank = (a, b) =>
+      Number(a.last) - Number(b.last) ||
+      b.score - a.score ||
+      a.id.localeCompare(b.id);
+    let next = ready.sort(rank)[0];
+    if (!next || (next.last && pending.some((unit) => !unit.last))) {
+      problem('Review dependencies contain a cycle or depend on an AI-last scope');
+      next = pending.sort(rank)[0];
+    }
+    result.push({ ...next, dependsOn: [...next.dependsOn] });
     pending.splice(pending.indexOf(next), 1);
   }
   return result;
 }
 
-export function reviewQueue(index) {
-  orderScopes(index.scopes);
-  const scopes = new Map(index.scopes.map((scope) => [scope.id, scope]));
-  const groups = index.reviewGroups ?? [];
-  const membership = new Map();
-  const ids = new Set(scopes.keys());
 
-  for (const group of groups) {
-    assert.ok(
-      /^[a-z0-9][a-z0-9-]+$/.test(group.id) && !ids.has(group.id),
-      `Invalid or duplicate review group: ${group.id}`
-    );
-    ids.add(group.id);
-    assert.ok(
-      group.title?.trim() &&
-        group.reason?.trim() &&
-        Array.isArray(group.scopes) &&
-        group.scopes.length > 1,
-      `Incomplete review group: ${group.id}`
-    );
-    for (const id of group.scopes) {
-      assert.ok(scopes.has(id), `Unknown review group member: ${id}`);
-      assert.ok(!membership.has(id), `Repeated review group member: ${id}`);
-      membership.set(id, group.id);
+/** Source and law freshness of a record against the live tree. Matching is not behavior proof. */
+export function freshness(tree, record) {
+  const evidence = record.evidence;
+  const result = {
+    state: 'unknown',
+    changed: [],
+    missing: [],
+    law: { changed: [] },
+    legacyGroups: evidence?.legacyGroups ?? 0,
+    upstream: null,
+  };
+  if (!evidence) return { ...result, reason: 'no captured source' };
+  const inputs = Object.entries(evidence.inputs);
+  if (record.kind === 'execution') {
+    for (const item of record.proof.evidence ?? []) {
+      if (item.sha256) inputs.push([item.path, item.sha256]);
     }
   }
-
-  const units = [
-    ...groups,
-    ...index.scopes
-      .filter((scope) => !membership.has(scope.id))
-      .map((scope) => ({
-        id: scope.id,
-        title: scope.title,
-        scopes: [scope.id],
-      })),
-  ].map((unit) => {
-    const members = unit.scopes.map((id) => scopes.get(id));
-    const dependsOn = [
-      ...new Set(
-        members.flatMap((scope) =>
-          scope.dependsOn.map((id) => membership.get(id) ?? id)
-        )
-      ),
-    ].filter((id) => id !== unit.id);
-
-    return {
-      ...unit,
-      dependsOn,
-      last: members.some((scope) => scope.last),
-      opportunity: {
-        score: Math.max(...members.map((scope) => scope.opportunity.score)),
-      },
-      reviewed: members.filter((scope) => scope.review === 'reviewed').length,
-      pending: members.filter((scope) => scope.review !== 'reviewed').length,
-    };
-  });
-
-  return orderScopes(units);
-}
-
-function localPath(root, path, requireExists = true) {
-  assert.ok(
-    typeof path === 'string' &&
-      path &&
-      !path.startsWith('/') &&
-      !path.split('/').includes('..'),
-    `Expected repository-relative path: ${path}`
-  );
-  if (requireExists) {
-    assert.ok(existsSync(join(root, path)), `Missing evidence: ${path}`);
+  for (const [path, recorded] of inputs) {
+    const current = tree.digest(path);
+    if (current === recorded) continue;
+    if (isLaw(path)) result.law.changed.push(path);
+    else if (current === null) result.missing.push(path);
+    else result.changed.push(path);
   }
+  for (const upstream of evidence.upstreams) {
+    result.upstream = upstreamState(upstream, result.upstream);
+  }
+  const moved =
+    result.changed.length ||
+    result.missing.length ||
+    result.upstream === 'stale';
+  result.state = moved
+    ? 'stale'
+    : inputs.length === 0 ||
+        result.legacyGroups > 0 ||
+        result.upstream === 'unknown'
+      ? 'unknown'
+      : 'matching';
+  result.law.state = result.law.changed.length ? 'moved' : 'unchanged';
+  return result;
 }
 
-const workKinds = new Set([
+function upstreamState(upstream, previous) {
+  if (previous === 'stale') return previous;
+  if (!existsSync(upstream.checkout)) return 'unknown';
+  let head;
+  try {
+    head = execFileSync(
+      'git',
+      ['-C', upstream.checkout, 'rev-parse', 'HEAD'],
+      { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }
+    ).trim();
+  } catch {
+    return 'unknown';
+  }
+  const moved =
+    head !== upstream.commit ||
+    Object.entries(upstream.files ?? {}).some(
+      ([path, digest]) =>
+        !existsSync(join(upstream.checkout, path)) ||
+        hash(readFileSync(join(upstream.checkout, path))) !== digest
+    );
+  return moved ? 'stale' : (previous ?? 'matching');
+}
+
+
+function headSummary(review) {
+  return review
+    ? {
+        id: review.id,
+        date: review.date,
+        verdict: review.verdict,
+        relation: review.relation,
+        summary: clip(review.summary),
+        ...(review.callSites ? { callSites: review.callSites } : {}),
+      }
+    : null;
+}
+
+function briefFreshness(state) {
+  return {
+    state: state.state,
+    changed: bounded(state.changed, 5),
+    missing: bounded(state.missing, 5),
+    lawMoved: bounded(state.law.changed, 5),
+    ...(state.legacyGroups ? { legacyGroups: state.legacyGroups } : {}),
+    ...(state.upstream ? { upstream: state.upstream } : {}),
+  };
+}
+
+function unresolvedCandidates(ledger, scope) {
+  const classified = new Set(
+    ledger.documents
+      .filter(
+        (document) =>
+          document.disposition !== 'candidate' &&
+          document.scopes.includes(scope.id)
+      )
+      .map((document) => document.path)
+  );
+  return [
+    ...new Set([
+      ...(scope.historyCandidates ?? []),
+      ...ledger.documents
+        .filter(
+          (document) =>
+            document.disposition === 'candidate' &&
+            document.scopes.includes(scope.id)
+        )
+        .map((document) => document.path),
+    ]),
+  ].filter((path) => !classified.has(path));
+}
+
+function compact(ledger, tree, plans, scope) {
+  const state = openState(ledger, scope.id, plans);
+  const head = latest(headsOf(ledger, scope.id));
+  const executions = ledger.executions.get(scope.id) ?? [];
+  const scopePlans = plans.filter((plan) => plan.scopes.includes(scope.id));
+  const documents = ledger.documents.filter(
+    (document) =>
+      document.scopes.includes(scope.id) &&
+      !['candidate', 'rejected'].includes(document.disposition)
+  );
+  return {
+    id: scope.id,
+    title: scope.title,
+    question: scope.question,
+    ...(scope.group ? { group: scope.group } : {}),
+    open: state,
+    head: headSummary(head),
+    freshness: head ? briefFreshness(freshness(tree, head)) : null,
+    executions: bounded(
+      executions
+        .slice()
+        .reverse()
+        .map((execution) => ({
+          id: execution.id,
+          date: execution.date,
+          outcome: execution.outcome,
+          workKind: execution.workKind,
+          namesHead: Boolean(head && execution.reviewBasis.includes(head.id)),
+        })),
+      3
+    ),
+    plans: bounded(
+      scopePlans.map((plan) => ({
+        path: plan.path,
+        status: plan.status,
+        reviewBasis: plan.reviewBasis,
+      })),
+      5
+    ),
+    documents: bounded(
+      documents.map((document) => ({
+        path: document.path,
+        kind: document.kind,
+        disposition: document.disposition,
+      })),
+      3
+    ),
+    candidates: bounded(unresolvedCandidates(ledger, scope), 5),
+    related: (scope.relatedScopes ?? []).map((id) => ({
+      id,
+      verdict: latest(headsOf(ledger, id))?.verdict ?? null,
+      open: openState(ledger, id, plans).open,
+    })),
+    decision: scope.decision ?? null,
+    scopeFile: `${scopesDir}/${scope.id}.json`,
+    detail: `node tooling/scripts/review-ledger.mjs lookup ${scope.id} --detail`,
+  };
+}
+
+function detailed(ledger, tree, plans, scope) {
+  const history = [
+    ...(ledger.reviews.get(scope.id) ?? []),
+    ...(ledger.executions.get(scope.id) ?? []),
+  ].sort((a, b) => a.date.localeCompare(b.date) || byId(a, b));
+  return {
+    ...compact(ledger, tree, plans, scope),
+    scope,
+    history: history.map((record) => ({
+      ...record.raw,
+      freshness: freshness(tree, record),
+    })),
+    plans: plans.filter((plan) => plan.scopes.includes(scope.id)),
+    documents: ledger.documents.filter((document) =>
+      document.scopes.includes(scope.id)
+    ),
+    candidates: unresolvedCandidates(ledger, scope),
+    executionsTotal: (ledger.executions.get(scope.id) ?? []).length,
+  };
+}
+
+const lookupLimit = 10;
+
+export function lookup(root, query, { detail = false } = {}) {
+  assert.ok(isText(query), 'Supply a scope, group, path or search term');
+  const ledger = loadLedger(root);
+  const tree = observe(root);
+  const plans = plansOf(root, ledger);
+  const needle = query.toLowerCase();
+  const scopes = [...ledger.scopes.values()].sort(byId);
+  const legacy = legacyGroups(ledger);
+  const matchesAny = (texts) =>
+    texts.some((text) => text.toLowerCase().includes(needle));
+  const path = query.replace(/^\.\//, '');
+  const pathLike = path.includes('/') && !path.includes(' ');
+  const steps = [
+    () => (ledger.scopes.has(needle) ? [ledger.scopes.get(needle)] : []),
+    () => scopes.filter((scope) => scope.group === needle),
+    () => scopes.filter((scope) => legacy.get(scope.id)?.has(query)),
+    () => {
+      if (!pathLike) return [];
+      const owners = new Set(owningScopes(ledger, path));
+      return scopes.filter((scope) => owners.has(scope.id));
+    },
+    () =>
+      pathLike && !inCensus(path)
+        ? scopes.filter((scope) =>
+            entriesOf(scope).some(
+              (entry) =>
+                entry === path || (entry.endsWith('/') && path.startsWith(entry))
+            )
+          )
+        : [],
+    () =>
+      scopes.filter((scope) =>
+        matchesAny([
+          scope.id,
+          scope.title,
+          scope.question,
+          ...(legacy.get(scope.id) ?? []),
+        ])
+      ),
+    () => scopes.filter((scope) => matchesAny(entriesOf(scope))),
+  ];
+  let matched = [];
+  for (const step of steps) {
+    matched = step();
+    if (matched.length) break;
+  }
+  if (!matched.length && pathLike && inCensus(path)) {
+    const directory = path.slice(0, path.lastIndexOf('/') + 1);
+    const siblings = tree
+      .under(directory)
+      .filter((file) => !file.slice(directory.length).includes('/'))
+      .flatMap((file) => owningScopes(ledger, file));
+    const counts = Object.entries(Object.groupBy(siblings, (id) => id))
+      .sort((x, y) => y[1].length - x[1].length)
+      .map(([id, list]) => `${id} (${list.length})`);
+    throw new Error(
+      `No scope owns ${path}.${counts.length ? ` Files beside it belong to: ${counts.join(', ')}.` : ''} Add it to "members" in ${scopesDir}/<scope>.json.`
+    );
+  }
+  assert.ok(matched.length, `No scope, group or path matches: ${query}`);
+  const shown = matched
+    .slice(0, lookupLimit)
+    .map((scope) => (detail ? detailed : compact)(ledger, tree, plans, scope));
+  return matched.length > lookupLimit
+    ? [
+        ...shown,
+        {
+          omitted: matched.length - lookupLimit,
+          narrow: 'Use a scope id, a path or a longer term',
+        },
+      ]
+    : shown;
+}
+
+const entriesOf = (scope) => [
+  ...(scope.owners ?? []),
+  ...(scope.members ?? []),
+  ...(scope.consumers ?? []),
+  ...(scope.proof ?? []),
+  ...(scope.evidenceInputs ?? []),
+];
+
+/** Retired feature-group ids each scope's records bound, so old names still resolve. */
+function legacyGroups(ledger) {
+  const groups = new Map();
+  for (const record of ledger.records.values()) {
+    if (record.kind === 'execution') continue;
+    const ids = Object.keys(record.raw.source?.features ?? {});
+    if (!ids.length) continue;
+    if (!groups.has(record.scope)) groups.set(record.scope, new Set());
+    for (const id of ids) groups.get(record.scope).add(id);
+  }
+  return groups;
+}
+
+export function status(root) {
+  const ledger = loadLedger(root);
+  const plans = plansOf(root, ledger);
+  const states = new Map(
+    [...ledger.scopes.keys()].map((id) => [id, openState(ledger, id, plans)])
+  );
+  const count = (open) =>
+    [...states.values()].filter((state) => state.open === open).length;
+  return {
+    scopes: ledger.scopes.size,
+    unreviewed: count('unreviewed'),
+    fork: count('fork'),
+    pursueUnbound: count('pursue-unbound'),
+    pursueNotAdopted: count('pursue-not-adopted'),
+    deferred: count('deferred'),
+    closed: count(null),
+    unowned: coverage(root, { ledger }).unowned.total,
+    open: [...states]
+      .filter(([, state]) => state.open)
+      .map(([id, state]) => ({ id, open: state.open })),
+    queue: orderUnits(ledger).map((unit, index) => ({
+      order: index + 1,
+      unit: unit.id,
+      title: unit.title,
+      score: unit.score,
+      scopes: unit.scopes.map((id) => ({
+        id,
+        open: states.get(id).open,
+        verdict: latest(headsOf(ledger, id))?.verdict ?? null,
+      })),
+    })),
+    ...report(root, ledger),
+  };
+}
+
+const report = (root, ledger) => {
+  const problems = integrity(root, ledger);
+  return {
+    ...(problems.length ? { integrity: problems } : {}),
+    ...(ledger.warnings.length ? { warnings: ledger.warnings } : {}),
+  };
+};
+
+export function next(root) {
+  const ledger = loadLedger(root);
+  const tree = observe(root);
+  const plans = plansOf(root, ledger);
+  const actionable = (id) =>
+    ['fork', 'unreviewed', 'pursue-unbound', 'pursue-not-adopted'].includes(
+      openState(ledger, id, plans).open
+    );
+  const unit = orderUnits(ledger).find((item) => item.scopes.some(actionable));
+  if (!unit) {
+    return {
+      unit: null,
+      reason: 'No scope is open except those deferred on outside evidence.',
+      ...report(root, ledger),
+    };
+  }
+  return {
+    unit: unit.id,
+    title: unit.title,
+    scopes: unit.scopes
+      .filter(actionable)
+      .map((id) => compact(ledger, tree, plans, ledger.scopes.get(id))),
+    ...report(root, ledger),
+  };
+}
+
+/** Markdown for people, printed instead of committed. */
+export function show(root, scopeId) {
+  const ledger = loadLedger(root);
+  const plans = plansOf(root, ledger);
+  if (!scopeId) {
+    const lines = [
+      '# Review queue',
+      '',
+      '| Order | Review | Payoff | Questions and open state |',
+      '| ---: | --- | ---: | --- |',
+    ];
+    for (const [index, unit] of orderUnits(ledger).entries()) {
+      const cells = unit.scopes.map(
+        (id) => `${id}: ${openState(ledger, id, plans).open ?? 'closed'}`
+      );
+      lines.push(
+        `| ${index + 1} | ${unit.title} | ${unit.score} | ${cells.join('; ')} |`
+      );
+    }
+    return `${lines.join('\n')}\n`;
+  }
+  const scope = ledger.scopes.get(scopeId);
+  assert.ok(scope, `Unknown scope: ${scopeId}`);
+  const tree = observe(root);
+  const state = openState(ledger, scope.id, plans);
+  const history = [
+    ...(ledger.reviews.get(scope.id) ?? []),
+    ...(ledger.executions.get(scope.id) ?? []),
+  ].sort((a, b) => b.date.localeCompare(a.date) || byId(b, a));
+  const list = (items) => items.join(', ') || 'none';
+  const lines = [
+    `# ${scope.title}`,
+    '',
+    `Question: ${scope.question}`,
+    '',
+    `Open state: **${state.open ?? `closed by ${state.by}`}**.`,
+    '',
+    '## History, newest first',
+    '',
+  ];
+  for (const record of history) {
+    const seen = freshness(tree, record);
+    lines.push(
+      `### ${record.date}: ${record.id}`,
+      '',
+      `${record.kind}; ${record.verdict ?? record.outcome ?? 'no verdict'}; source ${seen.state}${seen.law.changed.length ? '; doctrine moved since' : ''}.`,
+      '',
+      record.summary,
+      ''
+    );
+    for (const alternative of record.alternatives ?? []) {
+      lines.push(`- ${alternative}`);
+    }
+    for (const entry of record.reconciliation ?? []) {
+      lines.push(`- ${entry.action} ${entry.record}: ${entry.reason}`);
+    }
+    if (record.kind === 'execution') {
+      lines.push(
+        `- plan ${record.plan}; basis ${list(record.reviewBasis)}; proof ${record.proof.state}: ${record.proof.limits}`
+      );
+    } else {
+      lines.push('', `Proof limits: ${record.proofLimits}`);
+    }
+    lines.push('', `References: ${list(record.references)}.`, '');
+  }
+  const scopePlans = plans.filter((plan) => plan.scopes.includes(scope.id));
+  lines.push('## Plans', '');
+  for (const plan of scopePlans) {
+    lines.push(
+      `- ${plan.path}: ${plan.status || 'no status'}; ${plan.workKind ?? 'no work kind'}; basis ${list(plan.reviewBasis)}`
+    );
+  }
+  if (!scopePlans.length) lines.push('None associated.');
+  lines.push('');
+  const documents = ledger.documents.filter((document) =>
+    document.scopes.includes(scope.id)
+  );
+  lines.push('## Documents', '');
+  for (const document of documents) {
+    lines.push(
+      `- ${document.path}: ${document.kind}, ${document.disposition}. ${document.rationale}`
+    );
+  }
+  if (!documents.length) lines.push('None classified.');
+  lines.push(
+    '',
+    '## Owners and evidence',
+    '',
+    `Owners: ${list(scope.owners ?? [])}.`,
+    '',
+    `Members: ${list(scope.members ?? [])}.`,
+    '',
+    `Consumers: ${list(scope.consumers ?? [])}.`,
+    '',
+    `Proof: ${list(scope.proof ?? [])}.${scope.gaps ? ` ${scope.gaps}` : ''}`,
+    '',
+    `Evidence inputs: ${list(scope.evidenceInputs ?? [])}.`,
+    ''
+  );
+  return `${lines.join('\n')}\n`;
+}
+
+/** Product source the census covers: its roots and files, minus build output and prose. */
+export const inCensus = (path) =>
+  (census.files.includes(path) ||
+    census.roots.some((dir) => path.startsWith(`${dir}/`))) &&
+  census.extension.test(path) &&
+  !census.exclusions.some((item) => item.pattern.test(path));
+
+export function sourceFiles(tree) {
+  return tree.files().filter(inCensus);
+}
+
+/** Census source that no scope owns, and owner or member entries that match nothing. */
+export function coverage(root, { prefix = '', ledger = loadLedger(root) } = {}) {
+  const tree = observe(root);
+  const universe = sourceFiles(tree).filter((path) => path.startsWith(prefix));
+  const unowned = universe.filter(
+    (path) => !owningScopes(ledger, path).length
+  );
+  const dangling = [];
+  for (const scope of ledger.scopes.values()) {
+    for (const entry of [...(scope.owners ?? []), ...(scope.members ?? [])]) {
+      if (!entry.startsWith(prefix)) continue;
+      const matches = entry.endsWith('/')
+        ? tree.under(entry).length
+        : existsSync(join(root, entry));
+      if (!matches) dangling.push({ scope: scope.id, entry });
+    }
+  }
+  return {
+    universe: universe.length,
+    unowned: {
+      total: unowned.length,
+      byDirectory: Object.groupBy(unowned, (path) =>
+        path.slice(0, path.lastIndexOf('/'))
+      ),
+    },
+    dangling,
+  };
+}
+
+
+function inputPaths(root, tree, scopes, extra, excluded) {
+  const entries = new Set();
+  for (const scope of scopes) {
+    for (const path of entriesOf(scope)) entries.add(entryOf(root, path));
+  }
+  for (const path of tree.files().filter(isLaw)) entries.add(path);
+  for (const path of extra) entries.add(entryOf(root, repoPath(path)));
+  const inputs = {};
+  const missing = [];
+  for (const entry of [...entries].sort()) {
+    if (excluded.has(entry) || excluded.has(entry.replace(/\/$/, ''))) continue;
+    const digest = tree.digest(entry);
+    if (digest === null) missing.push(entry);
+    else inputs[entry] = digest;
+  }
+  return { inputs, missing };
+}
+
+function freeId(root, base) {
+  let id = base;
+  for (let n = 2; existsSync(join(root, recordsDir, `${id}.json`)); n++) {
+    id = `${base}-${n}`;
+  }
+  return id;
+}
+
+export function draftReview(root, scopeId, extra = []) {
+  const ledger = loadLedger(root);
+  const scope = ledger.scopes.get(scopeId);
+  assert.ok(scope, `Unknown scope: ${scopeId}`);
+  const tree = observe(root);
+  const head = latest(headsOf(ledger, scopeId));
+  const date = new Date().toISOString().slice(0, 10);
+  const { inputs, missing } = inputPaths(
+    root,
+    tree,
+    [scope],
+    extra,
+    new Set(scope.decision ? [scope.decision] : [])
+  );
+  return {
+    draft: {
+      id: freeId(root, `${date}-${scopeId}`),
+      kind: 'review',
+      scope: scopeId,
+      date,
+      question: scope.question,
+      model: null,
+      method,
+      trigger: '',
+      requirements: [],
+      evidenceReuse: '',
+      summary: '',
+      verdict: null,
+      callSites: { current: '', proposed: '' },
+      previous: head?.id ?? null,
+      relation: head ? 'reaffirms' : 'initial',
+      reconciliation: requiredReconciliation(
+        ledger,
+        scopeId,
+        head?.id ?? null
+      ).map((record) => ({ record, action: '', reason: '' })),
+      alternatives: [],
+      proofLimits: '',
+      references: [],
+      inputs,
+      upstreams: [],
+    },
+    missing,
+  };
+}
+
+export function draftExecution(root, planPath, extra = []) {
+  repoPath(planPath);
+  assert.ok(existsSync(join(root, planPath)), `Missing plan: ${planPath}`);
+  const ledger = loadLedger(root);
+  const plan = associationOf(root, ledger, planPath);
+  assert.ok(
+    !plan?.invalid,
+    `The plan's review metadata is invalid: ${plan?.invalid?.join(', ')}`
+  );
+  assert.ok(
+    plan?.scopes?.length,
+    'Declare review_scopes, review_basis and work_kind in the plan front matter, or classify the plan in review-documents.json'
+  );
+  for (const id of plan.scopes) {
+    assert.ok(ledger.scopes.has(id), `Unknown plan scope: ${id}`);
+  }
+  const tree = observe(root);
+  const scopes = plan.scopes.map((id) => ledger.scopes.get(id));
+  const { inputs, missing } = inputPaths(
+    root,
+    tree,
+    scopes,
+    extra,
+    new Set([
+      planPath,
+      ...scopes.map((scope) => scope.decision).filter(Boolean),
+    ])
+  );
+  const date = new Date().toISOString().slice(0, 10);
+  const slug = planPath
+    .split('/')
+    .at(-1)
+    .replace(/\.md$/, '')
+    .replace(/^\d{4}-\d{2}-\d{2}-/, '');
+  return {
+    draft: {
+      id: freeId(root, `${date}-${slug}-execution`),
+      kind: 'execution',
+      date,
+      scopes: plan.scopes,
+      reviewBasis: plan.reviewBasis,
+      workKind: plan.workKind,
+      previous: [
+        ...new Set(
+          plan.reviewBasis.flatMap((id) =>
+            effectiveExecutions(ledger, id).map((execution) => execution.id)
+          )
+        ),
+      ],
+      plan: planPath,
+      outcome: plan.landed ? 'completed' : 'partial',
+      summary: '',
+      proof: { state: 'unknown', evidence: [], limits: '' },
+      references: [planPath],
+      inputs,
+      upstreams: [],
+    },
+    missing,
+  };
+}
+
+
+const reviewKeys = [
+  'id',
+  'kind',
+  'scope',
+  'date',
+  'question',
+  'model',
+  'method',
+  'trigger',
+  'requirements',
+  'evidenceReuse',
+  'summary',
+  'verdict',
+  'callSites',
+  'previous',
+  'relation',
+  'reconciliation',
+  'alternatives',
+  'proofLimits',
+  'references',
+  'inputs',
+  'upstreams',
+];
+const executionKeys = [
+  'id',
+  'kind',
+  'date',
+  'scopes',
+  'reviewBasis',
+  'workKind',
+  'previous',
+  'plan',
+  'outcome',
+  'summary',
+  'proof',
+  'references',
+  'inputs',
+  'upstreams',
+];
+const workKinds = [
   'design',
   'implementation',
   'research',
   'workflow',
   'verification',
-]);
-const belongsTo = (record, scope) =>
-  record.kind === 'execution'
-    ? record.scopes.includes(scope)
-    : record.scope === scope;
+];
+
+function validateInputs(record) {
+  assert.ok(
+    isObject(record.inputs) &&
+      Object.entries(record.inputs).every(
+        ([path, digest]) => repoPath(path) && isDigest(digest)
+      ),
+    'inputs maps repository paths to SHA-256 digests'
+  );
+  assert.ok(
+    Array.isArray(record.upstreams) && upstreamsShape(record.upstreams),
+    'upstreams is a list of { checkout, commit, files } entries'
+  );
+}
+
+/**
+ * The rules a new record must keep forever. `record` checks them before
+ * writing, and `check` re-checks every non-legacy record against them.
+ */
+function validateContract(ledger, record) {
+  const shape = recordShape(record);
+  assert.ok(!shape, `Malformed record: ${shape}`);
+  assert.ok(/^[a-z0-9][a-z0-9-]+$/.test(record.id), 'Invalid record id');
+  assert.ok(
+    record.kind === 'execution' || record.kind === 'review',
+    'kind is review or execution'
+  );
+  const keys = record.kind === 'execution' ? executionKeys : reviewKeys;
+  const extra = Object.keys(record).filter((key) => !keys.includes(key));
+  assert.ok(!extra.length, `Unknown fields: ${extra.join(', ')}`);
+  assert.ok(
+    record.references?.length && record.references.every(repoPath),
+    'References name repository files'
+  );
+  validateInputs(record);
+  if (record.kind === 'execution') validateExecutionContract(ledger, record);
+  else validateReviewContract(ledger, record);
+}
+
+function validateReviewContract(ledger, record) {
+  assert.ok(ledger.scopes.has(record.scope), `Unknown scope: ${record.scope}`);
+  for (const field of [
+    'question',
+    'method',
+    'trigger',
+    'evidenceReuse',
+    'summary',
+    'proofLimits',
+  ]) {
+    assert.ok(isText(record[field]), `Missing ${field}`);
+  }
+  assert.ok(Object.hasOwn(record, 'model'), 'Record the model, or null');
+  assert.ok(
+    ['stop', 'pursue', 'defer'].includes(record.verdict),
+    'A review needs a Stop, Pursue or Defer verdict'
+  );
+  if (record.verdict === 'pursue') {
+    assert.ok(
+      isText(record.callSites?.current) && isText(record.callSites?.proposed),
+      'A Pursue review records callSites.current and callSites.proposed'
+    );
+  }
+  assert.ok(
+    record.requirements?.length && record.requirements.every(isText),
+    'Record the current requirements and hard laws'
+  );
+  assert.ok(
+    record.alternatives?.length >= 2 && record.alternatives.every(isText),
+    'Record at least two alternatives, including the strongest cut'
+  );
+  assert.ok(
+    ['initial', 'reaffirms', 'supersedes', 'reverses', 'defers'].includes(
+      record.relation
+    ),
+    'Invalid relation'
+  );
+  assert.equal(
+    record.previous === null,
+    record.relation === 'initial',
+    'Only a first review has relation initial and previous null'
+  );
+  if (record.previous !== null) {
+    assert.equal(
+      ledger.records.get(record.previous)?.scope,
+      record.scope,
+      `previous ${record.previous} is not a review of ${record.scope}`
+    );
+  }
+  assert.ok(Array.isArray(record.reconciliation), 'Record reconciliation');
+  for (const entry of record.reconciliation) {
+    assert.ok(
+      ledger.records.has(entry.record),
+      `Unknown reconciliation record: ${entry.record}`
+    );
+    assert.ok(
+      ['retains', 'reopens', 'supersedes'].includes(entry.action) &&
+        isText(entry.reason),
+      `Reconciliation of ${entry.record} needs an action and a reason`
+    );
+  }
+  const previous = ledger.records.get(record.previous);
+  if (previous?.verdict && previous.verdict !== record.verdict) {
+    assert.ok(
+      record.reconciliation.some(
+        (entry) => entry.record === previous.id && entry.action !== 'retains'
+      ),
+      'A changed verdict must reopen or supersede its previous review'
+    );
+  }
+  assert.ok(
+    Object.keys(record.inputs).length,
+    'A review captures the inputs it read'
+  );
+}
+
+function validateExecutionContract(ledger, record) {
+  assert.ok(
+    record.scopes.length &&
+      new Set(record.scopes).size === record.scopes.length &&
+      record.scopes.every((id) => ledger.scopes.has(id)),
+    'An execution needs unique known scopes'
+  );
+  assert.ok(Array.isArray(record.reviewBasis), 'Record reviewBasis');
+  for (const id of record.reviewBasis) {
+    const review = ledger.records.get(id);
+    assert.ok(
+      review && review.kind === 'review' && record.scopes.includes(review.scope),
+      `Unknown governing review: ${id}`
+    );
+  }
+  assert.ok(workKinds.includes(record.workKind), 'Invalid workKind');
+  assert.ok(
+    Array.isArray(record.previous) &&
+      record.previous.every(
+        (id) => ledger.records.get(id)?.kind === 'execution'
+      ),
+    'previous names earlier executions'
+  );
+  assert.ok(
+    ['completed', 'partial', 'blocked', 'abandoned'].includes(record.outcome),
+    'Invalid outcome'
+  );
+  assert.ok(
+    isText(record.summary) && isText(record.proof?.limits),
+    'An execution needs a summary and proof limits'
+  );
+  assert.ok(
+    ['verified', 'partial', 'unverified', 'unknown'].includes(
+      record.proof.state
+    ),
+    'Invalid proof state'
+  );
+  assert.ok(
+    Array.isArray(record.proof.evidence) &&
+      record.proof.evidence.every(
+        (item) =>
+          repoPath(item.path) && isDigest(item.sha256) && isText(item.claim)
+      ),
+    'Each proof input names its path, digest and what it establishes'
+  );
+  repoPath(record.plan);
+  if (record.proof.state === 'verified') {
+    assert.ok(
+      record.outcome === 'completed' &&
+        record.proof.evidence.some((item) => item.path !== record.plan),
+      'Verified proof needs a completed outcome and evidence beyond the plan'
+    );
+  }
+}
+
+/** The rules that hold only at the moment of recording, against the live ledger and tree. */
+function validateAdmission(root, ledger, record) {
+  for (const path of record.references) {
+    assert.ok(existsSync(join(root, path)), `Missing reference: ${path}`);
+  }
+  if (record.kind === 'execution') {
+    for (const item of record.proof.evidence) {
+      assert.ok(existsSync(join(root, item.path)), `Missing proof file: ${item.path}`);
+    }
+    if (['implementation', 'workflow'].includes(record.workKind)) {
+      const standing = record.reviewBasis
+        .flatMap((id) => effectiveExecutions(ledger, id))
+        .map((execution) => execution.id)
+        .filter((id) => !record.previous.includes(id));
+      assert.ok(
+        !standing.length,
+        `Name the executions this one follows in previous: ${[...new Set(standing)].join(', ')}`
+      );
+    }
+    assert.ok(existsSync(join(root, record.plan)), `Missing plan: ${record.plan}`);
+    const plan = associationOf(root, ledger, record.plan);
+    assert.ok(
+      plan && !plan.invalid,
+      plan?.invalid
+        ? `The plan's review metadata is invalid: ${plan.invalid.join(', ')}`
+        : 'The plan has no review association'
+    );
+    const same = (a = [], b = []) =>
+      JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+    assert.ok(
+      same(plan.scopes, record.scopes) &&
+        same(plan.reviewBasis, record.reviewBasis) &&
+        (plan.workKind ?? record.workKind) === record.workKind,
+      'Execution scopes, reviewBasis and workKind must match the plan association'
+    );
+    if (record.outcome === 'completed') {
+      assert.ok(
+        plan.landed,
+        plan.conflict
+          ? `A completed execution needs one landed plan status; the plan says ${plan.conflict.map((label) => `"${label}"`).join(' and ')}`
+          : `A completed execution needs a landed plan Status; found "${plan.status}"`
+      );
+    }
+    return;
+  }
+  const heads = headsOf(ledger, record.scope);
+  if (!heads.length) {
+    assert.equal(record.previous, null, 'A first review has previous null');
+  } else {
+    assert.ok(
+      heads.some((head) => head.id === record.previous),
+      `The head of ${record.scope} is ${latest(heads).id}${heads.length > 1 ? ` (fork: ${heads.map((head) => head.id).join(', ')})` : ''}; set previous to it and reconcile it`
+    );
+  }
+  const missing = requiredReconciliation(
+    ledger,
+    record.scope,
+    record.previous
+  ).filter(
+    (id) => !record.reconciliation.some((entry) => entry.record === id)
+  );
+  assert.ok(!missing.length, `Reconcile ${missing.join(', ')}`);
+}
+
+/** Validates one record and creates its file. Never rewrites another file. */
+export function record(root, draftPath, { dryRun = false } = {}) {
+  const draft = JSON.parse(readFileSync(resolve(root, draftPath), 'utf-8'));
+  delete draft.digest;
+  const path = `${recordsDir}/${draft.id}.json`;
+  const ledger = loadLedger(root);
+  if (existsSync(join(root, path))) {
+    const { digest, ...existing } = JSON.parse(read(root, path));
+    const stored = new Map(
+      (existing.proof?.evidence ?? []).map((item) => [item.path, item.sha256])
+    );
+    const retried =
+      draft.kind === 'execution'
+        ? {
+            ...draft,
+            proof: {
+              ...draft.proof,
+              evidence: (draft.proof?.evidence ?? []).map((item) => ({
+                ...item,
+                sha256: item.sha256 ?? stored.get(item.path),
+              })),
+            },
+          }
+        : draft;
+    assert.equal(
+      json(retried),
+      json(existing),
+      `${path} already exists with other content; pick another id`
+    );
+    return { recorded: path, duplicate: true, ...report(root, ledger) };
+  }
+  if (draft.kind === 'execution' && Array.isArray(draft.proof?.evidence)) {
+    draft.proof.evidence = draft.proof.evidence.map((item) => ({
+      ...item,
+      sha256:
+        item.sha256 ??
+        (existsSync(join(root, item.path))
+          ? hash(readFileSync(join(root, item.path)))
+          : undefined),
+    }));
+  }
+  for (const item of draft.kind === 'execution' ? draft.proof?.evidence ?? [] : []) {
+    assert.ok(
+      typeof item?.path === 'string' && existsSync(join(root, item.path)),
+      `Missing proof file: ${item?.path}`
+    );
+  }
+  const contents = json({ ...draft, digest: hash(json(draft)) });
+  validateContract(ledger, draft);
+  validateAdmission(root, ledger, draft);
+  const tree = observe(root);
+  const changedSinceDraft = Object.entries(draft.inputs)
+    .filter(([entry, digest]) => tree.digest(entry) !== digest)
+    .map(([entry]) => entry);
+  const scopes = (draft.kind === 'execution' ? draft.scopes : [draft.scope])
+    .map((id) => ledger.scopes.get(id))
+    .filter(Boolean);
+  const skipped = new Set([
+    ...scopes.map((scope) => scope.decision),
+    draft.plan,
+  ]);
+  const notCaptured = [
+    ...new Set(
+      scopes
+        .flatMap(entriesOf)
+        .map((entry) => entryOf(root, entry))
+        .filter(
+          (entry) =>
+            !skipped.has(entry) &&
+            !Object.hasOwn(draft.inputs, entry) &&
+            tree.digest(entry) !== null
+        )
+    ),
+  ];
+  const result = {
+    recorded: path,
+    inputs: Object.keys(draft.inputs).length,
+    ...(changedSinceDraft.length ? { changedSinceDraft } : {}),
+    ...(notCaptured.length ? { notCaptured } : {}),
+    ...report(root, ledger),
+  };
+  if (dryRun) return { ...result, recorded: null, valid: true, record: draft };
+  mkdirSync(join(root, recordsDir), { recursive: true });
+  const temporary = join(root, recordsDir, `.${draft.id}.${process.pid}.tmp`);
+  writeFileSync(temporary, contents);
+  try {
+    linkSync(temporary, join(root, path));
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+    assert.equal(
+      read(root, path),
+      contents,
+      `${path} was created concurrently with other content`
+    );
+    return { recorded: path, duplicate: true, ...report(root, ledger) };
+  } finally {
+    unlinkSync(temporary);
+  }
+  return result;
+}
+
+
+function git(root, args) {
+  try {
+    return execFileSync('git', ['-C', root, ...args], {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+  } catch {
+    return null;
+  }
+}
+
+const gitBlob = (bytes) =>
+  createHash('sha1')
+    .update(`blob ${bytes.length}\0`)
+    .update(bytes)
+    .digest('hex');
+
+/**
+ * The blob each committed record and the legacy checksum list had when it
+ * first reached the main line: the tree at the checksum list's first commit
+ * (or at HEAD before that commit exists), plus every later addition along the
+ * first-parent history, merges and renamed paths included.
+ */
+function committedBlobs(root) {
+  const mainLine = ['--first-parent', '-m', '--no-renames'];
+  const base =
+    git(root, ['log', ...mainLine, '--diff-filter=A', '--format=%H', '--', legacyPath])
+      ?.trim()
+      .split('\n')
+      .filter(Boolean)
+      .at(-1) ?? 'HEAD';
+  const blobs = new Map();
+  for (const line of (
+    git(root, ['ls-tree', '-r', base, '--', recordsDir, legacyPath]) ?? ''
+  ).split('\n')) {
+    const match = line.match(/^\d+ blob ([a-f0-9]{40})\t(.+)$/);
+    if (match) blobs.set(match[2], match[1]);
+  }
+  for (const line of (
+    git(root, [
+      'log',
+      ...mainLine,
+      '--reverse',
+      '--raw',
+      '--no-abbrev',
+      '--diff-filter=A',
+      '--format=',
+      `${base}..HEAD`,
+      '--',
+      recordsDir,
+      legacyPath,
+    ]) ?? ''
+  ).split('\n')) {
+    const match = line.match(/^:\d+ \d+ [a-f0-9]+ ([a-f0-9]{40}) A\t(.+)$/);
+    if (match && !blobs.has(match[2])) blobs.set(match[2], match[1]);
+  }
+  return blobs;
+}
+
+/**
+ * Edits and deletions of immutable records. The legacy checksum list and each
+ * new record's digest and contract catch an edit before any commit. A
+ * committed record or checksum list must match the blob it first reached the
+ * main line with, in the working tree and in the index, so a byte-for-byte
+ * restore reads clean. A staged record that was never committed must match
+ * its index entry, which the Stop hook never restages.
+ */
+export function integrity(root, ledger) {
+  const problems = [];
+  for (const item of ledger.records.values()) {
+    const path = `${recordsDir}/${item.id}.json`;
+    const legacy = ledger.legacy.get(item.id);
+    if (legacy) {
+      if (item.sha256 !== legacy.sha256) {
+        problems.push(`${path}: changed since the legacy checksum list`);
+      }
+      continue;
+    }
+    const { digest, ...body } = item.raw;
+    if (digest !== hash(json(body))) {
+      problems.push(`${path}: changed since it was recorded`);
+      continue;
+    }
+    try {
+      validateContract(ledger, body);
+    } catch (error) {
+      problems.push(`${path}: ${error.message.split('\n')[0]}`);
+    }
+  }
+  for (const id of ledger.legacy.keys()) {
+    if (!ledger.records.has(id)) problems.push(`Missing legacy record: ${id}`);
+  }
+  if (git(root, ['rev-parse', '--verify', 'HEAD']) === null) return problems;
+  const indexed = new Map();
+  for (const line of (
+    git(root, ['ls-files', '-s', '--', recordsDir, legacyPath]) ?? ''
+  ).split('\n')) {
+    const match = line.match(/^\d+ ([a-f0-9]{40}) \d\t(.+)$/);
+    if (match) indexed.set(match[2], match[1]);
+  }
+  const committed = committedBlobs(root);
+  for (const [path, blob] of committed) {
+    let bytes = null;
+    try {
+      bytes = readFileSync(join(root, path));
+    } catch {
+      problems.push(`Committed file deleted: ${path}`);
+      continue;
+    }
+    if (gitBlob(bytes) !== blob || indexed.get(path) !== blob) {
+      problems.push(`Committed file changed since it was first committed: ${path}`);
+    }
+  }
+  for (const line of (
+    git(root, ['diff', '--name-status', '--no-renames', '--', recordsDir, legacyPath]) ?? ''
+  ).split('\n')) {
+    const [status, path] = line.split('\t');
+    if (/^[MD]$/.test(status) && !committed.has(path)) {
+      problems.push(`Staged file changed or deleted before its first commit: ${path}`);
+    }
+  }
+  return [...new Set(problems)];
+}
+
+/** Ledger integrity. Reads ledger files and git, never product source. */
+export function check(root) {
+  const ledger = loadLedger(root);
+  const errors = [...ledger.warnings];
+  const warnings = [];
+  const attempt = (label, fn) => {
+    try {
+      fn();
+    } catch (error) {
+      errors.push(`${label}: ${error.message.split('\n')[0]}`);
+    }
+  };
+  for (const scope of ledger.scopes.values()) {
+    attempt(`${scopesDir}/${scope.id}.json`, () => {
+      for (const field of ['title', 'question']) {
+        assert.ok(isText(scope[field]), `Missing ${field}`);
+      }
+      assert.ok(
+        Number.isInteger(scope.opportunity?.score) &&
+          scope.opportunity.score >= 0 &&
+          scope.opportunity.score <= 10 &&
+          isText(scope.opportunity.reason),
+        'opportunity needs an integer score 0 to 10 and a reason'
+      );
+      assert.equal(typeof scope.last, 'boolean', 'last is a boolean');
+      for (const path of entriesOf(scope)) {
+        repoPath(path);
+        assert.equal(
+          entryOf(root, path),
+          path,
+          `A directory entry ends with "/": ${path}`
+        );
+      }
+      assert.ok(
+        scope.owners?.length || scope.members?.length || scope.consumers?.length,
+        'A scope names owners, members or consumers'
+      );
+      assert.ok(
+        scope.proof?.length || isText(scope.gaps),
+        'An empty proof list needs gaps saying why'
+      );
+      for (const id of [
+        ...(scope.dependsOn ?? []),
+        ...(scope.relatedScopes ?? []),
+      ]) {
+        assert.ok(
+          id !== scope.id && ledger.scopes.has(id),
+          `Unknown scope: ${id}`
+        );
+      }
+      if (scope.dependsOn?.length) {
+        assert.ok(
+          isText(scope.prerequisiteReason),
+          'dependsOn needs prerequisiteReason'
+        );
+      }
+      if (scope.group) {
+        assert.ok(ledger.groups.has(scope.group), `Unknown group: ${scope.group}`);
+      }
+    });
+  }
+  for (const [id, group] of ledger.groups) {
+    attempt(`${groupsPath} ${id}`, () => {
+      assert.ok(!ledger.scopes.has(id), 'A group id cannot be a scope id');
+      assert.ok(
+        isText(group.title) && isText(group.reason),
+        'A group needs a title and a reason'
+      );
+      assert.ok(
+        [...ledger.scopes.values()].filter((scope) => scope.group === id)
+          .length > 1,
+        'A group needs at least two scopes'
+      );
+    });
+  }
+  attempt(documentsPath, () => {
+    const paths = ledger.documents.map((document) => document.path);
+    assert.equal(new Set(paths).size, paths.length, 'Duplicate document path');
+  });
+  for (const document of ledger.documents) {
+    attempt(`${documentsPath} ${document.path}`, () => {
+      repoPath(document.path);
+      assert.ok(
+        ['plan', 'decision', 'lesson', 'specification', 'report', 'history'].includes(
+          document.kind
+        ) &&
+          ['active', 'historical', 'superseded', 'candidate', 'rejected'].includes(
+            document.disposition
+          ) &&
+          isText(document.rationale),
+        'A document needs a kind, a disposition and a rationale'
+      );
+      assert.ok(
+        document.scopes?.length &&
+          document.scopes.every((id) => ledger.scopes.has(id)),
+        'Unknown document scope'
+      );
+      for (const id of document.reviewBasis ?? []) {
+        assert.ok(ledger.records.has(id), `Unknown review basis: ${id}`);
+      }
+      if (!existsSync(join(root, document.path))) {
+        warnings.push(`Missing document: ${document.path}`);
+      }
+    });
+  }
+  errors.push(...integrity(root, ledger));
+  for (const item of ledger.records.values()) {
+    if (!ledger.legacy.has(item.id) && item.raw.digest) continue;
+    attempt(`${recordsDir}/${item.id}.json`, () => {
+      if (item.kind === 'execution') {
+        assert.ok(
+          item.scopes.length && item.scopes.every((id) => ledger.scopes.has(id)),
+          'Unknown execution scope'
+        );
+        for (const id of item.reviewBasis) {
+          assert.ok(ledger.records.has(id), `Unknown review basis: ${id}`);
+        }
+        for (const id of item.previous) {
+          assert.equal(
+            ledger.records.get(id)?.kind,
+            'execution',
+            `previous ${id} is not a recorded execution`
+          );
+        }
+        return;
+      }
+      assert.ok(ledger.scopes.has(item.scope), `Unknown scope: ${item.scope}`);
+      if (item.previous) {
+        assert.equal(
+          ledger.records.get(item.previous)?.scope,
+          item.scope,
+          `previous ${item.previous} is not a review of ${item.scope}`
+        );
+      }
+      for (const entry of item.reconciliation) {
+        assert.ok(
+          ledger.records.has(entry.record),
+          `Unknown reconciliation record: ${entry.record}`
+        );
+      }
+    });
+  }
+  attempt('queue', () => orderUnits(ledger, { strict: true }));
+  for (const id of ledger.scopes.keys()) {
+    const heads = headsOf(ledger, id);
+    if (heads.length > 1) {
+      warnings.push(`Fork in ${id}: ${heads.map((head) => head.id).join(', ')}`);
+    }
+    for (const head of heads) {
+      const standing = effectiveExecutions(ledger, head.id);
+      if (standing.length > 1) {
+        warnings.push(
+          `Executions fork for ${head.id}: ${standing.map((item) => item.id).join(', ')}`
+        );
+      }
+    }
+  }
+  if (existsSync(join(root, recordsDir))) {
+    for (const name of readdirSync(join(root, recordsDir))) {
+      if (name.endsWith('.tmp')) warnings.push(`Stray temporary file: ${name}`);
+    }
+  }
+  for (const plan of plansOf(root, ledger)) {
+    const problems = [
+      ...plan.scopes.filter((id) => !ledger.scopes.has(id)).map((id) => `unknown scope ${id}`),
+      ...plan.reviewBasis
+        .filter((id) => ledger.records.get(id)?.kind !== 'review')
+        .map((id) => `unknown review ${id}`),
+    ];
+    if (plan.invalid) problems.push(`invalid ${plan.invalid.join(', ')}`);
+    if (plan.conflict) {
+      problems.push(`conflicting status labels ${plan.conflict.join(' | ')}`);
+    }
+    if (problems.length) warnings.push(`${plan.path}: ${problems.join(', ')}`);
+  }
+  const covered = coverage(root, { ledger });
+  if (covered.unowned.total) {
+    warnings.push(`${covered.unowned.total} unowned source files; run coverage`);
+  }
+  for (const item of covered.dangling) {
+    warnings.push(`${item.scope} entry matches no file: ${item.entry}`);
+  }
+  assert.ok(!errors.length, errors.join('\n'));
+  return {
+    ok: true,
+    scopes: ledger.scopes.size,
+    records: ledger.records.size,
+    ...(warnings.length ? { warnings } : {}),
+  };
+}
+
+
 const unquote = (value) => value.trim().replace(/^(['"])(.*)\1$/, '$2');
 
-// Read only the small metadata contract. Prose and other YAML remain owned by the document.
+/**
+ * Reads review_scopes, review_basis and work_kind from a document's front matter
+ * and ignores every other key. The two list keys take a block list or `[a, b]`;
+ * a scalar reads as null.
+ */
 export function documentMetadata(text) {
   const frontmatter =
     text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1] ?? '';
   const result = {};
-  for (const key of [
-    'review_scopes',
-    'review_basis',
-    'work_kind',
-    'current_review',
-    'reconciled_executions',
-  ]) {
+  for (const key of ['review_scopes', 'review_basis', 'work_kind']) {
     const match = frontmatter.match(
       new RegExp(
         `^${key}:([^\\n]*)(?:\\n((?:[ \\t]+-[^\\n]*(?:\\n|$))*))?`,
@@ -609,9 +2124,8 @@ export function documentMetadata(text) {
     );
     if (!match) continue;
     const value = match[1].trim();
-    if (['work_kind', 'current_review'].includes(key)) {
-      result[key] = unquote(value);
-    } else if (value.startsWith('[') && value.endsWith(']')) {
+    if (key === 'work_kind') result[key] = unquote(value);
+    else if (value.startsWith('[') && value.endsWith(']')) {
       result[key] = value.slice(1, -1).trim()
         ? value.slice(1, -1).split(',').map(unquote)
         : [];
@@ -625,1183 +2139,6 @@ export function documentMetadata(text) {
     }
   }
   return result;
-}
-
-function lifecycle(value) {
-  const status = value.trim().toLowerCase().replaceAll('**', '');
-  if (/^(?:complete[d]?|done|closed|implemented|finished)\b/.test(status)) {
-    return 'completed';
-  }
-  if (/^(?:in[ -]progress|active|running|executing|designing)\b/.test(status)) {
-    return 'in-progress';
-  }
-  if (
-    /^(?:pause[d]?|blocked|gated|deferred|superseded|abandoned|cancelled|canceled)\b/.test(
-      status
-    )
-  ) {
-    return status.match(/^\w+/)[0];
-  }
-  if (/^(?:plan[ned]?|draft|ready|approved|accepted|proposed)\b/.test(status)) {
-    return 'planned';
-  }
-  return 'unknown';
-}
-
-export function planState(root, path) {
-  const contents = read(root, path);
-  const metadata = documentMetadata(contents);
-  const labels = [
-    ...contents.matchAll(
-      /^(?:[-*][ \t]+)?(?:\*\*)?(?:Status|status|goal_status)(?:\*\*)?:[ \t]*(.+)$/gm
-    ),
-  ].map((match) => ({
-    text: match[1].replaceAll('**', '').trim(),
-    status: lifecycle(match[1]),
-  }));
-  for (const match of contents.matchAll(
-    /^(?:Status|status):[ \t]*\r?\n[ \t]*-[ \t]+([^\n]+)$/gm
-  )) {
-    labels.push({ text: match[1], status: lifecycle(match[1]) });
-  }
-  const states = [...new Set(labels.map((label) => label.status))];
-  return {
-    path,
-    ...metadata,
-    status:
-      states.length === 1 ? states[0] : states.length ? 'conflict' : 'unknown',
-    statusLabels: labels,
-    sha256: hash(contents),
-    metadataPresent: ['review_scopes', 'review_basis', 'work_kind'].some(
-      (key) => Object.hasOwn(metadata, key)
-    ),
-  };
-}
-
-function historyContext(root, index, live = discover(root, index)) {
-  const all = records(root, index);
-  const paths = new Set([
-    ...files(root, 'docs/plans', [
-      { pattern: '(^|/)(artifacts|templates|topics)/' },
-    ]).filter((path) => path.endsWith('.md')),
-    ...index.scopes.flatMap((scope) => scope.plans),
-    ...(index.documents ?? [])
-      .filter((doc) => doc.kind === 'plan')
-      .map((doc) => doc.path),
-  ]);
-  const plans = [...paths]
-    .sort(compareStrings)
-    .filter((path) => existsSync(join(root, path)))
-    .map((path) => {
-      const plan = planState(root, path);
-      const document = (index.documents ?? []).find(
-        (doc) => doc.path === path && doc.disposition !== 'candidate'
-      );
-      const legacyScopes = index.scopes
-        .filter((scope) => scope.plans.includes(path))
-        .map((scope) => scope.id);
-      return {
-        ...plan,
-        scopes: plan.review_scopes ?? document?.scopes ?? legacyScopes,
-        reviewBasis: plan.review_basis ?? document?.reviewBasis ?? [],
-        workKind: plan.work_kind ?? document?.workKind ?? null,
-        association: plan.metadataPresent
-          ? plan.review_scopes?.length
-            ? 'plan-metadata'
-            : 'not-applicable'
-          : document
-            ? 'inspected-document'
-            : legacyScopes.length
-              ? 'legacy-index'
-              : 'unassociated',
-      };
-    });
-  return { all, live, plans };
-}
-
-function recordSummary(root, record, live) {
-  return {
-    id: record.id,
-    path: `docs/research/review-records/${record.id}.json`,
-    date: record.date,
-    kind: record.kind,
-    question: record.question,
-    summary: record.summary,
-    verdict: record.verdict,
-    relation: record.relation,
-    freshness:
-      record.kind === 'execution'
-        ? executionFreshness(root, record, live)
-        : freshness(root, record, live),
-    ...(record.kind === 'execution'
-      ? {
-          outcome: record.outcome,
-          reviewBasis: record.reviewBasis,
-          plan: record.plan.path,
-          proof: record.proof.state,
-          binding: record.binding,
-        }
-      : {}),
-  };
-}
-
-export function changedInputs(root, record, live) {
-  if (!record?.source) {
-    return { status: 'unknown', files: [], directories: [], features: [] };
-  }
-  const { source } = record;
-  return {
-    status: freshness(root, record, live),
-    files: Object.entries(source.files ?? {})
-      .filter(
-        ([path, sha256]) =>
-          !existsSync(join(root, path)) ||
-          hash(readFileSync(join(root, path))) !== sha256
-      )
-      .map(([path]) => path),
-    directories: Object.entries(source.directories ?? {})
-      .filter(
-        ([path, sha256]) =>
-          !existsSync(join(root, path)) ||
-          directoryFingerprint(root, path) !== sha256
-      )
-      .map(([path]) => path),
-    features: Object.entries(source.features ?? {})
-      .filter(
-        ([id, sha256]) =>
-          live.find((entry) => entry.id === id)?.fingerprint !== sha256
-      )
-      .map(([id]) => id),
-  };
-}
-
-export function executionFreshness(root, record, live = []) {
-  if (record.binding !== 'current') return 'unknown';
-  const inputs = [record.plan, ...record.proof.evidence];
-  if (
-    inputs.some(
-      ({ path, sha256 }) =>
-        !existsSync(join(root, path)) ||
-        hash(readFileSync(join(root, path))) !== sha256
-    )
-  ) {
-    return 'stale';
-  }
-  return freshness(root, record, live);
-}
-
-export function draftExecution(root, index, path) {
-  localPath(root, path);
-  const context = historyContext(root, index);
-  const plan = context.plans.find((item) => item.path === path);
-  assert.ok(
-    plan?.scopes?.length,
-    'Associate the plan with review_scopes or an inspected documents entry first'
-  );
-  const sources = plan.scopes.map(
-    (scope) => draftReview(root, index, scope).source
-  );
-  const excluded = executionSummaryInputs(
-    index,
-    plan.scopes,
-    plan.path,
-    plan.workKind
-  );
-  const hasBasis =
-    plan.reviewBasis.length &&
-    plan.scopes.every((scope) =>
-      plan.reviewBasis.some((id) =>
-        context.all.some(
-          (record) =>
-            record.id === id &&
-            record.kind === 'review' &&
-            record.scope === scope
-        )
-      )
-    );
-  return {
-    id: '',
-    kind: 'execution',
-    date: new Date().toISOString().slice(0, 10),
-    scopes: plan.scopes,
-    reviewBasis: plan.reviewBasis,
-    workKind: plan.workKind,
-    plan: { path, sha256: plan.sha256 },
-    binding: hasBasis ? 'current' : 'historical-unbound',
-    outcome: plan.status === 'completed' ? 'completed' : 'partial',
-    summary: '',
-    proof: {
-      state: hasBasis ? 'unverified' : 'unknown',
-      evidence: [],
-      limits: '',
-    },
-    source: hasBasis
-      ? {
-          files: Object.fromEntries(
-            Object.entries(
-              Object.assign({}, ...sources.map((source) => source.files))
-            ).filter(([sourcePath]) => !excluded.has(sourcePath))
-          ),
-          directories: Object.assign(
-            {},
-            ...sources.map((source) => source.directories)
-          ),
-          features: Object.assign(
-            {},
-            ...sources.map((source) => source.features)
-          ),
-          upstreams: [],
-        }
-      : null,
-    references: [path],
-  };
-}
-
-function executionSummaryInputs(index, scopes, plan, workKind) {
-  return new Set([
-    plan,
-    indexPath,
-    'docs/research/reviews.md',
-    ...scopes.flatMap((id) => [
-      index.scopes.find((scope) => scope.id === id)?.decision,
-      `docs/research/features/${id}.md`,
-    ]),
-    ...(workKind === 'workflow'
-      ? []
-      : [
-          '.agents/skills/best-api-review/SKILL.md',
-          '.agents/rules/best-api-review.mdc',
-        ]),
-  ]);
-}
-
-function validateExecution(root, record, index, prior, recording) {
-  assert.ok(
-    record.scopes?.length &&
-      new Set(record.scopes).size === record.scopes.length,
-    'Execution requires unique scopes'
-  );
-  assert.ok(
-    record.scopes.every((id) => index.scopes.some((scope) => scope.id === id)),
-    'Unknown execution scope'
-  );
-  assert.ok(
-    Array.isArray(record.reviewBasis),
-    'Execution requires reviewBasis'
-  );
-  for (const id of record.reviewBasis) {
-    assert.ok(
-      prior.some(
-        (item) =>
-          item.id === id &&
-          item.kind === 'review' &&
-          record.scopes.includes(item.scope)
-      ),
-      `Unknown governing review: ${id}`
-    );
-  }
-  assert.ok(workKinds.has(record.workKind), 'Execution requires workKind');
-  assert.ok(
-    ['current', 'historical-unbound'].includes(record.binding),
-    'Execution requires explicit binding'
-  );
-  assert.ok(
-    ['completed', 'partial', 'blocked', 'abandoned'].includes(record.outcome),
-    'Invalid execution outcome'
-  );
-  assert.ok(
-    record.summary?.trim() && record.proof?.limits?.trim(),
-    'Execution requires summary and proof limits'
-  );
-  assert.ok(
-    ['verified', 'partial', 'unverified', 'unknown'].includes(
-      record.proof.state
-    ),
-    'Invalid execution proof state'
-  );
-  assert.ok(
-    Array.isArray(record.proof.evidence),
-    'Execution requires proof evidence array'
-  );
-  assert.ok(record.references?.length, 'Execution requires references');
-  record.references.forEach((path) => localPath(root, path, recording));
-  for (const entry of [record.plan, ...record.proof.evidence]) {
-    localPath(root, entry?.path, recording);
-    assert.ok(
-      /^[a-f0-9]{64}$/.test(entry.sha256),
-      'Execution requires plan and proof fingerprints'
-    );
-    if (recording) {
-      assert.equal(
-        hash(readFileSync(join(root, entry.path))),
-        entry.sha256,
-        `Execution input changed: ${entry.path}`
-      );
-    }
-  }
-  assert.ok(
-    record.proof.evidence.every((entry) => entry.claim?.trim()),
-    'Describe what each proof input establishes'
-  );
-  if (record.binding === 'historical-unbound') {
-    assert.equal(
-      record.proof.state,
-      'unknown',
-      'Unbound historical work cannot certify proof'
-    );
-    assert.equal(
-      record.source,
-      null,
-      'Unbound historical work has no recovered source binding'
-    );
-  } else {
-    assert.ok(
-      record.scopes.every((scope) =>
-        record.reviewBasis.some((id) =>
-          prior.some((item) => item.id === id && item.scope === scope)
-        )
-      ),
-      'Bound execution requires a governing review for each scope'
-    );
-    assert.ok(
-      record.source &&
-        [
-          record.source.files,
-          record.source.directories,
-          record.source.features,
-        ].some((inputs) => Object.keys(inputs ?? {}).length),
-      'Bound execution requires source fingerprints'
-    );
-    if (record.proof.state === 'verified') {
-      assert.ok(
-        record.outcome === 'completed' && record.proof.evidence.length,
-        'Verified execution requires completion and evidence'
-      );
-      assert.ok(
-        record.proof.evidence.some((entry) => entry.path !== record.plan.path),
-        'A completed plan alone does not verify execution'
-      );
-    }
-    if (recording) {
-      assert.equal(
-        executionFreshness(root, record, discover(root, index)),
-        'matching',
-        'Execution source changed before recording'
-      );
-    }
-    if (recording) {
-      for (const id of record.scopes) {
-        const scope = index.scopes.find((item) => item.id === id);
-        assert.ok(
-          index.features
-            .filter((feature) => feature.scope === id)
-            .every((feature) => record.source.features?.[feature.id]),
-          `Execution source must cover scope members: ${id}`
-        );
-        for (const path of [
-          ...scope.owners,
-          ...scope.consumers,
-          ...scope.proof,
-          ...(scope.evidenceInputs ?? []),
-        ].filter(
-          (evidencePath) =>
-            !executionSummaryInputs(
-              index,
-              record.scopes,
-              record.plan.path,
-              record.workKind
-            ).has(evidencePath)
-        )) {
-          assert.ok(
-            record.source.files?.[path] || record.source.directories?.[path],
-            `Execution must capture declared evidence: ${path}`
-          );
-        }
-      }
-    }
-  }
-  if (recording) {
-    const plan = historyContext(root, index).plans.find(
-      (item) => item.path === record.plan.path
-    );
-    assert.ok(plan, 'Execution plan is not discoverable');
-    assert.deepEqual(
-      [...record.scopes].sort((left, right) => left.localeCompare(right)),
-      [...plan.scopes].sort((left, right) => left.localeCompare(right)),
-      'Execution scopes disagree with plan association'
-    );
-    assert.deepEqual(
-      [...record.reviewBasis].sort((left, right) => left.localeCompare(right)),
-      [...plan.reviewBasis].sort((left, right) => left.localeCompare(right)),
-      'Execution governing reviews disagree with plan association'
-    );
-    assert.equal(
-      record.workKind,
-      plan.workKind,
-      'Execution work kind disagrees with plan'
-    );
-    assert.ok(
-      plan.status !== 'conflict',
-      'Resolve conflicting plan lifecycle statuses before recording'
-    );
-    if (record.outcome === 'completed') {
-      assert.equal(
-        plan.status,
-        'completed',
-        'Completed execution requires the plan lifecycle to be complete'
-      );
-    }
-  }
-}
-
-export function scopeHistory(
-  root,
-  index,
-  scope,
-  context = historyContext(root, index)
-) {
-  const { all, live } = context;
-  const latest = latestRecord(all, scope.id);
-  const plans = context.plans.filter((plan) => plan.scopes?.includes(scope.id));
-  const executions = all.filter(
-    (record) => record.kind === 'execution' && belongsTo(record, scope.id)
-  );
-  const decision =
-    scope.decision && existsSync(join(root, scope.decision))
-      ? documentMetadata(read(root, scope.decision))
-      : {};
-  const gaps = [];
-  if (latest && (!scope.decision || !decision.current_review)) {
-    gaps.push({
-      kind: 'missing-current-decision',
-      review: latest.id,
-      path: scope.decision ?? null,
-    });
-  } else if (latest && decision.current_review !== latest.id) {
-    gaps.push({
-      kind: 'decision-review-mismatch',
-      expected: latest.id,
-      actual: decision.current_review,
-      path: scope.decision,
-    });
-  }
-  for (const plan of plans) {
-    if (plan.status === 'conflict') {
-      gaps.push({
-        kind: 'conflicting-plan-status',
-        path: plan.path,
-        labels: plan.statusLabels,
-      });
-    }
-    if (!plan.reviewBasis.length) {
-      gaps.push({ kind: 'unbound-plan', path: plan.path });
-    }
-    const outcomes = executions.filter(
-      (record) => record.plan.path === plan.path
-    );
-    if (
-      plan.status === 'completed' &&
-      !outcomes.some(
-        (record) =>
-          record.outcome === 'completed' && record.plan.sha256 === plan.sha256
-      )
-    ) {
-      gaps.push({
-        kind: 'completed-plan-without-current-outcome',
-        path: plan.path,
-      });
-    }
-    if (
-      plan.metadataPresent &&
-      (!Array.isArray(plan.review_scopes) ||
-        !Array.isArray(plan.review_basis) ||
-        !workKinds.has(plan.work_kind))
-    ) {
-      gaps.push({ kind: 'incomplete-plan-metadata', path: plan.path });
-    }
-  }
-  for (const execution of executions) {
-    if (
-      execution.outcome === 'completed' &&
-      !(decision.reconciled_executions ?? []).includes(execution.id)
-    ) {
-      gaps.push({
-        kind: 'unreconciled-execution',
-        record: execution.id,
-        decision: scope.decision ?? null,
-      });
-    }
-    if (executionFreshness(root, execution, live) === 'stale') {
-      gaps.push({ kind: 'stale-execution-proof', record: execution.id });
-    }
-  }
-  const latestExecution = executions.at(-1);
-  const retainsOutcome = (review, visited = new Set()) => {
-    if (!review || visited.has(review.id)) return false;
-    visited.add(review.id);
-    return (
-      latestExecution.reviewBasis.includes(review.id) ||
-      (review.reconciliation ?? []).some(
-        (entry) =>
-          entry.action === 'retains' &&
-          (entry.record === latestExecution.id ||
-            retainsOutcome(
-              all.find(
-                (record) =>
-                  record.id === entry.record && record.kind === 'review'
-              ),
-              visited
-            ))
-      )
-    );
-  };
-  const governsCurrentReview =
-    latestExecution?.binding === 'current' && retainsOutcome(latest);
-  if (latestExecution?.binding === 'current' && !governsCurrentReview) {
-    gaps.push({
-      kind: 'decision-changed',
-      record: latestExecution.id,
-      decision: scope.decision ?? null,
-    });
-  }
-  const historicalOutcome = [...executions]
-    .reverse()
-    .find((record) => record.binding === 'current');
-  const progress =
-    latestExecution?.binding === 'current' && governsCurrentReview
-      ? {
-          state:
-            latestExecution.outcome === 'completed' &&
-            ['design', 'research', 'verification'].includes(
-              latestExecution.workKind
-            )
-              ? `${latestExecution.workKind}-complete`
-              : latestExecution.outcome,
-          adoption: ['implementation', 'workflow'].includes(
-            latestExecution.workKind
-          )
-            ? latestExecution.outcome
-            : 'not-established',
-          record: latestExecution.id,
-          reviewBasis: latestExecution.reviewBasis,
-          plan: latestExecution.plan.path,
-          workKind: latestExecution.workKind,
-          proof:
-            executionFreshness(root, latestExecution, live) === 'matching'
-              ? latestExecution.proof.state
-              : executionFreshness(root, latestExecution, live),
-          evidence: latestExecution.proof.evidence,
-          limits: latestExecution.proof.limits,
-          governsCurrentReview: true,
-        }
-      : {
-          state:
-            latestExecution?.binding === 'current'
-              ? 'decision-changed'
-              : executions.length ||
-                  plans.some((plan) => plan.status === 'completed') ||
-                  scope.adoption === 'adopted'
-                ? 'unbound'
-                : plans.some((plan) => plan.status === 'in-progress')
-                  ? 'in-progress'
-                  : plans.length
-                    ? 'planned'
-                    : 'not-assessed',
-          proof: 'unknown',
-          record: null,
-          reviewBasis: [],
-          limits:
-            'No reconciled source-bound execution outcome establishes current adoption or proof.',
-          ...(historicalOutcome
-            ? {
-                priorOutcome: {
-                  record: historicalOutcome.id,
-                  reviewBasis: historicalOutcome.reviewBasis,
-                  workKind: historicalOutcome.workKind,
-                  outcome: historicalOutcome.outcome,
-                  proof: historicalOutcome.proof.state,
-                  freshness: executionFreshness(root, historicalOutcome, live),
-                },
-              }
-            : {}),
-        };
-  const afterReview = all
-    .slice(latest ? all.indexOf(latest) + 1 : 0)
-    .filter(
-      (record) => record.kind === 'execution' && belongsTo(record, scope.id)
-    );
-  return {
-    latest,
-    plans,
-    executions,
-    progress,
-    gaps,
-    decision,
-    afterReview,
-    history: all.filter((record) => belongsTo(record, scope.id)),
-  };
-}
-
-export function openWork(root, index, context = historyContext(root, index)) {
-  return index.scopes.map((scope) => {
-    const { executions, latest, plans, progress } = scopeHistory(
-      root,
-      index,
-      scope,
-      context
-    );
-    const verdict = latest?.verdict ?? null;
-    const unboundWork =
-      executions.length > 0 ||
-      plans.some((plan) => plan.status === 'completed');
-    let open = null;
-    if (!verdict) open = 'unreviewed';
-    else if (verdict === 'pursue' && progress.adoption !== 'completed') {
-      open =
-        progress.state === 'unbound' && unboundWork
-          ? 'pursue-unbound'
-          : 'pursue-not-adopted';
-    } else if (verdict === 'defer') open = 'deferred';
-    return { id: scope.id, verdict, progress: progress.state, open };
-  });
-}
-
-export function validateRecord(
-  root,
-  record,
-  index,
-  prior = [],
-  { recording = true } = {}
-) {
-  assert.ok(/^[a-z0-9][a-z0-9-]+$/.test(record.id), 'Invalid review ID');
-  assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(record.date), 'Missing review date');
-  if (record.kind === 'execution') {
-    validateExecution(root, record, index, prior, recording);
-    return;
-  }
-  assert.ok(
-    index.scopes.some((scope) => scope.id === record.scope),
-    'Unknown review scope'
-  );
-  assert.ok(
-    ['review', 'historical'].includes(record.kind),
-    'Invalid record kind'
-  );
-  assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(record.date), 'Missing review date');
-  for (const field of [
-    'question',
-    'summary',
-    'trigger',
-    'method',
-    'proofLimits',
-  ]) {
-    assert.ok(
-      typeof record[field] === 'string' && record[field].trim(),
-      `Missing ${field}`
-    );
-  }
-  assert.ok(
-    Object.hasOwn(record, 'model'),
-    'Record known model identity or null'
-  );
-  assert.ok(
-    ['stop', 'pursue', 'defer', null].includes(record.verdict),
-    'Invalid verdict'
-  );
-  assert.ok(
-    [
-      'initial',
-      'reaffirms',
-      'supersedes',
-      'reverses',
-      'defers',
-      'historical-context',
-    ].includes(record.relation),
-    'Invalid review relation'
-  );
-  assert.ok(record.references?.length, 'Record requires evidence references');
-  record.references.forEach((path) => localPath(root, path, recording));
-  if (record.previous) {
-    assert.ok(
-      prior.some(
-        (item) => item.id === record.previous && item.scope === record.scope
-      ),
-      'Previous record must exist in this scope'
-    );
-  }
-  if (record.kind === 'review') {
-    assert.ok(record.verdict, 'Completed review requires Stop/Pursue/Defer');
-    if (recording && record.verdict === 'pursue') {
-      assert.ok(
-        ['current', 'proposed'].every(
-          (key) =>
-            typeof record.callSites?.[key] === 'string' &&
-            record.callSites[key].trim()
-        ),
-        'A Pursue review records callSites.current and callSites.proposed'
-      );
-    }
-    assert.ok(
-      record.requirements?.length &&
-        record.requirements.every(
-          (item) => typeof item === 'string' && item.trim()
-        ),
-      'Record current requirements and hard laws'
-    );
-    assert.ok(
-      typeof record.evidenceReuse === 'string' && record.evidenceReuse.trim(),
-      'Explain which evidence was reused or rechecked and why'
-    );
-    assert.ok(
-      record.alternatives?.length >= 2,
-      'Record the alternatives, including the strongest cut'
-    );
-    assert.ok(
-      record.alternatives.every(
-        (item) => typeof item === 'string' && item.trim()
-      ),
-      'Alternatives require concise findings'
-    );
-    assert.ok(
-      record.source &&
-        [
-          record.source.features,
-          record.source.files,
-          record.source.directories,
-        ].some((input) => Object.keys(input ?? {}).length),
-      'Review requires current evidence fingerprints'
-    );
-    const expected = index.features
-      .filter((feature) => feature.scope === record.scope)
-      .map((feature) => feature.id);
-    if (recording) {
-      assert.ok(
-        expected.every((id) => record.source.features[id]),
-        'Review source must cover every scope member'
-      );
-      const scope = index.scopes.find((item) => item.id === record.scope);
-      for (const path of [
-        ...scope.owners,
-        ...scope.consumers,
-        ...scope.proof,
-        ...(scope.evidenceInputs ?? []),
-      ]) {
-        if (path === scope.decision || !existsSync(join(root, path))) continue;
-        assert.ok(
-          record.source.files?.[path] || record.source.directories?.[path],
-          `Review must capture declared evidence: ${path}`
-        );
-      }
-    }
-    assert.ok(
-      !prior.some(
-        (item) => item.scope === record.scope && item.kind !== 'execution'
-      ) || record.previous,
-      'Repeated review must reconcile previous history'
-    );
-    assert.ok(
-      record.previous
-        ? record.relation !== 'initial'
-        : record.relation === 'initial',
-      'Initial relation must match history'
-    );
-    if (recording || record.method === 'best-api-review/history-v3') {
-      assert.ok(
-        Array.isArray(record.reconciliation),
-        'Record structured history reconciliation'
-      );
-      for (const entry of record.reconciliation) {
-        const referenced = prior.find((item) => item.id === entry.record);
-        assert.ok(referenced, `Unknown reconciliation record: ${entry.record}`);
-        assert.ok(
-          ['retains', 'reopens', 'supersedes'].includes(entry.action) &&
-            entry.reason?.trim(),
-          'Reconciliation requires a disposition and reason'
-        );
-        const question =
-          referenced.question ??
-          index.scopes.find((scope) => scope.id === record.scope).question;
-        assert.equal(
-          entry.question,
-          question,
-          'Reconcile the exact prior question; do not silently reopen adjacent decisions'
-        );
-      }
-      const previous = prior.find((item) => item.id === record.previous);
-      const required = [
-        ...(previous ? [previous.id] : []),
-        ...prior
-          .slice(previous ? prior.indexOf(previous) + 1 : 0)
-          .filter(
-            (item) =>
-              item.kind === 'execution' &&
-              item.binding === 'current' &&
-              belongsTo(item, record.scope)
-          )
-          .map((item) => item.id),
-      ];
-      assert.ok(
-        required.every((id) =>
-          record.reconciliation.some((entry) => entry.record === id)
-        ),
-        'Reconcile the previous conclusion and subsequent execution before review'
-      );
-      if (previous?.verdict && previous.verdict !== record.verdict) {
-        assert.ok(
-          record.reconciliation.some(
-            (entry) =>
-              entry.record === previous.id && entry.action !== 'retains'
-          ),
-          'A changed verdict must explicitly reopen or supersede its prior conclusion'
-        );
-      }
-    }
-    for (const [path, digest] of Object.entries(record.source.files ?? {})) {
-      if (recording) {
-        localPath(root, path);
-        assert.ok(
-          hash(readFileSync(join(root, path))) === digest,
-          `Source changed before recording: ${path}`
-        );
-      }
-    }
-  }
-}
-
-export function records(root, index) {
-  return index.records.map((entry) => {
-    const contents = read(root, entry.path);
-    assert.ok(
-      hash(contents) === entry.sha256,
-      `Immutable record changed: ${entry.path}`
-    );
-    return JSON.parse(contents);
-  });
-}
-
-export function validate(
-  root,
-  index,
-  { current = true, scopeEvidence = true } = {}
-) {
-  assert.ok(index.version === 1, 'Unsupported ledger version');
-  for (const key of ['features', 'scopes', 'records']) {
-    assert.ok(Array.isArray(index[key]), `Missing ${key}`);
-  }
-  const live = discover(root, index);
-  const unique = (items, label) =>
-    assert.ok(new Set(items).size === items.length, `Duplicate ${label}`);
-  unique(
-    index.features.map((item) => item.id),
-    'feature ID'
-  );
-  unique(
-    index.scopes.map((item) => item.id),
-    'scope ID'
-  );
-  unique(
-    index.records.map((item) => item.path),
-    'record path'
-  );
-  assert.deepEqual(
-    index.features.map((item) => item.id).sort(compareStrings),
-    live.map((item) => item.id).sort(compareStrings),
-    'Inventory changed; reconcile added/removed feature identities'
-  );
-  for (const feature of index.features) {
-    assert.ok(
-      index.scopes.some((scope) => scope.id === feature.scope),
-      `Unknown scope for ${feature.id}`
-    );
-    assert.ok(
-      ['review', 'grouped', 'support'].includes(feature.disposition),
-      `Missing disposition: ${feature.id}`
-    );
-    if (feature.source && current) {
-      localPath(root, feature.source);
-      assert.ok(
-        live
-          .find((item) => item.id === feature.id)
-          .paths.includes(feature.source),
-        `Source example is outside feature membership: ${feature.id}`
-      );
-    }
-    if (current) {
-      assert.equal(
-        feature.fingerprint,
-        live.find((item) => item.id === feature.id).fingerprint,
-        `Stale inventory: ${feature.id}; inspect source and refresh`
-      );
-    }
-  }
-  for (const scope of index.scopes) {
-    assert.ok(
-      scope.question &&
-        scope.opportunity.reason &&
-        Number.isInteger(scope.opportunity.score) &&
-        scope.opportunity.score >= 0 &&
-        scope.opportunity.score <= 10,
-      `Invalid scope or opportunity: ${scope.id}`
-    );
-    assert.ok(
-      scope.owners.length &&
-        scope.consumers.length &&
-        Array.isArray(scope.proof),
-      `Missing owner/consumer/proof: ${scope.id}`
-    );
-    assert.ok(
-      scope.proof.length || scope.gaps?.trim(),
-      `Missing proof gap: ${scope.id}`
-    );
-    [
-      ...scope.owners,
-      ...scope.consumers,
-      ...scope.proof,
-      ...(scope.evidenceInputs ?? []),
-      ...scope.plans,
-      ...(scope.historyCandidates ?? []),
-      ...(scope.decision ? [scope.decision] : []),
-    ].forEach((path) => localPath(root, path, scopeEvidence));
-    for (const id of scope.relatedScopes ?? []) {
-      assert.ok(
-        id !== scope.id && index.scopes.some((item) => item.id === id),
-        `Unknown related scope: ${id}`
-      );
-    }
-    if (index.inventory.snapshot) {
-      assert.ok(
-        scope.inspection?.trim() && scope.gaps?.trim(),
-        `Missing inspection limits: ${scope.id}`
-      );
-      assert.ok(
-        !scope.dependsOn.length || scope.prerequisiteReason?.trim(),
-        `Missing prerequisite reason: ${scope.id}`
-      );
-    }
-    assert.ok(
-      ['unassessed', 'historical', 'reviewed'].includes(scope.review),
-      `Invalid review state: ${scope.id}`
-    );
-    assert.ok(
-      ['not-assessed', 'planned', 'in-progress', 'adopted'].includes(
-        scope.adoption
-      ),
-      `Invalid adoption state: ${scope.id}`
-    );
-    assert.ok(
-      ['not-replayed', 'partial', 'verified'].includes(scope.proofState),
-      `Invalid proof state: ${scope.id}`
-    );
-  }
-  if (current && index.inventory.snapshot) {
-    assert.equal(
-      index.inventory.snapshot.fingerprint,
-      inventoryFingerprint(live),
-      'Inventory snapshot fingerprint is stale'
-    );
-  }
-  orderScopes(index.scopes);
-  reviewQueue(index);
-  const all = records(root, index);
-  unique(
-    all.map((item) => item.id),
-    'review ID'
-  );
-  for (const [i, record] of all.entries()) {
-    validateRecord(root, record, index, all.slice(0, i), { recording: false });
-  }
-  unique(
-    (index.documents ?? []).map((item) => item.path),
-    'document association'
-  );
-  for (const document of index.documents ?? []) {
-    localPath(root, document.path);
-    assert.ok(
-      [
-        'plan',
-        'decision',
-        'lesson',
-        'specification',
-        'report',
-        'history',
-      ].includes(document.kind) &&
-        ['active', 'historical', 'superseded', 'candidate'].includes(
-          document.disposition
-        ) &&
-        document.rationale?.trim(),
-      `Classify inspected document: ${document.path}`
-    );
-    assert.ok(
-      document.scopes?.length &&
-        new Set(document.scopes).size === document.scopes.length &&
-        document.scopes.every((id) =>
-          index.scopes.some((scope) => scope.id === id)
-        ),
-      `Invalid document scopes: ${document.path}`
-    );
-    for (const id of document.reviewBasis ?? []) {
-      assert.ok(
-        all.some(
-          (record) =>
-            record.id === id &&
-            record.kind === 'review' &&
-            document.scopes.includes(record.scope)
-        ),
-        `Unknown document review basis: ${id}`
-      );
-    }
-    if (document.workKind) {
-      assert.ok(
-        workKinds.has(document.workKind),
-        `Invalid document work kind: ${document.path}`
-      );
-    }
-  }
-  unique(
-    (index.rejectedCandidates ?? []).map((item) => item.path),
-    'rejected candidate'
-  );
-  for (const candidate of index.rejectedCandidates ?? []) {
-    localPath(root, candidate.path);
-    assert.ok(
-      candidate.reason?.trim() &&
-        candidate.scopes?.length &&
-        candidate.scopes.every((id) =>
-          index.scopes.some((scope) => scope.id === id)
-        ),
-      `Invalid rejected candidate: ${candidate.path}`
-    );
-    assert.ok(
-      !(index.documents ?? []).some(
-        (document) =>
-          document.path === candidate.path &&
-          document.disposition !== 'candidate' &&
-          document.scopes.some((id) => candidate.scopes.includes(id))
-      ),
-      `Candidate is both rejected and associated: ${candidate.path}`
-    );
-  }
-  const context = historyContext(root, index, live);
-  for (const historyPlan of context.plans.filter(
-    (candidatePlan) => candidatePlan.metadataPresent
-  )) {
-    assert.ok(
-      Array.isArray(historyPlan.review_scopes) &&
-        Array.isArray(historyPlan.review_basis) &&
-        (historyPlan.review_scopes.length ||
-          !historyPlan.review_basis.length) &&
-        workKinds.has(historyPlan.work_kind),
-      `Incomplete plan metadata: ${historyPlan.path}`
-    );
-    assert.equal(
-      historyPlan.statusLabels.length,
-      1,
-      `Plan metadata requires one lifecycle Status: ${historyPlan.path}`
-    );
-    assert.ok(
-      historyPlan.review_scopes.every((id) =>
-        index.scopes.some((scope) => scope.id === id)
-      ),
-      `Unknown plan scope: ${historyPlan.path}`
-    );
-    for (const id of historyPlan.review_basis) {
-      assert.ok(
-        all.some(
-          (record) =>
-            record.id === id &&
-            record.kind === 'review' &&
-            historyPlan.review_scopes.includes(record.scope)
-        ),
-        `Unknown plan review basis: ${id}`
-      );
-    }
-  }
-  for (const scope of index.scopes) {
-    const latest = latestRecord(all, scope.id);
-    assert.equal(
-      scope.review,
-      latest?.kind === 'review'
-        ? 'reviewed'
-        : latest
-          ? 'historical'
-          : 'unassessed',
-      `Review state disagrees with records: ${scope.id}`
-    );
-  }
-  return {
-    features: live.length,
-    files: new Set(live.flatMap((item) => item.paths)).size,
-    scopes: index.scopes.length,
-    records: all.length,
-    trackingGaps: index.scopes.reduce(
-      (count, scope) =>
-        count + scopeHistory(root, index, scope, context).gaps.length,
-      0
-    ),
-    unassociatedPlans: context.plans.filter(
-      (plan) => plan.association === 'unassociated'
-    ).length,
-    explicitlyUnscopedPlans: context.plans.filter(
-      (plan) => plan.association === 'not-applicable'
-    ).length,
-    live,
-  };
-}
-
-function checkRecord(root, index, record, prior) {
-  const existing = prior.find((item) => item.id === record.id);
-  if (existing) {
-    assert.deepEqual(
-      record,
-      existing,
-      'Review ID already recorded with different contents'
-    );
-    return 'duplicate';
-  }
-  validateRecord(root, record, index, prior);
-  if (record.kind !== 'review') return 'new';
-  assert.equal(
-    record.previous,
-    latestRecord(prior, record.scope)?.id ?? null,
-    'Reconcile the latest review before recording'
-  );
-  assert.equal(
-    freshness(root, record, discover(root, index)),
-    'matching',
-    'Review source changed before recording'
-  );
-  const path = join(root, `docs/research/review-records/${record.id}.json`);
-  if (existsSync(path)) {
-    assert.equal(
-      readFileSync(path, 'utf-8'),
-      json(record),
-      'Unindexed record already exists with different contents'
-    );
-  }
-  return 'new';
-}
-
-export function recordReview(root, index, record) {
-  const prior = records(root, index);
-  const path = `docs/research/review-records/${record.id}.json`;
-  if (checkRecord(root, index, record, prior) === 'duplicate') return path;
-  const contents = json(record);
-  mkdirSync(join(root, dirname(path)), { recursive: true });
-  if (existsSync(join(root, path))) {
-    assert.equal(
-      read(root, path),
-      contents,
-      'Unindexed record already exists with different contents'
-    );
-  } else writeFileSync(join(root, path), contents, { flag: 'wx' });
-  index.records.push({ path, sha256: hash(contents) });
-  if (record.kind !== 'execution') {
-    index.scopes.find((scope) => scope.id === record.scope).review =
-      latestRecord([...prior, record], record.scope).kind === 'review'
-        ? 'reviewed'
-        : 'historical';
-  }
-  return path;
 }
 
 export function searchResearch(root, query) {
@@ -1864,709 +2201,39 @@ export function searchResearch(root, query) {
   };
 }
 
-const bounded = (items, limit = 8) => ({
-  items: items.slice(0, limit),
-  total: items.length,
-  omitted: Math.max(0, items.length - limit),
-});
-const markdownCell = (value) =>
-  String(value ?? '')
-    .replaceAll('|', '\\|')
-    .replaceAll('\n', ' ');
-const documentLink = (from, path, label = path.split('/').at(-1)) =>
-  `[${label}](${relative(dirname(from), path)})`;
-// Excerpts keep their meaning; their original relative links belong to the linked source.
-const excerptText = (text) =>
-  text.replace(/\[([^\]\n]+)\]\((?:[^()\n]|\([^()\n]*\))*\)/g, '$1');
 
-function retrievalCandidates(index, scope) {
-  const classified = new Set(
-    (index.documents ?? [])
-      .filter(
-        (doc) =>
-          doc.disposition !== 'candidate' && doc.scopes.includes(scope.id)
-      )
-      .map((doc) => doc.path)
-  );
-  const rejected = (index.rejectedCandidates ?? []).filter((entry) =>
-    entry.scopes.includes(scope.id)
-  );
-  const rejectedPaths = new Set(rejected.map((entry) => entry.path));
-  return {
-    unresolved: [
-      ...new Set([
-        ...(scope.historyCandidates ?? []),
-        ...(index.documents ?? [])
-          .filter(
-            (doc) =>
-              doc.disposition === 'candidate' && doc.scopes.includes(scope.id)
-          )
-          .map((doc) => doc.path),
-      ]),
-    ].filter((path) => !classified.has(path) && !rejectedPaths.has(path)),
-    rejected,
-  };
-}
-
-function compactScope(root, index, scope, context) {
-  const state = scopeHistory(root, index, scope, context);
-  const brief = (record) => {
-    const summary = recordSummary(root, record, context.live);
-    return {
-      id: summary.id,
-      kind: summary.kind,
-      verdict: summary.verdict,
-      ...(record.kind === 'execution'
-        ? {
-            outcome: record.outcome,
-            binding: record.binding,
-            plan: record.plan.path,
-          }
-        : { question: record.question }),
-      freshness: summary.freshness,
-      summary:
-        summary.summary.length > 220
-          ? `${summary.summary.slice(0, 217)}...`
-          : summary.summary,
-    };
-  };
-  const history = state.history
-    .filter((record) => record.kind !== 'execution')
-    .slice(-3)
-    .map(brief);
-  const changed = changedInputs(root, state.latest, context.live);
-  const candidates = retrievalCandidates(index, scope);
-  const planPriority = (plan) =>
-    plan.reviewBasis.includes(state.latest?.id) ||
-    state.latest?.references?.includes(plan.path)
-      ? 0
-      : ['in-progress', 'gated', 'blocked', 'planned'].includes(plan.status)
-        ? 1
-        : 2;
-  const planDate = (path) =>
-    path.match(/\d{4}-\d{2}-\d{2}/)?.[0] ?? '0000-00-00';
-  const planSummaries = state.plans
-    .sort(
-      (a, b) =>
-        planPriority(a) - planPriority(b) ||
-        planDate(b.path).localeCompare(planDate(a.path)) ||
-        b.path.localeCompare(a.path)
-    )
-    .map((plan) => ({
-      path: plan.path,
-      status: plan.status,
-      workKind: plan.workKind,
-      reviewBasis: plan.reviewBasis,
-      association: plan.association,
-    }));
-  const gapPriority = (gap) =>
-    ['decision-review-mismatch', 'missing-current-decision'].includes(gap.kind)
-      ? 0
-      : [
-            'unreconciled-execution',
-            'stale-execution-proof',
-            'decision-changed',
-          ].includes(gap.kind)
-        ? 1
-        : gap.kind === 'unbound-plan'
-          ? 3
-          : 2;
-  const gaps = [...state.gaps].sort(
-    (a, b) =>
-      gapPriority(a) - gapPriority(b) ||
-      (b.record ?? b.path ?? '').localeCompare(a.record ?? a.path ?? '')
-  );
-  return {
-    id: scope.id,
-    title: scope.title,
-    question: scope.question,
-    hub: `docs/research/features/${scope.id}.md`,
-    decision: scope.decision ?? null,
-    review: scope.review,
-    current: state.latest
-      ? {
-          ...recordSummary(root, state.latest, context.live),
-          summary:
-            state.latest.summary.length > 600
-              ? `${state.latest.summary.slice(0, 597)}...`
-              : state.latest.summary,
-        }
-      : null,
-    adoption: state.progress.adoption ?? state.progress.state,
-    proofState: state.progress.proof,
-    progress: {
-      ...state.progress,
-      evidence: state.progress.evidence?.map(({ path, claim }) => ({
-        path,
-        claim,
-      })),
-    },
-    reviewGroup:
-      (index.reviewGroups ?? []).find((item) =>
-        item.scopes.includes(scope.id)
-      ) ?? null,
-    observation: {
-      inventoryStatus: index.inventory.snapshot
-        ? index.inventory.snapshot.fingerprint ===
-          inventoryFingerprint(context.live)
-          ? 'matching'
-          : 'stale'
-        : 'unknown',
-      status: index.features
-        .filter((feature) => feature.scope === scope.id)
-        .some(
-          (feature) =>
-            context.live.find((item) => item.id === feature.id)?.fingerprint !==
-            feature.fingerprint
-        )
-        ? 'stale'
-        : 'matching',
-    },
-    changedInputs: {
-      status: changed.status,
-      files: bounded(changed.files, 5),
-      directories: bounded(changed.directories, 5),
-      features: bounded(changed.features, 5),
-    },
-    reconciliation: bounded(state.latest?.reconciliation ?? []),
-    subsequentExecution: bounded(
-      state.afterReview
-        .slice()
-        .sort(
-          (a, b) =>
-            Number(b.reviewBasis.includes(state.latest?.id)) -
-              Number(a.reviewBasis.includes(state.latest?.id)) ||
-            planDate(b.plan.path).localeCompare(planDate(a.plan.path)) ||
-            context.all.indexOf(b) - context.all.indexOf(a)
-        )
-        .map(brief),
-      3
-    ),
-    plans: bounded(planSummaries, 5),
-    conflicts: {
-      ...bounded(gaps, 5),
-      byKind: Object.fromEntries(
-        [...new Set(gaps.map((gap) => gap.kind))].map((kind) => [
-          kind,
-          gaps.filter((gap) => gap.kind === kind).length,
-        ])
-      ),
-    },
-    history,
-    historySelection:
-      'Recent review summaries; outcomes recorded later are listed separately.',
-    historyTotal: state.history.length,
-    historyOmitted: Math.max(0, state.history.length - history.length),
-    related: (scope.relatedScopes ?? []).map((id) => {
-      const latest = latestRecord(context.all, id);
-      return {
-        id,
-        hub: `docs/research/features/${id}.md`,
-        history: latest
-          ? [
-              {
-                id: latest.id,
-                verdict: latest.verdict,
-                summary:
-                  latest.summary.length > 120
-                    ? `${latest.summary.slice(0, 117)}...`
-                    : latest.summary,
-              },
-            ]
-          : [],
-      };
-    }),
-    historyCandidates: bounded(candidates.unresolved, 3),
-    rejectedCandidates: {
-      total: candidates.rejected.length,
-      detail: `node tooling/scripts/review-ledger.mjs lookup ${scope.id} --detail`,
-    },
-    detail: `node tooling/scripts/review-ledger.mjs lookup ${scope.id} --detail`,
-  };
-}
-
-export function renderFeature(
-  root,
-  index,
-  scope,
-  context = historyContext(root, index)
-) {
-  const path = `docs/research/features/${scope.id}.md`;
-  const link = (target, label) =>
-    existsSync(join(root, target))
-      ? documentLink(path, target, label)
-      : `\`${target}\` (historical input unavailable)`;
-  const state = scopeHistory(root, index, scope, context);
-  const candidates = retrievalCandidates(index, scope);
-  const changes = changedInputs(root, state.latest, context.live);
-  const lines = [
-    `# ${scope.title}`,
-    '',
-    'Generated by `node tooling/scripts/review-ledger.mjs render`. Links and summaries derive from the ledger, plan lifecycle and immutable outcomes; do not maintain status here.',
-    '',
-    `[Docs guide](../../README.md) · [Review queue](../reviews.md) · [Ledger schema](../schema.md)`,
-    '',
-    `Question: ${scope.question}`,
-    '',
-    '## Current decision',
-    '',
-    state.latest
-      ? `${link(`docs/research/review-records/${state.latest.id}.json`, state.latest.id)} — **${state.latest.verdict ?? 'historical / unknown'}**. ${state.latest.summary}`
-      : 'Unassessed. No review conclusion is recorded.',
-    '',
-    `Compiled decision: ${scope.decision ? link(scope.decision) : 'not associated'}. Source observation: ${changes.status}. Source matching is not behavior proof.`,
-    '',
-    `Execution: **${state.progress.state}**. Proof: **${state.progress.proof}**. ${state.progress.limits}`,
-  ];
-  if (state.progress.record) {
-    lines.push(
-      '',
-      `Outcome: ${link(`docs/research/review-records/${state.progress.record}.json`, state.progress.record)}. Governing reviews: ${state.progress.reviewBasis.map((id) => link(`docs/research/review-records/${id}.json`, id)).join(', ')}. Work kind: ${state.progress.workKind}. Reconciled with current review: ${state.progress.governsCurrentReview ? 'yes' : 'no; evidence belongs to the named governing review'}.`
-    );
-  }
-  if (scope.adoption || scope.proofState) {
-    lines.push(
-      '',
-      `Imported scope flags (unbound historical claims): adoption ${scope.adoption ?? 'unknown'}, proof ${scope.proofState ?? 'unknown'}. These flags do not establish current progress.`
-    );
-  }
-  lines.push(
-    '',
-    '## Changes and tracking gaps',
-    '',
-    `Changed files: ${changes.files.map((item) => link(item)).join(', ') || 'none identified'}. Changed directories: ${changes.directories.map((item) => link(item)).join(', ') || 'none identified'}. Changed source groups: ${changes.features.join(', ') || 'none identified'}.`
-  );
-  if (!state.gaps.length) {
-    lines.push(
-      '',
-      'No structural tracking gap detected. This does not certify the architectural conclusion.'
-    );
-  }
-  for (const gap of state.gaps) {
-    lines.push(
-      '',
-      `- **${gap.kind}**: ${gap.path ? link(gap.path) : gap.record ? link(`docs/research/review-records/${gap.record}.json`, gap.record) : (gap.review ?? '')}${gap.expected ? `; expected ${gap.expected}, recorded ${gap.actual ?? 'unknown'}` : ''}.`
-    );
-  }
-  lines.push(
-    '',
-    '## Plans and execution',
-    '',
-    'The plan owns its lifecycle. Design completion is not implementation adoption. Unknown or unbound evidence stays explicit.',
-    '',
-    '| Plan | Lifecycle | Work kind | Governing review |',
-    '| --- | --- | --- | --- |'
-  );
-  for (const plan of state.plans) {
-    lines.push(
-      `| ${link(plan.path)} | ${plan.status} | ${plan.workKind ?? 'unknown'} | ${plan.reviewBasis.map((id) => link(`docs/research/review-records/${id}.json`, id)).join(', ') || 'unbound'} |`
-    );
-  }
-  if (!state.plans.length) {
-    lines.push('| No associated plan | unknown | unknown | unbound |');
-  }
-  lines.push(
-    '',
-    '### Outcomes recorded after the latest review',
-    '',
-    'Record order is observation order. Historical imports do not establish when execution happened.',
-    ''
-  );
-  if (!state.afterReview.length) {
-    lines.push(
-      'No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.'
-    );
-  }
-  for (const record of state.afterReview) {
-    lines.push(
-      `- ${link(`docs/research/review-records/${record.id}.json`, record.id)}: ${record.outcome}; binding **${record.binding}**; ${record.summary} Proof: ${executionFreshness(root, record, context.live)} / ${record.proof.state}. ${record.proof.limits}`
-    );
-  }
-  lines.push('', '## Inspected documents', '');
-  const documents = (index.documents ?? []).filter(
-    (doc) => doc.scopes.includes(scope.id) && doc.disposition !== 'candidate'
-  );
-  if (!documents.length) {
-    lines.push(
-      'No additional classified document. Linked legacy plans and immutable references remain available.'
-    );
-  }
-  for (const document of documents) {
-    lines.push(
-      `- ${link(document.path)} — ${document.kind}, ${document.disposition}. ${excerptText(document.rationale)}`
-    );
-  }
-  lines.push(
-    '',
-    '## Chronological history and alternatives',
-    '',
-    'Earlier conclusions and rejected alternatives remain question-specific. A newer paint observation does not automatically reopen topology or resize ownership.',
-    ''
-  );
-  if (!state.history.length) lines.push('No immutable history recorded.');
-  for (const record of [...state.history].sort(
-    (a, b) =>
-      a.date.localeCompare(b.date) ||
-      context.all.indexOf(a) - context.all.indexOf(b)
-  )) {
-    lines.push(
-      `### ${record.date}: ${record.id}`,
-      '',
-      `${link(`docs/research/review-records/${record.id}.json`, 'Immutable record')} — ${record.kind}; ${record.verdict ?? record.outcome ?? 'unknown'}; observation ${record.kind === 'execution' ? executionFreshness(root, record, context.live) : freshness(root, record, context.live)}.`,
-      '',
-      record.summary,
-      ''
-    );
-    if (record.question) lines.push(`Question: ${record.question}`, '');
-    for (const alternative of record.alternatives ?? []) {
-      lines.push(`- ${alternative}`);
-    }
-    for (const entry of record.reconciliation ?? []) {
-      lines.push(
-        `- ${entry.action} ${link(`docs/research/review-records/${entry.record}.json`, entry.record)} (${entry.question}): ${entry.reason}`
-      );
-    }
-    lines.push(
-      '',
-      `Proof limits: ${record.proofLimits ?? record.proof.limits}`,
-      '',
-      `References: ${(record.references ?? []).map((item) => link(item)).join(', ') || 'none'}.`,
-      ''
-    );
-  }
-  lines.push(
-    '## Retrieval boundaries',
-    '',
-    `${candidates.unresolved.length} unclassified candidates. Filename matches are discovery leads, not adopted decisions.`,
-    ''
-  );
-  for (const candidate of candidates.unresolved) {
-    lines.push(`- ${link(candidate)}`);
-  }
-  lines.push(
-    '',
-    `${candidates.rejected.length} rejected retrieval matches retained to prevent rediscovery.`,
-    ''
-  );
-  for (const rejected of candidates.rejected) {
-    lines.push(`- ${link(rejected.path)}: ${rejected.reason}`);
-  }
-  lines.push(
-    '',
-    '## Owners and evidence entrypoints',
-    '',
-    `Owners: ${scope.owners.map((item) => link(item)).join(', ')}.`,
-    '',
-    `Consumers: ${scope.consumers.map((item) => link(item)).join(', ')}.`,
-    '',
-    `Proof entrypoints: ${scope.proof.map((item) => link(item)).join(', ') || 'none located'}. These links alone are not proof of a passing run.`,
-    '',
-    `Inspection: ${scope.inspection ?? 'unknown'}`,
-    '',
-    `Limits: ${scope.gaps ?? 'unknown'}`,
-    '',
-    `Related questions: ${(scope.relatedScopes ?? []).map((id) => `[${id}](${id}.md)`).join(', ') || 'none'}.`
-  );
-  return `${lines.join('\n')}\n`;
-}
-
-export function render(root, index, context = historyContext(root, index)) {
-  const queue = reviewQueue(index);
-  const lines = [
-    '# Feature review ledger',
-    '',
-    'Generated by `node tooling/scripts/review-ledger.mjs render`. This is the queue; each feature hub owns the generated history view. [Docs guide](../README.md) · [Schema](schema.md).',
-    '',
-    `Inventory: ${index.features.length} source/capability/entrypoint groups across ${index.scopes.length} semantic review questions. Observation: ${index.inventory.checkedAt}.`,
-    '',
-    `Review queue: ${queue.filter((unit) => unit.pending > 0).length} pending reviews across ${queue.reduce((count, unit) => count + unit.pending, 0)} pending questions; ${queue.length} reviews in total.`,
-    '',
-    'Review, execution and proof are distinct. Progress is derived from immutable execution outcomes bound to a governing review, plan fingerprint and evidence. Legacy flags and completed plans without recovered evidence stay unbound. Source matching does not certify behavior.',
-    '',
-    'Scores estimate review payoff (0–10), not architecture quality. Prerequisites constrain order; related questions only supply context. AI is last in the global queue. A directly selected feature takes precedence.',
-    '',
-    '| Order | Review | Payoff | Questions | Reviewed | Pending |',
-    '| --- | --- | ---: | ---: | ---: | ---: |',
-  ];
-  for (const [position, unit] of queue.entries()) {
-    lines.push(
-      `| ${position + 1} | [${unit.title}](#${unit.id}) | ${unit.opportunity.score} | ${unit.scopes.length} | ${unit.reviewed} | ${unit.pending} |`
-    );
-  }
-  for (const group of index.reviewGroups ?? []) {
-    lines.push(
-      '',
-      `<a id="${group.id}"></a>`,
-      '',
-      `## ${group.title}`,
-      '',
-      group.reason,
-      '',
-      ...group.scopes.map((id) => `- [${id}](features/${id}.md)`)
-    );
-  }
-  lines.push(
-    '',
-    '## Feature progress',
-    '',
-    '| Question | Current conclusion | Execution | Proof | Gaps |',
-    '| --- | --- | --- | --- | ---: |'
-  );
-  for (const scope of orderScopes(index.scopes)) {
-    const state = scopeHistory(root, index, scope, context);
-    lines.push(
-      `| <a id="${scope.id}"></a>[${scope.title}](features/${scope.id}.md) | ${markdownCell(state.latest ? `${state.latest.verdict ?? 'historical'}: ${state.latest.summary}` : 'unassessed')} | ${state.progress.state}${state.progress.workKind ? ` (${state.progress.workKind})` : ''} | ${state.progress.proof} | ${state.gaps.length} |`
-    );
-  }
-  const unassociated = context.plans.filter(
-    (plan) => plan.association === 'unassociated'
-  );
-  lines.push(
-    '',
-    '## Retrieval limits',
-    '',
-    `${unassociated.length} discovered plans have no scope association. They remain unclassified; a filename match is not evidence. Use inspected document associations or plan metadata before claiming feature coverage.`,
-    '',
-    `Source census: ${new Set(context.live.flatMap((item) => item.paths)).size} distinct files. Current inventory: ${index.inventory.snapshot ? (index.inventory.snapshot.fingerprint === inventoryFingerprint(context.live) ? 'matching' : 'stale') : 'unknown'}. Original immutable records remain at their historical paths.`,
-    '',
-    'Use `lookup <scope>` for a compact conclusion and change summary. Use `lookup <scope> --detail` for complete records, fingerprints, associations and candidates.'
-  );
-  return `${lines.join('\n')}\n`;
-}
+const usage =
+  'Usage: node tooling/scripts/review-ledger.mjs next|status|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|draft <scope|plan.md> [--input <path>]...|record <draft.json> [--dry-run]|check|research <term>';
 
 export function main(root, args) {
   const [command, argument] = args;
-  const index = parse(root, indexPath);
-  if (command === 'discover') {
-    return discover(root, index).map(({ paths, ...item }) => ({
-      ...item,
-      example: paths[0],
-    }));
-  }
-  if (command === 'research') return searchResearch(root, argument);
-  if (command === 'queue') return reviewQueue(index);
-  if (command === 'status') {
-    const work = openWork(root, index);
-    const count = (open) => work.filter((item) => item.open === open).length;
-    return {
-      scopes: work.length,
-      unreviewed: count('unreviewed'),
-      pursueUnbound: count('pursue-unbound'),
-      pursueNotAdopted: count('pursue-not-adopted'),
-      deferred: count('deferred'),
-      closed: count(null),
-      open: work
-        .filter((item) => item.open)
-        .map(({ id, open }) => ({ id, open })),
-    };
-  }
-  if (command === 'next') {
-    const context = historyContext(root, index);
-    const work = new Map(
-      openWork(root, index, context).map((item) => [item.id, item])
-    );
-    const actionable = (id) =>
-      work.get(id).open && work.get(id).open !== 'deferred';
-    const unit = reviewQueue(index).find((item) =>
-      item.scopes.some(actionable)
-    );
-    if (!unit) {
-      return {
-        unit: null,
-        reason: 'No scope is open except those deferred on outside evidence.',
-      };
-    }
-    return {
-      unit: unit.id,
-      title: unit.title,
-      scopes: unit.scopes.filter(actionable).map((id) => ({
-        ...work.get(id),
-        lookup: compactScope(
-          root,
-          index,
-          index.scopes.find((scope) => scope.id === id),
-          context
-        ),
-      })),
-    };
-  }
-  if (command === 'draft' || command === 'draft-execution') {
-    const fresh =
-      command === 'draft'
-        ? draftReview(root, index, argument)
-        : draftExecution(root, index, argument);
-    const from = args.indexOf('--from');
-    return from === -1 ? fresh : carryDraft(fresh, parse(root, args[from + 1]));
-  }
+  const inputs = args.flatMap((arg, i) =>
+    args[i - 1] === '--input' ? [arg] : []
+  );
+  if (command === 'next') return next(root);
+  if (command === 'status') return status(root);
   if (command === 'lookup') {
-    assert.ok(argument, 'Supply a scope, feature or search term');
-    const group = (index.reviewGroups ?? []).find(
-      (item) => item.id === argument.toLowerCase()
-    );
-    const exact = index.scopes.find(
-      (scope) => scope.id === argument.toLowerCase()
-    );
-    const scopes = index.scopes.filter((scope) =>
-      group
-        ? group.scopes.includes(scope.id)
-        : exact
-          ? scope === exact
-          : `${scope.id} ${scope.title} ${scope.question}`
-              .toLowerCase()
-              .includes(argument.toLowerCase()) ||
-            index.features.some(
-              (feature) =>
-                feature.scope === scope.id &&
-                feature.id.toLowerCase().includes(argument.toLowerCase())
-            )
-    );
-    const context = historyContext(root, index);
-    return scopes.map((scope) => {
-      const compact = compactScope(root, index, scope, context);
-      if (!args.includes('--detail')) return compact;
-      const state = scopeHistory(root, index, scope, context);
-      return {
-        ...compact,
-        scope,
-        current: state.latest
-          ? recordSummary(root, state.latest, context.live)
-          : null,
-        progress: state.progress,
-        reconciliation: state.latest?.reconciliation ?? [],
-        subsequentExecution: state.afterReview.map((record) => ({
-          ...record,
-          freshness: executionFreshness(root, record, context.live),
-        })),
-        observation: {
-          ...compact.observation,
-          snapshot: index.inventory.snapshot ?? null,
-        },
-        changedInputs: changedInputs(root, state.latest, context.live),
-        plans: state.plans,
-        conflicts: state.gaps,
-        documents: (index.documents ?? []).filter((doc) =>
-          doc.scopes.includes(scope.id)
-        ),
-        historyCandidates: retrievalCandidates(index, scope).unresolved,
-        rejectedCandidates: retrievalCandidates(index, scope).rejected,
-        history: state.history.map((record) => ({
-          ...record,
-          freshness:
-            record.kind === 'execution'
-              ? executionFreshness(root, record, context.live)
-              : freshness(root, record, context.live),
-        })),
-        historySelection: 'All immutable records in append order.',
-        historyOmitted: 0,
-        features: index.features.filter(
-          (feature) => feature.scope === scope.id
-        ),
-      };
-    });
+    return lookup(root, argument, { detail: args.includes('--detail') });
   }
-
-  if (command === 'refresh') {
-    validate(root, index, { current: false });
-    const live = discover(root, index);
-    index.features = index.features.map((feature) => {
-      const item = live.find((entry) => entry.id === feature.id);
-      return {
-        ...feature,
-        fingerprint: item.fingerprint,
-        count: item.count,
-        source:
-          item.paths.find((path) => /\/index\.[jt]sx?$/.test(path)) ??
-          item.paths.find((path) => !/\.(spec|test|slow)\./.test(path)) ??
-          item.paths[0],
-      };
-    });
-    index.inventory.checkedAt = new Date().toISOString().slice(0, 10);
-    let baseCommit = null;
-    try {
-      baseCommit = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], {
-        encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-      }).trim();
-    } catch {
-      baseCommit = null;
+  if (command === 'show') return show(root, argument);
+  if (command === 'coverage') return coverage(root, { prefix: argument ?? '' });
+  if (command === 'draft') {
+    assert.ok(argument, 'Supply a scope id or a plan path');
+    const { draft, missing } = argument.endsWith('.md')
+      ? draftExecution(root, argument, inputs)
+      : draftReview(root, argument, inputs);
+    if (missing.length) {
+      process.stderr.write(`Not captured, missing: ${missing.join(', ')}\n`);
     }
-    index.inventory.snapshot = {
-      kind: 'working-tree',
-      baseCommit,
-      fingerprint: inventoryFingerprint(live),
-    };
-    writeFileSync(join(root, indexPath), json(index));
-    return 'Inventory refreshed; reviews and proof statuses unchanged. Run render and check.';
-  }
-  if (command === 'validate') {
-    assert.ok(argument, 'Supply a draft review record');
-    validate(root, index, { current: false, scopeEvidence: false });
-    const record = parse(root, argument);
-    const state = checkRecord(root, index, record, records(root, index));
-    const live = discover(root, index);
-    return {
-      valid: true,
-      ...(state === 'duplicate' ? { recorded: true } : {}),
-      freshness:
-        record.kind === 'execution'
-          ? executionFreshness(root, record, live)
-          : freshness(root, record, live),
-    };
+    return draft;
   }
   if (command === 'record') {
-    assert.ok(argument, 'Supply a completed JSON review record');
-    validate(root, index, { current: false, scopeEvidence: false });
-    const path = recordReview(root, index, parse(root, argument));
-    writeFileSync(join(root, indexPath), json(index));
-    return {
-      path,
-      next: 'Reconcile current scope/decision state, then render and check.',
-    };
+    assert.ok(argument, 'Supply a completed draft');
+    return record(root, argument, { dryRun: args.includes('--dry-run') });
   }
-  if (command === 'render') {
-    const context = historyContext(root, index);
-    writeFileSync(
-      join(root, 'docs/research/reviews.md'),
-      render(root, index, context)
-    );
-    mkdirSync(join(root, 'docs/research/features'), { recursive: true });
-    for (const scope of index.scopes) {
-      writeFileSync(
-        join(root, `docs/research/features/${scope.id}.md`),
-        renderFeature(root, index, scope, context)
-      );
-    }
-    return `Rendered docs/research/reviews.md and ${index.scopes.length} feature hubs`;
-  }
-  if (command === 'check') {
-    const { live, ...counts } = validate(root, index);
-    assert.equal(
-      read(root, 'docs/research/reviews.md'),
-      render(root, index),
-      'Generated view is stale; run render'
-    );
-    const context = historyContext(root, index, live);
-    for (const scope of index.scopes) {
-      assert.equal(
-        read(root, `docs/research/features/${scope.id}.md`),
-        renderFeature(root, index, scope, context),
-        `Generated feature hub is stale: ${scope.id}; run render`
-      );
-    }
-    assert.deepEqual(
-      files(root, 'docs/research/features')
-        .filter((path) => path.endsWith('.md'))
-        .sort(),
-      index.scopes
-        .map((scope) => `docs/research/features/${scope.id}.md`)
-        .sort(),
-      'Generated feature hub inventory disagrees with scopes'
-    );
-    return { ...counts, hubs: index.scopes.length };
-  }
-  throw new Error(
-    'Usage: node tooling/scripts/review-ledger.mjs discover|queue|next|status|lookup <scope-or-group> [--detail]|research <key>|draft <scope> [--from <draft>]|draft-execution <plan> [--from <draft>]|validate <json>|record <json>|refresh|render|check'
-  );
+  if (command === 'check') return check(root);
+  if (command === 'research') return searchResearch(root, argument);
+  throw new Error(usage);
 }
 
 if (
@@ -2574,14 +2241,11 @@ if (
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
   try {
-    process.stdout.write(
-      json(
-        main(
-          resolve(dirname(fileURLToPath(import.meta.url)), '../..'),
-          process.argv.slice(2)
-        )
-      )
+    const result = main(
+      resolve(dirname(fileURLToPath(import.meta.url)), '../..'),
+      process.argv.slice(2)
     );
+    process.stdout.write(typeof result === 'string' ? result : json(result));
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
     process.exitCode = 1;

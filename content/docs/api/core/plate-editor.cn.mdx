@@ -230,7 +230,7 @@ mutation 通过 `editor.update` 执行。Core Plate 命令位于 transaction 对
       type="(input: SnapshotInput) => void"
     >
       通过一次配置后的 Plate update 替换主 children、命名 roots、持久化 meta，
-      并可同时设置 selection。
+      并可同时设置 selection。其他顶层字段会被拒绝。
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.nodes.insert(node, options))"

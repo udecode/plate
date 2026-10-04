@@ -2,12 +2,7 @@
 title: Streaming parsing and consumer lifetime
 type: decision
 status: accepted
-updated: 2026-09-30
-review_scope: streaming
-current_review: 2026-09-30-streaming-history-reconciliation
-reconciled_executions: []
-review_history:
-  - ../review-records/2026-09-30-streaming-history-reconciliation.json
+updated: 2026-10-04
 source_refs:
   - conversion-boundary.md
   - ../../plans/2026-09-28-conversion-boundary-adoption.md
@@ -20,6 +15,8 @@ related:
 ---
 
 # Streaming parsing and consumer lifetime
+
+**Audit of 2026-10-04.** Stop. Markdown parseSlice's partial and previous options already give both streaming consumers neutral incremental parsing, and what they share beyond that is a one-line option choice, so a stream session or helper would add a public noun without removing coordination. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-streaming-audit` hold the evidence.
 
 **Stop adding another streaming owner.** Markdown owns parsing and its
 previous-result continuation hint. The consumer owns accumulated source,

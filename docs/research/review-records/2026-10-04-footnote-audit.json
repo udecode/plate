@@ -1,0 +1,85 @@
+{
+  "id": "2026-10-04-footnote-audit",
+  "scope": "footnote",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "How should footnote references and content preserve identity and navigation?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 47. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "References and definitions associate through persisted ref; runtime NodeKeys never persist.",
+    "Definitions stay root-level end matter; duplicate refs are preserved and flagged, first definition canonical.",
+    "Readers can move between a reference and its definition in any mounted view, including read-only.",
+    "Every conversion that can represent the association (Markdown, HTML, static) carries it; DOCX import reports what it drops.",
+    "Navigation arrival paint goes through NavigationFeedback and does not mutate model, selection or history."
+  ],
+  "evidenceReuse": "Reused the 2026-04-04 footnote support and sync architecture plans (ref registry, first-definition canonical), and the 2026-09-07 extraction execution (duplicate target subscriptions removed from copied UI). Rechecked live: BaseFootnotePlugin.ts, FootnotePlugin.tsx and its spec, copied footnote.tsx and footnote-static.tsx, HTML and DOCX handling of footnotes, the footnote docs, and a consumer census of the read and update methods.",
+  "summary": "The job is inline references and root-level definitions that share a persisted ref, survive conversion, and let users move between them. Live source matches the identity doctrine. footnoteReference and footnoteDefinition carry ref, a transfer veto keeps definitions at the root, read methods memoize one registry per document revision, duplicates are flagged and renumbered without data loss, and the React adapter's focusDefinition and focusReference select, focus, scroll and flash through NavigationFeedback. But both adapter methods return false in a read-only view (the spec asserts it and the docs state it), so the copied reference and back-link controls do nothing for readers. The static renderers print [ref] with no anchor or id, and neither plugin declares an HTML mapping, so HTML export and GFM-rendered HTML paste lose the association, while TOC navigation already works without a selection write. The strongest target keeps the data model, splits navigation into reveal (scroll and flash in any mounted view) and caret move (editable only), and gives static and HTML output GFM-compatible anchors. A separate end-matter root and schema-enforced unique refs both lose, because the veto already keeps definitions at the root and uniqueness enforcement would rewrite pasted content.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "editor.api.footnote.focusDefinition({ ref: '3' }) // selects, focuses, scrolls, flashes; returns false in a read-only view. Static: <sup>[3]</sup> and a definition div without id; no html mapping on BaseFootnotePlugin or BaseFootnoteDefinitionPlugin.",
+    "proposed": "editor.api.footnote.focusDefinition({ ref: '3' }) // proposed: reveals by scroll and flash in any mounted view, moves the caret only when editable. Static and HTML (proposed mapping): <sup><a href=\"#fn-3\" id=\"fnref-3\">3</a></sup> and a definition with id=\"fn-3\", decoded back to ref '3'."
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "How should footnote references and content preserve identity and navigation?",
+      "action": "retains",
+      "reason": "Its copied-UI subscription cleanup for footnotes still holds; this review addresses navigation permission and conversion anchors it did not decide."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current behavior loses on the navigation half of the question. Identity is sound, but read-only readers cannot navigate and static and HTML output drops the link.",
+    "Change an existing API: focusDefinition and focusReference reveal (scroll plus flash) in any view and move the caret only when editable; static renderers and a declared HTML mapping emit GFM-compatible anchors; wins without new nouns.",
+    "Replacing the architecture with a named footnotes root loses. It guarantees end matter structurally but adds a second mounted root, cross-root navigation and conversion work for a guarantee the veto already gives.",
+    "Enforcing unique definition refs in the schema loses to the lossless flag-and-renumber design, because it silently rewrites or drops pasted duplicates.",
+    "Pruning the derived read aliases (duplicateDefinitions, hasDuplicateDefinitions and duplicateRefs have no production consumer) is a small cleanup of public names that does not decide this question.",
+    "Moving the combobox trigger state belongs to the pending autocomplete target, not this scope."
+  ],
+  "proofLimits": "Source review only; read-only navigation refusal and missing anchors are read from source and spec, not exercised in a browser. HTML serialize behavior for unmapped footnotes (diagnosed drop or unwrap) was not executed. DOCX footnote import is diagnosed as unsupported and stays out of this target.",
+  "references": [
+    "docs/research/features/footnote.md",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json",
+    "docs/plans/2026-04-04-footnote-support.md",
+    "docs/plans/2026-04-04-footnote-sync-architecture.md",
+    "docs/plans/2026-07-12-plate-next-footnote-indent-juice-package-reviews.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts",
+    "packages/platejs/src/react/features/footnote/FootnotePlugin.tsx",
+    "packages/platejs/src/react/features/footnote/FootnotePlugin.spec.tsx",
+    "apps/www/src/registry/components/editor/footnote.tsx",
+    "apps/www/src/registry/components/editor/footnote-static.tsx",
+    "apps/www/src/registry/components/editor/toc.tsx",
+    "packages/platejs/src/docx/import/lib/importDocx.ts",
+    "packages/platejs/src/docx/html/cleanWordHtml.internal.ts",
+    "content/docs/(plugins)/(elements)/footnote.mdx"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/footnote.tsx": "c0a04066e9300c7a826d7e61f0c55b2a0de3d8a1f738c00abad6c1cf6e2e2bcd",
+      "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.spec.ts": "732e7f8976f09c85f33041b6af3a3b5804e0de000c9c276f6613ddbe2f310851",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/footnote": "c863ab6e72f59e8b29565c9fdf738c0e3e40818bbf4eff86587f848d540e817b"
+    },
+    "features": {
+      "capability/footnote": "15523d483fb6079e075f0901d46776f93546e4ee12079ceaa17539ef7149d35f",
+      "capability/footnoteDefinition": "aab4d40d961a706a2ad29c4afd5a7c2c40885417310df07c4fee8ba86f159b75",
+      "example/value/footnote-value": "23375692f9de57dac66cf9526fa82c0f31583def095b742511c80113df70b3b6",
+      "export/platejs/./footnote": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./footnote/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/footnote": "c863ab6e72f59e8b29565c9fdf738c0e3e40818bbf4eff86587f848d540e817b",
+      "ui/footnote": "97af6998e7c94567464ffb24219964d3bee2a943a4889cc01207d9b6fd600a1b"
+    },
+    "upstreams": []
+  }
+}

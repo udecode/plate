@@ -12,6 +12,8 @@ custom handlers, overrides, priorities, and default shortcut ownership.
 
 Each plugin owns a `shortcuts` object. At resolution time Plate namespaces every shortcut as `${plugin.name}.${shortcutName}`.
 
+Plate runs no shortcut for a key event that reports `isComposing` or carries keyCode `229`, the code WebKit sends for the Enter that confirms an IME composition. Plugin `onKeyDown` handlers still receive the event.
+
 When a shortcut has no `handler`, Plate looks for a same-named plugin method:
 
 1. One update method exists: Plate infers `update`.

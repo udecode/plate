@@ -1,0 +1,84 @@
+{
+  "id": "2026-10-04-math-audit",
+  "scope": "math",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "How should math value, delimiters, inline selection and rendering compose?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 49. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Persist block and inline LaTeX source as flat latex on void elements.",
+    "Round-trip Markdown math and inlineMath; $...$ and $$ input rules stay out of code blocks and equations.",
+    "For inline void selection, the caret enters and leaves the equation and its popover without stray writes, and a draft commits once.",
+    "The rendering engine (KaTeX, MathJax, Temml) and its stylesheet are presentation owned by copied UI.",
+    "Entrypoints carry only the dependencies their semantic job needs, and packages do not publish trivial presentation helpers to shorten copied code (plate-plugins SKILL.md 185, plate.md 905-914)."
+  ],
+  "evidenceReuse": "This scope has no prior review. This review reused the 2026-09-07 execution account (equation drafts, one guarded commit) and the 2026-04 delimiter-trigger plans as history. It rechecked the live BaseEquationPlugin, copied math.tsx and math-static.tsx, the entrypoint DAG, packages/platejs/math/katex.css and its package export, and getEquationHtml consumers.",
+  "summary": "The job is to store block and inline LaTeX, convert $...$ and $$ input, round-trip Markdown math and inlineMath, edit inline voids without caret traps, and render with an engine the app chooses. Live source does the semantic part well. It stores flat latex on block and inline voids, has Markdown math mappings and excludes input rules from code blocks and equations, and the copied popovers keep local drafts with one guarded undoable commit. Rendering is split inconsistently. Copied math.tsx already calls katex.render directly. But platejs/math declares katex as its peer because BaseEquationPlugin.ts imports it at the top for getEquationHtml, whose only consumer is copied math-static.tsx. The package also publishes platejs/math/katex.css, a single @import of KaTeX's own stylesheet. Moving the helper to a subpath keeps two trivial public nouns. Deletion leaves the headless entry dependency-free and makes it obvious that the rendering engine is copied policy. The text-children and code-block-merge alternatives lose to the current void-plus-latex model, which matches Lexical, Tiptap and Markdown's dedicated math node.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "import { getEquationHtml } from 'platejs/math'; import 'platejs/math/katex.css'; copied EquationElementStatic renders getEquationHtml({ element, options }); importing BaseEquationPlugin for schema or Markdown loads katex.",
+    "proposed": "import katex from 'katex'; import 'katex/dist/katex.min.css'; copied EquationElementStatic renders katex.renderToString(element.latex, options), like the live element's katex.render; platejs/math exports only the equation descriptors, MathRules and element types, with no katex peer."
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "How should math value, delimiters, inline selection and rendering compose?",
+      "action": "retains",
+      "reason": "Its local equation drafts and single guarded commit stay; it did not address the KaTeX dependency of the headless entry."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current design works but loses, because katex is a mandatory peer of a headless semantic entry for a helper the live renderer does not use.",
+    "Moving the KaTeX helper and stylesheet to a platejs/math/katex subpath fixes dependency closure but keeps a one-line wrapper and a CSS alias as public API. It loses to deletion.",
+    "The proposal deletes getEquationHtml, the platejs/math/katex.css export and the katex peer of platejs/math. Copied math.tsx and math-static.tsx then import katex and katex/dist/katex.min.css directly, as math.tsx already does for live rendering.",
+    "Storing LaTeX as text children (ProseMirror-math style) loses. Void plus latex matches Lexical and Tiptap and keeps the Markdown mapping direct, and the copied draft popover already gives one undoable commit.",
+    "Merging block equations into a code-block language loses, because Markdown has a dedicated math node and $$ syntax."
+  ],
+  "proofLimits": "This is a source review only, with no tests, packed-consumer or Node import runs. The claim that schema or Markdown consumers must install katex rests on the static import and the DAG peer list, not a packed install. This review judged inline selection and IME behavior from existing tests and changelog history and did not rerun them.",
+  "references": [
+    "packages/platejs/src/math/lib/BaseEquationPlugin.ts",
+    "packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx",
+    "packages/platejs/math/katex.css",
+    "packages/platejs/package.json",
+    "apps/www/src/registry/components/editor/math.tsx",
+    "apps/www/src/registry/components/editor/math-static.tsx",
+    "apps/www/src/registry/components/editor/math.lifecycle.spec.tsx",
+    "tooling/entrypoints/entrypoint-dag.mjs",
+    "content/docs/(plugins)/(elements)/equation.mdx",
+    ".agents/skills/plate-plugins/SKILL.md",
+    "docs/vision/plate.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "docs/research/features/math.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/math.tsx": "6cf1ce253ffb433398dae1d43da2360884795a65bf48324588626b36cf19d33e",
+      "packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx": "4d26871e665eec3beb2c0442c5dd76368a379e005d1f89a92849a84e2df9f525",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/math": "eada39156499210874c12c54b68960ea29147bea3e7990d70673d18cab47783f"
+    },
+    "features": {
+      "capability/equation": "e420051c56ad0fc55ca1e0daafcca1bee282e44bd17521046026fb941afb35cf",
+      "capability/inlineEquation": "d4339649525ffac096245c19d8b39fd27cc12ece1a06ba069adbead4c2f04438",
+      "example/value/equation-value": "9aa07c150ba5f0f93c7f9ef1883e9223ca6f7c32464faa0d13feeecede4b1e37",
+      "export/platejs/./math": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./math/katex.css": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./math/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/math": "eada39156499210874c12c54b68960ea29147bea3e7990d70673d18cab47783f",
+      "ui/equation-toolbar-button": "9551ce1b8513383f1396406b3c914a1ae5122e35f1b54234ecc8c63b0f72e911",
+      "ui/math": "88f3c852b96f0dbd8048c8017e537bad35fae9cd7f0d7801613688eec835b9fd"
+    },
+    "upstreams": []
+  }
+}

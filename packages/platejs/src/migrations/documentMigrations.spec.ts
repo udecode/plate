@@ -78,6 +78,14 @@ describe('document migrations', () => {
         ) => unknown
       )(raw, { migrations })
     ).toThrow('requires explicit source intent');
+    expect(() =>
+      (
+        migrateDocument as (
+          input: unknown,
+          options: { migrations: DocumentMigrations }
+        ) => unknown
+      )({ ...raw, document: { saved: true } }, { migrations })
+    ).toThrow('requires explicit source intent');
 
     expect(
       NodeApi.string(
@@ -175,7 +183,7 @@ describe('document migrations', () => {
         },
         { migrations }
       )
-    ).toThrow('invalid property "extra"');
+    ).toThrow('Persisted document envelope field "extra" is not supported');
     expect(() =>
       migrateDocument(
         {
@@ -204,6 +212,131 @@ describe('document migrations', () => {
     expect(() => migrateDocument(hostile, { migrations, source: 1 })).toThrow(
       'JSON-compatible data'
     );
+  });
+
+  describe('legacy top-level fields', () => {
+    const paragraph = (text: string) => ({
+      children: [{ text }],
+      type: 'paragraph',
+    });
+    const liftMigrations = defineDocumentMigrations({
+      plugins,
+      schema: EditorSchema,
+      sourceFingerprints: { 1: 'source-1', 2: 'source-2' },
+      steps: {
+        2: ({ document }) => ({ document }),
+        3: ({ document, legacy: { title, ...legacy } }) => ({
+          document:
+            title === undefined
+              ? document
+              : { ...document, meta: { ...document.meta, title } },
+          legacy,
+        }),
+      },
+    });
+
+    it('passes legacy fields through a step and lifts them in a later one', () => {
+      const raw = migrateDocument(
+        { children: [paragraph('raw')], title: 'Raw' },
+        { migrations: liftMigrations, source: 1 }
+      );
+      const enveloped = migrateDocument(
+        {
+          document: { children: [paragraph('saved')], title: 'Saved' },
+          schema: source(1).schema,
+        },
+        { migrations: liftMigrations }
+      );
+
+      expect(raw.output.document.meta).toEqual({ title: 'Raw' });
+      expect(Object.keys(raw.output.document).sort()).toEqual([
+        'children',
+        'meta',
+      ]);
+      expect(enveloped.output.document.meta).toEqual({ title: 'Saved' });
+    });
+
+    it('refuses at completion a field no step lifted', () => {
+      const oldContract = defineDocumentMigrations({
+        plugins,
+        schema: { id: 'old-contract', version: 2 },
+        sourceFingerprints: { 1: 'old-1' },
+        steps: {
+          2: ({ document }) => {
+            const { title } = document as typeof document & {
+              title?: string;
+            };
+
+            return {
+              document:
+                title === undefined
+                  ? document
+                  : { ...document, meta: { ...document.meta, title } },
+            };
+          },
+        },
+      });
+
+      expect(() =>
+        migrateDocument(
+          { children: [paragraph('v')], title: 'Draft' },
+          { migrations: oldContract, source: 1 }
+        )
+      ).toThrow(
+        'Migrated document field "title" was not lifted by any migration step.'
+      );
+      expect(() =>
+        migrateDocument(
+          { children: [paragraph('v')], stray: 1 },
+          { migrations, source: 1 }
+        )
+      ).toThrow(
+        'Migrated document field "stray" was not lifted by any migration step.'
+      );
+      expect(() =>
+        migrateDocument(
+          { children: [paragraph('v')], stray: 1 },
+          { migrations, source: 'current' }
+        )
+      ).toThrow('document field "stray" is not supported.');
+    });
+
+    it('refuses an unlifted own __proto__ field instead of losing it', () => {
+      const input = JSON.parse(
+        '{"children":[{"type":"paragraph","children":[{"text":"v"}]}],"__proto__":{"x":1}}'
+      );
+
+      expect(() => migrateDocument(input, { migrations, source: 1 })).toThrow(
+        'Migrated document field "__proto__" was not lifted by any migration step.'
+      );
+    });
+
+    it('reads envelope-shaped input as a raw document under explicit source intent', () => {
+      let seen: readonly string[] = [];
+      const capture = defineDocumentMigrations({
+        plugins,
+        schema: { id: 'raw-envelope-shape', version: 2 },
+        sourceFingerprints: { 1: 'raw-1' },
+        steps: {
+          2: ({ document, legacy }) => {
+            seen = Object.keys(legacy).sort();
+
+            return { document, legacy: {} };
+          },
+        },
+      });
+
+      migrateDocument(
+        {
+          children: [paragraph('v')],
+          document: { children: [] },
+          schema: source(1).schema,
+        },
+        { migrations: capture, source: 1 }
+      );
+
+      expect(seen).toEqual(['document', 'schema']);
+    });
   });
 
   it('keeps ordinary editor loading current-only', () => {

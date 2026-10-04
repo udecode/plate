@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/WddBEy4mfjBjRLp3FwVqRz
 
-Block drag and drop in Plite and Plate. The scope's full review and plan history is in the ledger hub.
+Block drag and drop in Plite and Plate. `node tooling/scripts/review-ledger.mjs show dnd` prints the scope's full review and plan history.
 
 ## Public API
 

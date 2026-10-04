@@ -113,7 +113,7 @@ editor.read.schema.assertDocument(document);
 editor.read.schema.assertFragment(children);
 ```
 
-Validation checks the complete document or closed children against the compiled schema. It does not publish content. Unknown vocabulary, invalid property values, illegal root ownership, and grammar violations cannot become a partially accepted document.
+Validation checks the complete document or closed children against the compiled schema. It does not publish content. A top-level field other than `children`, `roots` and `meta`, unknown vocabulary, invalid property values, illegal root ownership, and grammar violations cannot become a partially accepted document.
 
 Use `editor.read.schema.create(...)` to construct valid nodes and `isMarkableVoid`, `isInline`, `isVoid`, `isIsolating`, and `isObject` for behavior queries. The exact read methods live in [Editor API](/docs/api/editor-api#schema-behavior).
 

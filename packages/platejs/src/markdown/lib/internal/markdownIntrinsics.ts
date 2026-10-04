@@ -14,8 +14,52 @@ import { getMarkdownTagRepair } from './markdownTags';
 const LEADING_NEWLINE_REGEX = /^\n/;
 const BR_TAG = /<br\s*\/?>/gi;
 const ONLY_BR_TAGS = /^(?:\s*<br\s*\/?>)+\s*$/i;
+const LINE_ENDING_AT_END = /\r?\n$/;
 const HTML_COMMENT = /^\s*<!--[\s\S]*-->\s*$/;
 const TAG_NAME = /^<\/?([A-Za-z][\w-]*)/;
+
+/** Markdown drops an empty paragraph, so the writer gives it this text. */
+const EMPTY_PARAGRAPH_TEXT = '\u200B';
+
+/** The text an empty paragraph is written with, read back as empty. */
+export const readEmptyParagraphMarker = (child: Descendant): Descendant =>
+  TextApi.isText(child) && child.text === EMPTY_PARAGRAPH_TEXT
+    ? { ...child, text: '' }
+    : child;
+
+const withoutTrailingBreakMarkup = (
+  children: Paragraph['children']
+): Paragraph['children'] => {
+  const last = children.at(-1);
+  const previous = children.at(-2);
+
+  if (last?.type !== 'html' || !ONLY_BR_TAGS.test(last.value) || !previous) {
+    return children;
+  }
+  // After an image, the `<br>` would only open an empty paragraph, with or
+  // without a line ending between them.
+  if (previous.type === 'image') return children.slice(0, -1);
+  if (
+    previous.type === 'text' &&
+    /^\r?\n$/.test(previous.value) &&
+    children.at(-3)?.type === 'image'
+  ) {
+    return children.slice(0, -2);
+  }
+  // The writer keeps a trailing line break as a line ending plus `<br />`:
+  // the line ending is not content, the `<br>` is.
+  if (previous.type === 'text' && LINE_ENDING_AT_END.test(previous.value)) {
+    return [
+      ...children.slice(0, -2),
+      { ...previous, value: previous.value.replace(LINE_ENDING_AT_END, '') },
+      last,
+    ];
+  }
+  // After text ending in two spaces, that line ending reads as a hard break,
+  // which the `<br>` repeats.
+  if (previous.type === 'break') return [...children.slice(0, -2), last];
+  return children;
+};
 
 /**
  * Language-level decoders every editor needs, even without feature plugins.
@@ -85,14 +129,10 @@ export const markdownIntrinsicDecoders = {
       options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
     const imageType = options.registry.type(PLUGINS.image) ?? 'image';
     const children = convertChildrenDeserialize(
-      node.children,
+      withoutTrailingBreakMarkup(node.children),
       marks,
       options
-    ).map((child) =>
-      TextApi.isText(child) && child.text === '\u200B'
-        ? { ...child, text: '' }
-        : child
-    );
+    ).map(readEmptyParagraphMarker);
     const elements: Descendant[] = [];
     let inlineNodes: Descendant[] = [];
     const flushInlineNodes = () => {
@@ -102,16 +142,10 @@ export const markdownIntrinsicDecoders = {
       inlineNodes = [];
     };
 
-    children.forEach((child, index, allChildren) => {
+    children.forEach((child) => {
       if ((child as { type?: string }).type === imageType) {
         flushInlineNodes();
         elements.push(child);
-      } else if (
-        child.text === '\n' &&
-        allChildren.length > 1 &&
-        index === allChildren.length - 1
-      ) {
-        // A trailing break does not create another paragraph.
       } else {
         inlineNodes.push(child);
       }
@@ -126,6 +160,9 @@ export const markdownIntrinsicDecoders = {
     text: node.value.replace(LEADING_NEWLINE_REGEX, ''),
   }),
 };
+
+/** The `<br />` that keeps a paragraph's trailing line break, after its line ending. */
+export const TRAILING_BREAK_HTML = '\n<br />';
 
 /**
  * Encode the paragraph type when no feature mapping claims it. Newlines in text
@@ -157,7 +194,7 @@ export const encodeMarkdownParagraph = (
         .at(-1)
         ?.push(
           isEmpty && options.preserveEmptyParagraphs !== false
-            ? part(child, '\u200B')
+            ? part(child, EMPTY_PARAGRAPH_TEXT)
             : child
         );
       continue;
@@ -179,7 +216,10 @@ export const encodeMarkdownParagraph = (
   ]);
 
   if (lines.length > 1 && lines.at(-1)?.length === 0) {
-    children[children.length - 1] = { type: 'html', value: '\n<br />' };
+    children[children.length - 1] = {
+      type: 'html',
+      value: TRAILING_BREAK_HTML,
+    };
   }
 
   return { children: children as Paragraph['children'], type: 'paragraph' };

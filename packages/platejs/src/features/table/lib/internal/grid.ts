@@ -107,18 +107,10 @@ const freezeMap = <K, V>(map: Map<K, V>): ReadonlyMap<K, V> => {
   return Object.freeze(view);
 };
 
-const compileTableElement = (
+const buildTableGrid = (
   table: Element,
   getKey?: (cell: TableCellElement, path: Path) => string
 ): TableGrid => {
-  const cached = getKey ? undefined : cache.get(table);
-
-  if (cached) {
-    cacheHitCount += 1;
-
-    return cached;
-  }
-
   compileCount += 1;
 
   const height = table.children.length;
@@ -259,7 +251,21 @@ const compileTableElement = (
     width,
   }) satisfies TableGrid;
 
-  if (!getKey) cache.set(table, grid);
+  return grid;
+};
+
+const compileCachedTableGrid = (table: Element): TableGrid => {
+  const cached = cache.get(table);
+
+  if (cached) {
+    cacheHitCount += 1;
+
+    return cached;
+  }
+
+  const grid = buildTableGrid(table);
+
+  cache.set(table, grid);
 
   return grid;
 };
@@ -286,7 +292,7 @@ export function compileTableGrid(
       throw new Error(`No table found at path ${tablePath}`);
     }
 
-    return compileTableElement(table, (_cell, path) => {
+    return buildTableGrid(table, (_cell, path) => {
       const cellPath = tablePath.concat(path);
       const key = state.key(
         root ? { offset: 0, path: cellPath, root } : cellPath
@@ -300,8 +306,57 @@ export function compileTableGrid(
     });
   }
 
-  return compileTableElement(stateOrTable as Element);
+  return compileCachedTableGrid(stateOrTable as Element);
 }
+
+export type DetachedTableGrid =
+  | Readonly<{ grid: TableGrid; kind: 'merged' }>
+  | Readonly<{ kind: 'flat' }>
+  | Readonly<{ kind: 'too-large' }>;
+
+/**
+ * Lay out a caller-owned table, which may change between reads, without the
+ * identity cache. `flat` means no cell spans more than one slot. `too-large`
+ * means the layout could hold more than `maxEmptySlots` empty slots, checked
+ * before allocating, since any positive span is valid.
+ */
+export const compileDetachedTableGrid = (
+  table: Element,
+  maxEmptySlots: number
+): DetachedTableGrid => {
+  const rows = table.children as readonly TableRowElement[];
+  // Row spans carry columns into the rows below them.
+  const carryEndsAt = new Array<number>(rows.length + 1).fill(0);
+  let carried = 0;
+  let cells = 0;
+  let merged = false;
+  let width = 0;
+
+  rows.forEach((row, rowIndex) => {
+    carried -= carryEndsAt[rowIndex];
+
+    let rowWidth = carried;
+
+    for (const cell of row.children as readonly TableCellElement[]) {
+      const colSpan = getColSpan(cell);
+      const rowSpan = Math.min(getRowSpan(cell), rows.length - rowIndex);
+
+      cells += 1;
+      merged ||= colSpan > 1 || rowSpan > 1;
+      rowWidth += colSpan;
+      if (rowSpan > 1) {
+        carried += colSpan;
+        carryEndsAt[rowIndex + rowSpan] += colSpan;
+      }
+    }
+    width = Math.max(width, rowWidth);
+  });
+  if (!merged) return { kind: 'flat' };
+
+  return rows.length * width - cells > maxEmptySlots
+    ? { kind: 'too-large' }
+    : { grid: buildTableGrid(table), kind: 'merged' };
+};
 
 export const readTableGridCompilerMetrics = (): TableGridCompilerMetrics =>
   Object.freeze({ cacheHitCount, compileCount });

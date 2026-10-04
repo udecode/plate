@@ -10,7 +10,7 @@ Use this folder for package, API, test, and example inventories during the
 fresh-branch migration. These inventories include historical mappings and
 later revisions; inspect each ledger’s date, owner, and proof before reuse.
 Current review and execution state is linked from the
-[feature review ledger](../../research/reviews.md).
+[feature review ledger](../../research/schema.md#review-history).
 
 Status words:
 

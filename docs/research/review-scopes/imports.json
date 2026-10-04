@@ -1,0 +1,63 @@
+{
+  "id": "imports",
+  "title": "Document import and conversion fidelity",
+  "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+  "dependsOn": [],
+  "prerequisiteReason": "The user directly selected cross-format import/export architecture; settled export, persistence, clipboard and DOCX laws are reconciled rather than reopened wholesale.",
+  "last": false,
+  "opportunity": {
+    "score": 8,
+    "reason": "HTML and Markdown file import conflate complete documents with fragments, lack detached import parity, and expose incompatible failure and loss channels."
+  },
+  "owners": [
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/docx/import/lib/importDocx.ts"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/parse-html.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/import-toolbar-button.tsx",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "apps/www/src/registry/examples/markdown-streaming-demo.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts",
+    "packages/platejs/src/docx/import/lib/importDocx.spec.ts"
+  ],
+  "evidenceInputs": [
+    "docs/analysis/editor-architecture-candidates.md",
+    "docs/research/decisions/export-fidelity.md",
+    "docs/research/decisions/documents-conversion-fidelity.md",
+    "docs/research/decisions/persistence-ownership.md",
+    "apps/www/src/registry/components/editor/import-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/export-toolbar-button.tsx",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "packages/platejs/src/lib/plugins/html/htmlAst.ts",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",
+    "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts",
+    "packages/platejs/src/docx/import/lib/importDocx.ts",
+    "packages/platejs/src/docx/export/lib/exportDocx.tsx",
+    "packages/platejs/src/csv/lib/CsvPlugin.ts",
+    "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
+    "packages/plitejs/src/core/persisted-document.ts",
+    "packages/platejs/src/migrations/documentMigrations.ts",
+    "content/docs/(guides)/serializing.mdx",
+    "content/docs/(plugins)/(serializing)/html.mdx",
+    "content/docs/(plugins)/(serializing)/markdown.mdx",
+    "content/docs/(plugins)/(serializing)/docx.mdx"
+  ],
+  "relatedScopes": [
+    "exports",
+    "html",
+    "markdown",
+    "documents",
+    "persistence",
+    "clipboard",
+    "csv"
+  ],
+  "decision": "docs/research/decisions/import-fidelity.md"
+}

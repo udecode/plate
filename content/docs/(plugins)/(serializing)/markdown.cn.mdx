@@ -95,7 +95,9 @@ mapping bug 会抛出。预期内的格式表达损失通过带诊断的 result 
 
 `lossPolicy` 默认为 `'reject'`。不支持的可见内容会返回
 `{ ok: false, diagnostics }`，且不包含 `data`。只有格式把 drop、replacement 或
-unwrap 报告为 warning 时，`lossPolicy: 'allow'` 才能发布输出。
+unwrap 报告为 warning 时，`lossPolicy: 'allow'` 才能发布输出。保留内容的损失（例如
+[table cell](#table-cell) 中折叠为 `<br/>` 的 paragraph 边界）在任何策略下都是
+warning。
 
 ## 语法
 
@@ -139,7 +141,7 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
 - Block tag 与其内容之间用空行分隔，不缩进。
 - 只包含一个单行 paragraph 的 block 保持在一行内。
 - Attribute value 使用双引号。`&` 写为 `&amp;`，`"` 写为 `&quot;`，换行写为
-  `&#10;`。
+  `&#10;`，`|` 写为 `&#124;`。
 - CommonMark 会合并的 footnote label（例如 `A` 与 `a`）会写成不同的 label。
 
 ### 读取规则
@@ -166,6 +168,34 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
   diagnostic；script source 从未渲染，因此移除它是无损的。Link 的
   `allowedSchemes` 在该下限之上收窄或放宽 link scheme；被其拒绝的 link 保留
   label，并报告有损的 `markdown-unsupported-node` warning。
+
+### Table cell
+
+GFM 的一行只能写在一行内，因此 Plate 把 table cell 中的 block 以 inline 形式写在这一行：
+
+```md
+| Plan |
+| ---- |
+| Intro<ul><li><input type="checkbox" checked disabled /> ship</li></ul><ol start="3"><li>step</li></ol> |
+```
+
+- Plate 把 list paragraph 写为 `<ul>`、`<ol start="n">` 与 `<li>` HTML，task item
+  以 disabled checkbox 开头。安装 [List](/docs/list) 时，解析把这些 HTML 读取回
+  list paragraph；未安装时 HTML 保留为字面文本。
+- Plate 用 `<br/>` 连接其他 paragraph。解析把它们读取回一个带换行的 paragraph，
+  因此序列化会把折叠的边界报告为有损 warning。
+- Heading 或 quote 保留其 inline content，code 或 math block 保留其文本，各自报告
+  有损 warning。序列化会丢弃其他 block（例如 horizontal rule 或带 caption 的
+  image），并按 `lossPolicy` 报告。
+- Plate 把合并的 cell 写在其第一个 slot，在被覆盖的 slot 写空 cell。每个 span 报告
+  `markdown-property-omitted`。
+- 换行与 `|` 都不会提前结束 cell。在 inline math 中，序列化把 `|` 写为 `\vert`，
+  把 `\|` 写为 `\Vert`。在 `\text{…}` 等 text-mode group 中，`|` 写为
+  `\textbar{}`。`\verb` 的 `|` 分隔符换成其他分隔符。若 inline math 中的 `|` 或
+  `\|` 无法安全改写（例如位于其他命令的参数、array 列格式或 `\verb` 文本中），
+  整个 inline math 写为文本。序列化在 autolink destination 中把 `|` 写为 `%7C`，
+  在 raw HTML 中写为 `&#124;`；把 inline math 或 raw HTML 中的换行写为空格；把
+  包含 `\|` 的 inline code 写为文本。每个 cell 中每种改写报告一次有损 warning。
 
 ### Mention
 
@@ -382,6 +412,9 @@ markdown: {
 - `encodeNodeAttributes()` 按声明式 tag 的规则写出 node 的 attribute 并声明它们。
   `encodeAttributes(properties)` 写出给定的 property 值，并声明返回输出中保留了其
   attribute 的每个 property。
+- `encodeLine(children)` 把 block children 写在一行内，与 Plate 写出
+  [table cell](#table-cell) 的方式相同；`encodePhrasing(children)` 写出 inline
+  children。`decodeLine(children, marks?)` 把这一行读取回 block。
 
 传入数组可以为一个 plugin 声明多个 mapping。Self mapping 使用
 `defineFormats(map)`；foreign target 使用 `defineFormats(TargetPlugin, map)`。
@@ -428,7 +461,7 @@ reportWarnings(result.diagnostics);
 
 | Code | Severity | 报告内容 |
 | --- | --- | --- |
-| `markdown-unsupported-node` | `lossless` 时为 warning；`lossy` 遵循 `lossPolicy` | 没有 mapping 接受的内容、被拒绝的内容，或导出时丢弃的 node（`lossy`）。保留为文本的 raw HTML、HTML comment 与被移除的 `<block>` wrapper 为 `lossless`。 |
+| `markdown-unsupported-node` | `lossless` 或内容保留时为 warning；其他 `lossy` 遵循 `lossPolicy` | 没有 mapping 接受的内容、被拒绝的内容，或导出时丢弃的 node（`lossy`）。保留为文本的 raw HTML、HTML comment 与被移除的 `<block>` wrapper 为 `lossless`。[Table cell](#table-cell) 中折叠的 paragraph 边界或被折叠的 block 保留内容并报告 warning。 |
 | `markdown-unsafe-content` | `lossless` 时为 warning；`lossy` 遵循 `lossPolicy` | 被移除的 link 或 image destination。 |
 | `markdown-tag-repair` | Warning | `unclosed`、`unmatched` 或 `misplaced` 的注册 tag。 |
 | `markdown-property-omitted` | Warning | 导出时 Markdown 无法携带的 property 或 mark（例如 paragraph 的 `textAlign`），或导入时无效的 tag attribute value。 |

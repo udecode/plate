@@ -14,7 +14,7 @@ Use it to answer three different questions:
 - Use [current evidence navigation](current-evidence.md) to resolve the source
   behind historical parity/protocol rows. Keep their spec IDs and proof
   limits; a renamed path does not inherit a green result.
-- Use the [feature review ledger](../research/reviews.md) for architecture
+- Use the [feature review ledger](../research/schema.md#review-history) for architecture
   review order and prior iterations. The roadmap below retains accepted
   implementation sequence for this behavior lane.
 

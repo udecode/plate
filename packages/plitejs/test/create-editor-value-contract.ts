@@ -113,7 +113,7 @@ describe('createEditor value contract', () => {
         get: () => []
       });
       const cyclic = { children: [] };
-      cyclic.self = cyclic;
+      cyclic.children.push(cyclic);
 
       return [
         new DocumentValue(),

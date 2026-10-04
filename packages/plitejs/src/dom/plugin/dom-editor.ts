@@ -196,6 +196,14 @@ export interface DOMApi {
     options: DOMVisualPointOptions
   ) => DOMVisualPoint | null;
   root: () => HTMLElement | null;
+  /**
+   * The DOM text from `from` to this editor root's caret, including IME
+   * preedit the model has not received, without non-editable, retained or
+   * nested-editor DOM. Returns null when the root or `from` is not mounted,
+   * when `from.root` is not this view's root, or when the caret is outside
+   * this editor or before `from`.
+   */
+  textToCaret: (from: Point) => string | null;
   scroll: () => HTMLElement | null;
   /** Scroll a mounted target; return cleanup that cancels pending scrolling. */
   scrollIntoView: (
@@ -1097,6 +1105,41 @@ export const resolveDOMPointInRoot = (
   }
 
   return domPoint;
+};
+
+const readTextToCaret = (editor: DOMEditor<any>, from: Point) => {
+  if (getEditorDOMViewRoot(editor, from.root) !== getEditorDOMViewRoot(editor)) {
+    return null;
+  }
+
+  const root = DOMEditor.root(editor);
+  const start = root ? resolveDOMPointInRoot(editor, from, root) : null;
+
+  if (!root || !start) return null;
+
+  const selection = getSelection(root.getRootNode() as Document | ShadowRoot);
+  const focus = selection?.focusNode;
+  const focusEditor = (
+    isDOMElement(focus) ? focus : focus?.parentElement
+  )?.closest('[data-editor="true"]');
+
+  if (!focus || focusEditor !== root) return null;
+
+  const range = root.ownerDocument.createRange();
+
+  range.setStart(start[0], start[1]);
+  if (range.comparePoint(focus, selection.focusOffset) < 0) return null;
+  range.setEnd(focus, selection.focusOffset);
+
+  const contents = range.cloneContents();
+
+  for (const hidden of contents.querySelectorAll(
+    '[contenteditable="false"], [data-editor-retained], [data-editor="true"]'
+  )) {
+    hidden.remove();
+  }
+
+  return (contents.textContent ?? '').replaceAll('\uFEFF', '');
 };
 
 /** Resolve native coordinates within an exact mounted DOM root. @internal */
@@ -2797,6 +2840,7 @@ export const createDOMEditorCapability = <
     resolveRangeRect: (range) => DOMEditor.resolveRangeRect(editor, range),
     resolveVisualPoint,
     root: () => DOMEditor.root(editor),
+    textToCaret: (from) => readTextToCaret(editor, from),
     scroll: () => DOMEditor.scroll(editor),
     scrollIntoView: (target, options) =>
       DOMEditor.scrollIntoView(editor, target, options),

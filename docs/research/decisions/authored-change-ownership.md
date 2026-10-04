@@ -2,27 +2,20 @@
 title: Native authored-change ownership
 type: decision
 status: accepted
-updated: 2026-09-16
-review_scope: authored
-current_review: 2026-09-16-authored-writer-identity
-review_history:
-  - ../review-records/2026-09-10-authored-research.json
-  - ../review-records/2026-09-10-authored-adoption-plan.json
-  - ../review-records/2026-09-12-authored-scalability.json
-  - ../review-records/2026-09-12-authored-loadable-state.json
-  - ../review-records/2026-09-13-authored-direct-checkpoint-implementation.json
-  - ../review-records/2026-09-16-authored-writer-identity.json
+updated: 2026-10-04
 source_refs:
   - ../../plans/2026-09-12-authored-live-state-implementation.md
   - ../../plans/artifacts/authored-live-state-implementation/final-summary.json
   - ../../plans/artifacts/authored-live-state-implementation/final-candidate.mjs.sources.json
   - ../../plans/2026-09-12-authored-reload-prosemirror.md
 related:
-  - ../reviews.md#authored
+  - ../review-scopes/authored.json
   - structural-comparison.md
 ---
 
 # Native authored-change ownership
+
+**Audit of 2026-10-04.** Stop. The kept native contract still beats every deletion or bypass. It has one authored operation path for accepted and proposed writes, a resolver that may return null for reads but must yield a non-empty ID at the first write, and a directly loaded checkpoint. The two adjacent gaps found on the live tree (Plate's reflective userId bridge and the erased proposeAuthoredComparison import) are already owned by today's suggestions and diff Pursues and do not change this contract. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-authored-audit` hold the evidence.
 
 **Keep native authored ownership and persist its current state directly.** Plite
 owns contribution identity, dependencies, retained content, positions, atomic

@@ -1,0 +1,117 @@
+{
+  "id": "2026-10-04-media-audit",
+  "scope": "media",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What belongs to persisted media content, captions and display, and which application behavior should stay outside the node?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest pursue verdict, at queue position 32. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "A media body is one selectable object; caption text stays direct editable children in one document (schema object role).",
+    "Physical arrows visit visible child caret stops and object owner stops in a predictable order; no hidden caret stop, no skipped visible one.",
+    "Plite derives neutral navigation from its mounted DOM, never from a Plate presentation convention (VISION.md Boundary Law).",
+    "Copied registry UI owns caption placeholder, visibility and styling and may change them without breaking navigation.",
+    "Every stored media URL passes its role floor at admission; caption Enter policy stays with Plate media."
+  ],
+  "evidenceReuse": "Reused the 2026-09-21 object-role final pass, the arrow, caption-delete and focused-empty executions, and the 2026-09-22 caret-navigation review's alternatives and limits. Rechecked on the live tree the caret-engine vertical and horizontal owner paths and their last commit (2026-09-23, the commit that introduced the reviewed source), BaseMediaPlugin, the object-role declarations, the copied Caption and media kits, and media API consumers. caret-engine.ts and all media files are committed, and the uncommitted Plite editable files (typed-text WIP and input modules) are not involved.",
+  "summary": "The job is media blocks whose body is one selectable object while caption text stays ordinary editable children in the same document, with URL policy and caption Enter owned by Plate and presentation by copied UI. Live source keeps that design. All five media descriptors declare schema.element.textBlock({ object: true }), defineMediaPlugin owns URL normalization against the role floor and caption Enter, and copied Caption owns placeholder and visibility. The ledger counts the unit closed because earlier executions completed, but the 2026-09-22 caret-navigation Pursue has no execution. caret-engine.ts still gates reverse vertical caption entry on NodeApi.string(owner).length > 0 before it measures the caption host, and getHorizontalModelReverse still reads the Editable host's dir. Customizing copied caption presentation, a current Plate job, therefore breaks navigation. A visible empty caption is skipped from below, and a populated caption hidden by app CSS receives an invisible caret. The fix is a private Plite repair that derives the stop from the mounted child host, which the code already measures, plus a proof of local direction at owner stops. No public flag, media plugin or scale machinery is needed.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "Plite caret engine on ArrowUp below an object: captionEnd = NodeApi.string(owner).length > 0 ? end(owner) : null, then owner NodeSelection when empty; horizontal owner stops use getHorizontalModelReverse(editor, event) from the Editable host [dir]; copied Caption hides with hidden={!active && empty}.",
+    "proposed": "Same public surface; Plite privately resolves the reverse-entry stop from the mounted child host (proposed: enter the child only when getPathElement(child) has a rendered box, else select the owner) and resolves owner-stop direction from the focused block's computed direction; copied Caption keeps owning visibility with no Plite coupling."
+  },
+  "previous": "2026-09-22-caret-navigation-robustness-review",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-22-caret-navigation-robustness-review",
+      "question": "Is Plite caret navigation robust across visible media caption and generic object stops, and do the behavior law and tests describe its actual transitions?",
+      "action": "retains",
+      "reason": "Its Pursue target is still unadopted in live source (caret-engine.ts unchanged since 2026-09-23); this review keeps it and sharpens it to a private Plite repair with no scale gate, since the stop is decided once per keypress."
+    }
+  ],
+  "alternatives": [
+    "Keeping the text-length gate and host-direction read (Stop) loses. It ties a neutral Plite role to a copied-UI visibility rule and breaks caption customization, while the repair is private and O(1) per keypress.",
+    "Delete Plite's caret engine and use native arrows: Stop; DOM-less NodeSelection, coverage-skipped DOM and content roots still need the engine.",
+    "Add Plate media key handlers or a public caption-visible flag: Stop; five handlers or persisted view state move the coordination to consumers and weaken the neutral role.",
+    "Derive the reverse-entry stop from the mounted child host (rendered box, hidden or display none) and the owner-stop direction from the focused block's resolved direction inside Plite: Pursue; one private change at the existing owner.",
+    "Unpublishing the zero-consumer defineMediaPlugin from platejs/media is a P3 trim of public names and not decisive."
+  ],
+  "proofLimits": "Source inspection only. The skipped visible empty caption and the hidden populated caption caret are inferred from the code path with customized caption UI; neither was reproduced in a browser here, and the mixed local direction defect stays unproved. No non-Chromium media run, IME or virtualized-media interaction. Shipped media UI behaves correctly today because its caption rule matches the gate.",
+  "references": [
+    "packages/plitejs/src/react/editable/caret-engine.ts",
+    "packages/plitejs/src/react/editable/selection-void-target.ts",
+    "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts",
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts",
+    "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts",
+    "apps/www/src/registry/components/editor/caption.tsx",
+    "apps/www/src/registry/components/editor/media.tsx",
+    "apps/www/tests/browser/media-caption.spec.ts",
+    "docs/editor-behavior/markdown-editing-spec.md",
+    "VISION.md",
+    "docs/research/decisions/media-object-content.md",
+    "docs/research/review-records/2026-09-22-caret-navigation-robustness-review.json",
+    "docs/research/review-records/2026-09-21-media-object-editable-content-final-pass.json",
+    "docs/plans/2026-09-21-object-elements-with-editable-children.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/media.tsx": "a3a10aee7b55a1cf1f6304d49d3c6ea901b8268b85ff6b41e32947aa2a66f491",
+      "apps/www/src/registry/components/editor/caption.tsx": "bfbad7f87005f231a9c35737269b68169b49be185a1d611354a358c64c6d1886",
+      "packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts": "8f71ca02e20cc38d813be1e57d9b752e67d9f4c2f214e87fe09b3470bd30e9ce",
+      "apps/www/tests/browser/media-caption.spec.ts": "4fb5b9a8e82bfeda0dcfa7ef825101a4cc878b5b4bcb98ad82f4249f990591d2",
+      "apps/www/tests/browser/media-caption-delete.spec.ts": "bd9139d2bfc0461d28cc3d2887db05b6b30e82537216b70afa63144d94f19e57",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "packages/plitejs/src/react/editable/caret-engine.ts": "4c6e66826bbde828b9dffd1da7e66e66b91f75604601cc6d6c938727892d2d1e",
+      "packages/plitejs/src/react/editable/selection-void-target.ts": "98a002324e26c9591b03a89d7fa3b2d27ba4b62fa3c79fc9b5181df229afd05a",
+      "packages/plitejs/src/react/editable/runtime-keyboard-events.ts": "d8502b6b97ededc3e141176e621a7d330efd901b5a11a545c1ce63de7b9edb86",
+      "packages/plitejs/test/react/caret-engine-contract.test.ts": "4ebc148bf0239b8b7e4d3755831746732f83691aa0c950520019231da86250ac",
+      "packages/plitejs/test/react/dom-coverage-boundary-contract.tsx": "1a5b903010bfee7781e8faaba5d340aeb76e3995c33c7826c1daed2434ca682f",
+      "docs/editor-behavior/markdown-editing-spec.md": "7b265ae32b9b2502470ad99cf94a60f5f9c8d8c43daf4675da93009d7e6b9df3",
+      "docs/editor-behavior/editor-protocol-matrix.md": "d28b8409177a0870e8428dc64309d5b2c63f1dd75c07b75127506fcb44ced143",
+      "content/docs/(plugins)/(elements)/media.mdx": "1cabd59fccd6f0f13bd7ee6e7515f194e696c751bc43e19dfc3b3a57668207e7",
+      "docs/plans/2026-09-21-object-elements-with-editable-children.md": "d71570a96cdb95aea3ff4dfd939aef746f707304d74d217cde9f75f13971f186",
+      "docs/research/raw/2026-09-22-media-arrow-browser-observation.md": "352cf9437e5066a5a33d514386ccd2d63f6350ae1ed6b5cfc54e5bce624f165d",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/media": "3ec0760abc085b8f650c671747af2bf7e0f0d40b48c3910108b48cd4a8c62a1e"
+    },
+    "features": {
+      "browser/media-caption": "a13b3f770c0c936827e4c1ffb41e42b701278cb55e1e3c72c7d3d3d711fd641b",
+      "browser/media-caption-delete": "100d6c27e41f778661467408c3156fdc96cd7a82b5b0bb3d4dd72852362347a6",
+      "capability/audio": "1360e117e64e244f893fa9b589e90d3e97bbc400515a9e86cbcec648ae79f011",
+      "capability/file": "b99fba7a0aef330270eb7b63452559ffa974972a826fd8afccea4819e464f980",
+      "capability/image": "aeae7f09714bd418bee742a3b2a2b55cf31a265d1fc48909d063281839a7b3d5",
+      "capability/mediaEmbed": "b4a86e5ebeddd19d228e914162cc8c43be9d5441ecd508733c9987a2834d76f5",
+      "capability/video": "1360e117e64e244f893fa9b589e90d3e97bbc400515a9e86cbcec648ae79f011",
+      "example/plite/embeds": "10c7c76155c9915c7c74a9dea9e60317de88e8b865f3546588a6d9de422b09de",
+      "example/plite/images": "ea227cc055033ceac45f6dd4f4448c35683b4f10715be368086791b54f6f17c6",
+      "example/registry/image-pro-demo": "e58afb88e01cc707ba3b9fa121c47300984ff8a2ca90f002433fc9145d2f46a2",
+      "example/value/media-value": "948297ee10ce56abfc1a99ab9e143c502dd2af0361cd468778f0094256b298b8",
+      "export/platejs/./media": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./media/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./resizable/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/media": "9b7bfe4c4e9fe60fb0b55239cbffabd304bc1d7d12be9f739a420243bdcc99c2",
+      "ui/caption": "9096c36dc34b0b20be23780e9d5f4c46ed673dfd11071551d6cc322ba265a074",
+      "ui/media": "2663c399060ef10fa1e840c6d4b4e97b93251ce2e97d192798fe7b44ed731eca",
+      "ui/media-audio": "2ece02fcc0c757261ba7049e09506d4001b86cf9d89ee9498d636b55f0be6a2a",
+      "ui/media-embed": "106c2d2a626e868e0417ab4d563884d64cf9d7d6db5292f354a085cc8199dfac",
+      "ui/media-file": "c8342b59e109170a33f8cfab7f51f16ff1a31ba8a455aab3f320d6d3089f0620",
+      "ui/media-image": "4be5351629571dc5e710873b1e40eaf0812be7b717f5a7185a0518b9463ed6e9",
+      "ui/media-preview-dialog": "42bba9945cb37437fad16ff7730aff987fed9a0d99238f76ce26150b8ab87c5f",
+      "ui/media-toolbar": "2d9531facb52f4e8a4e8a98386d6a11b245f5a293d37213bfb47479ab82c14ba",
+      "ui/media-toolbar-button": "bf6390bc419a5f69450a7f30e805f46c42e20a9b2545b080b1f5c36eda094bbd",
+      "ui/media-video": "d35176477c55884b5a538d2cb45c092e8b52b8a7c9ac57c8d172a25215f42ec4",
+      "ui/resize-handle": "355d9898808b16b0d66ef5d948c3d0b5355bee50e9209ade998d7184c0159b36"
+    },
+    "upstreams": []
+  }
+}

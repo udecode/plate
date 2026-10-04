@@ -2,26 +2,7 @@
 title: Markdown conversion ownership and fidelity
 type: decision
 status: accepted
-updated: 2026-10-03
-review_scope: markdown
-current_review: 2026-10-03-markdown-table-cell-blocks-constraints
-reconciled_executions:
-  - 2026-09-18-recovered-2026-07-29-colocate-markdown-feature-codecs
-  - 2026-09-18-recovered-2026-07-30-hard-cut-markdown-codec-package
-  - 2026-09-28-markdown-commonmark-dialect-design
-  - 2026-09-28-markdown-commonmark-dialect-design-amended
-  - 2026-09-28-markdown-commonmark-dialect-execution
-  - 2026-09-28-markdown-commonmark-dialect-closure
-  - 2026-09-28-markdown-commonmark-dialect-serialize-repair
-review_history:
-  - ../review-records/2026-09-28-markdown-api-audit.json
-  - ../review-records/2026-09-28-markdown-api-audit-final-pass.json
-  - ../review-records/2026-09-28-markdown-dialect-last-pass.json
-  - ../review-records/2026-09-28-markdown-dialect-prototype.json
-  - ../review-records/2026-09-28-markdown-dialect-prototype-correction.json
-  - ../review-records/2026-10-03-markdown-table-cell-blocks.json
-  - ../review-records/2026-10-03-markdown-table-cell-blocks-again.json
-  - ../review-records/2026-10-03-markdown-table-cell-blocks-constraints.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts
   - ../../../packages/platejs/src/markdown/lib/internal/markdownConversion.ts
@@ -34,12 +15,14 @@ source_refs:
   - ../../analysis/2026-09-28-markdown-api-review.md
   - ../../analysis/2026-09-28-markdown-dialect-last-pass.md
 related:
-  - ../features/markdown.md
+  - ../review-scopes/markdown.json
   - import-fidelity.md
   - export-fidelity.md
 ---
 
 # Markdown conversion ownership and fidelity
+
+**Audit of 2026-10-04.** Pursue. The table-cell target is still right and is built, but only in the uncommitted working tree, with a partial execution outcome and two open owner questions. So committed next still refuses a cell holding list paragraphs and cascades that refusal to the row and the table. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-markdown-audit` hold the evidence.
 
 **Adopt** the redesign with the material correction in the
 [dialect last pass](../../analysis/2026-09-28-markdown-dialect-last-pass.md).
@@ -180,25 +163,74 @@ contract.
 ## Table cells
 
 A [2026-10-03 review](../review-records/2026-10-03-markdown-table-cell-blocks-constraints.json)
-reopens D6 for table cells. On `next`, a cell holding list paragraphs refuses,
-and the refusal cascades through the row and the table: the whole serialize
-fails under `reject`, and the whole table disappears under `allow`. A break
-inside a cell paragraph becomes a space with no diagnostic, a trailing break
-writes a raw newline into the row, and the cell-list HTML that `main` released
-in PR 5139 reads on `next` as literal text.
+reopened D6 for table cells, and
+[its plan](../../plans/2026-10-03-markdown-table-cell-blocks.md) settles it. The [build](../review-records/2026-10-03-markdown-table-cell-blocks-execution.json) landed it with a partial outcome: two frozen benchmark lines missed and the late fixes are unreviewed, both waiting on the owner. A
+GFM row is one line, so the Markdown runtime writes a cell's blocks inline and
+reads them back; Table owns only the grid.
 
-On parse, when a list decoder is installed, the `remarkToSlate` compiler turns
-a cell's `<ul>`, `<ol start>` and `<li>` run, with nested lists and a leading
-checkbox in `<ul>`, into a private list shape that the List decoder builds
-paragraphs from. Without a list decoder the run stays literal. On serialize, a
-typed helper on the Markdown encode context turns a cell's children into
-one-line HTML and `<br/>`, follows `main`'s joining rule and replaces the cell
-mapping's own `<br/>` join. An unspanned cell that still cannot be
-represented keeps its column as an empty cell with a lossy diagnostic, and a
-span flattens through the table grid or keeps the table refusal. Reusing the
-feature HTML mappings loses, because their output is verbose and unsafe in a
-GFM row, and reading it back needs a DOM that Markdown parsing avoids.
+- `encodeLine` on the encode context writes list paragraphs as `<ul>`,
+  `<ol start>` and `<li>` HTML, the format `main` released in PR 5139, with a
+  disabled checkbox leading each task item. It joins other paragraphs with
+  `<br/>`, keeps the inline content of a heading or quote and the text of a
+  code or math block, and drops any other block under `lossPolicy`. It never
+  writes a raw line ending or a `|` that ends the cell.
+- `decodeLine` on the decode context reads a cell's `<ul>` or `<ol>` run into a
+  standard mdast list and hands it to the installed list decoders, so List
+  still builds every list paragraph and no tree a mapping or remark plugin sees
+  holds a list inside a `tableCell`. Without List, or when every list decoder
+  declines, the run stays literal.
+- The table encoder writes a merged cell in its first slot and empty cells in
+  the slots it covers, and each span reports `markdown-property-omitted`. A
+  table whose merged cells would add more than 100,000 empty cells refuses.
+- The paragraph decoder treats a final `<br>` after a soft line ending as the
+  writer's trailing break, so a trailing break after bold or link text, or in a
+  cell list item, survives.
 
-The plan settles two policies on the merits: whether raw HTML that no mapping
-accepts is lossless, as the shipped docs say, or lossy, as D8 says, and which
-signal a paragraph boundary folded into `<br/>` gets.
+Raw HTML that no mapping accepts stays a lossless warning. Parse keeps it as
+the editor's text unchanged, and serializing escapes that text, so a renderer
+shows the tags. The lost rendering is the dialect choice D6 made, not lost
+text. A paragraph boundary folded into `<br/>`, and a cell block collapsed to
+inline content, are lossy warnings under every policy, because the content
+stays.
+
+Open work from the build, each with its owner:
+
+- Whether github.com renders a raw `<input type="checkbox">` in a cell is
+  unchecked. Owner: Markdown runtime.
+- Tagless HTML in a cell counts as a bare URL when it matches an absolute URL;
+  a predicate shared with Link's encoder would make that exact. Owner: Link
+  Markdown mapping.
+- A resized or attributed image in a cell is dropped and reported, because the
+  image encodes a flow `<img>`. Owner: Image Markdown mapping.
+- Parsing a container with hundreds of `<br/>` or literal tags is quadratic in
+  schema canonicalization, 2.8 s for 400 breaks. Owner: Plite core, through the
+  Perf issue playbook.
+- The cell reader drops the `<br/>` the writer puts beside a block element,
+  while list item paragraphs in the same cell use another reader; moving the
+  rule into the paragraph decoder would leave one. Owner: Markdown runtime.
+- A list item block that is not inline content, such as a nested table, is
+  dropped without a report. Owner: Markdown runtime list serializer.
+- A heading holding a bare URL link throws "expected inline content", at top
+  level and in a cell. Owner: Markdown runtime phrasing set.
+- With a raised `maxDepth`, a cell list nested tens of thousands deep can
+  overflow the reader's recursion, and a closed run of list tags without items
+  counts toward the depth limit. Owner: Markdown runtime.
+- A newline after a `%` comment in inline math becomes a space, so the rest of
+  the line joins the comment; the change is reported. Owner: math Markdown
+  mapping.
+- Text holding a dollar sign before a character the writer escapes, such as
+  `x$*$y`, or `x$|$y` in a cell, reads back as inline math, because the writer
+  drops that dollar's escape. It reproduces before this build. Owner: Markdown
+  runtime, in a spawned task.
+- A CR and LF split across a mark, link or empty-leaf boundary in a cell read
+  back as two breaks. Owner: Markdown runtime.
+- A paragraph whose text ends in `\n\n` reads back with a literal backslash,
+  and a top-level list item whose text ends in `\n` loses it. Owner: Bug fix
+  playbook.
+
+Rejected: a compiler pass that puts a private list shape inside `tableCell`,
+because every table mapping and remark plugin would see flow content where
+mdast promises phrasing; list spelling in Table, because it puts List's syntax
+in another feature; and reusing the feature HTML mappings, because their output
+is verbose and unsafe in a GFM row, and reading it back needs a DOM that
+Markdown parsing avoids.

@@ -1,16 +1,26 @@
 import {
   assertDetachedSelectionSupported,
+  assertEditorDocumentContainers,
   completePersistedDocumentFields,
   createDetachedEditorSchema,
   DocumentChange,
+  EDITOR_DOCUMENT_FIELDS,
+  type EditorDocumentShapeIssue,
   type EditorDocumentValue,
+  type EditorJsonValue,
   type EditorSchemaIdentity,
   type EditorStateField,
   type EditorStateSchemaApi,
   ElementApi,
+  getEditorDocumentShapeIssueMessage,
+  isEnvelopeInput,
   mapDetachedSelectionThroughChange,
   type NativeAuthoredDocumentCapability,
   type PersistedDocumentInput,
+  readDocumentRecord,
+  readEditorDocument,
+  readPersistedEnvelope,
+  rejectEditorRecord,
   type RuntimePluginReference,
   type Selection,
   SelectionApi,
@@ -58,28 +68,49 @@ export type DocumentMigrationSelectionContext = Readonly<{
   selection: Exclude<Selection, null>;
 }>;
 
+/** Stored top-level fields outside `children`, `meta` and `roots`. */
+export type DocumentMigrationLegacy = Readonly<Record<string, EditorJsonValue>>;
+
+/**
+ * A migration document admits only `children`, `meta` and `roots`; any other
+ * key fails to compile with a message naming the `legacy` channel.
+ */
+export type ClosedMigrationDocument<TDocument> = {
+  readonly [TKey in keyof TDocument]: TKey extends keyof EditorDocumentValue
+    ? TDocument[TKey]
+    : `Read top-level field "${TKey & string}" from legacy`;
+};
+
 export type DocumentMigrationStepResult<
-  ToDocument extends EditorDocumentValue = EditorDocumentValue,
+  ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> =
+    EditorDocumentValue,
 > = Readonly<{
   document: ToDocument;
+  /** Legacy fields left to lift. Omitted, the step's input passes on. */
+  legacy?: DocumentMigrationLegacy;
   mapSelection?: (context: DocumentMigrationSelectionContext) => Selection;
 }>;
 
 export type DocumentMigrationContext<
-  FromDocument extends EditorDocumentValue = EditorDocumentValue,
+  FromDocument extends EditorDocumentValue &
+    ClosedMigrationDocument<FromDocument> = EditorDocumentValue,
   FromVersion extends number = number,
   ToVersion extends number = number,
   TTarget extends DocumentMigrationTarget = DocumentMigrationTarget,
 > = Readonly<{
   document: DeepReadonly<FromDocument>;
   from: FromVersion;
+  /** Legacy top-level fields no earlier step lifted. */
+  legacy: DocumentMigrationLegacy;
   target: TTarget;
   to: ToVersion;
 }>;
 
 export type DocumentMigration<
-  FromDocument extends EditorDocumentValue = EditorDocumentValue,
-  ToDocument extends EditorDocumentValue = EditorDocumentValue,
+  FromDocument extends EditorDocumentValue &
+    ClosedMigrationDocument<FromDocument> = EditorDocumentValue,
+  ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> =
+    EditorDocumentValue,
   FromVersion extends number = number,
   ToVersion extends number = number,
   TTarget extends DocumentMigrationTarget = DocumentMigrationTarget,
@@ -215,6 +246,21 @@ type IncompatibleMigrationVersion<TSteps extends DocumentMigrationSteps> = {
     : never;
 }[keyof TSteps];
 
+type ExtraDocumentField<TMigration> = TMigration extends (
+  ...args: never[]
+) => Readonly<{ document: infer TDocument }>
+  ? Exclude<keyof TDocument, keyof EditorDocumentValue>
+  : never;
+
+/** Close an inferred step's returned document, which no generic argument checks. */
+type MigrationClosure<TSteps extends DocumentMigrationSteps> = [
+  ExtraDocumentField<TSteps[keyof TSteps]>,
+] extends [never]
+  ? unknown
+  : Readonly<{
+      __migrationStepDocument: `Read top-level field "${ExtraDocumentField<TSteps[keyof TSteps]> & string}" from legacy`;
+    }>;
+
 type MigrationContinuity<TSteps extends DocumentMigrationSteps> = [
   IncompatibleMigrationVersion<TSteps>,
 ] extends [never]
@@ -239,83 +285,38 @@ const assertVersion = (version: number, owner: string) => {
   }
 };
 
-const assertOwnedDocument = (
-  value: unknown,
-  owner: string
-): EditorDocumentValue => {
-  if (
-    !value ||
-    typeof value !== 'object' ||
-    Array.isArray(value) ||
-    !Object.hasOwn(value, 'children') ||
-    !Array.isArray((value as { children?: unknown }).children)
-  ) {
-    throw new Error(`${owner} must be an object with a children array.`);
-  }
-  const document = value as EditorDocumentValue;
+const STEP_RESULT_FIELDS = Object.freeze({
+  document: 'required',
+  legacy: 'optional',
+  mapSelection: 'optional',
+} satisfies Record<keyof DocumentMigrationStepResult, 'optional' | 'required'>);
 
-  if (
-    document.meta !== undefined &&
-    (typeof document.meta !== 'object' ||
-      document.meta === null ||
-      Array.isArray(document.meta))
-  ) {
-    throw new Error(`${owner} metadata must be an object.`);
-  }
-  if (
-    document.roots !== undefined &&
-    (typeof document.roots !== 'object' ||
-      document.roots === null ||
-      Array.isArray(document.roots))
-  ) {
-    throw new Error(`${owner} roots must be an object.`);
-  }
-  if (document.roots && Object.hasOwn(document.roots, 'main')) {
-    throw new Error(`${owner} roots cannot redefine the primary root.`);
-  }
-  for (const [root, children] of Object.entries(document.roots ?? {})) {
-    if (!Array.isArray(children)) {
-      throw new Error(`${owner} root "${root}" must be an array.`);
-    }
-  }
+const rejectDocument =
+  (label: string) =>
+  (issue: EditorDocumentShapeIssue): never => {
+    throw new Error(`${label}: ${getEditorDocumentShapeIssueMessage(issue)}`);
+  };
 
-  return document;
-};
+const isJsonRecord = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
 
-const ownDocument = (input: unknown, owner: string): EditorDocumentValue =>
-  assertOwnedDocument(snapshotEditorJsonValue(input, owner), owner);
+const splitHistoricalDocument = (value: unknown, label: string) => {
+  if (!isJsonRecord(value)) return rejectDocument(label)({ kind: 'record' });
+  const entries = Object.entries(value);
+  // fromEntries defines own keys, so a stored "__proto__" field stays data.
+  const document = Object.fromEntries(
+    entries.filter(([field]) => Object.hasOwn(EDITOR_DOCUMENT_FIELDS, field))
+  );
+  const legacy = Object.fromEntries(
+    entries.filter(([field]) => !Object.hasOwn(EDITOR_DOCUMENT_FIELDS, field))
+  );
 
-const assertExactKeys = (
-  value: unknown,
-  allowed: readonly string[],
-  required: readonly string[],
-  owner: string
-): Record<string, unknown> => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new Error(`${owner} must be an object.`);
-  }
-  const record = value as Record<string, unknown>;
-  const descriptors = Object.getOwnPropertyDescriptors(record);
+  assertEditorDocumentContainers(document, rejectDocument(label));
 
-  if (Object.getOwnPropertySymbols(record).length > 0) {
-    throw new Error(`${owner} cannot contain symbol properties.`);
-  }
-  for (const [key, descriptor] of Object.entries(descriptors)) {
-    if (
-      !allowed.includes(key) ||
-      !Object.hasOwn(descriptor, 'value') ||
-      !descriptor.enumerable
-    ) {
-      throw new Error(`${owner} contains an invalid property "${key}".`);
-    }
-  }
-  for (const key of required) {
-    if (!Object.hasOwn(descriptors, key)) {
-      throw new Error(`${owner} requires property "${key}".`);
-    }
-  }
-
-  return record;
+  return {
+    document: Object.freeze(document) as EditorDocumentValue,
+    legacy: Object.freeze(legacy) as DocumentMigrationLegacy,
+  };
 };
 
 const isConcreteSelection = (
@@ -488,6 +489,7 @@ export const defineDocumentMigrations = <
     sourceFingerprints?: Readonly<Record<number, string>>;
     steps: TSteps;
   }> &
+    MigrationClosure<TSteps> &
     MigrationContinuity<TSteps>
 ): DocumentMigrations<TSteps, TSchema['id'], TSchema['version']> => {
   if (!options.schema.id) {
@@ -598,27 +600,15 @@ const readDefinition = (migrations: DocumentMigrations): MigrationAuthority => {
 };
 
 const readEnvelopeSource = (
-  identityInput: unknown,
+  identity: EditorSchemaIdentity,
   migrations: DocumentMigrations,
   current: EditorSchemaIdentity
 ) => {
-  const identity = assertExactKeys(
-    identityInput,
-    ['fingerprint', 'id', 'kind', 'version'],
-    ['fingerprint', 'id', 'kind', 'version'],
-    'Persisted document schema identity'
-  );
-
-  if (
-    identity.kind !== 'named' ||
-    identity.id !== migrations.id ||
-    typeof identity.fingerprint !== 'string'
-  ) {
+  if (identity.kind !== 'named' || identity.id !== migrations.id) {
     throw new Error('Persisted document schema has the wrong named lineage.');
   }
-  const source = identity.version as number;
+  const source = identity.version;
 
-  assertVersion(source, 'Persisted document source version');
   if (current.kind !== 'named') {
     throw new Error('Document migrations require a named current schema.');
   }
@@ -641,11 +631,14 @@ const readEnvelopeSource = (
   return source;
 };
 
+/** An envelope carries its own source; raw input, envelope-shaped or not, needs one. */
 type MigrationOptions<TInput> = Readonly<{
   migrations: DocumentMigrations;
 }> &
   (TInput extends PersistedDocumentInput
-    ? Readonly<{ source?: never }>
+    ? TInput extends Readonly<{ children: unknown }>
+      ? Readonly<{ source: number | 'current' }>
+      : Readonly<{ source?: never }>
     : Readonly<{ source: number | 'current' }>);
 
 /** Convert one external document into the definition's exact current envelope. */
@@ -660,36 +653,29 @@ export const migrateDocument = <const TInput>(
     throw new Error('Document migrations require a named current schema.');
   }
   const owned = snapshotEditorJsonValue(input, 'Document migration input');
-  const envelope =
-    !!owned &&
-    typeof owned === 'object' &&
-    !Array.isArray(owned) &&
-    Object.hasOwn(owned, 'document');
-  let document: EditorDocumentValue;
+  // A raw document can hold a legacy top-level "document" field; only a record
+  // without children is read as an envelope.
+  const envelope = isEnvelopeInput(owned) && !Object.hasOwn(owned, 'children');
+  let historical: unknown;
   let selection: SnapshotSelectionInput | undefined;
   let hasSelection = false;
   let source: number;
 
-  if (envelope) {
-    if (options.source !== undefined) {
-      throw new Error(
-        'A persisted document envelope cannot also carry source intent.'
-      );
+  if (options.source === undefined) {
+    if (!envelope) {
+      throw new Error('Raw document input requires explicit source intent.');
     }
-    const persisted = assertExactKeys(
-      owned,
-      ['document', 'schema', 'selection'],
-      ['document', 'schema'],
-      'Persisted document envelope'
-    );
+    const persisted = readPersistedEnvelope(owned);
 
     source = readEnvelopeSource(persisted.schema, migrations, current);
-    document = assertOwnedDocument(persisted.document, 'Persisted document');
+    historical = persisted.document;
     hasSelection = Object.hasOwn(persisted, 'selection');
     selection = persisted.selection as SnapshotSelectionInput | undefined;
   } else {
-    if (options.source === undefined) {
-      throw new Error('Raw document input requires explicit source intent.');
+    if (envelope) {
+      throw new Error(
+        'A persisted document envelope carries its own source; omit source intent.'
+      );
     }
     source = options.source === 'current' ? current.version : options.source;
     assertVersion(source, 'Raw document source version');
@@ -698,11 +684,13 @@ export const migrateDocument = <const TInput>(
         `Document schema version ${source} is newer than current version ${current.version}.`
       );
     }
-    document = assertOwnedDocument(
-      Array.isArray(owned) ? Object.freeze({ children: owned }) : owned,
-      'Raw document'
-    );
+    historical = Array.isArray(owned) ? { children: owned } : owned;
   }
+
+  let { document, legacy } = splitHistoricalDocument(
+    historical,
+    options.source === undefined ? 'Persisted document' : 'Raw document'
+  );
 
   const chain: Array<readonly [number, DocumentMigration]> = [];
 
@@ -721,17 +709,16 @@ export const migrateDocument = <const TInput>(
 
   for (const [to, migration] of chain) {
     const before = document;
-    const rawResult = migration({
-      document: before,
-      from: to - 1,
-      target: authority.target,
-      to,
-    });
-    const result = assertExactKeys(
-      rawResult,
-      ['document', 'mapSelection'],
-      ['document'],
-      `Document migration step ${to} result`
+    const result = readDocumentRecord(
+      migration({
+        document: before,
+        from: to - 1,
+        legacy,
+        target: authority.target,
+        to,
+      }),
+      STEP_RESULT_FIELDS,
+      rejectEditorRecord(`Document migration step ${to} result`)
     );
     const mapper = result.mapSelection;
 
@@ -740,10 +727,24 @@ export const migrateDocument = <const TInput>(
         `Document migration step ${to} mapSelection must be a function.`
       );
     }
-    document = ownDocument(
-      result.document,
-      `Document migration step ${to} document`
+    const label = `Document migration step ${to} document`;
+    document = readEditorDocument(
+      snapshotEditorJsonValue(result.document, label),
+      rejectDocument(label)
     );
+    if (result.legacy !== undefined) {
+      const nextLegacy = snapshotEditorJsonValue(
+        result.legacy,
+        `Document migration step ${to} legacy`
+      );
+
+      if (!isJsonRecord(nextLegacy)) {
+        throw new Error(
+          `Document migration step ${to} legacy must be an object.`
+        );
+      }
+      legacy = nextLegacy as DocumentMigrationLegacy;
+    }
 
     if (isConcreteSelection(selection)) {
       const original = selection;
@@ -770,6 +771,16 @@ export const migrateDocument = <const TInput>(
       );
       assertHistoricalSelection(authority, selection, document);
     }
+  }
+
+  const [unlifted] = Object.keys(legacy);
+
+  if (unlifted !== undefined) {
+    throw new Error(
+      chain.length === 0
+        ? getEditorDocumentShapeIssueMessage({ kind: 'field', field: unlifted })
+        : `Migrated document field "${unlifted}" was not lifted by any migration step.`
+    );
   }
 
   const completed = completeDocument(

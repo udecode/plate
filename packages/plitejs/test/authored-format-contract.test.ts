@@ -239,6 +239,10 @@ describe('authored format snapshot', () => {
       () => parseAuthoredDocument('{"children":[{"text":1}]}'),
       /valid document envelope/
     );
+    assert.throws(
+      () => parseAuthoredDocument('{"children":[],"title":"Draft"}'),
+      /field "title" is not supported/
+    );
   });
 
   it('builds validated native records from sparse imported revisions', () => {

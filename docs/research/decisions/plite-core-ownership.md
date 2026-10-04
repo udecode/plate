@@ -2,32 +2,29 @@
 title: Plite core ownership
 type: decision
 status: assessed
-updated: 2026-09-30
-review_scope: plite-core
-reconciled_executions:
-  - 2026-09-30-content-root-locations-design
-  - 2026-09-30-content-root-locations-execution
-  - 2026-09-30-content-root-locations-closure
-review_history:
-  - ../review-records/2026-07-23-api-schema.json
-  - ../review-records/2026-09-11-runtime-document-view-ownership.json
-  - ../review-records/2026-09-11-state-remove-unused-facets.json
-  - ../review-records/2026-09-11-schema-extension-ownership.json
-  - ../review-records/2026-09-11-commands-remove-default-build.json
+updated: 2026-10-04
 source_refs:
   - ../../plans/2026-09-11-plite-core-api-review.md
   - ../../plans/artifacts/plite-core-api-review/consumer-census.json
   - ../../plans/artifacts/plite-core-api-review/facet-probe-results.json
   - ../../plans/artifacts/plite-core-api-review/facet-work-results.json
 related:
-  - ../reviews.md#runtime
-  - ../reviews.md#state
-  - ../reviews.md#schema
-  - ../reviews.md#commands
+  - ../review-scopes/runtime.json
+  - ../review-scopes/state.json
+  - ../review-scopes/schema.json
+  - ../review-scopes/commands.json
   - transactions-synchronous-boundary.md
 ---
 
 # Plite core ownership
+
+**Audit of 2026-10-04, `runtime`.** Stop. One private document runtime with root-, document- and authored-bound views still matches the lifetimes production code uses, the competing public React runtime is gone, and every deletion lane loses either shared-root identity or per-view interaction state. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-runtime-audit` hold the evidence.
+
+**Audit of 2026-10-04, `schema`.** Stop. Flat plugin descriptors, one compiled schema, typed contribution points and slot replacement each still own a distinct live job. The two dynamic front doors, editor.install and tx.plugins.reconfigure, already stage through one rollback-safe candidate publication, so no merge or deletion removes a duplicate authority. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-schema-audit` hold the evidence.
+
+**Audit of 2026-10-04, `commands`.** Stop. The public descriptor build() is already gone. What remains is the minimal contract, opaque descriptors for core editing intents with ordered handle and around interception and prepared continuations, while Plate shortcuts and UI target plugin update and api methods by name. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-commands-audit` hold the evidence.
+
+**Audit of 2026-10-04, `state`.** Stop. The facet cut is already done, and the surviving split is coherent. Typed state fields persist only through document meta with explicit history and collaboration policy, effects carry transitions, and transient UI stays with its product owner. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-state-audit` hold the evidence.
 
 **Pursue deleting facets and the public command descriptor's default-only
 `build()` method. Keep one document runtime, root-scoped views, document fields

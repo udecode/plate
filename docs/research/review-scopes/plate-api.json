@@ -1,0 +1,91 @@
+{
+  "id": "plate-api",
+  "title": "Plate plugin API and Plite facade",
+  "question": "Which Plate defaults and public plugin contracts serve a product job, and which duplicate an adequate Plite owner?",
+  "group": "plate-core",
+  "dependsOn": [
+    "schema"
+  ],
+  "prerequisiteReason": "Plate defaults and plugin contracts must compose the established extension/schema owner.",
+  "last": false,
+  "opportunity": {
+    "score": 10,
+    "reason": "Facade, inference and plugin defaults affect every first-party feature and copied kit."
+  },
+  "owners": [
+    "packages/platejs/src/core.tsx",
+    "packages/platejs/src/facade.ts",
+    "packages/platejs/src/lib/plugin/",
+    "packages/platejs/src/lib/editor/"
+  ],
+  "members": [
+    "packages/platejs/src/lib/"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/plugins.ts",
+    "apps/www/src/registry/components/editor/plugins-static.ts"
+  ],
+  "proof": [
+    "packages/platejs/src/lib/editor/createEditor.runtime.spec.ts",
+    "packages/platejs/src/internal/plugin/pluginReference.spec.ts",
+    "packages/platejs/src/internal/plugin/plateModelPublication.spec.ts",
+    "packages/plitejs/test/plugin-portal.test.ts",
+    "apps/plite/tests/plite-browser/authored-changes.spec.ts",
+    "docs/plans/artifacts/shared-plugin-identity-feasibility/production-result.json",
+    "tooling/entrypoints/platejs-entrypoint-sizes.json",
+    "docs/plans/artifacts/plate-core-api-review/production-reference-probe-result.json",
+    "docs/plans/artifacts/plate-core-api-review/production-transaction-probe-result.json",
+    "docs/plans/artifacts/plate-core-api-review/execution-verification.json",
+    "packages/platejs/src/yjs/YjsPlugin.api.spec.ts",
+    "packages/platejs/type-tests/yjs-collaboration-contracts.ts",
+    "apps/www/src/registry/components/editor/remote-cursor-overlay.spec.tsx",
+    "apps/www/src/registry/examples/collaboration-demo.spec.tsx",
+    "docs/plans/artifacts/parameterized-plugin-factories/benchmark.json"
+  ],
+  "evidenceInputs": [
+    ".agents/skills/best-api/SKILL.md",
+    ".agents/playbooks/references/architecture.md",
+    "packages/platejs/src/internal/plugin/resolvePlugins.ts",
+    "packages/platejs/src/internal/plugin/compilePlateModel.ts",
+    "packages/platejs/src/internal/plugin/pluginStore.ts",
+    "packages/platejs/src/internal/utils/mergePlugins.ts",
+    "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts",
+    "packages/platejs/src/react/plugin/PlatePlugin.ts",
+    "packages/platejs/src/react/plugin/definePlugin.ts",
+    "packages/platejs/src/react/plugin/toReactPlugin.ts",
+    "packages/platejs/src/react/plugin/definePlugin.spec.ts",
+    "packages/platejs/src/react/plugin/toReactPlugin.spec.ts",
+    "packages/platejs/src/react/plugins/paragraph/ParagraphPlugin.tsx",
+    "packages/platejs/src/math/react/EquationPlugin.tsx",
+    "packages/platejs/src/tabbable/react/TabbablePlugin.tsx",
+    "packages/plitejs/src/core/plugin.ts",
+    "packages/platejs/src/compiler/compileEditor.ts",
+    "apps/www/src/registry/components/editor/basic-blocks.tsx",
+    "apps/www/src/registry/components/editor/basic-blocks-static.tsx",
+    "packages/platejs/src/yjs/react/YjsPlugin.tsx",
+    "packages/platejs/src/react/plugin/pluginFactory.internal.ts",
+    "packages/platejs/src/yjs/YjsPlugin.api.spec.ts",
+    "docs/plans/artifacts/parameterized-plugin-factories/benchmark.json",
+    "packages/platejs/type-tests/yjs-collaboration-contracts.ts",
+    "packages/plitejs/src/yjs/core/plugin.ts",
+    "packages/plitejs/src/yjs/core/controller-registry.ts",
+    "packages/plitejs/test/yjs/admission-lifecycle-contract.spec.ts",
+    "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx",
+    "apps/www/src/registry/examples/collaboration-demo.tsx",
+    ".agents/rules/best-api/rules/schema-and-identity.md",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/src/authored/authored.ts",
+    "packages/plitejs/src/dom/plugin/with-dom.ts",
+    "packages/plitejs/src/history/history-plugin.ts",
+    "packages/platejs/src/authored/PlateAuthoredPlugin.ts",
+    "packages/platejs/src/lib/plugins/HistoryPlugin.ts",
+    "packages/platejs/src/lib/plugins/dom/plateDOMPlugin.internal.ts"
+  ],
+  "relatedScopes": [
+    "reads",
+    "commands",
+    "state",
+    "ui"
+  ],
+  "decision": "docs/research/decisions/plate-core-ownership.md"
+}

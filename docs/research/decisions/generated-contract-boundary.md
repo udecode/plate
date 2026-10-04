@@ -2,12 +2,7 @@
 title: Generated contracts belong to the application graph
 type: decision
 status: assessed
-updated: 2026-09-20
-review_scope: compiler
-current_review: 2026-09-20-registry-plugin-capability-boundary
-review_history:
-  - ../review-records/2026-09-14-registry-generated-contract-boundary.json
-  - ../review-records/2026-09-20-registry-plugin-capability-boundary.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/cli/src/generate.ts
   - ../../../apps/www/src/registry/components/editor/more-toolbar-button.tsx
@@ -15,10 +10,12 @@ source_refs:
   - ../../../apps/www/src/registry/components/editor/plugins.generated.ts
 related:
   - plate-core-ownership.md
-  - ../reviews.md#compiler
+  - ../review-scopes/compiler.json
 ---
 
 # Generated contracts belong to the application graph
+
+**Audit of 2026-10-04.** Stop. Compiler and CLI already share one semantic owner (platejs/compiler compileEditor runs the same Plate lowering as createEditor and defineDocumentMigrations), generated contracts stay opt-in at the application graph for jobs inference cannot do, and the one name-only exception the last review kept has since been deleted in favour of a descriptor portal. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-compiler-audit` hold the evidence.
 
 **Stop requiring CLI-generated application types in reusable registry items.**
 Keep descriptor-derived feature access and optional application-owned generation.

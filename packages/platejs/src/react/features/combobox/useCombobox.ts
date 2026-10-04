@@ -30,7 +30,9 @@ export type UseComboboxOptions<P extends PluginReference = PluginReference> = {
   /** The listbox's active option id, mirrored as `aria-activedescendant`. */
   activeOptionId?: string | null;
   /**
-   * Whether the popup is showing. Keys and ARIA attach only while it shows.
+   * Whether the popup is showing. Keys, `aria-controls` and
+   * `aria-activedescendant` attach only while it shows, and `aria-expanded`
+   * follows it.
    * Defaults to true.
    */
   open?: boolean;

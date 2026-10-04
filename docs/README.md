@@ -1,12 +1,13 @@
 # Documentation map
 
-Start a feature review with its generated [feature hub](research/features/) or
-`node tooling/scripts/review-ledger.mjs lookup <scope>` from the repository root.
-The [review ledger](research/reviews.md) owns the global queue and overview.
-For example, [Table](research/features/table.md),
-[Suggestions](research/features/suggestions.md), and
-[Comments](research/features/comments.md) collect their decisions, plans,
-execution evidence, rejected alternatives, and history without moving them.
+Start a feature review with `node tooling/scripts/review-ledger.mjs lookup <scope>`
+from the repository root, and read a scope's whole history with `show <scope>`.
+The [review ledger](research/schema.md#review-history) owns the global queue:
+`status` prints it. Each question has one scope file, for example
+[Table](research/review-scopes/table.json),
+[Suggestions](research/review-scopes/suggestions.json) and
+[Comments](research/review-scopes/comments.json); its decisions, plans,
+execution evidence, rejected alternatives and history stay where they are.
 
 ## Authority and history
 
@@ -19,8 +20,8 @@ The [research schema](research/schema.md) defines the storage and command
 contract. Current conclusions live in [decision pages](research/decisions/).
 [Review and execution records](research/review-records/) are immutable: later
 records retain, reopen, or supersede specific conclusions without rewriting
-the original evidence. Generated hubs summarize these records and linked plans;
-do not maintain a second status in a hub.
+the original evidence. `lookup` and `show` derive the current state from these
+records and linked plans; do not maintain a second status anywhere else.
 
 A plan owns its lifecycle status. New associated plans declare `review_scopes`,
 `review_basis`, and `work_kind`; cross-feature work names every affected scope.
@@ -45,7 +46,7 @@ Filename matches are search candidates until their contents are classified.
 | [development](development/) | Contributor and agent-tooling notes; current agent rules live in [.agents](../.agents/). |
 | [editor-audits](editor-audits/) | External-editor audit registry and durable report summaries, including source pins and rejected alternatives. An audit does not certify implementation. |
 | [editor-behavior](editor-behavior/README.md) | Behavior specifications and protocol history. [Current evidence](editor-behavior/current-evidence.md) identifies active proof owners; dated parity matrices retain their original limits. |
-| [editor-benchmarks](editor-benchmarks/) | Earlier benchmark plans and scratch findings. Use a scope hub and bound receipts for current performance decisions. |
+| [editor-benchmarks](editor-benchmarks/) | Earlier benchmark plans and scratch findings. Use `lookup <scope>` and bound receipts for current performance decisions. |
 | [editor-issue-harvester](editor-issue-harvester/) | Source-specific issue/PR inventories, classifications, and refresh cursors. A cursor describes the recorded refresh, not live upstream state. |
 | [editor-test-harvester](editor-test-harvester/) | Source-specific test inventories and portable behavior extraction. Reading or mapping an upstream test is distinct from executing it locally. |
 | [maintainer](maintainer/) | Public-maintenance queues and dated run receipts; revalidate external state before acting. |
@@ -58,7 +59,7 @@ Filename matches are search candidates until their contents are classified.
 | [research](research/README.md) | Feature entrypoints, global review queue, current decisions, immutable review/execution history, compiled concepts and source summaries. Raw-source availability and evidence freshness remain separate. |
 | [solutions](solutions/) | Reusable lessons and diagnosed failure patterns by category. Consult the relevant lesson before reopening the same mechanism; it does not override current law or proof. |
 | [sync](sync/) | Dated upstream UI, doctrine, and source-sync provenance. Each receipt applies to its named source revision and destination. |
-| [table](table/) | Historical table benchmark snapshots; the [Table hub](research/features/table.md) owns navigation to current decisions and evidence. |
+| [table](table/) | Historical table benchmark snapshots; `lookup table` and the [Table scope](research/review-scopes/table.json) lead to current decisions and evidence. |
 | [transplant](transplant/) | Preserved donor provenance, migration manifests, and deletion/readiness evidence. Not an instruction to restore retired APIs. |
 | [vision](vision/) | Scoped durable law subordinate to [root Vision](../VISION.md), with its own doctrine history. |
 

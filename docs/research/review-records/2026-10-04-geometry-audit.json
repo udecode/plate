@@ -1,0 +1,103 @@
+{
+  "id": "2026-10-04-geometry-audit",
+  "scope": "geometry",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which mounted view owns widget and selection geometry, and can duplicate position stores or observers disappear?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 7 in the plite-view group. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Geometry binds to one exact mounted Editable and returns null for foreign, unmounted or SSR targets.",
+    "Canonical selection, annotation and keyed Yjs cursor owners keep their data and subscriptions; geometry never owns targets, anchors or cursor membership.",
+    "Copied UI owns popup placement, popup resize observation and hide-before-positioning.",
+    "No generic public widget target, target store, registry or refresh DSL (docs/vision/plite.md transient-view-data law).",
+    "Invalidation is local, so unrelated cursor IDs and other roots perform no geometry read, and final cleanup releases observers and queued work."
+  ],
+  "evidenceReuse": "Reused the 2026-09-12 review's lanes and the plite-view design plan's v5 scale receipts and production replay as historical evidence (not rerun). Rechecked on the live tree: Widget symbols absent across packages, apps and content/docs; use-selection-geometry.tsx, range-geometry.ts, useYjs.ts and use-floating-rect.ts implement the direct-domain flow; the three copied positioning consumers use the semantic hooks; discussion.tsx is the one manual range measurement, lazy and storeless. The 46-taskhub input-ownership plan only preserved geometry as an obligation.",
+  "summary": "The job is viewport rectangles for floating toolbars, link popovers and remote cursor labels, for a canonical target in one exact mounted Editable, invalidated by selection or cursor change, DOM layout and scroll or resize. Live source does exactly the reviewed target. useSelectionGeometry and useYjsRemoteCursorGeometry build a RangeGeometryOwner from their own domain subscription, a per-editor coordinator shares one ResizeObserver and viewport listeners and subscribes to each DOMRootRuntime layout, and copied UI positions through useFloatingRect. No Widget, WidgetStore or useWidgetGeometry symbol survives in Plite, Plate, www or public docs, and Plate Next doctrine history records the cut. The strongest replacement, one generic public useRangeGeometry({ range, editableRef }), loses. Selection geometry reads the private native projected view selection rather than a canonical Range, and cursor geometry needs keyed per-client invalidation. The only extra consumer, the copied discussion popover, measures its annotation range lazily through a Floating UI virtual element with no store, which does not earn a public API. Deleting the Plite hooks in favor of lazy virtual elements loses the exact-view resolution and DOM-layout invalidation that the design receipts proved.",
+  "verdict": "stop",
+  "previous": "2026-09-12-geometry-widget-carrier-cut",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-12-geometry-widget-carrier-cut",
+      "question": "Which mounted view owns widget and selection geometry, and can duplicate position stores or observers disappear?",
+      "action": "supersedes",
+      "reason": "Its Pursue target (delete the Widget carrier, feed domain targets into private exact-Editable measurement, keep copied placement) is adopted in live source; the new Stop keeps that design."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-08-30-cursor-find-overlay-architecture",
+      "question": "Which mounted view owns widget and selection geometry, and can duplicate position stores or observers disappear?",
+      "action": "supersedes",
+      "reason": "The August design kept logical Widget as an advanced public owner; live source deleted it. Its exact-view and copied-UI placement conclusions survive inside the current design."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current direct-domain geometry wins. It is the adopted target, with one owner per responsibility and no carrier.",
+    "Adding a generic public useRangeGeometry({ range, editableRef }) for annotations and arbitrary ranges loses. Selection uses the private native projected selection, cursors need keyed invalidation, and the single annotation consumer (the discussion popover) measures lazily without a store, so one consumer does not pay for a public API.",
+    "Deleting the Plite geometry hooks and letting copied UI compute rects lazily via editor.api.dom.resolveDOMRange inside Floating UI virtual elements loses exact mounted-view resolution, DOM-layout invalidation from the root runtime and the measured fan-out bounds.",
+    "Replacing it with global geometry state, or merging popup and reference observers, loses. Measured elements and lifetimes differ, and multi-view coverage is per view.",
+    "Restoring a Widget-style descriptor list for annotation panels is rejected by doctrine, because it recreates the deleted carrier."
+  ],
+  "proofLimits": "Source review only; no test, browser or benchmark run here. The plite-view design plan's v5 24-row scale receipt, production replay and managed browser matrix are historical and not replayed against the current tree. Exact visual anchor alignment, native device behavior and the discussion popover's multi-view resolution through editor.api.dom.resolveDOMRange are unproven. docs/vision/plite.md has an uncommitted staged hunk above the cited line; it does not touch the geometry law but shifts line numbers by seven relative to HEAD.",
+  "references": [
+    "docs/research/review-records/2026-09-12-geometry-widget-carrier-cut.json",
+    "docs/research/decisions/plite-view-ownership.md",
+    "docs/plans/2026-09-12-plite-view-design.md",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-12-plite-view-design.json",
+    "docs/plans/2026-08-30-cursor-find-overlay-architecture.md",
+    "docs/plans/46-taskhub-46-input-ownership.md",
+    "packages/plitejs/src/react/range-geometry.ts",
+    "packages/plitejs/src/react/hooks/use-selection-geometry.tsx",
+    "packages/plitejs/src/yjs/react/useYjs.ts",
+    "apps/www/src/registry/hooks/use-floating-rect.ts",
+    "apps/www/src/registry/components/editor/floating-toolbar.tsx",
+    "apps/www/src/registry/components/editor/link.tsx",
+    "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx",
+    "apps/www/src/registry/components/editor/discussion.tsx",
+    "packages/plitejs/test/react/range-geometry-contract.test.tsx",
+    "apps/www/tests/browser/transient-editor-geometry.spec.ts",
+    "content/docs/api/react-hooks.mdx",
+    "docs/vision/plite.md"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/react/range-geometry.ts": "34005c4d05ab2cdeb60ba039c1cc35a68bd9ea72bb566281ad2d0755dd360ba9",
+      "packages/plitejs/src/react/hooks/use-selection-geometry.tsx": "35563880a21f2080adf0cfc671219e34fe6223fe61ddb9748a37486474fcd31d",
+      "apps/www/src/registry/hooks/use-floating-rect.ts": "07cd6bff9d411a5f02c57e3f6f1756a88fbb55200611a85532eaae1eed85b33d",
+      "apps/www/src/registry/components/editor/floating-toolbar.tsx": "ef0d6bc887b2827baedfa1e05602215513d270a1c9121938f824290183247546",
+      "packages/plitejs/src/yjs/react/useYjs.ts": "de83bce7eb59078db6106f2b3372b4314a017a44a8c24917b1de2702f91c304c",
+      "apps/www/src/app/(app)/examples/plite/_examples/persistent-annotation-anchors.tsx": "9d94f760b1b2b6246ecb1d1ad840e9cdd6e640ce9f785eeeb095ba9e49d70f9b",
+      "apps/www/src/app/(app)/examples/plite/_examples/comment-mode.tsx": "4c5beced59a9ec84c93f837105609f6a99387fdd6cd7328075ef1d3532d260f2",
+      "apps/www/tests/browser/transient-editor-geometry.spec.ts": "544f6510677b723eb6196cad66d884bac98829e86b92d7c754b0cac4ff8d1d50",
+      "apps/www/tests/browser/selection-drag-scroll.spec.ts": "970969dba7a5c3af943e3480f18e30f2c3ff32bde3857c7da8e1ed7751c5aab1",
+      "apps/www/src/registry/hooks/use-floating-rect.spec.tsx": "d237b8f0ff849cb195e134656fc482872910602b1f4f0c7eb46a2bd8785eb89e",
+      "packages/plitejs/test/react/range-geometry-contract.test.tsx": "2048f81aadec573100076fc055ecc07afb27b176c591aab60f247354e94c4c43",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "packages/plitejs/src/internal/view/mapped-view-store.ts": "8417d1fa538beabc03ce9107f3d251ab8bfc59414236262a93e77e40e9607fcf",
+      "packages/plitejs/src/react/index.ts": "7357ed7a95d6599977eda6bb16d88389bbfd68d4f150af621e5b429361e48d97",
+      "docs/plans/2026-08-30-cursor-find-overlay-architecture.md": "ab6cef8cefb1aab9b0b8b3acc7f7d9fa043c53ec6aa77ee1f35699dfd585b333",
+      "docs/plans/artifacts/transient-projection-scalability/node-benchmark.json": "9c9204341851dee157f2f92cf22996433441b87ae4ba81f57c16206c7ff62cc4",
+      "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+      ".agents/skills/best-api/SKILL.md": "6627d324d9578474511b4bff319a11078aff668442904533d158d6642865f840",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {
+      "browser/selection-drag-scroll": "7f153bf1e0b992a1a70b97885404dfa47f8684adfc2bd26b8bce8a050f1b6100",
+      "browser/transient-editor-geometry": "57d86c834e7db2fa315d59ff2f4a8ab1fde1381a595eaecd036a751af3f0b10b",
+      "plitejs/react/editable/content-root-vertical-geometry": "9a24bf1aed7dd9a755856d2124300634105dca093f6d954f10c1dd35303f7c50",
+      "plitejs/react/range-geometry": "469a751f71c48e0ed12291c1132066bcdfef736ff32f239926268c0d3f2486e5",
+      "registry/hooks/use-floating-rect": "2699f1586a7a3ef2509942328e36a9285ed84796ff245e902419100840e17ce8",
+      "registry/hooks/use-floating-rect.spec": "d591f702ff99a70c2504ff75952b1708fcdfe980ba6ffc2c11bc11ef51aa1b86"
+    },
+    "upstreams": []
+  }
+}

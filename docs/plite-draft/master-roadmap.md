@@ -8,7 +8,7 @@ status: superseded
 
 > Historical draft-program snapshot. Its “current,” “live,” and “canonical”
 > wording applies to the recorded April program, not present work. Use the
-> [Plite entrypoint](../plite/agent-start.md) and [feature review ledger](../research/reviews.md)
+> [Plite entrypoint](../plite/agent-start.md) and [feature review ledger](../research/schema.md#review-history)
 > for current decisions, plans, and evidence. Prior alternatives and results
 > remain below for reconciliation.
 

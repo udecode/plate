@@ -181,7 +181,7 @@ export default async function MyStaticPage() {
 <EditorStatic editor={editor} document={{ children: blocks }} />
 ```
 
-文档必须符合 editor 的 schema。每个文档对象只校验一次，再次渲染时请传入同一个对象。
+文档必须符合 editor 的 schema。来自 `editor.read.value()` 的文档只校验一次；其他文档对象可能在两次渲染之间被修改，所以每次渲染都会重新校验。
 `EditorPreview` 接受相同的 `document`，从中复制时复制的是所渲染的文档。
 
 每次渲染都会读取所有顶层块的装饰，因此重新渲染也是刷新依赖其他状态的装饰的方式。

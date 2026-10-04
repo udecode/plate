@@ -2,28 +2,7 @@
 title: Reuse performance candidate evidence
 type: decision
 status: accepted
-updated: 2026-10-01
-review_scope: performance
-current_review: 2026-09-30-performance-evidence-cuts
-review_history:
-  - ../review-records/2026-09-07-performance-iteration-1.json
-  - ../review-records/2026-09-09-performance-iteration-2.json
-  - ../review-records/2026-09-30-performance-evidence-value-review.json
-  - ../review-records/2026-09-30-performance-evidence-cuts.json
-reconciled_executions:
-  - 2026-09-30-performance-evidence-design
-  - 2026-09-30-performance-evidence-design-cuts
-  - 2026-09-30-performance-evidence-s1
-  - 2026-09-30-performance-evidence-design-wording
-  - 2026-09-30-performance-evidence-design-env
-  - 2026-09-30-performance-evidence-s1-repairs
-  - 2026-09-30-performance-evidence-execution
-  - 2026-09-30-performance-evidence-repairs
-  - 2026-10-01-performance-evidence-closure
-  - 2026-09-18-recovered-2026-09-07-editor-performance-research
-  - 2026-09-18-recovered-2026-09-10-editor-performance-follow-through
-  - 2026-09-30-static-preview-proportional-cost-execution
-  - 2026-09-30-content-root-locations-closure
+updated: 2026-10-04
 source_refs:
   - ../../plans/2026-09-07-editor-performance-research.md
   - ../../plans/2026-09-30-performance-evidence-design.md
@@ -32,10 +11,12 @@ source_refs:
   - ../probes/2026-09-30-performance-review/REPORT.md
 related:
   - code-text-ownership.md
-  - ../reviews.md#performance
+  - ../review-scopes/performance.json
 ---
 
 # Reuse performance candidate evidence
+
+**Audit of 2026-10-04.** Stop. The adopted target holds in live source (one latest receipt per target for every outcome, recipe-scoped environment, loader admission as current, stale or unknown from producer-recorded inputs, write-before-validate producers, and one S5 evaluator with frozen no-regression and work-gain policies, a shared preflight reference and an arm-variation noise rule), and every remaining gap is a calibration or coverage follow-up already owned in the execution plan, not a better design. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-performance-audit` hold the evidence.
 
 Pursue executable receipt admission and assessment at the existing measurement
 owners. A stored success label does not establish correct output, complete
@@ -145,7 +126,7 @@ navigation metric does not depend on the input clock. The 1.20 attribution
 guard sits within the noise of identical builds (1.1991). These are owner
 findings; the execution plan names each owner and destination.
 
-[The ledger](../reviews.md#performance) records review order and source entry
+[The ledger](../review-scopes/performance.json) records review order and source entry
 points. [The execution plan](../../plans/2026-09-30-performance-evidence-execution.md)
 records the adoption and its open findings. Benchmark keeps its receipt, paired
 comparison and adoption laws. Design does not establish implementation or

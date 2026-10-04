@@ -1,0 +1,98 @@
+{
+  "id": "2026-10-04-callout-audit",
+  "scope": "callout",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "How should callout and details nodes compose standard block editing and presentation?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 52. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Details persists { type: details, children: [summary, ...blocks] } with exactly one leading rich-inline summary, and its open state stays transient, outside JSON, history and Yjs.",
+    "Document invariants live in the schema owner, and Plite wins when its API fits (VISION.md boundary law).",
+    "Callout keeps the locked soft-break, empty-reset and start-delete reset behavior (EDIT-CALLOUT-*).",
+    "Package defaults stay neutral; visible product defaults such as an emoji belong to copied UI or the app kit.",
+    "Persisted properties need a consumer that gives them meaning, or they go.",
+    "Transfers never strand a summary or land content before it."
+  ],
+  "evidenceReuse": "Reused the 2026-08-29 semantic details plans (open state transient, Summary one rich-inline block, no persisted open) and the 2026-09-07 UI extraction execution (details semantic commands headless; callout view local). Rechecked live: BaseDetailsPlugin.ts, BaseCalloutPlugin.ts, both React adapters, copied callout, callout-static and details components, Plite schema-definition prefix, Plate prefix lowering, the slice-fit nested prefix test, git dates for both, and the locked callout law in docs/editor-behavior.",
+  "summary": "The job is two container presentations, a callout as an emphasized text block and details as a disclosure with one summary followed by block content. Details declares content as any summary-or-block child. Two corrections then insert or move the summary to index 0, retag later summaries to paragraphs and throw on inline children, and a transfer veto stops moves that take the summary or land before it. The code comment says the grammar allows a summary anywhere. Plite's schema.content.prefix(required, rest) expresses required leading slots for nested elements (slice-fit-contract box example), and Plate already lowers descriptor prefix slots. So the schema can own summary-first admission, the corrections can go, and format decoders build the summary. Callout stays a text block because its soft-break and reset behavior is locked editor law, but its presentation policy is misplaced. The package hard-codes the emoji default '💡', and copied UI repeats that fallback. The package persists a variant that neither live nor static copied UI renders, while docs and the example promise variants and 'any content'. Copied UI writes a localStorage key nothing reads. Merging callout into blockquote or making it a block container loses to the locked law without new evidence.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "BaseDetailsPlugin schema: content: schema.content.any([schema.content.type('summary').allowed, plugins.blockContent().allowed], { default: { type: 'summary' }, min: 1 }) plus corrections that insert, move or retag summaries; BaseCalloutPlugin persists icon with default '💡' and an unrendered variant.",
+    "proposed": "Proposed: BaseDetailsPlugin schema: content: schema.content.prefix([{ element: BaseDetailsSummaryPlugin }], plugins.blockContent()); no summary corrections; HTML and Markdown decode construct the summary. Callout: icon: property.string() with no package default; copied CalloutKit supplies the default icon and renders variant or the property is cut."
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "How should callout and details nodes compose standard block editing and presentation?",
+      "action": "retains",
+      "reason": "Its details command and callout view ownership outcome still holds; this review changes the details grammar owner and callout presentation defaults, which it did not decide."
+    }
+  ],
+  "alternatives": [
+    "Keeping the corrections loses now that prefix exists. They repair after the fact, retag silently and keep a throw path the schema could refuse earlier.",
+    "Change an existing API: details content becomes schema.content.prefix([{ element: BaseDetailsSummaryPlugin }], plugins.blockContent()); delete the summary corrections; keep only veto cases admission does not cover; callout drops the package emoji default and either renders or cuts variant; wins.",
+    "Deleting callout or merging it into blockquote with a variant (GFM-alert style) loses to the locked callout text-block law and the existing callout tag mapping.",
+    "Making callout a block container changes locked EDIT-CALLOUT-* behavior without new evidence, so it loses for now.",
+    "Moving details open state to the mounted view was considered under the view-local presentation law. Commands consult that state, and comments activation already keeps editor-session UI state in a plugin store. With no multi-view evidence, it waits.",
+    "Keeping the details grammar per the 2026-10-02 dnd landing plan Default (reverse word prefix summary) loses as the target. That plan kept it because prefix admission changes which stored documents load and needs a migration, which is adoption cost and sequencing, not a better design. The same plan notes that the prefix also fixes paste and insert."
+  ],
+  "proofLimits": "Source review only. Three things are not proven. Prefix admission alone may not refuse moving the summary out of its details (landing.ts checks the target parent). How invalid loaded documents without a summary should fail or repair is open. HTML and Markdown decode of summary-less details is unchecked. No browser proof of details or callout behavior ran, and multi-view details open state was not exercised.",
+  "references": [
+    "docs/research/features/callout.md",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json",
+    "docs/plans/2026-08-29-replace-toggle-with-semantic-details.md",
+    "docs/plans/2026-08-29-semantic-details-hard-cut.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts",
+    "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.ts",
+    "packages/platejs/src/react/features/details/DetailsPlugin.tsx",
+    "packages/platejs/src/react/features/callout/CalloutPlugin.tsx",
+    "packages/plitejs/src/core/schema-definition.ts",
+    "packages/plitejs/test/slice-fit-contract.test.ts",
+    "packages/platejs/src/internal/plugin/compilePlateModel.ts",
+    "apps/www/src/registry/components/editor/callout.tsx",
+    "apps/www/src/registry/components/editor/callout-static.tsx",
+    "apps/www/src/registry/components/editor/details.tsx",
+    "apps/www/src/registry/examples/values/callout-value.tsx",
+    "content/docs/(plugins)/(elements)/callout.mdx",
+    "docs/editor-behavior/markdown-editing-spec.md",
+    "docs/plans/2026-10-02-dnd-schema-derived-landing.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/callout.tsx": "d1f6669cacb773dd7ef20519078e8ea3281d0918a9a277181f54c12e0ece5e53",
+      "apps/www/src/registry/components/editor/details.tsx": "e87feb1494e39d7957d793ef8c35b96cf02b1a109064871d13f4ec2ea1cbb30e",
+      "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.spec.ts": "5e0dfa655221e7f9570b20c79459d08dc57b1fa4a858cffd09369eb45ed3d1a5",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/callout": "9c2c1d058e8c3e473a1b5e92d86bfe12821180c85586035aca86a7a96ae8fd30"
+    },
+    "features": {
+      "capability/callout": "fdba4434ae1359ad794162b7b08bb07501c89176e184a17bfc0e5b7e44671587",
+      "capability/details": "2338f740c4555679a740d48a1163050bffbaf26efb97d4ef89b83375b29a7f93",
+      "capability/detailsSummary": "931833c95f06fd27ced6e8bd27c49623ce16ae1e0bc83692f9e1d97791f913eb",
+      "example/value/callout-value": "5e48143a6e7231a8b92700f8141ec9bc074b7affab6a51a02146e168abfe5686",
+      "example/value/details-value": "fa1b91d511a868e82cf8f87e92d2dbaf500c590ac2cb3b83f8f4abc291b91ec1",
+      "export/platejs/./callout": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./callout/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./details": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./details/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/callout": "9c2c1d058e8c3e473a1b5e92d86bfe12821180c85586035aca86a7a96ae8fd30",
+      "platejs/details": "2c7cc1f97c9b9bcd1e074d8029c16983a49403627c4b57fed40d98c50523c738",
+      "ui/callout": "63182c65eb300908e4a5eb5f955a749c2859e4d09b0f1845af795ae48a75db7a",
+      "ui/details": "730fcde409060ae33e918eeb50b24c570a6f751fb6ae7450d1c77a1e26f075b3",
+      "ui/details-toolbar-button": "f7f4910f275b80ee2ce1cc9e20cd8dacf1b5bf2446112069123355aaadabf917"
+    },
+    "upstreams": []
+  }
+}

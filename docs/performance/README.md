@@ -1,8 +1,8 @@
 # Performance Docs
 
 This directory preserves benchmark contracts and dated performance narratives.
-Use the [feature review ledger](../research/reviews.md) for current decisions
-and the relevant feature hub for subsequent measurements. The April program
+Use the [review ledger](../research/schema.md#review-history) for current decisions
+and `lookup <scope>` for subsequent measurements. The April program
 and release snapshot below do not certify present performance.
 
 ## Read Order

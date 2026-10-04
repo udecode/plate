@@ -201,6 +201,8 @@ const editor = createEditor({
 
 把弹出框连接到一个编辑器。从 `platejs/combobox/react` 导入，并在 `afterEditable` 插槽组件中调用。
 
+键入的触发字符所打开的查询存在期间，编辑器会以组合框的身份呈现。它获得 `role="combobox"`、`aria-haspopup="listbox"`、`aria-autocomplete="list"` 和 `aria-expanded`，并移除 `aria-multiline`。查询关闭后，编辑器恢复自己原有的属性。
+
 <API name="useCombobox">
 <APIParameters>
   <APIItem name="editableRef" type="React.RefObject<HTMLDivElement | null>">
@@ -213,7 +215,7 @@ const editor = createEditor({
     当前选项的 id，同步为编辑器的 `aria-activedescendant`。
   </APIItem>
   <APIItem name="open" type="boolean" optional>
-    弹出框是否正在显示。只有显示时才接管按键并写入 ARIA，因此没有结果而隐藏的弹出框会把方向键和 Escape 留给编辑器。
+    弹出框是否正在显示。只有显示时才接管按键并写入 `aria-controls` 和 `aria-activedescendant`，`aria-expanded` 跟随它变化，因此没有结果而隐藏的弹出框会把方向键和 Escape 留给编辑器。
     - **默认值:** `true`
   </APIItem>
   <APIItem name="onKeyDown" type="(event: React.KeyboardEvent<HTMLDivElement>) => boolean" optional>
@@ -228,7 +230,7 @@ const editor = createEditor({
     弹出框列表的 id，同步为编辑器的 `aria-controls`。
   </APIItem>
   <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => false | void) => boolean">
-    通过一个同步事务替换触发字符和查询。传入提供该选项的 match。回调返回 `false` 表示拒绝并保留查询。更新的查询、进行中的组字或被拒绝的回调都不会产生更改并返回 `false`；回调抛出异常时会回滚全部更改。
+    通过一个同步事务替换触发字符和查询。传入提供该选项的 match。回调返回 `false` 表示拒绝并保留查询。来自更早查询的 match、更新的查询、进行中的组字或被拒绝的回调都不会产生更改并返回 `false`；回调抛出异常时会回滚全部更改。
   </APIItem>
   <APIItem name="dismiss" type="() => void">
     关闭弹出框并保留输入的文本。

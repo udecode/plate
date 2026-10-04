@@ -200,7 +200,28 @@ const current = migrateDocument(legacyDocument, {
 ```
 
 Use `source: 'current'` only when the raw document already uses the current
-schema. A persisted envelope cannot also receive a `source` option.
+schema. With an explicit `source`, `migrateDocument` reads its input as a raw
+document, so pass a persisted envelope without it.
+
+A step's `document` holds only `children`, `meta` and `roots`. Any other field
+stored at the document's top level arrives in `legacy`. Lift it into `meta` and
+return the remaining fields as `legacy`; a step that omits `legacy` passes it on
+unchanged. `migrateDocument` refuses a field that no step lifted.
+
+```ts
+import type { DocumentMigration } from "platejs/migrations";
+
+const liftTitle: DocumentMigration = ({
+  document,
+  legacy: { title, ...legacy },
+}) => ({
+  document:
+    title === undefined
+      ? document
+      : { ...document, meta: { ...document.meta, title } },
+  legacy,
+});
+```
 
 <Callout type="warning" title="History and collaboration need a cutover">
   Document migrations do not rewrite serialized history or a populated Yjs room.
@@ -388,8 +409,7 @@ fingerprints, and the structural diff. Add the completed function to
 `EditorMigrations.steps` under the version it produces, and bind the exported
 `from` fingerprint in `sourceFingerprints`.
 
-The editor runs configured migrations for initial and deferred complete
-document loads. For offline JSON files, the entry module exports the exact
+For offline JSON files, the entry module exports the exact
 `EditorKit`, `EditorSchema`, and `EditorMigrations` names used below. Explicit
 names keep the executable runner deterministic even when the module exports
 other arrays or schema-like objects.
@@ -404,6 +424,9 @@ The command is a dry run unless `--write` is present. `--check` exits nonzero
 when any document needs migration. `--stdin` writes the migrated envelope to
 standard output and never mutates storage. Envelope selections are mapped and
 preserved through the same document and preparation pipeline.
+
+Raw documents need `--from <version>` or `--from current`. With `--from`, the
+command reads every input as a raw document, so run persisted envelopes without it.
 
 ### Compile schema artifacts
 

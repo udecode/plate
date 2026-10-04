@@ -2,21 +2,7 @@
 title: Editing rules and structural commands
 type: decision
 status: accepted
-updated: 2026-09-23
-review_scope: editing
-current_review: 2026-09-23-editing-structural-rule-admission
-reconciled_executions:
-  - 2026-09-21-editing-command-input-rule-convergence-execution
-  - 2026-09-22-editing-document-structure-execution
-  - 2026-09-22-editing-document-structure-repair-execution
-  - 2026-09-23-editing-structural-rule-admission-design-execution
-  - 2026-09-23-editing-structural-rule-admission-implementation-execution
-review_history:
-  - ../review-records/2026-09-21-editing-command-and-structural-ownership.json
-  - ../review-records/2026-09-21-editing-command-final-pass.json
-  - ../review-records/2026-09-22-editing-document-structure.json
-  - ../review-records/2026-09-22-editing-document-structure-post-implementation.json
-  - ../review-records/2026-09-23-editing-structural-rule-admission.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts
   - ../../../packages/platejs/src/lib/plugins/input-rules/defineInputRule.ts
@@ -24,12 +10,14 @@ source_refs:
   - ../../../packages/platejs/src/internal/plugin/OverridePlugin.ts
   - ../../../packages/plitejs/src/core/command-registry.ts
 related:
-  - ../features/editing.md
+  - ../review-scopes/editing.json
   - plite-core-ownership.md
   - ../systems/editor-behavior-architecture.md
 ---
 
 # Editing rules and structural commands
+
+**Audit of 2026-10-04.** Stop. The adopted target holds on the live tree. Structural input rules open one candidate transaction, the actual Plite command reports whether it applied, and decline() discards the whole candidate and delegates the original input, so the shadow-document validator and its second admission path are gone, with no stronger deletion or replacement left. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-editing-audit` hold the evidence.
 
 ## Structural input-rule implementation
 

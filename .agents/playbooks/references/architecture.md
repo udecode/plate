@@ -11,6 +11,7 @@ Read root `VISION.md`, then `docs/vision/plite.md`, `docs/vision/plate.md` or bo
 - Pick the layer from the owners the question touches. Work that crosses layers starts at the owner of the first unresolved boundary and gives each layer its own rows.
 - Before calling a feature flow registry-only, test whether it exposes a neutral law of one mounted Editable. If the view can derive the behavior from its runtime or DOM lifecycle, include the Plite React primitive and literal DOM protocol; Plate inherits it, while registry UI owns markers and styling. Add a controlled input only when user intent cannot be derived. Never add a view-toggle plugin or kit.
 - When a Plate API duplicates an adequate Plite primitive, Plite wins. A real substrate gap is fixed in Plite, never hidden behind Plate glue, and Plite stays free of Plate product policy.
+- Check every owner placement, and every fix that moves code between entrypoints, against the enforced entrypoint graph in `tooling/entrypoints/entrypoint-dag.mjs` before candidates are scored or reviewed, and put that graph in an arena's grounding. A move that dodges one forbidden import often creates another.
 
 ## Decision ledger
 
@@ -31,6 +32,7 @@ Both layers:
 - A high-risk change (public API, model, operations, normalization, selection, IME, DOM, React subscription, history, collaboration, browser or generated contracts) records three realistic failures, its blast radius from `pstack:blast-radius`, its rollback or hard-cut answer and focused proof.
 - Issue or PR provenance belongs only in issue-backed work or a changed public claim.
 - Browser and device claims follow `verify`'s claim classes; unavailable hardware never blocks a source or API handoff.
+- A blast-radius probe that disproves a fact shipped code relies on confirms a violation. Run `AGENTS.md`'s Pokayoke audit over every reader of that fact, and send the shipped defect to the Bug fix playbook beside the plan instead of only listing it as open work.
 
 Plate:
 
@@ -39,6 +41,7 @@ Plate:
 Plite:
 
 - A controlled view of canonical selection proves two Editables over one editor and two independent editors, expanded and collapsed paint, root and direction correctness, native-paint deduplication, SSR and unmounted behavior, and zero mutation of DOM selection, focus, input, history, clipboard or the internal projected-view-selection runtime.
+- A design that filters input by a stamp, tag or origin traces every producer of it: model-owned input, DOM repair, composition, Android pending diffs and the `input`-event fallback. Input provenance is not typing intent. A per-Editable rule carries the Editable itself, because mounted Editables share their view's focus and selection state.
 - A fast path derives eligibility from evaluated material behavior, keeps capability declarations with the owning runtime, fails closed for unknown behavior and proves native and model parity.
 - Ordinary architecture does not run `issue-harvester`'s Slate claims mode.
 
@@ -48,7 +51,7 @@ A plan that picks an API or architecture target writes these sections as its del
 
 - `## What other editors do`, always: one sentence saying what was read (repository revision or package version) and the outcome, then a table with one row per editor and one column per question the decision turns on, such as where the state lives or what a screen reader receives. Cover ProseMirror, Lexical, Slate, Tiptap and any other editor the evidence names; an editor that was read but not run says so. Run `research audit` first when the decision needs a source-level comparison.
 - `## Document shape`, when a node type, property or serialization changes: the stored node JSON as ```` ```json before ```` and ```` ```json after ```` pairs, with one sentence above each pair naming who reads that shape.
-- `## Layer and owner`, when a row moves or adds an owner: a table of `Change | Layer (Plite or Plate) | Package | Why`, taken from the ledger's Owner column.
+- `## Layer and owner`, when a row moves or adds an owner: a table of `Change | Layer (Plite or Plate) | Package | Why`, taken from the ledger's Owner column. The Package cell names the entrypoint the code lives in, checked against the entrypoint graph.
 - `## Hard cuts and app migration`, when anything public is removed or breaks: what is deleted, the callers that break from `pstack:blast-radius`, and the app code and copied registry components that must change, with before and after code where it changes.
 - `## Native behavior and proof`, when selection, IME, clipboard, undo or focus behavior changes: one row per behavior with what changes and the surface its proof ran on (a named browser, device, emulation or jsdom test), or `unproven`.
 

@@ -2,21 +2,15 @@
 title: HTML conversion and static rendering
 type: decision
 status: accepted
-updated: 2026-09-30
-review_scope: html
-current_review: 2026-09-30-content-root-locations-adoption-review
-reconciled_executions:
-  - 2026-09-29-static-document-rendering-execution
-  - 2026-09-30-static-preview-proportional-cost-execution
-  - 2026-09-30-content-root-locations-design
-  - 2026-09-30-content-root-locations-execution
-  - 2026-09-30-content-root-locations-closure
+updated: 2026-10-04
 related:
   - conversion-boundary.md
   - ../../plans/2026-09-30-content-root-locations.md
 ---
 
 # HTML conversion and static rendering
+
+**Audit of 2026-10-04.** Pursue. The content-root closure holds, but static output still publishes a second editor vocabulary, createStaticEditor, StaticEditor, CreateStaticEditorOptions and useStaticEditor, that has been a pure alias of createEditor since its static plugins were deleted on 2026-09-15, plus a zustand store factory on platejs/static with no static job; Vision says branded editor variants and fake aliases do not survive. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-html-audit` and `2026-10-04-html-audit-2` hold the evidence.
 
 Retain the adopted immutable document reader, explicit conversion loss
 accounting and static reuse described in [conversion boundary ownership](conversion-boundary.md).

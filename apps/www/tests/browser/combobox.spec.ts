@@ -94,10 +94,12 @@ test('combobox:mention completes typed text and undo restores it', async ({
     ).toHaveCount(0);
     await editor.assert.focusOwner('editor');
     await expect(root).toHaveAttribute('aria-controls');
+    await expect(page.getByRole('combobox', { expanded: true })).toHaveCount(1);
     await editor.assert.modelBlockText(0, '@biggsMention');
 
     await page.keyboard.press('Enter');
     await expect(root).not.toHaveAttribute('aria-controls');
+    await expect(page.getByRole('combobox')).toHaveCount(0);
     await expect(
       root.locator('[data-editor-value="Biggs Darklighter"]')
     ).toHaveCount(1);
@@ -387,6 +389,31 @@ test('combobox:IME preedit filters without publishing text', async ({
     await expect(
       page.getByRole('option', { exact: true, name: 'Biggs Darklighter' })
     ).toBeVisible();
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('combobox:an IME-committed trigger opens the popup', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'chromium', 'Chromium composition protocol');
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const { editor } = await openDemo(page, '/blocks/mention-demo', 'Mention');
+    const client = await page.context().newCDPSession(page);
+
+    await editor.ime.enableKeyEvents();
+    await client.send('Input.imeSetComposition', {
+      selectionEnd: 1,
+      selectionStart: 1,
+      text: '@',
+    });
+    await client.send('Input.insertText', { text: '@' });
+    await editor.assert.modelBlockText(0, '@Mention');
+    await expect(page.getByRole('option').first()).toBeVisible();
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

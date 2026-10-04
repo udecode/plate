@@ -1,0 +1,57 @@
+{
+  "id": "geometry",
+  "title": "Widgets, floating controls and geometry",
+  "question": "Which mounted view owns widget and selection geometry, and can duplicate position stores or observers disappear?",
+  "group": "plite-view",
+  "dependsOn": [
+    "runtime",
+    "selection"
+  ],
+  "prerequisiteReason": "Mounted-view lifetime and selection ownership determine who may measure and publish coordinates.",
+  "last": false,
+  "opportunity": {
+    "score": 9,
+    "reason": "Floating controls and shared roots require one lifetime-aware source of coordinates."
+  },
+  "owners": [
+    "packages/plitejs/src/react/range-geometry.ts",
+    "packages/plitejs/src/react/hooks/use-selection-geometry.tsx"
+  ],
+  "members": [
+    "apps/www/src/registry/hooks/use-floating-rect.spec.tsx",
+    "apps/www/src/registry/hooks/use-floating-rect.ts",
+    "apps/www/tests/browser/selection-drag-scroll.spec.ts",
+    "apps/www/tests/browser/transient-editor-geometry.spec.ts",
+    "packages/plitejs/src/react/editable/content-root-vertical-geometry.ts",
+    "packages/plitejs/src/react/range-geometry.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/hooks/use-floating-rect.ts",
+    "apps/www/src/registry/components/editor/floating-toolbar.tsx",
+    "packages/plitejs/src/yjs/react/useYjs.ts",
+    "apps/www/src/app/(app)/examples/plite/_examples/persistent-annotation-anchors.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/comment-mode.tsx"
+  ],
+  "proof": [
+    "apps/www/tests/browser/transient-editor-geometry.spec.ts",
+    "apps/www/tests/browser/selection-drag-scroll.spec.ts",
+    "apps/www/src/registry/hooks/use-floating-rect.spec.tsx",
+    "packages/plitejs/test/react/range-geometry-contract.test.tsx"
+  ],
+  "evidenceInputs": [
+    "apps/www/playwright.config.ts",
+    "apps/www/package.json",
+    "packages/plitejs/src/internal/view/mapped-view-store.ts",
+    "packages/plitejs/src/react/index.ts",
+    "docs/plans/2026-08-30-cursor-find-overlay-architecture.md",
+    "docs/plans/artifacts/transient-projection-scalability/node-benchmark.json",
+    ".agents/skills/best-api/SKILL.md"
+  ],
+  "relatedScopes": [
+    "react",
+    "accessibility",
+    "pagination",
+    "ui"
+  ],
+  "decision": "docs/research/decisions/plite-view-ownership.md"
+}

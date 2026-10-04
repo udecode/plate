@@ -3,7 +3,7 @@
 Evidence freshness: the scenario IDs and historical statuses below do not
 certify the September 2026 source. Some literal test paths belong to earlier
 owners. Use [current evidence navigation](current-evidence.md) and the
-[feature review ledger](../research/reviews.md) before choosing an exact
+[feature review ledger](../research/schema.md#review-history) before choosing an exact
 replay; retain the old result as historical until current proof exists.
 
 This is the exhaustive scenario matrix for editor behavior.

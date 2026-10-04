@@ -329,6 +329,7 @@ describe('DOM public surface contract', () => {
         'root',
         'scroll',
         'scrollIntoView',
+        'textToCaret',
         'resolveNode',
         'resolvePoint',
         'resolveRange',

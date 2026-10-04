@@ -1,0 +1,90 @@
+{
+  "id": "authored",
+  "title": "Authored changes and selective reversal",
+  "question": "Which native contract should retain authorship and reversible edits without requiring a particular review UI?",
+  "dependsOn": [
+    "selection"
+  ],
+  "prerequisiteReason": "Retained authorship and reversal require committed-change and rebasing guarantees; review UI is contextual.",
+  "last": false,
+  "opportunity": {
+    "score": 10,
+    "reason": "Native authored semantics now open from a direct current-state checkpoint without operation reduction or pending replay; the accepted production path clears the frozen Bun and Node scale gate."
+  },
+  "owners": [
+    "packages/plitejs/src/authored/index.ts",
+    "packages/plitejs/src/core/authored-runtime.ts"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/authored-changes.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/registry/components/editor/inline-void-suggestion.slow.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/authored/",
+    "packages/plitejs/package.json",
+    "packages/plitejs/src/authored/",
+    "packages/plitejs/src/core/authored-document-capability.ts",
+    "packages/plitejs/src/core/authored-fragment-view.ts",
+    "packages/plitejs/src/core/authored-runtime.ts"
+  ],
+  "consumers": [
+    "packages/platejs/src/authored/index.ts",
+    "apps/www/src/app/(app)/examples/plite/_examples/authored-changes.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/authored/authored.api.spec.ts",
+    "packages/plitejs/test/authored-view-contract.test.ts",
+    "packages/plitejs/test/authored-history-input-contract.test.ts",
+    "apps/www/src/registry/components/editor/suggestion.spec.tsx"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/src/authored/state.ts",
+    "packages/plitejs/src/authored/authored.ts",
+    "packages/plitejs/src/authored/anchors.ts",
+    "packages/plitejs/src/authored/positions-codec.ts",
+    "packages/plitejs/src/yjs/core/shared-effect-log.ts",
+    "apps/www/src/registry/components/editor/discussion.tsx",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "docs/plans/2026-09-12-authored-reload-prosemirror.md",
+    "docs/plans/artifacts/authored-reload-prosemirror/summary.json",
+    "packages/plitejs/src/authored/decisions.ts",
+    "packages/plitejs/src/authored/positions.ts",
+    "packages/plitejs/src/authored/types.ts",
+    "packages/platejs/src/authored/PlateAuthoredPlugin.ts",
+    "packages/platejs/src/features/suggestion/BaseSuggestionPlugin.ts",
+    "apps/www/src/registry/components/editor/plugins.ts",
+    "apps/www/src/registry/examples/demo.tsx",
+    "packages/plitejs/src/core/value-codec.ts",
+    "docs/plans/2026-09-12-authored-loadable-state-design.md",
+    "docs/plans/artifacts/authored-loadable-state/summary.json",
+    "docs/plans/artifacts/authored-loadable-state/run-order.json",
+    "docs/plans/artifacts/authored-loadable-state/checkpoint-probe.ts",
+    "docs/plans/artifacts/authored-loadable-state/checkpoint-probe-v2.mjs.sources.json",
+    "docs/plans/artifacts/authored-loadable-state/retained-content.ts",
+    "docs/plans/artifacts/authored-loadable-state/retained-probe.ts",
+    "docs/plans/artifacts/authored-loadable-state/retained-probe.mjs.sources.json",
+    "docs/plans/artifacts/authored-reload-performance/fixture-10000-proposed.json"
+  ],
+  "relatedScopes": [
+    "history",
+    "suggestions",
+    "diff",
+    "collaboration"
+  ],
+  "decision": "docs/research/decisions/authored-change-ownership.md",
+  "historyCandidates": [
+    "docs/plans/5086-seeded-removal-suggestion-crash-regression.md",
+    "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
+    "docs/plans/2026-09-04-comments-suggestion-lifecycle-cut.md",
+    "docs/plans/2026-08-29-comment-suggestion-scroll-jump-regression.md",
+    "docs/plans/2026-08-13-restore-direct-suggestion-wrapper-typing.md",
+    "docs/plans/2026-07-24-fix-optional-suggestion-trailing-block-kit-composition.md",
+    "docs/plans/2026-07-09-plate-next-suggestion-plugin-portal-cut.md",
+    "docs/plans/2026-07-08-plate-next-suggestion-package-review.md",
+    "docs/plans/2026-04-25-remove-inline-suggestion-helper.md",
+    "docs/plans/2026-04-23-date-suggestion-injection.md",
+    "docs/plans/2026-04-13-inline-void-suggestion-styles.md",
+    "docs/plans/2026-04-08-suggestion-mention-backspace.md"
+  ]
+}

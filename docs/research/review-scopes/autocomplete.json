@@ -1,0 +1,98 @@
+{
+  "id": "autocomplete",
+  "title": "Combobox and triggered-input sessions",
+  "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
+  "dependsOn": [
+    "selection"
+  ],
+  "prerequisiteReason": "Trigger and accepted-result locations must obey the selection contract; individual feature policy is contextual.",
+  "last": false,
+  "opportunity": {
+    "score": 7,
+    "reason": "Shared interaction policy can cut repeated popup and text-trigger machinery."
+  },
+  "owners": [
+    "packages/platejs/src/features/combobox/",
+    "packages/platejs/src/react/features/combobox/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/inline-combobox.tsx",
+    "apps/www/tests/browser/combobox.spec.ts",
+    "packages/platejs/package.json",
+    "packages/platejs/src/features/combobox/"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/inline-combobox.tsx",
+    "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts",
+    "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts",
+    "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts",
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts",
+    "apps/www/src/registry/components/editor/mention.tsx",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/components/editor/emoji.tsx",
+    "apps/www/src/registry/components/editor/footnote.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/react/features/combobox/useCombobox.spec.tsx",
+    "packages/platejs/type-tests/combobox-input-contracts.ts",
+    "apps/www/tests/browser/combobox.spec.ts",
+    "packages/platejs/src/migrations/migratePlateV54Inputs.spec.ts",
+    "packages/platejs/src/features/combobox/lib/filterWords.spec.ts",
+    "docs/research/probes/2026-09-30-autocomplete/current-boundaries.spec.tsx"
+  ],
+  "evidenceInputs": [
+    "apps/www/playwright.config.ts",
+    "apps/www/package.json",
+    "packages/platejs/package.json",
+    "config/plite-source-aliases.ts",
+    "config/plite-source-test-setup.ts",
+    "tooling/config/bunTestSetup.ts",
+    "tooling/config/tsconfig.test.json",
+    "bunfig.toml",
+    "packages/platejs/src/lib/plugins/input-rules/",
+    "apps/www/src/registry/hooks/use-debounce.ts",
+    "packages/platejs/src/emoji/lib/createEmojiSearch.ts",
+    "apps/www/src/registry/components/editor/select-editor.tsx",
+    "apps/www/src/registry/components/editor/select-command.tsx"
+  ],
+  "relatedScopes": [
+    "mentions",
+    "tags",
+    "emoji",
+    "slash",
+    "accessibility"
+  ],
+  "decision": "docs/research/decisions/autocomplete-ownership.md",
+  "historyCandidates": [
+    "docs/plans/5087-mention-drag-regression.md",
+    "docs/plans/4778-inline-combobox-point-ref.md",
+    "docs/plans/2026-08-30-fix-combobox-popup-y-position.md",
+    "docs/plans/2026-08-29-combobox-trigger-regressions.md",
+    "docs/plans/2026-08-15-remove-plugin-declaration-stages.md",
+    "docs/plans/2026-07-25-audit-all-plugin-extend-stages.md",
+    "docs/plans/2026-07-24-table-staged-capability-refactor.md",
+    "docs/plans/2026-07-24-staged-plugin-capability-doctrine.md",
+    "docs/plans/2026-07-24-list-staged-plugin-api-proof.md",
+    "docs/plans/2026-07-13-plate-next-tag-toc-toggle-package-reviews.md",
+    "docs/plans/2026-07-13-plate-next-slash-command-tabbable-table-package-reviews.md",
+    "docs/plans/2026-07-13-plate-next-media-mention-resizable-package-reviews.md",
+    "docs/plans/2026-07-11-plate-next-docx-docx-io-emoji-package-reviews.md",
+    "docs/plans/2026-07-10-plate-next-code-drawing-combobox-comment-package-reviews.md",
+    "docs/plans/2026-06-28-plate-next-unstaged-core-drift-sweep.md",
+    "docs/plans/2026-06-27-plate-next-unstaged-core-diff-score-closure.md",
+    "docs/plans/2026-06-15-4949-emoji-empty-categories.md",
+    "docs/plans/2026-06-06-plite-staged-editable-scrollbar.md",
+    "docs/plans/2026-06-05-staged-huge-document-selection-delete-stability.md",
+    "docs/plans/2026-06-05-plite-two-hour-staged-full-dom-experiments.md",
+    "docs/plans/2026-06-05-plite-huge-doc-staged-selection-regression-new-video.md",
+    "docs/plans/2026-06-05-huge-document-staged-behavior-perf-closure.md",
+    "docs/plans/2026-05-23-plite-staged-architecture-cleanup-ralplan.md",
+    "docs/plans/2026-05-03-plite-mentions-void-arrow-selection-regression.md",
+    "docs/plans/2026-04-27-plite-mentions-inline-void-keyboard-navigation.md",
+    "docs/plans/2026-04-08-suggestion-mention-backspace.md",
+    "docs/plans/2026-04-05-footnote-combobox-ui.md",
+    "docs/plans/2026-04-04-emoji-shortcode-support.md",
+    "docs/plans/2026-03-23-emoji-coverage-pass.md",
+    "docs/plans/2026-03-23-combobox-coverage-pass.md"
+  ]
+}

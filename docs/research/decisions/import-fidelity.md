@@ -2,37 +2,7 @@
 title: Document import and conversion fidelity
 type: decision
 status: accepted
-updated: 2026-09-29
-review_scope: imports
-current_review: 2026-09-29-imports-opt-in-paste-result
-reconciled_executions:
-  - 2026-09-25-document-conversion-contracts-design
-  - 2026-09-25-document-conversion-schema-admission-design
-  - 2026-09-26-document-conversion-vocabulary-design
-  - 2026-09-26-document-conversion-vocabulary-doctrine-design
-  - 2026-09-27-document-conversion-contracts-implementation
-  - 2026-09-27-document-conversion-architecture-corrections
-  - 2026-09-27-document-conversion-closure-repairs
-  - 2026-09-27-document-conversion-closure-repairs-final
-  - 2026-09-28-document-conversion-standalone-value-types
-  - 2026-09-28-document-conversion-open-findings
-  - 2026-09-28-conversion-correctness-guarantees
-  - 2026-09-28-paste-loss-reporting-repairs
-  - 2026-09-28-paste-proof-and-media-html
-  - 2026-09-29-registry-paste-feedback
-  - 2026-09-29-registry-paste-feedback-reverification
-  - 2026-09-29-registry-paste-feedback-reverification-2
-review_history:
-  - ../review-records/2026-09-25-imports-document-slice-loss-contract.json
-  - ../review-records/2026-09-25-imports-codec-ontology-final.json
-  - ../review-records/2026-09-25-imports-codec-ontology-closure.json
-  - ../review-records/2026-09-25-imports-schema-admission-recovery.json
-  - ../review-records/2026-09-26-imports-conversion-vocabulary-hard-cut.json
-  - ../review-records/2026-09-26-imports-conversion-vocabulary-doctrine-closure.json
-  - ../review-records/2026-09-27-imports-adversarial-audit-feedback.json
-  - ../review-records/2026-09-28-imports-paste-loss-reporting-review.json
-  - ../review-records/2026-09-29-imports-paste-result-hard-cut.json
-  - ../review-records/2026-09-29-imports-opt-in-paste-result.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts
   - ../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts
@@ -43,13 +13,15 @@ source_refs:
   - ../../plite/research/2026-09-25-document-codec-architecture/README.md
   - ../../plite/research/2026-09-25-document-codec-architecture/api-ontology.tsv
 related:
-  - ../reviews.md#imports
+  - ../review-scopes/imports.json
   - export-fidelity.md
   - documents-conversion-fidelity.md
   - persistence-ownership.md
 ---
 
 # Document import and conversion fidelity
+
+**Audit of 2026-10-04.** Stop. The adopted cross-format import contract holds in live source, and its two remaining outliers, CSV deserialize and the DOCX authoredTrust mode, already have Pursue verdicts in the csv and documents audits. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-imports-audit` hold the evidence.
 
 The [adversarial audit feedback](../../plans/artifacts/2026-09-27-document-conversion-audit-feedback/feedback.md)
 reopened implementation closure for HTML transfer parity, fragment admission,

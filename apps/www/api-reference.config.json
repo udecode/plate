@@ -1072,9 +1072,11 @@
           "exclude": [],
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {
+            "ClosedMigrationDocument": "/docs/api/core#definedocumentmigrations",
             "defineDocumentMigrations": "/docs/api/core#definedocumentmigrations",
             "DocumentMigration": "/docs/api/core#definedocumentmigrations",
             "DocumentMigrationContext": "/docs/api/core#definedocumentmigrations",
+            "DocumentMigrationLegacy": "/docs/api/core#definedocumentmigrations",
             "DocumentMigrationResult": "/docs/api/core#migratedocument",
             "DocumentMigrations": "/docs/api/core#definedocumentmigrations",
             "DocumentMigrationSchema": "/docs/api/core#definedocumentmigrations",

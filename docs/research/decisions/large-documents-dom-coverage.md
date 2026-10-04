@@ -3,15 +3,12 @@ title: Large documents need explicit DOM omission
 type: decision
 status: assessed
 updated: 2026-09-11
-review_scope: large-documents
-review_history:
-  - ../review-records/2026-09-11-large-documents-explicit-dom-coverage.json
 source_refs:
   - ../../plans/2026-09-11-large-documents-api-review.md
   - ../../plans/artifacts/large-documents-api-review/verification.json
   - ../../plans/artifacts/large-documents-api-review/consumer-census.json
 related:
-  - ../reviews.md#large-documents
+  - ../review-scopes/large-documents.json
   - performance-candidate-reuse.md
 ---
 

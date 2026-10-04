@@ -162,13 +162,14 @@ export const decodeMarkdownTagAttribute = (value: string) =>
       : match;
   });
 
-/** Escape a quoted attribute value. Tags never span lines. */
+/** Escape a quoted attribute value. Tags never span lines or end a table cell. */
 export const escapeMarkdownTagAttribute = (value: string) =>
   value
     .replaceAll('&', '&amp;')
     .replaceAll('"', '&quot;')
     .replaceAll('\n', '&#10;')
-    .replaceAll('\r', '&#13;');
+    .replaceAll('\r', '&#13;')
+    .replaceAll('|', '&#124;');
 
 const tagStates = (
   effects: Effects,

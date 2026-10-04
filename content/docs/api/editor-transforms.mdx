@@ -493,7 +493,9 @@ editor.update((tx) => {
 ```
 
 The input is complete: omitted named roots are deleted and omitted persisted
-meta fields reset to their declared initial values. Omitted selection is
+meta fields reset to their declared initial values. It holds `children`,
+`roots`, `meta` and `selection`, or a persisted envelope of `document`, `schema`
+and `selection`, and `replace` refuses any other field. Omitted selection is
 cleared. Invalid combined content returns `false` and publishes nothing. Use
 `tx.roots` for a partial named-root change and `tx.setField` for one metadata
 field.

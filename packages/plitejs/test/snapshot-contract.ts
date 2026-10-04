@@ -72,7 +72,6 @@ it('maps replacement identities with work bounded by changed nodes', () => {
   editor.update((tx) =>
     tx.value.replace({
       children: value('before'),
-      marks: null,
       selection: null,
     })
   );
@@ -86,9 +85,7 @@ it('maps replacement identities with work bounded by changed nodes', () => {
     return readNode.apply(this, args);
   };
   try {
-    editor.update((tx) =>
-      tx.value.replace({ children, marks: null, selection: null })
-    );
+    editor.update((tx) => tx.value.replace({ children, selection: null }));
   } finally {
     DocumentIndex.prototype.node = readNode;
   }

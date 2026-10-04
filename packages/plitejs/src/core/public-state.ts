@@ -180,6 +180,16 @@ import { cloneFrozen, cloneValue, freezeOwnedJsonValue } from './clone';
 import { createEditorCommit } from './commit';
 import { ContentSlice } from './content-slice';
 import { rewriteContentRootReferences } from './content-slice-roots';
+import {
+  EDITOR_DOCUMENT_FIELDS,
+  EDITOR_SNAPSHOT_FIELDS,
+  type EditorDocumentShapeIssue,
+  getEditorDocumentShapeIssueMessage,
+  isEnvelopeInput,
+  readDocumentRecord,
+  readPersistedEnvelope,
+  rejectEditorRecord,
+} from './document-shape';
 import { editorCommands } from './editor-commands';
 import {
   isEditorNodeSelectable,
@@ -9657,98 +9667,61 @@ const createRootFitTransactionSpec = (
   return spec;
 };
 
-const readExactDataRecord = (
-  value: unknown,
-  label: string,
-  allowedKeys: readonly string[],
-  requiredKeys: readonly string[] = []
-) => {
-  if (
-    typeof value !== 'object' ||
-    value === null ||
-    Array.isArray(value) ||
-    !isReadMethodRecord(value)
-  ) {
-    throw new TypeError(`${label} must be a plain data object.`);
-  }
-  const allowed = new Set(allowedKeys);
-  const record = Object.create(null) as Record<string, unknown>;
-
-  for (const key of Reflect.ownKeys(value)) {
-    if (typeof key !== 'string' || !allowed.has(key)) {
-      throw new TypeError(`${label} field "${String(key)}" is not supported.`);
-    }
-    const descriptor = getDefined(Object.getOwnPropertyDescriptor(value, key));
-
-    if (!('value' in descriptor)) {
-      throw new TypeError(`${label} field "${key}" must be a data property.`);
-    }
-    if (!descriptor.enumerable) {
-      throw new TypeError(`${label} field "${key}" must be enumerable.`);
-    }
-    record[key] = descriptor.value;
-  }
-  for (const key of requiredKeys) {
-    if (!Object.hasOwn(record, key)) {
-      throw new TypeError(`${label} field "${key}" is required.`);
-    }
-  }
-
-  return record;
-};
-
 type DirectSnapshotInput = Exclude<SnapshotInput, PersistedDocumentInput>;
 
-export const isPersistedDocumentEnvelope = (
-  input: unknown
-): input is PersistedDocumentInput =>
-  typeof input === 'object' &&
-  input !== null &&
-  !Array.isArray(input) &&
-  Object.hasOwn(input, 'document') &&
-  Object.hasOwn(input, 'schema');
+const rejectSnapshotShape = (issue: EditorDocumentShapeIssue): never => {
+  throw new TypeError(getEditorDocumentShapeIssueMessage(issue));
+};
+
+/** Read a snapshot's or envelope's admitted fields, without matching schemas. */
+const readSnapshotRecord = (input: unknown) => {
+  if (!isEnvelopeInput(input)) {
+    return {
+      document: readDocumentRecord(
+        input,
+        EDITOR_SNAPSHOT_FIELDS,
+        rejectSnapshotShape
+      ),
+      envelope: undefined,
+    };
+  }
+
+  const envelope = readPersistedEnvelope(input);
+
+  return {
+    document: readDocumentRecord(
+      envelope.document,
+      EDITOR_DOCUMENT_FIELDS,
+      rejectEditorRecord('Persisted document')
+    ),
+    envelope,
+  };
+};
 
 export const transformEditorSnapshotInput = (
   editor: Editor,
   input: SnapshotInput
-): SnapshotInput =>
-  SNAPSHOT_INPUT_TRANSFORMS.get(getEditorRuntimeOwner(editor))?.(input) ??
-  input;
+): SnapshotInput => {
+  const transform = SNAPSHOT_INPUT_TRANSFORMS.get(
+    getEditorRuntimeOwner(editor)
+  );
+
+  if (!transform) return input;
+  // A host transform may rewrite a snapshot, but never hide a caller's field.
+  readSnapshotRecord(input);
+
+  return transform(input) ?? input;
+};
 
 const readDirectSnapshotInput = (
   editor: Editor,
   transformedInput: SnapshotInput
 ): DirectSnapshotInput => {
-  if (!isPersistedDocumentEnvelope(transformedInput)) {
-    return transformedInput;
-  }
+  const { document, envelope } = readSnapshotRecord(transformedInput);
 
-  const envelope = readExactDataRecord(
-    transformedInput,
-    'Persisted document envelope',
-    ['document', 'schema', 'selection'],
-    ['document', 'schema']
-  );
-  const schemaValue = envelope.schema;
-  const schemaKind =
-    schemaValue && typeof schemaValue === 'object'
-      ? Object.getOwnPropertyDescriptor(schemaValue, 'kind')?.value
-      : undefined;
-  const source = readExactDataRecord(
-    schemaValue,
-    'Persisted document schema',
-    schemaKind === 'derived'
-      ? ['fingerprint', 'kind']
-      : schemaKind === 'named'
-        ? ['fingerprint', 'id', 'kind', 'version']
-        : [],
-    schemaKind === 'derived'
-      ? ['fingerprint', 'kind']
-      : schemaKind === 'named'
-        ? ['fingerprint', 'id', 'kind', 'version']
-        : ['kind']
-  ) as unknown as EditorSchemaIdentity;
+  if (!envelope) return document as DirectSnapshotInput;
 
+  const source = envelope.schema;
   const current = getEditorSchema(editor).identity();
   const matches =
     source.kind === current.kind &&
@@ -9766,17 +9739,8 @@ const readDirectSnapshotInput = (
     );
   }
 
-  const document = readExactDataRecord(
-    envelope.document,
-    'Persisted document',
-    ['children', 'meta', 'roots'],
-    ['children']
-  );
-
   return {
-    children: document.children,
-    ...(document.meta === undefined ? {} : { meta: document.meta }),
-    ...(document.roots === undefined ? {} : { roots: document.roots }),
+    ...document,
     ...(envelope.selection === undefined
       ? {}
       : { selection: envelope.selection as SnapshotSelectionInput }),

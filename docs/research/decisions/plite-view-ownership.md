@@ -2,34 +2,30 @@
 title: Plite view ownership
 type: decision
 status: proposed
-updated: 2026-10-01
-review_scope: plite-view
-reconciled_executions:
-  - 2026-09-30-content-root-locations-design
-  - 2026-09-30-content-root-locations-execution
-  - 2026-09-30-content-root-locations-closure
-  - 2026-10-01-autocomplete-ordinary-text-adoption-design
-  - 2026-10-01-autocomplete-ordinary-text-adoption-third-pass
-review_history:
-  - ../review-records/2026-07-23-api-react.json
-  - ../review-records/2026-09-12-react-public-runtime-cut.json
-  - ../review-records/2026-09-12-selection-distinct-lifetimes.json
-  - ../review-records/2026-09-12-native-input-authority.json
-  - ../review-records/2026-09-12-accessibility-owner-boundaries.json
-  - ../review-records/2026-09-12-geometry-widget-carrier-cut.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/react/components/plite.tsx
   - ../../../packages/plitejs/src/react/hooks/use-plite-runtime.tsx
   - ../../../packages/plitejs/src/react/widget-store.ts
   - ../../../packages/plitejs/src/react/widget-geometry.ts
 related:
-  - ../reviews.md#plite-view
+  - ../review-groups.json
   - plite-core-ownership.md
   - plate-core-ownership.md
   - ../../plans/2026-09-12-plite-view-design.md
 ---
 
 # Plite view ownership
+
+**Audit of 2026-10-04, `accessibility`.** Pursue. Keeping announcements, exact-view focus and Tab traversal as separate owners still wins, but the per-provider announcement host it kept speaks each announcement once per mounted provider, and the registered dnd multi-editor demo now mounts two sibling EditorRoots of one editor that each render the same 'Moved up' in their own polite live region. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-accessibility-audit` and `2026-10-04-accessibility-audit-2` hold the evidence.
+
+**Audit of 2026-10-04, `selection`.** Stop. Static coordinates, the canonical text-or-node selection, released anchors and the private projected view selection still answer four different lifetime questions with one owner each. Every merge or replacement either puts DOM projection identity into document truth, loses exact disjoint node membership, or forces release ownership onto plain reads. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-selection-audit` hold the evidence.
+
+**Audit of 2026-10-04, `react`.** Pursue. The 2026-09-12 target landed (no Runtime, useRuntime or RuntimeValue, and EditorRoot requires its editor), but the plan that adopted it also required removing caller-chosen value and plugin generics from context-only hooks, and useRootEditor, useActiveEditor, useRootEffect and useCommand still let the caller manufacture the editor's value and installed-plugin types, which docs/vision/plite.md forbids. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-react-audit` and `2026-10-04-react-audit-2` hold the evidence.
+
+**Audit of 2026-10-04, `native`.** Stop. Each mounted Editable has one input controller built on the shared DOMInputRuntime, every accepted edit lands as a canonical transaction through either the model command path or the single native-text writer, and the integrity observer restores DOM mutations nothing authorized, so no competing write path exists to remove and every replacement loses a native law or a current job. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-native-audit` hold the evidence.
+
+**Audit of 2026-10-04, `geometry`.** Stop. The Pursue target landed. The generic Widget target and store carrier is gone, and selection and keyed Yjs cursor owners feed one private exact-Editable range-geometry owner whose rectangles copied UI positions, so no duplicate position store remains to cut. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-geometry-audit` hold the evidence.
 
 The [ordinary-text autocomplete adoption plan](../../plans/2026-10-01-autocomplete-ordinary-text-adoption.md)
 proposes an exact-Editable composition read and subscription under the existing

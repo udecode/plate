@@ -2,21 +2,19 @@
 title: External text ownership
 type: decision
 status: accepted
-updated: 2026-09-15
-review_scope: external-text
-current_review: 2026-09-15-external-text-ordered-feedback
-review_history:
-  - ../review-records/2026-09-15-external-text-ordered-feedback.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/react/external-text.ts
   - ../../../packages/plitejs/src/react/editable/external-text-runtime.ts
   - ../../../packages/platejs/src/code-block/codemirror/createCodeMirrorAdapter.ts
 related:
-  - ../reviews.md#external-text
+  - ../review-scopes/external-text.json
   - code-text-ownership.md
 ---
 
 # External text ownership
+
+**Audit of 2026-10-04.** Stop. The Pursue target landed. The CodeMirror adapter publishes from its dispatchTransactions boundary and applies canonical feedback synchronously with filter: false and no queue, ExternalTextRuntime delivery is monotonic under callback failure, and the public slot and versioned protocol stay unchanged. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-external-text-audit` hold the evidence.
 
 **Canonical feedback is synchronous and ordered at CodeMirror's dispatch
 boundary; external-text delivery is monotonic under callback failure.**

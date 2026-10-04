@@ -24,7 +24,7 @@ It discovers and synthesizes. It does not run measured packets (`benchmark`), cl
 | Arguments | Does |
 | --- | --- |
 | `<feature or question>` | Picks the most valuable open research question for it, then runs a discovery run. |
-| none | Picks the top item of `node tooling/scripts/review-ledger.mjs queue` that has no research yet. |
+| none | Picks the top item of `node tooling/scripts/review-ledger.mjs status` (its `queue`) that has no research yet. |
 | `full <area>` | Ingests and compiles every relevant corpus into `docs/research` ([full pipeline](../../../docs/research/commands/full-pipeline.md)). |
 | `maintain <area>` | Cleans an existing research lane: contradictions, freshness, backlinks, synthesis ([maintain](../../../docs/research/commands/maintain.md)). |
 | `audit [--target <surface\|full>] <repo>...` | Compares external editor architectures with Plite and Plate through a complete source inventory and explicit extraction decisions ([editor audit](./references/editor-audit.md); full, all, exhaustive or multi-repository audits also read the [matrix](./references/editor-audit-matrix.md)). |
@@ -105,4 +105,4 @@ Read `docs/research/README.md`, `index.md` and `log.md` first, then the mode's c
 
 A `full` pass scopes every relevant corpus, runs an official-source discovery step per corpus, reads the strongest local raw hits before calling anything missing, and closes each corpus in a per-corpus ledger: pages and raw paths inspected, files read, official entrypoints checked, strongest evidence, a disposition (`evidenced`, `raw gap`, `compile gap`, `synthesis gap`, `freshness gap`, `evidence gap`, `contradiction gap` or `structure gap`) and the next action. No corpus ends silent; thin or contradictory evidence becomes an `open-questions/` page, never fake law. A `full` pass that spot-checked one corpus of several is not `full`.
 
-After changing the review index or recording a review, run the helper's `render` and `check` commands and update `index.md` and `log.md`. For backlog or closure status, read [ledger queries](./references/ledger-queries.md).
+After changing a ledger scope, group or document file, or recording a review, run the helper's `check` command and update `index.md` and `log.md`. For backlog or closure status, read [ledger queries](./references/ledger-queries.md).

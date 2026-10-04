@@ -1,0 +1,63 @@
+{
+  "id": "format-mappings",
+  "title": "Format mapping authoring",
+  "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+  "dependsOn": [
+    "model",
+    "plate-api"
+  ],
+  "prerequisiteReason": "Reuse the established schema authority and plugin authoring boundary before choosing shared format mechanics.",
+  "last": false,
+  "opportunity": {
+    "score": 7,
+    "reason": "Repeated schema identity, child traversal and property handling across feature mappings may be removable at their existing compiler owners."
+  },
+  "owners": [
+    "packages/platejs/src/lib/plugin/BasePlugin.ts",
+    "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts",
+    "packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts",
+    "packages/platejs/src/internal/plugin/collectPlateNodeMappings.ts"
+  ],
+  "members": [],
+  "consumers": [
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts",
+    "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.ts",
+    "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts",
+    "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts",
+    "packages/platejs/src/features/date/lib/BaseDatePlugin.ts",
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts",
+    "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts",
+    "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/markdown/lib/internal/markdownMappings.spec.ts",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.mapping.spec.ts",
+    "packages/platejs/type-tests/base-plugin-contracts.ts"
+  ],
+  "evidenceInputs": [
+    "packages/platejs/src/markdown/lib/internal/markdownMappings.ts",
+    "packages/platejs/src/markdown/lib/internal/markdownAttributes.ts",
+    "packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "packages/platejs/src/lib/plugins/html/htmlConversion.ts",
+    "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts",
+    "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts",
+    "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts",
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts",
+    "packages/platejs/src/plain-text.ts",
+    "docs/research/decisions/markdown-conversion.md",
+    "docs/research/decisions/import-fidelity.md",
+    "docs/research/decisions/export-fidelity.md"
+  ],
+  "relatedScopes": [
+    "markdown",
+    "html",
+    "imports",
+    "exports",
+    "documents",
+    "clipboard"
+  ],
+  "decision": "docs/research/decisions/format-mapping-authoring.md"
+}

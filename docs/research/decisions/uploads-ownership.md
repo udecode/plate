@@ -2,19 +2,7 @@
 title: Upload lifetime and draft asset ownership
 type: decision
 status: accepted
-updated: 2026-09-21
-review_scope: uploads
-current_review: 2026-09-21-uploads-browser-provider-naming
-review_history:
-  - ../review-records/2026-09-18-uploads-lifecycle-ownership.json
-  - ../review-records/2026-09-19-uploads-node-model-correction.json
-  - ../review-records/2026-09-19-uploads-files-sdk-integration.json
-  - ../review-records/2026-09-19-uploads-official-files-sdk.json
-  - ../review-records/2026-09-20-uploads-registry-dependency.json
-  - ../review-records/2026-09-20-uploads-static-owner-cut.json
-  - ../review-records/2026-09-20-uploads-files-server-colocation.json
-  - ../review-records/2026-09-21-uploads-provider-items.json
-  - ../review-records/2026-09-21-uploads-browser-provider-naming.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts
   - ../../../packages/platejs/src/react/features/upload/UploadPlugin.tsx
@@ -29,30 +17,15 @@ source_refs:
   - ../../../apps/www/src/registry/examples/playground-demo.tsx
   - ../../../apps/www/tests/browser/files-sdk.spec.ts
 related:
-  - ../reviews.md#uploads
+  - ../review-scopes/uploads.json
   - ../../vision/plate.md
   - clipboard-content-fitting.md
   - history-ownership.md
-reconciled_executions:
-  - 2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit
-  - 2026-09-19-uploads-files-sdk-design
-  - 2026-09-19-uploads-files-sdk-final-audit
-  - 2026-09-19-uploads-files-sdk-testing-method
-  - 2026-09-20-uploads-files-sdk-implementation
-  - 2026-09-20-uploads-files-ui-colocation
-  - 2026-09-20-uploads-upload-api-hard-cut
-  - 2026-09-20-uploads-gateway-test-import-fix
-  - 2026-09-20-uploads-registry-dependency-implementation
-  - 2026-09-20-uploads-static-owner-cut-implementation
-  - 2026-09-20-uploads-files-server-colocation-implementation
-  - 2026-09-20-uploads-r2-live-verification
-  - 2026-09-20-uploads-playground-ephemeral-implementation
-  - 2026-09-21-uploads-provider-items-implementation
-  - 2026-09-21-uploads-provider-items-doc-contract-closure
-  - 2026-09-21-uploads-browser-provider-naming-implementation
 ---
 
 # Upload lifetime and draft asset ownership
+
+**Audit of 2026-10-04.** Pursue. The browser-provider rename and the draft lifetime laws hold, but the React UploadPlugin's nativeDrop option lost its only reason when DnD stopped routing files. With the package default (false), every external file drop falls through Plite's default drop into the insertData interceptor, the policy-less path the DnD design says a drop must never take, while the docs say dropped files become uploads only when the option is on. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-uploads-audit` and `2026-10-04-uploads-audit-2` hold the evidence.
 
 **Use one official Files SDK-compatible upload plugin under `platejs/upload`,
 replacing the current media upload capability and generic transport API.** The

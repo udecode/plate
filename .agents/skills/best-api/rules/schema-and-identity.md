@@ -125,6 +125,14 @@ target-version chain:
   A source at version 1 and target at version 3 runs steps 2 then 3. Missing
   steps, another lineage, future input, downgrade, and same-version fingerprint
   drift fail closed before any step runs.
+- Step documents are closed: `FromDocument` and `ToDocument` admit only
+  `children`, `meta` and `roots`, so a step that calls a closed primitive such
+  as `target.schema.fitDocument` never sees a legacy key. A stored top-level
+  field outside them arrives in the step's `legacy` record; the step lifts it,
+  usually into `meta`, and returns the rest as `legacy`. An omitted `legacy`
+  passes on unchanged, and completion refuses a field no step lifted. With an
+  explicit `source`, `migrateDocument` reads any input, envelope-shaped or not,
+  as raw.
 - Only the persistence or release owner allocates a target version. Fold every
   change into the current target until that boundary ships; implementation
   order never earns another schema version. Plate's approved next target is

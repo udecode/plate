@@ -190,7 +190,7 @@ describe('plate migrate run', () => {
     const noopWrite = await runEditorMigrations(
       fixture.entryPath,
       [fixture.documentPath],
-      { cwd: fixture.directory, from: 53, write: true }
+      { cwd: fixture.directory, write: true }
     );
 
     expect(noopWrite.changed).toBe(0);
@@ -202,7 +202,7 @@ describe('plate migrate run', () => {
     const current = await runEditorMigrations(
       fixture.entryPath,
       [fixture.documentPath],
-      { check: true, cwd: fixture.directory, from: 53 }
+      { check: true, cwd: fixture.directory }
     );
 
     expect(current.changed).toBe(0);
@@ -225,7 +225,7 @@ describe('plate migrate run', () => {
     expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(sourceText);
   });
 
-  it('applies --from only to raw documents in a mixed batch', async () => {
+  it('reads every file as raw under --from and refuses an envelope', async () => {
     const fixture = createFixture();
     const persistedPath = join(fixture.directory, 'persisted.json');
 
@@ -244,19 +244,16 @@ describe('plate migrate run', () => {
       }),
       'utf-8'
     );
-    const result = await runEditorMigrations(
-      fixture.entryPath,
-      [fixture.documentPath, persistedPath],
-      { cwd: fixture.directory, from: 53 }
-    );
+    const before = readFileSync(fixture.documentPath, 'utf-8');
 
-    expect(result.files.map(({ applied }) => applied)).toEqual([[54], [54]]);
-    expect(JSON.parse(result.files[0].outputText).document.children).toEqual([
-      { children: [{ text: 'v' }], type: 'paragraph' },
-    ]);
-    expect(JSON.parse(result.files[1].outputText).document.children).toEqual([
-      { children: [{ text: 'persisted' }], type: 'paragraph' },
-    ]);
+    await expect(
+      runEditorMigrations(
+        fixture.entryPath,
+        [fixture.documentPath, persistedPath],
+        { cwd: fixture.directory, from: 53, write: true }
+      )
+    ).rejects.toThrow(/persisted\.json: .*envelope carries its own source/);
+    expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(before);
   });
 
   it('requires --from for raw documents', async () => {
@@ -370,7 +367,6 @@ describe('plate migrate run', () => {
 
     await runEditorMigrations(fixture.entryPath, [fixture.documentPath], {
       cwd: fixture.directory,
-      from: 53,
       write: true,
     });
     const output = JSON.parse(readFileSync(fixture.documentPath, 'utf-8'));

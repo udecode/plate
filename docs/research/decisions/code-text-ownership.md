@@ -2,20 +2,7 @@
 title: Code text ownership
 type: decision
 status: accepted
-updated: 2026-09-22
-review_scope: code
-current_review: 2026-09-22-code-last-pass-ownership-gates
-reconciled_executions:
-  - 2026-09-18-recovered-2026-09-05-native-code-full-dom-investigation
-  - 2026-09-22-code-design-ownership-plan
-  - 2026-09-22-code-commands-and-highlighter-implementation
-  - 2026-09-22-code-demo-browser-closure
-  - 2026-09-30-static-preview-proportional-cost-execution
-review_history:
-  - ../review-records/2026-09-04-code-external-text.json
-  - ../review-records/2026-09-05-code-native-plateau.json
-  - ../review-records/2026-09-22-code-commands-and-highlighter-ownership.json
-  - ../review-records/2026-09-22-code-last-pass-ownership-gates.json
+updated: 2026-10-04
 source_refs:
   - ../../plans/2026-09-04-code-block-external-text-architecture-audit.md
   - ../../plans/2026-09-05-native-code-full-dom-investigation.md
@@ -27,10 +14,12 @@ source_refs:
   - ../../plans/2026-09-22-code-commands-and-highlighter-ownership.md
   - ../../plans/artifacts/2026-09-22-code-demo-final-proof.md
 related:
-  - ../reviews.md#code
+  - ../review-scopes/code.json
 ---
 
 # Code text ownership
+
+**Audit of 2026-10-04.** Stop. The adopted target holds in live source (schema-built code nodes, caller-owned Lowlight read without mutation, JSON formatting in copied UI, corrected selected-line endpoint), and no remaining deletion or replacement lane beats one Text plus native/static syntax plus optional CodeMirror. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-code-audit` hold the evidence.
 
 **Keep one newline-bearing Text, native/static rendering and optional
 CodeMirror. The bounded code-command and native-highlighter cleanup is

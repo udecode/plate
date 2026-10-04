@@ -1,0 +1,37 @@
+{
+  "id": "emoji",
+  "title": "Emoji input and picker preferences",
+  "question": "What should own emoji search, insertion and frequent-item preferences, and which state belongs outside the editor document?",
+  "dependsOn": [],
+  "prerequisiteReason": "Unicode insertion, search and preference lifetime form a bounded question without an earlier feature verdict.",
+  "last": false,
+  "opportunity": {
+    "score": 5,
+    "reason": "Unicode insertion is small; search and preference lifetimes deserve one bounded review."
+  },
+  "owners": [
+    "packages/platejs/src/emoji/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/emoji-picker.spec.tsx",
+    "apps/www/src/registry/components/editor/emoji-picker.tsx",
+    "apps/www/src/registry/components/editor/emoji-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/emoji.tsx",
+    "apps/www/src/registry/examples/values/cn/emoji-value.tsx",
+    "apps/www/src/registry/examples/values/emoji-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/emoji/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/emoji.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/emoji/lib/BaseEmojiPlugin.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "autocomplete",
+    "styles"
+  ]
+}

@@ -441,7 +441,11 @@ Current priorities:
   current plugin tuple and schema. `migrateDocument` runs detached at the app or
   CLI storage boundary and returns an exact current envelope; missing versions
   and identity drift fail closed before callbacks. Raw documents require an
-  explicit source at each conversion. Ordinary editor creation and replacement
+  explicit source at each conversion, and with one, `migrateDocument` reads any
+  input as raw. A step
+  sees only `children`, `meta` and `roots`; every other stored top-level field
+  arrives in its `legacy` record, a step lifts it into `meta` or `roots`, and
+  completion refuses a field no step lifted. Ordinary editor creation and replacement
   accept current input only. The persistence owner allocates each released
   boundary; implementation batches amend an unreleased target instead of
   inventing later schema versions.

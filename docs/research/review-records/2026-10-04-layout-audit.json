@@ -1,0 +1,88 @@
+{
+  "id": "2026-10-04-layout-audit",
+  "scope": "layout",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "How should alignment, indentation, columns and spacing share style and structure contracts?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 48. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Alignment, line height, text indent and indent stay independently optional block properties on configured target blocks.",
+    "One authority defines each property's valid values and default; stored JSON is canonical regardless of render config.",
+    "Every schema-admitted value renders and exports consistently.",
+    "Product choice lists (toolbar presets) are copied-UI policy, not package validation.",
+    "Columns keep an independent structural job, a group of at least two width-carrying columns with transfer vetoes.",
+    "Public descriptor names, definitions and docs tell the truth about the capability they own."
+  ],
+  "evidenceReuse": "This scope has no prior review. This review reused the 2026-07-12 layout package review (rename freeze deferred naming) and the 2026-07-15 insert-column parity plan as history. It rechecked the live BaseStylePlugins.ts, BaseIndentPlugin.ts, BaseColumnPlugin.ts, ColumnPlugin.tsx, pluginInjectNodeProps.ts, Plite omitDefault handling, the copied align, line-height, indent and column kits and toolbars, and the column docs. The open styles scope owns the same inject.nodeProps pattern for marks, and work on this scope must coordinate with it.",
+  "summary": "The job is block alignment, indentation and spacing as document properties on target blocks, plus columns as structure. TextAlign, LineHeight, TextIndent and Indent each declare a schema elementProperty, then repeat the domain and default in inject.nodeProps. Render drops any value outside validNodeValues or equal to defaultNodeValue, and update.set reads inject.nodeProps.defaultNodeValue (with a failInvariant) to choose unset. LineHeight's schema and HTML decode admit any finite number or string, while the copied LineHeightKit renders only [1, 1.2, 1.5, 2, 3]. So the editor stores and exports a pasted line-height 1.75 but does not show it. The copied AlignKit re-lists the package's own inject values verbatim, and the two toolbars disagree on who owns the option list. Plite already owns canonical default omission (property default plus omitDefault) and value validation, and Plate already uses it for column width. Columns have a real structural job but crossed names. ColumnPlugin owns columnGroup, ColumnItemPlugin owns column, and ColumnDefinition names the item. The item plugin hosts moveMiddle, which takes a group entry and has no production caller, and the docs teach moveMiddle and a nonexistent useDebouncePopoverOpen hook. The strongest target keeps separate optional plugins but makes the schema the only domain/default authority and names column descriptors after their capability.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "BaseLineHeightPlugin.configure({ inject: { nodeProps: { defaultNodeValue: 1.5, validNodeValues: [1, 1.2, 1.5, 2, 3] } }, targetPlugins: [PLUGINS.heading, PLUGINS.paragraph] }); editor.plugin(LineHeightPlugin).update.set(2); editor.plugin(ColumnPlugin).update.insert({ columns: 3 }) // ColumnPlugin owns columnGroup",
+    "proposed": "The lineHeight schema property declares its domain and default with omitDefault (configured through initialState). editor.plugin(LineHeightPlugin).update.set(2) or tx.nodes.set({ lineHeight: 2 }, { match }) canonicalizes through the schema. Inject keeps only the style mapping, and the copied toolbar owns [1, 1.2, 1.5, 2, 3]. For columns, the call becomes editor.plugin(ColumnGroupPlugin).update.insert({ columns: 3 }), with ColumnPlugin naming 'column' (proposed names), and moveMiddle is deleted."
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [],
+  "alternatives": [
+    "Keeping the current design loses. Two authorities persist, and the stored-but-invisible lineHeight case stays.",
+    "Changing an existing API wins. The schema property owns the domain and default (property default plus omitDefault, configurable through a schema factory over initialState). Inject maps the value to style only, set no longer reads render config, and copied toolbars own presets.",
+    "Adding a new building block loses. A generic block-style plugin factory would only restate the existing elementProperty plus inject pair.",
+    "Deleting or merging loses. Merging textIndent into indent loses (first-line versus margin semantics), and merging the four into one plugin loses their independent omission jobs.",
+    "As for moving ownership to Plite, style mapping is Plate presentation policy, and Plite already owns the default/omission law that Plate should reuse.",
+    "For columns, rename the descriptors to ColumnGroupPlugin (columnGroup) and ColumnPlugin (column), move group-scoped work to the group, and delete moveMiddle. Making columns a CSS property on one container loses the independent structural job."
+  ],
+  "proofLimits": "This is a source review only. This review traced the stored-but-invisible lineHeight case through source and did not reproduce it in a browser or test. Whether every inject default can move to a schema factory without changing paste or static output is unproven. This review does not cover the styles-scope coupling for marks. No benchmark is needed because the target adds no runtime machinery.",
+  "references": [
+    "docs/research/features/layout.md",
+    "docs/plans/2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md",
+    "docs/plans/2026-07-15-restore-insert-column-parity.md",
+    "docs/plans/2026-07-12-plate-next-footnote-indent-juice-package-reviews.md",
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts",
+    "packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts",
+    "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts",
+    "packages/platejs/src/react/features/layout/ColumnPlugin.tsx",
+    "packages/platejs/src/internal/plugin/pluginInjectNodeProps.ts",
+    "packages/plitejs/src/core/editor-schema.ts",
+    "apps/www/src/registry/components/editor/align.tsx",
+    "apps/www/src/registry/components/editor/align-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/line-height.tsx",
+    "apps/www/src/registry/components/editor/line-height-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/indent.tsx",
+    "apps/www/src/registry/components/editor/column.tsx",
+    "content/docs/(plugins)/(elements)/column.mdx",
+    "docs/research/features/styles.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/column.tsx": "16dbc9bceed5d4409420e1e8513b6ecd1d9d40b83f9029b6f13682fe4c8ebf8a",
+      "packages/platejs/src/features/layout/lib/BaseColumnPlugin.spec.ts": "7307ace3bedb6bce1c9948f1a4b76c4e11d9ae8d88d853d3ba2a60745d4af7da",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/layout": "19bc478e555348d33b01e5f81cadcaf912d77fc367d908fdf3116c77d3ccef21"
+    },
+    "features": {
+      "capability/column": "c5d8c80dd6e2c48d3c96213a4841db753625af4d019b585cfc66f3b1093984d0",
+      "capability/columnGroup": "88a0a0f7ed278cfc3bb4ff98e59e1f9f5110dd28ede6507d0c2968c4c8a7b6a1",
+      "example/value/align-value": "bcb889ff0c8ba53e4e2f35cbbccf24d1d9471c32e4147f47ce6225f02a42d51b",
+      "example/value/column-value": "3205ac1563d161d9c479db14067d2ae011578c76358bd231e9e96f720a7ccdfc",
+      "example/value/line-height-value": "45b5942a8ef915b8dfdd86f160d1543bd056b1c55d2d529a5244c8b80feff7d5",
+      "export/platejs/./layout": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./layout/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/layout": "19bc478e555348d33b01e5f81cadcaf912d77fc367d908fdf3116c77d3ccef21",
+      "ui/align": "43f6a4d522ae72347521d23c3db0c6f01be88ef6e1995587babdeed0f42a694f",
+      "ui/align-toolbar-button": "b21d24abb4d35fd326a90b5d0d9752a5d1b3b125a6a4ebb00f03929edf4f679a",
+      "ui/column": "1c4247637b97a7405b549249f3292e08cde6d07d14a07430eb2cb33087fbc7e6",
+      "ui/line-height": "5768d40f674a180d769a6934850a10b89cc23a8e23aa555ecb949e9aacd721c0",
+      "ui/line-height-toolbar-button": "3473ab2b0774d37b2d138978eea4471f884648d4a5101ddfc3775c18c970da9c"
+    },
+    "upstreams": []
+  }
+}

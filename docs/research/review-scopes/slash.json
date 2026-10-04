@@ -1,0 +1,39 @@
+{
+  "id": "slash",
+  "title": "Slash insertion and command discovery",
+  "question": "Which command discovery and insertion policy belongs to the slash menu, and which can reuse canonical commands and combobox sessions?",
+  "dependsOn": [
+    "commands"
+  ],
+  "prerequisiteReason": "Slash discovery and insertion must use established command intent and availability.",
+  "last": false,
+  "opportunity": {
+    "score": 6,
+    "reason": "Slash input composes discovery and insertion without needing another command authority."
+  },
+  "owners": [
+    "packages/platejs/src/features/slash-command/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/slash.spec.tsx",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/examples/values/cn/slash-command-value.tsx",
+    "apps/www/src/registry/examples/values/slash-command-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/features/slash-command/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/slash.tsx"
+  ],
+  "proof": [
+    "apps/www/src/registry/components/editor/slash.spec.tsx"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "autocomplete",
+    "ui",
+    "editing"
+  ],
+  "decision": "docs/research/decisions/slash-command-ownership.md"
+}

@@ -141,6 +141,18 @@ export type MarkdownDecodeContext<
       nodes: readonly RootContent[],
       marks?: MarkdownMarks
     ) => Descendant[];
+    /**
+     * Read the phrasing of a GFM table cell back into blocks: the reverse of
+     * `encodeLine`. Inline runs become paragraphs, block elements such as
+     * images stay blocks, and an inline `<ul>` or `<ol>` run reads as a list
+     * through the installed list mapping. Without one, or when every list
+     * mapping declines the run, it stays literal text; a refusal drops it
+     * with a report, as it does for a top-level list.
+     */
+    decodeLine: (
+      nodes: readonly PhrasingContent[],
+      marks?: MarkdownMarks
+    ) => Descendant[];
     marks: MarkdownMarks;
     node: TNode;
     /** The node before this one among its Markdown siblings. */
@@ -163,6 +175,25 @@ export type MarkdownEncodeContext<
       nodes: readonly Descendant[]
     ) => Array<BlockContent | DefinitionContent>;
     encodePhrasing: (nodes: readonly Descendant[]) => PhrasingContent[];
+    /**
+     * Encode block children onto one line of phrasing for a GFM table cell.
+     * `encodePhrasing` encodes inline nodes; this encodes blocks. Lists become
+     * inline `<ul>`, `<ol start>` and `<li>` HTML, line breaks become `<br/>`,
+     * and a `<br/>` joins paragraphs, with a lossy warning. Headings and
+     * quotes keep their inline content and code and math blocks keep their
+     * text, each with a lossy warning. A block with no inline form, such as a
+     * horizontal rule, is dropped and reported under the loss policy. The
+     * output never holds a raw line ending or a `|` that ends the cell. In
+     * inline math, `|` becomes `\vert` and `\|` becomes `\Vert`, a `|` in a
+     * text-mode group such as `\text{…}` becomes `\textbar{}`, and a `\verb`
+     * delimited by `|` takes another delimiter; a `|` becomes `%7C` in an
+     * autolink and `&#124;` in raw HTML. Inline math with a `|` or `\|` the
+     * writer cannot place, such as one in another command's argument, an
+     * array column spec or `\verb` text, becomes text, and so does inline code
+     * holding `\|`. Each kind of rewrite reports one lossy warning. It reads
+     * back as blocks only through `decodeLine`.
+     */
+    encodeLine: (nodes: readonly Descendant[]) => PhrasingContent[];
     isFlow: (node: RootContent) => node is BlockContent | DefinitionContent;
     isPhrasing: (node: RootContent) => node is PhrasingContent;
     /**

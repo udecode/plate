@@ -1,0 +1,13 @@
+consumer	identity used	evidence (file:line, static read on 2026-10-03)	depends on ElementIdPlugin	note
+comments	host thread record plus a saved anchor	packages/platejs: BaseCommentsPlugin.ts:56-65, :1179-1197; plitejs anchor.ts:1861-1868, :193-199	no	path anchors without the authored runtime are fragile across collaborators; deferred by the 09-16 comments-persistence review
+discussions	top-level block NodeKey	registry discussion.tsx:409, :468-477	no	nothing persisted
+suggestions, authored changes, checkpoints	Plite token positions (origin, offset) and replica:sequence operation ids in meta.authored	plitejs authored/positions.ts:13-16; steps.ts:256-270; authored.ts:1069-1070; state.ts:1659	no	text-level identity an element ID cannot provide
+comparison	authored spans when recorded; ignores id as lineage	structural-compare.spec.ts:454; comparison-matcher.ts:66-77; compare.ts:399-403	no	public compare() does not pass recorded lineage
+yjs	internal plite:yjs-id per node, text included	plitejs yjs/core/document.ts:40, :184-210, :1810-1830	no	transport-scoped; predates 2026-09-11 (b77cba1680)
+dnd	live NodeKey; persisted id survives a move inside one document	get-content-slice.ts (lifecycle move); transfer-contract.test.ts:236; transfer.ts:108-117, :380-384	no	a copy between editors regenerates the id by design
+copy and paste	copy drop strips the id; insertion regenerates it; prepared NodeKeys for placeholders	editor-schema.ts:2329; insert-nodes.ts:174 (seedPreparedNodeKeys)	no	2026-09-13 clipboard plan rejected ElementIdPlugin for placeholders (cost and persistence)
+markdown	reads block id only when ElementIdPlugin is installed; writer cut 2026-09-28 (a54dd033ba)	convertNodesDeserialize.ts:50-52, :110-135	optional	id is metadata and drops silently on serialize
+html	none	html-export-kit.test.ts:19-29	fixture only	the kit installs ElementIdPlugin only so fixture ids pass a closed schema
+table cells	NodeKey; WeakMap object cache	grid.ts:62, :306	no
+ai	request-local refs mapped to NodeKey	AIChatPlugin.markdown.spec.tsx:258	no
+migrations	assertElementIds when the schema binds elementId	documentMigrations.ts:448, :574	yes, when bound

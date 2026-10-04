@@ -3,7 +3,7 @@
 Date: 2026-07-23
 
 Historical assessment. Its source references and verdicts describe the July
-review. Use the [feature review ledger](../research/reviews.md) to locate current
+review. Use the [feature review ledger](../research/schema.md#review-history) to locate current
 owners and later decisions before reusing a conclusion.
 
 Scope: current Plate and Plite public types, exports, docs, representative call

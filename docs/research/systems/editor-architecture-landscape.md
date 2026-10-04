@@ -18,7 +18,7 @@ related:
 
 This map preserves the April 2026 overlay comparison. Its rankings apply to
 that question and source basis. For current feature ownership and later
-iterations, use the [feature review ledger](../reviews.md); source and behavior
+iterations, use the [feature review ledger](../schema.md#review-history); source and behavior
 claims need their own current verification.
 
 ## Purpose

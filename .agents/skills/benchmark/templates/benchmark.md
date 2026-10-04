@@ -227,7 +227,7 @@ Completion Gates:
 | Benchmark plan complete validation | yes | Run validator with `--complete` | pending |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | pending |
 | Timed checkpoint | pending | Satisfy requested duration and close current packet, otherwise N/A | pending |
-| P1 autoreview | pending | Apply the pstack block's Panel review and Review rules (big work, before any PR, otherwise only when asked) and record the result, or N/A with reason | pending |
+| P1 autoreview | pending | Run the panel that the `.agents/pstack.json` reviews list names for this work, or the one the user asked for, and record its result, or N/A with reason | pending |
 | Plan complete | yes | Run `node .agents/pstack/plan-open.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

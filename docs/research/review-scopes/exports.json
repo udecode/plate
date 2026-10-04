@@ -1,0 +1,74 @@
+{
+  "id": "exports",
+  "title": "Document conversion and export fidelity",
+  "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+  "dependsOn": [],
+  "prerequisiteReason": "The user directly selected whole-export architecture; related format feature audits remain separate.",
+  "last": false,
+  "opportunity": {
+    "score": 8,
+    "reason": "Whole-document and server conversion still reconstruct editor runtimes and copied codec policy; existing semantic compilers offer a stronger reusable boundary."
+  },
+  "owners": [
+    "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/export-toolbar-button.spec.tsx",
+    "apps/www/src/registry/components/editor/export-toolbar-button.tsx",
+    "packages/plitejs/src/core/plain-text.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/examples/docx-demo.tsx",
+    "apps/www/src/registry/blocks/html-export/page.tsx",
+    "apps/www/src/registry/components/editor/plugins-static.ts"
+  ],
+  "proof": [],
+  "evidenceInputs": [
+    "packages/platejs/src/static/renderStaticHtml.tsx",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts",
+    "packages/platejs/src/docx/export/lib/exportDocx.tsx",
+    "packages/platejs/type-tests/authored-format-contracts.ts",
+    "packages/plitejs/src/authored/format.ts",
+    "apps/www/src/registry/components/editor/html-export.tsx",
+    "apps/www/src/registry/registry-editor.ts",
+    "content/docs/examples/export.mdx",
+    "content/docs/(guides)/authored-changes.mdx",
+    "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx",
+    "apps/www/src/registry/components/editor/export-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/docx-export.tsx",
+    "apps/www/src/registry/blocks/html-export/page.tsx",
+    "apps/www/src/app/(app)/docs/examples/server-side/page.tsx",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "packages/platejs/src/static/editor/withStatic.tsx",
+    "packages/platejs/src/static/components/PlateStatic.tsx",
+    "packages/platejs/src/lib/editor/withPlite.ts",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "packages/platejs/src/internal/plugin/compilePlateModel.ts",
+    "packages/platejs/src/internal/plugin/compilePlateFormats.ts",
+    "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",
+    "packages/platejs/src/markdown/lib/types.ts",
+    "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts",
+    "packages/platejs/src/csv/lib/CsvPlugin.ts",
+    "packages/plitejs/src/authored/checkpoint.ts",
+    "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
+    "packages/plitejs/src/core/persisted-document.ts",
+    "content/docs/(guides)/serializing.mdx",
+    "content/docs/api/node.mdx",
+    "packages/plitejs/src/interfaces/node.ts",
+    "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts",
+    "packages/platejs/src/react/features/table/TablePlugin.tsx",
+    "packages/platejs/src/static/renderStaticHtml.node-props.spec.ts",
+    "docs/plite/research/2026-09-24-export-architecture/shards/002-final-reassessment.md"
+  ],
+  "relatedScopes": [
+    "html",
+    "documents",
+    "markdown",
+    "large-documents",
+    "pagination",
+    "media"
+  ],
+  "decision": "docs/research/decisions/export-fidelity.md",
+  "gaps": "Source-only architecture comparison: no new runtime, native-viewer or benchmark evidence. Detached frozen conversion configuration, inference, configured overrides and named roots need design. Structural plain-text feature mappings are not specified. Direct DOCX versus semantic HTML remains provisional pending matched fidelity and complete-operation measurement. OSS PDF engine selection is deferred. Earlier bound proof is retained for its exact cases."
+}

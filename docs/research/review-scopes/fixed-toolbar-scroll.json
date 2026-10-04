@@ -1,0 +1,42 @@
+{
+  "id": "fixed-toolbar-scroll",
+  "title": "Fixed toolbar and editor scroll ownership",
+  "question": "Should FixedToolbar measure itself and mutate an editor scroll container, or should copied editor layout eliminate the overlap?",
+  "dependsOn": [],
+  "last": false,
+  "opportunity": {
+    "score": 5,
+    "reason": "Bounded copied-layout question with existing shared and external toolbar consumers that contradict the new effect."
+  },
+  "owners": [
+    "apps/www/src/registry/components/editor/fixed-toolbar.tsx",
+    "apps/www/src/registry/components/editor/editor.tsx"
+  ],
+  "members": [],
+  "consumers": [
+    "apps/www/src/registry/examples/ai-demo.tsx",
+    "apps/www/src/registry/examples/multiple-editors-demo.tsx",
+    "apps/www/src/registry/examples/installation-next-02-marks-demo.tsx",
+    "apps/www/src/registry/examples/docx-demo.tsx"
+  ],
+  "proof": [
+    "apps/www/src/registry/components/editor/fixed-toolbar.spec.tsx",
+    "apps/www/src/registry/components/editor/editor.spec.tsx",
+    "apps/www/tests/browser/ai-session.spec.ts",
+    "apps/www/tests/browser/editor-ai-layout.spec.ts",
+    "apps/www/tests/browser/multi-editor.spec.ts"
+  ],
+  "evidenceInputs": [
+    "packages/platejs/src/react/components/PlateContainer.tsx",
+    "packages/platejs/src/react/components/PlateController.tsx",
+    "packages/platejs/src/react/stores/plate/useEditor.ts",
+    "packages/plitejs/src/react/hooks/use-editor-dom-scope.ts",
+    "packages/plitejs/src/react/components/editable.tsx"
+  ],
+  "relatedScopes": [
+    "ui",
+    "geometry",
+    "ai"
+  ],
+  "decision": "docs/research/decisions/fixed-toolbar-scroll-ownership.md"
+}

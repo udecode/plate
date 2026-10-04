@@ -2,24 +2,7 @@
 title: Media object and editable content ownership
 type: decision
 status: accepted
-updated: 2026-09-22
-review_scope: media
-current_review: 2026-09-22-caret-navigation-robustness-review
-reconciled_executions:
-  - 2026-09-21-object-elements-editable-children-design
-  - 2026-09-22-object-elements-editable-children-execution
-  - 2026-09-22-object-elements-full-browser-proof-execution
-  - 2026-09-22-media-object-arrow-navigation-execution
-  - 2026-09-22-media-object-arrow-final-execution
-  - 2026-09-22-media-object-arrow-ledger-closure-execution
-  - 2026-09-22-media-caption-full-text-delete-execution
-  - 2026-09-22-media-caption-focused-empty-execution
-review_history:
-  - ../review-records/2026-09-21-media-caption-clean-reset-ownership.json
-  - ../review-records/2026-09-21-media-object-editable-content.json
-  - ../review-records/2026-09-21-media-object-editable-content-final-pass.json
-  - ../review-records/2026-09-22-media-object-arrow-navigation-audit.json
-  - ../review-records/2026-09-22-caret-navigation-robustness-review.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/interfaces/schema.ts
   - ../../../packages/plitejs/src/core/schema-compiler.ts
@@ -28,12 +11,14 @@ source_refs:
   - ../../../packages/plitejs/src/editor/positions.ts
   - ../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts
 related:
-  - ../features/media.md
+  - ../review-scopes/media.json
   - editing-command-ownership.md
   - ../../plite/research/2026-09-21-media-object-editable-content/README.md
 ---
 
 # Media object and editable content ownership
+
+**Audit of 2026-10-04.** Pursue. The object-role model holds, but the latest Pursue never landed: Plite's neutral caret engine still decides whether to enter an object's child text from document text length, mirroring the copied Caption's hide-when-empty rule, and still reads owner-stop direction from the Editable host instead of the local run. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-media-audit` and `2026-10-04-media-audit-2` hold the evidence.
 
 Plite owns a strict object role for independently meaningful blocks with
 editable children. All five Plate media descriptors use that role while keeping

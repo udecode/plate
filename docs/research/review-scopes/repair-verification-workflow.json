@@ -1,0 +1,36 @@
+{
+  "id": "repair-verification-workflow",
+  "title": "Bug repair and verification workflow",
+  "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
+  "dependsOn": [],
+  "prerequisiteReason": "Workflow proof selection can be assessed without revisiting product architecture.",
+  "last": false,
+  "opportunity": {
+    "score": 8,
+    "reason": "Repeated user-reported interaction regressions expose contradictory proof selection and local completion rules."
+  },
+  "owners": [
+    "AGENTS.md",
+    ".agents/rules/verify.mdc",
+    ".agents/rules/verify/references/regression-oracles.md",
+    ".agents/rules/verify/references/testing.md"
+  ],
+  "members": [],
+  "consumers": [
+    ".agents/rules/maintainer.mdc",
+    ".agents/rules/benchmark.mdc"
+  ],
+  "proof": [],
+  "evidenceInputs": [
+    ".agents/rules/verify/references/editor-proof.md"
+  ],
+  "relatedScopes": [
+    "proof"
+  ],
+  "decision": "docs/plans/2026-09-16-patch-consolidation.md",
+  "historyCandidates": [
+    "docs/plans/2026-08-26-regression-proof-escalation-repair.md",
+    "docs/plans/2026-09-06-maintain-verify-plate.md"
+  ],
+  "gaps": "No executable check covers the bug-fix workflow itself; each fix is proven per case through Verify Plate."
+}

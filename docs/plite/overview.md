@@ -13,7 +13,7 @@ This directory contains current contracts, active research, and historical
 migration evidence. Do not assign one lifecycle status to the entire tree.
 
 Start with [agent-start.md](agent-start.md), [Plite Vision](../vision/plite.md),
-and the [feature review ledger](../research/reviews.md). The
+and the [feature review ledger](../research/schema.md#review-history). The
 [architecture contract](references/architecture-contract.md) describes current
 runtime invariants. Linked feature decisions and plans own their narrower
 questions and execution state. [Research runs](research/) retain source pins

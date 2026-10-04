@@ -5,6 +5,10 @@ import {
   type DocumentChange,
 } from '../core/change/document-change';
 import { jsonEqual } from '../core/change/tokens';
+import {
+  getEditorDocumentShapeIssueMessage,
+  readEditorDocument,
+} from '../core/document-shape';
 import type { EditorDocumentValue } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
@@ -427,7 +431,11 @@ export const projectAuthoredReview = (
 
 /** Parse a detached document envelope. Installed editor schema validates it on load. */
 export const parseAuthoredDocument = (data: string): EditorDocumentValue =>
-  assertAuthoredDocumentValue(JSON.parse(data));
+  assertAuthoredDocumentValue(
+    readEditorDocument(JSON.parse(data), (issue) => {
+      throw new Error(getEditorDocumentShapeIssueMessage(issue));
+    })
+  );
 
 /** Map a proposed-coordinate range through the exact review captured by a projection. */
 export const projectAuthoredRange = (

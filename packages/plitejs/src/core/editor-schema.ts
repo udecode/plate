@@ -39,8 +39,8 @@ import type { JsonNode } from './change/tokens';
 import { cloneFrozen, isOwnedJsonValue } from './clone';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import {
-  assertEditorDocumentShape,
   getEditorDocumentShapeIssueMessage,
+  readEditorDocument,
   type EditorDocumentShapeIssue,
 } from './document-shape';
 import {
@@ -3746,24 +3746,25 @@ export const createEditorSchema = <V extends Value = Value>(
     input: unknown
   ): asserts input is EditorDocumentValue<V> => {
     profileCoreDuration('schema-validation-full-document-boundary', () => {
+      const location = toSchemaValidationLocation('main', []);
       const rejectShape = (issue: EditorDocumentShapeIssue): never => {
         const root = issue.kind === 'root' ? issue.root : 'main';
 
         throw createEditorSchemaValidationError(
-          issue.kind === 'meta' ||
-            issue.kind === 'children' ||
-            issue.kind === 'document'
-            ? 'invalid-json'
-            : 'invalid-root',
+          issue.kind === 'field'
+            ? 'invalid-document'
+            : issue.kind === 'root' ||
+                issue.kind === 'roots' ||
+                issue.kind === 'primary-root'
+              ? 'invalid-root'
+              : 'invalid-json',
           getEditorDocumentShapeIssueMessage(issue),
           toSchemaValidationLocation(root, [])
         );
       };
-      const location = toSchemaValidationLocation('main', []);
-
-      assertSchemaJsonValue(input, 'Editor document value', location);
-      assertEditorDocumentShape(input, rejectShape);
-      const value = input as EditorDocumentValue<V>;
+      const value = readEditorDocument(input, rejectShape, (record) =>
+        assertSchemaJsonValue(record, 'Editor document value', location)
+      ) as EditorDocumentValue<V>;
 
       const declarative = getDeclarativeSchema();
 

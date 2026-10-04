@@ -68,6 +68,66 @@ const runKeyDown = (
 };
 
 describe('TablePlugin onKeyDown', () => {
+  it('collapses a multi-cell selection on IME 229 through EditorContent while an Enter shortcut is bound', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <anchor />
+                11
+              </hp>
+            </htd>
+            <htd>
+              <hp>
+                12
+                <focus />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const enter = mock();
+    const EnterPlugin = definePlugin('competingEnter', {
+      shortcuts: { enter: { handler: enter, keys: 'enter' } },
+    });
+    const editor = createTestTableEditor({
+      plugins: [
+        EnterPlugin,
+        TablePlugin.configure({
+          initialState: { allowCellSpanEditing: false },
+        }),
+      ],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+    const { container } = render(
+      React.createElement(
+        TestPlate,
+        { editor, suppressInstanceWarning: true },
+        React.createElement(EditorContent)
+      )
+    );
+    const editable = container.querySelector('[contenteditable="true"]');
+
+    if (!editable) throw new Error('Expected editable root');
+
+    fireEvent.keyDown(editable, {
+      code: 'Enter',
+      key: 'Enter',
+      keyCode: 229,
+      which: 229,
+    });
+
+    expect(enter).not.toHaveBeenCalled();
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 2, path: [0, 0, 1, 0, 0] },
+      focus: { offset: 2, path: [0, 0, 1, 0, 0] },
+    });
+  });
+
   it('prioritizes table Tab navigation over generic shortcuts', async () => {
     const input = (
       <editor>

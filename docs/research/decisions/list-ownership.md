@@ -2,18 +2,14 @@
 title: Lists and indentation
 type: decision
 status: accepted
-updated: 2026-09-30
-review_scope: list
-current_review: 2026-09-24-list-audit
-reconciled_executions:
-  - 2026-09-30-content-root-locations-design
-  - 2026-09-30-content-root-locations-execution
-  - 2026-09-30-content-root-locations-closure
+updated: 2026-10-04
 related:
   - ../../plans/2026-09-30-content-root-locations.md
 ---
 
 # Lists and indentation
+
+**Audit of 2026-10-04.** Pursue. Only the ordinal cache key, HTML decode and ordinal(at) landed. Live numbering still has no per-view owner, because both the package ListPlugin and the copied BlockList read read.ordinal during render with no dependency on earlier siblings, and the audit cuts (the sequence customization options, the root Shift+Tab half-state, the duplicate split-drop wrapper, package paint) are still live. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-list-audit` and `2026-10-04-list-audit-2` hold the evidence.
 
 The [list review](../review-records/2026-09-24-list-audit.json) retains flat list
 properties, the shared indentation axis, conditional `listStart` and forced

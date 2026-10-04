@@ -93,7 +93,7 @@ list.update.toggle({ type: ListType.Task });
 
 HTML ul 和 ol 映射到 listType。明确的 CSS list-style-type 映射到 listStyle。自然边界的 ol start 映射到 listStart；兼容序列后的 ol 边界映射到 listRestart。Plate 剪贴板 HTML 在私有列表元数据中携带这两个字段。
 
-MDAST list.ordered 映射到 listType。两种开始策略都会序列化为当前可见的 list.start，非默认的结构化 MDAST start 会反序列化为 listRestart。Markdown 无法保留条件开始与强制重启的区别。任务复选框映射到 task 和 checked。
+MDAST list.ordered 映射到 listType。两种开始策略都会序列化为当前可见的 list.start，非默认的结构化 MDAST start 会反序列化为 listRestart。Markdown 无法保留条件开始与强制重启的区别。任务复选框映射到 task 和 checked。在 GFM table cell 中，列表段落写为 inline `<ul>`、`<ol start>` 与 `<li>` HTML，并读取回列表；参见 [Markdown](/docs/markdown#table-cell)。
 
 ## API
 

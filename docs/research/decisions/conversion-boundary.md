@@ -2,24 +2,7 @@
 title: Conversion boundary ownership and incremental Markdown
 type: decision
 status: accepted
-updated: 2026-09-30
-review_scope: conversion-boundary
-current_review: 2026-09-29-conversion-next-static-read-review
-reconciled_executions:
-  - 2026-09-28-conversion-boundary-adoption-design
-  - 2026-09-28-conversion-boundary-adoption-amendment
-  - 2026-09-29-conversion-boundary-adoption-execution
-  - 2026-09-29-conversion-boundary-closure-repairs
-  - 2026-09-29-conversion-boundary-closure-repairs-final
-  - 2026-09-29-static-preview-document-execution
-  - 2026-09-29-static-preview-document-execution-final
-  - 2026-09-29-static-document-rendering-execution
-  - 2026-09-30-content-root-locations-design
-  - 2026-09-30-content-root-locations-execution
-  - 2026-09-30-content-root-locations-closure
-review_history:
-  - ../review-records/2026-09-28-conversion-boundary-value-review.json
-  - ../review-records/2026-09-29-conversion-next-static-read-review.json
+updated: 2026-10-04
 related:
   - format-mapping-authoring.md
   - markdown-conversion.md
@@ -28,6 +11,8 @@ related:
 ---
 
 # Conversion boundary ownership and incremental Markdown
+
+**Audit of 2026-10-04.** Pursue. The adopted laws and Markdown reuse contract hold, but HTML list import still merges an item's several blocks into one item's inline content before any decoder runs, with no diagnostic, while Markdown keeps the same structure as continuation blocks; that is silent content loss against the shared loss law despite a matched representation. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-conversion-boundary-audit` and `2026-10-04-conversion-boundary-audit-2` hold the evidence.
 
 **Adopted: coherent immutable document reads, explicit HTML loss accounting
 and dependency-correct static reuse.** Retain the rest of the design:

@@ -1,0 +1,65 @@
+{
+  "id": "commands",
+  "title": "Commands, availability and shortcuts",
+  "question": "What is the smallest command contract that shares availability and intent between headless calls, shortcuts and UI controls?",
+  "group": "plite-core",
+  "dependsOn": [
+    "transactions"
+  ],
+  "prerequisiteReason": "Command intent and availability must align with the canonical transaction owner.",
+  "last": false,
+  "opportunity": {
+    "score": 8,
+    "reason": "A shared command law can remove duplicate disabled-state and keyboard policy from callers."
+  },
+  "owners": [
+    "packages/plitejs/src/core/command-definition.ts",
+    "packages/plitejs/src/core/command-registry.ts",
+    "packages/plitejs/src/core/editor-commands.ts"
+  ],
+  "members": [
+    "packages/plitejs/src/core/command-definition.ts",
+    "packages/plitejs/src/core/command-registry.ts",
+    "packages/plitejs/src/core/editor-commands.ts"
+  ],
+  "consumers": [
+    "packages/plitejs/src/react/editable/keyboard-input-strategy.ts"
+  ],
+  "proof": [
+    "packages/plitejs/test/command-spec.test.ts",
+    "packages/plitejs/test/generic-command-contract.ts"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/editor-lifecycle-api.ts",
+    "config/plite-source-aliases.ts",
+    "config/plite-source-test-setup.ts",
+    "config/workspace-source-entries.mjs",
+    "config/plite-test-jsx.js",
+    "tooling/config/bunTestSetup.ts",
+    "docs/plans/artifacts/plite-core-api-review/verification.json",
+    "apps/plite/src/",
+    "apps/www/src/",
+    "packages/cli/src/",
+    "packages/platejs/src/",
+    "packages/plitejs/src/",
+    "docs/plans/artifacts/plite-core-api-review/consumer-census.json",
+    "packages/plitejs/test/tsconfig.generic-types.json",
+    "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts",
+    "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
+    "content/docs/(guides)/plugin-methods.mdx",
+    "docs/research/decisions/transactions-synchronous-boundary.md",
+    "docs/plans/artifacts/plite-core-cuts/verification.json",
+    "docs/plans/artifacts/plite-core-cuts/production-probe-results.json",
+    "docs/plans/artifacts/plite-core-cuts/production-work-counts.json"
+  ],
+  "relatedScopes": [
+    "editing",
+    "ui",
+    "native"
+  ],
+  "decision": "docs/research/decisions/plite-core-ownership.md"
+}

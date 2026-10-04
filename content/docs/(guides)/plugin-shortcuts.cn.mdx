@@ -7,6 +7,8 @@ description: 配置 Plate 插件的键盘快捷键。
 
 ## 快捷键解析规则
 
+当按键事件报告 `isComposing`，或带有 keyCode `229`（WebKit 为确认输入法组合的 Enter 发送的代码）时，Plate 不运行任何快捷键。插件的 `onKeyDown` 处理函数仍会收到该事件。
+
 每个插件拥有一个 `shortcuts` 对象。Plate 使用 `${plugin.name}.${shortcutName}` 作为编译后的快捷键标识。
 
 没有 `handler` 时，Plate 查找同名的公开方法：

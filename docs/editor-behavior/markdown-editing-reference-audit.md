@@ -2,7 +2,7 @@
 
 This audit retains the source scope and results of the original reference
 comparison. Use [current evidence navigation](current-evidence.md) for current
-package owners and the [feature ledger](../research/reviews.md) for subsequent
+package owners and the [feature ledger](../research/schema.md#review-history) for subsequent
 reviews. This document does not refresh upstream commits or certify current
 runtime behavior.
 

@@ -7,8 +7,16 @@ import {
   withAuthoredUpdateView,
   withAuthoredViewRead,
 } from './core/authored-runtime';
+import { isOwnedJsonValue } from './core/clone';
 import { createCommandDispatch } from './core/command-registry';
 import { getEditorCommitSnapshot } from './core/commit';
+import {
+  EDITOR_ROOT_SNAPSHOT_FIELDS,
+  type EditorDocumentShapeIssue,
+  getEditorDocumentShapeIssueMessage,
+  isEnvelopeInput,
+  readDocumentRecord,
+} from './core/document-shape';
 import {
   registerDocumentView,
   withDocumentViewRead,
@@ -45,7 +53,6 @@ import {
   getCurrentSelectionRoot,
   getSelectionNodeEntries,
   getTargetRuntime,
-  isPersistedDocumentEnvelope,
   isSelectionAcrossBlocks,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
@@ -82,11 +89,12 @@ import type {
   RootKey,
   Selection,
   SnapshotInput,
+  SnapshotSelectionInput,
   Value,
 } from './interfaces/editor';
 import type { ElementIn, ElementOrTextIn } from './interfaces/element';
 import type { Location } from './interfaces/location';
-import type { Ancestor, NodeEntry } from './interfaces/node';
+import type { Ancestor, Descendant, NodeEntry } from './interfaces/node';
 import { type Range, RangeApi } from './interfaces/range';
 import type { SchemaPropertyHandle } from './interfaces/schema';
 import type { NodeSelection } from './interfaces/selection';
@@ -121,11 +129,26 @@ const assertViewDocument = (editor: Editor, document: EditorDocumentValue) => {
 
   editor.read.schema.assertDocument(document);
 
+  // A caller's document can change after validation; validation registers a
+  // frozen document of owned values as owned, and only that one is cached.
+  if (!isOwnedJsonValue(document)) return;
   if (!documents) {
     documents = new WeakSet();
     VALIDATED_DOCUMENTS.set(schema, documents);
   }
   documents.add(document);
+};
+
+const rejectRootSnapshot = (issue: EditorDocumentShapeIssue): never => {
+  if (
+    issue.kind === 'field' &&
+    (issue.field === 'meta' || issue.field === 'roots')
+  ) {
+    throw new Error(
+      'Document metadata and roots can be loaded only through the complete editor.'
+    );
+  }
+  throw new TypeError(getEditorDocumentShapeIssueMessage(issue));
 };
 
 type CreateEditorView = {
@@ -628,17 +651,20 @@ const withViewTransaction = <V extends Value>(
 
     return runSelectionMutation(fn);
   };
-  const replaceValue = (input: SnapshotInput<V>) => {
-    if (isPersistedDocumentEnvelope(input)) {
+  const replaceValue = (rawInput: SnapshotInput<V>) => {
+    if (isEnvelopeInput(rawInput)) {
       throw new Error(
         'A persisted document envelope can replace only the complete editor, not one editor view root.'
       );
     }
-    if (input.meta !== undefined || input.roots !== undefined) {
-      throw new Error(
-        'Document metadata and roots can be loaded only through the complete editor.'
-      );
-    }
+    const input = readDocumentRecord(
+      rawInput,
+      EDITOR_ROOT_SNAPSHOT_FIELDS,
+      rejectRootSnapshot
+    ) as Readonly<{
+      children: V | readonly Descendant[];
+      selection?: SnapshotSelectionInput;
+    }>;
 
     runRootTransform(editor, viewState, () => {
       const value = transaction.value();
@@ -683,7 +709,7 @@ const withViewTransaction = <V extends Value>(
         scopedInput
       );
 
-      if (isPersistedDocumentEnvelope(transformedInput)) {
+      if (isEnvelopeInput(transformedInput)) {
         throw new Error(
           'A persisted document envelope can replace only the complete editor, not one editor view root.'
         );
@@ -1400,12 +1426,13 @@ export const createEditorViewRuntime = <
   setEditorRuntime(viewEditor, viewRuntime, runtimeEditor, viewState.root);
   inheritPluginRegistry(viewEditor, sourceEditor);
   if (document) registerDocumentView(viewEditor);
-  else
-    {configureAuthoredView(
+  else {
+    configureAuthoredView(
       viewEditor,
       options.authored ??
         (sourceView ? readAuthoredView(sourceEditor) : undefined)
-    );}
+    );
+  }
   pluginApis = createEditorViewPluginApis(viewEditor, sourceEditor);
   view.plugin = pluginApis.plugin;
   return Object.freeze(view);

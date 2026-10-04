@@ -1,0 +1,57 @@
+{
+  "id": "html",
+  "title": "HTML conversion and static rendering",
+  "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "The document contract determines what HTML ingress and static output must represent.",
+  "last": false,
+  "opportunity": {
+    "score": 7,
+    "reason": "Static/client paths risk divergent output and duplicate feature renderers."
+  },
+  "owners": [
+    "packages/platejs/src/static/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/html-export-kit.ts",
+    "apps/www/src/registry/components/editor/html-export-schema-kit.ts",
+    "apps/www/src/registry/components/editor/html-export.tsx",
+    "apps/www/src/registry/examples/values/cn/deserialize-html-value.tsx",
+    "apps/www/src/registry/examples/values/deserialize-html-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/html/html.spec.ts",
+    "packages/platejs/src/html/htmlConformance.spec.ts",
+    "packages/platejs/src/html/index.ts",
+    "packages/platejs/src/html/server/",
+    "packages/platejs/src/static/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/html-export.tsx",
+    "apps/www/src/registry/components/editor/plugins-static.ts"
+  ],
+  "proof": [
+    "packages/platejs/src/static/components/PlateStatic.spec.tsx"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "clipboard",
+    "react",
+    "exports"
+  ],
+  "decision": "docs/research/decisions/html-rendering.md",
+  "historyCandidates": [
+    "docs/plans/2026-07-26-plate-next-html-plugin-colocation.md",
+    "docs/plans/2026-07-24-c05-html-codec-vertical.md",
+    "docs/plans/2026-07-24-c05-downstream-html-codec-hard-cut.md",
+    "docs/plans/2026-07-03-plate-next-static-renderer-spec-any-cleanup.md",
+    "docs/plans/2026-06-30-plate-next-html-plugin-config-inference.md",
+    "docs/plans/2026-06-14-fix-malformed-markdown-html-crash.md",
+    "docs/plans/2026-04-09-editor-spec-html-block-current-surface.md",
+    "docs/plans/2026-04-06-plite-phase9-paste-html-matrix.md",
+    "docs/plans/2026-04-06-plite-links-paste-html-tranche.md",
+    "docs/plans/2026-04-06-plite-html-formatting-phase8.md"
+  ]
+}

@@ -26,6 +26,7 @@ import {
 import { failInvariant } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { readRuntimeSelection } from './runtime-selection-state';
+import { withTypedTextIntent } from './typed-text';
 
 export {
   applyModelOwnedHistoryIntent,
@@ -231,14 +232,22 @@ export const applyEditableInput = ({
       });
     }
 
-    applyEditableCommand({
-      command: {
-        inputType: nativeInput.inputType,
-        kind: 'insert-text',
-        text: nativeInput.data,
-      },
+    const { data } = nativeInput;
+
+    withTypedTextIntent(
       editor,
-    });
+      inputController,
+      { inputType: 'insertText', text: data },
+      () =>
+      applyEditableCommand({
+        command: {
+          inputType: 'insertText',
+          kind: 'insert-text',
+          text: data,
+        },
+        editor,
+      })
+    );
     repairs.push({
       focus: true,
       kind: 'repair-caret',

@@ -1,0 +1,85 @@
+{
+  "id": "accessibility",
+  "title": "Focus, accessible navigation and read-only interaction",
+  "question": "Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?",
+  "group": "plite-view",
+  "dependsOn": [
+    "selection",
+    "runtime"
+  ],
+  "prerequisiteReason": "Focus and navigation depend on mounted-view lifetime and selection intent across active and read-only views.",
+  "last": false,
+  "opportunity": {
+    "score": 9,
+    "reason": "Input acceptance, accessible feedback and selection preservation are different contracts from rendering static HTML."
+  },
+  "owners": [
+    "packages/plitejs/src/core/screen-reader-announcement.ts",
+    "packages/plitejs/src/react/editable/runtime-focus-mouse-events.ts",
+    "packages/platejs/src/tabbable/",
+    "packages/plitejs/src/react/components/editor-announcement-live-region.tsx",
+    "packages/plitejs/src/react/hooks/use-plite-runtime.tsx"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/custom-placeholder.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/editable-voids.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/hidden-content-blocks.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/read-only.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/registry/components/editor/tabbable.spec.ts",
+    "apps/www/src/registry/components/editor/tabbable.tsx",
+    "apps/www/src/registry/examples/editable-voids-demo.tsx",
+    "apps/www/src/registry/examples/inactive-selection-demo.spec.tsx",
+    "apps/www/src/registry/examples/inactive-selection-demo.tsx",
+    "apps/www/src/registry/examples/tabbable-demo.tsx",
+    "apps/www/src/registry/examples/values/cn/editable-voids-value.tsx",
+    "apps/www/src/registry/examples/values/cn/placeholder-value.tsx",
+    "apps/www/src/registry/examples/values/cn/tabbable-value.tsx",
+    "apps/www/src/registry/examples/values/editable-voids-value.tsx",
+    "apps/www/src/registry/examples/values/placeholder-value.tsx",
+    "apps/www/src/registry/examples/values/tabbable-value.tsx",
+    "apps/www/tests/browser/block-void-caret.spec.ts",
+    "apps/www/tests/browser/inline-void-first-click.spec.ts",
+    "apps/www/tests/browser/navigation-feedback.spec.ts",
+    "packages/platejs/package.json",
+    "packages/platejs/src/react/utils/BlockPlaceholderPlugin.tsx",
+    "packages/platejs/src/tabbable/",
+    "packages/platejs/src/utils/plate-keys.ts",
+    "packages/plitejs/src/core/screen-reader-announcement.ts",
+    "packages/plitejs/src/editor/element-read-only.ts",
+    "packages/plitejs/src/react/editable/caret-engine.ts",
+    "packages/plitejs/src/react/editable/content-root-coordinate-navigation.ts",
+    "packages/plitejs/src/react/editable/content-root-navigation-actions.ts",
+    "packages/plitejs/src/react/editable/content-root-navigation.ts",
+    "packages/plitejs/src/react/editable/runtime-focus-mouse-events.ts",
+    "packages/plitejs/src/react/editable/selection-void-target.ts"
+  ],
+  "consumers": [
+    "apps/www/src/app/(app)/examples/plite/_examples/read-only.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/editable-voids.tsx",
+    "apps/www/src/registry/components/editor/tabbable.tsx"
+  ],
+  "proof": [
+    "packages/plitejs/test/react/screen-reader-announcement.test.tsx",
+    "packages/plitejs/test/react/editable-read-only-transition.test.tsx",
+    "apps/www/tests/browser/navigation-feedback.spec.ts",
+    "apps/www/tests/browser/inline-void-first-click.spec.ts"
+  ],
+  "evidenceInputs": [
+    "apps/www/playwright.config.ts",
+    "apps/www/package.json",
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "docs/plans/2026-07-13-plate-next-slash-command-tabbable-table-package-reviews.md",
+    "docs/plans/2026-08-31-native-inactive-selection-focus-marker.md",
+    ".agents/skills/best-api/SKILL.md"
+  ],
+  "relatedScopes": [
+    "native",
+    "react",
+    "geometry",
+    "html"
+  ],
+  "decision": "docs/research/decisions/plite-view-ownership.md"
+}

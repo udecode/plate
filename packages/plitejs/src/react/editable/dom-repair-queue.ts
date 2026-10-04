@@ -43,6 +43,7 @@ import {
   setEditableModelSelectionPreference,
 } from './selection-controller';
 import { shouldSkipSelectionScroll } from './selection-side-effect-policy';
+import { withTypedTextIntent } from './typed-text';
 
 export type DOMInputRepair = {
   data: string | null;
@@ -296,15 +297,14 @@ export const createDOMRepairQueue = ({
     }
 
     const nextOffset = insert.offset + insert.text.length;
+    const at = { path: target.path, offset: insert.offset };
 
     armRepairInducedSelectionOriginGuard();
     profileDOMRepairDuration('captured-update-model', () => {
-      updateNativeTextInput(
+      withTypedTextIntent(editor, inputController, { at, inputType: 'insertText', text: insert.text }, () => updateNativeTextInput(
         editor,
         (tx) => {
-          tx.text.insert(insert.text, {
-            at: { path: target.path, offset: insert.offset },
-          });
+          tx.text.insert(insert.text, { at });
           const selectionAfter = tx.selection();
 
           if (
@@ -320,7 +320,7 @@ export const createDOMRepairQueue = ({
           }
         },
         getEditableNativeGroupingInput(inputController)
-      );
+      ));
     });
     if (!isInsideVirtualizedDOM(textHost)) {
       setEditableModelSelectionPreference({
@@ -617,13 +617,13 @@ export const createDOMRepairQueue = ({
             armModelOwnedTextInputGuard({ inputController });
           }
         }
-        updateNativeTextInput(
+        const at = { path, offset: insert.offset };
+
+        withTypedTextIntent(editor, inputController, { at, inputType: 'insertText', text: insert.text }, () => updateNativeTextInput(
           editor,
           (tx) => {
             tx.text.insert(insert.text, {
-              at: shouldReplaceExpandedSelection
-                ? expandedReplacementRange
-                : { path, offset: insert.offset },
+              at: shouldReplaceExpandedSelection ? expandedReplacementRange : at,
             });
 
             if (shouldMoveSelection) {
@@ -634,7 +634,7 @@ export const createDOMRepairQueue = ({
             }
           },
           getEditableNativeGroupingInput(inputController)
-        );
+        ));
         if (textHost && !isInsideVirtualizedDOM(textHost)) {
           setEditableModelSelectionPreference({
             inputController,

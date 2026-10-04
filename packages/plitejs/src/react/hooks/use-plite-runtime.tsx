@@ -77,6 +77,8 @@ import {
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import { useRuntimeFocusState } from './use-runtime-focus-state';
+import { subscribeTypedText } from '../editable/typed-text';
+import type { ReactApi } from '../plugin/with-react';
 
 const refEquality = <T,>(a: T | null, b: T) => a === b;
 const rootKeyEquality = (
@@ -129,7 +131,7 @@ export const unregisterContentRootOwnerViewEditor = <TEditor,>(
 const createReactApi = <V extends Value, TPlugins extends readonly unknown[]>(
   domApi: DOMApi,
   editor: ReactRuntimeEditor<V, TPlugins>
-) =>
+): ReactApi =>
   Object.freeze({
     isComposing: () => domApi.isComposing(),
     isFocused: () => domApi.isFocused(),
@@ -137,6 +139,7 @@ const createReactApi = <V extends Value, TPlugins extends readonly unknown[]>(
     settleInput: () =>
       getMountedEditableDOMRuntime(editor)?.settleInput() ??
       !domApi.isComposing(),
+    subscribeTypedText: (listener) => subscribeTypedText(editor, listener),
   });
 
 export const createPliteViewEffectQueue = () => {

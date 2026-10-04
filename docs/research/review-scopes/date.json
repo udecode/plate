@@ -1,0 +1,70 @@
+{
+  "id": "date",
+  "title": "Dates",
+  "question": "What should a date node persist and which formatting belongs to application UI?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "The document value contract determines persisted dates independently of locale formatting.",
+  "last": false,
+  "opportunity": {
+    "score": 4,
+    "reason": "A small inline value/presentation boundary with explicit serialization policy."
+  },
+  "owners": [
+    "packages/platejs/src/features/date/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/date-static.spec.tsx",
+    "apps/www/src/registry/components/editor/date-static.tsx",
+    "apps/www/src/registry/components/editor/date.slow.tsx",
+    "apps/www/src/registry/components/editor/date.tsx",
+    "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/examples/values/cn/date-value.tsx",
+    "apps/www/src/registry/examples/values/date-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/features/date/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/date.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/date/lib/BaseDatePlugin.spec.tsx"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "accessibility",
+    "markdown",
+    "documents"
+  ],
+  "historyCandidates": [
+    "docs/plans/5125-5126-date-navigation-and-comment-activation-regression.md",
+    "docs/plans/4803-update-upload-history.md",
+    "docs/plans/2026-08-31-date-popover-first-click-regression.md",
+    "docs/plans/2026-08-31-consolidate-selection-documentation.md",
+    "docs/plans/2026-08-29-date-calendar-single-click-regression.md",
+    "docs/plans/2026-08-21-consolidate-oxlint-suppressions.md",
+    "docs/plans/2026-08-16-consolidate-react-ui-skills.md",
+    "docs/plans/2026-08-15-hard-cut-caller-selected-read-update-generics.md",
+    "docs/plans/2026-08-04-cut-redundant-plugin-read-update-methods.md",
+    "docs/plans/2026-08-04-audit-plugin-read-update-generic-mutations.md",
+    "docs/plans/2026-07-15-plite-update-lifecycle-api.md",
+    "docs/plans/2026-07-15-plite-update-lifecycle-api-execution.md",
+    "docs/plans/2026-07-10-plate-next-csv-cursor-date-package-reviews.md",
+    "docs/plans/2026-06-26-plite-read-update-docs-loop.md",
+    "docs/plans/2026-06-16-architecture-candidate-finder.md",
+    "docs/plans/2026-05-30-consolidate-plite-agent-docs.md",
+    "docs/plans/2026-05-28-plite-update-after-commit.md",
+    "docs/plans/2026-05-11-plite-tiptap-plite-candidate-tests-ralplan.md",
+    "docs/plans/2026-04-23-date-suggestion-injection.md",
+    "docs/plans/2026-04-10-date-contract-expansion-lane-closeout-plan.md",
+    "docs/plans/2026-04-09-editor-spec-date-media-gap.md",
+    "docs/plans/2026-04-09-editor-spec-date-media-expansion.md",
+    "docs/plans/2026-04-09-date-media-expansion-consensus-plan.md",
+    "docs/plans/2026-04-08-plite-batch6-release-candidate-freeze.md",
+    "docs/plans/2026-03-25-templates-update-check.md",
+    "docs/plans/2026-03-23-date-coverage-pass.md"
+  ]
+}

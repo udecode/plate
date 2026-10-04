@@ -1,0 +1,87 @@
+{
+  "id": "2026-10-04-streaming-audit",
+  "scope": "streaming",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What makes partial document input stable, cancelable and reversible, and should the current AI-specific update owner be replaced by a neutral contract?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest stop verdict, at queue position 31. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "A partial preview matches a fresh partial parse of the same prefix; finishing or stopping uses a strict parse of the original source.",
+    "Streaming and previewing leave document history untouched; the consumer applies in one ordinary transaction (docs/vision/plate.md:1080).",
+    "Cancellation, replacement and unmount release outstanding work without touching unrelated edits.",
+    "The parser stays neutral and never learns consumer lifetimes; AI owns request validity, acceptance and undo.",
+    "Preview cost stays proportional to the changed tail of a growing response."
+  ],
+  "evidenceReuse": "Reused the 2026-09-30 reconciliation and its eight retained conversion, static-preview and content-root records with their proof limits. Rechecked on the live tree parseSlice's previous and partial options, AIChatPlugin's preview parse, the markdown-streaming demo's stream state and history-skip publication, and that another session's uncommitted Markdown changes leave partial and previous handling alone.",
+  "summary": "The job is to show a growing Markdown response as a stable partial document, cancel or replace it safely, finish with a strict parse, and keep previews out of history. Live source keeps the 2026-09-30 split. MarkdownPlugin.parseSlice takes partial and a previous result and reconverts only the text after the last complete block, while AIChatPlugin's setPreview and the non-AI markdown-streaming demo each own their accumulated source, cancellation, cadence and previous result and publish outside history. The strongest replacement, a public Markdown stream session shared by both, would absorb only the partial-versus-final option choice and one stored result, while each consumer still needs its own lifetime, with request fencing and authored acceptance for AI and AbortController and pause for the demo. Dropping the previous hint loses the proportional tail parse and the block identity reuse that static preview rendering depends on. Keep the current design.",
+  "verdict": "stop",
+  "previous": "2026-09-30-streaming-history-reconciliation",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-30-streaming-history-reconciliation",
+      "question": "What makes partial document input stable, cancelable and reversible, and should the current AI-specific update owner be replaced by a neutral contract?",
+      "action": "retains",
+      "reason": "Its split between parser continuation and consumer lifetime holds on the live tree, and the challenge adds no material alternative."
+    }
+  ],
+  "alternatives": [
+    "Keeping parser-owned continuation with consumer-owned lifetime wins. Both consumers already share the contract and differ only where their lifetimes differ.",
+    "Adding a public Markdown stream session or controller that holds previous and chooses partial or strict loses. It would save one option choice and one stored result per consumer and add a public lifetime that AI request fencing and the demo abort and pause would still wrap.",
+    "Dropping the previous hint and reparsing the whole source per chunk loses the proportional tail parse and the block identity reuse that static preview rendering relies on.",
+    "Making AIChatPlugin the only streaming owner is rejected. The non-AI demo proves the contract is neutral, and Markdown must not depend on AI."
+  ],
+  "proofLimits": "Source review only; no package, browser or benchmark run was repeated. Performance and the AI-rich preview cells remain as the 2026-09-30 record qualifies them. Another session has uncommitted Markdown changes (markdownTags.ts and others) that leave the streaming options alone but could change parse results.",
+  "references": [
+    "docs/research/decisions/streaming-ownership.md",
+    "docs/research/features/streaming.md",
+    "docs/research/review-records/2026-09-30-streaming-history-reconciliation.json",
+    "docs/plans/2026-09-28-conversion-boundary-adoption.md",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/markdown/lib/types.ts",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "apps/www/src/registry/examples/markdown-streaming-demo.tsx",
+    "apps/www/tests/browser/markdown-streaming-contract.spec.ts",
+    "docs/vision/plate.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "7a379b4dbb02de3c7b30fcc5c6ce38a6aa24d43af3b71b5d7e12bb8457bdd81c",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "ceea6f0aecf1128634f6245f4a8c10939578276de897e30b9959c7adf5625eb3",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "d4380cdac6642db677ef37d054240301ee0a56c661fcc5fd1cb6d110ed29165f",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "4da8ba57236032efe6ad7e869144dd6452a9c195b05b36c2385aa55d1ae42b39",
+      "apps/www/src/registry/components/editor/ai-menu.tsx": "f31e83869fe46284853da85ce07e9b25682a70ca91947cbc3d874bcf10620acf",
+      "apps/www/tests/browser/markdown-streaming-contract.spec.ts": "5924d253437dcf01f12fbb1f8db8d9478d18e3ebb4a8eaba99f421143c786d96",
+      "apps/www/tests/browser/markdown-streaming-lifetime.spec.ts": "cb7b4e381682bbe60c4bb9004d0e212ba39c0fb55b440a839071ef7a1e197c74",
+      "packages/platejs/src/markdown/lib/markdownContinuation.spec.ts": "2d388270f75fdea3a650147468f27e4a5df2735bcca0ec70fe43188244468cef",
+      "packages/platejs/src/ai/react/AIChatPlugin.streaming.spec.ts": "754ba3eeb9774f56ea39e97a0cfc7f435bf213e840f0df7d2782c7699691450a",
+      "apps/www/src/registry/examples/markdown-streaming-demo.spec.tsx": "ec385b96bfc99a09bbabb0ad7c16a41951c123b6182891489a7c117b939029a7",
+      "packages/platejs/src/markdown/lib/types.ts": "fe49e121a29a9da3a7b3a2a0e97c3ee93f14c474b0354519c55720dcd63cf7f9",
+      "packages/platejs/src/ai/react/useAIChat.ts": "887203d9eca7f9acb81970838972d9c91c9350283912f4ca3ff33640cb918f8b",
+      "docs/research/review-records/2026-09-28-conversion-boundary-adoption-amendment.json": "6e8f23f39a2b2a32ac5e661d6c4dc613aef728232ff197d6b2ea46957e5c4413",
+      "docs/research/review-records/2026-09-29-conversion-boundary-closure-repairs-final.json": "3c9ad012dc4ec17e8f3d245d9a0422129dcd880d2b0c916fb1a9e725428c41ac",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "docs/research/review-records/2026-09-30-content-root-locations-closure.json": "b6a1ee96994cc9db2cfae4113f92beb124937fad3155dbf94d1cbe642e3d29ff",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt": "1236eba2d944655ada507c41c74203212df6622d7f688aa260feaf94a92e6dcf",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json": "16980a7a7d8c78014790ee6571df736433943d8b5a81aa92334494e25731cd46",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/README.txt": "0b88189e1801afbb1cd0406aac8d5d75e10f68a03a91bc04d9ce531acc1d4cbd",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {
+      "browser/markdown-streaming-contract": "30d3f516f8f7769594309d73f56310c41a077034ad3d0301becbe040035c0a06",
+      "browser/markdown-streaming-lifetime": "96e8b0ace8a57472b50547bb33feab4af7792d0d38d27ec96936b501cef10084",
+      "example/registry/markdown-streaming-demo": "72494832ede82352f3ed1eb99a4ae36ab93d6b4928a02c881190289f138045ef"
+    },
+    "upstreams": []
+  }
+}

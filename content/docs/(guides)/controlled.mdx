@@ -127,7 +127,8 @@ identity stay together.
 ### Replace or reset content
 
 Use a transaction group for external changes. `tx.value.replace(...)` replaces
-the document with an explicit value.
+the document with an explicit value of `children`, `roots`, `meta` and an
+optional `selection`, and it refuses any other field.
 
 ```tsx title="components/replace-controls.tsx" showLineNumbers
 import type { Value } from 'platejs';

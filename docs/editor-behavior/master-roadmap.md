@@ -10,7 +10,7 @@ topic: editor-behavior-master-roadmap
 Canonical implementation sequence for `docs/editor-behavior`.
 
 This roadmap orders accepted implementation in the behavior lane. The
-[feature review ledger](../research/reviews.md) orders architecture review
+[feature review ledger](../research/schema.md#review-history) orders architecture review
 across the editor. Consult [current evidence navigation](current-evidence.md)
 before reusing historical completion or coverage claims.
 

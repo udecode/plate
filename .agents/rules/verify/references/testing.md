@@ -8,7 +8,12 @@ Choose the smallest boundary that proves the behavior:
 
 - Pure unit tests for deterministic logic.
 - Thin editor or plugin contract tests for real Plate or Slate wiring.
-- Golden input or output tests for serializer and parser behavior.
+- Golden input or output tests for serializer and parser behavior. Test a
+  serializer that rewrites embedded-language source to fit its container, such
+  as TeX, a URL or an HTML attribute, by comparing the consumer's own parse or
+  render before and after, over the modes and escapes it touches; an
+  input the consumer already rejects stays byte-identical. A literal expected
+  string alone does not prove the rewrite keeps the meaning.
 - Managed browser tests for native input, focus, selection, rendering and real
   component interactions that the lower layers cannot prove. `verify` owns
   the route, source identity and evidence.
@@ -32,6 +37,16 @@ Hard constraints:
   minimal implementation, then the next. Never write all the tests first, and
   do not anticipate later tests.
 - One logical assertion per test.
+- Failing at the base commit proves only that the behavior was missing. For a
+  guard or a new branch, revert that one condition in place, watch the test
+  fail for its named defect, then restore the file byte for byte (`cmp`
+  against a saved copy).
+- A lossy case asserts that the round trip equals the input apart from the
+  reported part, plus the diagnostic; a reported loss narrows the check and
+  never removes the case.
+- A new refusal or resource bound ships with a must-still-accept case at
+  realistic scale beside its must-refuse case, because over-refusal drops
+  user data.
 - Design for testability: accept dependencies instead of creating them, give
   each external operation its own SDK-style function, and return results
   instead of hiding side effects.

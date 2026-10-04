@@ -9,7 +9,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { SEATS, SEVERITIES } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -45,6 +45,12 @@ const opens = (line) => {
 function plansDir() {
   const config = '.agents/pstack.json';
   return (existsSync(config) && JSON.parse(readFileSync(config, 'utf8')).plans) || 'docs/plans';
+}
+
+function missingPlan(path, line, where) {
+  if (line.split('\t')[1] !== 'panel' || dirname(resolve(path)) !== resolve(plansDir())) return [];
+  const plan = path.replace(/\.decisions\.tsv$/u, '.md');
+  return existsSync(plan) ? [] : [`${where}: a panel row needs its plan ${plan} beside the log, so the page shows the round; write the plan first`];
 }
 
 function committedRows(path) {
@@ -89,7 +95,8 @@ function problems(path) {
   let opened = false;
   return lines.flatMap((line, index) => {
     if (index === 0 || line === '') return [];
-    const found = committed.has(line) ? [] : rowProblems(line, `${path}:${index + 1}`, opened);
+    const where = `${path}:${index + 1}`;
+    const found = committed.has(line) ? [] : [...rowProblems(line, where, opened), ...missingPlan(path, line, where)];
     opened ||= opens(line);
     return found;
   });
@@ -101,7 +108,7 @@ function append(path, cells) {
   if (broken !== -1) return [`${CELLS[broken]} contains a tab or newline`];
   const row = [new Date().toISOString().replace(/\.\d{3}Z$/u, 'Z'), ...cells].join('\t');
   const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
-  const found = rowProblems(row, `${path} (new row)`, (text ?? '').split('\n').some(opens));
+  const found = [...rowProblems(row, `${path} (new row)`, (text ?? '').split('\n').some(opens)), ...missingPlan(path, row, `${path} (new row)`)];
   if (found.length > 0) return found;
   if (text !== null) {
     appendFileSync(path, `${text === '' || text.endsWith('\n') ? '' : '\n'}${row}\n`);

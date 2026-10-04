@@ -1,0 +1,97 @@
+{
+  "id": "2026-10-04-html-audit",
+  "scope": "html",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest pursue verdict, at queue position 38. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Static output renders a document through the editor's plugins on server and client without editing the editor (EditorStatic, EditorPreview, renderStaticHtml).",
+    "One public editor-creation vocabulary of createEditor, Editor and CreateEditorOptions, with useCreateEditor in platejs/react, and no surviving branded editor variants or fake aliases.",
+    "An entrypoint exports only code backed by its job; interactive store machinery stays out of platejs/static.",
+    "Static root readers bind the current document, root, authored policy and read-only state (adopted closure).",
+    "Semantic HTML stays separate from styled static React output."
+  ],
+  "evidenceReuse": "Reused the content-root adoption review and closure, the static-document-rendering execution and the 2026-08-26 distribution hard-cut plan as history. Rechecked on the live tree the staticDocumentView.ts reader invalidation, createStaticEditor against root createEditor and applyEditor, core plugin installation, useStaticEditor, the platejs/static and root barrels, the static editor spec, and every tracked docs page, registry file and test that names createStaticEditor or useStaticEditor. git log -S traced the getStaticPlugins removal to e0c1500b95. Searched today's audit records, and none covers these exports. No tests or probes were run.",
+  "summary": "The job is rendering a document through the editor's plugins on server and client (EditorStatic, EditorPreview, renderStaticHtml) with no interactive machinery the static path does not need. The adopted closure holds, since getStaticRootView replaces a cached root reader when the rendering view's authored policy or read-only state changes. The new gap is the static entrypoint's own exports. createStaticEditor calls the same applyEditor with the same core plugins as root createEditor. The 2026-08-26 hard-cut plan kept it as a distinct static job while it still installed ViewPlugin, but commit e0c1500b95 deleted getStaticPlugins and ViewPlugin, so its spec now asserts only shared-owner behavior. Docs teach 'An editor created with createEditor or createStaticEditor', five registry files, one app proof page and the RSC guide use it, and CommentBody builds one static editor per comment from initialValue where one editor plus the document prop would do. platejs/static also re-exports createZustandStore, ZustandStoreApi and ZustandStoreOptions, which the root does not export and no consumer imports from there. The strongest alternative, giving createStaticEditor a real static-only job such as dropping DOM or history for a lighter server editor, has no measured cost or capability behind it, and EditorPreview copy needs the DOM capability.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "Server: import { createStaticEditor, EditorStatic } from 'platejs/static'; const editor = createStaticEditor({ plugins: BaseEditorKit, initialValue: content }); <EditorStatic editor={editor} />. Client: const editor = useStaticEditor({ plugins: BaseBasicMarksKit, initialValue }, [initialValue]); <EditorPreview editor={editor} />, one editor per comment body.",
+    "proposed": "Server: import { createEditor } from 'platejs'; const editor = createEditor({ plugins: BaseEditorKit }); <EditorStatic editor={editor} document={content} /> and renderStaticHtml(editor, { document }). Client: const editor = useCreateEditor({ plugins: BaseBasicMarksKit }); <EditorPreview editor={editor} document={{ children: body }} />, one editor for every comment body. platejs/static exports no zustand store. Whether useCreateEditor or a memoized root createEditor serves preview editors is the first bounded question (proposed)."
+  },
+  "previous": "2026-09-30-content-root-locations-adoption-review",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-30-content-root-locations-adoption-review",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "supersedes",
+      "reason": "Its bounded closure repairs landed; this review replaces its next work with the static entrypoint's alias and store exports."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-closure",
+      "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
+      "action": "retains",
+      "reason": "staticDocumentView.ts replaces a cached root reader when authored policy or read-only state changes and reuses it otherwise; the adoption holds."
+    }
+  ],
+  "alternatives": [
+    "Keeping createStaticEditor, StaticEditor and useStaticEditor as intent-revealing names loses. They return the same editor as createEditor through the same applyEditor, so the name adds a second convention for no behavior, and Vision forbids branded editor variants and fake aliases.",
+    "Giving createStaticEditor a real static-only job, such as omitting DOM, history or selection for a lighter server editor, loses absent evidence. No measured server cost or missing capability exists, and EditorPreview copy needs the core DOM capability.",
+    "Hard-cutting the static editor creators and the zustand re-export is the lane to pursue. Static callers use createEditor from platejs, useCreateEditor in platejs/react, and the document prop for many bodies over one editor.",
+    "Adding a detached renderStaticHtml(document, { plugins }) to mirror serializeHtml loses for now. It hides one createEditor call behind a second operation shape, and EditorStatic still needs an editor for repeated renders.",
+    "Folding this into the editor-public-naming scope is a possible ownership move. That scope's 2026-10-04 audit names other branded values and does not cover these exports.",
+    "Reopen the content-root location design or static reader cache: Stop. The closure's policy and read-only invalidation is live."
+  ],
+  "proofLimits": "Source and git-history review only; no tests, type tests, registry build or browser were run. Whether useCreateEditor's React core plugins change EditorPreview output or cost against a headless editor is unmeasured and is the first design question. content/docs/(guides)/static.mdx carries another session's staged change to its document-validation paragraph; the cited line 392 is unchanged by it. The overlap with the editor-public-naming scope is a routing judgment, not a proof gap.",
+  "references": [
+    "docs/research/decisions/html-rendering.md",
+    "docs/research/review-records/2026-09-30-content-root-locations-adoption-review.json",
+    "docs/research/review-records/2026-09-30-content-root-locations-closure.json",
+    "docs/plans/2026-08-26-plitejs-platejs-distribution-hard-cut.md",
+    "packages/platejs/src/static/editor/withStatic.tsx",
+    "packages/platejs/src/static/editor/withStatic.spec.tsx",
+    "packages/platejs/src/static/index.ts",
+    "packages/platejs/src/static/internal/staticDocumentView.ts",
+    "packages/platejs/src/react/editor/useStaticEditor.ts",
+    "packages/platejs/src/lib/editor/withPlite.ts",
+    "packages/platejs/src/core.tsx",
+    "packages/platejs/src/lib/libs/zustand.ts",
+    "apps/www/src/registry/components/editor/comment.tsx",
+    "apps/www/src/registry/blocks/html-export/page.tsx",
+    "content/docs/(guides)/static.mdx",
+    "content/docs/installation/rsc.mdx",
+    "docs/vision/common.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/components/PlateStatic.spec.tsx": "f1ee84b350d8f1a4d870874bac548360bc4869d54c00baa96a2f96b5b3c9d006",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/static": "8bab681f97ae1a434cb1ba7bc1cf66529d8e41cda8e31f1a0e00d7beee8f1d0b"
+    },
+    "features": {
+      "capability/html": "15523d483fb6079e075f0901d46776f93546e4ee12079ceaa17539ef7149d35f",
+      "example/value/deserialize-html-value": "41cf8a0ccbd2fb68fe09d8bbbaa15555c8aa36cd205e449cb752d2d54d44c612",
+      "export/platejs/./html": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./html/server": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./static": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/html": "e124b15c57fee445a81455e4a54eb9e46a8b5aac568e0bd8ac0f21e3804598e8",
+      "platejs/static": "8bab681f97ae1a434cb1ba7bc1cf66529d8e41cda8e31f1a0e00d7beee8f1d0b",
+      "ui/html-export": "18dc4ff9da241dcce200c7d9d1de1b8267c99a81e48a108a8b2fd13d3e946e58",
+      "ui/html-export-kit": "6e510055e7d538e7ecc34a94444ff371edbcfc4c27b4296997ab41fab92c17c5",
+      "ui/html-export-schema-kit": "7852617a57c749d881f3364cb06c9ed240c4ecbc30dd3c68112b7cc313627978"
+    },
+    "upstreams": []
+  }
+}

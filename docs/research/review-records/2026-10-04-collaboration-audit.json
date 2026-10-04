@@ -1,0 +1,119 @@
+{
+  "id": "2026-10-04-collaboration-audit",
+  "scope": "collaboration",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 10. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Canonical accepted changes stay the document truth; discarded specs and aborted updates publish no external effects.",
+    "The app owns Y.Doc, provider connection, authentication, persistence, readiness and destruction; seed authority is an explicit exclusive app decision.",
+    "Pre-sync room content must not be replaced by a placeholder; waiting or failed admission rejects document commits before publication.",
+    "Presence is transient and view-specific; one awareness client publishes one arbitrated selection across mounted views.",
+    "Plite owns neutral Yjs binding and cursor reads in plitejs/yjs and plitejs/yjs/react; Plate adds plugin authoring and selection decoration policy with no provider lifecycle or duplicate store (plate.md Plate Rules).",
+    "Cursor metadata types infer through factory options, copied composition, portals and explicit-editor hooks."
+  ],
+  "evidenceReuse": "Reused the 2026-09-14 implementation record, the completed lifetime plan and its recorded browser, provider and benchmark receipts as historical evidence only. Rechecked on the live tree the native options and api types, the conditional descriptor factory, the Plate YjsPlugin factory, the facade-identity and deleted-export assertions, the copied overlay derivation, the registry demo call site, current public docs, and git history of both yjs directories since the record (three small commits, none reintroducing a store, provider command or read/update group). No yjs source file has uncommitted changes.",
+  "summary": "The job is to bind an app-owned Y.Doc to the canonical document with explicit admission, offline edits, relative cursor identity, shared authored effects and per-view presence, while the app owns provider lifetime. Live plitejs/yjs takes doc, initialReady, optional awareness, seed and compaction as factory input. It publishes only an api group whose presence and compaction methods exist when their inputs are supplied. Plate YjsPlugin.create composes yjs(options) with an unstyled remote-selection decoration and keeps no configuration store, and copied CollaborationPlugin derives from it via require('awareness').map. The strongest cut, moving the remote-selection decoration out of Plate into copied UI or into plitejs/yjs/react, loses. Vision assigns selection decoration policy to the Plate facade, raw Plite examples paint cursors through hooks rather than inline decoration, and the move would make each copied consumer own keyed refresh invalidation. Later commits (2026-09-23 to 2026-09-30) made small fixes inside the same owners, namely default root-child indexing, the shared-effect persistence-version rename, root-qualified cursor paint and document-view exclusion. Keep the current design.",
+  "verdict": "stop",
+  "previous": "2026-09-14-collaboration-lifetime-implementation",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-14-collaboration-lifetime-implementation",
+      "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
+      "action": "supersedes",
+      "reason": "Its Pursue target is adopted in live source; the fresh verdict is Stop (keep the current design), so no further collaboration work remains open."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-14-collaboration-lifetimes",
+      "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
+      "action": "retains",
+      "reason": "Its completion claim matches the live source checked here; proof stays historical, not re-run."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-08-23-hard-cut-yjs-public-entrypoints",
+      "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
+      "action": "retains",
+      "reason": "The four exact yjs entrypoints and facade identity it delivered remain in source and are asserted by YjsPlugin.api.spec.ts."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-04-yjs-cursor-presentation",
+      "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
+      "action": "retains",
+      "reason": "Headless tracking with copied cursor presentation still holds in YjsPlugin.tsx and remote-cursor-overlay.tsx."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
+      "action": "retains",
+      "reason": "Context only; nothing in it changes the collaboration ownership verdict."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current design is selected. Every gate of the lifetime target is present in source, and docs teach the same ownership.",
+    "Deleting Plate YjsPlugin and letting copied UI own remote-selection decoration is rejected. Vision assigns selection decoration policy to Plate, and each copied consumer would re-own observe and refresh invalidation by node key.",
+    "Moving remote-selection decoration into plitejs/yjs/react as a neutral source is rejected for now. Raw Plite consumers render cursors through useYjsRemoteCursor hooks, so no second consumer earns the move.",
+    "Restoring a provider service or Hocuspocus helper is rejected. Provider events differ by package and version, and the app already owns construction and teardown.",
+    "Replacing the CRDT binding with commit or snapshot broadcast is rejected. Convergence, relative identity, named roots and shared authored effects remain current jobs.",
+    "Collapsing the four capability-specific internal descriptor builders in plugin.ts is a private implementation detail with no public or ownership change, so it is not a review-level target."
+  ],
+  "proofLimits": "Source review only. No test, typecheck, browser, Hocuspocus or benchmark command was re-run in this read-only audit; the 2026-09-14 receipts remain historical. The Plate remote-selection decoration iterates every remote cursor for each text node read; its cost at high cursor counts in the mounted Plate path is unmeasured (the plan's 500-cursor cohort ran the native benchmark). Long-duration soaks were never run.",
+  "references": [
+    "docs/research/decisions/collaboration-ownership.md",
+    "docs/research/features/collaboration.md",
+    "docs/research/review-records/2026-09-14-collaboration-lifetime-implementation.json",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-14-collaboration-lifetimes.json",
+    "docs/plans/2026-09-14-collaboration-lifetimes.md",
+    "packages/plitejs/src/yjs/core/types.ts",
+    "packages/plitejs/src/yjs/core/plugin.ts",
+    "packages/plitejs/src/yjs/react/useYjs.ts",
+    "packages/platejs/src/yjs/react/YjsPlugin.tsx",
+    "packages/platejs/src/yjs/YjsPlugin.api.spec.ts",
+    "packages/platejs/type-tests/yjs-collaboration-contracts.ts",
+    "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx",
+    "apps/www/src/registry/examples/collaboration-demo.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/yjs-hocuspocus.tsx",
+    "content/docs/(plugins)/(collaboration)/yjs.mdx",
+    "docs/vision/plate.md",
+    "docs/vision/plite.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/app/(app)/examples/plite/_examples/yjs-collaboration.tsx": "652663f3f381a1e01558be06b9230f2329c1d81b4c3453d6b1245c0d7a4f8e76",
+      "apps/www/src/app/(app)/examples/plite/_examples/yjs-hocuspocus.tsx": "94db5f51e5fbaf3e7619547529b741e5494a89f9ce54eae578beab95cc9c3d41",
+      "packages/plitejs/test/yjs/admission-lifecycle-contract.spec.ts": "57a8f46062b9ab097cca824fe7c065c66206d365c4bbcd525ec94114ef8b9b41",
+      "packages/platejs/src/yjs/YjsPlugin.api.spec.ts": "5954461018a79059a36f7ab6af732b133e95b6df0f43be442319b4470a7ddd22",
+      "packages/platejs/type-tests/yjs-collaboration-contracts.ts": "0eb8d730da8cc1eaa37bb3480903cb6138b959a587fac3271344dd81de4b0e3e",
+      "apps/plite/tests/plite-browser/donor/examples/yjs-hocuspocus.test.ts": "1028d559b6d3d197c6f2e98d5004c57f1088b2a787bc21eb5e18c00f6e3eaad3",
+      "benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs": "38f2c71ea3adef4283cf6c4c99e1dca6727e72bee3b67a6230af9a94a5031bc8",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/plitejs/src/yjs": "3255ea02ffcb2f1255ddd3ced52bb93e956759b83c079f7b62169b52fcf2cd89",
+      "packages/platejs/src/yjs": "5e18c75cec8676c46617481dbaf93811050500d0da2fd1ccb9070c5c8a3331eb"
+    },
+    "features": {
+      "capability/yjs": "15523d483fb6079e075f0901d46776f93546e4ee12079ceaa17539ef7149d35f",
+      "example/plite/collaboration-demo": "2ae45528ba5a152c5caafcb64588f33564447d57be95862f7d81016e2616f535",
+      "example/plite/yjs-collaboration": "7d01b3996d30b4e21b07a05bd648d158b7582f3660998d1738ad80b0bdc218e9",
+      "example/plite/yjs-hocuspocus": "90376e149a62740190ec78105e57310bbeed647948fdca34948a6189927bfc42",
+      "example/registry/collaboration-demo": "f8e84f42b3e3c52be63144b529286972f65b0c9659b4d3b9521db40fb3cc0adb",
+      "export/platejs/./yjs": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./yjs/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/plitejs/./yjs": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/plitejs/./yjs/react": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "platejs/yjs": "5e18c75cec8676c46617481dbaf93811050500d0da2fd1ccb9070c5c8a3331eb",
+      "plitejs/yjs": "3255ea02ffcb2f1255ddd3ced52bb93e956759b83c079f7b62169b52fcf2cd89",
+      "ui/remote-cursor-overlay": "e798a2828a4f95781ef8b069bd3f267e174bc0c7bd65b61fa4bd55c21ffcd7c2"
+    },
+    "upstreams": []
+  }
+}

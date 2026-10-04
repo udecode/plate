@@ -4,8 +4,8 @@ Page: https://claude.ai/artifact/1C5Axx5Aqg68Ly6zr2JkQo
 
 How Plate proves editor behavior that unit and DOM tests miss, through real
 input and a model oracle that reads the page. Every plan for the `proof` scope
-is one iteration of this subject; the scope's review history is in the ledger
-hub.
+is one iteration of this subject; `node tooling/scripts/review-ledger.mjs show proof`
+prints the scope's review history.
 
 ## Public API
 

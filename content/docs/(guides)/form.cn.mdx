@@ -188,7 +188,7 @@ editor.update((tx) => {
 });
 ```
 
-只在应用明确提供外部快照时使用此 API。替换会使用显式提供的选区；省略选区时则清空选区。
+只在应用明确提供外部快照时使用此 API。`formStateValue` 只包含 `children`、`roots`、`meta` 和 `selection`。替换会使用显式提供的选区；省略选区时则清空选区。
 它会记录一次历史变更、删除省略的命名根，并重置省略的持久化 meta。不要把每次
 `onValueChange` 再写回此 API；这会形成整篇文档替换循环。
 

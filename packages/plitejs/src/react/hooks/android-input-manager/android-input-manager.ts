@@ -68,6 +68,7 @@ import {
   writeRuntimeSelection,
 } from '../../editable/runtime-mutation-state';
 import { readRuntimeSelectionRange } from '../../editable/runtime-selection-state';
+import { isTypingInputType } from '../../editable/typed-text';
 import {
   ReactEditor,
   type ReactRuntimeEditor,
@@ -315,7 +316,7 @@ export function createAndroidInputManager({
       }
 
       if (diff.diff.text) {
-        applyAndroidTextInput(diff.diff.text, 'insertText');
+        applyAndroidTextInput(diff.diff.text, diff.inputType ?? 'insertText');
       } else {
         applyEditableCommand({
           command: { kind: 'delete-fragment' },
@@ -467,7 +468,7 @@ export function createAndroidInputManager({
     inputController.state.selectionSource === 'dom-current' &&
     inputController.state.selectionChangeOrigin === 'native-user';
 
-  const storeDiff = (path: Path, diff: StringDiff) => {
+  const storeDiff = (path: Path, diff: StringDiff, inputType?: string) => {
     const pendingDiffs = EDITOR_TO_PENDING_DIFFS.get(editor) ?? [];
     EDITOR_TO_PENDING_DIFFS.set(editor, pendingDiffs);
 
@@ -499,7 +500,7 @@ export function createAndroidInputManager({
     if (idx === -1) {
       const normalized = normalizeStringDiff(target.text, nextDiff);
       if (normalized) {
-        pendingDiffs.push({ path, diff: normalized, id: idCounter });
+        pendingDiffs.push({ path, diff: normalized, id: idCounter, inputType });
         idCounter += 1;
       }
 
@@ -513,6 +514,10 @@ export function createAndroidInputManager({
       nextDiff
     );
     const previousDiff = pendingDiffs[idx].diff;
+    const mergedInputType =
+      diff.text.length > 0 && !isTypingInputType(inputType)
+        ? inputType
+        : pendingDiffs[idx].inputType;
 
     if (
       previousDiff.start === previousDiff.end &&
@@ -526,6 +531,7 @@ export function createAndroidInputManager({
         ...previousDiff,
         text: previousDiff.text + nextDiff.text,
       };
+      pendingDiffs[idx].inputType = mergedInputType;
       updatePlaceholderVisibility();
       return;
     }
@@ -539,6 +545,7 @@ export function createAndroidInputManager({
     pendingDiffs[idx] = {
       ...pendingDiffs[idx],
       diff: merged,
+      inputType: mergedInputType,
     };
   };
 
@@ -1143,7 +1150,7 @@ export function createAndroidInputManager({
 
           if (canStoreDiff) {
             const currentSelection = readRuntimeSelectionRange(editor);
-            storeDiff(start.path, diff);
+            storeDiff(start.path, diff, type);
 
             if (currentSelection) {
               const newPoint = {

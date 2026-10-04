@@ -2962,7 +2962,7 @@
           "name": "editorReads",
           "route": null,
           "runtime": true,
-          "signature": "editorReads: Readonly<{\n  nodes: Readonly<{\n    isSelectable: EditorReadDescriptor<Readonly<{\n      element: Node;\n      nodeKey: NodeKey | null;\n    }>, boolean, Editor>;\n    shouldMergeNodesRemovePrevNode: EditorReadDescriptor<Readonly<{\n      current: NodeEntry;\n      previous: NodeEntry;\n    }>, boolean, Editor>;\n  }>;\n  transfer: Readonly<{\n    /** Expand a transfer's selected blocks, such as a list item's family. */\n    source: EditorReadDescriptor<Readonly<{\n      selection: NodeSelection;\n    }>, Readonly<{\n      anchorPath: Path;\n      focusPath: Path;\n      kind: 'node';\n      paths: readonly [Path, ...Path[]];\n      root?: NamedRootKey;\n    }>, Editor>;\n    /**\n     * Redirect one landing edge, such as past a list item's family; the default\n     * keeps the edge. The schema admits it and vetoes refuse it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      edge: 'after' | 'before';\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      target: NodeEntry<Element>;\n    }>, Readonly<{\n      edge: 'after' | 'before';\n      key: NodeKey;\n    }>, Editor>;\n  }>;\n  slice: Readonly<{\n    export: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n      source: 'assembled' | 'selection';\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n    get: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n  }>;\n}>",
+          "signature": "editorReads: Readonly<{\n  nodes: Readonly<{\n    isSelectable: EditorReadDescriptor<Readonly<{\n      element: Node;\n      nodeKey: NodeKey | null;\n    }>, boolean, Editor>;\n    shouldMergeNodesRemovePrevNode: EditorReadDescriptor<Readonly<{\n      current: NodeEntry;\n      previous: NodeEntry;\n    }>, boolean, Editor>;\n  }>;\n  transfer: Readonly<{\n    /** Expand a transfer's selected blocks, such as a list item's family. */\n    source: EditorReadDescriptor<Readonly<{\n      selection: NodeSelection;\n    }>, Readonly<{\n      anchorPath: Path;\n      focusPath: Path;\n      kind: 'node';\n      paths: readonly [Path, ...Path[]];\n      root?: NamedRootKey;\n    }>, Editor>;\n    /**\n     * Redirect one landing edge, such as past a list item's family; the default\n     * keeps the edge. A redirected edge must map to itself. The schema admits\n     * the final edge and vetoes refuse it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      edge: 'after' | 'before';\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      target: NodeEntry<Element>;\n    }>, Readonly<{\n      edge: 'after' | 'before';\n      key: NodeKey;\n    }>, Editor>;\n  }>;\n  slice: Readonly<{\n    export: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n      source: 'assembled' | 'selection';\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n    get: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n  }>;\n}>",
           "source": null,
           "typeParameters": []
         },
@@ -6092,7 +6092,7 @@
           "name": "MarkdownDecodeContext",
           "route": null,
           "runtime": false,
-          "signature": "type MarkdownDecodeContext<TNode extends Node = Node, D extends AnyBasePluginDefinition = AnyBasePluginDefinition> = MarkdownContext<D> & Readonly<{\n  build: (node: RootContent | Node, marks?: MarkdownMarks) => Descendant[];\n  /** One paragraph's inline content, or `null` when it is not one paragraph. */\n  caption: (children: readonly Descendant[]) => readonly Descendant[] | null;\n  decode: (nodes: readonly RootContent[], marks?: MarkdownMarks) => Descendant[];\n  decodeNodes: (nodes: readonly RootContent[], marks?: MarkdownMarks) => Descendant[];\n  marks: MarkdownMarks;\n  node: TNode;\n  /** The node before this one among its Markdown siblings. */\n  previousSibling: RootContent | null;\n  /** Attributes of `tag` (default: this node) decoded for the target type. */\n  readTagAttributes: (tag?: MarkdownTagNode) => MarkdownTagAttributeView;\n  refuse: (message: string) => MarkdownRefusal;\n  serializeUnknown: (node: MdxJsxFlowElement) => string;\n}>;",
+          "signature": "type MarkdownDecodeContext<TNode extends Node = Node, D extends AnyBasePluginDefinition = AnyBasePluginDefinition> = MarkdownContext<D> & Readonly<{\n  build: (node: RootContent | Node, marks?: MarkdownMarks) => Descendant[];\n  /** One paragraph's inline content, or `null` when it is not one paragraph. */\n  caption: (children: readonly Descendant[]) => readonly Descendant[] | null;\n  decode: (nodes: readonly RootContent[], marks?: MarkdownMarks) => Descendant[];\n  decodeNodes: (nodes: readonly RootContent[], marks?: MarkdownMarks) => Descendant[];\n  /**\n   * Read the phrasing of a GFM table cell back into blocks: the reverse of\n   * `encodeLine`. Inline runs become paragraphs, block elements such as\n   * images stay blocks, and an inline `<ul>` or `<ol>` run reads as a list\n   * through the installed list mapping. Without one, or when every list\n   * mapping declines the run, it stays literal text; a refusal drops it\n   * with a report, as it does for a top-level list.\n   */\n  decodeLine: (nodes: readonly PhrasingContent[], marks?: MarkdownMarks) => Descendant[];\n  marks: MarkdownMarks;\n  node: TNode;\n  /** The node before this one among its Markdown siblings. */\n  previousSibling: RootContent | null;\n  /** Attributes of `tag` (default: this node) decoded for the target type. */\n  readTagAttributes: (tag?: MarkdownTagNode) => MarkdownTagAttributeView;\n  refuse: (message: string) => MarkdownRefusal;\n  serializeUnknown: (node: MdxJsxFlowElement) => string;\n}>;",
           "source": null,
           "typeParameters": [
             "TNode extends Node = Node",
@@ -6107,7 +6107,7 @@
           "name": "MarkdownEncodeContext",
           "route": null,
           "runtime": false,
-          "signature": "type MarkdownEncodeContext<TNode extends Descendant = Descendant, D extends AnyBasePluginDefinition = AnyBasePluginDefinition> = MarkdownContext<D> & Omit<PluginFormatModelView, 'node'> & Readonly<{\n  encode: (nodes: readonly Descendant[]) => RootContent[];\n  encodeBlocks: (nodes: readonly Descendant[]) => BlockContent[];\n  encodeFlow: (nodes: readonly Descendant[]) => Array<BlockContent | DefinitionContent>;\n  encodePhrasing: (nodes: readonly Descendant[]) => PhrasingContent[];\n  isFlow: (node: RootContent) => node is BlockContent | DefinitionContent;\n  isPhrasing: (node: RootContent) => node is PhrasingContent;\n  /**\n   * Encode property values as tag attributes for this node's type, under\n   * the mapping's `attributes` names. A property counts as represented when\n   * the returned output keeps its attribute.\n   */\n  encodeAttributes: (properties: Readonly<Record<string, unknown>>) => MdxJsxAttribute[];\n  /**\n   * Encode `node` as a mapping without `encode` writes its tag: this\n   * plugin's properties under their `attributes` names, then other plugins'\n   * non-metadata properties by key, except those the enclosing Markdown\n   * structure writes (list topology). Claims the properties it writes, so\n   * return the attributes in your output.\n   */\n  encodeNodeAttributes: () => MdxJsxAttribute[];\n  node: TNode;\n  /**\n   * Claim that the returned output represents these properties of `node`.\n   * Unclaimed content properties are reported as omitted. Claims count only\n   * when the encoder returns output.\n   */\n  preserve: (...keys: ReadonlyArray<PluginFormatOwnedPropertyKey<D>>) => void;\n  preserveEmptyParagraphs?: boolean;\n  readPlainInline: (children: readonly Descendant[]) => string | null;\n  refuse: (message: string) => MarkdownRefusal;\n  resourceLink: boolean;\n}>;",
+          "signature": "type MarkdownEncodeContext<TNode extends Descendant = Descendant, D extends AnyBasePluginDefinition = AnyBasePluginDefinition> = MarkdownContext<D> & Omit<PluginFormatModelView, 'node'> & Readonly<{\n  encode: (nodes: readonly Descendant[]) => RootContent[];\n  encodeBlocks: (nodes: readonly Descendant[]) => BlockContent[];\n  encodeFlow: (nodes: readonly Descendant[]) => Array<BlockContent | DefinitionContent>;\n  encodePhrasing: (nodes: readonly Descendant[]) => PhrasingContent[];\n  /**\n   * Encode block children onto one line of phrasing for a GFM table cell.\n   * `encodePhrasing` encodes inline nodes; this encodes blocks. Lists become\n   * inline `<ul>`, `<ol start>` and `<li>` HTML, line breaks become `<br/>`,\n   * and a `<br/>` joins paragraphs, with a lossy warning. Headings and\n   * quotes keep their inline content and code and math blocks keep their\n   * text, each with a lossy warning. A block with no inline form, such as a\n   * horizontal rule, is dropped and reported under the loss policy. The\n   * output never holds a raw line ending or a `|` that ends the cell. In\n   * inline math, `|` becomes `\\vert` and `\\|` becomes `\\Vert`, a `|` in a\n   * text-mode group such as `\\text{…}` becomes `\\textbar{}`, and a `\\verb`\n   * delimited by `|` takes another delimiter; a `|` becomes `%7C` in an\n   * autolink and `&#124;` in raw HTML. Inline math with a `|` or `\\|` the\n   * writer cannot place, such as one in another command's argument, an\n   * array column spec or `\\verb` text, becomes text, and so does inline code\n   * holding `\\|`. Each kind of rewrite reports one lossy warning. It reads\n   * back as blocks only through `decodeLine`.\n   */\n  encodeLine: (nodes: readonly Descendant[]) => PhrasingContent[];\n  isFlow: (node: RootContent) => node is BlockContent | DefinitionContent;\n  isPhrasing: (node: RootContent) => node is PhrasingContent;\n  /**\n   * Encode property values as tag attributes for this node's type, under\n   * the mapping's `attributes` names. A property counts as represented when\n   * the returned output keeps its attribute.\n   */\n  encodeAttributes: (properties: Readonly<Record<string, unknown>>) => MdxJsxAttribute[];\n  /**\n   * Encode `node` as a mapping without `encode` writes its tag: this\n   * plugin's properties under their `attributes` names, then other plugins'\n   * non-metadata properties by key, except those the enclosing Markdown\n   * structure writes (list topology). Claims the properties it writes, so\n   * return the attributes in your output.\n   */\n  encodeNodeAttributes: () => MdxJsxAttribute[];\n  node: TNode;\n  /**\n   * Claim that the returned output represents these properties of `node`.\n   * Unclaimed content properties are reported as omitted. Claims count only\n   * when the encoder returns output.\n   */\n  preserve: (...keys: ReadonlyArray<PluginFormatOwnedPropertyKey<D>>) => void;\n  preserveEmptyParagraphs?: boolean;\n  readPlainInline: (children: readonly Descendant[]) => string | null;\n  refuse: (message: string) => MarkdownRefusal;\n  resourceLink: boolean;\n}>;",
           "source": null,
           "typeParameters": [
             "TNode extends Descendant = Descendant",
@@ -10965,7 +10965,7 @@
           "name": "TransferRead",
           "route": null,
           "runtime": false,
-          "signature": "type TransferRead = Readonly<{\n  /**\n   * The blocks a transfer of `selection` carries: feature expansion, such as\n   * list families, without nested duplicates, in document order.\n   */\n  source: (selection: NodeSelection) => NodeSelection;\n}>;",
+          "signature": "type TransferRead = Readonly<{\n  /**\n   * The blocks a transfer carries, after feature expansion such as list\n   * families, without nested duplicates, in document order. With `node`, a\n   * handle's blocks: the node selection when it holds the node, else the node\n   * alone. Without it, a keyboard move's blocks: the selected blocks, else the\n   * blocks holding the selection.\n   */\n  nodes: (options?: Readonly<{\n    node?: NodeTarget<Element>;\n  }>) => readonly NodeKey[];\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -11377,7 +11377,7 @@
           "name": "UseComboboxOptions",
           "route": null,
           "runtime": false,
-          "signature": "type UseComboboxOptions<P extends PluginReference = PluginReference> = {\n  /** The Editable this popup serves, as passed to an `afterEditable` slot. */\n  editableRef: React$1.RefObject<HTMLDivElement | null>;\n  /** The feature whose state holds a `ComboboxState` trigger policy. */\n  plugin: P & RequireComboboxState<P>;\n  /** The listbox's active option id, mirrored as `aria-activedescendant`. */\n  activeOptionId?: string | null;\n  /**\n   * Whether the popup is showing. Keys and ARIA attach only while it shows.\n   * Defaults to true.\n   */\n  open?: boolean;\n  /**\n   * Handle Enter, Tab, ArrowUp, ArrowDown or Escape while this popup shows.\n   * Return true when handled; unhandled Escape dismisses the popup.\n   */\n  onKeyDown?: (event: React$1.KeyboardEvent<HTMLDivElement>) => boolean;\n};",
+          "signature": "type UseComboboxOptions<P extends PluginReference = PluginReference> = {\n  /** The Editable this popup serves, as passed to an `afterEditable` slot. */\n  editableRef: React$1.RefObject<HTMLDivElement | null>;\n  /** The feature whose state holds a `ComboboxState` trigger policy. */\n  plugin: P & RequireComboboxState<P>;\n  /** The listbox's active option id, mirrored as `aria-activedescendant`. */\n  activeOptionId?: string | null;\n  /**\n   * Whether the popup is showing. Keys, `aria-controls` and\n   * `aria-activedescendant` attach only while it shows, and `aria-expanded`\n   * follows it.\n   * Defaults to true.\n   */\n  open?: boolean;\n  /**\n   * Handle Enter, Tab, ArrowUp, ArrowDown or Escape while this popup shows.\n   * Return true when handled; unhandled Escape dismisses the popup.\n   */\n  onKeyDown?: (event: React$1.KeyboardEvent<HTMLDivElement>) => boolean;\n};",
           "source": null,
           "typeParameters": [
             "P extends PluginReference = PluginReference"
@@ -12473,6 +12473,20 @@
             "TRef = string"
           ]
         },
+        "platejs/migrations:ClosedMigrationDocument": {
+          "aliases": [],
+          "documentation": "A migration document admits only `children`, `meta` and `roots`; any other\nkey fails to compile with a message naming the `legacy` channel.",
+          "entrypoint": "platejs/migrations",
+          "kind": "type",
+          "name": "ClosedMigrationDocument",
+          "route": "/docs/api/core#definedocumentmigrations",
+          "runtime": false,
+          "signature": "type ClosedMigrationDocument<TDocument> = { readonly [TKey in keyof TDocument]: TKey extends keyof EditorDocumentValue ? TDocument[TKey] : `Read top-level field \"${TKey & string}\" from legacy`; };",
+          "source": null,
+          "typeParameters": [
+            "TDocument"
+          ]
+        },
         "platejs/migrations:defineDocumentMigrations": {
           "aliases": [],
           "documentation": "Compile one named current target and its exact historical migration chain.",
@@ -12493,11 +12507,11 @@
           "name": "DocumentMigration",
           "route": "/docs/api/core#definedocumentmigrations",
           "runtime": false,
-          "signature": "type DocumentMigration<FromDocument extends EditorDocumentValue = EditorDocumentValue, ToDocument extends EditorDocumentValue = EditorDocumentValue, FromVersion extends number = number, ToVersion extends number = number, TTarget extends DocumentMigrationTarget = DocumentMigrationTarget> = {\n  bivarianceHack(context: DocumentMigrationContext<FromDocument, FromVersion, ToVersion, TTarget>): DocumentMigrationStepResult<ToDocument>;\n}['bivarianceHack'];",
+          "signature": "type DocumentMigration<FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue, ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue, FromVersion extends number = number, ToVersion extends number = number, TTarget extends DocumentMigrationTarget = DocumentMigrationTarget> = {\n  bivarianceHack(context: DocumentMigrationContext<FromDocument, FromVersion, ToVersion, TTarget>): DocumentMigrationStepResult<ToDocument>;\n}['bivarianceHack'];",
           "source": null,
           "typeParameters": [
-            "FromDocument extends EditorDocumentValue = EditorDocumentValue",
-            "ToDocument extends EditorDocumentValue = EditorDocumentValue",
+            "FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue",
+            "ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue",
             "FromVersion extends number = number",
             "ToVersion extends number = number",
             "TTarget extends DocumentMigrationTarget = DocumentMigrationTarget"
@@ -12511,14 +12525,26 @@
           "name": "DocumentMigrationContext",
           "route": "/docs/api/core#definedocumentmigrations",
           "runtime": false,
-          "signature": "type DocumentMigrationContext<FromDocument extends EditorDocumentValue = EditorDocumentValue, FromVersion extends number = number, ToVersion extends number = number, TTarget extends DocumentMigrationTarget = DocumentMigrationTarget> = Readonly<{\n  document: DeepReadonly<FromDocument>;\n  from: FromVersion;\n  target: TTarget;\n  to: ToVersion;\n}>;",
+          "signature": "type DocumentMigrationContext<FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue, FromVersion extends number = number, ToVersion extends number = number, TTarget extends DocumentMigrationTarget = DocumentMigrationTarget> = Readonly<{\n  document: DeepReadonly<FromDocument>;\n  from: FromVersion;\n  /** Legacy top-level fields no earlier step lifted. */\n  legacy: DocumentMigrationLegacy;\n  target: TTarget;\n  to: ToVersion;\n}>;",
           "source": null,
           "typeParameters": [
-            "FromDocument extends EditorDocumentValue = EditorDocumentValue",
+            "FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue",
             "FromVersion extends number = number",
             "ToVersion extends number = number",
             "TTarget extends DocumentMigrationTarget = DocumentMigrationTarget"
           ]
+        },
+        "platejs/migrations:DocumentMigrationLegacy": {
+          "aliases": [],
+          "documentation": "Stored top-level fields outside `children`, `meta` and `roots`.",
+          "entrypoint": "platejs/migrations",
+          "kind": "type",
+          "name": "DocumentMigrationLegacy",
+          "route": "/docs/api/core#definedocumentmigrations",
+          "runtime": false,
+          "signature": "type DocumentMigrationLegacy = Readonly<Record<string, EditorJsonValue>>;",
+          "source": null,
+          "typeParameters": []
         },
         "platejs/migrations:DocumentMigrationResult": {
           "aliases": [],
@@ -12580,10 +12606,10 @@
           "name": "DocumentMigrationStepResult",
           "route": "/docs/api/core#definedocumentmigrations",
           "runtime": false,
-          "signature": "type DocumentMigrationStepResult<ToDocument extends EditorDocumentValue = EditorDocumentValue> = Readonly<{\n  document: ToDocument;\n  mapSelection?: (context: DocumentMigrationSelectionContext) => Selection;\n}>;",
+          "signature": "type DocumentMigrationStepResult<ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue> = Readonly<{\n  document: ToDocument;\n  /** Legacy fields left to lift. Omitted, the step's input passes on. */\n  legacy?: DocumentMigrationLegacy;\n  mapSelection?: (context: DocumentMigrationSelectionContext) => Selection;\n}>;",
           "source": null,
           "typeParameters": [
-            "ToDocument extends EditorDocumentValue = EditorDocumentValue"
+            "ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue"
           ]
         },
         "platejs/migrations:DocumentMigrationTarget": {

@@ -25,6 +25,10 @@ import {
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import type { AnyEditor } from '../editable/runtime-editor-api';
 import type { ReactRuntimeEditor } from './react-editor';
+import {
+  subscribeTypedText,
+  type TypedTextListener,
+} from '../editable/typed-text';
 
 type AnyDOMPlugin = DOMPlugin | DOMPlugin<false> | DOMPlugin<boolean>;
 
@@ -47,6 +51,16 @@ export type ReactApi = {
    * editor unmounts during the flush.
    */
   settleInput: () => boolean;
+  /**
+   * Call `listener` with the text each mounted Editable of this editor types:
+   * an `insertText` input or composition commit whose one change is an
+   * insertion ending at a collapsed caret. Paste, drop, yank, replacement and
+   * data-transfer input, history replay, remote edits and typing over a
+   * selection report nothing, and so does a commit that an earlier commit
+   * listener edits before the report. Android keyboards that paste through
+   * `insertText` report the pasted text. Returns the unsubscribe function.
+   */
+  subscribeTypedText: (listener: TypedTextListener) => () => void;
 };
 
 const createReactApi = (editor: AnyEditor): ReactApi =>
@@ -58,6 +72,8 @@ const createReactApi = (editor: AnyEditor): ReactApi =>
       getMountedEditableDOMRuntime(
         editor as ReactRuntimeEditor
       )?.settleInput() ?? !DOMEditor.isComposing(editor),
+    subscribeTypedText: (listener) =>
+      subscribeTypedText(editor as ReactRuntimeEditor, listener),
   });
 
 const createReactPlugin = <const TDOMPlugin extends AnyDOMPlugin>(

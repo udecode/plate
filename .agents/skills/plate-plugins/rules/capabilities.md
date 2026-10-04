@@ -229,7 +229,9 @@ Choose in this order:
 Historical document versions are not plugin capabilities. Applications bind
 an ascending `defineDocumentMigrations` plan and exact historical source
 fingerprints to their named schema and plugin tuple; raw input requires an
-explicit `source` at each conversion. Applications and the CLI call the
+explicit `source` at each conversion. Steps read stored top-level fields
+outside `children`, `meta` and `roots` from `legacy`, never from the document.
+Applications and the CLI call the
 detached `migrateDocument` runner before editor creation or complete
 replacement. Current-document invariants belong to the plugin's schema,
 property, state-field, validation, or transaction owner, never a generic

@@ -1,0 +1,102 @@
+{
+  "id": "2026-10-04-compiler-audit",
+  "scope": "compiler",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "When do generated contracts earn their cost over inference, and can compiler and CLI workflows share one semantic owner?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest stop verdict, at queue position 22. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Ordinary editors, plugin authoring, registry UI and public docs never require generated application contracts (AGENTS.md, docs/vision/plate.md 209-223).",
+    "An app may opt into exact Editor, Value, schema and mutation types plus a JSON schema contract with its compiled fingerprint at explicit static boundaries, with plate generate --check as the staleness gate.",
+    "Generated artifacts and runtime createEditor must describe the same lowered plugin and schema semantics, so compilation shares one owner with runtime construction and document migrations.",
+    "Ordinary editor.api, editor.read and editor.update access must not recursively evaluate the complete application grammar.",
+    "Copied registry items infer capabilities from exact descriptors and must not import the application-wide generated graph or manufacture capability types from strings."
+  ],
+  "evidenceReuse": "Reused the 2026-09-14 and 2026-09-20 Stop reasoning (registry items consume descriptors, and generated contracts belong to the application graph). Rechecked on the live tree the CLI generate and migrate call paths, platejs/compiler, compilePlateEditorTarget and its createEditor and document-migration callers, the generated type template, current importers of plugins.generated, the apps/www check scripts, the editor guide and plate.md generator doctrine, and the removal of the Dnd-to-upload name dispatch in commit 4e16eada7d.",
+  "summary": "The job is to let an app statically check its complete customized document, schema and grammar-dependent mutations, and keep a persisted schema fingerprint for migrations, without making ordinary editors, plugins or copied registry items depend on generated output. Live source does this. plate generate bundles the app entry, evaluates it in a worker and calls compileEditor from platejs/compiler, which is compilePlateEditorTarget, the same prepareInitialPlatePlugins and createPlateConfiguration lowering createEditor uses and the path defineDocumentMigrations compiles through. The CLI only renders TypeScript and JSON from that artifact and reads property types back through EditorPropertyTypes. The only registry consumers of plugins.generated are two package-integration contract tests, and the apps/www typecheck enforces plate generate --check. Since the last Stop, the guarded tx.plugins.has('upload') then tx.plugin('upload') call in dnd.tsx is gone. The React UploadPlugin owns native file drops through editor.plugin(BaseUploadPlugin), and no production tx.plugin('<name>') call remains. The strongest cut, deleting the generator and relying on inference, loses the exact closed Value, the application-schema mutation API and the fingerprint the migration chain checks, and doctrine forbids recursive whole-grammar inference in ordinary access, so the current split stays.",
+  "verdict": "stop",
+  "previous": "2026-09-20-registry-plugin-capability-boundary",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-09-20-registry-plugin-capability-boundary",
+      "question": "Should reusable registry items use name-only plugin dispatch, exact descriptors, or generated application contracts for optional cross-feature capabilities?",
+      "action": "supersedes",
+      "reason": "Retains the Stop on generated types in registry items and on spreading name-only dispatch; supersedes only its kept Dnd-to-upload string dispatch, which commit 4e16eada7d deleted when UploadPlugin took ownership of native file drops through its descriptor."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current design is selected, with one compiler owner shared by runtime, CLI and migrations, generated types opt-in at the app graph, and descriptors everywhere in reusable code.",
+    "Deleting plate generate and generated types and relying on inference loses the exact closed Value, the synthesized mutation API whose eligibility depends on application schema overrides, and the committed fingerprint JSON that the migration chain and the --check gate rely on.",
+    "Replacing generation with full recursive inference of the complete Value from raw tuples loses. Doctrine forbids recursive whole-grammar evaluation in ordinary access, application schema overrides are a compile boundary, and no exactness or type-cost comparison supports it.",
+    "Making generated contracts the ordinary path, or requiring them in registry items, loses. Copied items would inherit the whole app graph and need regeneration on every plugin change (rejected on 2026-09-14 and still true).",
+    "Hide compileEditor inside the CLI: loses; @platejs/cli is a separate package, docs teach compileEditor for build tooling, and generated files import its type-only bridges from platejs/compiler.",
+    "Keeping a name-only tx.plugin(name) exception for optional cross-feature capabilities is no longer needed, because the capability owner (UploadPlugin) now owns native file drops with its own descriptor."
+  ],
+  "proofLimits": "Source review only; no CLI generation, --check, test suite or typecheck was run. Exactness and type-cost of a recursive-inference alternative were not measured. The size of the CLI artifact journal, lock and watch-ownership machinery in generate.ts (about lines 1196-1886) was not assessed; it is a refactoring question outside this semantic one. Staged uncommitted changes in packages/cli (bin.ts, run-migration.ts) touch only the migrate --from wording and error path, not generation, and do not decide this verdict.",
+  "references": [
+    "packages/platejs/src/compiler/compileEditor.ts",
+    "packages/platejs/src/compiler/index.tsx",
+    "packages/platejs/src/lib/editor/withPlite.ts",
+    "packages/platejs/src/migrations/documentMigrations.ts",
+    "packages/platejs/src/internal/editor/generatedEditorTypes.ts",
+    "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts",
+    "packages/cli/src/generate.ts",
+    "packages/cli/src/migrate.ts",
+    "packages/cli/src/bin.ts",
+    "packages/cli/test/generate.test.ts",
+    "packages/platejs/src/compiler/compileEditor.test.ts",
+    "packages/plitejs/src/core/schema-compiler.ts",
+    "packages/platejs/src/react/features/upload/UploadPlugin.tsx",
+    "apps/www/src/registry/components/editor/dnd.tsx",
+    "apps/www/src/registry/components/editor/plugins.generated.ts",
+    "apps/www/src/__tests__/package-integration/core-runtime/editor-api-inference.contract.ts",
+    "apps/www/package.json",
+    "content/docs/(guides)/editor.mdx",
+    "docs/vision/plate.md",
+    "docs/research/decisions/generated-contract-boundary.md",
+    "docs/research/review-records/2026-09-20-registry-plugin-capability-boundary.json",
+    "docs/research/review-records/2026-09-14-registry-generated-contract-boundary.json",
+    "docs/research/features/compiler.md"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/schema-compiler.ts": "66130cdd98936c2700a72274482aeb8a4283fa77ea246b72b7b1095166f44d6b",
+      "packages/cli/src/bin.ts": "32771d692703b2d03fd2d4bcba1b538e08f89f17a3676f766906a0d551a702a9",
+      "apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx": "bf27aa8a05ae0329f5b64a9697dfb9927fb8f09ccc9232cd5b502d02aa7de537",
+      "packages/cli/test/generate.test.ts": "47fd80265ff2b0104771b8e879ae719b5e5a646e907b6026d3617a431fd9b54c",
+      "packages/plitejs/test/schema-compiler.test.ts": "f3c58dc3a6f8241fecf720f7c02dfbf3ee047800870faffe8b241d59c4545697",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+      "packages/cli/src/generate.ts": "66d5f622ace5673c91a2ddf1845572fe2de54d914bfeb50f7c8bad9821a22db2",
+      "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts": "3a571b05f80795b6217411c1ac663c645812735da4a03a7b57f22425f21a6c33",
+      "packages/platejs/src/react/stores/plate/useEditor.ts": "c9a6cfc63e0960a6b41944e1e11c756a2db4aecb76f8e120e1f00faeb57da666",
+      "packages/platejs/type-tests/combobox-input-contracts.ts": "5ec01afab8474b122c8f59c56ded87c8c791867c17278e04eb15003e510ad49c",
+      "apps/www/src/registry/components/editor/more-toolbar-button.tsx": "f6285ed58346fcc3788ca2ccd5398fa2323d2430f50f2c11d21cbfd718a4464d",
+      "apps/www/src/registry/components/editor/link-toolbar-button.tsx": "daa612b15526774b00be64a85105e86b4f502c2d2da3ab8389cd2f29a78221a4",
+      "apps/www/src/registry/components/editor/plugins.ts": "43bcdaf082e122e5d353f2621f1bd0bc84893bfe245a997f5d47b4fbe603a137",
+      "apps/www/src/registry/components/editor/plugins.generated.ts": "9a298fed9abb77d5cc497ca1f34c067733fc8150de5719b7322ea9fa11f334e2",
+      "apps/www/src/__tests__/package-integration/core-runtime/editor-api-inference.contract.ts": "79a8689cf414f882b825620137871620e132c6a4a1c5b639bc2837d4e3802301",
+      "docs/vision/plate.md": "4a0e6c187965994850a77771ed954d644f9a255a2d776966d33ec82c9cef5f3b",
+      "docs/research/decisions/plate-core-ownership.md": "2a19ef34f4062ebbb802f854e12ed2dadd2a354ce924286786812842ccba001a",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/compiler": "cef479983f8ffd0a57eeb58dfc67287477a09d1ddb5f255cbbafbd71d82119b1"
+    },
+    "features": {
+      "example/plite/plate-schema-descriptors": "9180ebae1307374c25b865994a77be57f052d02c2bf68ce12041b02022ffb702",
+      "export/platejs/./compiler": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/compiler": "cef479983f8ffd0a57eeb58dfc67287477a09d1ddb5f255cbbafbd71d82119b1",
+      "plitejs/core/schema-compiler": "4764244e88eaaec3aa6344ed9dcb49abb4016c9c3671a7f811ffd6c22ee082a6"
+    },
+    "upstreams": []
+  }
+}

@@ -12,7 +12,8 @@ work_kind: implementation
 
 # Ordinary-text autocomplete adoption
 
-Status: building; five checks and the execution record wait on other work, listed in Proof. Each remaining gate names its owner.
+Status: executed; the registry install proof fails on DnD registry types, and the remaining gates are in the subject's Open work.
+Playbook: plan
 Page: https://claude.ai/artifact/2iQkcnA7rkiCUqM1d5mpgZ
 
 ## Outcome
@@ -36,10 +37,13 @@ export const MentionKit = [
 ```
 
 ```tsx after
+// apps/www/src/registry/components/editor/mention.tsx
 export const MentionKit = [
   MentionPlugin.configure({
     component: MentionElement,
-    initialState: { triggerPreviousCharPattern: /^$|^[\s"']$/ },
+    initialState: {
+      triggerPreviousCharPattern: /^$|^[\s"']$/,
+    },
     slots: { afterEditable: MentionCombobox },
   }),
 ];
@@ -65,13 +69,14 @@ export function MentionInputElement(props: EditorElementProps<typeof MentionInpu
 ```
 
 ```tsx after
-export function MentionCombobox({ editableRef }: { editableRef: React.RefObject<HTMLDivElement | null> }) {
+// apps/www/src/registry/components/editor/mention.tsx
+export function MentionCombobox({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
     <InlineCombobox editableRef={editableRef} plugin={MentionPlugin}>
-      <InlineComboboxContent className="my-1.5">{/* options */}</InlineComboboxContent>
-    </InlineCombobox>
-  );
-}
 ```
 
 Completion goes through the hook's `complete`, which takes the offered match and a callback that may return `false` to refuse, instead of the removed `BaseComboboxPlugin` commit API.
@@ -82,8 +87,16 @@ const completed = combobox.api.commit(inputKey, callback);
 ```
 
 ```tsx after
-const box = useCombobox({ activeOptionId, editableRef, onKeyDown, open, plugin });
-const completed = box.complete(match, (tx) => onSelect?.(tx));
+// apps/www/src/registry/components/editor/inline-combobox.tsx
+const box = useCombobox({
+  activeOptionId: activeId ?? null,
+  editableRef,
+  onKeyDown,
+  open: shown,
+  plugin,
+});
+// in each item's onClick
+if (!box.complete(match, (tx) => onSelect?.(tx))) return;
 ```
 
 A custom trigger declares its policy as `ComboboxState` in the plugin's `initialState`; the input plugin, `createComboboxInput` and `triggerCombobox` are gone.
@@ -107,6 +120,7 @@ export const TagPlugin = definePlugin('customTag', {
 ```
 
 ```tsx after
+// content/docs/(plugins)/(functionality)/(combobox)/combobox.mdx
 export const HashtagPlugin = definePlugin('hashtag', {
   initialState: (): ComboboxState => ({
     maxQueryLength: 50,
@@ -115,7 +129,13 @@ export const HashtagPlugin = definePlugin('hashtag', {
     triggerPreviousCharPattern: /^\s?$/,
     triggerQuery: null,
   }),
-  schema: { element: { properties: { value: property.string({ required: true }) }, type: 'hashtag', void: 'inline' } },
+  schema: {
+    element: {
+      properties: { value: property.string({ required: true }) },
+      type: 'hashtag',
+      void: 'inline',
+    },
+  },
 });
 ```
 
@@ -166,14 +186,18 @@ Plite's React API gains `editor.api.react.settleInput()`, which commits a finish
 
 ## Defaults
 
-- Copilot keeps its auto-trigger while a popup is open; standing it down needs an editor-wide popup signal this design cut. Reverse with "stand down".
-- The key-to-paint contract paces keystrokes 100 ms apart, chosen after the unpaced first run queued behind development-mode rendering. Reverse with "unpaced".
-- The generated `insert` of an inline void leaves the caret after it unless `select` is passed, matching `MentionPlugin`. Reverse with "keep the caret in the void".
-- `ReactApi.settleInput()` stays public until the native owner reviews it, because Plate calls it across packages. Reverse with "make settleInput internal".
-- Owner and key-claim registries stay keyed by the Editable element instead of a `PlateContent` context. Reverse with "context".
-- `isAnotherEditorFocused` reads the DOM until Plite reports which Editable holds a shared selection. Reverse with "use the Plite query".
-- Combobox activation gets no editor-behavior law; the mention law scopes it out and the decision page owns it. Reverse with "add combobox law".
-- The plan's `work_kind` is `implementation`, because Build ran it under the user's GO. Reverse with "restore work_kind: design".
+Each row is a call this plan made for the owner. The word reverses it.
+
+| Decision | Pick | Alternative | Word |
+| --- | --- | --- | --- |
+| Copilot while a popup is open | Copilot keeps its auto-trigger; standing it down needs an editor-wide popup signal this design cut | Stand Copilot down while a popup shows | stand down |
+| Key-to-paint pacing | Keystrokes paced 100 ms apart, chosen after the unpaced first run queued behind development-mode rendering | Unpaced keystrokes | unpaced |
+| Caret after the generated `insert` of an inline void | After the void unless `select` is passed, matching `MentionPlugin` | Leave the caret in the void | keep the caret in the void |
+| `ReactApi.settleInput()` | Public until the native owner reviews it, because Plate calls it across packages | Internal to Plite | make settleInput internal |
+| Owner and key-claim registries | Keyed by the Editable element | A `PlateContent` context | context |
+| Which Editable is focused | `isAnotherEditorFocused` reads the DOM until Plite reports which Editable holds a shared selection | The Plite query | use the Plite query |
+| Combobox activation law | No editor-behavior law; the mention law scopes it out and the decision page owns it | An editor-behavior law for activation | add combobox law |
+| `work_kind` | `implementation`, because Build ran the plan under the user's GO | `design` | restore work_kind: design |
 
 ## Scope
 
@@ -407,7 +431,7 @@ The generated plugin `insert` and `MentionPlugin`'s `insert` left the caret insi
 ## Steps
 
 - [x] Phase 1. Matcher, per-Editable owner, `useCombobox`, refusable completion, Plite `settleInput()` and the detached input migration. Closed with `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx` (18 cases), `packages/platejs/src/migrations/migratePlateV54Inputs.spec.ts`, the `settleInput` case in `packages/plitejs/test/react/editable-dom-runtime-contract.test.tsx`, and `packages/platejs/type-tests/combobox-input-contracts.ts` under root `pnpm test:types`. Key arbitration inside owned content roots is deferred. The native owner has not reviewed `settleInput()`, and the settle mechanism has no emulated Android or WebKit proof; both are remaining gates.
-- [x] Phase 2. The four copied popups replace the input elements, the input protocol and its keys are cut, and the migration is adopted. Closed with `apps/www/tests/browser/combobox.spec.ts` (13 cases) and `apps/www/tests/browser/multi-editor.spec.ts` on real registry kits in Chromium, Firefox and WebKit, and `pnpm --filter www test:create-install editor-ai` on two installed projects.
+- [x] Phase 2. The four copied popups replace the input elements, the input protocol and its keys are cut, and the migration is adopted. Closed with `apps/www/tests/browser/combobox.spec.ts` (13 cases) and `apps/www/tests/browser/multi-editor.spec.ts` on real registry kits in Chromium, Firefox and WebKit, and `pnpm --filter www test:create-install editor-ai` on two installed projects. That install proof fails on the October 3 bytes on DnD registry types; see Proof and the subject's Open work.
 - [x] Phase 3. Docs, doctrine v255, changesets, the registry changelog and generated output. Closed with `pnpm --dir apps/www check:docs`, `pnpm --dir apps/www build:registry --check`, `pnpm --dir apps/www editor:check`, `pnpm --dir apps/www api-reference`, `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, `node .agents/rules/plate-next/scripts/version.mjs validate` and `docs/editor-behavior/current-evidence.md`.
 
 Each phase is kept. Nothing was reverted or quarantined.
@@ -419,7 +443,7 @@ All runs used the current checkout. Browser runs and the typing probe used a `ne
 - The full platejs suite passed: 138 turbo partition tasks, none cached. That includes combobox-react (18), the block-insertion spec (20) and the mention spec (12). The copied-UI specs for slash, footnote, the new footnote combobox case, markdown, plugins and inline-void suggestion passed, each in its own process. Plite's react partition passed 1375 tests and Plite `typecheck` passed on these bytes.
 - Types passed: the affected platejs `typecheck:partition` runs, platejs `typecheck:contracts`, root `pnpm test:types` (its async and non-combobox `@ts-expect-error` lines fire), the main `apps/www` TypeScript config, and the custom hashtag tutorial assembled in a temporary file.
 - Browser runs passed: Chromium combobox plus multi-editor 22/22, then the combobox spec five times warm without retries, 13/13 each. Firefox passed 20 of combobox plus multi-editor, skipping the two Chromium-only IME cases. WebKit passed all 11 combobox cases it runs; its multi-editor shared-toolbar focus case failed two of three runs, the flake that also fails at HEAD.
-- Blocked on these bytes: `api-reference` and `check:docs` fail on another session's new `transfer` export, `build:registry --check` reports output stale from that session's `table.tsx` and `column.tsx` edits, and the `apps/www` package-integration config fails on that session's `transfer` contract. The registry install proof fails before building because npm has no `ai@6.0.300`, which the latest `@ai-sdk/react` requires. All five passed on the bytes before the trail review's caret fix, and the API reference manifest still needs regenerating for that fix's JSDoc on the generated `insert`.
+- All five checks passed on the bytes before the trail review's caret fix. On October 3 they reran in the working checkout with HEAD at `fe0e9599a6`, which held other sessions' uncommitted edits; their logs are local and not committed. `api-reference --check`, `check:docs`, `build:registry --check` and the `apps/www` package-integration typecheck pass; the typecheck prints nothing on success, and the same command on a missing config exits 1. The registry install proof, `pnpm --filter www test:create-install editor-ai`, now fails on DnD registry types, not autocomplete code: `block-menu.tsx(267)` and `dnd.tsx(167)` read a `nodes` property the transfer read no longer has, and `dnd.tsx(174)` has an implicit `any`. The install proof stops at that typecheck, so its later steps did not run on these bytes. The failure is the DnD workstream's to fix and is tracked in the subject's Open work; this plan does not call it pre-existing.
 - `check-plate-schema-adoption.mjs` reports the same 37 findings as HEAD and none from this work, after Build removed its stale `BaseComboboxPlugin` and input entries. `entrypoint:turbo:check` and the entrypoint DAG tests passed.
 - `pnpm check` was skipped. The working tree holds other sessions' changes and the schema-adoption step already fails at HEAD, so each affected owner check ran instead.
 
@@ -456,5 +480,15 @@ The remaining gates live with their owners in [the decision page's open gates](.
 - A browser case for two views of one document, a live Copilot model beside Mention and screen-reader navigation; the element read-only recheck in `complete` is reachable only through schema reconfiguration and has no case. Owner: Plate React, tracked there.
 - Migration of named roots and of inputs with meaningful children, a lineage cutover for applications that persisted an older v54 draft, a v55 allocation, and migration of active Yjs rooms and offline history. Owner: persistence/release, tracked there.
 - Production-build timing for the key-to-paint contract, which ran only on the development server with about 2 ms of per-run noise. Owner: Benchmark, tracked there.
+- Hard law 5 has known violations. String data inserted at a collapsed caret passes the owner's typing check when it is pasted, yanked, dropped or labeled a replacement. The probe checked only that helper and mounted no owner, and a real replacement range is unverified. An Android keyboard-clipboard paste arrives as `insertText`. Owner: Plite native input, tracked in the subject's Open work.
+- The registry install proof fails on the October 3 bytes on DnD registry types. Owner: DnD workstream, tracked in the subject's Open work.
 
 Live IME filtering is required; "accept commit-time IME filtering" removes the composition preview.
+
+## Close
+
+Reversals first: Build corrected eleven plan claims against source, listed in Execution. The largest is Build's own cut of the `combobox()` contribution after approval, which went back through interrogate. Hard law 5 has known violations, found on October 3. String data inserted at a collapsed caret passes the typing check when it is pasted, yanked, dropped or labeled a replacement, and an Android keyboard-clipboard paste arrives as typing.
+
+What landed: the matcher and refusable completion, one private owner per mounted Editable, `useCombobox`, `settleInput()`, the four copied popups, the v54 input migration, docs, doctrine v255 and generated output, all uncommitted in the working tree for the owner. The proof and its limits are in Proof; no physical IME or screen reader has run, and the timing ran only on the development server.
+
+Counts: 13 items. Done: 3, the three phases. Skipped: 1, `pnpm check`, because the tree held other sessions' changes. Blocked: 1, the registry install proof on DnD registry types. Open: 8, the other remaining gates below, each with its owner in the subject's Open work or the decision page's open gates. The next iteration is `docs/plans/2026-10-03-autocomplete-occurrence-host.md`.

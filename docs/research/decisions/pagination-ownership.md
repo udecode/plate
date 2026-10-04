@@ -2,27 +2,20 @@
 title: Pagination ownership
 type: decision
 status: implemented
-updated: 2026-09-16
-review_scope: pagination
-current_review: 2026-09-16-pagination-engine-trust-closure
-review_history:
-  - ../review-records/2026-09-15-pagination-view-ownership.json
-  - ../review-records/2026-09-15-pagination-design-plan.json
-  - ../review-records/2026-09-15-pagination-final-plan-review.json
-  - ../review-records/2026-09-15-pagination-render-page-closure.json
-  - ../review-records/2026-09-16-pagination-view-owned-implementation.json
-  - ../review-records/2026-09-16-pagination-engine-trust-closure.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/pagination/index.ts
   - ../../../packages/plitejs/src/pagination/react.tsx
   - ../../../apps/www/src/app/(app)/examples/plite/_examples/pagination.tsx
 related:
-  - ../reviews.md#pagination
+  - ../review-scopes/pagination.json
   - large-documents-rendering-api.md
   - ../../plans/2026-09-15-pagination-view-owned-layout.md
 ---
 
 # Pagination ownership
+
+**Audit of 2026-10-04.** Pursue. The Plite view-owned pagination target landed. But platejs/pagination/react re-exports the raw Plite PagedEditable, which bypasses Plate's EditorContent plugin pipeline. So a Plate app that paginates loses every plugin component, handler, shortcut and slot. Plate needs a paged content component routed through EditorContent, as VirtualizedEditorContent already does for virtualization. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-pagination-audit` hold the evidence.
 
 **Live pagination is an owned capability of the mounted paged view, and the
 derived layout reader's page-break persistence protocol is deleted.**

@@ -2,7 +2,7 @@
 
 This directory contains system maps and authority maps.
 
-Use the [feature review ledger](../reviews.md) to find current source and dated
+Use the [feature review ledger](../schema.md#review-history) to find current source and dated
 architecture records. Each system map keeps its stated scope and source date;
 it is not a current whole-editor ranking.
 

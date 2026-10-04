@@ -181,7 +181,8 @@ editor.update((tx) => {
 });
 ```
 
-Use this only for an explicit external snapshot. A replacement uses the
+Use this only for an explicit external snapshot. `formStateValue` holds only
+`children`, `roots`, `meta` and `selection`. A replacement uses the
 supplied selection or clears it when selection is omitted, records one history
 change, removes omitted roots, and resets omitted persisted meta. Mirroring
 every `onValueChange` back through this API creates a replacement loop and

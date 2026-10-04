@@ -1,0 +1,38 @@
+{
+  "id": "csv",
+  "title": "CSV and spreadsheet ingress",
+  "question": "Which quoting, cell and row semantics must tabular ingress preserve, and can conversion reuse the canonical table-fitting owner?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Tabular ingress must state the valid document structure and cell values it produces.",
+  "last": false,
+  "opportunity": {
+    "score": 6,
+    "reason": "CSV has a bounded tabular conversion contract that should be judged independently of document-format export."
+  },
+  "owners": [
+    "packages/platejs/src/csv/"
+  ],
+  "members": [
+    "apps/www/src/registry/examples/values/cn/deserialize-csv-value.tsx",
+    "apps/www/src/registry/examples/values/deserialize-csv-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/csv/index.ts",
+    "packages/platejs/src/csv/lib/CsvPlugin.spec.ts",
+    "packages/platejs/src/csv/lib/CsvPlugin.ts",
+    "packages/platejs/src/csv/lib/index.ts",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/plugins.ts"
+  ],
+  "proof": [
+    "packages/platejs/src/csv/lib/CsvPlugin.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "table",
+    "clipboard"
+  ]
+}

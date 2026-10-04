@@ -1,0 +1,92 @@
+{
+  "id": "2026-10-04-diff-audit",
+  "scope": "diff",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What should comparing two document snapshots return, and which consumers need structural identity or a separate live-review import step?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-not-adopted at queue position 58. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Compare two fixed schema-valid revisions without installing editor state; report correspondence, grouped effects, diagnostics and one canonical DocumentChange.",
+    "Preserve exact content and valid materialization; moves with edits, splits and merges are not reported as wholesale replacement.",
+    "Importing a comparison is an explicit native authored write that validates schema, live baseline and authored frontier before any mutation, atomically.",
+    "No second document store, review engine, position system or annotated-node protocol.",
+    "Public capability access is statically typed from the installed owner; erasure only at a genuinely optional boundary.",
+    "Bounded, cancellable comparison work."
+  ],
+  "evidenceReuse": "Reused the historical 2026-09-10 research and adoption-plan records (imported, no model) and the plan's current-implementation checkpoint. Rechecked on the live tree the compare.ts overloads and three-way regions, comparison-types.ts, authored/comparison.ts, the authored index exports, version-history-demo.tsx, the diff.tsx three-way branches, docs for version history and authored import, the AI suggestion path (it uses DocumentChange.between, not compare), DOCX revision import, and a consumer census showing three-way compare and resolveComparison called only from tests. Tests and benchmarks were not rerun.",
+  "summary": "The job is comparing two schema-valid snapshots for version history and, explicitly, importing a validated comparison as one pending authored proposal. Commits 8748befe14 and 7be787ca56 landed the target. compare returns immutable correspondence, grouped effects, diagnostics and a canonical DocumentChange, the copied Diff UI and version-history demo use it, and computeDiff, excludeDiffFragment and DiffPlugin have zero matches. Two parts fail the hard-cut test. The three-way overload, resolveComparison and the Diff conflict UI (most of compare.ts) are reached only by tests, though they carry 13 of the plan's 43 open acceptance families. proposeAuthoredComparison lives in plitejs/authored yet takes AnyEditor, returns unavailable after a runtime typeof check, casts editor.read.authored and maps errors by message string. This departs, with no recorded deviation, from the accepted editor.update.authored target and from Plite's standalone-utility rule. Keeping everything as it is loses, because sunk effort and passing tests do not earn public API, and the three-way doctrine sentence in plite.md would need repair alongside the cut.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "const comparison = await compare({ before, after, schema: editor.read.schema, signal }); <Diff comparison={comparison} />; const imported = proposeAuthoredComparison(editor, { comparison, groupIds }); plus test-only three-way compare({ base, local, remote, schema }) and resolveComparison({ comparison, baseline, resolutions }).",
+    "proposed": "Unchanged two-way: const comparison = await compare({ before, after, schema: editor.read.schema, signal }); <Diff comparison={comparison} />. Proposed: const imported = editor.update.authored.<import>({ comparison, groupIds }), typed from the installed authored owner (name settled by best-api; the plan sketched propose({ comparison })). Proposed removal: the three-way compare overload, resolveComparison, the three-way types and the Diff conflict UI until a product consumer exists."
+  },
+  "previous": "2026-09-10-diff-adoption-plan",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-10-diff-adoption-plan",
+      "question": "How should immutable correspondence, branch contributions and live review import compose?",
+      "action": "supersedes",
+      "reason": "Its two-way structural comparison and explicit import landed and remain the design; this review supersedes its three-way extension, which has no consumer, and its import call shape, which shipped as a free function over an erased editor."
+    }
+  ],
+  "alternatives": [
+    "Stopping and keeping everything loses. Three-way compare, resolveComparison and the conflict UI are public API with no product consumer, and the import's erased AnyEditor path contradicts the plan's own accepted shape and Plite's standalone-utility rule.",
+    "Cutting three-way compare, resolveComparison, the ThreeWayComparison, ComparisonConflict and ComparisonResolution types, ComparedChange.branches and the Diff conflict UI until a named product consumer exists is a lane to pursue. It matches the scope question (two snapshots), removes most of compare.ts and the S5 proof debt, and needs a plite.md doctrine repair.",
+    "Moving import onto the typed authored update owner (the plan sketched editor.update.authored.propose({ comparison })) is a lane to pursue. plitejs/authored already depends on diff internals, so typing costs no new dependency and drops the runtime plugin check, the cast and the error-message matching.",
+    "Deleting the import helper and letting callers compose tx.authored.propose with tx.changes.apply(comparison.change) loses. Baseline, schema and frontier validation, dependency closure and idempotent change identity are real safety jobs that need one owner.",
+    "Routing AI suggestions or DOCX tracked revisions through compare is not selected. AI streams recorded edits via DocumentChange.between and DOCX supplies exact revision sections, so inference would add uncertainty without a job.",
+    "Returning only a DocumentChange loses, as the original design found, because consumers would rediscover moves, splits and grouping."
+  ],
+  "proofLimits": "Source review only. The plan's 49 diff tests, five import tests, the Chromium version-history route and the registered comparison benchmark were not rerun; matcher quality across the 14 structural scenarios and all 43 families stays uncertified. The original user request is not available verbatim. If the owner explicitly required three-way review or names a consumer, the cut turns into an owner decision and the remaining gap reduces to the import shape. A cut also needs a doctrine repair at docs/vision/plite.md:234. docs/research/review-index.json and docs/vision/plite.md are staged by another session; the cited diff entry and comparison lines are unchanged in content and only shifted.",
+  "references": [
+    "docs/research/decisions/structural-comparison.md",
+    "docs/research/features/diff.md",
+    "docs/research/review-records/2026-09-10-diff-adoption-plan.json",
+    "docs/research/review-records/2026-09-10-diff-research.json",
+    "docs/plans/2026-09-10-structural-document-diff.md",
+    "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+    "packages/plitejs/src/diff/lib/compare.ts",
+    "packages/plitejs/src/diff/lib/comparison-types.ts",
+    "packages/plitejs/src/diff/lib/three-way.spec.ts",
+    "packages/plitejs/src/authored/comparison.ts",
+    "packages/plitejs/src/authored/index.ts",
+    "packages/platejs/src/diff/index.ts",
+    "apps/www/src/registry/examples/version-history-demo.tsx",
+    "apps/www/src/registry/components/editor/diff.tsx",
+    "content/docs/examples/version-history.mdx",
+    "content/docs/(guides)/authored-changes.mdx",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "docs/vision/plite.md",
+    ".agents/skills/best-api/SKILL.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/examples/version-history-demo.tsx": "74de705a40dd645ef563d52fe957ae1210edb43e1344fd488865de6c75aca200",
+      "packages/plitejs/src/diff/lib/compare.spec.ts": "0c31f16330107eec02218bbc1cba211a5802deef514eac88e28dc349829a966f",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/plitejs/src/diff": "c8a76453379214292ee6e81654dd26332c16a4176918bd9751de2ac4dd21ac0f",
+      "packages/platejs/src/diff": "286be010901f90172df27ca998884dfe73232d6a9291c930a9d61d0fcb662fc4"
+    },
+    "features": {
+      "browser/version-history": "cff81f2f8f6cfc5c1c898125b647ea761ff6f7d99c3c9d068715a0a6668a44d3",
+      "example/registry/version-history-async": "728991193cf2b69cc62878dd8d0c34cabde0f7482faf4164f90ea7861a5a0fd9",
+      "example/registry/version-history-demo": "e5053b721c2c1f3a0453f636c99abd06e8ae5e0074ff375629f503286fb6b4fe",
+      "export/platejs/./diff": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/plitejs/./diff": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "platejs/diff": "286be010901f90172df27ca998884dfe73232d6a9291c930a9d61d0fcb662fc4",
+      "plitejs/diff": "c8a76453379214292ee6e81654dd26332c16a4176918bd9751de2ac4dd21ac0f",
+      "ui/diff": "27df69e9942b86d68f9933ea86a37891f4ad0a687e1a96a72673dc330578cd24"
+    },
+    "upstreams": []
+  }
+}

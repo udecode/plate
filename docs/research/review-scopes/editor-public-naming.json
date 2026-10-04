@@ -1,0 +1,65 @@
+{
+  "id": "editor-public-naming",
+  "title": "Neutral editor exports and DOM vocabulary",
+  "question": "Should editor exports and DOM contracts use neutral names across the Plate facade and its runtime, and which public nouns should disappear instead of being renamed?",
+  "dependsOn": [],
+  "last": false,
+  "opportunity": {
+    "score": 8,
+    "reason": "Public names appear in ordinary imports, inferred types, copied UI and functional DOM contracts; current brand prefixes contradict the user teaching boundary."
+  },
+  "owners": [
+    "packages/platejs/src/core.tsx",
+    "packages/platejs/src/react/core.tsx",
+    "packages/platejs/src/static/components/plite-nodes.tsx",
+    "packages/platejs/src/react/components/Plate.tsx",
+    "packages/platejs/src/react/components/EditorProvider.tsx",
+    "packages/plitejs/src/interfaces/decoration.ts",
+    "packages/plitejs/src/react/inactive-selection.ts",
+    "packages/plitejs/src/react/components/editable.tsx",
+    "packages/plitejs/src/dom/plugin/dom-node-path.ts",
+    "packages/plitejs/src/dom/plugin/dom-integrity-observer.ts",
+    "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts",
+    "packages/platejs/src/static/renderStaticHtml.tsx",
+    "packages/test/src/proof/proof.ts",
+    "packages/test/src/playwright/ime.ts",
+    "packages/test/src/playwright/native-event-trace.ts",
+    "packages/test/src/playwright/render-profiler.ts",
+    "packages/test/src/playwright/interaction-performance.ts",
+    "packages/platejs/src/code-block/codemirror/createCodeMirrorAdapter.ts",
+    "packages/platejs/src/react/editor/withPlate.ts",
+    "packages/platejs/src/yjs/index.tsx",
+    "packages/platejs/src/yjs/react/YjsPlugin.tsx",
+    "packages/platejs/src/react/plugin/PlatePlugin.ts",
+    "packages/platejs/src/react/plugin/toReactPlugin.ts",
+    "packages/platejs/src/facade.ts",
+    "packages/platejs/src/dom/index.ts",
+    "packages/platejs/src/history/index.ts",
+    "packages/platejs/src/hyperscript/index.ts",
+    "packages/platejs/src/pagination/index.ts",
+    "packages/platejs/src/pagination/react/index.ts",
+    "packages/platejs/src/testing/index.ts",
+    "packages/platejs/src/yjs/react/index.tsx"
+  ],
+  "members": [],
+  "consumers": [
+    "apps/www/src/registry/components/editor/paragraph-static.tsx",
+    "apps/www/src/registry/components/editor/history-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/editor.tsx"
+  ],
+  "proof": [
+    "packages/plitejs/test/react/editable-behavior.tsx",
+    "packages/plitejs/test/dom/clipboard-boundary.test.ts"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/src/react/components/editor-announcement-live-region.tsx",
+    "packages/platejs/src/react/plugin/definePlugin.ts",
+    "packages/platejs/src/lib/plugin/definePlugin.ts",
+    "packages/platejs/src/react/index.tsx"
+  ],
+  "relatedScopes": [
+    "plate-api",
+    "distribution"
+  ],
+  "decision": "docs/research/decisions/editor-public-naming.md"
+}

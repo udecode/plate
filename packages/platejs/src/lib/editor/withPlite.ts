@@ -3,6 +3,11 @@ import {
   cloneEditorJsonValue,
   type CompiledEditorSchema,
   createDetachedEditorSchema,
+  EDITOR_DOCUMENT_FIELDS,
+  type EditorRecordIssue,
+  isEnvelopeInput,
+  readDocumentRecord,
+  readPersistedEnvelope,
   getEditorAuthoredDocumentCapability,
   initializePluginEntries,
   type InternalPluginPublicationEntry,
@@ -306,6 +311,46 @@ export type EditorValueInput<V extends Value> =
   | Readonly<V>
   | V;
 
+const EMPTY_INITIAL_VALUE =
+  'Plate initialValue must contain at least one primary-root element.';
+
+const readPlateInitialValue = (
+  value: unknown
+): EditorDocumentValue | PersistedDocumentInput => {
+  const reject = (issue: EditorRecordIssue): never => {
+    throw new Error(
+      issue.kind === 'json'
+        ? 'Plate initialValue must encode to JSON-compatible data.'
+        : issue.kind !== 'field'
+          ? EMPTY_INITIAL_VALUE
+          : issue.field === 'selection'
+            ? 'Plate initialValue field "selection" is not supported. Pass the selection option instead.'
+            : `Plate initialValue field "${issue.field}" is not supported. Store application data in meta.`
+    );
+  };
+
+  if (isEnvelopeInput(value)) {
+    const envelope = readPersistedEnvelope(value);
+    const document = envelope.document as { children?: unknown } | null;
+
+    if (!Array.isArray(document?.children) || document.children.length === 0) {
+      throw new Error(EMPTY_INITIAL_VALUE);
+    }
+
+    return envelope as PersistedDocumentInput;
+  }
+
+  const document = Array.isArray(value)
+    ? { children: value }
+    : readDocumentRecord(value, EDITOR_DOCUMENT_FIELDS, reject);
+
+  if (!Array.isArray(document.children) || document.children.length === 0) {
+    throw new Error(EMPTY_INITIAL_VALUE);
+  }
+
+  return document as EditorDocumentValue;
+};
+
 const normalizeBaseInitialValue = <
   V extends Value,
   TPlugins extends readonly unknown[],
@@ -315,30 +360,9 @@ const normalizeBaseInitialValue = <
   implicitDocumentIsCurrent: boolean
 ): EditorDocumentValue<V> | PersistedDocumentInput<V> => {
   if (value !== undefined) {
-    const children = Array.isArray(value)
-      ? value
-      : value &&
-          typeof value === 'object' &&
-          'document' in value &&
-          value.document &&
-          typeof value.document === 'object' &&
-          Array.isArray((value.document as EditorDocumentValue).children)
-        ? (value.document as EditorDocumentValue).children
-        : value &&
-            typeof value === 'object' &&
-            Array.isArray((value as EditorDocumentValue).children)
-          ? (value as EditorDocumentValue).children
-          : null;
-
-    if (!children || children.length === 0) {
-      throw new Error(
-        'Plate initialValue must contain at least one primary-root element.'
-      );
-    }
-
-    return (
-      Array.isArray(value) ? { children: value as unknown as V } : value
-    ) as EditorDocumentValue<V> | PersistedDocumentInput<V>;
+    return readPlateInitialValue(value) as
+      | EditorDocumentValue<V>
+      | PersistedDocumentInput<V>;
   }
 
   const currentValue = editor.read.value() as EditorDocumentValue<V>;

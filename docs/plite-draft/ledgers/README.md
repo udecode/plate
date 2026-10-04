@@ -6,7 +6,7 @@ topic: plite-exact-ledgers-index
 # Plite Exact Ledgers
 
 Historical mappings for the draft program. They do not establish current proof;
-start current work at the [feature review ledger](../../research/reviews.md).
+start current work at the [feature review ledger](../../research/schema.md#review-history).
 
 Exact 1:1 legacy-file ledgers that complement the human control ledger in
 [release-file-review-ledger.md](../../plite/release-file-review-ledger.md).

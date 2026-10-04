@@ -1,0 +1,95 @@
+{
+  "id": "selection",
+  "title": "Selections, locations and rebasing",
+  "question": "Which location guarantees survive edits, deletion, movement and root changes, and where do text, node and range targets need distinct contracts?",
+  "group": "plite-view",
+  "dependsOn": [
+    "transactions"
+  ],
+  "prerequisiteReason": "Locations must preserve document identity through the established transaction behavior.",
+  "last": false,
+  "opportunity": {
+    "score": 10,
+    "reason": "Selection and rebasing preserve user intent across clipboard, history, tables and annotations."
+  },
+  "owners": [
+    "packages/plitejs/src/core/selection-protocol.ts",
+    "packages/plitejs/src/core/selection-state.ts",
+    "packages/plitejs/src/core/anchor.ts",
+    "packages/plitejs/src/interfaces/location.ts",
+    "packages/plitejs/src/interfaces/selection.ts",
+    "packages/plitejs/src/react/view-selection.ts",
+    "packages/plitejs/src/react/editable/projected-selection-target.ts"
+  ],
+  "members": [
+    "apps/www/src/registry/examples/values/cn/node-selection-value.tsx",
+    "apps/www/src/registry/examples/values/node-selection-value.tsx",
+    "packages/platejs/src/utils/plate-keys.ts",
+    "packages/plitejs/src/core/anchor-state.ts",
+    "packages/plitejs/src/core/anchor.ts",
+    "packages/plitejs/src/core/selection-protocol.ts",
+    "packages/plitejs/src/core/selection-state.ts",
+    "packages/plitejs/src/core/target-runtime.ts",
+    "packages/plitejs/src/editor/adjacent-character-point.ts",
+    "packages/plitejs/src/editor/after.ts",
+    "packages/plitejs/src/editor/before.ts",
+    "packages/plitejs/src/editor/edges.ts",
+    "packages/plitejs/src/editor/end.ts",
+    "packages/plitejs/src/editor/is-edge.ts",
+    "packages/plitejs/src/editor/is-end.ts",
+    "packages/plitejs/src/editor/is-start.ts",
+    "packages/plitejs/src/editor/next.ts",
+    "packages/plitejs/src/editor/point.ts",
+    "packages/plitejs/src/editor/positions.ts",
+    "packages/plitejs/src/editor/previous.ts",
+    "packages/plitejs/src/editor/project-range.ts",
+    "packages/plitejs/src/editor/range.ts",
+    "packages/plitejs/src/editor/start.ts",
+    "packages/plitejs/src/editor/unhang-range.ts",
+    "packages/plitejs/src/react/editable/model-selection-dom-preference.ts",
+    "packages/plitejs/src/react/editable/projected-selection-target.ts",
+    "packages/plitejs/src/react/editable/root-interaction-dom-selection-replay.ts",
+    "packages/plitejs/src/react/editable/runtime-root-selection-export.ts",
+    "packages/plitejs/src/react/editable/runtime-root-selection-import.ts",
+    "packages/plitejs/src/react/editable/runtime-selection-engine.ts",
+    "packages/plitejs/src/react/editable/runtime-selection-state.ts",
+    "packages/plitejs/src/react/editable/selection-change-listener.ts",
+    "packages/plitejs/src/react/editable/selection-controller.ts",
+    "packages/plitejs/src/react/editable/selection-dom-range.ts",
+    "packages/plitejs/src/react/editable/selection-projected-dom.ts",
+    "packages/plitejs/src/react/editable/selection-reconciler.ts",
+    "packages/plitejs/src/react/editable/selection-runtime.ts",
+    "packages/plitejs/src/react/editable/selection-side-effect-policy.ts",
+    "packages/plitejs/src/react/editable/selection-triple-click.ts",
+    "packages/plitejs/src/react/inactive-selection.ts",
+    "packages/plitejs/src/react/view-selection-decoration.ts",
+    "packages/plitejs/src/react/view-selection.ts",
+    "packages/plitejs/src/transforms-selection/"
+  ],
+  "consumers": [
+    "packages/plitejs/src/react/editable/runtime-selection-engine.ts",
+    "apps/www/src/app/(app)/examples/plite/_examples/inlines.tsx",
+    "packages/platejs/src/features/table/lib/internal/selection.ts",
+    "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts",
+    "apps/www/src/app/(app)/examples/plite/_examples/synced-blocks.tsx"
+  ],
+  "proof": [
+    "packages/plitejs/test/authored-anchor-contract.test.ts",
+    "packages/plitejs/test/root-location-contract.ts"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "packages/plitejs/src/editor-runtime-view.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "docs/plans/2026-08-31-promote-view-scoped-selection-ownership.md",
+    ".agents/skills/best-api/SKILL.md"
+  ],
+  "relatedScopes": [
+    "annotations",
+    "native",
+    "accessibility",
+    "table"
+  ],
+  "decision": "docs/research/decisions/plite-view-ownership.md"
+}

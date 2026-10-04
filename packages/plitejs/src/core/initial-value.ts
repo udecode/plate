@@ -2,8 +2,8 @@ import type { Descendant } from '../interfaces/node';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
 import { isOwnedJsonValue } from './clone';
 import {
-  assertEditorDocumentShape,
   type EditorDocumentShapeIssue,
+  readEditorDocument,
 } from './document-shape';
 import {
   getEditorJsonRecordEntries,
@@ -19,10 +19,21 @@ export type NormalizedInitialValue = {
 
 const rejectInitialDocumentShape = (issue: EditorDocumentShapeIssue): never => {
   switch (issue.kind) {
-    case 'document':
-    case 'children': {
+    case 'record':
+    case 'children':
+    case 'missing': {
       throw new Error(
         '[Plite] initialValue is invalid! Expected a list of elements or a document value with children.'
+      );
+    }
+    case 'json': {
+      throw new Error(
+        '[Plite] initialValue must encode to JSON-compatible data.'
+      );
+    }
+    case 'field': {
+      throw new Error(
+        `[Plite] initialValue.${issue.field} is not supported. Store application data in initialValue.meta.`
       );
     }
     case 'meta': {
@@ -76,16 +87,7 @@ export const normalizeEditorValue = (
     };
   }
 
-  const entries = getEditorJsonRecordEntries(input);
-
-  if (!entries) {
-    // Preserve shape errors for valid JSON scalars while classifying unsafe
-    // containers, accessors, and other noncanonical objects at the JSON boundary.
-    snapshotEditorJsonValue(input, '[Plite] initialValue');
-    return rejectInitialDocumentShape({ kind: 'document' });
-  }
-  const value = Object.fromEntries(entries);
-  assertEditorDocumentShape(value, rejectInitialDocumentShape);
+  const value = readEditorDocument(input, rejectInitialDocumentShape);
   const children = snapshotEditorJsonValue(
     value.children,
     '[Plite] initialValue.children'
@@ -111,11 +113,6 @@ export const normalizeEditorValue = (
       ) as Descendant[],
     ])
   );
-  for (const [key, nested] of entries) {
-    if (key !== 'children' && key !== 'meta' && key !== 'roots') {
-      snapshotEditorJsonValue(nested, `[Plite] initialValue.${key}`);
-    }
-  }
 
   return {
     children,

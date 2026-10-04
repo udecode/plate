@@ -100,6 +100,13 @@ donor checkout as proof after the transplant.
 - Ordered required child positions and their literal property values belong to
   the compiled content grammar, including construction, admission, fitting and
   saved identity. App corrections do not maintain a second document shape.
+- A document's top level is `children`, `meta` and `roots`. Every load path
+  reads the caller's raw object and refuses any other top-level field instead
+  of dropping it; a direct snapshot adds `selection`, and a persisted envelope
+  is `document`, `schema` and `selection`. Application data belongs in `meta`,
+  and a stored top-level field moves there through a migration step. Because
+  readers refuse unknown keys, a new top-level document field breaks every
+  older reader, so Plite adds one only with a doctrine change and a migration.
 - Pure value predicates must honor the base model type they promise.
   `ElementApi.isElement` owns editor exclusion, the `children` array, and the
   required string `type`; `deep: true` additionally checks descendant shape.

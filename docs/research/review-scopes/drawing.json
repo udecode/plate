@@ -1,0 +1,52 @@
+{
+  "id": "drawing",
+  "title": "Code-generated diagrams",
+  "question": "Which source and rendering contract should generated diagrams use, and which remote or embedded renderer policy belongs to the application?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Persisted diagram source and node identity must be defined before renderer policy.",
+  "last": false,
+  "opportunity": {
+    "score": 6,
+    "reason": "Code drawing and Excalidraw have distinct data formats but a common embedding boundary."
+  },
+  "owners": [
+    "packages/platejs/src/code-drawing/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/code-drawing-static.spec.tsx",
+    "apps/www/src/registry/components/editor/code-drawing-static.tsx",
+    "apps/www/src/registry/components/editor/code-drawing.spec.tsx",
+    "apps/www/src/registry/components/editor/code-drawing.tsx",
+    "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/examples/code-drawing-demo.tsx",
+    "apps/www/src/registry/examples/values/code-drawing-value.tsx",
+    "apps/www/tests/browser/code-drawing-controls.spec.ts",
+    "packages/platejs/package.json",
+    "packages/platejs/src/code-drawing/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/code-drawing.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.spec.ts",
+    "apps/www/tests/browser/code-drawing-controls.spec.ts"
+  ],
+  "evidenceInputs": [
+    "apps/www/playwright.config.ts",
+    "apps/www/package.json"
+  ],
+  "relatedScopes": [
+    "code",
+    "external-text",
+    "html"
+  ],
+  "historyCandidates": [
+    "docs/plans/2026-07-12-plate-next-excalidraw-find-replace-floating-package-reviews.md",
+    "docs/plans/2026-07-10-plate-next-code-drawing-combobox-comment-package-reviews.md",
+    "docs/plans/2026-03-23-code-drawing-coverage-pass.md"
+  ]
+}

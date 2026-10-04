@@ -11,7 +11,7 @@ status: superseded
 The [June 15 policy outcome](../plans/2026-06-15-table-fragment-merge-policy.md)
 keeps core fragment insertion structural and grid-aware paste extension-owned.
 The proposal below for a Plite-native table-area owner is superseded; it is not
-an execution queue. The [Table feature hub](../research/features/table.md)
+an execution queue. `node tooling/scripts/review-ledger.mjs show table`
 locates later decisions and their evidence. Preserve this rejected design and
 its original proof limits as historical context.
 

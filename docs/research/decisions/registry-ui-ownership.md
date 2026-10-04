@@ -2,12 +2,7 @@
 title: Registry composition, installation and command ownership
 type: decision
 status: adopted
-updated: 2026-09-18
-review_scope: ui
-current_review: 2026-09-18-ui-menu-focus-and-block-insertion-ownership
-review_history:
-  - ../review-records/2026-09-17-ui-source-and-command-ownership.json
-  - ../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json
+updated: 2026-10-04
 source_refs:
   - ../../../apps/www/src/registry/components/editor/plugins.ts
   - ../../../apps/www/src/registry/components/editor/plugins-static.ts
@@ -21,24 +16,15 @@ source_refs:
   - ../../../apps/www/src/registry/registry.test.ts
   - ../../../apps/www/src/lib/registry-response.ts
 related:
-  - ../reviews.md#ui
+  - ../review-scopes/ui.json
   - ../../vision/plate.md
   - plite-core-ownership.md
   - plite-view-ownership.md
-reconciled_executions:
-  - 2026-09-18-slash-ui-actions-execution
-  - 2026-09-18-ui-provider-menu-adapter-completion
-  - 2026-09-18-ui-composition-installation-adoption
-  - 2026-09-18-ui-composition-installation-design-last-pass
-  - 2026-09-18-ui-composition-installation-design-final
-  - 2026-09-18-ui-composition-installation-design
-  - 2026-09-18-recovered-2026-07-24-decouple-live-and-base-registry-kits
-  - 2026-09-18-recovered-2026-07-24-unify-markdown-registry-kit
-  - 2026-09-18-recovered-2026-08-13-audit-registry-dependency-metadata
-  - 2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit
 ---
 
 # Registry composition, installation and command ownership
+
+**Audit of 2026-10-04.** Pursue. The adopted focus and insertion target holds, but registry tooling still makes authors hand-list every registry-item edge that a copied import already determines, so about 361 of 437 authored @plate edges duplicate facts that plate.md says to derive. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-ui-audit` and `2026-10-04-ui-audit-2` hold the evidence.
 
 **Delete redundant ownership: open-ended string action dispatch, caller-owned
 menu close-focus handshakes, the registry transaction recipe, duplicated neutral
@@ -214,7 +200,7 @@ execution evidence.
 
 ## Recovered execution history
 
-The [feature hub](../features/ui.md) links the recovered plan outcomes,
+`node tooling/scripts/review-ledger.mjs show ui` lists the recovered plan outcomes,
 including completed work and rejected experiments. These imports preserve
 reported completion with **unknown current proof**: their full original
 source/runner/result binding is not recovered. Their recovery date does not

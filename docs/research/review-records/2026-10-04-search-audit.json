@@ -1,0 +1,72 @@
+{
+  "id": "2026-10-04-search-audit",
+  "scope": "search",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "How should search matches, current selection and document navigation share indexed reads?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 57. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Literal case-insensitive search over the canonical document, including text across inline nodes and DOM-omitted content.",
+    "Match paint through plugin decorate with copied presentation; no document or history writes.",
+    "Navigation, active-match selection and range scrolling in the exact mounted view.",
+    "Results stay current through edits, undo, collaboration and whole-document replacement.",
+    "No hidden latency (no debounce); scale-sensitive machinery needs a benchmark receipt before acceptance."
+  ],
+  "evidenceReuse": "No prior review record. Reused the 2026-09-09 find-view-ownership, find-controller-cut and find-range-scrolling plans, the 2026-08-31 index-collapse benchmark plan and the 2026-09-09 performance iteration E10 deferral. Rechecked live BaseFindPlugin, copied find.tsx, findTextRanges and the PLUGINS map.",
+  "summary": "The job is literal search over the canonical document, painted without document writes, navigable and selectable in the exact mounted view, and kept current through edits, undo, collaboration and replacement. Live BaseFindPlugin reuses Plite NodeApi.findTextRanges (including matches across inline nodes), keeps a private anchor-path index for decorate reads, and publishes query, matches and activeIndex in its store. Copied FindKit owns the view-local bar through wrapRoot, Mod+F on its own Editable, deferred drafts and range scrolling. That split is the result of four completed 2026-08 and 2026-09 plans and has package, copied and browser proof, and per-view results, native browser find and a shared text index all lose on current jobs. What remains is runtime cost. on.commit rescans the whole document whenever a query is active, and because each rescan yields a new matches array, the observer refreshes every previous and current match node. The 2026-09-09 performance iteration already deferred this as E10 after Phase 3 candidates were rejected or inconclusive. A small identity debt also remains, because the plugin is named with the literal find while PLUGINS keeps an unused searchHighlight key.",
+  "verdict": "defer",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [],
+  "alternatives": [
+    "Keeping the owner split is right and broadly proven, but typing or replacing with an active query at high match counts stays unmeasured.",
+    "Changed-block maintenance rescans only the blocks commit changes name and refreshes only node keys whose matches changed. It wins only if a complete publication benchmark shows material cost, because Phase 3 attempts were rejected or inconclusive when rendering consumed the scan gain.",
+    "Per-view query and results lose for now. Results are a derived read of the shared model, and the prior plan chose shared committed results with view-local bars and proved it.",
+    "Deleting BaseFindPlugin and relying on native browser find loses. Native find misses DOM-omitted content, cannot select into the editor model and cannot paint through decorations.",
+    "A shared text index with TOC, annotations or large-document reads loses as hypothetical reuse with no current consumer."
+  ],
+  "proofLimits": "Source review only, with no benchmark, test or browser run. The cost of rescan plus full refresh per keystroke at 1k or 10k matches is unmeasured, and the earlier index-collapse cohorts measured query publication and projection, not typing with an active query. Multi-view shared highlighting was accepted from the prior plan's tests, not re-observed.",
+  "references": [
+    "packages/platejs/src/features/find/lib/BaseFindPlugin.ts",
+    "packages/platejs/src/features/find/lib/BaseFindPlugin.spec.ts",
+    "apps/www/src/registry/components/editor/find.tsx",
+    "apps/www/src/registry/components/editor/find.spec.tsx",
+    "packages/plitejs/src/interfaces/node.ts",
+    "packages/platejs/src/utils/plate-keys.ts",
+    "docs/plans/2026-09-09-find-view-ownership.md",
+    "docs/plans/2026-09-09-find-controller-cut.md",
+    "docs/plans/2026-09-09-find-range-scrolling.md",
+    "docs/plans/2026-08-31-collapse-find-index-into-find-owner.md",
+    "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md",
+    "docs/plite/research/2026-09-09-editor-performance-iteration-2/reconcile-prior-candidates.mjs",
+    "docs/research/features/search.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/find.tsx": "114aa693a46c423086aa1d7ff88ad497813d4547aaada1c269b5ff0df5866592",
+      "packages/platejs/src/features/find/lib/BaseFindPlugin.spec.ts": "172acb68e008abda97a4d90b891ebdf7619d72adbec1f425f9b93cda0dd394ea",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/find": "053230f5e6fb617f314c2785968ebca979edd4e094b9957556117ed246de23e8"
+    },
+    "features": {
+      "capability/searchHighlight": "15523d483fb6079e075f0901d46776f93546e4ee12079ceaa17539ef7149d35f",
+      "example/plite/linting": "96f6dc165b9bc737205c283b338d6b55f50610faaf536a259d404f0b79ee4f76",
+      "example/plite/search-highlighting": "8e7c593d33b42a5848e92116c2ad408ca67d0ae5872e36fdae8710422d512128",
+      "example/registry/find-demo": "b1a6fa001035c23ea67cbcffce855bf27f68ecdafddaac8dda6d87112969375c",
+      "example/value/find-value": "7542191db24cd87d3528c98b11b1c130b312a38817fe351e7f715c8d43e19adc",
+      "export/platejs/./find": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/find": "053230f5e6fb617f314c2785968ebca979edd4e094b9957556117ed246de23e8",
+      "ui/find": "0932e12d18fc6d4c24d28c3e15bad21c334890895964d22d1cad9c79d79b4ea1"
+    },
+    "upstreams": []
+  }
+}

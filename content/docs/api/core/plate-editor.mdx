@@ -240,7 +240,8 @@ the constructor's `update` field.
       type="(input: SnapshotInput) => void"
     >
       Replace primary children, named roots, persisted meta, and optionally the
-      selection through one configured Plate update.
+      selection through one configured Plate update. It refuses any other
+      top-level field.
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.nodes.insert(node, options))"

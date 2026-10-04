@@ -28,39 +28,45 @@ export const remarkResolveMarkdownReferences: UnifiedPlugin<[], Root> =
     });
     if (definitions.size === 0) return;
 
-    visit(tree, (node, index, parent) => {
-      if (!parent || index === undefined) return;
-      if (node.type === 'definition') {
-        parent.children.splice(index, 1);
+    // The node test keeps `visit` from looking up every node's sibling index,
+    // which is quadratic in a long container.
+    visit(
+      tree,
+      (node) =>
+        node.type === 'definition' ||
+        node.type === 'linkReference' ||
+        node.type === 'imageReference',
+      (node, index, parent) => {
+        if (!parent || index === undefined) return;
+        if (node.type === 'definition') {
+          parent.children.splice(index, 1);
 
-        return index;
+          return index;
+        }
+        const reference = node as ImageReference | LinkReference;
+        const definition = definitions.get(reference.identifier);
+
+        if (!definition) return;
+        const resolved: Image | Link =
+          reference.type === 'linkReference'
+            ? {
+                children: reference.children,
+                position: reference.position,
+                title: definition.title,
+                type: 'link',
+                url: definition.url,
+              }
+            : {
+                alt: reference.alt,
+                position: reference.position,
+                title: definition.title,
+                type: 'image',
+                url: definition.url,
+              };
+
+        parent.children[index] = resolved;
       }
-      if (node.type !== 'linkReference' && node.type !== 'imageReference') {
-        return;
-      }
-      const reference = node as ImageReference | LinkReference;
-      const definition = definitions.get(reference.identifier);
-
-      if (!definition) return;
-      const resolved: Image | Link =
-        reference.type === 'linkReference'
-          ? {
-              children: reference.children,
-              position: reference.position,
-              title: definition.title,
-              type: 'link',
-              url: definition.url,
-            }
-          : {
-              alt: reference.alt,
-              position: reference.position,
-              title: definition.title,
-              type: 'image',
-              url: definition.url,
-            };
-
-      parent.children[index] = resolved;
-    });
+    );
   };
 
 // CommonMark matches labels case-insensitively with collapsed whitespace.
@@ -78,14 +84,16 @@ export const allocateMarkdownFootnoteLabels = (
 ) => {
   const nodes: Array<FootnoteDefinition | FootnoteReference> = [];
 
-  visit(tree, (node) => {
-    if (
-      node.type === 'footnoteDefinition' ||
-      node.type === 'footnoteReference'
-    ) {
-      nodes.push(node);
+  // The node test keeps `visit` from looking up every node's sibling index,
+  // which is quadratic in a long container.
+  visit(
+    tree,
+    (node) =>
+      node.type === 'footnoteDefinition' || node.type === 'footnoteReference',
+    (node) => {
+      nodes.push(node as FootnoteDefinition | FootnoteReference);
     }
-  });
+  );
   if (nodes.length === 0) return;
 
   const labels = new Map<string, string>();

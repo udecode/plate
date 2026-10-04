@@ -1,0 +1,23 @@
+$ (cd packages/plitejs && bun test --preload ../../config/plite-source-test-setup.ts test/schema-identity-contract.test.ts test/schema-definition.test.ts test/schema-compiler-laws.test.ts test/value-codec.test.ts)
+bun test v1.3.12 (700fc117)
+
+ 49 pass
+ 0 fail
+Ran 49 tests across 4 files. [572.00ms]
+exit=0
+
+$ (cd packages/plitejs && bun test --preload ../../config/plite-source-test-setup.ts test/schema-identity-contract.test.ts -t 'rejects malformed document containers')
+bun test v1.3.12 (700fc117)
+
+ 1 pass
+ 9 filtered out
+ 0 fail
+Ran 1 test across 1 file. [197.00ms]
+exit=0
+
+$ (cd packages/plitejs && bun test --preload ../../config/plite-source-test-setup.ts test/schema-identity-contract.test.ts -t 'no test has this name')
+bun test v1.3.12 (700fc117)
+
+error: regex "no test has this name" matched 0 tests. Searched 1 file (skipping 10 tests) [179.00ms]
+exit=1
+

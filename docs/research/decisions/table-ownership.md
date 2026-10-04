@@ -2,20 +2,7 @@
 title: Table selection and mounted interaction ownership
 type: decision
 status: accepted
-updated: 2026-09-30
-review_scope: table
-current_review: 2026-09-17-table-host-delivery-benchmark-closure
-review_history:
-  - ../review-records/2026-09-16-table-canonical-edits.json
-  - ../review-records/2026-09-17-table-public-contract-final-pass.json
-  - ../review-records/2026-09-17-table-canonical-api-implementation.json
-  - ../review-records/2026-09-17-table-canonical-api-closure.json
-  - ../review-records/2026-09-17-table-substrate-ownership.json
-  - ../review-records/2026-09-17-table-direction-model-revalidation.json
-  - ../review-records/2026-09-17-table-host-projection-design.json
-  - ../review-records/2026-09-17-table-host-projection-final-design.json
-  - ../review-records/2026-09-17-table-host-delivery-model-revalidation.json
-  - ../review-records/2026-09-17-table-host-delivery-benchmark-closure.json
+updated: 2026-10-04
 source_refs:
   - ../../plans/2026-09-17-table-selection-host-projection-design.md
   - ../../plans/artifacts/2026-09-17-table-host-delivery-benchmark/final-comparison.json
@@ -23,31 +10,13 @@ source_refs:
   - ../../../packages/platejs/src/react/features/table/tableSelectionHostBinding.internal.ts
   - ../../../apps/www/src/registry/components/editor/table.tsx
 related:
-  - ../reviews.md#table
+  - ../review-scopes/table.json
   - ../../plans/2026-09-17-table-api-design.md
-reconciled_executions:
-  - 2026-09-30-content-root-locations-design
-  - 2026-09-30-content-root-locations-execution
-  - 2026-09-30-content-root-locations-closure
-  - 2026-09-18-table-edge-paste-regression
-  - 2026-09-18-table-strict-mode-execution-recovery
-  - 2026-09-18-recovered-2026-05-18-plite-table-transform-boundary-ralplan
-  - 2026-09-18-recovered-2026-07-23-flatten-table-plugin-commands
-  - 2026-09-18-recovered-2026-07-23-table-test-family-colocation
-  - 2026-09-18-recovered-2026-08-03-hard-cut-table-cell-header-plugin
-  - 2026-09-18-recovered-2026-08-17-hard-cut-table-renderer-hooks
-  - 2026-09-18-recovered-2026-08-26-ignore-table-resize-handles-during-cell-selection-drag
-  - 2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit
-  - 2026-09-18-recovered-2026-09-07-table-resize-ownership
-  - 2026-09-18-recovered-2026-09-17-table-api-design
-  - 2026-09-18-recovered-2026-09-17-table-direction-model-revalidation
-  - 2026-09-18-recovered-2026-09-17-table-host-delivery-benchmark
-  - 2026-09-18-recovered-2026-09-17-table-selection-host-projection-design
-  - 2026-09-18-recovered-5064-fix-homepage-table-grid-enter-crash
-  - 2026-09-18-recovered-5065-fix-table-tab-navigation
 ---
 
 # Table selection and mounted interaction ownership
+
+**Audit of 2026-10-04.** Stop. Live source still matches the kept design (Plate-owned topology and grid, Plite node selection of cells, one private per-view host binder, package resize lifecycle with copied previews), and the strongest replacements, a Plite CellSelection or table markers, a public paint hook, or the generic view-attribute channel, already lost on benchmark and native proof without new evidence. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-table-audit` hold the evidence.
 
 The [content-root location design](../../plans/2026-09-30-content-root-locations.md)
 retains this topology, selection and binder architecture. [Its execution](../../plans/2026-09-30-content-root-locations-execution.md)
@@ -118,7 +87,7 @@ separate questions.
 
 ## Recovered execution history
 
-The [feature hub](../features/table.md) links the recovered plan outcomes,
+`node tooling/scripts/review-ledger.mjs show table` lists the recovered plan outcomes,
 including completed work and rejected experiments. These imports preserve
 reported completion with **unknown current proof**: their full original
 source/runner/result binding is not recovered. Their recovery date does not

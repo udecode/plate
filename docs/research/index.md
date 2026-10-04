@@ -8,11 +8,11 @@ This is the entrypoint for the compiled agent research layer.
   retain Plite transfer and optional copied controls; compare React DnD,
   modern dnd-kit and Pragmatic Drag and Drop against five editor implementations.
   A PDD replacement remains deferred pending integration and production proof.
-- [Feature review ledger](reviews.md): current-source membership, preliminary
+- [Review ledger](schema.md#review-history): one file per review question with its source membership, preliminary
   payoff, dependency order, AI last, and independent review/adoption/proof states.
   Only Plite core, Plite view architecture and Plate core share review groups;
   individual features retain their own reviews.
-- [Core architecture review groups](schema.md#core-architecture-review-groups):
+- [Core architecture review groups](review-groups.json):
   group lookup, queue counts and per-question records.
 - [Review-history schema and commands](schema.md#review-history): automatic
   repeat review, immutable records, source reuse and cross-run research lookup.

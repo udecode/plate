@@ -1,0 +1,75 @@
+{
+  "id": "2026-10-04-csv-audit",
+  "scope": "csv",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which quoting, cell and row semantics must tabular ingress preserve, and can conversion reuse the canonical table-fitting owner?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 45. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Pasted tab- or comma-separated text becomes one table whose cells hold the source fields verbatim, including quoted delimiters, doubled quotes, quoted newlines, CRLF and a trailing line ending.",
+    "A tabular claim never takes a payload another format owns, such as text/html, Markdown tables or ordinary prose. Whole-payload admission belongs to the DataTransferFormat lifecycle (docs/vision/plate.md:777).",
+    "A whole-payload format reports what a paste leaves out (docs/vision/plate.md:780); no silent header renames or dropped fields.",
+    "Text syntax uses parse and serialize (docs/vision/plate.md:890); a failed parse returns diagnostics, not undefined.",
+    "Table owns table structure, cell construction, ragged-row repair and placement into an existing table; CSV hands it closed content.",
+    "The optional parser dependency stays behind platejs/csv. Names and config keys are public API and must earn their place (VISION.md:32)."
+  ],
+  "evidenceReuse": "No prior CSV review exists. Reused as context only the 2026-07-10 package review plan (cleanup, no semantics review, it cut the Table dependency), the 2026-09-25 document-codec ontology rows that deferred the three CSV exports to a format-specific failure audit, and the clipboard decision's note that CSV parsing into closed content is not a fitting defect. Rechecked on the live tree CsvPlugin source and spec, the EditorKit, the Markdown kit and its accept gate, Plate and Plite format ordering, Table's copy writer and paste fitter, and four headless bun probes plus one PapaParse probe, with outputs saved in scratch.",
+  "summary": "The job is tabular ingress, turning pasted or supplied CSV or TSV text into one table whose cells keep the source fields, without taking payloads that HTML, Markdown or plain text own. CsvPlugin registers a text/plain DataTransferFormat at priority 20 with no accept. Plate compiles declarations so the highest priority runs first, ahead of the HTML format and Markdown's text/plain decoder, which itself declines when text/html is present. Headless probes against live source show five failures under the EditorKit's Markdown plus CSV setup. Web prose pasted with text/html becomes a 2x2 table. A plain GFM table becomes a four-column table with a separator row and a renamed _1 header. Every newline-terminated CSV returns undefined. Duplicate headers are renamed and extra fields are dropped silently. text/csv is never read even though Table's own copy writes it. The public API also breaks doctrine with deserialize where text syntax uses parse, undefined instead of diagnostics, PapaParse's whole ParseConfig as public options, and name dispatch to the table plugin although CSV only ever produces tables. The strongest cut, deleting platejs/csv and its kit entry, loses because plain-text CSV and TSV and programmatic CSV conversion have no other owner. Moving the reader into Table is the strongest replacement, and the plan should validate it as a candidate.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "EditorKit installs CsvPlugin, which decodes text/plain at priority 20 with no accept; editor.api.csv.deserialize({ data, ...PapaParse ParseConfig }) returns Descendant[] or undefined; CsvPlugin.configure({ initialState: { errorTolerance, parseOptions } }); table, row and cell types resolve by name through getCompiledPlatePlugin(editor, PLUGINS.table).",
+    "proposed": "Proposed: editor.api.csv.parse(text, { delimiter?, header? }) returns { ok: true, document } or { ok: false } with diagnostics and keeps every field verbatim; CsvPlugin declares dependencies: [BaseTablePlugin], builds cells through Table's cell factory and leaves ragged rows to Table's repair; its DataTransferFormat reads text/csv and text/tab-separated-values exactly, accepts text/plain only without text/html and only for a consistent tab-delimited grid or a configured delimiter, and reports any field it drops."
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [],
+  "alternatives": [
+    "Keeping the plugin as it is loses. Probes show prose and Markdown-table hijacks, rejected newline-terminated CSV, renamed headers and silently dropped fields in the shipped kit.",
+    "Deleting platejs/csv and the EditorKit entry is the strongest cut. Spreadsheet apps put text/html tables on the clipboard, which the HTML format already reads, so the hijack would disappear at no cost. It loses because plain-text CSV and TSV from editors and terminals, and editor.api CSV conversion, have no other owner.",
+    "Only lowering the priority loses. Markdown's text/plain accept takes any non-HTML text, so CSV would never run with MarkdownKit installed, and the newline, rename and drop defects remain.",
+    "Moving the tabular reader into Table, beside Table's text/csv and TSV copy writer, is the strongest replacement. It gives writer and reader one owner but puts a CSV grammar into every table install. The plan should validate it as a candidate, with Papa-backed programmatic parse staying in platejs/csv.",
+    "Keeping the plugin and changing its contract is the Pursue lane. It adds an accept gate, exact text/csv and TSV claims, verbatim cells, parse with diagnostics, CSV-owned options, a Table descriptor dependency and Table's cell factory."
+  ],
+  "proofLimits": "Headless happy-dom probes run with bun against live source; CsvPlugin.ts, compilePlateFormats.ts, data-transfer-format.ts, MarkdownPlugin.ts and TablePlugin.tsx are unmodified, but other sessions have uncommitted edits in the table, markdown and Plite runtime files the probes also load. No real browser or OS clipboard capture (real MIME sets from Chrome, Excel, Sheets or Numbers are assumed, not observed), no package test run, no performance check. docs/vision/plate.md is staged with unrelated edits, so its cited line numbers are working-tree lines.",
+  "references": [
+    "packages/platejs/src/csv/lib/CsvPlugin.ts",
+    "packages/platejs/src/csv/lib/CsvPlugin.spec.ts",
+    "apps/www/src/registry/components/editor/plugins.ts",
+    "apps/www/src/registry/components/editor/markdown.tsx",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/react/features/table/TablePlugin.tsx",
+    "packages/platejs/src/features/table/lib/internal/paste.ts",
+    "packages/platejs/src/internal/plugin/compilePlateFormats.ts",
+    "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
+    "content/docs/(plugins)/(serializing)/csv.mdx",
+    "docs/vision/plate.md",
+    "docs/research/decisions/clipboard-content-fitting.md",
+    "docs/plite/research/2026-09-25-document-codec-architecture/api-ontology.tsv",
+    "docs/plans/2026-07-10-plate-next-csv-cursor-date-package-reviews.md",
+    ".changeset/csv-v54-runtime.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/plugins.ts": "43bcdaf082e122e5d353f2621f1bd0bc84893bfe245a997f5d47b4fbe603a137",
+      "packages/platejs/src/csv/lib/CsvPlugin.spec.ts": "d076596179ee3a6751efe23b9eec1ed750a8d8c5563756fec76c03d9d005dc41",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/csv": "7bad8b73f70fd818768d62d6efd786e6ea7437805bb965da20c361ff5f112104"
+    },
+    "features": {
+      "capability/csv": "57819c4a9b4ed79b7c4b12adf0e28e03a9f82b050782610a778c2a2492fe4f30",
+      "example/value/deserialize-csv-value": "77824374a1684c6b6954fba838530ea4c083a101315b9504bee368ad0143bb82",
+      "export/platejs/./csv": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/csv": "7bad8b73f70fd818768d62d6efd786e6ea7437805bb965da20c361ff5f112104"
+    },
+    "upstreams": []
+  }
+}

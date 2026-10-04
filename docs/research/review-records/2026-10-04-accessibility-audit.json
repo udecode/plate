@@ -1,0 +1,161 @@
+{
+  "id": "2026-10-04-accessibility-audit",
+  "scope": "accessibility",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest stop verdict, at queue position 7 in the plite-view group. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Announcements are local, ephemeral commit effects that skip history and collaboration; applications own the wording.",
+    "One user action is spoken once, however many views of the document are mounted on the page.",
+    "Each independently mounted React tree keeps a working announcement path when the others unmount; no global registry outlives its owner.",
+    "Owned controls inside voids and content roots stay app-owned targets, and focus belongs to the exact mounted view.",
+    "Inactive canonical-selection paint derives from each Editable's own focus transition, with no public toggle or second selection state (docs/vision/plite.md).",
+    "Tab traversal across embedded controls stays an optional product plugin whose exclusions belong to the kit."
+  ],
+  "evidenceReuse": "Reused the 2026-09-12 lanes (distinct announcement, focus and Tab owners) and the dnd transfer consolidation's announce design as context, without replaying any test or browser run. Rechecked on the live tree the live region and its commit subscription, the provider that renders it, EditorRoot's nested-versus-sibling provider choice, Plate's EditorRoot wrapping the Plite root, the announcement contract test, the dnd multi-editor and find demos, the copied keyboard-move shortcuts, the owned-control target classifier, inactive-selection markers, and TabbablePlugin, its effects and the copied kit.",
+  "summary": "The job is correct screen-reader feedback, focus and keyboard navigation across voids with owned controls, inactive editors, read-only views and several mounted views of one document. Most of the 2026-09-12 design holds. Announcements are a local, history-skipping commit effect with app-owned wording, owned controls in the editable are app-owned targets, inactive selection paint derives per Editable, and Tabbable stays an optional plugin whose kit owns its exclusions. The announcement host is the gap. Each non-nested EditorRoot creates its own PliteRuntimeProvider whose live region subscribes to every commit of the editor, and a contract test pins two independent roots both announcing. Since 2026-10-02 the registered dnd multi-editor demo mounts two sibling views of one document whose keyboard moves announce, so each move is spoken once per view. Merging the owners still loses, and the better direction keeps the effect and per-tree lifetimes while speaking each announcement through one region per editor and page.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "<EditorRoot editor={doc}><Editor /></EditorRoot> beside <EditorRoot editor={doc} suppressInstanceWarning><Editor /></EditorRoot>: each sibling mounts its own PliteRuntimeProvider and live region subscribed to every commit of doc, so Mod+Shift+ArrowUp in either view runs editor.api.transfer.move({ announce: 'Moved up', to: 'previous' }) and both regions render 'Moved up'.",
+    "proposed": "Same application code and the same screenReaderAnnouncementEffect. Proposed: each announcement renders in exactly one live region per editor and page, chosen from the mounted providers (the one holding the initiating or focused view, else the earliest mounted) with handoff when it unmounts. The selection rule is left to the repair."
+  },
+  "previous": "2026-09-12-accessibility-owner-boundaries",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-12-accessibility-owner-boundaries",
+      "question": "Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?",
+      "action": "reopens",
+      "reason": "Its Stop on merging announcement, focus and Tab owners still holds, but its kept sub-decision, one live region per provider mount without document-level coordination, is reopened because sibling views of one editor now double every announcement."
+    },
+    {
+      "record": "2026-10-01-dnd-transfer-consolidation-design",
+      "question": "Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?",
+      "action": "retains",
+      "reason": "Its non-drag move announcing through screenReaderAnnouncementEffect with caller-owned wording fits the announcement law; the duplication sits in the host, not the transfer action."
+    },
+    {
+      "record": "2026-10-01-dnd-transfer-consolidation-design-amended",
+      "question": "Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?",
+      "action": "retains",
+      "reason": "The amendment changed transfer guards and phases, not announcement or focus ownership."
+    },
+    {
+      "record": "2026-10-02-dnd-transfer-consolidation-execution",
+      "question": "Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?",
+      "action": "retains",
+      "reason": "Its keyboard moves and handle actions with a success announcement are live and correct for a single mounted view."
+    },
+    {
+      "record": "2026-10-02-dnd-transfer-consolidation-review-repair-execution",
+      "question": "Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?",
+      "action": "retains",
+      "reason": "Its proposal-view content-loss check and drag listener repairs do not touch accessibility ownership."
+    },
+    {
+      "record": "2026-10-02-dnd-transfer-consolidation-docs-execution",
+      "question": "Which focus and navigation guarantees must hold for voids, owned controls, inactive editors and read-only views?",
+      "action": "retains",
+      "reason": "Its two-view example is a supported configuration and the input that exposes the duplicate announcement; its transfer and column fixes stand."
+    }
+  ],
+  "alternatives": [
+    "Keeping one live region per provider (the 2026-09-12 choice) loses. Sibling views of one editor speak every announcement once per view, and the contract test pins that duplication.",
+    "Delivering each announcement through one region per editor and page, while keeping one region per provider for lifetime, wins. An editor-scoped choice among the mounted providers (the one holding the initiating or focused view, else the earliest mounted, with handoff on unmount) keeps the effect, wording and per-tree lifetimes and pools no providers. Nested roots already share a provider.",
+    "Pooling providers by document, or keeping one shared region per document, loses. It merges separately owned effects, cleanup and control scope, which the plite-view design plan rejected.",
+    "Merging announcements, focus and Tab traversal into one accessibility manager loses, as in 2026-09-12. Their lifetimes and owners differ, and the merge removes no work.",
+    "Deleting Tabbable for native Tab, or moving its policy into Plite, loses. Native Tab does not move between editor text and controls inside voids, and the code, table and list exclusions are product policy.",
+    "Repairing Tabbable's ambient document (activeElement and the global listener) for iframe and shadow-root editors is a bounded bug fix in the existing owner that does not change the verdict.",
+    "Rename the public TabbableEntry.slateNode field and repair docs/vision/plite.md and plate.md, which still teach data-plite-keep-selection-visible and data-plite-inactive-selection while source and copied UI use data-editor-*: real stale vocabulary, but it belongs to the editor-public-naming owner."
+  ],
+  "proofLimits": "Source review only; no screen reader, browser or jsdom run here. That both regions populate is shown by the existing contract test for separate roots and inferred for siblings from the provider choice; that assistive technology then speaks the text twice is inferred from two populated polite live regions, not heard. No Tabbable behavior, iframe or shadow-root case was run. The stale data-plite-* vocabulary in docs/vision/plite.md and plate.md and TabbableEntry.slateNode are flagged for the editor-public-naming owner, not settled here. docs/vision/plite.md carries another session's staged hunk above the cited lines.",
+  "references": [
+    "docs/research/review-records/2026-09-12-accessibility-owner-boundaries.json",
+    "docs/research/decisions/plite-view-ownership.md",
+    "docs/plans/2026-10-01-dnd-transfer-consolidation.md",
+    "packages/plitejs/src/core/screen-reader-announcement.ts",
+    "packages/plitejs/src/react/components/editor-announcement-live-region.tsx",
+    "packages/plitejs/src/react/hooks/use-plite-runtime.tsx",
+    "packages/plitejs/src/react/components/plite.tsx",
+    "packages/platejs/src/react/components/Plate.tsx",
+    "packages/platejs/src/react/internal/plite-components.ts",
+    "packages/plitejs/test/react/screen-reader-announcement.test.tsx",
+    "packages/plitejs/src/core/transfer.ts",
+    "apps/www/src/registry/examples/dnd-multi-editor-demo.tsx",
+    "apps/www/src/registry/components/editor/dnd.tsx",
+    "packages/plitejs/src/react/editable/input-controller.ts",
+    "packages/plitejs/src/react/inactive-selection.ts",
+    "packages/platejs/src/tabbable/react/TabbablePlugin.tsx",
+    "packages/platejs/src/tabbable/react/TabbableEffects.internal.tsx",
+    "packages/platejs/src/tabbable/lib/TabbablePluginTypes.ts",
+    "apps/www/src/registry/components/editor/tabbable.tsx",
+    "docs/vision/plite.md",
+    "docs/vision/plate.md"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/screen-reader-announcement.ts": "4c420343c550719ee6e55f4e11e1f6f45d268a78fbb7ce58a8930e50daf97e0f",
+      "packages/plitejs/src/react/editable/runtime-focus-mouse-events.ts": "3975d56dfc82710a891f479b84e3aa4d61aa1768dbc302f5a5c5fdc83d990591",
+      "packages/plitejs/src/react/components/editor-announcement-live-region.tsx": "f0baf669e579d74a6983ea4dd98f53f155e14adcf3bde5c7a8f00a46f1899c6a",
+      "packages/plitejs/src/react/hooks/use-plite-runtime.tsx": "3a4f98dbe294e442e2b01459e42f12d1d3908038cba73ff8d97a2bee18d2cc32",
+      "apps/www/src/app/(app)/examples/plite/_examples/read-only.tsx": "8cbd3afe4888c54c49c5329e307c533d1d64c11e27986cf41837d7f2e1c515c6",
+      "apps/www/src/app/(app)/examples/plite/_examples/editable-voids.tsx": "ae9837131937109ad9fb212d9e6c38bd960336e9791afb166a12c5c6bc27c4e5",
+      "apps/www/src/registry/components/editor/tabbable.tsx": "326d4d25fb69b3e61ee27e33471671e9695a98c7d3bd60c8fff34f48a30e6a6e",
+      "packages/plitejs/test/react/screen-reader-announcement.test.tsx": "6e9799fedc5e62a8a105a3e283b83e6fd09562025bba575f179c6d448a6244c5",
+      "packages/plitejs/test/react/editable-read-only-transition.test.tsx": "413a48f910d3680bca4ce5ca6d4585f1e1d51b6252e6909faa5ac4a25925c75f",
+      "apps/www/tests/browser/navigation-feedback.spec.ts": "23e88cf8b86143a11518f367970a5efcca2ba770763b5ea384d3ffbd906e40e4",
+      "apps/www/tests/browser/inline-void-first-click.spec.ts": "af91fda1d72ecd8206c2fbcf9ceef399d99dbbc120cf78d66be3623c7e572a73",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+      "docs/plans/2026-07-13-plate-next-slash-command-tabbable-table-package-reviews.md": "8b57d736e63e3754df5562304c9aaa6b417a624b82b1bef812972f99196a7c00",
+      "docs/plans/2026-08-31-native-inactive-selection-focus-marker.md": "b3b7aa9ae1001b9f5fa7a03dd5d3f1b610d68505bf13ddb72ff0ce74114cfce8",
+      "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+      ".agents/skills/best-api/SKILL.md": "6627d324d9578474511b4bff319a11078aff668442904533d158d6642865f840",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/tabbable": "5098115da54f011f61f7e6f416e1ff991c356f6a7dc948070528b0440ac00a46"
+    },
+    "features": {
+      "browser/block-void-caret": "0fdd1b67aa8483d522f5d490807fae66689096121f99bf6bcc1cf648c6e2c577",
+      "browser/inline-void-first-click": "db762803cc58eee8d93d67a64356b6556f6984354bdcbf585d5dc4565b3cec1a",
+      "browser/navigation-feedback": "f24730cd12fe5005e3d554665a1a7c5333ccb85923f2205a62bd25750d4291a9",
+      "capability/blockPlaceholder": "4ea42fdfe43f14b5dc8dc4f786a03a729864024e560a4fac5f6da74e755bd7e5",
+      "capability/navigationFeedback": "15523d483fb6079e075f0901d46776f93546e4ee12079ceaa17539ef7149d35f",
+      "capability/tabbable": "fde8d833f1d078a2223e6ebaa3688974028b9a2034b03850a82a1d029e163ba1",
+      "example/plite/custom-placeholder": "5f91c60d8e458ce129a7f42b8c44c7bde4e2834e24c508d7afd278cfc7cc238e",
+      "example/plite/editable-voids": "117861b82f7373af52020d4bc59989983f599caeaf682faa8be161a98a10d51a",
+      "example/plite/hidden-content-blocks": "1feb97757f511c2bfa63e2c965647fed453cb154a8605b3ddfcbfaba0653c72f",
+      "example/plite/read-only": "d5341674a0c841a10a2e049451585b9458b05cd24f63c29d36ffc47770474614",
+      "example/registry/editable-voids-demo": "5eace04810179131753d114be4ef7a3944a6059467400cd68bf64604f6752307",
+      "example/registry/inactive-selection-demo": "6edd2f371773278d84f6131fdca3a97b1824e7f37f1e6702b82776ba58341a59",
+      "example/registry/tabbable-demo": "166ec9a1b68cf36cc0f3aba6273f21e0075d40ef6e881a6e1da273652198e43d",
+      "example/value/editable-voids-value": "89c8f1099cbdec7e59dcb2700616de5890dcda2e30d7a51bbbc5a80a52e4d374",
+      "example/value/placeholder-value": "c47766682ce66c69be24f6b82839dc952c0528c09bbc8cda425696065a6e1df6",
+      "example/value/tabbable-value": "2b0656d7d770cea3c5dc201ab70e018ccc942f538ba99c352e369469db6523a3",
+      "export/platejs/./tabbable": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./tabbable/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/tabbable": "5098115da54f011f61f7e6f416e1ff991c356f6a7dc948070528b0440ac00a46",
+      "plitejs/core/screen-reader-announcement": "6800a49b785dc87f72378383e796577c7ebd3bdc483ad803a151de5386dbd066",
+      "plitejs/editor/element-read-only": "5db4b5fd6cbc157582d15f3f3c94b92296cb68aeb0b0fda3a0104b03e47c69b5",
+      "plitejs/react/editable/caret-engine": "b93b31a5ef8f3e75206456227290a24918470af4963fc28bdb6e3862ea7f0b6e",
+      "plitejs/react/editable/content-root-coordinate-navigation": "69dac2b5d948e3b95b9f0d6f9f1fda8fb0c087df6cbabc63defe350973e99f2f",
+      "plitejs/react/editable/content-root-navigation": "e3207b3879cd7d4af28efa6343ccfa4755108826b45dd4a1294b206cbddd20bc",
+      "plitejs/react/editable/content-root-navigation-actions": "0dec0122d64a7e3c3c6b1ce1c29407def74b2840ebfab4baa9f72445b14315e3",
+      "plitejs/react/editable/runtime-focus-mouse-events": "c2789f5c5b3024f0ae323eb9ae726683709818575bf4b35d05a53823ec287512",
+      "plitejs/react/editable/selection-void-target": "06a20ce4fa694480461e6f95ee55ab3689f1299e8d2c7192b08a96b1932b754d",
+      "ui/tabbable": "00162668e40a43414b7dcb409365d2be3b7bc45aedb7e4cdab4274654947cd7f"
+    },
+    "upstreams": []
+  }
+}

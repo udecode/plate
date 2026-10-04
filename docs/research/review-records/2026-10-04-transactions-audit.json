@@ -1,0 +1,120 @@
+{
+  "id": "2026-10-04-transactions-audit",
+  "scope": "transactions",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What becomes observable when updates commit, nest, fail or repair content, and which overlapping mutation authorities can disappear?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 3. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Publish document, selection and metadata through one canonical draft and commit; an uncaught failure before publication discards the draft.",
+    "Public transaction authors complete synchronously; nested public updates reject and escaped transaction methods cannot write later.",
+    "Commands keep non-publishing preparation, rejected prefixes and downstream continuation against staged state.",
+    "Preserve synchronous return values, inference, policy tags and view or root scope; independent read and API results keep their own contract."
+  ],
+  "evidenceReuse": "Reused the 09-11 review's lane comparison and the patch plan's account of its proof. Rechecked on the live tree the guard and every call site at HEAD, the regression matrix and its modes, the read-method exemption, prepared-spec consumers in InputRules and link, and current teaching. No tests were run.",
+  "summary": "The job is one coherent publish per update, with no nesting, a discarded draft when an author fails, retired escaped transactions, and commands that can prepare unpublished prefixes. Live public-state.ts rejects a thenable author result at the outer update, nested updates, guarded non-read transaction methods and both spec builders, through one assertSynchronousTransactionAuthorResult. synchronous-transaction-authors.test.ts covers 14 entry forms on the primary and a named root plus thenable objects and functions, and plugin-methods.mdx teaches the rule. The strongest cuts still lose. Deleting prepared specs breaks InputRules and link next.after continuations, deleting the configured direct forms only adds ceremony to the same owner, and a type-level async ban would reject ordinary expression-bodied authors while the runtime guard already covers the hazard. Keep the current design.",
+  "verdict": "stop",
+  "previous": "2026-09-11-transactions-synchronous-boundary",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-11-transactions-synchronous-boundary",
+      "question": "What becomes observable when updates commit, nest, fail or repair content, and which overlapping mutation authorities can disappear?",
+      "action": "supersedes",
+      "reason": "Its repair target is adopted in public-state.ts and pinned by synchronous-transaction-authors.test.ts; nothing materially better remains, so the verdict becomes Stop."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-11-synchronous-transaction-authors",
+      "question": "What becomes observable when updates commit, nest, fail or repair content, and which overlapping mutation authorities can disappear?",
+      "action": "retains",
+      "reason": "The recovered completion claim matches the live guard and regression file."
+    }
+  ],
+  "alternatives": [
+    "Keeping the repaired contract is selected, with one guard at the existing owner and no new runtime layer.",
+    "Deleting prepared specs and running commands live is rejected, because InputRules and link compose next.after(prefix) continuations before one commit.",
+    "Deleting the direct and configured update forms is rejected. They enter the same commit owner, and VISION lists them as the public lifecycle.",
+    "Adding an async transaction API is rejected. No current job needs draft lifetime across awaits, and work can finish before a fresh update.",
+    "Type-level rejection of Promise-returning authors is rejected. Tightening the callback return type breaks ordinary expression-bodied authors, and the runtime guard already rejects before publication.",
+    "Merging DocumentChange, TransactionSpec and EditorCommit is rejected, because transformation, revision-bound preparation and observed revisions keep distinct lifetimes."
+  ],
+  "proofLimits": "Source review only; the regression suite and the patch plan's 187 focused tests were not rerun here. No type-level async rejection exists by design. public-state.ts carries another session's uncommitted snapshot-input edits outside the guards, so lines are cited at HEAD, where the guards exist.",
+  "references": [
+    "docs/research/features/transactions.md",
+    "docs/research/decisions/transactions-synchronous-boundary.md",
+    "docs/research/review-records/2026-09-11-transactions-synchronous-boundary.json",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-11-synchronous-transaction-authors.json",
+    "docs/plans/2026-09-11-synchronous-transaction-authors.md",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/command-registry.ts",
+    "packages/plitejs/test/synchronous-transaction-authors.test.ts",
+    "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts",
+    "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
+    "content/docs/(guides)/plugin-methods.mdx"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/document-change.ts": "dea94229fb6eff172d7f6f72eae38dc96be9903bc12aba35da2edb4a5fac1459",
+      "packages/plitejs/src/core/commit.ts": "1be86183d11ddcff651f3e53c8fcdac83bbb3a11f6ae9eef4bc3f3dc62eeb9c7",
+      "packages/plitejs/src/core/public-state.ts": "e7e799227c5ba12393911c18c850b158fad216f24a0bab76e7b22c651ac24d43",
+      "packages/plitejs/src/core/editor-lifecycle-api.ts": "72fab9f5a995e0226c92718c6dd257d3ae7b9feec157c39a799ec7b8fc77cef4",
+      "packages/plitejs/src/core/plugin.ts": "173d80d68b84a690cbb614eebd90985f38550fde56c53b0dda862b2d04931f1e",
+      "packages/plitejs/src/core/command-registry.ts": "0ca28b54f1f36e8e10d491e1e04c2dc8a1de436e3797c48a999d4dd0c09ba181",
+      "packages/plitejs/src/editor-runtime-view.ts": "29b592d3afa949004e3249c8bff63b304d70d358b48db4c88e477e44080f1f3b",
+      "packages/plitejs/src/editor/insert-text.ts": "949b7c9ee82232a59b79ad55a0ff88ec41927638fc3ce1dec0ae9f3bb39a3053",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "f262cc3b34f6d3753974c02469f2bb37d849cb0bd5c7c697c420c4c5f3bdcdfb",
+      "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts": "6286086dbd0d5f4ca7a1f929dfd4bcb03f1902b8f43f6abe9e05876690874798",
+      "content/docs/(guides)/plugin-methods.mdx": "9b81659dcc00dcf70009117a2ff02ab0e49c5654f7b64097b415ed9bba27d6c2",
+      "content/docs/api/editor-api.mdx": "5fbd189283267da25a292b55f0af41f1a2bad00d0c10e3a82fb159f352f1d887",
+      "packages/plitejs/test/document-change-laws.test.ts": "bc9df30f2c1bec662f3cdf9d3b52742d8f651fd713cead8b694aec35c8c1ff0e",
+      "packages/plitejs/test/update-after-commit-contract.ts": "42e0d719a61e916f66a635a299997ec6022e742f505c251feb02fb97fe1e1c16",
+      "packages/plitejs/test/update-policy-contract.ts": "b78a0171db4ae34b8b064bd2ce8a1f11982e1acb541f267349a943aaec73f72b",
+      "packages/plitejs/test/read-update-contract.ts": "9faff7411bc46ad28e0844937bfa6150bc3161961c34b73661c6af9990845a8d",
+      "packages/plitejs/test/command-spec.test.ts": "80aa8fdaf45e8223e3c22c00e633373a266493e8edc83d3a5224c40fdec9c8e2",
+      "docs/plans/artifacts/transactions-api-review/synchronous-boundary-probe.mjs": "c0a11ec5b5161763b6f3135bea91c42a3a172445f5da79ebf558aecfcdbfcfb0",
+      "packages/plitejs/test/synchronous-transaction-authors.test.ts": "7c3b24dade96bedde7e750c85ea4206de5e6d412da8e97068e393cee9884361c",
+      "packages/plitejs/src/core/transaction-values.ts": "a81be80e8ab9b1bd9c241d388d6ec15a9533573a97a750857f650f68a27829b8",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+      "packages/plitejs/src/interfaces/editor.ts": "9f46f0711f22f9dde8c3e9f470a2d122f571aa3fc2b20d5039278a2b3ca03bc1",
+      "packages/plitejs/src/core/command-definition.ts": "6df00e0623d63ce10edd6526fe1ebb39831da33b6551ebb5c677524d0e2d38fd",
+      "packages/plitejs/src/core/editor-runtime.ts": "6ed1e828d78f61199e1551cd3f7a80410bf27a3ce7aeab7c250848bf53b7e16c",
+      "packages/plitejs/src/create-editor.ts": "e1932e46c9eeb4a628cdc7e51049ae5f888940f1e08e04e568da3dc013414919",
+      "packages/plitejs/src/index.ts": "f4d8cbcebb860555f7cf574f2566ebe33cd106d175c12ca330b1aa16396c2cb2",
+      "packages/plitejs/test/support/document-change.ts": "e0e07e2867b9d342437d463e3e48e679570099147064b14fa3cee3af85db914c",
+      "packages/plitejs/test/support/schema.ts": "8a6a894d13b63a82cf21693b34abd765ab22f37960e81b7f3abe07fd83d99493",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "config/plite-test-jsx.js": "c3f46dd2258e36c41a0ba1a77f52fd0592936493cfd56e00db740e4b97612e4a",
+      "config/workspace-source-entries.mjs": "07fd635afc33e4a04880e27505ae20174546a8b649160c8a88e2156248ae5f64",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/lib/editor": "2a228290dcb02bb3bc33fc76d12e497d66139103b9f0abbb8e2608eaf1c45f6e"
+    },
+    "features": {
+      "plitejs/core/change": "f2402a98057a79e4f3dccae8b9c42751bdeef5ecc9323c6a678e3dae545b1605",
+      "plitejs/core/change-events": "b8673ce006f777cbe3cc261760cef60e02f608e12a0a2bb21f949ef8df1b8cb8",
+      "plitejs/core/commit": "36a60585f3c4e9dc78b6bbd652048db762606df905e00b60a038c64919350df8",
+      "plitejs/core/commit-publication": "8435d8b2582b4a1f697e6cb6ddb144137752103b9ad47fb068f9c4d685909793",
+      "plitejs/core/document-change": "0a3f1897c1df66fa9158f1470c0854bf34f60aa0e7065e918205cd82c8f4ca19",
+      "plitejs/core/node-property-mutation": "0ed6efea2fb114894a08b931c85c0935cdc9c7f25348fe275678a39d9633e989",
+      "plitejs/core/public-state": "99233056f204fda49e8b6b15cb2276e156dec6928ac918afa8d827f35a080028",
+      "plitejs/core/semantic-update-method": "3f501a643faa5716493889586e85dce5467618cceb3d14fb2245f41f8cfd98d6",
+      "plitejs/core/tx-only": "613074e8bcf9d06aad82ca2339b5d0963f990f4a6f493e713ffa50c27ac8252b",
+      "plitejs/core/update-context": "512af6833c09c4214ba378bb7b91332fa4df21060ef46986e210662ee4bba84a",
+      "plitejs/core/update-policy": "8dd637869d54a5017d26f1029d8df8dd56a7241f306b808186d549e2c0087c10"
+    },
+    "upstreams": []
+  }
+}

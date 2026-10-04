@@ -152,3 +152,6 @@ packages/platejs/docs/
 # Autoresearch session state
 /autoresearch.*
 /autoresearch.research/
+
+# A temporary file the review ledger writes before linking a record.
+docs/research/review-records/.*.tmp

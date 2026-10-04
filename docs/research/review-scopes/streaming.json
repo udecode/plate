@@ -1,0 +1,61 @@
+{
+  "id": "streaming",
+  "title": "Incremental Markdown and streaming updates",
+  "question": "What makes partial document input stable, cancelable and reversible, and should the current AI-specific update owner be replaced by a neutral contract?",
+  "dependsOn": [
+    "transactions",
+    "markdown"
+  ],
+  "prerequisiteReason": "Incremental Markdown must preserve batch format meaning while obeying committed-update semantics.",
+  "last": false,
+  "opportunity": {
+    "score": 9,
+    "reason": "Partial parsing and consumer stream lifetime are independent jobs. Reconcile the adopted conversion and non-AI demo evidence before proposing another streaming owner."
+  },
+  "owners": [
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",
+    "apps/www/src/registry/examples/markdown-streaming-demo.tsx"
+  ],
+  "members": [
+    "apps/www/src/registry/examples/markdown-streaming-demo.spec.tsx",
+    "apps/www/src/registry/examples/markdown-streaming-demo.tsx",
+    "apps/www/tests/browser/markdown-streaming-contract.spec.ts",
+    "apps/www/tests/browser/markdown-streaming-lifetime.spec.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/examples/markdown-streaming-demo.tsx",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "apps/www/src/registry/components/editor/ai-menu.tsx"
+  ],
+  "proof": [
+    "apps/www/tests/browser/markdown-streaming-contract.spec.ts",
+    "apps/www/tests/browser/markdown-streaming-lifetime.spec.ts",
+    "packages/platejs/src/markdown/lib/markdownContinuation.spec.ts",
+    "packages/platejs/src/ai/react/AIChatPlugin.streaming.spec.ts",
+    "apps/www/src/registry/examples/markdown-streaming-demo.spec.tsx"
+  ],
+  "evidenceInputs": [
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "packages/platejs/src/markdown/lib/types.ts",
+    "packages/platejs/src/ai/react/useAIChat.ts",
+    "docs/research/review-records/2026-09-28-conversion-boundary-adoption-amendment.json",
+    "docs/research/review-records/2026-09-29-conversion-boundary-closure-repairs-final.json",
+    "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json",
+    "docs/research/review-records/2026-09-30-content-root-locations-closure.json",
+    "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt",
+    "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json",
+    "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/README.txt",
+    "apps/www/playwright.config.ts",
+    "apps/www/package.json"
+  ],
+  "relatedScopes": [
+    "conversion-boundary",
+    "markdown",
+    "html",
+    "ai",
+    "history",
+    "suggestions"
+  ],
+  "decision": "docs/research/decisions/streaming-ownership.md"
+}

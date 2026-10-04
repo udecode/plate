@@ -1,0 +1,168 @@
+{
+  "id": "2026-10-04-exports-audit-2",
+  "scope": "exports",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "Corrects the reconciliation of 2026-10-04-exports-audit, recorded earlier the same day in the owner's ledger triage audit. That record marked the scope's completed, current-bound execution as retained, which the ledger reads as adoption of the new Pursue, so status counted an open Pursue as closed. The verdict, target and evidence are unchanged.",
+  "requirements": [
+    "Export one captured revision. An authored document requires an explicit accepted, proposed or review projection and throws without one (document-first export contract).",
+    "Semantic HTML, Markdown and plain text serialize a document without an editor runtime, and editor methods capture and delegate.",
+    "Each format returns its own diagnosed result. Export asserts and never fits, and lossPolicy defaults to reject.",
+    "Styled static HTML and DOCX render through the configured static components. Copied UI owns projection choice, document shell, assets, filenames and toasts.",
+    "Hidden native state needs a current caller. Word review uses DOCX revisions, and exact Plate state uses canonical authored JSON (documents audit, 2026-10-04)."
+  ],
+  "evidenceReuse": "Reuses 2026-10-04-exports-audit in full, with the same source fingerprints recaptured from the live tree at recording time.",
+  "summary": "The job is to export one captured document to semantic HTML, Markdown, plain text, styled static HTML or DOCX under an explicit authored projection, with format-owned diagnostics and no editor runtime for the semantic formats. The 2026-09-27 targets landed. HTML ingress runs one parse5 path, inline Markdown fails instead of truncating, DOCX import cancels with the signal reason, the registry adopts Word comments, and detached HTML, Markdown and plain text compile plugins without activating an editor. One adopted law escaped. The editor HTML method, both Markdown paths, plain text and static HTML each hand-copy the missing-projection guard. Standalone serializeHtml has no copy and returns ok with pending proposals, plus only an authored-lossy-projection warning. The strongest alternative, dropping the guard everywhere and defaulting to proposed, reverses the explicit-projection law with no new job behind it. The better direction gives the rule one private owner in the shared projection helper, which fixes serializeHtml and deletes five duplicated checks. DOCX export keeps its editor input because it renders through the configured static components, and the DOCX native-state cut stays with the documents audit's Pursue.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "serializeHtml(authoredDocument, { plugins: EditorKit }) returns ok with the proposed projection and an authored-lossy-projection warning, while editor.api.html.serialize({ document: authoredDocument }) and serializeMarkdown(authoredDocument, { plugins: EditorKit }) throw 'requires projection'. Each path checks document.meta?.authored itself (HtmlPlugin.ts, MarkdownPlugin.ts twice, plain-text.ts, renderStaticHtmlWithOverrides.tsx) and then passes projection ?? 'proposed' to the shared helper.",
+    "proposed": "serializeHtml(authoredDocument, { plugins: EditorKit }) throws TypeError 'HTML serialization requires projection when the document contains authored changes', and serializeHtml(authoredDocument, { plugins: EditorKit, projection: 'accepted' }) returns ok. Proposed private change: projectFormatDocument in withPlite.ts, reached through projectPlateFormatDocument and withPlateFormatCompilation's projectDocument, takes the caller's projection or undefined and throws for an authored document without one. The per-format guards and their ?? 'proposed' fallbacks are deleted. No public signature changes."
+  },
+  "previous": "2026-10-04-exports-audit",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-10-04-exports-audit",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "supersedes",
+      "reason": "Same verdict, target and evidence. Only its reconciliation changes, because retaining the completed execution made the ledger treat this Pursue as already adopted."
+    },
+    {
+      "record": "2026-09-27-document-conversion-architecture-corrections",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "reopens",
+      "reason": "Its completed outcome still stands for the earlier target, but it does not adopt the gap this Pursue names, so the question is open again."
+    },
+    {
+      "record": "2026-09-27-document-conversion-closure-repairs",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "reopens",
+      "reason": "Its completed outcome still stands for the earlier target, but it does not adopt the gap this Pursue names, so the question is open again."
+    },
+    {
+      "record": "2026-09-27-document-conversion-closure-repairs-final",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "reopens",
+      "reason": "Its completed outcome still stands for the earlier target, but it does not adopt the gap this Pursue names, so the question is open again."
+    },
+    {
+      "record": "2026-09-28-document-conversion-standalone-value-types",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "reopens",
+      "reason": "Its completed outcome still stands for the earlier target, but it does not adopt the gap this Pursue names, so the question is open again."
+    },
+    {
+      "record": "2026-09-28-document-conversion-open-findings",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "reopens",
+      "reason": "Its completed outcome still stands for the earlier target, but it does not adopt the gap this Pursue names, so the question is open again."
+    },
+    {
+      "record": "2026-09-28-conversion-correctness-guarantees",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "reopens",
+      "reason": "Its completed outcome still stands for the earlier target, but it does not adopt the gap this Pursue names, so the question is open again."
+    },
+    {
+      "record": "2026-09-28-paste-proof-and-media-html",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "reopens",
+      "reason": "Its completed outcome still stands for the earlier target, but it does not adopt the gap this Pursue names, so the question is open again."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current design loses. One public serializer breaks the explicit-projection law that five sibling paths enforce, and nothing stops the next export path from missing it too.",
+    "Adding the missing check to serializeHtml only fixes the symptom but leaves six hand-copied guards in two phrasings, and hand-copying is how this one escaped.",
+    "Moving the rule into the shared private projection helper that every export path already calls is selected. One owner closes the standalone HTML gap and deletes five duplicated guards, and no public signature changes.",
+    "Dropping the guard everywhere and defaulting every format to proposed loses. It reverses the adopted law that an export never includes or omits pending work unless the caller chooses, and no new job asks for it.",
+    "Requiring projection on every serializer, even for clean documents, loses. It adds caller work for documents without authored metadata, which have only one projection.",
+    "Give exportDocx and renderStaticHtml a document-plus-plugins input instead of an editor: Stop for now. Both render through the configured static components, the registry passes a live model, and no caller exports DOCX on a server, as the 2026-09-25 conversion plan recorded.",
+    "Cutting DOCX nativeState in this scope would duplicate work. The documents audit (2026-10-04) holds that Pursue, which settles the 2026-09-27 deferral."
+  ],
+  "proofLimits": "Source review only. No probe, test or browser run reproduced the standalone serializeHtml behavior, and the read-only brief did not allow a scratch probe. Whether any external caller relies on the proposed default is unknown, and no first-party caller passes an authored document to standalone serializeHtml. DOCX backend fidelity, PDF and performance are outside this claim. The decision page still lists the cut standalone parseHtmlSlice, parseMarkdownSlice and parseMarkdownInline (export-fidelity.md:79) and keeps the DOCX authored part (export-fidelity.md:175), so it needs reconciliation.",
+  "references": [
+    "docs/research/decisions/export-fidelity.md",
+    "docs/research/features/exports.md",
+    "docs/research/review-records/2026-09-27-exports-adversarial-audit-feedback.json",
+    "docs/research/review-records/2026-09-25-document-first-export-contracts-implementation.json",
+    "docs/research/review-records/2026-10-04-documents-audit.json",
+    "docs/research/review-records/2026-09-29-imports-opt-in-paste-result.json",
+    "docs/plans/2026-09-24-document-first-export-contracts.md",
+    "docs/plans/2026-09-25-document-conversion-contracts.md",
+    "packages/platejs/src/lib/plugins/html/htmlConversion.ts",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts",
+    "packages/platejs/src/plain-text.ts",
+    "packages/platejs/src/static/renderStaticHtml.tsx",
+    "packages/platejs/src/static/internal/renderStaticHtmlWithOverrides.tsx",
+    "packages/platejs/src/lib/editor/withPlite.ts",
+    "packages/plitejs/src/authored/format.ts",
+    "packages/platejs/src/docx/export/lib/exportDocx.tsx",
+    "apps/www/src/registry/components/editor/export-toolbar-button.tsx",
+    "content/docs/(guides)/serializing.mdx",
+    "content/docs/(plugins)/(serializing)/html.mdx",
+    "content/docs/(plugins)/(serializing)/markdown.mdx",
+    "content/docs/(guides)/authored-changes.mdx",
+    "docs/research/review-records/2026-10-04-exports-audit.json"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "df62b3f645782fb26d89bf12050d130601f2852c218131d5e997a8fce500cece",
+      "apps/www/src/registry/examples/docx-demo.tsx": "4df0970d5c0eaab610d8789c0dd654fbb46b871a84107f0d6addc5bf5c502afd",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "3f372041ba2ce7c7fa5a4d185798223fa36e462dc129fd91e622da49ba0334ae",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "86497d4b05fda7a51d6389e21f89731a1ddaefc714765c4b93e48713c554523b",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "7a379b4dbb02de3c7b30fcc5c6ce38a6aa24d43af3b71b5d7e12bb8457bdd81c",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "85dd1b215d0e62b76f241798185919e33f5c280b6cff788927983a64bb3baaea",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "6afafeae2daeb73599175091783f043cf87a0ee63527c22c7f5dc55e8fa25d8c",
+      "packages/platejs/type-tests/authored-format-contracts.ts": "0c21a275ea428fa49bcca8c46f7069a090bb296887accf97417bb1f0dbbd40a4",
+      "packages/plitejs/src/authored/format.ts": "de8772cb57eac552d27b1bc613e33a2a9687f1352b5ac4dd40062619f015775c",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/registry-editor.ts": "95491326193b354802a076551bb117fc05f2f1431bd29f4635dac7e4a6b80cf4",
+      "content/docs/examples/export.mdx": "ea8211b880a268e0c1eb81c7efcbcb31f866f0d84c5204da14813d2f24cfc255",
+      "content/docs/(guides)/authored-changes.mdx": "385093cfb7fc0fae3b201cd9ae63934b6ae90bbcb449194c3a3624a570262320",
+      "docs/vision/plate.md": "4a0e6c187965994850a77771ed954d644f9a255a2d776966d33ec82c9cef5f3b",
+      "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "apps/www/src/registry/components/editor/docx-export.tsx": "85830dfdc863f1fe81778e52e755852c9605a9e722c964f9a0bb3d9c7a76abbe",
+      "apps/www/src/app/(app)/docs/examples/server-side/page.tsx": "4c98d9abf30942dea6ef6f850ae8b5fc3e174effbae19009098cb38f554a3877",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "4da8ba57236032efe6ad7e869144dd6452a9c195b05b36c2385aa55d1ae42b39",
+      "packages/platejs/src/static/editor/withStatic.tsx": "a7049ff7b1f5a91235238bb502a9c39c05220eebcb6d74c85afaff9467e70d33",
+      "packages/platejs/src/static/components/PlateStatic.tsx": "c714df7dd29b7bb7bd4724847c99adb853578eecf509655b264693906a06d65c",
+      "packages/platejs/src/lib/editor/withPlite.ts": "12e601c9a285f6dfa2f797fa70c959f75387ff6a4f503e490c5e7e65b7275c06",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "575a74c691bd23c2ecff9b73d8d7fc75c88a53be6b80f13a09e4c1efead1ec36",
+      "packages/platejs/src/internal/plugin/compilePlateModel.ts": "326cd9dae47df6c70342e74032a02807caa947cf1007b25c730af0fa12f61793",
+      "packages/platejs/src/internal/plugin/compilePlateFormats.ts": "58d6bdbe4a8340fb478c1693458ff617035087360f503980ea97363d0078ca9b",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "ceea6f0aecf1128634f6245f4a8c10939578276de897e30b9959c7adf5625eb3",
+      "packages/platejs/src/markdown/lib/types.ts": "fe49e121a29a9da3a7b3a2a0e97c3ee93f14c474b0354519c55720dcd63cf7f9",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "e4560ee7a76f6ac6309bdb1891c95adb9202ec691958e24742ad71169908b321",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "2ca3526ac45b843cec3b4568278e755f8c1f55a6c31f970e05dceb342ebf2051",
+      "packages/plitejs/src/authored/checkpoint.ts": "4e01515793b2423d84c824491869fb485f3f548e5e3d6e2f2fe901d02c0230f4",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "b20d0d9de88fe46cb58920be43fafcb840ebfb4eef8af6c90a4f7b7abec0d803",
+      "packages/plitejs/src/core/persisted-document.ts": "e605b0ed6d719d0b68f393bf531bd64e257fbe402851c77463fbbfac40281575",
+      "content/docs/(guides)/serializing.mdx": "e2ff9bb116de52e9bf5d7b1bdbf771e20b582c602c68fc6db7642cb7711f8985",
+      "content/docs/api/node.mdx": "6cf96d7dfb56d46a82ec64d540ec7ee3355a2756dca5b3b7444bc729592f5008",
+      "packages/plitejs/src/interfaces/node.ts": "e75fafa20ae004deb7db029c784bd30323408bea5fd244905a2018c626b96166",
+      "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts": "fc2eaea96376057f3eb41e07f4ab1a28d8a572bb5525b71f118a84f12985300c",
+      "packages/platejs/src/react/features/table/TablePlugin.tsx": "b1ab39fbb540828b32839c1123a5b6fec45d622f55032c73f00db6e36984a26a",
+      "packages/platejs/src/static/renderStaticHtml.node-props.spec.ts": "3f117091c0d4225cf97e3bf29413931cb94a21e0163e4a08f23eb3b498395e53",
+      "docs/plite/research/2026-09-24-export-architecture/shards/002-final-reassessment.md": "612865507a714a57495d19399a63fc79c4329c68381c0837b989209b9b79e0b4",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {
+      "plitejs/core/plain-text": "a1ced6bc55a354d3c2a5fee11384907e01b7c913af4a2ef95939ee752bf9c92b",
+      "ui/export-toolbar-button": "3a88ae36b39eb3f1527ac156c3d6950fe6dab9eb96404fe0497c526de6b299ca"
+    },
+    "upstreams": []
+  }
+}

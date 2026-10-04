@@ -1,0 +1,104 @@
+{
+  "id": "2026-10-04-basic-audit",
+  "scope": "basic",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which basic block primitives and identities should all editing and conversion consumers share?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 43. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Every editing and conversion consumer resolves heading, blockquote and paragraph through the installed nominal descriptor, so configured persisted types work and foreign same-name plugins do not.",
+    "Heading stays one capability with a required level 1-6; per-level plugins stay forbidden.",
+    "Paragraph remains the core default text block installed by every Base editor.",
+    "Formats are owned by the descriptor and synthesize Plate nodes with the installed schema type, never a raw literal while the plugin is installed.",
+    "editor.plugin(plugin) is the sole imperative lookup and strings or foreign same-name descriptors do not resolve (docs/vision/plate.md identity law).",
+    "Entrypoint edges must stay honest per tooling/entrypoints/entrypoint-dag.mjs."
+  ],
+  "evidenceReuse": "Reused the 2026-09-23 editing admission execution (input rules decline through structural command results; rechecked in BaseBlockPlugins.ts and BaseHeadingPlugins.ts), the 2026-09-24 list audit (its planned deletion of the zero-consumer list api covers one of the three list name lookups) and the 2026-09-07 UI extraction execution (copied menus own composition). Rechecked on the live tree every getCompiledPlatePlugin call site, the PLUGINS map, the core plugin assembly, the format registry type signature, copied menus and kits, and the DOCX export descriptors. The 18 paragraph fallbacks are identical at HEAD (git grep HEAD), though several markdown files carry other sessions' staged edits.",
+  "summary": "The job is one shared identity per basic block (paragraph, heading with level, blockquote container, horizontal rule) for editing, menus and conversion. Live source has the right descriptors. BaseParagraphPlugin is a core plugin installed in every editor, heading is PLUGINS.heading with a required validated level, formats are colocated, and the input rules already use the atomic structural decline from the 2026-09-23 editing work. Copied UI and DOCX export consume the nominal descriptors (editor.plugin(BaseHeadingPlugin), tx.plugin(BaseHeadingPlugin).insert). The leaks are inside platejs. List (3 sites), TOC (1) and indent (1) call getCompiledPlatePlugin(editor, PLUGINS.heading or PLUGINS.blockquote) and then editor.plugin(thatDescriptor), which accepts any foreign plugin that happens to be named heading (the TOC spec relies on exactly that). And 18 sites write registry.type(PLUGINS.paragraph) ?? 'paragraph' although the core paragraph is always compiled. The strongest replacement is not a new API. Consumers import the nominal descriptors (adding the honest standard/basic-nodes entrypoint edge to toc and standard/list), and the format registry resolves the core paragraph descriptor without an optional result. Deleting or merging the descriptors themselves loses, because one heading with level and the blockquote container are settled doctrine and law.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "Inside platejs: const d = getCompiledPlatePlugin(editor, PLUGINS.heading); const headingType = d ? editor.plugin(d).schema.type : undefined; format code: const paragraphType = registry.type(PLUGINS.paragraph) ?? 'paragraph';",
+    "proposed": "const heading = editor.plugin(BaseHeadingPlugin); const headingType = heading.installed ? heading.schema.type : undefined; (toc and standard/list declare the standard/basic-nodes edge); format code: const paragraphType = registry.type(BaseParagraphPlugin); // proposed: string for the always-installed core descriptor, no literal fallback"
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "Which basic block primitives and identities should all editing and conversion consumers share?",
+      "action": "retains",
+      "reason": "Its copied-UI ownership outcome for basic renderers and menus still holds; this review targets package-internal identity access it did not cover."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current code loses. It works today, but name laundering contradicts the nominal identity law and the dead literal fallback is repeated 18 times.",
+    "Change an existing API: consumers import BaseHeadingPlugin/BaseBlockquotePlugin and check installed; PluginFormatRegistry.type resolves the always-installed core paragraph descriptor as a string; wins with no new noun.",
+    "Deleting or merging loses. Per-level heading plugins or folding blockquote into a paragraph mark both lose to the vision's parameterized heading and the 2026-04-23 blockquote container law.",
+    "Moving paragraph out of core into basic-nodes loses, because column, details, footnote and content defaults depend on the core default block.",
+    "Replacing the architecture with generated closed editor types for exact identity loses. It is heavier than importing descriptors that already exist.",
+    "Indent's blockquote lookup could instead yield shift+tab through shortcut fallthrough order; the plan should pick that or the descriptor import."
+  ],
+  "proofLimits": "Source review only; no tests, typecheck or browser run. Whether a disabled core paragraph can ever make registry.type return undefined was not executed. Markdown fallback sites sit in files with other sessions' staged edits; the HEAD count matches. docs/vision/plate.md has an unrelated uncommitted migrations hunk.",
+  "references": [
+    "docs/research/features/basic.md",
+    "docs/research/review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json",
+    "docs/research/review-records/2026-09-23-editing-structural-rule-admission-implementation-execution.json",
+    "docs/research/review-records/2026-09-24-list-audit.json",
+    "docs/plans/2026-07-06-plate-next-basic-nodes-package-review.md",
+    "docs/plans/2026-08-13-repair-heading-component-family.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts",
+    "packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts",
+    "packages/platejs/src/lib/plugins/paragraph/BaseParagraphPlugin.ts",
+    "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts",
+    "packages/platejs/src/internal/plugin/compilePlateModel.ts",
+    "packages/platejs/src/lib/plugin/PluginFormatContext.ts",
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts",
+    "packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts",
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts",
+    "packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts",
+    "packages/platejs/src/docx/export/lib/docxStaticComponents.tsx",
+    "apps/www/src/registry/components/editor/basic-blocks.tsx",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "tooling/entrypoints/entrypoint-dag.mjs",
+    "docs/vision/plate.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts": "4b311a08a2c2bf330d095ee2dae401c1824fb26e2307f6067378dda3558d457d",
+      "apps/www/src/registry/components/editor/basic-nodes.tsx": "8d8a45cb71b6e696477372263aef7608430721d5cfeb2e207fc54ea975736808",
+      "packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.spec.tsx": "cc0a5a68121596582d5254a5a525f30d42705f3d9f7ad47ef72abf6240ad6166",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {
+      "capability/blockquote": "d8f8d98fbceaa89542d03af039438eb470fa0f18c8104db859c3bd5d0ca51cea",
+      "capability/heading": "d45fcc55c23106ccb2c1afbd18d1b526a5aa16f537178b9cdc8c204074b0fed7",
+      "capability/horizontalRule": "b1c93053d01af2fe65cfd6616d92538d31f2ddfbe081b498f9d84f8ffe18bd79",
+      "capability/paragraph": "6b055c22f873cb85a146fc1b430af7ca63f4069b2d1cf204154a221c79de35d1",
+      "example/value/basic-blocks-value": "b0c0a74092c847963d4762a302d46f667911829f3a6fab7ee8ca4124daf89dcd",
+      "example/value/basic-nodes-value": "4f54a4d40d8359c0abd244ce32cbb2af500032975fe44e42d00ed3270f8cac4d",
+      "platejs/basic-nodes": "26fb61123bdec93adcab50970098a61780f1157b2d0b5254c7c0fc9630698c0f",
+      "ui/basic-blocks": "293f12554fa7ee4bbacc89105d53c37c43461ead0d50f870187c2d3fd8d33e92",
+      "ui/basic-nodes": "51286a995bfa47ea22257c5d465d46139d2a68cbf4c067c26a884cf42b73712e",
+      "ui/blockquote": "4f6b88241e5bf75fa6faa3160f9e71f81573257e7f74ddf60f146960d1fe9a1d",
+      "ui/code": "5a8f692dcb4954e2086e511e7aeeab5289c19bd33173615b09b6ecab93a298fe",
+      "ui/font-color-toolbar-button": "efdac3550dd6232d65b293f234ea9608a111d6310c353be6ab6180b29fed814a",
+      "ui/font-size-toolbar-button": "cd4705b20da033662b28f8a361e5c73feed839ddcf4e6027a58ab515397679e3",
+      "ui/heading": "7b7202fd0ec110b63eb6748b638818a28f7a91061557f3d8bb5edb5007c0f0ac",
+      "ui/highlight": "87e67b820a401a80cdeb91264df770583eafdb87d5f8c6a697be15c962986b57",
+      "ui/horizontal-rule": "44347f2ed65da0fec7ec600451b7156c8fa93306b5b5fc704e5d6c0b19ab56e0",
+      "ui/kbd": "9f74313155e12f73a20c8c6bb96f36c636cf2d2ce6f47ff401da8c94e45128e0",
+      "ui/mark-toolbar-button": "4400c770c63b0838b46bd656bd5e08dbfd07d84dfc2d0618055fc7772837f6da",
+      "ui/paragraph": "44e16341985cf8f94d01b40703d75d7a57a7896b31530299d709b21b2eeb100d"
+    },
+    "upstreams": []
+  }
+}

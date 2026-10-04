@@ -1,6 +1,5 @@
 import {
   type Editor,
-  type EditorCommit,
   PathApi,
   type Point,
   PointApi,
@@ -10,10 +9,7 @@ import {
 } from '../../../core';
 import type { ComboboxState } from './combobox';
 
-const LOCAL_TYPING_TAGS = new Set(['dom-text-input', 'native-text-input']);
-const NON_TYPING_TAGS = new Set(['collaboration', 'historic', 'paste']);
-
-type ComboboxRead = Pick<Editor['read'], 'nodes' | 'points' | 'text'>;
+type ComboboxRead = Pick<Editor['read'], 'nodes' | 'text'>;
 
 export type TypedInsertion = Readonly<{ caret: Point; length: number }>;
 
@@ -24,38 +20,13 @@ const stateless = (pattern: RegExp) =>
 
 const rootOf = (point: Point) => point.root ?? 'main';
 
-export const readTypedInsertion = (
-  commit: EditorCommit
-): TypedInsertion | null => {
-  if (
-    !commit.tags.some((tag) => LOCAL_TYPING_TAGS.has(tag)) ||
-    commit.tags.some((tag) => NON_TYPING_TAGS.has(tag)) ||
-    !RangeApi.isRange(commit.selectionAfter) ||
-    !RangeApi.isCollapsed(commit.selectionAfter)
-  ) {
-    return null;
-  }
-
-  let ranges = 0;
-  let length = 0;
-
-  commit.changes.iterChangedRanges((_root, fromA, toA, fromB, toB) => {
-    ranges += 1;
-    length = fromA === toA ? toB - fromB : 0;
-  });
-
-  return ranges === 1 && length > 0
-    ? { caret: commit.selectionAfter.focus, length }
-    : null;
-};
-
 const readTextBeforeCaret = (
   read: ComboboxRead,
   caret: Point,
   length: number
 ) => {
   const parent = PathApi.parent(caret.path);
-  const leaves: Array<{ path: number[]; text: string }> = [];
+  const leaves: Array<{ path: number[]; start: number; text: string }> = [];
   let collected = 0;
 
   for (
@@ -68,11 +39,11 @@ const readTextBeforeCaret = (
 
     if (!TextApi.isText(node)) break;
 
-    const text =
-      leaves.length === 0 ? node.text.slice(0, caret.offset) : node.text;
+    const end = leaves.length === 0 ? caret.offset : node.text.length;
+    const start = Math.max(0, end - (length - collected));
 
-    leaves.push({ path, text });
-    collected += text.length;
+    leaves.push({ path, start, text: node.text.slice(start, end) });
+    collected += end - start;
   }
 
   leaves.reverse();
@@ -83,7 +54,7 @@ const readTextBeforeCaret = (
 
     for (const leaf of leaves) {
       if (rest <= leaf.text.length) {
-        return { ...caret, offset: rest, path: leaf.path };
+        return { ...caret, offset: leaf.start + rest, path: leaf.path };
       }
 
       rest -= leaf.text.length;
@@ -114,18 +85,23 @@ const longestTrigger = (trigger: ComboboxState['trigger']) =>
     ? 1
     : Math.max(0, ...[trigger].flat().map((candidate) => candidate.length));
 
-const isOneTextRun = (read: ComboboxRead, from: Point, to: Point) => {
+const textRunLength = (read: ComboboxRead, from: Point, to: Point) => {
   const parent = PathApi.parent(to.path);
+  const first = from.path.at(-1) ?? 0;
+  const last = to.path.at(-1) ?? 0;
+  let length = 0;
 
-  for (
-    let index = from.path.at(-1) ?? 0;
-    index <= (to.path.at(-1) ?? 0);
-    index += 1
-  ) {
-    if (!TextApi.isText(read.nodes.get([...parent, index])?.[0])) return false;
+  for (let index = first; index <= last; index += 1) {
+    const node = read.nodes.get([...parent, index])?.[0];
+
+    if (!TextApi.isText(node)) return null;
+
+    length +=
+      (index === last ? to.offset : node.text.length) -
+      (index === first ? from.offset : 0);
   }
 
-  return true;
+  return length;
 };
 
 const findLastTrigger = (
@@ -184,13 +160,10 @@ export const findTypedTrigger = (
   const start = run.pointAt(found.start);
 
   if (state.triggerPreviousCharPattern) {
-    const previous = found.start > 0 ? null : read.points.before(start);
+    // The run stops at a block start or an inline element's edge, where the
+    // previous character is ''.
     const previousChar =
-      found.start > 0
-        ? run.text.slice(found.start - 1, found.start)
-        : previous
-          ? read.text.string({ anchor: previous, focus: start })
-          : '';
+      found.start > 0 ? run.text.slice(found.start - 1, found.start) : '';
 
     if (!stateless(state.triggerPreviousCharPattern).test(previousChar)) {
       return null;
@@ -221,8 +194,16 @@ export const readComboboxQuery = (
     rootOf(start) !== rootOf(caret) ||
     !PathApi.equals(PathApi.parent(start.path), PathApi.parent(caret.path)) ||
     PointApi.isBefore(caret, end) ||
-    PointApi.isAfter(caret, typedExtentEnd) ||
-    !isOneTextRun(read, start, caret) ||
+    PointApi.isAfter(caret, typedExtentEnd)
+  ) {
+    return null;
+  }
+
+  const runLength = textRunLength(read, start, caret);
+
+  if (
+    runLength === null ||
+    runLength - triggerText.length > state.maxQueryLength ||
     read.text.string(trigger) !== triggerText
   ) {
     return null;

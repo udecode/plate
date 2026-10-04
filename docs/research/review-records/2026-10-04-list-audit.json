@@ -1,0 +1,129 @@
+{
+  "id": "2026-10-04-list-audit",
+  "scope": "list",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "How should list structure, numbering and indentation compose with generic block editing?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest pursue verdict, at queue position 28. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Lists stay semantic flat properties of ordinary blocks so generic split, merge, move, paste, DnD and type change need no list structure.",
+    "Displayed numbering equals the derived ordinal of the current document after every commit in every mounted view, static render and codec; derived ordinals are never persisted.",
+    "Sparse per-node presentation that custom components receive goes through render.useViewElementAttributes or a private canonical-host binding (VISION.md Boundary Law), never render-time reads of sibling state.",
+    "Every public list method and option has a current user job; zero-consumer customization surfaces are cut.",
+    "A root list item has one canonical indent invariant; Shift+Tab never leaves listType without its depth.",
+    "Copied registry UI owns list paint; the package owns semantics and derived reads."
+  ],
+  "evidenceReuse": "Reused the 2026-09-24 list audit's model comparison (flat properties over containers), its 14-unit census and its proof limits, plus the 2026-09-30 content-root and static-preview executions. Rechecked on the live tree the BaseListPlugin ordinal cache, its read, api and update methods, commands and corrections, BaseIndentPlugin untab, React ListPlugin, the copied block-list, block-list-static and list kit, the Plate React wrapNodeChildren rendering path, plitejs testing JSX, and consumer greps. All list, indent and copied list files are committed, and block-list.tsx last changed on 2026-09-10, before the audit.",
+  "summary": "The job is flat list properties on ordinary blocks with derived ordinals that every view, static render and codec shows identically after each commit. The kept model (flat listType and indent, conditional listStart, forced listRestart) still wins over a container list. The ledger marks adoption completed because the content-root execution bound this review, but the decision page itself says that receipt does not certify the audit's other findings, and live source confirms it. The cache now keys on snapshot children, yet the React wrappers still compute ordinals inside render, so a property-only edit to an earlier block cannot wake later items and their <ol start> can go stale. GetSiblingListOptions in plugin state, api.getSequenceSiblingOptions and isSequenceBoundary, and update.indent still ship with no production caller, and read.getNext and getPrevious are public only so the plugin toggle can call them through tx.list. Indent untab unsets indent but keeps listType on root items. The Enter wrapper re-unsets listStart and listRestart that the schema already drops on split. The package ListPlugin still ships default ol, ul and li paint, and test JSX still exports the deleted container vocabulary. The remaining gap is one owner for live sequence delivery plus the unadopted cuts, and it needs a plan with a scale comparison, not another review.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "Copied BlockList wrapper: <List listStart={innerProps.editor.plugin(ListPlugin).read.ordinal(innerProps.element)} ... /> computed during render; package ListPlugin also ships a default wrapNodeChildren that renders <ol start={...read.ordinal(element)}><li/></ol>; ListPlugin.configure({ initialState: { getSiblingListOptions } }) remains a public customization path.",
+    "proposed": "ListPlugin derives ordinals once per commit and delivers them per view to item hosts (proposed: render: { useViewElementAttributes: () => [{ key, attributes: { style: { counterSet: 'list-item N' } } }] } or an equivalent private host binding); copied BlockList renders from the delivered value only; package ListPlugin ships no paint; getSiblingListOptions, getSequenceSiblingOptions, isSequenceBoundary and update.indent are deleted and getNext/getPrevious become private to toggle; the list correction restores indent: 1 on any root listType block."
+  },
+  "previous": "2026-09-24-list-audit",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-24-list-audit",
+      "question": "How should list structure, numbering and indentation compose with generic block editing?",
+      "action": "supersedes",
+      "reason": "Keeps its model verdict and its unadopted targets, narrows the Pursue to the live-numbering owner and residual cuts, and corrects the ledger's completed adoption to partial, because only the cache key, HTML decode and ordinal(at) landed."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-design",
+      "question": "How should list structure, numbering and indentation compose with generic block editing?",
+      "action": "retains",
+      "reason": "Root-correct readers and ordinal(at) over node targets are live and remain the read contract the delivery owner should reuse."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-execution",
+      "question": "How should list structure, numbering and indentation compose with generic block editing?",
+      "action": "retains",
+      "reason": "Its adoption holds (getListOrdinal keyed by snapshot children); its decision page already states it does not certify the audit's other findings."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-closure",
+      "question": "How should list structure, numbering and indentation compose with generic block editing?",
+      "action": "retains",
+      "reason": "Its closure concerns static root readers and policy; nothing here contradicts it."
+    }
+  ],
+  "alternatives": [
+    "Keeping the adopted state (Stop) loses. The ledger's completed adoption covers only the cache key, HTML decode and ordinal(at), while live numbering in mounted views stays render-time and sibling-blind.",
+    "Replace flat properties with container lists: Stop; generic block editing, DOCX mapping and collaborative property edits keep the flat model ahead, as the audit found.",
+    "A per-item runtime selector in the copied wrapper (useEditorSelector over read.ordinal) is the smallest change with correct wakes, but it evaluates one selector per numbered item per commit. It is the baseline for the scale comparison.",
+    "A list-owned per-view ordinal projection published through render.useViewElementAttributes (or CSS counter-set on display:list-item hosts), which static rendering and codecs read from the same derivation, needs one derivation per commit and wakes only changed items. It is the proposed target, pending a matched 10k-item comparison.",
+    "Pure CSS counters with no model ordinal are rejected as the owner. They cannot express conditional start or heading partitions, and codecs still need numbers.",
+    "Deleting GetSiblingListOptions state, getSequenceSiblingOptions, isSequenceBoundary and update.indent (no caller), and making getNext and getPrevious private to toggle (their only caller), is a cut that goes with the plan.",
+    "Fixing root Shift+Tab by having the list correction own the indent invariant is the smallest owner, and the indent plugin stays list-agnostic."
+  ],
+  "proofLimits": "Source inspection only. The stale live <ol start> is inferred from the render path and the 2026-09-24 audit's React-DOM probe; no real-browser run, React test or new probe ran here, and no React/browser test in the tree covers live renumbering after a sibling edit. No scale measurement exists for either delivery candidate. DOCX export and Markdown ordinal claims were not rechecked. The task-list Enter law conflict from the audit was not re-examined.",
+  "references": [
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts",
+    "packages/platejs/src/react/features/list/ListPlugin.tsx",
+    "packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts",
+    "packages/platejs/src/react/utils/pipeRenderElement.internal.tsx",
+    "packages/plitejs/src/testing/jsx.ts",
+    "apps/www/src/registry/components/editor/block-list.tsx",
+    "apps/www/src/registry/components/editor/block-list-static.tsx",
+    "apps/www/src/registry/components/editor/list.tsx",
+    "VISION.md",
+    "docs/research/decisions/list-ownership.md",
+    "docs/research/review-records/2026-09-24-list-audit.json",
+    "docs/plans/2026-09-30-content-root-locations-execution.md",
+    "docs/plans/2026-09-30-static-preview-proportional-cost.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/list.tsx": "7c905126362567c8c8adc2d3deceea368f1bf74c9923d1bd08e7b399fc1c5aaf",
+      "apps/www/src/registry/components/editor/list-static.tsx": "7ed7443e1d97d167efdfbaf64c162549c7115c9041a2cd0749adb13e04c72c09",
+      "apps/www/src/registry/components/editor/block-list.tsx": "db26c166646141ca9b975cb971b229f3250f45726e06ddc379f2226f3b38cb65",
+      "apps/www/src/registry/components/editor/block-list-static.tsx": "2c63db605756118d1ca283595cc61096cd588b7af96e31d71c23c6493109b435",
+      "apps/www/src/registry/components/editor/list-toolbar-button.tsx": "8d5b9ee21882f0294ec0836141b2c0f74fccf3c6f58ff53b501fc4d58e5af406",
+      "apps/www/src/registry/components/editor/indent.tsx": "01cb50fdb49538c282ceb6c4bb2d9492c57440b5007664af87692b865bf27a03",
+      "apps/www/src/registry/components/editor/indent-static.tsx": "4c5e2ca2865204d16edbe116ef5bffcb42ca0302c671fb583a3631bc386f5b3e",
+      "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx": "356c22c7dcf310240a3440ef7bfc52c9d8637ce4b7bb5293f4390a5503462420",
+      "packages/platejs/src/react/features/list/ListPlugin.tsx": "abe954acc0e24bb3300bf9ccd820ddb1705c213a3372b00f6c08de61cb976024",
+      "packages/platejs/src/markdown/lib/serializer/listToMdastTree.ts": "5a60d4ce3629e52ab06ddf3b21d87a6cb70ecfb4c9077366efd1e0d8bddb830b",
+      "packages/platejs/src/docx/paste/lib/WordPastePlugin.ts": "984bb90b0a062dd019867d262623ed25b1ab6209a8e21597e98117f4372b2cd0",
+      "packages/platejs/src/docx/export/lib/internal/render-document-file.ts": "e430276114a4ef90f2fc05fca2c6f7871674131f74ffeca643fc508b29588729",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "3b09a84e4fafe1796830b8290f0676adaf3df3f841ee80f53df3d95f20aa3a93",
+      "packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx": "18227dfecb37948b25bce0076944ba2d149cd43a8339b9db8f992d01b38cb675",
+      "packages/platejs/src/features/list/lib/BaseListPlugin.slow.tsx": "c43f3fe59c508d35cff69e889ff5b59229f3270cf7210bf5f4d948ba390eaa46",
+      "packages/platejs/src/features/indent/lib/BaseIndentPlugin.spec.ts": "768abe1366ed22675c12db2f41da56f27180b310f60964168d02e87b22cfd2fd",
+      "apps/www/src/registry/components/editor/list.spec.tsx": "885357af60a6203fab82c1e2231c745f7a5ff1c06fb0a84d44bcaa338b5d4f0d",
+      "packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts": "9d7fff2cfc52b2ba2b30a893e4bf883e8f15d5967404a9e38309983d950fd433",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "575a74c691bd23c2ecff9b73d8d7fc75c88a53be6b80f13a09e4c1efead1ec36",
+      "packages/platejs/src/react/internal/rendered-attributes.tsx": "468d52a0f24a65bb7dce201044262ea0b73b8412927b537464d6bac03bce0ff9",
+      "packages/platejs/src/react/utils/pipeRenderElement.internal.tsx": "6a7d4104f2eef8c68693ca2a3b24a29d32d8fdef530312005660231cd3c3b117",
+      "docs/editor-behavior/markdown-editing-spec.md": "7b265ae32b9b2502470ad99cf94a60f5f9c8d8c43daf4675da93009d7e6b9df3",
+      "packages/plitejs/src/testing/jsx.ts": "29f62d95d6ea17e70413d441188c8967148c1b780b4108f27179b1ccbdeb1685",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/list": "c5901b891a6fad0676a50242ac89f8ffaf2ce23e3a4dfc7d55360557500694e4"
+    },
+    "features": {
+      "capability/indent": "88f3076a8f4e8bb5324b551401fd753c0887d4ae64a7cc52d0801ce2df95b121",
+      "capability/list": "67f2b13f3025804b5c68593ea9ad2f47d12c848fc4a8f09001c2a2026cfa6e14",
+      "example/plite/check-lists": "b611105088e03e29cc04583750762ee6ac63952043aa53bff2a1142c2482174b",
+      "example/value/indent-value": "d53705e42e614c39d18e9a9d21f863de0dcd846aedd7f9c723e3baace90eb3ae",
+      "example/value/list-value": "4bc83916e0af95a3fa6cfa1e34632bd92de6a43edd92a35b0748bb281bbe7c14",
+      "platejs/indent": "b0a084c74f076c20b682de1db0507988fb9de4aa88b3c21fcaeb734e4ca897e2",
+      "platejs/list": "c5901b891a6fad0676a50242ac89f8ffaf2ce23e3a4dfc7d55360557500694e4",
+      "ui/block-list": "19a2285b8fce1975de657bf1603af19a070897c232edd1e43b360f182a5ef5ad",
+      "ui/indent": "82719c1659c0e7843f1c8b53981970693392023e9347cbffc1a5c605f4d85e00",
+      "ui/indent-toolbar-button": "233620c00e9d81ce98a40ac4a7dea980b365f634a9f67ab05ee9dba0bafdb545",
+      "ui/list": "566807dddb074a9ca1cbf59cb3eea772ed4068377ac458c8a50500ff1bae6626",
+      "ui/list-toolbar-button": "6fd4ed073d8f21db08974f9b7cfb9ae8cd3196f559e2b15677e7ce7df464b4a4"
+    },
+    "upstreams": []
+  }
+}

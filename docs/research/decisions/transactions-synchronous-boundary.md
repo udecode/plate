@@ -2,11 +2,7 @@
 title: Atomic updates and synchronous transaction authors
 type: decision
 status: accepted
-updated: 2026-09-11
-review_scope: transactions
-current_review: 2026-09-11-transactions-synchronous-boundary
-review_history:
-  - ../review-records/2026-09-11-transactions-synchronous-boundary.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/core/public-state.ts
   - ../../../packages/plitejs/src/core/editor-lifecycle-api.ts
@@ -20,6 +16,8 @@ related:
 ---
 
 # Atomic updates and synchronous transaction authors
+
+**Audit of 2026-10-04.** Stop. The synchronous-author repair landed in the one transaction owner and a 28-case regression matrix pins it; every remaining mutation entrance serves a distinct current job. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-transactions-audit` hold the evidence.
 
 **Accepted and locally implemented:** enforce synchronous transaction authors
 through the existing update, prepared-spec and canonical-change owners.

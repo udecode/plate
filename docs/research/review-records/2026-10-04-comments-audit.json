@@ -1,0 +1,135 @@
+{
+  "id": "2026-10-04-comments-audit",
+  "scope": "comments",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What belongs to durable comment data, anchor mapping and application discussion UI?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as deferred at queue position 21. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Published conversations, replies and resolution survive target deletion and stay independent of document undo; only successful local thread creation joins session undo.",
+    "Only exact current-view attachment paints text, counts on blocks or navigates; unrelated later typing never inherits a deleted target, while exact undo/redo and atomic replacement keep identity.",
+    "Every published thread, open, resolved or unavailable, stays reachable without a sidebar, mode switch, provider or second semantic store.",
+    "The application owns persistence, revision pairing and authorization through one awaited mutate boundary; CommentsJSON is saved with the exact document revision.",
+    "Commenting is not a document write, and Comments works without Suggestions or Authored installed.",
+    "Per-anchor mapping work must not scale with replacement depth (frozen executable scale gate)."
+  ],
+  "evidenceReuse": "Reused the 2026-09-16 to 2026-09-18 review records, the design-complete and implementation execution summaries and the decision page; their artifacts under docs/plans/artifacts are gitignored and were not cited or rerun. Rechecked on the live tree: BaseCommentsPlugin API, mutate boundary and anchors; React CommentsPlugin activation; AuthoredSuccessor in authored/state.ts; DocumentReplacementRun in document-change.ts; attached-only placement in discussion.tsx; AllCommentsButton with 20-thread pages; plate.md and best-api comments doctrine; comment docs collaboration section; consumer census of every comments API method in copied UI. No comments source file has uncommitted changes.",
+  "summary": "The job is durable conversations on text ranges that follow edits, undo and authored projections, survive target deletion, persist with the exact document revision, and stay discoverable, with the app owning storage and authorization. The 2026-09-18 design gate deferred only the coupled native runtime because the trial candidates failed scale; the later design-complete execution selected AuthoredIndex successor lineage and passed 54/54 correctness and every frozen scale gate, and the implementation execution landed it with operation-local replacement runs for ordinary anchors, attached-only block placement and a lazy All comments dialog. Live source matches that design and the plate.md and best-api doctrine. The strongest replacement, threads as document marks, loses because commenting would become a document write (edit authority, document undo and authored history, collaboration as content) and per-thread persisted keys break the one-key-per-mark identity law; merging into Authored loses on independent reply and resolution lifetime; collapsing the three snapshot-field subscribe channels into one is a cosmetic trim with no ownership, lifetime or runtime gain. Remaining limits (real-time remote sync, per-thread rendering bounds, the open popover diagnosis) are separate jobs, not defects of this ownership split.",
+  "verdict": "stop",
+  "previous": "2026-09-18-comments-attachment-design-gate",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-comments-attachment-design-gate",
+      "question": "Which native retained-target and copied discovery design preserves comment identity, history and document-level access without scaling per-anchor work with replacement depth?",
+      "action": "supersedes",
+      "reason": "Its named gap closed. Design-complete passed the frozen correctness and scale gates, and the implementation outcome landed the selected runtime and discovery, so the Defer no longer governs."
+    },
+    {
+      "record": "2026-09-18-comments-attachment-design-partial",
+      "question": "What belongs to durable comment data, anchor mapping and application discussion UI?",
+      "action": "retains",
+      "reason": "Keep its rejected-candidate receipts (read-time ancestry, compact prepared recovery); its provisional recommendation was already superseded by design-complete."
+    },
+    {
+      "record": "2026-09-18-comments-canonical-provenance-analysis",
+      "question": "What belongs to durable comment data, anchor mapping and application discussion UI?",
+      "action": "retains",
+      "reason": "Its afterPositions restoration handoff is the integration the accepted design used."
+    },
+    {
+      "record": "2026-09-18-comments-attachment-design-complete",
+      "question": "What belongs to durable comment data, anchor mapping and application discussion UI?",
+      "action": "retains",
+      "reason": "The selected AuthoredIndex successor-lineage design and All comments projection are the design live source implements."
+    },
+    {
+      "record": "2026-09-18-comments-attachment-discovery-implementation",
+      "question": "What belongs to durable comment data, anchor mapping and application discussion UI?",
+      "action": "retains",
+      "reason": "Production adoption evidence; live source still carries successor lineage, replacement runs, attached-only placement and the All comments dialog, though its proof is stale."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current split wins (package records and queues, Plite retained anchors and per-view annotation projection, the app mutate adapter, and copied UI with All comments). The deferred runtime landed and passed its frozen gates.",
+    "Deleting Comments and storing threads as document marks or leaf properties loses. Commenting would become a document write that needs edit authority and enters undo, authored history and collaboration as content. Per-thread persisted keys break the one-key-per-mark law, and every format codec would have to strip them.",
+    "Merging conversations into Authored or Suggestions loses. Replies, resolution and explicit deletion have an independent lifetime, and comments must work without suggestions.",
+    "Adding a tombstone, activity log, location store or history plugin loses. Each duplicates native target identity or semantic records, earlier reviews already rejected them, and All comments reads the same records without them.",
+    "Merging subscribePending, subscribeVisibleThreadIds and subscribeDraftThreadIds into one snapshot subscription is a viable three-to-one trim of public names. Consumers would still select fields, and nothing about ownership, lifetime or runtime improves, so it is not material at scope level.",
+    "Adding real-time remote comment sync or changed-baseline Yjs target transport is a real missing capability, but doctrine assigns it its own proven transport contract. It is a collaboration job for when a user asks, not a defect here.",
+    "Deriving activation from selection instead of click is an open behavior diagnosis in the 2026-09-20 popover plan. Bug fix owns it after reproduction, and it is not an ownership question."
+  ],
+  "proofLimits": "Source review only. The Chromium comment suite, package tests and the retained-target benchmark were not rerun; the ledger marks the execution proof stale because inputs changed after 2026-09-18 (including the later comment-creation undo work). The copied Discussion controller rebuilds every comment item on each attachment or semantic change (discussion.tsx publish), unmeasured at large thread counts. The 2026-09-20 popover diagnosis (click-only activation) is unreproduced behavior, not covered here. Real-time remote sync, changed-baseline Yjs transport, persisted undo and non-text targets stay unsupported. 15 recovered historical executions and 37 unbound plans remain unreconciled tracking gaps. docs/vision/plate.md is staged by another session, but its staged hunk (line 444) does not touch the cited comments lines.",
+  "references": [
+    "docs/research/decisions/comments-data-ownership.md",
+    "docs/research/features/comments.md",
+    "docs/research/review-records/2026-09-18-comments-attachment-design-gate.json",
+    "docs/research/review-records/2026-09-18-comments-attachment-design-complete.json",
+    "docs/research/review-records/2026-09-18-comments-attachment-discovery-implementation.json",
+    "docs/research/review-records/2026-09-18-comments-attachment-and-discovery.json",
+    "docs/research/review-records/2026-09-17-comments-mounted-view-ownership.json",
+    "docs/research/review-records/2026-09-16-comments-persistence-architecture.json",
+    "docs/plans/2026-09-18-comments-attachment-discovery.md",
+    "docs/plans/2026-09-20-comments-popover-reproduction.md",
+    "packages/platejs/src/features/comments/BaseCommentsPlugin.ts",
+    "packages/platejs/src/react/features/comments/CommentsPlugin.ts",
+    "packages/plitejs/src/authored/state.ts",
+    "packages/plitejs/src/core/change/document-change.ts",
+    "packages/plitejs/src/annotations/store.ts",
+    "apps/www/src/registry/components/editor/comment-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/discussion.tsx",
+    "apps/www/src/registry/components/editor/comment.tsx",
+    "content/docs/(plugins)/(collaboration)/comment.mdx",
+    "docs/vision/plate.md",
+    ".agents/skills/best-api/SKILL.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.ts": "decbca35d6a5305fc3c19ffff51b3960a0a58c463fa36faedfd4d00392d4634b",
+      "apps/www/src/registry/components/editor/comment.tsx": "2e7b5cc74b49228ecee023c23e1d1aa2d7d67485e77cd16c25f0fbdfafc5b7e0",
+      "apps/www/src/registry/examples/comment-persistence-demo.tsx": "df35f1b44e46f6703b893a7724c18ba9056bb9bbbd6088b1fb5e6c796603ee7d",
+      "apps/www/src/registry/examples/comment-overlap-demo.tsx": "67b0ee491620d6c537dc1cd72fff1759b5b1be7d98800bde9447a405a8450efd",
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts": "77ad3698ded4c5865bde207b53b7b9edcc170b2e3370ad019d9448233c9a1abe",
+      "apps/www/tests/browser/comment.spec.ts": "d93fa177d082679ff47359e39b007fc025ba3db06e158372697fa9abba4c2f3a",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "packages/plitejs/src/core/anchor.ts": "fa787f059451ea8b91dbf912c794f0722fa81ea8791bc0e7c78da846f2a0206e",
+      "packages/plitejs/src/annotations/store.ts": "c5ceb15ab340254ef42c7ecf24715800fbc1dd221c2ffe14fc1928adc1739b16",
+      "packages/plitejs/src/authored/authored.ts": "9e488a054a29f040a4a23472e1998b891eb8c8756cc0cfb9aae0dfdba372a416",
+      "packages/platejs/src/react/features/comments/CommentsPlugin.ts": "130d085946462f34e7afd4b364ae9fde303063e2bbf0858472e37669a7432043",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "4da8ba57236032efe6ad7e869144dd6452a9c195b05b36c2385aa55d1ae42b39",
+      "apps/www/src/registry/components/editor/discussion.tsx": "5de1b0c9048111b6c5d6d6531c180e04246485e3a30c2e46ed45bbc9c5347f56",
+      "packages/plitejs/src/react/editable/runtime-root-engine.ts": "254f22dfef172d0f66271ebef945967b0f76a467841c21fcb2ed10006e07b4d8",
+      "packages/plitejs/test/react/editable-read-only-transition.test.tsx": "413a48f910d3680bca4ce5ca6d4585f1e1d51b6252e6909faa5ac4a25925c75f",
+      "packages/plitejs/src/core/authored-document-capability.ts": "918273355f94fd99114f46cf1b2a4614613d477339a5c8b2c90c74af932d103c",
+      "packages/platejs/src/migrations/documentMigrations.ts": "37d0e52326f1b76f99b3c4bbbf724824d8a01ee442afced8191afad9b7b0b263",
+      "packages/platejs/test/public-package-import-smoke.slow.ts": "41ae99d4050a84ad20ed70d1912f962d51cedf7bef2e6f0563bf72f0eb0f9ee1",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {
+      "browser/comment": "1031aba441e3b85af89a603e1f7880c86d3aae9f86a689c6fbcd35b476588982",
+      "example/plite/comment-mode": "3e7446221667ab8949948630aa0eb661a79ab4453b93cf94302b26f762bc9f25",
+      "example/registry/comment-demo": "e05d143c1b6cf0fe552515e0949b53eb1a37707c0541e10df900d66965f512fc",
+      "example/registry/comment-overlap-demo": "37491eae0318f0d2a361d5c156efed3cd189e465348201c7230270c431579485",
+      "example/registry/comment-persistence-demo": "344e568b57aa9a08cd94843b74e14248174816ccf01899a4ab78a0ab6f30fa6a",
+      "example/registry/comment-review-demo": "c2857ec922ba2a2cbb515ac51cf69f12373e491d66aacbef5ac8f2fa8cdb7f7e",
+      "example/registry/discussion-demo": "5387dff49b3ba540392aa813a81daa4813a348f53ee9672b4dbdaf276d02dfbd",
+      "example/value/comment-value": "f07d275b1cfc67c63d9a07e61620530e7f386fde4ec133f957fdfde5d36391d0",
+      "export/platejs/./comments": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./comments/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/comments": "5ff57fcb96daf8b3c53b8f279c46107067b548628cc0163e51c4294ee8d329b2",
+      "ui/comment": "50ec64e7c467711505c67bae234e7560c1b25c531f14c5b94fce9026112879ce",
+      "ui/comment-toolbar-button": "3b87bed8d9eb212144d770993c47384837dcd3a8ba63d535aa2d5ecfd7c5d03d",
+      "ui/discussion": "e9813d934d45af3e5c8f0650862b2cc26214ececd66c599d12840b2c7e66b3f5"
+    },
+    "upstreams": []
+  }
+}

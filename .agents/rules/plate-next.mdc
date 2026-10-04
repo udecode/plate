@@ -11,7 +11,7 @@ The migration is nearly done: most packages are retired and the live ones are li
 
 ## Doctrine Version
 
-Current doctrine version: `257`.
+Current doctrine version: `258`.
 
 `.agents/rules/plate-next/versions.json` owns the immutable doctrine history and, for each live package, its applied version, source fingerprint, verification date and evidence plan. Active `packages` match `reviewedPackageSlugs` in `tooling/scripts/check-core.mjs`; deleted packages stay in `retiredPackages` with their retirement date and evidence.
 

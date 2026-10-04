@@ -1,0 +1,57 @@
+{
+  "id": "callout",
+  "title": "Callouts and disclosure",
+  "question": "How should callout and details nodes compose standard block editing and presentation?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Callout and details nodes must compose valid document structure before interaction policy is assigned.",
+  "last": false,
+  "opportunity": {
+    "score": 5,
+    "reason": "These bounded node features are likely candidates for canonical schema/UI reuse."
+  },
+  "owners": [
+    "packages/platejs/src/features/callout/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/callout-static.tsx",
+    "apps/www/src/registry/components/editor/callout.tsx",
+    "apps/www/src/registry/components/editor/details-static.tsx",
+    "apps/www/src/registry/components/editor/details-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/details.spec.tsx",
+    "apps/www/src/registry/components/editor/details.tsx",
+    "apps/www/src/registry/components/editor/indent-static.tsx",
+    "apps/www/src/registry/components/editor/indent.tsx",
+    "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/list-static.tsx",
+    "apps/www/src/registry/components/editor/list.spec.tsx",
+    "apps/www/src/registry/components/editor/list.tsx",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/examples/values/callout-value.tsx",
+    "apps/www/src/registry/examples/values/cn/details-value.tsx",
+    "apps/www/src/registry/examples/values/details-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/features/callout/",
+    "packages/platejs/src/features/details/",
+    "packages/platejs/src/html/htmlConformance.spec.ts",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/callout.tsx",
+    "apps/www/src/registry/components/editor/details.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "editing",
+    "accessibility",
+    "large-documents"
+  ],
+  "historyCandidates": [
+    "docs/plans/2026-08-29-semantic-details-hard-cut.md",
+    "docs/plans/2026-08-29-replace-toggle-with-semantic-details.md"
+  ]
+}

@@ -31,9 +31,10 @@ Creates an `Editor` with the supplied plugins and configuration.
   </APIItem>
   <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: Editor }) => EditorValueInput)" optional>
     Synchronous initial document, persisted
-    `{ document, schema, selection? }` envelope, or primary-root array. Use the
-    callback when decoding needs the compiled editor model. Load remote data
-    before constructing the editor.
+    `{ document, schema, selection? }` envelope, or primary-root array. A
+    document holds only `children`, `roots` and `meta`; pass a selection through
+    `selection`. Use the callback when decoding needs the compiled editor model.
+    Load remote data before constructing the editor.
   </APIItem>
   <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
     Select the editor after initialization.
@@ -151,6 +152,12 @@ generated schema fingerprint. The definition compiles `plugins` and `schema`
 once into the immutable current target used by every step. Plate rejects
 missing intermediate steps and historical identity drift.
 
+Each step receives `{ document, legacy, from, to, target }` and returns
+`{ document, legacy?, mapSelection? }`. `document` holds only `children`, `meta`
+and `roots`, and its type refuses any other key. `legacy` holds the stored
+document's other top-level fields until a step lifts them; a step that omits
+`legacy` passes it on unchanged.
+
 ### `migrateDocument`
 
 Converts one complete document into an exact current persisted envelope. The
@@ -172,9 +179,11 @@ const imported = migrateDocument(legacyDocument, {
 `output` contains exactly `{ document, schema, selection? }` and can be saved or
 passed to `createEditor`. `applied` lists the destination versions that ran, and
 `source` is the validated source version. Raw documents require `source: number`
-or `source: 'current'`; persisted envelopes carry their own source identity. The
-runner rejects a different lineage, a future source, fingerprint drift,
-non-JSON data, invalid step results, and malformed final output.
+or `source: 'current'`; persisted envelopes carry their own source identity.
+With an explicit `source`, the runner reads any input as a raw document. The runner rejects a
+different lineage, a future source, fingerprint drift, non-JSON data, invalid
+step results, a stored top-level field no step lifted, and malformed final
+output.
 
 ### `definePlugin`
 

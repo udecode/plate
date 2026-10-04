@@ -2,21 +2,16 @@
 title: AI preview ownership
 type: decision
 status: adopted
-updated: 2026-09-21
-review_scope: ai
-current_review: 2026-09-16-ai-main-regression-closure
-review_history:
-  - ../review-records/2026-09-16-ai-preview-ownership.json
-  - ../review-records/2026-09-16-ai-preview-adoption.json
-  - ../review-records/2026-09-16-ai-main-regression-audit.json
-  - ../review-records/2026-09-16-ai-main-regression-closure.json
+updated: 2026-10-04
 related:
-  - ../reviews.md#ai
+  - ../review-scopes/ai.json
   - authored-change-ownership.md
   - ../../plans/2026-09-16-ai-continuation-render-recovery.md
 ---
 
 # AI preview ownership
+
+**Audit of 2026-10-04.** Pursue. The draft and native-proposal ownership still wins, but BaseAIPlugin keeps a persisted ai text mark and insertNodes, removeMarks and removeNodes operations that nothing in packages or copied UI writes or calls, and insertNodes teaches the in-document streaming the AI law removed. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-ai-audit` hold the evidence.
 
 **Separate generated drafts from requested edits.** Generate and insert commands
 preserve the user's editing intent, render one temporary purple draft, and apply

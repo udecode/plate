@@ -2,29 +2,19 @@
 title: Anchors, annotations and inline paint ownership
 type: decision
 status: implemented
-updated: 2026-09-30
-review_scope: annotations
-current_review: 2026-09-21-annotations-oss-validation
-reconciled_executions:
-  - 2026-09-18-recovered-2026-08-23-unify-plite-selection-anchors
-  - 2026-09-21-annotations-architecture-adoption
-  - 2026-09-30-content-root-locations-design
-  - 2026-09-30-content-root-locations-execution
-  - 2026-09-30-content-root-locations-closure
-review_history:
-  - ../review-records/2026-09-20-annotations-contract-and-consumers.json
-  - ../review-records/2026-09-21-annotations-final-pass.json
-  - ../review-records/2026-09-21-annotations-oss-validation.json
+updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/core/anchor.ts
   - ../../../packages/plitejs/src/annotations/store.ts
   - ../../../packages/plitejs/src/interfaces/decoration.ts
 related:
-  - ../features/annotations.md
-  - ../features/comments.md
+  - ../review-scopes/annotations.json
+  - ../review-scopes/comments.json
 ---
 
 # Anchors, annotations and inline paint ownership
+
+**Audit of 2026-10-04.** Stop. The adopted architecture holds and its one provisional gate is closed. One model with an exact-view annotation index, resolve-only borrowed anchors, Decoration as the separate paint owner and truthful drop and nearest deletion are live, and the matched 1, 2 and 4-view, 1k to 100k benchmark rejected every replacement kernel, so no stronger deletion or merge remains. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-annotations-audit` hold the evidence.
 
 The [content-root location design](../../plans/2026-09-30-content-root-locations.md)
 retains the adopted anchor, exact-view index and separate paint owners. [Its

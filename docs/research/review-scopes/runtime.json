@@ -1,0 +1,91 @@
+{
+  "id": "runtime",
+  "title": "Runtime, document roots and view lifetime",
+  "question": "Which state belongs to one document, shared root or mounted view, and can competing lifetime owners be removed?",
+  "group": "plite-core",
+  "dependsOn": [
+    "transactions"
+  ],
+  "prerequisiteReason": "Document and transaction ownership determine which state can belong to a shared root or mounted view.",
+  "last": false,
+  "opportunity": {
+    "score": 10,
+    "reason": "Multi-root, multi-editor and shared-content consumers expose ownership errors hidden by one editor demo."
+  },
+  "owners": [
+    "packages/plitejs/src/core/editor-runtime.ts",
+    "packages/plitejs/src/core/public-root.ts",
+    "packages/plitejs/src/editor-runtime-view.ts"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/iframe.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/multi-root-document.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/shadow-dom.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/synced-blocks.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/registry/examples/controlled-demo.tsx",
+    "apps/www/src/registry/examples/hundreds-editors-demo.tsx",
+    "apps/www/src/registry/examples/multiple-editors-demo.spec.tsx",
+    "apps/www/src/registry/examples/multiple-editors-demo.tsx",
+    "apps/www/src/registry/examples/values/cn/iframe-value.tsx",
+    "apps/www/src/registry/examples/values/cn/multi-editors-value.tsx",
+    "apps/www/src/registry/examples/values/iframe-value.tsx",
+    "apps/www/src/registry/examples/values/multi-editors-value.tsx",
+    "apps/www/tests/browser/multi-editor.spec.ts",
+    "packages/plitejs/src/core/editor-lifecycle-api.ts",
+    "packages/plitejs/src/core/editor-runtime.ts",
+    "packages/plitejs/src/core/editor-view-lifetime.ts",
+    "packages/plitejs/src/core/element-owned-root-index.ts",
+    "packages/plitejs/src/core/lifecycle-error.ts",
+    "packages/plitejs/src/core/public-root.ts",
+    "packages/plitejs/src/react/editable/content-root-boundaries.ts",
+    "packages/plitejs/src/react/editable/content-root-owner-target.ts",
+    "packages/plitejs/src/react/editable/content-root-owners.ts",
+    "packages/plitejs/src/react/editable/mutation-root-scope.ts",
+    "packages/plitejs/src/react/editable/root-interaction-controller.ts",
+    "packages/plitejs/src/react/editable/root-interaction-resolver.ts",
+    "packages/plitejs/src/react/editable/root-selector-sources.ts",
+    "packages/plitejs/src/react/editable/runtime-root-engine.ts",
+    "packages/plitejs/src/react/editable/runtime-root-lifecycle.ts",
+    "packages/plitejs/src/react/editable/runtime-root-state.ts",
+    "packages/plitejs/src/react/root-key.ts",
+    "packages/plitejs/src/react/shell-runtime.ts",
+    "packages/plitejs/src/react/view-boundary-graph-core.ts",
+    "packages/plitejs/src/react/view-boundary-graph.ts"
+  ],
+  "consumers": [
+    "apps/www/src/app/(app)/examples/plite/_examples/multi-root-document.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/synced-blocks.tsx",
+    "apps/www/src/registry/examples/multiple-editors-demo.tsx"
+  ],
+  "proof": [
+    "packages/plitejs/test/content-root-lifecycle-contract.test.ts",
+    "apps/www/tests/browser/multi-editor.spec.ts"
+  ],
+  "evidenceInputs": [
+    "apps/www/playwright.config.ts",
+    "apps/www/package.json",
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/editor-lifecycle-api.ts",
+    "config/plite-source-aliases.ts",
+    "config/plite-source-test-setup.ts",
+    "config/workspace-source-entries.mjs",
+    "config/plite-test-jsx.js",
+    "tooling/config/bunTestSetup.ts",
+    "docs/plans/artifacts/plite-core-api-review/verification.json",
+    "packages/plitejs/test/editor-runtime-view-contract.ts",
+    "packages/plitejs/src/core/authored-runtime.ts",
+    "packages/plitejs/src/core/plugin.ts"
+  ],
+  "relatedScopes": [
+    "model",
+    "react",
+    "external-text",
+    "collaboration"
+  ],
+  "decision": "docs/research/decisions/plite-core-ownership.md"
+}

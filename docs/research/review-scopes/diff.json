@@ -1,0 +1,65 @@
+{
+  "id": "diff",
+  "title": "Document comparison",
+  "question": "What should comparing two document snapshots return, and which consumers need structural identity or a separate live-review import step?",
+  "dependsOn": [
+    "model",
+    "search"
+  ],
+  "prerequisiteReason": "Snapshot comparison needs document value and identity semantics; live authored import is a separate integration question. The user's queue policy places deferred search before diff, with diff immediately before AI.",
+  "last": true,
+  "opportunity": {
+    "score": 9,
+    "reason": "Existing research identifies a broad comparison contract that depends on native authored semantics."
+  },
+  "owners": [
+    "packages/plitejs/src/diff/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/diff.spec.tsx",
+    "apps/www/src/registry/components/editor/diff.tsx",
+    "apps/www/src/registry/examples/version-history-async.spec.tsx",
+    "apps/www/src/registry/examples/version-history-demo.tsx",
+    "apps/www/tests/browser/version-history.spec.ts",
+    "packages/platejs/package.json",
+    "packages/platejs/src/diff/",
+    "packages/plitejs/package.json",
+    "packages/plitejs/src/diff/"
+  ],
+  "consumers": [
+    "packages/platejs/src/diff/",
+    "apps/www/src/registry/examples/version-history-demo.tsx"
+  ],
+  "proof": [
+    "packages/plitejs/src/diff/lib/compare.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "authored",
+    "suggestions",
+    "persistence"
+  ],
+  "decision": "docs/research/decisions/structural-comparison.md",
+  "historyCandidates": [
+    "docs/plans/2026-09-10-structural-document-diff.md",
+    "docs/plans/2026-09-05-shared-workflow-diff-audit.md",
+    "docs/plans/2026-09-02-wordgard-latest-diff-audit.md",
+    "docs/plans/2026-09-02-wordgard-diff-proof-closure.md",
+    "docs/plans/2026-07-16-wordgard-plite-rewrite-comparison.md",
+    "docs/plans/2026-07-10-plate-next-boolean-node-query-diff-sweep.md",
+    "docs/plans/2026-07-09-plate-next-diff-root-object-pollution-cleanup.md",
+    "docs/plans/2026-07-08-plate-next-diff-package-review.md",
+    "docs/plans/2026-06-27-plate-next-unstaged-core-diff-score-closure.md",
+    "docs/plans/2026-06-15-rewrite-changesets-from-diffs.md",
+    "docs/plans/2026-05-29-sync-shadcn-status-differences.md",
+    "docs/plans/2026-05-28-show-runtime-adapter-comparison.md",
+    "docs/plans/2026-05-23-shadcn-docs-restart-comparison.md",
+    "docs/plans/2026-04-10-plite-full-diff-topology-ralplan.md",
+    "docs/plans/2026-04-08-plite-public-core-diff-closure.md",
+    "docs/plans/2026-04-08-plite-batch8-family-depth-and-granular-diff-closure.md",
+    "docs/plans/2026-04-08-plite-batch5-maintainer-diff-migration-story.md",
+    "docs/plans/2026-04-07-plite-phase9-structural-comparison-families.md",
+    "docs/plans/2026-04-06-plite-cross-repo-comparison-and-scoreboard.md",
+    "docs/plans/2026-04-03-perf-release-comparison-plan.md"
+  ]
+}

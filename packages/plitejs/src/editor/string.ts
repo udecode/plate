@@ -16,17 +16,10 @@ export const string: EditorStaticApi['string'] = (editor, at, options = {}) => {
     match: NodeApi.isText,
     voids,
   })) {
-    let t = node.text;
+    const from = PathApi.equals(path, start.path) ? start.offset : 0;
+    const to = PathApi.equals(path, end.path) ? end.offset : node.text.length;
 
-    if (PathApi.equals(path, end.path)) {
-      t = t.slice(0, end.offset);
-    }
-
-    if (PathApi.equals(path, start.path)) {
-      t = t.slice(start.offset);
-    }
-
-    text += t;
+    text += node.text.slice(from, to);
   }
 
   return text;

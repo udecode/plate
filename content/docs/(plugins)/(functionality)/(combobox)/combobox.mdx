@@ -201,6 +201,8 @@ Trigger policy kept in a feature plugin's state. Override it with `.configure({ 
 
 Connects a popup to one editor. Import it from `platejs/combobox/react` and call it inside an `afterEditable` slot component.
 
+While a typed trigger's query is open, the editor reports itself as a combobox. It gets `role="combobox"`, `aria-haspopup="listbox"`, `aria-autocomplete="list"` and `aria-expanded`, and drops `aria-multiline`. It gets its own attributes back when the query closes.
+
 <API name="useCombobox">
 <APIParameters>
   <APIItem name="editableRef" type="React.RefObject<HTMLDivElement | null>">
@@ -213,7 +215,7 @@ Connects a popup to one editor. Import it from `platejs/combobox/react` and call
     The active option's id, mirrored as the editor's `aria-activedescendant`.
   </APIItem>
   <APIItem name="open" type="boolean" optional>
-    Whether the popup is showing. Keys and ARIA attach only while it shows, so a popup hidden with no results leaves arrows and Escape to the editor.
+    Whether the popup is showing. Keys, `aria-controls` and `aria-activedescendant` attach only while it shows, and `aria-expanded` follows it, so a popup hidden with no results leaves arrows and Escape to the editor.
     - **Default:** `true`
   </APIItem>
   <APIItem name="onKeyDown" type="(event: React.KeyboardEvent<HTMLDivElement>) => boolean" optional>
@@ -228,7 +230,7 @@ Connects a popup to one editor. Import it from `platejs/combobox/react` and call
     Id for the popup's listbox, mirrored as the editor's `aria-controls`.
   </APIItem>
   <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => false | void) => boolean">
-    Replace the trigger and query through one synchronous transaction. Pass the match that offered the option. Return `false` from the callback to refuse and keep the query. A newer query, an active composition or a refused callback changes nothing and returns `false`; a thrown callback rolls back everything.
+    Replace the trigger and query through one synchronous transaction. Pass the match that offered the option. Return `false` from the callback to refuse and keep the query. A match from an earlier query, a newer query, an active composition or a refused callback changes nothing and returns `false`; a thrown callback rolls back everything.
   </APIItem>
   <APIItem name="dismiss" type="() => void">
     Close the popup and keep the typed text.

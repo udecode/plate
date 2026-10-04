@@ -1,0 +1,97 @@
+{
+  "id": "2026-10-04-link-audit",
+  "scope": "link",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "How should link detection, editing, paste and navigation share one document contract?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 39. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "A stored URL meets one role policy at every admission through its feature's schema validator, and no option bypasses the navigation floor (docs/vision/plate.md).",
+    "Link validation and insertion stay in the link feature; core owns matcher building blocks only (docs/vision/plate.md matcher heuristic).",
+    "An input rule that cannot apply delegates the original input with decline(); returning undefined consumes it (docs/vision/plate.md input rules).",
+    "Apps can map display text to an href and normalize toolbar input (LinkRules.spec.tsx, link.mdx).",
+    "A custom URL check can still veto relative and hash URLs (#4591).",
+    "The package has no floating store for link editing; the copied link.tsx owns show, hide and submit (2026-09-04 decouple plan)."
+  ],
+  "evidenceReuse": "This review reused the 2026-10-01 record's findings, runtime probes and alternatives. A recheck on the live tree found that today's draft fingerprint for packages/platejs/src/features/link equals the record's (7f2e2a08...), git grep finds parseUrl only in media, no link plan exists after 2026-10-01, and git status shows no uncommitted link, isUrl, urlPolicy, input-rule or copied link files. This review re-read every entry path and the input-rule decline() contract, which landed 2026-09-23 (git log -S decline()).",
+  "summary": "The job is one destination decision shared by typed autolink, paste, toolbar submit, Markdown import and HTML import. Live source still splits it. findAutolink checks getUrlHref plus isUrl only, and paste resolve validates the raw text. The upsert method encodes and applies transformInput before validateUrl. Markdown decode checks allowedSchemes only and HTML decode adds isUrl, so a tel: URL survives Markdown but not HTML. When upsert refuses, the space and break rules return undefined after selecting the URL, which consumes the input and leaves the URL selected. The correct refusal is decline(), not the next() the old record named, because next() would type over the selected URL. The strongest cut (delete the hooks with no replacement) loses the documented display-text-to-href mapping, and per-path patches keep five admission sites in sync by hand. Pursue the same target with the decline() correction.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "LinkPlugin.configure({ initialState: { isUrl, getUrlHref, transformInput } }); if (editor.plugin(LinkPlugin).api.validateUrl(url)) editor.update.link.upsert({ url }); // space rule apply: tx.selection.set(match.range); if (!tx.link.upsert({ url: match.url })) return;",
+    "proposed": "// proposed: LinkPlugin.configure({ initialState: { allowedSchemes, parseUrl: (input) => href | undefined } }); const href = editor.plugin(LinkPlugin).api.parseUrl(input); // the same decision upsert, paste, autolink, Markdown and HTML decode use; rule apply: if (!tx.link.upsert({ url: match.url })) return decline();"
+  },
+  "previous": "2026-10-01-link-destination-contract",
+  "relation": "reaffirms",
+  "reconciliation": [
+    {
+      "record": "2026-10-01-link-destination-contract",
+      "question": "How should link detection, editing, paste and navigation share one document contract?",
+      "action": "retains",
+      "reason": "Its target is unadopted and still right; this review reaffirms it and corrects the refusal path from next() to decline()."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-04-decouple-link-floating-ui",
+      "question": "How should link detection, editing, paste and navigation share one document contract?",
+      "action": "retains",
+      "reason": "Its rule of no package floating store still holds. The copied link.tsx owns the editing flow and is outside this destination question."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "How should link detection, editing, paste and navigation share one document contract?",
+      "action": "retains",
+      "reason": "Its canonical input preparation in upsert holds and is the decision the target extends to every entry path."
+    }
+  ],
+  "alternatives": [
+    "Keeping the three hooks and patching each path loses. Five admission sites would still stay in step by hand, which is how they drifted.",
+    "The strongest cut deletes isUrl, getUrlHref and transformInput with no replacement. It loses the app job of mapping display text to an href and normalizing toolbar input that LinkRules and the docs teach.",
+    "A shared public URL helper for link and media loses. Media answers a different urlPolicy role, and the 2026-09-07 extraction audit rejected a public URL helper.",
+    "A separate autolink policy object (2026-04-11 Lane 9 proposal) changes where the rules live, not which decision they apply.",
+    "Changing the existing API is the chosen lane. One parseUrl hook in initialState and api.parseUrl replace api.validateUrl. Every entry path and both decoders use the decision upsert already prepares, and refusing rules return decline()."
+  ],
+  "proofLimits": "This review is source reading only. It reasoned the ftp space, tel import and encoded-space cases from current source and the 2026-10-01 runtime probes and did not rerun them today. It did not run tests because they write. It has no browser, click navigation, rel or performance proof.",
+  "references": [
+    "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
+    "packages/platejs/src/lib/utils/isUrl.ts",
+    "packages/platejs/src/internal/utils/urlPolicy.ts",
+    "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts",
+    "packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts",
+    "apps/www/src/registry/components/editor/link.tsx",
+    "content/docs/(plugins)/(elements)/link.mdx",
+    "content/docs/api/utils.mdx",
+    "docs/vision/plate.md",
+    "docs/research/review-records/2026-10-01-link-destination-contract.json",
+    "docs/plans/2026-09-04-decouple-link-floating-ui.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/link.tsx": "b2966cd43fd54d832e2fe5b909c7a34ed8d73dd093351fc04f00666c72fbfb6a",
+      "packages/platejs/src/features/link/lib/BaseLinkInput.spec.ts": "abba0ccd313309df8af9c4a0776b5c2fbf221593e38e42c01b3a1a6dc070ae58",
+      "apps/www/tests/browser/link-floating-toolbar.spec.ts": "edab671f8a246ef1878aac3d343135b36fee64cb668ee96780ae5a6bd33819d3",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/link": "7f2e2a0828e7f90f396c6a10d35c9cc717bb0d844731816152c883916faf38d8"
+    },
+    "features": {
+      "browser/link-floating-toolbar": "cdc4eaf4e977515dbbca329310492928161347c7534100697e65a488d578e790",
+      "capability/link": "8c90b7a452e9ae497c329934dd9694c5965a5d5a964a30001111ae35876dcbdc",
+      "example/value/link-value": "88e0f7f096fa6e90515ac702acde92570b8be0542007d6efae57cb6a34ce43a4",
+      "platejs/link": "7f2e2a0828e7f90f396c6a10d35c9cc717bb0d844731816152c883916faf38d8",
+      "ui/link": "d4affbb3162fdb3e31ad593d0b1796d897018247af714c256e220ac9d5f0c0f1",
+      "ui/link-toolbar": "77988ea90749044a0d6abae7e67d656305af94febcb4fc82b0cb16149f314b35",
+      "ui/link-toolbar-button": "e37006d9b98db0bf017f46adfa7a9fc2d7e721aa66778c25a1994bfe9f96ae77"
+    },
+    "upstreams": []
+  }
+}

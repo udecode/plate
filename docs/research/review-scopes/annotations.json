@@ -1,0 +1,107 @@
+{
+  "id": "annotations",
+  "title": "Anchors and annotations",
+  "question": "Which persistent anchor and transient annotation contracts can share native mapping without merging their lifetimes?",
+  "dependsOn": [
+    "selection"
+  ],
+  "prerequisiteReason": "Persistent anchors and transient ranges must use the same established location-rebasing guarantees.",
+  "last": false,
+  "opportunity": {
+    "score": 8,
+    "reason": "Comments, search and review decoration need consistent identity and range projection."
+  },
+  "owners": [
+    "packages/plitejs/src/annotations/",
+    "packages/plitejs/src/core/anchor.ts",
+    "packages/plitejs/src/core/anchor-state.ts",
+    "packages/plitejs/src/authored/anchors.ts",
+    "packages/plitejs/src/interfaces/decoration.ts",
+    "packages/plitejs/src/react/decoration-source.ts",
+    "packages/plitejs/src/react/decoration-context.tsx",
+    "packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx",
+    "packages/plitejs/src/react/hooks/use-plite-annotations.tsx"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/decorations-async.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/persistent-annotation-anchors.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "packages/plitejs/package.json",
+    "packages/plitejs/src/annotations/",
+    "packages/plitejs/src/react/decoration-context.tsx",
+    "packages/plitejs/src/react/decoration-source.ts"
+  ],
+  "consumers": [
+    "packages/platejs/src/features/comments/",
+    "apps/www/src/app/(app)/examples/plite/_examples/comment-mode.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/persistent-annotation-anchors.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/decorations-async.tsx"
+  ],
+  "proof": [
+    "packages/plitejs/test/react/annotation-store-contract.test.tsx",
+    "packages/plitejs/test/react/annotation-store-contract.tsx",
+    "packages/plitejs/test/react/decoration-manager-contract.test.ts",
+    "packages/plitejs/test/react/decoration-rendering-contract.test.tsx",
+    "packages/plitejs/test/authored-anchor-contract.test.ts",
+    "packages/plitejs/test/anchor-contract.ts",
+    "packages/plitejs/test/anchor-mapping-contract.ts",
+    "packages/plitejs/test/range-anchor-contract.ts",
+    "packages/plitejs/test/history/anchor-history-contract.ts"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "packages/plitejs/vitest.config.mjs",
+    "packages/plitejs/test/react/vitest-setup.ts",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/authored-runtime.ts",
+    "packages/plitejs/src/editor-runtime-view.ts",
+    "packages/plitejs/src/react/components/plite.tsx",
+    "packages/plitejs/src/internal/view/mapped-view-store.ts",
+    "packages/plitejs/src/internal/view/stable-id-mapped-source.ts",
+    "packages/plitejs/src/internal/view/view-source.ts",
+    "packages/plitejs/src/index.ts",
+    "packages/plitejs/src/react/index.ts",
+    "packages/plitejs/src/core/change/range-association.ts",
+    "packages/plitejs/src/core/change/document-change.ts",
+    "packages/plitejs/src/authored/state.ts",
+    "packages/plitejs/src/yjs/core/awareness-adapter.ts",
+    "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "packages/platejs/src/features/comments/plite-comments.internal.ts",
+    "content/docs/api/anchor.mdx",
+    "content/docs/api/react-hooks.mdx",
+    "content/docs/(guides)/annotations.mdx",
+    "content/docs/(guides)/decorations.mdx",
+    "content/docs/meta.json",
+    "bunfig.toml",
+    "config/plite-source-aliases.ts",
+    "tooling/config/bunTestSetup.ts",
+    "tooling/config/tsconfig.test.json",
+    "docs/plans/artifacts/annotations-review/deletion-probe.ts",
+    "docs/plans/artifacts/annotations-review/deletion-result.json",
+    "docs/plans/artifacts/annotations-review/proof.json",
+    "docs/plans/artifacts/annotations-review/core.log",
+    "docs/plans/artifacts/annotations-review/react.log"
+  ],
+  "relatedScopes": [
+    "state",
+    "react",
+    "comments",
+    "geometry"
+  ],
+  "decision": "docs/research/decisions/2026-09-20-annotations-ownership.md",
+  "historyCandidates": [
+    "docs/plans/4527-ai-menu-streaming-anchor-undefined.md",
+    "docs/plans/2026-09-03-plite-comment-anchor-edit-and-history.md",
+    "docs/plans/2026-08-23-unify-plite-selection-anchors.md",
+    "docs/plans/2026-06-01-audit-docs-api-search-anchors.md",
+    "docs/plans/2026-05-18-plite-annotation-decoration-example-dedupe-ralplan.md",
+    "docs/plans/2026-04-30-plite-decoration-annotation-api-ralplan.md",
+    "docs/plans/2026-04-28-plite-decoration-annotation-rewrite-review-plan.md",
+    "docs/plans/2026-04-14-plite-decorations-annotations-cluster-research.md",
+    "docs/plans/2026-04-06-plite-phase9-anchor-matrix.md"
+  ]
+}

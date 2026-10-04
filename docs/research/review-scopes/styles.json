@@ -1,0 +1,52 @@
+{
+  "id": "styles",
+  "title": "Text marks and presentation",
+  "question": "Which mark and style values belong to document semantics and which belong to view presentation?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Document semantics determine which marks and style values persist independently of view presentation.",
+  "last": false,
+  "opportunity": {
+    "score": 6,
+    "reason": "Shared marks and style contracts affect codecs and live/static consumers without requiring a separate owner for every toolbar control."
+  },
+  "owners": [
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/mark-utils.ts",
+    "apps/www/src/app/(app)/examples/plite/_examples/styling.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/registry/components/editor/basic-marks-static.tsx",
+    "apps/www/src/registry/components/editor/basic-marks.tsx",
+    "apps/www/src/registry/components/editor/font-static.tsx",
+    "apps/www/src/registry/components/editor/font.tsx",
+    "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+    "apps/www/src/registry/examples/values/cn/basic-marks-value.tsx",
+    "apps/www/src/registry/examples/values/cn/font-value.tsx",
+    "apps/www/src/registry/examples/values/font-value.tsx",
+    "packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts",
+    "packages/platejs/src/features/basic-styles/index.ts",
+    "packages/platejs/src/features/basic-styles/internal/",
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts",
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts",
+    "packages/platejs/src/features/basic-styles/lib/index.ts",
+    "packages/platejs/src/utils/plate-keys.spec.ts",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/basic-marks.tsx",
+    "apps/www/src/registry/components/editor/font.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "basic",
+    "layout",
+    "html"
+  ]
+}

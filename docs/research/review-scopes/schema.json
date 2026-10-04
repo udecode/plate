@@ -1,0 +1,97 @@
+{
+  "id": "schema",
+  "title": "Extension installation and composition",
+  "question": "How should typed extensions contribute and reconfigure schema and behavior without duplicate configuration authorities?",
+  "group": "plite-core",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "An extension must preserve the document identity and validity contract it configures.",
+  "last": false,
+  "opportunity": {
+    "score": 9,
+    "reason": "Shared extension and inference choices multiply across all packages and kits."
+  },
+  "owners": [
+    "packages/plitejs/src/core/plugin.ts",
+    "packages/plitejs/src/core/plugin-registry.ts",
+    "packages/plitejs/src/core/schema-contribution-registry.ts"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/schema-reconfiguration.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "packages/platejs/src/utils/plate-keys.ts",
+    "packages/plitejs/src/core/plugin-registry.ts",
+    "packages/plitejs/src/core/plugin-slot.ts",
+    "packages/plitejs/src/core/plugin.ts",
+    "packages/plitejs/src/core/schema-contribution-registry.ts"
+  ],
+  "consumers": [
+    "apps/www/src/app/(app)/examples/plite/_examples/schema-reconfiguration.tsx",
+    "packages/platejs/src/lib/plugin/"
+  ],
+  "proof": [
+    "packages/plitejs/test/schema-definition.test.ts",
+    "packages/plitejs/test/plugin-contribution-contract.test.ts",
+    "packages/platejs/src/lib/editor/createEditor.runtime.spec.ts"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/src/core/schema-definition.ts",
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/editor-lifecycle-api.ts",
+    "config/plite-source-aliases.ts",
+    "config/plite-source-test-setup.ts",
+    "config/workspace-source-entries.mjs",
+    "config/plite-test-jsx.js",
+    "tooling/config/bunTestSetup.ts",
+    "docs/plans/artifacts/plite-core-api-review/verification.json",
+    "packages/plitejs/src/core/plugin-slot.ts",
+    "packages/plitejs/src/core/state-field.ts",
+    "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
+    "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts",
+    "packages/platejs/src/internal/plugin/resolvePlugins.ts",
+    "packages/platejs/src/lib/editor/withPlite.ts",
+    "apps/www/src/app/(app)/examples/plite/_examples/yjs-collaboration.tsx",
+    "packages/plitejs/test/generic-plugin-contract.ts",
+    "packages/plitejs/test/generic-plugin-install-contract.ts",
+    "packages/plitejs/test/generic-plugin-namespace-contract.ts",
+    "packages/plitejs/test/tsconfig.generic-types.json",
+    "content/docs/(guides)/plugin-methods.mdx",
+    "content/docs/(guides)/schema.mdx"
+  ],
+  "relatedScopes": [
+    "state",
+    "commands",
+    "plate-api",
+    "compiler"
+  ],
+  "decision": "docs/research/decisions/plite-core-ownership.md",
+  "historyCandidates": [
+    "docs/plans/2026-08-31-fix-ai-generated-mdx-blockquote-schema.md",
+    "docs/plans/2026-08-14-remove-registry-schema-lineage.md",
+    "docs/plans/2026-08-06-derive-plugin-node-types-from-schema.md",
+    "docs/plans/2026-08-03-simplify-plugin-schema-property-access.md",
+    "docs/plans/2026-08-03-generated-editor-schema-contracts.md",
+    "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md",
+    "docs/plans/2026-08-02-separate-plugin-and-schema-identity.md",
+    "docs/plans/2026-08-02-schema-derived-editor-value-types.md",
+    "docs/plans/2026-07-31-schema-api-hard-cut.md",
+    "docs/plans/2026-07-31-full-schema-api-audit.md",
+    "docs/plans/2026-07-26-plate-next-all-package-plugin-api-review.md",
+    "docs/plans/2026-07-24-list-staged-plugin-api-proof.md",
+    "docs/plans/2026-07-23-schema-api-hard-cuts.md",
+    "docs/plans/2026-07-22-schema-contribution-completion-recheck.md",
+    "docs/plans/2026-07-22-schema-contribution-completion-audit.md",
+    "docs/plans/2026-07-22-plate-derived-schema-identity.md",
+    "docs/plans/2026-07-21-wordgard-plite-schema-contribution-architecture.md",
+    "docs/plans/2026-07-20-wordgard-plite-schema-architecture.md",
+    "docs/plans/2026-06-03-tighten-registry-changelog-schema.md",
+    "docs/plans/2026-05-16-plite-unified-extension-composition-ralplan.md",
+    "docs/plans/2026-04-15-input-rules-plugin-api-doc-plan.md",
+    "docs/plans/2026-04-09-plite-schema-normalization-extensibility-completion-plan.md"
+  ]
+}

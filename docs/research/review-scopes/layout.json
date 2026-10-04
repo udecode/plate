@@ -1,0 +1,66 @@
+{
+  "id": "layout",
+  "title": "Columns, alignment and spacing",
+  "question": "How should alignment, indentation, columns and spacing share style and structure contracts?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Persisted structure and style values must be distinguished using document semantics.",
+  "last": false,
+  "opportunity": {
+    "score": 6,
+    "reason": "Repeated style adapters are a plausible cut; columns still have an independent structural job."
+  },
+  "owners": [
+    "packages/platejs/src/features/layout/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/align-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/align.tsx",
+    "apps/www/src/registry/components/editor/column-static.tsx",
+    "apps/www/src/registry/components/editor/column.tsx",
+    "apps/www/src/registry/components/editor/line-height-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/line-height.tsx",
+    "apps/www/src/registry/examples/values/align-value.tsx",
+    "apps/www/src/registry/examples/values/cn/align-value.tsx",
+    "apps/www/src/registry/examples/values/cn/column-value.tsx",
+    "apps/www/src/registry/examples/values/cn/line-height-value.tsx",
+    "apps/www/src/registry/examples/values/column-value.tsx",
+    "apps/www/src/registry/examples/values/line-height-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "packages/platejs/src/features/layout/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/column.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/layout/lib/BaseColumnPlugin.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "styles",
+    "geometry",
+    "pagination",
+    "dnd"
+  ],
+  "historyCandidates": [
+    "docs/plans/2026-09-02-fix-editor-ai-view-layout.md",
+    "docs/plans/2026-08-30-rename-page-layout-entrypoints-to-pagination.md",
+    "docs/plans/2026-08-29-block-void-layout-regression-attempt-3.md",
+    "docs/plans/2026-08-22-fix-plite-layout-optional-peers.md",
+    "docs/plans/2026-07-15-restore-insert-column-parity.md",
+    "docs/plans/2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md",
+    "docs/plans/2026-06-16-openclaw-public-intake-alignment.md",
+    "docs/plans/2026-05-28-sync-shadcn-home-layout-styling.md",
+    "docs/plans/2026-05-26-plite-provider-owned-page-layout-fragments.md",
+    "docs/plans/2026-05-22-plite-pretext-layout-rendering-architecture-ralplan.md",
+    "docs/plans/2026-04-11-plite-benchmark-layout-reorg.md",
+    "docs/plans/2026-04-10-autoformat-runtime-alignment-execution.md",
+    "docs/plans/2026-04-10-autoformat-runtime-alignment-and-extension-plan.md",
+    "docs/plans/2026-04-07-plite-roadmap-public-readme-alignment.md",
+    "docs/plans/2026-04-07-plite-phase9-ui-layout-families.md",
+    "docs/plans/2026-03-23-fast-lane-reclaim-and-layout-pass.md"
+  ]
+}

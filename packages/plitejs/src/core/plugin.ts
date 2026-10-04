@@ -19,6 +19,7 @@ import type {
   PluginPoint,
   PluginReadContext,
   EditorDocumentValue,
+  EditorSchemaDocumentValue,
   PluginInput,
   PluginReconfigureOptions,
   EditorStateField,
@@ -38,6 +39,12 @@ import { DocumentChange } from './change/document-change';
 import { createCommandRegistration } from './command-definition';
 import { registerCommandInRegistry } from './command-registry';
 import { getEditorCommitSnapshot } from './commit';
+import {
+  EDITOR_STRUCTURE_FIELDS,
+  type EditorRecordIssue,
+  readDocumentRecord,
+  rejectEditorRecord,
+} from './document-shape';
 import {
   getEditorRuntimeOwner,
   getEditorRuntimeRoot,
@@ -98,6 +105,15 @@ import {
   normalizeEditorSchemaDefinition,
 } from './schema-definition';
 import { EditorSchemaValidationError } from './schema-validation';
+
+const rejectMigratedDocument = (issue: EditorRecordIssue): never => {
+  if (issue.kind === 'field' && issue.field === 'meta') {
+    throw new Error(
+      'Schema migrations cannot replace editor state-field metadata.'
+    );
+  }
+  return rejectEditorRecord('Schema migration result')(issue);
+};
 
 const PLUGIN_CONTRIBUTION_VALUES = new WeakMap<object, unknown>();
 type PluginPortalFactory = NonNullable<
@@ -2250,13 +2266,11 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
                 ? { roots: currentDocument.roots }
                 : {}),
             });
-            const migrated = options.migrate({ document, next: schema });
-
-            if (Object.hasOwn(migrated, 'meta')) {
-              throw new Error(
-                'Schema migrations cannot replace editor state-field metadata.'
-              );
-            }
+            const migrated = readDocumentRecord(
+              options.migrate({ document, next: schema }),
+              EDITOR_STRUCTURE_FIELDS,
+              rejectMigratedDocument
+            ) as EditorSchemaDocumentValue;
 
             return {
               children: migrated.children,

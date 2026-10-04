@@ -2,13 +2,7 @@
 title: Neutral editor public names
 type: decision
 status: accepted
-updated: 2026-09-13
-review_scope: editor-public-naming
-review_history:
-  - ../review-records/2026-09-12-editor-public-naming.json
-  - ../review-records/2026-09-12-editor-public-naming-components.json
-  - ../review-records/2026-09-12-editor-public-naming-editable-comparison.json
-  - ../review-records/2026-09-13-editor-public-naming-closure-audit.json
+updated: 2026-10-04
 source_refs:
   - ../../plans/2026-09-12-plate-public-docs-audit.md
   - ../../plans/2026-09-12-editor-public-naming-adoption.md
@@ -17,6 +11,8 @@ related:
 ---
 
 # Neutral editor public names
+
+**Audit of 2026-10-04.** Pursue. The closure audit's residuals are fixed, but the same law broke again in observable string values the census never checked. A documented platejs/react installBrowserHandle() writes element.__pliteBrowserHandle, saved comments carry kind 'plate-comments', every default editor.id is plite-editor-N despite Plate's @default nanoid() JSDoc, and root VISION.md still teaches deleted nouns that AGENTS.md says win over the corrected detail files. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-editor-public-naming-audit` hold the evidence.
 
 The user accepted this direction with “Ok go all.” The neutral top-level source
 API, DOM/codec boundary, copied UI and public documentation are adopted. A

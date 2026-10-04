@@ -45,8 +45,8 @@ import {
   isDetachedContentSlice,
 } from '../content-slice';
 import {
-  assertEditorDocumentShape,
   getEditorDocumentShapeIssueMessage,
+  readEditorDocument,
 } from '../document-shape';
 import { profileCoreDuration } from '../profiling';
 import { toPublicRoot } from '../public-root';
@@ -3744,19 +3744,25 @@ export const compileSliceFitter = <V extends Value>(
   };
 
   const fitDocumentInput = <TValue extends Value>(
-    innerInput2: EditorDocumentValue<TValue>,
+    rawInput: EditorDocumentValue<TValue>,
     selectionInput?: Readonly<{
       root: RootKey;
       selection: NonNullable<Selection>;
     }>,
     repairCollector?: EditorSchemaFitRepairCollector
   ) => {
-    assertEditorJsonValue(innerInput2, 'Editor schema document');
-    assertEditorDocumentShape(innerInput2, (issue) => {
-      throw new EditorSchemaValidationError(
-        getEditorDocumentShapeIssueMessage(issue)
-      );
-    });
+    const innerInput2 = readEditorDocument(
+      rawInput,
+      (issue) => {
+        if (issue.kind === 'json') {
+          assertEditorJsonValue(rawInput, 'Editor schema document');
+        }
+        throw new EditorSchemaValidationError(
+          getEditorDocumentShapeIssueMessage(issue)
+        );
+      },
+      (record) => assertEditorJsonValue(record, 'Editor schema document')
+    ) as EditorDocumentValue<TValue>;
 
     const inputRoots = innerInput2.roots ?? {};
     const seededRoots: Record<string, readonly Descendant[]> = {};

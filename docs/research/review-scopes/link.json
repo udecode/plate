@@ -1,0 +1,70 @@
+{
+  "id": "link",
+  "title": "Links and source entry",
+  "question": "How should link detection, editing, paste and navigation share one document contract?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Link identity and persisted values must be known before detection, editing and navigation policy is assigned.",
+  "last": false,
+  "opportunity": {
+    "score": 7,
+    "reason": "Links cross clipboard policy, inline selection and toolbar lifetimes."
+  },
+  "owners": [
+    "packages/platejs/src/features/link/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/link-static.tsx",
+    "apps/www/src/registry/components/editor/link-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/link-toolbar.spec.ts",
+    "apps/www/src/registry/components/editor/link.lifecycle.spec.tsx",
+    "apps/www/src/registry/components/editor/link.tsx",
+    "apps/www/src/registry/examples/values/cn/link-value.tsx",
+    "apps/www/src/registry/examples/values/link-value.tsx",
+    "apps/www/tests/browser/link-floating-toolbar.spec.ts",
+    "packages/platejs/src/features/link/index.ts",
+    "packages/platejs/src/features/link/lib/BaseLinkInput.spec.ts",
+    "packages/platejs/src/features/link/lib/BaseLinkPlugin.spec.tsx",
+    "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
+    "packages/platejs/src/features/link/lib/LinkRules.spec.tsx",
+    "packages/platejs/src/features/link/lib/index.ts",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/link.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/link/lib/BaseLinkInput.spec.ts",
+    "apps/www/tests/browser/link-floating-toolbar.spec.ts"
+  ],
+  "evidenceInputs": [
+    "apps/www/playwright.config.ts",
+    "apps/www/package.json"
+  ],
+  "relatedScopes": [
+    "clipboard",
+    "accessibility",
+    "autocomplete"
+  ],
+  "historyCandidates": [
+    "docs/plans/4613-code-block-paste-must-not-autolink.md",
+    "docs/plans/4591-custom-isurl-must-override-internal-links.md",
+    "docs/plans/2026-09-04-decouple-link-floating-ui.md",
+    "docs/plans/2026-09-04-clean-link-comments-subscription.md",
+    "docs/plans/2026-08-31-floating-link-empty-paragraph-focus-regression.md",
+    "docs/plans/2026-08-31-fix-link-floating-first-frame.md",
+    "docs/plans/2026-08-31-fix-floating-link-toolbar-in-empty-paragraph.md",
+    "docs/plans/2026-08-31-fix-doccontent-duplicate-link-key.md",
+    "docs/plans/2026-08-26-fix-link-popover-row-styling.md",
+    "docs/plans/2026-08-12-remove-link-preview-feature.md",
+    "docs/plans/2026-07-12-plate-next-layout-link-legacy-list-package-reviews.md",
+    "docs/plans/2026-04-11-link-paste-autolink-constraints.md",
+    "docs/plans/2026-04-11-link-input-autolink-policy-rewrite-plan.md",
+    "docs/plans/2026-04-11-link-automd-autoformat-plan.md",
+    "docs/plans/2026-04-06-plite-links-paste-html-tranche.md",
+    "docs/plans/2026-03-28-issue-4613-code-block-paste-must-not-autolink.md",
+    "docs/plans/2026-03-23-link-coverage-pass.md"
+  ]
+}

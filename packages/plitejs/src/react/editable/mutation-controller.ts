@@ -98,6 +98,7 @@ import {
   shouldUseModelBackedSelectAllSelection,
 } from './selection-controller';
 import { shouldSkipSelectionFocus } from './selection-side-effect-policy';
+import { withTypedTextIntent } from './typed-text';
 
 export {
   applyModelOwnedHistoryIntent,
@@ -1137,6 +1138,20 @@ export const applyModelOwnedTextInput = ({
   mergeHistory?: boolean;
   selection?: Range | Selection;
 }): EditableRepairRequest =>
+  withTypedTextIntent(
+    editor,
+    inputController,
+    {
+      at:
+        selection &&
+        RangeApi.isRange(selection) &&
+        RangeApi.isCollapsed(selection)
+          ? selection.focus
+          : undefined,
+      inputType,
+      text: data,
+    },
+    () =>
   withUpdateTagContext(
     getEditorRuntimeOwner(editor),
     ['dom-text-input'],
@@ -1287,6 +1302,7 @@ export const applyModelOwnedTextInput = ({
 
       return { kind: 'none' };
     }
+  )
   );
 
 export const applyEditableRepairRequest = ({

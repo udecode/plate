@@ -1,0 +1,91 @@
+{
+  "id": "2026-10-04-drawing-audit",
+  "scope": "drawing",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which source and rendering contract should generated diagrams use, and which remote or embedded renderer policy belongs to the application?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 46. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Author diagram source, preview it, choose code, preview or split, and export an image.",
+    "Persist and interchange diagram source; fenced code is the common Markdown carrier for Mermaid and related languages.",
+    "Renderer engines, their configuration and any remote server are application trust and product policy; do not hide a backend in a base item (plate.md 861-867).",
+    "Do not mutate a caller's shared library configuration (the plate.md 898-900 highlighter law applies by analogy).",
+    "Entrypoints tell the truth about dependency reachability; independently used converters have independent dependency entrypoints (plate.md 74-76, common.md 103-105).",
+    "Server-safe static kits import headless schema owners."
+  ],
+  "evidenceReuse": "There is no prior review. Reused the 2026-07-10 package review and the 2026-09-07 execution disposition (conversion kept in the package with explicit PlantUML server configuration) as history. Rechecked live BaseCodeDrawingPlugin, renderers.ts, the entrypoint DAG, copied code-drawing.tsx and code-drawing-static.tsx, the code-block language list and Markdown mapping, the codeDrawing Markdown tag output, Find's text walk and the installed mermaid 11.12.3 setSiteConfig.",
+  "summary": "The job is to author diagram source, preview it, choose a view, export an image and interchange the source, while the application decides which engines and remote servers see document content. Live source keeps the schema, Markdown tag mapping and renderCodeDrawing in one client-classified entrypoint. That entrypoint declares flowchart.js, mermaid, plantuml-encoder and viz.js peers and calls mermaid.initialize (which resets an app's mermaid site configuration), and the server-safe static kit imports it. The copied element defaults to the public plantuml.com server and renders whenever the view is not code, including read-only. The source lives in a string property that a textarea writes per keystroke, so Find, IME and character-level collaboration never see it. Markdown writes a custom codeDrawing tag, and standard mermaid fences decode to code blocks that the copied code-block picker already labels Mermaid. The strongest direction merges diagrams into code-block diagram languages with copied preview, app-owned renderers and an explicit PlantUML provider; the minimum acceptable target keeps a headless codeDrawing without renderers. Either way, renderer and remote-server policy leave the package, so Pursue holds even if the plan rejects the merge.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "import { renderCodeDrawing } from 'platejs/code-drawing'; the copied CodeDrawingElement({ plantUmlServer = 'https://www.plantuml.com/plantuml' }) calls renderCodeDrawing(language, code, { plantUmlServer }) and writes editor.update.nodes.set({ code }) on every textarea change; Markdown emits a custom codeDrawing tag.",
+    "proposed": "editor.plugin(CodeBlockPlugin).update.insert({ language: 'mermaid' }) (existing API) creates the diagram; copied code-block UI previews diagram languages through a registry-owned map such as const diagramRenderers = { mermaid: renderMermaid, graphviz: renderGraphviz } (proposed, copied source), PlantUML renders only through an explicit provider item that takes the app's server, and platejs/code-drawing is deleted."
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "Which source and rendering contract should generated diagrams use, and which remote or embedded renderer policy belongs to the application?",
+      "action": "reopens",
+      "reason": "It kept diagram conversion in the package with a configurable PlantUML server; the client-only schema entry, global mermaid reset, public server default and duplicate code-block representation reopen that disposition."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current design works and is tested, but it keeps a duplicate diagram representation, a client-classified schema entry, four mandatory renderer installs, a global mermaid reset and a hidden public PlantUML backend.",
+    "Keeping codeDrawing but moving renderers out is the minimum target. A headless platejs/code-drawing keeps only the schema and Markdown tag, and the copied registry owns the language-to-renderer map and an explicit PlantUML provider item. It fixes reachability and trust policy but keeps the duplicate representation and string-property editing.",
+    "Per-renderer package subpaths such as platejs/code-drawing/mermaid fix dependency closure but publish thin third-party wrappers whose configuration (theme, security level) is app policy. They lose to registry ownership.",
+    "Merging into code block is the strongest cut and the proposal. A diagram is a code block in a diagram language, and copied code-block UI adds preview, view and export for those languages with app-owned renderers. Source becomes document text, Markdown uses standard fences, and codeDrawing, CODE_DRAWING_*, renderCodeDrawing and platejs/code-drawing disappear. The plan must decide where the persisted view lives and migrate stored codeDrawing nodes.",
+    "Deleting diagram preview entirely loses. Preview, view mode and export are current product jobs in the registry and docs."
+  ],
+  "proofLimits": "This was a source review only, with no build, bundler, browser or network run. This review infers from static dynamic-import specifiers that a bundler fails on an uninstalled renderer peer and did not reproduce it. The mermaid config reset comes from reading the installed 11.12.3 bundle. The merge target's view persistence, copied code-block layout and migration are unvalidated design questions for the plan.",
+  "references": [
+    "packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.ts",
+    "packages/platejs/src/code-drawing/lib/renderers.ts",
+    "packages/platejs/src/code-drawing/lib/renderers.spec.ts",
+    "apps/www/src/registry/components/editor/code-drawing.tsx",
+    "apps/www/src/registry/components/editor/code-drawing-static.tsx",
+    "apps/www/src/registry/components/editor/plugins-static.ts",
+    "apps/www/src/registry/components/editor/code-block.tsx",
+    "apps/www/src/registry/components/editor/markdown.spec.ts",
+    "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts",
+    "packages/plitejs/src/interfaces/node.ts",
+    "tooling/entrypoints/entrypoint-dag.mjs",
+    "content/docs/(plugins)/(elements)/code-drawing.mdx",
+    "docs/vision/plate.md",
+    "docs/vision/common.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "docs/plans/2026-07-10-plate-next-code-drawing-combobox-comment-package-reviews.md",
+    "docs/research/features/drawing.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/code-drawing.tsx": "5be33dafd794b5498b6c92a376da4cee6a381a9a9b483c62b8fde0f66f7308da",
+      "packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.spec.ts": "58d23e5e24b071ee3bef0d8d81a4abffbbbe6a5a643191b46d3c933cd5e0e217",
+      "apps/www/tests/browser/code-drawing-controls.spec.ts": "9da7a1badba3b2a4dbb0d98d42539d7628109a52f5c743c4c5a92c1a3237e241",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/code-drawing": "5c9274cbff22ba7d7523321273ea3340dbeed72bafd456bcf3e354b6e44cb88e"
+    },
+    "features": {
+      "browser/code-drawing-controls": "76b4e901ae70be4c3548ed124dc0d5ba68eba2029aa526d79a378b2b13674d5e",
+      "capability/codeDrawing": "46f0f19ae8d22640bb937d2854e9f984b721a0043dd97c9cf0e12a9afad651eb",
+      "example/registry/code-drawing-demo": "6a0afadbbbe71527ca9608921fb89c6f469f650b78d3c6f80d39c43ffbf0d51a",
+      "example/value/code-drawing-value": "4ff0e467dc2891251d7cca91ba646bf54b68e0c2f1517688b269715cfe0d5786",
+      "export/platejs/./code-drawing": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./code-drawing/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/code-drawing": "5c9274cbff22ba7d7523321273ea3340dbeed72bafd456bcf3e354b6e44cb88e",
+      "ui/code-drawing": "010cc95db7211814693b2d45703ee874103aa854a5367680c2bc1ab961c6b265"
+    },
+    "upstreams": []
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "id": "2026-10-04-styles-audit",
+  "scope": "styles",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which mark and style values belong to document semantics and which belong to view presentation?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 51. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Semantic marks (bold, italic, underline, strikethrough, code, kbd, script, highlight) persist as flat booleans with semantic HTML and Markdown.",
+    "Author-chosen presentation values (color, background, font family and size, line height, alignment, indent) persist as flat schema-owned properties; view-only mapping such as indent offset and unit stays in plugin state.",
+    "One domain fact has one writable owner (architecture.md duplicate-truth cap).",
+    "HTML, DOCX and Markdown import and export map each fact once.",
+    "Root standalone utilities are editor-independent value operations; one-owner helpers stay in their copied item."
+  ],
+  "evidenceReuse": "No prior review. Read the 2026-07-07 basic-styles package review as history. Rechecked live BaseStylePlugins, the BaseBoldPlugin HTML mapping, the copied FontKit and font-size control, the docx font integration expectation and the font docs.",
+  "summary": "The job is to decide which mark and style values are document semantics and which are presentation, and to map each once through HTML, DOCX and Markdown. Most of the split is sound. Semantic marks are flat booleans with semantic tags, author-chosen colors, fonts and sizes persist as flat raw CSS values as in GDocs, Word, Lexical and Tiptap, and textIndent persists a level while its pixel offset and unit stay in plugin state. Font weight is the exception. BaseFontWeightPlugin matches any font-weight style and renders it inline, BaseBoldPlugin also matches font-weight 600, 700 and bold, and the docx integration test expects both fontWeight bold and bold on the same text, which hits the duplicate-truth cap of the architecture audit law. No registry kit installs FontWeightPlugin, so a hard cut costs only the docs, docx tests and stored fontWeight values. Narrowing it to the weights bold does not own is the alternative the plan must weigh. A secondary cut moves toUnitLess, a lossy size parser on the platejs root whose only consumer is the copied font-size control, into that control.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "editor.plugin(FontWeightPlugin).update.set('700') and the bold mark both write boldness; HTML or DOCX import of font-weight bold yields { bold: true, fontWeight: 'bold' }; copied font-size-toolbar-button.tsx imports toUnitLess from 'platejs'.",
+    "proposed": "The bold mark is the sole boldness writer; FontWeightPlugin and PLUGINS.fontWeight are deleted (or restricted to weights bold does not own), so import yields { bold: true } only; toUnitLess becomes a local function in the copied font-size control."
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [],
+  "alternatives": [
+    "Keeping everything loses, but only on the duplicate weight truth and a misplaced root helper. The semantic versus presentation split is otherwise sound.",
+    "Hard-cutting FontWeightPlugin and PLUGINS.fontWeight is the proposed lead. Bold owns weight, no registry kit installs the plugin, and light and medium weights from pasted HTML are dropped with it.",
+    "Restricting FontWeightPlugin to weights bold does not own, validated by schema, keeps light and medium round-trip but splits one CSS property across two plugins with a boundary rule. The plan weighs it against the cut.",
+    "Replacing raw CSS style values with semantic theme tokens (Notion-style names) loses. HTML and DOCX interchange need literal CSS values, and palettes are product policy.",
+    "One textStyle mark object (Tiptap) or one style string (Lexical) loses, because Plate law keeps feature properties flat and schema-owned.",
+    "Moving toUnitLess from the platejs root into copied font-size-toolbar-button.tsx is a secondary cut. That control is the only consumer, and the parser drops pt units and decimals."
+  ],
+  "proofLimits": "Source review only; no tests or browser runs. The bold-off-still-bold rendering is inferred from the inline styleKey injection, not observed in a browser. How many downstream apps install FontWeightPlugin or store fontWeight values is unknown.",
+  "references": [
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts",
+    "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts",
+    "packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts",
+    "apps/www/src/__tests__/package-integration/docx/font.slow.tsx",
+    "apps/www/src/registry/components/editor/font.tsx",
+    "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/basic-marks.tsx",
+    "content/docs/(plugins)/(styles)/font.mdx",
+    "packages/platejs/src/utils/plate-keys.ts",
+    ".agents/playbooks/references/architecture.md",
+    "docs/plans/2026-07-07-plate-next-basic-styles-package-review.md",
+    "docs/research/features/styles.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts": "316232b97c07b22afcac7f47caf2dcdacc515d8563564849d633228235d145d5",
+      "apps/www/src/registry/components/editor/basic-marks.tsx": "55921a1b8258db3550d20e888bf33d542df8b5a94314cc6402666420ca7deb55",
+      "apps/www/src/registry/components/editor/font.tsx": "b2cf27a3236f9efceb52799349d7333fda5e9765a235e38bc4320465830dd91f",
+      "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts": "e9a2451c1922175636b9abbaa288d1d5124c5cfbc2090e1cb817b22692826071",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {
+      "capability/backgroundColor": "2a1067800f6cce8395350ee317105bbcbb0e3e9ef185bebf629099b462069fa0",
+      "capability/bold": "8db9b9dc7fe7dfaace144613f4c0defd2984382d38605cc66decd71070ffc9a1",
+      "capability/code": "b45c3846cbb6ac064f858d98e18a8454eb723c53bd7dcca4b8330e578811cb93",
+      "capability/color": "2a1067800f6cce8395350ee317105bbcbb0e3e9ef185bebf629099b462069fa0",
+      "capability/fontFamily": "2a1067800f6cce8395350ee317105bbcbb0e3e9ef185bebf629099b462069fa0",
+      "capability/fontSize": "2a1067800f6cce8395350ee317105bbcbb0e3e9ef185bebf629099b462069fa0",
+      "capability/fontWeight": "2a1067800f6cce8395350ee317105bbcbb0e3e9ef185bebf629099b462069fa0",
+      "capability/highlight": "b45c3846cbb6ac064f858d98e18a8454eb723c53bd7dcca4b8330e578811cb93",
+      "capability/italic": "b45c3846cbb6ac064f858d98e18a8454eb723c53bd7dcca4b8330e578811cb93",
+      "capability/kbd": "b45c3846cbb6ac064f858d98e18a8454eb723c53bd7dcca4b8330e578811cb93",
+      "capability/lineHeight": "2a1067800f6cce8395350ee317105bbcbb0e3e9ef185bebf629099b462069fa0",
+      "capability/script": "b45c3846cbb6ac064f858d98e18a8454eb723c53bd7dcca4b8330e578811cb93",
+      "capability/strikethrough": "b45c3846cbb6ac064f858d98e18a8454eb723c53bd7dcca4b8330e578811cb93",
+      "capability/textAlign": "2a1067800f6cce8395350ee317105bbcbb0e3e9ef185bebf629099b462069fa0",
+      "capability/textIndent": "2a1067800f6cce8395350ee317105bbcbb0e3e9ef185bebf629099b462069fa0",
+      "capability/underline": "b45c3846cbb6ac064f858d98e18a8454eb723c53bd7dcca4b8330e578811cb93",
+      "example/plite/mark-utils": "74d5a60e95279640f9ce56c5473d4fd2abedee314289d4b77755906733ea4c1b",
+      "example/plite/styling": "2a51ec138f1bb51c7dc8241cf56cdad2d085ada824241ea13ef07d4863db049b",
+      "example/value/basic-marks-value": "721d68017d9c876c8f66985d48599a9d614402da0694cef7555f83188cbc6d8a",
+      "example/value/font-value": "cbe3f5bf25f336a12f860222a342f706fa8b7ba43f72833eea6b5a8a0823621d",
+      "platejs/basic-styles": "f5f9d8f9285b07a2c256d827c3c3c7883e116e1818607ff56092b69c1c0e3062",
+      "ui/basic-marks": "fae5aa341b9df5d4af80163af1c421298c44d23f6262137ba02219d49f7df462",
+      "ui/font": "5583bac6152d95da34145a61a4ba040802c306e22732a8417ad2b466ef44c0e1"
+    },
+    "upstreams": []
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "id": "2026-10-04-react-audit",
+  "scope": "react",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What is the smallest React integration for canonical editor state, rendering and component lifetime?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest pursue verdict, at queue position 7 in the plite-view group. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "One shared document can have independent root and projection views, and independent documents stay isolated; EditorRoot requires its editor and owns one mounted view.",
+    "React mounting preserves exact view identity, keyed replacement, callback scope, private registration and cleanup, and an announcement host for each independently mounted tree.",
+    "Context retrieval returns the mounted contract without caller generics, and selector hooks infer only their selected result (docs/vision/plite.md, React creation and context law).",
+    "Public generics correlate with a typed input, installed descriptor or validator; no method-level generic manufactures a capability or chooses a result type (docs/vision/plite.md).",
+    "Exact plugin capabilities come from editor.plugin(Plugin), not from a plugin tuple the caller asserts."
+  ],
+  "evidenceReuse": "Reused the 2026-09-12 review lanes, the plite-view design plan's alternatives table and generic rule, and the content-root-locations closure as historical evidence, and none were rerun. Rechecked on the live tree that no Runtime, useRuntime, RuntimeValue, RuntimeProps or UseRuntimeOptions symbol exists in packages, apps, content or docs/plite, EditorRoot's required editor prop, the hook signatures in use-plite-runtime.tsx, a production-consumer census of the root, effect and command hooks across packages and apps, Plate's facade re-exports in core.tsx, the Plate React hooks page, and the type fixture that asserts plugin tuples.",
+  "summary": "The job is to mount one editor's independent views in React and let controls read state and run commands against the right mounted root. Live source adopted the reviewed target. The public Runtime handle and useRuntime are gone, EditorRoot takes a required editor plus root and authored view inputs, and the content-root follow-up added no public provider or location carrier. What did not land is the design plan's own rule to drop caller-selected V and TPlugins generics from context-only root, effect and command hooks. useRootEditor<V, TPlugins>(root?) returns a RootEditor typed by whatever the caller names, and useCommand only accepts a plugin-owned command when the caller asserts the plugin tuple, which the type contract fixture pins. Two of these hooks, useRootEffect and Plite's useCommand, have no production or docs consumer, and Plate's facade already omits them. Merging the five selector hooks still loses, because their subscription sources differ.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "const header = useRootEditor<MyValue, readonly [typeof CommentsPlugin]>('header'); const run = useCommand<typeof specialCommand, CustomValue, readonly [typeof SpecialCommandPlugin]>(specialCommand); // the caller asserts the value and installed plugins; useCommand(specialCommand) without them is a type error",
+    "proposed": "const header = useRootEditor('header'); // proposed: no V or TPlugins, returns the broad mounted RootEditor like useEditorContext(); header.plugin(SpecialCommandPlugin) supplies descriptor-inferred, runtime-checked capability; useRootEffect and Plite's useCommand removed (proposed), with the exact surviving set left to Best API"
+  },
+  "previous": "2026-09-12-react-public-runtime-cut",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-12-react-public-runtime-cut",
+      "question": "What is the smallest React integration for canonical editor state, rendering and component lifetime?",
+      "action": "supersedes",
+      "reason": "Its Pursue target (remove Runtime, useRuntime, RuntimeValue and setup-only types; one required-editor EditorRoot mount grammar) is adopted in live source. This review keeps that design and replaces the open question with the context-only hook generics its executing plan left in place."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-design",
+      "question": "What is the smallest React integration for canonical editor state, rendering and component lifetime?",
+      "action": "retains",
+      "reason": "Its design kept EditorRoot and independent mounted-view constructors with no public provider or location carrier, which live source still shows."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-execution",
+      "question": "What is the smallest React integration for canonical editor state, rendering and component lifetime?",
+      "action": "retains",
+      "reason": "Its adoption of owned-root decoration sources and authored-mode following is unchanged by this review, which does not touch content roots."
+    },
+    {
+      "record": "2026-09-30-content-root-locations-closure",
+      "question": "What is the smallest React integration for canonical editor state, rendering and component lifetime?",
+      "action": "retains",
+      "reason": "Its retained render context and static reader repairs stand; the remaining gap is in hook typing, not content-root lifetime."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current hooks loses. It leaves a Vision-law violation that the adopting plan scheduled for removal, and a type fixture that teaches callers to assert a plugin tuple the mounted editor may not have.",
+    "Changing the existing API wins as a type-only change with no runtime machinery. Drop V and TPlugins from useRootEditor, useActiveEditor, useRootEffect and useCommand, return the broad mounted RootEditor as useEditorContext does, and take exact capability from editor.plugin(Plugin). TRoot and TCommand stay because they correlate with inputs.",
+    "Deleting useRootEffect and Plite's useCommand is the strongest cut. They have no production or docs consumer, Plate's facade already omits them, and their plugin-command typing works only through the asserted tuple. Best API decides the full deletion set, including useActiveEditor, useActiveRoot and useRuntimeState, which are documented but have no caller in this repository outside their own module and tests.",
+    "Merging useEditorState, useRuntimeState, useRootState, useEditorRuntimeState and useEditorViewState into one selector hook loses for now. They read different sources, namely the nearest view, the document runtime with no root filter, one filtered root, an explicit editor through subscribeCommit, and non-commit view state. The design plan rejected the merge on that basis, and nothing in live source contradicts it.",
+    "Replacing the architecture with a global store, a document per Editable or no EditorRoot loses independent views and shared-root semantics, as the 2026-09-12 review found."
+  ],
+  "proofLimits": "Source and type-signature review only; no typecheck, test, browser or package build ran. That the plugin tuple can be asserted for an editor that lacks the plugin is inferred from the signatures, not shown with a compiled probe. The consumer census covers this repository only, not downstream apps. use-plite-runtime.tsx carries another session's uncommitted typed-text hunk (two imports and one api.react field) that shifts its lines by about two against HEAD and does not touch these hooks, and docs/vision/plite.md carries another session's staged hunk above the cited law.",
+  "references": [
+    "docs/research/review-records/2026-09-12-react-public-runtime-cut.json",
+    "docs/research/decisions/plite-view-ownership.md",
+    "docs/plans/2026-09-12-plite-view-design.md",
+    "docs/plans/2026-09-30-content-root-locations-execution.md",
+    "docs/research/review-records/2026-09-30-content-root-locations-closure.json",
+    "packages/plitejs/src/react/hooks/use-plite-runtime.tsx",
+    "packages/plitejs/src/react/components/plite.tsx",
+    "packages/plitejs/src/react/hooks/use-editor-context.tsx",
+    "packages/plitejs/src/react/hooks/use-editor-selector.tsx",
+    "packages/plitejs/src/react/index.ts",
+    "packages/platejs/src/react/core.tsx",
+    "packages/plitejs/test/react/generic-react-editor-contract.tsx",
+    "content/docs/api/react-hooks.mdx",
+    "docs/vision/plite.md"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/react/components/plite.tsx": "be10b712a8a7eaf4c394d649342e6da0020a22712ad5b6abc5f6d32a949d2d35",
+      "packages/plitejs/src/react/hooks/use-plite-runtime.tsx": "3a4f98dbe294e442e2b01459e42f12d1d3908038cba73ff8d97a2bee18d2cc32",
+      "packages/plitejs/src/react/hooks/use-editor.ts": "5a6b1ffa7ebb1dc5f011368d701810a609ef00e4e0cb99ea8bad8b80ee7cfbdf",
+      "packages/plitejs/src/react/editable/editable-dom-runtime.ts": "59ca612806408a802097d10b1e3ddb5887b451eef056205e6f2da38315bdfd7d",
+      "apps/www/src/registry/components/editor/editor.tsx": "1e88264d89a94429cfc97a841bc0194b891aca48f1917be276ba4f5c56abbfaa",
+      "apps/www/src/app/(app)/examples/plite/_examples/multi-root-document.tsx": "eceda0d6deca51415f7bb5de84a9ff804fae87ac39294c35caec7c58ce6e3df5",
+      "apps/www/src/app/(app)/examples/plite/_examples/synced-blocks.tsx": "321c305e4e599114ddb48cb698ebd805a8b01131f8e34f25f4ceb2450c5032e5",
+      "apps/www/src/app/(app)/examples/plite/_examples/authored-changes.tsx": "792e760dcf96aebaaed364d245e8bb2b43cfddf115ec11e1c49408bd92592a1a",
+      "packages/plitejs/test/view-state-subscription.test.ts": "9487ee7addd0e5cdd64af7341bc7a9ccc304189a0117f8f3710249e1b06930c5",
+      "packages/plitejs/test/react/plite-runtime-provider-contract.test.tsx": "ce7d21a3e99bcd123f2921a2e2a6c3ff6a89ea58dea88c09e2e65adc3fb80697",
+      "packages/platejs/src/react/components/EditorRefEffect.spec.tsx": "bc73963fe2c3e95ceaa9f166ceae2f7f3119f8f686b175f3a9c1e6f20f700bb1",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+      "packages/plitejs/src/react/index.ts": "7357ed7a95d6599977eda6bb16d88389bbfd68d4f150af621e5b429361e48d97",
+      "packages/plitejs/src/editor-runtime-view.ts": "29b592d3afa949004e3249c8bff63b304d70d358b48db4c88e477e44080f1f3b",
+      "packages/plitejs/src/core/plugin.ts": "173d80d68b84a690cbb614eebd90985f38550fde56c53b0dda862b2d04931f1e",
+      "packages/plitejs/src/interfaces/editor.ts": "9f46f0711f22f9dde8c3e9f470a2d122f571aa3fc2b20d5039278a2b3ca03bc1",
+      "docs/plans/2026-08-23-fix-plite-react-provider-lifetime.md": "60a51bb59bab141e48e3db91c55116a8545abfd1240081050605ac571479572c",
+      "docs/analysis/best-api-review.md": "bf37e8d944e6b3d3eee9cbb643c1741dd4556458dbb2c566d19c59722ebe26fe",
+      "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+      ".agents/skills/best-api/SKILL.md": "6627d324d9578474511b4bff319a11078aff668442904533d158d6642865f840",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/react/components": "2534f561b1b6ab0ebe2a3a8c85b2bd651cb212a5d561cfd217a2f4e9bcbba4ce"
+    },
+    "features": {
+      "browser/react-selection-capture": "80b94d684b9c5db1c07f95aaa4096589dc2b28885bfd96327990c78d3c407e0c",
+      "export/platejs/./react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./react/virtualized": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/plitejs/./react": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/plitejs/./react/virtualized": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "platejs/react": "ed6afe81c2b937679dfb72e679165fbf5d035530808bcaa0532c1d8e78753285",
+      "plitejs/react/authored-fragment-context": "01e1c86fd867925a111c1e83d2c2999010548dc8baa6ab7f680e43853ced21bd",
+      "plitejs/react/components": "62b166ff9c1ec34ef61b1b77592806cbbc6203a97f4aa3bd35bc2c58b002f432",
+      "plitejs/react/context": "4f2acc9ec8d422d2ff0daac2fe53e9709d0494c4ff8083011525971f52f5470d",
+      "plitejs/react/dom-text-sync": "abbf0fdd4894294544a62870d64ea5e752fe7b8d18d6fa9f897d54bb5a5c44cd",
+      "plitejs/react/editable/editable-command-types": "46998f6dafdeda8587c4dcdd9b57d470c620659344c9ca7fb5aa4f9d635ab23c",
+      "plitejs/react/editable/editable-dom-runtime": "4ee887f07c93a8b64d41a424db15d7f9ecd8c5d4b10a4f37a512317ec0685db2",
+      "plitejs/react/editable/plite-string-coordinate-placement": "fc16429728ffcfd91f568a6af4ced8e5794b441a80c9c63b1375b6ad21097352",
+      "plitejs/react/editable/projected-collab-substrate": "56553edf477067843acad4e69ee163768cc4f74bd9d7364d15a1d583bea5ce25",
+      "plitejs/react/editable/projected-native-affordance": "e8f176d40d070ab8b5934ba35212bef695240d5d2310dbc94abac39f3a7208b5",
+      "plitejs/react/editable/runtime-editor-api": "10d0a8b742240987ad70381ddcf08823fe99cbdd473b2a12118a89a8f2cc667d",
+      "plitejs/react/editable/runtime-kernel-trace": "83af93326d2cc055fc5eaefd94d689cf4ebbfed6168d09c425b50cdc82196481",
+      "plitejs/react/editable/runtime-live-state": "876a92071c7dda64635941333f917e5844f6ac85f1c96e2c3a6c8683f7fc1d48",
+      "plitejs/react/editable/runtime-target-bridge": "e802076b9f9c49c186e559328b670f27a5ac96e65b518d8834510379c233f21b",
+      "plitejs/react/editable/schema-runtime-invalidation": "5aee27d897641c810079e5b06db75b4169d62eb3b64c9bb1a5cc0a340aee76cc",
+      "plitejs/react/hooks": "4546869d9c7c5dea6cd9f2f72ad96fc176aeda7aef383ac6bf66fd7ee951d953",
+      "plitejs/react/index": "67c91c528a7e04328ac3545768e4533e1c366238d2d8bc8674c34d8eaabc45c4",
+      "plitejs/react/internal": "f58e6fcaff3b1f0cb1029e1494672eb08f8f954deab1287181dac3eaada1d5b0",
+      "plitejs/react/plugin": "b5705fdacf216ef8d82f146465b329853d8b399d9bd516a60976cc6c7271f9b1",
+      "plitejs/react/render-profiler": "0841d6df57436b3e28e5531e532adc75b9b753e5d08eef1e1c2bee2c01d71303",
+      "plitejs/react/update-policy": "2788fd10b4a4e214c25e48175c031092ab79824f28adcd604d68c33f08098741",
+      "plitejs/react/utils": "7a3044bd33dc17c11c0c39ada0d1966d2207f8b66c6c5b5addd814d8f2516be9",
+      "ui/editor": "d99ecffe5e85983c8e0fe9d4978ea489ba54d4e897850a422b980b96bbf03864"
+    },
+    "upstreams": []
+  }
+}

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 // Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check]
+//        node .agents/pstack/plan-page.mjs --index
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -14,12 +15,132 @@ import {
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { SEATS, SEVERITIES, STATES, reopened, stateOf } from './status.mjs';
 
+const PAGE_HEAD = `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --ground: #f6f7f8; --paper: #ffffff; --ink: #1b2026; --muted: #5b6672; --rule: #dde2e7;
+  --accent: #2c5b8f; --accent-soft: #e6eef7; --amber: #9a5b00; --amber-soft: #fbf1df; --green: #2f6b3f; --green-soft: #e5f2e8; --red: #a3352b; --red-soft: #f8e6e3; --code: #eef1f4;
+  --kw: #8a3f9e; --str: #3d6b21; --fn: #2c5b8f; --num: #a24d12;
+  --sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #121518; --paper: #1a1e23; --ink: #e4e8ec; --muted: #9aa5b1; --rule: #2c333b;
+  --accent: #8db6e6; --accent-soft: #1f2d3d; --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #232931; --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --ground: #121518; --paper: #1a1e23; --ink: #e4e8ec; --muted: #9aa5b1; --rule: #2c333b;
+  --accent: #8db6e6; --accent-soft: #1f2d3d; --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #232931; --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
+}
+body { background: var(--ground); color: var(--ink); font: 15px/1.6 var(--sans); padding: 0 16px; }
+main { max-width: 760px; margin: 0 auto; padding-block: 32px 64px; display: grid; gap: 28px; }
+header { display: grid; gap: 8px; }
+h1 { font-size: 1.75rem; line-height: 1.2; margin: 0; text-wrap: balance; font-weight: 700; }
+h2 { font-size: 1.15rem; margin: 0 0 8px; text-wrap: balance; }
+h3, h4, h5 { font-size: 1rem; margin: 16px 0 4px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; color: var(--muted); font-size: 0.85rem; }
+.pill { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.pill.done { background: var(--green-soft); color: var(--green); }
+.pill.held, .pill.planning { background: var(--amber-soft); color: var(--amber); }
+.pill.unknown { background: var(--code); color: var(--muted); }
+.panel { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.panel.needs { border-color: var(--amber); }
+.panel h2 { display: flex; gap: 10px; align-items: baseline; }
+.count { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+.quiet { color: var(--muted); margin: 0; }
+.question { display: grid; gap: 8px; margin: 0 0 18px; min-width: 0; }
+.question-text { margin: 0 0 2px; font-weight: 600; display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; max-width: none; }
+.chip { font: 600 0.72rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--amber); background: var(--amber-soft); border-radius: 999px; padding: 2px 8px; }
+.option { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 8px; cursor: pointer; min-width: 0; }
+.option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.option input { margin: 4px 0 0; accent-color: var(--accent); flex: none; }
+.option-body { display: grid; gap: 2px; min-width: 0; }
+.option-label { font-weight: 600; overflow-wrap: anywhere; }
+.option-desc { color: var(--muted); font-size: 0.88rem; }
+.from { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+.topics { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.topic { display: grid; gap: 4px; min-width: 0; }
+.topic-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-weight: 600; }
+.topic-lead { margin: 0; color: var(--ink); }
+.topic-meta { margin: 0; color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.rec { font: 600 0.68rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--green); margin-left: 6px; }
+.more summary { color: var(--muted); font-size: 0.85rem; cursor: pointer; }
+.answer { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.answer[hidden] { display: none; }
+.answer code { flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere; padding: 8px 10px; }
+button { font: 500 0.85rem var(--sans); color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+section.plan { display: grid; gap: 4px; min-width: 0; }
+section.plan + section.plan { border-top: 1px solid var(--rule); padding-top: 20px; }
+p { margin: 0 0 10px; max-width: 68ch; }
+ul, ol { margin: 0 0 10px; padding-left: 1.4em; }
+li { margin: 3px 0; }
+li > ul, li > ol { margin: 4px 0; }
+code { font: 0.86em var(--mono); background: var(--code); padding: 1px 5px; border-radius: 4px; }
+pre { margin: 0; padding: 12px 14px; background: var(--code); border-radius: 8px; }
+pre code { padding: 0; background: none; }
+.scroll { overflow-x: auto; margin: 0 0 12px; }
+table { border-collapse: collapse; font-size: 0.9rem; min-width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; color: var(--muted); font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
+blockquote { margin: 0 0 10px; padding-left: 12px; border-left: 3px solid var(--rule); color: var(--muted); }
+a { color: var(--accent); }
+.box { display: inline-block; width: 0.85em; height: 0.85em; border: 1.5px solid var(--muted); border-radius: 3px; margin-right: 8px; vertical-align: -0.08em; }
+.box.done { background: var(--green); border-color: var(--green); }
+.compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin: 6px 0 14px; }
+.pane { min-width: 0; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--code); }
+.pane-head { display: flex; justify-content: space-between; align-items: center; padding: 5px 12px; border-bottom: 1px solid var(--rule); }
+.tally { font: 600 0.78rem var(--mono); }
+.tally.del, .diff .del .sign { color: var(--red, #a3352b); }
+.tally.add, .diff .add .sign { color: var(--green); }
+.pane-body { overflow-x: auto; }
+.diff { display: grid; min-width: 100%; width: max-content; padding: 6px 0; font: 0.86em/1.6 var(--mono); }
+.diff .row { display: grid; grid-template-columns: 4ch 2.5ch 1fr; }
+.diff .row code { font: inherit; background: none; padding: 0 14px 0 0; border-radius: 0; white-space: pre; }
+.diff .num { color: var(--muted); text-align: right; padding-right: 1ch; opacity: 0.7; user-select: none; }
+.diff .sign { text-align: center; user-select: none; }
+.diff .del { background: color-mix(in srgb, var(--red, #a3352b) 15%, transparent); }
+.diff .add { background: color-mix(in srgb, var(--green) 15%, transparent); }
+.diff .filler { display: none; }
+.side { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+@media (min-width: 1280px) {
+  main > :has(.compare) { --wide: min(1200px, calc(100vw - 64px)); box-sizing: border-box; width: var(--wide); margin-inline: calc((100% - var(--wide)) / 2); }
+  main > :has(.compare) > :not(.compare) { margin-inline: calc((var(--wide) - 760px) / 2); }
+  .compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diff .filler { display: grid; background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--rule) 45%, transparent) 6px 7px); }
+}
+.details { border-top: 1px solid var(--rule); padding-top: 14px; display: grid; gap: 20px; }
+.details > summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
+.mark { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
+.mark.added { background: var(--green-soft); color: var(--green); }
+.mark.changed { background: var(--amber-soft); color: var(--amber); }
+.mark.removed { background: var(--red-soft); color: var(--red); }
+.mark.was { color: var(--muted); }
+tr.was td, tr.removed td:not(:first-child) { color: var(--muted); text-decoration: line-through; }
+tr.was td:first-child { text-decoration: none; }
+details.current { margin-top: 6px; }
+details.current > summary, details.unchanged > summary { cursor: pointer; color: var(--muted); }
+details.unchanged > summary { font-weight: 600; }
+details.unchanged[open] > summary { margin-bottom: 8px; }
+.iteration { margin: 8px 0; }
+details.iteration > summary { cursor: pointer; }
+details.iteration[open] > summary { margin-bottom: 6px; }
+.hljs-keyword, .hljs-built_in, .hljs-type { color: var(--kw); }
+.hljs-string, .hljs-regexp { color: var(--str); }
+.hljs-title, .hljs-title.function_, .hljs-title.class_ { color: var(--fn); }
+.hljs-number, .hljs-literal { color: var(--num); }
+.hljs-attr, .hljs-property, .hljs-params { color: var(--ink); }
+.hljs-comment { color: var(--muted); font-style: italic; }
+</style>`;
+
 // The owner reads the top of the page and rarely opens the details.
 const ROLES = [
   [/^open questions$/i, 'needs'],
   [/^public api$/i, 'api'],
   [/^main changes$/i, 'main'],
   [/^defaults$/i, 'picked'],
+  [/^close$/i, 'close'],
   [/^(scope|steps|evidence|proof|claims|asks|verification|notes)$/i, 'details'],
 ];
 const roleOf = (section, lead) =>
@@ -54,7 +175,7 @@ function pageConfig(root) {
           };
         })
     : [];
-  return { playbooks, topic: config.pageTopic ?? {} };
+  return { playbooks, plans: config.plans ?? 'docs/plans', topic: config.pageTopic ?? {} };
 }
 
 function pageSections(playbooks, name, where) {
@@ -75,7 +196,13 @@ function subjectOf(plan, topic) {
 }
 
 // Newest first by the date a plan's name starts with; a name without one sorts as the oldest.
-const planOrder = (path) => `${basename(path).match(/^\d{4}-\d{2}-\d{2}/)?.[0] ?? '0000-00-00'} ${basename(path)}`;
+// Two iterations from one date order by their logs' latest rows, so the one closed last leads the page whichever plan renders it.
+const latestLogStamp = (path) => {
+  const log = path.replace(/\.md$/u, '.decisions.tsv');
+  const stamp = existsSync(log) ? readFileSync(log, 'utf-8').trim().split('\n').at(-1).split('\t')[0] : '';
+  return /^\d{4}-/u.test(stamp) ? stamp : '';
+};
+const planOrder = (path) => `${basename(path).match(/^\d{4}-\d{2}-\d{2}/)?.[0] ?? '0000-00-00'} ${latestLogStamp(path)} ${basename(path)}`;
 
 function iterationsOf(plansDir, subject, topic) {
   return readdirSync(plansDir)
@@ -580,15 +707,23 @@ const OPTION = /^\s*[-*+]\s+\*\*(.+?)\*\*(\s*\(recommended\))?\s*(?::\s*(.*))?$/
 
 // Open questions written as `### Header`, a one-line question and bold-labeled
 // options render like Claude's question tool; anything else renders as text.
-function needsHtml(lines) {
+function needsHtml(lines, older = []) {
   const intro = [];
   const groups = [];
   for (const line of lines) {
     const heading = line.match(/^###\s+(.*)$/);
-    if (heading) groups.push({ header: heading[1].trim(), lines: [] });
+    if (heading) groups.push({ header: heading[1].trim(), lines: [], from: null });
     else (groups.at(-1)?.lines ?? intro).push(line);
   }
-  if (groups.length === 0) return blocksHtml(lines);
+  for (const { lines: olderLines, from } of older) {
+    let own = null;
+    for (const line of olderLines) {
+      const heading = line.match(/^###\s+(.*)$/);
+      if (heading) groups.push((own = { header: heading[1].trim(), lines: [], from }));
+      else own?.lines.push(line);
+    }
+  }
+  if (groups.length === 0) return blocksHtml([...lines, ...older.flatMap((source) => source.lines)]);
   const questions = groups.map((group, index) => {
     const question = [];
     const options = [];
@@ -628,7 +763,7 @@ function needsHtml(lines) {
     const moreHtml = more.some((line) => line.trim())
       ? `<details class="more"><summary>More</summary>${blocksHtml(more)}</details>`
       : '';
-    return `<div class="question" role="radiogroup" aria-labelledby="${id}" data-header="${escapeHtml(group.header.replace(/[`*]/g, ''))}"><p class="question-text" id="${id}"><span class="chip">${inline(group.header)}</span>${inline(question.join(' '))}</p>${optionHtml}${moreHtml}</div>`;
+    return `<div class="question" role="radiogroup" aria-labelledby="${id}" data-header="${escapeHtml(group.header.replace(/[`*]/g, ''))}"><p class="question-text" id="${id}"><span class="chip">${inline(group.header)}</span>${inline(question.join(' '))}${group.from ? ` <span class="from">from ${inline(group.from)}</span>` : ''}</p>${optionHtml}${moreHtml}</div>`;
   });
   return `<p><strong>go</strong> takes every recommendation.</p>${blocksHtml(intro)}${questions.join('')}<div class="answer" hidden><code></code><button type="button">Copy answer</button></div>`;
 }
@@ -765,6 +900,9 @@ function page(planPath, { folded = false } = {}) {
     if (doc !== plan && isOpen(entry)) assertDelta(entry.plan, doc, { name: where, where: subjectWhere });
   }
   if (folded && doc === plan) throw new Error(`${repoPath} has no subject file to fold into`);
+  if (folded && !plan.sections.some((section) => /^close$/i.test(section.title) && section.lines.some((line) => line.trim()))) {
+    throw new Error(`${repoPath} needs a ## Close before --folded: what landed, the proof and its limits, the counts, reversals first and open work with owners`);
+  }
   if (doc !== plan) {
     assertNoPairs(doc.sections, pairs, subjectWhere);
     // Hand edits to the subject and plans that close without folding, such as superseded ones, leave older iterations unmatched, so only the close that just folded asks for the check.
@@ -811,7 +949,12 @@ function page(planPath, { folded = false } = {}) {
           .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
           .map((section) => sectionHtml(section, 'panel'))
           .join('\n  ');
-  const [needs] = doc === plan ? byRole('needs', plan) : focus ? byRole('needs', focus) : [];
+  const [needs] = byRole('needs', leader.plan);
+  const olderNeeds = iterations
+    .filter((entry) => entry.path !== leader.path)
+    .map((entry) => ({ lines: byRole('needs', entry.plan)[0]?.lines, from: entry.plan.title || basename(entry.path, '.md') }))
+    .filter((source) => source.lines);
+  const [close] = byRole('close', leader.plan);
   const iterationHtml = ({ path, plan: iteration }) => {
     const iterationStatus = iteration.meta.status ?? 'unknown';
     const open = !finished(iterationStatus) && path !== focusEntry?.path;
@@ -884,124 +1027,13 @@ function page(planPath, { folded = false } = {}) {
   const where = subjectPath ? relative(root, subjectPath) : repoPath;
 
   const html = `<title>${title}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
-<style>
-:root {
-  --ground: #f6f7f8; --paper: #ffffff; --ink: #1b2026; --muted: #5b6672; --rule: #dde2e7;
-  --accent: #2c5b8f; --accent-soft: #e6eef7; --amber: #9a5b00; --amber-soft: #fbf1df; --green: #2f6b3f; --green-soft: #e5f2e8; --red: #a3352b; --red-soft: #f8e6e3; --code: #eef1f4;
-  --kw: #8a3f9e; --str: #3d6b21; --fn: #2c5b8f; --num: #a24d12;
-  --sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --ground: #121518; --paper: #1a1e23; --ink: #e4e8ec; --muted: #9aa5b1; --rule: #2c333b;
-  --accent: #8db6e6; --accent-soft: #1f2d3d; --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #232931; --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
-} }
-:root[data-theme="dark"] {
-  --ground: #121518; --paper: #1a1e23; --ink: #e4e8ec; --muted: #9aa5b1; --rule: #2c333b;
-  --accent: #8db6e6; --accent-soft: #1f2d3d; --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #232931; --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
-}
-body { background: var(--ground); color: var(--ink); font: 15px/1.6 var(--sans); padding: 0 16px; }
-main { max-width: 760px; margin: 0 auto; padding-block: 32px 64px; display: grid; gap: 28px; }
-header { display: grid; gap: 8px; }
-h1 { font-size: 1.75rem; line-height: 1.2; margin: 0; text-wrap: balance; font-weight: 700; }
-h2 { font-size: 1.15rem; margin: 0 0 8px; text-wrap: balance; }
-h3, h4, h5 { font-size: 1rem; margin: 16px 0 4px; }
-.meta { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; color: var(--muted); font-size: 0.85rem; }
-.pill { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
-.pill.done { background: var(--green-soft); color: var(--green); }
-.pill.held, .pill.planning { background: var(--amber-soft); color: var(--amber); }
-.pill.unknown { background: var(--code); color: var(--muted); }
-.panel { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; min-width: 0; }
-.panel.needs { border-color: var(--amber); }
-.panel h2 { display: flex; gap: 10px; align-items: baseline; }
-.count { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
-.quiet { color: var(--muted); margin: 0; }
-.question { display: grid; gap: 8px; margin: 0 0 18px; min-width: 0; }
-.question-text { margin: 0 0 2px; font-weight: 600; display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; max-width: none; }
-.chip { font: 600 0.72rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--amber); background: var(--amber-soft); border-radius: 999px; padding: 2px 8px; }
-.option { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 8px; cursor: pointer; min-width: 0; }
-.option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
-.option input { margin: 4px 0 0; accent-color: var(--accent); flex: none; }
-.option-body { display: grid; gap: 2px; min-width: 0; }
-.option-label { font-weight: 600; overflow-wrap: anywhere; }
-.option-desc { color: var(--muted); font-size: 0.88rem; }
-.rec { font: 600 0.68rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--green); margin-left: 6px; }
-.more summary { color: var(--muted); font-size: 0.85rem; cursor: pointer; }
-.answer { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.answer[hidden] { display: none; }
-.answer code { flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere; padding: 8px 10px; }
-button { font: 500 0.85rem var(--sans); color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 8px; padding: 7px 14px; cursor: pointer; }
-button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-section.plan { display: grid; gap: 4px; min-width: 0; }
-section.plan + section.plan { border-top: 1px solid var(--rule); padding-top: 20px; }
-p { margin: 0 0 10px; max-width: 68ch; }
-ul, ol { margin: 0 0 10px; padding-left: 1.4em; }
-li { margin: 3px 0; }
-li > ul, li > ol { margin: 4px 0; }
-code { font: 0.86em var(--mono); background: var(--code); padding: 1px 5px; border-radius: 4px; }
-pre { margin: 0; padding: 12px 14px; background: var(--code); border-radius: 8px; }
-pre code { padding: 0; background: none; }
-.scroll { overflow-x: auto; margin: 0 0 12px; }
-table { border-collapse: collapse; font-size: 0.9rem; min-width: 100%; }
-th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--rule); }
-th { font-weight: 600; color: var(--muted); font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
-blockquote { margin: 0 0 10px; padding-left: 12px; border-left: 3px solid var(--rule); color: var(--muted); }
-a { color: var(--accent); }
-.box { display: inline-block; width: 0.85em; height: 0.85em; border: 1.5px solid var(--muted); border-radius: 3px; margin-right: 8px; vertical-align: -0.08em; }
-.box.done { background: var(--green); border-color: var(--green); }
-.compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin: 6px 0 14px; }
-.pane { min-width: 0; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--code); }
-.pane-head { display: flex; justify-content: space-between; align-items: center; padding: 5px 12px; border-bottom: 1px solid var(--rule); }
-.tally { font: 600 0.78rem var(--mono); }
-.tally.del, .diff .del .sign { color: var(--red, #a3352b); }
-.tally.add, .diff .add .sign { color: var(--green); }
-.pane-body { overflow-x: auto; }
-.diff { display: grid; min-width: 100%; width: max-content; padding: 6px 0; font: 0.86em/1.6 var(--mono); }
-.diff .row { display: grid; grid-template-columns: 4ch 2.5ch 1fr; }
-.diff .row code { font: inherit; background: none; padding: 0 14px 0 0; border-radius: 0; white-space: pre; }
-.diff .num { color: var(--muted); text-align: right; padding-right: 1ch; opacity: 0.7; user-select: none; }
-.diff .sign { text-align: center; user-select: none; }
-.diff .del { background: color-mix(in srgb, var(--red, #a3352b) 15%, transparent); }
-.diff .add { background: color-mix(in srgb, var(--green) 15%, transparent); }
-.diff .filler { display: none; }
-.side { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-@media (min-width: 1280px) {
-  main > :has(.compare) { --wide: min(1200px, calc(100vw - 64px)); box-sizing: border-box; width: var(--wide); margin-inline: calc((100% - var(--wide)) / 2); }
-  main > :has(.compare) > :not(.compare) { margin-inline: calc((var(--wide) - 760px) / 2); }
-  .compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .diff .filler { display: grid; background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--rule) 45%, transparent) 6px 7px); }
-}
-.details { border-top: 1px solid var(--rule); padding-top: 14px; display: grid; gap: 20px; }
-.details > summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
-.mark { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
-.mark.added { background: var(--green-soft); color: var(--green); }
-.mark.changed { background: var(--amber-soft); color: var(--amber); }
-.mark.removed { background: var(--red-soft); color: var(--red); }
-.mark.was { color: var(--muted); }
-tr.was td, tr.removed td:not(:first-child) { color: var(--muted); text-decoration: line-through; }
-tr.was td:first-child { text-decoration: none; }
-details.current { margin-top: 6px; }
-details.current > summary, details.unchanged > summary { cursor: pointer; color: var(--muted); }
-details.unchanged > summary { font-weight: 600; }
-details.unchanged[open] > summary { margin-bottom: 8px; }
-.iteration { margin: 8px 0; }
-details.iteration > summary { cursor: pointer; }
-details.iteration[open] > summary { margin-bottom: 6px; }
-.hljs-keyword, .hljs-built_in, .hljs-type { color: var(--kw); }
-.hljs-string, .hljs-regexp { color: var(--str); }
-.hljs-title, .hljs-title.function_, .hljs-title.class_ { color: var(--fn); }
-.hljs-number, .hljs-literal { color: var(--num); }
-.hljs-attr, .hljs-property, .hljs-params { color: var(--ink); }
-.hljs-comment { color: var(--muted); font-style: italic; }
-</style>
+${PAGE_HEAD}
 <main>
   <header>
     <h1>${title}</h1>
     <div class="meta"><span class="pill ${statusTone(shownStatus)}">${escapeHtml(shownStatus)}</span><code>${escapeHtml(where)}</code>${delta ? `<span>Plan <strong>${inline(focus.title || basename(focusEntry.path, '.md'))}</strong> <code>${escapeHtml(relative(root, focusEntry.path))}</code></span>` : ''}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
-  ${needs ? `<section class="panel needs"><h2>Needs you</h2>${needsHtml(needs.lines)}</section>` : ''}
+  ${needs || olderNeeds.length ? `<section class="panel needs"><h2>Needs you</h2>${needsHtml(needs?.lines ?? [], olderNeeds)}</section>` : ''}${close ? sectionHtml(close, 'panel') : ''}
   ${delta && focus.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(focus.lead)}</section>` : ''}
   ${changeHtml('api')}
   ${changeHtml('lead')}
@@ -1070,11 +1102,131 @@ document.querySelectorAll('.diff code').forEach((element) => window.hljs?.highli
   return { html, name: subject ? join('topics', subject) : basename(planPath, '.md') };
 }
 
+const firstParagraph = (lines) => {
+  const start = lines.findIndex((line) => line.trim());
+  if (start < 0) return '';
+  const end = lines.findIndex((line, index) => index > start && !line.trim());
+  const text = lines.slice(start, end < 0 ? undefined : end).join(' ').trim();
+  return text.length > 220 ? `${text.slice(0, 220).replace(/\s+\S*$/u, '')}…` : text;
+};
+
+function hubsWithoutSubject(root, hub, names) {
+  if (!hub?.includes('{topic}')) return [];
+  const [head, tail] = hub.split('{topic}');
+  const dir = join(root, head.slice(0, head.lastIndexOf('/') + 1));
+  const prefix = head.slice(head.lastIndexOf('/') + 1);
+  const nameOf = (file) => file.slice(prefix.length, file.length - tail.length);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((file) => file.startsWith(prefix) && file.endsWith(tail) && !names.includes(nameOf(file)))
+    .map((file) => ({ title: parsePlan(readFileSync(join(dir, file), 'utf-8')).title || nameOf(file) }))
+    .sort((a, b) => a.title.localeCompare(b.title));
+}
+
+function topicIndex(root) {
+  const { plans, topic } = pageConfig(root);
+  const plansDir = join(root, plans);
+  const topicsDir = join(plansDir, 'topics');
+  mkdirSync(join(plansDir, 'artifacts', 'topics'), { recursive: true });
+  const names = existsSync(topicsDir)
+    ? readdirSync(topicsDir)
+        .filter((name) => name.endsWith('.md') && name !== 'README.md')
+        .map((name) => basename(name, '.md'))
+    : [];
+  const hubPath = (name) => (topic.hub ? topic.hub.replaceAll('{topic}', name) : null);
+  const asks = (plan) => plan.sections.some((section) => /^open questions$/i.test(section.title) && section.lines.some((line) => /^###\s/.test(line)));
+  const subjects = names.map((name) => {
+    const doc = parsePlan(readFileSync(join(topicsDir, `${name}.md`), 'utf-8'));
+    const iterations = iterationsOf(plansDir, name, topic);
+    const open = iterations.find((entry) => !finished(entry.plan.meta.status ?? ''));
+    const hub = hubPath(name);
+    let local = null;
+    let refused = null;
+    if (iterations[0]) {
+      try {
+        const rendered = page(iterations[0].path);
+        writeFileSync(join(plansDir, 'artifacts', `${rendered.name}.html`), rendered.html);
+        local = `${basename(rendered.name)}.html`;
+      } catch (error) {
+        refused = error.message;
+      }
+    }
+    return {
+      title: doc.title || name,
+      page: doc.fields.page ?? null,
+      local,
+      refused,
+      lead: firstParagraph(doc.lead),
+      status: (open ?? iterations[0])?.plan.meta.status ?? null,
+      asks: iterations.some((entry) => asks(entry.plan)),
+      open: Boolean(open),
+      count: iterations.length,
+      newest: iterations[0] ? (basename(iterations[0].path).match(/^\d{4}-\d{2}-\d{2}/)?.[0] ?? '') : '',
+      feature: Boolean(hub && existsSync(join(root, hub))),
+    };
+  });
+  subjects.sort((a, b) => Number(b.asks) - Number(a.asks) || Number(b.open) - Number(a.open) || b.newest.localeCompare(a.newest) || a.title.localeCompare(b.title));
+  const unpaged = hubsWithoutSubject(root, topic.hub, names);
+  const rowHtml = (row) => {
+    const name = row.local ? `<a href="${escapeHtml(row.local)}">${inline(row.title)}</a>` : `<span>${inline(row.title)}</span>`;
+    const state = row.status
+      ? `<span class="pill ${statusTone(row.status)}">${escapeHtml(row.status.length > 90 ? `${row.status.slice(0, 90).replace(/\s+\S*$/u, '')}…` : row.status)}</span>`
+      : `<span class="pill done">current</span>`;
+    const meta = [
+      `${row.count} iteration${row.count === 1 ? '' : 's'}`,
+      row.newest && `newest ${row.newest}`,
+      row.page && `<a href="${escapeHtml(row.page)}">last published on claude.ai</a>`,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+    const refusal = row.refused ? `<p class="topic-meta"><span class="pill unknown">refused</span> ${escapeHtml(row.refused)}</p>` : '';
+    return `<li class="topic"><div class="topic-head">${name}${state}${row.asks ? '<span class="chip">waits on you</span>' : ''}</div>${row.lead ? `<p class="topic-lead">${inline(row.lead)}</p>` : ''}<p class="topic-meta">${meta}</p>${refusal}</li>`;
+  };
+  const unpagedHtml = (row) => `<li class="topic"><div class="topic-head"><span>${inline(row.title)}</span><span class="pill unknown">no page yet</span></div></li>`;
+  const group = (heading, rows, html) =>
+    rows.length ? `<section class="panel"><h2>${heading} <span class="count">${rows.length}</span></h2><ul class="topics">${rows.map(html).join('')}</ul></section>` : '';
+  const features = topic.hub ? subjects.filter((row) => row.feature) : subjects;
+  const others = topic.hub ? subjects.filter((row) => !row.feature) : [];
+  const title = `${basename(root)} topics`;
+  const waiting = subjects.filter((row) => row.asks).length;
+  const pageCount = subjects.filter((row) => row.local).length;
+  const refusedCount = subjects.filter((row) => row.refused).length;
+  const html = `<title>${escapeHtml(title)}</title>
+${PAGE_HEAD}
+<main>
+  <header>
+    <h1>${escapeHtml(title)}</h1>
+    <div class="meta"><span>${pageCount} page${pageCount === 1 ? '' : 's'}</span>${refusedCount ? `<span>${refusedCount} refused</span>` : ''}${unpaged.length ? `<span>${unpaged.length} with no page yet</span>` : ''}${waiting ? `<span>${waiting} wait on you</span>` : ''}<code>${escapeHtml(relative(root, topicsDir))}</code></div>
+  </header>
+  ${group(topic.hub ? 'Feature topics' : 'Subjects', features, rowHtml)}
+  ${group('Other subjects', others, rowHtml)}
+  ${group('No page yet', unpaged, unpagedHtml)}
+</main>
+`;
+  return { html, out: join(plansDir, 'artifacts', 'topics', 'index.html') };
+}
+
 const args = process.argv.slice(2);
+if (args.includes('--index')) {
+  if (args.length !== 1) {
+    console.error('Usage: node .agents/pstack/plan-page.mjs --index');
+    process.exit(2);
+  }
+  try {
+    const { html, out } = topicIndex(execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf-8' }).trim());
+    mkdirSync(dirname(out), { recursive: true });
+    writeFileSync(out, html);
+    console.info(out);
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+  process.exit(0);
+}
 const target = args.find((arg) => !arg.startsWith('--'));
 const planPath = target && resolve(target);
 if (!planPath || !existsSync(planPath) || args.some((arg) => arg.startsWith('--') && !['--folded', '--check'].includes(arg))) {
-  console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check]');
+  console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check] | --index');
   process.exit(2);
 }
 let rendered;

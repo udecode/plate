@@ -1,5 +1,9 @@
 # Explicit DOM omission and large-document rendering
 
+**Audit of 2026-10-04.** Stop. The deferred gates (P0-P4) ran and chose the target, and S1-S6 installed it. Ordinary Editable mounts the complete DOM. Omission comes from an explicit, dedicated VirtualizedEditable or from the pagination virtualize boolean. Pagination no longer routes through the generic virtualizer. No design question remains open, and only the plan's S7 proof closure is outstanding. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-large-documents-audit` hold the evidence.
+
+**Audit of 2026-10-04.** Stop. The deferred gates (P0-P4) ran and chose the target, and S1-S6 installed it. Ordinary Editable mounts the complete DOM. Omission comes from an explicit, dedicated VirtualizedEditable or from the pagination virtualize boolean. Pagination no longer routes through the generic virtualizer. No design question remains open, and only the plan's S7 proof closure is outstanding. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-large-documents-audit` hold the evidence.
+
 Status: **implementation complete; stable-snapshot closure pending**. The
 dedicated entrypoints, mounted-view runtime and pagination-owned page window are
 installed in production source. Final cross-browser recording must use one

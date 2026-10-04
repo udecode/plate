@@ -3,7 +3,6 @@ import type React from 'react';
 import { type PluginTransaction, PointApi } from '../../../core';
 import {
   type Anchor,
-  type EditorCommit,
   type Range,
   RangeApi,
   subscribeEditorViewState,
@@ -13,11 +12,12 @@ import {
   findTypedTrigger,
   isComboboxQuery,
   readComboboxQuery,
-  readTypedInsertion,
+  type TypedInsertion,
 } from '../../../features/combobox/lib/combobox.internal';
 import { getPluginStore } from '../../../internal/plugin/pluginStore';
 import type { PluginReference } from '../../../lib';
 import type { Editor } from '../../editor';
+import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
 import { claimEditableKeyDown } from '../../utils/editableKeyDown.internal';
 
 /** The open query an autocomplete popup offers options for. */
@@ -59,6 +59,8 @@ const PREVIEW_EVENTS = [
 ] as const;
 const refused = Symbol('combobox completion refused');
 const owners = new WeakMap<Element, ComboboxOwner>();
+// Equal text in a later occurrence must not complete a match offered by an earlier one.
+const occurrenceOf = new WeakMap<ComboboxMatch, Occurrence>();
 
 const isThenable = (value: unknown) =>
   typeof (value as PromiseLike<unknown> | null)?.then === 'function';
@@ -73,7 +75,8 @@ const sameMatch = (a: ComboboxMatch | null, b: ComboboxMatch) =>
   RangeApi.equals(a.range, b.range);
 
 class ComboboxOwner {
-  private aria: Readonly<Record<string, string>> = {};
+  private readonly replaced = new Map<string, string | null>();
+  private readonly written = new Map<string, string | null>();
   private readonly listeners = new Set<() => void>();
   private match: ComboboxMatch | null = null;
   private occurrence: Occurrence | null = null;
@@ -94,7 +97,12 @@ class ComboboxOwner {
   ) {
     const { match, occurrence } = this;
 
-    if (occurrence?.popup !== popup || !match || !sameOffer(match, expected)) {
+    if (
+      occurrence?.popup !== popup ||
+      occurrenceOf.get(expected) !== occurrence ||
+      !match ||
+      !sameOffer(match, expected)
+    ) {
       return false;
     }
     if (
@@ -190,24 +198,44 @@ class ComboboxOwner {
 
   syncAria() {
     const popup = this.match ? this.occurrence?.popup : undefined;
-    const next: Record<string, string> = popup?.open
+    const next: Record<string, string | null> = popup
       ? {
           'aria-autocomplete': 'list',
-          'aria-controls': popup.listboxId,
-          ...(popup.activeOptionId
-            ? { 'aria-activedescendant': popup.activeOptionId }
+          'aria-expanded': String(popup.open),
+          'aria-haspopup': 'listbox',
+          'aria-multiline': null,
+          role: 'combobox',
+          ...(popup.open
+            ? {
+                'aria-controls': popup.listboxId,
+                ...(popup.activeOptionId
+                  ? { 'aria-activedescendant': popup.activeOptionId }
+                  : {}),
+              }
             : {}),
         }
       : {};
 
-    for (const name of Object.keys(this.aria)) {
-      if (!(name in next)) this.element.removeAttribute(name);
+    for (const [name, original] of this.replaced) {
+      if (name in next) continue;
+      if (this.element.getAttribute(name) === this.written.get(name)) {
+        this.write(name, original);
+      }
+
+      this.replaced.delete(name);
+      this.written.delete(name);
     }
     for (const [name, value] of Object.entries(next)) {
-      if (this.aria[name] !== value) this.element.setAttribute(name, value);
-    }
+      const current = this.element.getAttribute(name);
 
-    this.aria = next;
+      // A value the app wrote after the owner's last write replaces the one to restore.
+      if (!this.replaced.has(name) || current !== this.written.get(name)) {
+        this.replaced.set(name, current);
+      }
+
+      this.write(name, value);
+      this.written.set(name, value);
+    }
   }
 
   private close() {
@@ -237,15 +265,20 @@ class ComboboxOwner {
     );
   }
 
-  private onCommit(commit: EditorCommit) {
-    const insertion = readTypedInsertion(commit);
+  private write(name: string, value: string | null) {
+    if (value === null) this.element.removeAttribute(name);
+    else if (this.element.getAttribute(name) !== value) {
+      this.element.setAttribute(name, value);
+    }
+  }
 
-    if (
-      insertion &&
-      commit.selectionAfterRoot === this.view.read.view.root() &&
-      this.view.api.react.isFocused() &&
-      this.isEditable()
-    ) {
+  private onTyped(range: Range, text: string) {
+    const insertion: TypedInsertion = {
+      caret: RangeApi.end(range),
+      length: text.length,
+    };
+
+    if (this.view.api.react.isFocused() && this.isEditable()) {
       let latest: { popup: ComboboxPopup; trigger: Range } | null = null;
 
       for (const popup of this.popups) {
@@ -285,8 +318,6 @@ class ComboboxOwner {
         this.match = null;
       }
     }
-
-    this.refresh();
   }
 
   private onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -299,9 +330,7 @@ class ComboboxOwner {
       event.ctrlKey ||
       event.metaKey ||
       event.shiftKey ||
-      event.nativeEvent.isComposing ||
-      // oxlint-disable-next-line typescript/no-deprecated -- WebKit sends the IME confirmation Enter after compositionend with only this code.
-      event.keyCode === 229
+      isImeConfirmKeyEvent(event.nativeEvent)
     ) {
       return false;
     }
@@ -352,40 +381,29 @@ class ComboboxOwner {
 
     if (query === null) {
       const { match } = this;
-      const modelLagsPreedit = composing && match !== null;
 
-      return modelLagsPreedit ? { ...match, composing } : null;
+      return composing && match !== null
+        ? this.offer(occurrence, { ...match, composing })
+        : null;
     }
 
-    const preview = composing ? this.readPreview(trigger) : null;
+    const preview = composing
+      ? this.view.api.dom.textToCaret(RangeApi.end(trigger))
+      : null;
 
-    return {
+    return this.offer(occurrence, {
       composing,
       query:
         preview !== null && isComboboxQuery(preview, state) ? preview : query,
       range: { anchor: RangeApi.start(trigger), focus: selection.focus },
       trigger: occurrence.triggerText,
-    };
+    });
   }
 
-  private readPreview(trigger: Range) {
-    const start = this.view.api.dom.resolveDOMPoint(RangeApi.end(trigger));
-    const root = this.element.getRootNode() as Document | ShadowRoot;
-    const selection =
-      'getSelection' in root && typeof root.getSelection === 'function'
-        ? root.getSelection()
-        : this.element.ownerDocument.getSelection();
-    const focus = selection?.focusNode;
+  private offer(occurrence: Occurrence, match: ComboboxMatch) {
+    occurrenceOf.set(match, occurrence);
 
-    if (!start || !focus || !this.element.contains(focus)) return null;
-
-    const range = this.element.ownerDocument.createRange();
-
-    range.setStart(start[0], start[1]);
-    if (range.comparePoint(focus, selection.focusOffset) < 0) return null;
-    range.setEnd(focus, selection.focusOffset);
-
-    return range.toString().replaceAll('\uFEFF', '');
+    return match;
   }
 
   private refresh() {
@@ -404,9 +422,14 @@ class ComboboxOwner {
 
   private start() {
     const refresh = () => this.refresh();
-    const unsubscribeCommit = this.view.subscribeCommit((commit) =>
-      this.onCommit(commit)
+    // Subscribed before the commit refresh, so a typed trigger replaces the
+    // open occurrence before the popup state publishes once.
+    const unsubscribeTyped = this.view.api.react.subscribeTypedText(
+      ({ editable, range, text }) => {
+        if (editable === this.element) this.onTyped(range, text);
+      }
     );
+    const unsubscribeCommit = this.view.subscribeCommit(refresh);
     const unsubscribeView = subscribeEditorViewState(this.view, refresh);
     const releaseKeys = claimEditableKeyDown(this.element, (event) =>
       this.onKeyDown(event)
@@ -421,6 +444,7 @@ class ComboboxOwner {
 
     this.stop = () => {
       unsubscribeCommit();
+      unsubscribeTyped();
       unsubscribeView();
       releaseKeys();
       for (const type of PREVIEW_EVENTS) {

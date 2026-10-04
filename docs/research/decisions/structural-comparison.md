@@ -2,21 +2,18 @@
 title: Structural comparison ownership
 type: decision
 status: accepted
-updated: 2026-09-11
-review_scope: diff
-current_review: 2026-09-10-diff-adoption-plan
-review_history:
-  - ../review-records/2026-09-10-diff-research.json
-  - ../review-records/2026-09-10-diff-adoption-plan.json
+updated: 2026-10-04
 source_refs:
   - ../../plans/2026-09-10-structural-document-diff.md
   - ../../plite/research/2026-09-10-structural-diff-oss/README.md
 related:
   - authored-change-ownership.md
-  - ../reviews.md#diff
+  - ../review-scopes/diff.json
 ---
 
 # Structural comparison ownership
+
+**Audit of 2026-10-04.** Pursue. The old target is already adopted in live source, so the remaining material gap is the API built beyond the current job. A three-way compare and resolveComparison API has no product consumer, and the live-review import shipped as a free function over an erased editor instead of a typed authored write. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-diff-audit` hold the evidence.
 
 The selected design keeps ordinary schema-valid JSON and compares immutable
 span correspondence with composable effects. Three-way review preserves
@@ -36,5 +33,5 @@ next reconciliation point. Neither state satisfies prerequisite completion.
 
 Reopen the design for a failed structural-quality/native invariant or a
 stronger alternative, and reconsider it on any repeated review request.
-[History and proof entry points](../reviews.md#diff) preserve both the research
+History and proof entry points (`node tooling/scripts/review-ledger.mjs show diff`) preserve both the research
 and the adoption specification without claiming production delivery.

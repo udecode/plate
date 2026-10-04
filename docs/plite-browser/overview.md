@@ -10,7 +10,7 @@ status: historical
 > source locations, and “current” claims below belong to that captured program.
 > Select live proof through [verify](../../.agents/skills/verify/SKILL.md)
 > and [Plite Agent Start](../plite/agent-start.md); consult the
-> [feature review ledger](../research/reviews.md) before reopening its proposals.
+> [feature review ledger](../research/schema.md#review-history) before reopening its proposals.
 > The retired sibling checkout is unavailable; its paths are provenance only.
 
 ## Purpose

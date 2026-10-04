@@ -1,0 +1,128 @@
+{
+  "id": "2026-10-04-imports-audit",
+  "scope": "imports",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, judged afresh because earlier verdicts came from a weaker model, then widened it on 2026-10-04 to every existing ledger item. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was closed, with a latest pursue verdict, at queue position 27. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "A complete-file parse returns EditorDocumentValue. Selection, clipboard and generated insertion return a closed ContentSlice, and callers never convert one carrier into the other.",
+    "Each format owns a diagnosed result. Success carries the carrier and warnings only, and failure carries an error-first tuple and no carrier. Lossy recovery fails unless the caller sets lossPolicy 'allow'.",
+    "Server and utility code parse without constructing an editor, and editor methods reuse the installed configuration.",
+    "Clipboard formats decode to a slice or null, report loss, and send thrown callbacks to the lifecycle error sink so the next format runs.",
+    "Plate and the registry render no paste-loss UI, and an application may opt in at the mounted view (owner decision, 2026-09-29).",
+    "Hidden native state in an interchange format needs a current caller, and exact Plate review state uses canonical authored JSON (documents audit, 2026-10-04)."
+  ],
+  "evidenceReuse": "Reused the 2026-09-29 opt-in review, its three executions, the 2026-09-29 conversion-boundary execution and the first-wave documents and csv audits. On the live tree, rechecked the platejs/html, platejs/html/server and platejs/markdown exports, the HTML and Markdown result types, inline Markdown parsing, the DataTransferFormat contract, Editable onPasteResult, importDocx's detached compilation and loss default, the registry Editor and import toolbar, and the serializing, clipboard and csv guides. None of those files has uncommitted changes. The uncommitted Markdown internals and Plite admission files that other sessions are editing did not decide anything here.",
+  "summary": "The job is to turn external HTML, Markdown, DOCX and clipboard payloads into a schema-valid complete document or an insertion slice, diagnose every loss Plate controls, and leave presentation to the application. Live source does this. parseHtml and parseMarkdown return EditorDocumentValue, the editor's parseSlice and parseInline return a closed ContentSlice, each format returns its own ok and diagnostics union with lossPolicy defaulting to reject, and importDocx compiles its target without activating an editor. DataTransferFormat decoders report loss, EditorContent.onPasteResult delivers it only when the app passes the callback, and the registry Editor renders nothing. The strongest deletion, cutting onPasteResult and the DataTransfer report, loses to the app-owned feedback job the owner confirmed on 2026-09-29. A shared ConversionResult or converter object still has no caller that handles formats polymorphically. The decision page still lists the cut standalone slice parsers and keeps the DOCX authored part, so it needs reconciliation but no new work.",
+  "verdict": "stop",
+  "previous": "2026-09-29-imports-opt-in-paste-result",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-29-imports-opt-in-paste-result",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "supersedes",
+      "reason": "Its target landed, since the registry Editor renders no paste UI and onPasteResult and the DataTransfer report remain opt-in. This review keeps that design as a Stop and closes the Pursue."
+    },
+    {
+      "record": "2026-09-29-registry-paste-feedback",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Its outcome holds in live source. The registry editor.tsx has no sonner, toast or onPasteResult reference, and the paste-result browser spec no longer exists."
+    },
+    {
+      "record": "2026-09-29-registry-paste-feedback-reverification",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Its reverification still matches the live tree, and no later change touched paste-result delivery or the registry Editor."
+    },
+    {
+      "record": "2026-09-29-registry-paste-feedback-reverification-2",
+      "question": "Which document, slice, schema, format, diagnostic and application contracts should own external document imports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Its reverification still matches the live tree, and no later change touched paste-result delivery or the registry Editor."
+    }
+  ],
+  "alternatives": [
+    "Keeping the adopted contract is selected. It serves every current import job with format-owned results and no shared machinery.",
+    "Deleting onPasteResult and the DataTransfer report loses. The owner confirmed an app-owned feedback job on 2026-09-29, and the cost is one optional callback with no default UI.",
+    "Adding a shared ConversionResult, converter object or format registry loses. No caller handles formats polymorphically, and every prior review rejected it.",
+    "Restoring standalone parseHtmlSlice, parseMarkdownSlice and parseMarkdownInline loses. Slice parsing serves an installed destination and no detached caller exists, so the conversion-boundary cut stands.",
+    "Deleting detached parseHtml and parseMarkdown and keeping only editor methods loses. The server-side example and platejs/html/server parse without an editor.",
+    "Pursuing the CSV result contract and the DOCX trust mode here is rejected as duplication. The csv and documents audits already hold those Pursues with their own owners."
+  ],
+  "proofLimits": "Source review only. No test, browser paste, file import or benchmark was run. Per-format mapping completeness stays with the html, markdown, documents and csv scopes. The caller census covers this repository only. The serializing guide says to install HtmlPlugin for editor.api.html, but HtmlPlugin is a core plugin (getCorePlugins.internal.ts:41). That is a docs wording drift and does not change the verdict.",
+  "references": [
+    "docs/research/decisions/import-fidelity.md",
+    "docs/research/features/imports.md",
+    "docs/research/review-records/2026-09-29-imports-opt-in-paste-result.json",
+    "docs/research/review-records/2026-09-29-registry-paste-feedback.json",
+    "docs/research/review-records/2026-09-29-conversion-boundary-adoption-execution.json",
+    "docs/research/review-records/2026-10-04-documents-audit.json",
+    "docs/research/review-records/2026-10-04-csv-audit.json",
+    "docs/plans/2026-09-29-registry-paste-feedback.md",
+    "docs/plans/2026-09-25-document-conversion-contracts.md",
+    "docs/plans/2026-09-28-conversion-boundary-adoption.md",
+    "packages/platejs/src/html/index.ts",
+    "packages/platejs/src/html/server/index.ts",
+    "packages/platejs/src/lib/plugins/html/htmlTypes.ts",
+    "packages/platejs/src/lib/plugins/html/htmlConversion.ts",
+    "packages/platejs/src/markdown/lib/index.ts",
+    "packages/platejs/src/markdown/lib/types.ts",
+    "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",
+    "packages/platejs/src/docx/import/lib/importDocx.ts",
+    "packages/platejs/src/csv/lib/CsvPlugin.ts",
+    "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
+    "packages/plitejs/src/react/components/editable.tsx",
+    "packages/platejs/type-tests/standalone-conversion-contracts.ts",
+    "apps/www/src/registry/components/editor/editor.tsx",
+    "apps/www/src/registry/components/editor/import-toolbar-button.tsx",
+    "content/docs/(guides)/serializing.mdx",
+    "content/docs/(guides)/clipboard.mdx",
+    "content/docs/(plugins)/(serializing)/csv.mdx"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "575a74c691bd23c2ecff9b73d8d7fc75c88a53be6b80f13a09e4c1efead1ec36",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "7a379b4dbb02de3c7b30fcc5c6ce38a6aa24d43af3b71b5d7e12bb8457bdd81c",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "3b09a84e4fafe1796830b8290f0676adaf3df3f841ee80f53df3d95f20aa3a93",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "604419f6caf98b015758d30037a3c7a30570724145aead1b188437709fd101a3",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "4da8ba57236032efe6ad7e869144dd6452a9c195b05b36c2385aa55d1ae42b39",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "d4380cdac6642db677ef37d054240301ee0a56c661fcc5fd1cb6d110ed29165f",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts": "4289812c3e8cd9a844a6ce7faead93e407cc037e45385550903dd7e2d15a5c57",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "85dd1b215d0e62b76f241798185919e33f5c280b6cff788927983a64bb3baaea",
+      "packages/platejs/src/docx/import/lib/importDocx.spec.ts": "fb5b8aa682b6a1548986b4eb18e51430d77e31e1b6a60e03a7a7081ff00c2260",
+      "docs/analysis/editor-architecture-candidates.md": "14a88723e948ca14db76a0a585c0c5561c1d396abb5ade4ba8d31c620e79765d",
+      "docs/research/decisions/export-fidelity.md": "f613b4530f6862096006d49b7fc26b33a0dd3d2f2573902670fa805255fe59e4",
+      "docs/research/decisions/documents-conversion-fidelity.md": "03ef59d02a45d89a9d067bfffb173184ac7007c151cf847c9cd82ee43e63c7c5",
+      "docs/research/decisions/persistence-ownership.md": "e9ba08b2a2be33b5d36b08c492f3b9eb4bfd207ac92aa52cc7d6c365960f9b26",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "df62b3f645782fb26d89bf12050d130601f2852c218131d5e997a8fce500cece",
+      "packages/platejs/src/lib/plugins/html/htmlAst.ts": "2807a035631521ac05d99b472f3e40767ca85576f8d79f9d7e15367f4f91a2df",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "ceea6f0aecf1128634f6245f4a8c10939578276de897e30b9959c7adf5625eb3",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "e4560ee7a76f6ac6309bdb1891c95adb9202ec691958e24742ad71169908b321",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "6afafeae2daeb73599175091783f043cf87a0ee63527c22c7f5dc55e8fa25d8c",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "2ca3526ac45b843cec3b4568278e755f8c1f55a6c31f970e05dceb342ebf2051",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "b20d0d9de88fe46cb58920be43fafcb840ebfb4eef8af6c90a4f7b7abec0d803",
+      "packages/plitejs/src/core/persisted-document.ts": "e605b0ed6d719d0b68f393bf531bd64e257fbe402851c77463fbbfac40281575",
+      "packages/platejs/src/migrations/documentMigrations.ts": "37d0e52326f1b76f99b3c4bbbf724824d8a01ee442afced8191afad9b7b0b263",
+      "content/docs/(guides)/serializing.mdx": "e2ff9bb116de52e9bf5d7b1bdbf771e20b582c602c68fc6db7642cb7711f8985",
+      "content/docs/(plugins)/(serializing)/html.mdx": "53eafe55fdf6a5ccb29623007aab924521ca2c8ad507afeea00d38e085ee4a43",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "6b157ab8c7acb1fb575b7d26559f0f0cc64e94fb505e6afd6aa01f129fcd4a44",
+      "content/docs/(plugins)/(serializing)/docx.mdx": "e6beb90a476747f28b1f2f1661c6a1726caf75fcb8c4b00f8dc6fdf0010c5a11",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {
+      "example/plite/parse-html": "8ebfcea1d39948b0fd313147864130c49ad8bfe56035bdeb84a2c37c0304fc66"
+    },
+    "upstreams": []
+  }
+}

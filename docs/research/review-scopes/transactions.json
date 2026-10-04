@@ -1,0 +1,78 @@
+{
+  "id": "transactions",
+  "title": "Atomic updates and document changes",
+  "question": "What becomes observable when updates commit, nest, fail or repair content, and which overlapping mutation authorities can disappear?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Transaction atomicity and repair must preserve canonical document validity and identity.",
+  "last": false,
+  "opportunity": {
+    "score": 10,
+    "reason": "All editing, history and asynchronous consumers depend on one coherent commit/failure law."
+  },
+  "owners": [
+    "packages/plitejs/src/core/document-change.ts",
+    "packages/plitejs/src/core/commit.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/editor-lifecycle-api.ts",
+    "packages/plitejs/src/core/plugin.ts",
+    "packages/plitejs/src/core/command-registry.ts",
+    "packages/plitejs/src/editor-runtime-view.ts"
+  ],
+  "members": [
+    "packages/plitejs/src/core/change-events.ts",
+    "packages/plitejs/src/core/change/",
+    "packages/plitejs/src/core/commit-publication.ts",
+    "packages/plitejs/src/core/commit.ts",
+    "packages/plitejs/src/core/document-change.ts",
+    "packages/plitejs/src/core/node-property-mutation.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/core/semantic-update-method.ts",
+    "packages/plitejs/src/core/tx-only.ts",
+    "packages/plitejs/src/core/update-context.ts",
+    "packages/plitejs/src/core/update-policy.ts"
+  ],
+  "consumers": [
+    "packages/platejs/src/lib/editor/",
+    "packages/plitejs/src/editor/insert-text.ts",
+    "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts",
+    "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts",
+    "content/docs/(guides)/plugin-methods.mdx",
+    "content/docs/api/editor-api.mdx"
+  ],
+  "proof": [
+    "packages/plitejs/test/document-change-laws.test.ts",
+    "packages/plitejs/test/update-after-commit-contract.ts",
+    "packages/plitejs/test/update-policy-contract.ts",
+    "packages/plitejs/test/read-update-contract.ts",
+    "packages/plitejs/test/command-spec.test.ts",
+    "docs/plans/artifacts/transactions-api-review/synchronous-boundary-probe.mjs",
+    "packages/plitejs/test/synchronous-transaction-authors.test.ts"
+  ],
+  "evidenceInputs": [
+    "packages/plitejs/src/core/transaction-values.ts",
+    "packages/plitejs/package.json",
+    "packages/plitejs/tsconfig.json",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/src/core/command-definition.ts",
+    "packages/plitejs/src/core/editor-runtime.ts",
+    "packages/plitejs/src/editor-runtime-view.ts",
+    "packages/plitejs/src/create-editor.ts",
+    "packages/plitejs/src/index.ts",
+    "packages/plitejs/test/support/document-change.ts",
+    "packages/plitejs/test/support/schema.ts",
+    "config/plite-source-aliases.ts",
+    "config/plite-source-test-setup.ts",
+    "config/plite-test-jsx.js",
+    "config/workspace-source-entries.mjs",
+    "tooling/config/bunTestSetup.ts",
+    "bunfig.toml"
+  ],
+  "relatedScopes": [
+    "model",
+    "history",
+    "authored"
+  ],
+  "decision": "docs/research/decisions/transactions-synchronous-boundary.md"
+}

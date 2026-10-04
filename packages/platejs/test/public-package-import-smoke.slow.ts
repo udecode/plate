@@ -413,6 +413,7 @@ const exactPublicPackageRuntimeExportExpectations = {
 
 const internalBridgeRuntimeExportExpectations = {
   '../../plitejs/src/internal': [
+    'EDITOR_DOCUMENT_FIELDS',
     'EditorSchemaCompileError',
     'MAIN_ROOT_KEY',
     'above',
@@ -422,6 +423,7 @@ const internalBridgeRuntimeExportExpectations = {
     'areEditorJsonValuesEqual',
     'areEditorSchemaIdentitiesEqual',
     'assertDetachedSelectionSupported',
+    'assertEditorDocumentContainers',
     'assertEditorJsonValue',
     'assertPublicRootKey',
     'assertSelectionSupported',
@@ -466,7 +468,9 @@ const internalBridgeRuntimeExportExpectations = {
     'formatDebugValue',
     'fragment',
     'getAnnotationStoreMetrics',
+    'getEditorDocumentShapeIssueMessage',
     'isDocumentView',
+    'isEnvelopeInput',
     'observeAnchorStateWork',
     'getActiveEditorTransaction',
     'getCandidatePluginApi',
@@ -574,7 +578,11 @@ const internalBridgeRuntimeExportExpectations = {
     'range',
     'read',
     'readAuthoredView',
+    'readDocumentRecord',
+    'readEditorDocument',
     'readEditorSchemaIdentity',
+    'readPersistedEnvelope',
+    'rejectEditorRecord',
     'removeMark',
     'removeNodes',
     'repairEditorValue',

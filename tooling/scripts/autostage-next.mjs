@@ -40,6 +40,21 @@ try {
   const unmerged = new Set(
     splitNul(git(['diff', '--name-only', '--diff-filter=U', '-z']))
   );
+  // Review records and their legacy checksum list are immutable: an edited or
+  // deleted one stays unstaged, so the review ledger's check reports it instead
+  // of the change disappearing into the index. New records still stage.
+  const changedRecords = new Set(
+    splitNul(
+      git([
+        'ls-files',
+        '-z',
+        '--modified',
+        '--',
+        'docs/research/review-records',
+        'docs/research/review-legacy.json',
+      ])
+    )
+  );
   const files = [
     ...new Set(
       splitNul(
@@ -55,7 +70,7 @@ try {
         ])
       )
     ),
-  ].filter((file) => !unmerged.has(file));
+  ].filter((file) => !unmerged.has(file) && !changedRecords.has(file));
 
   if (process.argv.includes('--dry-run')) {
     process.stdout.write(files.map((file) => `${file}\n`).join(''));

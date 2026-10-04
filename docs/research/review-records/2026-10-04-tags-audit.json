@@ -1,0 +1,83 @@
+{
+  "id": "2026-10-04-tags-audit",
+  "scope": "tags",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which selected values and editing rules should a tag/form editor persist, and can duplicate selection stores disappear?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 42. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "The form receives the selected values in controlled and uncontrolled use (select-editor-demo with react-hook-form).",
+    "Caret navigation between chips, backspace deletion, copy/paste and drag reorder of tags (multi-select.mdx).",
+    "One canonical owner per domain fact; two independently writable truths for one fact is structural failure (architecture reference duplicate-truth cap).",
+    "No delayed repair or timers hiding latency (VISION.md).",
+    "Duplicate prevention and case-insensitive matching follow one rule (multi-select.mdx).",
+    "Copied UI owns product composition; the package keeps semantic invariants (docs/vision/plate.md)."
+  ],
+  "evidenceReuse": "No prior review. Used the 2026-09-07 extraction audit's disposition (multi-select owns the constrained picker; eight cases and a narrow picker flow passed) and the 2026-07-13 package review as context. Rechecked live BaseTagPlugin, BaseMultiSelectPlugin, MultiSelectPlugin, copied select-editor.tsx, select-command.tsx, tag.tsx, select-editor-demo.tsx and multi-select.mdx; all clean in git status. git grep finds no kit that installs BaseTagPlugin without the multi-select.",
+  "summary": "The job is a form field where the user types a query, picks or creates tags, moves the caret across chips, and the form receives the selected values. BaseTagPlugin persists value and optional url. BaseMultiSelectPlugin adds duplicate removal, whitespace trimming and a commit listener that issues a follow-up write. The copied select-editor mirrors the document into React state through a selector and effect, writes controlled values back after setTimeout(0) with history skipped, and copies document text into its cmdk-fork search store. getSelectedItems drops url while insert persists it, and duplicates are case-sensitive in the package but case-insensitive in the copied filter. The strongest cut, chips outside the editor, deletes both plugins but loses the caret navigation, copy and paste and drag reorder the field exists for. The target makes the mounted document the only value and query truth. The field emits from the commit, applies a changed controlled value once without timers, and cleans up in the transaction that caused it.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "<SelectEditor value={value} onValueChange={setValue} items={ITEMS}> // inside: useState(defaultValue); useEditorSelector(getSelectedItems) -> effect -> setValue + onValueChange; controlled value -> setTimeout(0) -> editor.update({ history: 'skip' }).value.replace(...); EditorRoot onValueChange -> cmdk setSearch(text); MultiSelect on.commit -> second editor.update",
+    "proposed": "// proposed, same public props: <SelectEditor value={value} onValueChange={setValue} items={ITEMS}> // inside: EditorRoot onValueChange={({ editor }) => emit(editor.plugin(MultiSelectPlugin).read.getSelectedItems())}; the query is the document text; a changed controlled value replaces the document once; query cleanup runs inside the user transaction"
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "Which selected values and editing rules should a tag/form editor persist, and can duplicate selection stores disappear?",
+      "action": "reopens",
+      "reason": "It kept the picker's package and copied split without examining the select editor's duplicate value and query stores, which this review finds."
+    }
+  ],
+  "alternatives": [
+    "Keeping the field as it is loses. Three value carriers and two query carriers stay synchronized by effects and a timer, and they already disagree on url and duplicate casing.",
+    "The strongest cut, chips outside the editor with only query text inside, deletes BaseTagPlugin and BaseMultiSelectPlugin but loses caret navigation, copy and paste and drag reorder, the reason this field is an editor.",
+    "Merging BaseTagPlugin into BaseMultiSelectPlugin, or moving both into the copied select-editor because its only terminal consumer is copied, is plausible for the plan to validate, but it does not by itself remove the duplicate stores.",
+    "Changing ownership inside the field is chosen. The mounted document is the sole value and query truth. The field derives its value and emits it from the commit, applies a differing controlled value synchronously without history, drops internalValue, the setTimeout sync and the cmdk search copy, and folds query cleanup into the transaction that caused it."
+  ],
+  "proofLimits": "Source review only; tests, browser flows and undo behavior not run. The url loss and the follow-up commit's history effect are inferred from source, not reproduced. Docs drift (multi-select.mdx claims undo support and cmdk while the field blocks mod+z and uses Fzf with a copied fork) is noted, not proven at runtime.",
+  "references": [
+    "packages/platejs/src/features/tag/lib/BaseTagPlugin.ts",
+    "packages/platejs/src/features/tag/lib/BaseMultiSelectPlugin.ts",
+    "packages/platejs/src/react/features/tag/MultiSelectPlugin.tsx",
+    "apps/www/src/registry/components/editor/select-editor.tsx",
+    "apps/www/src/registry/components/editor/select-command.tsx",
+    "apps/www/src/registry/components/editor/tag.tsx",
+    "apps/www/src/registry/examples/select-editor-demo.tsx",
+    "content/docs/(plugins)/(functionality)/multi-select.mdx",
+    ".agents/playbooks/references/architecture.md",
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "docs/plans/2026-07-13-plate-next-tag-toc-toggle-package-reviews.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/examples/select-editor-demo.tsx": "d3808a5f6eba3770ee98078a63ced837bb1f3ee70901d0f5989a049b32667e80",
+      "apps/www/src/registry/components/editor/select-editor.tsx": "236f074cffcbb83efc1fb913a8f20f88fe12ef8c5ee69eb0c564699ac3f58e15",
+      "packages/platejs/src/features/tag/lib/BaseTagPlugin.spec.tsx": "696b0e82a608eaaa9922df761dea00455f902f43aa513f8e920422ad3174088e",
+      "packages/platejs/src/features/tag/lib/BaseMultiSelectPlugin.spec.ts": "bbe40d2f2dd1d3a671f1020e62d8c874bb82561af752ccb9221e5c0039557811",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/tag": "9e08aea9f3eb7fc9ceed54020d754ff5098a443ac6a68f8e9efd190ef0c35041"
+    },
+    "features": {
+      "capability/tag": "cec03841e210c30ae4f5fe07584beac7f57b270fd2a2ee22433c1624a3a72e53",
+      "example/registry/select-editor-demo": "a243e801a60e2a32ed51be09ea9cc3c7379dec7f5d9b2d6c8ba66abfbcc20934",
+      "export/platejs/./tag": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./tag/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/tag": "9e08aea9f3eb7fc9ceed54020d754ff5098a443ac6a68f8e9efd190ef0c35041",
+      "ui/select-command": "f6d33c1b0b13c0b661c11a25f1ed4996e015d973378db086d5784da00b51531e",
+      "ui/select-editor": "4fe68a3425359bb07244f3cbb19f08a9c240aa0db261c6c527dbd1e4bf20971f",
+      "ui/tag": "8965825c499081cc2e95d58255c6e0f6be04b5d813fa21b02a29b1a906115290"
+    },
+    "upstreams": []
+  }
+}

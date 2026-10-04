@@ -121,7 +121,7 @@ Completion Gates:
 | Registry/browser proof | pending | Verify runnable copied UI or record N/A | pending |
 | Docs/release proof | pending | Verify docs and release classification | pending |
 | Plate Next attestation | pending | Validate reviewed package version/evidence or record N/A | pending |
-| P1 autoreview | pending | Apply the pstack block's Panel review and Review rules (big work, before any PR, otherwise only when asked) and record the result, or N/A with reason | pending |
+| P1 autoreview | pending | Run the panel that the `.agents/pstack.json` reviews list names for this work, or the one the user asked for, and record its result, or N/A with reason | pending |
 | Plan complete | yes | Run `node .agents/pstack/plan-open.mjs {{PLAN_PATH}}` after applicable proof and review | pending |
 
 Findings:

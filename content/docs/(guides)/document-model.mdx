@@ -24,6 +24,8 @@ type EditorDocumentValue = {
 
 Feature properties stay flat on their owning node. Runtime NodeKey values are editor state and are never serialized.
 
+A document's top level holds only `children`, `roots` and `meta`. Every load path refuses any other top-level field, so store application data in `meta`.
+
 ## Application schema
 
 Persistence uses a named envelope:
@@ -46,7 +48,7 @@ const EditorSchema = {
 
 The minimum is required and must be a positive integer. The descriptor must match an installed plugin, and the first descriptor in `schema.content.elements` is the default. Root grammar participates in the schema fingerprint and generated `Value`; cardinality remains runtime validation law.
 
-`defineDocumentMigrations` binds an ascending chain to the application schema. Runtime loading and the CLI call the same `migrateDocument` runner before schema fitting. Increment a named schema's version and migrate stored documents when its root grammar changes.
+`defineDocumentMigrations` binds an ascending chain to the application schema. Runtime loading and the CLI call the same `migrateDocument` runner before schema fitting. Increment a named schema's version and migrate stored documents when its root grammar changes. A step's document holds only `children`, `roots` and `meta`. Any other stored top-level field arrives in the step's `legacy` record, the step lifts it into `meta`, and `migrateDocument` refuses a field no step lifted.
 
 `migrateV54` converts the frozen v53.3.6 profile to v54, including the final AST contracts and one newline-bearing text child per code block. Links and media whose stored URL the current schema rejects keep their label, caption, alt text or file name as ordinary content. Stored mention, emoji, slash and footnote inputs become their trigger and typed query as ordinary text.
 

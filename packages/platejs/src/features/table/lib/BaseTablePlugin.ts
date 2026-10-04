@@ -39,6 +39,7 @@ import {
   type TableContext,
 } from './internal/context';
 import {
+  compileDetachedTableGrid,
   compileTableGrid,
   getTableColumnSizes,
   isTableColumnSizes,
@@ -323,6 +324,8 @@ const parsePositiveHtmlCssNumber = (value: string | null | undefined) => {
   return parsed !== undefined && parsed > 0 ? parsed : undefined;
 };
 
+const MAX_MERGED_EMPTY_CELLS = 100_000;
+
 export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
   dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
@@ -373,52 +376,17 @@ export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
         match: [{ tag: 'td' }, { tag: 'th' }],
       },
       markdown: {
-        encode: ({ encode, isPhrasing, node, path, preserve, refuse }) => {
-          if (getColSpan(node) > 1 || getRowSpan(node) > 1) {
-            return refuse(
-              'Markdown tables cannot represent rowSpan or colSpan.'
-            );
-          }
-          preserve('colSpan', 'rowSpan');
+        encode: ({ encodeLine, node, path, preserve }) => {
+          // The table writes a merged cell in its first slot, so an unclaimed
+          // span is reported as the only loss.
+          if (getColSpan(node) === 1) preserve('colSpan');
+          if (getRowSpan(node) === 1) preserve('rowSpan');
           // Markdown makes exactly the first row the header row.
           if ((path.at(-2) === 0) === (node.header === true)) {
             preserve('header');
           }
 
-          const blocks = encode(node.children);
-
-          if (
-            blocks.some(
-              (block) => block.type !== 'paragraph' && !isPhrasing(block)
-            )
-          ) {
-            return refuse(
-              'Markdown table cells can only contain inline content.'
-            );
-          }
-          const children = blocks.flatMap((block, index) => {
-            const content = (
-              block.type === 'paragraph'
-                ? block.children
-                : isPhrasing(block)
-                  ? [block]
-                  : []
-            ).map((child) =>
-              // GFM writes a hard break in a cell as a space and HTML verbatim,
-              // where a newline would end the row.
-              child.type === 'break'
-                ? { type: 'html' as const, value: '<br/>' }
-                : child.type === 'html'
-                  ? { ...child, value: child.value.replaceAll('\n', '') }
-                  : child
-            );
-
-            return index === blocks.length - 1
-              ? content
-              : [...content, { type: 'html' as const, value: '<br/>' }];
-          });
-
-          return { children, type: 'tableCell' };
+          return { children: encodeLine(node.children), type: 'tableCell' };
         },
       },
     }),
@@ -1011,7 +979,7 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
         match: [{ tag: 'table' }],
       },
       markdown: {
-        decode: ({ decode, marks, isBlock, isInline, node, registry }) => {
+        decode: ({ decodeLine, marks, node, registry }) => {
           const cellType = registry.type(BaseTableCellPlugin);
           const paragraphType = registry.type(BaseParagraphPlugin);
           const rowType = registry.type(BaseTableRowPlugin);
@@ -1034,33 +1002,11 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
           const rows = node.children.map((row, rowIndex) => ({
             children: [
               ...row.children.map((cell) => {
-                const children = decode(cell.children, marks);
-                const grouped: Descendant[] = [];
-                let inline: Descendant[] = [];
-                const flush = () => {
-                  if (inline.length === 0) return;
+                const children = decodeLine(cell.children, marks);
 
-                  grouped.push({ children: inline, type: paragraphType });
-                  inline = [];
-                };
-
-                children.forEach((child) => {
-                  if (
-                    ElementApi.isElement(child) &&
-                    !isInline(child) &&
-                    isBlock(child)
-                  ) {
-                    flush();
-                    grouped.push(child);
-                  } else {
-                    inline.push(child);
-                  }
-                });
-                flush();
-
-                return grouped.length > 0
+                return children.length > 0
                   ? {
-                      children: grouped,
+                      children,
                       ...(rowIndex === 0 ? { header: true } : {}),
                       type: cellType,
                     }
@@ -1076,6 +1022,14 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
           return { children: rows, type };
         },
         encode: ({ encode, node, refuse }) => {
+          const layout = compileDetachedTableGrid(node, MAX_MERGED_EMPTY_CELLS);
+
+          if (layout.kind === 'too-large') {
+            return refuse(
+              `Markdown table would need more than ${MAX_MERGED_EMPTY_CELLS} empty cells to write its merged cells.`
+            );
+          }
+
           const children = encode(node.children);
 
           if (!children.every((child) => child.type === 'tableRow')) {
@@ -1085,7 +1039,20 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
             return refuse('Markdown table contains a row it cannot represent.');
           }
 
-          return { children, type: 'table' };
+          return {
+            children:
+              layout.kind === 'merged'
+                ? children.map((row, rowIndex) => ({
+                    ...row,
+                    children: layout.grid.slots[rowIndex].map((anchor, col) =>
+                      anchor?.row === rowIndex && anchor.col === col
+                        ? row.children[anchor.cellIndex]
+                        : { children: [], type: 'tableCell' as const }
+                    ),
+                  }))
+                : children,
+            type: 'table',
+          };
         },
         node: 'table',
       },

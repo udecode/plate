@@ -1,0 +1,104 @@
+{
+  "id": "2026-10-04-commands-audit",
+  "scope": "commands",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What is the smallest command contract that shares availability and intent between headless calls, shortcuts and UI controls?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-not-adopted at queue position 4 in the plite-core group. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Semantic dispatch composes installed handlers, exact descriptor identity, preparation, read-only checks and native-equivalence decisions.",
+    "Handlers can prepare a prefix and continue downstream against staged state before one commit.",
+    "Shortcuts and UI controls invoke the same plugin method a headless caller uses.",
+    "A public command method needs a current independent consumer."
+  ],
+  "evidenceReuse": "Reused the 09-11 caller census for build(). Rechecked on the live tree the descriptor shape and private runtime, every defineCommand producer, handle and around registrations across Plate, tx.command dispatch from native input, Plate shortcut targeting and sampled toolbar availability. Compared against the plite-core group (runtime and schema Stop, state facets cut). No tests were run.",
+  "summary": "The job is to share one intent between headless calls, native input, shortcuts and UI. Although the ledger records no bound execution, defineCommand now returns a frozen descriptor with only id, and its builder stays private. Native input and core update methods dispatch through tx.command, about 30 Plate plugin registrations intercept core intents through handle or around (input rules and links use next.after continuations), and Plate shortcuts target plugin update or api methods by name. The strongest deletion, making defineCommand private because only plitejs core defines commands, removes one export but also the only public interceptable-intent grammar, at no runtime saving. A shared can or availability API still has no consumer, because copied toolbar buttons derive availability from feature reads, read-only state and installation. Keep the current design.",
+  "verdict": "stop",
+  "previous": "2026-09-11-commands-remove-default-build",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-11-commands-remove-default-build",
+      "question": "What is the smallest command contract that shares availability and intent between headless calls, shortcuts and UI controls?",
+      "action": "supersedes",
+      "reason": "Its build() removal is adopted (descriptor is opaque identity plus id) through the plite-core-cuts plan; nothing materially better remains, so the verdict becomes Stop."
+    }
+  ],
+  "alternatives": [
+    "Keeping the opaque descriptor plus handle and around and prepared specs is selected. Each part has current callers.",
+    "Making defineCommand private and closing the intent set to core is rejected. It saves one export at no runtime gain and removes the only public way for a plugin to publish an interceptable intent.",
+    "Adding can or preview availability is rejected. Toolbar availability is feature policy computed from reads, read-only state and installation, with no shared consumer.",
+    "Routing shortcuts and UI through semantic commands instead of plugin methods is rejected. Plugin update and api methods already name the intent, and wrapping every feature action as a command adds a second vocabulary.",
+    "Replacing the registry with mutable function dispatch is rejected. It would rebuild ordering, interception and unpublished continuation."
+  ],
+  "proofLimits": "Source review only; no tests were run. External consumers of the removed build() are not checked, and the cuts plan's strict, packed-size and browser gates remain open for shared-checkout reasons. The command census is lexical over packages and apps/www/src.",
+  "references": [
+    "docs/research/features/commands.md",
+    "docs/research/decisions/plite-core-ownership.md",
+    "docs/research/review-records/2026-09-11-commands-remove-default-build.json",
+    "docs/plans/2026-09-11-plite-core-cuts.md",
+    "packages/plitejs/src/core/command-definition.ts",
+    "packages/plitejs/src/core/command-registry.ts",
+    "packages/plitejs/src/core/editor-commands.ts",
+    "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts",
+    "packages/plitejs/src/interfaces/editor.ts",
+    "packages/plitejs/src/react/editable/mutation-controller.ts",
+    "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts",
+    "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
+    "packages/platejs/src/lib/plugin/BasePlugin.ts",
+    "apps/www/src/registry/components/editor/details-toolbar-button.tsx",
+    "content/docs/(guides)/plugin-methods.mdx"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/command-definition.ts": "6df00e0623d63ce10edd6526fe1ebb39831da33b6551ebb5c677524d0e2d38fd",
+      "packages/plitejs/src/core/command-registry.ts": "0ca28b54f1f36e8e10d491e1e04c2dc8a1de436e3797c48a999d4dd0c09ba181",
+      "packages/plitejs/src/core/editor-commands.ts": "c98f11da8706d0ee6b54f3050b45887a3cc4f7332d10482ad178d2f9a40a6714",
+      "packages/plitejs/src/react/editable/keyboard-input-strategy.ts": "c8043eee1ed9c8e8c494f98884616761e6c1d87e885809cdc8f830178c028348",
+      "packages/plitejs/test/command-spec.test.ts": "80aa8fdaf45e8223e3c22c00e633373a266493e8edc83d3a5224c40fdec9c8e2",
+      "packages/plitejs/test/generic-command-contract.ts": "19d0e982e2cb9d53653cd3cc8cbcf6be4b2b7bc27149b89bdd819800a1437171",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+      "packages/plitejs/src/interfaces/editor.ts": "9f46f0711f22f9dde8c3e9f470a2d122f571aa3fc2b20d5039278a2b3ca03bc1",
+      "packages/plitejs/src/core/public-state.ts": "e7e799227c5ba12393911c18c850b158fad216f24a0bab76e7b22c651ac24d43",
+      "packages/plitejs/src/core/editor-lifecycle-api.ts": "72fab9f5a995e0226c92718c6dd257d3ae7b9feec157c39a799ec7b8fc77cef4",
+      "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "config/workspace-source-entries.mjs": "07fd635afc33e4a04880e27505ae20174546a8b649160c8a88e2156248ae5f64",
+      "config/plite-test-jsx.js": "c3f46dd2258e36c41a0ba1a77f52fd0592936493cfd56e00db740e4b97612e4a",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "docs/plans/artifacts/plite-core-api-review/verification.json": "de31dc419126df577eb452ad4a0c144131488cd23251bdb0345530180ed635ad",
+      "docs/plans/artifacts/plite-core-api-review/consumer-census.json": "00fbe90af4a1f2396c0dbcc4f7c778952452797ce21ae4d0634df8f08a34e006",
+      "packages/plitejs/test/tsconfig.generic-types.json": "c6ba823a5fd177c82554e4ecb088ed20db8418a6272cf7f9867762f5c835a7fc",
+      "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts": "6286086dbd0d5f4ca7a1f929dfd4bcb03f1902b8f43f6abe9e05876690874798",
+      "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts": "7d3ae606258f5921fccfb9a85aea1b730195e64113ecd050da4e709a82509541",
+      "content/docs/(guides)/plugin-methods.mdx": "9b81659dcc00dcf70009117a2ff02ab0e49c5654f7b64097b415ed9bba27d6c2",
+      "docs/research/decisions/transactions-synchronous-boundary.md": "63a12641b5fb7969f9e2715f85186b841f3393a78b2ea1d3bfed47d02fa2711d",
+      "docs/plans/artifacts/plite-core-cuts/verification.json": "02b5dc67f219a6befa8fbc4bbb9fa9a03b10cc92edcb8c8ec60c03b7afed2bb7",
+      "docs/plans/artifacts/plite-core-cuts/production-probe-results.json": "266a8739527153c3a4dbaac66cecce562c90d8eb320b10afcc8bdfe5b39de45e",
+      "docs/plans/artifacts/plite-core-cuts/production-work-counts.json": "bf6384aa4eb6fc7a54e4da3a70b3193efaa09c4cc221d56952ae89df538d38b7",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "apps/plite/src": "ba0b266b9833d38c4a6fc4740517e89ab76418cd91c1647423d8436a9186cecb",
+      "apps/www/src": "bbf53e34625c10ba528644ec2284a7f6d8042a37b6e19ea703540d030d052c0d",
+      "packages/cli/src": "0c26bf7b09a6b3d900385b053a566b29d9ff8ac6a95d60f31806f33ad586cd67",
+      "packages/platejs/src": "776f60d02edf5932ac768678c39624f25a361e9b2b4281bc6f1e7fcc25cca8e2",
+      "packages/plitejs/src": "e9113cd86628786df533568bd6eb1c99bcdc5815c1a9a70dadc792386478556c"
+    },
+    "features": {
+      "plitejs/core/command-definition": "e9be7b4575f2e8364d44931103f1785dc714aea82aa95fc7d3eb5032684fd062",
+      "plitejs/core/command-registry": "7935797edb9afe722cb7c8dbc2fe87daa2b2c16c4552394f7971b06dc71b07f3",
+      "plitejs/core/editor-commands": "9f89031b37ff1def1ca18dc3f423c9bc6a1b38259ee96a2ea0fbab272b709908"
+    },
+    "upstreams": []
+  }
+}

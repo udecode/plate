@@ -14,11 +14,11 @@ Plate adds playbooks on top of pstack's in [`.agents/playbooks/`](../../.agents/
 | Stop | You say | What runs | It stops with |
 | --- | --- | --- | --- |
 | Next item | "next" | [API review](../../.agents/playbooks/api-review.md): `review-ledger.mjs next` and `status` | The open ledger unit, why it is open, its prior work and the release counts |
-| Review | "review <scope>", then "again" or "interrogate" to iterate | API review: `best-api-review` | A Stop, Pursue or Defer verdict with the current and proposed call site |
+| Review | "review <scope>", then "again" or "panel" to iterate | API review: `best-api-review` | A Stop, Pursue or Defer verdict with the current and proposed call site |
 | Plan | "plan" | [Plan](../../.agents/playbooks/plan.md), with its architecture reference for API or architecture work | The ready plan and its open questions |
 | Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify` and the ledger record | The done report, ending with the next item |
 
-Bugs go through [Bug fix](../../.agents/playbooks/bug-fix.md) and finishing a PR or the current tree through [Babysit](../../.agents/playbooks/babysit.md). A structural cleanup runs [Refactoring](../../.agents/playbooks/refactoring.md), and a slowness report runs [Perf issue](../../.agents/playbooks/perf-issue.md) with `benchmark`.
+Bugs go through [Bug fix](../../.agents/playbooks/bug-fix.md) and finishing a PR or the current tree through [Babysit](../../.agents/playbooks/babysit.md). "review PR <number>" on someone else's PR runs a review-only panel through Babysit and returns findings without editing anything. A structural cleanup runs [Refactoring](../../.agents/playbooks/refactoring.md), and a slowness report runs [Perf issue](../../.agents/playbooks/perf-issue.md) with `benchmark`.
 
 Best API Review assesses whether a direction earns more work, Best API designs
 its public contract, and the Plan playbook owns adoption and proof for the Plate or
@@ -71,8 +71,11 @@ and the full principle (`pstack:principle-redesign-from-first-principles`).
 Known owners and accepted plans go directly to their Plate skill. `verify`
 applies to every proof owner. A tiny edit needs direct verification,
 without a playbook, app launch or review panel. Subagents research and review;
-the lead writes the code. The panel review (`/pstack:interrogate`) runs on big
-work and before opening a PR, and otherwise only when you ask.
+the lead writes the code. The panel review (`/pstack:interrogate`) runs without
+asking only for the rows in the `reviews` list of `.agents/pstack.json`: an API
+or architecture plan (after `architect`), a
+PR's diff before it opens and "review PR <number>". For anything else, say
+"panel", "arena" or "full".
 
 Plate Docs owns public page design, examples, installation, API teaching, MDX
 and navigation. `pstack:technical-writing` supplies general prose guidance.

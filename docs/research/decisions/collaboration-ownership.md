@@ -2,17 +2,12 @@
 title: Collaboration binding, transport and presence ownership
 type: decision
 status: implemented
-updated: 2026-09-14
-review_scope: collaboration
-current_review: 2026-09-14-collaboration-lifetime-implementation
-review_history:
-  - ../review-records/2026-09-14-collaboration-lifetime-ownership.json
-  - ../review-records/2026-09-14-collaboration-plan-readiness.json
-  - ../review-records/2026-09-14-collaboration-lifetime-implementation.json
-  - ../review-records/2026-09-14-plugin-factory-mapping-implementation.json
+updated: 2026-10-04
 ---
 
 # Collaboration binding, transport and presence ownership
+
+**Audit of 2026-10-04.** Stop. The 2026-09-14 lifetime target is in live source (app-owned Y.Doc, readiness, awareness and provider; one native binding with capability-inferred api.yjs; Plate composes it with no store; no read.yjs or tx.yjs), and no deletion, move or replacement lane beats it. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-collaboration-audit` hold the evidence.
 
 Status: **Implemented; adopted and verified** for ledger item 10,
 `collaboration`. The
@@ -67,7 +62,7 @@ establishes value, not a final replacement signature.
 
 ## Scope and acceptance
 
-The [ledger](../reviews.md), [review method](../../../.agents/skills/best-api-review/SKILL.md)
+The [ledger](../schema.md#review-history), [review method](../../../.agents/skills/best-api-review/SKILL.md)
 and [Plite](../../vision/plite.md) / [Plate](../../vision/plate.md) laws require
 one review of synchronization and presence. Separate feature items remain
 separate; this review does not absorb comments, authored changes or history.

@@ -759,26 +759,28 @@ Table owns navigation, selection, and structure inside the grid.
 - `EDIT-TABLE-*` `locked`
 
 ```text
-cell with multiple paragraphs
+cell with paragraphs and list paragraphs
 =>
-markdown cell with inline <br/> fallback
+markdown cell: Intro<ul><li><input type="checkbox" checked disabled /> ship</li></ul><ol start="3"><li>step</li></ol>
 ```
 
-note: plain markdown tables do not preserve nested block structure inside one
-cell
-note: when a cell contains multiple paragraphs or block children, the markdown
-serializer must collapse that content to inline `<br/>` fallback instead of
-pretending block structure can round-trip there
-note: this is a boundary policy, not a claim that `<br/>` is semantically
-equivalent to nested blocks; it is the least dishonest markdown shape available
-once the content must leave the editor-native table model
-note: the serializer should preserve content order and paragraph boundaries, but
-it must not invent fake nested-table markdown that plain GFM cannot carry
-note: deserializing that markdown returns one paragraph with inline breaks, not
-the original nested block tree
-note: this fallback is intentional table policy, not a serializer bug
-note: richer cell-local block structure remains editor-native until the surface
-is converted into a representation that can actually carry it
+note: a GFM row is one line of inline content, so the serializer writes a
+cell's blocks inline on that line, in content order, and never changes a
+cell's column
+note: the serializer writes list paragraphs as inline `<ul>`, `<ol start="n">`
+and `<li>` HTML, with a disabled checkbox leading each task item; the parser
+reads them back as list paragraphs when the editor has the List plugin, and
+without it they stay literal text
+note: the serializer joins other paragraphs with `<br/>` and reports that
+boundary as a lossy warning, because the parser returns one paragraph with
+inline breaks and cannot tell a paragraph boundary from a line break
+note: a heading or quote keeps its inline content and a code or math block
+keeps its text, each with a lossy warning; the serializer drops any other
+block, such as a horizontal rule or a captioned image, and reports it under
+the loss policy
+note: the serializer writes a merged cell in its first slot and empty cells in
+the slots it covers, and reports its span as an omitted property
+note: the parser keeps images as image blocks when it reads a cell back
 
 ### Cell Navigation
 

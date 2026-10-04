@@ -187,6 +187,7 @@ export {
   type ReactPlugin,
   react,
 } from './plugin/with-react';
+export type { TypedText, TypedTextListener } from './editable/typed-text';
 export { ReactUpdatePolicy } from './update-policy';
 export type { RangeGeometry, ViewportRect } from './range-geometry';
 export type {

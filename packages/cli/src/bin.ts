@@ -145,7 +145,7 @@ migrateCommand
   .option('--check', 'exit nonzero when files require migration')
   .option(
     '--from <version>',
-    'source version for raw documents, or "current"',
+    'read every input as a raw document from this version, or "current"',
     parseMigrationSource
   )
   .option('--stdin', 'read one JSON document from standard input')

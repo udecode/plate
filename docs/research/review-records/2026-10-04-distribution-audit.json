@@ -1,0 +1,126 @@
+{
+  "id": "2026-10-04-distribution-audit",
+  "scope": "distribution",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "Which independently consumed entrypoints justify their distribution boundary, and which facades or optional-dependency boundaries can disappear?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 6 in the plate-core group. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "Plate apps install and import platejs only; dedicated raw proof apps import plitejs (VISION.md:44).",
+    "Public roots expose author contracts; neither distribution exposes an internal, unsafe or generic framework escape path (VISION.md:131, docs/vision/plite.md:69).",
+    "Primary-root APIs expose no public main key (VISION.md:101).",
+    "Optional framework or runtime peers stay behind explicit subpaths with packed runtime and declaration closure (docs/vision/common.md:103-105).",
+    "Plate's privileged compiler and runtime hooks cross exactly one first-party bridge while facade identity holds (the release check requires the platejs root to mirror the plitejs root).",
+    "Keep CLI descriptor validation (isNominalPluginDescriptor) and the detached compiler workflow."
+  ],
+  "evidenceReuse": "Reused the 2026-09-12 consumer-class table (headless, static, live React, optional features, compiler and CLI, raw facade) after rechecking both export maps. platejs gained upload, upload/react, html, html/server, combobox/react, docx/paste and react/virtualized and lost dnd/react and docx. plitejs gained internal and react/virtualized. tooling/entrypoints/entrypoint-dag.mjs models all of them. Rechecked getCorePlugins adoption, then counted the @internal JSDoc tags on every plitejs public subpath index (24 hits, 23 in the root and 1 in react) and checked their consumers across the whole repository, their presence in plitejs/internal, the platejs star re-export, the release facade check and the API-reference exclude list. This review did not reuse old test receipts as current proof.",
+  "summary": "The job is that apps import one platejs distribution, raw proof apps import plitejs, optional peers stay behind subpaths, and Plate reaches plitejs internals through one first-party bridge. The old target is live. getCorePlugins and its construction types sit in getCorePlugins.internal.ts outside the plugins barrel (commit e0c1500b95), and the entrypoint DAG models the entrypoints added since the review (upload, upload/react, html, html/server, combobox/react, docx/paste, react/virtualized, plitejs/internal). The plitejs root still exports 23 symbols tagged @internal. Of those, 16 are values that only packages/plitejs, packages/platejs and one benchmark script consume. Every value is already in plitejs/internal, and the release check forces the platejs root to mirror the whole plitejs root, so all of them reach Plate apps. Only an API-reference exclude list hides them from docs. That contradicts VISION.md:131 (no internal or generic framework escape path), plite.md:69 (public roots expose author contracts) and, for MAIN_ROOT_KEY, VISION.md:101. The subtractive fix exports these values only from plitejs/internal, points the Plate facade there, adds a check that rejects @internal exports reachable from public entrypoints, and reconciles VISION.md:131 and common.md:111 with plite.md:65 so doctrine states the one sanctioned bridge once.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "In any app, import { setEditorTransactionViewTransform, runTrustedUpdate, initializePlugins, MAIN_ROOT_KEY } from 'platejs' resolves through packages/platejs/src/core.tsx:3 (export * from 'plitejs'); Plate's own facade imports the same hooks from the plitejs root (packages/platejs/src/facade.ts:1-49).",
+    "proposed": "The proposed packages/platejs/src/facade.ts imports { initializePlugins, runTrustedUpdate, setEditorTransactionViewTransform, MAIN_ROOT_KEY, ... } from 'plitejs/internal'. In apps, import { setEditorTransactionViewTransform } from 'platejs' no longer resolves, while import { createEditor, definePlugin, schema } from 'platejs' is unchanged."
+  },
+  "previous": "2026-09-12-distribution-public-ownership",
+  "relation": "supersedes",
+  "reconciliation": [
+    {
+      "record": "2026-09-12-distribution-public-ownership",
+      "question": "Which independently consumed entrypoints justify their distribution boundary, and which facades or optional-dependency boundaries can disappear?",
+      "action": "supersedes",
+      "reason": "Live source adopts its getCorePlugins cut (getCorePlugins.internal.ts sits outside the plugins barrel and is absent from apps and the API manifest), and its keep-distributions judgment holds. The same-class leak at the plitejs root replaces it as the open target."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-08-30-enforce-plate-facade-dogfooding",
+      "question": "Which independently consumed entrypoints justify their distribution boundary, and which facades or optional-dependency boundaries can disappear?",
+      "action": "retains",
+      "reason": "Facade dogfooding still holds; the proposed cut moves Plate facade imports to the existing bridge without new raw-import authority."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-08-28-finalize-platejs-entrypoint-ownership",
+      "question": "Which independently consumed entrypoints justify their distribution boundary, and which facades or optional-dependency boundaries can disappear?",
+      "action": "retains",
+      "reason": "Entrypoint categories and optional-peer subpaths remain justified; the newer entrypoints follow the same DAG model."
+    }
+  ],
+  "alternatives": [
+    "Keeping the current design loses. Distributions, entrypoints and the bridge stay, but both public roots keep publishing hooks their authors tagged @internal, contrary to VISION.md:131.",
+    "Changing the existing API is selected. It exports the @internal values and MAIN_ROOT_KEY only from plitejs/internal, imports them from there in packages/platejs/src/facade.ts, and adds a check that no @internal export is reachable from a public entrypoint. It deletes public exports and adds no runtime work.",
+    "Replacing export * from 'plitejs' in platejs core.tsx with a curated list loses. The release check already proves facade identity over the whole Plite root, and a hand-kept list recreates sync work once the Plite root is clean.",
+    "Deleting plitejs/internal loses. Plate's compiler lowering and view transforms need privileged access, and every substitute (public plitejs hooks, a hidden symbol-keyed registry, bundling Plite modules into platejs and duplicating its WeakMap state) is worse. Keep it as the single bridge and say so in root doctrine.",
+    "Merging plitejs into platejs or splitting every feature into its own npm package loses for the reasons the 2026-09-12 review gave (independence of raw plitejs, optional-peer closure, an extra distribution concept).",
+    "For the scale gate, this is an export-only cut with unchanged runtime work, so no benchmark lane applies."
+  ],
+  "proofLimits": "This review inspected source and local declarations only. It ran no build, typecheck, test, packed release or browser. The @internal census parses direct re-exports with an immediately preceding JSDoc block, so it is a lower bound. The review judged export * chains and untagged hooks such as runTrustedUpdate by consumer search only. Another process built packages/platejs/dist locally today, and it is not a packed release. packages/platejs/src/facade.ts and packages/plitejs/src/core/public-state.ts carry unstaged edits from other sessions, and packages/plitejs/src/internal/index.ts carries a staged edit from other sessions. Every cited hook also exists at HEAD. Whether the 7 @internal type providers can leave the root depends on public declaration reachability, which the design must check. dispatchCommand, evaluateCommand and probeCommandNativeEquivalent overlap the commands unit.",
+  "references": [
+    "docs/research/decisions/plate-core-ownership.md",
+    "docs/research/review-records/2026-09-12-distribution-public-ownership.json",
+    "docs/plans/2026-09-12-plate-core-api-review.md",
+    "docs/plans/2026-08-30-enforce-plate-facade-dogfooding.md",
+    "docs/plans/2026-08-28-finalize-platejs-entrypoint-ownership.md",
+    "packages/platejs/package.json",
+    "packages/plitejs/package.json",
+    "packages/plitejs/src/index.ts",
+    "packages/plitejs/src/internal/index.ts",
+    "packages/plitejs/src/core/public-state.ts",
+    "packages/plitejs/src/create-editor.ts",
+    "packages/platejs/src/core.tsx",
+    "packages/platejs/src/facade.ts",
+    "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts",
+    "packages/platejs/src/lib/plugins/index.ts",
+    "tooling/scripts/check-plite-release-artifacts.mjs",
+    "tooling/scripts/check-plate-schema-adoption.mjs",
+    "tooling/entrypoints/entrypoint-dag.mjs",
+    "apps/www/api-reference.config.json",
+    "VISION.md",
+    "docs/vision/common.md",
+    "docs/vision/plite.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/package.json": "9ef060d69055e74235e5fdf648bf23249fd028654271706eb4de35d72a9dbaac",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/cli/src/bin.ts": "32771d692703b2d03fd2d4bcba1b538e08f89f17a3676f766906a0d551a702a9",
+      "apps/www/scripts/registry-package-dependencies.mts": "d3ecb10433fb4b837c815a8a10f43184fa6cafe28668628db251f6f90777783b",
+      "tooling/scripts/check-plite-release-artifacts.test.mjs": "3e61f5f25c9cb0213c37e5cae31e37ecdb483bd3aab1c3afe21cf908cf467489",
+      "tooling/scripts/check-plite-release-artifacts.mjs": "34ac920b5f9bbe1dcf454fbe7589b803dadafed5dfdd2bbcff9292be53e6ea23",
+      "docs/plans/artifacts/plate-core-api-review/execution-verification.json": "f0c65995b64d88c1a6b81877d11d5b557913442125d4a753d64bb2a70b3be474",
+      "docs/vision/plate.md": "4a0e6c187965994850a77771ed954d644f9a255a2d776966d33ec82c9cef5f3b",
+      "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+      ".agents/skills/best-api/SKILL.md": "6627d324d9578474511b4bff319a11078aff668442904533d158d6642865f840",
+      ".agents/playbooks/references/architecture.md": "59f2d3b6a8eb44acb39a407260db784929b20dbbd039f38f60c83dfb9c65245a",
+      "packages/platejs/src/core.tsx": "b01128e6117b4b12ed9d204aa8d98fd7d98b76b0ddc62fa427c34ea27bcde1cf",
+      "packages/platejs/src/root.tsx": "fc1da360915489aef52a4d762dd5b7662a764d530bdb27674bb50391d7e93365",
+      "packages/platejs/src/lib/editor/withPlite.ts": "12e601c9a285f6dfa2f797fa70c959f75387ff6a4f503e490c5e7e65b7275c06",
+      "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts": "64f0f2cb3071c25e4becb23c3aea3a2c3b95e552aae84b01ce42e21138a3fba8",
+      "packages/platejs/src/compiler/compileEditor.ts": "69941de0236f3d0b19cf3439cf0e541065c85b0c26bd48314b5004dfcca7ad07",
+      "packages/cli/src/generate.ts": "66d5f622ace5673c91a2ddf1845572fe2de54d914bfeb50f7c8bad9821a22db2",
+      "packages/cli/src/run-migration.ts": "355df5344b1b6cf11d99f321c1517bd37e0fb4e839a80d8e39881e4dfb8b74ee",
+      "tooling/entrypoints/entrypoint-dag.mjs": "4b403baedf155c7405ea1c9ebbdd97805fdfaa6bb2400d0ff7ecfb56450fae20",
+      "apps/www/src/registry/components/editor/plugins.ts": "43bcdaf082e122e5d353f2621f1bd0bc84893bfe245a997f5d47b4fbe603a137",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {},
+    "features": {
+      "cli/deps": "920c55d7252b8097dc4ad41c65c70186544539cad30de87382c8de1369a8a2ec",
+      "cli/entrypoints": "df6f348010eddade5f9e3d6d5b53e48bc88f6dadbbcfd2d5495be5ac6f9f7f02",
+      "cli/internal": "02bb41b9d632875cd7f9ecd83eb26296e834abdc8ce8b5a3a3094862eb185dbc",
+      "cli/proof-and-packaging": "f43d7fc40ea14b8ab4412e383700d2a25b4e12df7687925c26032b3806c2cec9",
+      "export/cli/./package.json": "e6d1a3eb34a65e7ce7281111e6dc498d9c6a61b82a25ec07a815a596741a5393",
+      "export/platejs/.": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./package.json": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/entrypoints": "396a9e5f0c139743e676c74f767517c6b05387e12c5f68af3eb7df9629fbef97",
+      "platejs/internal": "29e369be3bee335a589e89cd4a59d62c0ac9b1a72adcbfd7dd8fd3649c426dc9",
+      "platejs/utils": "b657100c8e1c460305e9434c8cd80fc85c25917197dfa9dae0b293041fa218c4",
+      "tooling/distribution": "c9d457fc0578a4eef1644ea83e5018ffa1290756b1327369c28efb28fd740fa3"
+    },
+    "upstreams": []
+  }
+}

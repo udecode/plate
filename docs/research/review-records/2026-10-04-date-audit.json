@@ -1,0 +1,70 @@
+{
+  "id": "2026-10-04-date-audit",
+  "scope": "date",
+  "kind": "review",
+  "date": "2026-10-04",
+  "question": "What should a date node persist and which formatting belongs to application UI?",
+  "model": "Claude Opus 5.5",
+  "method": "best-api-review/history-v3",
+  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 56. It is not the unit next returned, which was reads.",
+  "requirements": [
+    "One persisted value, a canonical YYYY-MM-DD date or authored text, is preserved through the v54 migration (date.mdx, migratePlateV54Ast.spec.ts).",
+    "Markdown reads and writes <date value> and child-text date tags (date.mdx).",
+    "Package defaults stay neutral; no visible product copy from npm (plate-plugins).",
+    "Copied renderers own presentation; static presets stay server-safe and express their own presentation (docs/vision/plate.md).",
+    "Ordinary editor creation and replacement accept current input only; legacy shapes migrate at the persistence boundary (docs/vision/plate.md)."
+  ],
+  "evidenceReuse": "No prior review. Used the 2026-07-10 package review, which kept display labels Plate-owned under earlier doctrine, and the 2026-08-31 popover regression plan as context. Rechecked live BaseDatePlugin, dateValue.ts, DatePlugin, copied date.tsx and date-static.tsx, date.mdx and the v54 migration; all clean in git status.",
+  "summary": "The job is to store one date chip value that survives Markdown, migration and editing, and let each app present it in its own language and time context. BaseDatePlugin persists one non-empty string, a canonical YYYY-MM-DD date or authored text, by documented design and the v54 migration. dateValue.ts also exports getDateDisplayLabel, which hard-codes English relative words and toLocaleDateString(undefined) with a now default, and both copied date.tsx and date-static.tsx call it. The persisted union and the canonical codec are right and stay. The strongest cut, canonical-only values, breaks migrated authored text, and keeping the label in npm ships product copy against the neutral-defaults rule. The target moves the label into the copied date items, where the static item can render an absolute date. The plan should also check whether insert should keep converting the legacy toDateString shape.",
+  "verdict": "pursue",
+  "callSites": {
+    "current": "import { getDateDisplayLabel } from 'platejs/date'; {getDateDisplayLabel(element.value)} // in copied date.tsx and date-static.tsx",
+    "proposed": "// proposed, copied date.tsx and date-static.tsx: const label = formatDateLabel(element.value); // copied function over parseCanonicalDateValue from platejs/date, with the app's locale and relative words; the static item may render an absolute date"
+  },
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [],
+  "alternatives": [
+    "Keeping the label in the package loses. Every app inherits English relative labels and a locale and clock read at render time, including static output, from an npm export.",
+    "The strongest cut, persisting canonical dates only and dropping authored text, loses. The v54 migration and docs preserve authored values such as sometime next week, a serialized-data law.",
+    "Adding a locale or labels option to getDateDisplayLabel loses. It grows package presentation configuration instead of moving presentation to its copied owner.",
+    "Moving ownership is the chosen lane. platejs/date keeps the schema, Markdown mapping, insert and the canonical codec (formatDateValue, parseCanonicalDateValue, normalizeDateValue), and the label moves into the copied date items."
+  ],
+  "proofLimits": "Source review only; no SSR hydration or static export run, so the frozen-label and server-locale effects are inferred. date.mdx:194 attributes child-text parsing to an HTML parser although date has no HTML mapping; not runtime-verified.",
+  "references": [
+    "packages/platejs/src/features/date/lib/BaseDatePlugin.ts",
+    "packages/platejs/src/features/date/lib/dateValue.ts",
+    "packages/platejs/src/react/features/date/DatePlugin.tsx",
+    "apps/www/src/registry/components/editor/date.tsx",
+    "apps/www/src/registry/components/editor/date-static.tsx",
+    "content/docs/(plugins)/(elements)/date.mdx",
+    "packages/platejs/src/migrations/migratePlateV54Ast.internal.ts",
+    "packages/platejs/src/migrations/migratePlateV54Ast.spec.ts",
+    ".agents/skills/plate-plugins/SKILL.md",
+    "docs/plans/2026-07-10-plate-next-csv-cursor-date-package-reviews.md"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/date.tsx": "e625d7cb58a4851060197ff985e457bf0a7f2491bf8d6b78968925720813177c",
+      "packages/platejs/src/features/date/lib/BaseDatePlugin.spec.tsx": "0a2209e264a6563d2af478760606e775ecc6e5aef7074156fad5c6a934b28f31",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
+      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+    },
+    "directories": {
+      "packages/platejs/src/features/date": "b408a66d6adec42c73a51e27c95f52a4e067568409b0ff420a54b338168e9c39"
+    },
+    "features": {
+      "capability/date": "04e574348f404dcfef633f7a3aaab5674837db6cc17b8035996f6ed464d4f10d",
+      "example/value/date-value": "203862719bf71bbe285e556b063b12b7736b50063405e8e1af846e4a5ceea02d",
+      "export/platejs/./date": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./date/react": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/date": "b408a66d6adec42c73a51e27c95f52a4e067568409b0ff420a54b338168e9c39",
+      "ui/date": "14aeeef067246cf2265533e3499fd980d60e15f986d1d6e50831a836ab6e16d0"
+    },
+    "upstreams": []
+  }
+}
