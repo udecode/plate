@@ -86,6 +86,7 @@ const InlineCombobox = <P extends PluginReference>({
   const store = useComboboxStore({ includesBaseElement: false });
   const activeId = useStoreState(store, 'activeId');
   const items = useStoreState(store, 'items');
+  const moves = useStoreState(store, 'moves');
   const renderedItems = useStoreState(store, 'renderedItems');
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -139,10 +140,26 @@ const InlineCombobox = <P extends PluginReference>({
   React.useEffect(() => {
     const { activeId: id } = store.getState();
 
-    if (!id || !renderedItems.some((item) => item.id === id)) {
+    if (!id) {
       store.setActiveId(store.first());
+    } else if (!renderedItems.some((item) => item.id === id)) {
+      // A move scrolls the first option back into view; opening stays still.
+      store.move(store.first());
     }
   }, [renderedItems, store]);
+
+  // Ariakit scrolls on move only from its own Combobox input, which the
+  // editor replaces. Scroll without focusing so the editor keeps focus.
+  React.useEffect(() => {
+    if (!moves) return;
+
+    const { activeId: id } = store.getState();
+
+    store.item(id)?.element?.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+    });
+  }, [moves, store]);
 
   const queryBecameProse =
     !!match && !match.composing && items.length === 0 && /\s$/.test(query);

@@ -157,6 +157,88 @@ test('combobox:a mention completed at a block end keeps typing after it', async 
   }
 });
 
+const readActiveOption = (page: Page) =>
+  page.evaluate(() => {
+    const active = document.querySelector('[role="option"][data-active-item]');
+    const list = active?.closest('[role="listbox"]');
+
+    if (!active || !list) return null;
+
+    const options = [...list.querySelectorAll('[role="option"]')];
+
+    const listRect = list.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+
+    return {
+      index: options.indexOf(active),
+      inView:
+        activeRect.top >= listRect.top - 1 &&
+        activeRect.bottom <= listRect.bottom + 1,
+      last: options.length - 1,
+      scrollable: list.scrollHeight > list.clientHeight,
+    };
+  });
+
+test('combobox:arrow keys scroll the active option into view', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await openDemo(page, '/blocks/slash-command-demo', 'Slash Command');
+
+    await page.keyboard.type('/');
+    await expect(page.getByRole('option').first()).toBeVisible();
+    await expect
+      .poll(() => readActiveOption(page))
+      .toMatchObject({ index: 0, scrollable: true });
+
+    await page.keyboard.press('ArrowUp');
+    await expect
+      .poll(() => readActiveOption(page))
+      .toMatchObject({ inView: true });
+    const wrapped = await readActiveOption(page);
+    expect(wrapped?.index).toBe(wrapped?.last);
+
+    await page.keyboard.press('ArrowDown');
+    await expect
+      .poll(() => readActiveOption(page))
+      .toMatchObject({ index: 0, inView: true });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('combobox:filtering out the active option scrolls the first into view', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await openDemo(page, '/blocks/slash-command-demo', 'Slash Command');
+
+    await page.keyboard.type('/');
+    await expect(page.getByRole('option').first()).toBeVisible();
+    await page.keyboard.press('ArrowUp');
+    await expect
+      .poll(async () => {
+        const active = await readActiveOption(page);
+
+        return active !== null && active.index === active.last;
+      })
+      .toBe(true);
+
+    await page.keyboard.type('c');
+    await expect
+      .poll(() => readActiveOption(page))
+      .toMatchObject({ index: 0, inView: true, scrollable: true });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
 test('combobox:Escape keeps the query as text without reopening', async ({
   page,
 }) => {
