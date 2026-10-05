@@ -192,10 +192,8 @@ describe('editor foundation contract', () => {
     const remoteCommits: Array<
       NonNullable<ReturnType<typeof editorGetLastCommit>>
     > = [];
-    const unsubscribe = remote.subscribe((_snapshot, commit) => {
-      if (commit) {
-        remoteCommits.push(commit);
-      }
+    const unsubscribe = remote.subscribeCommit((commit) => {
+      remoteCommits.push(commit);
     });
 
     source.update({ tags: ['local-edit', 'collab-export'] }, (tx) => {

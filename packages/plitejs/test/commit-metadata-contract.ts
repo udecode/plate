@@ -27,7 +27,6 @@ import {
   getSnapshot as editorGetSnapshot,
   insertBreak as editorInsertBreak,
   replace as editorReplace,
-  subscribe as editorSubscribe,
 } from '../src/internal';
 
 const paragraph = (text: string): Element => ({
@@ -810,10 +809,8 @@ describe('commit metadata contract', () => {
       },
     });
 
-    const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
-      if (commit) {
-        commits.push(commit);
-      }
+    const unsubscribe = editor.subscribeCommit((commit) => {
+      commits.push(commit);
     });
 
     editor.update((tx) => {
@@ -1004,7 +1001,7 @@ describe('commit metadata contract', () => {
     const before = editorGetSnapshot(editor);
     const tableNodeKey = before.index.keyAt([1]);
     const tableRowNodeKey = before.index.keyAt([1, 0]);
-    const unsubscribe = editorSubscribe(editor, () => {});
+    const unsubscribe = editor.subscribeCommit(() => {});
 
     assert.ok(tableNodeKey);
     assert.ok(tableRowNodeKey);

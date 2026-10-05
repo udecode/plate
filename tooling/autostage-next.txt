@@ -3,8 +3,10 @@
 # One git glob pathspec per line; `**` crosses directories.
 
 docs/**
+AGENTS.md
 .agents/**
 .changeset/**
+benchmarks/**
 apps/www/api-reference.config.json
 apps/www/public/r/**
 apps/www/public/rd/**
@@ -20,8 +22,8 @@ packages/*/test/**
 packages/*/type-tests/**
 apps/*/tests/**
 tooling/e2e/**
-benchmarks/*/test/**
 **/*.cn.mdx
 **/index.ts
 tooling/**
 pnpm-lock.yaml
+skills-lock.json

@@ -38,7 +38,6 @@ import {
   removeMark as editorRemoveMark,
   replace as editorReplace,
   string as editorString,
-  subscribe as editorSubscribe,
 } from '../src/internal';
 import {
   createTestDocumentChange,
@@ -152,7 +151,7 @@ describe('plite transaction contract', () => {
 
     replaceChildren(editor, [paragraph('one'), paragraph('two')]);
 
-    const unsubscribe = editorSubscribe(editor, () => {
+    const unsubscribe = editor.subscribeCommit(() => {
       publishedStates.push(getVisibleState(editor));
     });
 
@@ -221,7 +220,7 @@ describe('plite transaction contract', () => {
         ],
       })
     );
-    const unsubscribe = editorSubscribe(editor, () => {
+    const unsubscribe = editor.subscribeCommit(() => {
       publishedStates.push(getVisibleState(editor));
     });
 
@@ -282,7 +281,7 @@ describe('plite transaction contract', () => {
     assert.ok(discardTargetNodeKey);
 
     const discardBefore = getVisibleState(discardEditor);
-    const unsubscribeDiscard = editorSubscribe(discardEditor, () => {
+    const unsubscribeDiscard = discardEditor.subscribeCommit(() => {
       discardPublishedStates.push(getVisibleState(discardEditor));
     });
 
@@ -434,10 +433,8 @@ describe('plite transaction contract', () => {
 
     replaceChildren(editor, [paragraph('one')]);
 
-    const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
-      if (commit) {
-        commits.push(commit);
-      }
+    const unsubscribe = editor.subscribeCommit((commit) => {
+      commits.push(commit);
     });
 
     editor.update((tx) => {
@@ -599,7 +596,7 @@ describe('plite transaction contract', () => {
 
     replaceChildren(editor, [paragraph('one')]);
 
-    const unsubscribe = editorSubscribe(editor, () => {
+    const unsubscribe = editor.subscribeCommit(() => {
       publishedStates.push(getVisibleState(editor));
     });
 
@@ -1775,14 +1772,9 @@ describe('plite transaction contract', () => {
       })
     );
     pluginCommits.length = 0;
-    const unsubscribeSubscriber = editorSubscribe(
-      editor,
-      (_snapshot, commit) => {
-        if (commit) {
-          subscribedCommits.push(commit);
-        }
-      }
-    );
+    const unsubscribeSubscriber = editor.subscribeCommit((commit) => {
+      subscribedCommits.push(commit);
+    });
 
     editor.update((_tx) => {
       editorInsertText(editor, '!');

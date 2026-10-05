@@ -6,7 +6,7 @@ work_kind: implementation
 
 # Synchronous history replay result
 
-Status: awaiting the owner's answer on the round-2 patch; built, reviewed in two plan and two diff panel rounds, and proven on the final bytes
+Status: executed: built, reviewed in two plan and two diff panel rounds, round-2 patch applied on the owner's go, proven on the final bytes; the work waits for your commit
 Playbook: plan
 
 **Verdict: Pursue.** `editor.api.history.undo()` and `redo()` should return their result synchronously, with a `pending` variant for the one replay that waits on an external owner. Keep the floating-promise lint on. The Promise carries no information for a document batch. The probe shows the text already reverted when `undo()` returns, and the guide says ordinary batches "settle immediately". Yet it makes every caller write `void` or `await`. HEAD has 101 `await` sites and calls the rest bare. Another session's uncommitted change adds the type-aware lint to `pnpm check`, and its sweep adds `void` to 276 history calls to satisfy `typescript/no-floating-promises`. None of the 12 production call sites waits for the result; only the mounted runtime's internal funnel does. Behind a discarded call, a throwing replay owner surfaces as an unhandled rejection (probe: 1 of 1). The one async case, comment-creation replay, already claims the branch head and publishes `pending` before its first `await`, so a synchronous result describes it exactly. The plan keeps the TaskHub-22 order and the claim lifecycle. It changes the return channel, gives replay failure one owner, and fixes a shipped defect: a throw while settling leaves `pending` set for good, so every later undo returns `busy`.
@@ -20,13 +20,14 @@ Playbook: plan
 - Step 7 asked for `plitejs` and `platejs` changesets. Only the unreleased `plite-history-persistence.md` changeset was amended; Plate exposes the history API only through its `plitejs` re-export.
 - `HistoryApi` reaches Plate through `packages/platejs/src/facade.ts`, because the entrypoint graph forbids `platejs/history` importing `plitejs`.
 - The build applied the plan panel's three unreviewed proof details, as the owner's Build now answer accepted: the claim version recorded in the commit handler, the migrated mounted rejection test and `build:registry`.
-- The diff panel's round-2 fixes are not applied; they wait under Needs you.
+- The diff panel's round-2 fixes landed on the owner's go without a panel review. The trail review had found a flaw in their first version, so the applied version was reworked and proven first.
+- The plan's Public API after fences now show the built code instead of the proposed sketches; the test uses a `settled` helper, and the reporting example is the history plugin's own `report`.
 
 **What landed.**
 
 - `editor.api.history.undo()` and `redo()` return `HistoryResult` synchronously. A replay that waits on an effect owner returns `{ status: 'pending', settled }`; `settled` never rejects. `HistorySettlement`, `HistoryOutcome`, `HistoryResult` and `HistoryApi` are root `plitejs` exports.
 - An owner or settlement failure after the claim settles `failed`, keeps the entry and reports through the lifecycle error sink, with `reportError` and then `console.error` as fallbacks. A synchronous owner result settles in the call. An owner promise from another realm still goes `pending`.
-- The stuck-`pending` defect is fixed: a throwing settlement clears the claim.
+- The stuck-`pending` defect is fixed: a throwing settlement clears the claim. An owner result is asynchronous only when it has a callable `then`, so a non-object result settles `failed` and a result with `then: undefined` settles in the call; a repeated settlement error reports once.
 - The mounted runtime keeps its timing, checks the claim version History records, removes its focus guards even when the replay throws, and no longer copies the result union or casts through `unknown`.
 - About 370 call sites dropped `void` or `await`, including another session's uncommitted sweep, which no longer needs to land. Docs, the Plite reference pages, Vision, the history decision page, the `best-api` rule, the protocol matrix, the changeset and Plate Next doctrine v259 teach the new contract.
 
@@ -35,10 +36,11 @@ Playbook: plan
 - New tests, each red first or proven by mutation: the settlement throw and owner throw (`docs/research/probes/2026-10-05-history-replay-result/build-proof/red-before.txt`), the foreign-realm owner promise and the synchronous owner throw (`docs/research/probes/2026-10-05-history-replay-result/panel-diff-r1/diff-r1-red.txt`), and two mounted tests (`docs/research/probes/2026-10-05-history-replay-result/build-proof/mounted-mutations.txt`).
 - `pnpm --filter plitejs test` and `pnpm --filter platejs test` exit 0 on the final bytes (`docs/research/probes/2026-10-05-history-replay-result/build-proof/final-suites.txt`); typechecks for `plitejs`, `platejs` and `www` exit 0.
 - `pnpm exec oxlint --type-aware` over the 104 task files exits 0, so no bare `undo()` call trips `no-floating-promises` (`docs/research/probes/2026-10-05-history-replay-result/build-proof/lint-final.txt`).
+- After the round-2 patch: history partition 154 pass, React partition 1418 pass, `plitejs` typecheck exit 0, lint on both changed files exit 0 (`docs/research/probes/2026-10-05-history-replay-result/build-proof/go-history.txt`, `docs/research/probes/2026-10-05-history-replay-result/build-proof/go-checks.txt`), and both Chromium routes again five times each (`docs/research/probes/2026-10-05-history-replay-result/build-proof/go-acceptance.txt`). The Comments spec (58 pass), `pnpm --filter platejs test` and `pnpm --filter plitejs test` exit 0; the first `plitejs` run passed all 20 partitions but its aggregate cache check failed, inferred to be another session's edit mid-run, and the rerun passed (`docs/research/probes/2026-10-05-history-replay-result/build-proof/go-suites.txt`).
 - Chromium, five forced warm runs without retries: the Plite donor undo cases and document-state (9 of 9 each run) and the C22 comment route (1 of 1 each run) (`docs/research/probes/2026-10-05-history-replay-result/build-proof/acceptance-plite-5x.txt`, `docs/research/probes/2026-10-05-history-replay-result/build-proof/acceptance-c22-5x.txt`).
 - Docs build and source parity pass; the registry regenerated; the migration grep returns nothing outside `settled` waiters; the history-depth benchmark runs as a smoke (`docs/research/probes/2026-10-05-history-replay-result/build-proof/`).
 
-**Limits.** No Firefox, WebKit or device run. The history-depth benchmark ran as a smoke, not a timing comparison. Turbo reused cached partitions whose inputs had not changed. The two round-2 warnings remain until the patch lands.
+**Limits.** No Firefox, WebKit or device run. The history-depth benchmark ran as a smoke, not a timing comparison. Turbo reused cached partitions whose inputs had not changed. The round-2 patch has no panel review; its proof is the probe, the worktree run and the reruns above. The `www` typecheck was not rerun after the patch, which touches only `plitejs` history code and its test.
 
 **Attention.**
 
@@ -53,13 +55,12 @@ reviewed by gpt-6.1-sol
 - The `platejs` changeset skip rests on `.changeset/pre.json`: no shipped beta changeset carries the Promise history API, so Plate beta users see no delta.
 - The review record's summary still promises focus repair inside the call, removal of the focus guards and every TaskHub-22 law. The plan supersedes those claims: timing and guards are unchanged, and the Comments listener gap stays open.
 
-**Counts.** 24 items: 8 steps, 13 gates and 3 asks. 23 done, 1 skipped (the `platejs` changeset), 0 blocked, 1 open (the round-2 patch answer).
+**Counts.** 25 items: 8 steps, 13 gates and 4 asks. 24 done, 1 skipped (the `platejs` changeset), 0 blocked, 0 open.
 
-**Records.** Review `2026-10-05-history-sync-replay-result` and execution `2026-10-05-history-sync-replay-result-execution` (partial, until the round-2 patch answer). The ledger's next item is `reads` (Reads, snapshots and subscriptions).
+**Records.** Review `2026-10-05-history-sync-replay-result`, execution `2026-10-05-history-sync-replay-result-execution` (partial) and execution `2026-10-05-history-sync-replay-result-execution-2` (completed, after the round-2 patch). The owner committed the build as `0dfa19ab11`; the round-2 patch is uncommitted. The ledger's next item is `reads` (Reads, snapshots and subscriptions).
 
 **Open work.**
 
-- Apply or review the diff panel's round-2 patch. owner: zbeyens, tracked under Needs you.
 - The Comments listener, Comments storage-error and lifecycle-fallback items, and staging Comments publication in settlement. owner: zbeyens, tracked in `docs/plans/topics/history.md` Open work.
 - An optional discriminated receipt instead of the optional `claimVersion`. owner: zbeyens, tracked in `docs/plans/topics/history.md` Open work.
 
@@ -71,23 +72,23 @@ The Promise did nothing for normal undo, because the text had already changed wh
 
 ### What will change?
 
-It already changed: `undo()` and `redo()` return their result in the call, comment-creation replay returns `pending` with a `settled` that never rejects, and about 370 `void`s and `await`s are gone. Type-aware lint passes with bare calls.
+Nothing more. `undo()` and `redo()` return their result in the call, comment-creation replay returns `pending` with a `settled` that never rejects, and about 370 `void`s and `await`s are gone.
 
 ### What do you need from me?
 
-One answer: apply the diff panel's last-round patch, review it first, or leave it out.
+Nothing. The work is in the working tree for you to commit.
 
 ### What happens if I say go?
 
-I apply the round-2 patch, rerun the history and React partitions, and republish this page. Nothing is committed.
+Nothing new runs; this plan is executed. The ledger's next item is `reads`.
 
 ### What could go wrong?
 
-Without the patch, an owner that breaks its declared return type can still wedge undo until reload. No Firefox, WebKit or device run backs the browser claims.
+No Firefox, WebKit or device run backs the browser claims, and the round-2 patch landed without a panel review.
 
 ## Public API
 
-A test waiting on a comment-style replay narrows the result instead of awaiting every call.
+A test waiting on a comment-style replay asserts the `pending` variant through a small `settled` helper instead of awaiting every call.
 
 ```ts before
 // packages/plitejs/test/history/history-branch-contract.spec.ts
@@ -98,11 +99,10 @@ assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
 ```
 
 ```ts after
-// packages/plitejs/test/history/history-branch-contract.spec.ts (proposed)
-const result = editor.api.history.undo();
-assert.ok(result.status === 'pending');
+// packages/plitejs/test/history/history-branch-contract.spec.ts
+const pending = editor.api.history.undo();
 gate.resolve();
-assert.deepEqual(await result.settled, { reason: 'external-diverged', status: 'blocked' });
+assert.deepEqual(await settled(pending), { reason: 'external-diverged', status: 'blocked' });
 assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
 ```
 
@@ -114,12 +114,12 @@ const result = await editor.api.history.undo();
 ```
 
 ```ts after
-// content/docs/(guides)/history.mdx (proposed)
+// content/docs/(guides)/history.mdx
 const result = editor.api.history.undo();
 const outcome = result.status === "pending" ? await result.settled : result;
 ```
 
-The result types move to the root entrypoint, beside the effect replay types. They lose the Promise and gain `pending` and `failed` (proposed).
+The result types move to the root entrypoint, beside the effect replay types. They lose the Promise and gain `pending` and `failed`.
 
 ```ts before
 // packages/plitejs/src/history/history-plugin.ts
@@ -136,34 +136,36 @@ export type HistoryApi = {
 ```
 
 ```ts after
-// packages/plitejs/src/interfaces/editor.ts (proposed)
-/** What a claimed replay settles to. */
+// packages/plitejs/src/interfaces/editor.ts
+/** Final outcome of a replay that waited on its effect owner. */
 export type HistorySettlement =
   | Readonly<{ status: 'applied' }>
   | Readonly<{ reason: string; status: 'blocked' }>
   | Readonly<{ status: 'failed' }>;
 
-/** A replay that has finished. */
+/** Outcome of an undo or redo that has finished. */
 export type HistoryOutcome =
   | HistorySettlement
-  | Readonly<{ status: 'empty' | 'busy' }>
+  | Readonly<{ status: 'busy' | 'empty' }>
   | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>;
 
 export type HistoryResult =
   | HistoryOutcome
   | Readonly<{
-      /** Resolves once its owner finishes. Never rejects. */
+      /** Resolves once the effect owner finishes. Never rejects. */
       settled: Promise<HistorySettlement>;
       status: 'pending';
     }>;
 
 export type HistoryApi = {
+  /** Replay the current redo batch as one complete editor update. */
   redo: () => HistoryResult;
+  /** Replay the current undo batch as one complete editor update. */
   undo: () => HistoryResult;
 };
 ```
 
-History's preconditions, such as a replay inside a transaction, and a document replay's own update still throw, like any `editor.update`. Once a session batch is claimed, an owner or settle failure, synchronous or not, settles `failed`, keeps the entry at the head and reports to the editor's lifecycle error sink instead of rejecting (proposed). With no sink set, the report goes to `globalThis.reportError` when the platform has it, and to `console.error` otherwise.
+History's preconditions, such as a replay inside a transaction, and a document replay's own update still throw, like any `editor.update`. Once a session batch is claimed, an owner or settle failure, synchronous or not, settles `failed`, keeps the entry at the head and reports to the editor's lifecycle error sink instead of rejecting. With no sink set, the report goes to `globalThis.reportError` when the platform has it, and to `console.error` otherwise.
 
 ```ts before
 // packages/plitejs/src/history/history-plugin.ts
@@ -177,10 +179,15 @@ try {
 ```
 
 ```ts after
-// application code (proposed)
-const editor = createEditor({
-  lifecycleErrorSink: (error) => reportToTelemetry(error.cause),
-});
+// packages/plitejs/src/history/history-plugin.ts
+const report = (cause: unknown) =>
+  reportEditorLifecycleError({
+    cause,
+    direction,
+    editor,
+    phase: 'replay',
+    source: 'history',
+  });
 ```
 
 ## Layer and owner
@@ -245,32 +252,11 @@ Removed nouns and where their behavior goes:
 | Mounted focus guards | Keep `focusin`/`pointerdown` armed across the call, with cleanup in a `finally` that starts before the call | Drop them for document batches after a Chromium case proves no subscriber moves focus mid-undo | drop guards |
 | Comments local publication timing | Unchanged: Comments publishes inside its owner, before settlement | Two-phase owner contract that stages Comments records inside the settlement update | stage comments |
 
-## Open questions
-
-### Round-2 patch
-
-Should the diff panel's last-round fixes land without another review?
-
-Why it needs you: The panel's round cap is spent, so any further code change lands unreviewed unless you grant one more round.
-
-- The patch is `docs/research/probes/2026-10-05-history-replay-result/panel-diff-r2/unreviewed.patch` and is not in the working tree.
-- It replaces the `'then' in` check with a callable-`then` test, stops reporting the same settlement error twice while still retrying the clear, and makes the foreign-realm test pass under any `deepEqual`.
-- In a detached worktree with the patch, the history tests pass 154 of 154 and `tsc` exits 0 (`docs/research/probes/2026-10-05-history-replay-result/patch-r2-proof/worktree-check.txt`). A probe shows each warning on the reviewed code and its fix on the patched copy (`docs/research/probes/2026-10-05-history-replay-result/patch-r2-proof/round2-cases.txt`).
-- Without it, a valid result object that carries `then: undefined` settles a microtask late, an owner that returns a non-object wedges undo until reload, and a settlement error that repeats reports twice.
-
-- **Apply the patch** (recommended): I run `git apply` on it, rerun the history and React partitions, and log the result. Cost: About twenty lines land that no panel seat has read.
-- **Review it first**: One more panel round on the patch alone. Cost: Three more seats and about half an hour.
-- **Leave it out**: The reviewed bytes stay as they are, and both warnings stay on the subject page as open work. Cost: The non-object owner result can still wedge undo until reload.
-
-Why I pick it: Each change narrows a failure path the seats traced, and the patch passes the same tests the reviewed bytes pass.
-
-If you say go: I apply the patch, rerun the history and React partitions, and republish this page.
-
 ## Panel gate
 
 The plan panel ran two rounds on seats Opus, gpt-6-astra @high and gpt-6.1-sol @xhigh. Round 1 applied three critical fixes. Round 2 found one critical, in round 1's Comments fix, and two warnings against round 1's failure split; both fixes were reverted, and the wording on error delivery and callback timing was narrowed to today's behavior. Its three additive suggestions waited in `docs/research/probes/2026-10-05-history-replay-result/panel-r2/unreviewed.patch`; the owner's Build now accepted them, and the build applied them.
 
-The diff panel ran two rounds on the same seats. Round 1 applied one critical fix: an owner promise from another realm settled as a synchronous result. Round 2 found no critical, so it is the last round. Its additive fixes wait unreviewed:
+The diff panel ran two rounds on the same seats. Round 1 applied one critical fix: an owner promise from another realm settled as a synchronous result. Round 2 found no critical, so it is the last round. Its additive fixes landed on the owner's go without a panel review:
 
 | Unreviewed | Source | Patch |
 | --- | --- | --- |

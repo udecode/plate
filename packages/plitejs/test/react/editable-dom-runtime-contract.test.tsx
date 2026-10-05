@@ -258,7 +258,7 @@ test('skips focus repair when a claim subscriber publishes before settlement', a
   const focus = vi.fn();
   const runtime = new EditableDOMRuntime({ editor });
   let published = false;
-  const unsubscribe = editor.subscribe(() => {
+  const unsubscribe = editor.subscribeCommit(() => {
     if (published || editor.read.history.pending() !== 'undo') return;
     published = true;
     editor.update((tx) => {

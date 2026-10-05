@@ -44,7 +44,6 @@ import {
   setSelection as editorSetSelection,
   setNodes as editorSetNodes,
   splitNodes as editorSplitNodes,
-  subscribe as editorSubscribe,
   subscribeSource as editorSubscribeSource,
   toggleMark as editorToggleMark,
   liftNodes as editorLiftNodes,
@@ -1922,7 +1921,7 @@ it('publishes once after a transaction and keeps same-version reads stable', () 
   const snapshots = [editorGetSnapshot(editor)];
   let notifications = 0;
 
-  editorSubscribe(editor, (snapshot) => {
+  editor.subscribeCommit((_commit, snapshot) => {
     notifications += 1;
     snapshots.push(snapshot);
   });
@@ -1971,7 +1970,7 @@ it('keeps text snapshots stable across later path-stable text commits', () => {
     selection: null,
   });
 
-  editorSubscribe(editor, (snapshot) => {
+  editor.subscribeCommit((_commit, snapshot) => {
     snapshots.push(snapshot);
   });
 
@@ -2051,7 +2050,7 @@ it('publishes one path-stable snapshot for batched text commits', () => {
 
   const before = editorGetSnapshot(editor);
 
-  editorSubscribe(editor, (snapshot) => {
+  editor.subscribeCommit((_commit, snapshot) => {
     snapshots.push(snapshot);
   });
 
@@ -2092,7 +2091,7 @@ it('reuses snapshot indexes for selection-only listener snapshots', () => {
 
   const before = editorGetSnapshot(editor);
 
-  editorSubscribe(editor, (snapshot) => {
+  editor.subscribeCommit((_commit, snapshot) => {
     snapshots.push(snapshot);
   });
 
@@ -2158,10 +2157,8 @@ it('publishes touched node keys for collapsed text changes', () => {
   assert.ok(blockNodeKey);
   assert.ok(nodeKey);
 
-  editorSubscribe(editor, (_snapshot, change) => {
-    if (change) {
-      changes.push(change);
-    }
+  editor.subscribeCommit((change) => {
+    changes.push(change);
   });
 
   editor.update((tx) => {
@@ -2183,9 +2180,8 @@ it('publishes touched node keys for collapsed text changes', () => {
   ]);
 });
 
-it('notifies snapshot subscribers with canonical commit metadata', () => {
+it('notifies commit listeners with canonical commit metadata', () => {
   const editor = createEditor();
-  const callOrder: string[] = [];
   const changes: EditorCommit[] = [];
 
   editorReplace(editor, {
@@ -2197,18 +2193,14 @@ it('notifies snapshot subscribers with canonical commit metadata', () => {
     },
   });
 
-  editorSubscribe(editor, (_snapshot, change) => {
-    callOrder.push('subscribe');
-    if (change) {
-      changes.push(change);
-    }
+  editor.subscribeCommit((change) => {
+    changes.push(change);
   });
 
   editor.update((tx) => {
     tx.text.insert('!', { at: { path: [0, 0], offset: 5 } });
   });
 
-  assert.deepEqual(callOrder, ['subscribe']);
   assert.equal(changes.length, 1);
   assert.equal(changes[0]?.changed.has('text'), true);
   assert.equal(
@@ -2234,10 +2226,8 @@ it('publishes selection-only dirtiness without touched node keys', () => {
   const initialBlockNodeKey = initialSnapshot.index.keyAt([0]);
   const initialTextNodeKey = initialSnapshot.index.keyAt([0, 0]);
 
-  editorSubscribe(editor, (_snapshot, change) => {
-    if (change) {
-      changes.push(change);
-    }
+  editor.subscribeCommit((change) => {
+    changes.push(change);
   });
 
   editor.update((_tx) => {
@@ -2288,10 +2278,8 @@ it('keeps small top-level expanded selection impact precise', () => {
   const nodeKey = (path: string) =>
     initialSnapshot.index.keyAt(path.split('.').map(Number));
 
-  editorSubscribe(editor, (_snapshot, change) => {
-    if (change) {
-      changes.push(change);
-    }
+  editor.subscribeCommit((change) => {
+    changes.push(change);
   });
 
   editor.update(() => {
@@ -2345,7 +2333,7 @@ it('does not rebuild root snapshots for selection-only subscriber commits', () =
     },
   });
 
-  editorSubscribe(editor, () => {});
+  editor.subscribeCommit(() => {});
 
   try {
     (
@@ -2507,10 +2495,8 @@ it('uses broad selection impact for large cross-document selections', () => {
     },
   });
 
-  editorSubscribe(editor, (_snapshot, change) => {
-    if (change) {
-      changes.push(change);
-    }
+  editor.subscribeCommit((change) => {
+    changes.push(change);
   });
 
   editor.update(() => {
@@ -2535,10 +2521,8 @@ it('publishes replace-level broad invalidation for editorReplace', () => {
     selection: null,
   });
 
-  editorSubscribe(editor, (_snapshot, change) => {
-    if (change) {
-      changes.push(change);
-    }
+  editor.subscribeCommit((change) => {
+    changes.push(change);
   });
 
   editorReplace(editor, {
@@ -2572,10 +2556,8 @@ it('publishes marks-only dirtiness without pretending the document paths changed
     },
   });
 
-  editorSubscribe(editor, (_snapshot, change) => {
-    if (change) {
-      changes.push(change);
-    }
+  editor.subscribeCommit((change) => {
+    changes.push(change);
   });
 
   editorAddMark(editor, 'bold', true);

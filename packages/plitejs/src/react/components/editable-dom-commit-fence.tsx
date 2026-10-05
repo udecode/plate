@@ -93,7 +93,6 @@ export const EditableDOMCommitFence = ({
         runtime.editor,
         'commit',
         (_snapshot, commit) => {
-          if (!commit) return;
           runtime.externalText.commit(commit);
           const requiresReactCommit = runtime.requiresReactCommit(commit);
 

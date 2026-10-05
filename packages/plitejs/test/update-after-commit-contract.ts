@@ -9,10 +9,11 @@ import {
 } from 'plitejs';
 
 import {
+  getEditorRuntime,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
-  subscribeSource as editorSubscribeSource,
   string as editorString,
+  subscribeSource as editorSubscribeSource,
 } from '../src/internal';
 
 const paragraph = (text: string) => ({
@@ -526,11 +527,11 @@ describe('editor.update afterCommit', () => {
         },
       });
 
-      editor.subscribe(() => {
+      getEditorRuntime(editor).subscribe(() => {
         events.push('throwing');
         throw new Error('snapshot listener failed');
       });
-      editor.subscribe(() => events.push('later'));
+      getEditorRuntime(editor).subscribe(() => events.push('later'));
       assert.doesNotThrow(() => {
         editor.update((tx) => {
           tx.text.insert('!', { at: { offset: 3, path: [0, 0] } });

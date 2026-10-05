@@ -1,6 +1,6 @@
 # Markdown break canonicalization benchmark
 
-Status: executed, both Plite fixes are in the working tree, uncommitted.
+Status: executed, both Plite fixes are in the working tree, waiting for your commit.
 Page: https://claude.ai/artifact/86Fw46kk2TChwFSMPAn9At
 Playbook: perf-issue
 

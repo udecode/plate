@@ -18,7 +18,6 @@ import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
-  subscribe as editorSubscribe,
 } from '../src/internal';
 import { createRangeAnchor } from './support/anchor';
 
@@ -141,20 +140,15 @@ describe('collab and history runtime contract', () => {
     const subscribedCommits: Array<
       NonNullable<ReturnType<typeof editorGetLastCommit>>
     > = [];
-    const unsubscribeSubscribe = editorSubscribe(
-      editor,
-      (_snapshot, commit) => {
-        if (commit) {
-          subscribedCommits.push(commit);
-        }
-      }
-    );
+    const unsubscribeListener = editor.subscribeCommit((commit) => {
+      subscribedCommits.push(commit);
+    });
     editor.update({ tags: 'collab-local' }, (tx) => {
       tx.text.insert('a');
       tx.text.insert('b');
     });
 
-    unsubscribeSubscribe();
+    unsubscribeListener();
 
     assert.equal(subscribedCommits.length, 1);
     assert.equal(pluginCommits.length, 1);
@@ -206,10 +200,8 @@ describe('collab and history runtime contract', () => {
     const remoteCommits: Array<
       NonNullable<ReturnType<typeof editorGetLastCommit>>
     > = [];
-    const unsubscribe = editorSubscribe(remote, (_snapshot, commit) => {
-      if (commit) {
-        remoteCommits.push(commit);
-      }
+    const unsubscribe = remote.subscribeCommit((commit) => {
+      remoteCommits.push(commit);
     });
 
     source.update({ tags: 'local-edit' }, (tx) => {

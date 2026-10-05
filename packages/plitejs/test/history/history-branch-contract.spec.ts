@@ -575,10 +575,10 @@ describe('immutable history branches', () => {
       tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
     });
 
-    assert.deepEqual(await settled(editor.api.history.undo()), {
-      reason: 'external-diverged',
-      status: 'blocked',
-    });
+    assert.deepEqual(
+      { ...(await settled(editor.api.history.undo())) },
+      { reason: 'external-diverged', status: 'blocked' }
+    );
     assert.equal(editor.read.history().undos.length, 1);
     assert.equal(editor.read.history().redos.length, 0);
   });
@@ -922,9 +922,7 @@ describe('immutable history branches', () => {
     let commits = 0;
     let observedRevision = -1;
 
-    editor.subscribe((_snapshot, commit) => {
-      if (!commit) return;
-
+    editor.subscribeCommit((commit) => {
       commits += 1;
       observedRevision = editor.read.history().revision;
       assert.ok(commit.tags.includes('history-restore'));

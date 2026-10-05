@@ -12,6 +12,8 @@ import {
   txRead,
 } from 'plitejs';
 
+import { getEditorRuntime } from '../src/core/editor-runtime';
+
 const paragraph = (text: string) => ({
   type: 'paragraph',
   children: [{ text }],
@@ -116,7 +118,7 @@ describe('synchronous transaction authors', () => {
         const { version } = editor.read.runtime.snapshot();
         let notifications = 0;
         let commits = 0;
-        runtime.subscribe(() => {
+        getEditorRuntime(runtime).subscribe(() => {
           notifications += 1;
         });
         runtime.subscribeCommit(() => {

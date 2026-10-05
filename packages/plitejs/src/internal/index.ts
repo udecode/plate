@@ -106,8 +106,6 @@ export {
   shouldMergeNodesRemovePrevNode,
   splitNodes,
   string,
-  subscribe,
-  subscribeCommit,
   subscribeSource,
   toggleBlock,
   toggleMark,

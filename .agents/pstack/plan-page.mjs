@@ -22,7 +22,7 @@ const PAGE_HEAD = `<meta charset="utf-8">
 :root {
   --ground: #ffffff; --paper: #ffffff; --ink: #15181d; --muted: #4a535e; --faint: #626b77; --rule: #e4e7eb;
   --c-red: #c2261c; --c-orange: #b8460b; --c-amber: #946000; --c-lime: #4d7c0f; --c-green: #1f7a3d; --c-teal: #0f766e; --c-cyan: #0e7490; --c-blue: #1d5fc2; --c-indigo: #4338ca; --c-violet: #6d28d9; --c-pink: #c0156b; --c-grey: #5f6874; --badge-ink: #ffffff;
-  --cta: var(--c-pink); --cta-ink: var(--badge-ink); --accent: #2c5b8f; --accent-soft: #eaf1f8;
+  --cta: var(--c-orange); --cta-ink: var(--badge-ink); --accent: #2c5b8f; --accent-soft: #eaf1f8;
   --amber: #9a5b00; --amber-soft: #fbf1df; --green: #2f6b3f; --green-soft: #e5f2e8; --red: #b3362b; --red-soft: #f8e6e3; --code: #f4f5f7;
   --kw: #8a3f9e; --str: #3d6b21; --fn: #2c5b8f; --num: #a24d12;
   --sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -30,15 +30,15 @@ const PAGE_HEAD = `<meta charset="utf-8">
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --ground: #111316; --paper: #111316; --ink: #e6e8eb; --muted: #c0c7cf; --faint: #9ea7b2; --rule: #262b31;
-  --c-red: #ff8a80; --c-orange: #ffa45c; --c-amber: #f5c35b; --c-lime: #b5e05a; --c-green: #7fd99a; --c-teal: #5fd4c6; --c-cyan: #67d1ee; --c-blue: #8ab8ff; --c-indigo: #a5a8ff; --c-violet: #c4a6ff; --c-pink: #ff8cc6; --c-grey: #a7b0ba; --badge-ink: #111316;
-  --cta: var(--c-pink); --cta-ink: var(--badge-ink); --accent: #8db6e6; --accent-soft: #1f2d3d;
+  --c-red: #ff6b5e; --c-orange: #ffa45c; --c-amber: #f5c35b; --c-lime: #b5e05a; --c-green: #7fd99a; --c-teal: #5fd4c6; --c-cyan: #67d1ee; --c-blue: #8ab8ff; --c-indigo: #a5a8ff; --c-violet: #c4a6ff; --c-pink: #ff8cc6; --c-grey: #a7b0ba; --badge-ink: #111316;
+  --cta: var(--c-orange); --cta-ink: var(--badge-ink); --accent: #8db6e6; --accent-soft: #1f2d3d;
   --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #1a1d21;
   --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
 } }
 :root[data-theme="dark"] {
   --ground: #111316; --paper: #111316; --ink: #e6e8eb; --muted: #c0c7cf; --faint: #9ea7b2; --rule: #262b31;
-  --c-red: #ff8a80; --c-orange: #ffa45c; --c-amber: #f5c35b; --c-lime: #b5e05a; --c-green: #7fd99a; --c-teal: #5fd4c6; --c-cyan: #67d1ee; --c-blue: #8ab8ff; --c-indigo: #a5a8ff; --c-violet: #c4a6ff; --c-pink: #ff8cc6; --c-grey: #a7b0ba; --badge-ink: #111316;
-  --cta: var(--c-pink); --cta-ink: var(--badge-ink); --accent: #8db6e6; --accent-soft: #1f2d3d;
+  --c-red: #ff6b5e; --c-orange: #ffa45c; --c-amber: #f5c35b; --c-lime: #b5e05a; --c-green: #7fd99a; --c-teal: #5fd4c6; --c-cyan: #67d1ee; --c-blue: #8ab8ff; --c-indigo: #a5a8ff; --c-violet: #c4a6ff; --c-pink: #ff8cc6; --c-grey: #a7b0ba; --badge-ink: #111316;
+  --cta: var(--c-orange); --cta-ink: var(--badge-ink); --accent: #8db6e6; --accent-soft: #1f2d3d;
   --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #1a1d21;
   --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
 }
@@ -52,32 +52,44 @@ h3, h4, h5 { font-size: 0.95rem; margin: 10px 0 2px; }
 .panel { min-width: 0; }
 .count { font-size: 0.78rem; color: var(--faint); font-weight: 500; letter-spacing: 0; text-transform: none; }
 .chip { font: 700 0.68rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cta-ink); background: var(--cta); border-radius: 999px; padding: 1px 7px; }
-.needs { display: grid; gap: 12px; border-top: 2px solid var(--cta); padding-top: 10px; }
-.needs-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
-.needs-head h2 { color: var(--cta); margin: 0; }
-.go-cta { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-size: 0.85rem; color: var(--muted); }
-.go-badge { font: 700 0.8rem var(--mono); color: var(--cta-ink); background: var(--cta); border-radius: 6px; padding: 1px 8px; }
-.go-cta b { color: var(--cta); font-weight: 600; }
-.ask { display: grid; gap: 6px; min-width: 0; }
-.ask + .ask { border-top: 1px solid var(--rule); padding-top: 12px; }
-.ask-q { display: flex; gap: 8px; align-items: baseline; }
-.ask-q h3 { margin: 0; font-size: 1rem; line-height: 1.35; text-wrap: balance; }
-.ask-num { flex: none; font: 700 0.75rem var(--mono); color: var(--cta-ink); background: var(--cta); border-radius: 999px; min-width: 1.6em; text-align: center; padding: 1px 0; }
-.why { margin: 0; color: var(--muted); font-size: 0.88rem; }
-.facts { margin: 0; padding-left: 1.1em; display: grid; gap: 1px; font-size: 0.88rem; color: var(--muted); }
-.opts { list-style: none; margin: 2px 0 0; padding: 0; display: grid; gap: 4px; }
-.opt { display: grid; grid-template-columns: 1.2em minmax(0, 1fr); gap: 0 4px; font-size: 0.92rem; }
-.opt::before { content: "○"; color: var(--faint); }
-.opt.picked::before { content: "●"; color: var(--cta); }
-.opt-label { font-weight: 600; }
-.opt.picked .opt-label { color: var(--cta); }
-.pick { font: 700 0.62rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cta-ink); background: var(--cta); border-radius: 999px; padding: 1px 6px; margin-left: 4px; vertical-align: 1px; }
-.cost { color: var(--faint); }
-.sep { color: var(--faint); }
-.reason { grid-column: 2; color: var(--muted); font-size: 0.86rem; }
-.go { margin: 2px 0 0; font-size: 0.9rem; }
-.go b { color: var(--cta); }
+.needs { display: grid; border: 2px solid var(--frame, var(--c-amber)); border-radius: 12px; padding: 12px 16px 0; min-width: 0; }
+.needs:not(:has(.bar)) { padding-bottom: 12px; }
+.needs-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding-bottom: 4px; }
+.needs-head h2 { margin: 0; color: var(--frame, var(--c-amber)); }
+.lg { color: var(--c); font-size: 0.8rem; font-weight: 600; }
+.lg::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; vertical-align: 1px; }
+.q { display: grid; gap: 4px; padding: 12px 0; border-top: 1px solid var(--rule); min-width: 0; }
+.q h3 { margin: 0; font-size: 1.02rem; line-height: 1.35; display: flex; gap: 9px; align-items: baseline; text-wrap: balance; }
+.n { flex: none; font: 700 0.74rem var(--mono); color: var(--badge-ink); background: var(--c); border-radius: 999px; min-width: 1.65em; text-align: center; padding: 1px 0; }
+.ctx { margin: 0 0 2px 2.25em; font-size: 0.86rem; color: var(--muted); }
+.fact { color: var(--faint); }
+.fact::before { content: "· "; }
+.opts { display: grid; grid-template-columns: 1.3em minmax(7.5em, max-content) minmax(0, 1.2fr) minmax(0, 1fr); gap: 0 12px; margin-left: 2.25em; font-size: 0.9rem; }
+.hd { font: 700 0.62rem var(--sans); letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); padding-bottom: 2px; }
+.o { display: contents; cursor: pointer; }
+.o > * { padding: 4px 0; border-top: 1px solid var(--rule); }
+.o input { margin: 7px 0 0; width: 1.05em; height: 1.05em; accent-color: var(--c); }
+.o b { font-weight: 650; }
+.o .cost { color: var(--muted); }
+.o.is-selected b { color: var(--c); }
+.o .why { grid-column: 3 / -1; border-top: 0; padding: 0 0 4px; margin-top: -2px; color: var(--muted); font-size: 0.82rem; font-style: italic; }
+.why-all, .nopick { margin: 2px 0 0 2.25em; font-size: 0.82rem; color: var(--muted); font-style: italic; }
+.nopick { color: var(--c); font-style: normal; font-weight: 600; }
 .from { color: var(--faint); font-weight: 400; font-size: 0.8rem; }
+.bar { position: sticky; bottom: env(safe-area-inset-bottom, 0px); display: flex; gap: 10px; align-items: center; margin: 4px -16px 0; padding: 9px 16px; background: var(--ground); border-top: 2px solid var(--frame, var(--c-amber)); border-radius: 0 0 10px 10px; }
+.bar code { flex: 1 1 auto; min-width: 0; font: 600 0.88rem var(--mono); overflow-wrap: anywhere; padding: 0; }
+.bar.is-default code { color: var(--c-green); }
+.bar.is-changed code { color: var(--c-amber); }
+.bar.is-missing code { color: var(--c-red); }
+.bar button { padding: 4px 12px; font-weight: 700; color: var(--frame, var(--c-amber)); border-color: var(--frame, var(--c-amber)); }
+.bar button:disabled { opacity: 0.4; cursor: not-allowed; }
+@media (max-width: 620px) {
+  .opts { grid-template-columns: 1.3em minmax(0, 1fr); margin-left: 0; }
+  .hd { display: none; }
+  .o > span { grid-column: 2; border-top: 0; padding: 0; }
+  .o > .cost { padding-bottom: 6px; }
+  .ctx, .why-all, .nopick { margin-left: 0; }
+}
 .topics { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
 .topic { display: grid; gap: 2px; min-width: 0; }
 .topic-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-weight: 600; }
@@ -126,17 +138,6 @@ a { color: var(--accent); }
 }
 .details { border-top: 1px solid var(--rule); padding-top: 10px; display: grid; gap: 14px; }
 .details > summary { cursor: pointer; color: var(--muted); font-size: 0.86rem; }
-.mark { font-size: 0.66rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; white-space: nowrap; }
-.mark.added { background: var(--green-soft); color: var(--green); }
-.mark.changed { background: var(--amber-soft); color: var(--amber); }
-.mark.removed { background: var(--red-soft); color: var(--red); }
-.mark.was { color: var(--faint); }
-tr.was td, tr.removed td:not(:first-child) { color: var(--faint); text-decoration: line-through; }
-tr.was td:first-child { text-decoration: none; }
-details.current { margin-top: 4px; }
-details.current > summary, details.unchanged > summary { cursor: pointer; color: var(--muted); }
-details.unchanged > summary { font-weight: 600; }
-details.unchanged[open] > summary { margin-bottom: 6px; }
 .iteration { margin: 6px 0; }
 details.iteration > summary { cursor: pointer; }
 details.iteration[open] > summary { margin-bottom: 4px; }
@@ -146,9 +147,7 @@ details.iteration[open] > summary { margin-bottom: 4px; }
 .hljs-number, .hljs-literal { color: var(--num); }
 .hljs-attr, .hljs-property, .hljs-params { color: var(--ink); }
 .hljs-comment { color: var(--faint); font-style: italic; }
-details.fold { border-top: 1px solid var(--rule); padding-top: 8px; }
-details.fold > summary { cursor: pointer; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
-details.fold[open] > summary { margin-bottom: 10px; }
+.source { color: var(--muted); font-size: 0.85rem; margin: 0; }
 .hue-red { --hue: var(--c-red); } .hue-orange { --hue: var(--c-orange); } .hue-amber { --hue: var(--c-amber); } .hue-lime { --hue: var(--c-lime); }
 .hue-green { --hue: var(--c-green); } .hue-teal { --hue: var(--c-teal); } .hue-cyan { --hue: var(--c-cyan); } .hue-blue { --hue: var(--c-blue); }
 .hue-indigo { --hue: var(--c-indigo); } .hue-violet { --hue: var(--c-violet); } .hue-pink { --hue: var(--c-pink); } .hue-grey { --hue: var(--c-grey); }
@@ -161,32 +160,30 @@ details.fold[open] > summary { margin-bottom: 10px; }
 .round-tag { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .card { border: 1px solid var(--rule); border-top: 3px solid var(--hue, var(--rule)); border-radius: 10px; padding: 10px 14px 12px; min-width: 0; }
 .brief.card { display: grid; gap: 0; padding: 2px 14px; border-top: 1px solid var(--rule); }
-.brief .qa { display: grid; grid-template-columns: 12em minmax(0, 1fr); gap: 0 14px; padding: 7px 0; min-width: 0; }
+.brief .qa { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 0 14px; padding: 7px 0; min-width: 0; }
 .brief .qa > p { margin: 0; }
 .brief .qa + .qa { border-top: 1px solid var(--rule); }
 .brief .qa > h2 { color: var(--hue); font-size: 0.7rem; margin: 2px 0 0; }
 .brief .qa > :not(h2) { grid-column: 2; }
-@media (max-width: 620px) { .brief .qa { grid-template-columns: minmax(0, 1fr); } .brief .qa > :not(h2) { grid-column: 1; } }
-.needs.card { border: 2px solid var(--cta); border-top-width: 4px; padding: 12px 16px 14px; }
 .findings { list-style: none; padding: 0; display: grid; gap: 4px; }
 .findings li { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
 
 .effort { color: var(--muted); font: 500 0.7rem var(--sans); margin-left: 2px; }
 .status-rest { color: var(--muted); font-size: 0.82rem; }
+.status-line { margin: 0; font-weight: 500; }
 .flow { margin: 8px 0 4px; }
 .fs { --hue: var(--c-blue); }
-.fs.done { --hue: var(--c-green); } .fs.now { --hue: var(--c-amber); } .fs.blocked { --hue: var(--c-red); } .fs.skipped { --hue: var(--c-grey); }
+.fs.done { --hue: var(--c-green); } .fs.now { --hue: var(--c-amber); } .fs.waiting { --hue: var(--c-orange); } .fs.blocked { --hue: var(--c-red); } .fs.skipped, .fs.stopped { --hue: var(--c-grey); }
 .flow-rail { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 4px; align-items: center; }
 .flow-rail .arrow { color: var(--faint); font-size: 0.8rem; }
 .fs { display: inline-flex; gap: 5px; align-items: baseline; border: 1.5px solid var(--hue); color: var(--hue); border-radius: 999px; padding: 2px 10px; font: 600 0.76rem var(--sans); white-space: nowrap; }
-.fs.done { color: var(--badge-ink); background: var(--hue); }
+.fs.done, .fs.waiting, .fs.blocked { color: var(--badge-ink); background: var(--hue); }
 .fs.skipped { border-style: dashed; opacity: 0.75; font-weight: 500; }
-.fs.now { box-shadow: 0 0 0 3px color-mix(in srgb, var(--hue) 25%, transparent); }
+.fs.now, .fs.waiting, .fs.blocked { box-shadow: 0 0 0 3px color-mix(in srgb, var(--hue) 25%, transparent); }
 .fs-meta { font: 700 0.7rem var(--mono); opacity: 0.9; }
 .tool { font: 500 0.68rem var(--mono); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; opacity: 0.9; }
 </style>`;
 
-// The owner reads the top of the page and rarely opens the details.
 const ROLES = [
   [/^brief$/i, 'brief'],
   [/^open questions$/i, 'needs'],
@@ -194,7 +191,7 @@ const ROLES = [
   [/^main changes$/i, 'main'],
   [/^defaults$/i, 'picked'],
   [/^close$/i, 'close'],
-  [/^(scope|steps|evidence|proof|claims|asks|verification|notes)$/i, 'details'],
+  [/^(scope|steps|evidence|proof|claims|asks|verification|notes|panel gate)$/i, 'details'],
 ];
 const roleOf = (section, lead) =>
   lead.includes(section.title.toLowerCase())
@@ -222,6 +219,7 @@ function pageConfig(root) {
           const { meta } = parsePlan(readFileSync(join(dir, name), 'utf-8'));
           return {
             name: basename(name, '.md'),
+            extends: listOf(meta, 'extends'),
             lead: listOf(meta, 'page-lead'),
             pairs: listOf(meta, 'page-pairs'),
             require: listOf(meta, 'page-require'),
@@ -231,9 +229,17 @@ function pageConfig(root) {
   return { playbooks, plans: config.plans ?? 'docs/plans', topic: config.pageTopic ?? {} };
 }
 
+const PSTACK_PLAYBOOKS = [
+  'authoring-a-skill', 'autonomous-run', 'autopilot-full', 'autopilot-stack', 'babysit', 'bug-fix', 'eval', 'feature', 'figure-it-out',
+  'hillclimb', 'investigation', 'multi-phase-plan', 'opening-a-pr', 'orchestrate', 'pause-safely', 'perf-issue', 'prototype',
+  'refactoring', 'runtime-forensics', 'session-pickup', 'shipping', 'trace-forensics', 'visual-parity', 'worktree-cleanup',
+];
+
 function pageSections(playbooks, name, where) {
   const named = name ? playbooks.find((entry) => entry.name === name) : null;
-  if (name && !named) throw new Error(`${where} names playbook ${name}, but .agents/playbooks/${name}.md does not exist`);
+  if (name && !named && !PSTACK_PLAYBOOKS.includes(name)) {
+    throw new Error(`${where} names playbook ${name}, which is neither .agents/playbooks/${name}.md nor a pstack playbook such as feature or bug-fix`);
+  }
   const union = (key, list) => [...new Set(list.flatMap((entry) => entry[key]))];
   const lower = (list) => list.map((title) => title.toLowerCase());
   return {
@@ -467,8 +473,11 @@ function assertDefaults(plan, where) {
   }
 }
 
-const BRIEF = ['What did you find?', 'What will change?', 'What do you need from me?', 'What happens if I say go?', 'What could go wrong?'];
+const BRIEF = ['What will change?', 'What could go wrong?'];
 const BRIEF_WORDS = 40;
+const BRIEF_LABELS = ['Changes', 'Risks'];
+const RETIRED_BRIEF = ['What did you find?', 'What do you need from me?', 'What happens if I say go?'];
+const wordCount = (text) => text.split(/\s+/).filter(Boolean).length;
 
 function briefOf(plan) {
   const section = sectionNamed(plan, 'Brief');
@@ -487,11 +496,15 @@ function assertBrief(plan, where) {
   const answers = briefOf(plan);
   if (!answers) throw new Error(`${where} leads its page while open, so it needs ${shape}`);
   const asked = answers.map((answer) => answer.question);
+  const cut = asked.filter((question) => RETIRED_BRIEF.some((old) => sameText(old) === sameText(question)));
+  if (cut.length) {
+    throw new Error(`## Brief in ${where} asks the older questions; drop ${listed(cut.map((question) => `"${question}"`))}; an ask that is not a decision goes on the Status: line`);
+  }
   if (asked.length !== BRIEF.length || asked.some((question, index) => sameText(question) !== sameText(BRIEF[index]))) {
     throw new Error(`## Brief in ${where} asks ${asked.join(' ') || 'nothing'}, but it needs ${shape}`);
   }
   for (const { question, lines } of answers) {
-    const words = lines.join(' ').split(/\s+/).filter(Boolean).length;
+    const words = wordCount(lines.join(' '));
     if (words === 0) throw new Error(`## Brief in ${where} leaves "${question}" unanswered`);
     if (words > BRIEF_WORDS) throw new Error(`## Brief in ${where} answers "${question}" in ${words} words; keep each answer to ${BRIEF_WORDS}`);
   }
@@ -622,22 +635,20 @@ function splitRow(row) {
 }
 
 const tds = (row) => row.map((cell) => `<td>${inline(cell)}</td>`).join('');
-const markedRow = (mark, row) => `<tr class="${mark}"><td><span class="mark ${mark}">${mark}</span></td>${tds(row)}</tr>`;
 
-function deltaRow([cell, ...row], prior, marks) {
+function assertDeltaRow([cell, ...row], prior, context) {
   const mark = sameText(cell);
-  const of = marks.name ? ` of ${marks.name}` : '';
+  const of = context.name ? ` of ${context.name}` : '';
   if (!DELTA.includes(mark)) {
-    throw new Error(`A Delta cell in ## ${marks.title}${of} is added, changed or removed, not "${cell}"`);
+    throw new Error(`A Delta cell in ## ${context.title}${of} is added, changed or removed, not "${cell}"`);
   }
   const old = prior.get(sameText(row[0] ?? ''));
   const folded = old ? sameCells(old, row) : mark === 'removed';
   if (!folded && (mark === 'added') === Boolean(old)) {
     throw new Error(
-      `## ${marks.title}${of} marks "${row[0]}" ${mark}, but ${marks.where} ${old ? 'already has that row' : 'has no such row'}`
+      `## ${context.title}${of} marks "${row[0]}" ${mark}, but ${context.where} ${old ? 'already has that row' : 'has no such row'}`
     );
   }
-  return { mark, old, folded, row };
 }
 
 function assertDelta(plan, doc, { name, where }) {
@@ -645,22 +656,13 @@ function assertDelta(plan, doc, { name, where }) {
     const current = sectionNamed(doc, section.title)?.lines ?? [];
     for (const table of tablesOf(section.lines).filter((entry) => isDelta(entry.head))) {
       const prior = rowsByKey(current, table.head.slice(1));
-      for (const row of table.rows) deltaRow(row, prior, { name, title: section.title, where });
+      for (const row of table.rows) assertDeltaRow(row, prior, { name, title: section.title, where });
     }
   }
 }
 
-function deltaRowHtml(cells, prior, marks) {
-  const { mark, old, folded, row } = deltaRow(cells, prior, marks);
-  if (mark === 'removed') return markedRow(mark, old ?? row);
-  return markedRow(mark, row) + (old && !folded ? markedRow('was', old) : '');
-}
-
-function tableHtml(head, rows, marks) {
-  const prior = marks && isDelta(head) ? rowsByKey(marks.current?.lines ?? [], head.slice(1)) : null;
-  const body = rows
-    .map((row) => (prior ? deltaRowHtml(row, prior, marks) : `<tr>${tds(row)}</tr>`))
-    .join('');
+function tableHtml(head, rows) {
+  const body = rows.map((row) => `<tr>${tds(row)}</tr>`).join('');
   return `<div class="scroll"><table><thead><tr>${head.map((cell) => `<th>${inline(cell)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
@@ -691,7 +693,7 @@ function listHtml(items, start) {
   };
 }
 
-function blocksHtml(lines, marks = null) {
+function blocksHtml(lines) {
   const html = [];
   let index = 0;
   const startsBlock = (line) =>
@@ -733,7 +735,7 @@ function blocksHtml(lines, marks = null) {
       ) {
         rows.push(splitRow(lines[index]));
       }
-      html.push(tableHtml(head, rows, marks));
+      html.push(tableHtml(head, rows));
       continue;
     }
     if (LIST_ITEM.test(line)) {
@@ -791,7 +793,12 @@ const ASK_FIELDS = [
   ['why', /^why it needs you:\s*/i],
   ['reason', /^why i pick it:\s*/i],
   ['go', /^if you say go:\s*/i],
+  ['attention', /^attention:\s*/i],
 ];
+const PICK_ANY = /^pick any\.?$/i;
+const ATTENTION = { answer: ['needs you', 'red'], look: ['worth a look', 'amber'], safe: ['safe', 'green'] };
+const LEVELS = Object.keys(ATTENTION);
+const levelOf = (ask) => (ask.options.some((option) => option.recommended) ? (ATTENTION[ask.attention] ? ask.attention : 'look') : 'answer');
 
 const splitCost = (text) => {
   const at = text.search(/\bCost:\s*/);
@@ -818,11 +825,12 @@ function questionGroups(lines, older = []) {
 }
 
 function askOf({ header, lines, from }) {
-  const ask = { header, from, lines, question: [], why: '', facts: [], options: [], reason: '', go: '', rest: [] };
+  const ask = { header, from, lines, question: [], why: '', facts: [], options: [], reason: '', go: '', attention: '', multi: false, rest: [] };
   let last = null;
   for (const line of lines) {
     const text = line.trim();
-    if (!text) {
+    if (PICK_ANY.test(text)) ask.multi = true;
+    if (!text || PICK_ANY.test(text)) {
       last = null;
       continue;
     }
@@ -849,6 +857,7 @@ function askOf({ header, lines, from }) {
       last = null;
     }
   }
+  ask.attention = ask.attention.trim().toLowerCase().replace(/\.$/, '');
   return ask;
 }
 
@@ -859,20 +868,53 @@ function missingParts(ask) {
     !ask.why && 'Why it needs you:',
     ask.options.length < 2 && 'two or more options',
     ask.options.some((option) => !option.cost) && 'a Cost: on every option',
-    picks > 1 && 'at most one (recommended) option',
-    picks === 1 && !ask.reason && 'Why I pick it:',
-    !ask.go && 'If you say go:',
+    picks > 1 && !ask.multi && 'at most one (recommended) option, or a Pick any. line',
+    picks > 0 && !ask.reason && 'Why I pick it:',
+    picks > 0 && !ATTENTION[ask.attention] && 'Attention: safe, look or answer',
+    picks === 0 && !ask.go && 'If you say go:',
   ].filter(Boolean);
 }
+
+const MEMO_WORDS = 15;
+const MEMO_LABEL_WORDS = 3;
+const MEMO_FACTS = 2;
+function longParts(ask) {
+  const parts = [
+    ['the question', ask.question.join(' ')],
+    ['Why it needs you:', ask.why],
+    ...ask.facts.map((fact, index) => [`fact ${index + 1}`, fact]),
+    ...ask.options.flatMap((option) => [[`"${option.label}"`, option.does], [`"${option.label}" Cost:`, option.cost]]),
+    ['Why I pick it:', ask.reason],
+    ['If you say go:', ask.go],
+  ];
+  return [
+    ask.facts.length > MEMO_FACTS && `${ask.facts.length} facts, where ${MEMO_FACTS} is the most`,
+    ...ask.options.filter((option) => wordCount(option.label) > MEMO_LABEL_WORDS).map((option) => `the label "${option.label}" at ${wordCount(option.label)} words, where ${MEMO_LABEL_WORDS} is the most`),
+    ...parts.filter(([, text]) => wordCount(text) > MEMO_WORDS).map(([name, text]) => `${name} at ${wordCount(text)} words, where ${MEMO_WORDS} is the most`),
+  ].filter(Boolean);
+}
+
+const PAGE_PARTS = ['Brief', 'Open questions', 'Defaults'];
+
+function assertPlain(plan, where) {
+  for (const title of PAGE_PARTS) {
+    const code = sectionNamed(plan, title)?.lines.join('\n').match(/`[^`\n]+`/);
+    if (code) throw new Error(`## ${title} in ${where} holds code ${code[0]}; the page shows this section, so write it in plain words and keep code in the plan's other sections`);
+  }
+}
+
+const listed = (items) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items.at(-1)}` : items[0]);
 
 function assertAsks(plan, where) {
   const section = sectionNamed(plan, 'Open questions');
   if (!section) return;
   for (const group of questionGroups(section.lines).groups) {
-    const missing = missingParts(askOf(group));
-    if (missing.length === 0) continue;
-    const list = missing.length > 1 ? `${missing.slice(0, -1).join(', ')} and ${missing.at(-1)}` : missing[0];
-    throw new Error(`"${group.header}" in ${where} needs ${list}; write it as the decision memo in the plan-page skill's references/shape.md`);
+    const ask = askOf(group);
+    const fix = "write it as the decision memo in the plan-page skill's references/shape.md";
+    const missing = missingParts(ask);
+    if (missing.length) throw new Error(`"${group.header}" in ${where} needs ${listed(missing)}; ${fix}`);
+    const long = longParts(ask);
+    if (long.length) throw new Error(`"${group.header}" in ${where} runs long: ${listed(long)}; ${fix}`);
   }
 }
 
@@ -925,7 +967,7 @@ function findingHtml(decision, result) {
   return `<li>${body}${resultHtml}</li>`;
 }
 
-const BRIEF_HUES = ['blue', 'violet', 'pink', 'green', 'red'];
+const BRIEF_HUES = ['violet', 'red'];
 
 const stepChecks = (plan) => (sectionNamed(plan, 'Steps')?.lines ?? []).flatMap((line) => line.match(/^\s*(?:\d+\.\s+)?[-*+]\s+\[([ xX])\]/)?.slice(1) ?? []).map((mark) => mark !== ' ');
 
@@ -947,14 +989,29 @@ const STAGE_PHASES = {
   Review: ['panel', 'interrogate'],
   Build: ['build'],
   Writing: ['writing'],
-  Proof: ['proof', 'verify'],
+  Verify: ['verify', 'proof'],
   Ship: ['ship', 'delivery'],
   Reflect: ['reflect', 'lesson'],
+  Audit: ['trail'],
+};
+const STAGE_HINTS = {
+  Plan: 'The plan file and its brief; the badges name the playbook poteto-mode picked.',
+  Design: 'architect, prototype, arena, how or why explored the design.',
+  'Plan review': 'interrogate panel rounds on the plan, before the build.',
+  Build: 'Code written; the count is checked Steps.',
+  Writing: 'deslop, no-comments and unslop cleanup passes.',
+  'Code review': 'interrogate panel rounds on the code.',
+  Verify: 'The verify skill or a proof run on the real app.',
+  Audit: "show-me-your-work's decision-trail review: another model checks each decision-log claim against the conversation.",
+  Ship: 'The work landed.',
+  Reflect: 'Lessons saved with reflect.',
 };
 const WRITING_PASSES = ['deslop', 'no-comments', 'unslop'];
 
-function flowOf(entry, status) {
+function flowOf(entry, status, playbooks) {
   const rows = logRowsOf(entry.path);
+  const named = entry.plan.meta.playbook;
+  const picked = named ? [...new Set([named, ...(playbooks.find((each) => each.name === named)?.extends ?? [])])] : [];
   const of = (stage) => rows.filter((row) => STAGE_PHASES[stage].includes(row.phase));
   const firstBuild = rows.findIndex((row) => STAGE_PHASES.Build.includes(row.phase));
   const panelRounds = (beforeBuild) => {
@@ -962,7 +1019,6 @@ function flowOf(entry, status) {
     return half.filter((row) => SEATS.test(row.decision)).length || (half.length ? 1 : 0);
   };
   const handOffPhases = new Set(rows.filter((row) => /^review/.test(row.phase)).map((row) => row.phase));
-  const trailReviews = rows.filter((row) => row.phase === 'trail' && /trail review/i.test(row.decision)).length;
   const steps = stepChecks(entry.plan);
   const stepsDone = steps.filter(Boolean).length;
   const design = [...new Set(of('Design').map((row) => row.phase))];
@@ -970,24 +1026,24 @@ function flowOf(entry, status) {
   const { lead, state, hue } = statusLead(status);
   const ended = state === 'done';
   const stages = [
-    { label: 'Plan', ran: true },
+    { label: 'Plan', ran: true, tools: picked },
     { label: 'Design', ran: design.length > 0, tools: design.filter((phase) => phase !== 'design') },
-    { label: 'Plan review', rounds: panelRounds(true) },
+    { label: 'Plan review', rounds: panelRounds(true), tools: ['interrogate'] },
     { label: 'Build', ran: firstBuild >= 0 || stepsDone > 0, meta: steps.length ? `${stepsDone}/${steps.length}` : '' },
     { label: 'Writing', ran: of('Writing').length > 0, tools: passes },
-    { label: 'Code review', rounds: panelRounds(false) },
-    { label: 'Proof', ran: of('Proof').length > 0 },
-    { label: 'Log review', rounds: Math.max(handOffPhases.size, trailReviews) },
-    { label: 'Ship', ran: ended || of('Ship').length > 0 },
+    { label: 'Code review', rounds: panelRounds(false), tools: ['interrogate'] },
+    { label: 'Verify', ran: of('Verify').length > 0 },
+    { label: 'Audit', rounds: handOffPhases.size || (of('Audit').length ? 1 : 0), tools: ['show-me-your-work'] },
+    { label: 'Ship', ran: landed(status) || of('Ship').length > 0 },
     { label: 'Reflect', ran: of('Reflect').length > 0 },
-  ].map((stage) => ({ ...stage, ran: stage.ran ?? stage.rounds > 0 }));
+  ].map((stage) => {
+    const ran = stage.ran ?? stage.rounds > 0;
+    return { ...stage, ran, tools: ran ? (stage.tools ?? []) : [] };
+  });
   const furthest = stages.findLastIndex((stage) => stage.ran);
-  for (const [index, stage] of stages.entries()) stage.state = stage.ran ? 'done' : index < furthest ? 'skipped' : 'left';
-  if (!ended) {
-    const at = stages.findIndex((stage) => stage.state === 'left');
-    if (hue === 'orange' || state === 'held') stages.splice(at < 0 ? stages.length : at, 0, { label: `${lead[0].toUpperCase()}${lead.slice(1)}`, state: state === 'held' ? 'blocked' : 'now' });
-    else if (at >= 0) stages[at].state = 'now';
-  }
+  for (const [index, stage] of stages.entries()) stage.state = stage.ran ? 'done' : ended || index < furthest ? 'skipped' : 'left';
+  if (ended && !landed(status)) stages.splice(furthest + 1, 0, { label: `${lead.charAt(0).toUpperCase()}${lead.slice(1)}`, state: 'stopped' });
+  else if (!ended && stages[furthest + 1]) stages[furthest + 1].state = state === 'held' ? 'blocked' : hue === 'orange' ? 'waiting' : 'now';
   return stages;
 }
 
@@ -996,31 +1052,77 @@ const toolChips = (stage) => (stage.tools ?? []).map((tool) => `<span class="too
 
 function flowRailHtml(stages) {
   return `<ol class="flow-rail">${stages
-    .map((stage) => `<li class="fs ${stage.state}">${escapeHtml(stage.label)}${stageMeta(stage) ? `<span class="fs-meta">${escapeHtml(stageMeta(stage))}</span>` : ''}${toolChips(stage)}</li>`)
+    .map((stage) => `<li class="fs ${stage.state}" title="${escapeHtml(STAGE_HINTS[stage.label] ?? stage.label)}">${escapeHtml(stage.label)}${stageMeta(stage) ? `<span class="fs-meta">${escapeHtml(stageMeta(stage))}</span>` : ''}${toolChips(stage)}</li>`)
     .join('<li class="arrow" aria-hidden="true">→</li>')}</ol>`;
 }
 
-const flowHtml = (entry, status) => `<div class="flow">${flowRailHtml(flowOf(entry, status))}</div>`;
+const flowHtml = (entry, status, playbooks) => `<div class="flow">${flowRailHtml(flowOf(entry, status, playbooks))}</div>`;
 
-function askHtml(ask, index, count) {
-  const head = `<div class="ask-q"><span class="ask-num">${index + 1}</span><h3>${ask.options.length ? inline(ask.question.join(' ')) : inline(ask.header)}${ask.from ? ` <span class="from">from ${inline(ask.from)}</span>` : ''}</h3></div>`;
-  if (ask.options.length === 0) return `<article class="ask">${head}${blocksHtml(ask.lines)}</article>`;
-  const ordered = [...ask.options.filter((option) => option.recommended), ...ask.options.filter((option) => !option.recommended)];
-  const options = ordered
-    .map((option) => `<li class="opt${option.recommended ? ' picked' : ''}"><span><span class="opt-label">${inline(option.label)}</span>${option.recommended ? '<span class="pick">My pick</span>' : ''}${option.does ? ` <span class="sep">·</span> ${inline(option.does)}` : ''}${option.cost ? ` <span class="cost">Cost: ${inline(option.cost)}</span>` : ''}</span>${option.recommended && ask.reason ? `<span class="reason">Why: ${inline(ask.reason)}</span>` : ''}</li>`)
+function askHtml(ask, index) {
+  const style = `--c: var(--c-${ATTENTION[levelOf(ask)][1]})`;
+  const head = `<h3><span class="n">${index + 1}</span><span>${ask.options.length ? inline(ask.question.join(' ')) : inline(ask.header)}${ask.from ? ` <span class="from">from ${inline(ask.from)}</span>` : ''}</span></h3>`;
+  if (ask.options.length === 0) return `<article class="q" style="${style}">${head}${blocksHtml(ask.lines)}</article>`;
+  const picks = ask.options.filter((option) => option.recommended).map((option) => option.label);
+  const type = ask.multi ? 'checkbox' : 'radio';
+  const context = [ask.why && inline(ask.why), ...ask.facts.map((fact) => `<span class="fact">${inline(fact)}</span>`)].filter(Boolean).join(' ');
+  const rows = ask.options
+    .map((option) => `<label class="o"><input type="${type}" name="q${index}" value="${escapeHtml(option.label)}"${option.recommended ? ' checked' : ''}><b>${inline(option.label)}</b><span>${inline(option.does)}</span><span class="cost">${inline(option.cost)}</span>${option.recommended && ask.reason && !ask.multi ? `<span class="why">${inline(ask.reason)}</span>` : ''}</label>`)
     .join('');
-  return `<article class="ask">${head}${ask.why ? `<p class="why">${inline(ask.why)}</p>` : ''}${ask.facts.length ? `<ul class="facts">${ask.facts.map((fact) => `<li>${inline(fact)}</li>`).join('')}</ul>` : ''}<ol class="opts">${options}</ol>${blocksHtml(ask.rest)}${ask.go ? `<p class="go"><b>go</b> ${inline(ask.go)}</p>` : ''}</article>`;
+  const after = picks.length === 0 ? `<p class="nopick">${inline(ask.go || 'No pick: choose one.')}</p>` : ask.multi && ask.reason ? `<p class="why-all">${inline(ask.reason)}</p>` : '';
+  return `<article class="q" style="${style}" data-title="${escapeHtml(ask.header)}" data-multi="${ask.multi ? 1 : 0}" data-default="${escapeHtml(JSON.stringify(picks))}">${head}${context ? `<p class="ctx">${context}</p>` : ''}<div class="opts" role="${ask.multi ? 'group' : 'radiogroup'}"><span class="hd"></span><span class="hd"></span><span class="hd">Then</span><span class="hd">Cost</span>${rows}</div>${blocksHtml(ask.rest)}${after}</article>`;
 }
+
+const ANSWER_SCRIPT = `<script>
+(() => {
+  const root = document.querySelector('.needs');
+  const bar = root.querySelector('.bar');
+  const text = bar.querySelector('code');
+  const copy = bar.querySelector('button');
+  const update = () => {
+    const changed = [];
+    const missing = [];
+    for (const q of root.querySelectorAll('.q[data-title]')) {
+      for (const input of q.querySelectorAll('input')) input.closest('.o').classList.toggle('is-selected', input.checked);
+      const chosen = [...q.querySelectorAll('input:checked')].map((input) => input.value);
+      const picks = JSON.parse(q.dataset.default);
+      if (q.dataset.multi !== '1' && chosen.length === 0) {
+        missing.push(q.dataset.title);
+        continue;
+      }
+      if (chosen.length !== picks.length || chosen.some((value) => !picks.includes(value))) changed.push(q.dataset.title + ': ' + (chosen.join(', ') || 'none'));
+    }
+    bar.className = 'bar ' + (missing.length ? 'is-missing' : changed.length ? 'is-changed' : 'is-default');
+    text.textContent = missing.length ? 'Answer ' + missing.join(', ') : changed.length ? 'go, except ' + changed.join('; ') : 'go';
+    copy.disabled = missing.length > 0;
+    copy.textContent = 'Copy';
+  };
+  root.addEventListener('change', update);
+  copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(text.textContent);
+      copy.textContent = 'Copied';
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+      copy.textContent = 'Selected';
+    }
+  });
+  update();
+})();
+</script>`;
 
 function needsSection(lines, older = []) {
   const { intro, groups } = questionGroups(lines, older);
-  if (groups.length === 0) return `<section class="needs card"><div class="needs-head"><h2>Needs you</h2></div>${blocksHtml([...lines, ...older.flatMap((source) => source.lines)])}</section>`;
-  const asks = groups.map(askOf);
-  const picks = asks.map((ask, index) => {
-    const pick = ask.options.find((option) => option.recommended);
-    return pick ? `<span>${index + 1}. <b>${inline(pick.label)}</b></span>` : `<span>${index + 1}. your answer</span>`;
-  });
-  return `<section class="needs card"><div class="needs-head"><h2>Needs you</h2><span class="count">${asks.length} ${asks.length === 1 ? 'decision' : 'decisions'}</span><span class="go-cta"><span class="go-badge">go</span>takes ${picks.join(' ')}</span></div>${blocksHtml(intro)}${asks.map((ask, index) => askHtml(ask, index, asks.length)).join('')}</section>`;
+  if (groups.length === 0) return `<section class="needs"><div class="needs-head"><h2>Needs you</h2></div>${blocksHtml([...lines, ...older.flatMap((source) => source.lines)])}</section>`;
+  const asks = groups.map(askOf).sort((a, b) => LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b)));
+  const legend = LEVELS.map((level) => [level, asks.filter((ask) => levelOf(ask) === level).length])
+    .filter(([, count]) => count)
+    .map(([level, count]) => `<span class="lg" style="--c: var(--c-${ATTENTION[level][1]})">${count} ${ATTENTION[level][0]}</span>`)
+    .join('');
+  const answerable = asks.some((ask) => ask.options.length);
+  return `<section class="needs" style="--frame: var(--c-${ATTENTION[levelOf(asks[0])][1]})"><div class="needs-head"><h2>Needs you</h2>${legend}</div>${blocksHtml(intro)}${asks.map((ask, index) => askHtml(ask, index)).join('')}${answerable ? '<div class="bar" aria-live="polite"><code></code><button type="button">Copy</button></div>' : ''}</section>${answerable ? ANSWER_SCRIPT : ''}`;
 }
 
 function parsePlan(source) {
@@ -1094,8 +1196,6 @@ function reviewRounds(rows) {
 
 const finished = (status) => stateOf(status) === 'done';
 
-const statusTone = (status) => stateOf(status) ?? 'unknown';
-
 function page(planPath, { folded = false } = {}) {
   const plan = parsePlan(readFileSync(planPath, 'utf-8'));
   const root = execFileSync('git', ['rev-parse', '--show-toplevel'], {
@@ -1148,7 +1248,10 @@ function page(planPath, { folded = false } = {}) {
     assertPairs(entry.plan.sections, pairs, where);
     if (!finished(entry.plan.meta.status ?? '')) assertDefaults(entry.plan, where);
     if (!finished(entry.plan.meta.status ?? '') && owesBrief(entry)) assertBrief(entry.plan, where);
-    if (stateOf(entry.plan.meta.status ?? '') && !finished(entry.plan.meta.status ?? '')) assertAsks(entry.plan, where);
+    if (stateOf(entry.plan.meta.status ?? '') && !finished(entry.plan.meta.status ?? '')) {
+      assertAsks(entry.plan, where);
+      assertPlain(entry.plan, where);
+    }
     if (doc !== plan && isOpen(entry)) assertDelta(entry.plan, doc, { name: where, where: subjectWhere });
   }
   if (folded && doc === plan) throw new Error(`${repoPath} has no subject file to fold into`);
@@ -1173,34 +1276,13 @@ function page(planPath, { folded = false } = {}) {
     source.sections.filter(
       (section) => roleOf(section, lead) === role && hasContent(section)
     );
-  const sectionHtml = (section, className = 'plan') =>
-    `<section class="${className}"><h2>${inline(section.title)}</h2>${blocksHtml(section.lines)}</section>`;
-  const unchangedHtml = (section) =>
-    `<details class="panel unchanged"><summary>${inline(section.title)} <span class="count">unchanged</span></summary>${blocksHtml(section.lines)}</details>`;
-  const deltaHtml = (title) => {
-    const change = byRole(roleOf({ title }, lead), focus).find((section) => sameText(section.title) === sameText(title));
-    const current = byRole(roleOf({ title }, lead)).find((section) => sameText(section.title) === sameText(title));
-    if (!change) return unchangedHtml(current);
-    return `<section class="panel"><h2>${inline(change.title)} <span class="count">this plan</span></h2>${blocksHtml(change.lines, {
-      current,
-      title: change.title,
-      where: subjectWhere,
-    })}${current ? `<details class="current"><summary>Current state</summary>${blocksHtml(current.lines)}</details>` : ''}</section>`;
-  };
-  const ordered = (role) => {
-    const seen = new Map();
-    for (const section of [...byRole(role, focus), ...byRole(role)]) {
-      if (!seen.has(sameText(section.title))) seen.set(sameText(section.title), section.title);
-    }
-    return [...seen.values()].sort((a, b) => lead.indexOf(a.toLowerCase()) - lead.indexOf(b.toLowerCase()));
-  };
+  const sectionHtml = (section, className = 'plan', tag = '') =>
+    `<section class="${className}"><h2>${inline(section.title)}${tag ? ` <span class="count">${tag}</span>` : ''}</h2>${blocksHtml(section.lines)}</section>`;
   const changeHtml = (role) =>
-    delta
-      ? ordered(role).map(deltaHtml).join('\n  ')
-      : byRole(role)
-          .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
-          .map((section) => sectionHtml(section, 'panel'))
-          .join('\n  ');
+    byRole(role)
+      .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
+      .map((section) => sectionHtml(section, 'panel'))
+      .join('\n  ');
   const [needs] = byRole('needs', leader.plan);
   const olderNeeds = iterations
     .filter((entry) => entry.path !== leader.path)
@@ -1222,15 +1304,14 @@ function page(planPath, { folded = false } = {}) {
         ? ''
         : shown.map((section) => `<h3>${inline(section.title)}</h3>${blocksHtml(section.lines)}`).join('');
     return body
-      ? `<details class="iteration"${open ? ' open' : ''}><summary>${head}</summary>${body}</details>`
+      ? `<details open class="iteration"><summary>${head}</summary>${body}</details>`
       : `<p class="iteration">${head}</p>`;
   };
   const iterationList = iterations.length
-    ? `<section class="plan"><h2>${delta ? 'Iterations' : 'History'} <span class="count">${iterations.length}</span></h2>${iterations.map(iterationHtml).join('')}</section>`
+    ? `<section class="plan"><h2>History <span class="count">${iterations.length}</span></h2>${iterations.map(iterationHtml).join('')}</section>`
     : '';
   const own = delta ? focus : doc === plan ? plan : null;
   const details = own ? byRole('details', own) : [];
-  if (delta) details.push(...byRole('idea', focus).filter((section) => !sectionNamed(doc, section.title)));
   const hubPath = subject && topic.hub ? topic.hub.replaceAll('{topic}', subject) : null;
   const hub = hubPath && existsSync(join(root, hubPath)) ? hubPath : null;
   if (hub) {
@@ -1274,6 +1355,8 @@ function page(planPath, { folded = false } = {}) {
     .slice(0, 16)
     .replace('T', ' ');
   const shownStatus = pageEntry?.plan.meta.status ?? status;
+  const sentence = shownStatus.trim();
+  const statusLine = sentence ? `<p class="status-line">${inline(sentence[0].toUpperCase() + sentence.slice(1))}</p>` : '';
   const title = escapeHtml(doc.title || basename(planPath, '.md'));
   const where = subjectPath ? relative(root, subjectPath) : repoPath;
   const brief = briefOf(leader.plan);
@@ -1281,37 +1364,38 @@ function page(planPath, { folded = false } = {}) {
     const round = reviewed.find(({ entry }) => entry.path === leader.path)?.rounds.findLast((entry) => entry.kind === 'panel');
     const roundTag = round ? roundTagHtml(round.round, round.seats) : '';
     const asking = needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : '';
-    const answers = brief.map((answer, index) => `<div class="qa hue-${BRIEF_HUES[index] ?? 'grey'}"><h2>${inline(answer.question)}</h2>${blocksHtml(answer.lines)}</div>`).join('');
-    const fold = (label, body) => (body.trim() ? `<details class="fold"><summary>${label}</summary>${body}</details>` : '');
-    const count = (label, n) => `${label} <span class="count">${n}</span>`;
-    const leadTitles = delta ? ordered('lead') : byRole('lead').map((section) => section.title);
-    const apiChanged = !delta || byRole('api', focus).length > 0;
-    const picked = own ? byRole('picked', own) : [];
-    const state = [
-      doc.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(doc.lead)}</section>` : '',
-      ...byRole('idea').map((section) => (delta ? deltaHtml(section.title) : sectionHtml(section))),
-    ].join('');
+    const answers = brief
+      .map((answer) => ({ answer, index: BRIEF.findIndex((question) => sameText(question) === sameText(answer.question)) }))
+      .filter(({ index }) => index >= 0)
+      .map(({ answer, index }) => `<div class="qa hue-${BRIEF_HUES[index]}"><h2 title="${escapeHtml(answer.question)}">${BRIEF_LABELS[index]}</h2>${blocksHtml(answer.lines)}</div>`)
+      .join('');
+    const source = leader.plan;
+    const planLead = byRole('lead', source);
+    const currentLead = doc === source ? [] : byRole('lead').filter((section) => !planLead.some((own) => sameText(own.title) === sameText(section.title)));
+    const changes = [
+      ...byRole('api', source).map((section) => sectionHtml(section)),
+      ...[...planLead, ...currentLead]
+        .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
+        .map((section) => sectionHtml(section, 'plan', currentLead.includes(section) ? 'current' : '')),
+      ...byRole('main', source).map((section) => sectionHtml(section)),
+      ...byRole('idea', source).map((section) => sectionHtml(section)),
+    ].join('\n  ');
+    const files = [leader.path, subjectPath]
+      .filter(Boolean)
+      .map((path) => `<code>${escapeHtml(relative(root, path))}</code>`)
+      .join(' and ');
     return `<main>
   <header>
     <h1>${title}</h1>
-    ${flowHtml(pageEntry ?? { path: planPath, plan }, shownStatus)}
+    ${flowHtml(pageEntry ?? { path: planPath, plan }, shownStatus, playbooks)}
+    ${statusLine}
     <div class="meta">${delta ? `<span>Plan <strong>${inline(focus.title || basename(focusEntry.path, '.md'))}</strong></span>` : ''}${roundTag}<span>Updated ${updated} UTC</span></div>
   </header>
   <section class="brief card">${answers}</section>
   ${asking}
-  ${apiChanged ? changeHtml('api') : ''}
-  <div>
-  ${fold('Close', close ? blocksHtml(close.lines) : '')}
-  ${apiChanged ? '' : fold('Public API', byRole('api').map((section) => blocksHtml(section.lines)).join(''))}
-  ${fold('Plan', delta && focus.lead.some((line) => line.trim()) ? blocksHtml(focus.lead) : '')}
-  ${fold(escapeHtml(leadTitles.join(', ')), changeHtml('lead'))}
-  ${fold('Main changes', changeHtml('main'))}
-  ${fold(count('Picked for you', tablesOf(picked.flatMap((section) => section.lines)).reduce((sum, table) => sum + table.rows.length, 0)), picked.map((section) => blocksHtml(section.lines)).join(''))}
-  ${fold(doc === plan ? 'More' : `${title} today`, state)}
-  ${fold(count(delta ? 'Iterations' : 'History', iterations.length), iterations.map(iterationHtml).join(''))}
-  ${fold(escapeHtml(details.map((section) => section.title).join(', ')), details.map((section) => sectionHtml(section)).join(''))}
-  ${fold('Review history', reviewRoundsHtml)}
-  </div>
+  ${byRole('picked', source).map((section) => sectionHtml({ ...section, title: 'Picked for you' })).join('')}
+  ${changes}
+  <p class="source">Proof, steps, history and review rounds are in ${files}.</p>
 </main>`;
   };
 
@@ -1320,11 +1404,11 @@ ${PAGE_HEAD}
 ${brief ? briefMain() : `<main>
   <header>
     <h1>${title}</h1>
-    ${flowHtml(pageEntry ?? { path: planPath, plan }, shownStatus)}
-    <div class="meta"><code>${escapeHtml(where)}</code>${delta ? `<span>Plan <strong>${inline(focus.title || basename(focusEntry.path, '.md'))}</strong> <code>${escapeHtml(relative(root, focusEntry.path))}</code></span>` : ''}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${reviewTag}<span>Updated ${updated} UTC</span></div>
+    ${flowHtml(pageEntry ?? { path: planPath, plan }, shownStatus, playbooks)}
+    ${statusLine}
+    <div class="meta"><code>${escapeHtml(where)}</code>${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
   ${needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : ''}${close ? sectionHtml(close, 'panel') : ''}
-  ${delta && focus.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(focus.lead)}</section>` : ''}
   ${changeHtml('api')}
   ${changeHtml('lead')}
   ${changeHtml('main')}
@@ -1335,12 +1419,12 @@ ${brief ? briefMain() : `<main>
     : ''}
   ${doc.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(doc.lead)}</section>` : ''}
   ${byRole('idea')
-    .map((section) => (delta ? deltaHtml(section.title) : sectionHtml(section)))
+    .map((section) => sectionHtml(section))
     .join('\n  ')}
   ${iterationList}
   ${
     details.length
-      ? `<details class="details"><summary>Details: ${details
+      ? `<details open class="details"><summary>Details: ${details
           .map((section) => escapeHtml(section.title.toLowerCase()))
           .join(', ')}</summary>${details.map((section) => sectionHtml(section)).join('')}</details>`
       : ''

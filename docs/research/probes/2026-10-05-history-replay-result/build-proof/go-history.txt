@@ -1,0 +1,6 @@
+# git apply docs/research/probes/2026-10-05-history-replay-result/panel-diff-r2/unreviewed.patch
+# exit: 0
+# pnpm --filter plitejs test:partition:history
+ 154 pass
+ 0 fail
+# exit: 0

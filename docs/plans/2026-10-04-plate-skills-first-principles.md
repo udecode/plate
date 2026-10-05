@@ -1,6 +1,6 @@
 # Plate skills on pstack, from first principles
 
-Status: building: closing; the third trail review runs before the fold
+Status: executed: built and folded on 2026-10-05; waiting on your commit
 Topic: pstack
 Playbook: plan
 
@@ -18,11 +18,11 @@ Nothing more. best-api is a 101-line lens, best-api-review a 22-line entry, plat
 
 ### What do you need from me?
 
-Commit the working tree. The changes since your `0dfa19ab11` are the reflect lessons, the brand check, best-api's premise check and the plan and its log.
+Commit the working tree. Since your `0dfa19ab11` it holds the reflect lessons, the brand check, best-api's premise check, one Vision fix and this plan with its log.
 
 ### What happens if I say go?
 
-Nothing runs. This plan has no step left, and go never grants a plate-2 commit.
+Nothing runs. Every step is closed, and go never grants a plate-2 commit.
 
 ### What could go wrong?
 
@@ -37,13 +37,13 @@ Built on 2026-10-05 after your Build now, with round 2's patch applied and no th
 - Step 7's declaration brand check first did not land, because `platejs/math` leaks `InternalBaseEditorWithInstalledPlugins` today. After reflect, it landed with a shrink-only known-leak entry for that one file, which you accepted.
 - The build ran without loading the Build playbook. The lead loaded it after the trail review, ran `verify` before narrowing a proof gate, and added the Completion Gates table.
 - A `platejs` build in this checkout failed on stale `plitejs` declarations and left `packages/platejs/dist` without declaration files until the lead rebuilt `plitejs`, then `platejs`.
-- Step 10's grep outside `docs/plans` still lists 50 dated records that cite the registry, and no live instruction, script, app or package. An earlier run of it used a path allowlist instead of the approved form. Step 10 stays open until you accept the narrower proof.
+- Step 10's grep outside `docs/plans` still lists 50 dated records that cite the registry, and no live instruction, script, app or package. An earlier run of it used a path allowlist instead of the approved form. You accepted the narrower proof.
 - The build interleaved its phases. It cut skills and deleted the registry before Phase 1's landing proof passed, and it logged no keep or revert decision per step. Every phase was kept whole, and each lane's patch is in scratch.
 - The 11 existing editor audits' ledgers stay in the ignored `docs/plans/artifacts/`. Only new audits write to `docs/editor-audits/`.
-- The lead checked step 13, folded the subject and marked this plan executed before the trail review returned. All three are undone, and the fold waits on your answers.
+- The lead checked step 13, folded the subject and marked this plan executed before the first trail review returned. All three were undone, and the fold ran again after the third review.
 - The lead dropped the regression template's Work Checklist and Patch delegation table, and step 3's reviewer showed that was wrong. Both are back. Delegation itself stays cut, because the lead fills the record.
 - The step 4 fix to `VISION.md:100` first said `useAnnotationStore` reads the store. Step 3's reviewer caught it, and the line now matches `docs/vision/plite.md` and source.
-- The build removed six registry files with `rm` on a variable path, which `CLAUDE.md` forbids. The deletions were the planned cut, and later removals used literal paths or `git rm`.
+- The build removed six registry files with `rm` on a variable path, which `CLAUDE.md` forbids. The deletions were the planned cut. The lead repeated the slip once later, on a symlink inside a scratch smoke worktree; a guard that refuses such an `rm` is in Open work.
 - The size estimate missed. Rule and playbook files landed at 10,533 lines, not about 8,100, because step 3's reviewers restored 82 rules the first cut lost or weakened. Vision's detail files grew 558 lines.
 - The paired trials found a defect class that the landing and coverage checks cannot see, because some cuts left a step list broken. The lead repaired nine spots in seven files after the Phase 2 checks first passed, then reran every acceptance check.
 - A lint-clean claim first named ten files. Ultracite checks only six of them, because lint ignores `.agents/**`.
@@ -78,25 +78,26 @@ Built on 2026-10-05 after your Build now, with round 2's patch applied and no th
 - In dotai's `skills/sync-pstack`, as commits `259989d` and `253031e` on `main`, pushed on your word, with plate-2 re-synced from `253031e` and the user-scope sync-pstack reinstalled: the Long runs re-read after compaction, where `check-playbooks.mjs` lives, frozen inventory quotes with an independent reader, a committed disposition table, routing-only smoke answers and cited judge rubrics.
 - Rejected, with the synthesizer's reasons: phase-gate waiting and the repair premise check (already covered), `@babel/parser` and grep repeat limits (tool-version facts), `cross.mjs` polling (one reviewer, small cost), unset shell variables and compaction-proof command scripts (already covered).
 - Backlog: eight mechanisms, listed under Open work.
-- The first paired smoke was partial, so `253031e` reworded two block sentences. In the second round the compaction re-read shows in both revised runtimes and in neither baseline, and every run finds `check-playbooks.mjs` in the plugin cache. The inventory lesson shows in revised Codex. After the push and reinstall, Claude writes per-runtime intended behaviors with cited lines before seeing answers, while its ten-line skills-cut walkthrough still omits the frozen quotes, and Codex loads no sync-pstack for paired trials.
+- The first paired smoke was partial, so `253031e` reworded two block sentences. In the second round both baselines already re-read after a compaction; both revised runtimes add the re-read as the first todo and the sentence-by-sentence comparison, and every run finds `check-playbooks.mjs` in the plugin cache. The inventory lesson shows in revised Codex. After the push and reinstall, Claude writes per-runtime intended behaviors with cited lines before seeing answers, while its ten-line skills-cut walkthrough still omits the frozen quotes, and Codex loads no sync-pstack for paired trials.
 
 **Proof.**
 
-- `landall.sh` finds all 3,627 non-drop inventory quotes, and `coverage.mjs` finds a row for each of the 12,054 removed lines.
+- `landall.sh` finds all 3,631 non-drop inventory quotes, and `coverage.mjs` finds a row for each of the 12,058 removed lines. Four of those rows cover later rewordings, two of them by other sessions.
 - The suites pass 158 tests: ci-workflow, validate-concept-matrix, sync-resources, check-plate-feature, the kit check, the declaration brand check, the regression and benchmark validators and check-core. The kit audit passes on the live tree.
 - `pnpm install` regenerated the mirrors, and `sync-resources.mjs --check` reports exact.
-- `sync-pstack verify` passes, run from a dotai worktree at `79345b9`, plate-2's last sync source, because the shared dotai checkout holds another session's uncommitted `plan-page.mjs`. `check-playbooks.mjs` passes, and a control copy whose playbook extends a missing pstack playbook fails.
+- `sync-pstack verify` and `check` pass after plate-2's re-sync from the pushed `253031e`. `check-playbooks.mjs` passes, and a control copy whose playbook extends a missing pstack playbook fails.
 - `pnpm check:core` passes, and its log shows the kit contracts and the kit audit running.
 - Ultracite and `oxlint --type-aware` exit 0 on the six `tooling/scripts` files.
 - The structure check finds no new step gap, empty section or orphaned list intro in the 172 changed instruction files, apart from one false positive.
 - The brand check passes on the fresh `cli`, `platejs`, `plitejs` and `test` declarations. A copy with no known-leak entry fails on exactly `platejs`'s `dist/math/index.d.ts`. Its tests pass 11, and each new test failed first for its own defect.
-- dotai's main plus the lesson patch alone passes `build-workflow`, the 93 `sync-pstack` tests and `validate-skills`, and `apply --dry-run` changes two block lines in plate-2 and in ellie. In the shared dotai checkout, another session's in-flight `plan-page` edit fails one test.
+- The pushed lesson commits on `8fb790b` pass `build-workflow`, the 94 `sync-pstack` tests and `validate-skills`, and the re-sync changed two block lines in plate-2. In the shared dotai checkout, another session's in-flight `plan-page` edit fails one test.
 
 **Limits.**
 
 - The trials ran in read-only sessions told not to write, so they prove what each runtime says it would do, not a real run's output.
 - Step 3's reviewers did not reread their files after the 82 repairs. The landing and coverage checks show each repair has a home, not that it kept its conditions and strength; some repair quotes are a rule's first fourteen words.
 - `plate-next sync`'s completion check is instruction text. No trial ran `plate-next sync`, and no control showed an unchecked or deferred row blocking completion.
+- Lesson mode's smoke gate is not met for two pushed lessons. Claude's skills-cut walkthrough omits the frozen quotes and independent reader, and Codex loads no sync-pstack for paired trials, so the cited-rubric rule never reaches it.
 - `pnpm check` did not run in full. The change is instruction text plus seven scripts, whose suites ran, and `check:core` covers the new wiring.
 
 **Attention.**
@@ -122,9 +123,18 @@ reviewed by gpt-6.1-sol
 - warning: Step 6 cited landing rows a later row narrowed to partial. Reopened as partial.
 - warning: The dotai push was recommended with the smoke gate incomplete. The recommendation is now a smoke round first.
 
-**Counts.** 13 steps: 12 done, 4 of them on narrower proofs you accepted (steps 6, 7, 8 and 10), 0 partial, 0 skipped, 0 blocked, 1 open (step 13, the fold, which waits on the dotai answer).
+**Attention, third round.**
 
-**Open work.** Eleven items wait in Open work with their owner, and move to the pstack subject at the fold. They include the `platejs/math` leak behind the known-leak entry, another session's plan that still cites the deleted registry script, and the reflect backlog.
+reviewed by gpt-6.1-sol
+
+- warning: Two pushed lessons still fail the smoke gate; moving them to Open work does not meet it. Stated in Limits.
+- warning: The compaction claim overstated the difference, because both baselines already re-read after a compaction. Narrowed in Reflect to the first-todo placement and the sentence comparison.
+- warning: The `rm` slip on a variable path happened twice; a logged row does not stop a third. A guard is in Open work.
+- nit: The Brief, two Close lines and two Proof lines were stale after your answers and the re-sync. Fixed.
+
+**Counts.** 13 steps: 13 done, 4 of them on narrower proofs you accepted (steps 6, 7, 8 and 10), 0 partial, 0 skipped, 0 blocked, 0 open.
+
+**Open work.** Twelve items, each with its owner, moved to the pstack subject's Open work at the fold. They include the `platejs/math` leak behind the known-leak entry, another session's plan that still cites the deleted registry script, and the reflect backlog.
 
 ## Main changes
 
@@ -253,7 +263,7 @@ Phase 2 closes when:
 - `sync-resources.mjs --check`, `check-playbooks.mjs`, `sync-pstack verify`, `ci-workflow.test.mjs` and each changed validator's suite pass;
 - paired baseline-versus-revised trials run per pstack's Eval playbook, with the baseline and revised trees in detached worktrees. The prompts are an API design question that must stop at a decision, a review of `packages/test`, a request for uncovered tests (an exception to Eval's blinding rule, because the job is about tests), "next", a fake "review PR 999999" that must route to Babysit and stop before any panel launches, a `sync-plate-ui` run from a workspace without this checkout, and every multi-word typed mode by its full command: `verify testing audit`, `research harvest plan`, `research audit sync` and `sync-shadcn parity`. Each trial checks the outcome and the authority used, not only the route.
 
-13. - [ ] Close. Write the Close, fold the delta into `docs/plans/topics/pstack.md`, and close the Open work items this answers: the benchmark-checklist audit, the test-audit owner, and the main-line delivery clash, which `AGENTS.md:137` already resolved. Then run the decision-trail review and update the Plate v2 workflow guide. Open: the Close, the trail review's Attention and the guide's two new rows landed; the fold waits on your answers.
+13. - [x] Close. Write the Close, fold the delta into `docs/plans/topics/pstack.md`, and close the Open work items this answers: the benchmark-checklist audit, the test-audit owner, and the main-line delivery clash, which `AGENTS.md:137` already resolved. Then run the decision-trail review and update the Plate v2 workflow guide. Closed by this Close with three trail-review Attention sections, the fold into `docs/plans/topics/pstack.md` and two new rows in `docs/development/agent-skills.md`.
 
 ## Completion Gates
 
@@ -269,27 +279,15 @@ Phase 2 closes when:
 | Build: changeset for a published package edit | skip: no published package changed |
 | Build: `check-plate-feature.mjs` on a feature-delivery plan | skip: not a feature-delivery plan |
 | Build: panel on the diff | skip: no reviews row names this build, and you asked for a panel on the plan only |
-| Decision-trail review | scratch `trail/trail-answer.md`, `trail2/trail-answer.md`, and a third round after the dotai push: pending |
+| Decision-trail review | scratch `trail/trail-answer.md`, `trail2/trail-answer.md` and `trail3/trail-answer.md` |
 | Ledger record for review scopes | skip: the plan has no review scopes |
 | The run's commits named | `0dfa19ab11`, your commit, holds the build through decision row 98 |
 | `review-ledger.mjs next` | `reads` (Reads, snapshots and subscriptions), pursue-not-adopted |
-| Fold, `--folded` render and republish | pending: after the third trail review |
+| Fold, `--folded` render and republish | `docs/plans/topics/pstack.md` and `docs/plans/artifacts/topics/pstack.html` |
 
 ## Open work
 
-Each item moves to `docs/plans/topics/pstack.md`'s Open work at the fold.
-
-- `platejs/math`'s input rule declarations expose `InternalBaseEditorWithInstalledPlugins` (`dist/math/index.d.ts`), which the Plate foundation return boundary law forbids. The brand check excuses only that file through its known-leak entry; once the leak is fixed, the check fails until the entry is removed. owner: Ziad, tracked here.
-- No standing check stops law copies from growing back in skills; this build removed the rules that told agents to copy law, but added no check. owner: Ziad, tracked here.
-- `tooling/scripts/check-plate-doc-code-contracts.mjs:924-1045` still checks a `clipboardHandler` export that no package source exports (`git grep clipboardHandler -- packages` finds only a local `clipboardHandlers` variable). owner: Ziad, tracked here.
-- `docs/editor-behavior/editor-protocol-matrix.md:355-362` cite `MediaUploadPlugin.spec.ts`, `BaseMediaUploadPlugin.upload.spec.ts` and `BaseMediaUploadPlugin.spec.ts`, which `git ls-files` does not list. owner: Ziad, tracked here.
-- The 11 audits in `docs/editor-audits/index.json` point at 112 ledger paths under the git-ignored `docs/plans/artifacts/`; new audits go to `docs/editor-audits/`, and the old ledgers have not moved. owner: Ziad, tracked here.
-- The v259 history types export from `plitejs` but not from the `platejs` root, so `docs/vision/plite.md` names only the `plitejs` entrypoint. owner: Ziad, tracked here.
-- `plate-next sync`'s completion check is instruction text that no trial or control has exercised. owner: Ziad, tracked here.
-- A typed `best-api review <surface>` routes into the API review playbook in both runtimes and both trees, which continues into planning on Pursue; decide whether it should stop at best-api's own review verdict. owner: Ziad, tracked here.
-- Another session's open plan, `docs/plans/2026-10-05-history-sync-replay-result.md`, cites `node .agents/rules/plate-next/scripts/version.mjs validate` as a checked proof and `best-api.mdc`'s replay rule as evidence; this build deleted the script and moved the rule to `docs/vision/plate.md` and `docs/vision/plite.md`. owner: Ziad, tracked here.
-- Two pushed lessons show in one runtime each: Claude's skills-cut walkthrough omits the frozen quotes and independent reader, and Codex loads no sync-pstack when asked for paired trials, so it never sees the cited-rubric rule. owner: Ziad, tracked here.
-- Reflect backlog: `sync-pstack verify` should catch broken `#fragment` links, numbering gaps, empty sections and orphaned list intros; `smoke()` should return what each session read; `plan-open.mjs` should refuse a closed box whose step is partial; `cross.mjs` should refuse `--help` and unknown flags instead of sending them as the prompt; the obligation-inventory scripts should be shared; `*.orig` and `*.rej` should stay out of autostage; `sync-resources.mjs` should prune empty mirror folders and move to `tooling/scripts/`; `docs/vision/plate.md`'s plugin doctrine section needs subheadings. owner: Ziad, tracked here.
+Moved to `docs/plans/topics/pstack.md`'s Open work at the fold, each item with its owner.
 
 ## Evidence
 

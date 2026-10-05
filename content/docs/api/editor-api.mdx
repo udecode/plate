@@ -402,35 +402,26 @@ workflows rather than editor APIs.
 
 ## Subscribing to commits
 
-#### `editor.subscribe(listener) => () => void`
-
-Subscribe to editor snapshots. The listener receives the current snapshot and an
-optional change summary.
-
-```javascript
-const unsubscribe = editor.subscribe((_snapshot, commit) => {
-  if (commit?.changed.has("document") || commit?.dirtyStateKeys.length) {
-    const documentValue = editor.read.value();
-
-    save(documentValue);
-  }
-});
-```
-
 #### `editor.subscribeCommit(listener) => () => void`
 
-Subscribe only to committed changes. The listener receives the change summary
-for each commit.
+Subscribe to committed changes. The listener receives each commit and the
+snapshot published with it.
 
 ```javascript
 const unsubscribe = editor.subscribeCommit((commit) => {
+  if (commit.changed.has("document") || commit.dirtyStateKeys.length) {
+    save(editor.read.value());
+  }
+
   if (commit.selectionChanged) {
     syncSelection(commit.selectionAfter);
   }
 });
 ```
 
-Call the returned function to unsubscribe.
+The listener runs synchronously once the editor publishes the commit. It can run
+before a mounted editor updates its DOM, so read rendered DOM from a React effect
+instead. Call the returned function to unsubscribe.
 
 ## Installing and reconfiguring plugins
 

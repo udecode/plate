@@ -106,8 +106,8 @@ const runBatchedUpdate = (children, commands) => {
 
   resetEditor(editor, children);
   let publicationCount = 0;
-  const unsubscribe = editor.subscribe((_snapshot, commit) => {
-    if (commit) publicationCount += 1;
+  const unsubscribe = editor.subscribeCommit(() => {
+    publicationCount += 1;
   });
 
   const start = performance.now();
@@ -131,8 +131,8 @@ const runSeparateUpdates = (children, commands) => {
 
   resetEditor(editor, children);
   let publicationCount = 0;
-  const unsubscribe = editor.subscribe((_snapshot, commit) => {
-    if (commit) publicationCount += 1;
+  const unsubscribe = editor.subscribeCommit(() => {
+    publicationCount += 1;
   });
 
   const start = performance.now();

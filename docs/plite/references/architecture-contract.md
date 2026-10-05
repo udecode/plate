@@ -30,7 +30,7 @@ The root editor exposes lifecycle primitives only:
 
 - `editor.read` for committed state
 - `editor.update` for atomic writes
-- `editor.subscribe` and `editor.subscribeCommit`
+- `editor.subscribeCommit` for commit listeners
 - `editor.extend` for atomic runtime extension installation and optional schema migration
 - `editor.api` for installed host/runtime services
 

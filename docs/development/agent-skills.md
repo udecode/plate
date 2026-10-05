@@ -40,7 +40,7 @@ These are optional shortcuts for a specific job, not a sequence to run.
 | Your job | Direct entry point |
 | --- | --- |
 | Choose a public API | `$best-api design <surface>` |
-| Deliver a complete Plate feature | "plan <feature>", then "go" |
+| Deliver a complete Plate feature | Describe it, or "plan <feature>" to stop at the plan and "go" to build it |
 | Fix one local editor behavior or regression, or recover a failed fix | Describe it, or paste a screenshot or recording |
 | Finish a PR or the current tree | "clean up PR <number>" or "finish the current tree" |
 | Simplify code ownership: delete, merge, inline or split | "clean up <surface>" |
@@ -56,7 +56,7 @@ These are optional shortcuts for a specific job, not a sequence to run.
 | Work a public issue, PR or security queue | `$maintainer <scope>` |
 | Draft a Plate Beta issue from video or text | `$maintainer issue-draft <video or text>` |
 
-A planning-only request stops at a reviewable plan. Planning and execution can also be authorized together.
+A planning-only request stops at a reviewable plan. Any other request runs to its close. Agents stop only for a call that cannot be undone or has no clear pick, and for production deploys, pushes to `main`, messages to people, shared-resource spend and deletes. Every other call they make shows under Picked for you with the word that reverses it. Add "stop at plan", "stop at design" or "stop before ship" to a request to stop sooner.
 
 For long unattended work, state a checkable exit condition. pstack's Autonomous
 run keeps going with `/loop` in Claude Code or `/goal` in Codex, and the domain
@@ -106,7 +106,7 @@ owns release mode details.
 
 ## Read a page and answer it
 
-Each stop that hands work back replies with a page link. The page opens with a rail of the work's stages, from Plan to Reflect, then five short answers labeled Found, Changes, Your call, On go and Risks. Under them, Needs you lists each decision as a short memo: the question, why it needs you, one or two facts, each option with what happens and what it costs, and the agent's pick with its reason. Each part runs at most 15 words, in plain words with no file paths or commands.
+Each stop that hands work back replies with a page link. The page opens with a rail of the work's stages, from Plan to Reflect, then the line that says what the work waits on, such as your answer or a commit you owe, and two short answers labeled Changes and Risks. On the rail, Plan names the playbook the agent picked, such as feature or bug-fix, and the design, review, writing and audit stages that ran name their pstack skills, such as interrogate or deslop. Under them, Needs you lists each decision as a short memo: the question, why it needs you, one or two facts, each option with what happens and what it costs, and the agent's pick with its reason. Each part runs at most 15 words, in plain words with no file paths or commands. A question's number is red when it needs your answer, amber when it is worth a look and green when the pick is safe, and red questions come first. Change a pick and the bar at the bottom gives you a reply to copy. Picked for you lists the calls the agent made for you, each with the word that reverses it. Under them come the plan's changes: Public API, the review sections and Main changes. Nothing folds, and the plan file under `docs/plans` keeps the proof, steps and history.
 
 Answer in your own words in the chat. "go" takes the pick on every decision that has one and authorizes nothing else.
 

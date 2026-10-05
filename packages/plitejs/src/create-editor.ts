@@ -692,7 +692,6 @@ const createEditorImplementation = <
     plugin: undefined as unknown as Editor<V, TPlugins>['plugin'],
     key,
     read,
-    subscribe: (listener) => subscribe(editor, listener),
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
     update,
     install: (plugin, pluginOptions) =>

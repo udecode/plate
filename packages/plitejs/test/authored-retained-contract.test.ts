@@ -24,6 +24,7 @@ import {
 } from '../src/authored/state';
 import { createAuthoredFragmentView } from '../src/core/authored-fragment-view';
 import { readAuthoredViewFragments } from '../src/core/authored-runtime';
+import { getEditorRuntime } from '../src/core/editor-runtime';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -699,8 +700,8 @@ describe('native retained counterparts', () => {
     const first = fragment.subscribeCommit(listener);
     const second = fragment.subscribeCommit(listener);
     const snapshots: string[] = [];
-    const snapshotSubscription = fragment.subscribe((snapshot) =>
-      snapshots.push(NodeApi.string(snapshot.children[0]))
+    const snapshotSubscription = getEditorRuntime(fragment).subscribe(
+      (snapshot) => snapshots.push(NodeApi.string(snapshot.children[0]))
     );
     source.update.text.insert('!', { at: { path: [1, 0], offset: 3 } });
     assert.equal(calls, 0);

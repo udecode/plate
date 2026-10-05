@@ -20,8 +20,6 @@ export {
   positions,
   replace,
   string,
-  subscribe,
-  subscribeCommit,
   unhangRange,
 } from '../interfaces/editor';
 export { end } from '../editor/end';

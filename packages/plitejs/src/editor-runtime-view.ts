@@ -1160,26 +1160,19 @@ const createViewRuntime = <V extends Value>(
     subscribe: (listener) => {
       if (viewState.document) return () => {};
 
-      const notify: (sourceChange?: EditorCommit<V>) => void = (
+      const notify: (sourceChange: EditorCommit<V>) => void = (
         sourceChange
       ) => {
-        const change =
-          sourceChange &&
-          getAuthoredViewCommit(getViewEditor() ?? editor, sourceChange);
+        const change = getAuthoredViewCommit(
+          getViewEditor() ?? editor,
+          sourceChange
+        );
         listener(
-          change
-            ? withViewSnapshot(
-                getEditorCommitSnapshot(change, viewState.root),
-                viewState,
-                viewState.root
-              )
-            : withViewSnapshot(
-                withRootRead(editor, viewState, () =>
-                  baseRuntime.getSnapshot()
-                ),
-                viewState,
-                getCurrentSelectionRoot(editor)
-              ),
+          withViewSnapshot(
+            getEditorCommitSnapshot(change, viewState.root),
+            viewState,
+            viewState.root
+          ),
           change
         );
       };
@@ -1215,27 +1208,20 @@ const createViewRuntime = <V extends Value>(
     subscribeSource: (source, listener) => {
       if (viewState.document) return () => {};
 
-      const notify: (sourceChange?: EditorCommit<V>) => void = (
+      const notify: (sourceChange: EditorCommit<V>) => void = (
         sourceChange
       ) => {
-        const change =
-          sourceChange &&
-          getAuthoredViewCommit(getViewEditor() ?? editor, sourceChange);
-        if (change && !getSourcesForChange(change).includes(source)) return;
+        const change = getAuthoredViewCommit(
+          getViewEditor() ?? editor,
+          sourceChange
+        );
+        if (!getSourcesForChange(change).includes(source)) return;
         listener(
-          change
-            ? withViewSnapshot(
-                getEditorCommitSnapshot(change, viewState.root),
-                viewState,
-                viewState.root
-              )
-            : withViewSnapshot(
-                withRootRead(editor, viewState, () =>
-                  baseRuntime.getSnapshot()
-                ),
-                viewState,
-                getCurrentSelectionRoot(editor)
-              ),
+          withViewSnapshot(
+            getEditorCommitSnapshot(change, viewState.root),
+            viewState,
+            viewState.root
+          ),
           change
         );
       };
@@ -1409,7 +1395,6 @@ export const createEditorViewRuntime = <
     key: createViewKey,
     read: viewRead,
     root: toPublicRoot(viewState.root),
-    subscribe: viewRuntime.subscribe,
     subscribeCommit: viewRuntime.subscribeCommit,
     update: viewUpdate,
   };

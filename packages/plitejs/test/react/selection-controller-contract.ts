@@ -949,8 +949,8 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
 
   const commits: Array<NonNullable<ReturnType<typeof editor.read.lastCommit>>> =
     [];
-  const unsubscribe = editor.subscribe((_snapshot, commit) => {
-    if (commit) commits.push(commit);
+  const unsubscribe = editor.subscribeCommit((commit) => {
+    commits.push(commit);
   });
 
   try {
@@ -1069,8 +1069,8 @@ test('projected DOM selection import publishes its anchor selection commit', () 
 
   const commits: Array<NonNullable<ReturnType<typeof editor.read.lastCommit>>> =
     [];
-  const unsubscribe = editor.subscribe((_snapshot, commit) => {
-    if (commit) commits.push(commit);
+  const unsubscribe = editor.subscribeCommit((commit) => {
+    commits.push(commit);
   });
 
   try {

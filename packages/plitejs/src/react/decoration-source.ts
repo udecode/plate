@@ -1692,15 +1692,14 @@ export const createPliteDecorationManager = <E>(
             if (pendingRefresh) pendingRefresh.snapshot = snapshot;
             if (
               sourceStates.length === 0 ||
-              (change && !change.changed.hasAny('document'))
+              !change.changed.hasAny('document')
             ) {
               return;
             }
 
-            let inputKeys = change?.changed.nodeKeysAll('decoration');
+            let inputKeys = change.changed.nodeKeysAll('decoration');
 
             if (
-              change &&
               inputKeys &&
               (change.changed.hasAny('structure') ||
                 change.changed.hasAny('properties'))
@@ -1728,7 +1727,6 @@ export const createPliteDecorationManager = <E>(
             }
             queueSourceRefresh(snapshot, sourceStates, inputKeys);
             if (
-              change &&
               (change.tags.includes('native-text-input') ||
                 change.tags.includes('dom-text-input')) &&
               change.changed.hasAny('text') &&
