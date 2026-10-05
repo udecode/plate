@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  mdast-util-find-and-replace@3.0.2:
+    hash: ewimfvsv36p72fygig33i2mi6q
+    path: patches/mdast-util-find-and-replace@3.0.2.patch
+
 importers:
 
   .:
@@ -20133,7 +20138,7 @@ snapshots:
       inherits: 2.0.4
       safe-buffer: 5.2.1
 
-  mdast-util-find-and-replace@3.0.2:
+  mdast-util-find-and-replace@3.0.2(patch_hash=ewimfvsv36p72fygig33i2mi6q):
     dependencies:
       '@types/mdast': 4.0.4
       escape-string-regexp: 5.0.0
@@ -20179,7 +20184,7 @@ snapshots:
       '@types/mdast': 4.0.4
       ccount: 2.0.1
       devlop: 1.1.0
-      mdast-util-find-and-replace: 3.0.2
+      mdast-util-find-and-replace: 3.0.2(patch_hash=ewimfvsv36p72fygig33i2mi6q)
       micromark-util-character: 2.1.1
 
   mdast-util-gfm-footnote@2.1.0:
@@ -22029,7 +22034,7 @@ snapshots:
     dependencies:
       '@types/mdast': 4.0.4
       emoticon: 4.1.0
-      mdast-util-find-and-replace: 3.0.2
+      mdast-util-find-and-replace: 3.0.2(patch_hash=ewimfvsv36p72fygig33i2mi6q)
       node-emoji: 2.2.0
       unified: 11.0.5
 

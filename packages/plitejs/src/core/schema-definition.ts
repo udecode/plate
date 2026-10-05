@@ -1612,10 +1612,7 @@ const schemaContent: SchemaContentApi = Object.assign(content, {
       };
     });
 
-    return cloneFrozenDeclaration(
-      { ...rest, prefix },
-      'Schema content prefix'
-    ) as TRest & Readonly<{ prefix: readonly SchemaContentPrefixSlot[] }>;
+    return cloneFrozenDeclaration({ ...rest, prefix }, 'Schema content prefix');
   },
   open: <const TOptions extends SchemaContentOptions = {}>(
     options: TOptions = {} as TOptions

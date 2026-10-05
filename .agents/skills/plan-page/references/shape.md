@@ -20,14 +20,38 @@ A subject file never holds a `before` or `after` fence.
 
 - Optional frontmatter, then `# Title`, then `Status:`, `Topic:` and, when a project playbook writes the plan, `Playbook:` lines.
 - `Status:` starts with a state word from `.agents/pstack/status.mjs`, such as `planning`, `building`, `blocked`, `reopened` or `executed`.
+- `## Brief`: five `###` questions in this order, each answered in at most 40 words: What did you find? What will change? What do you need from me? What happens if I say go? What could go wrong? The owner reads only this, so each answer names the decision, the number or the next action, and the go answer says what "go" picks. An open plan that leads its page needs one.
 - A plan that continues a subject carries only its delta, under the subject's section titles:
   - `## Public API`: one ```` ```ts before ```` and ```` ```ts after ```` pair per call it changes. A deleted call has an empty after fence, and a new call an empty before fence.
   - `## Main changes`: its own changes.
   - Any other subject section: a table whose first column is `Delta`. Each row is `added`, `changed` or `removed`, and its next cell keys it to the subject's row in a table with the same columns. New prose or tables go beside it.
 - A one-off plan carries its own `## Public API` pairs and `## Main changes`.
 - `## Defaults`: a table whose columns start with `Decision | Pick | Alternative | Word`, one row per call made for the owner. The word reverses the pick. Leave the section out when no call was made.
-- `## Open questions`: one `### <short header>` per question, unique on the page. Then the question in one line, then its options as `- **<label>** (recommended): <one-line description>`, with the recommended one first and each other label a word the user can type. A question with no clear recommendation marks none. Context a reader rarely needs goes after the options, and the page folds it under More.
-- `## Close`: written at every stop that hands work back after work ran, such as a build, fix or review close. It holds what landed, the proof and its limits, the done, skipped, blocked and open counts, reversals and deviations first, and open work with owners. A pstack playbook's Reply line lists what else it holds.
+- `## Open questions`: one `### <short header>` per decision, unique on the page, written as a decision memo the owner can answer without reading anything else on the page. The renderer refuses an open plan's question that skips a part:
+  1. The decision in one line that ends in `?`.
+  2. `Why it needs you:` and one or two sentences on why no safe default exists.
+  3. The facts the owner needs to decide, as plain bullets.
+  4. Two or more options, the recommended one first, each as `- **<label>** (recommended): <what happens> Cost: <what it costs or risks>`. The label is a plain phrase the owner recognizes, never a code word to type back.
+  5. `Why I pick it:` and one sentence, when one option is recommended. A question with no clear recommendation marks none and leaves this line out.
+  6. `If you say go:` and what the lead does next, or that go leaves the question open. It names only what go authorizes now; an irreversible or outward step after it, such as a later delete, comes back as its own question.
+
+  ```md
+  ### Workflow guides
+
+  Where should the two workflow guides live?
+
+  Why it needs you: Another account owns both pages, and the choice changes what teammates read.
+
+  - plate-2 already keeps a repo guide, `docs/development/agent-skills.md`.
+
+  - **Keep them in the repo** (recommended): Both `AGENTS.md` files link to a repo guide. Cost: The old pages stay up until you delete them.
+  - **Rebuild them as new pages**: I publish both guides under this account. Cost: Two more pages to keep in sync by hand.
+
+  Why I pick it: A repo file is reviewed, versioned and readable by every teammate.
+
+  If you say go: I write Ellie's repo guide and repoint both links.
+  ```
+- `## Close`: written at every stop that hands work back after work ran, such as a build, fix or review close. It holds what landed, the proof and its limits, the counts the block's Todo list and close rule requires, reversals and deviations first, open work with owners and, after a decision-trail review, its Attention section. A pstack playbook's Reply line lists what else it holds.
 - Scope, Steps, Evidence, Proof, Claims, Asks, Verification and Notes render collapsed under Details. In a subject iteration, so does any other section the subject file lacks; a one-off plan shows its other sections open.
 
 ## Lifecycle
@@ -42,7 +66,16 @@ A subject file never holds a `before` or `after` fence.
 
 ## Page order
 
-1. Needs you, from the Open questions of every iteration, the leader's first; an older iteration's question names its plan. Each question renders as radio buttons with the recommendation picked. The section says that go takes every recommendation, and shows a Copy answer line only when an answer differs from it or a question has none.
+When the leading plan has a brief, the page shows:
+
+1. The header: the leading plan's state, its title and its own latest review round.
+2. The brief, then Needs you, so all five answers stay on the first screen.
+3. Public API, when the leading plan changes it.
+4. Everything else, each folded to one line: Close, an unchanged Public API, the plan's lead paragraph, the `page-lead` sections, Main changes, Picked for you, the subject's current state, iterations or history, details and review history.
+
+Without a brief, the page shows:
+
+1. Needs you, from the Open questions of every iteration, the leader's first; an older iteration's question names its plan. A green strip on top lists each decision's pick, so the owner can say go without reading further. Each question then renders as a numbered decision card: the question, why it needs you, the facts, each option with what happens and what it costs, the pick's title in green with its reason, and what go does. Only badges, such as the pick chips, the decision number and the My pick badge, have a background; everything else uses text color and borders. The section says the owner answers in their own words and that go takes the pick on every decision that has one. An executed plan's older question renders with the parts it has.
 2. Close, from the leading iteration's or the one-off plan's `## Close`.
 3. The leading plan's lead paragraph.
 4. Public API, then the `page-lead` sections, then Main changes.
@@ -66,6 +99,8 @@ A subject file never holds a `before` or `after` fence.
 - A subject whose hub exists lacks a required section in both its file and its open plan. The leading plan's playbook sets the required sections, or every playbook does when that plan names none.
 - An open iteration's subject already shows one of its added or changed rows, or no longer has a row it removes, in any section with a Delta table. It also refuses when the subject shows a pair's after fence line for line, indentation and punctuation included, and does not show its before fence. The check skips a pair that deletes a call or changes nothing, a pair whose changed lines another iteration's fences all hold, and any row another iteration also marks. It exempts a plan whose `Status:` starts with `reopened`, and the plan a `--folded` render folds.
 - An open iteration's Defaults has no Decision, Pick, Alternative and Word table.
+- An open plan that leads its page, with a state word in its `Status:`, has no `## Brief`.
+- An open iteration's brief skips, adds or reorders a question, leaves an answer empty, or answers in more than 40 words.
 - `--folded` names a plan with no `## Close` or no subject file, or the subject file lacks the plan's Delta rows or after lines, still shows its before lines, or does not show an after fence as one block in order, skipping any row or line another iteration also changes.
 
 `--check` runs every refusal and writes nothing.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import { createEditor, type Element, NodeApi } from '../../../core';
+import { createEditor, NodeApi } from '../../../core';
 import { BaseTablePlugin } from './BaseTablePlugin';
 
 const tableOf = (...rows: string[][]) => ({
@@ -18,9 +18,7 @@ const createTable = (table: ReturnType<typeof tableOf>) =>
   createEditor({ initialValue: [table], plugins: [BaseTablePlugin] });
 
 const rowTexts = (editor: ReturnType<typeof createTable>) =>
-  (editor.read.children()[0] as Element).children.map((row) =>
-    NodeApi.string(row)
-  );
+  editor.read.children()[0].children.map((row) => NodeApi.string(row));
 
 describe('table row transfer landing', () => {
   it('reorders rows', () => {

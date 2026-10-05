@@ -7,22 +7,6 @@ skill records how to isolate one Potion tab offline with the repo-approved
 Browser/Chrome/Computer ladder and then replay the current bug's repro steps.
 Do not bake one historical repro into the workflow.
 
-## Tool Choice
-
-1. Use `[@Browser](plugin://browser@openai-bundled)` first when Potion can be
-   opened and operated in the in-app Browser session.
-2. Use `[@Chrome](plugin://chrome@openai-bundled)` when the repro needs an
-   existing signed-in Chrome profile, extension/profile state, exact Chrome
-   rendering, or a native browser state Browser cannot access.
-3. Use `[@Computer](plugin://computer-use@openai-bundled)` only when native
-   Chrome/OS UI must be visually inspected and Chrome automation cannot read it.
-
-Do not use a repo-local browser wrapper, Puppeteer, standalone Playwright, or
-raw Chrome DevTools as the default proof lane. If Browser/Chrome cannot isolate
-one tab's network state or inspect the required collaboration state, record the
-tool limitation and route it to `verify browser-tool-issue` instead of falling back to
-legacy tooling.
-
 ## Workflow
 
 1. Confirm Potion access in the selected Browser or Chrome session.

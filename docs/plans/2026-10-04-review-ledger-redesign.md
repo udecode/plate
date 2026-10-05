@@ -6,10 +6,88 @@ work_kind: workflow
 
 # Review ledger redesign
 
-Status: planning, plan panel done after two rounds; building next
+Status: awaiting the owner's answer on reflect's lessons under Needs you; built, reviewed in four diff rounds and accepted on the final bytes
+Page: https://claude.ai/artifact/PuJeFJG1ALFMy9EVJXUZpW
 Playbook: plan
 
 The review ledger records what Plate decided about each review question, what was built against it, and whether the code it looked at has moved. Today one shared 835 KB index mirrors every source file into 828 feature groups, and `check` asserts that mirror and 68 committed views against the live working tree byte for byte. Several agent sessions share that tree, so one session's new file or edit blocks or reddens every other session's record. This plan deletes the index, the feature inventory, `refresh` and the committed views. The ledger becomes its immutable record files plus one hand-edited file per scope, and every status is derived when read. It also fixes the adoption rule that closed 34 of 197 Pursue reviews the moment they were recorded.
+
+## Close
+
+**Reversals and deviations.**
+
+- Integrity differs from the approved plan. The plan panel approved this wording: "The 487 existing records are checked against the write-once checksum list in `docs/research/review-legacy.json`, and every new record carries a `digest` of its own content, so an edit is caught before the record is ever committed. `check` also reports records modified, deleted or renamed against `HEAD`." The build keeps the checksum list and the digest, re-checks each new record's contract, and compares each committed record with the blob it was first committed with, in the working tree and the index. Each change answers a diff-panel finding. A `HEAD` diff missed edits staged by the Stop hook, committed deletions and hand-written records. A history scan stayed red after a restore. A first-blob scan missed records added in merges, under renames and on side branches. Five cases still go unnoticed; `docs/research/schema.md` lists them.
+- The lead reversed the two-round panel limit twice, in the Defaults rows `ask after two rounds` and `ask after round 3`. Round 4 found a critical defect, the lead stopped, and the owner answered "Apply and finish".
+- Another session's pstack 0.9.67 sync, which landed after round 4, caps diff review at two rounds that applied a critical fix and never offers Another round as a recommendation. Under that text this run would have stopped after round 2 and asked.
+- Round 4 ran with two seats. The owner stopped the opus seat while its probe waited on a dangerous-`rm` permission prompt.
+- The round-4 fix leaves out `--topo-order`, a flag beyond the seats' suggestion, because only subtractive changes land after the last round. The reverse patch is `panel-diff/unreviewed-topo-order.patch`.
+- The lint fix renamed the exported `record` function to `recordDraft`. The CLI command is still `record`. No panel read the lint edits; the suite and the final acceptance cover their behavior.
+- The cross-session acceptance and the race ran in sandbox `wt5` after the cutover patch reached the checkout, not before it as Steps ordered.
+
+**What landed.** The owner committed the cutover in `17195da367`. The working tree holds the later edits: the round-4 fix, the lint fix, the fixture's git identity, the schema and plan text, the decision-log rows and two topic Open work rows.
+
+- The ledger is 487 immutable record files, one hand-edited file per scope (67), `review-groups.json`, `review-documents.json` and the write-once `review-legacy.json`. The 835 KB index, `reviews.md` and the 67 generated hubs are gone. Nothing is generated or committed as a view.
+- `review-ledger.mjs` has nine commands. `record` checks only the record and creates its file atomically, so another session's files, inputs or broken state cannot block it.
+- A Pursue closes only when its one standing implementation or workflow execution is completed. Before, 34 of 197 Pursues closed the moment they were recorded.
+- `AGENTS.md`, the best-api-review and research rules, the API review and Build playbooks, `schema.md`, 41 decision pages, about 30 docs and `pageTopic.hub` point at the new files.
+
+**Proof.** Evidence paths are relative to `docs/plans/artifacts/2026-10-04-review-ledger-redesign/`, a local copy that git ignores.
+
+- 55 tests pass with and without a git identity. Each test added in review failed on the code before its fix (`build/repro-*.txt`, `build/mutants/`). The concurrent-record test passes 5 of 5 warm runs (`acceptance/race-x5.txt`).
+- In the final acceptance on the last bytes, `check`, `status`, `next`, `lookup` and `coverage` exit 0 on the real tree. `status` reads 67 scopes, 31 closed, 1 deferred and 35 `pursue-not-adopted`, the pinned expectation. An unknown lookup and a missing draft exit 1 (`acceptance/final.txt`).
+- The real history at `36c2f43170`, which holds the cutover commit and a merge, passes `check`. A committed deletion of a real record in a throwaway worktree fails it (`build/real-check-r4.txt`).
+- The checksum list's 487 entries equal the old index's checksums, and a forged entry fails the same comparison (`build/manifest-anchor.txt`).
+- A side-branch record deleted before its merge fails `check` on the final bytes, and the final Stop hook keeps a deleted staged record visible where the old hook hid it (`build/probe-side-delete-final.txt`, `build/wt2-hook-delete-final.txt`).
+- Against a budget frozen before timing, the new CLI runs `next` in 246 ms against the old tool's 524 ms, `status` in 343 against 521 and `lookup table` in 218 against 498, median of 5 on the real tree. The new `check` takes 349 ms; the old one refuses its own tree (`perf/`).
+- Blast radius showed that pointing `pageTopic.hub` at the scope files changes no plan-page decision (`blast/reply.txt`).
+- The cross-family trail review raised six flags, each answered in the decision log's `trail` rows (`trail/findings.txt`).
+
+**Limits.**
+
+- Integrity has five documented gaps: a hand-written record that keeps every contract rule; a record deleted before anything staged it; a never-committed record's edit staged by something other than the hook; a forged checksum entry staged with the list before its first commit; and rewritten history.
+- `record` and larger cohorts were not timed. The new `check` walks the commits since the checksum list's first commit, so its git cost grows with that history (inferred).
+- The fresh-context trials ran once per arm. The cross-session acceptance ran in sandboxes that simulate other sessions, not with live concurrent sessions.
+- Four head reviews, for `compiler`, `media`, `react` and `uploads`, read stale because this change edited files they hashed. The next review of each scope rebinds them.
+- `record` refuses a draft written by the old tool, with "Unknown fields: source". Redraft it.
+
+**Counts.** 23 items: 7 steps, 13 gates and 3 asks. 18 done, 5 skipped, 0 blocked, 0 open. Applying reflect's lessons waits for the owner under Needs you.
+
+**Open work.**
+
+- Split `review-ledger.mjs` into modules. owner: Ziad, tracked in `docs/plans/topics/pstack.md` Open work.
+- Show JSON hub titles in the plan-page topics index. owner: zbeyens, tracked in `docs/plans/topics/plan-page.md` Open work.
+- Check the Plate v2 workflow guide for the deleted files. owner: Ziad, tracked in `docs/plans/topics/pstack.md` Open work.
+- Fix `.agents/pstack.json`'s null `synced.source` before the next sync. owner: Ziad, tracked in `docs/plans/topics/pstack.md` Open work.
+- Give `packages/plitejs/src/react/editable/typed-text.ts` a scope. owner: the session building typed text, tracked by `review-ledger.mjs coverage`.
+- Two other sessions' open plans still name `draft-execution` in an open gate: `docs/plans/2026-10-03-autocomplete-occurrence-host.md:452` and `docs/plans/2026-10-03-markdown-table-cell-blocks.md:282`, which also names `render`. Use `draft <plan.md>` instead. owner: each plan's owner, tracked in those plans' Completion Gates.
+
+## Open questions
+
+### Reflect lessons
+
+Which of reflect's 13 accepted lessons should I apply?
+
+- **all** (recommended): apply every row below. Rows 2, 3, 6, 7 and 8 change the shared pstack block in udecode/dotai through `sync-pstack`, whose commit there you approve separately; the rest edit this repository's playbooks, rules and `AGENTS.md` outside the block, and your global `CLAUDE.md`.
+- **none**: apply nothing; the list stays on this page.
+- **pick**: name the row numbers to apply.
+
+| # | Problem | Proposal | Where |
+| --- | --- | --- | --- |
+| 1 | The architecture reference never sends a tooling plan to `docs/vision/common.md`, whose rule is that robustness claims match the supported input domain. | Add `common.md` for tooling, proof and automation plans and name that rule. | `.agents/playbooks/references/architecture.md`, Pick the layer |
+| 2 | The diff-panel intent named no input domain, so four rounds each patched a new adversarial case. | Each invariant to attack names the input domain it covers, and a finding outside it is dismissed by citing it. | pstack block, Panel review |
+| 3 | An Agent-tool seat has no timeout; one sat on a permission prompt for over four hours while the lead waited without a wakeup. | Arm a wakeup at the seat budget before waiting, then stop a late seat and report it missing. | pstack block, Panel review and Long runs |
+| 4 | `verify` and Benchmark lived only in Build prose, so neither became a Completion Gates row. | Make each its own gate line so the gate table carries it. | `.agents/playbooks/build.md` gate list |
+| 5 | Before-fix runs counted as red when they failed on a label, a renamed export, a missing fixture or an empty name filter. | A red run counts only when the test's own name fails with the defect's message. | `.agents/rules/verify/references/testing.md` |
+| 6 | Lint ran after the last panel, so 29 hand fixes and an export rename landed outside the reviewed bytes. | Run the linter in check mode before the first diff panel and fix its findings inside the reviewed diff. | pstack block, Todo list and close |
+| 7 | Sandbox worktrees made a commit and two named branches in the shared repository. | A sandbox stays detached with no branch, and snapshots are patches in scratch. | pstack block, Git |
+| 8 | `why` investigators read and copied another organization's Linear and Docs items. | Confirm a connector's workspace with one list call and log a foreign one as out of tenant without reading it. | pstack block, an override of `why` |
+| 9 | The lead told you a harness setting could not change before any lookup. | A claim that a tool cannot do something cites the doc or changelog line, or says it is unverified. | `~/.claude/CLAUDE.md`, Work |
+| 10 | `git grep --untracked` refuses a revision, and `':!docs/plans/*.md'` also drops `docs/plans/topics/*.md`. | Drop `--untracked` for a commit and use `':(glob,exclude)dir/*.md'`. | `AGENTS.md` Source authority |
+| 11 | The procedure trials ran as subagents that inherited the checkout's instructions and were asked to list the files they read. | Load the Eval playbook and run each arm as a new session rooted in its own sandbox. | `AGENTS.md` Routing |
+| 12 | Nobody re-scored the arena pick after the build added the checksum store it was chosen to avoid. | Re-score against the rejected candidates when a build change falsifies a reason the synthesis won on. | `.agents/playbooks/plan.md` and `build.md` |
+| 13 | The write-once checksum list has no way to supersede a wrong entry except rewriting history. | A write-once store names how a wrong entry is superseded without editing it. | `.agents/playbooks/references/architecture.md`, Decision ledger |
+
+The synthesizer rejected 11 findings, among them three duplicates of the new pstack 0.9.67 round cap and the rm-bullet correction already applied. Its six Backlog items, which need a script or your word, are in `docs/plans/topics/pstack.md` Open work. Full output: `reflect/synth/reply.txt` under the run's artifact directory.
 
 ## Public API
 
@@ -117,7 +195,7 @@ git grep -l --untracked -E 'review-index\.json|(^|[^-a-z])reviews\.md|research/f
 - Records are the store. `record` writes one file with an atomic create (temp file, then `link`, which fails if the id exists) and writes nothing else. A scope's head is the review no later review of that scope names as `previous` or in `reconciliation`, so append order stops mattering; imported historical records stand in only when a scope has no review. Two heads are a visible `fork`, resolved by the next review.
 - Each scope owns one file with its question, queue fields, review inputs and `members`. A path entry ending in `/` covers every file under it. Membership is `members` alone, migrated so that every census file keeps exactly its old scopes; `owners`, `consumers`, `proof` and `evidenceInputs` are what a review reads, not membership.
 - A draft hashes the scope's paths, its law files and any `--input` paths, and the agent may delete entries to narrow a broad scope. `record` stores those draft-time digests and never refuses because a file moved; it reports which inputs changed since the draft and which declared scope paths the draft left out, and the record reads stale with the moved paths named.
-- Integrity has no shared writer and three witnesses: the write-once checksum list in `docs/research/review-legacy.json` for the 487 existing records, each new record's own `digest` plus a re-check of its contract, and git. In git, every record and the checksum list must match, in the working tree and the index, the blob it first reached the main line with, counting merges and renames; a staged record never committed must match its index entry. A restore that is staged reads clean before it is committed. The Stop hook stages new records but never an edit or a deletion of one. `check` fails on any of them, and `record`, `status` and `next` print them as warnings without refusing. Records are corrected by a later record, never edited or deleted. `docs/research/schema.md` lists the four cases that go unnoticed: a record deleted before anything staged it, a never-committed record's edit staged by something other than the hook, a forgery staged with the checksum list before its first commit, and rewritten history.
+- Integrity has no shared writer and three witnesses: the write-once checksum list in `docs/research/review-legacy.json` for the 487 existing records, each new record's own `digest` plus a re-check of its contract, and git. In git, every record and the checksum list must match, in the working tree and the index, the blob it was first committed with in any commit reachable from `HEAD`, counting side branches, merges and renames; a staged record never committed must match its index entry. A restore that is staged reads clean before it is committed. The Stop hook stages new records but never an edit or a deletion of one. `check` fails on any of them, and `record`, `status` and `next` print them as warnings without refusing. Records are corrected by a later record, never edited or deleted. `docs/research/schema.md` lists the five cases that go unnoticed: a hand-written record that keeps every contract rule, a record deleted before anything staged it, a never-committed record's edit staged by something other than the hook, a forged checksum entry staged with the list before its first commit, and rewritten history.
 - Another session's half-written ledger file cannot stop this one. `loadLedger` drops a file that does not parse or has the wrong shape with a warning, read commands order the queue around a dangling dependency or a cycle with a warning, and `check` turns every such warning into a failure.
 - Freshness has two clocks. Source covers every input except doctrine, including an execution's proof artifacts; law covers `VISION.md` and `docs/vision/*.md` and never makes a record stale. Legacy `source.features` digests are not evaluated: such a record reads `stale` when a file, directory or proof input moved and `unknown` otherwise, never `matching`.
 - A Pursue is adopted only when its one standing implementation or workflow execution is completed. An execution stands until a later one names it in `previous`; imported executions supersede each other in their old append order. Reconciliation actions are history only and never adopt. Legacy `historical-unbound` executions never adopt. `check` warns when two executions stand for one review.
@@ -152,7 +230,7 @@ git grep -l --untracked -E 'review-index\.json|(^|[^-a-z])reviews\.md|research/f
 | Record order | Append order in the index decides "latest" | Head from `previous` and `reconciliation` | record files | No shared order to write | None; 67 of 67 heads equal today's latest | census P1 | Forks | rearchitect |
 | Adoption | A retained completed execution adopts a new Pursue | Only the one standing implementation or workflow execution naming the Pursue, when completed | executions | 34 of 197 Pursues closed on arrival | Old executions read under the same rule in append order | pinned per-scope status; replay of imports and exports at 2026-09-27; tests | Intended closures reopen | rearchitect |
 | Freshness inputs | Six global files plus scope paths plus feature groups, checked against live at record | Scope paths plus law plus `--input`, hashed at draft, never refused | records | Doctrine or lockfile edits refused every in-flight record | Legacy reading limit | tests; legacy count | Legacy heads read unknown | rearchitect |
-| Integrity | Index checksum list rewritten by every record | Write-once legacy checksum list, a per-record `digest` and contract re-check, and each committed record's first main-line blob checked in the working tree and index | `check`, with warnings in `record`, `status` and `next` | A shared list needs a shared writer; 89 records are not in `HEAD` | Migration writes the legacy list once; the hook stops staging record edits | tests for uncommitted, legacy, committed and forged records; hook proof in a staged sandbox | The four unnoticed cases `schema.md` lists | rearchitect |
+| Integrity | Index checksum list rewritten by every record | Write-once legacy checksum list, a per-record `digest` and contract re-check, and each committed record's first committed blob checked in the working tree and index | `check`, with warnings in `record`, `status` and `next` | A shared list needs a shared writer; 89 records are not in `HEAD` | Migration writes the legacy list once; the hook stops staging record edits | tests for uncommitted, legacy, committed and forged records; hook proof in a staged sandbox | The five unnoticed cases `schema.md` lists | rearchitect |
 | Decision page control keys | `current_review`, `reconciled_executions` read as gaps | Removed; bodies stay | decision pages | Shared pages produce permanent gaps | Frontmatter edit on 41 pages | grep | Other sessions' page edits | cut |
 | Plan lifecycle | Ledger's own `lifecycle()` regex | Old status-line grammar, word mapped by `status.mjs` `landed` | pstack helper | `executed` could not record completed | None | test; parity over the associated plans | status.mjs export change | move |
 | Research search | `research` in the ledger CLI | Unchanged | `review-ledger.mjs` | Independent and used | None | existing test | None | keep |
@@ -165,7 +243,7 @@ Scored on the arena rubric (0 to 4 per criterion) against the incumbent with the
 | --- | --- | --- |
 | Cross-session independence | 1: `check` fails on any foreign edit; records refuse on doctrine edits and foreign groups under broad scopes | 4: `record` refuses only for its own contract: a same-scope head change, an unreconciled same-scope execution, a missing reference or proof path, or a plan that disagrees with it |
 | Truthful state | 1: 34 Pursues closed on arrival; 62 of 122 executions stale from plan edits | 3: explicit, reversible adoption; legacy heads read unknown |
-| Cut size | 1: 2,658 lines, 13 commands, 835 KB index rewritten per record, 2.7 MB of committed views | 3: about 2,050 lines, 9 commands, no shared index, no committed views |
+| Cut size | 1: 2,658 lines, 13 commands, 835 KB index rewritten per record, 2.7 MB of committed views | 3: about 2,300 lines, 9 commands, no shared index, no committed views |
 | Kept jobs | 4 | 4 |
 | Migration honesty | n/a | 4: byte-identical records, stated legacy limit |
 | Agent ergonomics | 1: seven-step ritual plus cron retries | 4: draft, dry run, record |
@@ -259,19 +337,19 @@ Phase 2, one cutover, built in a sandbox and applied to the checkout as one patc
 
 | Gate | Applies | Evidence |
 | --- | --- | --- |
-| Hard cut of the deleted commands, files and views, with the caller grep clean | yes | pending |
-| `pstack:blast-radius` on the changed agent-facing commands | yes | pending |
+| Hard cut of the deleted commands, files and views, with the caller grep clean | yes | scratch `build/final-caller-grep.txt`: one hit, a quoted historical rationale in `docs/research/review-documents.json` |
+| `pstack:blast-radius` on the changed agent-facing commands | yes | scratch `blast/reply.txt`; decision row "Blast radius on the changed agent-facing commands" |
 | `plate-docs` on affected public docs | no | skip: no `content/docs` page teaches the ledger |
 | `pstack:thermo-nuclear-code-quality-review` on code shared across packages or plugins | no | skip: the change is repository tooling, not package or plugin code |
 | Changeset | no | skip: no published package changes |
 | `check-plate-feature.mjs` | no | skip: not a feature-delivery plan |
 | Execution record through `draft <plan.md>` and `record` | no | skip: the plan declares no review scope |
-| Writing passes: `deslop` and `no-comments` on code, `unslop` on docs and agent files | yes | pending |
-| Diff panel (reviews: api-build) | yes | pending |
-| `pnpm lint:fix` on this task's files | yes | pending |
-| Acceptance proof on the final bytes | yes | pending |
-| Decision-trail review (shared script and check) | yes | pending |
-| `/pstack:reflect` after the trail review | yes | pending |
+| Writing passes: `deslop` and `no-comments` on code, `unslop` on docs and agent files | yes | decision rows of 2026-10-04T13:23:05Z (deslop, no-comments through comment-sicko, unslop on the cutover docs) and the unslop row for the Close and late doc edits |
+| Diff panel (reviews: api-build) | yes | four rounds, decision-log `panel` rows; round 4 had two seats and the owner's "Apply and finish" |
+| `pnpm lint:fix` on this task's files | yes | `pnpm exec ultracite check` on the three task code files exits 0 (scratch `lint/check2.txt`) |
+| Acceptance proof on the final bytes | yes | scratch `acceptance/final.txt` |
+| Decision-trail review (shared script and check) | yes | `codex:gpt-6.1-sol @xhigh`, six flags in `trail/findings.txt`, answered in the decision log's `trail` rows |
+| `/pstack:reflect` after the trail review | yes | three opus reviewers and a synthesizer, `reflect/synth/reply.txt`; the Accepted list waits under Open questions |
 
 ## Proof
 

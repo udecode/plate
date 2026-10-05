@@ -483,7 +483,7 @@ describe('markdown tables', () => {
     const inline = (props: object, text = ''): Node => ({
       children: [
         { text: '' },
-        { children: [{ text }], ...props } as Node,
+        { children: [{ text }], ...props },
         { text: '' },
       ],
       type: 'paragraph',

@@ -298,7 +298,12 @@ const withoutUnchangedTail = (
     limit
   );
 
-  return tail === 0
+  // Trimmed to nothing, an identical replacement would read as a fit that
+  // changed nothing, and the range guard would refuse its placement.
+  const identical =
+    tail === candidate.insert.length && tail === candidate.to - candidate.from;
+
+  return tail === 0 || identical
     ? candidate
     : Object.freeze({
         ...candidate,
@@ -3162,10 +3167,7 @@ export const compileSliceFitter = <V extends Value>(
 
         return (
           prepared.nodes.every(NodeApi.isDescendant) &&
-          canInsertContentAtBoundary(
-            candidate,
-            prepared.nodes as readonly Descendant[]
-          )
+          canInsertContentAtBoundary(candidate, prepared.nodes)
         );
       }
 
@@ -3183,10 +3185,7 @@ export const compileSliceFitter = <V extends Value>(
 
           if (
             inserted.every(NodeApi.isDescendant) &&
-            !canInsertContentAtBoundary(
-              candidate,
-              inserted as readonly Descendant[]
-            )
+            !canInsertContentAtBoundary(candidate, inserted)
           ) {
             return false;
           }

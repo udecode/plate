@@ -632,7 +632,11 @@ const createFromMarkdown = () => {
   return {
     enter: { markdownTagFlowTag: marker(true), markdownTagText: marker(false) },
     exit: { markdownTagFlowTag: exit, markdownTagText: exit },
-    transforms: [(tree: Root) => void pair(tree as unknown as AnyNode)],
+    transforms: [
+      (tree: Root) => {
+        pair(tree as unknown as AnyNode);
+      },
+    ],
   };
 };
 

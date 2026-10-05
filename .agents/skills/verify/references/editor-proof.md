@@ -23,27 +23,12 @@ contribution identity as well as visible text. Extend the existing authored
 contract suites and `apps/www/tests/browser/suggestion.spec.ts`; do not enumerate
 every combination or maintain another coverage database.
 
-## Vision Proof
-
-Metrics are not enough. Browser-visible editor work needs a human-like proof.
-
 Use the in-app Browser for live local routes when a route is named or obvious.
 Use Playwright for replayable proof. Use screenshots or geometry assertions when
-the failure can be visual:
+the failure can be visual, as `docs/vision/plite.md`'s Plite Browser And Behavior Proof section lists.
 
-- text shifts on selection/focus;
-- blank virtualized windows;
-- overlapped pages/content;
-- wrong scroll anchoring;
-- caret at the wrong visual line;
-- margin click placed on the wrong side;
-- table/page fragment drift;
-- native selection handles not matching model selection.
-
-Selection/editing regressions need both layers. Do not call a packet fixed when
-only Slate's model selection is green. Assert native selected text through
-`window.getSelection()` / `slate-browser` `selectedText`, and assert exact DOM
-selection endpoints when the route has stable text-node structure. If expected
+Selection and editing regressions need both layers. Assert native selected text
+through `window.getSelection()`, and assert exact DOM selection endpoints when the route has stable text-node structure. If expected
 native behavior is disputed, compare against the matching upstream
 `https://www.slatejs.org/examples` route or captured upstream behavior before
 weakening the oracle.
@@ -54,7 +39,7 @@ after the real interaction. Inspect the image before claiming fixed. Pair the
 image with model selection, native `window.getSelection()` state, and visible
 view-selection marker or caret-rect assertions so a projected selection cannot
 hide a second native paint. When a route uses projected/view selection, include
-the `slate-browser` `noDoubleSelectionHighlight` assertion or an equivalent
+the `@platejs/test/playwright` `noDoubleSelectionHighlight` assertion or an equivalent
 pixel/geometry proof.
 
 For vertical selection/navigation, prove reverse movement. A Shift+Down row is
@@ -82,7 +67,7 @@ preserves the same user-visible contract with a split text node.
 Mobile-emulation proof is scoped proof. The Playwright `mobile` project can
 prove viewport, touch/semantic-handle, and claim-width behavior, but
 `page.keyboard.type(...)` is not raw mobile native typing. For mobile-only
-editing rows, use a `slate-browser` semantic insert/composition/touch helper or
+editing rows, use an `@platejs/test/playwright` semantic insert/composition/touch helper or
 record the row as desktop-native keyboard proof with an explicit mobile skip. If
 a desktop row keeps `page.keyboard.type(...)`, rerun at least one desktop project
 after adding a mobile semantic branch so the desktop-native claim is not
@@ -138,13 +123,6 @@ When using the in-app Browser:
 - if a tab is stuck on an error page or Browser prints a huge encoded failure
   document, retry once from a fresh in-app Browser tab, catch per-route errors,
   and truncate recorded error text before falling back to Playwright screenshots;
-- when Browser command shape, not Slate runtime, caused a weak or misleading
-  proof packet, repair it per the pstack block's Improve the workflow mid-task
-  rule.
-
-Classify intentionally skipped families in the plan. Do not claim full editor
-parity when only one route and one gesture were checked.
-
 ## Scenario Generator
 
 For a broad sweep or a defect that crosses several states, derive a small
@@ -182,5 +160,4 @@ blue highlights.
 
 Pick the smallest matrix that covers the surface risk, then expand when a bug
 appears. Add new rows when user reports, screenshots, or Browser observation
-show a missed human journey. Promote repeated rows into reusable Playwright or
-`slate-browser` helpers instead of retyping the same automation.
+show a missed human journey.

@@ -44,6 +44,8 @@ These are optional shortcuts for a specific job, not a sequence to run.
 | Fix one local editor behavior or regression, or recover a failed fix | Describe it, or paste a screenshot or recording |
 | Finish a PR or the current tree | "clean up PR <number>" or "finish the current tree" |
 | Simplify code ownership: delete, merge, inline or split | "clean up <surface>" |
+| Review a live Plate package against the v2 target, or repair its findings | `$plate-next <package>`, `$plate-next sync <package>` |
+| Find important behavior with no test, or prune existing tests | `$verify testing audit <scope>`, `$test-audit <scope>` |
 | Measure, diagnose and improve slow behavior | `$benchmark <operation and workload>` |
 | Research external editor approaches | `$research <feature or question>` |
 | Compare external editor architectures, or harvest their tests | `$research audit <repo>`, `$research harvest <repo>` |
@@ -102,6 +104,14 @@ external message. [AGENTS.md](../../AGENTS.md) owns scope, authority and
 delivery. The [Release Lanes skill](../../.agents/skills/release-lanes/SKILL.md)
 owns release mode details.
 
+## Read a page and answer it
+
+Each stop that hands work back replies with a page link. The page opens with five short answers: what was found, what will change, what the agent needs from you, what happens if you say go, and what could go wrong. Under them, Needs you lists each decision as a short memo: the question, why it needs you, the facts, each option with what happens and what it costs, the agent's pick and its reason, and what go does.
+
+Answer in your own words in the chat. "go" takes the pick on every decision that has one and authorizes nothing else.
+
+A published page is for reading the latest hand-back and commenting on it. The plan files in `docs/plans` are the record, and agents read pages from those files, never from the published page.
+
 ## Installed skills
 
 These 21 skills live in this checkout's `.agents/skills` directory. pstack's
@@ -120,13 +130,13 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 | Skill | Purpose |
 | --- | --- |
 | [benchmark](../../.agents/skills/benchmark/SKILL.md) | Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. |
-| [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review or repair Plate/Plite public call shapes before planning their adoption. |
+| [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review, audit or repair a Plate or Plite public call shape with the Plate API lens. |
 | [best-api-review](../../.agents/skills/best-api-review/SKILL.md) | Reconcile earlier reviews, then judge whether a Plate or Plite API or architecture direction earns further work before detailed design or implementation, and record the verdict in the review ledger. |
 | [changeset](../../.agents/skills/changeset/SKILL.md) | Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice. |
 | [issue-harvester](../../.agents/skills/issue-harvester/SKILL.md) | Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence. |
 | [maintainer](../../.agents/skills/maintainer/SKILL.md) | Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof. |
 | [plate-docs](../../.agents/skills/plate-docs/SKILL.md) | Write or audit Plate public documentation, page design, examples, installation, MDX and navigation. |
-| [plate-next](../../.agents/skills/plate-next/SKILL.md) | Keep the live Plate packages attested against Plate Next doctrine through package review with the Plate v2 review law, and doctrine sync. |
+| [plate-next](../../.agents/skills/plate-next/SKILL.md) | Review a live Plate package, file or API path against the Plate v2 target, or sync one or every live package by repairing its review findings. |
 | [plate-plugins](../../.agents/skills/plate-plugins/SKILL.md) | Build Plate plugins and entrypoints with semantic ownership, inference, scoped capabilities and package proof, and deliver a feature across its package, UI, docs and release. |
 | [plate-ui](../../.agents/skills/plate-ui/SKILL.md) | Implement Plate React component families, copied registry UI and kit wiring with exact browser proof. |
 | [release-lanes](../../.agents/skills/release-lanes/SKILL.md) | Promote Plate beta releases, sync main back to next and verify published npm/GitHub state with release authority. |

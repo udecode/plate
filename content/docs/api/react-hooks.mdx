@@ -171,15 +171,18 @@ for the primary document and the root key for an extra root.
 `canRedo` are both `false` while a live-session replay is pending. A repeated
 shortcut during that wait is consumed and reports a `busy` result.
 
-Use the model service when application code owns awaited completion:
+Use the model service when application code needs the outcome itself. It
+returns synchronously; only a live-session replay returns `pending` with a
+`settled` promise:
 
 ```typescript
-const result = await editor.api.history.undo();
+const result = editor.api.history.undo();
+const outcome = result.status === "pending" ? await result.settled : result;
 ```
 
-Mounted controls deliver every fulfilled result to the exact initiating editor
-surface. Handle expected outcomes such as `blocked`, `busy`, and `empty` on
-`EditorContent`:
+Mounted controls deliver every final outcome to the exact initiating editor
+surface. Handle expected outcomes such as `blocked`, `busy`, `empty`, and
+`failed` on `EditorContent`:
 
 ```tsx
 <EditorContent
@@ -191,9 +194,11 @@ surface. Handle expected outcomes such as `blocked`, `busy`, and `empty` on
 />
 ```
 
-The mounted runtime reports rejected replay promises through the browser error
-channel. It restores selection and focus only when the initiating surface,
-focus target, and editor commit remain unchanged through settlement.
+A `failed` outcome means the replay's owner or settlement threw; the editor
+reports that error to its `lifecycleErrorSink`. With no sink, it uses
+`reportError`, or `console.error` where `reportError` does not exist. The mounted runtime restores selection and focus only when the
+initiating surface, focus target, and editor commit remain unchanged through
+settlement.
 
 ## Runtime and root hooks
 

@@ -9,7 +9,6 @@ import {
   definePlugin,
   defineEffect,
   defineStateField,
-  type EditorJsonValue,
   type EditorValuePersistence,
   type Range,
   type Editor as EditorType,
@@ -520,7 +519,7 @@ describe('document meta history contract', () => {
 
           return value as LargeCounter;
         },
-        encode: (value) => value as unknown as EditorJsonValue,
+        encode: (value) => value,
         version: 1,
       },
       reduce: (value, effect) =>

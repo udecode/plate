@@ -53,7 +53,7 @@ describe('HistoryPlugin', () => {
       );
 
       expect(editor.read.history().undos).toHaveLength(1);
-      expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+      expect(editor.api.history.undo()).toEqual({ status: 'applied' });
       expect(editor.read.text.string([0])).toBe('abc');
     } finally {
       if (clock) {

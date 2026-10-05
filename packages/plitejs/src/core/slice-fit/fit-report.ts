@@ -233,8 +233,47 @@ export const collectRepresentationRepairs = (
         return keep;
       });
       const canonical: RepresentationEntry[] = [];
+      let merge: {
+        outputIndex: number;
+        sources: EditorSchemaModelLocation[];
+      } | null = null;
+      const closeMerge = () => {
+        if (!merge) return;
+        repairs.push(
+          schemaRepair({
+            code: 'merge-text',
+            impact: 'lossless',
+            inputs: merge.sources,
+            outputs: [schemaModelLocation(root, [...path, merge.outputIndex])],
+            owner: 'representation',
+          })
+        );
+        merge = null;
+      };
 
       for (const entry of retained) {
+        const previous = canonical.at(-1);
+
+        if (
+          isText(entry.node) &&
+          previous &&
+          isText(previous.node) &&
+          textPropertiesEqual(previous.node, entry.node, context)
+        ) {
+          const outputIndex = canonical.length - 1;
+
+          merge ??= { outputIndex, sources: [...previous.sources] };
+          merge.sources.push(...entry.sources);
+          canonical[outputIndex] = {
+            node: {
+              ...previous.node,
+              text: previous.node.text + entry.node.text,
+            },
+            sources: merge.sources,
+          };
+          continue;
+        }
+        closeMerge();
         if (isElement(entry.node) && context.isInline(entry.node)) {
           if (!isText(canonical.at(-1)?.node)) {
             repairs.push(
@@ -252,36 +291,9 @@ export const collectRepresentationRepairs = (
           canonical.push(entry);
           continue;
         }
-        const previous = canonical.at(-1);
-
-        if (
-          isText(entry.node) &&
-          previous &&
-          isText(previous.node) &&
-          textPropertiesEqual(previous.node, entry.node, context)
-        ) {
-          const outputIndex = canonical.length - 1;
-
-          repairs.push(
-            schemaRepair({
-              code: 'merge-text',
-              impact: 'lossless',
-              inputs: [...previous.sources, ...entry.sources],
-              outputs: [schemaModelLocation(root, [...path, outputIndex])],
-              owner: 'representation',
-            })
-          );
-          canonical[outputIndex] = {
-            node: {
-              ...previous.node,
-              text: previous.node.text + entry.node.text,
-            },
-            sources: [...previous.sources, ...entry.sources],
-          };
-          continue;
-        }
         canonical.push(entry);
       }
+      closeMerge();
 
       const last = canonical.at(-1)?.node;
 

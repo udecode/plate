@@ -285,7 +285,7 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
     }
 
     if (options.initialize) {
-      const spec = createTransactionSpec(editor, options.initialize as never);
+      const spec = createTransactionSpec(editor, options.initialize);
 
       if (
         spec.effects.length > 0 ||

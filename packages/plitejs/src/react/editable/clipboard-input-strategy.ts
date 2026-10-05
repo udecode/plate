@@ -620,8 +620,12 @@ export const applyEditableDragOver = ({
     // even when no valid drop target is found.
     event.preventDefault();
     if (target) {
-      event.dataTransfer.dropEffect =
-        blockCopyIntent(session, dropInputOf(event)) ? 'copy' : 'move';
+      event.dataTransfer.dropEffect = blockCopyIntent(
+        session,
+        dropInputOf(event)
+      )
+        ? 'copy'
+        : 'move';
     } else {
       event.dataTransfer.dropEffect = 'none';
     }
@@ -730,7 +734,7 @@ export const applyEditableDragStart = ({
     if (blockKey || (draggedRange && RangeApi.isExpanded(draggedRange))) {
       const voidHost =
         blockKey && voidEntry
-          ? editor.api.dom.resolveDOMNode(voidEntry[0] as never)
+          ? editor.api.dom.resolveDOMNode(voidEntry[0])
           : null;
 
       beginDragSession({

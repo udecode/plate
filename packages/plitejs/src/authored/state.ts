@@ -1651,7 +1651,7 @@ const operationsPersistence = {
     2: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV2),
   },
   version: 5,
-} satisfies EditorValuePersistence<AuthoredOperations, EditorJsonValue>;
+} satisfies EditorValuePersistence<AuthoredOperations>;
 
 export const authoredOperationEffect = defineEffect<AuthoredOperations>({
   key: 'authored.operation',

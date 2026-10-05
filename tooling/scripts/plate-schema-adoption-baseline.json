@@ -1,0 +1,144 @@
+{
+  "deleted schema.element(...) wrapper": {
+    "packages/plitejs/src/diff/lib/comparison-index.ts": [
+      "const element = type === null ? null : schema.element(type);"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [$factory:defineMediaPlugin] -> [commands]": {
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": [
+      "export const BaseImagePlugin = definePlugin(PLUGINS.image, {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [$factory:transfer]": {
+    "packages/platejs/src/lib/plugins/TransferPlugin.ts": [
+      "export const TransferPlugin = definePlugin('transfer', {}).extend(() =>"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [activate, api, commands, effectTypes, on, read, selectors]": {
+    "packages/platejs/src/ai/react/AIChatPlugin.ts": [
+      "export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [activate, api, on, update] -> [commands] -> [contributions]": {
+    "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts": [
+      "export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api, contributions, corrections, on, selectors, update] -> [commands]": {
+    "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts": [
+      "export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api] -> [read] -> [update] -> [corrections] -> [readMiddleware] -> [commands]": {
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": [
+      "export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [commands]": {
+    "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts": [
+      "export const InputRulesPlugin = definePlugin('inputRules', {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [contributions]": {
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": [
+      "export const BaseFootnoteDefinitionPlugin = definePlugin("
+    ],
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": [
+      "export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [corrections, on, read]": {
+    "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts": [
+      "export const ElementIdPlugin = definePlugin('elementId', {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [dataTransferFormats]": {
+    "packages/platejs/src/docx/paste/lib/WordPastePlugin.ts": [
+      "export const WordPastePlugin = definePlugin(PLUGINS.wordPaste, {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [formats] -> [api, read] -> [override, update] -> [commands] -> [corrections] -> [readMiddleware]": {
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts": [
+      "export const BaseListPlugin = definePlugin(PLUGINS.list, {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [update] -> [commands]": {
+    "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": [
+      "export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {"
+    ]
+  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [update] -> [shortcuts] -> [contributions]": {
+    "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts": [
+      "export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {"
+    ]
+  },
+  "ordinary Plate editor construction must use derived schema identity; named lineage belongs in a reviewed persistence, collaboration, or migration contract": {
+    "packages/platejs/src/migrations/documentMigrations.spec.ts": [
+      "const editor = createEditor({",
+      "createEditor({",
+      "createEditor({",
+      "createEditor({"
+    ],
+    "packages/platejs/src/migrations/migratePlateV54Suggestions.spec.ts": [
+      "const editor = createEditor({"
+    ],
+    "packages/platejs/src/yjs/YjsPlugin.api.spec.ts": [
+      "const mappedEditor = createEditor({"
+    ]
+  },
+  "persisted type must use a schema identity, not a plugin capability name": {
+    "packages/platejs/src/code-block/codemirror/createCodeMirrorAdapter.integration.spec.tsx": [
+      "{ type: CodeMirrorTestPlugin.name, children: [{ text: 'a' }] },",
+      "{ type: CodeMirrorTestPlugin.name, children: [{ text: 'a' }] },"
+    ],
+    "packages/platejs/src/utils/plugins/ExitBreakPlugin.spec.ts": [
+      "{ children: [{ text: 'head' }], type: BaseParagraphPlugin.name },",
+      "default: { type: BaseParagraphPlugin.name },",
+      "type: RootHolderPlugin.name,"
+    ],
+    "packages/platejs/src/utils/plugins/TrailingBlockPlugin.spec.tsx": [
+      "default: { type: BaseParagraphPlugin.name },",
+      "type: RequiredTrailingPlugin.name,",
+      "type: RootHolderPlugin.name,"
+    ]
+  },
+  "production extend-stage allowlist expects exact 1 audited chain but found 1; signatures did not match": {
+    "packages/platejs/src/ai/react/AIChatPlugin.ts": [""],
+    "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts": [""],
+    "packages/platejs/src/features/list/lib/BaseListPlugin.ts": [""],
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": [""],
+    "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts": [""],
+    "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts": [""],
+    "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts": [""]
+  },
+  "production extend-stage allowlist expects exact 1 audited chain but found 2; signatures did not match": {
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": [""],
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": [""]
+  },
+  "production extend-stage allowlist expects exact 2 audited chains but found 2; signatures did not match": {
+    "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": [""],
+    "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts": [""]
+  },
+  "public Core barrels cannot star-export internal compiler modules": {
+    "packages/platejs/src/docx/import/lib/docxPackage.ts": [
+      "export * from '../../internal/docxPackage';"
+    ]
+  },
+  "schema identity comparisons must not use plugin capability names": {
+    "packages/platejs/src/docx/paste/lib/WordPastePlugin.spec.ts": [
+      "(node) => ElementApi.isElement(node) && node.type === PLUGINS.table",
+      "(node) => ElementApi.isElement(node) && node.type === PLUGINS.table"
+    ],
+    "packages/platejs/src/lib/plugins/override/OverridePlugin.spec.tsx": [
+      "node.type === CalloutPlugin.name ? false : undefined,"
+    ]
+  },
+  "uninstalled plugins have no schema identity; do not replace a missing type or key with a raw string fallback": {
+    "apps/www/src/registry/components/editor/code-block.tsx": [
+      "block !== element ||"
+    ],
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": [
+      "!ElementApi.isElement(paragraph) ||"
+    ]
+  }
+}

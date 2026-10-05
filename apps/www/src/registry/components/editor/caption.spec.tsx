@@ -11,6 +11,7 @@ mock.module('platejs/react', () => ({
   useElement: () => useElementMock(),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector(useEditorMock()),
+  usePath: () => [0],
 }));
 
 mock.module('@/components/ui/button', () => ({
@@ -33,7 +34,10 @@ describe('Caption', () => {
   beforeEach(() => {
     useEditorMock.mockReset();
     useEditorMock.mockReturnValue({
-      read: { selection: () => null },
+      read: Object.assign(() => undefined, {
+        nodes: { get: () => undefined },
+        selection: () => null,
+      }),
     });
     useElementMock.mockReset();
   });
@@ -128,8 +132,8 @@ describe('Caption', () => {
     useEditorMock.mockReturnValue({
       read: {
         selection: () => ({
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 0, path: [0, 0] },
+          anchorPath: [0],
+          focusPath: [0],
           kind: 'node',
           paths: [[0]],
         }),
@@ -159,8 +163,8 @@ describe('Caption', () => {
     useEditorMock.mockReturnValue({
       read: {
         selection: () => ({
-          anchor: { offset: 0, path: [1, 0] },
-          focus: { offset: 0, path: [1, 0] },
+          anchorPath: [1],
+          focusPath: [1],
           kind: 'node',
           paths: [[1]],
         }),

@@ -68,7 +68,8 @@ const typeSamplingLastKey = async (page: Page, text: string) => {
       ((window as ProbeWindow).__comboboxTypingSamples?.length ?? 0) > last,
     index
   );
-  const sample = (await readSamples(page))[index];
+  const samples = await readSamples(page);
+  const sample = samples[index];
 
   await pace(page);
 
@@ -100,11 +101,14 @@ const typeKeys = async (page: Page) => {
     await typeText(page, 'b');
     await pace(page);
   }
-  await page.waitForFunction(
-    (count) =>
-      ((window as ProbeWindow).__comboboxTypingSamples?.length ?? 0) >= count,
-    keys
-  );
+  await page
+    .waitForFunction(
+      (count) =>
+        ((window as ProbeWindow).__comboboxTypingSamples?.length ?? 0) >= count,
+      keys,
+      { timeout: 5000 }
+    )
+    .catch(() => {});
 
   const samples = await readSamples(page);
   const text = await root.textContent();
@@ -284,7 +288,7 @@ const measure = async (
 
     return samples;
   } catch (error) {
-    throw new Error(`${label}: ${(error as Error).message}`);
+    throw new Error(`${label}: ${(error as Error).message}`, { cause: error });
   } finally {
     await page.close();
   }

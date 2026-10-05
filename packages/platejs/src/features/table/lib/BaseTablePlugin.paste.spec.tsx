@@ -161,9 +161,9 @@ describe('BaseTablePlugin prepared paste', () => {
     expect(after).not.toEqual(before);
     expect(editor.read.history().undos).toHaveLength(1);
 
-    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual(before);
-    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.redo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual(after);
   });
 
@@ -446,10 +446,10 @@ describe('BaseTablePlugin prepared paste', () => {
       expect(
         compileTableGrid(editor.read.children()[0] as TableElement).problems
       ).toEqual([]);
-      expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+      expect(editor.api.history.undo()).toEqual({ status: 'applied' });
       expect(editor.read.value()).toEqual(before);
       expect(getEditorLiveSelection(editor)).toEqual(selection);
-      expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
+      expect(editor.api.history.redo()).toEqual({ status: 'applied' });
       expect(editor.read.value()).toEqual(after);
     }
   );

@@ -106,7 +106,7 @@ test('owns focused packed proof for Plite package boundaries', () => {
 test('tracks root and every public Plate feature entrypoint bundle size', () => {
   const specifiers = getPlateEntrypointSizeSpecifiers();
 
-  assert.equal(specifiers.length, 32);
+  assert.equal(specifiers.length, 33);
   assert.equal(new Set(specifiers).size, specifiers.length);
   assert.equal(specifiers[0], 'platejs');
   assert.ok(specifiers.includes('platejs/comments'));

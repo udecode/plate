@@ -355,7 +355,7 @@ const failedFixRows = ({
     const attempt = index + 1;
     const architecture =
       attempt >= 2
-        ? "best-api: accepted durable API; plate-plan: accepted adoption plan"
+        ? "best-api: accepted durable API; plate: accepted adoption plan"
         : "N/A: first failed fix without architecture pressure";
 
     const diagnostic =
@@ -603,7 +603,7 @@ Architecture pressure:
       : "N/A: local correctness patch"
   } | ${
     escalated
-      ? "plate-plan: accepted adoption proof"
+      ? "plate: accepted adoption proof"
       : "N/A: local correctness patch"
   } | pass: architecture decision recorded before implementation |
 
@@ -2373,11 +2373,11 @@ test("a second failed fix requires Best API and a layer plan", () => {
 test("a justified Best API Review Stop does not invent an adoption plan", () => {
   const reviewed = fixture({ architectureVerdict: "escalate", failedCount: 2 })
     .replace(
-      "best-api: accepted durable API; plate-plan: accepted adoption plan",
+      "best-api: accepted durable API; plate: accepted adoption plan",
       "best-api-review: stop: the current command owner fits; the native oracle missed focus settlement"
     )
     .replace("required: best-api accepted target", "required: best-api-review: stop: keep the existing owner; repair native proof")
-    .replace("plate-plan: accepted adoption proof", "N/A: review retains the current owner");
+    .replace("plate: accepted adoption proof", "N/A: review retains the current owner");
 
   assert.deepEqual(
     validateRegressionPlan(reviewed, { complete: true, rootDir: root }),

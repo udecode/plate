@@ -2008,6 +2008,11 @@ function main() {
       summary: args.summary,
     });
 
+    // The scaffold's JSON frontmatter is not the repository format, so lint
+    // would fail on every new entry.
+    execFileSync('pnpm', ['exec', 'oxfmt', '--write', targetPath], {
+      stdio: 'ignore',
+    });
     console.log(`Created ${relativePath(targetPath)}`);
     return;
   }

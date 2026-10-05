@@ -315,7 +315,9 @@ for (const parts of [['Generated'], ['First', ' second']]) {
         editor.plugin(AIChatPlugin).api.replaceSelection({ format: 'none' })
       );
       expect(editor.read.text.string([])).toBe(parts.join(''));
-      await act(async () => editor.api.history.undo());
+      await act(() => {
+        editor.api.history.undo();
+      });
       expect(editor.read.text.string([])).toBe('original');
     } finally {
       view.unmount();
@@ -421,7 +423,9 @@ it('publishes the first chunk at once, the latest draft every 32 ms and one fina
     await act(async () => ai.api.accept());
     expect(editor.read.text.string([])).toBe('originalABC');
     expect(editor.read.history().undos).toHaveLength(undos + 1);
-    await act(async () => editor.api.history.undo());
+    await act(() => {
+      editor.api.history.undo();
+    });
     expect(editor.read.text.string([])).toBe('original');
   } finally {
     unmount();

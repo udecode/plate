@@ -1,6 +1,8 @@
 import {
   type Anchor,
   type EditorCommit,
+  type HistoryApi,
+  type HistoryOutcome,
   type NodeKey,
   type Path,
   type Point,
@@ -72,14 +74,8 @@ type MutableCell<T> = { current: T };
 /** Focus behavior after mounted undo or redo applies a history batch. */
 export type EditorHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
 
-type ModelHistoryResult =
-  | Readonly<{ status: 'applied' | 'empty' }>
-  | Readonly<{ status: 'busy' }>
-  | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>
-  | Readonly<{ reason: string; status: 'blocked' }>;
-
 export type EditableHistoryReplayResult =
-  | ModelHistoryResult
+  | HistoryOutcome
   | Readonly<{
       reason: 'composing' | 'not-installed' | 'unmounted';
       status: 'unavailable';
@@ -1034,12 +1030,7 @@ export class EditableDOMRuntime {
         : { reason: 'unmounted', status: 'unavailable' };
     }
 
-    const { history } = this.editorValue.api as unknown as {
-      history?: {
-        redo: () => Promise<ModelHistoryResult>;
-        undo: () => Promise<ModelHistoryResult>;
-      };
-    };
+    const { history } = this.editorValue.api as { history?: HistoryApi };
 
     if (!history) {
       return { reason: 'not-installed', status: 'unavailable' };
@@ -1061,25 +1052,22 @@ export class EditableDOMRuntime {
       true
     );
 
-    const resultPromise =
-      focusPolicy === 'preserve'
-        ? withUpdateTagContext(
-            this.editorValue,
-            PLITE_REACT_PRESERVE_SELECTION_TAGS,
-            run
-          )
-        : run();
-    const pending = this.editorValue.read((state) => {
-      const { history: historyState } = state as unknown as {
-        history?: { pending?: () => 'redo' | 'undo' | null };
-      };
-
-      return historyState?.pending?.() ?? null;
-    });
-    let result: ModelHistoryResult;
+    let result: HistoryOutcome;
 
     try {
-      result = await resultPromise;
+      const replayed =
+        focusPolicy === 'preserve'
+          ? withUpdateTagContext(
+              this.editorValue,
+              PLITE_REACT_PRESERVE_SELECTION_TAGS,
+              run
+            )
+          : run();
+
+      // A settled result also waits one microtask, so focus repair has one timing for every replay.
+      result = await (replayed.status === 'pending'
+        ? replayed.settled
+        : Promise.resolve(replayed));
     } finally {
       targetDocument.removeEventListener(
         'focusin',
@@ -1096,14 +1084,13 @@ export class EditableDOMRuntime {
     if (result.status !== 'applied') return result;
 
     const receipt = readEditorHistoryReplayReceipt(result);
-    const expectedVersion = version + (pending === direction ? 2 : 1);
 
     if (
       !receipt ||
       !this.connected ||
       this.rootElement !== root ||
       presentationInvalidated ||
-      receipt.version !== expectedVersion ||
+      receipt.version !== (receipt.claimVersion ?? version) + 1 ||
       this.editorValue.read((state) => state.lastCommit()?.version) !==
         receipt.version
     ) {

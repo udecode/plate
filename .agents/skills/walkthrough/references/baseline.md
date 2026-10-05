@@ -1,17 +1,17 @@
 ## Record A Diff Baseline
 
 For a diff-gated workflow, capture the baseline before the first file mutation,
-including plan creation:
+including plan creation. `<skill>` is this skill's directory:
 
 ```bash
-node .agents/skills/walkthrough/scripts/diff-baseline.mjs capture \
+node <skill>/scripts/diff-baseline.mjs capture \
   --output tmp/walkthrough/<slug>/baseline.json
 ```
 
 At closeout, compare the final checkout with that baseline:
 
 ```bash
-node .agents/skills/walkthrough/scripts/diff-baseline.mjs compare \
+node <skill>/scripts/diff-baseline.mjs compare \
   --baseline tmp/walkthrough/<slug>/baseline.json \
   --output tmp/walkthrough/<slug>/diff-receipt.json
 ```

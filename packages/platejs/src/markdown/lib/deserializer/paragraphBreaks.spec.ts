@@ -221,7 +221,7 @@ describe('paragraph breaks preservation', () => {
               type: 'paragraph',
             },
           ],
-        } as never,
+        },
       }).data
     ).toBe('<kbd>Ctrl</kbd>\\\n<kbd>C</kbd>\n');
   });

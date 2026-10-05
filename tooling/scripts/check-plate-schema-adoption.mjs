@@ -8,6 +8,12 @@ import { pathToFileURL } from 'node:url';
 import { parse } from '@babel/parser';
 
 import { extractJavaScriptCodeFences } from './check-plate-doc-code-contracts.mjs';
+import {
+  enforceBaseline,
+  lineIdentity,
+  readBaseline,
+  groupFindings,
+} from './finding-baseline.mjs';
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -418,18 +424,15 @@ const intentionalRawSchemaQueryCounts = new Map([
     'apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx',
     1,
   ],
-  ['packages/platejs/src/ai/lib/BaseAIPlugin.spec.tsx', 6],
   [
     'packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts',
     8,
   ],
-  ['packages/platejs/src/ai/react/AIChatPlugin.ts', 1],
   ['packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.spec.ts', 3],
   ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 6],
   ['packages/platejs/src/lib/editor/withPlite.slow.ts', 2],
   ['packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
   ['packages/platejs/src/lib/plugins/html/HtmlPlugin.ts', 4],
-  ['packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts', 1],
   ['packages/platejs/src/migrations/migratePlateV54Ast.internal.ts', 1],
   ['packages/platejs/src/migrations/migratePlateV54Profile.internal.ts', 1],
   ['packages/platejs/src/migrations/migratePlateV54Urls.internal.ts', 1],
@@ -4390,6 +4393,9 @@ const isPluginTypeReference = (node) => {
 const createIssue = (file, node, reason) => ({
   column: node.loc?.start.column === undefined ? 1 : node.loc.start.column + 1,
   file,
+  ...(node.type === 'File' || node.type === 'Program'
+    ? { fileLevel: true }
+    : {}),
   line: node.loc?.start.line ?? 1,
   reason,
 });
@@ -6783,6 +6789,7 @@ export function auditNamedSchemaLineageDocument(
         issues.push({
           column: 1,
           file,
+          fileLevel: true,
           line: 1,
           reason: `named schema lineage allowlist expects ${count} ${signature} construction${
             count === 1 ? '' : 's'
@@ -6843,25 +6850,54 @@ export function auditPlateSchemaAdoption() {
   };
 }
 
+const baselineFile = 'tooling/scripts/plate-schema-adoption-baseline.json';
+
 function runAudit() {
   const { excludedGeneratedRoots, fileCount, issues } =
     auditPlateSchemaAdoption();
+  const known = readBaseline(baselineFile);
+  const findings = issues.map((issue) => ({
+    ...issue,
+    identity: issue.fileLevel
+      ? ''
+      : lineIdentity(
+          readFileSync(join(repoRoot, issue.file), 'utf-8'),
+          issue.line
+        ),
+    rule: issue.reason,
+  }));
+  const rules = [...new Set(findings.map((finding) => finding.rule))];
 
-  if (issues.length > 0) {
-    console.error('Plate schema adoption audit failed:');
-    for (const issue of issues) {
-      console.error(
-        `- ${issue.file}:${issue.line}:${issue.column}: ${issue.reason}`
-      );
-    }
-    process.exit(1);
+  process.exitCode = enforceBaseline({
+    file: baselineFile,
+    found: groupFindings(findings),
+    lowerCommand: 'node tooling/scripts/check-plate-schema-adoption.mjs',
+    mode: process.argv.includes('--check')
+      ? 'check'
+      : process.argv.includes('--init')
+        ? 'init'
+        : 'lower',
+    newFindingsHelp: [
+      'Plate schema adoption audit failed:',
+      ...findings
+        .filter(
+          (finding) =>
+            !known[finding.rule]?.[finding.file]?.includes(finding.identity)
+        )
+        .map(
+          (finding) =>
+            `- ${finding.file}:${finding.line}:${finding.column}: ${finding.reason}`
+        ),
+    ].join('\n'),
+    rules,
+  });
+  if (process.exitCode === 0) {
+    console.log(
+      `Plate schema adoption source audit passed (${fileCount} source and documentation files; CI-generated ${excludedGeneratedRoots.join(
+        ', '
+      )} excluded).`
+    );
   }
-
-  console.log(
-    `Plate schema adoption source audit passed (${fileCount} source and documentation files; CI-generated ${excludedGeneratedRoots.join(
-      ', '
-    )} excluded).`
-  );
 }
 
 if (

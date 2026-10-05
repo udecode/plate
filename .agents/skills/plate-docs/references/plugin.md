@@ -16,7 +16,7 @@ Required shape:
    - include `<ComponentSource name="actual-kit-name" />`
    - list relevant kit components from the owning entries in `apps/www/src/registry/registry-features.ts`
      and `apps/www/src/registry/registry-editor.ts`
-   - show `createEditor({ plugins: [...RelevantKit] })` from `platejs/react`
+   - show `useCreateEditor({ plugins: [...RelevantKit] })` from `platejs/react`
 4. `## Examples` for distinct tasks and meaningful states, selected through
    [feature coverage](../SKILL.md#cover-the-features-actual-use). Put one useful
    example under each named subsection; omit this section when the primary
@@ -30,102 +30,9 @@ Required shape:
    - show the package install command
    - import plugin APIs from `platejs`, `platejs/react`, or the actual
      `platejs/<feature>` entrypoint
-   - add the plugin to `createEditor`
-   - declare an ordinary node `component` in
-     `definePlugin(name, { component })` or
-     `definePlugin(name, { component })`
-   - replace an existing descriptor's component with one terminal
-     `.configure({ component })`
-   - keep Base `.extend()` free of `component`; independent defaults belong in
-     the constructor
-   - use `toReactPlugin()` at the owning React adapter to publish a reusable
-     Plate-layer descriptor or add genuine Plate-only authoring; a terminal
-     consumer never inserts conversion merely to set `component`
-   - never teach `.withComponent()`
-   - never teach a second node-component channel
-   - teach renderer attributes and mark placement under `render`, and
-     structural composition under `slots`
-   - teach semantic mappings as
-     `formats: ({ defineFormats }) => defineFormats(map)` in the constructor
-   - use `defineFormats(map)` for self/product maps and
-     `defineFormats(TargetPlugin, map)` for foreign maps; the helper injects the
-     target and keeps callback inference local
-   - never teach direct `formats: { ... }`, manual mapping `target` fields, a
-     global mapping helper, casts, or callback annotations
-   - document semantic `html`, `markdown`, and `plainText` keys under `formats`;
-     whole-payload MIME negotiation belongs to root `dataTransferFormats`
-   - teach Plite-native fields directly on the Plate plugin root:
-     `conflicts`, `readMiddleware`, commands, corrections, declarations,
-     contributions, `on`, activation, and validation; never teach a nested
-     `extension` wrapper
-   - keep Plate-context capture inside the authoring callback and extract
-     domain inputs; never teach a context identity helper, callback annotation,
-     cast, or `any` to recover erased inference
-   - use `definePlugin` imported from `plitejs` only for
-     independently reusable standalone Plite descriptors composed as
-     dependencies
-   - put constructor-accessible fields and their context callbacks directly in
-     the headless or React `definePlugin()` call; use `.extend()` only for an
-     imported/prebuilt plugin descriptor, a shared factory the constructor cannot
-     access, or a real earlier-stage type dependency
-   - teach `name` as descriptor identity and `type` as serialized node identity
-   - never teach `PluginConfig`, `__config`, `clone()`, `pluginApi`, `getApi`,
-     or a second Plite `config` channel
-   - teach `DefinitionOf<typeof FooPlugin>` as the sole descriptor-definition
-     extractor and name an alias `FooDefinition`; never teach `InferConfig`,
-     `FooConfig`, or an unsuffixed alias for an extracted definition
-   - teach `api` as a factory at Plite, Base, and Plate layers, even when it
-     needs no context: `api: () => ({ ... })`, never `api: { ... }`
-   - show one destructured API factory context object, never positional
-     `(editor, context)` arguments, and never teach `.configure({ api })`
-   - capture view work inside that API factory: its `editor` is the exact
-     editor or mounted view exposing the API. Descriptor construction and
-     shared plugin stores retain their model lifetime. Use mounted hooks for
-     view commands; never imply a base editor chooses a mounted view
-   - show one descriptor-definition object call with no caller generics; do not claim the
-     implementation uses one self-referential generic when contextual
-     inference requires a private inferred environment plus author input
-   - teach an externally parameterized Plate integration as a non-installable
-     factory only when its app-owned options determine exact capabilities:
-     `YjsPlugin.create(options)` returns the complete descriptor, while copied
-     composition may use `YjsPlugin.require(key).map(stage)`; never put the
-     factory in a plugin tuple or call `.extend()` / `.configure()` on it
-   - teach the root `PluginDependencyReference` only as a shallow,
-     non-generic `name` plus optional `enabled` reference; never expose the
-     internal normalized installed-capability carrier, higher-kinded encoding,
-     or recursive exact dependency ancestry
-   - teach `PluginTypeProvider` as the sole public
-     descriptor-to-installed-capability bridge; keep its carrier and expansion
-     machinery under
-     `plitejs/internal`
-   - teach one Plite-owned nominal descriptor family across raw, Base,
-     configured, and React plugins; descriptor ancestors resolve to one private
-     installed record, while same-name foreign descriptors remain absent
-   - never teach synthetic replacement descriptors, name-remapped dependency
-     topology, alias registries, or raw/Plate portal dispatch
-   - teach typed portals as a static literal-name plus capability-equivalence
-     proof and a runtime installed-descriptor-or-source-ancestor proof; never
-     imply that a same-name object is an interchangeable runtime token
-   - never teach Plate foundation's author-source-to-canonical-lowered normalization
-     aliases; plugin authors supply one object and receive one descriptor
-   - show low-level React composition as `react({ dom })` with the exact DOM
-     descriptor; never teach `react()`, flattened DOM options, caller
-     generics, or implementation casts
-   - put lifecycle and host/DOM events in one root `on` family with prefixless
-     child names: `keyDown`, `paste`, `nodeChange`, `textChange`, and capture
-     variants; never teach a `handlers` bucket
-   - register a complete before/after Editable or container component directly;
-     show a callback only for real custom composition, and pass only the exact
-     `editableRef` or `containerRef` supplied by that slot
-   - teach clipboard ingress as a `domCommands.insertData` interceptor in
-     `commands`, never as a root plugin field or contribution; read
-     `DataTransfer` from `input`, return `state.transaction(...)`, delegate with
-     `next()`, teach `handle` false as fallback and `around` false as terminal
-     rejection unless it explicitly delegates, and let the owning plugin or
-     Plate stage infer transaction capabilities without callback annotations or
-     editor type arguments
-   - teach Plite owner-local capabilities as `read` and `update`, pure
-     core-read policy as `readMiddleware`, and config-free `validate`
+   - add the plugin to `useCreateEditor` in React, or to `createEditor` in
+     headless code; `docs/vision/plate.md` holds the node `component` and
+     `.configure` rules a manual example follows
 7. Style plugins without distinct components should document their schema
    placement truth. Cross-cut block styles configure
    root `targetPlugins`; render/parser injection is derived and must not
@@ -141,13 +48,8 @@ Required shape:
     standalone operations their exact import paths and arguments; do not invent
     an installed plugin for file conversion. Teach
     `editor.plugin(Plugin).api.*` only when the example is intentionally generic
-    package code or needs exact descriptor ownership, including raw Plite ownership. These
-    paths expose one descriptor-owned API, never root-merged methods. When that descriptor is
-    optional, show `const plugin = editor.plugin(Plugin)` and guard portal access
-    with `plugin.installed`; disabled plugins count as absent. Never teach root
-    API probing, node/schema/cache inference, or caught portal errors as plugin
-    availability checks. Never invent or document `editor.tf`,
-    `editor.transforms`, or a competing root mutation namespace.
+    package code or needs exact descriptor ownership; `docs/vision/plate.md`
+    holds the portal and optional-plugin rules.
 
 Preserve existing `<APIOptions>`, `<APIParameters>`, and `<APIReturns>`
 formatting when editing a working page. Use

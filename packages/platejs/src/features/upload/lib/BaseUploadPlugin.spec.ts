@@ -87,9 +87,7 @@ describe('BaseUploadPlugin', () => {
     (_, state) => {
       expect(() =>
         createEditor({
-          plugins: [
-            BaseUploadPlugin.configure({ initialState: state as never }),
-          ],
+          plugins: [BaseUploadPlugin.configure({ initialState: state })],
         })
       ).toThrow(/Upload/);
     }
@@ -129,7 +127,7 @@ describe('upload draft transfer', () => {
       initialValue: {
         children: [paragraph('top'), card],
         roots: { 'card:1': [draft, paragraph('stays')] },
-      } as never,
+      },
       plugins: [cardPlugin('upload'), BaseUploadPlugin],
     });
     const body = createEditorView(editor, { root: 'card:1' });
@@ -160,7 +158,7 @@ describe('upload draft transfer', () => {
             },
           ],
         },
-      } as never,
+      },
       plugins: [
         cardPlugin('columnGroup', 'upload'),
         BaseColumnPlugin,

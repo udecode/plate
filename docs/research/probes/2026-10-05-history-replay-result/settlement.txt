@@ -1,0 +1,3 @@
+# command: npx --no-install tsc --noEmit --strict --ignoreConfig /private/tmp/claude-501/-Users-zbeyens-git-plate-2/77220dd0-ee8b-48e9-a5a3-6b1b40c6c371/scratchpad/panel/typecheck/settlement.ts
+../../../../private/tmp/claude-501/-Users-zbeyens-git-plate-2/77220dd0-ee8b-48e9-a5a3-6b1b40c6c371/scratchpad/panel/typecheck/settlement.ts(8,40): error TS2322: Type '"applied"' is not assignable to type '"blocked" | "failed"'.
+# exit: 1

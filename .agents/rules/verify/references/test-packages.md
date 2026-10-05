@@ -24,16 +24,6 @@ implementation recipes and reviewed exceptions, not a coverage mandate.
 - Add a few explicit chunk-boundary tests.
 - Do not hide streaming behavior behind snapshots or giant hand-written trees.
 
-### `plate`
-
-- Use `createEditor` for:
-  - pure plugin option stores
-  - selector extension
-  - plugin API composition
-  - transform composition
-  - parser and deserializer contracts
-  - HTML `insertData`
-  - DnD-style contracts
 - Grow the compile-only type lane here first:
   - plugin creation
   - editor creation
@@ -43,19 +33,6 @@ implementation recipes and reviewed exceptions, not a coverage mandate.
 - Port upstream Slate React invariants by behavior, not by file.
 - When a Plate foundation source test mounts `EditorRoot` while the same run also loads public-package React entrypoints, treat duplicate-instance warnings as test noise. Suppress them in the test wrapper with `suppressInstanceWarning` instead of changing runtime warning logic.
 - For provider-only React specs in the Plate foundation, reuse the shared `packages/platejs/src/react/__tests__/TestPlate.tsx` helper instead of re-declaring local `const Plate = ...` wrappers.
-
-### `selection`
-
-- Test current `moveSelection` and `shiftSelection` behavior at their shipped
-  owner. If ownership or public shape is disputed, route the decision to
-  `best-api` and the relevant layer plan; testing does not decide it.
-
-### DOCX entrypoints and app integration
-
-- Keep app-owned cross-package integration tests under `apps/www/src/__tests__/package-integration`.
-- Keep buckets local under that folder instead of scattering app-owned integration coverage through `src/lib`.
-- Package tests must not pull app aliases, app kits, or registries into package graphs.
-- Fixture-heavy `docx-paste` suites are valid reasons to keep `__tests__/`.
 
 ### `plitejs`
 
@@ -86,15 +63,5 @@ Keep Plate React `createEditor` when the contract is actually about:
 - rendered output or DOM behavior
 - store rerender semantics
 - Plate plugin conversion boundaries
-- the known Plate-only selection APIs: `moveSelection` and `shiftSelection`
 
 Do not treat these files as backlog just because they still use Plate.
-
-### `__tests__/` allowlist
-
-Keep `__tests__/` when it holds:
-
-- package-local helpers or fixture banks
-- intentionally split multi-file suites like `withAutoformat`
-- fixture-heavy integration suites like `docx-paste`
-- app-owned cross-package integration suites under `apps/www/src/__tests__/package-integration`

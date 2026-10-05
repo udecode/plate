@@ -102,7 +102,7 @@ const checkIdentity = (
 ) => {
   if (!moving) return;
 
-  const targetRoot = getEditorRuntimeRoot(editor as never);
+  const targetRoot = getEditorRuntimeRoot(editor);
 
   if (
     moving.root === targetRoot &&
@@ -153,7 +153,7 @@ const checkPlacement = (
     parentPath.length === 0
       ? null
       : (editor.read.nodes.get(parentPath)?.[0] as Element);
-  const root = getEditorRuntimeRoot(editor as never);
+  const root = getEditorRuntimeRoot(editor);
   const removing =
     moving?.root === root
       ? moving.entries
@@ -162,7 +162,7 @@ const checkPlacement = (
       : [];
 
   if (
-    !getEditorSchema(editor as never).canPlaceAt(
+    !getEditorSchema(editor).canPlaceAt(
       parent,
       parent ? parent.children : editor.read.children(),
       fit,
@@ -193,11 +193,11 @@ const readLanding = (
   edge: TransferEdge
 ): TransferEdge =>
   executeEditorRead(
-    editor as never,
+    editor,
     editorReads.transfer.landing,
     input,
     () => edge,
-    editor as never
+    editor
   );
 
 const sameEdge = (a: TransferEdge, b: TransferEdge) =>
@@ -224,7 +224,7 @@ export const landAt = (
 
   checkPlacement(editor, request, to, final[1]);
 
-  for (const veto of getPluginContributions(editor as never, transferVeto)) {
+  for (const veto of getPluginContributions(editor, transferVeto)) {
     if ((veto as TransferVeto)(input, editor)) refuse('policy');
   }
 

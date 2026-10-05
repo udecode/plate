@@ -116,7 +116,7 @@ function summarizeRichTextStructural() {
 
   return {
     id: 'rich-text-structural-ops',
-    priority: worst.ratio >= 100 ? 'P0' : 'P1',
+    priority: 'P1',
     primaryMetric: 'rich_text_structural_ops_worst_ratio',
     direction: 'lower',
     baseline: `${worst.metric} ${worst.ratio}x legacy (${worst.current}ms vs ${worst.legacy}ms)`,

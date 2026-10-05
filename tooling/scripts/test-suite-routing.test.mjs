@@ -23,6 +23,10 @@ import {
   TEST_SLOW_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
 
+// Bun hides passing test names when it detects an agent (CLAUDECODE, AGENT,
+// REPL_ID), and these cases assert on those names.
+const bunEnv = { ...process.env, AGENT: '0' };
+
 test('runner selects exact files, keeps lanes separate, and preserves JUnit and bail', (t) => {
   const cwd = mkdtempSync(path.join(tmpdir(), 'plate-runner-'));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
@@ -37,7 +41,11 @@ test('runner selects exact files, keeps lanes separate, and preserves JUnit and 
     "import test from 'node:test'; test('slow fixture', () => {});"
   );
   const run = (...args) =>
-    spawnSync('bun', [runner, ...args], { cwd, encoding: 'utf-8' });
+    spawnSync('bun', [runner, ...args], {
+      cwd,
+      encoding: 'utf-8',
+      env: bunEnv,
+    });
   const fast = run('fast', path.join(cwd, 'tooling/scripts/fast.test.mjs'));
   assert.equal(fast.status, 0, fast.stderr + fast.stdout);
   assert.match(fast.stdout, /fast fixture/);
@@ -237,6 +245,7 @@ test('discovers website and lint contracts across their authored extensions', (t
   const result = spawnSync('bun', [runner, 'fast'], {
     cwd,
     encoding: 'utf-8',
+    env: bunEnv,
   });
   assert.equal(result.status, 0, result.stderr + result.stdout);
   for (const fixture of fixtures) {
@@ -299,6 +308,7 @@ test('runs editor slow contracts without pulling package fast contracts into the
   const result = spawnSync('bun', [runner, 'slow', 'packages'], {
     cwd,
     encoding: 'utf-8',
+    env: bunEnv,
   });
   const output = result.stdout + result.stderr;
   assert.equal(result.status, 0, output);

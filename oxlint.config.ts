@@ -43,6 +43,12 @@ const plateJsPlugins = {
         new URL('tooling/oxlint/entrypoint-dag-plugin.mjs', import.meta.url)
       ),
     },
+    {
+      name: 'plate',
+      specifier: fileURLToPath(
+        new URL('tooling/oxlint/plate-plugin.mjs', import.meta.url)
+      ),
+    },
   ],
 };
 
@@ -194,7 +200,8 @@ export default defineConfig({
         'apps/www/src/app/(app)/examples/plite/**',
         // The Plite proof app installs the raw Plite browser handle.
         'apps/plite/src/app/providers.tsx',
-        // This route measures raw Plite against Plate on the same fixture.
+        // These routes measure raw Plite against Plate on the same fixture.
+        'apps/www/src/app/dev/combobox-typing/page.tsx',
         'apps/www/src/app/dev/editor-perf/page.tsx',
       ],
       rules: {
@@ -379,6 +386,63 @@ export default defineConfig({
       rules: {
         // [P0 test-harness] These components synchronously publish render observations; effects would change the boundary under test.
         'react/immutability': 'off',
+      },
+    },
+    {
+      files: ['**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
+      rules: {
+        'plate/exception-format': 'error',
+      },
+    },
+    {
+      files: ['apps/**/*.{cts,mts,ts,tsx}', 'packages/**/*.{cts,mts,ts,tsx}'],
+      rules: {
+        'plate/no-annotated-inferred-callback': 'error',
+      },
+    },
+    {
+      files: [
+        'apps/www/src/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
+        'packages/platejs/src/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
+      ],
+      rules: {
+        'plate/no-relative-plite-source': 'error',
+      },
+    },
+    {
+      files: [
+        'apps/www/src/**/*.{spec,test}.{cts,mts,ts,tsx}',
+        'packages/**/*.{spec,test}.{cts,mts,ts,tsx}',
+        'packages/*/test/**/*.{cts,mts,ts,tsx}',
+      ],
+      excludeFiles: ['**/*.slow.*'],
+      rules: {
+        'plate/no-raised-test-timeout': 'error',
+        'plate/no-source-text-test': 'error',
+      },
+    },
+    {
+      files: [
+        'apps/www/src/**/*.{slow,spec,test}.{cts,mts,ts,tsx}',
+        'packages/**/*.{slow,spec,test}.{cts,mts,ts,tsx}',
+        'packages/*/test/**/*.{cts,mts,ts,tsx}',
+      ],
+      rules: {
+        'plate/mock-spreads-module': 'error',
+      },
+    },
+    {
+      files: ['packages/*/src/**/*.{cts,mts,ts,tsx}'],
+      excludeFiles: [
+        '**/*.spec.*',
+        '**/*.test.*',
+        '**/*.slow.*',
+        '**/__tests__/**',
+      ],
+      rules: {
+        'plate/no-as-never': 'error',
+        'plate/no-one-off-editor-type': 'error',
+        'plate/no-second-name': 'error',
       },
     },
     {

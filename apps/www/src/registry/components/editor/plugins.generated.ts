@@ -34,7 +34,7 @@ export interface AudioElement extends Element {
 }
 
 export interface BlockquoteElement extends Element {
-  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
+  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "blockquote";
   readonly checked?: boolean;
   readonly indent?: number;
@@ -65,7 +65,7 @@ export interface CodeBlockElement extends Element {
 }
 
 export interface ColumnElement extends Element {
-  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
+  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "column";
   readonly width: string;
 }
@@ -107,7 +107,7 @@ export interface FileElement extends Element {
 }
 
 export interface FootnoteDefinitionElement extends Element {
-  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
+  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "footnoteDefinition";
   readonly ref: string;
 }
@@ -211,7 +211,7 @@ export interface TableElement extends Element {
 }
 
 export interface TableCellElement extends Element {
-  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
+  readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "tableCell";
   readonly backgroundColor?: string;
   readonly borders?: unknown;
@@ -248,7 +248,7 @@ export interface VideoElement extends Element {
 }
 
 export type EditorElement = AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnElement | ColumnGroupElement | DateElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | FootnoteElement | HeadingElement | HorizontalRuleElement | ImageElement | InlineEquationElement | LinkElement | MediaEmbedElement | MentionElement | ParagraphElement | DetailsSummaryElement | TableElement | TableCellElement | TableRowElement | TocElement | UploadElement | VideoElement;
-export type Value = readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
+export type Value = readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
 export type Schema = Readonly<{
   readonly plugins: Readonly<{
     readonly paragraph: Readonly<{ readonly type: "paragraph"; }>;
@@ -606,7 +606,6 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<Record<PropertyKey, never>>;
     readonly properties: Readonly<Record<PropertyKey, never>>;
-    readonly toggle: true;
     readonly type: "summary";
   }>;
   readonly table: Readonly<{

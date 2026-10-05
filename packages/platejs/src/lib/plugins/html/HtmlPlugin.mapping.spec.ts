@@ -625,7 +625,7 @@ describe('compilePlateHtmlFormat', () => {
       },
     ]);
     expect(
-      writeDataTransferFragment(editor, output, ContentSlice.closed(fragment!))
+      writeDataTransferFragment(editor, output, ContentSlice.closed(fragment))
     ).toContain('text/html');
     expect(output.getData('text/html')).toBe(
       '<p style="--brandColor: coral">Custom</p>'
@@ -1148,7 +1148,7 @@ describe('compilePlateHtmlFormat', () => {
         writeDataTransferFragment(
           editor,
           output,
-          ContentSlice.closed(fragment!)
+          ContentSlice.closed(fragment)
         );
         const reparsed = new DOMParser().parseFromString(
           output.getData('text/html'),

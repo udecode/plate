@@ -5,51 +5,11 @@ on:
     branches:
       - main
       - next
-    paths:
-      - 'packages/**'
-      - 'apps/plite/package.json'
-      - 'apps/plite/scripts/**'
-      - 'benchmarks/**'
-      - 'tooling/**'
-      - 'package.json'
-      - '.github/actions/**'
-      - '.github/workflows/**'
-      - 'pnpm-workspace.yaml'
-      - 'pnpm-lock.yaml'
-      - 'oxfmt.config.ts'
-      - 'oxlint.config.ts'
-      - 'bunfig.toml'
-      - 'tsconfig.json'
-      - 'turbo.json'
-      - 'config/**'
-      - 'scripts/**'
-      - 'patches/**'
-      - '.npmrc'
   pull_request:
     types:
       - opened
       - synchronize
       - reopened
-    paths:
-      - 'packages/**'
-      - 'apps/plite/package.json'
-      - 'apps/plite/scripts/**'
-      - 'benchmarks/**'
-      - 'tooling/**'
-      - 'package.json'
-      - '.github/actions/**'
-      - '.github/workflows/**'
-      - 'pnpm-workspace.yaml'
-      - 'pnpm-lock.yaml'
-      - 'oxfmt.config.ts'
-      - 'oxlint.config.ts'
-      - 'bunfig.toml'
-      - 'tsconfig.json'
-      - 'turbo.json'
-      - 'config/**'
-      - 'scripts/**'
-      - 'patches/**'
-      - '.npmrc'
 
   workflow_dispatch:
 
@@ -113,12 +73,14 @@ jobs:
           restore-keys: |
             packages-cache-v2-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
 
+      # A push commits barrel drift for the author; anywhere else the barrels
+      # step in pnpm check fails on it.
       - name: 🧱 Generate barrels
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' }}
         run: pnpm brl
 
       - name: 🔍 Detect barrel changes
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' }}
         id: barrel-changes
         run: |
           if [[ -n "$(git status --porcelain --untracked-files=all -- packages)" ]]; then
@@ -128,31 +90,15 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: ❌ Fail on barrel drift in PR
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'pull_request' && steps.barrel-changes.outputs.changed == 'true' }}
-        run: |
-          echo "pnpm brl produced changes. Commit the generated barrel updates."
-          exit 1
-
-      - name: ✅ Check push
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' }}
-        run: bun run check:push
-
-      - name: ✅ Check PR
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') }}
-        run: bun check
-
-      - name: 🧪 Check Plate and Plite packages
+      - name: 🎭 Install Chromium for package tests
         if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
-        run: |
-          pnpm plite:browser:install chromium
-          pnpm plite:test
-          pnpm plite:bench:targets:check
-          pnpm plite:public-types
+        run: pnpm plite:browser:install chromium
 
-      - name: 🧪 Check CLI generation and migrations
+      - name: ✅ Check
         if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
-        run: pnpm --filter @platejs/cli test
+        env:
+          PLATE_BASELINE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: pnpm check
 
       - name: 🔧 Configure git
         if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}

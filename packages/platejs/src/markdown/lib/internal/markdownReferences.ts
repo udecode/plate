@@ -37,7 +37,7 @@ export const remarkResolveMarkdownReferences: UnifiedPlugin<[], Root> =
         node.type === 'linkReference' ||
         node.type === 'imageReference',
       (node, index, parent) => {
-        if (!parent || index === undefined) return;
+        if (!parent || index === undefined) return undefined;
         if (node.type === 'definition') {
           parent.children.splice(index, 1);
 
@@ -46,7 +46,7 @@ export const remarkResolveMarkdownReferences: UnifiedPlugin<[], Root> =
         const reference = node as ImageReference | LinkReference;
         const definition = definitions.get(reference.identifier);
 
-        if (!definition) return;
+        if (!definition) return undefined;
         const resolved: Image | Link =
           reference.type === 'linkReference'
             ? {
@@ -65,6 +65,7 @@ export const remarkResolveMarkdownReferences: UnifiedPlugin<[], Root> =
               };
 
         parent.children[index] = resolved;
+        return undefined;
       }
     );
   };

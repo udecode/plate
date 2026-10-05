@@ -9,6 +9,7 @@ import {
 } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
+import * as actualPlatejs from 'platejs';
 import type { CodeBlockElement } from 'platejs';
 import * as React from 'react';
 
@@ -27,6 +28,7 @@ const pluginContext = {} as React.ComponentProps<
 >;
 
 mock.module('platejs', () => ({
+  ...actualPlatejs,
   BaseCodeBlockPlugin: mockPlugin('codeBlock'),
   CodeBlockRules: { markdown: mock(() => ({})) },
   NodeApi: {

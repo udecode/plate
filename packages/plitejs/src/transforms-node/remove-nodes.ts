@@ -130,7 +130,7 @@ export const removeNodes = ((
     const selectionAnchor = SelectionApi.isText(selection)
       ? editor.anchor(selection, { deletion: 'nearest' })
       : null;
-    const depths = getNodes(editor as never, { at, match, mode, voids });
+    const depths = getNodes(editor, { at, match, mode, voids });
     const pathAnchors = Array.from(depths, ([, path]) =>
       editor.anchor(path, {
         association: 'forward',

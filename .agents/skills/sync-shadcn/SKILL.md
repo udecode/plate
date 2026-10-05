@@ -1,5 +1,6 @@
 ---
 description: Sync upstream shadcn docs into Plate with source inventory, fork-aware apply and baseline accounting, or match shadcn's registry and install protocol source by source.
+argument-hint: '[status | apply | dashboard | review | parity <surface> | <range or surface>]'
 name: sync-shadcn
 metadata:
   skiller:
@@ -10,8 +11,9 @@ metadata:
 
 Handle $ARGUMENTS. Read the complete [sync policy](./references/policy.md), then
 the selected mode below. pstack's poteto-mode owns lifecycle and existing
-authority; this skill owns
-upstream range accounting, Plate forks, slice decisions and sync state.
+authority, the lead writes every change, and a plan takes the plan-page shape;
+this skill owns upstream range accounting, Plate forks, slice decisions and sync
+state.
 
 Plate's docs app is a forked product. Upstream owns the Fumadocs/shadcn docs
 architecture; Plate owns editor content, demos, registry, API MDX, CN docs,

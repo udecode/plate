@@ -207,7 +207,11 @@ test('browser handle leaves text-only multi-root history to direct DOM sync', ()
     inputController: createInputController(),
     isViewportBackedSelection: () => false,
     dispatchHistory: (direction, _focusPolicy, onFulfilled) => {
-      void editor.api.history[direction]().then(onFulfilled);
+      const result = editor.api.history[direction]();
+
+      void (
+        result.status === 'pending' ? result.settled : Promise.resolve(result)
+      ).then(onFulfilled);
     },
     setExplicitViewportBackedSelection: vi.fn(),
   });

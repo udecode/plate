@@ -53,7 +53,7 @@ const freezeDiagnostic = (
     ...(contextual.source
       ? { source: freezeSourceLocation(contextual.source) }
       : {}),
-  }) as MarkdownDiagnostic;
+  });
 };
 
 export class MarkdownDiagnostics {
@@ -177,7 +177,7 @@ export const checkMarkdownTreeLimits = (
   report: (diagnostic: MarkdownDiagnostic) => void
 ): number | null => {
   const stack: Array<Readonly<{ depth: number; node: TreeNode }>> = [
-    { depth: 0, node: root as TreeNode },
+    { depth: 0, node: root },
   ];
   let nodes = 0;
 
@@ -211,7 +211,7 @@ export const checkMarkdownTreeLimits = (
       return null;
     }
     current.node.children?.forEach((child) => {
-      stack.push({ depth: current.depth + 1, node: child as TreeNode });
+      stack.push({ depth: current.depth + 1, node: child });
     });
   }
 

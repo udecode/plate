@@ -2439,7 +2439,8 @@
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-styles",
         "typecheck:partition:standard-link",
-        "typecheck:partition:standard-list"
+        "typecheck:partition:standard-list",
+        "typecheck:partition:table"
       ],
       "inputs": [
         "src/markdown/**",

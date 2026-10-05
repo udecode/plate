@@ -752,13 +752,11 @@ describe('column transfer landing', () => {
     ...children: Array<ReturnType<typeof columns | typeof paragraph>>
   ) =>
     createRuntimeEditor({
-      initialValue: children as never,
+      initialValue: children,
       plugins: columnPlugins,
     });
   const columnTexts = (editor: ReturnType<typeof createColumns>, at: number) =>
-    (editor.read.children()[at] as Element).children.map((column) =>
-      NodeApi.string(column)
-    );
+    editor.read.children()[at].children.map((column) => NodeApi.string(column));
 
   it('reorders column items inside their group', () => {
     const editor = createColumns(columns('a', 'b'));
@@ -806,9 +804,11 @@ describe('column transfer landing', () => {
     });
 
     expect(
-      (editor.read.children()[0] as Element).children.map((column) =>
-        (column as Element).children.map((node) => NodeApi.string(node))
-      )
+      editor.read
+        .children()[0]
+        .children.map((column) =>
+          (column as Element).children.map((node) => NodeApi.string(node))
+        )
     ).toEqual([['a'], ['b', 'x']]);
   });
 
@@ -843,9 +843,9 @@ describe('column transfer landing', () => {
     });
 
     expect(
-      (
-        (editor.read.children()[0] as Element).children[0] as Element
-      ).children.map((node) => NodeApi.string(node))
+      (editor.read.children()[0].children[0] as Element).children.map((node) =>
+        NodeApi.string(node)
+      )
     ).toEqual(['parent', 'child', 'moved']);
   });
 });

@@ -8,7 +8,6 @@ import {
   definePlugin,
   defineEffect,
   defineStateField,
-  type EditorJsonValue,
   valueCodecs,
 } from '../../src/index';
 import { yjs } from '../../src/yjs/core/plugin';
@@ -998,7 +997,7 @@ describe('plitejs/yjs shared effect compaction', () => {
     const effect = defineEffect<Payload>({
       persist: {
         decode: (value) => value as Payload,
-        encode: (value) => value as unknown as EditorJsonValue,
+        encode: (value) => value,
         version: 1,
       },
       collab: 'shared',

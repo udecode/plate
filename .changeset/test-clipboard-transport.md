@@ -11,7 +11,10 @@ import type { BrowserTestOptions } from '@platejs/test/playwright';
 
 export default defineConfig<BrowserTestOptions>({
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'], clipboardTransport: 'native' } },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], clipboardTransport: 'native' },
+    },
   ],
 });
 ```

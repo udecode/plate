@@ -5,10 +5,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import './index.js';
 
-import { createEditor, createEditorView } from 'plitejs';
+import {
+  createEditor,
+  createEditorView,
+  type Editor,
+  type Value,
+} from 'plitejs';
 
 import * as PliteHistory from '../../src/history';
-import { History, history } from '../../src/history';
+import { History, type HistoryPlugin, history } from '../../src/history';
 import {
   delete as editorDelete,
   deleteBackward as editorDeleteBackward,
@@ -122,8 +127,8 @@ const withTest = (editor: any) => {
   return editor;
 };
 
-const getHistory = (editor: any) =>
-  editor.read((state: any) => state.history());
+const getHistory = (editor: Editor<Value, readonly [HistoryPlugin]>) =>
+  editor.read((state) => state.history());
 
 describe('plitejs/history', () => {
   it('exposes the current history plugin surface', () => {

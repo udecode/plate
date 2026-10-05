@@ -301,26 +301,32 @@ export const createDOMRepairQueue = ({
 
     armRepairInducedSelectionOriginGuard();
     profileDOMRepairDuration('captured-update-model', () => {
-      withTypedTextIntent(editor, inputController, { at, inputType: 'insertText', text: insert.text }, () => updateNativeTextInput(
+      withTypedTextIntent(
         editor,
-        (tx) => {
-          tx.text.insert(insert.text, { at });
-          const selectionAfter = tx.selection();
+        inputController,
+        { inputType: 'insertText', text: insert.text },
+        () =>
+          updateNativeTextInput(
+            editor,
+            (tx) => {
+              tx.text.insert(insert.text, { at });
+              const selectionAfter = tx.selection();
 
-          if (
-            !selectionAfter ||
-            !RangeApi.isCollapsed(selectionAfter) ||
-            !PathApi.equals(selectionAfter.anchor.path, target.path) ||
-            selectionAfter.anchor.offset !== nextOffset
-          ) {
-            tx.selection.set({
-              anchor: { path: target.path, offset: nextOffset },
-              focus: { path: target.path, offset: nextOffset },
-            });
-          }
-        },
-        getEditableNativeGroupingInput(inputController)
-      ));
+              if (
+                !selectionAfter ||
+                !RangeApi.isCollapsed(selectionAfter) ||
+                !PathApi.equals(selectionAfter.anchor.path, target.path) ||
+                selectionAfter.anchor.offset !== nextOffset
+              ) {
+                tx.selection.set({
+                  anchor: { path: target.path, offset: nextOffset },
+                  focus: { path: target.path, offset: nextOffset },
+                });
+              }
+            },
+            getEditableNativeGroupingInput(inputController)
+          )
+      );
     });
     if (!isInsideVirtualizedDOM(textHost)) {
       setEditableModelSelectionPreference({
@@ -617,24 +623,34 @@ export const createDOMRepairQueue = ({
             armModelOwnedTextInputGuard({ inputController });
           }
         }
-        const at = { path, offset: insert.offset };
-
-        withTypedTextIntent(editor, inputController, { at, inputType: 'insertText', text: insert.text }, () => updateNativeTextInput(
+        // A repair that leaves the caret elsewhere is not typing at the caret.
+        withTypedTextIntent(
           editor,
-          (tx) => {
-            tx.text.insert(insert.text, {
-              at: shouldReplaceExpandedSelection ? expandedReplacementRange : at,
-            });
-
-            if (shouldMoveSelection) {
-              tx.selection.set({
-                anchor: { path, offset: nextOffset },
-                focus: { path, offset: nextOffset },
-              });
-            }
+          inputController,
+          {
+            inputType: shouldMoveSelection ? 'insertText' : undefined,
+            text: insert.text,
           },
-          getEditableNativeGroupingInput(inputController)
-        ));
+          () =>
+            updateNativeTextInput(
+              editor,
+              (tx) => {
+                tx.text.insert(insert.text, {
+                  at: shouldReplaceExpandedSelection
+                    ? expandedReplacementRange
+                    : { path, offset: insert.offset },
+                });
+
+                if (shouldMoveSelection) {
+                  tx.selection.set({
+                    anchor: { path, offset: nextOffset },
+                    focus: { path, offset: nextOffset },
+                  });
+                }
+              },
+              getEditableNativeGroupingInput(inputController)
+            )
+        );
         if (textHost && !isInsideVirtualizedDOM(textHost)) {
           setEditableModelSelectionPreference({
             inputController,

@@ -1763,8 +1763,7 @@ test('allows only exact audited production extend stages at their owner path', (
       'packages/platejs/src/ai/react/AIChatPlugin.ts',
       `definePlugin('aiChat', { })
         .extend(() => ({ api: () => ({}), read: () => ({}), selectors: {}, update: () => ({}) }))
-        .extend(() => ({ commands: () => [], corrections: [], effectTypes: [], on: {} }));
-       editor.read.schema.property({});`,
+        .extend(() => ({ commands: () => [], corrections: [], effectTypes: [], on: {} }))`,
     ],
     [
       'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',

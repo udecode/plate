@@ -166,8 +166,6 @@ const dataTransferFormatReconfigurationSlot = definePluginSlot(
 );
 const dataTransferDecodeDurations = [];
 const dataTransferEncodeDurations = [];
-const decodeSuccess = (slice) => ({ diagnostics: [], ok: true, slice });
-const encodeSuccess = (data) => ({ data, diagnostics: [], ok: true });
 const benchmarkDataTransferFormatPlugin = dataTransferFormats(
   'benchmark-data-transfer-format',
   [
@@ -181,7 +179,7 @@ const benchmarkDataTransferFormatPlugin = dataTransferFormats(
           const content = JSON.parse(data);
 
           return Array.isArray(content)
-            ? decodeSuccess(ContentSlice.closed(content))
+            ? ContentSlice.closed(content)
             : null;
         } finally {
           dataTransferDecodeDurations.push(performance.now() - start);
@@ -191,7 +189,7 @@ const benchmarkDataTransferFormatPlugin = dataTransferFormats(
         const start = performance.now();
 
         try {
-          return encodeSuccess(JSON.stringify(slice.content));
+          return JSON.stringify(slice.content);
         } finally {
           dataTransferEncodeDurations.push(performance.now() - start);
         }
@@ -218,7 +216,7 @@ const createPlateReconfigurationFormatPlugin = (label, counters) =>
 
         const payload = JSON.parse(data);
 
-        return decodeSuccess(ContentSlice.fromJSON(payload.slice));
+        return ContentSlice.fromJSON(payload.slice);
       },
       accept: () => {
         counters.accept += 1;
@@ -228,7 +226,7 @@ const createPlateReconfigurationFormatPlugin = (label, counters) =>
       encode: ({ slice }) => {
         counters.encode += 1;
 
-        return encodeSuccess(JSON.stringify({ label, slice }));
+        return JSON.stringify({ label, slice });
       },
     },
   ]);
@@ -244,7 +242,7 @@ const createPlateBenchmarkFormatPlugin = (counters, mimeType) =>
 
           counters.decode += 1;
           try {
-            return decodeSuccess(ContentSlice.fromJSON(JSON.parse(data)));
+            return ContentSlice.fromJSON(JSON.parse(data));
           } finally {
             counters.decodeMs += performance.now() - start;
           }
@@ -254,7 +252,7 @@ const createPlateBenchmarkFormatPlugin = (counters, mimeType) =>
 
           counters.encode += 1;
           try {
-            return encodeSuccess(JSON.stringify(slice));
+            return JSON.stringify(slice);
           } finally {
             counters.encodeMs += performance.now() - start;
           }

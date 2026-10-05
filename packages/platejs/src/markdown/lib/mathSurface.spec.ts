@@ -33,6 +33,19 @@ describe('math package surfaces', () => {
     expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
   });
 
+  it('keeps a dollar sign before an escaped character as text', () => {
+    const editor = createTestEditor();
+    const value = {
+      children: [{ children: [{ text: 'x$*$y' }], type: 'paragraph' }],
+    };
+
+    const markdown = serializeTestMarkdown(editor, { document: value }).data;
+
+    expect(parseTestMarkdown(editor, markdown).children).toEqual(
+      value.children
+    );
+  });
+
   it('round-trips block math through the markdown package surfaces', () => {
     const editor = createTestEditor();
     const input = '$$\nx+1\n$$';

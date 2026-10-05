@@ -111,11 +111,8 @@ When annotation is required, read [annotation.md](references/annotation.md). Ret
 
 ## Write Plain Technical Prose
 
-Apply these rules to annotation labels, captions, and the final handoff:
+Annotation labels, captions and the final handoff follow `unslop`. They also:
 
-- Lead with the outcome. Give the reason before implementation details.
-- Prefer common words and one project term per concept.
-- Use active voice and short, single-topic paragraphs.
 - Cover objective, owner, chosen fix, invariant, alternatives, blast radius,
   verification, and remaining risk when they apply.
 - Never make the reader inspect the diff to understand why the result is
@@ -123,8 +120,10 @@ Apply these rules to annotation labels, captions, and the final handoff:
 
 ## Final Handoff
 
-Show every annotated image inline with an absolute local path. Give each image
-one short caption stating what to notice. Name the related test, browser,
+In a project with plan pages, put the annotated images on the plan page, which
+is published with them, and keep the reply to the page link. Otherwise show every
+annotated image inline with an absolute local path. Give each image one short
+caption stating what to notice. Name the related test, browser,
 external, or source proof.
 
 When a PR or tracker needs images, follow the owning repo's upload policy and
@@ -143,5 +142,5 @@ Close only when:
   contradiction as a blocker;
 - originals and annotated copies are saved;
 - every annotation matches its original;
-- annotated images appear inline in the final response;
+- annotated images appear on the plan page, or inline when the project has none;
 - the owning proof is named.

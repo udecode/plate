@@ -3,12 +3,14 @@ id: 2026-10-02-schema-block-handles
 date: 2026-10-02
 status: draft
 kind: behavior
-summary: "Give every selectable block a drag handle"
-change: {"type":"source","date":"2026-10-02","commits":[]}
-release: {"status":"unresolved"}
+summary: 'Give every selectable block a drag handle'
+change: { 'type': 'source', 'date': '2026-10-02', 'commits': [] }
+release: { 'status': 'unresolved' }
 diagnostics: []
 ---
+
 <!-- entry: {"id":"2026-10-02-dnd-give-every-selectable-block-5b93fca9","kind":"behavior","migrationNotes":[]} -->
+
 - **`dnd`**: Every selectable block gets a handle at any depth, such as blocks inside blockquotes, details, columns and table cells, and only the innermost hovered block shows its handle. The handle reads its blocks from `editor.read.transfer.nodes`, and a selected table no longer hides the editor's handles.
 <!-- entry: {"id":"2026-10-02-block-menu-cut-transfer-nodes","kind":"behavior","migrationNotes":[]} -->
 - **`block-menu`**: Cut takes the blocks `editor.read.transfer.nodes()` returns, such as a list item with its nested items.

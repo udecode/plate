@@ -212,7 +212,7 @@ type BlockFenceApplyContext = SelectionInputRuleContext &
   TransformInputRuleContext;
 
 export type BlockFenceInputRuleConfig<TMatch = BlockFenceInputRuleMatch> =
-  BaseInputRule<SelectionInputRuleContext> &
+  BaseInputRule &
     MatchBlockFenceOptions<TMatch> & {
       apply: (
         context: BlockFenceApplyContext,

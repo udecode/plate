@@ -3,6 +3,8 @@
 export const TEST_NODE_FILE_PATTERNS = [
   '.agents/rules/**/*.test.mjs',
   'tooling/scripts/**/*.test.mjs',
+  // oxlint's RuleTester refuses to run under Bun.
+  'tooling/oxlint/plate-plugin.test.mjs',
   'apps/plite/scripts/**/*.test.mjs',
   'benchmarks/editor/benchmarks/{external-text,markdown-streaming}-measurement.test.mjs',
 ];

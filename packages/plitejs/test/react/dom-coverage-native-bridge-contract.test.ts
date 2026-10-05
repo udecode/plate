@@ -1761,7 +1761,7 @@ describe('native block drag', () => {
     try {
       const drag = editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
 
       expect(drag?.previews.map((preview) => preview.textContent)).toEqual([
@@ -1794,7 +1794,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
       hosts[0].remove();
       document.dispatchEvent(new Event('pointermove'));
@@ -1875,7 +1875,7 @@ describe('native block drag', () => {
         for (const _ of [0, 1]) {
           editor.api.dom.drag.start(
             { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-            { node: editorGetSnapshot(editor).children[0] as never }
+            { node: editorGetSnapshot(editor).children[0] }
           );
         }
 
@@ -1900,7 +1900,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
       applyEditableDragOver({
         editor,
@@ -1927,7 +1927,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
       applyEditableDrop({
         editor,
@@ -1951,7 +1951,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
       hosts[0].remove();
       applyEditableDrop({
@@ -1976,7 +1976,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
 
       expect(dataTransfer.effectAllowed).toBe('copy');
@@ -1992,7 +1992,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
 
       const overC = at([2], 1);
@@ -2028,7 +2028,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
 
       const overC = at([2], 1);
@@ -2053,7 +2053,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
 
       // Drop back on the dragged block itself
@@ -2081,7 +2081,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
 
       // "P2 after" → indicator between b and c
@@ -2123,7 +2123,7 @@ describe('native block drag', () => {
     try {
       editor.api.dom.drag.start(
         { clientX: 0, clientY: 0, dataTransfer: dataTransfer as never },
-        { node: editorGetSnapshot(editor).children[0] as never }
+        { node: editorGetSnapshot(editor).children[0] }
       );
 
       const overC = at([2], 1);

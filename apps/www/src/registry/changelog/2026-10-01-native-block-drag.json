@@ -63,7 +63,7 @@
       "migrationNotes": [],
       "targets": ["dnd"],
       "source": {
-        "line": 11,
+        "line": 12,
         "row": 1,
         "legacyRelease": {
           "date": "2026-10-01",
@@ -80,7 +80,7 @@
       "migrationNotes": [],
       "targets": ["column"],
       "source": {
-        "line": 12,
+        "line": 13,
         "row": 2,
         "legacyRelease": {
           "date": "2026-10-01",
@@ -97,7 +97,7 @@
       "migrationNotes": [],
       "targets": ["table"],
       "source": {
-        "line": 13,
+        "line": 14,
         "row": 3,
         "legacyRelease": {
           "date": "2026-10-01",
@@ -114,7 +114,7 @@
       "migrationNotes": [],
       "targets": ["media-image", "media-video"],
       "source": {
-        "line": 14,
+        "line": 15,
         "row": 4,
         "legacyRelease": {
           "date": "2026-10-01",
@@ -131,7 +131,7 @@
       "migrationNotes": [],
       "targets": ["upload"],
       "source": {
-        "line": 15,
+        "line": 16,
         "row": 5,
         "legacyRelease": {
           "date": "2026-10-01",

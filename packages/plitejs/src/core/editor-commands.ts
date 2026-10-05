@@ -856,7 +856,7 @@ export const editorCommands: EditorCommands = Object.freeze({
   removeNodes: defineCommand<RemoveNodesCommand>('node.remove', {
     build: ({ input, state }) =>
       state.transaction((tx) => {
-        tx.nodes.remove(input.options as never);
+        tx.nodes.remove(input.options);
       }),
   }),
   select: defineCommand<SelectCommand>('selection.select', {

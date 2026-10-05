@@ -212,7 +212,75 @@ test('does not repair focus after a later focus interaction', async () => {
   runtime.destroy();
 });
 
-test('reports a replay rejection once through the platform error sink', async () => {
+test('repairs focus after a replay whose owner settles in the call', async () => {
+  const initialValue: Value = [
+    { type: 'paragraph', children: [{ text: 'a' }] },
+  ];
+  const sessionEffect = defineEffect<
+    Readonly<{ previous: string; value: string }>
+  >({
+    history: {
+      replay: (_editor, transition) => ({
+        status: 'applied',
+        value: transition,
+      }),
+    },
+    invert: ({ previous, value }) => ({ previous: value, value: previous }),
+    key: `react.runtime.history.sync.${nextSessionEffect}`,
+  });
+  nextSessionEffect += 1;
+  const editor = createEditor({
+    initialValue,
+    plugins: [
+      history(),
+      definePlugin(`react-runtime-history-sync-${nextSessionEffect}`, {
+        effectTypes: [sessionEffect],
+      }),
+    ],
+  });
+  const runtime = new EditableDOMRuntime({ editor });
+  const focus = vi.fn();
+
+  editor.update((tx) => {
+    tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+  });
+  runtime.setRoot(document.createElement('div'));
+  runtime.connect();
+  runtime.updateHistoryFocusHandler(focus);
+
+  expect(await dispatchHistory(runtime, 'undo')).toEqual({ status: 'applied' });
+  expect(focus).toHaveBeenCalledWith('restore-root');
+  runtime.destroy();
+});
+
+test('skips focus repair when a claim subscriber publishes before settlement', async () => {
+  const { editor, gate } = createPendingReplayEditor();
+  const focus = vi.fn();
+  const runtime = new EditableDOMRuntime({ editor });
+  let published = false;
+  const unsubscribe = editor.subscribe(() => {
+    if (published || editor.read.history.pending() !== 'undo') return;
+    published = true;
+    editor.update((tx) => {
+      tx.selection.set({ offset: 1, path: [0, 0] });
+    });
+  });
+
+  runtime.setRoot(document.createElement('div'));
+  runtime.connect();
+  runtime.updateHistoryFocusHandler(focus);
+
+  const result = dispatchHistory(runtime, 'undo');
+  gate.resolve();
+
+  expect(await result).toEqual({ status: 'applied' });
+  expect(published).toBe(true);
+  expect(focus).not.toHaveBeenCalled();
+  unsubscribe();
+  runtime.destroy();
+});
+
+test('reports a failed replay once through the platform error sink', async () => {
   const { editor, gate } = createPendingReplayEditor({ throws: true });
   const onHistoryReplay = vi.fn();
   const reportError = vi.fn();
@@ -235,7 +303,12 @@ test('reports a replay rejection once through the platform error sink', async ()
       );
     });
     expect(reportError).toHaveBeenCalledTimes(1);
-    expect(onHistoryReplay).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(onHistoryReplay).toHaveBeenCalledWith({
+        direction: 'undo',
+        result: { status: 'failed' },
+      });
+    });
   } finally {
     runtime.destroy();
     if (previousReportError) {

@@ -104,7 +104,7 @@ for (const retirement of ['finish', 'hide', 'replace', 'stop'] as const) {
           await pending;
         });
       } else if (retirement === 'hide') {
-        act(() => editor.plugin(AIChatPlugin).api.hide({ focus: false }));
+        void act(() => editor.plugin(AIChatPlugin).api.hide({ focus: false }));
       } else if (retirement === 'replace') {
         await act(async () => {
           replacementPending = editor
@@ -157,7 +157,7 @@ test('failed Comment requests expose retry without rolling back completed commen
   );
   const before = value(editor);
   try {
-    act(() =>
+    void act(() =>
       editor.plugin(AIChatPlugin).api.submit('Comment', { toolName: 'comment' })
     );
     await flush();
@@ -324,9 +324,9 @@ for (const [result, retirement] of [
       } else if (retirement === 'stop') {
         act(() => editor.plugin(AIChatPlugin).api.stop());
       } else if (retirement === 'hide' || retirement === 'finished-hide') {
-        act(() => editor.plugin(AIChatPlugin).api.hide({ focus: false }));
+        void act(() => editor.plugin(AIChatPlugin).api.hide({ focus: false }));
       } else if (retirement === 'reset') {
-        act(() => editor.plugin(AIChatPlugin).api.reset());
+        void act(() => editor.plugin(AIChatPlugin).api.reset());
       } else if (retirement === 'unmount') view.unmount();
       else if (retirement === 'replacement') {
         view.rerender(renderAssembly(false, 1));

@@ -951,6 +951,30 @@ describe('JSON document change algebra', () => {
     });
   });
 
+  it('rewrites a shared ancestor once for every replacement inside it', () => {
+    const leaves = ['a', '\n', 'b', '\n', 'c'];
+    const document = DocumentIndex.fromValue(
+      asJsonNodes([
+        { children: leaves.map((text) => ({ text })), type: 'paragraph' },
+      ])
+    );
+    const change = RootChange.create(
+      document,
+      leaves.slice(1).map((_, index) => {
+        const boundary = document.nodeRange([0, index]).to;
+
+        return { from: boundary - 1, to: boundary + 1 };
+      })
+    );
+    const applied = change.apply(document);
+
+    assert.deepEqual(
+      applied.value,
+      applyByTokenReference(change, document).value
+    );
+    assert.deepEqual(getRootChangeApplyStats(change)?.ancestorPaths, [[0]]);
+  });
+
   it('maps structural node keys lazily without changing snapshot queries', () => {
     const owner = {} as Editor;
     const before = DocumentIndex.fromValue(

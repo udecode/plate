@@ -53,10 +53,10 @@ describe('authored local history', () => {
 
     assert.notDeepEqual(after, before);
     assert.equal(view.read.history().undos.length, 1);
-    const undo = await view.api.history.undo();
+    const undo = view.api.history.undo();
     assert.equal(undo.status, 'applied');
     assert.deepEqual(view.read.children(), before);
-    const redo = await view.api.history.redo();
+    const redo = view.api.history.redo();
     assert.equal(redo.status, 'applied');
     assert.deepEqual(view.read.children(), after);
   });
@@ -84,12 +84,12 @@ describe('authored local history', () => {
     });
 
     for (let step = 0; step < 3; step++) {
-      const result = await editor.api.history.undo();
+      const result = editor.api.history.undo();
       assert.equal(result.status, 'applied');
     }
     assert.deepEqual(editor.read.children(), [paragraph('Base')]);
     for (let step = 0; step < 3; step++) {
-      const result = await editor.api.history.redo();
+      const result = editor.api.history.redo();
       assert.equal(result.status, 'applied');
     }
     assert.deepEqual(editor.read.children(), [paragraph('Base draft!')]);
@@ -235,7 +235,7 @@ describe('authored local history', () => {
     authorId = 'alice';
     const before = editor.read.value();
     const batches = editor.read.history().undos.length;
-    const result = await editor.api.history.undo();
+    const result = editor.api.history.undo();
 
     assert.deepEqual(result, { status: 'blocked', conflicts: [b] });
     assert.equal(
@@ -347,9 +347,9 @@ describe('authored local history', () => {
         }).status,
         'applied'
       );
-      assert.deepEqual(await view.api.history.undo(), { status: 'applied' });
+      assert.deepEqual(view.api.history.undo(), { status: 'applied' });
       assert.equal(view.read.authored.change(id)?.status, 'pending');
-      assert.deepEqual(await view.api.history.redo(), { status: 'applied' });
+      assert.deepEqual(view.api.history.redo(), { status: 'applied' });
       assert.equal(
         view.read.authored.change(id)?.status,
         action === 'accept' ? 'accepted' : 'rejected'
@@ -500,11 +500,11 @@ describe('authored local history', () => {
     assert.equal(editor.read.authored.change(id)?.status, 'rejected');
     assert.equal(editor.read.history().undos.length, beforeActionDepth + 1);
 
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     assert.deepEqual(editor.read.children(), [paragraph('Base')]);
     assert.equal(editor.read.authored.change(id)?.status, 'pending');
 
-    assert.deepEqual(await editor.api.history.redo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.redo(), { status: 'applied' });
     assert.deepEqual(editor.read.children(), [paragraph('Base final')]);
     assert.deepEqual(editor.read.selection(), {
       anchor: at(10),
@@ -552,14 +552,14 @@ describe('authored local history', () => {
     assert.equal(editor.read.authored.change(id)?.status, 'rejected');
     assert.equal(editor.read.history().undos.length, beforeActionDepth + 1);
 
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     assert.deepEqual(editor.read.children(), [
       paragraph('Base'),
       paragraph('Tail'),
     ]);
     assert.equal(editor.read.authored.change(id)?.status, 'pending');
 
-    assert.deepEqual(await editor.api.history.redo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.redo(), { status: 'applied' });
     assert.deepEqual(editor.read.children(), [
       paragraph('Final'),
       paragraph('Tail'),
@@ -681,7 +681,7 @@ describe('authored local history', () => {
     });
     authorId = 'alice';
     const before = editor.read.value();
-    const result = await editor.api.history.undo();
+    const result = editor.api.history.undo();
 
     assert.equal(result.status, 'blocked');
     assert.equal(

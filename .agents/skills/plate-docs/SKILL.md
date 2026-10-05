@@ -26,13 +26,6 @@ unrelated docs mechanics.
 Read the target page, its nearest useful sibling, and the source that owns each
 changed claim. Start from the current source and public exports. Docs describe
 the current API; unresolved API design belongs to Best API before teaching it.
-Plate application examples import from `platejs`, `platejs/react` or the actual
-feature subpath. Public docs teach Plate as one editor API; its internal runtime
-is not a second learning path. Plite is named only in the Performance comparison
-and From Plite to Plate guide, including that guide's translation. Keep runtime
-contributor references outside `content/docs`. This boundary covers navigation,
-search, LLM output, examples and installable docs as well as visible prose.
-
 ## House style: shadcn
 
 This house style takes precedence over the generic presentation defaults of
@@ -54,10 +47,6 @@ behavior, imports, requirements and examples.
   Preserve established headings and anchors across comparable pages.
 - Explain a non-obvious choice briefly. Runtime concepts can need more context
   than a UI component; density must not hide ownership or lifecycle behavior.
-- Use direct verbs and short paragraphs. Omit sales copy, repeated summaries
-  and compulsory "Done" or "That's it" endings. Let the last useful fact end
-  the section.
-
 For a substantial style or page-shape decision, compare the nearest Plate
 sibling with a relevant page in `../shadcn/apps/v4/content/docs/`. Component
 examples include `components/base/button.mdx`, `chart.mdx` and `sidebar.mdx`;
@@ -117,9 +106,6 @@ setup in the feature page, and cross-package explanations in a concept guide.
 Merge duplicated concepts and link to one owner. Read `content/docs/meta.json`
 only when adding, moving, merging or deleting routes or changing navigation.
 
-Keep one plan under `docs/plans/` when the job needs durable state; it records
-the selected claims and proof. A page edit needs no plan.
-
 ## Verify the changed claims
 
 | Change | Required evidence |
@@ -134,7 +120,3 @@ the selected claims and proof. A page edit needs no plan.
 Run applicable checks once after the final prose pass. New source changes or a
 failure can require another pass. An MDX parse does not prove a route, runtime
 API behavior or browser input. Report the exact proof limit.
-
-Public reference teaches the latest state without changelog or migration
-narration. Release data and an explicitly requested migration guide retain
-their own jobs. General writing rules stay in `pstack:technical-writing`.

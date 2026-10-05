@@ -426,6 +426,7 @@ function FootnoteComboboxContent() {
                 focusDefinition: false,
                 ...(numericQuery ? { ref: numericQuery } : {}),
               });
+              return undefined;
             }}
           >
             <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">

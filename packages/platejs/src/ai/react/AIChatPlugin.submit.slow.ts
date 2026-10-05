@@ -122,7 +122,7 @@ describe('AIChatPlugin submit', () => {
       });
       ai.api.submit('edit');
       ai.api.setPreview('NEW');
-      const before = editor.read.value();
+      const before = editor.read.children();
       const historyDepth = editor.read.history().undos.length;
 
       ai.api[action]();
@@ -134,7 +134,7 @@ describe('AIChatPlugin submit', () => {
       ).toEqual(action === 'insertBelow' ? ['one', 'two', 'NEW'] : ['oNEWo']);
       expect(editor.read.history().undos).toHaveLength(historyDepth + 1);
       editor.api.history.undo();
-      expect(editor.read.value()).toEqual(before);
+      expect(editor.read.children()).toEqual(before);
     }
   );
 

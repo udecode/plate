@@ -49,18 +49,16 @@ const ConfiguredAIChatPlugin = AIChatPlugin.configure({
 
 void ConfiguredAIChatPlugin;
 
-declare const customTransport: ChatTransport<
-  UIMessage<unknown, { custom: { message: string } }>
->;
-
 function CustomAIView({
   editableRef,
+  transport,
 }: {
   editableRef: React.RefObject<HTMLElement | null>;
+  transport: ChatTransport<UIMessage<unknown, { custom: { message: string } }>>;
 }) {
   useAIChat({
     editableRef,
-    transport: customTransport,
+    transport,
     onData: (part, signal) => {
       const data: unknown = part.data;
       const requestSignal: AbortSignal = signal;

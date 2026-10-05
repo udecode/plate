@@ -1,0 +1,6 @@
+# git grep -n -E '(void|await) [^;]*history\.(undo|redo)\(' -- packages apps benchmarks content docs/plite
+# exit-of-grep(1=no match): 1
+# git grep -n -E '(void|await) [^;]*historyPortal\.api\.(undo|redo)\(' -- packages apps benchmarks content docs/plite
+# exit-of-grep(1=no match): 1
+# control: same pattern matches the plan's before fence
+docs/plans/2026-10-05-history-sync-replay-result.md:2

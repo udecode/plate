@@ -460,7 +460,7 @@ const readBuildId = (page: Page) =>
       )
     );
 
-    return ids.size === 1 ? [...ids][0]! : null;
+    return ids.size === 1 ? [...ids][0] : null;
   });
 
 const outputHTML = (page: Page, composition: Composition) =>

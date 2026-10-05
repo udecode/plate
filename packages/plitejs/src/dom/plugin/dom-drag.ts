@@ -15,7 +15,11 @@ import {
 } from '../../core/transfer';
 import type { TransferCheck, TransferEdge } from '../../core/transfer-types';
 import { type AnyEditor, isBlock } from '../../interfaces/editor';
-import { type DragSession, beginDragSession, readDragSession } from '../utils/drag-session';
+import {
+  type DragSession,
+  beginDragSession,
+  readDragSession,
+} from '../utils/drag-session';
 import { publishDropIndicator } from '../utils/drop-indicator';
 import { usesAppleDOMHotkeys } from '../utils/environment';
 import { writeDOMSelectionData } from './dom-clipboard-runtime';
@@ -187,7 +191,7 @@ const boundariesAt = (
   first: number,
   last: number
 ) =>
-  findEditorDOMRootRuntime(editor as never)?.domCoverage.getBoundariesForRange({
+  findEditorDOMRootRuntime(editor)?.domCoverage.getBoundariesForRange({
     anchor: { offset: 0, path: [...parent, Math.max(first, 0)] },
     focus: { offset: 0, path: [...parent, last] },
   }) ?? [];
@@ -201,7 +205,7 @@ const unmountedRangeAt = (
   index: number
 ): readonly [number, number] | null => {
   const boundary = findEditorDOMRootRuntime(
-    editor as never
+    editor
   )?.domCoverage.getBoundaryForPoint({ offset: 0, path: [...path, index] });
 
   for (const { anchor, focus } of boundary?.coveredPathRanges ?? []) {
@@ -482,8 +486,12 @@ export const copyIntentOf = (input: DOMDropTargetInput) =>
   !!(usesAppleDOMHotkeys(input) ? input.altKey : input.ctrlKey);
 
 /** Block-drag copy intent: session flag or the platform copy modifier. */
-export const blockCopyIntent = (session: DragSession, input: DOMDropTargetInput) =>
-  session.copyOnly || !!(usesAppleDOMHotkeys(input) ? input.altKey : input.ctrlKey);
+export const blockCopyIntent = (
+  session: DragSession,
+  input: DOMDropTargetInput
+) =>
+  session.copyOnly ||
+  !!(usesAppleDOMHotkeys(input) ? input.altKey : input.ctrlKey);
 
 export const resolveDOMDropTarget = (
   editor: AnyEditor,
@@ -786,7 +794,7 @@ export const startDOMDrag = (
 
   if (!copyOnly) {
     editor.update.selection.setNodes(entries);
-    writeDOMSelectionData(editor as never, dataTransfer);
+    writeDOMSelectionData(editor, dataTransfer);
   }
 
   const previews = hosts.map(previewOf);

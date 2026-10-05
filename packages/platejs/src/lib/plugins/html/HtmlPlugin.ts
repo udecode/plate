@@ -21,7 +21,6 @@ import {
   type InternalEditorSchemaApi,
   type Path,
   type PropertyValueDescriptor,
-  type RootKey,
   type SchemaProperty,
   type SchemaTarget,
   type Text,
@@ -1749,7 +1748,7 @@ const htmlTreeLocation = (
 
     if (!parent) break;
     path.unshift(Array.prototype.indexOf.call(parent.childNodes, current));
-    current = parent as Node;
+    current = parent;
   }
 
   return Object.freeze({
@@ -3606,7 +3605,7 @@ const schemaDiagnostic = (
     model: Object.freeze({
       path: schema.path,
       ...(schema.property ? { property: schema.property.key } : {}),
-      ...(schema.root === null ? {} : { root: schema.root as RootKey }),
+      ...(schema.root === null ? {} : { root: schema.root }),
     }),
     schema,
     severity: 'error' as const,

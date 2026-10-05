@@ -153,7 +153,7 @@ const createMarkdownDocument = (
       return;
     }
     flushInline();
-    output.push(node as Element);
+    output.push(node);
   });
   flushInline();
 

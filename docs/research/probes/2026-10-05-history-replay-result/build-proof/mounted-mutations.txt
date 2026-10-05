@@ -1,0 +1,12 @@
+# mutation A: ignore the claim version (version + 1)
+1
+   × repairs focus after a replay whose owner settles in the call 16ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 29 skipped (30)
+# mutation B: drop the version check
+1
+   × skips focus repair when a claim subscriber publishes before settlement 18ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 29 skipped (30)
+# restored
+identical

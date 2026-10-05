@@ -1,7 +1,5 @@
 # Agent Browser Issue
 
-Handle $ARGUMENTS.
-
 Use this only for likely reusable agent/browser tooling bugs. Do not use it for:
 
 - auth or SSO gates

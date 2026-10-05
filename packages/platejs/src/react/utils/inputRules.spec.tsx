@@ -161,6 +161,7 @@ describe('input rules', () => {
                     applyCounts[index] += 1;
 
                     if (continueInsertion) return next('continued');
+                    return undefined;
                   },
                   resolve: () => {
                     resolveCounts[index] += 1;
@@ -409,9 +410,9 @@ describe('input rules', () => {
     insertText(editor, '*');
 
     expect(editorString(editor, [])).toBe('a!continued');
-    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editorString(editor, [])).toBe('a');
-    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+    expect(editor.api.history.undo()).toEqual({ status: 'empty' });
   });
 
   it('composes insertBreak prefix and continuation into one history entry', async () => {
@@ -441,11 +442,11 @@ describe('input rules', () => {
       { children: [{ text: 'a!' }], type: 'paragraph' },
       { children: [{ text: '' }], type: 'paragraph' },
     ]);
-    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'a' }], type: 'paragraph' },
     ]);
-    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+    expect(editor.api.history.undo()).toEqual({ status: 'empty' });
   });
 
   it('composes insertData prefix and replacement continuation into one history entry', async () => {
@@ -475,9 +476,9 @@ describe('input rules', () => {
     });
 
     expect(editorString(editor, [])).toBe('a!replacement');
-    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editorString(editor, [])).toBe('a');
-    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+    expect(editor.api.history.undo()).toEqual({ status: 'empty' });
   });
 
   it.each([
@@ -531,7 +532,7 @@ describe('input rules', () => {
 
     expect(() => run(editor)).toThrow('failed');
     expect(editorString(editor, [])).toBe('a');
-    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+    expect(editor.api.history.undo()).toEqual({ status: 'empty' });
   });
 
   it('skips rules whose enabled predicate returns false', () => {
@@ -1028,11 +1029,11 @@ describe('input rules', () => {
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
-    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual([
       { children: [{ text: '@' }], type: 'paragraph' },
     ]);
-    expect(await editor.api.history.undo()).toEqual({ status: 'empty' });
+    expect(editor.api.history.undo()).toEqual({ status: 'empty' });
   });
 
   it.each([

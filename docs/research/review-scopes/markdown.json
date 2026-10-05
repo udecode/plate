@@ -144,7 +144,6 @@
     "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
     "packages/plitejs/src/react/external-text.ts",
     "content/docs/(plugins)/(serializing)/markdown.mdx",
-    ".agents/rules/best-api/rules/behavior-and-ownership.md",
     "config/plite-source-aliases.ts"
   ],
   "relatedScopes": [

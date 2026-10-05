@@ -67,10 +67,10 @@ describe('SuggestionKit', () => {
       plugins: SuggestionKit,
     });
 
-    editor.plugin(SuggestionPlugin).api.setMode('suggesting');
-    expect(() => editor.update.text.insert(' lost')).toThrow(
-      'author ID is required'
-    );
+    expect(() =>
+      editor.plugin(SuggestionPlugin).api.setMode('suggesting')
+    ).toThrow('An author ID is required for proposal mode.');
+    expect(editor.plugin(SuggestionPlugin).read.mode()).toBe('editing');
     expect(editor.read.children()).toEqual(value);
   });
 });

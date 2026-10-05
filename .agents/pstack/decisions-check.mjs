@@ -79,10 +79,12 @@ function rowProblems(line, where, opened) {
   if (rest[0] === 'panel' && !SEATS.test(rest[1])) {
     if (!SEVERITIES.includes(rest[1].split(/\s/u)[0])) found.push(`${where}: a panel row's decision starts with "seats" or a severity: critical, warning or nit`);
     else if (!opened) found.push(`${where}: a panel finding needs a "seats" row before it`);
-    if (!/^(applied|dismissed|deferred)\b\W+\w/u.test(rest[4])) found.push(`${where}: a panel finding's result starts with "applied", "dismissed" or "deferred" and gives the reason`);
+    if (!/^(applied|dismissed|deferred|open)\b\W+\w/u.test(rest[4])) found.push(`${where}: a panel finding's result starts with "applied", "dismissed", "deferred" or "open" and gives the reason`);
     else if (/^deferred\b/u.test(rest[4])) {
       if (rest[1].startsWith('critical')) found.push(`${where}: a critical panel finding is applied or dismissed, never deferred`);
       else if (!/\bowner:\s*\S/u.test(rest[4])) found.push(`${where}: a deferred panel finding names its owner:`);
+    } else if (/^open\b/u.test(rest[4]) && !(/\bpatch:\s*\S/u.test(rest[4]) && /\bowner:\s*\S/u.test(rest[4]))) {
+      found.push(`${where}: an open panel finding names its patch: and owner:`);
     }
   }
   return found;

@@ -64,42 +64,21 @@ assert.match(renderToStaticMarkup(<EditorStatic editor={editor} />), /Static sni
   });
 }
 
-test('Chinese Node.js example reads text, changes the heading, and appends a paragraph', () => {
-  runExample(
-    'content/docs/installation/node.cn.mdx',
-    'async function processDocument(',
-    `
+for (const [suffix, heading, body] of [
+  ['mdx', 'Title', 'Body'],
+  ['cn.mdx', '标题', '正文'],
+]) {
+  test(`Node.js ${suffix} Markdown example round-trips a heading and bold text`, () => {
+    runExample(
+      `content/docs/installation/node.${suffix}`,
+      'parseMarkdown(',
+      `
 import assert from 'node:assert/strict';
 
-const result = await processDocument([
-  { type: 'heading', level: 1, children: [{ text: 'Title' }] },
-  { type: 'paragraph', children: [{ text: 'Body' }] },
-]);
-
-assert.equal(result.transformedValue[0].level, 2);
-assert.equal(result.transformedValue.length, 3);
-assert.equal(result.transformedValue[2].children[0].text, '由Node.js脚本添加！');
-assert.equal(result.textContent, 'TitleBody');
+assert.equal(parsed.ok, true);
+assert.equal(output.ok, true);
+assert.equal(output.data.trim(), '# ${heading}\\n\\n**${body}**');
 `
-  );
-});
-
-test('English Node.js example updates headings and serializes the complete result', () => {
-  runExample(
-    'content/docs/installation/node.mdx',
-    'export function normalizeHeadings(',
-    `
-import assert from 'node:assert/strict';
-
-const result = normalizeHeadings([
-  { type: 'heading', level: 1, children: [{ text: 'Title' }] },
-  { type: 'paragraph', children: [{ text: 'Body' }] },
-]);
-
-assert.equal(result.value[0].level, 2);
-assert.equal(result.value.length, 3);
-assert.match(result.markdown, /^## Title/);
-assert.match(result.text, /Imported from the legacy CMS/);
-`
-  );
-});
+    );
+  });
+}

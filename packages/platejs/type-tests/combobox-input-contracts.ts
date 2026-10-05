@@ -21,6 +21,7 @@ export function MentionComboboxContract() {
   const refused: boolean = box.complete(box.match, (tx) => {
     if (!tx.selection()) return false;
     tx.plugin(BaseBlockquotePlugin).insert({}, { replaceEmpty: true });
+    return undefined;
   });
 
   // @ts-expect-error A completion runs inside one synchronous transaction.

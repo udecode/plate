@@ -1854,6 +1854,7 @@ export const BulletedListRules = {
       apply: ({ decline, tx }, match) => {
         tx.text.delete({ at: match.range });
         if (!tx.list.toggle({ type: ListType.Bulleted })) return decline();
+        return undefined;
       },
     }),
 };
@@ -1886,6 +1887,7 @@ export const OrderedListRules = {
         ) {
           return decline();
         }
+        return undefined;
       },
     }),
 };
@@ -1907,6 +1909,7 @@ export const TaskListRules = {
         tx.text.delete({ at: match.range });
         if (!tx.list.toggle({ type: ListType.Task })) return decline();
         tx.nodes.set({ checked, listType: ListType.Task });
+        return undefined;
       },
     }),
 };

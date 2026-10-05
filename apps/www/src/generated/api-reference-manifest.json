@@ -940,7 +940,7 @@
           "name": "BlockFenceInputRuleConfig",
           "route": null,
           "runtime": false,
-          "signature": "type BlockFenceInputRuleConfig<TMatch = BlockFenceInputRuleMatch> = BaseInputRule<SelectionInputRuleContext> & MatchBlockFenceOptions<TMatch> & {\n  apply: (context: BlockFenceApplyContext, match: TMatch) => InputRuleDecline | undefined;\n  on: 'break' | 'match';\n};",
+          "signature": "type BlockFenceInputRuleConfig<TMatch = BlockFenceInputRuleMatch> = BaseInputRule & MatchBlockFenceOptions<TMatch> & {\n  apply: (context: BlockFenceApplyContext, match: TMatch) => InputRuleDecline | undefined;\n  on: 'break' | 'match';\n};",
           "source": null,
           "typeParameters": [
             "TMatch = BlockFenceInputRuleMatch"
@@ -12495,7 +12495,7 @@
           "name": "defineDocumentMigrations",
           "route": "/docs/api/core#definedocumentmigrations",
           "runtime": true,
-          "signature": "defineDocumentMigrations: <const TPlugins extends readonly PluginReference[], const TSchema extends NamedEditorApplicationSchema, const TSteps extends DocumentMigrationSteps>(options: Readonly<{\n  plugins: TPlugins;\n  schema: TSchema;\n  sourceFingerprints?: Readonly<Record<number, string>>;\n  steps: TSteps;\n}> & MigrationContinuity<TSteps>) => DocumentMigrations<TSteps, TSchema['id'], TSchema['version']>",
+          "signature": "defineDocumentMigrations: <const TPlugins extends readonly PluginReference[], const TSchema extends NamedEditorApplicationSchema, const TSteps extends DocumentMigrationSteps>(options: Readonly<{\n  plugins: TPlugins;\n  schema: TSchema;\n  sourceFingerprints?: Readonly<Record<number, string>>;\n  steps: TSteps;\n}> & MigrationClosure<TSteps> & MigrationContinuity<TSteps>) => DocumentMigrations<TSteps, TSchema['id'], TSchema['version']>",
           "source": null,
           "typeParameters": []
         },

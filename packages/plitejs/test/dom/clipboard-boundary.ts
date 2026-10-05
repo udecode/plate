@@ -12,13 +12,14 @@ import {
   NodeApi as PliteNode,
   property,
   type Range,
+  type Value,
   schema,
   target,
   SelectionApi,
   type Element as EditorElement,
   ElementApi,
 } from 'plitejs';
-import { history } from 'plitejs/history';
+import { type HistoryPlugin, history } from 'plitejs/history';
 
 import {
   dom,
@@ -210,8 +211,8 @@ const nestedInlinePastePlugin = definePlugin('nested-inline-paste', {
   },
 });
 
-const getHistory = (editor: Editor) =>
-  editor.read((state: any) => state.history());
+const getHistory = (editor: Editor<Value, readonly [HistoryPlugin]>) =>
+  editor.read((state) => state.history());
 
 const undo = (editor: Editor) => {
   editor.api.history.undo();

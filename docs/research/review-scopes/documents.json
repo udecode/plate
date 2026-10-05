@@ -132,8 +132,7 @@
     "benchmarks/editor/benchmarks/plate-docx-retained-source-benchmark.test.ts",
     "benchmarks/editor/benchmarks/results/plate-docx-retained-source-latest.json",
     "docs/plans/2026-09-15-docx-retained-source-preservation.md",
-    ".agents/rules/best-api.mdc",
-    ".agents/rules/plate-next/versions.json"
+    ".agents/rules/best-api.mdc"
   ],
   "relatedScopes": [
     "clipboard",

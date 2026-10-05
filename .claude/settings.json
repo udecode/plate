@@ -24,7 +24,7 @@
       "source": {
         "source": "github",
         "repo": "michael-denyer/pstack-claude",
-        "ref": "v0.9.64"
+        "ref": "v0.9.67"
       }
     }
   }

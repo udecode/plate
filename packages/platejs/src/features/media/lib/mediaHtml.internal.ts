@@ -59,7 +59,7 @@ export const readHtmlMediaProvider = (
     report({
       action: 'dropped',
       kind: 'attribute',
-      message: `HTML media source page "${sourceUrl}" is not a link this editor stores; it was omitted.`,
+      message: `HTML media source page "${String(sourceUrl)}" is not a link this editor stores; it was omitted.`,
     });
   }
 

@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { isEditor } from '../../src/editor/is-editor';
 import { createHyperscript, jsx as pliteJsx } from '../../src/hyperscript';
 
 type FixtureModule = {
@@ -11,14 +12,12 @@ type FixtureModule = {
 };
 
 const readFixtureField = (value: Record<string, unknown>, key: string) => {
-  if (key === 'children' && typeof value.read === 'function') {
-    return value.read((state: { children: () => unknown }) => state.children());
+  if (key === 'children' && isEditor(value)) {
+    return value.read((state) => state.children());
   }
 
-  if (key === 'selection' && typeof value.read === 'function') {
-    return value.read((state: { selection: () => unknown }) =>
-      state.selection()
-    );
+  if (key === 'selection' && isEditor(value)) {
+    return value.read((state) => state.selection());
   }
 
   if (key === 'children' && typeof value.getChildren === 'function') {

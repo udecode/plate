@@ -414,7 +414,7 @@ test('public Stop flushes the buffered final text before accepting the partial d
     });
     act(() => editor.plugin(AIChatPlugin).api.stop());
     expect(draft(editor)).toContain('AB');
-    act(() => editor.plugin(AIChatPlugin).api.accept());
+    void act(() => editor.plugin(AIChatPlugin).api.accept());
     expect(value(editor)).toContain('AB');
   } finally {
     view.unmount();

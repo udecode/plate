@@ -1138,49 +1138,100 @@ export const applyModelOwnedTextInput = ({
   mergeHistory?: boolean;
   selection?: Range | Selection;
 }): EditableRepairRequest =>
-  withTypedTextIntent(
-    editor,
-    inputController,
-    {
-      at:
-        selection &&
-        RangeApi.isRange(selection) &&
-        RangeApi.isCollapsed(selection)
-          ? selection.focus
-          : undefined,
-      inputType,
-      text: data,
-    },
-    () =>
-  withUpdateTagContext(
-    getEditorRuntimeOwner(editor),
-    ['dom-text-input'],
-    () => {
-      const nativeInput = inputController
-        ? getEditableNativeGroupingInput(inputController, mergeHistory)
-        : undefined;
+  withTypedTextIntent(editor, inputController, { inputType, text: data }, () =>
+    withUpdateTagContext(
+      getEditorRuntimeOwner(editor),
+      ['dom-text-input'],
+      () => {
+        const nativeInput = inputController
+          ? getEditableNativeGroupingInput(inputController, mergeHistory)
+          : undefined;
 
-      if (
-        applyRetainedViewSelectionCommand(
-          editor,
-          { kind: 'insert-text', text: data },
-          mergeHistory ? ['composition'] : undefined,
-          nativeInput
-        )
-      ) {
-        return { kind: 'sync-selection', syncDOMSelection: true };
-      }
-      if (SelectionApi.isNode(selection)) {
-        editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
-          if (nativeInput) {
-            tx.annotations.set(nativeGroupingInput, nativeInput);
+        if (
+          applyRetainedViewSelectionCommand(
+            editor,
+            { kind: 'insert-text', text: data },
+            mergeHistory ? ['composition'] : undefined,
+            nativeInput
+          )
+        ) {
+          return { kind: 'sync-selection', syncDOMSelection: true };
+        }
+        if (SelectionApi.isNode(selection)) {
+          editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
+            if (nativeInput) {
+              tx.annotations.set(nativeGroupingInput, nativeInput);
+            }
+            tx.selection.set(selection);
+            tx.command(editorCommands.insertText, { text: data });
+          });
+
+          return inputType === 'insertText'
+            ? {
+                forceRender: ReactEditor.isComposing(
+                  editor as ReactRuntimeEditor
+                ),
+                kind: 'repair-caret-after-text-insert',
+                selectionSourceTransition: {
+                  preferModelSelection: true,
+                  reason: 'model-command',
+                  selectionSource: 'model-owned',
+                },
+              }
+            : { kind: 'none' };
+        }
+
+        const insertAtSelection = (target: Range) => {
+          if (RangeApi.isCollapsed(target)) {
+            editor.update(
+              mergeHistory ? { tags: ['composition'] } : {},
+              (tx) => {
+                if (nativeInput) {
+                  tx.annotations.set(nativeGroupingInput, nativeInput);
+                }
+                tx.selection.set(target);
+                tx.command(editorCommands.insertText, {
+                  options: { at: target },
+                  text: data,
+                });
+              }
+            );
+            return;
           }
-          tx.selection.set(selection);
-          tx.command(editorCommands.insertText, { text: data });
-        });
 
-        return inputType === 'insertText'
-          ? {
+          if (nativeInput) {
+            editor.update(
+              mergeHistory ? { tags: ['composition'] } : {},
+              (tx) => {
+                tx.annotations.set(nativeGroupingInput, nativeInput);
+                tx.command(editorCommands.insertText, {
+                  options: { at: target },
+                  text: data,
+                });
+              }
+            );
+            return;
+          }
+
+          dispatchCommand(editor, editorCommands.insertText, {
+            options: { at: target },
+            text: data,
+          });
+        };
+        const hasExplicitTargetSelection =
+          !!selection &&
+          (RangeApi.isExpanded(selection) || inputType !== 'insertText');
+
+        if (
+          !hasExplicitTargetSelection &&
+          applyProjectedViewSelectionTextCommand({
+            editor,
+            nativeInput,
+            text: data,
+          })
+        ) {
+          if (inputType === 'insertText') {
+            return {
               forceRender: ReactEditor.isComposing(
                 editor as ReactRuntimeEditor
               ),
@@ -1190,53 +1241,52 @@ export const applyModelOwnedTextInput = ({
                 reason: 'model-command',
                 selectionSource: 'model-owned',
               },
-            }
-          : { kind: 'none' };
-      }
+            };
+          }
 
-      const insertAtSelection = (target: Range) => {
-        if (RangeApi.isCollapsed(target)) {
-          editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
-            if (nativeInput) {
-              tx.annotations.set(nativeGroupingInput, nativeInput);
-            }
-            tx.selection.set(target);
-            tx.command(editorCommands.insertText, {
-              options: { at: target },
-              text: data,
-            });
-          });
-          return;
+          return { kind: 'none' };
         }
 
-        if (nativeInput) {
-          editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
-            tx.annotations.set(nativeGroupingInput, nativeInput);
-            tx.command(editorCommands.insertText, {
-              options: { at: target },
-              text: data,
-            });
+        const canUseSyncedCollapsedTarget =
+          inputType === 'insertText' &&
+          selection &&
+          RangeApi.isCollapsed(selection) &&
+          canUseCachedCollapsedTextInsert({ editor, selection });
+
+        if (canUseSyncedCollapsedTarget) {
+          profilePliteReactDuration(
+            'model-text-input-insert-at-selection',
+            () => insertAtSelection(selection)
+          );
+        } else if (
+          selection &&
+          (RangeApi.isExpanded(selection) || inputType !== 'insertText')
+        ) {
+          writePliteViewSelection(editor, null);
+          profilePliteReactDuration(
+            'model-text-input-insert-at-target-selection',
+            () => insertAtSelection(selection)
+          );
+        } else {
+          profilePliteReactDuration('model-text-input-apply-command', () => {
+            if (!nativeInput) {
+              applyEditableCommand({
+                command: { inputType, kind: 'insert-text', text: data },
+                editor,
+              });
+              return;
+            }
+
+            editor.update(
+              mergeHistory ? { tags: ['composition'] } : {},
+              (tx) => {
+                tx.annotations.set(nativeGroupingInput, nativeInput);
+                tx.command(editorCommands.insertText, { text: data });
+              }
+            );
           });
-          return;
         }
 
-        dispatchCommand(editor, editorCommands.insertText, {
-          options: { at: target },
-          text: data,
-        });
-      };
-      const hasExplicitTargetSelection =
-        !!selection &&
-        (RangeApi.isExpanded(selection) || inputType !== 'insertText');
-
-      if (
-        !hasExplicitTargetSelection &&
-        applyProjectedViewSelectionTextCommand({
-          editor,
-          nativeInput,
-          text: data,
-        })
-      ) {
         if (inputType === 'insertText') {
           return {
             forceRender: ReactEditor.isComposing(editor as ReactRuntimeEditor),
@@ -1251,58 +1301,7 @@ export const applyModelOwnedTextInput = ({
 
         return { kind: 'none' };
       }
-
-      const canUseSyncedCollapsedTarget =
-        inputType === 'insertText' &&
-        selection &&
-        RangeApi.isCollapsed(selection) &&
-        canUseCachedCollapsedTextInsert({ editor, selection });
-
-      if (canUseSyncedCollapsedTarget) {
-        profilePliteReactDuration('model-text-input-insert-at-selection', () =>
-          insertAtSelection(selection)
-        );
-      } else if (
-        selection &&
-        (RangeApi.isExpanded(selection) || inputType !== 'insertText')
-      ) {
-        writePliteViewSelection(editor, null);
-        profilePliteReactDuration(
-          'model-text-input-insert-at-target-selection',
-          () => insertAtSelection(selection)
-        );
-      } else {
-        profilePliteReactDuration('model-text-input-apply-command', () => {
-          if (!nativeInput) {
-            applyEditableCommand({
-              command: { inputType, kind: 'insert-text', text: data },
-              editor,
-            });
-            return;
-          }
-
-          editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
-            tx.annotations.set(nativeGroupingInput, nativeInput);
-            tx.command(editorCommands.insertText, { text: data });
-          });
-        });
-      }
-
-      if (inputType === 'insertText') {
-        return {
-          forceRender: ReactEditor.isComposing(editor as ReactRuntimeEditor),
-          kind: 'repair-caret-after-text-insert',
-          selectionSourceTransition: {
-            preferModelSelection: true,
-            reason: 'model-command',
-            selectionSource: 'model-owned',
-          },
-        };
-      }
-
-      return { kind: 'none' };
-    }
-  )
+    )
   );
 
 export const applyEditableRepairRequest = ({

@@ -29,7 +29,6 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "summary",
           "table",
           "toc",
           "upload",
@@ -67,7 +66,6 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "summary",
           "table",
           "toc",
           "upload",
@@ -139,7 +137,6 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "summary",
           "table",
           "toc",
           "upload",
@@ -239,7 +236,6 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "summary",
           "table",
           "toc",
           "upload",
@@ -287,7 +283,6 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "summary",
           "table",
           "toc",
           "upload",
@@ -529,12 +524,7 @@
       [
         "summary",
         [
-          "element:blockquote",
-          "element:column",
-          "element:details",
-          "element:footnoteDefinition",
-          "element:tableCell",
-          "root"
+          "element:details"
         ]
       ],
       [
@@ -678,7 +668,6 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "summary",
             "table",
             "toc",
             "upload",
@@ -867,7 +856,6 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "summary",
             "table",
             "toc",
             "upload",
@@ -1195,7 +1183,6 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "summary",
             "table",
             "toc",
             "upload",
@@ -1753,7 +1740,6 @@
           "all",
           "block",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [],
@@ -1840,7 +1826,6 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "summary",
             "table",
             "toc",
             "upload",
@@ -2114,7 +2099,6 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "summary",
             "table",
             "toc",
             "upload",
@@ -2180,7 +2164,6 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "summary",
             "table",
             "toc",
             "upload",
@@ -2309,7 +2292,6 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "summary",
             "table",
             "toc",
             "upload",
@@ -2519,7 +2501,6 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "summary",
             "table",
             "toc",
             "upload",
@@ -2614,7 +2595,6 @@
             "image",
             "mediaEmbed",
             "paragraph",
-            "summary",
             "table",
             "toc",
             "upload",
@@ -2929,7 +2909,6 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "summary",
           "table",
           "toc",
           "upload",
@@ -3043,10 +3022,6 @@
         []
       ],
       [
-        "element:blockquote\u0000summary",
-        []
-      ],
-      [
         "element:blockquote\u0000table",
         []
       ],
@@ -3148,10 +3123,6 @@
       ],
       [
         "element:column\u0000paragraph",
-        []
-      ],
-      [
-        "element:column\u0000summary",
         []
       ],
       [
@@ -3332,10 +3303,6 @@
       ],
       [
         "element:footnoteDefinition\u0000paragraph",
-        []
-      ],
-      [
-        "element:footnoteDefinition\u0000summary",
         []
       ],
       [
@@ -3551,10 +3518,6 @@
         []
       ],
       [
-        "element:tableCell\u0000summary",
-        []
-      ],
-      [
         "element:tableCell\u0000table",
         []
       ],
@@ -3667,10 +3630,6 @@
         []
       ],
       [
-        "root\u0000summary",
-        []
-      ],
-      [
         "root\u0000table",
         []
       ],
@@ -3688,10 +3647,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:8dbd436867ec3264",
+  "fingerprint": "fnv1a64:5c6b05e09589cb4f",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:8dbd436867ec3264",
+    "fingerprint": "fnv1a64:5c6b05e09589cb4f",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -3711,7 +3670,6 @@
         "image",
         "mediaEmbed",
         "paragraph",
-        "summary",
         "table",
         "toc",
         "upload",

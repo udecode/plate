@@ -1352,7 +1352,7 @@ const registerPluginSlots = <TEditor extends Editor>(
       );
     }
     const readContext: PluginReadContext<TEditor> = Object.freeze({
-      around: (read, handler) => createReadRegistration(read, handler as never),
+      around: (read, handler) => createReadRegistration(read, handler),
     });
 
     for (const registration of slots.readMiddleware?.(readContext) ?? []) {

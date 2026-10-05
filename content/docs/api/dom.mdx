@@ -67,8 +67,8 @@ the input, `typed.range` the inserted text in the model, ending at the caret,
 and `typed.text` that text. Returns the unsubscribe function.
 
 Paste, drop, yank, replacement text, history replay, remote edits and typing
-over a selection report nothing, and so does a commit that an earlier commit
-listener edits before the report. Android keyboards that paste through
+over a selection report nothing, and so does a commit whose document an
+earlier commit listener changes before the report. Android keyboards that paste through
 `insertText` report the pasted text. When an Android keyboard sends typed and
 pasted text for the same text node before one `input` event, that input reports
 nothing.

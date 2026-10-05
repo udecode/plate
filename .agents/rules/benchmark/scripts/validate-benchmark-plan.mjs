@@ -53,12 +53,7 @@ const ARCHITECTURAL_FIX_CLASSES = new Set([
   'public-api',
   'runtime-architecture',
 ]);
-const LAYER_PLANS = new Set([
-  'plate-plan',
-  'plate-plan + plite-plan',
-  'plite-plan',
-  'plite-plan + plate-plan',
-]);
+const LAYER_PLANS = new Set(['plate', 'plate + plite', 'plite', 'plite + plate']);
 const CAUSE_HISTORY_DECISIONS = new Set([
   'deferred',
   'invalidated',
@@ -143,7 +138,7 @@ const validateFixDecision = (decision, label, errors) => {
     }
     if (!LAYER_PLANS.has(decision.layerPlan?.toLowerCase())) {
       errors.push(
-        `${label} ${fixClass} requires layer-plan plite-plan, plate-plan, or both`
+        `${label} ${fixClass} requires layer-plan plite, plate, or both`
       );
     }
     if (

@@ -225,6 +225,7 @@
       "dependsOn": [
         "platejs#typecheck:partition:root",
         "platejs#typecheck:partition:testing",
+        "typecheck:partition:device",
         "typecheck:partition:playwright",
         "typecheck:partition:root"
       ],

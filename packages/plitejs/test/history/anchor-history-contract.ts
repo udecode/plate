@@ -972,7 +972,7 @@ describe('persistent anchor history contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     assert.deepEqual(anchor.resolve(), before);
     assert.equal(editor.read.text.string([]), 'abc');
   });

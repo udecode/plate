@@ -28,7 +28,7 @@ import {
   next,
   observe,
   orderUnits,
-  record,
+  recordDraft,
   recordsDir,
   scopesDir,
   searchResearch,
@@ -37,7 +37,7 @@ import {
 } from './review-ledger.mjs';
 
 const digest = (value) => createHash('sha256').update(value).digest('hex');
-const script = fileURLToPath(new URL('./review-ledger.mjs', import.meta.url));
+const script = fileURLToPath(new URL('review-ledger.mjs', import.meta.url));
 
 function scope(id, fields = {}) {
   return {
@@ -67,26 +67,33 @@ function fixture(t, scopes = [scope('comments'), scope('link')]) {
     );
   };
   const git = (...args) =>
-    execFileSync('git', ['-C', root, ...args], {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    execFileSync(
+      'git',
+      [
+        '-C',
+        root,
+        '-c',
+        'user.email=fixture@example.com',
+        '-c',
+        'user.name=fixture',
+        ...args,
+      ],
+      { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }
+    );
   const commit = () => {
     git('add', '-A');
-    git(
-      '-c',
-      'user.email=fixture@example.com',
-      '-c',
-      'user.name=fixture',
-      'commit',
-      '-qm',
-      'fixture'
-    );
+    git('commit', '-qm', 'fixture');
   };
   git('init', '-q');
   for (const item of scopes) {
-    put(`packages/core/src/${item.id}/index.ts`, `export const ${item.id} = 1;`);
-    put(`packages/core/src/${item.id}/${item.id}.spec.ts`, `test('${item.id}');`);
+    put(
+      `packages/core/src/${item.id}/index.ts`,
+      `export const ${item.id} = 1;`
+    );
+    put(
+      `packages/core/src/${item.id}/${item.id}.spec.ts`,
+      `test('${item.id}');`
+    );
     put(`${scopesDir}/${item.id}.json`, item);
   }
   put('docs/evidence.md', 'Observed behavior and alternatives.');
@@ -125,11 +132,11 @@ function recordReview(root, put, scopeId, fields = {}) {
   const { draft } = draftReview(root, scopeId);
   const value = completed(draft, fields);
   put(`drafts/${value.id}.json`, value);
-  return record(root, `drafts/${value.id}.json`);
+  return recordDraft(root, `drafts/${value.id}.json`);
 }
 
-function recordExecution(root, put, plan, fields = {}) {
-  const { draft } = draftExecution(root, plan);
+function recordExecution(root, put, planPath, fields = {}) {
+  const { draft } = draftExecution(root, planPath);
   const value = {
     ...draft,
     summary: 'Implemented the governing Pursue.',
@@ -137,10 +144,14 @@ function recordExecution(root, put, plan, fields = {}) {
     ...fields,
   };
   put(`drafts/${value.id}.json`, value);
-  return record(root, `drafts/${value.id}.json`);
+  return recordDraft(root, `drafts/${value.id}.json`);
 }
 
-function plan(put, path, { scopes, basis, workKind = 'implementation', state }) {
+function plan(
+  put,
+  path,
+  { scopes, basis, workKind = 'implementation', state }
+) {
   put(
     path,
     `---\nreview_scopes: [${scopes.join(', ')}]\nreview_basis: [${basis.join(', ')}]\nwork_kind: ${workKind}\n---\n\n# Plan\n\nStatus: ${state}\n`
@@ -257,14 +268,29 @@ test('recording one scope ignores every other session’s unfinished state', (t)
     upstreams: [null],
   });
   put('docs/research/review-legacy.json', [null]);
-  put(`${scopesDir}/link.json`, scope('link', { dependsOn: ['table'], prerequisiteReason: 'Cycle.' }));
-  put(`${scopesDir}/table.json`, scope('table', { dependsOn: ['link'], prerequisiteReason: 'Cycle.' }));
-  put('docs/plans/2026-09-09-other.md', '---\nreview_scopes: [link]\nreview_basis: [missing]\nwork_kind: design\n---\n\nStatus: building\nStatus: done\n');
+  put(
+    `${scopesDir}/link.json`,
+    scope('link', { dependsOn: ['table'], prerequisiteReason: 'Cycle.' })
+  );
+  put(
+    `${scopesDir}/table.json`,
+    scope('table', { dependsOn: ['link'], prerequisiteReason: 'Cycle.' })
+  );
+  put(
+    'docs/plans/2026-09-09-other.md',
+    '---\nreview_scopes: [link]\nreview_basis: [missing]\nwork_kind: design\n---\n\nStatus: building\nStatus: done\n'
+  );
   put('docs/research/review-documents.json', [
-    { path: 'docs/plans/deleted.md', scopes: ['link'], kind: 'plan', disposition: 'historical', rationale: 'Gone.' },
+    {
+      path: 'docs/plans/deleted.md',
+      scopes: ['link'],
+      kind: 'plan',
+      disposition: 'historical',
+      rationale: 'Gone.',
+    },
   ]);
 
-  const result = record(root, 'drafts/comments.json');
+  const result = recordDraft(root, 'drafts/comments.json');
 
   assert.equal(result.recorded, `${recordsDir}/${draft.id}.json`);
   assert.equal(coverage(root).unowned.total, 1);
@@ -278,7 +304,7 @@ test('a broken foreign scope file fails check but not another scope’s record',
   const { draft } = draftReview(root, 'comments');
   put('drafts/comments.json', completed(draft));
 
-  assert.ok(record(root, 'drafts/comments.json').recorded);
+  assert.ok(recordDraft(root, 'drafts/comments.json').recorded);
   assert.throws(() => check(root), /link\.json/);
 });
 
@@ -288,10 +314,10 @@ test('record refuses a stale previous and names the new head', (t) => {
   const second = { ...first, id: '2026-09-02-other' };
   put('drafts/a.json', completed(first));
   put('drafts/b.json', completed(second));
-  record(root, 'drafts/a.json');
+  recordDraft(root, 'drafts/a.json');
 
   assert.throws(
-    () => record(root, 'drafts/b.json'),
+    () => recordDraft(root, 'drafts/b.json'),
     new RegExp(`head of comments is ${first.id}`)
   );
 });
@@ -322,7 +348,7 @@ test('a review must reconcile a bound execution recorded after its previous', (t
   put('drafts/next.json', value);
 
   assert.throws(
-    () => record(root, 'drafts/next.json'),
+    () => recordDraft(root, 'drafts/next.json'),
     /Reconcile 2026-09-02-comments-execution/
   );
 });
@@ -340,7 +366,7 @@ test('a changed verdict cannot retain its previous review', (t) => {
   );
 
   assert.throws(
-    () => record(root, 'drafts/next.json'),
+    () => recordDraft(root, 'drafts/next.json'),
     /changed verdict must reopen or supersede/
   );
 });
@@ -349,11 +375,11 @@ test('recording is idempotent and refuses an id that exists with other content',
   const { root, put } = fixture(t);
   const { draft } = draftReview(root, 'comments');
   put('drafts/a.json', completed(draft));
-  record(root, 'drafts/a.json');
+  recordDraft(root, 'drafts/a.json');
 
-  assert.equal(record(root, 'drafts/a.json').duplicate, true);
+  assert.equal(recordDraft(root, 'drafts/a.json').duplicate, true);
   put('drafts/b.json', completed(draft, { summary: 'Different.' }));
-  assert.throws(() => record(root, 'drafts/b.json'), /already exists/);
+  assert.throws(() => recordDraft(root, 'drafts/b.json'), /already exists/);
 });
 
 test('concurrent records of one id leave one complete file', async (t) => {
@@ -362,22 +388,25 @@ test('concurrent records of one id leave one complete file', async (t) => {
   put('drafts/a.json', completed(draft, { summary: 'From session A.' }));
   put('drafts/b.json', completed(draft, { summary: 'From session B.' }));
   const run = (path) =>
-    new Promise((done) => {
+    new Promise((resolve) => {
       const child = spawn(
         process.execPath,
         [
           '--input-type=module',
           '-e',
-          `import { record } from ${JSON.stringify(script)}; try { record(${JSON.stringify(root)}, ${JSON.stringify(path)}); process.exit(0) } catch { process.exit(1) }`,
+          `import { recordDraft } from ${JSON.stringify(script)}; try { recordDraft(${JSON.stringify(root)}, ${JSON.stringify(path)}); process.exit(0) } catch { process.exit(1) }`,
         ],
         { stdio: 'ignore' }
       );
-      child.on('exit', done);
+      child.on('exit', resolve);
     });
 
   const codes = await Promise.all([run('drafts/a.json'), run('drafts/b.json')]);
 
-  assert.deepEqual([...codes].sort(), [0, 1]);
+  assert.deepEqual(
+    [...codes].sort((a, b) => a - b),
+    [0, 1]
+  );
   const files = readdirSync(join(root, recordsDir));
   assert.deepEqual(files, [`${draft.id}.json`]);
   assert.match(
@@ -392,12 +421,14 @@ test('an input moved after the draft records and reads stale with its path', (t)
   put('drafts/a.json', completed(draft));
   put('packages/core/src/comments/index.ts', 'export const comments = 2;');
 
-  const result = record(root, 'drafts/a.json');
+  const result = recordDraft(root, 'drafts/a.json');
 
   assert.deepEqual(result.changedSinceDraft, ['packages/core/src/comments/']);
   const [item] = lookup(root, 'comments');
   assert.equal(item.freshness.state, 'stale');
-  assert.deepEqual(item.freshness.changed.items, ['packages/core/src/comments/']);
+  assert.deepEqual(item.freshness.changed.items, [
+    'packages/core/src/comments/',
+  ]);
 });
 
 test('a doctrine edit moves the law clock without staling source', (t) => {
@@ -426,7 +457,9 @@ test('legacy group digests read unknown, never matching, and stale once a file m
     references: ['docs/evidence.md'],
     source: {
       files: {
-        'packages/core/src/comments/index.ts': digest('export const comments = 1;'),
+        'packages/core/src/comments/index.ts': digest(
+          'export const comments = 1;'
+        ),
         'pnpm-lock.yaml': digest('anything'),
       },
       features: { 'core/comments': digest('group') },
@@ -439,7 +472,10 @@ test('legacy group digests read unknown, never matching, and stale once a file m
 
   assert.equal(read().state, 'unknown');
   put('packages/core/src/comments/index.ts', 'export const comments = 2;');
-  assert.equal(freshness(observe(root), loadLedger(root).records.get(legacy.id)).state, 'stale');
+  assert.equal(
+    freshness(observe(root), loadLedger(root).records.get(legacy.id)).state,
+    'stale'
+  );
 });
 
 test('directory digests keep the legacy per-directory name order', (t) => {
@@ -496,13 +532,15 @@ test('two reviews from one previous fork the scope until a review reconciles bot
   }
   assert.equal(openOf(root, 'comments'), 'fork');
 
-  const next = draftReview(root, 'comments').draft;
+  const resolving = draftReview(root, 'comments').draft;
   assert.deepEqual(
-    next.reconciliation.map((entry) => entry.record).sort(),
+    resolving.reconciliation
+      .map((entry) => entry.record)
+      .sort((a, b) => a.localeCompare(b)),
     ['2026-09-02-a', '2026-09-02-b']
   );
-  put('drafts/resolve.json', completed(next));
-  record(root, 'drafts/resolve.json');
+  put('drafts/resolve.json', completed(resolving));
+  recordDraft(root, 'drafts/resolve.json');
   assert.equal(openOf(root, 'comments'), null);
 });
 
@@ -566,7 +604,10 @@ test('a completed execution needs a landed plan whose front matter matches', (t)
     basis: ['2026-09-01-comments'],
     state: 'executed, folded into the subject',
   });
-  assert.equal(draftExecution(root, 'docs/plans/2026-09-02-comments.md').draft.outcome, 'completed');
+  assert.equal(
+    draftExecution(root, 'docs/plans/2026-09-02-comments.md').draft.outcome,
+    'completed'
+  );
 });
 
 test('a landed plan for the head with no execution reads pursue-unbound', (t) => {
@@ -594,8 +635,14 @@ test('queue order honours dependencies, groups and AI-last over payoff', (t) => 
       opportunity: { score: 9, reason: 'Hot.' },
     }),
     scope('ai', { last: true, opportunity: { score: 10, reason: 'Last.' } }),
-    scope('runtime', { group: 'core', opportunity: { score: 4, reason: 'Core.' } }),
-    scope('state', { group: 'core', opportunity: { score: 6, reason: 'Core.' } }),
+    scope('runtime', {
+      group: 'core',
+      opportunity: { score: 4, reason: 'Core.' },
+    }),
+    scope('state', {
+      group: 'core',
+      opportunity: { score: 6, reason: 'Core.' },
+    }),
   ]);
   put('docs/research/review-groups.json', {
     core: { title: 'Core', reason: 'Reviewed together.' },
@@ -605,10 +652,13 @@ test('queue order honours dependencies, groups and AI-last over payoff', (t) => 
     orderUnits(loadLedger(root)).map((unit) => unit.id),
     ['core', 'model', 'table', 'ai']
   );
-  put(`${scopesDir}/model.json`, scope('model', {
-    dependsOn: ['table'],
-    prerequisiteReason: 'Cycle.',
-  }));
+  put(
+    `${scopesDir}/model.json`,
+    scope('model', {
+      dependsOn: ['table'],
+      prerequisiteReason: 'Cycle.',
+    })
+  );
   assert.throws(() => orderUnits(loadLedger(root), { strict: true }), /cycle/);
   const ledger = loadLedger(root);
   assert.equal(orderUnits(ledger).length, 4);
@@ -621,7 +671,10 @@ test('research search keeps headers, exact status and malformed-row warnings', (
     'docs/plite/research/2026-01-02-second/lead-ledger.tsv',
     'claim\tdecision\tstatus\ncomment range\tpursue\tdeferred-proof\ncomment malformed\n'
   );
-  put('docs/plite/research/2026-01-02-second/read-log.tsv', 'claim\tstatus\ncomment\t\n');
+  put(
+    'docs/plite/research/2026-01-02-second/read-log.tsv',
+    'claim\tstatus\ncomment\t\n'
+  );
 
   const result = searchResearch(root, 'comment');
 
@@ -629,11 +682,13 @@ test('research search keeps headers, exact status and malformed-row warnings', (
     result.matches.find((item) => item.row?.claim === 'comment range').status,
     'deferred-proof'
   );
-  assert.deepEqual(
-    result.matches.find((item) => item.row === null).rawCells,
-    ['comment malformed']
+  assert.deepEqual(result.matches.find((item) => item.row === null).rawCells, [
+    'comment malformed',
+  ]);
+  assert.equal(
+    result.matches.find((item) => item.row?.claim === 'comment').row.status,
+    ''
   );
-  assert.equal(result.matches.find((item) => item.row?.claim === 'comment').row.status, '');
   assert.equal(result.warnings.length, 1);
 });
 
@@ -797,7 +852,10 @@ test('a changed proof artifact makes its execution stale', (t) => {
   put('docs/proof/report.md', 'Failed.');
 
   const ledger = loadLedger(root);
-  const result = freshness(observe(root), ledger.records.get('2026-09-02-execution'));
+  const result = freshness(
+    observe(root),
+    ledger.records.get('2026-09-02-execution')
+  );
 
   assert.equal(result.state, 'stale');
   assert.deepEqual(result.changed, ['docs/proof/report.md']);
@@ -815,7 +873,10 @@ test('lookup still resolves a retired feature-group name through the records tha
     relation: 'initial',
     summary: 'Legacy.',
     references: ['docs/evidence.md'],
-    source: { files: {}, features: { 'ui/link-floating-toolbar': digest('x') } },
+    source: {
+      files: {},
+      features: { 'ui/link-floating-toolbar': digest('x') },
+    },
   });
 
   assert.deepEqual(
@@ -836,7 +897,10 @@ test('a reopened Status beside an old completion label cannot record a completed
     '---\nreview_scopes: [comments]\nreview_basis: [2026-09-01-comments]\nwork_kind: implementation\n---\n\n# Plan\n\n- goal_status: complete\n\nStatus: reopened, a regression returned\n'
   );
 
-  assert.equal(draftExecution(root, 'docs/plans/2026-09-02-comments.md').draft.outcome, 'partial');
+  assert.equal(
+    draftExecution(root, 'docs/plans/2026-09-02-comments.md').draft.outcome,
+    'partial'
+  );
   assert.throws(
     () =>
       recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
@@ -858,8 +922,12 @@ test('check catches an execution whose previous execution is gone', (t) => {
     basis: ['2026-09-01-comments'],
     state: 'building',
   });
-  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', { id: '2026-09-02-first' });
-  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', { id: '2026-09-02-second' });
+  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
+    id: '2026-09-02-first',
+  });
+  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
+    id: '2026-09-02-second',
+  });
   rmSync(join(root, recordsDir, '2026-09-02-first.json'));
 
   assert.throws(() => check(root), /2026-09-02-second\.json: previous/);
@@ -887,12 +955,20 @@ test('a malformed foreign execution does not block another scope’s execution d
     reviewBasis: {},
   });
 
-  const result = recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-    id: '2026-09-02-execution',
-  });
+  const result = recordExecution(
+    root,
+    put,
+    'docs/plans/2026-09-02-comments.md',
+    {
+      id: '2026-09-02-execution',
+    }
+  );
 
   assert.ok(result.recorded);
-  assert.throws(() => check(root), /2026-09-09-foreign\.json: malformed record/);
+  assert.throws(
+    () => check(root),
+    /2026-09-09-foreign\.json: malformed record/
+  );
 });
 
 test('a review must reconcile an execution recorded after its previous review even when drafted before it', (t) => {
@@ -920,7 +996,7 @@ test('a review must reconcile an execution recorded after its previous review ev
     summary: 'Drafted before the second review, recorded after it.',
     proof: { state: 'partial', evidence: [], limits: 'Fixture.' },
   });
-  record(root, 'drafts/late.json');
+  recordDraft(root, 'drafts/late.json');
 
   assert.ok(
     draftReview(root, 'comments').draft.reconciliation.some(
@@ -934,7 +1010,10 @@ test('record refuses a record its own readers could not read', (t) => {
   const { draft } = draftReview(root, 'comments');
   put('drafts/a.json', completed(draft, { upstreams: [null] }));
 
-  assert.throws(() => record(root, 'drafts/a.json'), /upstreams is malformed/);
+  assert.throws(
+    () => recordDraft(root, 'drafts/a.json'),
+    /upstreams is malformed/
+  );
 });
 
 test('check catches a committed deletion of a record recorded after the cutover', (t) => {
@@ -1006,16 +1085,24 @@ test('retrying an execution draft without proof hashes stays a duplicate after t
       limits: 'One run.',
     },
   });
-  record(root, 'drafts/e.json');
+  recordDraft(root, 'drafts/e.json');
   put('docs/proof/report.md', 'Failed.');
 
-  assert.equal(record(root, 'drafts/e.json').duplicate, true);
+  assert.equal(recordDraft(root, 'drafts/e.json').duplicate, true);
 });
 
 test('strict queue order catches a dependency cycle inside a review group', (t) => {
   const { root, put } = fixture(t, [
-    scope('runtime', { group: 'core', dependsOn: ['state'], prerequisiteReason: 'Cycle.' }),
-    scope('state', { group: 'core', dependsOn: ['runtime'], prerequisiteReason: 'Cycle.' }),
+    scope('runtime', {
+      group: 'core',
+      dependsOn: ['state'],
+      prerequisiteReason: 'Cycle.',
+    }),
+    scope('state', {
+      group: 'core',
+      dependsOn: ['runtime'],
+      prerequisiteReason: 'Cycle.',
+    }),
   ]);
   put('docs/research/review-groups.json', {
     core: { title: 'Core', reason: 'Reviewed together.' },
@@ -1030,7 +1117,10 @@ test('status reports a changed record as an integrity problem without failing', 
   const text = readFileSync(join(root, result.recorded), 'utf-8');
   writeFileSync(join(root, result.recorded), text.replace('Keep', 'Drop'));
 
-  assert.match(status(root).integrity.join('\n'), /changed since it was recorded/);
+  assert.match(
+    status(root).integrity.join('\n'),
+    /changed since it was recorded/
+  );
 });
 
 test('a supplied proof digest does not admit a proof file that does not exist', (t) => {
@@ -1051,7 +1141,13 @@ test('a supplied proof digest does not admit a proof file that does not exist', 
       recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
         proof: {
           state: 'partial',
-          evidence: [{ path: 'docs/proof/gone.md', sha256: digest('x'), claim: 'Passed.' }],
+          evidence: [
+            {
+              path: 'docs/proof/gone.md',
+              sha256: digest('x'),
+              claim: 'Passed.',
+            },
+          ],
           limits: 'One run.',
         },
       }),
@@ -1061,7 +1157,10 @@ test('a supplied proof digest does not admit a proof file that does not exist', 
 
 test('invalid plan front matter is reported instead of falling back to a classified entry', (t) => {
   const { root, put } = fixture(t);
-  put('docs/plans/2026-09-02-table.md', '---\nreview_scopes: link\n---\n\n# Plan\n\nStatus: done\n');
+  put(
+    'docs/plans/2026-09-02-table.md',
+    '---\nreview_scopes: link\n---\n\n# Plan\n\nStatus: done\n'
+  );
   put('docs/research/review-documents.json', [
     {
       path: 'docs/plans/2026-09-02-table.md',
@@ -1077,7 +1176,10 @@ test('invalid plan front matter is reported instead of falling back to a classif
     () => draftExecution(root, 'docs/plans/2026-09-02-table.md'),
     /metadata is invalid: review_scopes/
   );
-  assert.match(check(root).warnings.join('\n'), /2026-09-02-table\.md: invalid review_scopes/);
+  assert.match(
+    check(root).warnings.join('\n'),
+    /2026-09-02-table\.md: invalid review_scopes/
+  );
 });
 
 test('show lists the plans associated with a scope', (t) => {
@@ -1089,15 +1191,32 @@ test('show lists the plans associated with a scope', (t) => {
     state: 'done',
   });
 
-  assert.match(show(root, 'comments'), /docs\/plans\/2026-09-02-comments\.md: done; design/);
+  assert.match(
+    show(root, 'comments'),
+    /docs\/plans\/2026-09-02-comments\.md: done; design/
+  );
 });
 
 test('integrity reports a legacy record deleted after loading instead of throwing', (t) => {
   const { root, put } = fixture(t);
-  const legacy = { id: '2026-09-01-legacy', kind: 'historical', scope: 'comments', date: '2026-09-01', verdict: null, previous: null, relation: 'historical-context', summary: 'Imported.', references: ['docs/evidence.md'], source: null };
+  const legacy = {
+    id: '2026-09-01-legacy',
+    kind: 'historical',
+    scope: 'comments',
+    date: '2026-09-01',
+    verdict: null,
+    previous: null,
+    relation: 'historical-context',
+    summary: 'Imported.',
+    references: ['docs/evidence.md'],
+    source: null,
+  };
   put(`${recordsDir}/${legacy.id}.json`, legacy);
   put('docs/research/review-legacy.json', [
-    { id: legacy.id, sha256: digest(readFileSync(join(root, recordsDir, `${legacy.id}.json`))) },
+    {
+      id: legacy.id,
+      sha256: digest(readFileSync(join(root, recordsDir, `${legacy.id}.json`))),
+    },
   ]);
   const ledger = loadLedger(root);
   rmSync(join(root, recordsDir, `${legacy.id}.json`));
@@ -1125,10 +1244,24 @@ test('check catches a forged entry committed into the legacy checksum list', (t)
   const { root, put, commit } = fixture(t);
   put('docs/research/review-legacy.json', []);
   commit();
-  const forged = { id: '2026-09-02-forged', kind: 'historical', scope: 'comments', date: '2026-09-02', verdict: 'stop', previous: null, relation: 'historical-context', summary: 'Forged.', references: ['docs/evidence.md'], source: null };
+  const forged = {
+    id: '2026-09-02-forged',
+    kind: 'historical',
+    scope: 'comments',
+    date: '2026-09-02',
+    verdict: 'stop',
+    previous: null,
+    relation: 'historical-context',
+    summary: 'Forged.',
+    references: ['docs/evidence.md'],
+    source: null,
+  };
   put(`${recordsDir}/${forged.id}.json`, forged);
   put('docs/research/review-legacy.json', [
-    { id: forged.id, sha256: digest(readFileSync(join(root, recordsDir, `${forged.id}.json`))) },
+    {
+      id: forged.id,
+      sha256: digest(readFileSync(join(root, recordsDir, `${forged.id}.json`))),
+    },
   ]);
   commit();
 
@@ -1152,14 +1285,26 @@ test('record refuses a review without an upstreams list', (t) => {
   const { upstreams, ...rest } = completed(draft);
   put('drafts/a.json', rest);
 
-  assert.throws(() => record(root, 'drafts/a.json'), /upstreams is a list/);
+  assert.throws(
+    () => recordDraft(root, 'drafts/a.json'),
+    /upstreams is a list/
+  );
 });
 
 test('plan front matter without review_scopes is invalid, not a fallback', (t) => {
   const { root, put } = fixture(t);
-  put('docs/plans/2026-09-02-link.md', '---\nreview_basis: [x]\n---\n\n# Plan\n\nStatus: done\n');
+  put(
+    'docs/plans/2026-09-02-link.md',
+    '---\nreview_basis: [x]\n---\n\n# Plan\n\nStatus: done\n'
+  );
   put('docs/research/review-documents.json', [
-    { path: 'docs/plans/2026-09-02-link.md', scopes: ['link'], kind: 'plan', disposition: 'historical', rationale: 'Old.' },
+    {
+      path: 'docs/plans/2026-09-02-link.md',
+      scopes: ['link'],
+      kind: 'plan',
+      disposition: 'historical',
+      rationale: 'Old.',
+    },
   ]);
 
   assert.throws(
@@ -1172,10 +1317,20 @@ test('check warns on a classified plan with an unknown work kind', (t) => {
   const { root, put } = fixture(t);
   put('docs/plans/2026-03-15-link.md', '# Old plan\n\nStatus: done\n');
   put('docs/research/review-documents.json', [
-    { path: 'docs/plans/2026-03-15-link.md', scopes: ['link'], kind: 'plan', disposition: 'historical', rationale: 'Old.', workKind: 'implementaton' },
+    {
+      path: 'docs/plans/2026-03-15-link.md',
+      scopes: ['link'],
+      kind: 'plan',
+      disposition: 'historical',
+      rationale: 'Old.',
+      workKind: 'implementaton',
+    },
   ]);
 
-  assert.match(check(root).warnings.join('\n'), /2026-03-15-link\.md: invalid workKind/);
+  assert.match(
+    check(root).warnings.join('\n'),
+    /2026-03-15-link\.md: invalid workKind/
+  );
 });
 
 test('a ledger file of the wrong type fails check instead of reading as empty', (t) => {
@@ -1189,11 +1344,11 @@ test('check catches a committed deletion of a record that first landed in a merg
   const { root, put, commit, git } = fixture(t);
   put('docs/research/review-legacy.json', []);
   commit();
-  const main = git('branch', '--show-current').trim();
+  const trunk = git('branch', '--show-current').trim();
   git('switch', '-q', '-c', 'side');
   put('docs/side.md', 'Side work.');
   commit();
-  git('switch', '-q', main);
+  git('switch', '-q', trunk);
   git('merge', '-q', '--no-ff', '--no-commit', 'side');
   const result = recordReview(root, put, 'comments');
   commit();
@@ -1203,15 +1358,49 @@ test('check catches a committed deletion of a record that first landed in a merg
   assert.throws(() => check(root), new RegExp(`deleted: ${result.recorded}`));
 });
 
+test('check catches a record edited on a side branch before the branch merged', (t) => {
+  const { root, put, commit, git } = fixture(t);
+  put('docs/research/review-legacy.json', []);
+  commit();
+  const trunk = git('branch', '--show-current').trim();
+  git('switch', '-q', '-c', 'side');
+  const result = recordReview(root, put, 'comments');
+  commit();
+  const { digest: _, ...body } = JSON.parse(
+    readFileSync(join(root, result.recorded), 'utf-8')
+  );
+  const edited = { ...body, summary: 'Drop the owner.' };
+  put(result.recorded, {
+    ...edited,
+    digest: digest(`${JSON.stringify(edited, null, 2)}\n`),
+  });
+  commit();
+  git('switch', '-q', trunk);
+  git('merge', '-q', '--no-ff', '--no-commit', 'side');
+  commit();
+
+  assert.throws(
+    () => check(root),
+    new RegExp(`first committed: ${result.recorded}`)
+  );
+});
+
 test('check catches a committed deletion hidden as a rename of a similar record', (t) => {
   const { root, put, commit, git } = fixture(t);
   put('docs/research/review-legacy.json', []);
   commit();
-  const first = recordReview(root, put, 'comments', { id: '2026-09-01-comments' });
+  const first = recordReview(root, put, 'comments', {
+    id: '2026-09-01-comments',
+  });
   commit();
   const bytes = readFileSync(join(root, first.recorded));
   git('rm', '-q', first.recorded);
-  const second = recordReview(root, put, 'comments', { id: '2026-09-02-comments', previous: null, relation: 'initial', reconciliation: [] });
+  const second = recordReview(root, put, 'comments', {
+    id: '2026-09-02-comments',
+    previous: null,
+    relation: 'initial',
+    reconciliation: [],
+  });
   commit();
   writeFileSync(join(root, first.recorded), bytes);
   git('rm', '-q', second.recorded);

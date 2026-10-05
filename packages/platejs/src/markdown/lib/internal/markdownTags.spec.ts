@@ -33,8 +33,7 @@ const tagged = unified()
   .use(remarkMarkdownTags, { tags });
 
 const parsePlain = (source: string) => plain.runSync(plain.parse(source));
-const parse = (source: string) =>
-  tagged.runSync(tagged.parse(source), source) as Root;
+const parse = (source: string) => tagged.runSync(tagged.parse(source), source);
 
 type AnyNode = {
   attributes?: Array<{ name: string; value: unknown }>;
@@ -206,7 +205,7 @@ describe('registered Markdown tags', () => {
     });
 
     const stray = parse('text </callout> more') as AnyNode;
-    const html = stray.children![0]!.children!.find(
+    const html = stray.children![0].children!.find(
       (node) => node.type === 'html'
     )!;
 
@@ -217,7 +216,7 @@ describe('registered Markdown tags', () => {
     });
 
     const misplaced = parse('a <callout>b</callout> c') as AnyNode;
-    const paragraph = misplaced.children![0]!;
+    const paragraph = misplaced.children![0];
 
     expect(paragraph.type).toBe('paragraph');
     expect(paragraph.children!.map((node) => node.value ?? node.type)).toEqual([
@@ -268,7 +267,7 @@ describe('registered Markdown tags', () => {
     const tree = parse(source) as AnyNode;
     const [group] = tree.children!;
 
-    expect(strip(group!)).toMatchObject({
+    expect(strip(group)).toMatchObject({
       children: [
         {
           children: [
@@ -292,7 +291,7 @@ describe('registered Markdown tags', () => {
       name: 'columnGroup',
     });
 
-    const bold = group!.children![0]!.children![0]!.children![1]!;
+    const bold = group.children![0].children![0].children![1];
 
     expect(
       source.slice(bold.position!.start.offset, bold.position!.end.offset)

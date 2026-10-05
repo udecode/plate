@@ -44,12 +44,12 @@ describe('core static HTML representable projection', () => {
 
     const { data: html } = await renderStaticHtml(editor);
 
-    const result = editor.api.html.parseSlice(html, {
+    const result = editor.api.html.parse(html, {
       collapseWhitespace: false,
     });
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error(result.diagnostics[0].message);
-    expect(result.slice.content).toEqual(representableValue);
+    expect(result.document.children).toEqual(representableValue);
   });
 });

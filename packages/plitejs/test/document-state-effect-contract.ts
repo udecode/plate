@@ -125,7 +125,7 @@ describe('document state effect contract', () => {
 
           return value as LargeCounter;
         },
-        encode: (value) => value as unknown as EditorJsonValue,
+        encode: (value) => value,
         version: 1,
       },
       reduce: (value, effect) =>
@@ -205,7 +205,7 @@ describe('document state effect contract', () => {
     type Payload = { nested: { count: number } };
     const persistence = {
       decode: (value) => value as Payload,
-      encode: (value) => value as unknown as EditorJsonValue,
+      encode: (value) => value,
       version: 1,
     } satisfies EditorValuePersistence<Payload, EditorJsonValue>;
     const effect = defineEffect<Payload>({

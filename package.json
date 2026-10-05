@@ -7,6 +7,7 @@
     "packages/*"
   ],
   "scripts": {
+    "bench:docx": "BENCH_MEASURE=1 bun tooling/scripts/test-suite.mjs fast benchmarks/editor/benchmarks/plate-docx-retained-source-benchmark.test.ts benchmarks/editor/benchmarks/plate-docx-revision-import-benchmark.test.ts",
     "bench:editor:bench": "cd benchmarks/editor && npm run bench:evidence",
     "bench:editor:check": "cd benchmarks/editor && npm run check",
     "bench:editor:docs": "cd benchmarks/editor && npm run docs:perf",
@@ -35,10 +36,9 @@
     "build:tw": "pnpm --filter www build:tw",
     "build:www:ci": "turbo run build --filter=www... --concurrency=2",
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
-    "check": "pnpm lint && pnpm lint:type-aware && pnpm typecheck && pnpm test:all",
+    "check": "node tooling/scripts/check.mjs",
     "check:core": "node tooling/scripts/check-core.mjs",
     "check:plate-feature": "node tooling/scripts/check-plate-feature.mjs",
-    "check:push": "pnpm check",
     "check:plite": "node tooling/scripts/check-plite.mjs strict",
     "check:plite:contracts": "node --test tooling/scripts/bench-targets.test.mjs tooling/scripts/bench-targets.slow.test.mjs tooling/scripts/check-package-build-artifacts.test.mjs tooling/scripts/check-package-declaration-brands.test.mjs tooling/scripts/check-plite.test.mjs tooling/scripts/check-plite-release-artifacts.test.mjs tooling/scripts/check-plite-release-artifacts.slow.test.mjs tooling/scripts/check-plite-release-proof.test.mjs tooling/scripts/entrypoint-dag-plugin.test.mjs tooling/scripts/entrypoint-turbo.test.mjs tooling/scripts/entrypoint-turbo.slow.test.mjs tooling/scripts/plite-source-aliases.test.mjs tooling/scripts/plite-source-aliases.slow.test.mjs tooling/scripts/run-bounded-process.test.mjs tooling/scripts/run-bounded-process.slow.test.mjs tooling/scripts/test-suite-routing.test.mjs apps/plite/scripts/*.test.mjs && bun test --preload ./config/plite-source-test-setup.ts benchmarks/editor/benchmarks/benchmark-artifact.test.ts benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts benchmarks/editor/benchmarks/plite-content-slice-value-benchmark.test.ts benchmarks/editor/benchmarks/plite-plugin-graph-benchmark.test.ts benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.test.ts benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.test.ts benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts && pnpm plite:bench:targets:check && pnpm plite:public-types",
     "check:plite:dev": "node tooling/scripts/check-plite.mjs dev",
@@ -55,6 +55,7 @@
     "entrypoint:turbo:check": "node tooling/scripts/generate-entrypoint-turbo.mjs check && node tooling/scripts/migrate-platejs-entrypoint-imports.mjs",
     "entrypoint:turbo:generate": "node tooling/scripts/generate-entrypoint-turbo.mjs generate",
     "e2e": "pnpm exec playwright test --config tooling/config/playwright.config.ts",
+    "generate": "node tooling/scripts/check.mjs --write",
     "g:brl": "turbo --filter \"./packages/**\" brl",
     "g:build": "turbo --filter \"./packages/**\" build",
     "g:build:watch": "pnpm build:watch",
@@ -71,6 +72,7 @@
     "g:typecheck:all": "turbo typecheck --concurrency=2",
     "lint": "ultracite check",
     "lint:fix": "ultracite fix",
+    "lint:baseline": "node tooling/oxlint/plate-baseline.mjs",
     "lint:type-aware": "oxlint --type-aware --threads=2 --report-unused-disable-directives-severity=error .",
     "nuke:node_modules": "rimraf '**/node_modules'",
     "p:brl": "sh tooling/scripts/brl.sh",
@@ -201,5 +203,10 @@
   "packageManager": "pnpm@9.15.0",
   "patchedDependencies": {
     "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "mdast-util-find-and-replace@3.0.2": "patches/mdast-util-find-and-replace@3.0.2.patch"
+    }
   }
 }

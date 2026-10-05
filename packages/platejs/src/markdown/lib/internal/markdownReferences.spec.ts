@@ -68,7 +68,7 @@ describe('Markdown references', () => {
           footnote('A'),
           footnote('a'),
         ],
-      } as never,
+      },
     }).data;
 
     expect(markdown).toContain('[^A]');
@@ -102,7 +102,7 @@ describe('Markdown references', () => {
               type: 'paragraph',
             },
           ],
-        } as never,
+        },
       })
     ).toMatchObject({
       diagnostics: [

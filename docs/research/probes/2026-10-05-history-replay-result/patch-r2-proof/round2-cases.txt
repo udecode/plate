@@ -1,0 +1,28 @@
+# reviewed: cd packages/plitejs && PLITE_SRC=/Users/zbeyens/git/plate-2/packages/plitejs/src bun run /Users/zbeyens/git/plate-2/docs/research/probes/2026-10-05-history-replay-result/patch-r2-proof/round2-cases.probe.ts
+thenUndefined.status	"pending"
+thenUndefined.redosRightAfterCall	0
+undefinedResult.status	null
+undefinedResult.thrown	"TypeError: ownerResult is not an Object. (evaluating '\"then\""
+undefinedResult.pendingAfter	"undo"
+undefinedResult.reports	0
+blockedThrows.always.status	"failed"
+blockedThrows.always.reports	2
+blockedThrows.always.pendingAfter	"undo"
+blockedThrows.once.status	"failed"
+blockedThrows.once.reports	1
+blockedThrows.once.pendingAfter	null
+# exit: 0
+# patched: cd packages/plitejs && PLITE_SRC=/private/tmp/claude-501/-Users-zbeyens-git-plate-2/77220dd0-ee8b-48e9-a5a3-6b1b40c6c371/scratchpad/plite-copy/src bun run /Users/zbeyens/git/plate-2/docs/research/probes/2026-10-05-history-replay-result/patch-r2-proof/round2-cases.probe.ts
+thenUndefined.status	"applied"
+thenUndefined.redosRightAfterCall	1
+undefinedResult.status	"failed"
+undefinedResult.thrown	null
+undefinedResult.pendingAfter	null
+undefinedResult.reports	1
+blockedThrows.always.status	"failed"
+blockedThrows.always.reports	1
+blockedThrows.always.pendingAfter	"undo"
+blockedThrows.once.status	"failed"
+blockedThrows.once.reports	1
+blockedThrows.once.pendingAfter	null
+# exit: 0

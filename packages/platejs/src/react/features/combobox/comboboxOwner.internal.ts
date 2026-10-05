@@ -57,7 +57,7 @@ const PREVIEW_EVENTS = [
   'compositionupdate',
   'input',
 ] as const;
-const refused = Symbol('combobox completion refused');
+const refused = new Error('combobox completion refused');
 const owners = new WeakMap<Element, ComboboxOwner>();
 // Equal text in a later occurrence must not complete a match offered by an earlier one.
 const occurrenceOf = new WeakMap<ComboboxMatch, Occurrence>();

@@ -25,6 +25,5 @@ For each degraded mode, record:
 
 ## Reject
 
-- automatic or threshold-selected virtualization
 - shell mode described as "same editor, just faster"
 - model-backed copy/paste without visible contract

@@ -1,11 +1,7 @@
 # Test harvest
 
-
 Mine another editor repository for tests worth harvesting: Lexical, ProseMirror, CodeMirror, Tiptap, Monaco, Quill, ProseKit, Meowdown, or any local clone under `..`. The job is not to clone their framework. It is to extract portable editor behavior proof and route it to the right owner: raw Slate v2 (Plite) substrate, or Plate packages, kits, examples and docs.
 
-- ProseKit covers extension composition, framework adapters, autocomplete and editor UI behavior. Behavior inherited from ProseMirror is not a new invariant unless a ProseKit test adds a distinct contract.
-- Meowdown covers hybrid Markdown, hidden-syntax caret and selection behavior, touch input, IME and WebKit. Split raw editor behavior from its Markdown and product policy; desktop WebKit and touch emulation are scoped browser proof, not iOS proof.
-- `research audit` owns source-level architecture, model, runtime and API comparison; do not expand a harvest into that audit.
 - With `--issues`, mine the editor's issue corpus for robustness pressure, not to mirror its backlog: all states by default, cluster first, skip unrelated issues hard, extract portable invariants, then map them to Plite/Plate coverage. `issue-harvester` owns the exhaustive issue-by-issue closure that follows: ledger autodiscovery, refresh, closed-issue provenance, unchecked rows and coverage checkmarks.
 
 Work source-first with an exhaustive inventory, explicit skip reasons, evidence rows, complete passes and narrow claims, following the Slate claims provenance bar: exact thread, exact behavior, no speculative closure claim, no broad claim without current source proof. Implement only when asked (`--apply`).
@@ -61,39 +57,9 @@ Whatever the license mode, never paste upstream test code verbatim into versione
 - Preserve the behavior invariant, not the upstream API shape. Strengthen or split a related existing test instead of duplicating it.
 - A portable invariant that is really a runtime-boundary problem goes to a small fake-runtime or contract-test helper that drives both sides; promote the helper only when several rows share the boundary.
 - Use `plate-owned` for behavior that fits Plate rather than raw Plite: link and autolink grammar, list and checklist policy, Markdown transformer UX, mention, hashtag, emoji and date-time plugins, media and product decorators, toolbar and menu state, React plugin hosts, NodeView- and PluginView-style authoring, and rich product examples. Raw Plite owns editor primitives; Plate owns opinionated features and product behavior.
-- Browser, mobile, selection, clipboard and IME claims need honest runtime proof; a jsdom composition test does not prove IME behavior.
 - Edit Plite or Plate source and tests only with `--apply`. Lane-plan mode writes only the plan and its evidence.
 - In issue mode, cluster by portable behavior before reading issues one by one, and skip Lexical or editor-specific API, node-class lifecycle, command registry, packaging, product UX, docs, release, support and framework-only issues unless they expose a raw primitive gap. Never patch from an issue title or body alone. Closed issues are often the best regression stories; they are pressure, not closure claims.
-- A cluster matrix is routing, not closure. The issue-by-issue ledger gives every relevant issue a checkmark (`covered-by-existing-test`, `test-written`, `plate-owned-covered` or `deferred-with-owner`) and every invalid or unrelated one `invalid-skip` with a reason, linking the exact local test and its command.
 - Status is `pending` while passes or per-issue checkmarks remain. A single-pass matrix is a first-pass harvest; call a harvest comprehensive or `done` only when the pass schedule is complete, the readiness evidence is complete and the report has its full inventory appendix, or when the user asked for a quick report and the verdict says so.
-
-## Plan and report state
-
-Comprehensive harvests, long reruns and apply runs keep one plan under `docs/plans/`, run as pstack's Autonomous run when unattended; lane-plan mode uses the same plan. The report itself lives in the license-selected directory as `report.md`. Record this state in the plan:
-
-```md
-target_repo: <path>
-repo_key: <repo>
-license_mode: permissive|behavior-only
-output_mode: durable|scratch
-report_path: <docs/.../report.md or .tmp/.../report.md>
-inventory_path: <report_dir>/inventory.md
-test_index_path: <report_dir>/test-index.md
-issue_mode: yes|no
-issue_state: all|open|closed
-issue_report_dir: docs/editor-issue-harvester/<repo> or N/A
-issue_raw_cache_dir: .tmp/editor-issue-harvester/<repo>/raw or N/A
-issue_index_path: <issue_report_dir>/issues.md or N/A
-issue_cluster_path: <issue_report_dir>/clusters.md or N/A
-issue_matrix_path: <issue_report_dir>/matrix.md or N/A
-current_pass: <pass-name>
-current_pass_status: in_progress
-current_pass_skill: .agents/skills/research/SKILL.md
-next_pass: <next-pass>
-mode: harvest|issue-harvest|lane-plan
-```
-
-Use `blocked` only when the target repo, Plite checkout, required browser or device tooling, or a user decision is missing and no useful pass remains.
 
 ## Readiness evidence
 
@@ -152,17 +118,12 @@ Infer an unknown lane only when the harvest's owner labels make it obvious; othe
 6. For `slate-v2`, include raw substrate (selection DOM mapping, beforeinput and input, IME and composition, clipboard, paste, drag and drop, history, normalization, transforms, delete and backspace, fragment insertion, marks and inlines, void primitives, shadow DOM, browser engines, focus and blur, large-document performance) and split out product policy (links, lists, Markdown UX, mention-style plugins, media decorators, toolbar, menu and dialog state, React plugin hosts, NodeView- and PluginView-style authoring).
 7. Search current owner coverage before claiming covered or missing: the Plate repo by behavior words for `slate-v2`; packages, kits, docs, examples and behavior-law docs for `plate`.
 8. Apply the Layer gates in `.agents/playbooks/references/architecture.md` for the lane's layer: Plite for `slate-v2`, Plate for `plate`.
-9. Write the lane plan's sections: Lane contract, Full harvest row accounting, In-lane candidate matrix, Execution queue, Downstream lane application and Accepted-plan execution handoff. The handoff names the plan path, lane, execution queue IDs, implementation boundaries, focused commands, broad final gate, issue and claim sync rule and stop rule.
+9. Write the lane plan in the plan-page shape, with the full harvest row accounting and the in-lane candidate matrix in its Evidence and the execution queue as its Steps. Its execution handoff names the plan path, lane, execution queue IDs, implementation boundaries, focused commands, broad final gate, issue and claim sync rule and stop rule.
 10. Below threshold, keep `pending` and name the next pass. The lane plan is `done` only when the harvest report path and license mode are recorded, inventory and test-index status are recorded with reasons for missing files, every harvest row is accounted for, no unresolved in-lane row remains, every in-lane row has owner coverage, action, target location, proof kind and a verification command or explicit defer reason, downstream lane gates are recorded, behavior-only rows use fresh invariant wording only, and the execution handoff is present. When the gates pass, mark the result `done` and hand off: a planning-only request stops there; existing apply authority continues through the lane owner.
 
 ## Discovery workflow
 
-1. Resolve the target repo:
-
-   ```bash
-   test -d ../lexical || git clone https://github.com/facebook/lexical.git ../lexical
-   ```
-
+1. Resolve the target repo: inspect the local checkout at `..`, or clone a missing `owner/repo` to `../repo-name`, as `AGENTS.md`'s Packages section says.
 2. Classify the license mode before creating artifacts:
 
    ```bash
@@ -230,16 +191,7 @@ Infer an unknown lane only when the harvest's owner labels make it obvious; othe
      | rg -v '(^|/)(dist|build|coverage|node_modules|vendor|fixtures/generated|__snapshots__)(/|$)'
    ```
 
-6. With `--issues`, build an all-state issue inventory before sampling:
-
-   ```bash
-   gitcrawl search issues "" -R <owner/repo> --state "${issue_state:-all}" \
-     --json number,title,state,url,labels,updatedAt --limit 1000 \
-     > "$issue_raw_cache_dir/issues.json"
-   ```
-
-   Without `gitcrawl` coverage, use `gh search issues` in batches or the best local archive, and record the fallback, state coverage, limit and freshness. A truncated result is a sampled corpus, never all-state coverage. `gitcrawl doctor --json` and `gitcrawl sync <owner/repo> --numbers <n> --with pr-details --json` supply single-thread provenance.
-
+6. With `--issues`, build an all-state issue inventory before sampling, through `issue-harvester`'s archive input. Use `gitcrawl` first; when it cannot supply the corpus, record the fallback, state coverage, limit and freshness.
 7. Cluster issues before deep reads: portable robustness (selection, IME, beforeinput, clipboard, history, decorations, voids and inlines, tables, collaboration, browser and mobile, large documents), `portable-mixed`, `plate-owned`, `skip` (framework internals, node-class mechanics, command registry, product shell, docs, release and support noise, stale duplicates) and `security-quarantine` (CVE, GHSA, exploit or sensitive-data reports, never routed through a normal harvest).
 8. Classify every inventory row in the appendix:
    - `portable`: framework-agnostic editor behavior.
@@ -371,12 +323,6 @@ rg -n "state: all|open \\+ closed|closed" "$issue_report_dir/issues.md" "$issue_
 ! rg -n "bodyMarkdown|bodyText|comments\\s*:" "$issue_report_dir" 2>/dev/null
 ```
 
-Lane plan:
-
-```bash
-rg -n "Lane contract|Full harvest row accounting|In-lane candidate matrix|Execution queue|Downstream lane application|Accepted-plan execution handoff|review" docs/plans/<plan>.md
-```
-
 Versioned-output hygiene for `behavior-only` sources:
 
 ```bash
@@ -386,5 +332,3 @@ rg -n "copied from|verbatim|fixture copied|ported from" \
   docs packages apps content benchmarks tooling 2>/dev/null && \
   echo "Review versioned output for unsafe behavior-only wording" || true
 ```
-
-For `behavior-only` sources, verify that versioned local tests use local fixtures, helpers, names and assertions, not upstream test code or mechanically ported fixture shape. Implementation proof follows `verify`'s command lanes: the focused package or browser test first, `pnpm check:plite:dev` before closing a Plite slice, and `pnpm check:plite` for release-quality browser claims. Raw mobile proof needs real device or Appium artifacts; semantic mobile handles and mobile viewports are not raw-device proof.

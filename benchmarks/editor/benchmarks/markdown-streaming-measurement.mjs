@@ -145,10 +145,10 @@ function assessLatency(receipt, policy) {
   const finals = armValues(streams, (stream) => stream.trace?.finalWorkMs);
   const arrivals = armValues(streams, (stream) => stream.page?.latencyP95Ms);
 
-  for (const [name, values] of [
-    ['final', finals],
-    ['arrival', arrivals],
-  ]) {
+  for (const [name, values] of Object.entries({
+    final: finals,
+    arrival: arrivals,
+  })) {
     for (const arm of arms) {
       if (values[arm].length === 0 || !values[arm].every(isDuration)) {
         reasons.push([

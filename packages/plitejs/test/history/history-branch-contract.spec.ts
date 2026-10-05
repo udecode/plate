@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { runInNewContext } from 'node:vm';
 
 import {
   createEditor,
   defineEffect,
   definePlugin,
   definePluginSlot,
+  type EditorLifecycleError,
   type Element,
+  type HistoryResult,
 } from 'plitejs';
 
 import { History, history } from '../../src/history';
@@ -25,6 +28,11 @@ const deferred = <T>() => {
   return { promise, resolve };
 };
 
+const settled = (result: HistoryResult) => {
+  assert.ok(result.status === 'pending');
+  return result.settled;
+};
+
 type Transition = Readonly<{ previous: string; value: string }>;
 type ReplayOutcome = 'applied' | 'blocked' | 'throw';
 type ReplayResult =
@@ -32,7 +40,13 @@ type ReplayResult =
   | Readonly<{ reason: string; status: 'blocked' }>;
 let nextSessionEffect = 1;
 
-const createSessionHarness = (options: { maxDepth?: number } = {}) => {
+const createSessionHarness = ({
+  lifecycleErrorSink,
+  ...options
+}: {
+  lifecycleErrorSink?: (error: EditorLifecycleError) => void;
+  maxDepth?: number;
+} = {}) => {
   let external = 'comment';
   let replay: (transition: Transition) => Promise<ReplayResult> = async (
     transition
@@ -49,6 +63,7 @@ const createSessionHarness = (options: { maxDepth?: number } = {}) => {
   });
   nextSessionEffect += 1;
   const editor = createEditor({
+    lifecycleErrorSink,
     plugins: [
       history(options),
       definePlugin(`history-session-${nextSessionEffect}`, {
@@ -138,7 +153,7 @@ describe('immutable history branches', () => {
       tx.text.insert('C', { at: { offset: 0, path: [0, 0] } });
     });
 
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     const { revision } = editor.read.history();
     const sessionUndo = editor.api.history.undo();
 
@@ -149,7 +164,7 @@ describe('immutable history branches', () => {
     assert.equal(editor.read.history().revision, revision);
     assert.equal(Object.hasOwn(editor.read.history(), 'pending'), false);
     assert.equal(Object.hasOwn(History.toJSON(editor), 'pending'), false);
-    assert.deepEqual(await editor.api.history.undo(), { status: 'busy' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'busy' });
 
     editor.update({ history: 'merge' }, (tx) => {
       tx.text.insert('X', { at: { offset: 1, path: [0, 0] } });
@@ -159,14 +174,14 @@ describe('immutable history branches', () => {
     assert.equal(editor.read.history().undos.length, 3);
 
     gate.resolve();
-    assert.deepEqual(await sessionUndo, { status: 'applied' });
+    assert.deepEqual(await settled(sessionUndo), { status: 'applied' });
     assert.equal(external, '');
     assert.equal(editor.read.history.pending(), null);
     assert.equal(editor.read.text.string([]), 'AX');
     assert.equal(editor.read.history().undos.length, 2);
     assert.equal(editor.read.history().redos.length, 0);
 
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     assert.equal(editor.read.text.string([]), 'A');
   });
 
@@ -174,12 +189,16 @@ describe('immutable history branches', () => {
     const harness = createSessionHarness();
     const { editor } = harness;
 
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(await settled(editor.api.history.undo()), {
+      status: 'applied',
+    });
     assert.equal(harness.external(), '');
     assert.equal(editor.read.history().undos.length, 1);
     assert.equal(editor.read.history().redos.length, 1);
 
-    assert.deepEqual(await editor.api.history.redo(), { status: 'applied' });
+    assert.deepEqual(await settled(editor.api.history.redo()), {
+      status: 'applied',
+    });
     assert.equal(harness.external(), 'comment');
     assert.equal(editor.read.history().undos.length, 2);
     assert.equal(editor.read.history().redos.length, 0);
@@ -200,13 +219,13 @@ describe('immutable history branches', () => {
       tx.text.insert('N', { at: { offset: 0, path: [0, 0] } });
     });
 
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     assert.equal(editor.read.text.string([]), '');
 
     for (let cycle = 0; cycle < 5; cycle += 1) {
-      assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+      assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
       assert.equal(editor.read.text.string([]), 'A');
-      assert.deepEqual(await editor.api.history.redo(), { status: 'applied' });
+      assert.deepEqual(editor.api.history.redo(), { status: 'applied' });
       assert.equal(editor.read.text.string([]), '');
     }
   });
@@ -223,14 +242,14 @@ describe('immutable history branches', () => {
     });
     gate.resolve();
 
-    assert.deepEqual(await pending, {
+    assert.deepEqual(await settled(pending), {
       reason: 'external-diverged',
       status: 'blocked',
     });
     assert.equal(editor.read.history().undos.length, 3);
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     assert.equal(editor.read.text.string([]), 'A');
-    assert.deepEqual(await editor.api.history.undo(), {
+    assert.deepEqual(await settled(editor.api.history.undo()), {
       reason: 'external-diverged',
       status: 'blocked',
     });
@@ -240,7 +259,7 @@ describe('immutable history branches', () => {
     const harness = createSessionHarness();
     const { editor } = harness;
 
-    await editor.api.history.undo();
+    await settled(editor.api.history.undo());
     const gate = harness.defer('applied');
     const pending = editor.api.history.redo();
 
@@ -249,15 +268,17 @@ describe('immutable history branches', () => {
     });
     gate.resolve();
 
-    assert.deepEqual(await pending, { status: 'applied' });
+    assert.deepEqual(await settled(pending), { status: 'applied' });
     assert.equal(harness.external(), 'comment');
     assert.equal(editor.read.history().undos.length, 3);
     assert.equal(editor.read.history().redos.length, 0);
 
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     assert.equal(editor.read.text.string([]), 'A');
     assert.equal(harness.external(), 'comment');
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(await settled(editor.api.history.undo()), {
+      status: 'applied',
+    });
     assert.equal(editor.read.text.string([]), 'A');
     assert.equal(harness.external(), '');
   });
@@ -266,7 +287,7 @@ describe('immutable history branches', () => {
     const harness = createSessionHarness();
     const { editor } = harness;
 
-    await editor.api.history.undo();
+    await settled(editor.api.history.undo());
     const gate = harness.defer('blocked');
     const pending = editor.api.history.redo();
 
@@ -275,13 +296,13 @@ describe('immutable history branches', () => {
     });
     gate.resolve();
 
-    assert.deepEqual(await pending, {
+    assert.deepEqual(await settled(pending), {
       reason: 'external-diverged',
       status: 'blocked',
     });
     assert.equal(editor.read.history().undos.length, 2);
     assert.equal(editor.read.history().redos.length, 0);
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     assert.equal(editor.read.text.string([]), 'A');
     assert.equal(harness.external(), '');
   });
@@ -290,11 +311,11 @@ describe('immutable history branches', () => {
     const harness = createSessionHarness();
     const { editor } = harness;
 
-    await editor.api.history.undo();
+    await settled(editor.api.history.undo());
     harness.replayAs('blocked');
 
     for (let attempt = 0; attempt < 2; attempt++) {
-      assert.deepEqual(await editor.api.history.redo(), {
+      assert.deepEqual(await settled(editor.api.history.redo()), {
         reason: 'external-diverged',
         status: 'blocked',
       });
@@ -321,7 +342,7 @@ describe('immutable history branches', () => {
     assert.equal(editor.read.selection()?.focus.offset, 2);
 
     gate.resolve();
-    assert.deepEqual(await pending, { status: 'applied' });
+    assert.deepEqual(await settled(pending), { status: 'applied' });
     assert.equal(editor.read.text.string([]), 'AR');
     assert.equal(editor.read.history().undos.length, 1);
     assert.equal(editor.read.history().redos.length, 1);
@@ -331,7 +352,7 @@ describe('immutable history branches', () => {
     const harness = createSessionHarness();
     const { editor } = harness;
 
-    await editor.api.history.undo();
+    await settled(editor.api.history.undo());
     const gate = harness.defer('applied');
     const pending = editor.api.history.redo();
 
@@ -346,13 +367,15 @@ describe('immutable history branches', () => {
     });
 
     gate.resolve();
-    assert.deepEqual(await pending, { status: 'applied' });
+    assert.deepEqual(await settled(pending), { status: 'applied' });
     assert.equal(editor.read.text.string([]), 'ARXQ');
 
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
     assert.equal(editor.read.text.string([]), 'ARQ');
     assert.equal(harness.external(), 'comment');
-    assert.deepEqual(await editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(await settled(editor.api.history.undo()), {
+      status: 'applied',
+    });
     assert.equal(editor.read.text.string([]), 'ARQ');
     assert.equal(harness.external(), '');
   });
@@ -395,7 +418,7 @@ describe('immutable history branches', () => {
     assert.equal(second.read.text.string([]), 'B');
 
     gate.resolve();
-    assert.deepEqual(await pending, { status: 'applied' });
+    assert.deepEqual(await settled(pending), { status: 'applied' });
   });
 
   it('clears a claim without moving it after replacement or depth clipping', async () => {
@@ -408,7 +431,7 @@ describe('immutable history branches', () => {
     });
     replacementGate.resolve();
 
-    assert.deepEqual(await replacementUndo, { status: 'applied' });
+    assert.deepEqual(await settled(replacementUndo), { status: 'applied' });
     assert.equal(replacement.editor.read.history.pending(), null);
     assert.equal(replacement.editor.read.history().undos.length, 0);
     assert.equal(replacement.editor.read.history().redos.length, 0);
@@ -426,7 +449,7 @@ describe('immutable history branches', () => {
     restored.editor.update((tx) => tx.history.restore(empty));
     restoredGate.resolve();
 
-    assert.deepEqual(await restoredUndo, { status: 'applied' });
+    assert.deepEqual(await settled(restoredUndo), { status: 'applied' });
     assert.equal(restored.editor.read.history.pending(), null);
     assert.equal(restored.editor.read.history().undos.length, 0);
     assert.equal(restored.editor.read.history().redos.length, 0);
@@ -447,26 +470,154 @@ describe('immutable history branches', () => {
     }
     clippedGate.resolve();
 
-    assert.deepEqual(await clippedUndo, { status: 'applied' });
+    assert.deepEqual(await settled(clippedUndo), { status: 'applied' });
     assert.equal(clipped.editor.read.history.pending(), null);
     assert.equal(clipped.editor.read.history().undos.length, 2);
     assert.equal(clipped.editor.read.history().redos.length, 0);
   });
 
-  it('clears a live claim and preserves its head when the owner throws', async () => {
-    const harness = createSessionHarness();
+  it('reports a throwing owner once, clears its claim and preserves its head', async () => {
+    const errors: EditorLifecycleError[] = [];
+    const rejections: unknown[] = [];
+    const onRejection = (reason: unknown) => rejections.push(reason);
+    const harness = createSessionHarness({
+      lifecycleErrorSink: (error) => errors.push(error),
+    });
     const gate = harness.defer('throw');
-    const pending = harness.editor.api.history.undo();
 
-    gate.resolve();
-    await assert.rejects(pending, /owner failed/);
+    process.on('unhandledRejection', onRejection);
+    try {
+      harness.editor.api.history.undo();
+      gate.resolve();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+    } finally {
+      process.off('unhandledRejection', onRejection);
+    }
+
+    assert.deepEqual(rejections, []);
+    assert.deepEqual(
+      errors.map((error) => ('source' in error ? error.source : undefined)),
+      ['history']
+    );
     assert.equal(harness.editor.read.history.pending(), null);
     assert.equal(harness.editor.read.history().undos.length, 2);
     assert.equal(harness.editor.read.history().redos.length, 0);
   });
 
+  it('clears its claim and keeps undo usable when settlement throws', async () => {
+    const errors: EditorLifecycleError[] = [];
+    const uncloneable = (() => '') as unknown as string;
+    const sessionEffect = defineEffect<Transition>({
+      history: {
+        replay: async (_editor, transition) => ({
+          status: 'applied' as const,
+          value: { ...transition, previous: uncloneable },
+        }),
+      },
+      invert: ({ previous, value }) => ({ previous: value, value: previous }),
+      key: 'history.session-settle-throw',
+    });
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => errors.push(error),
+      plugins: [
+        history(),
+        definePlugin('history-session-settle-throw', {
+          effectTypes: [sessionEffect],
+        }),
+      ],
+      initialValue: [paragraph('')],
+    });
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('A', { at: { offset: 0, path: [0, 0] } });
+    });
+    editor.update((tx) => {
+      tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+    });
+    editor.api.history.undo();
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    assert.equal(editor.read.history.pending(), null);
+    assert.equal(errors.length, 1);
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('B', { at: { offset: 0, path: [0, 0] } });
+    });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
+    assert.equal(editor.read.text.string([]), 'A');
+  });
+
+  it('waits on an owner promise from another realm', async () => {
+    const sessionEffect = defineEffect<Transition>({
+      history: {
+        replay: () =>
+          runInNewContext(
+            'Promise.resolve({ reason: "external-diverged", status: "blocked" })'
+          ),
+      },
+      invert: ({ previous, value }) => ({ previous: value, value: previous }),
+      key: 'history.session-foreign-promise',
+    });
+    const editor = createEditor({
+      plugins: [
+        history(),
+        definePlugin('history-session-foreign-promise', {
+          effectTypes: [sessionEffect],
+        }),
+      ],
+      initialValue: [paragraph('')],
+    });
+
+    editor.update((tx) => {
+      tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+    });
+
+    assert.deepEqual(await settled(editor.api.history.undo()), {
+      reason: 'external-diverged',
+      status: 'blocked',
+    });
+    assert.equal(editor.read.history().undos.length, 1);
+    assert.equal(editor.read.history().redos.length, 0);
+  });
+
+  it('settles a synchronous owner throw in the call', () => {
+    const errors: EditorLifecycleError[] = [];
+    const sessionEffect = defineEffect<Transition>({
+      history: {
+        replay: () => {
+          throw new Error('owner failed');
+        },
+      },
+      invert: ({ previous, value }) => ({ previous: value, value: previous }),
+      key: 'history.session-sync-throw',
+    });
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => errors.push(error),
+      plugins: [
+        history(),
+        definePlugin('history-session-sync-throw', {
+          effectTypes: [sessionEffect],
+        }),
+      ],
+      initialValue: [paragraph('')],
+    });
+
+    editor.update((tx) => {
+      tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+    });
+
+    assert.deepEqual(editor.api.history.undo(), { status: 'failed' });
+    assert.equal(editor.read.history.pending(), null);
+    assert.equal(errors.length, 1);
+    assert.equal(editor.read.history().undos.length, 1);
+  });
+
   it('returns the session owner outcome after history retires', async () => {
     for (const outcome of ['applied', 'blocked', 'throw'] as const) {
+      const errors: EditorLifecycleError[] = [];
       const gate = deferred<void>();
       const slot = definePluginSlot(`history-retirement-${outcome}`);
       const sessionEffect = defineEffect<Transition>({
@@ -487,6 +638,7 @@ describe('immutable history branches', () => {
         key: `history.retirement.${outcome}`,
       });
       const editor = createEditor({
+        lifecycleErrorSink: (error) => errors.push(error),
         plugins: [
           slot.of(history()),
           definePlugin(`history-retirement-effect-${outcome}`, {
@@ -504,14 +656,15 @@ describe('immutable history branches', () => {
       gate.resolve();
 
       if (outcome === 'throw') {
-        await assert.rejects(pending, /owner failed/);
+        assert.deepEqual(await settled(pending), { status: 'failed' });
+        assert.equal(errors.length, 1);
       } else if (outcome === 'blocked') {
-        assert.deepEqual(await pending, {
+        assert.deepEqual(await settled(pending), {
           reason: 'external-diverged',
           status: 'blocked',
         });
       } else {
-        assert.deepEqual(await pending, { status: 'applied' });
+        assert.deepEqual(await settled(pending), { status: 'applied' });
       }
     }
   });
@@ -544,7 +697,7 @@ describe('immutable history branches', () => {
     editor.update((tx) => tx.effects.emit(sessionEffect, 'comment'));
 
     for (let attempt = 1; attempt <= 2; attempt++) {
-      assert.deepEqual(await editor.api.history.undo(), {
+      assert.deepEqual(editor.api.history.undo(), {
         reason: 'external-diverged',
         status: 'blocked',
       });

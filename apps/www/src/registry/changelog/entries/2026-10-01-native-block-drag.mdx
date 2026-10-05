@@ -3,11 +3,12 @@ id: 2026-10-01-native-block-drag
 date: 2026-10-01
 status: draft
 kind: behavior
-summary: "Drag blocks natively, without React DnD"
-change: {"type":"source","date":"2026-10-01","commits":[]}
-release: {"status":"unresolved"}
+summary: 'Drag blocks natively, without React DnD'
+change: { 'type': 'source', 'date': '2026-10-01', 'commits': [] }
+release: { 'status': 'unresolved' }
 diagnostics: []
 ---
+
 - **`dnd`**: Drag handles start a native drag with `editor.api.dom.drag.start`, and `DropIndicator` paints `useDropIndicator()` in each view. `DndKit` needs no `DndProvider`, and the `react-dnd` dependencies are gone.
 - **`column`**: The column handle drags its column natively; the vertical drop line comes from `DndKit`.
 - **`table`**: The row handle drags its row natively; the drop line comes from `DndKit`.

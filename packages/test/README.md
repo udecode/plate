@@ -123,10 +123,7 @@ test('types through the browser editor', async ({ page }) => {
 });
 ```
 
-The page under test installs the browser handle once, at module scope in a
-test or development entry, before its first editor mounts. Production entries
-never call it. Without it, `ready: { editor: 'visible' }` fails with "browser
-handle not installed".
+The page under test installs the browser handle once, at module scope in a test or development entry, before its first editor mounts. Production entries never call it. Without it, `ready: { editor: 'visible' }` fails with "browser handle not installed".
 
 ```ts
 import { installBrowserHandle } from 'platejs/react'; // or 'plitejs/react'
@@ -134,8 +131,7 @@ import { installBrowserHandle } from 'platejs/react'; // or 'plitejs/react'
 installBrowserHandle();
 ```
 
-Each Playwright project names how `editor.clipboard.pasteText` and
-`pasteHtml` deliver a paste:
+Each Playwright project names how `editor.clipboard.pasteText` and `pasteHtml` deliver a paste:
 
 ```ts
 import type { BrowserTestOptions } from '@platejs/test/playwright';
@@ -159,11 +155,7 @@ export default defineConfig<BrowserTestOptions>({
 });
 ```
 
-`'native'` writes the clipboard and presses the paste shortcut. `'event'`
-dispatches `paste`, then `beforeinput` when nothing cancels it. `'handle'`
-calls the editor directly and is labeled a stand-in. A paste fails when its
-transport did not apply it or the page threw, and each test records its
-transport in a `clipboard-transport` annotation.
+`'native'` writes the clipboard and presses the paste shortcut. `'event'` dispatches `paste`, then `beforeinput` when nothing cancels it. `'handle'` calls the editor directly and is labeled a stand-in. A paste fails when its transport did not apply it or the page threw, and each test records its transport in a `clipboard-transport` annotation.
 
 ## Proof Style
 

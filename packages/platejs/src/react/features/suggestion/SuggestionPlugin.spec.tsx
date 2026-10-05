@@ -290,7 +290,9 @@ it.each(['accept', 'reject'] as const)(
     expect(editor.read.children()).toEqual([value[0], value[2]]);
     expect(editor.read.value().children).toEqual(value);
 
-    await act(async () => editor.api.history.undo());
+    await act(() => {
+      editor.api.history.undo();
+    });
     expect(mounted.getByTestId('retained-block')).not.toHaveAttribute(
       'data-editor-retained'
     );
@@ -298,7 +300,9 @@ it.each(['accept', 'reject'] as const)(
       'data-read-only',
       'false'
     );
-    await act(async () => editor.api.history.redo());
+    await act(() => {
+      editor.api.history.redo();
+    });
     expect(mounted.getByTestId('retained-block')).toHaveAttribute(
       'data-editor-retained'
     );

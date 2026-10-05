@@ -67,18 +67,11 @@ type BivariantCallback<TArgs extends readonly unknown[], TResult> = {
   bivarianceHack(...args: TArgs): TResult;
 }['bivarianceHack'];
 
-type MarkdownDecodeResult =
-  | Descendant
-  | Descendant[]
-  | MarkdownRefusal
-  | unknown
-  | undefined;
-
 type MarkdownEncodeResult = MdRootContent | MarkdownRefusal | undefined;
 
 type ErasedMarkdownNodeMapping = Readonly<{
   attributes?: Readonly<Record<string, string>>;
-  decode?: BivariantCallback<[MarkdownDecodeContext], MarkdownDecodeResult>;
+  decode?: BivariantCallback<[MarkdownDecodeContext], unknown>;
   encode?: BivariantCallback<[MarkdownEncodeContext], MarkdownEncodeResult>;
   nestedTags?: readonly string[];
   node?: string;
@@ -130,7 +123,7 @@ type MarkdownDecoder = Readonly<{
     marks: MdMarks,
     options: DeserializeMdContext,
     previousSibling: MdRootContent | null
-  ) => MarkdownDecodeResult;
+  ) => unknown;
   mark: boolean;
   owner: string;
   priority: number;

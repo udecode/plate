@@ -14,7 +14,7 @@ type Equal<A, B> =
 type Assert<T extends true> = T;
 
 type Label = Readonly<{ label: string }>;
-type LabelJson = Readonly<{ label: string }>;
+type LabelJson = { label: string };
 
 const persistence = {
   decode(value) {
@@ -27,9 +27,9 @@ const persistence = {
       throw new Error('Invalid label.');
     }
 
-    return { label: value.label } as Label;
+    return { label: value.label };
   },
-  encode: (value) => ({ label: value.label }) as LabelJson,
+  encode: (value) => ({ label: value.label }),
   version: 2,
 } satisfies EditorValuePersistence<Label, LabelJson>;
 

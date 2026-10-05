@@ -50,6 +50,12 @@ page-require: What other editors do
 - The rendered file under the plans directory is the lasting copy of a page; a published claude.ai page is where the owner comments on one hand-back, and a link that no longer opens gets a new page on the next publish. Codex renders the page and replies with its file path.
 - Needs you collects the Open questions of every iteration, each older one labeled with its plan, so a newer plan no longer hides an older question; the index marks a subject that waits on you.
 - plate-2's API review playbook creates a missing subject file with its editor comparison and what has landed and been proven, at its first stop and in a ledger triage audit, so the required "What other editors do" section exists before the page renders.
+- The brief leads the page. A plan's `## Brief` holds five `###` questions, always in this order: What did you find? What will change? What do you need from me? What happens if I say go? What could go wrong? The page renders it first, under the title.
+- Needs you follows the brief. The open questions render as their own panel right after the five answers, so every answer stays on the first screen.
+- Everything else folds. Close, Main changes, Defaults, the subject's state, earlier iterations, details and review history each collapse to one summary line. A plan's Public API pairs stay open under the brief when it changes them.
+- The renderer checks the brief. An open plan that leads its page needs one, and any open plan's brief is refused when it skips or reorders a question, leaves an answer empty, or gives an answer more than 40 words. A page without a brief renders as before.
+- The header names only the leading plan's own review round.
+- plate-2's feature, benchmark and regression plan templates carry a brief skeleton.
 
 ## Hard cuts and app migration
 
@@ -64,6 +70,11 @@ page-require: What other editors do
 - Have sync-pstack's `verify` fail when the block names a skill the project cannot resolve, or when `skills-lock.json` records a local source for a dotai skill. owner: zbeyens.
 - `docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md` refuses to render until its Defaults becomes the decision table. owner: zbeyens.
 - No fresh session has yet published a page under the page hand-back rule; the trials that proved its routing were read-only. Check the first real hand-back on its page. owner: zbeyens.
+- plate-2's `pageTopic.hub` points at `docs/research/review-scopes/{topic}.json` since the 2026-10-04 ledger redesign, so the topics index (`hubsWithoutSubject`) lists 63 hub-only topics by bare id instead of their titles, and the page header labels the JSON scope file as history. Read a JSON hub's `title` and drop the history label. owner: zbeyens.
 - plate-2's 22 ledger topics with plans and no subject file get their pages when the API review playbook's first stop or a ledger triage audit reaches them. owner: Ziad, tracked here.
 - The block calls the rendered file the durable page, but `docs/plans/artifacts/` is gitignored, so the page lasts only on the machine that rendered it; a Claude smoke flagged it on 2026-10-04. owner: Ziad, tracked here.
 - A plan the reviews list does not name ends with an `AskUserQuestion`, while Plan pages says the hand-back reply is the page link alone; a Claude smoke flagged it on 2026-10-04. owner: Ziad, tracked here.
+- The Plate v2 workflow guide was not checked after the brief change, because another account owns it and reading it needs your approval. owner: Ziad, tracked here.
+- The feature and regression templates hold their brief at the end, because they use `Label:` sections and a `## Brief` above them would swallow those lines. owner: Ziad, tracked here.
+- The header could show an open-critical count once panel rows record open findings. owner: Ziad, tracked here.
+- A hand-back reply is the page link alone, and the index is never published, so a reply cannot tell the owner that a second subject also waits on them. Both runtimes' smokes flagged it on 2026-10-05. owner: Ziad, tracked here.

@@ -252,10 +252,7 @@ const captureDocxDomRealm = (): DocxDomRealm => {
   const correspondence = subtle
     ? Object.freeze({
         digestSha256: (value: Uint8Array) =>
-          subtle.digest(
-            'SHA-256',
-            Uint8Array.from(value)
-          ) as Promise<ArrayBuffer>,
+          subtle.digest('SHA-256', Uint8Array.from(value)),
         parseXml: (source: Uint8Array) =>
           parseXml(decoder.decode(source), 'word/document.xml'),
         serializeXml,
@@ -1488,10 +1485,9 @@ const failed = (
   diagnostics: readonly DocxDiagnostic[] = []
 ): DocxImportFailure =>
   Object.freeze({
-    diagnostics: Object.freeze([diagnostic, ...diagnostics]) as readonly [
-      DocxErrorDiagnostic,
-      ...DocxDiagnostic[],
-    ],
+    diagnostics: Object.freeze<
+      readonly [DocxErrorDiagnostic, ...DocxDiagnostic[]]
+    >([diagnostic, ...diagnostics]),
     ok: false,
   });
 
@@ -1581,7 +1577,7 @@ const importBoundedDocx = async <V extends Value>(
 
   try {
     projection = await importProjection(
-      target as DocxImportTarget<Value>,
+      target,
       normalized,
       codec,
       diagnostics,
@@ -1613,7 +1609,7 @@ const importBoundedDocx = async <V extends Value>(
         children: rootValue(projectNodes(projection.nodes, new Set(), codec)),
       }));
     imported = createSparseImportedRevisions(
-      target as DocxImportTarget<Value>,
+      target,
       projection.nodes,
       revisions,
       codec,
@@ -1699,7 +1695,7 @@ const importBoundedDocx = async <V extends Value>(
 
   const nativeDocument = authoredTrust
     ? await readCorrespondingNativeDocument(
-        target as DocxImportTarget<Value>,
+        target,
         pkg,
         diagnostics,
         authoredTrust,
@@ -1786,8 +1782,8 @@ const runDocxImport = async <V extends Value, TRetainSource extends boolean>(
     );
 
     throwIfDocxAborted(options.signal, target.dom.abortError);
-    if (!result.ok || options.retainSource !== true) {
-      return result as DocxImportOutcome<TRetainSource, V>;
+    if (!result.ok || !options.retainSource) {
+      return result;
     }
     const retained = retainDocxSource(pkg, {
       comments: result.comments,
@@ -1807,7 +1803,7 @@ const runDocxImport = async <V extends Value, TRetainSource extends boolean>(
           ])
         : result.diagnostics,
       source: retained.source,
-    }) as DocxImportOutcome<TRetainSource, V>;
+    });
   } catch (error) {
     throwIfDocxAborted(options.signal, target.dom.abortError);
     if (error instanceof DocxPackageError) {
@@ -1826,6 +1822,7 @@ export function importDocx<const TRetainSource extends boolean = false>(
   const signal = options?.signal;
 
   if (signal?.aborted) {
+    // oxlint-disable-next-line typescript/prefer-promise-reject-errors -- Reject with the caller's AbortSignal.reason, as fetch does.
     return Promise.reject(signal.reason);
   }
   if (!options || !Array.isArray(options.plugins)) {

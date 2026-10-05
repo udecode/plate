@@ -365,110 +365,107 @@ function CommentBody({ body }: { body: Value }) {
   );
 }
 
-export const CommentThreadCard = React.memo(
-  ({
-    id,
-    onInteractionChange,
-    showReply = true,
-  }: {
-    id: string;
-    onInteractionChange?: (blocked: boolean) => void;
-    showReply?: boolean;
-  }) => {
-    const { api: comments } = useEditor().plugin(CommentsPlugin);
-    const thread = useCommentThread(id);
-    const currentUserId = useCurrentCommentUserId();
-    const [editingId, setEditingId] = React.useState<string | null>(null);
-    const [replyVersion, setReplyVersion] = React.useState(0);
-    const interactionsRef = React.useRef<ReadonlySet<string>>(new Set());
-    const [interactions, setInteractions] = React.useState<ReadonlySet<string>>(
-      () => new Set()
-    );
-    const interactionChangeRef = React.useRef(onInteractionChange);
-    React.useEffect(() => {
-      interactionChangeRef.current = onInteractionChange;
-    }, [onInteractionChange]);
-    React.useEffect(() => () => interactionChangeRef.current?.(false), []);
-    const setInteraction = React.useCallback(
-      (key: string, blocked: boolean) => {
-        const { current } = interactionsRef;
-        const next = new Set(current);
-        if (blocked) next.add(key);
-        else next.delete(key);
-        if (
-          next.size === current.size &&
-          [...next].every((entry) => current.has(entry))
-        ) {
-          return;
-        }
-        interactionsRef.current = next;
-        setInteractions(next);
-        onInteractionChange?.(next.size > 0);
-      },
-      [onInteractionChange]
-    );
-    const setReplyInteraction = React.useCallback(
-      (blocked: boolean) => setInteraction('reply', blocked),
-      [setInteraction]
-    );
-    if (!thread) return null;
+export function CommentThreadCard({
+  id,
+  onInteractionChange,
+  showReply = true,
+}: {
+  id: string;
+  onInteractionChange?: (blocked: boolean) => void;
+  showReply?: boolean;
+}) {
+  const { api: comments } = useEditor().plugin(CommentsPlugin);
+  const thread = useCommentThread(id);
+  const currentUserId = useCurrentCommentUserId();
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [replyVersion, setReplyVersion] = React.useState(0);
+  const interactionsRef = React.useRef<ReadonlySet<string>>(new Set());
+  const [interactions, setInteractions] = React.useState<ReadonlySet<string>>(
+    () => new Set()
+  );
+  const interactionChangeRef = React.useRef(onInteractionChange);
+  React.useEffect(() => {
+    interactionChangeRef.current = onInteractionChange;
+  }, [onInteractionChange]);
+  React.useEffect(() => () => interactionChangeRef.current?.(false), []);
+  const setInteraction = React.useCallback(
+    (key: string, blocked: boolean) => {
+      const { current } = interactionsRef;
+      const next = new Set(current);
+      if (blocked) next.add(key);
+      else next.delete(key);
+      if (
+        next.size === current.size &&
+        [...next].every((entry) => current.has(entry))
+      ) {
+        return;
+      }
+      interactionsRef.current = next;
+      setInteractions(next);
+      onInteractionChange?.(next.size > 0);
+    },
+    [onInteractionChange]
+  );
+  const setReplyInteraction = React.useCallback(
+    (blocked: boolean) => setInteraction('reply', blocked),
+    [setInteraction]
+  );
+  if (!thread) return null;
 
-    return (
-      <article
-        className="relative"
-        data-comment-thread={id}
-        data-status={thread.status}
-      >
-        {thread.messages.map((message, index) => (
-          <CommentMessageRow
-            interactionBlocked={interactions.size > 0}
-            editing={editingId === message.id}
-            excerpt={thread.excerpt}
-            id={id}
-            index={index}
-            isLast={index === thread.messages.length - 1}
-            key={message.id}
-            message={message}
-            onEdit={() => {
-              setInteraction(`${message.id}:edit`, true);
-              setEditingId(message.id);
+  return (
+    <article
+      className="relative"
+      data-comment-thread={id}
+      data-status={thread.status}
+    >
+      {thread.messages.map((message, index) => (
+        <CommentMessageRow
+          interactionBlocked={interactions.size > 0}
+          editing={editingId === message.id}
+          excerpt={thread.excerpt}
+          id={id}
+          index={index}
+          isLast={index === thread.messages.length - 1}
+          key={message.id}
+          message={message}
+          onEdit={() => {
+            setInteraction(`${message.id}:edit`, true);
+            setEditingId(message.id);
+          }}
+          onEditingChange={(next) => {
+            if (next === null) {
+              setInteraction(`${message.id}:edit`, false);
+            }
+            setEditingId(next);
+          }}
+          onInteractionChange={setInteraction}
+          mine={message.userId === currentUserId}
+          resolved={thread.resolution !== null}
+          showExcerpt={thread.target.type === 'range' && index === 0}
+          status={thread.status}
+          threadLength={thread.messages.length}
+        />
+      ))}
+
+      {showReply &&
+        currentUserId &&
+        (!thread.resolution || interactions.has('reply')) && (
+          <CommentComposer
+            ariaLabel="Reply to thread"
+            cancelLabel="Cancel reply"
+            key={replyVersion}
+            onCancel={() => {
+              setReplyInteraction(false);
+              setReplyVersion((version) => version + 1);
             }}
-            onEditingChange={(next) => {
-              if (next === null) {
-                setInteraction(`${message.id}:edit`, false);
-              }
-              setEditingId(next);
-            }}
-            onInteractionChange={setInteraction}
-            mine={message.userId === currentUserId}
-            resolved={thread.resolution !== null}
-            showExcerpt={thread.target.type === 'range' && index === 0}
-            status={thread.status}
-            threadLength={thread.messages.length}
+            onInteractionChange={setReplyInteraction}
+            onSubmit={(body) => comments.reply(id, body)}
+            placeholder="Reply..."
           />
-        ))}
-
-        {showReply &&
-          currentUserId &&
-          (!thread.resolution || interactions.has('reply')) && (
-            <CommentComposer
-              ariaLabel="Reply to thread"
-              cancelLabel="Cancel reply"
-              key={replyVersion}
-              onCancel={() => {
-                setReplyInteraction(false);
-                setReplyVersion((version) => version + 1);
-              }}
-              onInteractionChange={setReplyInteraction}
-              onSubmit={(body) => comments.reply(id, body)}
-              placeholder="Reply..."
-            />
-          )}
-      </article>
-    );
-  }
-);
-CommentThreadCard.displayName = 'CommentThreadCard';
+        )}
+    </article>
+  );
+}
 
 function CommentMessageRow({
   editing,

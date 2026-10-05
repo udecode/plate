@@ -2167,7 +2167,7 @@ export const validateRegressionPlan = (
         }
         if (
           !BEST_API_STOP_PATTERN.test(row.best_api_layer_plan ?? "") &&
-          !/\b(?:plite-plan|plate-plan)\b/i.test(row.best_api_layer_plan ?? "")
+          !/\b(?:plite|plate):\s*\S/i.test(row.best_api_layer_plan ?? "")
         ) {
           errors.push(`${label} requires a Plite or Plate layer plan`);
         }
@@ -2466,7 +2466,7 @@ export const validateRegressionPlan = (
         if (
           BEST_API_STOP_PATTERN.test(row.best_api ?? "")
             ? !isNotApplicable(row.layer_plan)
-            : !/^(?:plite-plan|plate-plan):\s*\S/i.test(row.layer_plan ?? "")
+            : !/^(?:plite|plate):\s*\S/i.test(row.layer_plan ?? "")
         ) {
           errors.push(`${label} requires a Plite or Plate layer plan`);
         }
@@ -2479,7 +2479,7 @@ export const validateRegressionPlan = (
         if (
           BEST_API_STOP_PATTERN.test(row.best_api ?? "")
             ? !isNotApplicable(row.layer_plan)
-            : !/^(?:plite-plan|plate-plan):\s*\S/i.test(row.layer_plan ?? "")
+            : !/^(?:plite|plate):\s*\S/i.test(row.layer_plan ?? "")
         ) {
           errors.push(`${label} requires a Plite or Plate layer plan`);
         }

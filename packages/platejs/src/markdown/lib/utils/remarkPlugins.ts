@@ -93,7 +93,7 @@ const wrapSyncPlugin = (plugin: MarkdownSyncPlugin, index: number): Plugin =>
 
       return result;
     };
-  } as Plugin;
+  };
 
 const materializePluggable = (
   value: MarkdownSyncPluggable,

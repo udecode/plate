@@ -1,0 +1,2 @@
+# pnpm exec oxlint --type-aware <104 task files>
+# exit: 0

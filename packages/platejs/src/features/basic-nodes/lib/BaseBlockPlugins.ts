@@ -59,6 +59,7 @@ export const BlockquoteRules = {
         if (!tx.nodes.wrap({ children: [], type }, { at: match.blockPath })) {
           return decline();
         }
+        return undefined;
       },
     }),
 };
@@ -98,6 +99,7 @@ export const HorizontalRuleRules = {
           children: [{ text: '' }],
           type: editor.plugin(BaseParagraphPlugin).schema.type,
         });
+        return undefined;
       },
     }),
 };

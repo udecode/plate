@@ -1,5 +1,6 @@
 import {
   defaultTreeAdapter,
+  ErrorCodes,
   parse,
   parseFragment,
   type DefaultTreeAdapterMap,
@@ -126,7 +127,9 @@ const limitError = (
   actual: number
 ): HtmlAstParseResult =>
   Object.freeze({
-    diagnostics: Object.freeze([
+    diagnostics: Object.freeze<
+      readonly [HtmlErrorDiagnostic, ...HtmlDiagnostic[]]
+    >([
       Object.freeze({
         actual,
         code: 'html-limit-exceeded' as const,
@@ -135,7 +138,7 @@ const limitError = (
         message: `HTML ${limit} limit ${maximum} was exceeded by ${actual}.`,
         severity: 'error' as const,
       }),
-    ]) as readonly [HtmlErrorDiagnostic, ...HtmlDiagnostic[]],
+    ]),
     ok: false as const,
   });
 
@@ -173,7 +176,7 @@ const createCountingTreeAdapter = (
     depths.set(node, depth);
 
     if ('childNodes' in node) {
-      getChildNodes(node as HtmlAstParentNode).forEach((child) => {
+      getChildNodes(node).forEach((child) => {
         attach(child, depth + 1);
       });
     }
@@ -182,12 +185,7 @@ const createCountingTreeAdapter = (
       node.tagName === 'template' &&
       'content' in node
     ) {
-      attach(
-        defaultTreeAdapter.getTemplateContent(
-          node as DefaultTreeAdapterTypes.Template
-        ),
-        depth + 1
-      );
+      attach(defaultTreeAdapter.getTemplateContent(node), depth + 1);
     }
   };
   const childDepth = (parent: HtmlAstParentNode) =>
@@ -418,7 +416,7 @@ export const parseHtmlAst = (
   }
   const diagnostics: HtmlWarningDiagnostic[] = [];
   const onParseError = (error: ParserError) => {
-    if (error.code === 'missing-doctype') return;
+    if (error.code === ErrorCodes.missingDoctype) return;
 
     diagnostics.push(
       Object.freeze({
@@ -460,7 +458,9 @@ export const parseHtmlAst = (
 
       if (roots.length > 1) {
         return Object.freeze({
-          diagnostics: Object.freeze([
+          diagnostics: Object.freeze<
+            readonly [HtmlErrorDiagnostic, ...HtmlDiagnostic[]]
+          >([
             Object.freeze({
               code: 'html-multiple-editor-roots' as const,
               count: roots.length,
@@ -468,7 +468,7 @@ export const parseHtmlAst = (
               severity: 'error' as const,
             }),
             ...sourceDiagnostics,
-          ]) as readonly [HtmlErrorDiagnostic, ...HtmlDiagnostic[]],
+          ]),
           ok: false as const,
         });
       }
@@ -492,7 +492,9 @@ export const parseHtmlAst = (
     }
 
     return Object.freeze({
-      diagnostics: Object.freeze([
+      diagnostics: Object.freeze<
+        readonly [HtmlErrorDiagnostic, ...HtmlDiagnostic[]]
+      >([
         Object.freeze({
           code: 'html-invalid-source' as const,
           message:
@@ -500,7 +502,7 @@ export const parseHtmlAst = (
           reason: 'parser-failure' as const,
           severity: 'error' as const,
         }),
-      ]) as readonly [HtmlErrorDiagnostic, ...HtmlDiagnostic[]],
+      ]),
       ok: false as const,
     });
   }

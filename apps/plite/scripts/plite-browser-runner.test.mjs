@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { steps as checkSteps } from '../../../tooling/scripts/check.mjs';
 import { stopProcessTree } from '../../../tooling/scripts/run-bounded-process.mjs';
 import {
   applyWorkerCap,
@@ -1197,10 +1198,6 @@ test('fans CI proof into independent project jobs with one build owner', () => {
     path.resolve(appRoot, '../../.github/workflows/plite-ci.yml'),
     'utf-8'
   );
-  const packageWorkflow = fs.readFileSync(
-    path.resolve(appRoot, '../../.github/workflows/ci.yml'),
-    'utf-8'
-  );
   const { dependencies } = JSON.parse(
     fs.readFileSync(path.join(appRoot, 'package.json'), 'utf-8')
   );
@@ -1229,8 +1226,15 @@ test('fans CI proof into independent project jobs with one build owner', () => {
   );
   assert.match(workflow, /Verify exact Chromium coverage/);
   assert.match(workflow, /Verify exact browser-matrix coverage/);
-  assert.match(packageWorkflow, /pnpm plite:bench:targets:check/);
-  assert.match(packageWorkflow, /pnpm plite:public-types/);
+  for (const command of [
+    'pnpm plite:bench:targets:check',
+    'pnpm plite:public-types',
+  ]) {
+    assert.ok(
+      checkSteps.some((step) => step.run === command),
+      command
+    );
+  }
   assert.doesNotMatch(workflow, /pnpm plite:bench:targets:check/);
   assert.doesNotMatch(workflow, /pnpm plite:public-types/);
   assert.doesNotMatch(workflow, /run: pnpm --filter plite test:runner/);

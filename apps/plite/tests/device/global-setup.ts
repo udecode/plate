@@ -122,9 +122,9 @@ const prepareSerial = async (
 
   const session = await run.browser.newBrowserCDPSession();
   // Chrome caches this file; a fresh query shows what the server holds now.
-  const { targetId } = (await session.send('Target.createTarget', {
+  const { targetId } = await session.send('Target.createTarget', {
     url: `${appURL}/.editor-proof-build.json?run=${Date.now()}`,
-  })) as { targetId: string };
+  });
 
   run.targetId = targetId;
   recordOwnedTarget(serial, targetId);

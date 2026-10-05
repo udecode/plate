@@ -14,8 +14,6 @@ external store.
 
 - no derived state in effects
 - no interaction logic in effects watching state
-- no reactive path/context dependency when the value is needed only by an
-  event handler; resolve it lazily from stable node/node key
 - no hand-rolled repeated subscriptions when `useSyncExternalStore` or a local
   selector hook exists
 - `useEffectEvent` only for event-like callbacks fired from an effect/observer
@@ -30,8 +28,5 @@ external store.
 - `vercel-react-best-practices/rules/advanced-effect-event-deps.md`
 - `vercel-react-best-practices/rules/advanced-event-handler-refs.md` when a
   long-lived subscription needs fresh handler behavior
-
-For Plate component/hook ownership, apply `plate-ui`; performance tactics do
-not create new public hooks, providers, or files.
 
 This rule owns the repeated-unit budget and Plite runtime subscription proof.

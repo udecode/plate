@@ -719,7 +719,9 @@ const describeSuggestionPart = (
         default: {
           const unsupportedAction: never = action;
 
-          throw new Error(`Unsupported content action: ${unsupportedAction}`);
+          throw new Error(
+            `Unsupported content action: ${String(unsupportedAction)}`
+          );
         }
       }
     }
@@ -745,7 +747,9 @@ const describeSuggestionPart = (
     default: {
       const unsupportedKind: never = kind;
 
-      throw new Error(`Unsupported suggestion part: ${unsupportedKind}`);
+      throw new Error(
+        `Unsupported suggestion part: ${String(unsupportedKind)}`
+      );
     }
   }
 };
@@ -896,7 +900,9 @@ function SuggestionDiscussionCard({
       default: {
         const unsupportedStatus: never = status;
 
-        throw new Error(`Unsupported authored result: ${unsupportedStatus}`);
+        throw new Error(
+          `Unsupported authored result: ${String(unsupportedStatus)}`
+        );
       }
     }
   })();

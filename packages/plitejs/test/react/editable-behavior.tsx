@@ -798,7 +798,7 @@ describe('plite-react editable behavior', () => {
             types: [],
           } as never,
         },
-        { node: view.read.children()[0] as never }
+        { node: view.read.children()[0] }
       );
 
       expect(drag).not.toBe(null);

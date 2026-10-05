@@ -20,11 +20,12 @@ const getLocalGateway = () => {
   gateway = createFilesGateway({
     adapter,
     maxUploadSize: Number(requireFilesEnv('FILES_MAX_UPLOAD_SIZE')),
-    resolveAccess: async (_request, documentId) => ({
-      namespace: `local/${documentId}`,
-      canRead: true,
-      canWrite: true,
-    }),
+    resolveAccess: (_request, documentId) =>
+      Promise.resolve({
+        namespace: `local/${documentId}`,
+        canRead: true,
+        canWrite: true,
+      }),
     secret: requireFilesEnv('FILES_API_SECRET'),
     trustedInlineType: async (_request, documentId, key) => {
       if (!localUploadKey.test(key)) return undefined;

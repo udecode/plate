@@ -49,12 +49,12 @@ defineEffect<string>({
   key: 'contract.shared-effect',
 });
 
-// @ts-expect-error shared effects cannot own live-session replay work
 defineEffect<string>({
   persist: { ...valueCodecs.string, version: 1 },
   collab: 'shared',
   collabReplay: 'live',
   history: {
+    // @ts-expect-error shared effects cannot own live-session replay work
     replay: (_editor, value) => ({ status: 'applied', value }),
   },
   key: 'contract.invalid-shared-session',

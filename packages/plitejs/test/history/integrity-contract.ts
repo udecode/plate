@@ -32,8 +32,8 @@ const paragraph = (text: string): Descendant => ({
 
 const historyTestEditor = () => createEditor({ plugins: [history()] });
 
-const getHistory = (editor: EditorType) =>
-  editor.read((state: any) => state.history());
+const getHistory = (editor: ReturnType<typeof historyTestEditor>) =>
+  editor.read((state) => state.history());
 
 const undo = (editor: EditorType) => {
   editor.api.history.undo();

@@ -66,7 +66,6 @@
     "packages/plitejs/test/react/vitest-setup.ts",
     "packages/platejs/src/ai/lib/BaseAIPlugin.ts",
     "packages/platejs/src/ai/react/AIChatPlugin.ts",
-    ".agents/rules/best-api/rules/authoring-and-inference.md",
     ".agents/rules/plate-plugins/rules/capabilities.md",
     "content/docs/(guides)/document-meta.mdx",
     "docs/plans/artifacts/plite-core-cuts/verification.json",

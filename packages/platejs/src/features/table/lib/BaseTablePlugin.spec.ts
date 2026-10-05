@@ -338,7 +338,7 @@ describe('BaseTablePlugin', () => {
       '<table><colgroup><col width="80" /></colgroup><tbody><tr><td colspan="4294967296"><p>A</p></td><td colspan="4294967296"><p>B</p></td></tr></tbody></table>'
     )?.[0];
 
-    const truncatedWidths = Reflect.get(truncated as object, 'columnWidths') as
+    const truncatedWidths = Reflect.get(truncated, 'columnWidths') as
       | Array<number | null>
       | undefined;
 

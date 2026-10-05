@@ -12,6 +12,7 @@ import {
   plitePackages,
   repoRoot,
 } from './check-plite.mjs';
+import { steps as checkSteps } from './check.mjs';
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -555,10 +556,6 @@ test('Plite workflows route benchmark authorities to one package-check owner', (
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
     'utf-8'
   );
-  const packageWorkflow = fs.readFileSync(
-    path.join(repoRoot, '.github/workflows/ci.yml'),
-    'utf-8'
-  );
 
   for (const input of [
     'benchmarks/editor/benchmarks/plite-*',
@@ -611,10 +608,16 @@ test('Plite workflows route benchmark authorities to one package-check owner', (
     );
   }
 
-  assert.match(packageWorkflow, /name: 🧪 Check Plate and Plite packages/u);
-  assert.match(packageWorkflow, /pnpm plite:test/u);
-  assert.match(packageWorkflow, /pnpm plite:bench:targets:check/u);
-  assert.match(packageWorkflow, /pnpm plite:public-types/u);
+  for (const command of [
+    'pnpm plite:test',
+    'pnpm plite:bench:targets:check',
+    'pnpm plite:public-types',
+  ]) {
+    assert.ok(
+      checkSteps.some((step) => step.run === command),
+      `${command} must run in pnpm check`
+    );
+  }
   assert.doesNotMatch(pliteWorkflow, /^ {2}packages:$/mu);
   assert.doesNotMatch(pliteWorkflow, /plite:bench:targets:run/u);
 });
@@ -744,15 +747,14 @@ test('root CI owns Plate and Plite package proof without workflow duplication', 
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
     'utf-8'
   );
-  const packageProof = workflow.match(
-    /- name: 🧪 Check Plate and Plite packages(?<body>[\s\S]*?)(?=\n\s+- name:)/u
-  )?.groups?.body;
-
-  assert.ok(packageProof, 'missing root package proof step');
   assert.ok(
-    packageProof.indexOf('pnpm plite:browser:install chromium') <
-      packageProof.indexOf('pnpm plite:test'),
-    'root package proof must install Chromium before browser-backed tests'
+    checkSteps.some((step) => step.run === 'pnpm plite:test'),
+    'pnpm check must own root package proof'
+  );
+  assert.ok(
+    workflow.indexOf('pnpm plite:browser:install chromium') <
+      workflow.indexOf('run: pnpm check'),
+    'root CI must install Chromium before the browser-backed package tests in pnpm check'
   );
   assert.doesNotMatch(pliteWorkflow, /^ {2}packages:$/mu);
   assert.doesNotMatch(pliteWorkflow, /pnpm plite:test/u);

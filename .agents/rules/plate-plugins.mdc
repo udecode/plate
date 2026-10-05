@@ -4,19 +4,14 @@ description: Build Plate plugins and entrypoints with semantic ownership, infere
 
 # Plate Plugins
 
-
 Build Plate plugins that do not need a later `plate-next` cleanup.
 
 This skill owns plugin authoring mechanics: semantic layer, durable source
 owners, file topology, contextual typing, initial state, scoped stores/APIs and
-transactions, React families, and package-local proof.
-
-Before changing reusable API shape, naming, builder/factory patterns,
-composition identity, or runtime/perf law, read `VISION.md` and the relevant `docs/vision/*.md` per the Source authority
-section of `AGENTS.md`
-and route the target call shape to [best-api](../best-api/SKILL.md). Use
-the Plan playbook only when adoption, runtime law, or layer ownership
-needs a plan. Use [Plate Docs](../plate-docs/SKILL.md) for public documentation.
+transactions, React families, and package-local proof. The plugin law it
+applies lives in `docs/vision/plate.md` (Plugin and component doctrine) and
+`docs/vision/plite.md` (Plite API Direction); read the relevant section
+instead of a copy here.
 
 ## Required Reads
 
@@ -25,27 +20,8 @@ Before authoring or refactoring a plugin, read:
 1. [creation-flow.md](./rules/creation-flow.md) for semantic and file ownership;
 2. [typing.md](./rules/typing.md) for inference and public contracts.
 
-These references contain package implementation mechanics. Vision and
-`best-api` own reusable API doctrine; this skill applies the settled shape and
-does not re-decide it.
-
 Use [plugin-authoring-audit.md](./references/plugin-authoring-audit.md) only
 for current repo examples. Plate foundation builders and type tests outrank precedent.
-
-## Routing Gate
-
-Ownership follows the Routing table in `AGENTS.md`.
-
-Continue here when the public target is already clear. Stop for `best-api` when
-the work invents or materially changes a reusable public shape. For a local
-regression, keep pstack's Bug fix playbook as workflow owner and use this skill only as the Plate
-plugin implementation law.
-
-Applying a settled API and changing that API are different jobs. If package
-work changes, removes, renames, or reinterprets the reusable plugin-authoring
-contract, run `best-api repair` in the same task, then repair this skill's own
-rules/examples before package closeout. Do not defer the skill update until a
-later migration pass or wait for the user to notice the drift.
 
 ## Semantic Layer
 
@@ -55,50 +31,8 @@ later migration pass or wait for the user to notice the drift.
   `definePlugin`.
 - Lift an existing semantic base with `toReactPlugin` only in its live React
   adapter; do not re-author it with `definePlugin`.
-- Base and Plate constructors accept root-level `component`; Base `.extend()`
-  does not. A static/base kit declares or terminally replaces a server-safe
-  component without importing a Plate React entrypoint.
-- A static/base kit binds the Base descriptor to a static renderer module,
-  never a live/client node component.
 - Use `definePlugin` directly only for a real React/Plate-native plugin.
-- Package roots never export named plugin-array `*Kit` presets. Feature and
-  facade packages export individual descriptors, operations, and types; a
-  facade may reexport them but never their composition policy.
-- Pure grouping of complete plugins belongs in an app or registry kit array.
-  Inseparable package structure uses `dependencies` on one honest descriptor,
-  never a bundle plugin or exported array.
 - Keep a plugin base-only when no React layer has an independent job.
-- Use the flat shared `PLUGINS` map for shipped capability identities. Element
-  `type` and property `key` are
-  separate persisted schema identities. They default to `name` when omitted,
-  but runtime AST work resolves `.type`/`.key` and copied/static document data
-  uses explicit persisted literals. Additional document properties stay
-  feature-owned. Never add `KEYS`, `NODES`, or `STYLE_KEYS`. Model a
-  parameterized semantic capability once: Heading is `PLUGINS.heading` with a
-  required `level`, not six capability identities. List literal items
-  directly; never spread a literal array into another literal array.
-- Plite owns generic editor substrate: nodes, ranges, selection, reads,
-  updates, transactions, schema, history, DOM/runtime primitives, and editor
-  extensions.
-- A control that only changes how one mounted Editable paints canonical
-  selection is Plite React view behavior, not plugin state. Prefer private
-  lifecycle state plus a literal DOM marker when the view can derive the
-  transition. Do not author a descriptor, store, kit, copied Range, or redundant
-  controlled prop. Plate inherits the mechanics; route product markers and
-  styling to `plate-ui`.
-- Live descendant identity is Plite `NodeKey`. Resolve it with `editor.key`,
-  coherent `state.key`, or active `tx.key`; reverse through `nodes.path`.
-  Feature state and arguments use `key` / `keys`, never `id` / `ids`.
-  Persisted `element.id` is a separate optional `ElementIdPlugin` capability;
-  never serialize a `NodeKey` or alias the plugin-authored `id` property.
-  Persisted associations use `ref` / `refs`, so one node may carry its own
-  occurrence `id` plus a relation `ref`. Keep external names such as MDAST
-  `identifier` in mappings and keep domain addresses such as `url` semantic.
-- Plate owns product composition: plugins, React integration, UI, app/registry
-  kits, product commands, defaults, and docs/examples.
-- Do not wrap Plite APIs under second Plate names. If clean authoring needs
-  missing substrate, name the exact Plite or Plate gap and patch the owner
-  instead of inventing a local bridge.
 
 Named direct-Plate exceptions:
 
@@ -114,107 +48,6 @@ Colocation is the default.
   `define*Plugin` / `.extend()` chain. This includes one-use `with*`,
   `decorate*`, normalizers, parsers, commands, corrections, matchers, state,
   APIs, and tx callbacks.
-- Author inline transient feature paint through the owning plugin's
-  `decorate: { read, observe?, attributes? }` descriptor. Reads return `{ key, range,
-  attributes }`; plugin-store changes invalidate that plugin through
-  `observe`. Copied feature files configure `decorate.attributes` with a safe
-  object or pure inferred-context callback; `null` clears inherited presentation.
-  Existing capabilities accept presentation-only patches without repeating their
-  reader or observer. New capabilities require `read`. Keep generic Editor skins
-  free of optional feature selectors. Use `render.contentAttributes` for a
-  safe attribute object on the existing live/static content root; `null` clears
-  inherited configuration. The copied feature owns its styling values, and
-  core owns composition. Author sparse whole-element attributes delivered to
-  custom React components through `render.useViewElementAttributes`, which
-  receives the mounted `view` and returns `{ key, attributes }[]` from one hook
-  host per enabled plugin per view. A benchmarked high-frequency interaction
-  may bind private view-local state through composed canonical node-host refs
-  when it must stay outside component props; keep that binder feature-owned and
-  prove replacement, detach, cleanup, hydration and native behavior. Keep
-  per-node attribute and injection callbacks pure and hook-free. Structural
-  render slots remain for nodes and marks. Do not publish source registries,
-  renderer registries, keyed stores, managers, generic host channels, or manual
-  refresh requirements.
-- Give before/after Editable and container sibling components only their exact
-  slot ref. Never intersect those props with Editable props or container HTML
-  attributes, and never spread host props into the sibling invocation. Register
-  a complete component directly; use a render callback only for real caller
-  composition such as alternative children. Type the component with
-  `EditableSiblingProps` or `ContainerSiblingProps`, never a `typeof Plugin`
-  generic that only restates the fixed slot. Descriptor-derived props belong to
-  node renderers whose schema or plugin context changes the actual contract.
-  Extracted `wrapRoot` and `wrapContent` components use `WrapRootProps` and
-  `WrapContentProps`; never restate those native fields in a local object type.
-  Delete sibling option bags and primitive-prop intersections without a current
-  consumer job.
-- A separate helper needs multiple production consumers that cannot reuse the
-  owning scoped API, a real cross-plugin/cross-layer/transaction-composition
-  algorithm, a standalone public owner, or dedicated proof tooling.
-- Tests, barrels, exports, docs, app wrappers, historical filenames, and
-  hypothetical reuse do not count as additional production owners.
-- There is no line-count ceiling. A large coherent owner is cheaper than a
-  graph of one-use files.
-- Do not create `internal/`, `helpers/`, `utils/`, `transforms/`, `queries/`,
-  `components/`, or `hooks/` merely to classify implementation kinds.
-- An `internal/` subsystem is justified only when it has several files and a
-  durable independent boundary. Privacy alone is not file ownership.
-- Apply `plate-ui` for every package React/component topology decision. Package
-  React roots stay flat: one `<Family>.tsx`, zero or one semantic
-  `use<Family>.ts[x]` controller, and a separate context/store only for
-  independent lifecycle or cross-family reuse.
-- Do not create state-hook/prop-hook pipelines, public prop-bag hooks, or one
-  custom hook per subcomponent. Simple component behavior stays in the direct
-  component; complex siblings consume one private family context.
-- Keep auto-mounted plugin components and effect components out of public
-  barrels unless independent consumers render them directly. A separate React
-  file may remain the honest component owner without becoming public API.
-- A public headless hook exposes one terminal consumer job. Keep lower-level
-  adapters used only to build that hook importable for package tests when
-  necessary, but do not reexport them from the package entrypoint.
-- When a hook mixes durable DOM lifecycle with renderer state/props, publish
-  only the lifecycle job. Require its ref/controller input, return `void` when
-  it only synchronizes side effects, and keep subscription/observer/cleanup
-  together. Move derived layout, transient rendering overrides, visual rounding,
-  refs/styles used only as props, and presentation event wiring into the copied
-  renderer. Apply Plate UI's extraction test to semantic calculations and
-  neutral interaction lifecycle; one current consumer does not disqualify them.
-  Do not publish trivial presentation helpers to shorten copied code.
-- Plugin descriptor files never own named custom hook definitions.
-- Public exports and external imports prove access, not independent source
-  ownership. For React surfaces, trace through package wrappers to terminal
-  product consumers. When every terminal consumer is copied registry UI and
-  the behavior is UI/product composition, route its hook, store, provider,
-  hotkeys, and plugin extension together to `plate-ui`. Multiple subcomponents
-  inside one family are one owner. Keep package publication only for independent
-  terminal consumers or a durable headless subsystem contract.
-- Package defaults remain neutral. Do not publish application routes, visible
-  placeholder copy, upload quotas, feature-specific accessibility labels, or
-  copied-registry visual treatment from npm. Keep the semantic mapping and
-  validation engine in the package; configure product policy in the app kit.
-- `UploadPlugin` from `platejs/upload` is the editor-owned upload lifecycle,
-  configured with the package's single-operation `UploadClient`. A Files SDK
-  client satisfies that capability without making its unrelated methods part of
-  Plate's contract; explicit session-local and test clients implement the same
-  operation. Keep draft admission and task lifetime in Upload; keep the
-  completed `FilePlugin` node and URL normalization with installed media
-  plugins, and gateway/storage policy with the application.
-- When colocation makes a helper obsolete, delete its file and generated barrel
-  export. Do not preserve aliases, forwarding wrappers, or old filenames by
-  default.
-- Never replace a deleted raw helper with a wrapper around the scoped plugin
-  API. Call the scoped API directly.
-
-Colocation controls source ownership, not public composition identity. A real
-independently substitutable capability may remain colocated; route its public
-identity to `best-api`.
-
-Within one owned plugin array, terminal configurations derived from the same
-authored plugin compose in source order; later defined values win and exact
-identity deduplicates. A shared name never makes unrelated plugins or divergent
-authoring branches compatible. Same-name descriptors across independently
-optional app or registry kits still require a membership decision: do not make
-one optional kit install another merely to adapt it. Route that fork to
-`best-api`; `plate-next` owns the package/kit adoption audit.
 
 For copied app/registry source, stop here and follow `plate-ui`; this skill does
 not own copied-item colocation, dependency metadata, or browser proof.
@@ -228,30 +61,9 @@ Read this reference when authoring inferred plugin capabilities, current-owner c
 - `plate-ui` owns component, hook, context, provider, primitive, and React 19
   shape. This skill only implements that accepted shape inside the package and
   proves package behavior.
-- Hooks/selectors subscribe only to values that affect render. Read
-  callback-only values inside click/key/command/delayed handlers from
-  `editor.read.*` or `editor.api.*`.
-- Plugin `read` factories return methods or nested method records built once
-  per configuration. Compute live document values when those methods run;
-  stable constants and host services belong in `api`.
-- Capture the exact editor for focus, scrolling or view feedback inside the
-  `api` factory. Outer descriptor-construction callbacks retain their model
-  lifetime; Best API owns the shared-model and mounted-view boundary.
-- Keep one colocated `<FooPlugin>.<family>.spec.tsx` per plugin behavior
-  family. Do not mirror each API method, helper, or deleted filename into a
-  separate spec.
 - React tests live beside the component family or its single semantic
-  controller owner.
-- Split one `<FooPlugin>.<family>.slow.tsx` only when profiling proves the
-  repository threshold or the case has an independent blocking proof boundary.
-  Never use `.slow.spec.tsx`.
-- Merge old helper specs into the surviving behavior-family spec when
-  production helpers are merged.
-- Keep editor/plugin construction inline in tests when inference should support
-  it. Do not add local fixture-shape aliases, casts, or setup constants to hide
-  weak source typing; repair the test-utils or builder owner.
-- Assert current behavior, not deleted compatibility paths or incidental text
-  leaf grouping.
+  controller owner. `verify`'s [testing reference](../verify/references/testing.md)
+  owns spec families, fixtures and inline test construction.
 
 ## Package Host → [package-host.md](./references/package-host.md)
 
@@ -264,41 +76,13 @@ boundary graph.
 
 Read this reference when one feature must reach registry consumers across its
 package, React adapter, copied UI, docs and release. The Plan playbook copies
-the [template](./references/feature/template.md) into the plan, appends the
-[plate-next-attestation pack](./references/feature/plate-next-attestation.md)
-when a package is attested and Benchmark's performance-observability pack when
-the Scale proof row is `yes`, and the Build playbook closes it with
+the [template](./references/feature/template.md) into the plan, appends
+Benchmark's performance-observability pack when the Scale proof row is `yes`,
+and the Build playbook closes it with
 `node tooling/scripts/check-plate-feature.mjs <plan>`.
 
 - Headless and registry-only flows are first-class modes, not incomplete full
   flows. Skip a manifest row only as `no` with a concrete N/A reason.
-- Resolve the Scale proof row before source writes, per the Scale Gate below.
-- Never mass-attest packages after a doctrine bump. A package advances only
-  after its own full current review and recorded evidence.
-
-## Package And Barrel Law
-
-- Never hand-edit generated `index.ts` / `index.tsx` barrels.
-- After adding, moving, renaming, or deleting exported files, run `pnpm brl`
-  and fix source placement or generator configuration if output is wrong.
-- Plate feature source imports relative owners inside `packages/platejs`;
-  applications consume `platejs`, `platejs/react`, or the canonical feature
-  subpath. Plugin implementations and their specs, type tests, and fixtures
-  never import `plitejs`; only exact facade/proxy/replacement leaves do.
-  One-owner helpers stay local.
-- Keep React as an optional peer while any public React entrypoint exists. Keep
-  only dependencies proven by source/runtime imports or repo tooling convention;
-  implementation libraries used only by opt-in entrypoints are optional peers.
-
-## Scale Gate
-
-Before source writes, decide whether the plugin or entrypoint adds, retains, or
-changes a runtime layer, cache, index, projection, store, subscription,
-scheduler, geometry owner, repeated-unit fan-out, or other hot work. If yes,
-the active plan must include the performance-observability pack and contain a
-passing Benchmark pre-acceptance receipt for the selected target, or a
-source-backed type-only N/A. Route an unresolved public/runtime owner through
-`best-api` and the Plan playbook first.
 
 ## Workflow
 
@@ -309,14 +93,10 @@ source-backed type-only N/A. Route an unresolved public/runtime owner through
    analog. Do not copy a stale file graph.
 4. Route reusable public forks to `best-api`; otherwise keep the inferred
    plugin chain inline.
-5. Resolve the scale gate. A positive result consumes the accepted target
-   receipt and carries its cohorts, frozen budget, deterministic counters,
-   benchmark command/artifact, source identities, and correctness guard into
-   this packet.
-6. Define initial state, scoped store/API/update methods, relationships, flat
+5. Define initial state, scoped store/API/update methods, relationships, flat
    Plite-native fields, and React behavior in their durable owners.
-7. Delete superseded helper/component/hook/spec files and regenerate barrels.
-8. Prove the smallest honest surface:
+6. Delete superseded helper/component/hook/spec files and regenerate barrels.
+7. Prove the smallest honest surface:
    - package typecheck and behavior tests;
    - Plate foundation type tests when builder/public inference changes;
    - compile/runtime proof that a required dependent sees staged capabilities;
@@ -325,32 +105,10 @@ source-backed type-only N/A. Route an unresolved public/runtime owner through
    - runtime proof when a native runtime callback consumes a staged API;
    - an active-transaction test when a query crosses a state-view boundary;
    - React tests when React behavior changes;
-   - the exact final production-path scale rerun and correctness guard when the
-     scale gate applies;
-   - `pnpm brl` when exports or public files change.
-9. Audit for stale helper names, root option helpers, nested updates, explicit
+8. Audit for stale helper names, root option helpers, nested updates, explicit
    plugin annotations, empty config aliases, top-level plugin `config`,
    parameter-threaded `editor` / `api` / `read` / `tx` helpers, and one-use
    file taxonomies.
-10. When this packet changed a reusable public API or canonical plugin pattern,
-   run `best-api repair`, update only affected worker rules, bump Plate Next
-   doctrine when its source set changed, regenerate mirrors, and prove the old
-   teaching is gone before closeout.
-
-## Do Not Copy
-
-- One-use helper files, `internal/` dumping grounds, or folders by implementation
-  kind.
-- Plugin export annotations, empty config aliases, callback ferry types,
-  `satisfies` patches, or `any` casts.
-- Root editor pollution, root option helpers, duplicate Plate wrappers, or
-  local structural guards around typed Plite APIs.
-- Redundant portal nouns or taxonomy-only method nesting.
-- `editor.update.*` inside an active transaction.
-- Broad explicit normalization without a named invariant.
-- Render subscriptions used only to feed later callbacks.
-- Compatibility aliases, forwarding wrappers, or old filenames kept without
-  an accepted API reason.
 
 ## References
 
@@ -362,5 +120,4 @@ source-backed type-only N/A. Route an unresolved public/runtime owner through
   creation and the import graph
 - [manifest.md](./references/feature/manifest.md) — the Feature Manifest,
   package boundary contract and flow modes, with its plan
-  [template](./references/feature/template.md) and
-  [attestation pack](./references/feature/plate-next-attestation.md)
+  [template](./references/feature/template.md)

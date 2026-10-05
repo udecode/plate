@@ -299,6 +299,7 @@ const groups: Group[] = [
           }
 
           tx.plugin(BaseDatePlugin).insert({}, { select: true });
+          return undefined;
         },
       },
       {
@@ -316,6 +317,7 @@ const groups: Group[] = [
           }
 
           tx.plugin(BaseFootnotePlugin).insert({}, { select: true });
+          return undefined;
         },
       },
       {
@@ -334,6 +336,7 @@ const groups: Group[] = [
           }
 
           tx.plugin(BaseInlineEquationPlugin).insert({}, { select: true });
+          return undefined;
         },
       },
     ],

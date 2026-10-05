@@ -2,18 +2,27 @@
 
 This is a project-owned plan template. Copy it to `docs/plans/<date>-<slug>.md` and fill its `{{…}}` placeholders. The pstack block in `AGENTS.md` governs timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
 
-Objective:
-TODO: Write the short Benchmark objective, under 240 characters. Put the full
-measurement and iteration contract below.
+## Brief
 
-Flow mode:
-one-shot execution
+### What did you find?
 
-Plan:
-{{PLAN_PATH}}
+TODO: The finding behind this plan, in at most 40 words.
 
-Template:
-{{TEMPLATE_PATH}}
+### What will change?
+
+TODO: What the owner will notice, in at most 40 words.
+
+### What do you need from me?
+
+TODO: The decision the owner must make, or nothing.
+
+### What happens if I say go?
+
+TODO: What go starts and what it does not authorize.
+
+### What could go wrong?
+
+TODO: The largest risk and what limits it.
 
 ## Benchmark Source
 
@@ -27,66 +36,11 @@ Template:
 - named-symptom: pending
 - final-artifacts: pending
 
-First checkpoint:
-- Copy every explicit requirement into checkable rows before measurement or
-  code changes.
-- Resolve source identities, host/build freshness, fixture/action comparability,
-  correctness guards, and every default lane's applicability.
-- All applicable lanes are selected by default. Only an explicit `only`
-  invocation may mark otherwise relevant lanes
-  `N/A: only - <reason>`. Use `N/A: inapplicable - <reason>` only for a lane
-  that genuinely cannot apply.
-
-Timed checkpoint:
-- requested duration: pending
-- semantics: pending
-- start / deadline: pending
-- final loop closure: pending
-
-Completion threshold:
-- TODO: Define the exact metric/budget, comparison, breadth, and correctness
-  done state.
-- Every applicable lane is complete or N/A with evidence.
-- Every kept fix passes its exact benchmark rerun and correctness guard.
-- Benchmark plan validation passes with `--complete`, the P1 autoreview gate is
-  resolved per the pstack block's Panel review and Review rules, and `node .agents/pstack/plan-open.mjs` passes.
-
-Verification surface:
-- benchmark commands / artifacts: pending
-- correctness commands: pending
-- Browser / Chrome / device proof: pending
-- source/ref/fingerprint proof: pending
-
-Constraints:
-- Correctness and native editor behavior outrank metric movement.
-- Do not hide latency with debounce, delayed work, changed fixtures, degraded
-  DOM, or a narrower action.
-- Do not create another benchmark target registry or permanent run ledger.
-- A conclusive cause pauses later lanes; it does not complete the goal.
-- A proven cause selects the best long-term durable target, not the cheapest
-  compatible patch. Before stability, hard-cut API or architecture when that
-  buys materially better lasting value; preserve only a named hard correctness,
-  security, serialized-data, native-behavior, or runtime law.
-- After a fix, rerun the exact red lane and correctness guard before breadth.
-- Do not commit, push, open a PR, comment, publish, or release unless separately
-  authorized.
-
 Boundaries:
 - allowed runtime/packages/apps: pending
 - allowed benchmark/tests/fixtures: pending
 - allowed baseline checkouts/hosts: pending
 - non-goals: pending
-
-Output budget strategy:
-- Discover target/runner filenames and counts first. Exclude `node_modules`,
-  `.next`, `.turbo`, generated static output, broad historical plans, and old
-  artifacts unless named. Save large benchmark/trace output to artifacts and
-  inspect summaries plus focused slices.
-
-Blocked condition:
-- TODO: Name the missing baseline, route, source identity, browser/device,
-  correctness oracle, reproducible metric, or unsafe architecture decision that
-  stops autonomous work.
 
 ## Interaction Coverage
 
@@ -113,7 +67,6 @@ Start Gates:
 | Gate | Applies | Evidence |
 |---|---|---|
 | Prompt requirements captured before work | pending | pending |
-| Timed checkpoint parsed | pending | pending |
 | `benchmark` source and methodology read | yes | pending |
 | Existing plan reused | yes | pending |
 | Candidate and baseline identities recorded | pending | pending |
@@ -123,38 +76,6 @@ Start Gates:
 | All default lanes inventoried | yes | pending |
 | `only` narrowing explicitly authorized or N/A | pending | pending |
 | Browser/native proof strategy selected | pending | pending |
-| Output budget strategy recorded | yes | see above |
-| Commit/PR/release authority recorded | yes | no mutation authorized by default |
-
-Work Checklist:
-- [ ] Every explicit scope, comparison, timing, stop condition, deliverable,
-      verification surface, and success criterion is recorded.
-- [ ] Short objective, threshold, verification, constraints, boundaries, and
-      blocked condition are concrete.
-- [ ] Default lanes remain in diagnostic order; every N/A row has a reason.
-- [ ] Candidate/baseline signatures prove comparable source, fixture, action,
-      build, browser, machine, and sampling.
-- [ ] Primary metrics match the visible user operation; proxies stay labeled.
-- [ ] Samples expose p50/p75/p95/p99 only when sample count supports them,
-      plus max, absolute/relative delta, and noise evidence.
-- [ ] Red lanes are not called causal without the conclusive-cause gate.
-- [ ] A proven cause pauses later lanes before another expensive benchmark.
-- [ ] Every proven cause records its fix class, best long-term target, decision
-      owner, layer plan, compatibility verdict, and implementation owner.
-- [ ] `public-api` and `runtime-architecture` causes run `best-api`, then
-      the Plan playbook before implementation. Broad accepted
-      execution may use pstack's Autonomous run playbook; target selection may not.
-- [ ] One isolated owner is fixed, then the exact benchmark and correctness
-      guard rerun before breadth resumes.
-- [ ] Failed reruns invalidate or continue the same cause; they do not skip to
-      a different green metric.
-- [ ] Green reruns resume the first pending applicable lane.
-- [ ] Every packet has keep/revert/invalidate/quarantine/defer and next-owner
-      evidence.
-- [ ] Harness/metric/host defects are repaired before product optimization.
-- [ ] Final handoff reports candidate/baseline identities, lane status, first
-      conclusive cause, metrics, fix/reruns, resumed breadth, and residual risk.
-
 ## Benchmark Lane Table
 
 | Order | Lane | Applies | Status | Evidence | Next |
@@ -223,63 +144,8 @@ Completion Gates:
 | Package/type/build proof | pending | Run affected package checks/typecheck/build only where owned | pending |
 | Browser surface proof | pending | Run Browser for product routes; Chrome/device for native state when applicable, or N/A with reason | pending |
 | Changeset/release artifact | pending | Add only for published package behavior/API changes, otherwise N/A | pending |
-| Agent rule/skill sync | pending | Run `pnpm install` and mirror/resource checks when agent sources changed, otherwise N/A | pending |
 | Benchmark plan complete validation | yes | Run validator with `--complete` | pending |
-| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Timed checkpoint | pending | Satisfy requested duration and close current packet, otherwise N/A | pending |
-| P1 autoreview | pending | Run the panel that the `.agents/pstack.json` reviews list names for this work, or the one the user asked for, and record its result, or N/A with reason | pending |
 | Plan complete | yes | Run `node .agents/pstack/plan-open.mjs {{PLAN_PATH}}` | pending |
 
-Phase / pass table:
-| Phase | Status | Evidence | Next |
-|---|---|---|---|
-| Intake and comparison authority | in_progress | created plan | fast symptom lane |
-| Ordered diagnosis | pending | | cause gate or next lane |
-| Fix and exact rerun | pending | | resume breadth |
-| Remaining breadth | pending | | final verification |
-| Review and closeout | pending | | final response |
-
-Findings:
-- None yet.
-
-Decisions and tradeoffs:
-- None yet.
-
-Harness/methodology repairs:
-- None yet.
-
-Error attempts:
-| Error / failed attempt | Count | Next different move | Resolution |
-|---|---|---|---|
-| None yet | 0 | | |
-
 Verification evidence:
-- Pending.
-
-Final handoff contract:
-- plan / scope: pending
-- candidate / baseline identities: pending
-- completed / N/A / pending lanes: pending
-- first conclusive cause: pending
-- baseline / latest / best metrics: pending
-- fix owner / changed files: pending
-- exact benchmark and correctness reruns: pending
-- resumed breadth: pending
-- packet decisions: pending
-- harness/methodology repairs: pending
-- residual claim limits / next owner: pending
-
-Timeline:
-- {{CREATED_AT}} Benchmark plan created.
-
-Reboot status:
-| Question | Answer |
-|---|---|
-| Where am I? | Intake and comparison authority |
-| Where am I going? | Ordered diagnosis, fix/rerun, remaining breadth, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
-
-Open risks:
 - Pending.

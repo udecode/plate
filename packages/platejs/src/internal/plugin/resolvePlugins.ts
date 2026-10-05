@@ -1030,7 +1030,7 @@ const resolvePluginStores = (editor: Editor) => {
       mutative: true,
       name: plugin.name,
     });
-    const store = createPluginStore(plugin, base as never, plugin.selectors);
+    const store = createPluginStore(plugin, base, plugin.selectors);
 
     setPluginStore(editor, plugin, store);
   });

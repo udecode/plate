@@ -1,0 +1,8 @@
+# bun benchmarks/editor/benchmarks/plite-history-depth-benchmark.ts --remote-commits=200
+  "version": 1,
+  "strictValidation": {
+    "requested": false,
+    "status": "measured"
+  }
+}
+# exit: 0

@@ -53,7 +53,7 @@ if (diagnostics.length) {
   console.error(
     ts.formatDiagnosticsWithColorAndContext(diagnostics, {
       getCanonicalFileName: (file) => file,
-      getCurrentDirectory: ts.sys.getCurrentDirectory,
+      getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
       getNewLine: () => ts.sys.newLine,
     })
   );

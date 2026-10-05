@@ -304,40 +304,49 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
 
     return {
       formats: defineFormats({
-        html: {
-          decode: ({ element }) => {
-            counters.elementDecode += 1;
+        html: [
+          {
+            decode: ({ element }) => {
+              counters.elementDecode += 1;
 
-            const image = element.querySelector<HTMLElement>(':scope > img');
-            const width = Number.parseFloat(image?.style.width ?? '');
+              const image = element.querySelector<HTMLElement>(':scope > img');
+              const width = Number.parseFloat(image?.style.width ?? '');
 
-            return {
-              url: image?.getAttribute('src') || undefined,
-              ...(Number.isFinite(width) ? { width } : {}),
-            };
-          },
-          encode: ({ content, node, preserve }) => {
-            counters.elementEncode += 1;
-            preserve('url', 'width');
+              return {
+                url: image?.getAttribute('src') || undefined,
+                ...(Number.isFinite(width) ? { width } : {}),
+              };
+            },
+            encode: ({ content, node, preserve }) => {
+              counters.elementEncode += 1;
+              preserve('url', 'width');
 
-            return {
-              attributes: { class: 'benchmark-media' },
-              children: [
-                {
-                  attributes: { src: node.url },
-                  style: {
-                    width:
-                      node.width === undefined ? undefined : `${node.width}px`,
+              return {
+                attributes: { class: 'benchmark-media' },
+                children: [
+                  {
+                    attributes: { src: node.url },
+                    style: {
+                      width:
+                        node.width === undefined
+                          ? undefined
+                          : `${node.width}px`,
+                    },
+                    tag: 'img',
                   },
-                  tag: 'img',
-                },
-                { children: content, tag: 'figcaption' },
-              ],
-              tag: 'figure',
-            };
+                  { children: content, tag: 'figcaption' },
+                ],
+                tag: 'figure',
+              };
+            },
+            match: [{ className: 'benchmark-media', tag: 'figure' }],
           },
-          match: [{ className: 'benchmark-media', tag: 'figure' }],
-        },
+          {
+            decode: () => undefined,
+            decodeOnly: true,
+            match: [{ tag: 'img' }],
+          },
+        ],
       }),
     };
   });

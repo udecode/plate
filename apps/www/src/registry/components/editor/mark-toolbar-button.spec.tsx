@@ -62,13 +62,6 @@ mock.module('platejs', () => ({
   BaseImagePlugin,
   BaseVideoPlugin,
   isUrl: isUrlMock,
-  PLUGINS: {
-    audio: 'audio',
-    file: 'file',
-    image: 'image',
-    kbd: 'kbd',
-    video: 'video',
-  },
   TextApi: { isText: () => true },
   toUnitLess: (value: string) => value.replace('px', ''),
 }));
@@ -714,6 +707,7 @@ describe('feature toolbar plugin portals', () => {
     const { MediaToolbarButton } = await import(
       `./media-toolbar-button?file-picker=${Math.random().toString(36).slice(2)}`
     );
+    pluginMock.mockReturnValue({ installed: true });
     const view = render(<MediaToolbarButton plugin={BaseFilePlugin} />);
     const primary = view.getAllByRole('button')[0];
 

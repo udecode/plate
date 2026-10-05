@@ -17,15 +17,22 @@ const editor = createEditor({
 
 const canUndo = editor.read.history.hasUndo();
 const pending = editor.read.history.pending();
-const result = await editor.api.history.undo();
+
+editor.api.history.undo();
 
 editor.update({ history: "skip" }).text.insert("draft");
 ```
 
-`undo()` and `redo()` claim their next batch in call order. Ordinary document
-batches settle in that call. A batch with a live-session effect publishes its
+`undo()` and `redo()` claim their next batch in call order and return its
+result. A document batch has applied when the call returns. A batch with a
+live-session effect returns `{ status: "pending", settled }` and publishes its
 pending direction while its external owner finishes. Document edits, selection
 updates, and collaborative imports continue while replay is pending.
+
+```typescript
+const result = editor.api.history.undo();
+const outcome = result.status === "pending" ? await result.settled : result;
+```
 
 Use `hasUndo()`, `hasRedo()`, and `pending()` for controls. Inspect
 `editor.read.history()` when you need the full immutable stacks.
@@ -125,21 +132,29 @@ Return the replay direction currently waiting for a live-session owner. Pending
 state belongs to this editor's runtime. It is absent from History JSON,
 snapshots, and collaboration.
 
-#### `editor.api.history.undo(): Promise<HistoryResult>`
+#### `editor.api.history.undo(): HistoryResult`
 
 Claim and replay the current undo batch.
 
-#### `editor.api.history.redo(): Promise<HistoryResult>`
+#### `editor.api.history.redo(): HistoryResult`
 
 Claim and replay the current redo batch.
 
 Both methods return `{ status: "applied" }` after a replay and
 `{ status: "empty" }` when no surviving batch exists. An authored dependency
 conflict returns `{ status: "blocked", conflicts }`, where `conflicts` contains
-the immutable contribution IDs that block replay. A live-session owner can
-return `{ status: "blocked", reason }`; the same batch remains at the branch
-head. A replay requested while another live-session replay is pending returns
-`{ status: "busy" }` and does not claim another batch. Other failures reject.
+the immutable contribution IDs that block replay. A replay requested while
+another live-session replay is pending returns `{ status: "busy" }` and does
+not claim another batch.
+
+A live-session batch returns `{ status: "pending", settled }` while its owner
+works, unless the owner answers synchronously. `settled` never rejects; it
+resolves to `{ status: "applied" }`, to `{ status: "blocked", reason }` when the
+owner refuses, or to `{ status: "failed" }` when the owner or the settlement
+threw. A failure goes to the editor's `lifecycleErrorSink`. With no sink, it
+goes to `reportError`, or to `console.error` where `reportError` does not
+exist. A blocked or failed replay leaves the same batch at the
+branch head. Invalid runtime use throws.
 
 Call these services outside `editor.read(...)` and `editor.update(...)`. A
 history batch can cover several document roots; replay always applies the

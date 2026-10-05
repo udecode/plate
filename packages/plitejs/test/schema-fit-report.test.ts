@@ -240,6 +240,37 @@ describe('reported schema fitting', () => {
     );
   });
 
+  it('reports one text merge per merged leaf with every source leaf', () => {
+    const editor = createRepresentationEditor();
+    const report = getEditorSchema(editor).fitDocumentWithReport(
+      inContainer([
+        {
+          children: [{ text: 'a' }, { text: '\n' }, { text: 'b' }],
+          type: 'paragraph',
+        },
+      ])
+    );
+
+    assert.deepEqual(
+      report.repairs.map(({ code, inputs, outputs }) => ({
+        code,
+        inputs: inputs.map(({ path }) => path),
+        outputs: outputs.map(({ path }) => path),
+      })),
+      [
+        {
+          code: 'merge-text',
+          inputs: [
+            [0, 0, 0],
+            [0, 0, 1],
+            [0, 0, 2],
+          ],
+          outputs: [[0, 0, 0]],
+        },
+      ]
+    );
+  });
+
   it('reports document and grammar repairs without changing rejection APIs', () => {
     const RequiredRootSchema = defineEditorSchema(
       'schema:fit-report-required-root',

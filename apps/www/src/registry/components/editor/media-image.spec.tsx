@@ -15,7 +15,10 @@ mock.module('platejs/react', () => ({
   ),
   useEditor: () => ({
     extension: () => ({ update: { set: () => {} } }),
-    read: { selection: selectionMock },
+    read: Object.assign(() => undefined, {
+      nodes: { get: () => undefined },
+      selection: selectionMock,
+    }),
   }),
   useEditorMounted: () => true,
   useEditorFocused: () => true,
@@ -72,7 +75,9 @@ describe('ImageElement', () => {
     usePluginStoreMock.mockReturnValue(false);
     useEditorSelectorMock.mockImplementation(
       (selector: (editor: unknown) => unknown) =>
-        selector({ read: { selection: selectionMock } })
+        selector({
+          read: { nodes: { get: () => undefined }, selection: selectionMock },
+        })
     );
   });
 

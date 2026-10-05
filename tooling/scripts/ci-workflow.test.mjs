@@ -53,34 +53,111 @@ test('browser CI keeps coverage aggregation aligned with its affected build', as
   );
 });
 
-test('root CI retains package proof and watched inputs', async () => {
+const runCommands = (workflow) => {
+  const commands = [];
+  const lines = workflow.split('\n');
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = /^(\s*)run: (.*)$/u.exec(lines[index]);
+    if (!match) continue;
+    if (match[2] !== '|') {
+      commands.push(match[2].trim());
+      continue;
+    }
+    const block = [];
+    while (
+      index + 1 < lines.length &&
+      (lines[index + 1].trim() === '' ||
+        lines[index + 1].search(/\S/u) > match[1].length)
+    ) {
+      index += 1;
+      block.push(lines[index].trim());
+    }
+    commands.push(block.filter(Boolean).join('\n'));
+  }
+  return commands;
+};
+
+test('pnpm check is the only gate the CI job runs', async () => {
   const [workflow, packageJson] = await Promise.all([
     readFile(ciWorkflowPath, 'utf-8'),
     readFile(packageJsonPath, 'utf-8').then(JSON.parse),
   ]);
-
-  assert.match(
-    workflow,
-    /name: ✅ Check push[\s\S]{0,200}run: bun run check:push/
+  const gates = runCommands(workflow).filter((command) =>
+    /\b(?:check|lint|test|tsc|typecheck|vitest)\b/u.test(command)
   );
-  assert.match(workflow, /name: ✅ Check PR[\s\S]{0,200}run: bun check/);
-  assert.match(packageJson.scripts.check, /pnpm typecheck/);
-  assert.doesNotMatch(packageJson.scripts.check, /test:slowest/);
-  assert.equal(packageJson.scripts['check:push'], 'pnpm check');
-  assert.equal(packageJson.scripts.typecheck, 'pnpm g:typecheck');
-  assert.doesNotMatch(packageJson.scripts['g:typecheck'], /--only/u);
+
+  assert.equal(packageJson.scripts.check, 'node tooling/scripts/check.mjs');
+  assert.deepEqual(
+    gates,
+    ['pnpm check'],
+    'ci.yml gates only through pnpm check; add a new gate as a step in tooling/scripts/check.mjs.'
+  );
   assert.match(workflow, /\$\{\{ github\.workspace \}\}\/\.turbo/u);
   assert.match(workflow, /restore-keys:/u);
-  for (const ownedPath of [
-    "'apps/plite/scripts/**'",
-    "'benchmarks/**'",
-    "'config/**'",
-  ]) {
-    assert.equal(workflow.split(ownedPath).length - 1, 2, ownedPath);
+});
+
+test('every check script is a pnpm check step or says why it stays manual', async () => {
+  const [packageJson, wwwPackageJson] = await Promise.all([
+    readFile(packageJsonPath, 'utf-8').then(JSON.parse),
+    readFile(wwwPackageJsonPath, 'utf-8').then(JSON.parse),
+  ]);
+  const { manualOnly, steps } = await import('./check.mjs');
+  const scripts = {
+    root: packageJson.scripts,
+    www: wwwPackageJson.scripts,
+  };
+  const reachable = new Set();
+  const commands = new Set(steps.map((step) => step.run));
+  const queue = steps.map((step) => ['root', step.run]);
+
+  while (queue.length > 0) {
+    const [scope, command] = queue.pop();
+    for (const [, filter, name] of command.matchAll(
+      /pnpm (?:--filter (\S+) )?(?:run )?([\w:.-]+)/gu
+    )) {
+      const target = filter === 'www' ? 'www' : filter ? null : scope;
+      const script = target && scripts[target][name];
+      const key = `${target} ${name}`;
+      if (!script || reachable.has(key)) continue;
+      reachable.add(key);
+      commands.add(script);
+      queue.push([target, script]);
+    }
   }
-  assert.equal(workflow.match(/pnpm plite:test/g)?.length, 1);
-  assert.equal(workflow.match(/pnpm plite:public-types/g)?.length, 1);
-  assert.equal(workflow.match(/pnpm --filter @platejs\/cli test/g)?.length, 1);
+
+  const missing = Object.entries(scripts).flatMap(([scope, entries]) =>
+    Object.entries(entries)
+      .filter(
+        ([name, command]) =>
+          (/(?:^|:)(?:check|test|typecheck)(?::|$)/u.test(name) ||
+            /--check\b/u.test(command)) &&
+          name !== 'check' &&
+          !reachable.has(`${scope} ${name}`) &&
+          !commands.has(command) &&
+          !Object.hasOwn(manualOnly, name)
+      )
+      .map(([name]) => `${scope} ${name}`)
+  );
+
+  assert.deepEqual(
+    missing,
+    [],
+    'Add each check script to the steps in tooling/scripts/check.mjs, or to its manualOnly map with the reason it stays manual.'
+  );
+  const covered = Object.keys(manualOnly).filter((name) => {
+    const scope = Object.hasOwn(packageJson.scripts, name) ? 'root' : 'www';
+    const command = scripts[scope][name];
+    assert.ok(
+      command,
+      `manualOnly names ${name}, which no package.json defines.`
+    );
+    return reachable.has(`${scope} ${name}`) || commands.has(command);
+  });
+  assert.deepEqual(
+    covered,
+    [],
+    'pnpm check already runs these manualOnly scripts; delete their entries.'
+  );
 });
 
 test('Vercel uses the repo-owned bounded www build', async () => {

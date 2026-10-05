@@ -48,7 +48,7 @@ export const createPluginStore = <C extends AnyBasePluginDefinition>(
   }
 
   const replace = (value: InferPluginStoreState<C>) => {
-    base.set('state', snapshotPluginState(value, true) as never);
+    base.set('state', snapshotPluginState(value, true));
   };
   const store: PluginStore<C> = {
     get(key?: PropertyKey, ...args: unknown[]) {
@@ -72,7 +72,7 @@ export const createPluginStore = <C extends AnyBasePluginDefinition>(
       const current = base.store.getState();
 
       if (typeof value === 'function') {
-        replace(create(current, value as never) as InferPluginStoreState<C>);
+        replace(create(current, value));
       } else {
         replace({ ...current, ...value });
       }

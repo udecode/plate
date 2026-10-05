@@ -687,13 +687,8 @@ export const commitChromeCompositionEndFallback = ({
     withTypedTextIntent(
       editor,
       inputController,
-      {
-        at: RangeApi.start(target),
-        inputType: 'insertFromComposition',
-        text,
-      },
-      () =>
-      updateNativeTextInput(editor, insertCompositionText, input)
+      { inputType: 'insertFromComposition', text },
+      () => updateNativeTextInput(editor, insertCompositionText, input)
     );
   });
   finishCleanup();

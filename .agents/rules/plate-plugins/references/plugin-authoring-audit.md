@@ -11,7 +11,7 @@ type tests, and this skill outrank package precedent.
 - Owner-first production colocation
 - React family colocation
 - Scoped capabilities and state
-- Rejected precedent
+- Rendered prop augmentation
 
 ## Semantic Base And Thin Wrapper
 
@@ -52,25 +52,10 @@ topology without checking current owner law.
 - [plugin.ts](../../../../packages/plitejs/src/yjs/core/plugin.ts)
 - [YjsPlugin.tsx](../../../../packages/platejs/src/yjs/react/YjsPlugin.tsx)
 
-Keep neutral document behavior and externally supplied resources in the Plite
-descriptor constructor. The Plate `YjsPlugin` factory preserves that
-input-to-descriptor relation while adding only Plate authoring and presentation
-policy. Copied composition refines required inputs before mapping an ordinary
-Plate author stage; each `.create()` returns a complete descriptor. Optional
-capabilities must remain exact through copied factories, builder stages,
-portals and explicit-editor hooks.
-
 Comments uses [BaseCommentsPlugin.ts](../../../../packages/platejs/src/features/comments/BaseCommentsPlugin.ts)
 for records, actions and native ranges. Its React adapter adds click and shortcut
 behavior. Applications configure complete records and persist mapped range
 snapshots; copied UI does not bind native handles or provide another data owner.
-
-Audit every first-party descriptor for the exact positional shape
-`define*Plugin(PLUGINS.foo, definition)`. Treat `PLUGINS.foo` as capability
-identity only. Element `type` and property `key` default to the name when
-omitted but may differ at creation. Plugin lookup inputs accept the exact
-descriptor or name; runtime AST work resolves `.type`/`.key`, while copied
-registry data and deliberate fixtures use explicit persisted literals.
 
 ## Owner-First Production Colocation
 
@@ -89,108 +74,18 @@ These are topology examples, not permission to copy every local declaration.
 Keep new one-use constants, callbacks, and contract fragments inline when
 builder inference can own them.
 
-## React Family Colocation
-
-Use `plate-ui` for the exact component law. Audit current families rather than
-copying their historical split:
-
-- one component-family file owns the main component, subcomponents, variants,
-  render helpers, component-local constants, and simple local hooks;
-- zero or one `use<Family>` semantic controller may coordinate multiple family
-  members or surfaces;
-- one hook per subcomponent, state-hook/prop-hook pipelines, and public prop-bag
-  hooks are migration debt;
-- a hook that mixes package-worthy DOM lifecycle with renderer state is split:
-  keep only required lifecycle input plus subscription/projection/cleanup in
-  the package (returning `void` when side-effect-only), and localize layout,
-  transient overrides, trivial helpers, and event handlers;
-- providers and stores remain separate only for independent lifecycle or
-  cross-family reuse;
-- app wrappers composing a family do not establish another source owner.
-
-Do not copy an editor-accepting helper signature from a family file when plugin
-builder context or a scoped API can own the behavior.
-
 ## Scoped Capabilities And State
 
 - [MarkdownPlugin.ts](../../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts)
 - [BaseTablePlugin.ts](../../../../packages/platejs/src/features/table/lib/BaseTablePlugin.ts)
 
-Copy:
-
-- plugin defaults use `initialState`, live values use the scoped `store`, and
-  pure store projections use `selectors`;
-- document queries use pure snapshot-bound `read`, document mutation uses
-  transaction-bound `update`, non-snapshot plugin services use `api`, and
-  Plite-native capabilities stay flat on the plugin root;
-- independent contributions stay in the constructor; repeated `.extend()`
-  stages require imported/prebuilt adaptation, a constructor-inaccessible
-  shared factory, or a real earlier-capability type dependency;
-- mapping owners destructure `defineFormats` inline, use
-  `defineFormats(map)` for self/product maps, and use
-  `defineFormats(TargetPlugin, map)` for foreign maps without manual targets;
-- Plate authoring objects and callback returns stay plain; context capture
-  stays inline, extracted helpers receive domain inputs, and independently
-  reusable standalone descriptors use Plite `definePlugin`;
-- concrete editors expose `editor.api.<name>`;
-- generic package code can use `editor.plugin(Plugin).api`, `.read`, `.update`,
-  and `.store`;
-- optional generic integrations check `.installed` before capability or
-  descriptor access; exact element and primary-mark portals expose
-  `schema.type` or `schema.key`, while missing and wrong-kind access throws;
-- behavior and aggregate-property portals omit `schema`, consumer portals do
-  not expose `schema.properties`, and nominal descriptor portals keep
-  applicable identity getters non-optional;
-- copied registry UI stays generic and never imports a host editor type;
-- scoped portal methods use direct verbs instead of repeating the plugin noun.
+Copy their scoped `initialState`, `store`, `selectors`, `read`, `update` and `api`
+split and their portal access, which `docs/vision/plate.md` defines.
 
 ## Rendered Prop Augmentation
 
 - [BlockPlaceholderPlugin.tsx](../../../../packages/platejs/src/react/utils/BlockPlaceholderPlugin.tsx)
 - [NavigationFeedbackPlugin.ts](../../../../packages/platejs/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts)
 
-Use `inject.nodeProps` only for pure output derived synchronously from the node,
-plugin configuration, and callback context. Its queries and transforms never
-call React hooks.
-
-Keep component-local reactive output in the owning component. First-party
-cross-cutting whole-element attributes delivered through custom React
-components use `render.useViewElementAttributes`. It receives the exact mounted
-`view`, may use React hooks, and returns sparse `{ key, attributes }[]`. Plate
-keeps the keyed store, source order, publisher, and cleanup private. A
-benchmarked high-frequency interaction may keep a feature-private projection
-and bind canonical node-host refs when it must stay outside component props;
-prove replacement and cleanup and add no public hook or generic channel.
-Per-node `render.attributes` and `inject.nodeProps.transformProps` stay pure and
-hook-free.
-
-## Rejected Precedent
-
-Do not copy a current or historical file merely because it compiles.
-
-Reject:
-
-- private plugin factory results and intermediate `.extend()` / `.configure()`
-  constants whose production references only feed one exported chain or type
-  queries, regardless of the constant name;
-- private code defaulted into `internal/`;
-- one file per helper, query, transform, subcomponent, hook, or API method;
-- explicit plugin export types or casts;
-- empty `PluginConfig` aliases;
-- manual callback/local/test annotations hiding weak inference;
-- editor-locked helpers created only to carry `editor`, resolved `name`,
-  `store`, resolved plugin state, or `tx`;
-- top-level Plate plugin `config`;
-- deleted option accessors or arbitrary plugin fields on the editor root;
-- duplicate plugin API and editor-plugin API implementations;
-- redundant portal nesting such as `table.update.insert.table`;
-- a second node-component channel instead of root `component`;
-- direct mapping maps, manual mapping `target` fields, or a global mapping helper
-  instead of the callback's context-bound `defineFormats`;
-- `editor.update.*` inside an active transaction;
-- broad normalization without a named invariant;
-- render subscriptions used only by later callbacks;
-- compatibility aliases and forwarding wrappers after owner colocation.
-
-When an example conflicts with these laws, repair the builder/source owner or
-choose a cleaner example. “Older style” is not a waiver.
+Their `inject.nodeProps` and `render.useViewElementAttributes` rules are in
+`docs/vision/plate.md`.

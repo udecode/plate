@@ -1,0 +1,414 @@
+{
+  "plate/mock-spreads-module": {
+    "apps/www/src/registry/components/editor/ai-menu.slow.tsx": [
+      "mock.module('platejs/ai', () => ({",
+      "mock.module('platejs/ai/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/caption.spec.tsx": [
+      "mock.module('platejs/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/code-block-static.spec.tsx": [
+      "mock.module('platejs', () => ({",
+      "mock.module('platejs/static', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/code-block.spec.tsx": [
+      "mock.module('platejs/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/code-drawing-static.spec.tsx": [
+      "mock.module('platejs/code-drawing', () => ({",
+      "mock.module('platejs/static', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/code-drawing.spec.tsx": [
+      "mock.module('platejs/code-drawing', () => ({",
+      "mock.module('platejs/code-drawing/react', () => ({",
+      "mock.module('platejs/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/date-static.spec.tsx": [
+      "mock.module('platejs/date', () => ({",
+      "mock.module('platejs/static', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/date.slow.tsx": [
+      "mock.module('platejs/date', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/editor.spec.tsx": [
+      "mock.module('platejs/react', () => ({",
+      "mock.module('platejs/static', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/export-toolbar-button.spec.tsx": [
+      "mock.module('platejs/docx/export', () => ({ exportDocx }));"
+    ],
+    "apps/www/src/registry/components/editor/floating-toolbar.spec.tsx": [
+      "mock.module('platejs/ai/react', () => ({",
+      "mock.module('platejs/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/footnote.slow.tsx": [
+      "mock.module('platejs/static', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/import-toolbar-button.spec.tsx": [
+      "mock.module('platejs/docx/import', () => ({ importDocx }));"
+    ],
+    "apps/www/src/registry/components/editor/inline-void-suggestion.slow.tsx": [
+      "mock.module('platejs/math/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/math.spec.tsx": [
+      "mock.module('platejs', () => ({",
+      "mock.module('platejs/math', () => ({",
+      "mock.module('platejs/math/react', () => ({",
+      "mock.module('platejs/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/media-embed-static.spec.tsx": [
+      "mock.module('platejs/static', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/media-file.spec.tsx": [
+      "mock.module('platejs/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/media-image-static.spec.tsx": [
+      "mock.module('platejs/static', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/media-preview-dialog.spec.tsx": [
+      "mock.module('platejs/media/react', () => ({",
+      "mock.module('platejs/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/media-toolbar.spec.tsx": [
+      "mock.module('platejs/react', () => ({"
+    ],
+    "apps/www/src/registry/components/editor/toc.spec.tsx": [
+      "mock.module('platejs/react', () => ({"
+    ],
+    "apps/www/src/registry/examples/collaboration-demo.spec.tsx": [
+      "mock.module('platejs/yjs', () => ({",
+      "mock.module('platejs/yjs/react', () => ({"
+    ]
+  },
+  "plate/no-as-never": {
+    "packages/platejs/src/docx/import/lib/importDocx.ts": [
+      "{ arrayBuffer, buffer: arrayBuffer as never },"
+    ],
+    "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts": [
+      "? attributes({"
+    ],
+    "packages/platejs/src/internal/plugin/resolvePlugins.ts": [
+      "context.tx.nodes.insert(element, blockOptions as never);"
+    ],
+    "packages/platejs/src/lib/plugin/createPluginContext.internal.ts": [
+      "accessCache.set(input, access as never);"
+    ],
+    "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts": [
+      ": editor.plugin(reference as never);",
+      "? createPlatePluginPortal(editor, reference as never)"
+    ],
+    "packages/plitejs/src/core/anchor.ts": [
+      "return view.read.nodes.path(node as never) ?? null;"
+    ],
+    "packages/plitejs/src/core/editor-read-runtime.ts": [
+      "() => above(editor, innerOptions as never),",
+      "() => levels(editor, innerOptions7 as never),",
+      "() => next(editor, innerOptions8 as never),",
+      "() => previous(editor, innerOptions13 as never),"
+    ],
+    "packages/plitejs/src/core/public-state.ts": [
+      "(options.props ?? getDefaultBlockProps(path, root)) as never,",
+      "command(editorCommands.removeNodes, { options: options as never });",
+      "command(editorCommands.setNodes, { options: options as never, props })",
+      "const update = registration.factory(state as never, editor, context);",
+      "moveNodes(editor, resolvedOptions as never);",
+      "registration.factory(factoryState.state as never, editor)",
+      "registration.factory(factoryState.state as never, editor)",
+      "setNodes(editor, props as never, { at: path, voids });",
+      "setTransactionNodes(props as never, {",
+      "txPluginRecord as never,"
+    ],
+    "packages/plitejs/src/core/schema-definition.ts": [
+      "cloneFrozenDeclaration(",
+      "return combineContent('any', references, {"
+    ],
+    "packages/plitejs/src/core/transfer.ts": [
+      "{ children } as never,",
+      "slice as never,"
+    ],
+    "packages/plitejs/src/create-editor.ts": [
+      "readEditor(editor, (state) => state.key(target as never))"
+    ],
+    "packages/plitejs/src/diff/lib/comparison-index.ts": [
+      "nodes.push(undefined as never);"
+    ],
+    "packages/plitejs/src/editor-runtime-view.ts": [
+      "transaction.nodes.move(options as never);",
+      "viewRead((state) => state.key(target as never));"
+    ],
+    "packages/plitejs/src/react/components/editable-text-blocks.tsx": [
+      "authored={ownerAuthored as never}"
+    ]
+  },
+  "plate/no-one-off-editor-type": {
+    "packages/cli/src/generate.ts": ["type CompiledEditor = Readonly<{"],
+    "packages/platejs/src/features/combobox/lib/combobox.ts": [
+      "export type ComboboxEditor = Pick<Editor, 'plugin'> & {"
+    ],
+    "packages/platejs/src/lib/plugin/PluginDefinition.ts": [
+      "export type StructuralRuleEditor = Omit<RuntimeEditor, 'plugin'> & {"
+    ],
+    "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": [
+      "export type MarkdownEditor<E = Editor, V extends Value = Value> = E & {"
+    ],
+    "packages/plitejs/src/dom/plugin/with-dom.ts": ["export type DOMEditor<"],
+    "packages/plitejs/src/interfaces/editor.ts": [
+      "export interface BaseEditor<",
+      "export type PluginCandidateEditor<"
+    ],
+    "packages/plitejs/src/react/editable/content-root-owners.ts": [
+      "export type ContentRootNavigationEditor = Pick<"
+    ],
+    "packages/plitejs/src/react/editable/root-interaction-controller.ts": [
+      "export type RootInteractionEditor = ReactRuntimeEditor &"
+    ],
+    "packages/plitejs/src/react/hooks/use-editor-dom-scope.ts": [
+      "type DOMScopeEditor = {"
+    ],
+    "packages/plitejs/src/react/hooks/use-plite-runtime.tsx": [
+      "export type RootEditor<"
+    ],
+    "packages/plitejs/src/react/plugin/with-react.ts": ["export type Editor<"],
+    "packages/test/src/device/lane.ts": ["export type DeviceEditor = Pick<"]
+  },
+  "plate/no-raised-test-timeout": {
+    "apps/www/src/registry/components/editor/comment.spec.tsx": ["}, 20_000);"],
+    "apps/www/src/registry/examples/version-history-async.spec.tsx": [
+      "}, 12_000);"
+    ],
+    "packages/cli/test/generate.test.ts": [
+      "}, 15_000);",
+      "}, 30_000);",
+      "}, 30_000);",
+      "}, 45_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);",
+      "}, 60_000);"
+    ],
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.resize.spec.ts": [
+      "}, 30_000);"
+    ],
+    "packages/platejs/src/markdown/lib/markdownContinuation.spec.ts": [
+      "60_000"
+    ],
+    "packages/plitejs/src/diff/lib/comparison-work.spec.ts": [
+      "}, 60_000);",
+      "}, 60_000);"
+    ],
+    "packages/plitejs/test/authored-changes-contract.test.ts": [
+      "{ timeout: 15_000 },"
+    ],
+    "packages/plitejs/test/authored-positions-contract.test.ts": [
+      "{ timeout: 60_000 },"
+    ],
+    "packages/plitejs/test/document-change.test.ts": ["timeout: 20_000,"],
+    "packages/plitejs/test/dom/dom-coverage.ts": ["{ timeout: 30_000 },"],
+    "packages/plitejs/test/incremental-schema-validation.test.ts": [
+      "timeout: 20_000,"
+    ],
+    "packages/plitejs/test/react/dom-coverage-boundary-contract.tsx": [
+      "}, 15_000);"
+    ],
+    "packages/plitejs/test/react/rendered-dom-shape-contract.tsx": [
+      "}, 20_000);"
+    ],
+    "packages/plitejs/test/react/selection-dom-realm-contract.test.ts": [
+      "}, 15_000);"
+    ],
+    "packages/plitejs/test/slice-fit-contract.test.ts": [
+      "timeout: 20_000,",
+      "timeout: 20_000,"
+    ],
+    "packages/plitejs/test/snapshot-contract.ts": ["{ timeout: 15_000 },"],
+    "packages/plitejs/test/text-splice-projection.test.ts": [
+      "{ timeout: 15_000 },"
+    ]
+  },
+  "plate/no-relative-plite-source": {
+    "apps/www/src/app/dev/suggestion-performance/page.tsx": [
+      "import { DecorationContext } from '../../../../../../packages/plitejs/src/react/decoration-context';"
+    ],
+    "apps/www/src/registry/examples/markdown-streaming-demo.spec.tsx": [
+      "import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';"
+    ],
+    "apps/www/src/registry/examples/multiple-editors-demo.spec.tsx": [
+      "import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';"
+    ],
+    "packages/platejs/src/compiler/compileEditor.test.ts": [
+      "import { createEditorSchemaContract } from '../../../plitejs/src/core/schema-compiler';",
+      "import { getPluginRegistry } from '../../../plitejs/src/core/plugin-registry';",
+      "import type { RuntimePluginContributionInput } from '../../../plitejs/src/interfaces/editor';"
+    ],
+    "packages/platejs/src/react/features/suggestion/SuggestionPlugin.spec.tsx": [
+      "import { DecorationContext } from '../../../../../plitejs/src/react/decoration-context';"
+    ]
+  },
+  "plate/no-second-name": {
+    "packages/platejs/src/csv/lib/CsvPlugin.ts": [
+      "export type CsvParseOptions = ParseConfig;"
+    ],
+    "packages/platejs/src/docx/export/lib/internal/docx-document.ts": [
+      "export type NumberingOptions = ListStyleDefaults;"
+    ],
+    "packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.ts": [
+      "export type ExcalidrawDataState = ImportedDataState;"
+    ],
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": [
+      "export type FootnotePluginState = ComboboxState;"
+    ],
+    "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": [
+      "export type AudioPluginState = MediaPluginState;",
+      "export type FilePluginState = MediaPluginState;",
+      "export type VideoPluginState = MediaPluginState;"
+    ],
+    "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts": [
+      "export type SlashPluginState = ComboboxState;"
+    ],
+    "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts": [
+      "export type BasePluginInput = PluginReference;"
+    ],
+    "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts": [
+      "export type MarkdownPluginRegistry = PluginFormatRegistry;"
+    ],
+    "packages/platejs/src/lib/plugin/PluginDefinition.ts": [
+      "export type AnyBasePluginDefinition = BasePluginDefinition;"
+    ],
+    "packages/platejs/src/markdown/lib/internal/markdownDocument.ts": [
+      "export type MarkdownSerializeDocumentValue = EditorDocumentValue;"
+    ],
+    "packages/platejs/src/markdown/lib/types.ts": [
+      "export type MdMarks = MarkdownMarks;"
+    ],
+    "packages/platejs/src/react/plugin/PlatePlugin.ts": [
+      "export type AnyPlugin = AnyPluginRuntime;"
+    ],
+    "packages/platejs/src/static/renderStaticHtml.tsx": [
+      "export type StaticHtmlDiagnostic = AuthoredProjectionDiagnostic;"
+    ],
+    "packages/plitejs/src/authored/format.ts": [
+      "export type AuthoredProjectionDiagnostic = NativeAuthoredProjectionDiagnostic;"
+    ],
+    "packages/plitejs/src/core/schema-contribution-registry.ts": [
+      "export type EditorSchemaContributionRegistration ="
+    ],
+    "packages/plitejs/src/core/value-codec.ts": [
+      "export const assertEditorJsonValue = assertJsonValue;"
+    ],
+    "packages/plitejs/src/dom/plugin/dom-geometry.ts": [
+      "export const getPliteStringPlacementDOMPoint = getStringPlacementDOMPoint;"
+    ],
+    "packages/plitejs/src/editor-runtime-view.ts": [
+      "export const createEditorView: CreateEditorView = createEditorViewRuntime;"
+    ],
+    "packages/plitejs/src/internal/view/mapped-view-store.ts": [
+      "export const areMappedViewDataEqual = areEditorJsonValuesEqual;"
+    ],
+    "packages/plitejs/src/react/components/editable-text-blocks.tsx": [
+      "export type EditableDOMCoverageBoundaryMaterializePayload ="
+    ],
+    "packages/plitejs/src/react/external-text.ts": [
+      "export type ExternalTextDecoration = DecorationSlice;"
+    ],
+    "packages/plitejs/src/react/hooks/use-plite-history.ts": [
+      "export type EditorHistoryFocusPolicy = EditableEditorHistoryFocusPolicy;"
+    ],
+    "packages/plitejs/src/react/plugin/react-editor.ts": [
+      "export const ReactEditor: ReactEditorInterface = DOMEditor;"
+    ],
+    "packages/plitejs/src/testing/jsx.ts": [
+      "export const hjsx = jsx;",
+      "export const jsxt = jsx;",
+      "export type TestEditor = TestEditorFixture;"
+    ],
+    "packages/plitejs/src/yjs/core/awareness-relative-selection.ts": [
+      "export const isYjsAwarenessSelectionValue = isYjsAwarenessSelection;"
+    ],
+    "packages/test/src/react/createPlateTestEditor.ts": [
+      "export type EditorTestRenderResult = RenderResult;"
+    ]
+  },
+  "plate/no-source-text-test": {
+    "apps/www/src/lib/rehype-utils.spec.ts": [
+      "expect(await fs.readFile(filePath, 'utf-8')).toContain("
+    ],
+    "apps/www/src/registry/components/editor/turn-into-toolbar-button.spec.ts": [
+      "const source = readFileSync("
+    ],
+    "apps/www/src/registry/registry.test.ts": [
+      "const exportKit = readFileSync(",
+      "const exportToolbar = readFileSync("
+    ],
+    "packages/plitejs/test/delete-contract.ts": [
+      "const wholeBlockSource = readFileSync("
+    ],
+    "packages/plitejs/test/dom/public-surface-contract.ts": [
+      "const hotkeySource = readFileSync(",
+      "const indexSource = readFileSync(",
+      "const rootSource = readFileSync(",
+      "const source = readFileSync(sourcePath, 'utf-8');"
+    ],
+    "packages/plitejs/test/react/dom-repair-policy-contract.test.ts": [
+      "const source = readFileSync("
+    ],
+    "packages/plitejs/test/react/kernel-authority-audit-contract.ts": [
+      "const editableSource = readFileSync(",
+      "const editableSource = readFileSync("
+    ],
+    "packages/plitejs/test/react/surface-contract.tsx": [
+      "const indexSource = readFileSync(",
+      "const indexSource = readFileSync(",
+      "const indexSource = readFileSync("
+    ],
+    "packages/test/test/proof/package-scripts.test.ts": [
+      "const indexSource = readFileSync(",
+      "const playwrightSource = readFileSync(",
+      "const proofIndex = readFileSync(proofIndexPath, 'utf-8');",
+      "const source = readFileSync(sourcePath, 'utf-8');"
+    ],
+    "packages/test/test/proof/scenario.test.ts": [
+      "const caretSource = readFileSync(caretSourcePath, 'utf-8');",
+      "const source = readFileSync(sourcePath, 'utf-8');",
+      "const source = readFileSync(sourcePath, 'utf-8');",
+      "const typeSource = readFileSync(typeSourcePath, 'utf-8');"
+    ]
+  }
+}

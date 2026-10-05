@@ -177,7 +177,7 @@ describe('useCombobox', () => {
     });
 
     await act(async () => {
-      await editor.api.history.undo();
+      editor.api.history.undo();
     });
 
     expect(text(editor)).toBe('Hi @jo');
@@ -185,7 +185,7 @@ describe('useCombobox', () => {
     expect(box!.match).toBeNull();
 
     await act(async () => {
-      await editor.api.history.redo();
+      editor.api.history.redo();
     });
 
     expect(editor.read.children()[0]).toMatchObject({
@@ -395,17 +395,17 @@ describe('useCombobox', () => {
       '[contenteditable="true"]'
     );
 
-    await type(first!, '@jo');
-    await waitFor(() => expect(viewBoxes.get(first!)?.match?.query).toBe('jo'));
-    expect(viewBoxes.get(second!)?.match).toBeNull();
+    await type(first, '@jo');
+    await waitFor(() => expect(viewBoxes.get(first)?.match?.query).toBe('jo'));
+    expect(viewBoxes.get(second)?.match).toBeNull();
     expect(second).not.toHaveAttribute('aria-controls');
 
     await act(async () => {
-      second!.focus();
+      second.focus();
     });
 
-    await waitFor(() => expect(viewBoxes.get(first!)?.match).toBeNull());
-    expect(viewBoxes.get(second!)?.match).toBeNull();
+    await waitFor(() => expect(viewBoxes.get(first)?.match).toBeNull());
+    expect(viewBoxes.get(second)?.match).toBeNull();
   });
 
   it('ends when another editor takes focus', async () => {

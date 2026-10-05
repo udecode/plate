@@ -10,7 +10,7 @@ work_kind: implementation
 
 # Autocomplete occurrence host
 
-Status: blocked; panel round 4's fixes wait as an unreviewed patch on the owner's answer.
+Status: building; Phase 1b is built and accepted with a partial benchmark, and Phase 2 waits on its best-api-review gate.
 Playbook: plan
 
 The built autocomplete works, but its owner reads Plite's private input tags, maps Plite's DOM text itself and compares completions by text alone. It also mounts every feature's popup in every Editable and leaves the editor root a textbox while a popup is open. Phase 1a repairs the built owner in Plate: an occurrence id that completion compares, a read bounded in characters, the combobox role and the shortcut table's IME-confirm skip. Phase 1b moves typed text and DOM text into public Plite calls once the native owner accepts them. Phase 2 replaces the owner with one host per mounted Editable, which a small `ComboboxPlugin` renders and which mounts only the open occurrence's popup, and lets each feature declare its trigger once, the way it declares input rules. Phase 2 runs only after its own review against the repaired owner, because the panel found no evidence yet that it beats that owner. The query stays ordinary text. The 13 hard laws of the adoption plan hold, and law 5 keeps one known violation that the built design shares. The execution playbook is `.agents/playbooks/build.md`.
@@ -292,16 +292,9 @@ Each removed noun keeps its behavior through a named replacement and a regressio
 | Phase 2 | Gated: it runs only after a `best-api-review` against the kept Phase 1 tree records a material gain in API shape or lifetime, because the panel found no evidence yet that it beats the repaired owner | Build Phase 2 right after Phase 1 | build phase 2 |
 | Plite input facts if the native owner refuses Phase 1b | Plite tags string paste, drop and yank with its public `paste` tag, which the owner already rejects, and the rest of Phase 1b drops; string replacement input stays a known law-5 violation | No Plite change, leaving law 5's string-data violation | no plite change |
 | `work_kind` | `implementation`, because Build now runs this plan through `.agents/playbooks/build.md`, which refuses a `design` plan | `design`, which stops at the chosen target | design |
-
-## Open questions
-
-### Phase 1b round-4 patch
-Panel round 4 found two critical gaps in the round-3 patch, and their fixes wait as an unreviewed patch. This one mostly deletes code. What happens to it?
-- **Another round** (recommended): apply the patch and run panel round 5 on it alone, then the benchmark, the five-repeat acceptance and the trail review.
-- **Ship**: apply the patch without another review, then the benchmark, acceptance and trail review.
-- **Subset**: keep the tree as round 4 reviewed it, with both gaps open, and run the benchmark and acceptance on it.
-
-The patch is `round5-unreviewed.patch` in this run's scratch `panel-1b` folder, 8 files; `typed-text.ts` gains 26 lines and loses 86. Astra and Sol showed that a DOM repair writing at the next leaf's start, with the caret left after an existing `@`, reported that old `@`. Every rule that guessed where the text landed had a case like this. The patch removes the guessing: the second DOM repair opens a typing scope only when it moves the caret, so every input that reports leaves the caret just past its own text. Opus showed that the version check dropped the report whenever an earlier listener committed anything, such as Copilot's reject on each typed commit, so the popup never opened in the Copilot demo. The patch checks only that the document is still the commit's. Each fix has a test that fails on the current tree and passes with the patch.
+| `a167271`, three shared-block rules session `a16d4446` wrote and never committed | Keep them in dotai, because plate-2 and ellie both run them | Revert the commit | revert a167271 |
+| plate-2's pstack sync source | Stay at dotai `236f09b`; the five later commits are another session's | Sync plate-2 to `b295b68` now | sync plate-2 |
+| The Plate v2 workflow guide's panel section | Its author updates it from the new `AGENTS.md` text | This session updates it once given access | update the guide |
 
 ## Scope
 
@@ -442,14 +435,14 @@ The `api-build` review row gave the build a panel on its diff. Round 1 reviewed 
 | `draft-execution` and `record` | yes | `docs/research/review-records/2026-10-04-autocomplete-occurrence-host-phase-1a.json` |
 | Phase 1b: `plate-docs` on `content/docs/api/dom.mdx` | yes | Typed text section and the `textToCaret` entry; `pnpm --filter www build:source` and the docs source parity check exit 0; `check:docs` stops at its api-reference step on another session's migrations symbol |
 | Phase 1b: changesets | yes | `.changeset/plite-typed-text.md`, `.changeset/combobox-typed-text.md` |
-| Phase 1b: `deslop` and `no-comments` on product code | yes | `deslop` and comment-sicko on Phase 1b and again on the round-1 fix delta, logged in the decision log |
-| Phase 1b: `api-build` panel on the diff | yes | pending: four rounds logged under `panel`; round 4's fixes wait as `round5-unreviewed.patch` |
-| Phase 1b: `unslop` on docs, changesets and this plan | yes | `pstack:unslop` on this hand-back's plan text, the subject's new Open work, `dom.mdx` and both changesets; the patch's `dom.mdx` lines get theirs when it lands |
-| Phase 1b: `pnpm lint:fix` on the task's files | yes | pending: after the patch decision |
-| Phase 1b: calibrated benchmark | yes | pending: the A/A and known-bad runs passed and failed as required on the old harness; A/A on the final harness and the candidate pairs wait on the patch decision |
-| Phase 1b: five-repeat acceptance in Chromium, Firefox, WebKit and the Android emulator | yes | pending: one Chromium IME run and one emulator run passed |
-| Phase 1b: decision-trail review | yes | pending |
-| Phase 1b: `draft-execution` and `record` | yes | pending |
+| Phase 1b: `deslop` and `no-comments` on product code | yes | `deslop` and comment-sicko on Phase 1b and the round-1 delta; `pstack:deslop` and `pstack:no-comments` on the round-5 patch; a final `pstack:no-comments` over the whole task diff kept all 26 comments |
+| Phase 1b: `api-build` panel on the diff | yes | four rounds logged under `panel`, two past the cap; round 4's fixes shipped as `round5-unreviewed.patch` on the owner's Ship answer |
+| Phase 1b: `unslop` on docs, changesets and this plan | yes | `pstack:unslop` on each hand-back's plan text, the subject's Open work, `dom.mdx` and both changesets |
+| Phase 1b: `pnpm lint:fix` on the task's files | yes | `pnpm exec ultracite fix` and `check` on the 7 patch files, exit 0 |
+| Phase 1b: calibrated benchmark | yes | partial: `bench/aa2.json` passed on the final harness; `cand2.json`, `cand2-fn.json` and `cand3.json` keep medians within -0.5 to +1.15 ms, and no run met the full keep rule under load; the rerun is in the subject's Open work |
+| Phase 1b: five-repeat acceptance in Chromium, Firefox, WebKit and the Android emulator | yes | `combobox.spec.ts` at `--repeat-each=5 --retries=0`: Chromium 70, Firefox 55 and WebKit 55 passed; `mention-taps.device.ts` 5 of 5 on emulator-5554 |
+| Phase 1b: decision-trail review | yes | gpt-6.1-sol through `cross.mjs`: one critical and nine warnings, each answered in the decision log |
+| Phase 1b: `draft-execution` and `record` | yes | `docs/research/review-records/2026-10-04-autocomplete-occurrence-host-phase-1b.json` |
 
 ## Proof
 
@@ -457,12 +450,14 @@ Phase 1a's proof is in Completion Gates and the decision log. The design's evide
 
 ## Close
 
-Reversals first. Phase 1b adds no Android flush. When a keyboard sends typed and pasted text for one text node before a single input event, the merged diff reports nothing, where the approved step flushes first. Separate inputs report by their own intent. The word flush reverses this. My early log row said Phase 1b would get no panel; the re-read `AGENTS.md` adds the `api-build` row, so the build got four rounds, the third and fourth on the owner's word. Phase 1a's constant-cost claim held only for a trigger preceded by text, and round 1 fixed the block-start read.
+Reversals first. Phase 1b adds no Android flush. When a keyboard sends typed and pasted text for one text node before a single input event, the merged diff reports nothing, where the approved step flushes first. Separate inputs report by their own intent, because the action-flush timer flushes between them. The word flush reverses this. The panel ran four rounds on the Phase 1b diff, two past its two-round cap, because I recommended Another round each time. The owner then asked for the rule repair below. The round-5 patch shipped with no panel on it, on the owner's go. Phase 1a's constant-cost claim held only for a trigger preceded by text, and round 1 fixed the block-start read.
 
-What landed, uncommitted for the owner: Plite's typed-text report, `api.react.subscribeTypedText` and `api.dom.textToCaret`, the input type on Android's pending diffs, the input-event fallback reporting its Editable, and the Plate owner opening only from reports and previewing through `textToCaret`, plus the fixes from panel rounds 1 to 3. Docs and changesets are in Completion Gates. Round 4's fixes wait in the unreviewed patch.
+What landed, uncommitted for the owner: Plite's typed-text report in `typed-text.ts`, `api.react.subscribeTypedText`, `api.dom.textToCaret`, the input type on Android's pending diffs, the input-event fallback reporting its Editable, and the Plate owner opening only from reports and previewing through `textToCaret`. A report names the text just before the commit's caret. The second DOM repair opens a typing scope only when it moves the caret, and a commit whose document an earlier listener changed reports nothing. Docs and changesets are in Completion Gates. The dev server's `build:registry` regenerated 12 files under `apps/www/public/r`.
 
-Proof: the Plite suite and Plate's tests pass; `typed-text.test.tsx` holds 16 cases and the combobox spec 25. The listener, unmounted and focus cases fail on the tree round 1 reviewed, and the two Android cases fail when the merge keeps the pending type or the flush always uses `insertText`. A Chromium CDP composition opens the popup, and fails with the composition input types removed. One emulator run typed ` @bi` through Gboard and tapped the option. The known-bad unbounded read fails the benchmark by 9.85 ms idle and 6.15 ms on query typing.
+The panel rules are repaired in the shared block, and this checkout's `AGENTS.md` is synced at dotai `236f09b`. The cap is two rounds that applied a critical fix. The lead never recommends Another round and offers it once. A past-cap critical with an additive fix gets an `open` row with its patch and owner, the stop question offers Hold and recommends it while a critical remains, and every panel seat runs through `cross.mjs`. All 24 reflect lessons are applied, in dotai, this repository's rules and the owner's `CLAUDE.md`. An ellie session pushed most of them before this run's smoke and trail review, and ellie runs them from `b295b68`. I committed `a167271`, three rules session `a16d4446` wrote and never committed, before finding their author; Defaults keeps it.
 
-Limits: the candidate benchmark has not run, and the A/A run predates the probe's sample-attribution fix; on the old harness its `footnote-2000` cohort failed the 1 ms bar at 0.5% of a 215 ms p95, a bar inside that cohort's noise. The five-repeat browser and device acceptance, the trail review and the execution record have not run. The api-reference check is blocked by another session's work.
+Proof: the typed-text suite (18 cases), the combobox React partition (25) and the plitejs react and dom typechecks pass on the linted bytes. The five-repeat acceptance passes: Chromium 70, Firefox 55 and WebKit 55 runs of the combobox spec, and the emulator's mention-tap case 5 of 5. The decision-trail review on gpt-6.1-sol found one critical and nine warnings, and each has an answer in the decision log.
 
-Counts: 10 Phase 1b gates. Done: 5. Open: 5, the lint fix, the benchmark, acceptance, trail review and record, all waiting on the patch answer. Phase 2 and Phase 3 stay open, and Phase 1a is done.
+Limits: the calibrated benchmark is partial. The A/A passed on the final harness and the candidate's medians stayed within -0.5 to +1.15 ms of the baseline, but load from other sessions kept every candidate run from meeting the full keep rule, and the known-bad control predates the final harness. WebKit counts only its port-3000 run, because on port 3297 the home page's manifest URL failed the strict error check. A panel seat run through `cross.mjs` runs at Claude's default effort until the models sheet names a level.
+
+Counts: 10 Phase 1b gates. Done: 9. Partial: 1, the benchmark. Phase 2 and Phase 3 stay open, and Phase 1a is done.

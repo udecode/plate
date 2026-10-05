@@ -52,7 +52,9 @@ Rules:
   guessing command variants. Locate the exact file or wrapper with `rg --files`
   / `rg -n`, then rerun once with the correct runner;
 - run Plite package checks through the entrypoint-aware `plitejs` scripts, such
-  as `pnpm --filter plitejs typecheck`; do not target deleted package roots;
+  as `pnpm --filter plitejs typecheck`, and typecheck its test files with
+  `pnpm --filter plitejs typecheck:tests`, not `tsc -p test/tsconfig.json` or
+  `tsconfig.test.json`; do not target deleted package roots;
 - use `pnpm --filter plite test:plite-browser:chromium ...` for focused Plite
   browser specs; do not send Playwright specs through `bun test` or the
   `apps/www` docs app;
@@ -106,11 +108,10 @@ Rules:
   `tests/plite-browser/runtime-entrypoints.test.ts` drives `/runtime-entrypoints`
   for client imports. These runners derive membership from the DAG; type-only
   exports and CSS assets retain their separate proof scope;
-- split external consumer type smoke by claim width. App-facing Slate packages
-  should compile with strict Slate declaration checking. `slate-browser`
-  Playwright subpaths may need a separate config with third-party lib checking
-  skipped so Playwright/Node ambient declarations do not hide the Slate package
-  result. Record the split as proof scope, not as a product exemption;
+- split external consumer type smoke by claim width. App-facing packages
+  should compile with strict declaration checking. `@platejs/test/playwright`
+  may need a separate config with third-party lib checking skipped so
+  Playwright/Node ambient declarations do not hide the package result. Record the split as proof scope, not as a product exemption;
 - use `bun test ./path` only with repo-relative Bun test paths from
   `Plate repo root`, or with package-local paths after recording the package cwd;
 - if root `bun test ./packages/.../<file>.test.ts` says the path filter did not
@@ -139,11 +140,6 @@ Rules:
 - do not broad-scan every example/package test name into chat with
   `rg "test\\(" ...` when the lane is already scoped; use a curated file list,
   targeted `rg` filters, or write discovery output to an artifact;
-- when durable Slate v2 docs contain absolute checkout paths, verify the path
-  exists before reusing the command. Current Slate v2 runtime/package commands
-  belong to the Plate repo root; stale donor-checkout command snippets should
-  be repaired unless the doc explicitly names a historical draft/source
-  checkout such as `slate-v2-draft`;
 - when Playwright imports a package through public exports such as
   `@platejs/test/playwright`, verify whether the export resolves built `dist`;
   after source changes to those packages, run the focused package build (for
@@ -161,12 +157,9 @@ Rules:
   Slate proof when the proof should be durable;
 - do not casually swap in raw `playwright`, or a custom wrapper unless the
   package script and argument forwarding are verified in the plan;
-- if a command fails because of command shape, repair the owning skill or
-  script per the pstack block's Improve the workflow mid-task rule, and rerun
-  the focused proof with the corrected command.
-
-
 ## Source-first package checks
+
+A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it with `bun run` from the package directory, import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/<package>/` that the import added. A scratch file outside the repository cannot resolve bare package names, so it imports by path.
 
 Default to source-first typecheck. Do not build packages just to run types.
 Inspect the affected package/app `paths` and source-entry graph if stale
@@ -189,8 +182,9 @@ pnpm --filter platejs lint:fix
 Use root `pnpm lint:fix` when the affected lint scope needs that command.
 `pnpm typecheck` checks root packages from source; `pnpm build` builds all
 packages only when needed. `bun run test` is the fast aggregate test lane;
-`pnpm test:all` is the complete lane for required handoff/CI proof, not the
-default iteration command.
+`pnpm check` is the CI gate for required handoff proof, not the default
+iteration command. `pnpm check --list` names its steps, and `pnpm check <step>`
+runs one.
 
 `pnpm check:plite` covers all Plite-family package typechecks/tests, proof-runner
 contracts and Chromium proof through `apps/plite`. Pair package and browser
@@ -200,8 +194,6 @@ proof before marking an architecture/browser plan done, for release-quality
 browser claims or when explicitly requested.
 
 `bun test:mobile-device-proof:raw` requires actual Appium Android/iOS artifacts.
-Semantic mobile handles and Playwright mobile viewports never prove a raw device.
-
 The local device lane is `verify`-scoped proof and does not satisfy that raw
 gate:
 
@@ -226,6 +218,17 @@ fails only at run time. After any edit to the device config, global setup or
 lane fixtures, run one case once before the default five repeats, which take
 about twelve minutes:
 `PLATE_DEVICE_REPEAT=1 pnpm --filter plite exec playwright test --config playwright.device.config.ts bypass`.
+
+## Base worktree for a HEAD comparison
+
+Add a detached worktree at the base (`git worktree add --detach <path> <sha>`)
+and link this checkout's installed dependencies, as `AGENTS.md`'s Git rule says.
+When the base lockfile differs or a package's links are missing, install with
+scripts instead (`pnpm rebuild` first when an earlier install skipped them) and
+build `@platejs/cli`. A step that fails in about a second, such as `plate:
+command not found`, is a broken install, not a result. Never copy candidate
+files into the base worktree; replay them in a second worktree, and require an
+empty `git -C <path> status --porcelain` before labeling any run as base.
 
 ## Local install recovery
 

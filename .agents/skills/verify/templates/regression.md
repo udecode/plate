@@ -75,7 +75,6 @@ Boundaries:
 - generated/source boundary: pending
 - browser/device claim width: pending
 - forbidden product/API/release/public mutations: pending
-- orchestration mode and writer ownership: pending
 
 Output budget strategy:
 
@@ -118,8 +117,6 @@ Start Gates:
 | Reporter oracle matrix resolved | pending | pending |
 | Regression semantic validator ready | pending | pending |
 | Route/proof-host readiness plan recorded | pending | pending |
-| Direct/delegated repair boundary recorded | pending | pending |
-| Orchestrator writer ownership recorded | pending | pending |
 | Output budget strategy recorded | pending | pending |
 | Claim width and blocked rules recorded | pending | pending |
 
@@ -147,6 +144,7 @@ Work Checklist:
 - [ ] Reconcile acceptance and record final evidence, risks and next owner.
 - [ ] Pass semantic completion, then structural completion.
 
+
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
@@ -173,33 +171,13 @@ Completion Gates:
 | Local completion status | pending | Mark every fully proved kept case and the run `completed`; record local ref/fingerprints and uncommitted/unpushed state separately | pending |
 | No duplicate registry | pending | Prove no sidecar behavior manifest/database was created | pending |
 | Generated/source and host repair | pending | Repair drift/host methodology or record blocked claim | pending |
-| Orchestrator writer closure | pending | Prove one shared-state writer and serialized overlapping owners/hosts, or N/A | pending |
 | Workflow slowdown closure | pending | Repair avoidable slow/stale/noisy proof paths or defer with owner | pending |
 | Methodology delta closure | pending | Resolve repair-now/no-change/defer for every case | pending |
 | Source/generated sync | pending | Run `pnpm install` and parity audit when agent sources changed, otherwise N/A | pending |
 | Decision-trail review | pending | Run per the pstack block's Decision-trail review rule for changed agent workflows, or record N/A | pending |
 | Final handoff contract | pending | Record tests, decisions, proof, sync, reviews, risks, and next owner | pending |
-| Autoreview | pending | Run the review the pstack block's Panel review and Review rules require, or record N/A | pending |
 | Regression semantic plan | yes | Run `node .agents/skills/verify/scripts/validate-regression-plan.mjs {{PLAN_PATH}} --complete` | pending |
 | Plan complete | yes | Run `node .agents/pstack/plan-open.mjs {{PLAN_PATH}}` | pending |
-
-Phase / pass table:
-| Phase | Status | Evidence | Next |
-|-------|--------|----------|------|
-| Requirement extraction and goal setup | in_progress | template created | source/host readiness |
-| Current source and proof-host readiness | pending | | discover executable cases |
-| Executable case discovery and selection | pending | | smallest probe |
-| Cumulative reporter evidence inventory | pending | | reporter oracle expansion |
-| Reporter oracle expansion | pending | | semantic validation |
-| Pre-implementation semantic validation | pending | | smallest probe |
-| Smallest high-value probe | pending | | reproduce/classify |
-| Reproduce, classify, and red test | pending | | case repair |
-| One-case repair | pending | | verification |
-| Focused verification and stability | pending | | packet decision |
-| Keep/revert/quarantine | pending | | methodology delta |
-| Methodology repair/no-change/defer | pending | | next case or closure |
-| Reviews and final handoff | pending | | goal-plan check |
-| Final goal-plan check | pending | | final response |
 
 Selected executable cases:
 | Case ID | Source reference | Setup / action | Expected outcome | Expected-outcome authority | Red-test escalation | Exact environment | Test file / command | Status | Tested ref | Next owner |
@@ -260,6 +238,7 @@ Patch delegation:
 |---------|----------|---------------------|--------------------------|-----------------------|--------|
 | pending | pending | pending | pending | pending | pending |
 
+
 Stability:
 | Case ID | Executable proof / host | Required runs | Results | Retry count | Decision |
 |---------|-------------------------|---------------|---------|-------------|----------|
@@ -280,55 +259,24 @@ Workflow slowdowns:
 |----------------|-------|--------------------|-------|----------------|---------------|
 | pending | pending | pending | pending | pending | pending |
 
-Findings:
+## Brief
 
-- pending
+### What did you find?
 
-Timeline:
+TODO: The finding behind this plan, in at most 40 words.
 
-- pending
+### What will change?
 
-Decisions and tradeoffs:
+TODO: What the owner will notice, in at most 40 words.
 
-- pending
+### What do you need from me?
 
-Review fixes:
+TODO: The decision the owner must make, or nothing.
 
-- pending
+### What happens if I say go?
 
-Error attempts:
-| Error / failed attempt | Count | Next different move | Resolution |
-|------------------------|-------|---------------------|------------|
-| None yet | 0 | N/A | N/A |
+TODO: What go starts and what it does not authorize.
 
-Verification evidence:
+### What could go wrong?
 
-- pending
-
-Final handoff:
-
-- executable cases: pending
-- cumulative reporter evidence, phase-specific oracles, and forbidden states: pending
-- failed-fix invalidation and escape-prevention evidence: pending
-- proof receipts and affected-corpus replay: pending
-- started-gate failure closure: pending
-- changed files: pending
-- design decisions: pending
-- tests and proof: pending
-- source/generated sync: pending
-- review and decision-trail findings: pending
-- residual risks and next owner: pending
-- local completion status and integration/public-status boundary: pending
-
-Reboot status:
-| Question | Answer |
-|----------|--------|
-| Where am I? | requirement extraction |
-| Where am I going? | source/host readiness, executable cases, patch, verification, closeout |
-| What is the goal? | close selected regressions through executable tests and fresh proof |
-| What have I learned? | pending |
-| What have I done? | template created |
-
-Open risks:
-
-- pending
+TODO: The largest risk and what limits it.

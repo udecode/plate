@@ -1,0 +1,14 @@
+# pnpm --filter www build:source
+> www@0.0.1 build:source /Users/zbeyens/git/plate-2/apps/www
+> fumadocs-mdx source.config.ts .source
+
+[MDX] generated files in 7.946957999999995ms
+# exit: 0
+# pnpm --filter www check:docs
+
+> www@0.0.1 build:source /Users/zbeyens/git/plate-2/apps/www
+> fumadocs-mdx source.config.ts .source
+
+[MDX] generated files in 16.33820800000001ms
+Docs source parity check passed.
+# exit: 0

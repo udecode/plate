@@ -80,6 +80,7 @@ export type {
   EditorLevelsOptions,
   EditorLifecycleErrorSink,
   EditorNextOptions,
+  HistoryApi,
   EditorNodeChangeContext,
   EditorNodeGetOptions,
   EditorNodesReadOptions,

@@ -35,7 +35,7 @@ export const getStaticDocumentView = (
   let view = byDocument.get(document);
 
   if (!view) {
-    view = createEditorView(editor, { document }) as unknown as Editor;
+    view = createEditorView(editor, { document });
     byDocument.set(document, view);
   }
 

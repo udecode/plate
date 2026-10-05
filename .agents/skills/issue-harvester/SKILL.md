@@ -9,7 +9,6 @@ metadata:
 
 # Issue Harvester
 
-
 Handle $ARGUMENTS.
 
 Use this skill when the user wants exhaustive issue-history coverage, including
@@ -27,44 +26,6 @@ paste the long closure-ledger prompt again.
 
 `issue-harvester slate ...` keeps the Slate v2 fork's issue provenance and claim hygiene: the v2 sync ledger, exact claim levels, the fork issue dossier, coverage-matrix and PR-text claim sync, and gitcrawl upkeep. Read [Slate claims](./references/slate-claims.md) in full for that mode.
 
-## Core Take
-
-Closed issues are regression gold. But a cluster summary is not coverage.
-
-Every relevant issue needs its own row and one final checkmark:
-
-- `invalid-skip`
-- `covered-by-existing-test`
-- `test-written`
-- `plate-owned-covered`
-- `deferred-with-owner`
-- `needs-repro`
-- `blocked`
-
-Clusters and matrices route work. They never close an issue row.
-
-## Owners
-
-- `issue-harvester`: exhaustive issue closure ledger, resume/new-issue refresh,
-  PR/test provenance, unchecked-row loop, and final issue handoff.
-- `research audit`: source architecture comparison and commit-aware orchestration.
-  Its `sync` mode may invoke this skill with `--refresh-only`; it never owns or
-  advances issue closure rows itself.
-- `research harvest`: first-pass external repo inventory, license gate,
-  issue corpus clustering, portable invariant matrix, and source test inventory.
-- Slate claims mode: provenance discipline: exact thread, exact behavior, no
-  claim without proof.
-- pstack's Autonomous run: timeboxed or batch supervision.
-- `maintainer slate-issue`: receive one public Slate issue row, run coordinator
-  intake, and delegate a normalized local repair packet when warranted.
-- `maintainer`: receive any other public issue row, run queue/claim/authority
-  checks, and delegate a normalized local repair packet when warranted.
-- pstack's Bug fix playbook or `pstack:tdd`: receive only the resulting normalized local repair/test
-  packet, never a public issue row directly.
-- `best-api`: review broad public API/DX gaps.
-- the Plan playbook: defer broad runtime or adoption gaps that one small test
-  cannot prove.
-
 ## Scope
 
 This skill works for:
@@ -75,16 +36,6 @@ This skill works for:
 - open and closed issues, defaulting to `--state all`;
 - resuming an existing closure ledger;
 - adding only missing local tests for unchecked relevant issues.
-
-External repos follow `research harvest`'s license gate: extract the
-behavior invariant and write a fresh local proof, never copied upstream code,
-fixtures or prose.
-
-Broad or timeboxed work records in its plan the target repo and key, issue
-state, scope flags (`slate-v2-only`, `plate-only` or both), the ledger path and
-whether it was found or created, the refresh command, the unchecked count and
-next issue number, and the provenance requirement for closed issues.
-Checkpoint after each complex runtime issue or each ten trivial rows.
 
 ## Ledger Autodiscovery
 
@@ -111,26 +62,11 @@ docs/editor-issue-harvester/<repo_key>/full/issue-closure-run.md
 The `docs/editor-issue-harvester/<repo_key>/full/` directory is the canonical
 resume/checkmark workspace. It may contain compact generated TSV/Markdown/JSON
 state, but it must not contain raw issue bodies/comments. The `.tmp` path is raw
-cache only. If a legacy ledger exists under
-`.tmp/editor-issue-harvester/<repo_key>/full/`, treat it as a read-only import
-source, copy or regenerate the compact ledger into the docs path, and continue
-from the docs path.
+cache only.
 
-When importing a legacy `.tmp/**/full` ledger:
-
-- copy only compact artifacts: classified indexes, matrices, reports,
-  closure ledgers, overrides, checkpoint summaries, and local generator
-  scripts;
-- do not copy `issues-all-with-bodies.json`, raw issue lists, hydrated thread
-  JSON, comments, or `issue-bodies/**`;
-- repair imported generator scripts so compact outputs are written under
-  `docs/editor-issue-harvester/<repo_key>/full/` while raw issue-body input, if
-  needed, is read from `.tmp/editor-issue-harvester/<repo_key>/full/` or
-  `.tmp/editor-issue-harvester/<repo_key>/raw/`;
-- run the docs-path closure generator and verify the unchecked count from the
-  docs ledger, not from the legacy `.tmp` copy;
-- grep or inspect the docs path for raw body/comment artifacts before claiming
-  the import is clean.
+Do not broad-search `docs/editor-issue-harvester/**` or raw issue JSON just to
+learn ledger status. Parse `issue-closure-ledger.md` / `.tsv` directly for the
+`check` column, `unchecked relevant`, total rows, and next unchecked issue.
 
 If a ledger exists:
 
@@ -152,7 +88,8 @@ If no ledger exists:
 
 ## Refresh Commands
 
-Prefer `gitcrawl` for archive input:
+Prefer `gitcrawl` for archive input; [gitcrawl](./references/gitcrawl.md) holds
+its install, update and archive commands:
 
 ```bash
 gitcrawl doctor --json
@@ -324,16 +261,6 @@ same feature area. Link:
 If coverage is partial, either strengthen the existing test or write a narrow
 new row. Avoid duplicate tests.
 
-## Verification Commands
-
-Prefer focused commands from the owner repo:
-
-```bash
-pnpm --filter platejs test -- <file-or-pattern>
-bun test ./packages/platejs/<file>.ts --test-name-pattern "<test>"
-PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/<suite>.test.ts --grep "<test>"
-```
-
 For Plate-owned rows, use the relevant Plate package/example command. If the
 run is scoped to Slate v2 only, do not write Plate tests; mark
 `deferred-with-owner` with the concrete Plate owner and reason.
@@ -358,8 +285,3 @@ prevents all progress, a broad API or runtime decision belongs to `best-api` or
 the Plan playbook, or the timebox expires with the active packet decided. Never
 stop after a cluster summary, a first matrix or the first ten rows unless a
 sample was asked for.
-
-The handoff names the target, state and ledger path, the refresh command and
-freshness, issues checked, tests written or linked and verified, provenance used
-for closed issues, skips and defers with reasons, the remaining unchecked count
-and next issue number. The ledger carries the detail.

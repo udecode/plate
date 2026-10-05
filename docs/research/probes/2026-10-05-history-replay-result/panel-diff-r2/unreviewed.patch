@@ -1,0 +1,46 @@
+diff --git a/packages/plitejs/src/history/history-plugin.ts b/packages/plitejs/src/history/history-plugin.ts
+index d9f343bbf7..bcde59973d 100644
+--- a/packages/plitejs/src/history/history-plugin.ts
++++ b/packages/plitejs/src/history/history-plugin.ts
+@@ -972,7 +972,7 @@ const createHistoryPlugin = <
+             try {
+               settleBlocked();
+             } catch (clearError) {
+-              report(clearError);
++              if (clearError !== cause) report(clearError);
+             }
+           }
+           report(cause);
+@@ -1026,7 +1026,12 @@ const createHistoryPlugin = <
+         } catch (error) {
+           return fail(error);
+         }
+-        if (!('then' in ownerResult)) return settle(ownerResult);
++        if (
++          typeof (ownerResult as { then?: unknown } | null | undefined)?.then !==
++          'function'
++        ) {
++          return settle(ownerResult as EditorEffectHistoryReplayResult);
++        }
+ 
+         return Object.freeze({
+           settled: Promise.resolve(ownerResult).then(settle, fail),
+diff --git a/packages/plitejs/test/history/history-branch-contract.spec.ts b/packages/plitejs/test/history/history-branch-contract.spec.ts
+index 2cae671bac..cc4cd777d4 100644
+--- a/packages/plitejs/test/history/history-branch-contract.spec.ts
++++ b/packages/plitejs/test/history/history-branch-contract.spec.ts
+@@ -575,10 +575,10 @@ describe('immutable history branches', () => {
+       tx.effects.emit(sessionEffect, { previous: '', value: 'comment' });
+     });
+ 
+-    assert.deepEqual(await settled(editor.api.history.undo()), {
+-      reason: 'external-diverged',
+-      status: 'blocked',
+-    });
++    assert.deepEqual(
++      { ...(await settled(editor.api.history.undo())) },
++      { reason: 'external-diverged', status: 'blocked' }
++    );
+     assert.equal(editor.read.history().undos.length, 1);
+     assert.equal(editor.read.history().redos.length, 0);
+   });

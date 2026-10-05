@@ -1,6 +1,10 @@
-import type { TransferApi, TransferRead, Value } from '../../facade';
 import type {
   HistoryApi,
+  TransferApi,
+  TransferRead,
+  Value,
+} from '../../facade';
+import type {
   HistoryStateApi,
   HistoryTxApi,
 } from '../../history/plite-history.internal';

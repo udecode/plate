@@ -239,14 +239,14 @@ export const applyEditableInput = ({
       inputController,
       { inputType: 'insertText', text: data },
       () =>
-      applyEditableCommand({
-        command: {
-          inputType: 'insertText',
-          kind: 'insert-text',
-          text: data,
-        },
-        editor,
-      })
+        applyEditableCommand({
+          command: {
+            inputType: 'insertText',
+            kind: 'insert-text',
+            text: data,
+          },
+          editor,
+        })
     );
     repairs.push({
       focus: true,

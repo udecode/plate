@@ -45,30 +45,45 @@ h3, h4, h5 { font-size: 1rem; margin: 16px 0 4px; }
 .pill.held, .pill.planning { background: var(--amber-soft); color: var(--amber); }
 .pill.unknown { background: var(--code); color: var(--muted); }
 .panel { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; min-width: 0; }
-.panel.needs { border-color: var(--amber); }
+.panel.needs { border: 2px solid var(--amber); display: grid; gap: 14px; }
+.panel.needs > h2 { margin: 0; padding-bottom: 8px; border-bottom: 2px solid var(--amber); color: var(--amber); }
+.go-strip { display: grid; gap: 8px; padding: 12px 14px; border-radius: 8px; border: 2px solid var(--green); }
+.go-strip > strong { color: var(--green); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.go-strip ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.go-chip { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: baseline; background: var(--green); color: var(--paper); border-radius: 999px; padding: 4px 12px; font-weight: 600; font-size: 0.88rem; overflow-wrap: anywhere; }
+.go-chip span { font-weight: 500; }
+.go-chip.open { background: var(--amber); }
 .panel h2 { display: flex; gap: 10px; align-items: baseline; }
 .count { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
 .quiet { color: var(--muted); margin: 0; }
-.question { display: grid; gap: 8px; margin: 0 0 18px; min-width: 0; }
-.question-text { margin: 0 0 2px; font-weight: 600; display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; max-width: none; }
 .chip { font: 600 0.72rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--amber); background: var(--amber-soft); border-radius: 999px; padding: 2px 8px; }
-.option { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 8px; cursor: pointer; min-width: 0; }
-.option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
-.option input { margin: 4px 0 0; accent-color: var(--accent); flex: none; }
-.option-body { display: grid; gap: 2px; min-width: 0; }
-.option-label { font-weight: 600; overflow-wrap: anywhere; }
-.option-desc { color: var(--muted); font-size: 0.88rem; }
+.how { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.how strong { color: var(--ink); }
+.ask { display: grid; gap: 12px; min-width: 0; border-left: 4px solid var(--amber); padding-left: 14px; }
+.ask + .ask { border-top: 1px solid var(--rule); padding-top: 18px; }
+.ask h3 { margin: 0; font-size: 1.05rem; line-height: 1.4; text-wrap: balance; }
+.eyebrow { justify-self: start; font: 700 0.72rem var(--sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper); background: var(--accent); border-radius: 999px; padding: 2px 10px; }
+.why { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.facts { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; }
+.opts { display: grid; gap: 8px; }
+.opt { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; min-width: 0; }
+.opt.picked { border: 2px solid var(--green); }
+.opt.picked .opt-head { color: var(--green); }
+.opt-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-weight: 600; overflow-wrap: anywhere; }
+.pick { font: 700 0.68rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--paper); background: var(--green); border-radius: 999px; padding: 1px 8px; }
+.kv { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 2px 10px; margin: 0; font-size: 0.9rem; }
+.kv dt { color: var(--accent); font-weight: 600; }
+.kv dt.cost { color: var(--amber); }
+.kv dd { margin: 0; min-width: 0; }
+.go { margin: 0; justify-self: start; font-size: 0.93rem; border: 1px solid var(--green); border-radius: 999px; padding: 4px 12px; }
+.go strong { color: var(--green); }
+@media (max-width: 520px) { .kv { grid-template-columns: minmax(0, 1fr); } .kv dd + dt { margin-top: 4px; } }
 .from { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
 .topics { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
 .topic { display: grid; gap: 4px; min-width: 0; }
 .topic-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-weight: 600; }
 .topic-lead { margin: 0; color: var(--ink); }
 .topic-meta { margin: 0; color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
-.rec { font: 600 0.68rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--green); margin-left: 6px; }
-.more summary { color: var(--muted); font-size: 0.85rem; cursor: pointer; }
-.answer { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.answer[hidden] { display: none; }
-.answer code { flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere; padding: 8px 10px; }
 button { font: 500 0.85rem var(--sans); color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 8px; padding: 7px 14px; cursor: pointer; }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 section.plan { display: grid; gap: 4px; min-width: 0; }
@@ -132,10 +147,18 @@ details.iteration[open] > summary { margin-bottom: 6px; }
 .hljs-number, .hljs-literal { color: var(--num); }
 .hljs-attr, .hljs-property, .hljs-params { color: var(--ink); }
 .hljs-comment { color: var(--muted); font-style: italic; }
+.brief { display: grid; gap: 16px; }
+.qa { display: grid; gap: 4px; min-width: 0; }
+.qa > h2 { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.qa > p:last-of-type { margin-bottom: 0; }
+details.fold { border-top: 1px solid var(--rule); padding-top: 10px; }
+details.fold > summary { cursor: pointer; color: var(--muted); font-weight: 600; }
+details.fold[open] > summary { margin-bottom: 12px; }
 </style>`;
 
 // The owner reads the top of the page and rarely opens the details.
 const ROLES = [
+  [/^brief$/i, 'brief'],
   [/^open questions$/i, 'needs'],
   [/^public api$/i, 'api'],
   [/^main changes$/i, 'main'],
@@ -411,6 +434,36 @@ function assertDefaults(plan, where) {
   if (!section?.lines.some((line) => line.trim())) return;
   if (!tablesOf(section.lines).some((table) => DEFAULTS_HEAD.every((cell, index) => headCell(table.head[index] ?? '') === cell))) {
     throw new Error(`## Defaults in ${where} needs a table whose columns start with Decision, Pick, Alternative and Word, one row per call made for the owner`);
+  }
+}
+
+const BRIEF = ['What did you find?', 'What will change?', 'What do you need from me?', 'What happens if I say go?', 'What could go wrong?'];
+const BRIEF_WORDS = 40;
+
+function briefOf(plan) {
+  const section = sectionNamed(plan, 'Brief');
+  if (!section) return null;
+  const answers = [];
+  for (const line of section.lines) {
+    const heading = line.match(/^###\s+(.*)$/);
+    if (heading) answers.push({ question: heading[1].trim(), lines: [] });
+    else answers.at(-1)?.lines.push(line);
+  }
+  return answers;
+}
+
+function assertBrief(plan, where) {
+  const shape = `a ## Brief with these ### questions in order, each answered in at most ${BRIEF_WORDS} words: ${BRIEF.join(' ')}`;
+  const answers = briefOf(plan);
+  if (!answers) throw new Error(`${where} leads its page while open, so it needs ${shape}`);
+  const asked = answers.map((answer) => answer.question);
+  if (asked.length !== BRIEF.length || asked.some((question, index) => sameText(question) !== sameText(BRIEF[index]))) {
+    throw new Error(`## Brief in ${where} asks ${asked.join(' ') || 'nothing'}, but it needs ${shape}`);
+  }
+  for (const { question, lines } of answers) {
+    const words = lines.join(' ').split(/\s+/).filter(Boolean).length;
+    if (words === 0) throw new Error(`## Brief in ${where} leaves "${question}" unanswered`);
+    if (words > BRIEF_WORDS) throw new Error(`## Brief in ${where} answers "${question}" in ${words} words; keep each answer to ${BRIEF_WORDS}`);
   }
 }
 
@@ -704,10 +757,18 @@ function blocksHtml(lines, marks = null) {
 }
 
 const OPTION = /^\s*[-*+]\s+\*\*(.+?)\*\*(\s*\(recommended\))?\s*(?::\s*(.*))?$/i;
+const ASK_FIELDS = [
+  ['why', /^why it needs you:\s*/i],
+  ['reason', /^why i pick it:\s*/i],
+  ['go', /^if you say go:\s*/i],
+];
 
-// Open questions written as `### Header`, a one-line question and bold-labeled
-// options render like Claude's question tool; anything else renders as text.
-function needsHtml(lines, older = []) {
+const splitCost = (text) => {
+  const at = text.search(/\bCost:\s*/);
+  return at < 0 ? [text.trim(), ''] : [text.slice(0, at).trim(), text.slice(at).replace(/^Cost:\s*/, '').trim()];
+};
+
+function questionGroups(lines, older = []) {
   const intro = [];
   const groups = [];
   for (const line of lines) {
@@ -723,49 +784,97 @@ function needsHtml(lines, older = []) {
       else own?.lines.push(line);
     }
   }
-  if (groups.length === 0) return blocksHtml([...lines, ...older.flatMap((source) => source.lines)]);
-  const questions = groups.map((group, index) => {
-    const question = [];
-    const options = [];
-    const more = [];
-    let stage = 'question';
-    for (const line of group.lines) {
-      if (stage === 'options' && !line.trim()) stage = 'more';
-      const option = stage === 'more' ? null : line.match(OPTION);
-      if (option) {
-        const description = option[3]?.trim() ?? '';
-        const trailing = /\s*\(recommended\)$/i;
-        options.push({
-          description: description.replace(trailing, ''),
-          label: option[1].trim(),
-          recommended: Boolean(option[2]) || trailing.test(description),
-        });
-        stage = 'options';
-      } else if (stage === 'options' && /^\s+\S/.test(line)) {
-        options.at(-1).description += ` ${line.trim()}`;
-      } else if (stage === 'question' && line.trim()) {
-        question.push(line.trim());
-      } else if (stage === 'more' || line.trim() || question.length > 0) {
-        if (line.trim() || more.length > 0) more.push(line);
-        if (line.trim()) stage = 'more';
-      }
+  return { intro, groups };
+}
+
+function askOf({ header, lines, from }) {
+  const ask = { header, from, lines, question: [], why: '', facts: [], options: [], reason: '', go: '', rest: [] };
+  let last = null;
+  for (const line of lines) {
+    const text = line.trim();
+    if (!text) {
+      last = null;
+      continue;
     }
-    const recommended = options.findIndex((option) => option.recommended);
-    const ordered = recommended < 0 ? options : [options[recommended], ...options.filter((_, i) => i !== recommended)];
-    const id = `needs-${index + 1}`;
-    const optionHtml = ordered
-      .map((option, i) => {
-        const picked = recommended >= 0 && i === 0;
-        const value = picked ? '' : option.label.replace(/[`*]/g, '');
-        return `<label class="option"><input type="radio" name="${id}" value="${escapeHtml(value)}"${picked ? ' checked' : ''}><span class="option-body"><span class="option-label">${inline(option.label)}${picked && ordered.length > 1 ? ' <span class="rec">Recommended</span>' : ''}</span>${option.description ? `<span class="option-desc">${inline(option.description)}</span>` : ''}</span></label>`;
-      })
-      .join('');
-    const moreHtml = more.some((line) => line.trim())
-      ? `<details class="more"><summary>More</summary>${blocksHtml(more)}</details>`
-      : '';
-    return `<div class="question" role="radiogroup" aria-labelledby="${id}" data-header="${escapeHtml(group.header.replace(/[`*]/g, ''))}"><p class="question-text" id="${id}"><span class="chip">${inline(group.header)}</span>${inline(question.join(' '))}${group.from ? ` <span class="from">from ${inline(group.from)}</span>` : ''}</p>${optionHtml}${moreHtml}</div>`;
+    const field = ASK_FIELDS.find(([, pattern]) => pattern.test(text));
+    const option = line.match(OPTION);
+    if (field) {
+      ask[field[0]] = text.replace(field[1], '');
+      last = field[0];
+    } else if (option) {
+      const [does, cost] = splitCost((option[3] ?? '').replace(/\s*\(recommended\)$/i, ''));
+      last = { label: option[1].trim(), recommended: Boolean(option[2]) || /\(recommended\)$/i.test(option[3] ?? ''), does, cost };
+      ask.options.push(last);
+    } else if (last && /^\s+\S/.test(line)) {
+      if (last === 'fact') ask.facts[ask.facts.length - 1] += ` ${text}`;
+      else if (typeof last === 'string') ask[last] += ` ${text}`;
+      else [last.does, last.cost] = splitCost(`${last.does}${last.cost ? ` Cost: ${last.cost}` : ''} ${text}`);
+    } else if (/^[-*+]\s/.test(text) && ask.options.length === 0) {
+      ask.facts.push(text.replace(/^[-*+]\s+/, ''));
+      last = 'fact';
+    } else if (ask.options.length === 0 && !ask.why && ask.facts.length === 0) {
+      ask.question.push(text);
+    } else {
+      ask.rest.push(line);
+      last = null;
+    }
+  }
+  return ask;
+}
+
+function missingParts(ask) {
+  const picks = ask.options.filter((option) => option.recommended).length;
+  return [
+    !ask.question.join(' ').trim().endsWith('?') && 'a question line ending in ?',
+    !ask.why && 'Why it needs you:',
+    ask.options.length < 2 && 'two or more options',
+    ask.options.some((option) => !option.cost) && 'a Cost: on every option',
+    picks > 1 && 'at most one (recommended) option',
+    picks === 1 && !ask.reason && 'Why I pick it:',
+    !ask.go && 'If you say go:',
+  ].filter(Boolean);
+}
+
+function assertAsks(plan, where) {
+  const section = sectionNamed(plan, 'Open questions');
+  if (!section) return;
+  for (const group of questionGroups(section.lines).groups) {
+    const missing = missingParts(askOf(group));
+    if (missing.length === 0) continue;
+    const list = missing.length > 1 ? `${missing.slice(0, -1).join(', ')} and ${missing.at(-1)}` : missing[0];
+    throw new Error(`"${group.header}" in ${where} needs ${list}; write it as the decision memo in the plan-page skill's references/shape.md`);
+  }
+}
+
+function askHtml(ask, index, count) {
+  const eyebrow = `<span class="eyebrow">Decision ${index + 1} of ${count}: ${inline(ask.header)}</span>`;
+  if (ask.options.length === 0) return `<article class="ask">${eyebrow}${blocksHtml(ask.lines)}${ask.from ? `<p class="from">from ${inline(ask.from)}</p>` : ''}</article>`;
+  const ordered = [...ask.options.filter((option) => option.recommended), ...ask.options.filter((option) => !option.recommended)];
+  const options = ordered
+    .map((option) => {
+      const rows = [
+        option.does && `<dt>What happens</dt><dd>${inline(option.does)}</dd>`,
+        option.cost && `<dt class="cost">Cost</dt><dd>${inline(option.cost)}</dd>`,
+        option.recommended && ask.reason && `<dt>Why I pick it</dt><dd>${inline(ask.reason)}</dd>`,
+      ].filter(Boolean);
+      return `<div class="opt${option.recommended ? ' picked' : ''}"><div class="opt-head">${inline(option.label)}${option.recommended ? '<span class="pick">My pick</span>' : ''}</div>${rows.length ? `<dl class="kv">${rows.join('')}</dl>` : ''}</div>`;
+    })
+    .join('');
+  return `<article class="ask">${eyebrow}<h3>${inline(ask.question.join(' '))}${ask.from ? ` <span class="from">from ${inline(ask.from)}</span>` : ''}</h3>${ask.why ? `<p class="why">${inline(ask.why)}</p>` : ''}${ask.facts.length ? `<ul class="facts">${ask.facts.map((fact) => `<li>${inline(fact)}</li>`).join('')}</ul>` : ''}${options ? `<div class="opts">${options}</div>` : ''}${blocksHtml(ask.rest)}${ask.go ? `<p class="go"><strong>If you say go:</strong> ${inline(ask.go)}</p>` : ''}</article>`;
+}
+
+function needsSection(lines, older = []) {
+  const { intro, groups } = questionGroups(lines, older);
+  if (groups.length === 0) return `<section class="panel needs"><h2>Needs you</h2>${blocksHtml([...lines, ...older.flatMap((source) => source.lines)])}</section>`;
+  const asks = groups.map(askOf);
+  const picks = asks.some((ask) => ask.options.some((option) => option.recommended));
+  const how = `<p class="how">Answer in your own words.${picks ? ' <strong>go</strong> takes my pick on every decision that has one.' : ''}</p>`;
+  const chips = asks.map((ask, index) => {
+    const pick = ask.options.find((option) => option.recommended);
+    return `<li class="go-chip${pick ? '' : ' open'}"><span>${index + 1}. ${inline(ask.header)}</span>${pick ? inline(pick.label) : 'needs your answer'}</li>`;
   });
-  return `<p><strong>go</strong> takes every recommendation.</p>${blocksHtml(intro)}${questions.join('')}<div class="answer" hidden><code></code><button type="button">Copy answer</button></div>`;
+  const strip = `<div class="go-strip"><strong>Say go and I will</strong><ol>${chips.join('')}</ol></div>`;
+  return `<section class="panel needs"><h2>Needs you <span class="count">${asks.length} ${asks.length === 1 ? 'decision' : 'decisions'}</span></h2>${strip}${how}${blocksHtml(intro)}${asks.map((ask, index) => askHtml(ask, index, asks.length)).join('')}</section>`;
 }
 
 function parsePlan(source) {
@@ -891,12 +1000,15 @@ function page(planPath, { folded = false } = {}) {
     const role = roleOf(section, lead);
     return ['api', 'lead', 'main'].includes(role) || (role === 'idea' && Boolean(sectionNamed(doc, section.title)));
   };
+  const owesBrief = (entry) => Boolean(briefOf(entry.plan)) || (entry.path === leader.path && Boolean(stateOf(entry.plan.meta.status ?? '')));
   // Open iterations meet their own rules whichever plan is passed; executed ones stay as written.
   for (const entry of doc === plan ? [{ path: planPath, plan }] : iterations.filter(isOpen)) {
     const where = relative(root, entry.path);
     pageSections(playbooks, entry.plan.meta.playbook, where);
     assertPairs(entry.plan.sections, pairs, where);
     if (!finished(entry.plan.meta.status ?? '')) assertDefaults(entry.plan, where);
+    if (!finished(entry.plan.meta.status ?? '') && owesBrief(entry)) assertBrief(entry.plan, where);
+    if (stateOf(entry.plan.meta.status ?? '') && !finished(entry.plan.meta.status ?? '')) assertAsks(entry.plan, where);
     if (doc !== plan && isOpen(entry)) assertDelta(entry.plan, doc, { name: where, where: subjectWhere });
   }
   if (folded && doc === plan) throw new Error(`${repoPath} has no subject file to fold into`);
@@ -1007,15 +1119,14 @@ function page(planPath, { folded = false } = {}) {
             .join('')}</ul>`
       )
       .join('');
-  const reviewHistory = reviewed.length
-    ? `<section class="plan"><h2>Review history</h2>${
-        doc === plan
-          ? roundsHtml(reviewed[0].rounds, 'h3')
-          : reviewed
-              .map(({ entry, rounds }) => `<h3>${inline(entry.plan.title || basename(entry.path, '.md'))}</h3>${roundsHtml(rounds, 'h4')}`)
-              .join('')
-      }</section>`
+  const reviewRoundsHtml = reviewed.length
+    ? doc === plan
+      ? roundsHtml(reviewed[0].rounds, 'h3')
+      : reviewed
+          .map(({ entry, rounds }) => `<h3>${inline(entry.plan.title || basename(entry.path, '.md'))}</h3>${roundsHtml(rounds, 'h4')}`)
+          .join('')
     : '';
+  const reviewHistory = reviewed.length ? `<section class="plan"><h2>Review history</h2>${reviewRoundsHtml}</section>` : '';
   const updated = new Date(
     Math.max(...[planPath, ...iterations.map((entry) => entry.path), subjectPath].filter(Boolean).map((path) => statSync(path).mtimeMs))
   )
@@ -1025,15 +1136,51 @@ function page(planPath, { folded = false } = {}) {
   const shownStatus = pageEntry?.plan.meta.status ?? status;
   const title = escapeHtml(doc.title || basename(planPath, '.md'));
   const where = subjectPath ? relative(root, subjectPath) : repoPath;
+  const brief = briefOf(leader.plan);
+  const briefMain = () => {
+    const round = reviewed.find(({ entry }) => entry.path === leader.path)?.rounds.findLast((entry) => entry.kind === 'panel');
+    const roundTag = round ? `<span>Review round <strong>${round.round}</strong>${round.seats ? ` <code>${escapeHtml(round.seats)}</code>` : ''}</span>` : '';
+    const asking = needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : '';
+    const answers = brief.map((answer) => `<div class="qa"><h2>${inline(answer.question)}</h2>${blocksHtml(answer.lines)}</div>`).join('');
+    const fold = (label, body) => (body.trim() ? `<details class="fold"><summary>${label}</summary>${body}</details>` : '');
+    const count = (label, n) => `${label} <span class="count">${n}</span>`;
+    const leadTitles = delta ? ordered('lead') : byRole('lead').map((section) => section.title);
+    const apiChanged = !delta || byRole('api', focus).length > 0;
+    const picked = own ? byRole('picked', own) : [];
+    const state = [
+      doc.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(doc.lead)}</section>` : '',
+      ...byRole('idea').map((section) => (delta ? deltaHtml(section.title) : sectionHtml(section))),
+    ].join('');
+    return `<main>
+  <header>
+    <h1>${title}</h1>
+    <div class="meta"><span class="pill ${statusTone(shownStatus)}">${escapeHtml(shownStatus)}</span>${delta ? `<span>Plan <strong>${inline(focus.title || basename(focusEntry.path, '.md'))}</strong></span>` : ''}${roundTag}<span>Updated ${updated} UTC</span></div>
+  </header>
+  <section class="panel brief">${answers}</section>${asking}
+  ${apiChanged ? changeHtml('api') : ''}
+  <div>
+  ${fold('Close', close ? blocksHtml(close.lines) : '')}
+  ${apiChanged ? '' : fold('Public API', byRole('api').map((section) => blocksHtml(section.lines)).join(''))}
+  ${fold('Plan', delta && focus.lead.some((line) => line.trim()) ? blocksHtml(focus.lead) : '')}
+  ${fold(escapeHtml(leadTitles.join(', ')), changeHtml('lead'))}
+  ${fold('Main changes', changeHtml('main'))}
+  ${fold(count('Picked for you', tablesOf(picked.flatMap((section) => section.lines)).reduce((sum, table) => sum + table.rows.length, 0)), picked.map((section) => blocksHtml(section.lines)).join(''))}
+  ${fold(doc === plan ? 'More' : `${title} today`, state)}
+  ${fold(count(delta ? 'Iterations' : 'History', iterations.length), iterations.map(iterationHtml).join(''))}
+  ${fold(escapeHtml(details.map((section) => section.title).join(', ')), details.map((section) => sectionHtml(section)).join(''))}
+  ${fold('Review history', reviewRoundsHtml)}
+  </div>
+</main>`;
+  };
 
   const html = `<title>${title}</title>
 ${PAGE_HEAD}
-<main>
+${brief ? briefMain() : `<main>
   <header>
     <h1>${title}</h1>
     <div class="meta"><span class="pill ${statusTone(shownStatus)}">${escapeHtml(shownStatus)}</span><code>${escapeHtml(where)}</code>${delta ? `<span>Plan <strong>${inline(focus.title || basename(focusEntry.path, '.md'))}</strong> <code>${escapeHtml(relative(root, focusEntry.path))}</code></span>` : ''}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
-  ${needs || olderNeeds.length ? `<section class="panel needs"><h2>Needs you</h2>${needsHtml(needs?.lines ?? [], olderNeeds)}</section>` : ''}${close ? sectionHtml(close, 'panel') : ''}
+  ${needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : ''}${close ? sectionHtml(close, 'panel') : ''}
   ${delta && focus.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(focus.lead)}</section>` : ''}
   ${changeHtml('api')}
   ${changeHtml('lead')}
@@ -1056,47 +1203,11 @@ ${PAGE_HEAD}
       : ''
   }
   ${reviewHistory}
-</main>
+</main>`}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
 window.hljs?.highlightAll();
 document.querySelectorAll('.diff code').forEach((element) => window.hljs?.highlightElement(element));
-</script>
-<script>
-(() => {
-  const panel = document.querySelector('.panel.needs');
-  const box = panel && panel.querySelector('.answer');
-  if (!box) return;
-  const code = box.querySelector('code');
-  const button = box.querySelector('button');
-  const update = () => {
-    const questions = [...panel.querySelectorAll('.question')];
-    const open = questions.filter((question) => !question.querySelector('input:checked')).map((question) => question.dataset.header);
-    const changes = questions
-      .map((question) => [question.dataset.header, (question.querySelector('input:checked') || {}).value || ''])
-      .filter((change) => change[1]);
-    box.hidden = open.length === 0 && changes.length === 0;
-    button.hidden = open.length > 0;
-    code.textContent = open.length > 0
-      ? 'Pick an answer for ' + open.join(', ')
-      : 'go, except ' + changes.map((change) => change[0] + ': ' + change[1]).join('; ');
-    button.textContent = 'Copy answer';
-  };
-  panel.addEventListener('change', update);
-  update();
-  button.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(code.textContent);
-      button.textContent = 'Copied';
-    } catch {
-      const range = document.createRange();
-      range.selectNodeContents(code);
-      getSelection().removeAllRanges();
-      getSelection().addRange(range);
-      button.textContent = 'Selected';
-    }
-  });
-})();
 </script>
 `;
   return { html, name: subject ? join('topics', subject) : basename(planPath, '.md') };

@@ -281,7 +281,7 @@ function assertCleanWorktreeForDirectSync({ dryRun = false } = {}) {
   throw new Error(
     [
       'Direct main -> next sync requires a clean worktree before mutating next.',
-      'Commit, stash, or move local changes first:',
+      'Run it from a clean detached worktree instead, such as `git worktree add --detach ../plate-sync origin/next` with dependencies installed there:',
       status,
     ].join('\n')
   );
@@ -1228,18 +1228,7 @@ export function syncMainToNextDirect({
   const mainChangedFiles = listGitDiffFiles(mergeBase, 'origin/main');
   const changedPackages = getMainToNextChangedPackages(mainChangedFiles);
 
-  runGit(['config', 'user.name', 'github-actions[bot]'], { dryRun });
-  runGit(
-    [
-      'config',
-      'user.email',
-      '41898282+github-actions[bot]@users.noreply.github.com',
-    ],
-    {
-      dryRun,
-    }
-  );
-  runGit(['checkout', '-B', 'next', 'origin/next'], { dryRun });
+  runGit(['checkout', '--detach', 'origin/next'], { dryRun });
   runGit(['merge', '--no-ff', '--no-commit', 'origin/main'], {
     allowFailure: true,
     dryRun,

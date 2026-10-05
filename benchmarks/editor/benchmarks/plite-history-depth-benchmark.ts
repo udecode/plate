@@ -27,69 +27,65 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
-const rows = await Promise.all(
-  [100, 1000].map(async (depth) => {
-    const editor = createEditor({
-      plugins: [history({ maxDepth: depth })],
-      initialValue: [paragraph('body')],
+const rows = [100, 1000].map((depth) => {
+  const editor = createEditor({
+    plugins: [history({ maxDepth: depth })],
+    initialValue: [paragraph('body')],
+  });
+
+  for (let index = 0; index < depth; index++) {
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.text.insert('l', { at: { offset: 4 + index, path: [0, 0] } });
     });
+  }
 
-    for (let index = 0; index < depth; index++) {
-      editor.update((tx) => {
-        tx.history.newBatch();
-        tx.text.insert('l', { at: { offset: 4 + index, path: [0, 0] } });
-      });
-    }
+  const historyDepthBeforeBurst = editor.read.history().undos.length;
+  const heapBefore = process.memoryUsage().heapUsed;
+  const samples: number[] = [];
+  const burstStartedAt = performance.now();
 
-    const historyDepthBeforeBurst = editor.read.history().undos.length;
-    const heapBefore = process.memoryUsage().heapUsed;
-    const samples: number[] = [];
-    const burstStartedAt = performance.now();
+  for (let index = 0; index < remoteCommits; index++) {
+    const startedAt = performance.now();
 
-    for (let index = 0; index < remoteCommits; index++) {
-      const startedAt = performance.now();
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.text.insert('r', { at: { offset: 0, path: [0, 0] } });
+    });
+    samples.push(performance.now() - startedAt);
+  }
 
-      editor.update({ history: 'skip' }, (tx) => {
-        tx.text.insert('r', { at: { offset: 0, path: [0, 0] } });
-      });
-      samples.push(performance.now() - startedAt);
-    }
+  const remoteBurstMs = performance.now() - burstStartedAt;
+  const heapDeltaBytes = process.memoryUsage().heapUsed - heapBefore;
+  const undoStartedAt = performance.now();
 
-    const remoteBurstMs = performance.now() - burstStartedAt;
-    const heapDeltaBytes = process.memoryUsage().heapUsed - heapBefore;
-    const undoStartedAt = performance.now();
+  const undoResult = editor.api.history.undo();
 
-    const undoResult = await editor.api.history.undo();
+  if (undoResult.status !== 'applied') {
+    throw new Error(`${depth}: lazy history did not apply the retained batch.`);
+  }
 
-    if (undoResult.status !== 'applied') {
-      throw new Error(
-        `${depth}: lazy history did not apply the retained batch.`
-      );
-    }
+  const undoResolutionMs = performance.now() - undoStartedAt;
+  const expected = `${'r'.repeat(remoteCommits)}body${'l'.repeat(depth - 1)}`;
 
-    const undoResolutionMs = performance.now() - undoStartedAt;
-    const expected = `${'r'.repeat(remoteCommits)}body${'l'.repeat(depth - 1)}`;
+  if (editor.read.text.string([]) !== expected) {
+    throw new Error(`${depth}: lazy history resolved to the wrong document.`);
+  }
 
-    if (editor.read.text.string([]) !== expected) {
-      throw new Error(`${depth}: lazy history resolved to the wrong document.`);
-    }
+  samples.sort((left, right) => left - right);
 
-    samples.sort((left, right) => left - right);
-
-    return {
-      depth,
-      heapDeltaBytes,
-      historyDepthBeforeBurst,
-      p50Ms: percentile(samples, 0.5),
-      p95Ms: percentile(samples, 0.95),
-      p99Ms: percentile(samples, 0.99),
-      remoteBurstMs,
-      remoteCommits,
-      repeatedUnit: 'one history-skipped remote commit',
-      undoResolutionMs,
-    };
-  })
-);
+  return {
+    depth,
+    heapDeltaBytes,
+    historyDepthBeforeBurst,
+    p50Ms: percentile(samples, 0.5),
+    p95Ms: percentile(samples, 0.95),
+    p99Ms: percentile(samples, 0.99),
+    remoteBurstMs,
+    remoteCommits,
+    repeatedUnit: 'one history-skipped remote commit',
+    undoResolutionMs,
+  };
+});
 
 const normal = rows[0];
 const stress = rows[1];

@@ -723,7 +723,7 @@ const breakAutolinkRule = (
     apply: ({ next, tx }, match) => {
       tx.selection.set(match.range);
 
-      if (!tx.link.upsert({ url: match.url })) return;
+      if (!tx.link.upsert({ url: match.url })) return undefined;
 
       tx.selection.collapse({ edge: 'end' });
       tx.link.exitEnd();
@@ -904,7 +904,7 @@ export const LinkRules = {
         if (inserted) {
           tx.link.exitEnd();
 
-          return;
+          return undefined;
         }
 
         return next(text, options);

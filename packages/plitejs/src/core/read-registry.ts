@@ -134,10 +134,7 @@ export const executeEditorRead = <
     const exitRead = enterEditorRead(owner);
 
     try {
-      return fnWithState(
-        fn,
-        getEditorStateView((stateSource ?? owner) as Editor)
-      );
+      return fnWithState(fn, getEditorStateView(stateSource ?? owner));
     } finally {
       exitRead();
     }

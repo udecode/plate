@@ -1,7 +1,5 @@
 # Security advisory hotfix mechanics
 
-Every write below needs the active request's publication and disclosure authority.
-
 ## Security Advisory Hotfixes
 
 Apply this when the source or required closeout is a GitHub security advisory,

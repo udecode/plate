@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { copyFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { validateBetaPreState } from './guard-beta-pre-release.mjs';
 import {
@@ -300,12 +305,68 @@ test('main to next direct sync versions generated beta changesets before committ
 test('main to next direct sync guards real pushes from dirty worktrees', async () => {
   const source = await readFile(releaseBranchPrsPath, 'utf-8');
   const guardIndex = source.indexOf('assertCleanWorktreeForDirectSync');
-  const checkoutIndex = source.indexOf("runGit(['checkout', '-B', 'next'");
+  const checkoutIndex = source.indexOf("runGit(['checkout', '--detach'");
 
   assert.match(source, /status', '--porcelain', '--untracked-files=all'/);
   assert.match(source, /Direct main -> next sync requires a clean worktree/);
   assert.ok(guardIndex > 0);
   assert.ok(checkoutIndex > guardIndex);
+});
+
+test('a local main to next sync keeps the git identity and unpushed next commits', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'plate-sync-'));
+  const work = path.join(root, 'work');
+  const git = (...args) => {
+    const result = spawnSync('git', args, { cwd: work, encoding: 'utf-8' });
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim();
+  };
+  const author = ['-c', 'user.name=Dev', '-c', 'user.email=dev@example.com'];
+
+  spawnSync('git', ['init', '-q', '--bare', path.join(root, 'origin.git')]);
+  spawnSync('git', ['clone', '-q', path.join(root, 'origin.git'), work]);
+  mkdirSync(path.join(work, 'tooling/scripts'), { recursive: true });
+  copyFileSync(
+    fileURLToPath(releaseBranchPrsPath),
+    path.join(work, 'tooling/scripts/release-branch-prs.mjs')
+  );
+  writeFileSync(path.join(work, 'package.json'), '{"private":true}\n');
+  git('add', '-A');
+  git(...author, 'commit', '-qm', 'base');
+  git('branch', '-M', 'main');
+  git('push', '-q', 'origin', 'main');
+  git('checkout', '-qb', 'next');
+  git('push', '-q', 'origin', 'next');
+  git('checkout', '-q', 'main');
+  writeFileSync(path.join(work, 'fix.txt'), 'fix\n');
+  git('add', 'fix.txt');
+  git(...author, 'commit', '-qm', 'main fix');
+  git('push', '-q', 'origin', 'main');
+  git('checkout', '-q', 'next');
+  writeFileSync(path.join(work, 'local.txt'), 'local\n');
+  git('add', 'local.txt');
+  git(...author, 'commit', '-qm', 'unpushed work on next');
+  const unpushed = git('rev-parse', 'HEAD');
+
+  spawnSync(
+    process.execPath,
+    ['tooling/scripts/release-branch-prs.mjs', 'sync-main-to-next'],
+    { cwd: work, encoding: 'utf-8' }
+  );
+
+  assert.equal(
+    spawnSync('git', ['rev-parse', '-q', '--verify', 'MERGE_HEAD'], {
+      cwd: work,
+    }).status,
+    0,
+    'the sync reaches its merge'
+  );
+  assert.equal(
+    spawnSync('git', ['config', '--local', 'user.name'], { cwd: work }).status,
+    1,
+    'the sync leaves the repository git identity unset'
+  );
+  assert.equal(git('rev-parse', 'next'), unpushed);
 });
 
 test('main to next direct sync can restore beta pre mode in the sync commit', () => {

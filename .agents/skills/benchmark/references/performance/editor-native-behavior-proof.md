@@ -2,10 +2,6 @@
 
 Use this when a faster mode can change browser-native behavior.
 
-## Rule
-
-Performance wins do not count if they silently break core editor behavior.
-
 ## Proof Rows
 
 - browser find
@@ -29,5 +25,3 @@ For every mode, state whether each row is:
 - materialize-first
 - intentionally unsupported
 - explicit opt-in only
-
-Do not hide native behavior regressions inside timing wins.

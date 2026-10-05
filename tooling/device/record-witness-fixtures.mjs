@@ -254,6 +254,7 @@ try {
     'script-exec-command': () =>
       page.evaluate(() => {
         document.querySelector('[data-editor="true"]').focus();
+        // oxlint-disable-next-line typescript/no-deprecated -- execCommand is the page-side way to type through the native input path this recorder captures.
         document.execCommand('insertText', false, 'z');
       }),
     'script-beforeinput': () =>

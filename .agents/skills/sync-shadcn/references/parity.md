@@ -66,19 +66,11 @@ shape.
 
 When building or changing Plate registry items:
 
-- keep list parity work on the standard list registry graph; do not create an
-  alternative persisted list model or copied UI family
 - check `../shadcn` first
 - copy upstream file/layout/helper patterns when they fit
 - prefer upstream naming and dependency structure over Plate-specific novelty
 - keep dynamic Plate-specific behavior in build or response tooling, not in a
   fake registry data model
-- treat Base as Plate's default provider and keep one complete semantic item
-  surface for Base and Radix; unsupported providers fail closed as providers,
-  never as filtered items inside a supported provider
-- treat Nova as Plate's default style and support the pinned upstream Nova,
-  Vega, Maia, Lyra, Mira, Luma, Sera, and Rhea transforms only when each style
-  produces installable output for the complete public semantic registry
 
 Registry dependency rules:
 
@@ -134,14 +126,3 @@ pattern to spread.
   infrastructure
 - old generated registry output may still contain absolute Plate self-URLs;
   treat that as compatibility input only, not the source contract
-
-## Red Flags
-
-Stop and reassess if you are about to do any of this:
-
-- describe Plate as a fork of shadcn CLI
-- invent a new Plate-only registry schema
-- replace upstream namespace behavior with raw URL sprawl
-- solve a registry issue by adding more installer logic when the data is wrong
-- treat post-release template state as a registry parity failure without an
-  explicit template/release scope

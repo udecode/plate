@@ -242,14 +242,16 @@ editor.update((tx) => {
   void afterInsert;
 });
 
-editor.read.transaction((tx) => {
-  const portalSelectedHref: string | null = tx
-    .plugin(LinkPlugin)
-    .selectedHref();
+editor.read((state) =>
+  state.transaction((tx) => {
+    const portalSelectedHref: string | null = tx
+      .plugin(LinkPlugin)
+      .selectedHref();
 
-  tx.plugin(LinkPlugin).setHref('https://example.com/spec');
-  void portalSelectedHref;
-});
+    tx.plugin(LinkPlugin).setHref('https://example.com/spec');
+    void portalSelectedHref;
+  })
+);
 
 const _assertNormalizationApisStayPrivate = () => {
   editor.update((tx) => {

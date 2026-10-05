@@ -55,6 +55,7 @@ import {
   getSnapshot as editorGetSnapshot,
 } from '../editable/runtime-editor-api';
 import { getSchemaInvalidatedNodeKeys } from '../editable/schema-runtime-invalidation';
+import { subscribeTypedText } from '../editable/typed-text';
 import {
   type ReactRuntimeEditor,
   toReactRuntimeEditor,
@@ -62,6 +63,7 @@ import {
 import type {
   Editor as ReactEditorType,
   ReactPlugin,
+  ReactApi,
 } from '../plugin/with-react';
 import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
@@ -77,8 +79,6 @@ import {
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import { useRuntimeFocusState } from './use-runtime-focus-state';
-import { subscribeTypedText } from '../editable/typed-text';
-import type { ReactApi } from '../plugin/with-react';
 
 const refEquality = <T,>(a: T | null, b: T) => a === b;
 const rootKeyEquality = (

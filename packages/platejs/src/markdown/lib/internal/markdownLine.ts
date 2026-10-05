@@ -315,7 +315,7 @@ const lowerPhrasing = (
         // A wrapper emptied by the `\r` strip would write bare markup.
         if (content.length === 0 && child.children.length > 0) return [];
 
-        return [{ ...child, children: content } as PhrasingContent];
+        return [{ ...child, children: content }];
       }
       default: {
         return [child];

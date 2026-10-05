@@ -1,5 +1,9 @@
 # Typing
 
+`docs/vision/plate.md` (Plugin and component doctrine) and `docs/vision/plite.md`
+(Plite API Direction) hold the inference and public-contract law. This
+reference keeps the authoring patterns that apply it.
+
 ## Contents
 
 - Builder inference
@@ -13,39 +17,8 @@
 
 ## Builder Inference First
 
-Default to inferred plugin chains:
-
-```ts
-export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
-  api: ({ editor, store }) => ({
-    // inferred
-  }),
-  initialState: {
-    enabled: true,
-  },
-  update: ({ tx }) => ({
-    // inferred
-  }),
-});
-```
-
-Do not pass caller-supplied generics to the plugin factory. When initial state,
-API, read, update, or selectors need a real exported contract, type that
-capability's return boundary and let the factory infer the complete definition.
-
-Do not create:
-
-```ts
-type FooConfig = PluginConfig<"foo">;
-
-export const BaseFooPlugin: BasePlugin<FooConfig> =
-  definePlugin<FooConfig>(PLUGINS.foo, {});
-```
-
-An empty config alias and an annotated plugin export both hide whether the
-builder inferred correctly.
-
-Keep every inference stage in the direct exported chain:
+Default to inferred plugin chains, and keep every inference stage in the
+direct exported chain:
 
 ```ts
 export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
@@ -59,71 +32,10 @@ export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
 
 Never create `fooSchemaPlugin` or `FooPluginBase` merely so the next line can
 extend it or so a type query can name it. Audit references rather than names.
-When a later capability needs the schema-derived shape, keep the chain direct
-and use an honest stage:
-
-```ts
-type InsertFooOptionsFor<T extends Element> = NodeInsertNodesOptions<T>;
-
-export const BaseFooPlugin = definePlugin('foo', {
-  schema: { element: schema.element.textBlock() },
-}).extend(({ plugin, schema: { type } }) => {
-  type Foo = ElementOf<typeof plugin>;
-
-  return {
-    update: ({ tx }) => ({
-      insert: (options?: InsertFooOptionsFor<Foo>) => {
-        tx.nodes.insert({ children: [{ text: '' }], type }, options);
-      },
-    }),
-  };
-});
-
-export type FooElement = ElementOf<typeof BaseFooPlugin>;
-export type InsertFooOptions = InsertFooOptionsFor<FooElement>;
-```
-
-The helper generic stays private, the public aliases derive from the final
-descriptor, and the node option never widens to `Element`, `Node`, or an
-omitted generic. When final-plugin declaration emit still recurses, type only
-the smallest private domain or hook-stage boundary and keep the exported plugin
-inferred.
-
-Never give a recursive owner a package-private structural AST mirror. A known
-element owner uses `ElementOf<typeof FinalPlugin>`. A property capability uses
-`ElementWith<typeof Plugin, RequiredLocalIds>` or `TextWith`; aliases, prefixes,
-defaults, and value domains stay descriptor-derived. An algorithm that accepts
-malformed or open-world input uses broad `Element` / `Text` and narrows every
-consumed property at runtime. Fix remaining declaration recursion in Plate foundation or at
-the declaration boundary.
-
 A generic plugin factory constrained to a required element or mark schema must
 infer a required flat `schema.type` or `schema.key`. If that handle becomes
 optional merely because `name` is generic, fix `PluginAuthorSchemaView`; do not
 assert, guard, cast, or copy the identity in the package.
-
-A factory bound to a plugin may infer the exact installed-plugin editor inside
-its author callback. Its public factory and emitted value must still project to
-the smallest portable public type. If declaration emit names
-`InternalBaseEditorWithInstalledPlugins`, repair the Plate foundation return boundary.
-Never publish a package-local `Editor<typeof Plugin>` alias, reconstructed
-factory options/rule interface, annotation, or cast to hide that leak.
-
-TS7056 never earns a package-local declaration bridge. Preserve the direct
-inferred export, compact the honest dependency source, and route any remaining
-failure to the owning Plate foundation generic or declaration boundary. Do not add
-`@plate-plugin-declaration-stage`, a private definition carrier, an annotated
-staging alias, a widened dependency, a cast, or a public subset type. Existing
-marked stages are transitional debt with a direct-build deletion gate and block
-current-doctrine package attestation until removed.
-
-## Capability Boundaries
-
-Classify fields by the canonical
-[capability boundary protocol](./capabilities.md#capability-boundary-protocol).
-The published `api` object is immutable; that does not make every API method
-pure. Document queries still belong in `read`, pure store projections belong in
-`selectors`, and document mutations belong in `update`.
 
 ## Context, Not Ferry Types
 
@@ -139,11 +51,6 @@ Plugin callbacks already expose the typed owner context:
 - `store`
 - `defineFormats`
 - active `tx` where the callback is transaction-backed
-
-Keep one-owner behavior inline and capture those values. Do not move a callback
-into another file by inventing context/descriptor ferry types or threading
-the editor, resolved plugin name, store state, and `tx` through helper
-signatures.
 
 Use those current-owner values directly:
 
@@ -173,219 +80,16 @@ only expose `editor`; an exact typed portal is correct there. Do not split or
 wrap a coherent declaration solely to capture a shortcut, and do not mistake
 an editor-wide plugin such as `editor.api.dom` for the plugin-scoped `api`.
 
-`defineFormats` is the one inline inference anchor for semantic format maps:
+## Format Mappings
 
-```ts
-export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
-  formats: ({ defineFormats }) =>
-    defineFormats({
-      html: {
-        decode: () => true,
-        decodeOnly: true,
-        match: [{ tag: 'strong' }],
-      },
-    }),  schema: { mark: property.boolean() },
-});
-```
-
-Use `defineFormats(map)` for self/product mappings and
-`defineFormats(TargetPlugin, map)` for foreign mappings. The foreign overload
-injects `TargetPlugin`; do not add `target` to the rule. Keep the map keyed by
-semantic families such as `html`, `markdown`, and `plainText`; whole-payload
-MIME negotiation belongs to root `dataTransferFormats`. Direct
-`formats: { ... }`, casts, and callback annotations bypass the owner inference
-and are invalid.
-
-A custom Plate-owned Markdown tag mapping binds its final schema identity once.
-Start with the declaration; the runtime builds the element from the schema,
-converts its properties as attributes and traverses children by the content
-model:
-
-```ts
-formats: ({ defineFormats, schema: { type } }) =>
-  defineFormats({
-    markdown: { tag: type, attributes: { url: 'src' } },
-  })
-```
-
-Write `decode`/`encode` only for a real format difference. A custom encoder
-writes the node's attributes with `encodeNodeAttributes()`, or chosen values
-with `encodeAttributes(properties)`, which claims each property whose attribute
-the returned output keeps; it claims anything else its output represents with
-`preserve(...keys)`. Unclaimed content properties report
-`markdown-property-omitted`:
-
-```ts
-encode: ({ encodeNodeAttributes, encodePhrasing, node }) => ({
-  attributes: encodeNodeAttributes(),
-  children: encodePhrasing(node.children),
-  name: type,
-  type: 'mdxJsxTextElement',
-}),
-```
-
-An HTML element encoder claims the properties it writes the same way, with
-`preserve(...keys)` typed to its target's own properties; a single-`value`
-mark or property mapping claims its value by returning output that writes it.
-A decoder claims the Plate attributes its result represents the same way,
-with `preserve(...names)` on the decode context. Unclaimed content properties,
-and each Plate attribute no decoder claims, report `html-unsupported-content`;
-a custom mapping's own attributes are outside that report:
-
-```ts
-encode: ({ content, node, preserve }) => {
-  preserve('variant');
-
-  return {
-    attributes: { 'data-variant': node.variant },
-    children: content,
-    tag: 'aside',
-  };
-},
-```
-
-Use the resolved `type` for `tag`, the decoded element, and the encoded tag
-`name`. Standard MDAST sources use `node` (for example `node: 'blockquote'`),
-which types the decoded `node`; fixed external format names remain literal. Do
-not use the capability name, an authored default type, or a compatibility
-alias for persisted tags. The attribute codec follows the schema property
-kind, so do not parse or coerce attribute strings in the mapping; return
-`refuse(message)` for unrepresentable input instead of throwing.
-Structural Plate wrappers and unknown-node fallbacks also resolve their
-installed schema type; only external format nodes keep literal identities.
 If a claiming mapping returns `undefined`, dispatch declines to the next mapping
 on that selector; no per-operation override exists. A plugin whose schema
 declares a `mark` maps a mark with no flag: declare `{ node: 'strong' }`,
 `{ tag: 'kbd' }`, `{ tag: 'sub', value: 'sub' }` or
 `{ tag: 'span', style: 'color' }`. A custom mark `decode` returns the mark
 value, not decoded children; `wrap` returns a childless wrapper, and mark
-mappings take no `priority`. Foreign target mappings do
-not own configurable custom tag identity.
-Decode-only mappings still prove `tag` and decoded identity; encode-only mappings
-still prove the emitted tag. Phrasing-only wrappers decode source phrasing
-children directly because decoded wrapper elements are not identity witnesses.
-A fixed external source never licenses a literal decoded Plate type. Decoded
-attribute properties precede structural fields so they cannot replace
-`children` or the resolved schema type.
-
-Plate constructors and justified `.extend()` stages contextually type flat
-Plite-native fields:
-
-```ts
-definePlugin('foo', {
-  commands: ({ handle, store }) => [
-    // store and nested callbacks remain inferred
-  ],});
-```
-
-Keep Plate-context capture inside the authoring callback and extract domain
-inputs. A public identity helper that only recovers this nested type is leaked
-compiler machinery: fix the owning generic instead of adding an annotation,
-cast, `any`, alias, or replacement helper. Independently reusable standalone
-descriptors use Plite's `definePlugin`; their factories receive domain
-inputs, not Plate plugin context.
-
-## Stage Capabilities, Not Plumbing
-
-A plugin chain is a typed capability dependency graph. Put a reusable
-plugin-owned capability in an earlier builder stage, then consume the
-accumulated inferred surface from later stages:
-
-```ts
-type FooPluginState = { labels: { id: string; value: string }[] };
-
-export const BaseFooPlugin = definePlugin('foo', {
-  schema: { element: schema.element.textBlock() },
-  initialState: (): FooPluginState => ({
-    labels: [{ id: 'alpha', value: 'Alpha' }],
-  }),
-  selectors: {
-    getLabel: (state, id: string) =>
-      state.labels.find((label) => label.id === id)?.value,
-  },
-})
-  .extend(({ store, schema: { type } }) => ({
-    update: ({ tx }) => ({
-      insertFoo: (id: string) => {
-        const label = store.get('getLabel', id);
-
-        if (!label) return;
-
-        tx.nodes.insert({
-          children: [{ text: label }],
-          type,
-        });
-      },
-    }),
-  }))
-  .extend(() => ({
-    update: ({ tx }) => ({
-      insertFooPair: (firstId: string, secondId: string) => {
-        tx.plugin(BaseFooPlugin.name).insertFoo(firstId);
-        tx.plugin(BaseFooPlugin.name).insertFoo(secondId);
-      },
-    }),
-  }));
-
-export const FooConsumerPlugin = definePlugin('fooConsumer', {
-  api: ({ editor }) => ({
-    hasLabel: (id: string) =>
-      editor.plugin(BaseFooPlugin).store.get('getLabel', id) !== undefined,
-  }),  dependencies: [BaseFooPlugin],
-});
-```
-
-Keep independent contributions together in the constructor. Repeated
-`.extend()` calls are correct only when their order expresses a real capability
-dependency. They preserve local inference and make the accumulated capability
-visible to required dependents.
-
-Repeated fields do not all share one merge law. `api`, `read`, and `update`
-accumulate inferred object capabilities across honest stages. Replacement
-declarations such as the `commands` array must have one ordered owner factory
-unless a later stage intentionally replaces the complete earlier declaration.
-Do not treat `.extend()` as array concatenation.
-
-The first `.extend()` is justified because its update consumes the selector
-type introduced by the constructor. The second is justified because it reuses
-the first update through the active transaction. Stage only honest capabilities
-that consumers or later stages should discover; do not publish private
-implementation fragments merely to move them between callbacks.
-
-Inside a later tx stage, call an earlier tx method through
-`tx.plugin(Plugin)` when the caller owns the descriptor or
-`tx.plugin(pluginName)` when importing that descriptor would create the wrong
-package dependency. Descriptor input keeps exact inference and nominal
-validation; name input is intentionally erased and fails at runtime when the
-plugin or group is absent. Generated closed editors may use the direct
-`tx.pluginName` group. An optional name-only consumer checks
-`tx.plugins.has(pluginName)` in the same transaction; it does not reflect over
-editor capability maps, recast the target group, or import a descriptor only
-to test installation. Do not index the transaction object with a runtime
-plugin name or use `editor.plugin(...).update`, `context.update`, or another
-one-shot update there; those open a nested transaction. Raw Plite and Plate
-share the selector semantics.
-
-New methods should accept domain inputs such as `value`, `entry`, `at`, or
-operation options. Do not invent function parameters for `editor`, `api`,
-`read`, `tx`, `store`, resolved plugin state values, or resolved name
-when the builder context can capture or stage them.
-
-Keep an explicit state/read-view parameter only at an honest composition
-boundary where the same query must observe an uncommitted transaction snapshot.
-Prove that boundary with an active-transaction test; never replace it with
-stale `editor.read` merely to remove a parameter.
-
-Do not add:
-
-```ts
-.extend(({ editor }: { editor: Editor }) => ({
-  update: ({ tx }) => ({ ... }),
-}))
-targetParserToInject: ({ editor }: { editor: Editor }) => ...
-const plugin: BasePlugin<FooDefinition> = definePlugin(...)
-const plugin = definePlugin(...) as BasePlugin<FooDefinition>
-```
+mappings take no `priority`. Foreign target mappings do not own configurable
+custom tag identity.
 
 ## Repair The Type Owner
 
@@ -401,15 +105,9 @@ Do not “fix” inference with:
 - a decorative `PluginConfig` alias;
 - explicit callback parameter annotations;
 - local variable annotations that repeat the initializer;
-- `Parameters<typeof fn>` plumbing;
 - casts or `as any`;
-- `satisfies` on a builder result;
 - local fixture-shape aliases in tests;
 - an editor-locked helper extraction.
-
-A typed escape hatch stays only with a specific reason and a deletion gate. A
-constructed type must carry the invariant it claims: a plain number admits a
-negative duration, so validate and brand it at the boundary.
 
 ## Real Public Contracts
 
@@ -431,15 +129,16 @@ type FooRead = {
 };
 
 type FooTx = {
-  insertFoo: (options: InsertFooOptions) => void;
+  setCollapsed: (collapsed: boolean) => void;
 };
 
 export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
   read: ({ state }): FooRead => ({
     getChildCount: () => state.children().length,
-  }),  update: ({ tx }): FooTx => ({
-    insertFoo: (options) => {
-      // `options` and `tx` are contextual
+  }),
+  update: ({ tx }): FooTx => ({
+    setCollapsed: (collapsed) => {
+      // `collapsed` and `tx` are contextual
     },
   }),
 });
@@ -451,14 +150,7 @@ be inferred.
 
 ## Plugin Export Law
 
-The exported plugin value must infer from:
-
-- `definePlugin(...)`;
-- `definePlugin(...)`;
-- `toReactPlugin(...)`;
-- chained `.extend()` calls.
-
-Never annotate or cast that result merely to preserve a desired type. If the
+The exported plugin value must infer from its builder chain. Never annotate or cast that result merely to preserve a desired type. If the
 chain widens, loses dependencies, or drops API/tx capability, repair the owning
 builder generic and add a Plate foundation compile-only inference test.
 
@@ -475,69 +167,6 @@ const entries: NodeEntry<FooElement>[] = editor
 // Good
 const entries = editor.plugin(FooPlugin).read.getEntries();
 ```
-
-The same law applies to tests and examples:
-
-- keep inline editor/plugin construction;
-- do not extract `plugins`, `initialState`, or wrapper factories to placate
-  types;
-- do not define local `{ children; selection }` fixture aliases;
-- use source-owned test-utils types when an explicit boundary is unavoidable;
-- repair source typing when inline setup fails.
-
-## Capability And Schema Identity
-
-Use the shared flat `PLUGINS` catalog only for first-party capability identity.
-Resolve persisted identity from the schema-owning context or portal:
-
-```ts
-definePlugin(PLUGINS.paragraph, {
-  schema: { element: schema.element.textBlock() },
-});
-targetPlugins: [PLUGINS.paragraph];
-const codeBlockType = editor.plugin(CodeBlockPlugin).schema.type;
-const boldKey = editor.plugin(BoldPlugin).schema.key;
-tx.nodes.insert({ type: codeBlockType, children: [{ text: '' }] });
-editor.plugin(BoldPlugin).update.set(true);
-```
-
-There are no rank-shaped heading capabilities or grouped aliases. Use
-`PLUGINS.heading`; persisted `level` carries rank. Function and property names
-must keep roles honest: use `plugin` for a nominal descriptor lookup input and
-`name` for its capability namespace after resolution. Exact element and
-primary-mark portals expose `schema.type` and `schema.key`; behavior and
-aggregate-property portals omit `schema`. Additional property handles exist
-only in author callbacks and compiler internals. Never expose or index
-`schema.properties` from a consumer portal. Copied registry data and
-deliberate fixtures use explicit persisted literals, never `PLUGINS` as a
-storage catalog.
-
-Raw literals are for genuinely local/internal plugins and deliberate test
-fixtures.
-
-Use `editor.plugin(plugin)` with a nominal descriptor so the portal keeps
-exact capabilities. Dynamic application input must first resolve through an
-application-owned map of accepted descriptors. Public lookup rejects strings,
-weak `{ name }` objects, divergent siblings, and foreign same-name descriptors.
-An uninstalled descriptor has no final application schema handle;
-`installed: false` is the sole non-throwing availability check and other
-capability access throws.
-
-Preserve meaningful literal state types at the state owner:
-
-```ts
-initialState: {
-  trigger: '@' as const,
-}
-```
-
-Do not create a separate type solely to ferry the literal elsewhere.
-
-## `any`
-
-Forbid `any` in production source. A deliberate, local non-type test escape is
-the only exception. Do not use `any`, `unknown` casts, or structural guards to
-hide a missing typed Plite/Plate API.
 
 ## Source Hierarchy
 

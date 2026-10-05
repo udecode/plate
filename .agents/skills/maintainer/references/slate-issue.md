@@ -1,7 +1,5 @@
 # Maintainer Slate issue mode
 
-Handle $ARGUMENTS.
-
 This is the thin public coordinator for one Slate issue:
 
 ```txt
@@ -23,31 +21,14 @@ fix playbook for a local behavior bug or regression with no public mutation.
 - Shipping authority: a Plate PR targeting `next`.
 - Release authority: npm/GitHub release readback.
 
-The active user request determines local repair, PR and message authority.
-This recipe prepares those steps but does not grant them. Complete local proof
-first; run public steps only when explicitly authorized. Existing authority
-remains valid across the bug-fix handoff.
-
-## Hard Rules
-
-- Start from the live issue and current Plate source.
 - Read `CONTRIBUTING.md`, the relevant issue template,
   `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before public mutation.
-- Do not duplicate local reproduction, test design, implementation,
-  architecture pressure, focused proof, or the review decision here. Run that
-  complete local packet through pstack's Bug fix playbook.
 - Do not use a sibling Slate checkout as implementation proof.
 - Current-green behavior is `already-accounted` only when Plate `next` contains
   and proves it, not when it exists only in unmerged local changes.
-- An authorized code-changing PR follows the pstack block's Commit and PR text rule.
-  A local-only request ends with the complete evidence packet.
-- Never merge unless the user explicitly asks.
 - A merge to `next` proves beta-branch integration, not stable availability.
-- Use `gh issue comment ... --body-file ...`.
 - Pending PR language is `fix prepared`; leave the issue open.
 - Do not claim raw IME/mobile/device closure from synthetic browser rows.
-- Route security-shaped intake to `maintainer security`.
-
 ## Intake
 
 Resolve and read the full issue:
@@ -94,36 +75,22 @@ Extract:
 
 ## Local Repair
 
-For `red-current` or `local-only-fix`, run pstack's Bug fix playbook on the normalized
-behavior report and issue constraints. Require this evidence packet back:
-
-- classification and root cause;
-- durable owner and changed files;
-- red proof and passing focused commands;
-- Browser/device proof or explicit limitation;
-- architecture-pressure verdict;
-- changeset status;
-- review result under the pstack block's Review rule, or N/A with reason;
-- unresolved caveat.
-
-Reject an incomplete packet. Do not recreate the Bug fix playbook or
-package command matrix in this coordinator.
+For `red-current` or `local-only-fix`, run pstack's Bug fix playbook on the
+normalized behavior report and issue constraints, and require back the evidence
+packet `maintainer` names for a public behavior bug. Reject an incomplete
+packet.
 
 ## Ship And Synchronize
 
-When the user authorizes shipping and the corresponding messages:
-
-1. Verify the worker evidence matches the current checkout.
-2. Run the root `check` gate.
-3. Create or update a `udecode/plate` PR targeting `next`, using the repo
-   PR template body (`.github/PULL_REQUEST_TEMPLATE.md`) and `<owner>/<repo>#<number>`.
-4. Verify the PR body with `gh pr view --json body`.
-5. Comment on the Slate issue with `fix prepared`, the PR URL, exact proof, and
+1. Verify the Bug fix evidence packet matches the current checkout.
+2. Create or update a `udecode/plate` PR targeting `next`, written per the pstack
+   block's Commit and PR text rule and naming `<owner>/<repo>#<number>`.
+3. Comment on the Slate issue with `fix prepared`, the PR URL, exact proof, and
    the merge/release boundary.
-6. Leave the issue open.
-7. After an explicitly authorized merge, or a later run that finds the PR
+4. Leave the issue open.
+5. After an explicitly authorized merge, or a later run that finds the PR
    merged, verify Plate `next` readback.
-8. Close only when the verified claim is true. Say `next` or beta-only when
+6. Close only when the verified claim is true. Say `next` or beta-only when
    stable publication has not happened.
 
 For `already-accounted`, keep code unchanged, verify the exact flow on current
@@ -183,16 +150,3 @@ Verified on <exact ref and environment>
 
 Use `🔴` only for an observed failing proof. Add a caveat section only when a
 real device, browser, or release limitation remains.
-
-## Final Handoff
-
-Keep it short:
-
-- issue repository and number;
-- classification;
-- worker evidence packet status;
-- Plate PR URL, target, and merge state;
-- issue comment URL;
-- issue closed yes/no and why;
-- exact root/public verification;
-- delivery state and caveat.

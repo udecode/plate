@@ -2367,10 +2367,14 @@ it('deletes the live document after select-all spans retained authored content',
   });
   assert.equal(readPliteViewSelection(parent), null);
 
-  await act(async () => parent.api.history.undo());
+  await act(() => {
+    parent.api.history.undo();
+  });
   assert.deepEqual(parent.read.children(), [paragraph('AB')]);
 
-  await act(async () => parent.api.history.redo());
+  await act(() => {
+    parent.api.history.redo();
+  });
   assert.deepEqual(parent.read.children(), [paragraph('')]);
   assert.deepEqual(parent.read.selection(), {
     anchor: point(0),
@@ -2449,7 +2453,9 @@ it('deletes live ranges when a projected selection crosses retained content', as
     });
     assert.equal(readPliteViewSelection(parent), null);
 
-    await act(async () => parent.api.history.undo());
+    await act(() => {
+      parent.api.history.undo();
+    });
     assert.deepEqual(source.read.children(), [paragraph('LAXYZBR')]);
     assert.deepEqual(parent.read.children(), [paragraph('LABR')]);
     assert.equal(
@@ -2462,7 +2468,9 @@ it('deletes live ranges when a projected selection crosses retained content', as
     );
   }
 
-  await act(async () => parent.api.history.redo());
+  await act(() => {
+    parent.api.history.redo();
+  });
   assert.deepEqual(source.read.children(), [paragraph('LR')]);
   assert.deepEqual(parent.read.children(), [paragraph('LR')]);
   assert.equal(

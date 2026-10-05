@@ -138,6 +138,7 @@ export const createMarkInputRule = (
           focus: match.afterStartMatchPoint,
         },
       });
+      return undefined;
     },
   });
 

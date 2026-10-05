@@ -14,11 +14,15 @@ mock.module('platejs/react', () => ({
     </div>
   ),
   useEditor: () => ({
-    read: { selection: () => null },
+    read: Object.assign(() => undefined, {
+      nodes: { get: () => undefined },
+      selection: () => null,
+    }),
   }),
+  useEditorFocused: () => false,
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector({
-      read: { selection: () => null },
+      read: { nodes: { get: () => undefined }, selection: () => null },
     }),
   useElement: () => ({ children: [{ text: '' }], type: 'file' }),
   useEditorMounted: () => true,

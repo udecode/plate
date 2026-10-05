@@ -117,6 +117,7 @@ export const HeadingRules = {
 
         tx.text.delete({ at: match.range });
         if (!tx.heading.toggle({ level: match.level })) return decline();
+        return undefined;
       },
     }),
 };

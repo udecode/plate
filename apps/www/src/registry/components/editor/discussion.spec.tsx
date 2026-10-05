@@ -569,7 +569,7 @@ describe('DiscussionSlots', () => {
         })
       );
       await act(async () => {
-        await editor.api.history.undo();
+        editor.api.history.undo();
       });
       fireEvent.click(
         await view.findByRole('button', {
@@ -590,7 +590,7 @@ describe('DiscussionSlots', () => {
         comments.getThreads().every(({ target }) => target.type === 'change')
       ).toBe(true);
       await act(async () => {
-        await editor.api.history.redo();
+        editor.api.history.redo();
       });
       await waitFor(() =>
         expect(

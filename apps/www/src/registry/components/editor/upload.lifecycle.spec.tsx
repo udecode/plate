@@ -44,7 +44,7 @@ it('keeps one upload and its progress across a real upload view remount', async 
   );
   const first = render(content);
   expect(first.getByRole('button', { name: 'Add a file' })).toBeTruthy();
-  act(() =>
+  void act(() =>
     editor.plugin(UploadPlugin).update.submit([new File(['x'], 'file.txt')], {
       slot: editor.key([0])!,
     })
@@ -98,7 +98,7 @@ it('cancels an active upload from the draft without removing the slot', async ()
     </EditorRoot>
   );
 
-  act(() =>
+  void act(() =>
     editor.plugin(UploadPlugin).update.submit([new File(['x'], 'file.txt')], {
       slot: editor.key([0])!,
     })

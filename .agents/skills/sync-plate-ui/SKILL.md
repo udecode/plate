@@ -1,5 +1,6 @@
 ---
 description: Sync Plate registry UI into downstream apps with fork-aware comparison, scoped apply and changelog tracking.
+argument-hint: '[status | plan | review | dashboard | apply] <target> [scope]'
 name: sync-plate-ui
 metadata:
   skiller:
@@ -7,7 +8,6 @@ metadata:
 ---
 
 # Sync Plate UI
-
 
 Handle $ARGUMENTS.
 
@@ -508,7 +508,7 @@ Dashboard: <path or N/A>
 | smart-merge | ... |
 | needs-question | ... |
 
-Next: review the plan, then invoke `sync-plate-ui apply <target>` with accepted rows.
+Next: review the plan; accepted rows apply under the existing apply authority without a second invocation.
 ```
 
 Apply output:

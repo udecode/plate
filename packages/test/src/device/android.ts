@@ -583,7 +583,7 @@ export const selectedSubtype = (serial: string) =>
   shell(serial, 'settings', 'get', 'secure', 'selected_input_method_subtype');
 
 export const keyboardShown = (serial: string) =>
-  /mInputShown=true/.test(shell(serial, 'dumpsys', 'input_method'));
+  shell(serial, 'dumpsys', 'input_method').includes('mInputShown=true');
 
 export const screenSize = (serial: string) =>
   shell(serial, 'wm', 'size').match(/(\d+x\d+)\s*$/)?.[1] ?? 'unknown';
@@ -711,7 +711,9 @@ const closeTabsAt = async (serial: string, url: string) => {
       await fetch(`http://127.0.0.1:${port}/json/close/${tab.id}`);
     }
   } catch (error) {
-    process.stderr.write(`Could not close the tab at ${url}: ${error}\n`);
+    process.stderr.write(
+      `Could not close the tab at ${url}: ${error instanceof Error ? error.message : String(error)}\n`
+    );
   } finally {
     if (port) removePorts(serial, [`tcp:${port}`], []);
   }

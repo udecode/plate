@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { jsx } from '@platejs/test';
+import JSZip from 'jszip';
 import {
   type EditorDocumentValue,
   type Node as PliteNode,
@@ -13,7 +14,6 @@ import {
 } from 'platejs';
 import { exportDocx } from 'platejs/docx/export';
 import { importDocx } from 'platejs/docx/import';
-import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
@@ -62,17 +62,29 @@ const exportDocumentToDocx = async (
 
 describe('docx roundtrip', () => {
   it('pairs TOC links with export-local heading bookmarks without persisted ids', async () => {
-    const { data: html } = await renderStaticHtml(
+    const result = await exportDocx(
       createTestEditor([
         { children: [{ text: '' }], type: 'toc' },
         { children: [{ text: 'Introduction' }], level: 1, type: 'heading' },
-      ])
+      ]),
+      { projection: 'proposed' }
     );
-    const document = new DOMParser().parseFromString(html, 'text/html');
-    const href = document.querySelector('a')?.getAttribute('href');
 
-    expect(href?.startsWith('#')).toBe(true);
-    expect(document.getElementById(href!.slice(1))).not.toBeNull();
+    if (!result.ok) throw new Error(result.diagnostics[0]?.message);
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const xml = new DOMParser().parseFromString(
+      await zip.file('word/document.xml')!.async('string'),
+      'application/xml'
+    );
+    const anchors = [...xml.getElementsByTagName('w:hyperlink')].map((node) =>
+      node.getAttribute('w:anchor')
+    );
+    const bookmarks = [...xml.getElementsByTagName('w:bookmarkStart')].map(
+      (node) => node.getAttribute('w:name')
+    );
+
+    expect(anchors).toHaveLength(1);
+    expect(bookmarks).toContain(anchors[0]);
   });
 
   it.each(['headers', 'block_quotes', 'tables'])(

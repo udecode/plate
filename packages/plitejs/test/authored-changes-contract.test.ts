@@ -499,7 +499,7 @@ describe('native authored changes', () => {
       initialValue: [paragraph('Base')],
     });
     compensationEditor.update.text.insert('!', { at: point(4) });
-    const compensationUndo = await compensationEditor.api.history.undo();
+    const compensationUndo = compensationEditor.api.history.undo();
     assert.equal(compensationUndo.status, 'applied');
 
     for (const [editor, kind] of [

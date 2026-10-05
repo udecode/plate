@@ -877,7 +877,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       authored: { intent: 'edit', projection: 'proposed' },
       ...(root ? { root } : {}),
     });
-    const rollback = Symbol('ai-suggestion-draft');
+    const rollback = new Error('AI suggestion draft rollback');
     let result:
       | {
           base: EditorDocumentValue;
@@ -1308,11 +1308,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         applied = true;
       });
       if (applied) finishCompleteAction();
-      return;
+      return undefined;
     }
     if (context.store.get('mode') === 'chat') {
       completeDetachedOutput(commandEditor, 'replaceSelection', 'single');
-      return;
+      return undefined;
     }
     let applied = false;
     getActionEditor(commandEditor).update((tx) => {
@@ -1340,6 +1340,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       applied = true;
     });
     if (applied) finishCompleteAction();
+    return undefined;
   };
   const completeDetachedOutput = (
     commandEditor: Editor,
@@ -1555,7 +1556,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           previewValue: [],
         });
         tableDraft.clear();
-        if (!restoreTarget(commandEditor)) return;
+        if (!restoreTarget(commandEditor)) return undefined;
         captureTarget(commandEditor);
         aiChatCommandEditors.set(editor, commandEditor);
         context.store.set({ _requestId: crypto.randomUUID() });
@@ -1596,7 +1597,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         }: { final?: boolean; requestId?: string | null } = {}
       ) => {
         const state = context.store.get();
-        if (requestId !== undefined && requestId !== state._requestId) return;
+        if (requestId !== undefined && requestId !== state._requestId) {
+          return undefined;
+        }
         if (state.toolName === 'edit' && state.mode === 'chat') {
           return applySuggestion(commandEditor, content, { requestId });
         }
@@ -1614,7 +1617,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             : (state.chatSelection ?? commandEditor.read.selection());
           if (previewAnchor && !selection) {
             invalidatePreview();
-            return;
+            return undefined;
           }
           const target =
             state.chatNodes.length > 0 && !state.chatSelection
@@ -1626,7 +1629,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
                 });
           if (!target) {
             invalidatePreview();
-            return;
+            return undefined;
           }
           targetKey = commandEditor.key(target[0]);
           if (
@@ -1639,7 +1642,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         }
         if (!commandEditor.read.nodes.get(targetKey)) {
           invalidatePreview();
-          return;
+          return undefined;
         }
         const previous = previewParse;
         const parsed = content
@@ -1661,7 +1664,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         previewParse = undefined;
         if (parsed && !parsed.ok) {
           invalidatePreview();
-          return;
+          return undefined;
         }
         const previewValue = parsed?.slice.content ?? [];
 
@@ -1671,7 +1674,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           )
         ) {
           invalidatePreview();
-          return;
+          return undefined;
         }
         const reused = previous?.result.ok ? previous.result.slice.content : [];
 
@@ -1690,6 +1693,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             stored: context.store.get('previewValue'),
           };
         }
+        return undefined;
       },
       /** Publish a complete cell response in the current table draft. */
       setTablePreview: (
@@ -1769,7 +1773,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         const { chat, open: isOpen, toolName } = context.store.get();
         const nextToolName = requestedToolName ?? toolName ?? null;
 
-        if (!prompt && input.length === 0) return;
+        if (!prompt && input.length === 0) return undefined;
         const discarded = decideCurrentChange('reject');
         if (discarded && !reviewSucceeded(discarded)) return discarded;
         suggestionBase = null;

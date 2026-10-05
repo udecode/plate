@@ -32,35 +32,41 @@ the full immutable arrays. The same group is available as `state.history` inside
 
 ## Replay service
 
-#### `editor.api.history.undo(): Promise<HistoryResult>`
+#### `editor.api.history.undo(): HistoryResult`
 
 Claim and replay the current undo batch.
 
-#### `editor.api.history.redo(): Promise<HistoryResult>`
+#### `editor.api.history.redo(): HistoryResult`
 
 Claim and replay the current redo batch.
 
 ```typescript
+type HistorySettlement =
+  | Readonly<{ status: "applied" }>
+  | Readonly<{ reason: string; status: "blocked" }>
+  | Readonly<{ status: "failed" }>;
+
 type HistoryResult =
-  | Readonly<{ status: "applied" | "busy" | "empty" }>
-  | Readonly<{
-      status: "blocked";
-      conflicts?: readonly string[];
-      reason?: string;
-    }>;
+  | HistorySettlement
+  | Readonly<{ status: "busy" | "empty" }>
+  | Readonly<{ conflicts: readonly string[]; status: "blocked" }>
+  | Readonly<{ settled: Promise<HistorySettlement>; status: "pending" }>;
 ```
 
-Both methods claim the current branch head before returning. Ordinary document
-batches settle in that call. A live-session batch publishes its pending
-direction while its external owner finishes. Document edits, selection updates,
+Both methods claim the current branch head and return synchronously. A document
+batch has applied when the call returns. A live-session batch whose owner is
+still working returns `pending` and publishes its pending direction until
+`settled` resolves; `settled` never rejects. Document edits, selection updates,
 and collaborative imports continue during that wait; another replay returns
 `busy` without claiming a batch.
 
 `blocked` reports an authored dependency conflict or a refusal from the
-live-session owner and keeps that batch at the branch head. Invalid runtime use
-and other failures reject. Invoke replay outside an active read or update.
-Replay always applies the complete document-wide batch, including changes in
-other roots.
+live-session owner. `failed` means the owner or the settlement threw; the error
+goes to the editor's `lifecycleErrorSink`. With no sink, it goes to
+`reportError`, or to `console.error` where `reportError` does not exist.
+`blocked` and `failed` both keep that batch at the branch head. Invalid runtime
+use, such as a replay inside an active read or update, throws. Replay always applies the
+complete document-wide batch, including changes in other roots.
 
 ## Transaction API
 

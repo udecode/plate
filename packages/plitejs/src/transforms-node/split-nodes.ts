@@ -297,7 +297,7 @@ export const splitNodes = ((
 
       try {
         const [highest] = profileCoreDuration('split-nodes-find-highest', () =>
-          getNodes(editor as never, {
+          getNodes(editor, {
             at: splitPoint,
             match,
             mode,

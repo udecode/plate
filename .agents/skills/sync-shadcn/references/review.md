@@ -39,7 +39,6 @@ Review mode must not:
 - patch `apps/www`
 - change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
   `partialSyncs`
-- hand implementation to pstack's poteto-mode
 - create a new implementation plan or advance the baseline
 - treat a fresh review as user acceptance to implement
 
@@ -114,15 +113,3 @@ Report: <path>
 
 Next: <use the existing plan | rerun planning | fix local drift | resolve refs>
 ```
-
-Before substantive work, open the plan under `docs/plans/` and fill it
-immediately. It must name the objective, flow mode,
-completion threshold, verification surface, constraints, boundaries, output
-budget strategy, blocked condition, and planned run directory. Do not replace it
-with a smaller ad hoc plan.
-
-Completion requires the named sync evidence.
-
-Never mark the plan complete just because a range plan was written if the plan
-also required implementation, baseline advancement, or user acceptance.
-

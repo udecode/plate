@@ -44,8 +44,7 @@ Every row names files, facts, owner, proof path and action; never a menu of gene
 
 Prefer deep modules: a small public interface, meaningful behavior behind it, a clear owner, and natural tests through that interface. A module earns its keep when callers gain leverage and maintainers gain locality. When a candidate changes module shape:
 
-- Interface test: every method, option, invariant, ordering constraint, error mode, config rule and performance expectation is part of what callers must learn. A smaller learned surface wins when behavior stays honest.
-- Depth test: a large implementation is fine when the caller-facing interface is small and stable. A shallow wrapper with nearly the same interface as its implementation is deleted, merged or inlined.
+- Red flags: screen the shape against pstack's `architect/references/design-red-flags.md`, which covers shallow modules, pass-through methods, split ownership, two ways to do one task, importable internals and hand-synced lists.
 - Adapter test: one adapter is usually hypothetical structure; two real adapters can justify an interface boundary.
 - Test-surface test: if useful tests must punch through the public interface, the module shape is probably wrong.
 - Side-effect test: prefer accepting dependencies and returning results over hidden construction and ambient mutation when that makes behavior easier to test.

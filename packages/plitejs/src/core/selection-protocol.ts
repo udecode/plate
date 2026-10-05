@@ -168,7 +168,7 @@ const TEXT_SELECTION_PERSISTENCE = {
     return value as unknown as EditorJsonValue;
   },
   version: 1,
-} satisfies EditorValuePersistence<SelectionValue, EditorJsonValue>;
+} satisfies EditorValuePersistence<SelectionValue>;
 
 const NODE_SELECTION_PERSISTENCE = {
   decode(value) {
@@ -183,7 +183,7 @@ const NODE_SELECTION_PERSISTENCE = {
       throw new Error('Invalid node editor selection.');
     }
 
-    return value as unknown as EditorJsonValue;
+    return value;
   },
   legacyDecoders: {
     1(value) {
@@ -249,7 +249,7 @@ const NODE_SELECTION_PERSISTENCE = {
     },
   },
   version: 4,
-} satisfies EditorValuePersistence<SelectionValue, EditorJsonValue>;
+} satisfies EditorValuePersistence<SelectionValue>;
 
 const getSelectionPersistence = (kind: string) => {
   if (kind === 'text') return TEXT_SELECTION_PERSISTENCE;

@@ -184,7 +184,7 @@ const architectureCause = {
   decisionOwner: 'best-api',
   fixClass: 'runtime-architecture',
   fixOwner: 'auto: Plate core and package adoption',
-  layerPlan: 'plate-plan',
+  layerPlan: 'plate',
   longTermTarget:
     'compile one immutable capability graph and delete the per-render adapter',
 };

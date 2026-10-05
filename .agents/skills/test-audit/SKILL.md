@@ -11,7 +11,7 @@ Judge the result by how much the remaining tests can be trusted, never by how ma
 
 ## Scope
 
-Take the user's scope, or the files they name. Read the root and scoped `AGENTS.md` first; their Tests rule is the bar for any test this audit rewrites. Leave out skills and code installed from another repository.
+Take the user's scope, or the files they name. Read the root and scoped `AGENTS.md` first; their Tests rule is the bar for every test this audit keeps, rewrites or moves. Leave out skills and code installed from another repository.
 
 ## Discover, read-only
 
@@ -44,7 +44,7 @@ Keep a test that independently enforces one of the contracts listed at the top, 
 
 - call ordering when the order is observable behavior;
 - a regression with a credible failure mode;
-- a source inspection that is the cheapest independent guard, failing when the user-facing key, byte or path changes and surviving an identifier rename;
+- a source inspection that is the cheapest independent guard, failing when the user-facing key, byte or path changes and surviving an identifier rename; when the project's Tests rule bans source-text tests, the guard moves to its lint or a check script;
 - a test that fails on the current tree. Treat it as a possible bug, reproduce it and repair the owner or the fixture instead of deleting it.
 
 A test that resembles the implementation may still be the independent contract. Prove otherwise before removing it.
@@ -77,4 +77,4 @@ Review and delivery follow the project's `AGENTS.md`.
 
 ## Handoff
 
-Report the removed low-value categories, the production simplifications, the retained false positives and why they stay, the proof actually run, production and test line counts, the commit or PR state, and named follow-ups with owners.
+Report the removed low-value categories, the production simplifications, the retained false positives and why they stay, the proof actually run, production and test line counts, the commit or PR state, and named follow-ups with owners. In a project with plan pages, write this in the plan's `## Close`.

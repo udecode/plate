@@ -1,0 +1,46 @@
+## reports a throwing owner once
+bun test v1.3.12 (700fc117)
+packages/plitejs/test/history/history-branch-contract.spec.ts:
+77 |     defer(outcome: ReplayOutcome) {
+78 |       const gate = deferred<void>();
+79 | 
+80 |       replay = async (transition) => {
+81 |         await gate.promise;
+82 |         if (outcome === 'throw') throw new Error('owner failed');
+                                                ^
+error: owner failed
+      at <anonymous> (/Users/zbeyens/git/plate-2/packages/plitejs/test/history/history-branch-contract.spec.ts:82:44)
+      at async <anonymous> (/Users/zbeyens/git/plate-2/packages/plitejs/src/history/history-plugin.ts:983:46)
+(fail) immutable history branches > reports a throwing owner once, clears its claim and preserves its head [15.40ms]
+ 0 pass
+ 22 filtered out
+ 1 fail
+Ran 1 test across 1 file. [418.00ms]
+exit=1
+## keeps undo usable when settlement throws
+  NOT_SUPPORTED_ERR: 9,
+  INUSE_ATTRIBUTE_ERR: 10,
+  INVALID_STATE_ERR: 11,
+  SYNTAX_ERR: 12,
+  INVALID_MODIFICATION_ERR: 13,
+  NAMESPACE_ERR: 14,
+  INVALID_ACCESS_ERR: 15,
+  VALIDATION_ERR: 16,
+  TYPE_MISMATCH_ERR: 17,
+  SECURITY_ERR: 18,
+  NETWORK_ERR: 19,
+  ABORT_ERR: 20,
+  URL_MISMATCH_ERR: 21,
+  QUOTA_EXCEEDED_ERR: 22,
+  TIMEOUT_ERR: 23,
+  INVALID_NODE_TYPE_ERR: 24,
+  DATA_CLONE_ERR: 25,
+  toString: [Function: toString],
+}
+      at /Users/zbeyens/git/plate-2/packages/plitejs/src/core/clone.ts:17
+(fail) immutable history branches > clears its claim and keeps undo usable when settlement throws [17.90ms]
+ 0 pass
+ 22 filtered out
+ 1 fail
+Ran 1 test across 1 file. [189.00ms]
+exit=1

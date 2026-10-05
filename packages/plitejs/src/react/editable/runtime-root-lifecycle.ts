@@ -67,7 +67,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
         setEditorFocused(editor, false);
         publishFocusState();
       }
-      return;
+      return undefined;
     }
     const hasReadOnlyModelSelection =
       readOnly && Boolean(editor.read((innerState) => innerState.selection()));

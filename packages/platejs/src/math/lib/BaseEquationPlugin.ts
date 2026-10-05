@@ -5,7 +5,6 @@ import {
   createBlockFenceInputRule,
   defineInputRule,
   definePlugin,
-  type Editor,
   type ElementOf,
   type InputRuleEditor,
   matchDelimitedInline,
@@ -20,7 +19,7 @@ import {
 const INLINE_EQUATION_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_EQUATION_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
 
-const getMathExcludedSelectors = (editor: InputRuleEditor<Editor>) => {
+const getMathExcludedSelectors = (editor: InputRuleEditor) => {
   const codeBlock = editor.plugin(PLUGINS.codeBlock);
 
   return [

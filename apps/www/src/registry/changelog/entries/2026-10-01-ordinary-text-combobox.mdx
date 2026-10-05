@@ -3,10 +3,12 @@ id: 2026-10-01-ordinary-text-combobox
 date: 2026-10-01
 status: draft
 kind: behavior
-summary: "Open autocomplete popups over typed text instead of an inline input"
-change: {"type":"source","date":"2026-10-01","commits":[]}
-release: {"status":"unresolved"}
+summary: 'Open autocomplete popups over typed text instead of an inline input'
+change: { 'type': 'source', 'date': '2026-10-01', 'commits': [] }
+release: { 'status': 'unresolved' }
 diagnostics: []
 ---
+
 <!-- entry: {"id":"2026-10-01-inline-combobox-keep-autocomplete-queries-editor-f953ab8c","kind":"behavior","migrationNotes":["Mount MentionCombobox, SlashCombobox, EmojiCombobox and FootnoteCombobox through each plugin's slots.afterEditable; the input elements are gone."]} -->
+
 - **`inline-combobox`**, **`mention`**, **`slash`**, **`emoji`**, **`footnote`**: Open the popup when the trigger is typed and filter on the text after it, keeping the editor focused. Enter or Tab completes the active option in one undo step, Escape keeps the typed text, and IME preedit filters without selecting.

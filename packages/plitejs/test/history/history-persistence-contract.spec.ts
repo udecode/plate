@@ -689,9 +689,9 @@ describe('versioned history persistence', () => {
     restored.update((tx) =>
       tx.history.restore(History.fromJSON(restored, encoded))
     );
-    assert.deepEqual(await restored.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(restored.api.history.undo(), { status: 'applied' });
     assert.equal(restored.read.text.string([]), '');
-    assert.deepEqual(await restored.api.history.undo(), { status: 'empty' });
+    assert.deepEqual(restored.api.history.undo(), { status: 'empty' });
   });
 
   it('rejects old, unversioned, schema-less history, unknown effects, and stale field data', () => {

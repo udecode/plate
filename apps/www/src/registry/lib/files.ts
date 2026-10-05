@@ -9,23 +9,25 @@ export const requireFilesEnv = (name: string): string => {
 };
 
 /** Replace this with the application's session and document ACL lookup. */
-export async function resolveFilesAccess(
+export function resolveFilesAccess(
   _req: Request,
   _documentId: string
 ): Promise<FilesAccess> {
-  throw new FilesGatewayError(
-    503,
-    'Configure resolveFilesAccess with session and document permissions'
+  return Promise.reject(
+    new FilesGatewayError(
+      503,
+      'Configure resolveFilesAccess with session and document permissions'
+    )
   );
 }
 
 /** Return only a type established by server-side byte validation or trusted ingestion. */
-export async function resolveTrustedFilesInlineType(
+export function resolveTrustedFilesInlineType(
   _req: Request,
   _documentId: string,
   _key: string
 ): Promise<string | undefined> {
-  return undefined;
+  return Promise.resolve(undefined);
 }
 
 export interface FilesAccess {
@@ -203,7 +205,7 @@ export const createFilesGateway = (options: FilesGatewayOptions) => {
         },
       });
       const route = createRouteHandler(router);
-      const response = await route[req.method as 'GET' | 'POST' | 'PUT'](req);
+      const response = await route[req.method](req);
       if (inlineType && response.ok) {
         response.headers.set('content-type', inlineType);
         response.headers.set('x-content-type-options', 'nosniff');
@@ -253,7 +255,7 @@ export const createFilesRoute = (
   const handle = async (req: Request): Promise<Response> => {
     try {
       const gateway = await configuredGateway();
-      return gateway[req.method as 'GET' | 'POST' | 'PUT'](req);
+      return await gateway[req.method as 'GET' | 'POST' | 'PUT'](req);
     } catch {
       return Response.json(
         {

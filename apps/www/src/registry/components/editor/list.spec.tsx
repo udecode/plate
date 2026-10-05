@@ -67,6 +67,7 @@ describe('ListKit unordered list rendering', () => {
       {
         checked: true,
         children: [{ text: 'Task' }],
+        indent: 1,
         listType: 'task',
         type: 'paragraph',
       },

@@ -28,6 +28,8 @@ const projectIgnorePatterns = [
   '**/tmp/**',
   '**/*otf.json',
   '**/*.html',
+  // Benchmark runners write these results; nobody edits them by hand.
+  'benchmarks/editor/benchmarks/results/**',
   'apps/plite/tests/**/donor/**',
   'apps/www/src/app/(app)/examples/slate/_examples/**',
   'apps/www/src/registry/**/*.schema.json',

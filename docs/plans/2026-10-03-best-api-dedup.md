@@ -1,6 +1,6 @@
 # Give each Plate API rule one home
 
-Status: planned
+Status: superseded by [the skills redesign](2026-10-04-plate-skills-first-principles.md), whose build lands these rulings in Vision
 
 Split out of [the pstack drift plan](2026-10-03-pstack-drift.md) at the owner's answer on 2026-10-03, because the dedup changes Plate API guidance rather than moving text.
 

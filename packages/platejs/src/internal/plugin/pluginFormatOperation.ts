@@ -133,7 +133,7 @@ export const createPluginFormatOperationContext = (
             name: candidate.name,
             pluginState: freezePluginDescriptorValue({
               ...(pluginStates.get(candidate.name) as Record<string, unknown>),
-            }) as Readonly<Record<string, unknown>>,
+            }),
             registry,
             schema,
           }),

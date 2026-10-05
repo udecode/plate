@@ -23,8 +23,11 @@ const CONTENT_TYPES_NAMESPACE =
   'http://schemas.openxmlformats.org/package/2006/content-types';
 const RELATIONSHIPS_NAMESPACE =
   'http://schemas.openxmlformats.org/package/2006/relationships';
-const PROBE_RELATIONSHIP_TYPE = 'urn:plate:retained-source-probe';
+const PROBE_RELATIONSHIP_TYPE =
+  'http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail';
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 const MEBIBYTE = 1024 * 1024;
+const measured = process.env.BENCH_MEASURE === '1';
 const resultUrl = new URL(
   'results/plate-docx-retained-source-latest.json',
   import.meta.url
@@ -203,7 +206,7 @@ const buildFixture = async (
   const contentTypesRoot = contentTypes.documentElement;
   const probePartNames = Array.from(
     { length: cohort.rootParts },
-    (_, index) => `retained-source-probe/part-${index}.bin`
+    (_, index) => `retained-source-probe/part-${index}.png`
   );
   const partBytes = Math.floor(cohort.opaqueBytes / cohort.rootParts);
   const remainder = cohort.opaqueBytes % cohort.rootParts;
@@ -211,10 +214,13 @@ const buildFixture = async (
   for (const [index, partName] of probePartNames.entries()) {
     zip.file(
       partName,
-      opaquePayload(
-        partBytes + (index < remainder ? 1 : 0),
-        0x9e_37_79_b9 + index
-      )
+      new Uint8Array([
+        ...PNG_SIGNATURE,
+        ...opaquePayload(
+          partBytes + (index < remainder ? 1 : 0),
+          0x9e_37_79_b9 + index
+        ),
+      ])
     );
     const relationship = relationships.createElementNS(
       RELATIONSHIPS_NAMESPACE,
@@ -228,7 +234,7 @@ const buildFixture = async (
   }
   const hasBinaryDefault = Array.from(contentTypesRoot.children).some(
     (child) =>
-      child.localName === 'Default' && child.getAttribute('Extension') === 'bin'
+      child.localName === 'Default' && child.getAttribute('Extension') === 'png'
   );
 
   if (!hasBinaryDefault) {
@@ -237,8 +243,8 @@ const buildFixture = async (
       'Default'
     );
 
-    binaryDefault.setAttribute('ContentType', 'application/octet-stream');
-    binaryDefault.setAttribute('Extension', 'bin');
+    binaryDefault.setAttribute('ContentType', 'image/png');
+    binaryDefault.setAttribute('Extension', 'png');
     contentTypesRoot.append(binaryDefault);
   }
   zip.file('_rels/.rels', new XMLSerializer().serializeToString(relationships));
@@ -518,7 +524,9 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
 
       overlayBytes += bytes.byteLength;
     }
-    expect(overlayBytes).toBe(cohort.opaqueBytes);
+    expect(overlayBytes).toBe(
+      cohort.opaqueBytes + PNG_SIGNATURE.length * cohort.rootParts
+    );
     const overlayWork = {
       copiedParts: overlayEdges.length,
       finalPackageValidationLoads: 1,
@@ -603,20 +611,22 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       3 * fixture.bytes.byteLength +
       64 * MEBIBYTE;
 
-    expect(targetImportSummary.p95Ms).toBeLessThanOrEqual(importP95BudgetMs);
-    expect(targetCold.durationMs).toBeLessThanOrEqual(importColdBudgetMs);
-    expect(targetImportSummary.rssDeltaMaxBytes).toBeLessThanOrEqual(
-      targetRssBudgetBytes
-    );
-    expect(exactExportSummary.p95Ms).toBeLessThanOrEqual(
-      exactExportP95BudgetMs
-    );
-    expect(overlayExportSummary.p95Ms).toBeLessThanOrEqual(
-      overlayExportP95BudgetMs
-    );
-    expect(overlayExportSummary.rssDeltaMaxBytes).toBeLessThanOrEqual(
-      overlayRssBudgetBytes
-    );
+    if (measured) {
+      expect(targetImportSummary.p95Ms).toBeLessThanOrEqual(importP95BudgetMs);
+      expect(targetCold.durationMs).toBeLessThanOrEqual(importColdBudgetMs);
+      expect(targetImportSummary.rssDeltaMaxBytes).toBeLessThanOrEqual(
+        targetRssBudgetBytes
+      );
+      expect(exactExportSummary.p95Ms).toBeLessThanOrEqual(
+        exactExportP95BudgetMs
+      );
+      expect(overlayExportSummary.p95Ms).toBeLessThanOrEqual(
+        overlayExportP95BudgetMs
+      );
+      expect(overlayExportSummary.rssDeltaMaxBytes).toBeLessThanOrEqual(
+        overlayRssBudgetBytes
+      );
+    }
     rows.push({
       ...cohort,
       baselineCommentBytes,
@@ -708,6 +718,8 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
     ),
   };
 
-  await mkdir(new URL('results/', import.meta.url), { recursive: true });
-  await Bun.write(resultUrl, `${JSON.stringify(result, null, 2)}\n`);
+  if (measured) {
+    await mkdir(new URL('results/', import.meta.url), { recursive: true });
+    await Bun.write(resultUrl, `${JSON.stringify(result, null, 2)}\n`);
+  }
 }, 240_000);

@@ -1,0 +1,20 @@
+# run 1: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (2.4s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.1s
+# exit: 0
+# run 2: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (2.4s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.0s
+# exit: 0
+# run 3: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (2.4s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.1s
+# exit: 0
+# run 4: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (2.5s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.3s
+# exit: 0
+# run 5: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (3.2s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 4.2s
+# exit: 0

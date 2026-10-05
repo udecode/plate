@@ -255,7 +255,7 @@ it('awaits resolution and reopening, retains failures, and keeps document undo i
     // An unawaited async act leaves React's act queue installed for every later
     // test in the process.
     await act(async () => {
-      await editor.api.history.undo();
+      editor.api.history.undo();
     });
     expect(editor.read.text.string([0])).toBe('Review this');
     expect(comments.getThread(id)?.resolution).toBeNull();

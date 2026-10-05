@@ -1,16 +1,13 @@
 # Plate architecture reference
 
-The Plan playbook reads this file in full for an API or architecture plan, the Build playbook reads its Hard cut, and a read-only architecture audit reads its Audit. `best-api` owns the call shape, `research audit` the source-level editor comparison and `benchmark` the measurement.
+The Plan playbook reads this file in full for an API or architecture plan, the Build playbook reads its Hard cut, a read-only architecture audit reads its Audit, and every P0 to P3 ranking uses its Priority. `best-api` owns the call shape, `research audit` the source-level editor comparison and `benchmark` the measurement.
 
 ## Pick the layer
 
 Read root `VISION.md`, then `docs/vision/plite.md`, `docs/vision/plate.md` or both. Their laws bind every decision row; link them instead of copying their tables into the plan.
 
-- Plite owns the editor model, operations, reads, updates, transactions, selection primitives, DOM, input and runtime substrate, history, replay, collaboration substrate and browser proof infrastructure.
-- Plate owns product plugins, feature workflows, kits, registry code, app-facing docs and examples, and opinionated UX.
 - Pick the layer from the owners the question touches. Work that crosses layers starts at the owner of the first unresolved boundary and gives each layer its own rows.
 - Before calling a feature flow registry-only, test whether it exposes a neutral law of one mounted Editable. If the view can derive the behavior from its runtime or DOM lifecycle, include the Plite React primitive and literal DOM protocol; Plate inherits it, while registry UI owns markers and styling. Add a controlled input only when user intent cannot be derived. Never add a view-toggle plugin or kit.
-- When a Plate API duplicates an adequate Plite primitive, Plite wins. A real substrate gap is fixed in Plite, never hidden behind Plate glue, and Plite stays free of Plate product policy.
 - Check every owner placement, and every fix that moves code between entrypoints, against the enforced entrypoint graph in `tooling/entrypoints/entrypoint-dag.mjs` before candidates are scored or reviewed, and put that graph in an arena's grounding. A move that dodges one forbidden import often creates another.
 
 ## Decision ledger
@@ -42,7 +39,6 @@ Plite:
 
 - A controlled view of canonical selection proves two Editables over one editor and two independent editors, expanded and collapsed paint, root and direction correctness, native-paint deduplication, SSR and unmounted behavior, and zero mutation of DOM selection, focus, input, history, clipboard or the internal projected-view-selection runtime.
 - A design that filters input by a stamp, tag or origin traces every producer of it: model-owned input, DOM repair, composition, Android pending diffs and the `input`-event fallback. Input provenance is not typing intent. A per-Editable rule carries the Editable itself, because mounted Editables share their view's focus and selection state.
-- A fast path derives eligibility from evaluated material behavior, keeps capability declarations with the owning runtime, fails closed for unknown behavior and proves native and model parity.
 - Ordinary architecture does not run `issue-harvester`'s Slate claims mode.
 
 ## Page sections
@@ -74,7 +70,6 @@ Plate closeout for a cut:
 - `pnpm brl` when package exports or exported folders changed.
 - `pnpm --filter www build:registry` when registry source changed, with its generated output.
 - A changeset or registry changelog entry per `changeset`.
-- A removed package moves to `retiredPackages` in Plate Next's `versions.json`, leaves `reviewedPackageSlugs` in `tooling/scripts/check-core.mjs`, and records its retirement date and evidence.
 - `best-api repair` when the cut changes a reusable public API that skills or Vision still teach.
 - The narrowest honest verification for the surviving product.
 
@@ -120,4 +115,10 @@ The raw score out of 10 is the sum of each grade divided by 4 times its weight; 
 
 A provisional cap renders as a ceiling such as `≤6.0/10`, not a final score; an incomplete audit has no numeric score; a blocker leads the verdict with the violated hard law. Report evidence confidence separately (inventory 35, trace 30, consumers 20, runtime 15, each graded 0 to 4, out of 100); it does not change the score.
 
-Assign priority independently of the score: `P0` for confirmed corruption, security failure, serialized-data break, hard native or model-law violation, or an unusable primary public contract; `P1` for a wrong canonical owner or lifetime, competing writable truth, or a common scale law with material ecosystem harm; `P2` for bounded reachability, API, composition, adoption or proof debt with a safe current path; `P3` for local naming, teaching or cleanup debt with no architectural harm. A low score is not automatically P0, and a high score can still hide one P0 defect.
+## Priority
+
+Every Plate review, audit and research finding uses this one scale; review findings in a panel use interrogate's critical, warning and nit instead.
+
+Assign priority independently of the score: `P0` for confirmed corruption, security failure, serialized-data break, hard native or model-law violation, or an unusable primary public contract; `P1` for a wrong canonical owner or lifetime, competing writable truth, or a common scale law with material ecosystem harm; `P2` for bounded reachability, API, composition, adoption or proof debt with a safe current path; `P3` for local naming, teaching or cleanup debt with no architectural harm. `P0` also covers a wrong public ontology or a foundational public shape that would spread costly damage as more code adopts it. `P1` also covers high-frequency DX, inference, discoverability or composition debt. A low score is not automatically P0, and a high score can still hide one P0 defect.
+
+Rank priority by user and ecosystem cost rather than redesign interest, ground every finding in current source and call sites, and keep implemented debt apart from speculative ideas.

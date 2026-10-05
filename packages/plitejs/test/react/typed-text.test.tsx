@@ -5,6 +5,7 @@ import { createDOMPhaseScheduler } from '../../src/dom/internal';
 import { history } from '../../src/history';
 import { createEditor, Editable, EditorRoot } from '../../src/react';
 import type { TypedText } from '../../src/react';
+import { createDOMRepairQueue } from '../../src/react/editable/dom-repair-queue';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { createAndroidInputManager } from '../../src/react/hooks/android-input-manager/android-input-manager';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
@@ -166,12 +167,7 @@ const createAndroid = ({ editables }: Mounted) => {
     text.replaceData(from, to - from, data);
     document
       .getSelection()!
-      .setBaseAndExtent(
-        text,
-        from + data.length,
-        text,
-        from + data.length
-      );
+      .setBaseAndExtent(text, from + data.length, text, from + data.length);
   };
 
   return {
@@ -260,6 +256,46 @@ describe('subscribeTypedText', () => {
     }
   });
 
+  test('a listener that commits without editing the document keeps the report', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+    });
+    let moved = false;
+
+    // Subscribed before the report, so its selection-only commit runs first.
+    editor.subscribeCommit(() => {
+      if (moved || editor.read.text.string([]) !== 'abx') return;
+      moved = true;
+      editor.update((tx) => tx.selection.set(caret(0)));
+    });
+
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable aria-label="Left" />
+      </EditorRoot>
+    );
+    const editable = rendered.getByRole('textbox', { name: 'Left' });
+    const reports: TypedText[] = [];
+
+    Object.defineProperty(editable, 'isContentEditable', { value: true });
+    editor.api.react.subscribeTypedText((typed) => {
+      reports.push(typed);
+    });
+
+    try {
+      await act(async () => {
+        editable.focus();
+        editor.update((tx) => tx.selection.set(caret(2)));
+      });
+      await beforeInput(editable, 'insertText', 'x');
+
+      expect(moved).toBe(true);
+      expect(reports.map(({ text }) => text)).toEqual(['x']);
+    } finally {
+      rendered.unmount();
+    }
+  });
+
   test.each([
     {
       children: [{ text: 'Hi ' }, { bold: true as const, text: 'bold' }],
@@ -293,7 +329,10 @@ describe('subscribeTypedText', () => {
         await beforeInput(editable, 'insertText', '@');
 
         expect(
-          mounted.reports.map((typed) => ({ range: typed.range, text: typed.text }))
+          mounted.reports.map((typed) => ({
+            range: typed.range,
+            text: typed.text,
+          }))
         ).toEqual([{ range, text: '@' }]);
       } finally {
         mounted.rendered.unmount();
@@ -330,10 +369,10 @@ describe('subscribeTypedText', () => {
       await placeCaret(mounted, editable, 2);
       await beforeInput(editable, 'insertText', '@');
       await act(async () => {
-        await editor.api.history.undo();
+        editor.api.history.undo();
       });
       await act(async () => {
-        await editor.api.history.redo();
+        editor.api.history.redo();
       });
       await act(async () => {
         editor.update((tx) => {
@@ -364,6 +403,48 @@ describe('subscribeTypedText', () => {
         },
       ]);
     } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test('a captured repair that leaves the caret elsewhere reports nothing', async () => {
+    const mounted = mount([{ bold: true, text: 'Hi @' }, { text: 'x' }]);
+    const [editable] = mounted.editables;
+    const runtime = findMountedEditableDOMRuntime(editable)!;
+    const elsewhere = document.createElement('button');
+
+    try {
+      await placeCaret(mounted, editable, 4);
+      editable.append(elsewhere);
+      document.getSelection()!.setBaseAndExtent(elsewhere, 0, elsewhere, 0);
+      await act(async () => {
+        createDOMRepairQueue({
+          domPhaseScheduler: runtime.domPhaseScheduler,
+          editor: runtime.editor,
+          inputController: runtime.inputController,
+          scrollSelectionIntoView: () => {},
+          syncDOMSelectionToEditor: () => {},
+        }).repairDOMInput(
+          {
+            data: '@',
+            inputType: 'insertText',
+            target: {
+              insert: { offset: 0, text: '@' },
+              path: [0, 1],
+              preferCapturedInsert: true,
+              selectionOffset: 1,
+              text: '@x',
+            },
+          },
+          editable,
+          1
+        );
+      });
+
+      expect(mounted.editor.read.text.string([])).toBe('Hi @@x');
+      expect(mounted.reports).toEqual([]);
+    } finally {
+      elsewhere.remove();
       mounted.rendered.unmount();
     }
   });

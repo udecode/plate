@@ -1108,7 +1108,9 @@ export const resolveDOMPointInRoot = (
 };
 
 const readTextToCaret = (editor: DOMEditor<any>, from: Point) => {
-  if (getEditorDOMViewRoot(editor, from.root) !== getEditorDOMViewRoot(editor)) {
+  if (
+    getEditorDOMViewRoot(editor, from.root) !== getEditorDOMViewRoot(editor)
+  ) {
     return null;
   }
 

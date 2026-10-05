@@ -46,5 +46,15 @@ export const reportEditorLifecycleError = <
     }
   }
 
+  const { reportError } = globalThis as {
+    reportError?: (error: unknown) => void;
+  };
+
+  // A replay failure settles `failed` instead of rejecting; reportError keeps it visible to window error monitors.
+  if ('source' in error && error.source === 'history' && reportError) {
+    reportError(error.cause);
+    return;
+  }
+
   globalThis.console?.error(error);
 };

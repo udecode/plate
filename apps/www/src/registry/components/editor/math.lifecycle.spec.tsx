@@ -54,11 +54,11 @@ it('commits a local equation draft once and restores it with one undo', async ()
     })
   );
   await act(async () => {
-    await editor.api.history.undo();
+    editor.api.history.undo();
   });
   expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({ latex: 'x' });
   await act(async () => {
-    await editor.api.history.redo();
+    editor.api.history.redo();
   });
   expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({
     latex: 'x^2 + y^2',

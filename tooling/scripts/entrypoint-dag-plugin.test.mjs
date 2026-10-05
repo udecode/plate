@@ -141,6 +141,8 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'packages/plitejs/test/**',
     'config/plite-test-jsx.js',
     'apps/www/src/app/(app)/examples/plite/**',
+    'apps/plite/src/app/providers.tsx',
+    'apps/www/src/app/dev/combobox-typing/page.tsx',
     'apps/www/src/app/dev/editor-perf/page.tsx',
   ]);
 });

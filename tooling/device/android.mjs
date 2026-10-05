@@ -94,7 +94,7 @@ const commands = {
       })
     );
   },
-  doctor: async (serial) => doctorDevice(serial),
+  doctor: (serial) => doctorDevice(serial),
   restore: async (serial) => {
     const targets = closeOwnedTargets(serial, { forceStop });
 

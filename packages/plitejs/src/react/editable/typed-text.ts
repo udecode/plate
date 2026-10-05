@@ -1,12 +1,4 @@
-import {
-  NodeApi,
-  PathApi,
-  type Point,
-  PointApi,
-  RangeApi,
-  type Range,
-  TextApi,
-} from '../..';
+import { NodeApi, RangeApi, type Range, TextApi } from '../..';
 import { getEditorCommitSnapshot } from '../../core/commit';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getSnapshotVersion } from '../../core/public-state';
@@ -19,7 +11,6 @@ import type {
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
 import type { EditableInputController } from './input-state';
-import { readRuntimeSelectionRange } from './runtime-selection-state';
 
 /** Text a mounted Editable committed with typing intent. */
 export type TypedText = Readonly<{
@@ -33,13 +24,11 @@ export type TypedText = Readonly<{
 export type TypedTextListener = (typed: TypedText) => void;
 
 type TypingInput = Readonly<{
-  at?: Point;
   inputType: string | undefined;
   text: string;
 }>;
 
 type TypingScope = Readonly<{
-  at: Point;
   controller: EditableInputController;
   owner: Editor;
   previousVersion: number;
@@ -74,15 +63,7 @@ export const withTypedTextIntent = <T>(
     return fn();
   }
 
-  const selection = input.at ? null : readRuntimeSelectionRange(editor);
-  const at =
-    input.at ??
-    (selection && RangeApi.isCollapsed(selection) ? selection.focus : null);
-
-  if (!at) return fn();
-
   scopes.push({
-    at,
     controller,
     owner,
     previousVersion: getSnapshotVersion(owner),
@@ -96,52 +77,12 @@ export const withTypedTextIntent = <T>(
   }
 };
 
-const snapshotBlock = <V extends Value>(
-  commit: EditorCommit<V>,
-  index: number | undefined
-) =>
-  index === undefined
-    ? undefined
-    : getEditorCommitSnapshot(commit, commit.selectionAfterRoot ?? 'main')
-        .children[index];
-
-const readBlockText = <V extends Value>(
-  commit: EditorCommit<V>,
-  from: Point,
-  to: Point,
-  maxLength: number
-) => {
-  const [index, ...fromPath] = from.path;
-  const [toIndex, ...toPath] = to.path;
-  const block = index === toIndex ? snapshotBlock(commit, index) : undefined;
-
-  if (
-    !block ||
-    !TextApi.isText(NodeApi.getIf(block, fromPath)) ||
-    !TextApi.isText(NodeApi.getIf(block, toPath))
-  ) {
-    return null;
-  }
-
-  let text = '';
-
-  for (const [leaf, path] of NodeApi.texts(block, {
-    from: fromPath,
-    to: toPath,
-  })) {
-    const start = PathApi.equals(path, fromPath) ? from.offset : 0;
-    const end = PathApi.equals(path, toPath) ? to.offset : leaf.text.length;
-
-    text += leaf.text.slice(start, end);
-    if (text.length > maxLength) return null;
-  }
-
-  return text;
-};
-
+// Every input that opens a scope leaves the caret just past the text it wrote,
+// wherever Plite put that text, so the text before the caret identifies it.
 const readInsertion = <V extends Value>(
   commit: EditorCommit<V>,
-  { at, text }: TypingScope
+  children: Value,
+  text: string
 ): Range | null => {
   const caret = commit.selectionAfter;
 
@@ -162,24 +103,17 @@ const readInsertion = <V extends Value>(
   });
 
   const end = caret.focus;
-  const start = { ...end, offset: end.offset - text.length };
+  const start = end.offset - text.length;
+  const [index, ...rest] = end.path;
+  const block = children[index];
+  const leaf = block && NodeApi.getIf(block, rest);
 
-  if (
-    changes !== 1 ||
-    inserts !== 1 ||
-    readBlockText(commit, start, end, text.length) !== text
-  ) {
-    return null;
-  }
-
-  // Plite can write text typed at a leaf edge into the neighboring leaf or a
-  // new one, so the text either runs from the input's point to the caret or
-  // ends where that point sits.
-  const insertedAt = PointApi.isAfter(at, end)
-    ? readBlockText(commit, end, at, 0) === ''
-    : readBlockText(commit, at, end, text.length) === text;
-
-  return insertedAt ? { anchor: start, focus: end } : null;
+  return changes === 1 &&
+    inserts === 1 &&
+    TextApi.isText(leaf) &&
+    leaf.text.slice(start, end.offset) === text
+    ? { anchor: { ...end, offset: start }, focus: end }
+    : null;
 };
 
 const readTypedText = <V extends Value, TPlugins extends readonly unknown[]>(
@@ -191,18 +125,24 @@ const readTypedText = <V extends Value, TPlugins extends readonly unknown[]>(
   if (
     scope?.owner !== getEditorRuntimeOwner(view) ||
     commit.previousVersion !== scope.previousVersion ||
-    // A listener that edited during delivery moved the document past this
-    // commit, so its range no longer names the typed text.
-    getSnapshotVersion(scope.owner) !== commit.version ||
     commit.selectionAfterRoot !== view.read.view.root()
   ) {
     return null;
   }
 
+  const { children } = getEditorCommitSnapshot(
+    commit,
+    commit.selectionAfterRoot ?? 'main'
+  );
+
+  // A listener that edited the document during delivery replaced its
+  // children, so this commit's range no longer names the typed text.
+  if (view.read.children() !== children) return null;
+
   const editable = getMountedEditableDOMRuntimes(view).find(
     (runtime) => runtime.inputController === scope.controller
   )?.rootRef.current;
-  const range = editable ? readInsertion(commit, scope) : null;
+  const range = editable ? readInsertion(commit, children, scope.text) : null;
 
   return editable && range ? { editable, range, text: scope.text } : null;
 };

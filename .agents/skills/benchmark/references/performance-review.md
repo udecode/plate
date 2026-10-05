@@ -1,8 +1,5 @@
 # Benchmark performance review
 
-
-Handle $ARGUMENTS.
-
 Use this when a Plate plan claims speed, responsiveness, large-document readiness, or production performance. This skill owns the review shape around cohorts, repeated-unit budgets, p95/p99 interactions, memory/DOM tags, degradation contracts, native editor behavior, trace proof, and RUM gaps. It delegates React/Next micro-tactics, effect law, and complexity analysis to the skills that already own them.
 
 This is a review lens only. It does not discover or order benchmark lanes,
@@ -20,10 +17,6 @@ loads only the relevant rules from this lens.
 | `benchmark` | ordered lane discovery, baseline/editor comparison, measurement, causal diagnosis, fix/rerun/resume, and benchmark artifacts | Route execution there; do not copy its loop here. |
 
 Rule: if the plan only says "use React best practices", "avoid O(n)", or "seems fast locally", it is not done.
-
-Performance pressure does not automatically earn public profiling, config,
-toggle, profile, or diagnostics machinery. Keep measurement internal by
-default; use `best-api` before adding a reusable public instrumentation surface.
 
 ## Required Output
 
@@ -139,24 +132,6 @@ Use this shape for a large-document Plate review:
 ```
 
 That is enough to review a huge-document claim without rereading the entire performance rule set.
-
-## Architecture Performance Pass
-
-When used inside an architecture plan, record this lens in its decision ledger.
-
-Must answer:
-
-- Which Vercel rules cover the micro-tactics?
-- Which extra rule files from this skill apply?
-- What is the repeated unit and current/target budget?
-- Which cohorts are normal, large, stress, and pathological?
-- Which interaction-level INP rows or lab proxies prove responsiveness?
-- Which memory tags prove heap/DOM/component/listener/subscription counts stay bounded?
-- Which degradation mode applies only to which cohort?
-- Which native browser behaviors are preserved or intentionally degraded?
-- Which React 19.2 primitive applies, and what does it explicitly not solve?
-- Which Chrome trace or Core Web Vitals proof is relevant, and which load metrics are out of scope?
-- What Datadog/RUM view would catch the regression?
 
 ## No-Change Defense
 

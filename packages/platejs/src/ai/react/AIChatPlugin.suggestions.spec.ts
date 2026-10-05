@@ -478,9 +478,9 @@ describe('AIChatPlugin suggestions', () => {
 
     const completed = structuredClone(editor.read.children());
 
-    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editor.read.text.string([])).toBe('old-aold-btail');
-    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.redo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual(completed);
   });
 
@@ -518,9 +518,9 @@ describe('AIChatPlugin suggestions', () => {
 
     const completed = structuredClone(editor.read.children());
 
-    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editor.read.text.string([])).toBe('old-aold-btail');
-    expect(await editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.redo()).toEqual({ status: 'applied' });
     expect(editor.read.children()).toEqual(completed);
   });
 

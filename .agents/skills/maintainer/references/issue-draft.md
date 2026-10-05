@@ -1,12 +1,8 @@
 # Issue draft
 
-
 Turn incomplete Plate `next`/Beta bug evidence into one concise, reproducible
 `udecode/plate` GitHub issue. A user request to publish the issue authorizes
-analysis, necessary evidence uploads, creation and read-back in one run. Do not
-ask to reconfirm that authority. Loading this mode as a reference does not
-authorize publication. Complete the concrete local draft before asking for
-missing publication authority.
+analysis, necessary evidence uploads, creation and read-back in one run.
 
 `draft only`, `analyze only` and `do not publish` keep the result local.
 
@@ -33,9 +29,8 @@ missing publication authority.
 - Never publish private-repository evidence to a public object store without a
   separate explicit `--allow-public-video` decision.
 - Never use GitHub's undocumented web upload endpoints. The public Issues REST
-  API does not expose native attachment upload. Read
-  [github-api-boundaries.md](github-api-boundaries.md)
-  before publishing media.
+  API does not expose native attachment upload; see the official references in
+  [GitHub API references](#github-api-references) before publishing media.
 - Never put a native `github.com/user-attachments` URL inside inline code or a
   fenced code block. GitHub renders it as code instead of issue media.
 - Never move, rewrite, duplicate, or remove a freshly saved native attachment
@@ -49,16 +44,8 @@ missing publication authority.
 - Never claim expected behavior from appearance alone. Ground it in the
   supplied comparison video, product docs, a reference implementation, tests,
   source, or a clearly labeled user statement.
-- Make a lightweight evidence-based attempt to distinguish the `main` and
-  `next` recordings before asking. Prefer explicit labels or branch/build
-  metadata; otherwise use the behavioral delta: normal behavior is the likely
-  `main` baseline and the regression is the likely `next` recording. Ask the
-  user only when the available evidence does not support a reliable mapping.
 - Never infer branch roles from input order, filename, resolution, crop, zoom,
   framing, or composition.
-- Never invent presentation roles such as `wide`, `close-up`, `overview`, or
-  `detail` for the two recordings. Label them only by verified branch and
-  behavior role.
 - Stop before public mutation when expected behavior, repository, or repro is
   materially ambiguous.
 
@@ -130,9 +117,7 @@ title is not enough; compare trigger, affected surface, and actual behavior.
 ## Decide whether to record
 
 Use an installed recording skill only when its source and recorder capability
-are actually available. If `recording-browser-repros` is installed, follow its
-complete shot-plan, safety, recording and verification method; its scripts,
-overlay, schema and examples remain externally owned.
+are actually available.
 
 For supplied videos, use `video-transcripts` and this skill's frame helper.
 For a static state, capture through the current project Browser/Chrome tools;
@@ -328,15 +313,8 @@ If any upload, public verification, or issue-creation step fails before the
 issue exists, report every attempted public object URL that may be orphaned.
 Do not silently delete remote objects.
 
-## Final report
+## GitHub API references
 
-Return:
-
-- classification: two-video, one-video, or text-only
-- verified testing lane: Plate `next`/Beta, plus exact commit/version or
-  `NOT_ENOUGH_INFO`
-- whether a fresh recording was needed and why
-- issue URL, or `not created` with the reason
-- uploaded evidence URL(s), or `none`
-- verified title, repro steps, expected/actual behavior
-- caveats, including inferred expected behavior or an orphaned upload
+- Issues REST API: https://docs.github.com/en/rest/issues/issues
+- Attaching files: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files
+- Release assets REST API: https://docs.github.com/en/rest/releases/assets

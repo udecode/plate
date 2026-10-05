@@ -25,11 +25,14 @@ mock.module('platejs/react', () => ({
   ),
   useEditor: () => ({
     extension: () => ({ update: { set: () => {} } }),
-    read: { selection: () => null },
+    read: Object.assign(() => undefined, {
+      nodes: { get: () => undefined },
+      selection: () => null,
+    }),
   }),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector({
-      read: { selection: () => null },
+      read: { nodes: { get: () => undefined }, selection: () => null },
     }),
   useElement: () => ({ children: [{ text: '' }], type: 'video' }),
   useEditorMounted: useEditorMountedMock,

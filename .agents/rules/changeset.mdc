@@ -1,27 +1,12 @@
 ---
-description: Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice.
+description: Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice. Use before deciding whether a package edit needs a changeset, including skipping one.
 ---
 
 # Changeset
 
-
 Release notes document user-visible changes: package changesets for published packages, and [registry changelog entries](./references/registry.md) for copied registry code under `apps/www/src/registry/**`. Concise bullets, imperative voice, user impact only.
 
 **Core principle:** one action verb + one impact statement = one bullet.
-
-## When To Use
-
-Use when:
-
-- Creating `.changeset/*.md` files
-- Documenting package changes: feat, fix, breaking
-- Adding registry changelog entries for copied registry components
-
-Do not use for:
-
-- Internal docs
-- Commit messages
-- PR descriptions
 
 ## Critical Rules
 
@@ -47,6 +32,13 @@ Use `patch` instead. `minor` on those explodes version bumps across dependents.
 ```
 
 Only real breaking changes get `major`.
+
+Target branch by bump:
+
+- Major changesets target `next` for beta before stable promotion.
+- Minor changesets target `main`, not `next`.
+- Patch changes may target `main`; use `next` patch changes only for active
+  beta-lane fixes or direct-sync beta metadata.
 
 ### 2. One package per file
 
@@ -158,36 +150,6 @@ Prefer this shape:
 
 If a sentence would sound stupid in release notes, cut it.
 
-## Template
-
-Simple:
-
-```md
----
-"platejs": patch
----
-
-Fix `isEmpty` not handling void elements correctly
-```
-
-API change:
-
-````md
----
-"platejs": patch
----
-
-Rename `LegacyPlugin` to `ExamplePlugin`
-
-```tsx
-// Before
-import { LegacyPlugin } from 'platejs';
-
-// After
-import { ExamplePlugin } from 'platejs';
-```
-````
-
 Breaking change:
 
 ````md
@@ -203,21 +165,6 @@ Remove `LegacyPlugin`; use `ExamplePlugin`
 const plugins = [ExamplePlugin];
 ```
 ````
-
-## Red Flags
-
-Before shipping:
-
-- [ ] Used `minor` for `plitejs` or `platejs`? Change to `patch`
-- [ ] Multiple packages in frontmatter? Split files
-- [ ] Describes the last commit, working tree, or branch-only API instead of the
-      user-visible delta from the release baseline? Rewrite it
-- [ ] Claims an API was removed or needs migration without proving that API
-      exists in the release baseline? Delete that claim
-- [ ] Past tense verbs? Fix them
-- [ ] Multiple paragraphs? Condense
-- [ ] Too much explanation? Cut it
-- [ ] API change without before/after? Add one
 
 ## Managed auto-release choice
 

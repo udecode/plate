@@ -6,7 +6,12 @@
 // imports and only erasable TypeScript.
 
 import { createHash } from 'node:crypto';
-import { createServer, type IncomingMessage, type Server } from 'node:http';
+import {
+  createServer,
+  type IncomingMessage,
+  type Server,
+  type ServerResponse,
+} from 'node:http';
 import type { Duplex } from 'node:stream';
 
 export type GuardedEndpoint = {
@@ -145,7 +150,7 @@ export const startGuardedEndpoint = async ({
   const upstream = `http://127.0.0.1:${upstreamPort}`;
   const refused: GuardedEndpoint['refused'] = [];
   const sockets = new Set<Duplex>();
-  const server: Server = createServer(async (request, response) => {
+  const proxy = async (request: IncomingMessage, response: ServerResponse) => {
     try {
       const upstreamResponse = await fetch(`${upstream}${request.url}`);
       const upstreamBody = await upstreamResponse.text();
@@ -162,6 +167,9 @@ export const startGuardedEndpoint = async ({
       response.writeHead(502);
       response.end(String(error));
     }
+  };
+  const server: Server = createServer((request, response) => {
+    void proxy(request, response);
   });
   const address = () => server.address() as { port: number };
 

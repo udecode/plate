@@ -15,7 +15,6 @@ import {
   type MarkdownPluginRegistry,
   PLUGINS,
   TextApi,
-  type Value,
 } from '../../../core';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import { createValidatedContentSlice } from '../../../internal/utils/trustedContentSlice';
@@ -349,6 +348,29 @@ const remarkToSlate: UnifiedPlugin<[DeserializeMdContext], Root, Descendant[]> =
     };
   };
 
+// mdast-util-math declares its `$` pattern with an `after` key even when that key
+// is undefined, so mdast-util-to-markdown treats the escape as conditional and
+// drops it before an escaped character: `x$*$y` writes `x$\*\$y`, which reads
+// back as math. The same pattern without the key clears that condition.
+const remarkEscapeDollars: UnifiedPlugin<[], Root> = function () {
+  const data = this.data() as {
+    toMarkdownExtensions?: Array<{
+      unsafe?: Array<{ character?: string; inConstruct?: unknown }>;
+    }>;
+  };
+  const extensions = data.toMarkdownExtensions ?? [];
+  const escapesDollars = extensions.some((extension) =>
+    extension.unsafe?.some(
+      (pattern) =>
+        pattern.character === '$' && pattern.inConstruct === 'phrasing'
+    )
+  );
+
+  if (escapesDollars) {
+    extensions.push({ unsafe: [{ character: '$', inConstruct: 'phrasing' }] });
+  }
+};
+
 export const serializeMdWithRuntime = (
   runtime: MarkdownRuntime,
   options: MarkdownSerializePolicy = {},
@@ -365,6 +387,7 @@ export const serializeMdWithRuntime = (
   const toRemarkProcessor = unified()
     .use(remarkMarkdownTagWriter)
     .use(remarkPlugins ?? [])
+    .use(remarkEscapeDollars)
     .use(remarkStringify, {
       emphasis: '_',
       resourceLink: false,
@@ -809,7 +832,7 @@ export const parseMarkdownDocumentWithRuntime = (
   // Normalized top-level blocks are elements. Fitting copies them, so a
   // document parse needs no frozen snapshot.
   const input = Object.freeze({
-    children: normalizeDocumentChildren(runtime, parsed) as Value,
+    children: normalizeDocumentChildren(runtime, parsed),
   });
   let document: EditorDocumentValue;
 

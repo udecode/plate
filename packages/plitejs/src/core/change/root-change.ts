@@ -2256,14 +2256,24 @@ export class RootChange {
     }
 
     let current = document;
-    const recordLocality = (path: readonly number[]) => {
+    const recordLocality = (path: readonly number[], replacementCount = 1) => {
       work.ancestorPaths.push([...path]);
-      work.localizedReplacements += 1;
+      work.localizedReplacements += replacementCount;
 
       return true;
     };
+    const ancestorContains = (
+      ancestor: Readonly<{ from: number; to: number }>,
+      { from, to }: Replacement
+    ) =>
+      ancestor.from <= from &&
+      to <= ancestor.to &&
+      (from !== to || (ancestor.from < from && from < ancestor.to));
 
-    for (const replacement of replacementsByPosition.toReversed()) {
+    const unapplied = [...replacementsByPosition];
+
+    while (unapplied.length > 0) {
+      const replacement = getDefined(unapplied.pop());
       const preparedNodes = DOCUMENT_SLICE_PREPARED_NODES.get(
         replacement.insert
       );
@@ -2406,31 +2416,40 @@ export class RootChange {
         .filter(
           (entry) =>
             toPaths.has(pathKey(entry.path)) &&
-            entry.from <= replacement.from &&
-            replacement.to <= entry.to &&
-            (replacement.from !== replacement.to ||
-              (entry.from < replacement.from && replacement.from < entry.to))
+            ancestorContains(entry, replacement)
         );
 
       let localized = false;
 
       for (const ancestor of ancestors) {
+        let first = unapplied.length;
+
+        while (first > 0 && ancestorContains(ancestor, unapplied[first - 1])) {
+          first -= 1;
+        }
+        const batch = [...unapplied.slice(first), replacement];
+
         try {
           const ancestorSlice = current.nodeSlice(ancestor.path);
-          const replacementFrom = replacement.from - ancestor.from;
-          const replacementTo = replacement.to - ancestor.from;
-          const local = PreparedTokenSlice.concat([
-            ancestorSlice.slice(0, replacementFrom),
-            replacement.insert,
-            ancestorSlice.slice(replacementTo),
-          ]);
+          const pieces: PreparedTokenSlice[] = [];
+          let position = 0;
+
+          for (const { from, insert, to } of batch) {
+            pieces.push(
+              ancestorSlice.slice(position, from - ancestor.from),
+              insert
+            );
+            position = to - ancestor.from;
+          }
+          pieces.push(ancestorSlice.slice(position));
+          const local = PreparedTokenSlice.concat(pieces);
           const nodes = profileCoreDuration(
             'change-set-local-decode',
             () => decodeNodes(local).nodes
           );
           const index = getDefined(ancestor.path.at(-1));
 
-          if (!recordLocality(ancestor.path)) return null;
+          if (!recordLocality(ancestor.path, batch.length)) return null;
           current = profileCoreDuration('change-set-local-splice', () =>
             current.withDecodedSplicedNodes(
               ancestor.path.slice(0, -1),
@@ -2439,6 +2458,7 @@ export class RootChange {
               nodes
             )
           );
+          unapplied.length = first;
           localized = true;
           break;
         } catch {

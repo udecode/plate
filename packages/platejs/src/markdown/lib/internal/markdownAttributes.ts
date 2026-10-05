@@ -141,7 +141,15 @@ const encodeValue = (
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value);
   }
-  if (Array.isArray(value)) return JSON.stringify([...value].sort());
+  if (Array.isArray(value)) {
+    return JSON.stringify(
+      [...value].sort((a, b) => {
+        const left = String(a);
+        const right = String(b);
+        return left < right ? -1 : left > right ? 1 : 0;
+      })
+    );
+  }
 
   return JSON.stringify(value);
 };
@@ -153,9 +161,7 @@ const describe = (
 ): PropertyDescriptor | undefined => {
   if (!type) return undefined;
 
-  return state.schema.property({ key, placement: 'element', type })?.value as
-    | PropertyDescriptor
-    | undefined;
+  return state.schema.property({ key, placement: 'element', type })?.value;
 };
 
 /** Raw attribute values; the tokenizer already decoded character references. */

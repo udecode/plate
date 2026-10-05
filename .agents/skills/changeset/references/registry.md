@@ -120,13 +120,3 @@ changelog source layout:
 ```bash
 bun test tooling/scripts/generate-ui-changelog-entries.test.mjs
 ```
-
-## Closeout
-
-Before handoff:
-
-- source entry exists or the plan records a concrete `N/A` reason
-- generated JSON is updated with `--write`
-- `--check` passes
-- focused generator tests run when the generator/schema changed
-- package changeset decision is recorded separately when package code changed

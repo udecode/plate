@@ -100,7 +100,7 @@ const nodeAt = (children: readonly Descendant[], path: Path) =>
       null);
 
 const authoredIdentity = (editor: AnyEditor) => {
-  const view = readAuthoredView(editor as never);
+  const view = readAuthoredView(editor);
 
   return view ? `${view.intent}:${view.projection}` : 'native';
 };
@@ -133,11 +133,11 @@ const pruneAndSort = (entries: ReadonlyArray<NodeEntry<Descendant>>) => {
 
 export const expandSource = (from: AnyEditor, paths: readonly Path[]) => {
   const expanded = executeEditorRead(
-    from as never,
+    from,
     editorReads.transfer.source,
     { selection: SelectionApi.nodes(paths as [Path, ...Path[]]) },
     ({ selection }) => selection,
-    from as never
+    from
   );
 
   return pruneAndSort(
@@ -177,7 +177,7 @@ const resolveSource = (
   from: AnyEditor,
   input: TransferInput
 ): NodeSource | TextSource => {
-  const root = getEditorRuntimeRoot(from as never);
+  const root = getEditorRuntimeRoot(from);
 
   if (input.range) {
     if (RangeApi.isCollapsed(input.range)) refuse('source-missing');
@@ -228,7 +228,7 @@ const checkTextLanding = (
     source.kind !== 'text' ||
     intent !== 'move' ||
     relation !== 'document' ||
-    source.root !== getEditorRuntimeRoot(editor as never)
+    source.root !== getEditorRuntimeRoot(editor)
   ) {
     return;
   }
@@ -257,7 +257,7 @@ const requestOf = (
     source.kind !== 'nodes'
       ? []
       : slice
-        ? (slice.content as readonly Descendant[])
+        ? slice.content
         : source.entries.map(([node]) => node),
   from,
   intent,
@@ -275,10 +275,7 @@ const resolveStep = (
   source: NodeSource | TextSource,
   direction: 'next' | 'previous'
 ): TransferEdge => {
-  if (
-    source.kind !== 'nodes' ||
-    source.root !== getEditorRuntimeRoot(editor as never)
-  ) {
+  if (source.kind !== 'nodes' || source.root !== getEditorRuntimeRoot(editor)) {
     return refuse('policy');
   }
 
@@ -351,7 +348,7 @@ const resolvePayload = (from: AnyEditor, input: TransferInput) => {
     input.nodes?.join('\u0000') ??
       (input.range ? JSON.stringify(input.range) : from.read.selection()),
     from.read.runtime.snapshot(),
-    getConfiguredPluginRegistry(from as never).configurationRevision,
+    getConfiguredPluginRegistry(from).configurationRevision,
   ];
   const cached = SOURCES.get(from);
 
@@ -388,10 +385,10 @@ const admit = (
   const slice =
     source.kind === 'nodes' &&
     intent === 'move' &&
-    source.root === getEditorRuntimeRoot(editor as never)
+    source.root === getEditorRuntimeRoot(editor)
       ? null
       : (slices[intent] ??= getContentSlice(
-          from as never,
+          from,
           source.kind === 'text'
             ? source.range
             : SelectionApi.nodes(
@@ -493,7 +490,7 @@ const textTokens = (fragment: readonly Descendant[]) => {
         return;
       }
 
-      const element = node as Element;
+      const element = node;
       const open = (openStart && isFirst) || (openEnd && isLast);
 
       if (!open) {
@@ -534,11 +531,11 @@ const mapDraft = (
     };
   }
 
-  const before = DocumentIndex.fromValue(draft as never);
-  const next = DocumentIndex.fromValue(after as never);
+  const before = DocumentIndex.fromValue(draft);
+  const next = DocumentIndex.fromValue(after);
   const change = DocumentChange.between(
-    { children: draft } as never,
-    { children: after } as never
+    { children: draft },
+    { children: after }
   );
 
   return {
@@ -559,7 +556,7 @@ const mapDraft = (
           ? null
           : next.pointAt(mapped, association === 'backward' ? -1 : 1);
 
-      return mappedPoint as Point | null;
+      return mappedPoint;
     },
   };
 };
@@ -571,12 +568,12 @@ const guardLanding = (
   check: (landed: DraftLanding, after: JsonValue) => boolean,
   diagnostics: TransferDiagnostic[]
 ) =>
-  registerEditorDraftGuard(editor as never, (written) => {
+  registerEditorDraftGuard(editor, (written) => {
     const landing = draft.current;
 
     if (!landing) return;
     draft.current = null;
-    if (check(landing, written as JsonValue)) return;
+    if (check(landing, written)) return;
     if (!copy) throw new TransferRefusalError('lossy');
     diagnostics.push({
       impact: 'lossy',
@@ -604,16 +601,16 @@ const runTransfer = (
 
   const { intent, relation, slice, source, to } = admission;
   const copy = intent === 'copy';
-  const targetRoot = getEditorRuntimeRoot(editor as never);
+  const targetRoot = getEditorRuntimeRoot(editor);
   const before = from.read.value() as JsonValue;
   const relocate = !slice;
   const expected: readonly Descendant[] = slice
-    ? (slice.content as readonly Descendant[])
+    ? slice.content
     : source.kind === 'nodes'
       ? source.entries.map(([node]) => node)
       : [];
   const expectedRoots = slice ? slice.roots : before.roots;
-  const schema = getEditorSchema(editor as never);
+  const schema = getEditorSchema(editor);
   const normalize = (node: Descendant, path: Path) =>
     copy ? schema.copyNodeAt(node, path, targetRoot) : node;
   const draft: { current: DraftLanding | null } = { current: null };
@@ -729,7 +726,7 @@ const runTransfer = (
           return;
         }
 
-        const owner = getEditorRuntimeOwner(editor as never);
+        const owner = getEditorRuntimeOwner(editor);
 
         withEditorUpdateRootScope(owner, source.root, () => {
           if (source.kind === 'text') {
@@ -789,7 +786,7 @@ const runTransfer = (
 
       if (
         !replaceSliceAtBlockBoundary(
-          getEditorRuntimeOwner(editor) as never,
+          getEditorRuntimeOwner(editor),
           slice as never,
           boundary
         )
@@ -862,7 +859,7 @@ const checkKey = (
     from.read.view.isReadOnly(),
     authoredIdentity(editor),
     authoredIdentity(from),
-    getConfiguredPluginRegistry(editor as never).configurationRevision,
+    getConfiguredPluginRegistry(editor).configurationRevision,
   ];
 };
 

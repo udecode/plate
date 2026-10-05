@@ -85,5 +85,5 @@ export const next = ((
   }
 
   const [innerNext] = nodes(editor, { at: span, match, mode, voids });
-  return innerNext as never;
+  return innerNext;
 }) as EditorStaticApi['next'];

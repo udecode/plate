@@ -9,7 +9,6 @@ import {
   type Element,
   definePlugin,
   definePluginPoint,
-  type EditorUpdateTransaction,
   NodeApi,
   type Path,
   type Range,
@@ -512,7 +511,7 @@ describe('editor runtime/view contract', () => {
           on: {
             commit({ commit, editor }) {
               if (commit.changed.has('text')) {
-                editor.update((tx: EditorUpdateTransaction) => {
+                editor.update((tx) => {
                   tx.selection.set({
                     kind: 'text',
                     anchor: { path: [0, 0], offset: 0, root: 'header' },

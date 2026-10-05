@@ -18,31 +18,10 @@ The generated runtime matrix Node-imports every public entrypoint, runs every
 headless entrypoint without React or DOM, renders every SSR entrypoint without
 DOM and exercises every client entrypoint in a real browser.
 
-Existing entrypoints are evidence, not doctrine. Reject compatibility aliases,
-redundant helpers, and topology that conflicts with current skills.
-
 ## Package Host Law
 
 Treat `platejs` as the shared Plate host, not another feature dependency.
 
-- Editor features live in `platejs`; do not create another editor-facing
-  package. The only other package roots are `plitejs`, `@platejs/cli` and
-  `@platejs/test`; the last two peer on `platejs` with `workspace:^` as their
-  local dev provider and no normal `platejs` dependency.
-
-- Only `packages/platejs` declares `plitejs`. Its local
-  `dependencies.plitejs` stays `workspace:*` so a prerelease publishes one
-  exact runtime version. Within that package, only exact facade, proxy, or
-  replacement leaves import `plitejs`; feature and plugin source, specs, type
-  tests, and fixtures use relative Plate owners. No app or other workspace
-  package imports `plitejs`.
-- `packages/platejs` does not depend on another Plate workspace package.
-  Absorbed foundation code lives inside the host instead of retaining a
-  workspace dependency.
-- Plate app code imports public contracts from `platejs`, `platejs/react`, or
-  the canonical `platejs/<feature>` entrypoint. Raw Plite package tests
-  and the dedicated Plite proof/example surfaces are the only direct Plite
-  exceptions.
 - Keep an always-required implementation library in `dependencies`. Use a peer
   only when the consumer must share the runtime instance or the library powers
   an opt-in entrypoint/capability. Mark that peer optional only when `platejs`
@@ -52,18 +31,6 @@ Treat `platejs` as the shared Plate host, not another feature dependency.
   entrypoint's `peerDependencies` in the canonical DAG; the manifest's optional
   peer set and the DAG's peer set must match exactly. Optional peers are not a
   dumping ground for normal dependencies.
-- Documentation installs `platejs` or `plitejs`, never a package subpath. A
-  feature page lists the optional peer libraries required by the subpaths it
-  teaches.
-- Packed release proof derives each public JavaScript export's runtime and
-  declaration peer closure, rejects unrelated peers from the package's base
-  dependency graph, and reports sibling peers that a required vendor brings
-  transitively. A hand-picked root or feature sample is not package isolation
-  proof.
-- Root ownership is explicit: basic nodes, basic styles, code block, indent,
-  link, and list live at `platejs` and `platejs/react`. Independent product
-  capabilities use feature subpaths. Do not add `platejs/basic`, a root
-  `BasicKit`, or duplicate feature exports at root.
 - Packed release proof records minified consumer sizes for the root and every
   public feature entrypoint. Review each byte diff before running
   `pnpm plite:entrypoint-sizes:update`.

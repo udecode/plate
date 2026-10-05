@@ -271,7 +271,7 @@ describe('FloatingToolbar', () => {
     act(() => floatingOptions.onOpenChange(false));
     expect(view.queryByText('toolbar')).toBeNull();
 
-    act(() => document.dispatchEvent(new Event('selectionchange')));
+    void act(() => document.dispatchEvent(new Event('selectionchange')));
     expect(view.queryByText('toolbar')).toBeNull();
 
     selectionExpanded = false;

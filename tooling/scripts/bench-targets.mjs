@@ -611,7 +611,7 @@ function recipeVariables(target) {
       names.add(name);
     }
   }
-  return [...names].sort();
+  return [...names].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 function executionContract(target) {
@@ -889,7 +889,10 @@ async function runBenchmarkTarget(
       }
     }
   } catch (error) {
-    failure = error;
+    failure =
+      error instanceof Error
+        ? error
+        : new Error('Benchmark target failed', { cause: error });
   }
 
   after ??= snapshots();

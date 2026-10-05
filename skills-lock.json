@@ -5,7 +5,7 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/plan-page/SKILL.md",
-      "computedHash": "aacc7028856d48bb8d4d2000ed35e585ba634d67da32da722431b477c20dd47e"
+      "computedHash": "3565db7102971d2b6a54f4ef68b9c5985c0827e3478151711e40c2d106a085ae"
     },
     "shadcn": {
       "source": "shadcn/ui",
@@ -21,7 +21,7 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/test-audit/SKILL.md",
-      "computedHash": "07e5177ef0268811cb63439a9a654152f15b00ad66f1a8a663611ad9e0a4cea6"
+      "computedHash": "96c8764924577b02a2da5c86125fc75c15b006ae587d00b242d65e0c001c6e74"
     },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
@@ -29,14 +29,16 @@
       "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
     },
     "video-transcripts": {
-      "source": "../dotai",
-      "sourceType": "local",
-      "computedHash": "a601063e0c3eae8bb5c862feb25e86eca2180ef3499de5914afb38b8e3c19bd8"
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/video-transcripts/SKILL.md",
+      "computedHash": "5e92964a809de71e06523d6e73f65af553c535b6e91885d6ca1443784eaf9132"
     },
     "walkthrough": {
-      "source": "../dotai",
-      "sourceType": "local",
-      "computedHash": "c8806f6959b02ae21b181af2dfc42520b296bc1b7e63a2d30bccf7d66188b954"
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/walkthrough/SKILL.md",
+      "computedHash": "218885f9d48a0834d03c824215c4644af5da195c65098b443e691a0bb7640bf6"
     }
   }
 }

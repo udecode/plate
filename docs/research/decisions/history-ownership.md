@@ -2,7 +2,7 @@
 title: History ownership
 type: decision
 status: accepted
-updated: 2026-10-04
+updated: 2026-10-05
 source_refs:
   - ../../../packages/plitejs/src/history/history-plugin.ts
   - ../../../packages/plitejs/src/history/history-state.ts
@@ -14,6 +14,8 @@ related:
 ---
 
 # History ownership
+
+**Review of 2026-10-05.** Pursue, reopening one question: what `editor.api.history.undo()` and `redo()` return. Keep the claim, pending, `busy` and settlement lifecycle, but return the result synchronously, with a `pending` variant for the replay that waits on an external owner. The Promise carries nothing for a document batch, which has already applied when `undo()` returns. It costs every caller a `void` or an `await`, and a throwing owner behind `void` is an unhandled rejection. No surveyed editor returns an always-Promise undo; VS Code's undo service and Monaco return `Promise<void> | void`. The floating-promise lint stays on. The [plan](../../plans/2026-10-05-history-sync-replay-result.md) and record `2026-10-05-history-sync-replay-result` hold the evidence. Where the paragraphs below say `undo()` keeps `Promise<HistoryResult>`, this review supersedes them.
 
 **Audit of 2026-10-04.** Stop. The last Pursue target is adopted. Local fallible replay is one typed history: { replay } value on a local-only effect union, the split session literal, sibling callback and policy export are gone, and the one replay lifecycle, grouping authority, mounted dispatcher and Plate adapter each still own a proved job that no deletion or merge removes. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-history-audit` hold the evidence.
 
@@ -75,22 +77,24 @@ selection and remote imports keep publishing, while overlapping replays resolve
 call order. Edits are never disabled or buffered; only overlapping replays are
 refused.
 
-`editor.api.history.undo()` and `redo()` remain the sole awaited replay API.
-`useEditorHistory` is a mounted controller whose `undo` and `redo` dispatch and
-return `void`. One exact-runtime `Editable.onHistoryReplay` callback receives
-fulfilled mounted outcomes, and the same dispatcher reports Promise
-rejections. Pending is observable per-editor runtime lifecycle state; it is not
-persisted, snapshotted or shared through collaboration. If history is retired
-while an external owner is pending, the call returns that owner's actual
-applied, blocked or rejected outcome without settling into the retired or a
-replacement activation.
+`editor.api.history.undo()` and `redo()` are the model replay API. They return
+their outcome in the call, or `{ status: "pending", settled }` while an
+external owner finishes; `settled` never rejects. `useEditorHistory` is a
+mounted controller whose `undo` and `redo` dispatch and return `void`. One
+exact-runtime `Editable.onHistoryReplay` callback receives final mounted
+outcomes. An owner or settlement failure settles `failed` and reports
+through the editor's lifecycle error sink. Pending is observable per-editor
+runtime lifecycle state; it is not persisted, snapshotted or shared through
+collaboration. If history is retired while an external owner is pending,
+`settled` resolves to that owner's actual applied, blocked or failed outcome
+without settling into the retired or a replacement activation.
 
 A permanently blocked branch head remains in place under TaskHub-22: the next
 undo targets the newer eligible batch and never silently discards the blocked
 entry. A public skip or discard action is a separate API decision. Do not
-restore synchronous replay, return a sync-or-Promise union, add separate sync
-and async undo methods, create a Comments history stack or auto-skip blocked
-history.
+settle a live-session replay before its owner finishes, return a
+sync-or-Promise union, add separate sync and async undo methods, create a
+Comments history stack or auto-skip blocked history.
 
 **The earlier configuration Stop remains in force.** Keep the Plate history
 adapter and its live getters. Plite owns exact descriptors whose immutable
@@ -139,9 +143,9 @@ claims the branch head before returning, publishes per-editor pending state and
 settles the claimed entry after its owner finishes. New document batches remain
 above that claimed entry according to the four-case settlement table. A blocked
 result leaves the same head eligible for a later replay. The public `undo()` and
-`redo()` results remain promises so API callers can observe the settled external
-mutation and document branch together; mounted controls dispatch through one
-result and error owner.
+`redo()` results are synchronous; a `pending` result's `settled` promise lets API
+callers observe the settled external mutation and document branch together, and
+mounted controls dispatch through one result owner.
 
 Acceptance:
 

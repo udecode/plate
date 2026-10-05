@@ -249,7 +249,7 @@ export const setNodes = ((
 
     const updates: SetNodeUpdate[] = [];
 
-    for (const [node, path] of getNodes(editor as never, {
+    for (const [node, path] of getNodes(editor, {
       at,
       match,
       mode,

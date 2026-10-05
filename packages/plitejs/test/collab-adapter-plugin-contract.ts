@@ -117,7 +117,7 @@ const createFakeCollabAdapterPlugin = () => {
           return adapterState.get().exports;
         },
         importRemote(change) {
-          editor.update(remoteCollabPolicy, (tx: EditorUpdateTransaction) => {
+          editor.update(remoteCollabPolicy, (tx) => {
             tx.changes.apply(DocumentChange.fromJSON(clone(change)));
           });
           setAdapterState((state) => ({

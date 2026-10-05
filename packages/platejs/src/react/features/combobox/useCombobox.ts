@@ -97,7 +97,7 @@ export function useCombobox<P extends PluginReference>({
   React.useLayoutEffect(() => {
     const element = editableRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     const nextOwner = getComboboxOwner(view, element);
     const unmount = nextOwner.mount(popup);

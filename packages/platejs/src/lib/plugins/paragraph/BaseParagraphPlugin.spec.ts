@@ -19,7 +19,7 @@ describe('BaseParagraphPlugin', () => {
       },
     ]);
     expect(
-      writeDataTransferFragment(editor, data, ContentSlice.closed(fragment!))
+      writeDataTransferFragment(editor, data, ContentSlice.closed(fragment))
     ).toContain('text/html');
     expect(data.getData('text/html')).toBe('<p>Paragraph</p>');
   });

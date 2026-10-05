@@ -393,6 +393,38 @@ export type EditorEffectHistoryReplayResult<TValue = unknown> =
   | Readonly<{ status: 'applied'; value: TValue }>
   | Readonly<{ reason: string; status: 'blocked' }>;
 
+/** Final outcome of a replay that waited on its effect owner. */
+export type HistorySettlement =
+  | Readonly<{ status: 'applied' }>
+  | Readonly<{ reason: string; status: 'blocked' }>
+  | Readonly<{ status: 'failed' }>;
+
+/** Outcome of an undo or redo that has finished. */
+export type HistoryOutcome =
+  | HistorySettlement
+  | Readonly<{ status: 'busy' | 'empty' }>
+  | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>;
+
+/**
+ * Result of one undo or redo call. A document batch has already applied when
+ * the call returns; only a batch whose effect owner is still working returns
+ * `pending`.
+ */
+export type HistoryResult =
+  | HistoryOutcome
+  | Readonly<{
+      /** Resolves once the effect owner finishes. Never rejects. */
+      settled: Promise<HistorySettlement>;
+      status: 'pending';
+    }>;
+
+export type HistoryApi = {
+  /** Replay the current redo batch as one complete editor update. */
+  redo: () => HistoryResult;
+  /** Replay the current undo batch as one complete editor update. */
+  undo: () => HistoryResult;
+};
+
 export type StateFieldInitial<TValue> = TValue | (() => TValue);
 
 /** Versioned persistence for one live editor value. */
@@ -1897,7 +1929,10 @@ export type CreateEditorOptions<
   id?: string;
   initialSelection?: Selection<EditorSelection>;
   initialValue?: InitialValue<V>;
-  /** Receives failures from observers that run after authoritative state is published. */
+  /**
+   * Receives failures from observers that run after authoritative state is
+   * published, and the error behind each history replay that settles `failed`.
+   */
   lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TPlugins>>;
   maxLength?: number;
   readOnly?: boolean;
@@ -2593,6 +2628,13 @@ export type EditorLifecycleError<TEditor = Editor> =
       key: string;
       phase: 'accept' | 'decode' | 'encode';
       source: 'data-transfer-format';
+    }>
+  | Readonly<{
+      cause: unknown;
+      direction: 'redo' | 'undo';
+      editor: TEditor;
+      phase: 'replay';
+      source: 'history';
     }>;
 
 export type EditorLifecycleErrorSink<TEditor = Editor> = (
@@ -4728,11 +4770,11 @@ const editorInternalApi: EditorInternalApiTable = {
   },
 
   replace(editor, input) {
-    replaceEditorSnapshot(editor as never, input);
+    replaceEditorSnapshot(editor, input);
   },
 
   reset(editor, input) {
-    replaceEditorSnapshot(editor as never, input);
+    replaceEditorSnapshot(editor, input);
   },
 
   removeMark(editor, key) {

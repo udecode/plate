@@ -72,7 +72,6 @@
     "packages/plitejs/test/yjs/admission-lifecycle-contract.spec.ts",
     "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx",
     "apps/www/src/registry/examples/collaboration-demo.tsx",
-    ".agents/rules/best-api/rules/schema-and-identity.md",
     "packages/plitejs/src/interfaces/editor.ts",
     "packages/plitejs/src/authored/authored.ts",
     "packages/plitejs/src/dom/plugin/with-dom.ts",

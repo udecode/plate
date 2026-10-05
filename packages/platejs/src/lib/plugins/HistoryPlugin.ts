@@ -1,7 +1,6 @@
-import type { RuntimePluginTypeProviderOf } from '../../facade';
+import type { HistoryApi, RuntimePluginTypeProviderOf } from '../../facade';
 import {
   history,
-  type HistoryApi,
   type HistoryPlugin as PliteHistoryPlugin,
   type HistoryStateApi,
   type HistoryTxApi,

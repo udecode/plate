@@ -170,7 +170,7 @@ describe('transfer', () => {
       const editor = createEditor({
         initialValue: [
           paragraph('alphabet'),
-          { type: 'quote', children: [paragraph('abc')] } as Element,
+          { type: 'quote', children: [paragraph('abc')] },
         ],
         plugins: [
           transfer(),
@@ -700,7 +700,7 @@ describe('schema-derived landing', () => {
           type: 'heading',
           role: 'title',
           children: [{ text: 'T' }],
-        } as Element,
+        },
       ],
       plugins: [
         transfer(),
@@ -732,7 +732,7 @@ describe('schema-derived landing', () => {
           type: 'heading',
           role: 'title',
           children: [{ text: 'Kept' }],
-        } as Element),
+        }),
       ],
       plugins: [
         transfer(),

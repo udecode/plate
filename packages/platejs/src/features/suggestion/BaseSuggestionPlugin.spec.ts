@@ -140,7 +140,7 @@ describe('BaseSuggestionPlugin', () => {
     expect(refresh).toHaveBeenCalledWith({ nodeKeys: [nodeKey] });
     refresh.mockClear();
 
-    expect(await editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(
       editor.plugin(DefaultAuthoredPlugin).read.change(change.id)?.status
     ).toBe('pending');

@@ -116,7 +116,7 @@ describe('editor value persistence contract', () => {
       { value: 'fractional-version', version: 1.5 },
     ]) {
       assert.throws(
-        () => field.deserialize(malformed as never),
+        () => field.deserialize(malformed),
         /Invalid state field "document.payload" envelope/
       );
     }
@@ -125,7 +125,7 @@ describe('editor value persistence contract', () => {
   it('accepts shared JSON references while rejecting cycles', () => {
     const field = defineStateField({
       key: 'document.shared-payload',
-      initial: () => null as unknown,
+      initial: () => null,
       persist: jsonPersistence,
     });
     const shared = { value: 'shared' };
@@ -148,7 +148,7 @@ describe('editor value persistence contract', () => {
   it('round-trips every canonical JSON value without narrowing', () => {
     const field = defineStateField({
       key: 'document.canonical-json',
-      initial: () => null as unknown,
+      initial: () => null,
       persist: jsonPersistence,
     });
     const jsonValue = fc
@@ -208,7 +208,7 @@ describe('editor value persistence contract', () => {
     const replace = defineEffect<unknown>({ key: 'document.pages.replace' });
     const field = defineStateField({
       key: 'document.pages',
-      initial: () => null as unknown,
+      initial: () => null,
       persist: jsonPersistence,
       reduce: (value, effect) =>
         effect.type === replace ? effect.value : value,
@@ -277,7 +277,7 @@ describe('editor value persistence contract', () => {
   it('detaches initial metadata after registered fields decode', () => {
     const field = defineStateField({
       key: 'document.initial-payload',
-      initial: () => null as unknown,
+      initial: () => null,
       persist: jsonPersistence,
     });
     const fieldValue = { label: 'stored' };
@@ -314,7 +314,7 @@ describe('editor value persistence contract', () => {
   it('accepts canonical JSON values created in another realm', () => {
     const field = defineStateField({
       key: 'document.cross-realm-json',
-      initial: () => null as unknown,
+      initial: () => null,
       persist: jsonPersistence,
     });
     const value = runInNewContext(
@@ -348,7 +348,7 @@ describe('editor value persistence contract', () => {
   it('rejects every value shape that JSON would coerce or omit', () => {
     const field = defineStateField({
       key: 'document.strict-json',
-      initial: () => null as unknown,
+      initial: () => null,
       persist: jsonPersistence,
     });
     const sparse = Array.from({ length: 1 });

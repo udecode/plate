@@ -10,6 +10,10 @@ import { TextEncoder } from 'node:util';
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
+// fumadocs' createMDX, which next.config.ts calls on import, regenerates
+// apps/www/.source unless this is set, and other test files read that output.
+process.env._FUMADOCS_MDX = '1';
+
 // Make mock and spyOn globally available to avoid needing to import from bun:test
 (globalThis as any).mock = mock;
 (globalThis as any).spyOn = spyOn;

@@ -720,6 +720,8 @@ const DRAFT_GUARDS = new WeakMap<
 const PREPARING_COMMIT = new WeakSet<Editor>();
 
 export type EditorHistoryReplayReceipt = Readonly<{
+  /** Version of the claim commit when the replay waited on an effect owner. */
+  claimVersion?: number;
   group: object;
   version: number;
 }>;
@@ -4985,7 +4987,7 @@ const getUpdateView = <
   const resetBlocks: EditorTransactionBlocksApi<V>['reset'] = (options) => {
     runNodeTargetMutation(options, (resolvedOptions) => {
       const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
-      const entries = state.nodes.blocks(resolvedOptions as never);
+      const entries = state.nodes.blocks(resolvedOptions);
 
       for (const [, path] of entries) {
         resetBlockAtPath(path, root);
@@ -5244,7 +5246,7 @@ const getUpdateView = <
               match: matchesBlock,
               mode,
               voids,
-            } as never)
+            })
           : (() => {
               const entry = state.nodes.block({ at: targetAt });
 
@@ -5349,7 +5351,7 @@ const getUpdateView = <
   >(
     (props, options) =>
       runNodeTargetMutation(options, (resolvedOptions) => {
-        setNodes(editor, props, resolvedOptions as never);
+        setNodes(editor, props, resolvedOptions);
       }),
     (command, [props, options]) =>
       command(editorCommands.setNodes, { options: options as never, props })
@@ -5365,7 +5367,7 @@ const getUpdateView = <
     }
   ) =>
     runNodeTargetMutation(options, (resolvedOptions) => {
-      const entries = state.nodes.blocks(resolvedOptions as never);
+      const entries = state.nodes.blocks(resolvedOptions);
       const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
 
       if (
@@ -5382,13 +5384,10 @@ const getUpdateView = <
       const before = getActiveDocumentChangeBuilder(editor).change;
 
       for (const [, path] of entries) {
-        setTransactionNodes(
-          props as never,
-          {
-            ...resolvedOptions,
-            at: path,
-          } as never
-        );
+        setTransactionNodes(props as never, {
+          ...resolvedOptions,
+          at: path,
+        });
       }
       return getActiveDocumentChangeBuilder(editor).change !== before;
     }) ?? false) as EditorTransactionBlocksApi<V>['set'];
@@ -5720,11 +5719,11 @@ const getUpdateView = <
       ),
       lift: (options?: { at?: NodeSelection | NodeTarget }) =>
         runNodeTargetMutation(options, (resolvedOptions) => {
-          liftNodes(editor, resolvedOptions as never);
+          liftNodes(editor, resolvedOptions);
         }),
       merge: (options?: { at?: NodeSelection | NodeTarget }) =>
         runNodeTargetMutation(options, (resolvedOptions) => {
-          mergeNodes(editor, resolvedOptions as never);
+          mergeNodes(editor, resolvedOptions);
         }),
       move: (options: { at?: NodeSelection | NodeTarget }) =>
         runNodeTargetMutation(options, (resolvedOptions) => {
@@ -5735,7 +5734,7 @@ const getUpdateView = <
       >(
         (options: { at?: NodeSelection | NodeTarget } | undefined) =>
           runNodeTargetMutation(options, (resolvedOptions) => {
-            removeNodes(editor, resolvedOptions as never);
+            removeNodes(editor, resolvedOptions);
           }),
         (command, [options]) => {
           command(editorCommands.removeNodes, { options: options as never });
@@ -5746,12 +5745,12 @@ const getUpdateView = <
       set: setTransactionNodes,
       split: (options?: { at?: NodeTarget }) =>
         runTargetMutation(options, (resolvedOptions) => {
-          splitNodes(editor, resolvedOptions as never);
+          splitNodes(editor, resolvedOptions);
         }),
       unset: unsetTransactionNodes,
       unwrap: (options?: { at?: NodeSelection | NodeTarget }) =>
         runNodeTargetMutation(options, (resolvedOptions) => {
-          unwrapNodes(editor, resolvedOptions as never);
+          unwrapNodes(editor, resolvedOptions);
         }),
       wrap: (
         element: ElementIn<V>,
@@ -5784,7 +5783,7 @@ const getUpdateView = <
 
           const before = getActiveDocumentChangeBuilder(editor).change;
 
-          wrapNodes(editor, element, resolvedOptions as never);
+          wrapNodes(editor, element, resolvedOptions);
 
           return getActiveDocumentChangeBuilder(editor).change !== before;
         }) ?? false,

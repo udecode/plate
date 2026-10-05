@@ -273,7 +273,9 @@ const emojiPickerReducer = (
     default: {
       const unsupportedType: never = type;
 
-      throw new Error(`Unsupported emoji picker action: ${unsupportedType}`);
+      throw new Error(
+        `Unsupported emoji picker action: ${String(unsupportedType)}`
+      );
     }
   }
 };

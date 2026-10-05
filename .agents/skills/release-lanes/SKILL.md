@@ -9,7 +9,6 @@ metadata:
 
 # Release Lanes
 
-
 Use this when the user asks to maintain Plate `latest` and `beta`, promote beta
 to stable, sync `main` into `next`, recover release lane drift, verify npm
 dist-tags, or run the release lane after a stable release.
@@ -23,50 +22,22 @@ for deterministic release metadata conflicts. Sync directly with a merge commit,
 repair known release metadata automatically, push `next`, then let `release.yml`
 publish beta.
 
-Execute the mode authorized by the active user request. `status` and `verify`
-are read-only. An explicit sync or promotion request authorizes its necessary
-Git/release operations; merge, public messages and unrelated cleanup still
-require the corresponding explicit authority. Do not reconfirm authority the
-user has already granted.
-
-## Plan Contract
-
-Default flow mode: one-shot execution of the authorized mode. A lane that
-needs a plan keeps it at `docs/plans/<date>-<slug>.md`.
-
-Record the authorized mode and required evidence before mutating remote
-release branches. A bounded direct sync uses its complete fast mode without a new plan. If it
-grows into sustained investigation or repair, continue under pstack's Autonomous
-run playbook and persist the remaining sync, release and read-back obligations. Close only when the requested lane state is true and
-its applicable proof is recorded.
-
 ## Lanes
 
 - `main` publishes stable packages with npm tag `latest`.
 - `next` publishes prerelease packages with npm tag `beta`.
 - `.changeset/pre.json` belongs on `next` only.
 - `main` must never publish while `.changeset/pre.json` exists.
-- Major changesets target `next` for beta before stable promotion.
-- Minor changesets target `main`, not `next`.
-- Patch changes may target `main`; use `next` patch changes only for active
-  beta-lane fixes or direct-sync beta metadata.
 
 ## Plite Release Claims
 
 Package publication runs `pnpm plite:release:packages` and does not imply broad
-Plite behavior readiness. When repository release input selects
-`PLITE_RELEASE_CLAIM_PROFILE=release-ready`, `pnpm plite:release:proof` must
-resolve the run named by `PLITE_RELEASE_PROOF_RUN_ID` from live GitHub Actions
-metadata. That run must be a successful manual
-`.github/workflows/plite-ci.yml` run in the same repository at the exact release
-SHA. The verifier requires exactly one unexpired `plite-release-proof`
-artifact, downloads it by GitHub artifact ID, verifies GitHub's SHA-256 archive
-digest, requires the manifest's run attempt to match the live run attempt, and
-reads no caller-local manifest. It also rejects tracked or untracked checkout
-changes before accepting the source claim. Missing, stale, incomplete, failed,
-tampered, dirty, or non-canonical evidence blocks that explicit claim. Do not
-infer broad readiness from source tests, historical artifacts, or package
-proof, and do not select the profile without that authoritative producer run.
+Plite behavior readiness. A `release-ready` claim needs the authoritative
+producer run that `tooling/scripts/check-plite-release-proof.mjs` verifies;
+missing, stale, incomplete, failed, tampered, dirty, or non-canonical evidence
+blocks that explicit claim. Do not infer broad readiness from source tests,
+historical artifacts, or package proof, and do not select the profile without
+that authoritative producer run.
 
 The current Plite CI workflow does not emit `plite-release-proof`, so the broad
 profile is unavailable. A future producer job must build the manifest from
@@ -77,32 +48,10 @@ The profile and run ID are repository-wide release inputs. Change them only
 when the user explicitly authorizes a broad release-ready claim. Preflight the
 producer from a clean checkout at the exact release SHA before setting them.
 The verifier reads and downloads from live `udecode/plate` Actions data and
-requires an Actions-read token even outside the release workflow:
-
-```bash
-gh run view <run-id> --json headSha,conclusion,event,workflowName,url
-PLITE_RELEASE_PROOF_GITHUB_TOKEN="$(gh auth token)" \
-  node tooling/scripts/check-plite-release-proof.mjs \
-  --profile release-ready \
-  --expected-commit <release-sha> \
-  --producer-run-id <run-id>
-```
-
-Then set both inputs before the target release begins:
-
-```bash
-gh variable set PLITE_RELEASE_CLAIM_PROFILE --body release-ready
-gh variable set PLITE_RELEASE_PROOF_RUN_ID --body <run-id>
-```
+requires an Actions-read token even outside the release workflow.
 
 After the target release finishes or fails, clear both inputs and read them
-back. Do not leave a broad claim armed for the next push:
-
-```bash
-gh variable delete PLITE_RELEASE_CLAIM_PROFILE
-gh variable delete PLITE_RELEASE_PROOF_RUN_ID
-gh variable list
-```
+back. Do not leave a broad claim armed for the next push.
 
 ## Modes
 
@@ -117,10 +66,6 @@ These are skill arguments, not subcommands of `release-branch-prs.mjs`.
 | `release-lanes promote execute` | Dispatch with `dry_run=false`; verify the generated next-to-main PR. Merge only with merge authority. |
 | `release-lanes verify` | Read release workflows, npm tags and GitHub releases. |
 | `release-lanes full <scope>` | Status, the explicitly requested promotion/merge or sync steps, then verification. No unrelated release operation is implied. |
-
-The former `sync-main-to-next` skill maps to `release-lanes sync`.
-The former `promote-beta` skill maps to `release-lanes promote`.
-Both use the executable owners below; no compatibility skill is needed.
 
 ### Status
 
@@ -148,8 +93,7 @@ Record:
 
 ### Sync Main To Next
 
-Use the complete [direct sync recipe](./references/sync.md) for this fast mode.
-It skips planning and panel review unless a planning artifact was requested.
+This fast mode is the whole direct sync recipe. It skips planning and panel review unless a planning artifact was requested.
 
 Run after a stable release, after merging a promote PR, or whenever `main` has
 commits missing from `next`.
@@ -160,7 +104,7 @@ Dry run first:
 node tooling/scripts/release-branch-prs.mjs sync-main-to-next --dry-run
 ```
 
-Then run the direct sync:
+Then run the direct sync from a clean detached worktree, never from the shared checkout. The real sync checks out `origin/next` detached in whatever checkout runs it, and it refuses local changes. Create the worktree with `git worktree add --detach ../plate-sync origin/next`, run `pnpm install` there, and run the sync from it. Remove it afterward with `git worktree remove ../plate-sync`.
 
 For an explicit `dry-run` request, stop after the dry run and report it.
 
@@ -173,7 +117,7 @@ The script must:
 - fetch `main` and `next`
 - refuse real direct sync when the checkout has local tracked or untracked
   changes
-- create a merge commit on `next`
+- create the merge commit on a detached checkout of `origin/next`, leaving local branches and the git identity unchanged
 - keep `next` beta package versions over `main` stable versions
 - keep `.changeset/pre.json` from `next`, or create beta pre mode in the same
   sync commit when `next` is out of pre mode after promotion
@@ -189,6 +133,18 @@ The script must:
 
 If the script stops on files outside known release metadata, do not guess.
 Resolve only when source ownership is obvious; otherwise stop with exact files.
+
+Then watch only the workflows created by the pushed sync commit:
+
+```bash
+gh run list --branch next --limit 10 \
+  --json databaseId,name,workflowName,headSha,status,conclusion,displayTitle,url
+gh run watch <release-run-id> --exit-status
+gh run watch <ci-run-id> --exit-status
+```
+
+- Do not re-run broad release status commands once the pushed SHA is known.
+- Do not wait on unrelated old workflow runs.
 
 ### Re-Enter Beta
 
@@ -286,19 +242,3 @@ Stop only for:
 - npm `latest` or `beta` points at an unexpected version after publication
 - branch protection rejects the required merge or push
 - local tracked or untracked changes are present before a real direct sync
-
-Continue the next in-scope lane step under existing user authority. The plan
-records that authority and its proof; it does not grant new authority.
-
-## Handoff
-
-Report:
-
-- `main` SHA and `next` SHA
-- promote PR URL or N/A
-- direct sync result and pushed commit
-- beta pre mode state
-- release run URLs
-- npm `latest` and `beta` versions
-- stale PR cleanup
-- residual risk or `none`

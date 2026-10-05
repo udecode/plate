@@ -218,10 +218,6 @@ Open work from the build, each with its owner:
 - A newline after a `%` comment in inline math becomes a space, so the rest of
   the line joins the comment; the change is reported. Owner: math Markdown
   mapping.
-- Text holding a dollar sign before a character the writer escapes, such as
-  `x$*$y`, or `x$|$y` in a cell, reads back as inline math, because the writer
-  drops that dollar's escape. It reproduces before this build. Owner: Markdown
-  runtime, in a spawned task.
 - A CR and LF split across a mark, link or empty-leaf boundary in a cell read
   back as two breaks. Owner: Markdown runtime.
 - A paragraph whose text ends in `\n\n` reads back with a literal backslash,

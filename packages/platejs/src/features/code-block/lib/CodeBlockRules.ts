@@ -44,6 +44,7 @@ export const CodeBlockRules = {
         if (start) {
           tx.selection.set(start);
         }
+        return undefined;
       },
     }),
 };

@@ -61,6 +61,7 @@ export const createBrowserUploadKit = () => {
           }, uploadDelayMs);
           const abort = () => {
             cleanup();
+            // oxlint-disable-next-line typescript/prefer-promise-reject-errors -- Reject with the caller's AbortSignal.reason, as fetch does.
             reject(signal.reason);
           };
           const cleanup = () => {

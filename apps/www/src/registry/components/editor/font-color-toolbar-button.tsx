@@ -122,7 +122,7 @@ function getColor(editor: PluginPortalEditor, plugin: ColorPlugin) {
       return editor.plugin(FontColorPlugin).read.value();
     }
     default: {
-      throw new Error(`Unsupported color plugin: ${pluginName}`);
+      throw new Error(`Unsupported color plugin: ${String(pluginName)}`);
     }
   }
 }

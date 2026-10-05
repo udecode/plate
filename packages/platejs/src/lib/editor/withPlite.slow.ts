@@ -25,6 +25,7 @@ import {
   ElementStatePlugin,
   HistoryPlugin,
   HtmlPlugin,
+  TransferPlugin,
 } from '../index';
 import { InputRulesPlugin } from '../plugins/input-rules/InputRulesPlugin';
 
@@ -34,6 +35,7 @@ const coreNames = [
   ElementStatePlugin.name,
   DOMPlugin.name,
   HistoryPlugin.name,
+  TransferPlugin.name,
   InputRulesPlugin.name,
   OverridePlugin.name,
   HtmlPlugin.name,
@@ -95,7 +97,7 @@ describe('createReactEditor', () => {
       const editor = createHeadlessEditor();
 
       expect(editor.read.schema.identity()).toMatchObject({
-        fingerprint: 'fnv1a64:4164b9dbcdccb294',
+        fingerprint: 'fnv1a64:458d1d9436ccbaa6',
         kind: 'derived',
       });
       expect(editor.read.schema.createDefaultRootChild()).toEqual({
@@ -1435,10 +1437,13 @@ describe('createReactEditor', () => {
       const editor = createHeadlessEditor({
         editor: createPliteEditor(),
         plugins: [TestBoldPlugin, HtmlPlugin],
-        initialValue: ({ editor: innerEditor2 }) =>
-          innerEditor2
-            .plugin(HtmlPlugin)
-            .api.deserialize({ element: htmlString }),
+        initialValue: ({ editor: innerEditor }) => {
+          const result = innerEditor.plugin(HtmlPlugin).api.parse(htmlString);
+
+          if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+          return result.document;
+        },
       });
 
       expect(editor.read.children()).toEqual([

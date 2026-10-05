@@ -260,7 +260,7 @@ describe('plitejs/yjs remote import contract', () => {
     const nested = defineEffect<Payload>({
       persist: {
         decode: (value) => value as Payload,
-        encode: (value) => value as unknown as EditorJsonValue,
+        encode: (value) => value,
         version: 1,
       },
       collab: 'shared',

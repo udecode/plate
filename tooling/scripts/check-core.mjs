@@ -18,7 +18,6 @@ const TOP_LEVEL_AMBIENT_VALUE_RE =
   /^declare\s+(?:const|let|var|function|class)\b/m;
 
 const packageSlugs = ['plitejs', 'platejs', 'test', 'cli'];
-export const reviewedPackageSlugs = ['platejs', 'test'];
 const entrypointPackageNames = new Set(['@platejs/test', 'platejs', 'plitejs']);
 
 const testBatchSizeOverride = process.env.CORE_TEST_BATCH_SIZE;
@@ -316,12 +315,20 @@ const main = () => {
     '--test',
     'tooling/scripts/check-package-declaration-brands.test.mjs',
   ]);
+  run('package kit export contracts', 'node', [
+    '--test',
+    'tooling/scripts/check-package-kit-exports.test.mjs',
+  ]);
+  run('package kit export audit', 'node', [
+    'tooling/scripts/check-package-kit-exports.mjs',
+  ]);
   run('Plate schema adoption audit contracts', 'node', [
     '--test',
     'tooling/scripts/check-plate-schema-adoption.test.mjs',
   ]);
   run('Plate schema adoption source audit', 'node', [
     'tooling/scripts/check-plate-schema-adoption.mjs',
+    '--check',
   ]);
   run('React Compiler contract tests', 'node', [
     '--test',

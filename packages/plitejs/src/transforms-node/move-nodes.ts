@@ -77,7 +77,7 @@ export const moveNodes = ((editor: Editor, options: NodeMoveNodesOptions) => {
       deletion: 'nearest',
     });
     const pathAnchors = Array.from(
-      getNodes(editor as never, { at, match, mode, voids }),
+      getNodes(editor, { at, match, mode, voids }),
       ([, path]) =>
         editor.anchor(path, {
           association: 'forward',

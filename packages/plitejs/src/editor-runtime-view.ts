@@ -766,7 +766,7 @@ const withViewTransaction = <V extends Value>(
     blocks: Object.freeze<EditorUpdateTransaction<V, any>['blocks']>({
       duplicate: ((options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
-          transaction.blocks.duplicate(options as never);
+          transaction.blocks.duplicate(options);
         })) as EditorUpdateTransaction<V, any>['blocks']['duplicate'],
       insertAfter: (nodes, options) =>
         runImplicitSelectionMutation(options, () =>
@@ -829,15 +829,15 @@ const withViewTransaction = <V extends Value>(
         options?: { at?: NodeTarget }
       ) =>
         runImplicitSelectionMutation(options, () => {
-          transaction.nodes.insert(nodes, options as never);
+          transaction.nodes.insert(nodes, options);
         }),
       lift: (options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
-          transaction.nodes.lift(options as never);
+          transaction.nodes.lift(options);
         }),
       merge: (options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
-          transaction.nodes.merge(options as never);
+          transaction.nodes.merge(options);
         }),
       move: (options: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
@@ -845,7 +845,7 @@ const withViewTransaction = <V extends Value>(
         }),
       remove: (options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
-          transaction.nodes.remove(options as never);
+          transaction.nodes.remove(options);
         }),
       replace: (nodes, options) =>
         runImplicitSelectionMutation({ at: options.at }, () =>
@@ -861,7 +861,7 @@ const withViewTransaction = <V extends Value>(
         })) as typeof transaction.nodes.set,
       split: (options?: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
-          transaction.nodes.split(options as never);
+          transaction.nodes.split(options);
         }),
       unset: ((
         props: string | readonly string[] | SchemaPropertyHandle,
@@ -877,14 +877,14 @@ const withViewTransaction = <V extends Value>(
         })) as typeof transaction.nodes.unset,
       unwrap: (options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
-          transaction.nodes.unwrap(options as never);
+          transaction.nodes.unwrap(options);
         }),
       wrap: (
         element: ElementIn<V>,
         options?: { at?: NodeSelection | NodeTarget }
       ) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.wrap(element, options as never)
+          transaction.nodes.wrap(element, options)
         ) ?? false,
     }),
     selection: Object.freeze(

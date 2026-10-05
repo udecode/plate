@@ -66,6 +66,7 @@ type ResolvedHistoryEntry<V extends Value> = Readonly<{
 
 type PendingHistoryReplay<V extends Value> = Readonly<{
   activation: object;
+  claimVersion: number;
   direction: 'redo' | 'undo';
   edited: boolean;
   entry: ResolvedHistoryEntry<V> | null;
@@ -609,6 +610,7 @@ export const beginHistoryReplay = <V extends Value>(
   editor: Editor<V>,
   input: Readonly<{
     activation: object;
+    claimVersion: number;
     direction: 'redo' | 'undo';
     identity: object;
     request: number;

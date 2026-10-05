@@ -3,10 +3,12 @@ id: 2026-09-30-streaming-preview-deferred-render
 date: 2026-09-30
 status: draft
 kind: behavior
-summary: "Render streamed previews from the latest draft"
-change: {"type":"source","date":"2026-09-30","commits":[]}
-release: {"status":"unresolved"}
+summary: 'Render streamed previews from the latest draft'
+change: { 'type': 'source', 'date': '2026-09-30', 'commits': [] }
+release: { 'status': 'unresolved' }
 diagnostics: []
 ---
+
 <!-- entry: {"id":"2026-09-30-ai-menu-render-streamed-previews-from-c010fece","kind":"behavior","migrationNotes":[]} -->
+
 - **`ai-menu`**, **`markdown-streaming-demo`**: Render streamed previews from the latest draft, skipping drafts that were never shown when rendering falls behind the stream. The streaming demo's static output shows its status and parse error with the parse it renders. Both previews render only when their document changes, not on every streamed update. The AI draft's purple text is styled by its container instead of a decoration on every text, its end marker is read from the last block only, the fallback end marker stays mounted so the preview is not restyled whenever it appears or disappears, and the inline draft scrolls when it resizes instead of measuring layout after every render.

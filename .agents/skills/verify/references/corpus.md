@@ -6,15 +6,7 @@ playbook directly; a contradicted claimed fix follows that playbook's
 [failed-fix recovery](../../../playbooks/bug-fix.md) without adopting this
 corpus plan or its full schema.
 
-Executable tests own durable regression behavior. Use one existing plan; this
-method adds case selection and executable completion semantics, not another
-coordinator, lifecycle, goal or publication authority. Apply the plan's scope
-and the pstack block's review and delivery rules.
-
-Baselines are evidence, not product law. A green proxy does not prove the named
-route, a clean review does not prove behavior, and a plan row is not regression
-coverage. No stage may borrow confidence from a later stage.
-
+Executable tests own durable regression behavior.
 ## Conditional Proof References
 
 Read the applicable sections of `verify`'s
@@ -22,10 +14,9 @@ Read the applicable sections of `verify`'s
 case evidence invokes their domain: runtime/model identity, subscriptions,
 render measurement, native input/focus/popup, pointer feedback, caret, geometry
 or paint. That reference owns exact assertion tags and domain proof mechanics.
-Use `verify`'s command recipes for the chosen runner. Follow the Bug fix
-playbook's [failed-fix recovery](../../../playbooks/bug-fix.md) whenever a
-claimed candidate fails.
-
+Use `verify`'s command recipes for the chosen runner, and the Bug fix playbook's
+[failed-fix recovery](../../../playbooks/bug-fix.md) when a claimed candidate
+fails.
 ## Durable Authority
 
 Use one owner for each fact:
@@ -156,12 +147,6 @@ Runtime-mode, fixture, mounted-owner and model/view identity requirements are
 conditional proof contracts in `verify`'s
 [runtime and model oracles](./regression-oracles.md#runtime-and-model-contracts).
 
-A report that names only the bad state authorizes only that forbidden state.
-It cannot select a positive replacement behavior. If multiple materially
-different outcomes satisfy the negative report and no reporter or accepted
-contract distinguishes them, mark the case `needs-oracle` and ask before
-writing the product test or patch.
-
 ## Cumulative Reporter Evidence
 
 Build one temporary evidence inventory in the active plan before writing the
@@ -169,23 +154,11 @@ oracle. Read the original report, acceptance criteria, attached recordings or
 screenshots, and every later reporter confirmation or contradiction relevant
 to the current attempt.
 
-Reporter follow-ups are deltas:
-
-- a confirmed field stays required unless the reporter or accepted product law
-  explicitly removes it;
-- a residual field joins the still-applicable base acceptance instead of
-  replacing it;
-- a narrower green test cannot discard an original visual, transient, focus,
-  selection, popup, error, or follow-up requirement;
 - mark a claim superseded only with the exact source and reason.
 
 For each required statement, record its source reference, interaction phase,
 claim, oracle anchors, executable test anchor, and current result. Use phases
 `setup`, `during-action`, `after-action`, `after-release`, and `follow-up`.
-Held-pointer carets, drag marquees, drop cursors, open menus, and intermediate
-paint must be observed during the action; a clean state after pointer release
-does not prove they appeared or stayed absent at the required time.
-
 The inventory is transient coordination, not a durable registry. Executable
 tests remain the permanent behavior authority. Route-wide measurement and plain
 UI-noun inventories follow the applicable `verify` oracle section.
@@ -194,25 +167,12 @@ UI-noun inventories follow the applicable `verify` oracle section.
 
 Translate every required inventory row into the active plan before the case's
 product implementation. For each case, fill one or more phase-specific rows for
-every observation:
-
-| Observation | Question |
-|---|---|
-| `model` | What editor state must exist, and what wrong state must not? |
-| `dom-native` | What rendered/native selection, caret, clipboard, or DOM state must exist and must not coexist? |
-| `pointer-feedback` | Which cursor and hover, active, tooltip, or drag affordance must appear or stay absent in the named pointer phase? |
-| `focus` | Which element owns focus, and which owner is forbidden? |
-| `popup` | Which toolbar, menu, overlay, or dialog is visible/hidden, including after release/close? |
-| `geometry-paint` | What layout or painted pixels must match, and what stale/duplicate paint is forbidden? |
-| `subscription-lifecycle` | Does the same keyed publication path survive add, update, remove, and teardown without stale reads, retained registrations, or post-cleanup wakes? |
-| `runtime-errors` | What error/overlay/console state is forbidden? |
-| `follow-up-input` | What next edit proves the editor remains usable, and what corruption/lost selection is forbidden? |
+every observation kind in the [regression oracles](./regression-oracles.md)
+table.
 
 Mark a row `yes` only with a phase, positive assertion, distinct forbidden
 state, executable proof layer, `test: <path>#<title>` anchor, and result. Mark
-it `no` only with a phase and an N/A reason in every proof cell. “Moved,”
-“rendered,” or “did not crash” never implies selection shape, focus, popup
-exclusion, paint, performance, transient gesture state, or follow-up usability.
+it `no` only with a phase and an N/A reason in every proof cell.
 
 ## Proof Selection
 
@@ -235,56 +195,16 @@ limitation; browser exploration alone does not justify another test.
 Viewport emulation is not raw-device proof. Manual exploration may diagnose the
 case but cannot replace its repeatable final test.
 
-## Probe Before Scale
-
-Run the smallest probe that can falsify the highest-value assumption:
-
-- one exact test;
-- one exact route readiness check;
-- one gesture plus final-state assertion;
-- one current-source import/export check.
-
-If the probe exposes a wrong command, stale server, missing export, generated
-drift, or broken host, repair that owner before adding cases.
-
-## Packet Lifecycle
-
-### Reproduce
-
-Replay the exact setup, action, expected state, browser/device scope, and
-follow-up input. Capture applicable model, DOM/native, pointer feedback, focus,
-popup, geometry/paint, and runtime errors.
-
-If the exact case does not fail, record `needs-repro` in the active plan. A
-nearby route, direct model call, or synthetic proxy is not the same case.
-
-### Classify
-
-Name the violated invariant and durable owner before patching. Route public API
-shape to `best-api`; broader Plite/Plate architecture goes through its layer
-plan.
-
-### Add Red Proof
-
-Add or expose an executable failing test before the fix whenever practical.
-The red and green commands must cover the same case and claim fields. If a
-destructive external state prevents a safe red run, record the exact limitation
-and improve the repeatable proof path before claiming fixed.
-
-Use the smallest adequate runner. If a unit test reproduces a contributing
-fault, keep the remaining native claim explicit and record its lower-layer
-limitation before adding or extending the exact journey test.
-
 ### Repair One Case
 
 The Bug fix playbook repairs one normalized executable case at a time: case ID and source,
 owner/route, setup/action/outcome, violated invariant, exact red test and result,
 allowed files, forbidden scope, required proof/stability and expected evidence.
 Record root cause, durable owner, changed files, exact red/green commands,
-ref/dirty fingerprints, stability, architecture verdict, review the pstack block's Review rule requires
-and caveat in the existing plan. `Patch delegation` is the schema name for this
-repair record; direct execution satisfies it. Delegate only when useful and
-permitted, with exclusive ownership. Do not create a worker merely to fill it.
+ref/dirty fingerprints, stability, architecture verdict, the review the pstack
+block's Review rule requires, and caveat in the existing plan. `Patch delegation`
+is the regression template's name for this repair record; the lead fills it
+directly.
 
 ### Verify And Stabilize
 
@@ -297,10 +217,6 @@ Once a requested or started package, browser, root, or CI gate fails, add it to
 rerun. Completion requires `pass: <evidence>` from that same gate on the final
 bytes. A failure called unrelated is still red; partial progress before it
 cannot authorize completion.
-
-Use repeated retry-free warm runs for flaky, native, lifecycle, compositor,
-focus, selection, DnD, or device risks. Default to five. One failure keeps the
-case open.
 
 When a case first fails during stability after an exact green run, freeze the
 product bytes and classify that failure before another implementation attempt.
@@ -318,10 +234,6 @@ proof-host failure. Revoke the run, record `repair-now`, repair the host, and
 restart the full stability count on unchanged product bytes. Do not increment
 the product attempt or trigger architecture escalation for behavior the runner
 never exercised.
-
-Each required stability repetition must execute the proof command. Cached result
-reuse does not count toward the run total; force fresh execution or disable the
-cache before recording stability.
 
 Apply the selected domain oracles through `verify`, including any bounded
 geometry settling and post-capture final-state assertion, before final receipts.
@@ -387,9 +299,6 @@ gates.
 Deferred, blocked, reverted, and quarantined selected cases do not become goal
 success through prose.
 
-A failed claimed fix interrupts this loop. Apply [failed-fix recovery](../../../playbooks/bug-fix.md)
-before another product attempt; that method also applies to a single report.
-
 ## Proof Receipts And Affected Corpus
 
 The receipt proves one command ran against unchanged named inputs. It does not
@@ -440,36 +349,6 @@ Do not persist this table as a second registry. Once a case earns permanent
 coverage, the test is the record. Live issues without tests remain issues until
 selected; they do not need a duplicate row elsewhere.
 
-## Optional Delegation
-
-When orchestrator mode is active, the master owns the plan, selection, and
-final decision. If delegated, a durable child owns one bounded case or read-only
-proof packet.
-
-- Never run parallel writers against the same source, tests, plan, build,
-  generated output, or managed host.
-- Serialize cases sharing production files, fixtures, package builds, or route
-  hosts.
-- Parallelize read-only audits only when artifacts and hosts are disjoint.
-- Reuse the same child for same-case follow-ups.
-
-## Canonical File-Plan Gates
-
-The runtime plan must use these headings:
-
-- `Start Gates:`
-- `Work Checklist:`
-- `Completion Gates:`
-- `Phase / pass table:`
-- `Verification evidence:`
-- `Reboot status:`
-- `Open risks:`
-
-Required runtime rows live in `Work Checklist` or `Completion Gates`.
-Supporting case tables cannot close the plan. Run `node .agents/pstack/plan-open.mjs <plan>` only
-after every selected executable case passes its required red/green, fresh-host,
-stability, review, methodology-delta, and started-gate rerun gates.
-
 Run `validate-regression-plan.mjs --complete` first. A structurally complete
 plan with an incomplete reporter oracle is still an open corpus run.
 
@@ -481,15 +360,6 @@ Every case ends with one:
    host, generator, or test helper.
 2. `no-change`: cite why the current method handled the case cleanly.
 3. `defer`: name the durable owner, deficiency, evidence, and revisit trigger.
-
-Repair immediately when a case exposes wrong routing, irrelevant skill loading,
-bad commands, stale servers, generated drift, missing proof layers,
-false-green gates, noisy output, redundant broad checks, or shared-host
-conflicts.
-
-When a claimed fix failed, prove the repaired gap or show that the existing
-gate rejects the escaped packet before another product attempt. A demonstrated
-`no-change` avoids redundant instruction edits, not the exact-case replay.
 
 Do not optimize away the authoritative executable test.
 
@@ -511,12 +381,6 @@ A fresh reporter contradiction invalidates every narrower green/completion
 claim and receipt immediately. Never leave `completed` or a public completed
 label authoritative while treating the contradiction as a separate optional
 follow-up.
-
-Stop a case when completed, reverted, quarantined, deferred with owner, or
-blocked with no safe move. Complete the goal locally when every selected
-executable case has a valid terminal decision, every kept case is completed,
-no required runnable case remains, methodology deltas resolve, canonical
-file-plan gates pass, and the requested time/batch policy is satisfied.
 
 Do not freeze one run's cases, refs, blockers, metrics, or conclusions into
 reusable methodology.

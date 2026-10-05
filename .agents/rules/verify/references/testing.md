@@ -20,9 +20,11 @@ Choose the smallest boundary that proves the behavior:
 
 Hard constraints:
 
-- Bun owns the fast Node lane. Use the narrowest affected runner during iteration;
-  `bun run test` is its aggregate and `pnpm test:all` is the full handoff/CI lane
-  only when required by the change or claim.
+- Bun owns the fast lane, and `node:test` runs the files that
+  `TEST_NODE_FILE_PATTERNS` in `tooling/config/test-suites.mjs` lists, such as
+  oxlint rule tests, whose `RuleTester` refuses Bun. Use the narrowest affected
+  runner during iteration; `bun run test` is the fast aggregate, and `pnpm check`
+  is the full handoff/CI gate only when the change or claim requires it.
 - Keep the default iterative suite fast.
 - A unit regression may accompany a browser regression when they guard distinct
   failure boundaries. Avoid duplicate assertions, not necessary integration proof.
@@ -33,6 +35,14 @@ Hard constraints:
   `IsAny` and `IsNever` guards. Each `@ts-expect-error` sits on the line
   immediately before the error, with a reason; an unused directive fails the
   test because the constraint is missing.
+- Type proof runs at application scale: app-scale API and core-field access stay
+  under TypeScript's instantiation-depth limit, and a standalone conversion
+  typechecks with a full application kit, not a small plugin tuple.
+- Design for testability: accept dependencies instead of creating them, give
+  each external operation its own SDK-style function, and return results
+  instead of hiding side effects.
+- Tests assert current behavior, never deleted compatibility paths or
+  incidental text-leaf grouping.
 - When a test is written first, work in vertical slices: one test, then its
   minimal implementation, then the next. Never write all the tests first, and
   do not anticipate later tests.
@@ -47,18 +57,16 @@ Hard constraints:
 - A new refusal or resource bound ships with a must-still-accept case at
   realistic scale beside its must-refuse case, because over-refusal drops
   user data.
-- Design for testability: accept dependencies instead of creating them, give
-  each external operation its own SDK-style function, and return results
-  instead of hiding side effects.
-
 ## Plate foundation Rules
 
-- Assert public behavior through editor APIs, plugin APIs, hooks, transforms, or rendered output. Do not assert private state, call order, or implementation detail when public behavior already proves the contract.
 - Bun globals come from `tooling/config/global.d.ts`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test`.
 - Use `*.spec.ts[x]` for the fast lane and `*.slow.ts[x]` for the slow lane.
 - Keep helpers package-local first. Reuse `packages/test` (`@platejs/test`) for
   shared editor/browser contracts; never import a helper from another spec file.
 - No spec should import another spec.
+- A plugin behavior family keeps one colocated `<FooPlugin>.<family>.spec.tsx`; merged helpers merge their specs into it, and no spec mirrors one public method, deleted helper or old filename.
+- Tests declare no local fixture-shape alias or cast to hide weak hyperscript typing; the test-utils owner type is repaired and exported instead.
+- Test setup is not extracted into constants, helpers or factories to work around weak inference; the source typing is fixed so inline construction infers.
 - Put compile-only type contracts in `type-tests/`, not mixed into runtime specs.
 - Titles should describe behavior semantically, not echo raw option names.
 - Prefer explicit assertions over snapshots by default.
@@ -143,8 +151,11 @@ each. A fake runtime cannot certify native browser behavior.
 - Use plain object fixtures for option, state, and pure helper tests.
 - Use a real editor object only when editor-root semantics matter. `NodeApi` and `ElementApi` do not treat plain `{ children: [...] }` objects the same way as real editors.
 - Keep inputs and outputs small.
+- The shared browser runtime error recorder `recordBrowserRuntimeErrors` uses `{ strict: true }` wherever every runtime error must fail, and it keeps listener cleanup and reset. Consolidating verification helpers preserves each caller's failure policy: strict error capture stays explicit on the existing recorder instead of copied listeners or a narrower filter.
 - Use `it.each` for small behavior matrices.
 - In this Bun + Testing Library setup, prefer render-returned queries over `screen`.
+- Focus and blur inside one `act` leave the editor's focus state stale; run them in separate `act` calls.
+- Inside `act`, MutationObserver records reach the callback in a microtask, so `takeRecords()` after `await act` comes back empty. Collect records in the callback.
 - Snapshots are allowed only when serialized text, AST, or similar output is the contract and inline assertions would be worse.
 - Whitespace-sensitive serializer outputs should prefer direct `toBe(...)` string assertions.
 - Avoid `toHaveStyle` here. Use direct style-property assertions instead.
@@ -161,8 +172,9 @@ reviewed React/fixture exceptions and upstream behavior guidance.
 Use the smallest boundary and exact owning script. Bun globals and adjacent
 specs serve the fast `*.spec.ts[x]` lane (`pnpm test`); unavoidable measured
 slow cases use `*.slow.ts[x]` (`pnpm test:slow`). Focused runs use actual
-repo-relative `./` paths or the package’s runner. `pnpm test:all` is the full
-repo lane when the claim or required gate needs it. Never infer coverage from
+repo-relative `./` paths or the package’s runner. `pnpm check test test-slow` runs
+both test lanes as gate steps, and `pnpm check` is the full CI gate when the
+claim needs it. Never infer coverage from
 an aggregate command without checking its discovered files.
 
 For coverage or cleanup waves, the full [suite audit](./testing-audit.md)
