@@ -1,5 +1,5 @@
 ---
-description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, and before claiming a fix works.
+description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, and before claiming a fix works.
 argument-hint: '[package | route | cli | collaboration | corpus | testing audit] <target>'
 ---
 

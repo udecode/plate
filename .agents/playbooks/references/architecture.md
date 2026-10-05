@@ -61,7 +61,7 @@ A hard cut removes behavior, so it runs only when the user asks to remove that f
 
 - Delete the surface and its glue: exports, commands and flags, routes, UI entrypoints, feature flags, call sites, types, state, tests of the deleted behavior, docs, examples and comments about the old code.
 - Leave no `Not implemented` throws, stub handlers, "feature removed" notices, compatibility aliases, shims, fallback parsing, migration bridges, dead enum or union members, permanently-false flag branches or unused config.
-- Before deleting, run `pstack:blast-radius` on the removed surface to find the consumers grep misses: serialized documents, registry copies, docs, generated output and downstream apps.
+- Before deleting, run `pstack:blast-radius` on the removed surface to find the consumers grep misses: serialized documents, registry copies, docs, generated output and downstream apps. An open plan, one whose `Status:` is not done, is a consumer when a step or proof command cites what the cut removes, and so is a file that changed under the run since its snapshot. Flag each on the page, per the Delivery rule.
 - Keep cutting the dead code the removal exposes, then grep again for the removed name and its obvious aliases.
 - Keep real native behavior, serialized-data and package laws intact.
 

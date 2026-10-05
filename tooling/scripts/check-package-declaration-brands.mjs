@@ -80,6 +80,15 @@ const internalPlatePluginCompilerTypeSymbols = [
   'ToPlatePluginResult',
   'ToPlatePluginAdapterResult',
   'ToConfiguredPlatePluginResult',
+  'InternalBaseEditorWithInstalledPlugins',
+];
+const knownPublicDeclarationLeaks = [
+  {
+    finding:
+      'dist/math/index.d.ts: public declaration exposes internal Plate plugin compiler type InternalBaseEditorWithInstalledPlugins',
+    owner: 'Ziad',
+    packageName: 'platejs',
+  },
 ];
 const publicPackageDeclarationEntrypointPattern =
   /^dist\/(?:(?:react|static)\/)?index\.d\.(?:c|m)?ts$/;
@@ -283,6 +292,27 @@ export function auditPrivatePlateDeclarationBrands(
   return errors;
 }
 
+export function withoutKnownDeclarationLeaks(
+  packageName,
+  errors,
+  known = knownPublicDeclarationLeaks
+) {
+  const entries = known.filter((entry) => entry.packageName === packageName);
+  const remaining = errors.filter(
+    (error) => !entries.some((entry) => entry.finding === error)
+  );
+
+  for (const entry of entries) {
+    if (!errors.includes(entry.finding)) {
+      remaining.push(
+        `${entry.finding}: no longer found; remove its known-leak entry (owner: ${entry.owner})`
+      );
+    }
+  }
+
+  return remaining;
+}
+
 export function assertNoPrivatePlateDeclarationBrands(
   packageRoot = process.cwd()
 ) {
@@ -290,23 +320,26 @@ export function assertNoPrivatePlateDeclarationBrands(
 
   if (!existsSync(distRoot)) return;
 
+  const packageJson = JSON.parse(
+    readFileSync(join(packageRoot, 'package.json'), 'utf-8')
+  );
   const files = walkDeclarationFiles(distRoot).map((path) => ({
     path: toPosixPath(relative(packageRoot, path)),
     source: readFileSync(path, 'utf-8'),
   }));
-  const errors = auditPrivatePlateDeclarationBrands(files, {
-    publicDeclarationPaths: collectPublicDeclarationPaths(packageRoot),
-  });
+  const errors = withoutKnownDeclarationLeaks(
+    packageJson.name,
+    auditPrivatePlateDeclarationBrands(files, {
+      publicDeclarationPaths: collectPublicDeclarationPaths(packageJson),
+    })
+  );
 
   if (errors.length > 0) {
     throw new Error(errors.join('\n'));
   }
 }
 
-function collectPublicDeclarationPaths(packageRoot) {
-  const packageJson = JSON.parse(
-    readFileSync(join(packageRoot, 'package.json'), 'utf-8')
-  );
+function collectPublicDeclarationPaths(packageJson) {
   const paths = new Set();
 
   const addDeclarationPath = (value) => {

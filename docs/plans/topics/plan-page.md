@@ -54,7 +54,11 @@ page-require: What other editors do
 - Needs you follows the brief. The open questions render as their own panel right after the five answers, so every answer stays on the first screen.
 - Everything else folds. Close, Main changes, Defaults, the subject's state, earlier iterations, details and review history each collapse to one summary line. A plan's Public API pairs stay open under the brief when it changes them.
 - The renderer checks the brief. An open plan that leads its page needs one, and any open plan's brief is refused when it skips or reorders a question, leaves an answer empty, or gives an answer more than 40 words. A page without a brief renders as before.
-- The header names only the leading plan's own review round.
+- The header shows the title, a flow rail and the leading plan's own review round with its seats. The rail draws the ten pstack stages, from Plan to Reflect, filled green when a stage ran, dashed grey when skipped, with an amber ring on the next one and outlined blue for the rest. It reads the decision log's stage phases, the Steps boxes and the Status; the block's Plans and trails rule and `shape.md` name the phases. Seat chips drop `codex:` and show the effort as plain text, and a missing seat says so in red.
+- Each open question is a decision memo: the question, `Why it needs you:`, the facts, each option with what happens and `Cost:`, `Why I pick it:` when one option is recommended, and `If you say go:`. The renderer refuses an open plan's question that skips a part and names it; an executed plan's question renders with the parts it has.
+- Needs you is one card with a pink border. Its head lists each decision's pick after a go badge, and the pick shows in pink with a My pick badge. The owner answers in their own words; there are no radio buttons or Copy answer line.
+- Status words, review seats, finding severities and results each take a hue from a 12-hue palette that reads at 5:1 or better in both themes. Only badges have a background; everything else is text color and borders. The brief is one card, and the type and spacing are compact.
+- An agent reads a page from its rendered file or its plan and subject files, never from the published page, and only a page whose work is still active is published again. Ellie's workflow guide lives at `docs/development/agent-workflow.md` and plate-2's at `docs/development/agent-skills.md`.
 - plate-2's feature, benchmark and regression plan templates carry a brief skeleton.
 
 ## Hard cuts and app migration
@@ -78,3 +82,7 @@ page-require: What other editors do
 - The feature and regression templates hold their brief at the end, because they use `Label:` sections and a `## Brief` above them would swallow those lines. owner: Ziad, tracked here.
 - The header could show an open-critical count once panel rows record open findings. owner: Ziad, tracked here.
 - A hand-back reply is the page link alone, and the index is never published, so a reply cannot tell the owner that a second subject also waits on them. Both runtimes' smokes flagged it on 2026-10-05. owner: Ziad, tracked here.
+- The smokes of the decision memo named rule gaps that predate it: a bare go can pick an option that spends a shared resource, which the Shared resources rule says needs a go-ahead for that target; the link-only reply contradicts plan-page's pin offer; and a Codex session's render-only hand-back contradicts the publish-before-reply rule. owner: Ziad, tracked here.
+- `askOf` keeps one `last` variable for four kinds of continuation; split it if the memo grammar grows. owner: Ziad, tracked here.
+- Decision logs written before the stage phases show some rail stages as skipped although that work ran, such as writing passes logged under `build`. owner: Ziad, tracked here.
+- The rail and the compact page are proven at 500px in headless Chrome and on desktop in both themes, not at 400px in a real phone browser. owner: Ziad, tracked here.

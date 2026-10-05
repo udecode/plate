@@ -13,147 +13,177 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
-import { SEATS, SEVERITIES, STATES, reopened, stateOf } from './status.mjs';
+import { SEATS, SEVERITIES, STATES, landed, reopened, stateOf } from './status.mjs';
 
-const PAGE_HEAD = `<link rel="preconnect" href="https://fonts.googleapis.com">
+const PAGE_HEAD = `<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 :root {
-  --ground: #f6f7f8; --paper: #ffffff; --ink: #1b2026; --muted: #5b6672; --rule: #dde2e7;
-  --accent: #2c5b8f; --accent-soft: #e6eef7; --amber: #9a5b00; --amber-soft: #fbf1df; --green: #2f6b3f; --green-soft: #e5f2e8; --red: #a3352b; --red-soft: #f8e6e3; --code: #eef1f4;
+  --ground: #ffffff; --paper: #ffffff; --ink: #15181d; --muted: #4a535e; --faint: #626b77; --rule: #e4e7eb;
+  --c-red: #c2261c; --c-orange: #b8460b; --c-amber: #946000; --c-lime: #4d7c0f; --c-green: #1f7a3d; --c-teal: #0f766e; --c-cyan: #0e7490; --c-blue: #1d5fc2; --c-indigo: #4338ca; --c-violet: #6d28d9; --c-pink: #c0156b; --c-grey: #5f6874; --badge-ink: #ffffff;
+  --cta: var(--c-pink); --cta-ink: var(--badge-ink); --accent: #2c5b8f; --accent-soft: #eaf1f8;
+  --amber: #9a5b00; --amber-soft: #fbf1df; --green: #2f6b3f; --green-soft: #e5f2e8; --red: #b3362b; --red-soft: #f8e6e3; --code: #f4f5f7;
   --kw: #8a3f9e; --str: #3d6b21; --fn: #2c5b8f; --num: #a24d12;
   --sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --ground: #121518; --paper: #1a1e23; --ink: #e4e8ec; --muted: #9aa5b1; --rule: #2c333b;
-  --accent: #8db6e6; --accent-soft: #1f2d3d; --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #232931; --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
+  --ground: #111316; --paper: #111316; --ink: #e6e8eb; --muted: #c0c7cf; --faint: #9ea7b2; --rule: #262b31;
+  --c-red: #ff8a80; --c-orange: #ffa45c; --c-amber: #f5c35b; --c-lime: #b5e05a; --c-green: #7fd99a; --c-teal: #5fd4c6; --c-cyan: #67d1ee; --c-blue: #8ab8ff; --c-indigo: #a5a8ff; --c-violet: #c4a6ff; --c-pink: #ff8cc6; --c-grey: #a7b0ba; --badge-ink: #111316;
+  --cta: var(--c-pink); --cta-ink: var(--badge-ink); --accent: #8db6e6; --accent-soft: #1f2d3d;
+  --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #1a1d21;
+  --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
 } }
 :root[data-theme="dark"] {
-  --ground: #121518; --paper: #1a1e23; --ink: #e4e8ec; --muted: #9aa5b1; --rule: #2c333b;
-  --accent: #8db6e6; --accent-soft: #1f2d3d; --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #232931; --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
+  --ground: #111316; --paper: #111316; --ink: #e6e8eb; --muted: #c0c7cf; --faint: #9ea7b2; --rule: #262b31;
+  --c-red: #ff8a80; --c-orange: #ffa45c; --c-amber: #f5c35b; --c-lime: #b5e05a; --c-green: #7fd99a; --c-teal: #5fd4c6; --c-cyan: #67d1ee; --c-blue: #8ab8ff; --c-indigo: #a5a8ff; --c-violet: #c4a6ff; --c-pink: #ff8cc6; --c-grey: #a7b0ba; --badge-ink: #111316;
+  --cta: var(--c-pink); --cta-ink: var(--badge-ink); --accent: #8db6e6; --accent-soft: #1f2d3d;
+  --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #1a1d21;
+  --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
 }
-body { background: var(--ground); color: var(--ink); font: 15px/1.6 var(--sans); padding: 0 16px; }
-main { max-width: 760px; margin: 0 auto; padding-block: 32px 64px; display: grid; gap: 28px; }
-header { display: grid; gap: 8px; }
-h1 { font-size: 1.75rem; line-height: 1.2; margin: 0; text-wrap: balance; font-weight: 700; }
-h2 { font-size: 1.15rem; margin: 0 0 8px; text-wrap: balance; }
-h3, h4, h5 { font-size: 1rem; margin: 16px 0 4px; }
-.meta { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; color: var(--muted); font-size: 0.85rem; }
-.pill { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
-.pill.done { background: var(--green-soft); color: var(--green); }
-.pill.held, .pill.planning { background: var(--amber-soft); color: var(--amber); }
-.pill.unknown { background: var(--code); color: var(--muted); }
-.panel { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; min-width: 0; }
-.panel.needs { border: 2px solid var(--amber); display: grid; gap: 14px; }
-.panel.needs > h2 { margin: 0; padding-bottom: 8px; border-bottom: 2px solid var(--amber); color: var(--amber); }
-.go-strip { display: grid; gap: 8px; padding: 12px 14px; border-radius: 8px; border: 2px solid var(--green); }
-.go-strip > strong { color: var(--green); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
-.go-strip ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.go-chip { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: baseline; background: var(--green); color: var(--paper); border-radius: 999px; padding: 4px 12px; font-weight: 600; font-size: 0.88rem; overflow-wrap: anywhere; }
-.go-chip span { font-weight: 500; }
-.go-chip.open { background: var(--amber); }
-.panel h2 { display: flex; gap: 10px; align-items: baseline; }
-.count { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
-.quiet { color: var(--muted); margin: 0; }
-.chip { font: 600 0.72rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--amber); background: var(--amber-soft); border-radius: 999px; padding: 2px 8px; }
-.how { margin: 0; color: var(--muted); font-size: 0.9rem; }
-.how strong { color: var(--ink); }
-.ask { display: grid; gap: 12px; min-width: 0; border-left: 4px solid var(--amber); padding-left: 14px; }
-.ask + .ask { border-top: 1px solid var(--rule); padding-top: 18px; }
-.ask h3 { margin: 0; font-size: 1.05rem; line-height: 1.4; text-wrap: balance; }
-.eyebrow { justify-self: start; font: 700 0.72rem var(--sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper); background: var(--accent); border-radius: 999px; padding: 2px 10px; }
-.why { margin: 0; color: var(--muted); font-size: 0.92rem; }
-.facts { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; }
-.opts { display: grid; gap: 8px; }
-.opt { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; min-width: 0; }
-.opt.picked { border: 2px solid var(--green); }
-.opt.picked .opt-head { color: var(--green); }
-.opt-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-weight: 600; overflow-wrap: anywhere; }
-.pick { font: 700 0.68rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--paper); background: var(--green); border-radius: 999px; padding: 1px 8px; }
-.kv { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 2px 10px; margin: 0; font-size: 0.9rem; }
-.kv dt { color: var(--accent); font-weight: 600; }
-.kv dt.cost { color: var(--amber); }
-.kv dd { margin: 0; min-width: 0; }
-.go { margin: 0; justify-self: start; font-size: 0.93rem; border: 1px solid var(--green); border-radius: 999px; padding: 4px 12px; }
-.go strong { color: var(--green); }
-@media (max-width: 520px) { .kv { grid-template-columns: minmax(0, 1fr); } .kv dd + dt { margin-top: 4px; } }
-.from { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
-.topics { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
-.topic { display: grid; gap: 4px; min-width: 0; }
+body { background: var(--ground); color: var(--ink); font: 14.5px/1.5 var(--sans); padding: 0 16px; margin: 0; }
+main { max-width: 800px; margin: 0 auto; padding-block: 24px 56px; display: grid; gap: 18px; }
+header { display: grid; gap: 4px; }
+h1 { font-size: 1.4rem; line-height: 1.25; margin: 0; text-wrap: balance; font-weight: 700; }
+h2 { font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; text-wrap: balance; }
+h3, h4, h5 { font-size: 0.95rem; margin: 10px 0 2px; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; color: var(--faint); font-size: 0.8rem; }
+.panel { min-width: 0; }
+.count { font-size: 0.78rem; color: var(--faint); font-weight: 500; letter-spacing: 0; text-transform: none; }
+.chip { font: 700 0.68rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cta-ink); background: var(--cta); border-radius: 999px; padding: 1px 7px; }
+.needs { display: grid; gap: 12px; border-top: 2px solid var(--cta); padding-top: 10px; }
+.needs-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.needs-head h2 { color: var(--cta); margin: 0; }
+.go-cta { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-size: 0.85rem; color: var(--muted); }
+.go-badge { font: 700 0.8rem var(--mono); color: var(--cta-ink); background: var(--cta); border-radius: 6px; padding: 1px 8px; }
+.go-cta b { color: var(--cta); font-weight: 600; }
+.ask { display: grid; gap: 6px; min-width: 0; }
+.ask + .ask { border-top: 1px solid var(--rule); padding-top: 12px; }
+.ask-q { display: flex; gap: 8px; align-items: baseline; }
+.ask-q h3 { margin: 0; font-size: 1rem; line-height: 1.35; text-wrap: balance; }
+.ask-num { flex: none; font: 700 0.75rem var(--mono); color: var(--cta-ink); background: var(--cta); border-radius: 999px; min-width: 1.6em; text-align: center; padding: 1px 0; }
+.why { margin: 0; color: var(--muted); font-size: 0.88rem; }
+.facts { margin: 0; padding-left: 1.1em; display: grid; gap: 1px; font-size: 0.88rem; color: var(--muted); }
+.opts { list-style: none; margin: 2px 0 0; padding: 0; display: grid; gap: 4px; }
+.opt { display: grid; grid-template-columns: 1.2em minmax(0, 1fr); gap: 0 4px; font-size: 0.92rem; }
+.opt::before { content: "○"; color: var(--faint); }
+.opt.picked::before { content: "●"; color: var(--cta); }
+.opt-label { font-weight: 600; }
+.opt.picked .opt-label { color: var(--cta); }
+.pick { font: 700 0.62rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cta-ink); background: var(--cta); border-radius: 999px; padding: 1px 6px; margin-left: 4px; vertical-align: 1px; }
+.cost { color: var(--faint); }
+.sep { color: var(--faint); }
+.reason { grid-column: 2; color: var(--muted); font-size: 0.86rem; }
+.go { margin: 2px 0 0; font-size: 0.9rem; }
+.go b { color: var(--cta); }
+.from { color: var(--faint); font-weight: 400; font-size: 0.8rem; }
+.topics { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.topic { display: grid; gap: 2px; min-width: 0; }
 .topic-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-weight: 600; }
 .topic-lead { margin: 0; color: var(--ink); }
-.topic-meta { margin: 0; color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
-button { font: 500 0.85rem var(--sans); color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 8px; padding: 7px 14px; cursor: pointer; }
-button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-section.plan { display: grid; gap: 4px; min-width: 0; }
-section.plan + section.plan { border-top: 1px solid var(--rule); padding-top: 20px; }
-p { margin: 0 0 10px; max-width: 68ch; }
-ul, ol { margin: 0 0 10px; padding-left: 1.4em; }
-li { margin: 3px 0; }
-li > ul, li > ol { margin: 4px 0; }
-code { font: 0.86em var(--mono); background: var(--code); padding: 1px 5px; border-radius: 4px; }
-pre { margin: 0; padding: 12px 14px; background: var(--code); border-radius: 8px; }
-pre code { padding: 0; background: none; }
-.scroll { overflow-x: auto; margin: 0 0 12px; }
-table { border-collapse: collapse; font-size: 0.9rem; min-width: 100%; }
-th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--rule); }
-th { font-weight: 600; color: var(--muted); font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
-blockquote { margin: 0 0 10px; padding-left: 12px; border-left: 3px solid var(--rule); color: var(--muted); }
+.topic-meta { margin: 0; color: var(--faint); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+button { font: 500 0.85rem var(--sans); color: var(--accent); background: none; border: 1px solid var(--rule); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--cta); outline-offset: 2px; }
+section.plan { display: grid; gap: 2px; min-width: 0; }
+section.plan + section.plan { border-top: 1px solid var(--rule); padding-top: 14px; }
+p { margin: 0 0 8px; max-width: 72ch; }
+ul, ol { margin: 0 0 8px; padding-left: 1.3em; }
+li { margin: 2px 0; }
+li > ul, li > ol { margin: 2px 0; }
+code { font: 0.86em var(--mono); padding: 0 2px; color: var(--ink); }
+pre { margin: 0; padding: 10px 12px; background: var(--code); border-radius: 6px; }
+pre code { padding: 0; }
+.scroll { overflow-x: auto; margin: 0 0 10px; }
+table { border-collapse: collapse; font-size: 0.86rem; min-width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 5px 8px; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; color: var(--faint); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; }
+blockquote { margin: 0 0 8px; padding-left: 10px; border-left: 3px solid var(--rule); color: var(--muted); }
 a { color: var(--accent); }
-.box { display: inline-block; width: 0.85em; height: 0.85em; border: 1.5px solid var(--muted); border-radius: 3px; margin-right: 8px; vertical-align: -0.08em; }
+.box { display: inline-block; width: 0.8em; height: 0.8em; border: 1.5px solid var(--faint); border-radius: 3px; margin-right: 6px; vertical-align: -0.08em; }
 .box.done { background: var(--green); border-color: var(--green); }
-.compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin: 6px 0 14px; }
-.pane { min-width: 0; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--code); }
-.pane-head { display: flex; justify-content: space-between; align-items: center; padding: 5px 12px; border-bottom: 1px solid var(--rule); }
-.tally { font: 600 0.78rem var(--mono); }
-.tally.del, .diff .del .sign { color: var(--red, #a3352b); }
+.compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin: 4px 0 12px; }
+.pane { min-width: 0; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.pane-head { display: flex; justify-content: space-between; align-items: center; padding: 3px 10px; border-bottom: 1px solid var(--rule); }
+.tally { font: 600 0.75rem var(--mono); }
+.tally.del, .diff .del .sign { color: var(--red); }
 .tally.add, .diff .add .sign { color: var(--green); }
 .pane-body { overflow-x: auto; }
-.diff { display: grid; min-width: 100%; width: max-content; padding: 6px 0; font: 0.86em/1.6 var(--mono); }
+.diff { display: grid; min-width: 100%; width: max-content; padding: 4px 0; font: 0.82em/1.55 var(--mono); }
 .diff .row { display: grid; grid-template-columns: 4ch 2.5ch 1fr; }
-.diff .row code { font: inherit; background: none; padding: 0 14px 0 0; border-radius: 0; white-space: pre; }
-.diff .num { color: var(--muted); text-align: right; padding-right: 1ch; opacity: 0.7; user-select: none; }
+.diff .row code { font: inherit; padding: 0 14px 0 0; white-space: pre; }
+.diff .num { color: var(--faint); text-align: right; padding-right: 1ch; user-select: none; }
 .diff .sign { text-align: center; user-select: none; }
-.diff .del { background: color-mix(in srgb, var(--red, #a3352b) 15%, transparent); }
-.diff .add { background: color-mix(in srgb, var(--green) 15%, transparent); }
+.diff .del { background: color-mix(in srgb, var(--red) 12%, transparent); }
+.diff .add { background: color-mix(in srgb, var(--green) 12%, transparent); }
 .diff .filler { display: none; }
-.side { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.side { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
 @media (min-width: 1280px) {
   main > :has(.compare) { --wide: min(1200px, calc(100vw - 64px)); box-sizing: border-box; width: var(--wide); margin-inline: calc((100% - var(--wide)) / 2); }
-  main > :has(.compare) > :not(.compare) { margin-inline: calc((var(--wide) - 760px) / 2); }
+  main > :has(.compare) > :not(.compare) { margin-inline: calc((var(--wide) - 800px) / 2); }
   .compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .diff .filler { display: grid; background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--rule) 45%, transparent) 6px 7px); }
 }
-.details { border-top: 1px solid var(--rule); padding-top: 14px; display: grid; gap: 20px; }
-.details > summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
-.mark { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
+.details { border-top: 1px solid var(--rule); padding-top: 10px; display: grid; gap: 14px; }
+.details > summary { cursor: pointer; color: var(--muted); font-size: 0.86rem; }
+.mark { font-size: 0.66rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; white-space: nowrap; }
 .mark.added { background: var(--green-soft); color: var(--green); }
 .mark.changed { background: var(--amber-soft); color: var(--amber); }
 .mark.removed { background: var(--red-soft); color: var(--red); }
-.mark.was { color: var(--muted); }
-tr.was td, tr.removed td:not(:first-child) { color: var(--muted); text-decoration: line-through; }
+.mark.was { color: var(--faint); }
+tr.was td, tr.removed td:not(:first-child) { color: var(--faint); text-decoration: line-through; }
 tr.was td:first-child { text-decoration: none; }
-details.current { margin-top: 6px; }
+details.current { margin-top: 4px; }
 details.current > summary, details.unchanged > summary { cursor: pointer; color: var(--muted); }
 details.unchanged > summary { font-weight: 600; }
-details.unchanged[open] > summary { margin-bottom: 8px; }
-.iteration { margin: 8px 0; }
+details.unchanged[open] > summary { margin-bottom: 6px; }
+.iteration { margin: 6px 0; }
 details.iteration > summary { cursor: pointer; }
-details.iteration[open] > summary { margin-bottom: 6px; }
+details.iteration[open] > summary { margin-bottom: 4px; }
 .hljs-keyword, .hljs-built_in, .hljs-type { color: var(--kw); }
 .hljs-string, .hljs-regexp { color: var(--str); }
 .hljs-title, .hljs-title.function_, .hljs-title.class_ { color: var(--fn); }
 .hljs-number, .hljs-literal { color: var(--num); }
 .hljs-attr, .hljs-property, .hljs-params { color: var(--ink); }
-.hljs-comment { color: var(--muted); font-style: italic; }
-.brief { display: grid; gap: 16px; }
-.qa { display: grid; gap: 4px; min-width: 0; }
-.qa > h2 { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; }
-.qa > p:last-of-type { margin-bottom: 0; }
-details.fold { border-top: 1px solid var(--rule); padding-top: 10px; }
-details.fold > summary { cursor: pointer; color: var(--muted); font-weight: 600; }
-details.fold[open] > summary { margin-bottom: 12px; }
+.hljs-comment { color: var(--faint); font-style: italic; }
+details.fold { border-top: 1px solid var(--rule); padding-top: 8px; }
+details.fold > summary { cursor: pointer; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
+details.fold[open] > summary { margin-bottom: 10px; }
+.hue-red { --hue: var(--c-red); } .hue-orange { --hue: var(--c-orange); } .hue-amber { --hue: var(--c-amber); } .hue-lime { --hue: var(--c-lime); }
+.hue-green { --hue: var(--c-green); } .hue-teal { --hue: var(--c-teal); } .hue-cyan { --hue: var(--c-cyan); } .hue-blue { --hue: var(--c-blue); }
+.hue-indigo { --hue: var(--c-indigo); } .hue-violet { --hue: var(--c-violet); } .hue-pink { --hue: var(--c-pink); } .hue-grey { --hue: var(--c-grey); }
+.pill { font: 700 0.7rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--badge-ink); background: var(--hue, var(--c-grey)); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+.badge { font: 700 0.66rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--badge-ink); background: var(--hue, var(--c-grey)); border-radius: 999px; padding: 1px 7px; white-space: nowrap; }
+.tone { color: var(--hue); font-weight: 600; }
+.seats { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.seat { display: inline-flex; gap: 3px; align-items: center; border: 1.5px solid var(--hue); color: var(--hue); border-radius: 999px; padding: 0 8px; font: 600 0.74rem var(--mono); }
+.seat.missing { --hue: var(--c-red); }
+.round-tag { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.card { border: 1px solid var(--rule); border-top: 3px solid var(--hue, var(--rule)); border-radius: 10px; padding: 10px 14px 12px; min-width: 0; }
+.brief.card { display: grid; gap: 0; padding: 2px 14px; border-top: 1px solid var(--rule); }
+.brief .qa { display: grid; grid-template-columns: 12em minmax(0, 1fr); gap: 0 14px; padding: 7px 0; min-width: 0; }
+.brief .qa > p { margin: 0; }
+.brief .qa + .qa { border-top: 1px solid var(--rule); }
+.brief .qa > h2 { color: var(--hue); font-size: 0.7rem; margin: 2px 0 0; }
+.brief .qa > :not(h2) { grid-column: 2; }
+@media (max-width: 620px) { .brief .qa { grid-template-columns: minmax(0, 1fr); } .brief .qa > :not(h2) { grid-column: 1; } }
+.needs.card { border: 2px solid var(--cta); border-top-width: 4px; padding: 12px 16px 14px; }
+.findings { list-style: none; padding: 0; display: grid; gap: 4px; }
+.findings li { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+
+.effort { color: var(--muted); font: 500 0.7rem var(--sans); margin-left: 2px; }
+.status-rest { color: var(--muted); font-size: 0.82rem; }
+.flow { margin: 8px 0 4px; }
+.fs { --hue: var(--c-blue); }
+.fs.done { --hue: var(--c-green); } .fs.now { --hue: var(--c-amber); } .fs.blocked { --hue: var(--c-red); } .fs.skipped { --hue: var(--c-grey); }
+.flow-rail { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 4px; align-items: center; }
+.flow-rail .arrow { color: var(--faint); font-size: 0.8rem; }
+.fs { display: inline-flex; gap: 5px; align-items: baseline; border: 1.5px solid var(--hue); color: var(--hue); border-radius: 999px; padding: 2px 10px; font: 600 0.76rem var(--sans); white-space: nowrap; }
+.fs.done { color: var(--badge-ink); background: var(--hue); }
+.fs.skipped { border-style: dashed; opacity: 0.75; font-weight: 500; }
+.fs.now { box-shadow: 0 0 0 3px color-mix(in srgb, var(--hue) 25%, transparent); }
+.fs-meta { font: 700 0.7rem var(--mono); opacity: 0.9; }
+.tool { font: 500 0.68rem var(--mono); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; opacity: 0.9; }
 </style>`;
 
 // The owner reads the top of the page and rarely opens the details.
@@ -846,35 +876,151 @@ function assertAsks(plan, where) {
   }
 }
 
+const WORD_HUES = { waiting: 'orange', awaiting: 'orange', review: 'orange', reviewing: 'orange', reopened: 'pink', rework: 'pink', partial: 'amber' };
+const STATE_HUES = { active: 'violet', held: 'red', planning: 'blue' };
+
+function statusLead(status) {
+  const text = status.trim();
+  const lead = text.match(/^\W*((?:in\s+)?[a-z][a-z-]*)/i)?.[1] ?? '';
+  const state = stateOf(text);
+  const word = lead.toLowerCase().replace(/^in\s+/, '').replaceAll('-', '');
+  const hue = state === 'done' ? (landed(text) ? 'green' : 'grey') : (WORD_HUES[word] ?? STATE_HUES[state] ?? 'grey');
+  const rest = text.slice(text.indexOf(lead) + lead.length).replace(/^[\s,:;.]+/, '');
+  return { lead, state, hue, rest };
+}
+
+function statusHtml(status, limit = Infinity) {
+  const { lead, hue, rest } = statusLead(status);
+  if (!lead) return `<span class="pill hue-grey">${escapeHtml(status.trim() || 'no status')}</span>`;
+  const shown = rest.length > limit ? `${rest.slice(0, limit).replace(/\s+\S*$/u, '')}…` : rest;
+  return `<span class="pill hue-${hue}">${escapeHtml(lead)}</span>${shown ? ` <span class="status-rest">${escapeHtml(shown)}</span>` : ''}`;
+}
+
+const modelHue = (name) => (/opus|claude|sonnet|haiku|fable/i.test(name) ? 'orange' : /astra/i.test(name) ? 'teal' : /sol\b/i.test(name) ? 'cyan' : /gpt|codex/i.test(name) ? 'blue' : 'indigo');
+
+function seatsHtml(seats) {
+  return `<span class="seats">${seats
+    .split(/,\s*/)
+    .filter(Boolean)
+    .map((seat) => {
+      const missing = /\bmissing\b/i.test(seat);
+      const effort = seat.match(/@(\w+)/)?.[1];
+      const name = seat.replace(/@\w+/, '').replace(/\bmissing\b/i, '').replace(/^codex:/i, '').trim();
+      return `<span class="seat hue-${modelHue(name)}${missing ? ' missing' : ''}">${escapeHtml(name)}${effort ? ` <span class="effort">${escapeHtml(effort)}</span>` : ''}${missing ? ' <span class="effort">missing</span>' : ''}</span>`;
+    })
+    .join('')}</span>`;
+}
+
+const roundTagHtml = (round, seats, suffix = '') => `<span class="round-tag"><span class="badge hue-indigo">Review round ${round}</span>${suffix}${seats ? seatsHtml(seats) : ''}</span>`;
+
+const SEVERITY_HUES = { critical: 'red', warning: 'amber', nit: 'blue' };
+const RESULT_HUES = { applied: 'green', fixed: 'green', verified: 'green', proven: 'green', kept: 'green', dismissed: 'grey', skipped: 'grey', superseded: 'grey', recorded: 'teal', decided: 'teal', corrected: 'teal', reverted: 'pink', deferred: 'amber', partial: 'amber', inconclusive: 'amber', open: 'red', gap: 'red', blocked: 'red' };
+
+function findingHtml(decision, result) {
+  const severity = decision.match(/^(\w+)/)?.[1];
+  const hue = SEVERITY_HUES[severity];
+  const body = hue ? `<span class="badge hue-${hue}">${escapeHtml(severity)}</span> ${inline(decision.slice(severity.length).trim())}` : inline(decision);
+  const word = result.match(/^(\w+)/)?.[1]?.toLowerCase();
+  const resultHtml = result ? ` <span class="tone hue-${RESULT_HUES[word] ?? 'grey'}">${inline(result)}</span>` : '';
+  return `<li>${body}${resultHtml}</li>`;
+}
+
+const BRIEF_HUES = ['blue', 'violet', 'pink', 'green', 'red'];
+
+const stepChecks = (plan) => (sectionNamed(plan, 'Steps')?.lines ?? []).flatMap((line) => line.match(/^\s*(?:\d+\.\s+)?[-*+]\s+\[([ xX])\]/)?.slice(1) ?? []).map((mark) => mark !== ' ');
+
+function logRowsOf(planPath) {
+  const log = planPath.replace(/\.md$/, '.decisions.tsv');
+  if (!existsSync(log)) return [];
+  return readFileSync(log, 'utf-8')
+    .split('\n')
+    .slice(1)
+    .filter(Boolean)
+    .map((line) => {
+      const [, phase = '', decision = '', , , result = ''] = line.split('\t');
+      return { phase, decision, result };
+    });
+}
+
+const STAGE_PHASES = {
+  Design: ['architect', 'prototype', 'arena', 'how', 'why', 'design'],
+  Review: ['panel', 'interrogate'],
+  Build: ['build'],
+  Writing: ['writing'],
+  Proof: ['proof', 'verify'],
+  Ship: ['ship', 'delivery'],
+  Reflect: ['reflect', 'lesson'],
+};
+const WRITING_PASSES = ['deslop', 'no-comments', 'unslop'];
+
+function flowOf(entry, status) {
+  const rows = logRowsOf(entry.path);
+  const of = (stage) => rows.filter((row) => STAGE_PHASES[stage].includes(row.phase));
+  const firstBuild = rows.findIndex((row) => STAGE_PHASES.Build.includes(row.phase));
+  const panelRounds = (beforeBuild) => {
+    const half = rows.filter((row, index) => STAGE_PHASES.Review.includes(row.phase) && (firstBuild < 0 || index < firstBuild) === beforeBuild);
+    return half.filter((row) => SEATS.test(row.decision)).length || (half.length ? 1 : 0);
+  };
+  const handOffPhases = new Set(rows.filter((row) => /^review/.test(row.phase)).map((row) => row.phase));
+  const trailReviews = rows.filter((row) => row.phase === 'trail' && /trail review/i.test(row.decision)).length;
+  const steps = stepChecks(entry.plan);
+  const stepsDone = steps.filter(Boolean).length;
+  const design = [...new Set(of('Design').map((row) => row.phase))];
+  const passes = WRITING_PASSES.filter((pass) => of('Writing').some((row) => row.decision.toLowerCase().includes(pass)));
+  const { lead, state, hue } = statusLead(status);
+  const ended = state === 'done';
+  const stages = [
+    { label: 'Plan', ran: true },
+    { label: 'Design', ran: design.length > 0, tools: design.filter((phase) => phase !== 'design') },
+    { label: 'Plan review', rounds: panelRounds(true) },
+    { label: 'Build', ran: firstBuild >= 0 || stepsDone > 0, meta: steps.length ? `${stepsDone}/${steps.length}` : '' },
+    { label: 'Writing', ran: of('Writing').length > 0, tools: passes },
+    { label: 'Code review', rounds: panelRounds(false) },
+    { label: 'Proof', ran: of('Proof').length > 0 },
+    { label: 'Log review', rounds: Math.max(handOffPhases.size, trailReviews) },
+    { label: 'Ship', ran: ended || of('Ship').length > 0 },
+    { label: 'Reflect', ran: of('Reflect').length > 0 },
+  ].map((stage) => ({ ...stage, ran: stage.ran ?? stage.rounds > 0 }));
+  const furthest = stages.findLastIndex((stage) => stage.ran);
+  for (const [index, stage] of stages.entries()) stage.state = stage.ran ? 'done' : index < furthest ? 'skipped' : 'left';
+  if (!ended) {
+    const at = stages.findIndex((stage) => stage.state === 'left');
+    if (hue === 'orange' || state === 'held') stages.splice(at < 0 ? stages.length : at, 0, { label: `${lead[0].toUpperCase()}${lead.slice(1)}`, state: state === 'held' ? 'blocked' : 'now' });
+    else if (at >= 0) stages[at].state = 'now';
+  }
+  return stages;
+}
+
+const stageMeta = (stage) => [stage.rounds > 1 ? `×${stage.rounds}` : '', stage.meta ?? ''].filter(Boolean).join(' ');
+const toolChips = (stage) => (stage.tools ?? []).map((tool) => `<span class="tool">${escapeHtml(tool)}</span>`).join('');
+
+function flowRailHtml(stages) {
+  return `<ol class="flow-rail">${stages
+    .map((stage) => `<li class="fs ${stage.state}">${escapeHtml(stage.label)}${stageMeta(stage) ? `<span class="fs-meta">${escapeHtml(stageMeta(stage))}</span>` : ''}${toolChips(stage)}</li>`)
+    .join('<li class="arrow" aria-hidden="true">→</li>')}</ol>`;
+}
+
+const flowHtml = (entry, status) => `<div class="flow">${flowRailHtml(flowOf(entry, status))}</div>`;
+
 function askHtml(ask, index, count) {
-  const eyebrow = `<span class="eyebrow">Decision ${index + 1} of ${count}: ${inline(ask.header)}</span>`;
-  if (ask.options.length === 0) return `<article class="ask">${eyebrow}${blocksHtml(ask.lines)}${ask.from ? `<p class="from">from ${inline(ask.from)}</p>` : ''}</article>`;
+  const head = `<div class="ask-q"><span class="ask-num">${index + 1}</span><h3>${ask.options.length ? inline(ask.question.join(' ')) : inline(ask.header)}${ask.from ? ` <span class="from">from ${inline(ask.from)}</span>` : ''}</h3></div>`;
+  if (ask.options.length === 0) return `<article class="ask">${head}${blocksHtml(ask.lines)}</article>`;
   const ordered = [...ask.options.filter((option) => option.recommended), ...ask.options.filter((option) => !option.recommended)];
   const options = ordered
-    .map((option) => {
-      const rows = [
-        option.does && `<dt>What happens</dt><dd>${inline(option.does)}</dd>`,
-        option.cost && `<dt class="cost">Cost</dt><dd>${inline(option.cost)}</dd>`,
-        option.recommended && ask.reason && `<dt>Why I pick it</dt><dd>${inline(ask.reason)}</dd>`,
-      ].filter(Boolean);
-      return `<div class="opt${option.recommended ? ' picked' : ''}"><div class="opt-head">${inline(option.label)}${option.recommended ? '<span class="pick">My pick</span>' : ''}</div>${rows.length ? `<dl class="kv">${rows.join('')}</dl>` : ''}</div>`;
-    })
+    .map((option) => `<li class="opt${option.recommended ? ' picked' : ''}"><span><span class="opt-label">${inline(option.label)}</span>${option.recommended ? '<span class="pick">My pick</span>' : ''}${option.does ? ` <span class="sep">·</span> ${inline(option.does)}` : ''}${option.cost ? ` <span class="cost">Cost: ${inline(option.cost)}</span>` : ''}</span>${option.recommended && ask.reason ? `<span class="reason">Why: ${inline(ask.reason)}</span>` : ''}</li>`)
     .join('');
-  return `<article class="ask">${eyebrow}<h3>${inline(ask.question.join(' '))}${ask.from ? ` <span class="from">from ${inline(ask.from)}</span>` : ''}</h3>${ask.why ? `<p class="why">${inline(ask.why)}</p>` : ''}${ask.facts.length ? `<ul class="facts">${ask.facts.map((fact) => `<li>${inline(fact)}</li>`).join('')}</ul>` : ''}${options ? `<div class="opts">${options}</div>` : ''}${blocksHtml(ask.rest)}${ask.go ? `<p class="go"><strong>If you say go:</strong> ${inline(ask.go)}</p>` : ''}</article>`;
+  return `<article class="ask">${head}${ask.why ? `<p class="why">${inline(ask.why)}</p>` : ''}${ask.facts.length ? `<ul class="facts">${ask.facts.map((fact) => `<li>${inline(fact)}</li>`).join('')}</ul>` : ''}<ol class="opts">${options}</ol>${blocksHtml(ask.rest)}${ask.go ? `<p class="go"><b>go</b> ${inline(ask.go)}</p>` : ''}</article>`;
 }
 
 function needsSection(lines, older = []) {
   const { intro, groups } = questionGroups(lines, older);
-  if (groups.length === 0) return `<section class="panel needs"><h2>Needs you</h2>${blocksHtml([...lines, ...older.flatMap((source) => source.lines)])}</section>`;
+  if (groups.length === 0) return `<section class="needs card"><div class="needs-head"><h2>Needs you</h2></div>${blocksHtml([...lines, ...older.flatMap((source) => source.lines)])}</section>`;
   const asks = groups.map(askOf);
-  const picks = asks.some((ask) => ask.options.some((option) => option.recommended));
-  const how = `<p class="how">Answer in your own words.${picks ? ' <strong>go</strong> takes my pick on every decision that has one.' : ''}</p>`;
-  const chips = asks.map((ask, index) => {
+  const picks = asks.map((ask, index) => {
     const pick = ask.options.find((option) => option.recommended);
-    return `<li class="go-chip${pick ? '' : ' open'}"><span>${index + 1}. ${inline(ask.header)}</span>${pick ? inline(pick.label) : 'needs your answer'}</li>`;
+    return pick ? `<span>${index + 1}. <b>${inline(pick.label)}</b></span>` : `<span>${index + 1}. your answer</span>`;
   });
-  const strip = `<div class="go-strip"><strong>Say go and I will</strong><ol>${chips.join('')}</ol></div>`;
-  return `<section class="panel needs"><h2>Needs you <span class="count">${asks.length} ${asks.length === 1 ? 'decision' : 'decisions'}</span></h2>${strip}${how}${blocksHtml(intro)}${asks.map((ask, index) => askHtml(ask, index, asks.length)).join('')}</section>`;
+  return `<section class="needs card"><div class="needs-head"><h2>Needs you</h2><span class="count">${asks.length} ${asks.length === 1 ? 'decision' : 'decisions'}</span><span class="go-cta"><span class="go-badge">go</span>takes ${picks.join(' ')}</span></div>${blocksHtml(intro)}${asks.map((ask, index) => askHtml(ask, index, asks.length)).join('')}</section>`;
 }
 
 function parsePlan(source) {
@@ -926,20 +1072,14 @@ const severity = (row) => {
 };
 
 function reviewRows(planPath) {
-  const log = planPath.replace(/\.md$/, '.decisions.tsv');
-  if (!existsSync(log)) return [];
   let round = 0;
-  return readFileSync(log, 'utf-8')
-    .split('\n')
-    .slice(1)
-    .map((row) => row.split('\t'))
-    .flatMap(([, phase = '', decision = '', , , result = '']) => {
-      if (phase === 'panel') {
-        if (SEATS.test(decision)) round += 1;
-        return [{ kind: 'panel', round, decision, result }];
-      }
-      return /^review/iu.test(phase) ? [{ kind: 'hand-off', decision, result }] : [];
-    });
+  return logRowsOf(planPath).flatMap(({ phase, decision, result }) => {
+    if (phase === 'panel') {
+      if (SEATS.test(decision)) round += 1;
+      return [{ kind: 'panel', round, decision, result }];
+    }
+    return /^review/iu.test(phase) ? [{ kind: 'hand-off', decision, result }] : [];
+  });
 }
 
 function reviewRounds(rows) {
@@ -1076,7 +1216,7 @@ function page(planPath, { folded = false } = {}) {
         (/^main changes$/i.test(section.title) ||
           (open && /^(open questions|defaults)$/i.test(section.title)))
     );
-    const head = `<span class="pill ${statusTone(iterationStatus)}">${escapeHtml(iterationStatus)}</span> <strong>${inline(iteration.title || basename(path, '.md'))}</strong> <code>${escapeHtml(relative(root, path))}</code>`;
+    const head = `${statusHtml(iterationStatus)} <strong>${inline(iteration.title || basename(path, '.md'))}</strong> <code>${escapeHtml(relative(root, path))}</code>`;
     const body =
       path === focusEntry?.path
         ? ''
@@ -1108,14 +1248,14 @@ function page(planPath, { folded = false } = {}) {
   const latest = tagged?.rounds.findLast((entry) => entry.kind === 'panel');
   const taggedTitle = doc !== plan && tagged && tagged.entry.path !== pageEntry?.path ? ` for ${inline(tagged.entry.plan.title || basename(tagged.entry.path, '.md'))}` : '';
   const reviewTag = latest
-    ? `<span>Review round <strong>${latest.round}</strong>${taggedTitle}${latest.seats ? ` <code>${escapeHtml(latest.seats)}</code>` : ''}</span>`
+    ? roundTagHtml(latest.round, latest.seats, taggedTitle)
     : '';
   const roundsHtml = (rounds, heading) =>
     rounds
       .map(
         (entry) =>
-          `<${heading}>${entry.kind === 'panel' ? `Round ${entry.round}` : 'Hand-off review'}${entry.seats ? ` <span class="count">${escapeHtml(entry.seats)}</span>` : ''}</${heading}><ul>${entry.findings
-            .map((row) => `<li>${inline(row.decision)}${row.result ? ` <span class="count">${inline(row.result)}</span>` : ''}</li>`)
+          `<${heading}>${entry.kind === 'panel' ? `Round ${entry.round}` : 'Hand-off review'}${entry.seats ? ` ${seatsHtml(entry.seats)}` : ''}</${heading}><ul class="findings">${entry.findings
+            .map((row) => findingHtml(row.decision, row.result ?? ''))
             .join('')}</ul>`
       )
       .join('');
@@ -1139,9 +1279,9 @@ function page(planPath, { folded = false } = {}) {
   const brief = briefOf(leader.plan);
   const briefMain = () => {
     const round = reviewed.find(({ entry }) => entry.path === leader.path)?.rounds.findLast((entry) => entry.kind === 'panel');
-    const roundTag = round ? `<span>Review round <strong>${round.round}</strong>${round.seats ? ` <code>${escapeHtml(round.seats)}</code>` : ''}</span>` : '';
+    const roundTag = round ? roundTagHtml(round.round, round.seats) : '';
     const asking = needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : '';
-    const answers = brief.map((answer) => `<div class="qa"><h2>${inline(answer.question)}</h2>${blocksHtml(answer.lines)}</div>`).join('');
+    const answers = brief.map((answer, index) => `<div class="qa hue-${BRIEF_HUES[index] ?? 'grey'}"><h2>${inline(answer.question)}</h2>${blocksHtml(answer.lines)}</div>`).join('');
     const fold = (label, body) => (body.trim() ? `<details class="fold"><summary>${label}</summary>${body}</details>` : '');
     const count = (label, n) => `${label} <span class="count">${n}</span>`;
     const leadTitles = delta ? ordered('lead') : byRole('lead').map((section) => section.title);
@@ -1154,9 +1294,11 @@ function page(planPath, { folded = false } = {}) {
     return `<main>
   <header>
     <h1>${title}</h1>
-    <div class="meta"><span class="pill ${statusTone(shownStatus)}">${escapeHtml(shownStatus)}</span>${delta ? `<span>Plan <strong>${inline(focus.title || basename(focusEntry.path, '.md'))}</strong></span>` : ''}${roundTag}<span>Updated ${updated} UTC</span></div>
+    ${flowHtml(pageEntry ?? { path: planPath, plan }, shownStatus)}
+    <div class="meta">${delta ? `<span>Plan <strong>${inline(focus.title || basename(focusEntry.path, '.md'))}</strong></span>` : ''}${roundTag}<span>Updated ${updated} UTC</span></div>
   </header>
-  <section class="panel brief">${answers}</section>${asking}
+  <section class="brief card">${answers}</section>
+  ${asking}
   ${apiChanged ? changeHtml('api') : ''}
   <div>
   ${fold('Close', close ? blocksHtml(close.lines) : '')}
@@ -1178,7 +1320,8 @@ ${PAGE_HEAD}
 ${brief ? briefMain() : `<main>
   <header>
     <h1>${title}</h1>
-    <div class="meta"><span class="pill ${statusTone(shownStatus)}">${escapeHtml(shownStatus)}</span><code>${escapeHtml(where)}</code>${delta ? `<span>Plan <strong>${inline(focus.title || basename(focusEntry.path, '.md'))}</strong> <code>${escapeHtml(relative(root, focusEntry.path))}</code></span>` : ''}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${reviewTag}<span>Updated ${updated} UTC</span></div>
+    ${flowHtml(pageEntry ?? { path: planPath, plan }, shownStatus)}
+    <div class="meta"><code>${escapeHtml(where)}</code>${delta ? `<span>Plan <strong>${inline(focus.title || basename(focusEntry.path, '.md'))}</strong> <code>${escapeHtml(relative(root, focusEntry.path))}</code></span>` : ''}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
   ${needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : ''}${close ? sectionHtml(close, 'panel') : ''}
   ${delta && focus.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(focus.lead)}</section>` : ''}
@@ -1281,7 +1424,7 @@ function topicIndex(root) {
   const rowHtml = (row) => {
     const name = row.local ? `<a href="${escapeHtml(row.local)}">${inline(row.title)}</a>` : `<span>${inline(row.title)}</span>`;
     const state = row.status
-      ? `<span class="pill ${statusTone(row.status)}">${escapeHtml(row.status.length > 90 ? `${row.status.slice(0, 90).replace(/\s+\S*$/u, '')}…` : row.status)}</span>`
+      ? statusHtml(row.status, 90)
       : `<span class="pill done">current</span>`;
     const meta = [
       `${row.count} iteration${row.count === 1 ? '' : 's'}`,

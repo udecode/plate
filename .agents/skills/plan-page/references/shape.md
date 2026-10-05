@@ -66,16 +66,31 @@ A subject file never holds a `before` or `after` fence.
 
 ## Page order
 
+Every page opens with a header: the title, the flow rail and the latest review round with its seats. The rail shows the stages Plan, Design, Plan review, Build, Writing, Code review, Proof, Log review, Ship and Reflect. A stage that ran is a filled green badge, a skipped one is dashed grey, the next one has an amber ring and the rest are outlined blue. A `Status:` that waits or is held adds its own word, such as Waiting, before the stages left. Review stages count their rounds, Build counts its checked steps, and Design and Writing name the tools that ran. Phases outside this table never move the rail, so log each stage's rows under its phase:
+
+| Stage | Ran when |
+| --- | --- |
+| Plan | always |
+| Design | the log has an `architect`, `prototype`, `arena`, `how`, `why` or `design` row |
+| Plan review | the log has a `panel` or `interrogate` row before the first `build` row; each `seats` row is a round |
+| Build | the log has a `build` row, or Steps has a checked box |
+| Writing | the log has a `writing` row; the stage names the `deslop`, `no-comments` and `unslop` passes those rows mention |
+| Code review | the log has a `panel` or `interrogate` row after the first `build` row |
+| Proof | the log has a `proof` or `verify` row |
+| Log review | the log has a hand-off reviewer's row, whose phase starts with `review`, or a `trail` row whose decision names the trail review |
+| Ship | the log has a `ship` or `delivery` row, or `Status:` ends the plan |
+| Reflect | the log has a `reflect` or `lesson` row |
+
 When the leading plan has a brief, the page shows:
 
-1. The header: the leading plan's state, its title and its own latest review round.
-2. The brief, then Needs you, so all five answers stay on the first screen.
+1. The header.
+2. The brief in one card, then Needs you, so all five answers stay on the first screen.
 3. Public API, when the leading plan changes it.
 4. Everything else, each folded to one line: Close, an unchanged Public API, the plan's lead paragraph, the `page-lead` sections, Main changes, Picked for you, the subject's current state, iterations or history, details and review history.
 
 Without a brief, the page shows:
 
-1. Needs you, from the Open questions of every iteration, the leader's first; an older iteration's question names its plan. A green strip on top lists each decision's pick, so the owner can say go without reading further. Each question then renders as a numbered decision card: the question, why it needs you, the facts, each option with what happens and what it costs, the pick's title in green with its reason, and what go does. Only badges, such as the pick chips, the decision number and the My pick badge, have a background; everything else uses text color and borders. The section says the owner answers in their own words and that go takes the pick on every decision that has one. An executed plan's older question renders with the parts it has.
+1. Needs you, from the Open questions of every iteration, the leader's first; an older iteration's question names its plan. Its head lists each decision's pick after a go badge, because go takes the pick on every decision that has one, so the owner can say go without reading further. Otherwise the owner answers in their own words. Each question then renders as a numbered decision: the question, why it needs you, the facts, each option with what happens and what it costs, the pick in the call-to-action color with its reason, and what go does. Only badges, such as the go badge, the decision number, the My pick badge and a finished rail stage, have a background; everything else uses text color and borders. An executed plan's older question renders with the parts it has.
 2. Close, from the leading iteration's or the one-off plan's `## Close`.
 3. The leading plan's lead paragraph.
 4. Public API, then the `page-lead` sections, then Main changes.

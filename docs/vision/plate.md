@@ -349,17 +349,18 @@ Current priorities:
   a generic checkpoint, live record-replacement API or separate comment undo
   stack needs an independent supported job.
 - Successful local thread creation joins the one document-history order through
-  a session-only effect after its durable commit, and user records and the
-  current reply identity live in the ordinary plugin store. An authoritative
-  full-document import prepares its document, comments, users and required
-  plugin state in a detached candidate editor and swaps the editor owner through
-  a keyed remount; candidate failure preserves the mounted editor, and document,
-  comment and user replacement is never sequenced on the mounted editor. Keeping
-  the editor instance instead needs one owner that publishes or discards every
-  affected runtime resource as a unit, and without that owner the import is
-  rejected before mutation. Replaying that history entry blocks on replies,
-  canonical divergence or rejection, and settles failed when the owner throws,
-  without advancing to the next document change. A successful authoritative
+  a session-only effect after its durable commit. Replay returns a pending
+  history result while the same mutation owner finishes. Replaying that history
+  entry blocks on replies, canonical divergence or rejection, and settles failed
+  when the owner throws, without advancing to the next document change. User
+  records and the current reply identity live in the ordinary plugin store. An
+  authoritative full-document import prepares its document, comments, users and
+  required plugin state in a detached candidate editor and swaps the editor
+  owner through a keyed remount; candidate failure preserves the mounted editor,
+  and document, comment and user replacement is never sequenced on the mounted
+  editor. Keeping the editor instance instead needs one owner that publishes or
+  discards every affected runtime resource as a unit, and without that owner the
+  import is rejected before mutation. A successful authoritative
   import bypasses ordinary mutation and history, clears transient composer
   state, fences late work from the retired snapshot, and never exposes
   per-thread replacement.

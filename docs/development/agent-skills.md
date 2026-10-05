@@ -106,7 +106,7 @@ owns release mode details.
 
 ## Read a page and answer it
 
-Each stop that hands work back replies with a page link. The page opens with five short answers: what was found, what will change, what the agent needs from you, what happens if you say go, and what could go wrong. Under them, Needs you lists each decision as a short memo: the question, why it needs you, the facts, each option with what happens and what it costs, the agent's pick and its reason, and what go does.
+Each stop that hands work back replies with a page link. The page opens with a rail of the work's stages, from Plan to Reflect, then five short answers labeled Found, Changes, Your call, On go and Risks. Under them, Needs you lists each decision as a short memo: the question, why it needs you, one or two facts, each option with what happens and what it costs, and the agent's pick with its reason. Each part runs at most 15 words, in plain words with no file paths or commands.
 
 Answer in your own words in the chat. "go" takes the pick on every decision that has one and authorizes nothing else.
 

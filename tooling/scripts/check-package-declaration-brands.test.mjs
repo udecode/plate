@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { auditPrivatePlateDeclarationBrands } from './check-package-declaration-brands.mjs';
+import {
+  auditPrivatePlateDeclarationBrands,
+  withoutKnownDeclarationLeaks,
+} from './check-package-declaration-brands.mjs';
 
 const audit = (source) =>
   auditPrivatePlateDeclarationBrands([{ path: 'dist/index.d.ts', source }]);
@@ -307,4 +310,46 @@ test('keeps package-specific type lambdas private behind public type providers',
     ]
   );
   assert.deepEqual(audit(`export type { HistoryPluginTypeProvider };`), []);
+});
+
+test('rejects the installed-plugins editor type in public declarations', () => {
+  assert.deepEqual(
+    auditAt(
+      'dist/math/index.d.ts',
+      'import { f as InternalBaseEditorWithInstalledPlugins } from "../index-AbCd1234.js"; export declare const rule: () => InternalBaseEditorWithInstalledPlugins<any>;'
+    ),
+    [
+      'dist/math/index.d.ts: public declaration exposes internal Plate plugin compiler type InternalBaseEditorWithInstalledPlugins',
+    ]
+  );
+});
+
+test('excuses a known leak only while it still exists', () => {
+  const known = [
+    {
+      finding: 'dist/math/index.d.ts: leak',
+      owner: 'Ziad',
+      packageName: 'platejs',
+    },
+  ];
+
+  assert.deepEqual(
+    withoutKnownDeclarationLeaks(
+      'platejs',
+      ['dist/math/index.d.ts: leak', 'dist/react/index.d.ts: leak'],
+      known
+    ),
+    ['dist/react/index.d.ts: leak']
+  );
+  assert.deepEqual(withoutKnownDeclarationLeaks('platejs', [], known), [
+    'dist/math/index.d.ts: leak: no longer found; remove its known-leak entry (owner: Ziad)',
+  ]);
+  assert.deepEqual(
+    withoutKnownDeclarationLeaks(
+      '@platejs/test',
+      ['dist/math/index.d.ts: leak'],
+      known
+    ),
+    ['dist/math/index.d.ts: leak']
+  );
 });

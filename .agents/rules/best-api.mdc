@@ -90,9 +90,11 @@ When the audit covers colocation, helpers or file topology, add the bounded mani
 
 Run `repair` when the user corrects an API recommendation in a reusable way, when an accepted design sets or rejects a reusable public API principle, or when a change removes, renames or reinterprets a reusable public API or its canonical pattern. This is an automatic closeout subtask of the API change. In a read-only request, report the exact repair instead of writing it. When the same API mistake comes back a second time, run `/pstack:correct` on its class first, so a type, lint or check stops it before doctrine text changes.
 
-1. Edit the one Vision owner of the rule in `VISION.md` or `docs/vision/**`.
-2. Search every artifact that teaches the contract, its skills, examples, recipes, checks, docs and generated mirrors for the rejected names, examples, and call shapes. Update only skills that teach or enforce the changed contract, remove contradictions, and link the Vision owner instead of copying the doctrine.
-3. Regenerate skills and their resources per the pstack block's Agent files rule.
+1. Check the correction against live source and the current Vision owner. When it names an API the source lacks or contradicts settled law, stop and ask, because changing settled law is a `best-api-review` question, not a repair.
+2. Edit the one Vision owner of the rule in `VISION.md` or `docs/vision/**`.
+3. Search every artifact that teaches the contract, its skills, examples, recipes, checks, docs and generated mirrors for the rejected names, examples, and call shapes. Update only skills that teach or enforce the changed contract, remove contradictions, and link the Vision owner instead of copying the doctrine.
+4. Regenerate skills and their resources per the pstack block's Agent files rule.
+5. Forward-test the affected action on a real API without seeding the expected answer.
 
 Do not call the API migration complete while an owning or dependent skill still teaches the rejected shape. Do not turn product-specific decisions into universal rules. A rule that every long-running workflow needs goes to `AGENTS.md` or the block's shared source, never here.
 
