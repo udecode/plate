@@ -2443,12 +2443,17 @@ it('copies retained content across both affinities and replaces the selected por
 it('deletes the live document after select-all spans retained authored content', async () => {
   const source = createEditor({
     plugins: [history(), authored({ authorId: 'alice' })],
-    initialValue: [paragraph('AXYZB')],
+    initialValue: [paragraph('Before'), paragraph('AXYZB'), paragraph('After')],
   });
   const parent = createReactRuntimeViewEditor(
     createEditorView(source, { authored: markup })
   );
-  parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
+  parent.update.text.delete({
+    at: {
+      anchor: { path: [1, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 4 },
+    },
+  });
   parent.api.authored.setView(editingMarkup);
   const mounted = render(
     <EditorRoot editor={parent}>
@@ -2464,11 +2469,11 @@ it('deletes the live document after select-all spans retained authored content',
     getProjectedViewSelectionSlice(parent)
       ?.content.map(NodeApi.string)
       .join(''),
-    'AXYZB'
+    'BeforeAXYZBAfter'
   );
   assert.deepEqual(parent.read.selection(), {
     anchor: point(0),
-    focus: point(2),
+    focus: { path: [2, 0], offset: 5 },
   });
 
   await act(async () => {
@@ -2508,7 +2513,11 @@ it('deletes the live document after select-all spans retained authored content',
   await act(() => {
     parent.api.history.undo();
   });
-  assert.deepEqual(parent.read.children(), [paragraph('AB')]);
+  assert.deepEqual(parent.read.children(), [
+    paragraph('Before'),
+    paragraph('AB'),
+    paragraph('After'),
+  ]);
 
   await act(() => {
     parent.api.history.redo();

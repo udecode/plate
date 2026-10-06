@@ -6,6 +6,7 @@ import {
   PathApi,
   NodeApi,
   type Point,
+  PointApi,
   type Range,
   RangeApi,
   type Selection,
@@ -674,8 +675,17 @@ const retainedSelectionGroups = (
     const previousGroup = groups.find(
       (group) => group.fragmentId === fragmentId && group.root === segment.root
     );
-    if (previousGroup) previousGroup.ranges.push({ anchor, focus });
-    else {
+    if (previousGroup) {
+      const lastRange = previousGroup.ranges.at(-1);
+      if (lastRange && PointApi.equals(lastRange.focus, anchor)) {
+        previousGroup.ranges[previousGroup.ranges.length - 1] = {
+          anchor: lastRange.anchor,
+          focus,
+        };
+      } else {
+        previousGroup.ranges.push({ anchor, focus });
+      }
+    } else {
       groups.push({
         fragment,
         ranges: [{ anchor, focus }],
